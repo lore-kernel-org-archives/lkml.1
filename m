@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbZIOLkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZIOLoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbZIOLkR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 07:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbZIOLkP
+	id S1753316AbZIOLoa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 07:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZIOLoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 07:40:15 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35368 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753188AbZIOLkO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 07:40:14 -0400
-Subject: RE: [patch, resend] x86, perf_counter, bts: optimize BTS overflow
- handling
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC47B0EC1@irsmsx504.ger.corp.intel.com>
-References: <20090915130023.A16204@sedona.ch.intel.com>
-	 <1253013145.5506.50.camel@laptop>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC47B0E9E@irsmsx504.ger.corp.intel.com>
-	 <1253013915.5506.54.camel@laptop>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC47B0EC1@irsmsx504.ger.corp.intel.com>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 13:40:09 +0200
-Message-Id: <1253014809.5506.62.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 07:44:24 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49398 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752805AbZIOLoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 07:44:23 -0400
+Date: Tue, 15 Sep 2009 13:44:26 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com, tytso@mit.edu,
+       akpm@linux-foundation.org, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 6/7] writeback: separate starting of sync vs
+	opportunistic writeback
+Message-ID: <20090915114426.GJ23126@kernel.dk>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-7-git-send-email-jens.axboe@oracle.com> <20090914133307.GJ24075@duck.suse.cz> <20090914134207.GA14830@infradead.org> <20090914192803.GL14984@kernel.dk> <20090914194242.GM14984@kernel.dk> <20090915090847.GA12169@duck.suse.cz> <20090915091402.GG23126@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090915091402.GG23126@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 12:35 +0100, Metzger, Markus T wrote:
-> >-----Original Message-----
-> >From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
-> >Sent: Tuesday, September 15, 2009 1:25 PM
-> >To: Metzger, Markus T
-> >Cc: mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
-> >kernel@vger.kernel.org
-> >Subject: RE: [patch, resend] x86, perf_counter, bts: optimize BTS overflow handling
-> >
-> >On Tue, 2009-09-15 at 12:18 +0100, Metzger, Markus T wrote:
-> >
-> >> >> Restructure perf_counter sampling into sample creation and sample
-> >> >> output.
-> >> >> Prepare a single reference sample for BTS sampling and update the from
-> >> >> and to address fields when draining the BTS buffer.
-> >> >> Drain the entire BTS buffer between a single perf_output_begin() /
-> >> >> perf_output_end() pair.
-> >> >
-> >> >Generally looks very nice, one thing though, why did you take regs out
-> >> >of perf_sample_data, now you get to pass around one extra param..
-> >>
-> >>
-> >> That is to make perf_sample_data describe the sample directly.
-> >>
-> >> The regs are used to create the sample; they're not needed once
-> >> the sample has been created.
-> >
-> >True, but I'd have been lazy and not added that extra parameter all over
-> >the place, but sure ;-)
-> >
-> >This is now fast enough to BTS trace the kernel too?
+On Tue, Sep 15 2009, Jens Axboe wrote:
+> On Tue, Sep 15 2009, Jan Kara wrote:
+> > On Mon 14-09-09 21:42:43, Jens Axboe wrote:
+> > > On Mon, Sep 14 2009, Jens Axboe wrote:
+> > > > On Mon, Sep 14 2009, Christoph Hellwig wrote:
+> > > > > On Mon, Sep 14, 2009 at 03:33:07PM +0200, Jan Kara wrote:
+> > > > > > On Mon 14-09-09 11:36:33, Jens Axboe wrote:
+> > > > > > > bdi_start_writeback() is currently split into two paths, one for
+> > > > > > > WB_SYNC_NONE and one for WB_SYNC_ALL. Add bdi_sync_writeback()
+> > > > > > > for WB_SYNC_ALL writeback and let bdi_start_writeback() handle
+> > > > > > > only WB_SYNC_NONE.
+> > > > > >   What I don't like about this patch is that if somebody sets up
+> > > > > > writeback_control with WB_SYNC_ALL mode set and then submits it to disk via
+> > > > > > bdi_start_writeback() it will just silently convert his writeback to an
+> > > > > > asynchronous one.
+> > > > > >   So I'd maybe leave setting of sync_mode to the caller and just WARN_ON if
+> > > > > > it does not match the purpose of the function...
+> > > > > 
+> > > > > Or initialize the wb entirely inside these functions.  For the sync case
+> > > > > we really only need a superblock as argument, and for writeback it's
+> > > > > bdi + nr_pages.  And also make sure they consistenly return void as
+> > > > > no one cares about the return value.
+> > > > 
+> > > > Yes, I thought about doing that and like that better than the warning.
+> > > > Just pass in the needed args and allocate+fill the wbc on stack. I'll
+> > > > make that change.
+> > > 
+> > > That works out much better, imho:
+> > > 
+> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=270c12655d7d11e234d335a8ab0540c02c034b66
+> >   Yeah, the code looks better. BTW, how about converting also
+> > bdi_writeback_all() to get superblock and nr_pages as an argument?
+> > Currently it seems to be the only place "above" flusher thread which uses
+> > wbc and it's just constructed in the callers of bdi_writeback_all() and
+> > then disassembled inside the function...
 > 
-> It is. At least on my box.
-> 
-> Once that patch has been accepted, I will ask Ingo to drop
-> 1653192f510bd8114b7b133d7289e6e5c3e95046.
+> Yes good point, I'll include that too. Thanks!
 
-Patch looks good,
+One small problem there, though... Currently all queued writeback is
+range cyclic, however with this change then we drop that bit from
+sync_inodes_sb() which isn't range_cyclic and instead just specifies the
+whole range.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-You could also look at throttling the BTS interrupt when you notice
-you're doing them back-to-back..
+-- 
+Jens Axboe
 
