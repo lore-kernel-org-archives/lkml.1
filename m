@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbZIOKht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZIOKo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774AbZIOKht (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 06:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZIOKhp
+	id S1752601AbZIOKo0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 06:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbZIOKoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 06:37:45 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47793 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZIOKho (ORCPT
+	Tue, 15 Sep 2009 06:44:23 -0400
+Received: from cluster-d.mailcontrol.com ([85.115.60.190]:57176 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbZIOKoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 06:37:44 -0400
-Date: Tue, 15 Sep 2009 12:37:39 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Jamie Lokier <jamie@shareable.org>, Marek Vasut <marek.vasut@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] arm: remove unused code in delay.S
-Message-ID: <20090915103739.GA19519@elf.ucw.cz>
-References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com> <200909132328.47079.marek.vasut@gmail.com> <20090913230008.GC30169@n2100.arm.linux.org.uk> <20090914002100.GD30621@shareable.org> <20090914081001.GB14519@n2100.arm.linux.org.uk> <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com> <20090914140059.GC21580@n2100.arm.linux.org.uk> <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com> <20090914144028.GG21580@n2100.arm.linux.org.uk> <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
+	Tue, 15 Sep 2009 06:44:22 -0400
+Message-ID: <4AAF6F8F.8050108@csr.com>
+Date: Tue, 15 Sep 2009 11:42:23 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] UWB bug fixes for 2.6.32
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Sep 2009 10:42:24.0220 (UTC) FILETIME=[35F639C0:01CA35F1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-> >> > Because then you get it whenever you configure for V4 as the lowest
-> >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
-> >> > It's far better to leave it as is and just accept that the old CPUs
-> >> > will have longer than necessary delays.  If people really really
-> >> > care (and there's likely to only be a small minority of them now)
-> >> > changing the '0' to a '1' is a very simple change for them to carry
-> >> > in their local tree.  Unlike getting the right unrolling etc.
-> >>
-> >> Well, they can also 'git revert' this patch. If somebody really cares
-> >> I think they should shout now and provide a better patch, otherwise
-> >> this one should be merged.
-> >
-> > On the other hand, having the code there as it currently stands is not
-> > harmful in any way, so leaving it there is just as easy.
-> 
-> It makes the code less understandable. I'm not sure about linux's
-> practices, but an #if 0 generally means somebody is being lazy.
+Please merge these bug fixes for the UWB subsystem,
 
-Not in this case, as you was explained to you. You may want to add
-explaining comment above #if 0....
-								Pavel
+The following changes since commit 7c0a57d5c47bcfc492b3139e77400f888a935c44:
+  Linus Torvalds (1):
+        Merge branch 'fixes' of git://git.marvell.com/orion
 
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/dvrabel/uwb.git for-upstream
+
+David Vrabel (3):
+      uwb: handle radio controller events with out-of-range IDs correctly
+      uwb: stop uwbd thread if rc->start() fails
+      uwb: avoid radio controller reset loops
+
+ drivers/uwb/hwa-rc.c  |    3 +--
+ drivers/uwb/lc-rc.c   |    2 +-
+ drivers/uwb/reset.c   |   21 +++++++++++----------
+ drivers/uwb/umc-bus.c |    2 +-
+ drivers/uwb/uwbd.c    |    4 ++--
+ drivers/uwb/whc-rc.c  |    3 +--
+ include/linux/uwb.h   |    2 +-
+ 7 files changed, 18 insertions(+), 19 deletions(-)
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+
+
+Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
