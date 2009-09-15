@@ -1,108 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbZIOIWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbZIOISh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbZIOIWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbZIOIWh
+	id S1758140AbZIOISh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757314AbZIOIS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:22:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43085 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758213AbZIOIWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:22:35 -0400
-Date: Tue, 15 Sep 2009 08:22:02 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de,
-       carsten.emde@osadl.org
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de,
-       carsten.emde@osadl.org
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] time: Prevent 32 bit overflow with set_normalized_timespec()
-Message-ID: <tip-12e09337fe238981cb0c87543306e23775d1a143@git.kernel.org>
-Git-Commit-ID: 12e09337fe238981cb0c87543306e23775d1a143
-X-Mailer: tip-git-log-daemon
+	Tue, 15 Sep 2009 04:18:29 -0400
+Received: from lider.pardus.org.tr ([193.140.100.216]:59277 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756834AbZIOIS2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 04:18:28 -0400
+Message-ID: <4AAF4ECD.5010401@pardus.org.tr>
+Date: Tue, 15 Sep 2009 11:22:37 +0300
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.22 (X11/20071115)
 MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: mingo@redhat.com
+Subject: Tricks to speed up kernel builds
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 08:22:03 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  12e09337fe238981cb0c87543306e23775d1a143
-Gitweb:     http://git.kernel.org/tip/12e09337fe238981cb0c87543306e23775d1a143
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Mon, 14 Sep 2009 23:37:40 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Tue, 15 Sep 2009 10:17:30 +0200
+Hi,
 
-time: Prevent 32 bit overflow with set_normalized_timespec()
+I'd googled a lot about the $subject but couldn't find any detailed
+guide about it. So, the followings are what I understand from what I've
+found:
 
-set_normalized_timespec() nsec argument is of type long. The recent
-timekeeping changes of ktime_get_ts() feed 
+1. Build inside a tmpfs to avoid I/O bottlenecks,
+2. Use ccache,
+3. Switch governor to performance if supported,
+4. Pass -j to gnu make to parallelize the build process,
+5. Don't build debug symbols a.k.a set CONFIG_DEBUG_INFO=n
+6. There are a bunch of sched patches in tip which apparently improves
+things during kbuild
+7. Distribute the work into the local network using icecream, distcc.
 
-	ts->tv_nsec + tomono.tv_nsec + nsecs
+For the -j part, how many jobs should we pass to it? I've seen people
+passing
 
-to set_normalized_timespec(). On 32 bit machines that sum can be
-larger than (1 << 31) and therefor result in a negative value which
-screws up the result completely.
+- NR_of_cores+1
+- NR_of_cores x 2 (I think that this is useful when there's 2 threads of
+execution per core like HyperThreading?)
+- 64, 128, etc. regardless of the number of cores (Is it really useful
+regardless of the CPU)
 
-Make the nsec argument of set_normalized_timespec() s64 to fix the
-problem at hand. This also prevents similar problems for future users
-of set_normalized_timespec().
+The curious question is *what build times can you get* with your typical
+systems using your speedup tricks (quad core, dual core, etc.) ? What
+are other tricks that I can use to even more speed up the build?
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Tested-by: Carsten Emde <carsten.emde@osadl.org>
-LKML-Reference: <new-submission>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: John Stultz <johnstul@us.ibm.com>
+Do you really use icecream/distcc on your daily test builds?
+
+How about nicing/ionicing make on an idle system? Will it make any
+difference?
+
+Thanks a lot
+Ozan Caglayan
 
 
 
----
- include/linux/time.h |    2 +-
- kernel/time.c        |    9 ++++++++-
- 2 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/time.h b/include/linux/time.h
-index 256232f..56787c0 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -75,7 +75,7 @@ extern unsigned long mktime(const unsigned int year, const unsigned int mon,
- 			    const unsigned int day, const unsigned int hour,
- 			    const unsigned int min, const unsigned int sec);
- 
--extern void set_normalized_timespec(struct timespec *ts, time_t sec, long nsec);
-+extern void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec);
- extern struct timespec timespec_add_safe(const struct timespec lhs,
- 					 const struct timespec rhs);
- 
-diff --git a/kernel/time.c b/kernel/time.c
-index 2951194..2e2e469 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -370,13 +370,20 @@ EXPORT_SYMBOL(mktime);
-  *	0 <= tv_nsec < NSEC_PER_SEC
-  * For negative values only the tv_sec field is negative !
-  */
--void set_normalized_timespec(struct timespec *ts, time_t sec, long nsec)
-+void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
- {
- 	while (nsec >= NSEC_PER_SEC) {
-+		/*
-+		 * The following asm() prevents the compiler from
-+		 * optimising this loop into a modulo operation. See
-+		 * also __iter_div_u64_rem() in include/linux/time.h
-+		 */
-+		asm("" : "+rm"(nsec));
- 		nsec -= NSEC_PER_SEC;
- 		++sec;
- 	}
- 	while (nsec < 0) {
-+		asm("" : "+rm"(nsec));
- 		nsec += NSEC_PER_SEC;
- 		--sec;
- 	}
