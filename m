@@ -1,996 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbZIOTIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZIOSIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbZIOTIA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 15:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758401AbZIOTHz
+	id S1754699AbZIOSIm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 14:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZIOSIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 15:07:55 -0400
-Received: from kroah.org ([198.145.64.141]:35817 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755102AbZIOTHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 15:07:23 -0400
-Date: Tue, 15 Sep 2009 11:08:04 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
-Subject: Re: Linux 2.6.30.7
-Message-ID: <20090915180804.GD32060@kroah.com>
-References: <20090915180748.GC32060@kroah.com>
+	Tue, 15 Sep 2009 14:08:40 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:57199 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZIOSIj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 14:08:39 -0400
+Message-ID: <4AAFD823.3050309@vlnb.net>
+Date: Tue, 15 Sep 2009 22:08:35 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090915180748.GC32060@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Joel Becker <joel.becker@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Florian Haas <florian.haas@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+Subject: Re: [RFC PATCH 0/19] A kernel-level configfs enabled generic	target
+ engine for Linux v2.6.32
+References: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>	 <4AAE907E.1020205@vlnb.net> <1252961396.2067.316.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1252961396.2067.316.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+vMYVjxbvx7SkJyQQRb16deqNVXnT8sBduMVy
+ hJimVGVRPWM1+Ltr53VaZPotIDNU9th50Au1X7E8PHD77BpILz
+ 03yOP/9x7gE+VtfczlaUA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 281ddff..4ebf57a 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 30
--EXTRAVERSION = .6
-+EXTRAVERSION = .7
- NAME = Man-Eating Seals of Antiquity
- 
- # *DOCUMENTATION*
-diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-index b049abf..0ff92fa 100644
---- a/arch/sparc/include/asm/pgtable_64.h
-+++ b/arch/sparc/include/asm/pgtable_64.h
-@@ -726,11 +726,17 @@ extern unsigned long pte_file(pte_t);
- extern pte_t pgoff_to_pte(unsigned long);
- #define PTE_FILE_MAX_BITS	(64UL - PAGE_SHIFT - 1UL)
- 
--extern unsigned long *sparc64_valid_addr_bitmap;
-+extern unsigned long sparc64_valid_addr_bitmap[];
- 
- /* Needs to be defined here and not in linux/mm.h, as it is arch dependent */
--#define kern_addr_valid(addr)	\
--	(test_bit(__pa((unsigned long)(addr))>>22, sparc64_valid_addr_bitmap))
-+static inline bool kern_addr_valid(unsigned long addr)
-+{
-+	unsigned long paddr = __pa(addr);
-+
-+	if ((paddr >> 41UL) != 0UL)
-+		return false;
-+	return test_bit(paddr >> 22, sparc64_valid_addr_bitmap);
-+}
- 
- extern int page_in_phys_avail(unsigned long paddr);
- 
-diff --git a/arch/sparc/kernel/irq_64.c b/arch/sparc/kernel/irq_64.c
-index 5deabe9..bed910a 100644
---- a/arch/sparc/kernel/irq_64.c
-+++ b/arch/sparc/kernel/irq_64.c
-@@ -902,7 +902,7 @@ void notrace init_irqwork_curcpu(void)
-  * Therefore you cannot make any OBP calls, not even prom_printf,
-  * from these two routines.
-  */
--static void __cpuinit register_one_mondo(unsigned long paddr, unsigned long type, unsigned long qmask)
-+static void __cpuinit notrace register_one_mondo(unsigned long paddr, unsigned long type, unsigned long qmask)
- {
- 	unsigned long num_entries = (qmask + 1) / 64;
- 	unsigned long status;
-diff --git a/arch/sparc/kernel/ktlb.S b/arch/sparc/kernel/ktlb.S
-index cef8def..3ea6e8c 100644
---- a/arch/sparc/kernel/ktlb.S
-+++ b/arch/sparc/kernel/ktlb.S
-@@ -151,12 +151,46 @@ kvmap_dtlb_4v:
- 	 * Must preserve %g1 and %g6 (TAG).
- 	 */
- kvmap_dtlb_tsb4m_miss:
--	sethi		%hi(kpte_linear_bitmap), %g2
--	or		%g2, %lo(kpte_linear_bitmap), %g2
-+	/* Clear the PAGE_OFFSET top virtual bits, shift
-+	 * down to get PFN, and make sure PFN is in range.
-+	 */
-+	sllx		%g4, 21, %g5
- 
--	/* Clear the PAGE_OFFSET top virtual bits, then shift
--	 * down to get a 256MB physical address index.
-+	/* Check to see if we know about valid memory at the 4MB
-+	 * chunk this physical address will reside within.
- 	 */
-+	srlx		%g5, 21 + 41, %g2
-+	brnz,pn		%g2, kvmap_dtlb_longpath
-+	 nop
-+
-+	/* This unconditional branch and delay-slot nop gets patched
-+	 * by the sethi sequence once the bitmap is properly setup.
-+	 */
-+	.globl		valid_addr_bitmap_insn
-+valid_addr_bitmap_insn:
-+	ba,pt		%xcc, 2f
-+	 nop
-+	.subsection	2
-+	.globl		valid_addr_bitmap_patch
-+valid_addr_bitmap_patch:
-+	sethi		%hi(sparc64_valid_addr_bitmap), %g7
-+	or		%g7, %lo(sparc64_valid_addr_bitmap), %g7
-+	.previous
-+
-+	srlx		%g5, 21 + 22, %g2
-+	srlx		%g2, 6, %g5
-+	and		%g2, 63, %g2
-+	sllx		%g5, 3, %g5
-+	ldx		[%g7 + %g5], %g5
-+	mov		1, %g7
-+	sllx		%g7, %g2, %g7
-+	andcc		%g5, %g7, %g0
-+	be,pn		%xcc, kvmap_dtlb_longpath
-+
-+2:	 sethi		%hi(kpte_linear_bitmap), %g2
-+	or		%g2, %lo(kpte_linear_bitmap), %g2
-+
-+	/* Get the 256MB physical address index. */
- 	sllx		%g4, 21, %g5
- 	mov		1, %g7
- 	srlx		%g5, 21 + 28, %g5
-diff --git a/arch/sparc/kernel/nmi.c b/arch/sparc/kernel/nmi.c
-index 2c0cc72..b75bf50 100644
---- a/arch/sparc/kernel/nmi.c
-+++ b/arch/sparc/kernel/nmi.c
-@@ -103,7 +103,7 @@ notrace __kprobes void perfctr_irq(int irq, struct pt_regs *regs)
- 	}
- 	if (!touched && __get_cpu_var(last_irq_sum) == sum) {
- 		local_inc(&__get_cpu_var(alert_counter));
--		if (local_read(&__get_cpu_var(alert_counter)) == 5 * nmi_hz)
-+		if (local_read(&__get_cpu_var(alert_counter)) == 30 * nmi_hz)
- 			die_nmi("BUG: NMI Watchdog detected LOCKUP",
- 				regs, panic_on_timeout);
- 	} else {
-diff --git a/arch/sparc/kernel/sys32.S b/arch/sparc/kernel/sys32.S
-index f061c4d..de8e9b5 100644
---- a/arch/sparc/kernel/sys32.S
-+++ b/arch/sparc/kernel/sys32.S
-@@ -134,7 +134,7 @@ SIGN1(sys32_getpeername, sys_getpeername, %o0)
- SIGN1(sys32_getsockname, sys_getsockname, %o0)
- SIGN2(sys32_ioprio_get, sys_ioprio_get, %o0, %o1)
- SIGN3(sys32_ioprio_set, sys_ioprio_set, %o0, %o1, %o2)
--SIGN2(sys32_splice, sys_splice, %o0, %o1)
-+SIGN2(sys32_splice, sys_splice, %o0, %o2)
- SIGN2(sys32_sync_file_range, compat_sync_file_range, %o0, %o5)
- SIGN2(sys32_tee, sys_tee, %o0, %o1)
- SIGN1(sys32_vmsplice, compat_sys_vmsplice, %o0)
-diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-index f26a352..397a99d 100644
---- a/arch/sparc/mm/init_64.c
-+++ b/arch/sparc/mm/init_64.c
-@@ -145,7 +145,8 @@ static void __init read_obp_memory(const char *property,
- 	     cmp_p64, NULL);
- }
- 
--unsigned long *sparc64_valid_addr_bitmap __read_mostly;
-+unsigned long sparc64_valid_addr_bitmap[VALID_ADDR_BITMAP_BYTES /
-+					sizeof(unsigned long)];
- EXPORT_SYMBOL(sparc64_valid_addr_bitmap);
- 
- /* Kernel physical address base and size in bytes.  */
-@@ -1876,7 +1877,7 @@ static int pavail_rescan_ents __initdata;
-  * memory list again, and make sure it provides at least as much
-  * memory as 'pavail' does.
-  */
--static void __init setup_valid_addr_bitmap_from_pavail(void)
-+static void __init setup_valid_addr_bitmap_from_pavail(unsigned long *bitmap)
- {
- 	int i;
- 
-@@ -1899,8 +1900,7 @@ static void __init setup_valid_addr_bitmap_from_pavail(void)
- 
- 				if (new_start <= old_start &&
- 				    new_end >= (old_start + PAGE_SIZE)) {
--					set_bit(old_start >> 22,
--						sparc64_valid_addr_bitmap);
-+					set_bit(old_start >> 22, bitmap);
- 					goto do_next_page;
- 				}
- 			}
-@@ -1921,20 +1921,21 @@ static void __init setup_valid_addr_bitmap_from_pavail(void)
- 	}
- }
- 
-+static void __init patch_tlb_miss_handler_bitmap(void)
-+{
-+	extern unsigned int valid_addr_bitmap_insn[];
-+	extern unsigned int valid_addr_bitmap_patch[];
-+
-+	valid_addr_bitmap_insn[1] = valid_addr_bitmap_patch[1];
-+	mb();
-+	valid_addr_bitmap_insn[0] = valid_addr_bitmap_patch[0];
-+	flushi(&valid_addr_bitmap_insn[0]);
-+}
-+
- void __init mem_init(void)
- {
- 	unsigned long codepages, datapages, initpages;
- 	unsigned long addr, last;
--	int i;
--
--	i = last_valid_pfn >> ((22 - PAGE_SHIFT) + 6);
--	i += 1;
--	sparc64_valid_addr_bitmap = (unsigned long *) alloc_bootmem(i << 3);
--	if (sparc64_valid_addr_bitmap == NULL) {
--		prom_printf("mem_init: Cannot alloc valid_addr_bitmap.\n");
--		prom_halt();
--	}
--	memset(sparc64_valid_addr_bitmap, 0, i << 3);
- 
- 	addr = PAGE_OFFSET + kern_base;
- 	last = PAGE_ALIGN(kern_size) + addr;
-@@ -1943,15 +1944,19 @@ void __init mem_init(void)
- 		addr += PAGE_SIZE;
- 	}
- 
--	setup_valid_addr_bitmap_from_pavail();
-+	setup_valid_addr_bitmap_from_pavail(sparc64_valid_addr_bitmap);
-+	patch_tlb_miss_handler_bitmap();
- 
- 	high_memory = __va(last_valid_pfn << PAGE_SHIFT);
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
--	for_each_online_node(i) {
--		if (NODE_DATA(i)->node_spanned_pages != 0) {
--			totalram_pages +=
--				free_all_bootmem_node(NODE_DATA(i));
-+	{
-+		int i;
-+		for_each_online_node(i) {
-+			if (NODE_DATA(i)->node_spanned_pages != 0) {
-+				totalram_pages +=
-+					free_all_bootmem_node(NODE_DATA(i));
-+			}
- 		}
- 	}
- #else
-diff --git a/arch/sparc/mm/init_64.h b/arch/sparc/mm/init_64.h
-index 1606387..c2f772d 100644
---- a/arch/sparc/mm/init_64.h
-+++ b/arch/sparc/mm/init_64.h
-@@ -5,10 +5,13 @@
-  * marked non-static so that assembler code can get at them.
-  */
- 
--#define MAX_PHYS_ADDRESS	(1UL << 42UL)
--#define KPTE_BITMAP_CHUNK_SZ	(256UL * 1024UL * 1024UL)
-+#define MAX_PHYS_ADDRESS	(1UL << 41UL)
-+#define KPTE_BITMAP_CHUNK_SZ		(256UL * 1024UL * 1024UL)
- #define KPTE_BITMAP_BYTES	\
- 	((MAX_PHYS_ADDRESS / KPTE_BITMAP_CHUNK_SZ) / 8)
-+#define VALID_ADDR_BITMAP_CHUNK_SZ	(4UL * 1024UL * 1024UL)
-+#define VALID_ADDR_BITMAP_BYTES	\
-+	((MAX_PHYS_ADDRESS / VALID_ADDR_BITMAP_CHUNK_SZ) / 8)
- 
- extern unsigned long kern_linear_pte_xor[2];
- extern unsigned long kpte_linear_bitmap[KPTE_BITMAP_BYTES / sizeof(unsigned long)];
-diff --git a/arch/sparc/prom/misc_64.c b/arch/sparc/prom/misc_64.c
-index eedffb4..39fc6af 100644
---- a/arch/sparc/prom/misc_64.c
-+++ b/arch/sparc/prom/misc_64.c
-@@ -88,7 +88,7 @@ void prom_cmdline(void)
- /* Drop into the prom, but completely terminate the program.
-  * No chance of continuing.
-  */
--void prom_halt(void)
-+void notrace prom_halt(void)
- {
- #ifdef CONFIG_SUN_LDOMS
- 	if (ldom_domaining_enabled)
-diff --git a/arch/sparc/prom/printf.c b/arch/sparc/prom/printf.c
-index 660943e..ca86926 100644
---- a/arch/sparc/prom/printf.c
-+++ b/arch/sparc/prom/printf.c
-@@ -14,14 +14,14 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/compiler.h>
- 
- #include <asm/openprom.h>
- #include <asm/oplib.h>
- 
- static char ppbuf[1024];
- 
--void
--prom_write(const char *buf, unsigned int n)
-+void notrace prom_write(const char *buf, unsigned int n)
- {
- 	char ch;
- 
-@@ -33,8 +33,7 @@ prom_write(const char *buf, unsigned int n)
- 	}
- }
- 
--void
--prom_printf(const char *fmt, ...)
-+void notrace prom_printf(const char *fmt, ...)
- {
- 	va_list args;
- 	int i;
-diff --git a/drivers/md/dm-exception-store.c b/drivers/md/dm-exception-store.c
-index 14ce11e..0083296 100644
---- a/drivers/md/dm-exception-store.c
-+++ b/drivers/md/dm-exception-store.c
-@@ -171,6 +171,14 @@ static int set_chunk_size(struct dm_exception_store *store,
- 	 */
- 	chunk_size_ulong = round_up(chunk_size_ulong, PAGE_SIZE >> 9);
- 
-+	return dm_exception_store_set_chunk_size(store, chunk_size_ulong,
-+						 error);
-+}
-+
-+int dm_exception_store_set_chunk_size(struct dm_exception_store *store,
-+				      unsigned long chunk_size_ulong,
-+				      char **error)
-+{
- 	/* Check chunk_size is a power of 2 */
- 	if (!is_power_of_2(chunk_size_ulong)) {
- 		*error = "Chunk size is not a power of 2";
-@@ -183,6 +191,11 @@ static int set_chunk_size(struct dm_exception_store *store,
- 		return -EINVAL;
- 	}
- 
-+	if (chunk_size_ulong > INT_MAX >> SECTOR_SHIFT) {
-+		*error = "Chunk size is too high";
-+		return -EINVAL;
-+	}
-+
- 	store->chunk_size = chunk_size_ulong;
- 	store->chunk_mask = chunk_size_ulong - 1;
- 	store->chunk_shift = ffs(chunk_size_ulong) - 1;
-diff --git a/drivers/md/dm-exception-store.h b/drivers/md/dm-exception-store.h
-index 96a796b..43658dd 100644
---- a/drivers/md/dm-exception-store.h
-+++ b/drivers/md/dm-exception-store.h
-@@ -168,6 +168,10 @@ static inline chunk_t sector_to_chunk(struct dm_exception_store *store,
- int dm_exception_store_type_register(struct dm_exception_store_type *type);
- int dm_exception_store_type_unregister(struct dm_exception_store_type *type);
- 
-+int dm_exception_store_set_chunk_size(struct dm_exception_store *store,
-+				      unsigned long chunk_size_ulong,
-+				      char **error);
-+
- int dm_exception_store_create(struct dm_target *ti, int argc, char **argv,
- 			      unsigned *args_used,
- 			      struct dm_exception_store **store);
-diff --git a/drivers/md/dm-raid1.c b/drivers/md/dm-raid1.c
-index d8d31b8..a2cf5cf 100644
---- a/drivers/md/dm-raid1.c
-+++ b/drivers/md/dm-raid1.c
-@@ -648,7 +648,13 @@ static void do_writes(struct mirror_set *ms, struct bio_list *writes)
- 	 */
- 	dm_rh_inc_pending(ms->rh, &sync);
- 	dm_rh_inc_pending(ms->rh, &nosync);
--	ms->log_failure = dm_rh_flush(ms->rh) ? 1 : 0;
-+
-+	/*
-+	 * If the flush fails on a previous call and succeeds here,
-+	 * we must not reset the log_failure variable.  We need
-+	 * userspace interaction to do that.
-+	 */
-+	ms->log_failure = dm_rh_flush(ms->rh) ? 1 : ms->log_failure;
- 
- 	/*
- 	 * Dispatch io.
-diff --git a/drivers/md/dm-snap-persistent.c b/drivers/md/dm-snap-persistent.c
-index e75c6dd..aa02fe5 100644
---- a/drivers/md/dm-snap-persistent.c
-+++ b/drivers/md/dm-snap-persistent.c
-@@ -106,6 +106,13 @@ struct pstore {
- 	void *zero_area;
- 
- 	/*
-+	 * An area used for header. The header can be written
-+	 * concurrently with metadata (when invalidating the snapshot),
-+	 * so it needs a separate buffer.
-+	 */
-+	void *header_area;
-+
-+	/*
- 	 * Used to keep track of which metadata area the data in
- 	 * 'chunk' refers to.
- 	 */
-@@ -148,16 +155,27 @@ static int alloc_area(struct pstore *ps)
- 	 */
- 	ps->area = vmalloc(len);
- 	if (!ps->area)
--		return r;
-+		goto err_area;
- 
- 	ps->zero_area = vmalloc(len);
--	if (!ps->zero_area) {
--		vfree(ps->area);
--		return r;
--	}
-+	if (!ps->zero_area)
-+		goto err_zero_area;
- 	memset(ps->zero_area, 0, len);
- 
-+	ps->header_area = vmalloc(len);
-+	if (!ps->header_area)
-+		goto err_header_area;
-+
- 	return 0;
-+
-+err_header_area:
-+	vfree(ps->zero_area);
-+
-+err_zero_area:
-+	vfree(ps->area);
-+
-+err_area:
-+	return r;
- }
- 
- static void free_area(struct pstore *ps)
-@@ -169,6 +187,10 @@ static void free_area(struct pstore *ps)
- 	if (ps->zero_area)
- 		vfree(ps->zero_area);
- 	ps->zero_area = NULL;
-+
-+	if (ps->header_area)
-+		vfree(ps->header_area);
-+	ps->header_area = NULL;
- }
- 
- struct mdata_req {
-@@ -188,7 +210,8 @@ static void do_metadata(struct work_struct *work)
- /*
-  * Read or write a chunk aligned and sized block of data from a device.
-  */
--static int chunk_io(struct pstore *ps, chunk_t chunk, int rw, int metadata)
-+static int chunk_io(struct pstore *ps, void *area, chunk_t chunk, int rw,
-+		    int metadata)
- {
- 	struct dm_io_region where = {
- 		.bdev = ps->store->cow->bdev,
-@@ -198,7 +221,7 @@ static int chunk_io(struct pstore *ps, chunk_t chunk, int rw, int metadata)
- 	struct dm_io_request io_req = {
- 		.bi_rw = rw,
- 		.mem.type = DM_IO_VMA,
--		.mem.ptr.vma = ps->area,
-+		.mem.ptr.vma = area,
- 		.client = ps->io_client,
- 		.notify.fn = NULL,
- 	};
-@@ -240,7 +263,7 @@ static int area_io(struct pstore *ps, int rw)
- 
- 	chunk = area_location(ps, ps->current_area);
- 
--	r = chunk_io(ps, chunk, rw, 0);
-+	r = chunk_io(ps, ps->area, chunk, rw, 0);
- 	if (r)
- 		return r;
- 
-@@ -254,20 +277,7 @@ static void zero_memory_area(struct pstore *ps)
- 
- static int zero_disk_area(struct pstore *ps, chunk_t area)
- {
--	struct dm_io_region where = {
--		.bdev = ps->store->cow->bdev,
--		.sector = ps->store->chunk_size * area_location(ps, area),
--		.count = ps->store->chunk_size,
--	};
--	struct dm_io_request io_req = {
--		.bi_rw = WRITE,
--		.mem.type = DM_IO_VMA,
--		.mem.ptr.vma = ps->zero_area,
--		.client = ps->io_client,
--		.notify.fn = NULL,
--	};
--
--	return dm_io(&io_req, 1, &where, NULL);
-+	return chunk_io(ps, ps->zero_area, area_location(ps, area), WRITE, 0);
- }
- 
- static int read_header(struct pstore *ps, int *new_snapshot)
-@@ -276,6 +286,7 @@ static int read_header(struct pstore *ps, int *new_snapshot)
- 	struct disk_header *dh;
- 	chunk_t chunk_size;
- 	int chunk_size_supplied = 1;
-+	char *chunk_err;
- 
- 	/*
- 	 * Use default chunk size (or hardsect_size, if larger) if none supplied
-@@ -297,11 +308,11 @@ static int read_header(struct pstore *ps, int *new_snapshot)
- 	if (r)
- 		return r;
- 
--	r = chunk_io(ps, 0, READ, 1);
-+	r = chunk_io(ps, ps->header_area, 0, READ, 1);
- 	if (r)
- 		goto bad;
- 
--	dh = (struct disk_header *) ps->area;
-+	dh = ps->header_area;
- 
- 	if (le32_to_cpu(dh->magic) == 0) {
- 		*new_snapshot = 1;
-@@ -319,20 +330,25 @@ static int read_header(struct pstore *ps, int *new_snapshot)
- 	ps->version = le32_to_cpu(dh->version);
- 	chunk_size = le32_to_cpu(dh->chunk_size);
- 
--	if (!chunk_size_supplied || ps->store->chunk_size == chunk_size)
-+	if (ps->store->chunk_size == chunk_size)
- 		return 0;
- 
--	DMWARN("chunk size %llu in device metadata overrides "
--	       "table chunk size of %llu.",
--	       (unsigned long long)chunk_size,
--	       (unsigned long long)ps->store->chunk_size);
-+	if (chunk_size_supplied)
-+		DMWARN("chunk size %llu in device metadata overrides "
-+		       "table chunk size of %llu.",
-+		       (unsigned long long)chunk_size,
-+		       (unsigned long long)ps->store->chunk_size);
- 
- 	/* We had a bogus chunk_size. Fix stuff up. */
- 	free_area(ps);
- 
--	ps->store->chunk_size = chunk_size;
--	ps->store->chunk_mask = chunk_size - 1;
--	ps->store->chunk_shift = ffs(chunk_size) - 1;
-+	r = dm_exception_store_set_chunk_size(ps->store, chunk_size,
-+					      &chunk_err);
-+	if (r) {
-+		DMERR("invalid on-disk chunk size %llu: %s.",
-+		      (unsigned long long)chunk_size, chunk_err);
-+		return r;
-+	}
- 
- 	r = dm_io_client_resize(sectors_to_pages(ps->store->chunk_size),
- 				ps->io_client);
-@@ -351,15 +367,15 @@ static int write_header(struct pstore *ps)
- {
- 	struct disk_header *dh;
- 
--	memset(ps->area, 0, ps->store->chunk_size << SECTOR_SHIFT);
-+	memset(ps->header_area, 0, ps->store->chunk_size << SECTOR_SHIFT);
- 
--	dh = (struct disk_header *) ps->area;
-+	dh = ps->header_area;
- 	dh->magic = cpu_to_le32(SNAP_MAGIC);
- 	dh->valid = cpu_to_le32(ps->valid);
- 	dh->version = cpu_to_le32(ps->version);
- 	dh->chunk_size = cpu_to_le32(ps->store->chunk_size);
- 
--	return chunk_io(ps, 0, WRITE, 1);
-+	return chunk_io(ps, ps->header_area, 0, WRITE, 1);
- }
- 
- /*
-@@ -679,6 +695,8 @@ static int persistent_ctr(struct dm_exception_store *store,
- 	ps->valid = 1;
- 	ps->version = SNAPSHOT_DISK_VERSION;
- 	ps->area = NULL;
-+	ps->zero_area = NULL;
-+	ps->header_area = NULL;
- 	ps->next_free = 2;	/* skipping the header and first area */
- 	ps->current_committed = 0;
- 
-diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-index 014dfb6..53e8252 100644
---- a/drivers/net/e100.c
-+++ b/drivers/net/e100.c
-@@ -1764,7 +1764,7 @@ static int e100_rx_indicate(struct nic *nic, struct rx *rx,
- 				nic->ru_running = RU_SUSPENDED;
- 		pci_dma_sync_single_for_device(nic->pdev, rx->dma_addr,
- 					       sizeof(struct rfd),
--					       PCI_DMA_BIDIRECTIONAL);
-+					       PCI_DMA_FROMDEVICE);
- 		return -ENODATA;
- 	}
- 
-diff --git a/drivers/net/ppp_generic.c b/drivers/net/ppp_generic.c
-index 8ee9142..ae898f7 100644
---- a/drivers/net/ppp_generic.c
-+++ b/drivers/net/ppp_generic.c
-@@ -1383,7 +1383,7 @@ static int ppp_mp_explode(struct ppp *ppp, struct sk_buff *skb)
- 
- 	/* create a	fragment for each channel */
- 	bits = B;
--	while (nfree > 0 &&	len	> 0) {
-+	while (len	> 0) {
- 		list = list->next;
- 		if (list ==	&ppp->channels)	{
- 			i =	0;
-@@ -1430,29 +1430,31 @@ static int ppp_mp_explode(struct ppp *ppp, struct sk_buff *skb)
- 		*otherwise divide it according to the speed
- 		*of the channel we are going to transmit on
- 		*/
--		if (pch->speed == 0) {
--			flen = totlen/nfree	;
--			if (nbigger > 0) {
--				flen++;
--				nbigger--;
--			}
--		} else {
--			flen = (((totfree - nzero)*(totlen + hdrlen*totfree)) /
--				((totspeed*totfree)/pch->speed)) - hdrlen;
--			if (nbigger > 0) {
--				flen += ((totfree - nzero)*pch->speed)/totspeed;
--				nbigger -= ((totfree - nzero)*pch->speed)/
-+		if (nfree > 0) {
-+			if (pch->speed == 0) {
-+				flen = totlen/nfree	;
-+				if (nbigger > 0) {
-+					flen++;
-+					nbigger--;
-+				}
-+			} else {
-+				flen = (((totfree - nzero)*(totlen + hdrlen*totfree)) /
-+					((totspeed*totfree)/pch->speed)) - hdrlen;
-+				if (nbigger > 0) {
-+					flen += ((totfree - nzero)*pch->speed)/totspeed;
-+					nbigger -= ((totfree - nzero)*pch->speed)/
- 							totspeed;
-+				}
- 			}
-+			nfree--;
- 		}
--		nfree--;
- 
- 		/*
- 		 *check	if we are on the last channel or
- 		 *we exceded the lenght	of the data	to
- 		 *fragment
- 		 */
--		if ((nfree == 0) || (flen > len))
-+		if ((nfree <= 0) || (flen > len))
- 			flen = len;
- 		/*
- 		 *it is not worth to tx on slow channels:
-@@ -1466,7 +1468,7 @@ static int ppp_mp_explode(struct ppp *ppp, struct sk_buff *skb)
- 			continue;
- 		}
- 
--		mtu	= pch->chan->mtu + 2 - hdrlen;
-+		mtu	= pch->chan->mtu - hdrlen;
- 		if (mtu	< 4)
- 			mtu	= 4;
- 		if (flen > mtu)
-diff --git a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
-index 5b07dd8..72be141 100644
---- a/drivers/net/pppol2tp.c
-+++ b/drivers/net/pppol2tp.c
-@@ -2682,6 +2682,7 @@ out_unregister_pppol2tp_proto:
- static void __exit pppol2tp_exit(void)
- {
- 	unregister_pppox_proto(PX_PROTO_OL2TP);
-+	unregister_pernet_gen_device(pppol2tp_net_id, &pppol2tp_net_ops);
- 	proto_unregister(&pppol2tp_sk_proto);
- }
- 
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index b497daa..bba9bb0 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -595,6 +595,29 @@ int pci_iov_resource_bar(struct pci_dev *dev, int resno,
- }
- 
- /**
-+ * pci_sriov_resource_alignment - get resource alignment for VF BAR
-+ * @dev: the PCI device
-+ * @resno: the resource number
-+ *
-+ * Returns the alignment of the VF BAR found in the SR-IOV capability.
-+ * This is not the same as the resource size which is defined as
-+ * the VF BAR size multiplied by the number of VFs.  The alignment
-+ * is just the VF BAR size.
-+ */
-+int pci_sriov_resource_alignment(struct pci_dev *dev, int resno)
-+{
-+	struct resource tmp;
-+	enum pci_bar_type type;
-+	int reg = pci_iov_resource_bar(dev, resno, &type);
-+
-+	if (!reg)
-+		return 0;
-+
-+	 __pci_read_base(dev, type, &tmp, reg);
-+	return resource_alignment(&tmp);
-+}
-+
-+/**
-  * pci_restore_iov_state - restore the state of the IOV capability
-  * @dev: the PCI device
-  */
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index d03f6b9..04d126b 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -234,6 +234,7 @@ extern int pci_iov_init(struct pci_dev *dev);
- extern void pci_iov_release(struct pci_dev *dev);
- extern int pci_iov_resource_bar(struct pci_dev *dev, int resno,
- 				enum pci_bar_type *type);
-+extern int pci_sriov_resource_alignment(struct pci_dev *dev, int resno);
- extern void pci_restore_iov_state(struct pci_dev *dev);
- extern int pci_iov_bus_range(struct pci_bus *bus);
- #else
-@@ -259,4 +260,16 @@ static inline int pci_iov_bus_range(struct pci_bus *bus)
- }
- #endif /* CONFIG_PCI_IOV */
- 
-+static inline int pci_resource_alignment(struct pci_dev *dev,
-+					 struct resource *res)
-+{
-+#ifdef CONFIG_PCI_IOV
-+	int resno = res - dev->resource;
-+
-+	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END)
-+		return pci_sriov_resource_alignment(dev, resno);
-+#endif
-+	return resource_alignment(res);
-+}
-+
- #endif /* DRIVERS_PCI_H */
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index a00f854..e693948 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -25,7 +25,7 @@
- #include <linux/ioport.h>
- #include <linux/cache.h>
- #include <linux/slab.h>
--
-+#include "pci.h"
- 
- static void pbus_assign_resources_sorted(const struct pci_bus *bus)
- {
-@@ -355,7 +355,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
- 				continue;
- 			r_size = resource_size(r);
- 			/* For bridges size != alignment */
--			align = resource_alignment(r);
-+			align = pci_resource_alignment(dev, r);
- 			order = __ffs(align) - 20;
- 			if (order > 11) {
- 				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 3039fcb..cfec5f3 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -145,7 +145,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 	size = resource_size(res);
- 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
- 
--	align = resource_alignment(res);
-+	align = pci_resource_alignment(dev, res);
- 	if (!align) {
- 		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
- 			"alignment) %pR flags %#lx\n",
-@@ -236,7 +236,7 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 		if (!(r->flags) || r->parent)
- 			continue;
- 
--		r_align = resource_alignment(r);
-+		r_align = pci_resource_alignment(dev, r);
- 		if (!r_align) {
- 			dev_warn(&dev->dev, "BAR %d: bogus alignment "
- 				"%pR flags %#lx\n",
-@@ -248,7 +248,7 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 			struct resource_list *ln = list->next;
- 
- 			if (ln)
--				align = resource_alignment(ln->res);
-+				align = pci_resource_alignment(ln->dev, ln->res);
- 
- 			if (r_align > align) {
- 				tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 8404423..d8e1d15 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1902,24 +1902,6 @@ static void sd_probe_async(void *data, async_cookie_t cookie)
- 	index = sdkp->index;
- 	dev = &sdp->sdev_gendev;
- 
--	if (!sdp->request_queue->rq_timeout) {
--		if (sdp->type != TYPE_MOD)
--			blk_queue_rq_timeout(sdp->request_queue, SD_TIMEOUT);
--		else
--			blk_queue_rq_timeout(sdp->request_queue,
--					     SD_MOD_TIMEOUT);
--	}
--
--	device_initialize(&sdkp->dev);
--	sdkp->dev.parent = &sdp->sdev_gendev;
--	sdkp->dev.class = &sd_disk_class;
--	dev_set_name(&sdkp->dev, dev_name(&sdp->sdev_gendev));
--
--	if (device_add(&sdkp->dev))
--		goto out_free_index;
--
--	get_device(&sdp->sdev_gendev);
--
- 	if (index < SD_MAX_DISKS) {
- 		gd->major = sd_major((index & 0xf0) >> 4);
- 		gd->first_minor = ((index & 0xf) << 4) | (index & 0xfff00);
-@@ -1954,11 +1936,6 @@ static void sd_probe_async(void *data, async_cookie_t cookie)
- 
- 	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
- 		  sdp->removable ? "removable " : "");
--
--	return;
--
-- out_free_index:
--	ida_remove(&sd_index_ida, index);
- }
- 
- /**
-@@ -2026,6 +2003,24 @@ static int sd_probe(struct device *dev)
- 	sdkp->openers = 0;
- 	sdkp->previous_state = 1;
- 
-+	if (!sdp->request_queue->rq_timeout) {
-+		if (sdp->type != TYPE_MOD)
-+			blk_queue_rq_timeout(sdp->request_queue, SD_TIMEOUT);
-+		else
-+			blk_queue_rq_timeout(sdp->request_queue,
-+					     SD_MOD_TIMEOUT);
-+	}
-+
-+	device_initialize(&sdkp->dev);
-+	sdkp->dev.parent = &sdp->sdev_gendev;
-+	sdkp->dev.class = &sd_disk_class;
-+	dev_set_name(&sdkp->dev, dev_name(&sdp->sdev_gendev));
-+
-+	if (device_add(&sdkp->dev))
-+		goto out_free_index;
-+
-+	get_device(&sdp->sdev_gendev);
-+
- 	async_schedule(sd_probe_async, sdkp);
- 
- 	return 0;
-@@ -2055,8 +2050,10 @@ static int sd_probe(struct device *dev)
-  **/
- static int sd_remove(struct device *dev)
- {
--	struct scsi_disk *sdkp = dev_get_drvdata(dev);
-+	struct scsi_disk *sdkp;
- 
-+	async_synchronize_full();
-+	sdkp = dev_get_drvdata(dev);
- 	device_del(&sdkp->dev);
- 	del_gendisk(sdkp->disk);
- 	sd_shutdown(dev);
-diff --git a/fs/jffs2/wbuf.c b/fs/jffs2/wbuf.c
-index d9a721e..5ef7bac 100644
---- a/fs/jffs2/wbuf.c
-+++ b/fs/jffs2/wbuf.c
-@@ -1268,10 +1268,20 @@ int jffs2_nor_wbuf_flash_setup(struct jffs2_sb_info *c) {
- 	if (!c->wbuf)
- 		return -ENOMEM;
- 
-+#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
-+	c->wbuf_verify = kmalloc(c->wbuf_pagesize, GFP_KERNEL);
-+	if (!c->wbuf_verify) {
-+		kfree(c->wbuf);
-+		return -ENOMEM;
-+	}
-+#endif
- 	return 0;
- }
- 
- void jffs2_nor_wbuf_flash_cleanup(struct jffs2_sb_info *c) {
-+#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
-+	kfree(c->wbuf_verify);
-+#endif
- 	kfree(c->wbuf);
- }
- 
-diff --git a/fs/nilfs2/btnode.c b/fs/nilfs2/btnode.c
-index 4cc07b2..b55f31c 100644
---- a/fs/nilfs2/btnode.c
-+++ b/fs/nilfs2/btnode.c
-@@ -206,6 +206,7 @@ int nilfs_btnode_prepare_change_key(struct address_space *btnc,
- 		 * We cannot call radix_tree_preload for the kernels older
- 		 * than 2.6.23, because it is not exported for modules.
- 		 */
-+retry:
- 		err = radix_tree_preload(GFP_NOFS & ~__GFP_HIGHMEM);
- 		if (err)
- 			goto failed_unlock;
-@@ -216,7 +217,6 @@ int nilfs_btnode_prepare_change_key(struct address_space *btnc,
- 				       (unsigned long long)oldkey,
- 				       (unsigned long long)newkey);
- 
--retry:
- 		spin_lock_irq(&btnc->tree_lock);
- 		err = radix_tree_insert(&btnc->page_tree, newkey, obh->b_page);
- 		spin_unlock_irq(&btnc->tree_lock);
-diff --git a/mm/slub.c b/mm/slub.c
-index 253016d..0b95a6c 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2490,8 +2490,6 @@ static inline int kmem_cache_close(struct kmem_cache *s)
-  */
- void kmem_cache_destroy(struct kmem_cache *s)
- {
--	if (s->flags & SLAB_DESTROY_BY_RCU)
--		rcu_barrier();
- 	down_write(&slub_lock);
- 	s->refcount--;
- 	if (!s->refcount) {
-@@ -2502,6 +2500,8 @@ void kmem_cache_destroy(struct kmem_cache *s)
- 				"still has objects.\n", s->name, __func__);
- 			dump_stack();
- 		}
-+		if (s->flags & SLAB_DESTROY_BY_RCU)
-+			rcu_barrier();
- 		sysfs_slab_remove(s);
- 	} else
- 		up_write(&slub_lock);
-diff --git a/net/core/net_namespace.c b/net/core/net_namespace.c
-index e3bebd3..33a3314 100644
---- a/net/core/net_namespace.c
-+++ b/net/core/net_namespace.c
-@@ -498,7 +498,7 @@ int net_assign_generic(struct net *net, int id, void *data)
- 	 */
- 
- 	ng->len = id;
--	memcpy(&ng->ptr, &old_ng->ptr, old_ng->len);
-+	memcpy(&ng->ptr, &old_ng->ptr, old_ng->len * sizeof(void*));
- 
- 	rcu_assign_pointer(net->gen, ng);
- 	call_rcu(&old_ng->rcu, net_generic_release);
-diff --git a/net/dccp/proto.c b/net/dccp/proto.c
-index 314a1b5..8e1da25 100644
---- a/net/dccp/proto.c
-+++ b/net/dccp/proto.c
-@@ -1159,6 +1159,7 @@ static void __exit dccp_fini(void)
- 	kmem_cache_destroy(dccp_hashinfo.bind_bucket_cachep);
- 	dccp_ackvec_exit();
- 	dccp_sysctl_exit();
-+	percpu_counter_destroy(&dccp_orphan_count);
- }
- 
- module_init(dccp_init);
-diff --git a/net/ipv4/ip_gre.c b/net/ipv4/ip_gre.c
-index e62510d..3491c93 100644
---- a/net/ipv4/ip_gre.c
-+++ b/net/ipv4/ip_gre.c
-@@ -952,7 +952,7 @@ static int ipgre_tunnel_bind_dev(struct net_device *dev)
- 			addend += 4;
- 	}
- 	dev->needed_headroom = addend + hlen;
--	mtu -= dev->hard_header_len - addend;
-+	mtu -= dev->hard_header_len + addend;
- 
- 	if (mtu < 68)
- 		mtu = 68;
-diff --git a/sound/pci/oxygen/oxygen_lib.c b/sound/pci/oxygen/oxygen_lib.c
-index 312251d..9a8936e 100644
---- a/sound/pci/oxygen/oxygen_lib.c
-+++ b/sound/pci/oxygen/oxygen_lib.c
-@@ -260,6 +260,9 @@ oxygen_search_pci_id(struct oxygen *chip, const struct pci_device_id ids[])
- 	 * chip didn't if the first EEPROM word was overwritten.
- 	 */
- 	subdevice = oxygen_read_eeprom(chip, 2);
-+	/* use default ID if EEPROM is missing */
-+	if (subdevice == 0xffff)
-+		subdevice = 0x8788;
- 	/*
- 	 * We use only the subsystem device ID for searching because it is
- 	 * unique even without the subsystem vendor ID, which may have been
-diff --git a/sound/pci/oxygen/oxygen_pcm.c b/sound/pci/oxygen/oxygen_pcm.c
-index c262049..8c6829b 100644
---- a/sound/pci/oxygen/oxygen_pcm.c
-+++ b/sound/pci/oxygen/oxygen_pcm.c
-@@ -469,9 +469,11 @@ static int oxygen_multich_hw_params(struct snd_pcm_substream *substream,
- 	oxygen_write16_masked(chip, OXYGEN_I2S_MULTICH_FORMAT,
- 			      oxygen_rate(hw_params) |
- 			      chip->model.dac_i2s_format |
-+			      oxygen_i2s_mclk(hw_params) |
- 			      oxygen_i2s_bits(hw_params),
- 			      OXYGEN_I2S_RATE_MASK |
- 			      OXYGEN_I2S_FORMAT_MASK |
-+			      OXYGEN_I2S_MCLK_MASK |
- 			      OXYGEN_I2S_BITS_MASK);
- 	oxygen_update_dac_routing(chip);
- 	oxygen_update_spdif_source(chip);
+Nicholas A. Bellinger, on 09/15/2009 12:49 AM wrote:
+> On Mon, 2009-09-14 at 22:50 +0400, Vladislav Bolkhovitin wrote:
+>> Nicholas A. Bellinger, on 09/12/2009 05:55 AM wrote:
+>>> Greetings all,
+>>>
+>>> This is my humble request for review and inclusion of
+>>> Target_Core_Mod/ConfigFS v3.2 from lio-core-2.6.git code into mainline
+>>> v2.6.32.  With TCM v3.2, the two major SPC-4 SCSI target mode fabric
+>>> features that have now been completed: Persistent Reservation APTPL and
+>>> implict/explict ALUA are the first all optional SPC4 defined feature
+>>> implementation of PR and ALUA in the Linux OSS target theatre using an
+>>> upstream user-driven virtual filesystem directory hierarchy structure
+>>> based on configfs that can be configured in realtime in combination with
+>>> interpreted userspace code.
+>>>
+>>> Both of these new features are now being used to provide Persistent Reservations
+>>> across target power loss and asymmetric multipath I/O to both Linux and non-Linux
+>>> clients.  There is also an optional ALUA transition delay logic that has been
+>>> included to futher debug and improve existing upstream client side Linux kernel code
+>>> using TCM v3.2. These patches have been diffed against v2.6.31, and tested on x86
+>>> 32-bit HVM, x86_64 KVM, and powerpc.
+>>>
+>>> There is cleanup work continuing to make the TCM code to use dprintk(),
+>>> and some include cleanups, and other minor fixes.  The code has also
+>>> been run through checkpatch again since the posting in April, and all
+>>> errors have been removed, with the exception of one ConfigFS macro
+>>> define triggering a checkpatch false positive.
+>>>
+>>> As with the posting of the TCM v3.0 code earlier in April, I have
+>>> decided to break up the submissions into the generic target_core_mod
+>>> piece (this patch series) and then a seperate one that will be appearing
+>>> in the next days for v3.2 of the LIO-Target iSCSI fabric module.
+>>>
+>>> More Information about Target_Core_Mod/ConfigFS, and PR and ALUA:
+>>>
+>>> http://www.linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
+>>> http://www.linux-iscsi.org/index.php/Persistent_Reservations
+>>> http://www.linux-iscsi.org/index.php/ALUA
+>>>
+>>> The complete v3.x TCM CLI operations set can be found here:
+>>>
+>>> http://www.linux-iscsi.org/index.php/Lio-utils#v3.1_TCM_CLI_operations
+>>>
+>>> Instructions and examples for getting setup:
+>>>
+>>> http://linux-iscsi.org/builds/docs/LIO-3.0-Users_Reference_Manual.pdf
+>>> http://www.linux-iscsi.org/index.php/Howto#Start_target_core_mod
+>> Some questions among many I have:
+>>
+>> 1. Where and how TCM is better over the existing mainline target 
+>> framework STGT to justify such a move as adding a new piece of code 
+>> doing the same job?
+> 
+> I think from reading my original email and the list of patches it is
+> quite obvious to the people involved what are the major pieces of
+> functionality available in TCM v3.2 that people actually *want* and
+> *care* about that is not available in the existing STGT framework.
+
+Probably, I'm not sufficiently smart, but benefits of "TCM v3.2" aren't 
+obvious for me at all. Could you list them point by point?
+
+Especially interesting, why the above mentioned features can't be added 
+in the STGT instead of creating something a whole new?
+
+>> 2. On the linux-iscsi.org main page (BTW, the comparison on that page 
+>> isn't fully correct about STGT and SCST) you claim that TCM is a generic 
+>> target engine. But how can you prove (and test) that if there are no 
+>> hardware target drivers for TCM?
+> 
+> I am not sure why you think you need hardware target drivers to prove
+> that a target engine is generic..?  Why don't you look at the TCM v3.2
+> code (like everyone else is doing) and see for yourself..?
+
+I looked there many times. Hardware target drivers fundamentally 
+different from software drivers, because they need to do some processing 
+on IRQ level. You can't test the corresponding target's framework 
+branches and prove they provide sufficient functionality using a driver, 
+which doesn't need such functionality.
+
+>> Also patch 7 implements MIBs through procfs. Procfs is for long time 
+>> forbidden for adding anything like that, so you can't push it in the 
+>> mainline.
+> 
+> There are other subsystems (Linux/Net and SCTP for example) that use
+> procfs for read-only MIBs statistics, so TCM actually having an
+> implementation of SCSI MIBs available (no other target projects have
+> SCSI MIBs btw) under procfs is hardly a show-stopper considering the
+> *entire* control path for TCM v3.2 is using upstream configfs code
+> anyways.
+
+Addition of new non-process related entries in /proc is fully forbidden 
+and it doesn't matter if those entries used on "control path" or in 
+corner cases.
+
+Vlad
+
