@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbZIOJc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZIOJdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164AbZIOJc4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZIOJcx
+	id S1752175AbZIOJdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZIOJdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:32:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49318 "EHLO hera.kernel.org"
+	Tue, 15 Sep 2009 05:33:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49340 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbZIOJcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:32:52 -0400
-Date: Tue, 15 Sep 2009 09:32:24 GMT
+	id S1752035AbZIOJdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:33:11 -0400
+Date: Tue, 15 Sep 2009 09:32:37 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
        hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
@@ -21,33 +21,53 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf sched: Clean up latency and replay sub-commands
-Message-ID: <tip-46f392c97f9fd772426ed3361c5179a0d44b8c3f@git.kernel.org>
-Git-Commit-ID: 46f392c97f9fd772426ed3361c5179a0d44b8c3f
+Subject: [tip:perfcounters/core] perf sched: Display time in milliseconds, reorganize output
+Message-ID: <tip-d9340c1db3f52460a8335eeb127a2728c5bba6ce@git.kernel.org>
+Git-Commit-ID: d9340c1db3f52460a8335eeb127a2728c5bba6ce
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:32:25 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:32:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  46f392c97f9fd772426ed3361c5179a0d44b8c3f
-Gitweb:     http://git.kernel.org/tip/46f392c97f9fd772426ed3361c5179a0d44b8c3f
+Commit-ID:  d9340c1db3f52460a8335eeb127a2728c5bba6ce
+Gitweb:     http://git.kernel.org/tip/d9340c1db3f52460a8335eeb127a2728c5bba6ce
 Author:     Ingo Molnar <mingo@elte.hu>
 AuthorDate: Sat, 12 Sep 2009 10:08:34 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Sun, 13 Sep 2009 10:22:44 +0200
 
-perf sched: Clean up latency and replay sub-commands
+perf sched: Display time in milliseconds, reorganize output
 
-- Separate the latency and the replay commands more cleanly
+After:
 
- - Use consistent naming
+-----------------------------------------------------------------------------------
+ Task              |  runtime ms | switches | average delay ms | maximum delay ms |
+-----------------------------------------------------------------------------------
+ migration/0       |    0.000 ms |        1 | avg:    0.047 ms | max:    0.047 ms |
+ ksoftirqd/0       |    0.000 ms |        1 | avg:    0.039 ms | max:    0.039 ms |
+ migration/1       |    0.000 ms |        3 | avg:    0.013 ms | max:    0.016 ms |
+ migration/3       |    0.000 ms |        2 | avg:    0.003 ms | max:    0.004 ms |
+ migration/4       |    0.000 ms |        1 | avg:    0.022 ms | max:    0.022 ms |
+ distccd           |    0.000 ms |        1 | avg:    0.004 ms | max:    0.004 ms |
+ distccd           |    0.000 ms |        1 | avg:    0.014 ms | max:    0.014 ms |
+ distccd           |    0.000 ms |        2 | avg:    0.000 ms | max:    0.000 ms |
+ distccd           |    0.000 ms |        2 | avg:    0.012 ms | max:    0.019 ms |
+ distccd           |    0.000 ms |        1 | avg:    0.002 ms | max:    0.002 ms |
+ as                |    0.000 ms |        2 | avg:    0.019 ms | max:    0.019 ms |
+ as                |    0.000 ms |        3 | avg:    0.015 ms | max:    0.017 ms |
+ as                |    0.000 ms |        1 | avg:    0.009 ms | max:    0.009 ms |
+ perf              |    0.000 ms |        1 | avg:    0.001 ms | max:    0.001 ms |
+ gcc               |    0.000 ms |        1 | avg:    0.021 ms | max:    0.021 ms |
+ run-mozilla.sh    |    0.000 ms |        2 | avg:    0.010 ms | max:    0.017 ms |
+ mozilla-plugin-   |    0.000 ms |        1 | avg:    0.006 ms | max:    0.006 ms |
+ gcc               |    0.000 ms |        2 | avg:    0.013 ms | max:    0.013 ms |
+-----------------------------------------------------------------------------------
 
- - Display help page on 'perf sched' outlining comments,
-   instead of aborting
+(The runtime ms column is not filled in yet.)
 
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -59,169 +79,83 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-sched.c |   99 ++++++++++++++++++++++----------------------
- 1 files changed, 49 insertions(+), 50 deletions(-)
+ tools/perf/builtin-sched.c         |   17 +++++++++--------
+ tools/perf/util/trace-event-read.c |    6 ++++--
+ 2 files changed, 13 insertions(+), 10 deletions(-)
 
 diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 4f9e943..84699cf 100644
+index 84699cf..a084c28 100644
 --- a/tools/perf/builtin-sched.c
 +++ b/tools/perf/builtin-sched.c
-@@ -543,24 +543,7 @@ static void wait_for_tasks(void)
+@@ -1096,14 +1096,15 @@ static void output_lat_thread(struct thread_latency *lat)
+ 	if (!count)
+ 		return;
+ 
+-	ret = printf("%s", lat->thread->comm);
++	ret = printf(" %s ", lat->thread->comm);
+ 
+-	for (i = 0; i < 25 - ret; i++)
++	for (i = 0; i < 19 - ret; i++)
+ 		printf(" ");
+ 
+ 	avg = total / count;
+ 
+-	printf("%5d        %10llu       %10llu      %10llu\n", count, total, avg, max);
++	printf("|%9.3f ms |%9d | avg:%9.3f ms | max:%9.3f ms |\n",
++		0.0, count, (double)avg/1e9, (double)max/1e9);
+ }
+ 
+ static void __cmd_lat(void)
+@@ -1113,11 +1114,9 @@ static void __cmd_lat(void)
+ 	setup_pager();
+ 	read_events();
+ 
+-	printf(" Tasks");
+-	printf("                     count");
+-	printf("          total");
+-	printf("              avg");
+-	printf("            max\n\n");
++	printf("-----------------------------------------------------------------------------------\n");
++	printf(" Task              |  runtime ms | switches | average delay ms | maximum delay ms |\n");
++	printf("-----------------------------------------------------------------------------------\n");
+ 
+ 	next = rb_first(&lat_snapshot_root);
+ 
+@@ -1128,6 +1127,8 @@ static void __cmd_lat(void)
+ 		output_lat_thread(lat);
+ 		next = rb_next(next);
  	}
++
++	printf("-----------------------------------------------------------------------------------\n");
  }
  
--static int __cmd_sched(void);
--
--static void parse_trace(void)
--{
--	__cmd_sched();
--
--	printf("nr_run_events:        %ld\n", nr_run_events);
--	printf("nr_sleep_events:      %ld\n", nr_sleep_events);
--	printf("nr_wakeup_events:     %ld\n", nr_wakeup_events);
--
--	if (targetless_wakeups)
--		printf("target-less wakeups:  %ld\n", targetless_wakeups);
--	if (multitarget_wakeups)
--		printf("multi-target wakeups: %ld\n", multitarget_wakeups);
--	if (nr_run_events_optimized)
--		printf("run events optimized: %ld\n",
--			nr_run_events_optimized);
--}
-+static int read_events(void);
- 
- static unsigned long nr_runs;
- static nsec_t sum_runtime;
-@@ -637,6 +620,38 @@ static void test_calibrations(void)
- 	printf("the sleep test took %Ld nsecs\n", T1-T0);
+ static struct trace_sched_handler *trace_handler;
+diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
+index a1217a1..1b5c847 100644
+--- a/tools/perf/util/trace-event-read.c
++++ b/tools/perf/util/trace-event-read.c
+@@ -458,12 +458,13 @@ struct record *trace_read_data(int cpu)
+ 	return data;
  }
  
-+static void __cmd_replay(void)
-+{
-+	long nr_iterations = 10, i;
-+
-+	calibrate_run_measurement_overhead();
-+	calibrate_sleep_measurement_overhead();
-+
-+	test_calibrations();
-+
-+	read_events();
-+
-+	printf("nr_run_events:        %ld\n", nr_run_events);
-+	printf("nr_sleep_events:      %ld\n", nr_sleep_events);
-+	printf("nr_wakeup_events:     %ld\n", nr_wakeup_events);
-+
-+	if (targetless_wakeups)
-+		printf("target-less wakeups:  %ld\n", targetless_wakeups);
-+	if (multitarget_wakeups)
-+		printf("multi-target wakeups: %ld\n", multitarget_wakeups);
-+	if (nr_run_events_optimized)
-+		printf("run events optimized: %ld\n",
-+			nr_run_events_optimized);
-+
-+	print_task_traces();
-+	add_cross_task_wakeups();
-+
-+	create_tasks();
-+	printf("------------------------------------------------------------\n");
-+	for (i = 0; i < nr_iterations; i++)
-+		run_one_test();
-+}
-+
- static int
- process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+-void trace_report (void)
++void trace_report(void)
  {
-@@ -1091,10 +1106,13 @@ static void output_lat_thread(struct thread_latency *lat)
- 	printf("%5d        %10llu       %10llu      %10llu\n", count, total, avg, max);
- }
+ 	const char *input_file = "trace.info";
+ 	char buf[BUFSIZ];
+ 	char test[] = { 23, 8, 68 };
+ 	char *version;
++	int show_version = 0;
+ 	int show_funcs = 0;
+ 	int show_printk = 0;
  
--static void output_lat_results(void)
-+static void __cmd_lat(void)
- {
- 	struct rb_node *next;
+@@ -480,7 +481,8 @@ void trace_report (void)
+ 		die("not a trace file (missing tracing)");
  
-+	setup_pager();
-+	read_events();
-+
- 	printf(" Tasks");
- 	printf("                     count");
- 	printf("          total");
-@@ -1312,7 +1330,7 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
- 	return 0;
- }
+ 	version = read_string();
+-	printf("version = %s\n", version);
++	if (show_version)
++		printf("version = %s\n", version);
+ 	free(version);
  
--static int __cmd_sched(void)
-+static int read_events(void)
- {
- 	int ret, rc = EXIT_FAILURE;
- 	unsigned long offset = 0;
-@@ -1408,8 +1426,8 @@ more:
- 	return rc;
- }
- 
--static const char * const annotate_usage[] = {
--	"perf trace [<options>] <command>",
-+static const char * const sched_usage[] = {
-+	"perf sched [<options>] <command>",
- 	NULL
- };
- 
-@@ -1427,49 +1445,30 @@ static const struct option options[] = {
- 
- int cmd_sched(int argc, const char **argv, const char *prefix __used)
- {
--	long nr_iterations = 10, i;
--
- 	symbol__init();
- 	page_size = getpagesize();
- 
--	argc = parse_options(argc, argv, options, annotate_usage, 0);
-+	argc = parse_options(argc, argv, options, sched_usage, 0);
- 	if (argc) {
- 		/*
- 		 * Special case: if there's an argument left then assume tha
- 		 * it's a symbol filter:
- 		 */
- 		if (argc > 1)
--			usage_with_options(annotate_usage, options);
-+			usage_with_options(sched_usage, options);
- 	}
- 
--//	setup_pager();
--
- 	if (replay_mode)
- 		trace_handler = &replay_ops;
- 	else if (lat_mode)
- 		trace_handler = &lat_ops;
--	else /* We may need a default subcommand (perf trace?) */
--		die("Please select a sub command (-r)\n");
--
--	if (replay_mode) {
--		calibrate_run_measurement_overhead();
--		calibrate_sleep_measurement_overhead();
--
--		test_calibrations();
--
--		parse_trace();
--		print_task_traces();
--		add_cross_task_wakeups();
--
--		create_tasks();
--		printf("------------------------------------------------------------\n");
--		for (i = 0; i < nr_iterations; i++)
--			run_one_test();
--	} else if (lat_mode) {
--		setup_pager();
--		__cmd_sched();
--		output_lat_results();
--	}
-+	else
-+		usage_with_options(sched_usage, options);
-+
-+	if (replay_mode)
-+		__cmd_replay();
-+	else if (lat_mode)
-+		__cmd_lat();
- 
- 	return 0;
- }
+ 	read_or_die(buf, 1);
