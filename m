@@ -1,67 +1,8788 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbZIOHDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbZIOHNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758144AbZIOHDJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 03:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbZIOHDH
+	id S1758152AbZIOHNE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 03:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbZIOHM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 03:03:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59470 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757991AbZIOHDF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 03:03:05 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       Brice Goglin <Brice.Goglin@inria.fr>, linux-rdma@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-Reply-To: <adaljklifkt.fsf@cisco.com>
-References: <20090911064019.GZ4973@obsidianresearch.com> <adaljklifkt.fsf@cisco.com>
-Message-Id: <20090915155231.DB86.A69D9226@jp.fujitsu.com>
+	Tue, 15 Sep 2009 03:12:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42935 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758106AbZIOHMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 03:12:45 -0400
+Date: Tue, 15 Sep 2009 09:11:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Eric Paris <eparis@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       James Morris <jmorris@namei.org>, Thomas Liu <tliu@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [origin tree SLAB corruption #2] BUG kmalloc-64: Poison
+	overwritten, INFO: Allocated in bdi_alloc_work+0x2b/0x100 age=175
+	cpu=1 pid=3514
+Message-ID: <20090915071158.GA31392@elte.hu>
+References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com> <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org> <20090912072450.GA6767@elte.hu> <1252808939.13780.30.camel@dhcp231-106.rdu.redhat.com> <20090914071631.GA24801@elte.hu> <alpine.LFD.2.01.0909140725470.3654@localhost.localdomain> <20090914162902.GF6773@linux.vnet.ibm.com> <20090914171037.GG14984@kernel.dk> <20090915065707.GA3435@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 15 Sep 2009 16:03:04 +0900 (JST)
+Content-Type: multipart/mixed; boundary="azLHFNyN32YCQGCU"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090915065707.GA3435@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_00,FR_ALMOST_VIAG2 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	2.0 FR_ALMOST_VIAG2        RAW: Almost looks like viagra.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+--azLHFNyN32YCQGCU
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> Hard to tell whether it's BDI, RCU or something else - sadly this is 
+> the only incident i've managed to log so far. (We'd be all much 
+> happier if boxes crashed left and right! ;)
 > 
->  > So.. What is the problem with fork? The semantics of what should
->  > happen seem natural enough to me, the PD doesn't get copied to the
->  > child, so the MR stays with the parent. COW events on the pinned
->  > region must be resolved so that the physical page stays with the
->  > process that has pinned it - the pin is logically released in the
->  > child because the MR doesn't exist because the PD doesn't exist.
+> -tip's been carrying the RCU changes for a long(er) time which would 
+> reduce the chance of this being RCU related. [ It's still possible 
+> though: if it's a bug with a probability of hitting this box on these 
+> workloads with a chance of 1:20,000 or worse. ]
 > 
-> This is getting away from the problem that ummunotify is solving, but
-> handling a COW fault generated by the parent by doing the copy in the
-> child seems like a pretty major, tricky change to make.  The child may
-> have forked 100 more times in the meantime, meaning we now have to
-> change 101 memory maps ... the cost of page faults goes through the roof
-> probably...
+> Plus it triggered shortly after i updated -tip to latest -git which 
+> had the BDI bits - which would indicate the BDI stuff - or just about 
+> anything else in -git for that matter - or something older in -tip. 
+> Every day without having hit this crash once more broadens the range 
+> of plausible possibilities.
+> 
+> In any case, i'll refrain from trying to fit a line on a single point 
+> of measurement ;-)
 
-Ummm...
-Perhaps my first question was wrong. I'm not intent to NAK your patch.
-I merely want to know your patch detail...
+Ha! I should have checked all logs of today before writing that, not 
+just that box's logs.
 
-ok, I ask you again as another word.
+Another testbox triggered the SLAB corruption yesternight:
 
- - I guess you have your MPI implementaion w/ ummunotify, right?
- - I guess you have test sevaral pattern, right?
-   if so, can we see your test result?
- - I think you can explain your MPI advantage/disadvantage against
-   current OpenMPI (or mpich et al).
- - I guess your patch dramatically improve MPI implementaion, but
-   it's not free. it request some limitation to MPI application, right?
- - I imagine multi thread and fork. Is there another linmitaion?
- - In past discuttion, you said ummunotify user should not use
-   multi threading. you also think user should not fork?
+[   13.598011] Freeing unused kernel memory: 2820k freed
+[   13.602011] Write protecting the kernel read-only data: 13528k
+[   13.649011] Not activating Mandatory Access Control now since /sbin/tomoyo-init doesn't exist.
+[   14.391012] =============================================================================
+[   14.391012] BUG kmalloc-96: Poison overwritten
+[   14.391012] -----------------------------------------------------------------------------
+[   14.391012] 
+[   14.391012] INFO: 0xffff88003da4a950-0xffff88003da4a988. First byte 0x0 instead of 0x6b
+[   14.391012] INFO: Allocated in bdi_alloc_work+0x20/0x83 age=6 cpu=0 pid=3191
+[   14.391012] INFO: Freed in bdi_work_free+0x1b/0x2f age=4 cpu=0 pid=3193
+[   14.391012] INFO: Slab 0xffffea000190ae10 objects=24 used=13 fp=0xffff88003da4a930 flags=0x200000000000c3
+[   14.391012] INFO: Object 0xffff88003da4a930 @offset=2352 fp=0xffff88003da4a888
+[   14.391012] 
+[   14.391012] Bytes b4 0xffff88003da4a920:  52 a4 fb ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a R¤ûÿ....ZZZZZZZZ
+[   14.391012]   Object 0xffff88003da4a930:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.391012]   Object 0xffff88003da4a940:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.391012]   Object 0xffff88003da4a950:  00 0c 47 3d 00 88 ff ff be 22 11 81 ff ff ff ff ..G=..ÿÿ¾"..ÿÿÿÿ
+[   14.391012]   Object 0xffff88003da4a960:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.391012]   Object 0xffff88003da4a970:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.391012]   Object 0xffff88003da4a980:  6b 6b 6b 6b 6b 6b 6b 6b 6a 6b 6b 6b 6b 6b 6b a5 kkkkkkkkjkkkkkk¥
+[   14.391012]  Redzone 0xffff88003da4a990:  bb bb bb bb bb bb bb bb                         »»»»»»»»        
+[   14.391012]  Padding 0xffff88003da4a9d0:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
+[   14.391012] Pid: 3193, comm: mount Not tainted 2.6.31-tip-02377-g78907f0-dirty #88876
+[   14.391012] Call Trace:
+[   14.391012]  [<ffffffff810e6bef>] print_trailer+0x140/0x149
+[   14.391012]  [<ffffffff810e70db>] check_bytes_and_report+0xb7/0xf7
+[   14.391012]  [<ffffffff810e71ec>] check_object+0xd1/0x1b4
+[   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+[   14.391012]  [<ffffffff810e7bee>] alloc_debug_processing+0x7b/0xf7
+[   14.391012]  [<ffffffff810e9842>] __slab_alloc+0x23e/0x282
+[   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+[   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+[   14.391012]  [<ffffffff810e9a8f>] kmem_cache_alloc+0xa1/0x13f
+[   14.391012]  [<ffffffff81112078>] bdi_alloc_work+0x20/0x83
+[   14.391012]  [<ffffffff81112ae2>] bdi_writeback_all+0x66/0x133
+[   14.391012]  [<ffffffff810788b8>] ? mark_held_locks+0x4d/0x6b
+[   14.391012]  [<ffffffff81872268>] ? __mutex_unlock_slowpath+0x12d/0x163
+[   14.391012]  [<ffffffff81078b45>] ? trace_hardirqs_on_caller+0x11c/0x140
+[   14.391012]  [<ffffffff815c35e5>] ? usbfs_fill_super+0x0/0xa8
+[   14.391012]  [<ffffffff81112c87>] writeback_inodes_sb+0x75/0x83
+[   14.391012]  [<ffffffff8111652d>] __sync_filesystem+0x30/0x6b
+[   14.391012]  [<ffffffff81116705>] sync_filesystem+0x3a/0x51
+[   14.391012]  [<ffffffff810f4b23>] do_remount_sb+0x5b/0x11f
+[   14.391012]  [<ffffffff810f59a3>] get_sb_single+0x92/0xad
+[   14.391012]  [<ffffffff815c2f01>] usb_get_sb+0x1b/0x1d
+[   14.391012]  [<ffffffff810f5786>] vfs_kern_mount+0x9e/0x122
+[   14.391012]  [<ffffffff810f5871>] do_kern_mount+0x4c/0xec
+[   14.391012]  [<ffffffff8110dd15>] do_mount+0x1e9/0x236
+[   14.391012]  [<ffffffff8110dde6>] sys_mount+0x84/0xc6
+[   14.391012]  [<ffffffff8187333a>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+[   14.391012]  [<ffffffff8100b642>] system_call_fastpath+0x16/0x1b
+[   14.391012] FIX kmalloc-96: Restoring 0xffff88003da4a950-0xffff88003da4a988=0x6b
+[   14.391012] 
+[   14.391012] FIX kmalloc-96: Marking all objects used
+[   20.597016] usb usb2: uevent
+[   20.606016] usb 2-0:1.0: uevent
+[   20.615016] usb usb3: uevent
+[   20.622016] usb 3-0:1.0: uevent
+[   20.631016] usb usb4: uevent
 
+Different hardware, different config, but still in bdi_alloc_work().
 
+- Which excludes cosmic rays and freak hardware from the list of 
+  possibilities.
 
+- I'd also say RCU is out too as this incident was 500 iterations after 
+  the BDI merge - preceded by a streak of 3000+ successful iterations on 
+  that same box with all of -tip (including the RCU changes).
+
+- Random memory corruption is probably out as well - the chance of 
+  hitting a BDI data structure twice accidentally is low.
+
+- It's also two completely different versions of distros - the 
+  user-space of the two testboxes affected is 2 years apart or so.
+
+- It's a single CPU box - SMP races are out as well.
+
+This points towards this being a BDI bug with about ~80% confidence 
+statistically - or [with a lower probability] a SLAB bug. (both failing 
+configs had CONFIG_SLUB=y. But SLUB is the best in detecting corrupted 
+data structures so that alone does not tell much.)
+
+Also, this particular config seems to reproduce the problem a bit more 
+reliably - a second bootup gave a third corruption report, attached 
+below.
+
+Full bootlog and config attached as well.
+
+	Ingo
+
+[   13.677011] Freeing unused kernel memory: 2820k freed
+[   13.681011] Write protecting the kernel read-only data: 13528k
+[   13.728011] Not activating Mandatory Access Control now since /sbin/tomoyo-init doesn't exist.
+[   14.399012] =============================================================================
+[   14.399012] BUG kmalloc-96: Poison overwritten
+[   14.399012] -----------------------------------------------------------------------------
+[   14.399012] 
+[   14.399012] INFO: 0xffff88003da5c950-0xffff88003da5c988. First byte 0x0 instead of 0x6b
+[   14.399012] INFO: Allocated in bdi_alloc_work+0x20/0x83 age=7 cpu=0 pid=3191
+[   14.399012] INFO: Freed in bdi_work_free+0x1b/0x2f age=4 cpu=0 pid=3193
+[   14.399012] INFO: Slab 0xffffea000190b560 objects=24 used=13 fp=0xffff88003da5c930 flags=0x200000000000c3
+[   14.399012] INFO: Object 0xffff88003da5c930 @offset=2352 fp=0xffff88003da5c888
+[   14.399012] 
+[   14.399012] Bytes b4 0xffff88003da5c920:  5a a4 fb ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a Z¤ûÿ....ZZZZZZZZ
+[   14.399012]   Object 0xffff88003da5c930:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.399012]   Object 0xffff88003da5c940:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.399012]   Object 0xffff88003da5c950:  00 83 49 3d 00 88 ff ff 92 23 11 81 ff ff ff ff ..I=..ÿÿ.#..ÿÿÿÿ
+[   14.399012]   Object 0xffff88003da5c960:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.399012]   Object 0xffff88003da5c970:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.399012]   Object 0xffff88003da5c980:  6b 6b 6b 6b 6b 6b 6b 6b 6a 6b 6b 6b 6b 6b 6b a5 kkkkkkkkjkkkkkk¥
+[   14.399012]  Redzone 0xffff88003da5c990:  bb bb bb bb bb bb bb bb                         »»»»»»»»        
+[   14.399012]  Padding 0xffff88003da5c9d0:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
+[   14.399012] Pid: 3193, comm: mount Not tainted 2.6.31-tip-02387-gc84a410-dirty #88877
+[   14.399012] Call Trace:
+[   14.399012]  [<ffffffff810e6cc3>] print_trailer+0x140/0x149
+[   14.399012]  [<ffffffff810e71af>] check_bytes_and_report+0xb7/0xf7
+[   14.399012]  [<ffffffff810e72c0>] check_object+0xd1/0x1b4
+[   14.399012]  [<ffffffff8111214c>] ? bdi_alloc_work+0x20/0x83
+[   14.399012]  [<ffffffff810e7cc2>] alloc_debug_processing+0x7b/0xf7
+[   14.399012]  [<ffffffff810e9916>] __slab_alloc+0x23e/0x282
+[   14.399012]  [<ffffffff8111214c>] ? bdi_alloc_work+0x20/0x83
+[   14.399012]  [<ffffffff8111214c>] ? bdi_alloc_work+0x20/0x83
+[   14.399012]  [<ffffffff810e9b63>] kmem_cache_alloc+0xa1/0x13f
+[   14.399012]  [<ffffffff8111214c>] bdi_alloc_work+0x20/0x83
+[   14.399012]  [<ffffffff81112bb6>] bdi_writeback_all+0x66/0x133
+[   14.399012]  [<ffffffff8107894c>] ? mark_held_locks+0x4d/0x6b
+[   14.399012]  [<ffffffff81872358>] ? __mutex_unlock_slowpath+0x12d/0x163
+[   14.399012]  [<ffffffff81078bd9>] ? trace_hardirqs_on_caller+0x11c/0x140
+[   14.399012]  [<ffffffff815c36c9>] ? usbfs_fill_super+0x0/0xa8
+[   14.399012]  [<ffffffff81112d5b>] writeback_inodes_sb+0x75/0x83
+[   14.399012]  [<ffffffff81116601>] __sync_filesystem+0x30/0x6b
+[   14.399012]  [<ffffffff811167d9>] sync_filesystem+0x3a/0x51
+[   14.399012]  [<ffffffff810f4bf7>] do_remount_sb+0x5b/0x11f
+[   14.399012]  [<ffffffff810f5a77>] get_sb_single+0x92/0xad
+[   14.399012]  [<ffffffff815c2fe5>] usb_get_sb+0x1b/0x1d
+[   14.399012]  [<ffffffff810f585a>] vfs_kern_mount+0x9e/0x122
+[   14.399012]  [<ffffffff810f5945>] do_kern_mount+0x4c/0xec
+[   14.399012]  [<ffffffff8110dde9>] do_mount+0x1e9/0x236
+[   14.399012]  [<ffffffff8110deba>] sys_mount+0x84/0xc6
+[   14.399012]  [<ffffffff8187342a>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+[   14.399012]  [<ffffffff8100b642>] system_call_fastpath+0x16/0x1b
+[   14.399012] FIX kmalloc-96: Restoring 0xffff88003da5c950-0xffff88003da5c988=0x6b
+[   14.399012] 
+[   14.399012] FIX kmalloc-96: Marking all objects used
+[   20.640016] usb usb2: uevent
+[   20.651016] usb 2-0:1.0: uevent
+[   20.658016] usb usb3: uevent
+
+--azLHFNyN32YCQGCU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="config-Tue_Sep_15_05_02_52_CEST_2009.bad"
+
+# 78907f07
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.31
+# Tue Sep 15 05:02:52 2009
+#
+CONFIG_64BIT=y
+# CONFIG_X86_32 is not set
+CONFIG_X86_64=y
+CONFIG_X86=y
+CONFIG_OUTPUT_FORMAT="elf64-x86-64"
+CONFIG_ARCH_DEFCONFIG="arch/x86/configs/x86_64_defconfig"
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_FAST_CMPXCHG_LOCAL=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_BUG_RELATIVE_POINTERS=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_GPIO=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_RWSEM_GENERIC_SPINLOCK=y
+# CONFIG_RWSEM_XCHGADD_ALGORITHM is not set
+CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_TIME_VSYSCALL=y
+CONFIG_ARCH_HAS_CPU_RELAX=y
+CONFIG_ARCH_HAS_DEFAULT_IDLE=y
+CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+CONFIG_HAVE_SETUP_PER_CPU_AREA=y
+CONFIG_HAVE_DYNAMIC_PER_CPU_AREA=y
+CONFIG_HAVE_CPUMASK_OF_CPU_MAP=y
+CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+CONFIG_ARCH_SUSPEND_POSSIBLE=y
+CONFIG_ZONE_DMA32=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_PENDING_IRQ=y
+CONFIG_USE_GENERIC_SMP_HELPERS=y
+CONFIG_X86_64_SMP=y
+CONFIG_X86_HT=y
+CONFIG_X86_TRAMPOLINE=y
+# CONFIG_KTIME_SCALAR is not set
+# CONFIG_BOOTPARAM_SUPPORT_NOT_WANTED is not set
+CONFIG_BOOTPARAM_SUPPORT=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_CONSTRUCTORS=y
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+# CONFIG_BROKEN_BOOT_ALLOWED4 is not set
+# CONFIG_BROKEN_BOOT_DISALLOWED is not set
+CONFIG_BROKEN_BOOT_EUROPE=y
+CONFIG_BROKEN_BOOT_TITAN=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_HAVE_KERNEL_GZIP=y
+CONFIG_HAVE_KERNEL_BZIP2=y
+CONFIG_HAVE_KERNEL_LZMA=y
+CONFIG_KERNEL_GZIP=y
+# CONFIG_KERNEL_BZIP2 is not set
+# CONFIG_KERNEL_LZMA is not set
+CONFIG_SWAP=y
+# CONFIG_SYSVIPC is not set
+CONFIG_POSIX_MQUEUE=y
+CONFIG_POSIX_MQUEUE_SYSCTL=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+# CONFIG_TASKSTATS is not set
+CONFIG_AUDIT=y
+# CONFIG_AUDITSYSCALL is not set
+
+#
+# RCU Subsystem
+#
+# CONFIG_TREE_RCU is not set
+CONFIG_TREE_PREEMPT_RCU=y
+CONFIG_RCU_TRACE=y
+CONFIG_RCU_FANOUT=64
+# CONFIG_RCU_FANOUT_EXACT is not set
+CONFIG_TREE_RCU_TRACE=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=20
+CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+# CONFIG_GROUP_SCHED is not set
+# CONFIG_CGROUPS is not set
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_SYSFS_DEPRECATED_V2=y
+CONFIG_RELAY=y
+# CONFIG_NAMESPACES is not set
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_RD_GZIP=y
+CONFIG_RD_BZIP2=y
+CONFIG_RD_LZMA=y
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_ANON_INODES=y
+CONFIG_EMBEDDED=y
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+CONFIG_KALLSYMS_EXTRA_PASS=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_PCSPKR_PLATFORM=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+# CONFIG_AIO is not set
+CONFIG_HAVE_PERF_COUNTERS=y
+
+#
+# Performance Counters
+#
+CONFIG_PERF_COUNTERS=y
+# CONFIG_EVENT_PROFILE is not set
+# CONFIG_VM_EVENT_COUNTERS is not set
+CONFIG_PCI_QUIRKS=y
+CONFIG_SLUB_DEBUG=y
+CONFIG_STRIP_ASM_SYMS=y
+# CONFIG_COMPAT_BRK is not set
+# CONFIG_SLAB is not set
+CONFIG_SLUB=y
+# CONFIG_SLOB is not set
+# CONFIG_PROFILING is not set
+CONFIG_TRACEPOINTS=y
+# CONFIG_MARKERS is not set
+CONFIG_HAVE_OPROFILE=y
+# CONFIG_KPROBES is not set
+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
+CONFIG_HAVE_IOREMAP_PROT=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+CONFIG_HAVE_DMA_ATTRS=y
+CONFIG_HAVE_DMA_API_DEBUG=y
+CONFIG_HAVE_HW_BREAKPOINT=y
+
+#
+# GCOV-based kernel profiling
+#
+CONFIG_SLOW_WORK=y
+# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_FORCE_LOAD=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+CONFIG_MODVERSIONS=y
+CONFIG_MODULE_SRCVERSION_ALL=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+# CONFIG_BLK_DEV_BSG is not set
+# CONFIG_BLK_DEV_INTEGRITY is not set
+CONFIG_BLOCK_COMPAT=y
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=m
+CONFIG_IOSCHED_CFQ=y
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+CONFIG_DEFAULT_NOOP=y
+CONFIG_DEFAULT_IOSCHED="noop"
+CONFIG_PREEMPT_NOTIFIERS=y
+# CONFIG_FREEZER is not set
+
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+CONFIG_BOOTPARAM_NO_HZ_OFF=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+# CONFIG_BOOTPARAM_HIGHRES_OFF is not set
+# CONFIG_SMP_SUPPORT is not set
+CONFIG_SPARSE_IRQ=y
+CONFIG_NUMA_IRQ_DESC=y
+CONFIG_X86_MPPARSE=y
+CONFIG_X86_EXTENDED_PLATFORM=y
+CONFIG_X86_VSMP=y
+# CONFIG_SCHED_OMIT_FRAME_POINTER is not set
+# CONFIG_PARAVIRT_GUEST is not set
+CONFIG_PARAVIRT=y
+CONFIG_PARAVIRT_DEBUG=y
+# CONFIG_MEMTEST is not set
+# CONFIG_M386 is not set
+# CONFIG_M486 is not set
+# CONFIG_M586 is not set
+# CONFIG_M586TSC is not set
+# CONFIG_M586MMX is not set
+# CONFIG_M686 is not set
+# CONFIG_MPENTIUMII is not set
+# CONFIG_MPENTIUMIII is not set
+# CONFIG_MPENTIUMM is not set
+# CONFIG_MPENTIUM4 is not set
+# CONFIG_MK6 is not set
+# CONFIG_MK7 is not set
+# CONFIG_MK8 is not set
+# CONFIG_MCRUSOE is not set
+# CONFIG_MEFFICEON is not set
+# CONFIG_MWINCHIPC6 is not set
+# CONFIG_MWINCHIP3D is not set
+# CONFIG_MGEODEGX1 is not set
+# CONFIG_MGEODE_LX is not set
+# CONFIG_MCYRIXIII is not set
+# CONFIG_MVIAC3_2 is not set
+# CONFIG_MVIAC7 is not set
+# CONFIG_MPSC is not set
+# CONFIG_MCORE2 is not set
+# CONFIG_MATOM is not set
+CONFIG_GENERIC_CPU=y
+CONFIG_X86_CPU=y
+CONFIG_X86_L1_CACHE_BYTES=64
+CONFIG_X86_INTERNODE_CACHE_BYTES=4096
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=6
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_TSC=y
+CONFIG_X86_CMPXCHG64=y
+CONFIG_X86_CMOV=y
+CONFIG_X86_MINIMUM_CPU_FAMILY=64
+CONFIG_X86_DEBUGCTLMSR=y
+CONFIG_PROCESSOR_SELECT=y
+CONFIG_CPU_SUP_INTEL=y
+CONFIG_CPU_SUP_AMD=y
+CONFIG_CPU_SUP_CENTAUR=y
+# CONFIG_X86_DS is not set
+CONFIG_HPET_TIMER=y
+CONFIG_DMI=y
+CONFIG_GART_IOMMU=y
+# CONFIG_CALGARY_IOMMU is not set
+CONFIG_SWIOTLB=y
+CONFIG_IOMMU_HELPER=y
+# CONFIG_IOMMU_API is not set
+CONFIG_MAXSMP=y
+CONFIG_NR_CPUS=4096
+CONFIG_SCHED_SMT=y
+CONFIG_SCHED_MC=y
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=y
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS=y
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_INTEL=y
+CONFIG_X86_MCE_AMD=y
+CONFIG_X86_MCE_THRESHOLD=y
+# CONFIG_X86_MCE_INJECT is not set
+CONFIG_X86_THERMAL_VECTOR=y
+CONFIG_I8K=m
+CONFIG_MICROCODE=m
+CONFIG_MICROCODE_INTEL=y
+# CONFIG_MICROCODE_AMD is not set
+CONFIG_MICROCODE_OLD_INTERFACE=y
+CONFIG_X86_MSR=y
+CONFIG_X86_CPUID=m
+CONFIG_X86_CPU_DEBUG=m
+# CONFIG_UP_WANTED_1 is not set
+CONFIG_SMP=y
+CONFIG_ARCH_PHYS_ADDR_T_64BIT=y
+# CONFIG_DIRECT_GBPAGES is not set
+CONFIG_NUMA=y
+CONFIG_K8_NUMA=y
+CONFIG_NUMA_EMU=y
+CONFIG_NODES_SHIFT=9
+CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ARCH_MEMORY_PROBE=y
+CONFIG_ILLEGAL_POINTER_VALUE=0xdead000000000000
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+CONFIG_SPARSEMEM_MANUAL=y
+CONFIG_SPARSEMEM=y
+CONFIG_NEED_MULTIPLE_NODES=y
+CONFIG_HAVE_MEMORY_PRESENT=y
+CONFIG_SPARSEMEM_EXTREME=y
+CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+CONFIG_SPARSEMEM_VMEMMAP=y
+CONFIG_MEMORY_HOTPLUG=y
+CONFIG_MEMORY_HOTPLUG_SPARSE=y
+CONFIG_MEMORY_HOTREMOVE=y
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_MIGRATION=y
+CONFIG_PHYS_ADDR_T_64BIT=y
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_HAVE_MLOCK=y
+CONFIG_HAVE_MLOCKED_PAGE_BIT=y
+CONFIG_MMU_NOTIFIER=y
+CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
+CONFIG_X86_CHECK_BIOS_CORRUPTION=y
+CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK=y
+CONFIG_X86_RESERVE_LOW_64K=y
+CONFIG_MTRR=y
+CONFIG_MTRR_SANITIZER=y
+CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=0
+CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
+CONFIG_X86_PAT=y
+CONFIG_ARCH_USES_PG_UNCACHED=y
+# CONFIG_SECCOMP is not set
+# CONFIG_CC_STACKPROTECTOR is not set
+# CONFIG_HZ_100 is not set
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+CONFIG_HZ_1000=y
+CONFIG_HZ=1000
+CONFIG_SCHED_HRTICK=y
+# CONFIG_KEXEC is not set
+CONFIG_CRASH_DUMP=y
+CONFIG_PHYSICAL_START=0x1000000
+CONFIG_RELOCATABLE=y
+CONFIG_PHYSICAL_ALIGN=0x1000000
+# CONFIG_HOTPLUG_CPU is not set
+CONFIG_COMPAT_VDSO=y
+CONFIG_CMDLINE_BOOL=y
+CONFIG_CMDLINE=""
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
+CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
+
+#
+# Power management and ACPI options
+#
+# CONFIG_PM is not set
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_DEBUG=y
+CONFIG_CPU_FREQ_STAT=y
+# CONFIG_CPU_FREQ_STAT_DETAILS is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+# CONFIG_CPU_FREQ_GOV_ONDEMAND is not set
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
+
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_P4_CLOCKMOD=m
+
+#
+# shared options
+#
+CONFIG_X86_SPEEDSTEP_LIB=m
+# CONFIG_CPU_IDLE is not set
+
+#
+# Memory power savings
+#
+CONFIG_I7300_IDLE_IOAT_CHANNEL=y
+CONFIG_I7300_IDLE=m
+
+#
+# Bus options (PCI etc.)
+#
+CONFIG_PCI=y
+CONFIG_PCI_DIRECT=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCIEPORTBUS=y
+CONFIG_HOTPLUG_PCI_PCIE=m
+# CONFIG_PCIEAER is not set
+# CONFIG_PCIEASPM is not set
+CONFIG_ARCH_SUPPORTS_MSI=y
+CONFIG_PCI_MSI=y
+CONFIG_PCI_LEGACY=y
+CONFIG_PCI_DEBUG=y
+# CONFIG_PCI_STUB is not set
+CONFIG_HT_IRQ=y
+# CONFIG_PCI_IOV is not set
+CONFIG_ISA_DMA_API=y
+CONFIG_K8_NB=y
+CONFIG_PCCARD=m
+# CONFIG_PCMCIA_DEBUG is not set
+CONFIG_PCMCIA=m
+# CONFIG_PCMCIA_LOAD_CIS is not set
+CONFIG_PCMCIA_IOCTL=y
+CONFIG_CARDBUS=y
+
+#
+# PC-card bridges
+#
+CONFIG_YENTA=m
+CONFIG_YENTA_O2=y
+# CONFIG_YENTA_RICOH is not set
+# CONFIG_YENTA_TI is not set
+# CONFIG_YENTA_TOSHIBA is not set
+CONFIG_PD6729=m
+CONFIG_I82092=m
+CONFIG_PCCARD_NONSTATIC=m
+CONFIG_HOTPLUG_PCI=m
+CONFIG_HOTPLUG_PCI_FAKE=m
+CONFIG_HOTPLUG_PCI_CPCI=y
+CONFIG_HOTPLUG_PCI_CPCI_ZT5550=m
+CONFIG_HOTPLUG_PCI_CPCI_GENERIC=m
+CONFIG_HOTPLUG_PCI_SHPC=m
+CONFIG_BOOTPARAM_NMI_WATCHDOG_BIT_0=y
+CONFIG_BOOTPARAM_NOLAPIC_TIMER=y
+CONFIG_BOOTPARAM_LAPIC=y
+CONFIG_BOOTPARAM_HPET_DISABLE=y
+CONFIG_BOOTPARAM_IDLE_MWAIT=y
+CONFIG_BOOTPARAM_IDLE_POLL=y
+CONFIG_BOOTPARAM_HIGHMEM_512M=y
+CONFIG_BOOTPARAM_NOPAT=y
+CONFIG_BOOTPARAM_NOTSC=y
+CONFIG_BOOTPARAM_ACPI_OFF=y
+CONFIG_BOOTPARAM_PCI_NOMSI=y
+
+#
+# Executable file formats / Emulations
+#
+CONFIG_BINFMT_ELF=y
+CONFIG_COMPAT_BINFMT_ELF=y
+CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
+# CONFIG_HAVE_AOUT is not set
+CONFIG_BINFMT_MISC=y
+CONFIG_IA32_EMULATION=y
+CONFIG_IA32_AOUT=y
+CONFIG_COMPAT=y
+CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=y
+CONFIG_XFRM_SUB_POLICY=y
+# CONFIG_XFRM_MIGRATE is not set
+CONFIG_XFRM_STATISTICS=y
+CONFIG_XFRM_IPCOMP=m
+# CONFIG_NET_KEY is not set
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_ADVANCED_ROUTER=y
+CONFIG_ASK_IP_FIB_HASH=y
+# CONFIG_IP_FIB_TRIE is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_MULTIPLE_TABLES=y
+CONFIG_IP_ROUTE_MULTIPATH=y
+CONFIG_IP_ROUTE_VERBOSE=y
+# CONFIG_IP_PNP is not set
+CONFIG_NET_IPIP=m
+CONFIG_NET_IPGRE=y
+CONFIG_NET_IPGRE_BROADCAST=y
+CONFIG_IP_MROUTE=y
+# CONFIG_IP_PIMSM_V1 is not set
+CONFIG_IP_PIMSM_V2=y
+# CONFIG_ARPD is not set
+# CONFIG_SYN_COOKIES is not set
+CONFIG_INET_AH=y
+CONFIG_INET_ESP=y
+CONFIG_INET_IPCOMP=m
+CONFIG_INET_XFRM_TUNNEL=m
+CONFIG_INET_TUNNEL=y
+CONFIG_INET_XFRM_MODE_TRANSPORT=y
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+CONFIG_INET_XFRM_MODE_BEET=m
+CONFIG_INET_LRO=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_TCP_CONG_BIC=y
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_TCP_CONG_WESTWOOD=m
+CONFIG_TCP_CONG_HTCP=m
+# CONFIG_TCP_CONG_HSTCP is not set
+CONFIG_TCP_CONG_HYBLA=y
+CONFIG_TCP_CONG_VEGAS=m
+CONFIG_TCP_CONG_SCALABLE=y
+# CONFIG_TCP_CONG_LP is not set
+# CONFIG_TCP_CONG_VENO is not set
+CONFIG_TCP_CONG_YEAH=m
+CONFIG_TCP_CONG_ILLINOIS=y
+CONFIG_DEFAULT_BIC=y
+# CONFIG_DEFAULT_CUBIC is not set
+# CONFIG_DEFAULT_HTCP is not set
+# CONFIG_DEFAULT_VEGAS is not set
+# CONFIG_DEFAULT_WESTWOOD is not set
+# CONFIG_DEFAULT_RENO is not set
+CONFIG_DEFAULT_TCP_CONG="bic"
+CONFIG_TCP_MD5SIG=y
+CONFIG_IPV6=y
+# CONFIG_IPV6_PRIVACY is not set
+CONFIG_IPV6_ROUTER_PREF=y
+CONFIG_IPV6_ROUTE_INFO=y
+CONFIG_IPV6_OPTIMISTIC_DAD=y
+CONFIG_INET6_AH=m
+# CONFIG_INET6_ESP is not set
+CONFIG_INET6_IPCOMP=m
+# CONFIG_IPV6_MIP6 is not set
+CONFIG_INET6_XFRM_TUNNEL=m
+CONFIG_INET6_TUNNEL=m
+CONFIG_INET6_XFRM_MODE_TRANSPORT=y
+# CONFIG_INET6_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET6_XFRM_MODE_BEET is not set
+CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION=m
+CONFIG_IPV6_SIT=y
+CONFIG_IPV6_NDISC_NODETYPE=y
+# CONFIG_IPV6_TUNNEL is not set
+CONFIG_IPV6_MULTIPLE_TABLES=y
+CONFIG_IPV6_SUBTREES=y
+CONFIG_IPV6_MROUTE=y
+CONFIG_IPV6_PIMSM_V2=y
+# CONFIG_NETLABEL is not set
+CONFIG_NETWORK_SECMARK=y
+CONFIG_NETFILTER=y
+CONFIG_NETFILTER_DEBUG=y
+CONFIG_NETFILTER_ADVANCED=y
+
+#
+# Core Netfilter Configuration
+#
+CONFIG_NETFILTER_NETLINK=y
+CONFIG_NETFILTER_NETLINK_QUEUE=m
+CONFIG_NETFILTER_NETLINK_LOG=y
+# CONFIG_NF_CONNTRACK is not set
+CONFIG_NETFILTER_XTABLES=y
+CONFIG_NETFILTER_XT_TARGET_CLASSIFY=y
+CONFIG_NETFILTER_XT_TARGET_HL=y
+CONFIG_NETFILTER_XT_TARGET_LED=m
+CONFIG_NETFILTER_XT_TARGET_MARK=y
+CONFIG_NETFILTER_XT_TARGET_NFLOG=y
+# CONFIG_NETFILTER_XT_TARGET_NFQUEUE is not set
+CONFIG_NETFILTER_XT_TARGET_RATEEST=y
+CONFIG_NETFILTER_XT_TARGET_TRACE=m
+CONFIG_NETFILTER_XT_TARGET_SECMARK=m
+CONFIG_NETFILTER_XT_TARGET_TCPMSS=y
+CONFIG_NETFILTER_XT_MATCH_COMMENT=y
+CONFIG_NETFILTER_XT_MATCH_DCCP=m
+CONFIG_NETFILTER_XT_MATCH_DSCP=m
+CONFIG_NETFILTER_XT_MATCH_ESP=m
+# CONFIG_NETFILTER_XT_MATCH_HASHLIMIT is not set
+CONFIG_NETFILTER_XT_MATCH_HL=y
+CONFIG_NETFILTER_XT_MATCH_IPRANGE=m
+CONFIG_NETFILTER_XT_MATCH_LENGTH=y
+CONFIG_NETFILTER_XT_MATCH_LIMIT=y
+CONFIG_NETFILTER_XT_MATCH_MAC=y
+CONFIG_NETFILTER_XT_MATCH_MARK=m
+CONFIG_NETFILTER_XT_MATCH_MULTIPORT=y
+CONFIG_NETFILTER_XT_MATCH_OWNER=m
+# CONFIG_NETFILTER_XT_MATCH_POLICY is not set
+CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
+# CONFIG_NETFILTER_XT_MATCH_QUOTA is not set
+# CONFIG_NETFILTER_XT_MATCH_RATEEST is not set
+CONFIG_NETFILTER_XT_MATCH_REALM=y
+# CONFIG_NETFILTER_XT_MATCH_RECENT is not set
+CONFIG_NETFILTER_XT_MATCH_SCTP=y
+# CONFIG_NETFILTER_XT_MATCH_STATISTIC is not set
+CONFIG_NETFILTER_XT_MATCH_STRING=y
+CONFIG_NETFILTER_XT_MATCH_TCPMSS=y
+CONFIG_NETFILTER_XT_MATCH_TIME=y
+CONFIG_NETFILTER_XT_MATCH_U32=m
+CONFIG_NETFILTER_XT_MATCH_OSF=m
+CONFIG_IP_VS=m
+# CONFIG_IP_VS_IPV6 is not set
+# CONFIG_IP_VS_DEBUG is not set
+CONFIG_IP_VS_TAB_BITS=12
+
+#
+# IPVS transport protocol load balancing support
+#
+CONFIG_IP_VS_PROTO_TCP=y
+CONFIG_IP_VS_PROTO_UDP=y
+CONFIG_IP_VS_PROTO_AH_ESP=y
+CONFIG_IP_VS_PROTO_ESP=y
+CONFIG_IP_VS_PROTO_AH=y
+
+#
+# IPVS scheduler
+#
+# CONFIG_IP_VS_RR is not set
+CONFIG_IP_VS_WRR=m
+CONFIG_IP_VS_LC=m
+CONFIG_IP_VS_WLC=m
+CONFIG_IP_VS_LBLC=m
+CONFIG_IP_VS_LBLCR=m
+CONFIG_IP_VS_DH=m
+# CONFIG_IP_VS_SH is not set
+# CONFIG_IP_VS_SED is not set
+# CONFIG_IP_VS_NQ is not set
+
+#
+# IPVS application helper
+#
+# CONFIG_IP_VS_FTP is not set
+
+#
+# IP: Netfilter Configuration
+#
+# CONFIG_NF_DEFRAG_IPV4 is not set
+CONFIG_IP_NF_QUEUE=m
+CONFIG_IP_NF_IPTABLES=m
+CONFIG_IP_NF_MATCH_ADDRTYPE=m
+CONFIG_IP_NF_MATCH_AH=m
+CONFIG_IP_NF_MATCH_ECN=m
+# CONFIG_IP_NF_MATCH_TTL is not set
+CONFIG_IP_NF_FILTER=m
+CONFIG_IP_NF_TARGET_REJECT=m
+# CONFIG_IP_NF_TARGET_LOG is not set
+# CONFIG_IP_NF_TARGET_ULOG is not set
+# CONFIG_IP_NF_MANGLE is not set
+CONFIG_IP_NF_TARGET_TTL=m
+# CONFIG_IP_NF_RAW is not set
+CONFIG_IP_NF_SECURITY=m
+# CONFIG_IP_NF_ARPTABLES is not set
+
+#
+# IPv6: Netfilter Configuration
+#
+# CONFIG_IP6_NF_QUEUE is not set
+CONFIG_IP6_NF_IPTABLES=y
+# CONFIG_IP6_NF_MATCH_AH is not set
+CONFIG_IP6_NF_MATCH_EUI64=y
+# CONFIG_IP6_NF_MATCH_FRAG is not set
+# CONFIG_IP6_NF_MATCH_OPTS is not set
+CONFIG_IP6_NF_MATCH_HL=m
+CONFIG_IP6_NF_MATCH_IPV6HEADER=y
+# CONFIG_IP6_NF_MATCH_MH is not set
+CONFIG_IP6_NF_MATCH_RT=y
+CONFIG_IP6_NF_TARGET_HL=y
+CONFIG_IP6_NF_TARGET_LOG=m
+CONFIG_IP6_NF_FILTER=m
+# CONFIG_IP6_NF_TARGET_REJECT is not set
+# CONFIG_IP6_NF_MANGLE is not set
+CONFIG_IP6_NF_RAW=m
+# CONFIG_IP6_NF_SECURITY is not set
+CONFIG_IP_DCCP=m
+CONFIG_INET_DCCP_DIAG=m
+
+#
+# DCCP CCIDs Configuration (EXPERIMENTAL)
+#
+CONFIG_IP_DCCP_CCID2_DEBUG=y
+# CONFIG_IP_DCCP_CCID3 is not set
+
+#
+# DCCP Kernel Hacking
+#
+CONFIG_IP_DCCP_DEBUG=y
+CONFIG_IP_SCTP=m
+CONFIG_SCTP_DBG_MSG=y
+# CONFIG_SCTP_DBG_OBJCNT is not set
+# CONFIG_SCTP_HMAC_NONE is not set
+CONFIG_SCTP_HMAC_SHA1=y
+# CONFIG_SCTP_HMAC_MD5 is not set
+CONFIG_TIPC=y
+CONFIG_TIPC_ADVANCED=y
+CONFIG_TIPC_ZONES=3
+CONFIG_TIPC_CLUSTERS=1
+CONFIG_TIPC_NODES=255
+CONFIG_TIPC_SLAVE_NODES=0
+CONFIG_TIPC_PORTS=8191
+CONFIG_TIPC_LOG=0
+# CONFIG_TIPC_DEBUG is not set
+CONFIG_ATM=m
+CONFIG_ATM_CLIP=m
+CONFIG_ATM_CLIP_NO_ICMP=y
+# CONFIG_ATM_LANE is not set
+# CONFIG_ATM_BR2684 is not set
+CONFIG_STP=y
+CONFIG_GARP=y
+# CONFIG_BRIDGE is not set
+CONFIG_NET_DSA=y
+CONFIG_NET_DSA_TAG_DSA=y
+CONFIG_NET_DSA_TAG_EDSA=y
+# CONFIG_NET_DSA_TAG_TRAILER is not set
+CONFIG_NET_DSA_MV88E6XXX=y
+# CONFIG_NET_DSA_MV88E6060 is not set
+CONFIG_NET_DSA_MV88E6XXX_NEED_PPU=y
+CONFIG_NET_DSA_MV88E6131=y
+CONFIG_NET_DSA_MV88E6123_61_65=y
+CONFIG_VLAN_8021Q=y
+CONFIG_VLAN_8021Q_GVRP=y
+# CONFIG_DECNET is not set
+CONFIG_LLC=y
+CONFIG_LLC2=m
+# CONFIG_IPX is not set
+CONFIG_ATALK=y
+# CONFIG_DEV_APPLETALK is not set
+CONFIG_X25=y
+CONFIG_LAPB=m
+# CONFIG_ECONET is not set
+CONFIG_WAN_ROUTER=y
+CONFIG_PHONET=m
+# CONFIG_IEEE802154 is not set
+CONFIG_NET_SCHED=y
+
+#
+# Queueing/Scheduling
+#
+CONFIG_NET_SCH_CBQ=y
+# CONFIG_NET_SCH_HTB is not set
+# CONFIG_NET_SCH_HFSC is not set
+CONFIG_NET_SCH_ATM=m
+CONFIG_NET_SCH_PRIO=m
+# CONFIG_NET_SCH_MULTIQ is not set
+CONFIG_NET_SCH_RED=m
+# CONFIG_NET_SCH_SFQ is not set
+CONFIG_NET_SCH_TEQL=m
+CONFIG_NET_SCH_TBF=m
+CONFIG_NET_SCH_GRED=m
+# CONFIG_NET_SCH_DSMARK is not set
+CONFIG_NET_SCH_NETEM=y
+CONFIG_NET_SCH_DRR=y
+CONFIG_NET_SCH_INGRESS=m
+
+#
+# Classification
+#
+CONFIG_NET_CLS=y
+CONFIG_NET_CLS_BASIC=m
+# CONFIG_NET_CLS_TCINDEX is not set
+CONFIG_NET_CLS_ROUTE4=m
+CONFIG_NET_CLS_ROUTE=y
+CONFIG_NET_CLS_FW=m
+# CONFIG_NET_CLS_U32 is not set
+# CONFIG_NET_CLS_RSVP is not set
+CONFIG_NET_CLS_RSVP6=m
+CONFIG_NET_CLS_FLOW=y
+CONFIG_NET_EMATCH=y
+CONFIG_NET_EMATCH_STACK=32
+# CONFIG_NET_EMATCH_CMP is not set
+CONFIG_NET_EMATCH_NBYTE=m
+# CONFIG_NET_EMATCH_U32 is not set
+CONFIG_NET_EMATCH_META=m
+CONFIG_NET_EMATCH_TEXT=m
+CONFIG_NET_CLS_ACT=y
+CONFIG_NET_ACT_POLICE=y
+CONFIG_NET_ACT_GACT=m
+# CONFIG_GACT_PROB is not set
+CONFIG_NET_ACT_MIRRED=y
+CONFIG_NET_ACT_IPT=m
+CONFIG_NET_ACT_NAT=m
+# CONFIG_NET_ACT_PEDIT is not set
+CONFIG_NET_ACT_SIMP=m
+CONFIG_NET_ACT_SKBEDIT=m
+# CONFIG_NET_CLS_IND is not set
+CONFIG_NET_SCH_FIFO=y
+CONFIG_DCB=y
+
+#
+# Network testing
+#
+CONFIG_NET_PKTGEN=m
+CONFIG_NET_DROP_MONITOR=y
+CONFIG_HAMRADIO=y
+
+#
+# Packet Radio protocols
+#
+# CONFIG_AX25 is not set
+CONFIG_CAN=y
+CONFIG_CAN_RAW=y
+CONFIG_CAN_BCM=y
+
+#
+# CAN Device Drivers
+#
+# CONFIG_CAN_VCAN is not set
+CONFIG_CAN_DEV=m
+# CONFIG_CAN_CALC_BITTIMING is not set
+CONFIG_CAN_SJA1000=m
+CONFIG_CAN_SJA1000_PLATFORM=m
+CONFIG_CAN_EMS_PCI=m
+CONFIG_CAN_KVASER_PCI=m
+CONFIG_CAN_DEBUG_DEVICES=y
+CONFIG_IRDA=m
+
+#
+# IrDA protocols
+#
+# CONFIG_IRLAN is not set
+CONFIG_IRCOMM=m
+CONFIG_IRDA_ULTRA=y
+
+#
+# IrDA options
+#
+CONFIG_IRDA_CACHE_LAST_LSAP=y
+# CONFIG_IRDA_FAST_RR is not set
+CONFIG_IRDA_DEBUG=y
+
+#
+# Infrared-port device drivers
+#
+
+#
+# SIR device drivers
+#
+CONFIG_IRTTY_SIR=m
+
+#
+# Dongle support
+#
+# CONFIG_DONGLE is not set
+# CONFIG_KINGSUN_DONGLE is not set
+CONFIG_KSDAZZLE_DONGLE=m
+CONFIG_KS959_DONGLE=m
+
+#
+# FIR device drivers
+#
+CONFIG_USB_IRDA=m
+CONFIG_SIGMATEL_FIR=m
+# CONFIG_NSC_FIR is not set
+CONFIG_WINBOND_FIR=m
+# CONFIG_SMC_IRCC_FIR is not set
+CONFIG_ALI_FIR=m
+# CONFIG_VLSI_FIR is not set
+# CONFIG_VIA_FIR is not set
+CONFIG_MCS_FIR=m
+# CONFIG_BT is not set
+CONFIG_AF_RXRPC=y
+CONFIG_AF_RXRPC_DEBUG=y
+CONFIG_RXKAD=y
+CONFIG_FIB_RULES=y
+# CONFIG_WIRELESS is not set
+CONFIG_WIRELESS_EXT=y
+CONFIG_LIB80211=y
+CONFIG_LIB80211_CRYPT_WEP=y
+CONFIG_LIB80211_CRYPT_CCMP=y
+CONFIG_LIB80211_CRYPT_TKIP=y
+# CONFIG_WIMAX is not set
+# CONFIG_RFKILL is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_FIRMWARE_IN_KERNEL=y
+CONFIG_EXTRA_FIRMWARE=""
+CONFIG_DEBUG_DRIVER=y
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+CONFIG_CONNECTOR=m
+# CONFIG_PARPORT is not set
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_FD is not set
+CONFIG_BLK_CPQ_DA=y
+CONFIG_BLK_CPQ_CISS_DA=y
+# CONFIG_CISS_SCSI_TAPE is not set
+CONFIG_BLK_DEV_DAC960=m
+CONFIG_BLK_DEV_UMEM=m
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_CRYPTOLOOP=y
+CONFIG_BLK_DEV_NBD=y
+# CONFIG_BLK_DEV_OSD is not set
+CONFIG_BLK_DEV_SX8=y
+# CONFIG_BLK_DEV_UB is not set
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_XIP=y
+CONFIG_CDROM_PKTCDVD=m
+CONFIG_CDROM_PKTCDVD_BUFFERS=8
+# CONFIG_CDROM_PKTCDVD_WCACHE is not set
+CONFIG_ATA_OVER_ETH=m
+# CONFIG_VIRTIO_BLK is not set
+CONFIG_BLK_DEV_HD=y
+CONFIG_MISC_DEVICES=y
+CONFIG_IBM_ASM=y
+# CONFIG_PHANTOM is not set
+# CONFIG_SGI_IOC4 is not set
+CONFIG_TIFM_CORE=y
+CONFIG_TIFM_7XX1=y
+# CONFIG_ICS932S401 is not set
+# CONFIG_ENCLOSURE_SERVICES is not set
+CONFIG_HP_ILO=m
+CONFIG_ISL29003=y
+CONFIG_C2PORT=m
+# CONFIG_C2PORT_DURAMAR_2150 is not set
+
+#
+# EEPROM support
+#
+# CONFIG_EEPROM_AT24 is not set
+CONFIG_EEPROM_AT25=m
+CONFIG_EEPROM_LEGACY=m
+CONFIG_EEPROM_MAX6875=m
+CONFIG_EEPROM_93CX6=y
+# CONFIG_CB710_CORE is not set
+CONFIG_HAVE_IDE=y
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+CONFIG_SCSI_TGT=y
+CONFIG_SCSI_NETLINK=y
+# CONFIG_SCSI_PROC_FS is not set
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+CONFIG_CHR_DEV_ST=y
+# CONFIG_CHR_DEV_OSST is not set
+CONFIG_BLK_DEV_SR=m
+# CONFIG_BLK_DEV_SR_VENDOR is not set
+CONFIG_CHR_DEV_SG=m
+# CONFIG_CHR_DEV_SCH is not set
+CONFIG_SCSI_MULTI_LUN=y
+# CONFIG_SCSI_CONSTANTS is not set
+CONFIG_SCSI_LOGGING=y
+# CONFIG_SCSI_SCAN_ASYNC is not set
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+CONFIG_SCSI_FC_ATTRS=y
+# CONFIG_SCSI_FC_TGT_ATTRS is not set
+CONFIG_SCSI_ISCSI_ATTRS=y
+CONFIG_SCSI_SAS_ATTRS=y
+CONFIG_SCSI_SAS_LIBSAS=y
+# CONFIG_SCSI_SAS_ATA is not set
+CONFIG_SCSI_SAS_HOST_SMP=y
+CONFIG_SCSI_SAS_LIBSAS_DEBUG=y
+CONFIG_SCSI_LOWLEVEL=y
+CONFIG_ISCSI_TCP=y
+# CONFIG_SCSI_CXGB3_ISCSI is not set
+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+CONFIG_SCSI_3W_9XXX=m
+CONFIG_SCSI_ACARD=y
+CONFIG_SCSI_AACRAID=y
+CONFIG_SCSI_AIC7XXX=y
+CONFIG_AIC7XXX_CMDS_PER_DEVICE=32
+CONFIG_AIC7XXX_RESET_DELAY_MS=5000
+CONFIG_AIC7XXX_DEBUG_ENABLE=y
+CONFIG_AIC7XXX_DEBUG_MASK=0
+CONFIG_AIC7XXX_REG_PRETTY_PRINT=y
+# CONFIG_SCSI_AIC7XXX_OLD is not set
+CONFIG_SCSI_AIC79XX=m
+CONFIG_AIC79XX_CMDS_PER_DEVICE=32
+CONFIG_AIC79XX_RESET_DELAY_MS=5000
+CONFIG_AIC79XX_DEBUG_ENABLE=y
+CONFIG_AIC79XX_DEBUG_MASK=0
+CONFIG_AIC79XX_REG_PRETTY_PRINT=y
+# CONFIG_SCSI_AIC94XX is not set
+CONFIG_SCSI_MVSAS=y
+# CONFIG_SCSI_MVSAS_DEBUG is not set
+CONFIG_SCSI_DPT_I2O=y
+CONFIG_SCSI_ADVANSYS=m
+CONFIG_SCSI_ARCMSR=m
+CONFIG_MEGARAID_NEWGEN=y
+CONFIG_MEGARAID_MM=m
+CONFIG_MEGARAID_MAILBOX=m
+CONFIG_MEGARAID_LEGACY=y
+CONFIG_MEGARAID_SAS=m
+CONFIG_SCSI_MPT2SAS=m
+CONFIG_SCSI_MPT2SAS_MAX_SGE=128
+# CONFIG_SCSI_MPT2SAS_LOGGING is not set
+CONFIG_SCSI_HPTIOP=y
+CONFIG_SCSI_BUSLOGIC=y
+CONFIG_LIBFC=m
+# CONFIG_LIBFCOE is not set
+# CONFIG_FCOE is not set
+CONFIG_FCOE_FNIC=m
+CONFIG_SCSI_DMX3191D=m
+# CONFIG_SCSI_EATA is not set
+CONFIG_SCSI_FUTURE_DOMAIN=y
+CONFIG_SCSI_GDTH=y
+CONFIG_SCSI_IPS=y
+CONFIG_SCSI_INITIO=m
+CONFIG_SCSI_INIA100=m
+CONFIG_SCSI_STEX=y
+# CONFIG_SCSI_SYM53C8XX_2 is not set
+CONFIG_SCSI_IPR=m
+CONFIG_SCSI_IPR_TRACE=y
+CONFIG_SCSI_IPR_DUMP=y
+# CONFIG_SCSI_QLOGIC_1280 is not set
+# CONFIG_SCSI_QLA_FC is not set
+CONFIG_SCSI_QLA_ISCSI=m
+CONFIG_SCSI_LPFC=m
+CONFIG_SCSI_LPFC_DEBUG_FS=y
+CONFIG_SCSI_DC395x=y
+# CONFIG_SCSI_DC390T is not set
+CONFIG_SCSI_SRP=m
+CONFIG_SCSI_LOWLEVEL_PCMCIA=y
+# CONFIG_PCMCIA_FDOMAIN is not set
+CONFIG_PCMCIA_QLOGIC=m
+CONFIG_PCMCIA_SYM53C500=m
+CONFIG_SCSI_DH=m
+CONFIG_SCSI_DH_RDAC=m
+CONFIG_SCSI_DH_HP_SW=m
+CONFIG_SCSI_DH_EMC=m
+CONFIG_SCSI_DH_ALUA=m
+CONFIG_SCSI_OSD_INITIATOR=y
+CONFIG_SCSI_OSD_ULD=m
+CONFIG_SCSI_OSD_DPRINT_SENSE=1
+CONFIG_SCSI_OSD_DEBUG=y
+CONFIG_ATA=y
+# CONFIG_ATA_NONSTANDARD is not set
+CONFIG_ATA_VERBOSE_ERROR=y
+CONFIG_SATA_PMP=y
+CONFIG_SATA_AHCI=y
+# CONFIG_SATA_SIL24 is not set
+CONFIG_ATA_SFF=y
+CONFIG_SATA_SVW=m
+CONFIG_ATA_PIIX=y
+CONFIG_SATA_MV=y
+CONFIG_SATA_NV=y
+CONFIG_PDC_ADMA=m
+# CONFIG_SATA_QSTOR is not set
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SX4 is not set
+# CONFIG_SATA_SIL is not set
+CONFIG_SATA_SIS=m
+CONFIG_SATA_ULI=m
+CONFIG_SATA_VIA=y
+# CONFIG_SATA_VITESSE is not set
+CONFIG_SATA_INIC162X=m
+# CONFIG_PATA_ALI is not set
+CONFIG_PATA_AMD=y
+# CONFIG_PATA_ARTOP is not set
+CONFIG_PATA_ATIIXP=y
+CONFIG_PATA_CMD640_PCI=m
+CONFIG_PATA_CMD64X=m
+CONFIG_PATA_CS5520=m
+CONFIG_PATA_CS5530=y
+CONFIG_PATA_CYPRESS=m
+CONFIG_PATA_EFAR=y
+# CONFIG_ATA_GENERIC is not set
+CONFIG_PATA_HPT366=y
+CONFIG_PATA_HPT37X=y
+CONFIG_PATA_HPT3X2N=m
+CONFIG_PATA_HPT3X3=y
+# CONFIG_PATA_HPT3X3_DMA is not set
+# CONFIG_PATA_IT821X is not set
+# CONFIG_PATA_IT8213 is not set
+CONFIG_PATA_JMICRON=y
+CONFIG_PATA_TRIFLEX=m
+CONFIG_PATA_MARVELL=y
+# CONFIG_PATA_MPIIX is not set
+CONFIG_PATA_OLDPIIX=y
+# CONFIG_PATA_NETCELL is not set
+# CONFIG_PATA_NINJA32 is not set
+CONFIG_PATA_NS87410=y
+CONFIG_PATA_NS87415=y
+# CONFIG_PATA_OPTI is not set
+CONFIG_PATA_OPTIDMA=m
+CONFIG_PATA_PCMCIA=m
+CONFIG_PATA_PDC_OLD=m
+# CONFIG_PATA_RADISYS is not set
+CONFIG_PATA_RDC=m
+CONFIG_PATA_RZ1000=m
+# CONFIG_PATA_SC1200 is not set
+CONFIG_PATA_SERVERWORKS=y
+# CONFIG_PATA_PDC2027X is not set
+CONFIG_PATA_SIL680=m
+CONFIG_PATA_SIS=m
+CONFIG_PATA_VIA=y
+CONFIG_PATA_WINBOND=y
+CONFIG_PATA_PLATFORM=m
+# CONFIG_PATA_SCH is not set
+CONFIG_MD=y
+# CONFIG_BLK_DEV_MD is not set
+CONFIG_BLK_DEV_DM=m
+CONFIG_DM_DEBUG=y
+# CONFIG_DM_CRYPT is not set
+# CONFIG_DM_SNAPSHOT is not set
+# CONFIG_DM_MIRROR is not set
+CONFIG_DM_ZERO=m
+CONFIG_DM_MULTIPATH=m
+# CONFIG_DM_MULTIPATH_QL is not set
+# CONFIG_DM_MULTIPATH_ST is not set
+CONFIG_DM_DELAY=m
+CONFIG_DM_UEVENT=y
+CONFIG_FUSION=y
+# CONFIG_FUSION_SPI is not set
+CONFIG_FUSION_FC=y
+CONFIG_FUSION_SAS=y
+CONFIG_FUSION_MAX_SGE=128
+CONFIG_FUSION_CTL=y
+# CONFIG_FUSION_LOGGING is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+
+#
+# You can enable one or both FireWire driver stacks.
+#
+
+#
+# See the help texts for more information.
+#
+# CONFIG_FIREWIRE is not set
+CONFIG_IEEE1394=y
+CONFIG_IEEE1394_OHCI1394=m
+CONFIG_IEEE1394_PCILYNX=m
+# CONFIG_IEEE1394_SBP2 is not set
+CONFIG_IEEE1394_ETH1394_ROM_ENTRY=y
+CONFIG_IEEE1394_ETH1394=y
+CONFIG_IEEE1394_RAWIO=y
+CONFIG_IEEE1394_VIDEO1394=m
+# CONFIG_IEEE1394_DV1394 is not set
+CONFIG_IEEE1394_VERBOSEDEBUG=y
+# CONFIG_I2O is not set
+CONFIG_MACINTOSH_DRIVERS=y
+CONFIG_MAC_EMUMOUSEBTN=y
+CONFIG_NETDEVICES=y
+# CONFIG_IFB is not set
+CONFIG_DUMMY=m
+# CONFIG_BONDING is not set
+CONFIG_MACVLAN=m
+CONFIG_EQUALIZER=y
+# CONFIG_TUN is not set
+CONFIG_VETH=y
+# CONFIG_ARCNET is not set
+CONFIG_PHYLIB=y
+
+#
+# MII PHY device drivers
+#
+# CONFIG_MARVELL_PHY is not set
+CONFIG_DAVICOM_PHY=y
+CONFIG_QSEMI_PHY=y
+CONFIG_LXT_PHY=m
+CONFIG_CICADA_PHY=y
+CONFIG_VITESSE_PHY=y
+CONFIG_SMSC_PHY=y
+CONFIG_BROADCOM_PHY=y
+# CONFIG_ICPLUS_PHY is not set
+CONFIG_REALTEK_PHY=m
+CONFIG_NATIONAL_PHY=m
+CONFIG_STE10XP=m
+# CONFIG_LSI_ET1011C_PHY is not set
+# CONFIG_FIXED_PHY is not set
+CONFIG_MDIO_BITBANG=y
+CONFIG_MDIO_GPIO=m
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+# CONFIG_HAPPYMEAL is not set
+# CONFIG_SUNGEM is not set
+CONFIG_CASSINI=y
+CONFIG_NET_VENDOR_3COM=y
+CONFIG_VORTEX=y
+CONFIG_TYPHOON=y
+# CONFIG_ENC28J60 is not set
+# CONFIG_ETHOC is not set
+CONFIG_DNET=m
+CONFIG_NET_TULIP=y
+CONFIG_DE2104X=m
+CONFIG_DE2104X_DSL=0
+# CONFIG_TULIP is not set
+# CONFIG_DE4X5 is not set
+CONFIG_WINBOND_840=y
+CONFIG_DM9102=m
+CONFIG_ULI526X=y
+# CONFIG_PCMCIA_XIRCOM is not set
+CONFIG_HP100=y
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
+# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
+# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
+CONFIG_NET_PCI=y
+CONFIG_PCNET32=y
+# CONFIG_AMD8111_ETH is not set
+CONFIG_ADAPTEC_STARFIRE=y
+CONFIG_B44=m
+CONFIG_B44_PCI_AUTOSELECT=y
+CONFIG_B44_PCICORE_AUTOSELECT=y
+CONFIG_B44_PCI=y
+CONFIG_FORCEDETH=y
+# CONFIG_FORCEDETH_NAPI is not set
+CONFIG_E100=y
+CONFIG_FEALNX=m
+# CONFIG_NATSEMI is not set
+CONFIG_NE2K_PCI=y
+CONFIG_8139CP=y
+CONFIG_8139TOO=y
+CONFIG_8139TOO_PIO=y
+CONFIG_8139TOO_TUNE_TWISTER=y
+# CONFIG_8139TOO_8129 is not set
+CONFIG_8139_OLD_RX_RESET=y
+CONFIG_R6040=m
+# CONFIG_SIS900 is not set
+CONFIG_EPIC100=m
+CONFIG_SMSC9420=y
+CONFIG_SUNDANCE=y
+# CONFIG_SUNDANCE_MMIO is not set
+# CONFIG_TLAN is not set
+CONFIG_KS8842=y
+CONFIG_KS8851=y
+CONFIG_VIA_RHINE=m
+CONFIG_VIA_RHINE_MMIO=y
+CONFIG_SC92031=y
+CONFIG_ATL2=m
+CONFIG_NETDEV_1000=y
+CONFIG_ACENIC=y
+CONFIG_ACENIC_OMIT_TIGON_I=y
+# CONFIG_DL2K is not set
+CONFIG_E1000=m
+CONFIG_E1000E=y
+CONFIG_IP1000=m
+# CONFIG_IGB is not set
+# CONFIG_IGBVF is not set
+# CONFIG_NS83820 is not set
+CONFIG_HAMACHI=m
+# CONFIG_YELLOWFIN is not set
+CONFIG_R8169=y
+# CONFIG_R8169_VLAN is not set
+CONFIG_SIS190=y
+CONFIG_SKGE=y
+CONFIG_SKGE_DEBUG=y
+CONFIG_SKY2=y
+# CONFIG_SKY2_DEBUG is not set
+# CONFIG_VIA_VELOCITY is not set
+CONFIG_TIGON3=y
+# CONFIG_BNX2 is not set
+# CONFIG_QLA3XXX is not set
+CONFIG_ATL1=y
+# CONFIG_ATL1E is not set
+CONFIG_ATL1C=y
+# CONFIG_JME is not set
+CONFIG_NETDEV_10000=y
+CONFIG_MDIO=m
+# CONFIG_CHELSIO_T1 is not set
+CONFIG_CHELSIO_T3_DEPENDS=y
+CONFIG_CHELSIO_T3=m
+CONFIG_ENIC=m
+# CONFIG_IXGBE is not set
+CONFIG_IXGB=y
+CONFIG_S2IO=y
+# CONFIG_MYRI10GE is not set
+# CONFIG_NIU is not set
+# CONFIG_MLX4_EN is not set
+# CONFIG_MLX4_CORE is not set
+CONFIG_TEHUTI=m
+CONFIG_BNX2X=y
+# CONFIG_QLGE is not set
+# CONFIG_SFC is not set
+CONFIG_BE2NET=y
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+CONFIG_WLAN_PRE80211=y
+CONFIG_STRIP=m
+# CONFIG_PCMCIA_WAVELAN is not set
+CONFIG_PCMCIA_NETWAVE=m
+CONFIG_WLAN_80211=y
+CONFIG_PCMCIA_RAYCS=m
+# CONFIG_LIBERTAS is not set
+CONFIG_AIRO=m
+CONFIG_ATMEL=y
+# CONFIG_PCI_ATMEL is not set
+CONFIG_PCMCIA_ATMEL=m
+CONFIG_AIRO_CS=m
+# CONFIG_PCMCIA_WL3501 is not set
+# CONFIG_PRISM54 is not set
+# CONFIG_USB_ZD1201 is not set
+CONFIG_IPW2100=m
+# CONFIG_IPW2100_MONITOR is not set
+# CONFIG_IPW2100_DEBUG is not set
+CONFIG_IPW2200=m
+CONFIG_IPW2200_MONITOR=y
+CONFIG_IPW2200_RADIOTAP=y
+CONFIG_IPW2200_PROMISCUOUS=y
+CONFIG_IPW2200_QOS=y
+CONFIG_IPW2200_DEBUG=y
+CONFIG_LIBIPW=m
+# CONFIG_LIBIPW_DEBUG is not set
+CONFIG_HOSTAP=y
+CONFIG_HOSTAP_FIRMWARE=y
+CONFIG_HOSTAP_FIRMWARE_NVRAM=y
+CONFIG_HOSTAP_PLX=y
+# CONFIG_HOSTAP_PCI is not set
+CONFIG_HOSTAP_CS=m
+CONFIG_HERMES=y
+# CONFIG_HERMES_CACHE_FW_ON_INIT is not set
+# CONFIG_PLX_HERMES is not set
+# CONFIG_TMD_HERMES is not set
+CONFIG_NORTEL_HERMES=y
+# CONFIG_PCI_HERMES is not set
+CONFIG_PCMCIA_HERMES=m
+# CONFIG_PCMCIA_SPECTRUM is not set
+
+#
+# Enable WiMAX (Networking options) to see the WiMAX drivers
+#
+
+#
+# USB Network Adapters
+#
+# CONFIG_USB_CATC is not set
+CONFIG_USB_KAWETH=m
+CONFIG_USB_PEGASUS=m
+CONFIG_USB_RTL8150=y
+CONFIG_USB_USBNET=y
+CONFIG_USB_NET_AX8817X=y
+CONFIG_USB_NET_CDCETHER=y
+# CONFIG_USB_NET_CDC_EEM is not set
+# CONFIG_USB_NET_DM9601 is not set
+# CONFIG_USB_NET_SMSC95XX is not set
+CONFIG_USB_NET_GL620A=y
+CONFIG_USB_NET_NET1080=m
+CONFIG_USB_NET_PLUSB=m
+CONFIG_USB_NET_MCS7830=y
+CONFIG_USB_NET_RNDIS_HOST=y
+CONFIG_USB_NET_CDC_SUBSET=y
+CONFIG_USB_ALI_M5632=y
+# CONFIG_USB_AN2720 is not set
+CONFIG_USB_BELKIN=y
+# CONFIG_USB_ARMLINUX is not set
+CONFIG_USB_EPSON2888=y
+# CONFIG_USB_KC2190 is not set
+# CONFIG_USB_NET_ZAURUS is not set
+CONFIG_USB_NET_INT51X1=y
+CONFIG_USB_CDC_PHONET=m
+CONFIG_NET_PCMCIA=y
+# CONFIG_PCMCIA_3C589 is not set
+CONFIG_PCMCIA_3C574=m
+# CONFIG_PCMCIA_FMVJ18X is not set
+# CONFIG_PCMCIA_PCNET is not set
+# CONFIG_PCMCIA_NMCLAN is not set
+CONFIG_PCMCIA_SMC91C92=m
+CONFIG_PCMCIA_XIRC2PS=m
+CONFIG_PCMCIA_AXNET=m
+CONFIG_WAN=y
+# CONFIG_HDLC is not set
+CONFIG_DLCI=m
+CONFIG_DLCI_MAX=8
+CONFIG_WAN_ROUTER_DRIVERS=y
+# CONFIG_CYCLADES_SYNC is not set
+# CONFIG_LAPBETHER is not set
+CONFIG_X25_ASY=m
+# CONFIG_SBNI is not set
+# CONFIG_ATM_DRIVERS is not set
+CONFIG_FDDI=m
+CONFIG_DEFXX=m
+CONFIG_DEFXX_MMIO=y
+CONFIG_SKFP=m
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+CONFIG_SLIP=m
+CONFIG_SLIP_COMPRESSED=y
+CONFIG_SLHC=m
+# CONFIG_SLIP_SMART is not set
+# CONFIG_SLIP_MODE_SLIP6 is not set
+# CONFIG_NET_FC is not set
+CONFIG_NETCONSOLE=y
+CONFIG_NETCONSOLE_DYNAMIC=y
+CONFIG_NETPOLL=y
+CONFIG_NETPOLL_TRAP=y
+CONFIG_NET_POLL_CONTROLLER=y
+CONFIG_VIRTIO_NET=y
+CONFIG_ISDN=y
+# CONFIG_ISDN_I4L is not set
+CONFIG_ISDN_CAPI=y
+CONFIG_ISDN_DRV_AVMB1_VERBOSE_REASON=y
+CONFIG_CAPI_TRACE=y
+CONFIG_ISDN_CAPI_MIDDLEWARE=y
+CONFIG_ISDN_CAPI_CAPI20=y
+CONFIG_ISDN_CAPI_CAPIFS_BOOL=y
+CONFIG_ISDN_CAPI_CAPIFS=y
+
+#
+# CAPI hardware drivers
+#
+CONFIG_CAPI_AVM=y
+CONFIG_ISDN_DRV_AVMB1_B1PCI=y
+# CONFIG_ISDN_DRV_AVMB1_B1PCIV4 is not set
+CONFIG_ISDN_DRV_AVMB1_B1PCMCIA=y
+CONFIG_ISDN_DRV_AVMB1_AVM_CS=m
+CONFIG_ISDN_DRV_AVMB1_T1PCI=y
+CONFIG_ISDN_DRV_AVMB1_C4=m
+# CONFIG_CAPI_EICON is not set
+CONFIG_PHONE=y
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+CONFIG_INPUT_FF_MEMLESS=y
+CONFIG_INPUT_POLLDEV=y
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+CONFIG_INPUT_JOYDEV=y
+CONFIG_INPUT_EVDEV=y
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+CONFIG_KEYBOARD_LKKBD=y
+CONFIG_KEYBOARD_GPIO=m
+CONFIG_KEYBOARD_MATRIX=m
+# CONFIG_KEYBOARD_LM8323 is not set
+CONFIG_KEYBOARD_NEWTON=y
+CONFIG_KEYBOARD_STOWAWAY=y
+# CONFIG_KEYBOARD_SUNKBD is not set
+CONFIG_KEYBOARD_XTKBD=m
+# CONFIG_INPUT_MOUSE is not set
+# CONFIG_INPUT_JOYSTICK is not set
+CONFIG_INPUT_TABLET=y
+CONFIG_TABLET_USB_ACECAD=y
+# CONFIG_TABLET_USB_AIPTEK is not set
+CONFIG_TABLET_USB_GTCO=y
+# CONFIG_TABLET_USB_KBTAB is not set
+CONFIG_TABLET_USB_WACOM=y
+# CONFIG_INPUT_TOUCHSCREEN is not set
+CONFIG_INPUT_MISC=y
+CONFIG_INPUT_PCSPKR=y
+CONFIG_INPUT_APANEL=m
+CONFIG_INPUT_ATI_REMOTE=m
+CONFIG_INPUT_ATI_REMOTE2=m
+CONFIG_INPUT_KEYSPAN_REMOTE=y
+# CONFIG_INPUT_POWERMATE is not set
+CONFIG_INPUT_YEALINK=m
+CONFIG_INPUT_CM109=m
+CONFIG_INPUT_TWL4030_PWRBUTTON=m
+CONFIG_INPUT_UINPUT=y
+CONFIG_INPUT_PCF50633_PMU=m
+CONFIG_INPUT_GPIO_ROTARY_ENCODER=y
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+CONFIG_SERIO_SERPORT=m
+CONFIG_SERIO_CT82C710=y
+# CONFIG_SERIO_PCIPS2 is not set
+CONFIG_SERIO_LIBPS2=y
+CONFIG_SERIO_RAW=y
+CONFIG_GAMEPORT=y
+# CONFIG_GAMEPORT_NS558 is not set
+# CONFIG_GAMEPORT_L4 is not set
+CONFIG_GAMEPORT_EMU10K1=m
+CONFIG_GAMEPORT_FM801=y
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_CONSOLE_TRANSLATIONS=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_DEVKMEM=y
+# CONFIG_SERIAL_NONSTANDARD is not set
+# CONFIG_NOZOMI is not set
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_FIX_EARLYCON_MEM=y
+# CONFIG_SERIAL_8250_PCI is not set
+CONFIG_SERIAL_8250_CS=m
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+CONFIG_SERIAL_8250_EXTENDED=y
+CONFIG_SERIAL_8250_MANY_PORTS=y
+# CONFIG_SERIAL_8250_SHARE_IRQ is not set
+# CONFIG_SERIAL_8250_DETECT_IRQ is not set
+# CONFIG_SERIAL_8250_RSA is not set
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_MAX3100=m
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_CONSOLE_POLL=y
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+CONFIG_HVC_DRIVER=y
+CONFIG_VIRTIO_CONSOLE=m
+CONFIG_IPMI_HANDLER=y
+CONFIG_IPMI_PANIC_EVENT=y
+# CONFIG_IPMI_PANIC_STRING is not set
+CONFIG_IPMI_DEVICE_INTERFACE=y
+CONFIG_IPMI_SI=y
+CONFIG_IPMI_WATCHDOG=m
+# CONFIG_IPMI_POWEROFF is not set
+CONFIG_HW_RANDOM=y
+CONFIG_HW_RANDOM_TIMERIOMEM=y
+# CONFIG_HW_RANDOM_INTEL is not set
+CONFIG_HW_RANDOM_AMD=m
+CONFIG_HW_RANDOM_VIA=m
+CONFIG_HW_RANDOM_VIRTIO=m
+CONFIG_NVRAM=y
+CONFIG_R3964=y
+# CONFIG_APPLICOM is not set
+
+#
+# PCMCIA character devices
+#
+CONFIG_SYNCLINK_CS=m
+# CONFIG_CARDMAN_4000 is not set
+CONFIG_CARDMAN_4040=m
+# CONFIG_IPWIRELESS is not set
+# CONFIG_MWAVE is not set
+# CONFIG_PC8736x_GPIO is not set
+# CONFIG_RAW_DRIVER is not set
+CONFIG_HANGCHECK_TIMER=m
+CONFIG_TCG_TPM=m
+CONFIG_TCG_NSC=m
+# CONFIG_TCG_ATMEL is not set
+CONFIG_TELCLOCK=m
+CONFIG_DEVPORT=y
+CONFIG_I2C=y
+CONFIG_I2C_BOARDINFO=y
+CONFIG_I2C_CHARDEV=y
+CONFIG_I2C_HELPER_AUTO=y
+CONFIG_I2C_ALGOBIT=y
+CONFIG_I2C_ALGOPCA=m
+
+#
+# I2C Hardware Bus support
+#
+
+#
+# PC SMBus host controller drivers
+#
+# CONFIG_I2C_ALI1535 is not set
+# CONFIG_I2C_ALI1563 is not set
+# CONFIG_I2C_ALI15X3 is not set
+CONFIG_I2C_AMD756=y
+# CONFIG_I2C_AMD8111 is not set
+CONFIG_I2C_I801=y
+# CONFIG_I2C_ISCH is not set
+# CONFIG_I2C_PIIX4 is not set
+CONFIG_I2C_NFORCE2=m
+CONFIG_I2C_SIS5595=y
+# CONFIG_I2C_SIS630 is not set
+CONFIG_I2C_SIS96X=m
+CONFIG_I2C_VIA=y
+
+#
+# I2C system bus drivers (mostly embedded / system-on-chip)
+#
+CONFIG_I2C_GPIO=y
+CONFIG_I2C_OCORES=y
+CONFIG_I2C_SIMTEC=y
+
+#
+# External I2C/SMBus adapter drivers
+#
+CONFIG_I2C_PARPORT_LIGHT=y
+CONFIG_I2C_TAOS_EVM=m
+# CONFIG_I2C_TINY_USB is not set
+
+#
+# Graphics adapter I2C/DDC channel drivers
+#
+CONFIG_I2C_VOODOO3=y
+
+#
+# Other I2C/SMBus bus drivers
+#
+CONFIG_I2C_PCA_PLATFORM=m
+CONFIG_I2C_STUB=m
+
+#
+# Miscellaneous I2C Chip support
+#
+# CONFIG_DS1682 is not set
+CONFIG_SENSORS_PCA9539=y
+# CONFIG_SENSORS_TSL2550 is not set
+# CONFIG_I2C_DEBUG_CORE is not set
+# CONFIG_I2C_DEBUG_ALGO is not set
+CONFIG_I2C_DEBUG_BUS=y
+# CONFIG_I2C_DEBUG_CHIP is not set
+CONFIG_SPI=y
+CONFIG_SPI_DEBUG=y
+CONFIG_SPI_MASTER=y
+
+#
+# SPI Master Controller Drivers
+#
+CONFIG_SPI_BITBANG=m
+# CONFIG_SPI_GPIO is not set
+
+#
+# SPI Protocol Masters
+#
+# CONFIG_SPI_SPIDEV is not set
+CONFIG_SPI_TLE62X0=y
+
+#
+# PPS support
+#
+# CONFIG_PPS is not set
+CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
+CONFIG_GPIOLIB=y
+CONFIG_DEBUG_GPIO=y
+# CONFIG_GPIO_SYSFS is not set
+
+#
+# Memory mapped GPIO expanders:
+#
+
+#
+# I2C GPIO expanders:
+#
+CONFIG_GPIO_MAX732X=m
+# CONFIG_GPIO_PCA953X is not set
+CONFIG_GPIO_PCF857X=m
+# CONFIG_GPIO_TWL4030 is not set
+
+#
+# PCI GPIO expanders:
+#
+
+#
+# SPI GPIO expanders:
+#
+CONFIG_GPIO_MAX7301=m
+CONFIG_GPIO_MCP23S08=y
+# CONFIG_W1 is not set
+# CONFIG_POWER_SUPPLY is not set
+CONFIG_HWMON=y
+CONFIG_HWMON_VID=y
+# CONFIG_SENSORS_ABITUGURU is not set
+CONFIG_SENSORS_ABITUGURU3=m
+CONFIG_SENSORS_AD7414=m
+CONFIG_SENSORS_AD7418=m
+CONFIG_SENSORS_ADCXX=m
+# CONFIG_SENSORS_ADM1021 is not set
+CONFIG_SENSORS_ADM1025=m
+CONFIG_SENSORS_ADM1026=m
+CONFIG_SENSORS_ADM1029=y
+CONFIG_SENSORS_ADM1031=y
+# CONFIG_SENSORS_ADM9240 is not set
+CONFIG_SENSORS_ADT7462=m
+CONFIG_SENSORS_ADT7470=y
+CONFIG_SENSORS_ADT7473=m
+# CONFIG_SENSORS_ADT7475 is not set
+CONFIG_SENSORS_K8TEMP=m
+CONFIG_SENSORS_ASB100=y
+CONFIG_SENSORS_ATXP1=m
+# CONFIG_SENSORS_DS1621 is not set
+CONFIG_SENSORS_I5K_AMB=y
+CONFIG_SENSORS_F71805F=y
+# CONFIG_SENSORS_F71882FG is not set
+CONFIG_SENSORS_F75375S=y
+# CONFIG_SENSORS_FSCHER is not set
+# CONFIG_SENSORS_FSCPOS is not set
+CONFIG_SENSORS_FSCHMD=m
+# CONFIG_SENSORS_G760A is not set
+CONFIG_SENSORS_GL518SM=m
+CONFIG_SENSORS_GL520SM=m
+# CONFIG_SENSORS_CORETEMP is not set
+CONFIG_SENSORS_IBMAEM=m
+# CONFIG_SENSORS_IBMPEX is not set
+CONFIG_SENSORS_IT87=y
+CONFIG_SENSORS_LM63=m
+CONFIG_SENSORS_LM70=m
+CONFIG_SENSORS_LM75=m
+CONFIG_SENSORS_LM77=m
+CONFIG_SENSORS_LM78=y
+CONFIG_SENSORS_LM80=y
+CONFIG_SENSORS_LM83=y
+# CONFIG_SENSORS_LM85 is not set
+# CONFIG_SENSORS_LM87 is not set
+CONFIG_SENSORS_LM90=m
+CONFIG_SENSORS_LM92=y
+CONFIG_SENSORS_LM93=y
+CONFIG_SENSORS_LTC4215=y
+# CONFIG_SENSORS_LTC4245 is not set
+CONFIG_SENSORS_LM95241=m
+CONFIG_SENSORS_MAX1111=y
+CONFIG_SENSORS_MAX1619=m
+# CONFIG_SENSORS_MAX6650 is not set
+CONFIG_SENSORS_PC87360=y
+CONFIG_SENSORS_PC87427=m
+CONFIG_SENSORS_PCF8591=y
+CONFIG_SENSORS_SHT15=m
+# CONFIG_SENSORS_SIS5595 is not set
+CONFIG_SENSORS_DME1737=m
+CONFIG_SENSORS_SMSC47M1=m
+CONFIG_SENSORS_SMSC47M192=y
+# CONFIG_SENSORS_SMSC47B397 is not set
+CONFIG_SENSORS_ADS7828=y
+CONFIG_SENSORS_THMC50=m
+CONFIG_SENSORS_TMP401=m
+# CONFIG_SENSORS_VIA686A is not set
+CONFIG_SENSORS_VT1211=m
+CONFIG_SENSORS_VT8231=m
+CONFIG_SENSORS_W83781D=m
+CONFIG_SENSORS_W83791D=m
+# CONFIG_SENSORS_W83792D is not set
+# CONFIG_SENSORS_W83793 is not set
+CONFIG_SENSORS_W83L785TS=m
+CONFIG_SENSORS_W83L786NG=y
+CONFIG_SENSORS_W83627HF=y
+# CONFIG_SENSORS_W83627EHF is not set
+CONFIG_SENSORS_HDAPS=m
+CONFIG_SENSORS_LIS3_SPI=y
+CONFIG_SENSORS_APPLESMC=y
+# CONFIG_HWMON_DEBUG_CHIP is not set
+CONFIG_THERMAL=y
+# CONFIG_THERMAL_HWMON is not set
+# CONFIG_WATCHDOG is not set
+CONFIG_SSB_POSSIBLE=y
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB=y
+CONFIG_SSB_SPROM=y
+CONFIG_SSB_PCIHOST_POSSIBLE=y
+CONFIG_SSB_PCIHOST=y
+# CONFIG_SSB_B43_PCI_BRIDGE is not set
+CONFIG_SSB_SILENT=y
+CONFIG_SSB_DRIVER_PCICORE_POSSIBLE=y
+CONFIG_SSB_DRIVER_PCICORE=y
+
+#
+# Multifunction device drivers
+#
+CONFIG_MFD_CORE=y
+CONFIG_MFD_SM501=m
+CONFIG_MFD_SM501_GPIO=y
+# CONFIG_HTC_PASIC3 is not set
+CONFIG_TPS65010=y
+CONFIG_TWL4030_CORE=y
+# CONFIG_MFD_TMIO is not set
+CONFIG_PMIC_DA903X=y
+CONFIG_MFD_WM8400=y
+CONFIG_MFD_PCF50633=y
+# CONFIG_PCF50633_ADC is not set
+# CONFIG_PCF50633_GPIO is not set
+CONFIG_AB3100_CORE=m
+CONFIG_EZX_PCAP=y
+CONFIG_REGULATOR=y
+CONFIG_REGULATOR_DEBUG=y
+CONFIG_REGULATOR_FIXED_VOLTAGE=m
+CONFIG_REGULATOR_VIRTUAL_CONSUMER=m
+# CONFIG_REGULATOR_USERSPACE_CONSUMER is not set
+CONFIG_REGULATOR_BQ24022=y
+CONFIG_REGULATOR_MAX1586=m
+CONFIG_REGULATOR_TWL4030=y
+CONFIG_REGULATOR_WM8400=y
+CONFIG_REGULATOR_DA903X=y
+CONFIG_REGULATOR_PCF50633=y
+CONFIG_REGULATOR_LP3971=m
+CONFIG_MEDIA_SUPPORT=y
+
+#
+# Multimedia core support
+#
+CONFIG_VIDEO_DEV=y
+CONFIG_VIDEO_V4L2_COMMON=y
+CONFIG_VIDEO_ALLOW_V4L1=y
+CONFIG_VIDEO_V4L1_COMPAT=y
+CONFIG_DVB_CORE=y
+CONFIG_VIDEO_MEDIA=y
+
+#
+# Multimedia drivers
+#
+CONFIG_VIDEO_SAA7146=y
+CONFIG_VIDEO_SAA7146_VV=y
+# CONFIG_MEDIA_ATTACH is not set
+CONFIG_MEDIA_TUNER=y
+CONFIG_MEDIA_TUNER_CUSTOMISE=y
+CONFIG_MEDIA_TUNER_SIMPLE=y
+# CONFIG_MEDIA_TUNER_TDA8290 is not set
+CONFIG_MEDIA_TUNER_TDA827X=y
+CONFIG_MEDIA_TUNER_TDA18271=m
+CONFIG_MEDIA_TUNER_TDA9887=y
+# CONFIG_MEDIA_TUNER_TEA5761 is not set
+# CONFIG_MEDIA_TUNER_TEA5767 is not set
+# CONFIG_MEDIA_TUNER_MT20XX is not set
+CONFIG_MEDIA_TUNER_MT2060=m
+# CONFIG_MEDIA_TUNER_MT2266 is not set
+CONFIG_MEDIA_TUNER_MT2131=m
+CONFIG_MEDIA_TUNER_QT1010=y
+CONFIG_MEDIA_TUNER_XC2028=m
+CONFIG_MEDIA_TUNER_XC5000=y
+CONFIG_MEDIA_TUNER_MXL5005S=m
+CONFIG_MEDIA_TUNER_MXL5007T=y
+# CONFIG_MEDIA_TUNER_MC44S803 is not set
+CONFIG_VIDEO_V4L2=y
+CONFIG_VIDEO_V4L1=y
+CONFIG_VIDEOBUF_GEN=y
+CONFIG_VIDEOBUF_DMA_SG=y
+CONFIG_VIDEOBUF_VMALLOC=y
+CONFIG_VIDEOBUF_DVB=y
+CONFIG_VIDEO_BTCX=y
+CONFIG_VIDEO_IR=y
+CONFIG_VIDEO_TVEEPROM=y
+CONFIG_VIDEO_TUNER=y
+CONFIG_VIDEO_CAPTURE_DRIVERS=y
+CONFIG_VIDEO_ADV_DEBUG=y
+CONFIG_VIDEO_FIXED_MINOR_RANGES=y
+CONFIG_VIDEO_HELPER_CHIPS_AUTO=y
+CONFIG_VIDEO_IR_I2C=y
+CONFIG_VIDEO_TVAUDIO=y
+CONFIG_VIDEO_TDA7432=y
+CONFIG_VIDEO_MSP3400=y
+CONFIG_VIDEO_SAA6588=y
+CONFIG_VIDEO_BT819=m
+CONFIG_VIDEO_BT856=m
+CONFIG_VIDEO_BT866=m
+CONFIG_VIDEO_KS0127=m
+CONFIG_VIDEO_OV7670=m
+CONFIG_VIDEO_SAA711X=m
+CONFIG_VIDEO_CX25840=y
+CONFIG_VIDEO_CX2341X=y
+CONFIG_VIDEO_SAA7185=m
+CONFIG_VIDEO_VIVI=y
+CONFIG_VIDEO_BT848=y
+CONFIG_VIDEO_BT848_DVB=y
+CONFIG_VIDEO_CPIA=y
+CONFIG_VIDEO_CPIA_USB=m
+# CONFIG_VIDEO_CPIA2 is not set
+# CONFIG_VIDEO_SAA5246A is not set
+# CONFIG_VIDEO_SAA5249 is not set
+CONFIG_VIDEO_STRADIS=m
+CONFIG_VIDEO_ZORAN=m
+# CONFIG_VIDEO_ZORAN_DC30 is not set
+CONFIG_VIDEO_ZORAN_ZR36060=m
+CONFIG_VIDEO_ZORAN_BUZ=m
+# CONFIG_VIDEO_ZORAN_DC10 is not set
+CONFIG_VIDEO_ZORAN_LML33=m
+# CONFIG_VIDEO_ZORAN_LML33R10 is not set
+CONFIG_VIDEO_ZORAN_AVS6EYES=m
+CONFIG_VIDEO_SAA7134=y
+CONFIG_VIDEO_SAA7134_ALSA=m
+CONFIG_VIDEO_SAA7134_DVB=y
+# CONFIG_VIDEO_MXB is not set
+CONFIG_VIDEO_HEXIUM_ORION=m
+# CONFIG_VIDEO_HEXIUM_GEMINI is not set
+CONFIG_VIDEO_CX23885=y
+# CONFIG_VIDEO_IVTV is not set
+# CONFIG_VIDEO_CX18 is not set
+CONFIG_VIDEO_CAFE_CCIC=m
+CONFIG_SOC_CAMERA=m
+CONFIG_SOC_CAMERA_MT9M001=m
+CONFIG_SOC_CAMERA_MT9M111=m
+CONFIG_SOC_CAMERA_MT9T031=m
+# CONFIG_SOC_CAMERA_MT9V022 is not set
+CONFIG_SOC_CAMERA_TW9910=m
+CONFIG_SOC_CAMERA_PLATFORM=m
+# CONFIG_SOC_CAMERA_OV772X is not set
+# CONFIG_V4L_USB_DRIVERS is not set
+# CONFIG_RADIO_ADAPTERS is not set
+CONFIG_DVB_DYNAMIC_MINORS=y
+CONFIG_DVB_CAPTURE_DRIVERS=y
+
+#
+# Supported SAA7146 based PCI Adapters
+#
+CONFIG_TTPCI_EEPROM=y
+CONFIG_DVB_AV7110=y
+# CONFIG_DVB_AV7110_OSD is not set
+# CONFIG_DVB_BUDGET_CORE is not set
+
+#
+# Supported USB Adapters
+#
+CONFIG_DVB_USB=y
+CONFIG_DVB_USB_DEBUG=y
+# CONFIG_DVB_USB_A800 is not set
+CONFIG_DVB_USB_DIBUSB_MB=y
+# CONFIG_DVB_USB_DIBUSB_MB_FAULTY is not set
+CONFIG_DVB_USB_DIBUSB_MC=y
+CONFIG_DVB_USB_DIB0700=y
+# CONFIG_DVB_USB_UMT_010 is not set
+# CONFIG_DVB_USB_CXUSB is not set
+CONFIG_DVB_USB_M920X=m
+CONFIG_DVB_USB_GL861=m
+CONFIG_DVB_USB_AU6610=y
+CONFIG_DVB_USB_DIGITV=y
+CONFIG_DVB_USB_VP7045=y
+# CONFIG_DVB_USB_VP702X is not set
+CONFIG_DVB_USB_GP8PSK=m
+# CONFIG_DVB_USB_NOVA_T_USB2 is not set
+# CONFIG_DVB_USB_TTUSB2 is not set
+CONFIG_DVB_USB_DTT200U=m
+CONFIG_DVB_USB_OPERA1=y
+CONFIG_DVB_USB_DW2102=m
+# CONFIG_DVB_USB_CINERGY_T2 is not set
+CONFIG_DVB_USB_ANYSEE=m
+# CONFIG_DVB_USB_DTV5100 is not set
+CONFIG_DVB_USB_AF9015=y
+CONFIG_DVB_USB_CE6230=m
+CONFIG_DVB_TTUSB_BUDGET=m
+CONFIG_DVB_TTUSB_DEC=m
+# CONFIG_SMS_SIANO_MDTV is not set
+
+#
+# Supported FlexCopII (B2C2) Adapters
+#
+# CONFIG_DVB_B2C2_FLEXCOP is not set
+
+#
+# Supported BT878 Adapters
+#
+CONFIG_DVB_BT8XX=y
+
+#
+# Supported Pluto2 Adapters
+#
+# CONFIG_DVB_PLUTO2 is not set
+
+#
+# Supported SDMC DM1105 Adapters
+#
+CONFIG_DVB_DM1105=m
+
+#
+# Supported FireWire (IEEE 1394) Adapters
+#
+# CONFIG_DVB_FIREDTV is not set
+
+#
+# Supported DVB Frontends
+#
+CONFIG_DVB_FE_CUSTOMISE=y
+
+#
+# Customise DVB Frontends
+#
+
+#
+# Multistandard (satellite) frontends
+#
+CONFIG_DVB_STB0899=y
+CONFIG_DVB_STB6100=y
+CONFIG_DVB_STV090x=m
+# CONFIG_DVB_STV6110x is not set
+
+#
+# DVB-S (satellite) frontends
+#
+# CONFIG_DVB_CX24110 is not set
+CONFIG_DVB_CX24123=m
+# CONFIG_DVB_MT312 is not set
+CONFIG_DVB_ZL10036=m
+# CONFIG_DVB_S5H1420 is not set
+CONFIG_DVB_STV0288=m
+CONFIG_DVB_STB6000=y
+CONFIG_DVB_STV0299=y
+# CONFIG_DVB_STV6110 is not set
+CONFIG_DVB_STV0900=y
+CONFIG_DVB_TDA8083=m
+# CONFIG_DVB_TDA10086 is not set
+CONFIG_DVB_TDA8261=y
+CONFIG_DVB_VES1X93=y
+CONFIG_DVB_TUNER_ITD1000=m
+CONFIG_DVB_TUNER_CX24113=y
+# CONFIG_DVB_TDA826X is not set
+# CONFIG_DVB_TUA6100 is not set
+CONFIG_DVB_CX24116=y
+CONFIG_DVB_SI21XX=y
+
+#
+# DVB-T (terrestrial) frontends
+#
+CONFIG_DVB_SP8870=y
+# CONFIG_DVB_SP887X is not set
+CONFIG_DVB_CX22700=y
+# CONFIG_DVB_CX22702 is not set
+# CONFIG_DVB_DRX397XD is not set
+CONFIG_DVB_L64781=m
+# CONFIG_DVB_TDA1004X is not set
+CONFIG_DVB_NXT6000=y
+# CONFIG_DVB_MT352 is not set
+CONFIG_DVB_ZL10353=m
+CONFIG_DVB_DIB3000MB=y
+CONFIG_DVB_DIB3000MC=y
+CONFIG_DVB_DIB7000M=m
+CONFIG_DVB_DIB7000P=m
+CONFIG_DVB_TDA10048=m
+CONFIG_DVB_AF9013=y
+
+#
+# DVB-C (cable) frontends
+#
+CONFIG_DVB_VES1820=y
+CONFIG_DVB_TDA10021=m
+CONFIG_DVB_TDA10023=m
+# CONFIG_DVB_STV0297 is not set
+
+#
+# ATSC (North American/Korean Terrestrial/Cable DTV) frontends
+#
+CONFIG_DVB_NXT200X=y
+CONFIG_DVB_OR51211=m
+CONFIG_DVB_OR51132=m
+CONFIG_DVB_BCM3510=m
+CONFIG_DVB_LGDT330X=y
+# CONFIG_DVB_LGDT3304 is not set
+CONFIG_DVB_LGDT3305=m
+CONFIG_DVB_S5H1409=m
+CONFIG_DVB_AU8522=m
+CONFIG_DVB_S5H1411=y
+
+#
+# ISDB-T (terrestrial) frontends
+#
+# CONFIG_DVB_S921 is not set
+
+#
+# Digital terrestrial only tuners/PLL
+#
+# CONFIG_DVB_PLL is not set
+# CONFIG_DVB_TUNER_DIB0070 is not set
+
+#
+# SEC control devices for DVB-S
+#
+CONFIG_DVB_LNBP21=m
+CONFIG_DVB_ISL6405=y
+CONFIG_DVB_ISL6421=m
+# CONFIG_DVB_ISL6423 is not set
+CONFIG_DVB_LGS8GL5=m
+CONFIG_DVB_LGS8GXX=y
+
+#
+# Tools to develop new frontends
+#
+# CONFIG_DVB_DUMMY_FE is not set
+CONFIG_DAB=y
+CONFIG_USB_DABUSB=m
+
+#
+# Graphics support
+#
+CONFIG_AGP=y
+CONFIG_AGP_AMD64=y
+CONFIG_AGP_INTEL=y
+# CONFIG_AGP_SIS is not set
+CONFIG_AGP_VIA=y
+# CONFIG_DRM is not set
+CONFIG_VGASTATE=y
+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
+CONFIG_FB=y
+# CONFIG_FIRMWARE_EDID is not set
+CONFIG_FB_DDC=y
+CONFIG_FB_BOOT_VESA_SUPPORT=y
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
+CONFIG_FB_SYS_FILLRECT=y
+CONFIG_FB_SYS_COPYAREA=y
+CONFIG_FB_SYS_IMAGEBLIT=y
+CONFIG_FB_FOREIGN_ENDIAN=y
+# CONFIG_FB_BOTH_ENDIAN is not set
+CONFIG_FB_BIG_ENDIAN=y
+# CONFIG_FB_LITTLE_ENDIAN is not set
+CONFIG_FB_SYS_FOPS=y
+CONFIG_FB_DEFERRED_IO=y
+CONFIG_FB_HECUBA=m
+CONFIG_FB_SVGALIB=y
+# CONFIG_FB_MACMODES is not set
+CONFIG_FB_BACKLIGHT=y
+CONFIG_FB_MODE_HELPERS=y
+CONFIG_FB_TILEBLITTING=y
+
+#
+# Frame buffer hardware drivers
+#
+CONFIG_FB_PM2=y
+CONFIG_FB_PM2_FIFO_DISCONNECT=y
+# CONFIG_FB_CYBER2000 is not set
+CONFIG_FB_ARC=m
+CONFIG_FB_IMSTT=y
+CONFIG_FB_UVESA=m
+CONFIG_FB_N411=m
+# CONFIG_FB_HGA is not set
+# CONFIG_FB_S1D13XXX is not set
+CONFIG_FB_NVIDIA=y
+# CONFIG_FB_NVIDIA_I2C is not set
+CONFIG_FB_NVIDIA_DEBUG=y
+CONFIG_FB_NVIDIA_BACKLIGHT=y
+CONFIG_FB_RIVA=m
+CONFIG_FB_RIVA_I2C=y
+# CONFIG_FB_RIVA_DEBUG is not set
+CONFIG_FB_RIVA_BACKLIGHT=y
+CONFIG_FB_LE80578=y
+CONFIG_FB_CARILLO_RANCH=m
+CONFIG_FB_INTEL=y
+CONFIG_FB_INTEL_DEBUG=y
+CONFIG_FB_INTEL_I2C=y
+# CONFIG_FB_MATROX is not set
+# CONFIG_FB_ATY128 is not set
+CONFIG_FB_ATY=m
+CONFIG_FB_ATY_CT=y
+# CONFIG_FB_ATY_GENERIC_LCD is not set
+# CONFIG_FB_ATY_GX is not set
+CONFIG_FB_ATY_BACKLIGHT=y
+CONFIG_FB_S3=y
+# CONFIG_FB_SAVAGE is not set
+CONFIG_FB_SIS=m
+# CONFIG_FB_SIS_300 is not set
+CONFIG_FB_SIS_315=y
+CONFIG_FB_VIA=y
+CONFIG_FB_NEOMAGIC=m
+# CONFIG_FB_KYRO is not set
+# CONFIG_FB_3DFX is not set
+CONFIG_FB_VOODOO1=y
+CONFIG_FB_VT8623=y
+CONFIG_FB_TRIDENT=y
+CONFIG_FB_ARK=y
+CONFIG_FB_PM3=y
+# CONFIG_FB_CARMINE is not set
+CONFIG_FB_GEODE=y
+CONFIG_FB_GEODE_LX=y
+CONFIG_FB_GEODE_GX=y
+CONFIG_FB_GEODE_GX1=y
+CONFIG_FB_TMIO=y
+# CONFIG_FB_TMIO_ACCELL is not set
+CONFIG_FB_SM501=m
+CONFIG_FB_METRONOME=y
+CONFIG_FB_MB862XX=y
+# CONFIG_FB_MB862XX_PCI_GDC is not set
+CONFIG_FB_BROADSHEET=y
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+CONFIG_LCD_CLASS_DEVICE=y
+CONFIG_LCD_LTV350QV=y
+CONFIG_LCD_ILI9320=m
+# CONFIG_LCD_TDO24M is not set
+CONFIG_LCD_VGG2432A4=m
+CONFIG_LCD_PLATFORM=y
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+# CONFIG_BACKLIGHT_GENERIC is not set
+CONFIG_BACKLIGHT_PROGEAR=m
+CONFIG_BACKLIGHT_CARILLO_RANCH=y
+CONFIG_BACKLIGHT_DA903X=y
+CONFIG_BACKLIGHT_MBP_NVIDIA=y
+# CONFIG_BACKLIGHT_SAHARA is not set
+
+#
+# Display device support
+#
+CONFIG_DISPLAY_SUPPORT=y
+
+#
+# Display hardware drivers
+#
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=y
+CONFIG_VGACON_SOFT_SCROLLBACK=y
+CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=64
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_LOGO=y
+CONFIG_LOGO_LINUX_MONO=y
+CONFIG_LOGO_LINUX_VGA16=y
+# CONFIG_LOGO_LINUX_CLUT224 is not set
+CONFIG_SOUND=y
+CONFIG_SOUND_OSS_CORE=y
+CONFIG_SOUND_OSS_CORE_PRECLAIM=y
+CONFIG_SND=y
+CONFIG_SND_TIMER=y
+CONFIG_SND_PCM=y
+CONFIG_SND_HWDEP=m
+CONFIG_SND_JACK=y
+CONFIG_SND_SEQUENCER=y
+CONFIG_SND_SEQ_DUMMY=m
+CONFIG_SND_OSSEMUL=y
+# CONFIG_SND_MIXER_OSS is not set
+CONFIG_SND_PCM_OSS=y
+CONFIG_SND_PCM_OSS_PLUGINS=y
+# CONFIG_SND_SEQUENCER_OSS is not set
+CONFIG_SND_HRTIMER=m
+CONFIG_SND_SEQ_HRTIMER_DEFAULT=y
+CONFIG_SND_DYNAMIC_MINORS=y
+CONFIG_SND_SUPPORT_OLD_API=y
+# CONFIG_SND_VERBOSE_PROCFS is not set
+CONFIG_SND_VERBOSE_PRINTK=y
+CONFIG_SND_DEBUG=y
+# CONFIG_SND_DEBUG_VERBOSE is not set
+CONFIG_SND_DMA_SGBUF=y
+# CONFIG_SND_RAWMIDI_SEQ is not set
+# CONFIG_SND_OPL3_LIB_SEQ is not set
+# CONFIG_SND_OPL4_LIB_SEQ is not set
+# CONFIG_SND_SBAWE_SEQ is not set
+# CONFIG_SND_EMU10K1_SEQ is not set
+CONFIG_SND_VX_LIB=m
+# CONFIG_SND_DRIVERS is not set
+# CONFIG_SND_PCI is not set
+CONFIG_SND_SPI=y
+# CONFIG_SND_USB is not set
+CONFIG_SND_PCMCIA=y
+CONFIG_SND_VXPOCKET=m
+# CONFIG_SND_PDAUDIOCF is not set
+CONFIG_SND_SOC=y
+CONFIG_SND_SOC_I2C_AND_SPI=y
+CONFIG_SND_SOC_ALL_CODECS=y
+CONFIG_SND_SOC_WM_HUBS=y
+CONFIG_SND_SOC_AD1836=y
+CONFIG_SND_SOC_AD1938=y
+CONFIG_SND_SOC_AD73311=y
+CONFIG_SND_SOC_AK4104=y
+CONFIG_SND_SOC_AK4535=y
+CONFIG_SND_SOC_AK4642=y
+CONFIG_SND_SOC_CS4270=y
+CONFIG_SND_SOC_L3=y
+CONFIG_SND_SOC_PCM3008=y
+CONFIG_SND_SOC_SPDIF=y
+CONFIG_SND_SOC_SSM2602=y
+CONFIG_SND_SOC_TLV320AIC23=y
+CONFIG_SND_SOC_TLV320AIC26=y
+CONFIG_SND_SOC_TLV320AIC3X=y
+CONFIG_SND_SOC_TWL4030=y
+CONFIG_SND_SOC_UDA134X=y
+CONFIG_SND_SOC_UDA1380=y
+CONFIG_SND_SOC_WM8400=y
+CONFIG_SND_SOC_WM8510=y
+CONFIG_SND_SOC_WM8523=y
+CONFIG_SND_SOC_WM8580=y
+CONFIG_SND_SOC_WM8728=y
+CONFIG_SND_SOC_WM8731=y
+CONFIG_SND_SOC_WM8750=y
+CONFIG_SND_SOC_WM8753=y
+CONFIG_SND_SOC_WM8776=y
+CONFIG_SND_SOC_WM8900=y
+CONFIG_SND_SOC_WM8903=y
+CONFIG_SND_SOC_WM8940=y
+CONFIG_SND_SOC_WM8960=y
+CONFIG_SND_SOC_WM8961=y
+CONFIG_SND_SOC_WM8971=y
+CONFIG_SND_SOC_WM8974=y
+CONFIG_SND_SOC_WM8988=y
+CONFIG_SND_SOC_WM8990=y
+CONFIG_SND_SOC_WM8993=y
+CONFIG_SND_SOC_WM9081=y
+CONFIG_SND_SOC_MAX9877=y
+CONFIG_SOUND_PRIME=m
+# CONFIG_SOUND_OSS is not set
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=m
+CONFIG_HID_DEBUG=y
+CONFIG_HIDRAW=y
+
+#
+# USB Input Devices
+#
+CONFIG_USB_HID=m
+CONFIG_HID_PID=y
+# CONFIG_USB_HIDDEV is not set
+
+#
+# USB HID Boot Protocol drivers
+#
+CONFIG_USB_KBD=y
+CONFIG_USB_MOUSE=y
+
+#
+# Special HID drivers
+#
+# CONFIG_HID_A4TECH is not set
+CONFIG_HID_APPLE=m
+CONFIG_HID_BELKIN=m
+CONFIG_HID_CHERRY=m
+CONFIG_HID_CHICONY=m
+CONFIG_HID_CYPRESS=m
+# CONFIG_HID_DRAGONRISE is not set
+CONFIG_HID_EZKEY=m
+CONFIG_HID_KYE=m
+CONFIG_HID_GYRATION=m
+CONFIG_HID_KENSINGTON=m
+CONFIG_HID_LOGITECH=m
+# CONFIG_LOGITECH_FF is not set
+CONFIG_LOGIRUMBLEPAD2_FF=y
+CONFIG_HID_MICROSOFT=m
+CONFIG_HID_MONTEREY=m
+# CONFIG_HID_NTRIG is not set
+CONFIG_HID_PANTHERLORD=m
+CONFIG_PANTHERLORD_FF=y
+# CONFIG_HID_PETALYNX is not set
+CONFIG_HID_SAMSUNG=m
+CONFIG_HID_SONY=m
+CONFIG_HID_SUNPLUS=m
+CONFIG_HID_GREENASIA=m
+# CONFIG_GREENASIA_FF is not set
+CONFIG_HID_SMARTJOYPLUS=m
+CONFIG_SMARTJOYPLUS_FF=y
+CONFIG_HID_TOPSEED=m
+CONFIG_HID_THRUSTMASTER=m
+CONFIG_THRUSTMASTER_FF=y
+CONFIG_HID_ZEROPLUS=m
+# CONFIG_ZEROPLUS_FF is not set
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+CONFIG_USB_DEBUG=y
+CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+
+#
+# Miscellaneous USB options
+#
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_DEVICE_CLASS=y
+CONFIG_USB_DYNAMIC_MINORS=y
+# CONFIG_USB_OTG is not set
+# CONFIG_USB_OTG_WHITELIST is not set
+CONFIG_USB_OTG_BLACKLIST_HUB=y
+CONFIG_USB_MON=y
+CONFIG_USB_WUSB=y
+# CONFIG_USB_WUSB_CBAF is not set
+
+#
+# USB Host Controller Drivers
+#
+# CONFIG_USB_C67X00_HCD is not set
+CONFIG_USB_XHCI_HCD=y
+# CONFIG_USB_XHCI_HCD_DEBUGGING is not set
+CONFIG_USB_EHCI_HCD=y
+CONFIG_USB_EHCI_ROOT_HUB_TT=y
+CONFIG_USB_EHCI_TT_NEWSCHED=y
+CONFIG_USB_OXU210HP_HCD=y
+CONFIG_USB_ISP116X_HCD=y
+CONFIG_USB_ISP1760_HCD=m
+CONFIG_USB_OHCI_HCD=y
+CONFIG_USB_OHCI_HCD_SSB=y
+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+CONFIG_USB_UHCI_HCD=y
+CONFIG_USB_SL811_HCD=m
+# CONFIG_USB_SL811_CS is not set
+# CONFIG_USB_R8A66597_HCD is not set
+CONFIG_USB_HWA_HCD=y
+
+#
+# USB Device Class drivers
+#
+CONFIG_USB_ACM=m
+# CONFIG_USB_PRINTER is not set
+CONFIG_USB_WDM=m
+# CONFIG_USB_TMC is not set
+
+#
+# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
+#
+
+#
+# also be needed; see USB_STORAGE Help for more info
+#
+CONFIG_USB_STORAGE=y
+CONFIG_USB_STORAGE_DEBUG=y
+# CONFIG_USB_STORAGE_DATAFAB is not set
+# CONFIG_USB_STORAGE_FREECOM is not set
+CONFIG_USB_STORAGE_ISD200=m
+CONFIG_USB_STORAGE_USBAT=m
+CONFIG_USB_STORAGE_SDDR09=m
+CONFIG_USB_STORAGE_SDDR55=y
+# CONFIG_USB_STORAGE_JUMPSHOT is not set
+# CONFIG_USB_STORAGE_ALAUDA is not set
+CONFIG_USB_STORAGE_ONETOUCH=y
+CONFIG_USB_STORAGE_KARMA=y
+CONFIG_USB_STORAGE_CYPRESS_ATACB=y
+CONFIG_USB_LIBUSUAL=y
+
+#
+# USB Imaging devices
+#
+# CONFIG_USB_MDC800 is not set
+CONFIG_USB_MICROTEK=m
+
+#
+# USB port drivers
+#
+# CONFIG_USB_SERIAL is not set
+
+#
+# USB Miscellaneous drivers
+#
+# CONFIG_USB_EMI62 is not set
+CONFIG_USB_EMI26=m
+# CONFIG_USB_ADUTUX is not set
+CONFIG_USB_SEVSEG=y
+CONFIG_USB_RIO500=m
+CONFIG_USB_LEGOTOWER=m
+# CONFIG_USB_LCD is not set
+CONFIG_USB_BERRY_CHARGE=m
+CONFIG_USB_LED=m
+# CONFIG_USB_CYPRESS_CY7C63 is not set
+CONFIG_USB_CYTHERM=y
+CONFIG_USB_IDMOUSE=y
+# CONFIG_USB_FTDI_ELAN is not set
+# CONFIG_USB_APPLEDISPLAY is not set
+# CONFIG_USB_SISUSBVGA is not set
+CONFIG_USB_LD=y
+# CONFIG_USB_TRANCEVIBRATOR is not set
+CONFIG_USB_IOWARRIOR=m
+CONFIG_USB_TEST=m
+CONFIG_USB_ISIGHTFW=m
+# CONFIG_USB_VST is not set
+CONFIG_USB_ATM=m
+# CONFIG_USB_SPEEDTOUCH is not set
+CONFIG_USB_CXACRU=m
+CONFIG_USB_UEAGLEATM=m
+# CONFIG_USB_XUSBATM is not set
+
+#
+# OTG and related infrastructure
+#
+CONFIG_USB_OTG_UTILS=y
+# CONFIG_USB_GPIO_VBUS is not set
+# CONFIG_TWL4030_USB is not set
+CONFIG_NOP_USB_XCEIV=m
+CONFIG_UWB=y
+CONFIG_UWB_HWA=y
+CONFIG_UWB_WHCI=y
+# CONFIG_UWB_WLP is not set
+# CONFIG_UWB_I1480U is not set
+# CONFIG_MMC is not set
+# CONFIG_MEMSTICK is not set
+CONFIG_NEW_LEDS=y
+CONFIG_LEDS_CLASS=y
+
+#
+# LED drivers
+#
+CONFIG_LEDS_ALIX2=y
+CONFIG_LEDS_PCA9532=y
+# CONFIG_LEDS_GPIO is not set
+CONFIG_LEDS_LP3944=y
+# CONFIG_LEDS_CLEVO_MAIL is not set
+CONFIG_LEDS_PCA955X=y
+CONFIG_LEDS_DA903X=y
+# CONFIG_LEDS_DAC124S085 is not set
+CONFIG_LEDS_BD2802=m
+
+#
+# LED Triggers
+#
+CONFIG_LEDS_TRIGGERS=y
+CONFIG_LEDS_TRIGGER_TIMER=m
+# CONFIG_LEDS_TRIGGER_HEARTBEAT is not set
+# CONFIG_LEDS_TRIGGER_BACKLIGHT is not set
+# CONFIG_LEDS_TRIGGER_GPIO is not set
+CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
+
+#
+# iptables trigger is under Netfilter config (LED target)
+#
+CONFIG_ACCESSIBILITY=y
+CONFIG_A11Y_BRAILLE_CONSOLE=y
+# CONFIG_INFINIBAND is not set
+CONFIG_EDAC=y
+
+#
+# Reporting subsystems
+#
+CONFIG_EDAC_DEBUG=y
+CONFIG_EDAC_DEBUG_VERBOSE=y
+# CONFIG_EDAC_MM_EDAC is not set
+CONFIG_RTC_LIB=m
+CONFIG_RTC_CLASS=m
+
+#
+# RTC interfaces
+#
+CONFIG_RTC_INTF_SYSFS=y
+# CONFIG_RTC_INTF_PROC is not set
+CONFIG_RTC_INTF_DEV=y
+CONFIG_RTC_INTF_DEV_UIE_EMUL=y
+CONFIG_RTC_DRV_TEST=m
+
+#
+# I2C RTC drivers
+#
+CONFIG_RTC_DRV_DS1307=m
+CONFIG_RTC_DRV_DS1374=m
+CONFIG_RTC_DRV_DS1672=m
+CONFIG_RTC_DRV_MAX6900=m
+CONFIG_RTC_DRV_RS5C372=m
+# CONFIG_RTC_DRV_ISL1208 is not set
+CONFIG_RTC_DRV_X1205=m
+# CONFIG_RTC_DRV_PCF8563 is not set
+# CONFIG_RTC_DRV_PCF8583 is not set
+CONFIG_RTC_DRV_M41T80=m
+CONFIG_RTC_DRV_M41T80_WDT=y
+CONFIG_RTC_DRV_TWL4030=m
+CONFIG_RTC_DRV_S35390A=m
+CONFIG_RTC_DRV_FM3130=m
+CONFIG_RTC_DRV_RX8581=m
+CONFIG_RTC_DRV_RX8025=m
+
+#
+# SPI RTC drivers
+#
+CONFIG_RTC_DRV_M41T94=m
+# CONFIG_RTC_DRV_DS1305 is not set
+CONFIG_RTC_DRV_DS1390=m
+CONFIG_RTC_DRV_MAX6902=m
+CONFIG_RTC_DRV_R9701=m
+CONFIG_RTC_DRV_RS5C348=m
+CONFIG_RTC_DRV_DS3234=m
+
+#
+# Platform RTC drivers
+#
+# CONFIG_RTC_DRV_CMOS is not set
+CONFIG_RTC_DRV_DS1286=m
+CONFIG_RTC_DRV_DS1511=m
+# CONFIG_RTC_DRV_DS1553 is not set
+CONFIG_RTC_DRV_DS1742=m
+CONFIG_RTC_DRV_STK17TA8=m
+CONFIG_RTC_DRV_M48T86=m
+CONFIG_RTC_DRV_M48T35=m
+# CONFIG_RTC_DRV_M48T59 is not set
+CONFIG_RTC_DRV_BQ4802=m
+CONFIG_RTC_DRV_V3020=m
+CONFIG_RTC_DRV_PCF50633=m
+
+#
+# on-CPU RTC drivers
+#
+CONFIG_DMADEVICES=y
+
+#
+# DMA Devices
+#
+CONFIG_INTEL_IOATDMA=y
+CONFIG_DMA_ENGINE=y
+
+#
+# DMA Clients
+#
+CONFIG_NET_DMA=y
+CONFIG_ASYNC_TX_DMA=y
+# CONFIG_DMATEST is not set
+CONFIG_DCA=y
+CONFIG_AUXDISPLAY=y
+# CONFIG_UIO is not set
+
+#
+# TI VLYNQ
+#
+CONFIG_X86_PLATFORM_DEVICES=y
+
+#
+# Firmware Drivers
+#
+CONFIG_EDD=y
+# CONFIG_EDD_OFF is not set
+CONFIG_FIRMWARE_MEMMAP=y
+CONFIG_DELL_RBU=m
+CONFIG_DCDBAS=m
+CONFIG_DMIID=y
+CONFIG_ISCSI_IBFT_FIND=y
+CONFIG_ISCSI_IBFT=y
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+# CONFIG_EXT2_FS_XATTR is not set
+CONFIG_EXT2_FS_XIP=y
+CONFIG_EXT3_FS=y
+# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+CONFIG_EXT4_FS=y
+CONFIG_EXT4DEV_COMPAT=y
+CONFIG_EXT4_FS_XATTR=y
+# CONFIG_EXT4_FS_POSIX_ACL is not set
+CONFIG_EXT4_FS_SECURITY=y
+CONFIG_FS_XIP=y
+CONFIG_JBD=y
+CONFIG_JBD_DEBUG=y
+CONFIG_JBD2=y
+CONFIG_JBD2_DEBUG=y
+CONFIG_FS_MBCACHE=y
+CONFIG_REISERFS_FS=m
+CONFIG_REISERFS_CHECK=y
+CONFIG_REISERFS_PROC_INFO=y
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+CONFIG_REISERFS_FS_SECURITY=y
+CONFIG_JFS_FS=y
+CONFIG_JFS_POSIX_ACL=y
+CONFIG_JFS_SECURITY=y
+CONFIG_JFS_DEBUG=y
+# CONFIG_JFS_STATISTICS is not set
+CONFIG_FS_POSIX_ACL=y
+CONFIG_XFS_FS=m
+# CONFIG_XFS_QUOTA is not set
+# CONFIG_XFS_POSIX_ACL is not set
+CONFIG_XFS_RT=y
+CONFIG_XFS_DEBUG=y
+CONFIG_GFS2_FS=m
+CONFIG_GFS2_FS_LOCKING_DLM=y
+CONFIG_OCFS2_FS=y
+CONFIG_OCFS2_FS_O2CB=m
+# CONFIG_OCFS2_FS_USERSPACE_CLUSTER is not set
+# CONFIG_OCFS2_FS_STATS is not set
+CONFIG_OCFS2_DEBUG_MASKLOG=y
+CONFIG_OCFS2_DEBUG_FS=y
+CONFIG_OCFS2_FS_POSIX_ACL=y
+CONFIG_BTRFS_FS=y
+CONFIG_BTRFS_FS_POSIX_ACL=y
+CONFIG_FILE_LOCKING=y
+CONFIG_FSNOTIFY=y
+CONFIG_DNOTIFY=y
+# CONFIG_INOTIFY is not set
+CONFIG_INOTIFY_USER=y
+CONFIG_QUOTA=y
+CONFIG_QUOTA_NETLINK_INTERFACE=y
+CONFIG_PRINT_QUOTA_WARNING=y
+CONFIG_QUOTA_TREE=y
+# CONFIG_QFMT_V1 is not set
+CONFIG_QFMT_V2=y
+CONFIG_QUOTACTL=y
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+CONFIG_FUSE_FS=m
+CONFIG_CUSE=m
+CONFIG_GENERIC_ACL=y
+
+#
+# Caches
+#
+CONFIG_FSCACHE=y
+CONFIG_FSCACHE_STATS=y
+CONFIG_FSCACHE_HISTOGRAM=y
+# CONFIG_FSCACHE_DEBUG is not set
+# CONFIG_CACHEFILES is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=m
+CONFIG_JOLIET=y
+CONFIG_ZISOFS=y
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=m
+# CONFIG_MSDOS_FS is not set
+CONFIG_VFAT_FS=m
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+CONFIG_NTFS_FS=y
+CONFIG_NTFS_DEBUG=y
+CONFIG_NTFS_RW=y
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+# CONFIG_PROC_KCORE is not set
+CONFIG_PROC_VMCORE=y
+# CONFIG_PROC_SYSCTL is not set
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_TMPFS_POSIX_ACL=y
+CONFIG_HUGETLBFS=y
+CONFIG_HUGETLB_PAGE=y
+CONFIG_CONFIGFS_FS=y
+CONFIG_MISC_FILESYSTEMS=y
+CONFIG_ADFS_FS=m
+CONFIG_ADFS_FS_RW=y
+CONFIG_AFFS_FS=y
+CONFIG_ECRYPT_FS=y
+CONFIG_HFS_FS=y
+CONFIG_HFSPLUS_FS=y
+CONFIG_BEFS_FS=m
+CONFIG_BEFS_DEBUG=y
+CONFIG_BFS_FS=m
+CONFIG_EFS_FS=y
+# CONFIG_CRAMFS is not set
+CONFIG_SQUASHFS=y
+CONFIG_SQUASHFS_EMBEDDED=y
+CONFIG_SQUASHFS_FRAGMENT_CACHE_SIZE=3
+CONFIG_VXFS_FS=m
+# CONFIG_MINIX_FS is not set
+# CONFIG_OMFS_FS is not set
+CONFIG_HPFS_FS=y
+CONFIG_QNX4FS_FS=y
+CONFIG_ROMFS_FS=y
+CONFIG_ROMFS_BACKED_BY_BLOCK=y
+# CONFIG_ROMFS_BACKED_BY_MTD is not set
+# CONFIG_ROMFS_BACKED_BY_BOTH is not set
+CONFIG_ROMFS_ON_BLOCK=y
+# CONFIG_SYSV_FS is not set
+CONFIG_UFS_FS=y
+CONFIG_UFS_FS_WRITE=y
+CONFIG_UFS_DEBUG=y
+CONFIG_EXOFS_FS=m
+CONFIG_EXOFS_DEBUG=y
+CONFIG_NILFS2_FS=m
+# CONFIG_NETWORK_FILESYSTEMS is not set
+CONFIG_EXPORTFS=m
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+# CONFIG_ACORN_PARTITION is not set
+# CONFIG_OSF_PARTITION is not set
+CONFIG_AMIGA_PARTITION=y
+CONFIG_ATARI_PARTITION=y
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BSD_DISKLABEL=y
+CONFIG_MINIX_SUBPARTITION=y
+# CONFIG_SOLARIS_X86_PARTITION is not set
+CONFIG_UNIXWARE_DISKLABEL=y
+# CONFIG_LDM_PARTITION is not set
+CONFIG_SGI_PARTITION=y
+# CONFIG_ULTRIX_PARTITION is not set
+# CONFIG_SUN_PARTITION is not set
+CONFIG_KARMA_PARTITION=y
+# CONFIG_EFI_PARTITION is not set
+CONFIG_SYSV68_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=y
+# CONFIG_NLS_CODEPAGE_737 is not set
+CONFIG_NLS_CODEPAGE_775=y
+# CONFIG_NLS_CODEPAGE_850 is not set
+CONFIG_NLS_CODEPAGE_852=m
+# CONFIG_NLS_CODEPAGE_855 is not set
+CONFIG_NLS_CODEPAGE_857=m
+CONFIG_NLS_CODEPAGE_860=y
+CONFIG_NLS_CODEPAGE_861=m
+CONFIG_NLS_CODEPAGE_862=m
+CONFIG_NLS_CODEPAGE_863=y
+CONFIG_NLS_CODEPAGE_864=m
+CONFIG_NLS_CODEPAGE_865=m
+CONFIG_NLS_CODEPAGE_866=y
+# CONFIG_NLS_CODEPAGE_869 is not set
+CONFIG_NLS_CODEPAGE_936=y
+CONFIG_NLS_CODEPAGE_950=y
+CONFIG_NLS_CODEPAGE_932=y
+CONFIG_NLS_CODEPAGE_949=m
+# CONFIG_NLS_CODEPAGE_874 is not set
+CONFIG_NLS_ISO8859_8=y
+CONFIG_NLS_CODEPAGE_1250=m
+CONFIG_NLS_CODEPAGE_1251=y
+CONFIG_NLS_ASCII=m
+# CONFIG_NLS_ISO8859_1 is not set
+CONFIG_NLS_ISO8859_2=m
+CONFIG_NLS_ISO8859_3=m
+CONFIG_NLS_ISO8859_4=m
+CONFIG_NLS_ISO8859_5=y
+CONFIG_NLS_ISO8859_6=m
+CONFIG_NLS_ISO8859_7=m
+CONFIG_NLS_ISO8859_9=y
+CONFIG_NLS_ISO8859_13=y
+CONFIG_NLS_ISO8859_14=m
+CONFIG_NLS_ISO8859_15=m
+CONFIG_NLS_KOI8_R=y
+CONFIG_NLS_KOI8_U=m
+CONFIG_NLS_UTF8=y
+CONFIG_DLM=m
+CONFIG_DLM_DEBUG=y
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_PRINTK_TIME=y
+# CONFIG_ALLOW_WARNINGS is not set
+CONFIG_FRAME_WARN=2048
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_UNUSED_SYMBOLS=y
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_SECTION_MISMATCH=y
+CONFIG_DEBUG_KERNEL=y
+# CONFIG_DEBUG_SHIRQ is not set
+# CONFIG_DETECT_SOFTLOCKUP is not set
+# CONFIG_DETECT_HUNG_TASK is not set
+CONFIG_SCHED_DEBUG=y
+CONFIG_SCHEDSTATS=y
+CONFIG_TIMER_STATS=y
+CONFIG_DEBUG_OBJECTS=y
+CONFIG_DEBUG_OBJECTS_SELFTEST=y
+CONFIG_DEBUG_OBJECTS_FREE=y
+CONFIG_DEBUG_OBJECTS_TIMERS=y
+CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT=1
+CONFIG_SLUB_DEBUG_ON=y
+CONFIG_SLUB_STATS=y
+CONFIG_DEBUG_PREEMPT=y
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_RT_MUTEX_TESTER is not set
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_LOCK_ALLOC=y
+CONFIG_PROVE_LOCKING=y
+CONFIG_LOCKDEP=y
+CONFIG_LOCK_STAT=y
+# CONFIG_DEBUG_LOCKDEP is not set
+CONFIG_TRACE_IRQFLAGS=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
+CONFIG_STACKTRACE=y
+CONFIG_DEBUG_BUGVERBOSE=y
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_VIRTUAL is not set
+# CONFIG_DEBUG_WRITECOUNT is not set
+# CONFIG_DEBUG_MEMORY_INIT is not set
+CONFIG_DEBUG_LIST=y
+# CONFIG_DEBUG_SG is not set
+CONFIG_DEBUG_NOTIFIERS=y
+CONFIG_DEBUG_CREDENTIALS=y
+CONFIG_ARCH_WANT_FRAME_POINTERS=y
+CONFIG_FRAME_POINTER=y
+CONFIG_BOOT_PRINTK_DELAY=y
+CONFIG_RCU_TORTURE_TEST=m
+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+CONFIG_BACKTRACE_SELF_TEST=y
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_LATENCYTOP is not set
+# CONFIG_SYSCTL_SYSCALL_CHECK is not set
+# CONFIG_DEBUG_PAGEALLOC is not set
+CONFIG_USER_STACKTRACE_SUPPORT=y
+CONFIG_NOP_TRACER=y
+CONFIG_HAVE_FTRACE_NMI_ENTER=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
+CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
+CONFIG_TRACER_MAX_TRACE=y
+CONFIG_RING_BUFFER=y
+CONFIG_FTRACE_NMI_ENTER=y
+CONFIG_EVENT_TRACING=y
+CONFIG_CONTEXT_SWITCH_TRACER=y
+CONFIG_RING_BUFFER_ALLOW_SWAP=y
+CONFIG_TRACING=y
+CONFIG_GENERIC_TRACER=y
+CONFIG_TRACING_SUPPORT=y
+CONFIG_FTRACE=y
+CONFIG_FUNCTION_TRACER=y
+# CONFIG_FUNCTION_GRAPH_TRACER is not set
+CONFIG_IRQSOFF_TRACER=y
+CONFIG_PREEMPT_TRACER=y
+# CONFIG_SYSPROF_TRACER is not set
+# CONFIG_SCHED_TRACER is not set
+CONFIG_FTRACE_SYSCALLS=y
+CONFIG_BOOT_TRACER=y
+CONFIG_BRANCH_PROFILE_NONE=y
+# CONFIG_PROFILE_ANNOTATED_BRANCHES is not set
+# CONFIG_PROFILE_ALL_BRANCHES is not set
+CONFIG_POWER_TRACER=y
+CONFIG_KSYM_TRACER=y
+CONFIG_PROFILE_KSYM_TRACER=y
+CONFIG_STACK_TRACER=y
+# CONFIG_KMEMTRACE is not set
+# CONFIG_WORKQUEUE_TRACER is not set
+# CONFIG_BLK_DEV_IO_TRACE is not set
+CONFIG_DYNAMIC_FTRACE=y
+CONFIG_FUNCTION_PROFILER=y
+CONFIG_FTRACE_MCOUNT_RECORD=y
+CONFIG_FTRACE_SELFTEST=y
+CONFIG_FTRACE_STARTUP_TEST=y
+CONFIG_MMIOTRACE=y
+CONFIG_MMIOTRACE_TEST=m
+CONFIG_PROVIDE_OHCI1394_DMA_INIT=y
+# CONFIG_DYNAMIC_DEBUG is not set
+# CONFIG_DMA_API_DEBUG is not set
+CONFIG_SAMPLES=y
+CONFIG_SAMPLE_TRACEPOINTS=m
+CONFIG_SAMPLE_TRACE_EVENTS=m
+# CONFIG_SAMPLE_KOBJECT is not set
+CONFIG_SAMPLE_HW_BREAKPOINT=m
+CONFIG_HAVE_ARCH_KGDB=y
+CONFIG_KGDB=y
+CONFIG_KGDB_SERIAL_CONSOLE=y
+CONFIG_KGDB_TESTS=y
+CONFIG_HAVE_ARCH_KMEMCHECK=y
+# CONFIG_STRICT_DEVMEM is not set
+# CONFIG_X86_VERBOSE_BOOTUP is not set
+CONFIG_EARLY_PRINTK=y
+CONFIG_EARLY_PRINTK_DBGP=y
+# CONFIG_DEBUG_STACKOVERFLOW is not set
+CONFIG_DEBUG_STACK_USAGE=y
+# CONFIG_DEBUG_PER_CPU_MAPS is not set
+# CONFIG_X86_PTDUMP is not set
+CONFIG_DEBUG_RODATA=y
+CONFIG_DEBUG_RODATA_TEST=y
+CONFIG_DEBUG_NX_TEST=m
+CONFIG_IOMMU_DEBUG=y
+CONFIG_IOMMU_STRESS=y
+CONFIG_HAVE_MMIOTRACE_SUPPORT=y
+CONFIG_IO_DELAY_TYPE_0X80=0
+CONFIG_IO_DELAY_TYPE_0XED=1
+CONFIG_IO_DELAY_TYPE_UDELAY=2
+CONFIG_IO_DELAY_TYPE_NONE=3
+CONFIG_IO_DELAY_0X80=y
+# CONFIG_IO_DELAY_0XED is not set
+# CONFIG_IO_DELAY_UDELAY is not set
+# CONFIG_IO_DELAY_NONE is not set
+CONFIG_DEFAULT_IO_DELAY_TYPE=0
+CONFIG_DEBUG_BOOT_PARAMS=y
+# CONFIG_CPA_DEBUG is not set
+CONFIG_OPTIMIZE_INLINING=y
+
+#
+# Security options
+#
+CONFIG_KEYS=y
+CONFIG_KEYS_DEBUG_PROC_KEYS=y
+CONFIG_SECURITY=y
+CONFIG_SECURITYFS=y
+CONFIG_SECURITY_NETWORK=y
+CONFIG_SECURITY_NETWORK_XFRM=y
+CONFIG_SECURITY_PATH=y
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+# CONFIG_SECURITY_SELINUX is not set
+CONFIG_SECURITY_TOMOYO=y
+CONFIG_CRYPTO=y
+
+#
+# Crypto core or helper
+#
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_ALGAPI2=y
+CONFIG_CRYPTO_AEAD=y
+CONFIG_CRYPTO_AEAD2=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_BLKCIPHER2=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_HASH2=y
+CONFIG_CRYPTO_RNG=y
+CONFIG_CRYPTO_RNG2=y
+CONFIG_CRYPTO_PCOMP=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_MANAGER2=y
+CONFIG_CRYPTO_GF128MUL=m
+# CONFIG_CRYPTO_NULL is not set
+CONFIG_CRYPTO_WORKQUEUE=y
+CONFIG_CRYPTO_CRYPTD=m
+CONFIG_CRYPTO_AUTHENC=y
+CONFIG_CRYPTO_TEST=m
+
+#
+# Authenticated Encryption with Associated Data
+#
+CONFIG_CRYPTO_CCM=m
+CONFIG_CRYPTO_GCM=m
+CONFIG_CRYPTO_SEQIV=y
+
+#
+# Block modes
+#
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_CTR=m
+CONFIG_CRYPTO_CTS=m
+CONFIG_CRYPTO_ECB=y
+CONFIG_CRYPTO_LRW=m
+CONFIG_CRYPTO_PCBC=y
+# CONFIG_CRYPTO_XTS is not set
+
+#
+# Hash modes
+#
+CONFIG_CRYPTO_HMAC=y
+CONFIG_CRYPTO_XCBC=y
+CONFIG_CRYPTO_VMAC=m
+
+#
+# Digest
+#
+CONFIG_CRYPTO_CRC32C=y
+CONFIG_CRYPTO_CRC32C_INTEL=y
+CONFIG_CRYPTO_GHASH=m
+CONFIG_CRYPTO_MD4=y
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_MICHAEL_MIC=y
+# CONFIG_CRYPTO_RMD128 is not set
+# CONFIG_CRYPTO_RMD160 is not set
+# CONFIG_CRYPTO_RMD256 is not set
+CONFIG_CRYPTO_RMD320=y
+CONFIG_CRYPTO_SHA1=y
+# CONFIG_CRYPTO_SHA256 is not set
+# CONFIG_CRYPTO_SHA512 is not set
+# CONFIG_CRYPTO_TGR192 is not set
+# CONFIG_CRYPTO_WP512 is not set
+
+#
+# Ciphers
+#
+CONFIG_CRYPTO_AES=y
+# CONFIG_CRYPTO_AES_X86_64 is not set
+# CONFIG_CRYPTO_AES_NI_INTEL is not set
+CONFIG_CRYPTO_ANUBIS=m
+CONFIG_CRYPTO_ARC4=y
+CONFIG_CRYPTO_BLOWFISH=y
+CONFIG_CRYPTO_CAMELLIA=y
+CONFIG_CRYPTO_CAST5=m
+CONFIG_CRYPTO_CAST6=m
+CONFIG_CRYPTO_DES=y
+CONFIG_CRYPTO_FCRYPT=y
+CONFIG_CRYPTO_KHAZAD=m
+# CONFIG_CRYPTO_SALSA20 is not set
+CONFIG_CRYPTO_SALSA20_X86_64=y
+# CONFIG_CRYPTO_SEED is not set
+CONFIG_CRYPTO_SERPENT=y
+# CONFIG_CRYPTO_TEA is not set
+CONFIG_CRYPTO_TWOFISH=y
+CONFIG_CRYPTO_TWOFISH_COMMON=y
+CONFIG_CRYPTO_TWOFISH_X86_64=m
+
+#
+# Compression
+#
+CONFIG_CRYPTO_DEFLATE=m
+CONFIG_CRYPTO_ZLIB=y
+# CONFIG_CRYPTO_LZO is not set
+
+#
+# Random Number Generation
+#
+# CONFIG_CRYPTO_ANSI_CPRNG is not set
+# CONFIG_CRYPTO_HW is not set
+CONFIG_HAVE_KVM=y
+CONFIG_HAVE_KVM_IRQCHIP=y
+CONFIG_VIRTUALIZATION=y
+CONFIG_KVM=m
+CONFIG_KVM_INTEL=m
+CONFIG_KVM_AMD=m
+# CONFIG_KVM_TRACE is not set
+CONFIG_VIRTIO=y
+CONFIG_VIRTIO_RING=y
+CONFIG_VIRTIO_PCI=y
+CONFIG_VIRTIO_BALLOON=m
+CONFIG_BINARY_PRINTF=y
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_GENERIC_FIND_FIRST_BIT=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_FIND_LAST_BIT=y
+CONFIG_CRC_CCITT=m
+CONFIG_CRC16=y
+CONFIG_CRC_T10DIF=m
+CONFIG_CRC_ITU_T=m
+CONFIG_CRC32=y
+CONFIG_CRC7=m
+CONFIG_LIBCRC32C=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
+CONFIG_DECOMPRESS_GZIP=y
+CONFIG_DECOMPRESS_BZIP2=y
+CONFIG_DECOMPRESS_LZMA=y
+CONFIG_TEXTSEARCH=y
+CONFIG_TEXTSEARCH_KMP=y
+CONFIG_TEXTSEARCH_BM=y
+CONFIG_TEXTSEARCH_FSM=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+CONFIG_CHECK_SIGNATURE=y
+CONFIG_CPUMASK_OFFSTACK=y
+CONFIG_NLATTR=y
+CONFIG_FORCE_SUCCESSFUL_BUILD=y
+CONFIG_FORCE_MINIMAL_CONFIG=y
+CONFIG_FORCE_MINIMAL_CONFIG_64=y
+CONFIG_FORCE_MINIMAL_CONFIG_PHYS=y
+
+--azLHFNyN32YCQGCU
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: attachment; filename="crash.log"
+Content-Transfer-Encoding: 8bit
+
+[    0.000000] Linux version 2.6.31-tip-02377-g78907f0-dirty (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #88876 SMP PREEMPT Tue Sep 15 05:03:49 CEST 2009
+[    0.000000] Command line: root=/dev/sda1 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200 console=tty debug initcall_debug apic=verbose sysrq_always_enabled 5 ignore_loglevel no_hz=off nmi_watchdog=0 nolapic_timer hpet=disable idle=mwait idle=poll highmem=512m nopat notsc acpi=off pci=nomsi
+[    0.000000] bootconsole [earlyser0] enabled
+[    0.000000] debug: ignoring loglevel setting.
+[    0.000000] using polling idle threads.
+[    0.000000] PAT support disabled.
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   Centaur CentaurHauls
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000003ff30000 (usable)
+[    0.000000]  BIOS-e820: 000000003ff30000 - 000000003ff40000 (ACPI data)
+[    0.000000]  BIOS-e820: 000000003ff40000 - 000000003fff0000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003fff0000 - 0000000040000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
+[    0.000000] DMI 2.3 present.
+[    0.000000] AMI BIOS detected: BIOS may corrupt low RAM, working around it.
+[    0.000000] e820 update range: 0000000000000000 - 0000000000010000 (usable) ==> (reserved)
+[    0.000000] last_pfn = 0x3ff30 max_arch_pfn = 0x400000000
+[    0.000000] MTRR default type: uncachable
+[    0.000000] MTRR fixed ranges enabled:
+[    0.000000]   00000-9FFFF write-back
+[    0.000000]   A0000-EFFFF uncachable
+[    0.000000]   F0000-FFFFF write-protect
+[    0.000000] MTRR variable ranges enabled:
+[    0.000000]   0 base 0000000000 mask FFC0000000 write-back
+[    0.000000]   1 base 00F8000000 mask FFFC000000 write-combining
+[    0.000000]   2 disabled
+[    0.000000]   3 disabled
+[    0.000000]   4 disabled
+[    0.000000]   5 disabled
+[    0.000000]   6 disabled
+[    0.000000]   7 disabled
+[    0.000000] Scanning 0 areas for low memory corruption
+[    0.000000] modified physical RAM map:
+[    0.000000]  modified: 0000000000000000 - 0000000000010000 (reserved)
+[    0.000000]  modified: 0000000000010000 - 000000000009fc00 (usable)
+[    0.000000]  modified: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  modified: 00000000000e4000 - 0000000000100000 (reserved)
+[    0.000000]  modified: 0000000000100000 - 000000003ff30000 (usable)
+[    0.000000]  modified: 000000003ff30000 - 000000003ff40000 (ACPI data)
+[    0.000000]  modified: 000000003ff40000 - 000000003fff0000 (ACPI NVS)
+[    0.000000]  modified: 000000003fff0000 - 0000000040000000 (reserved)
+[    0.000000]  modified: 00000000fff80000 - 0000000100000000 (reserved)
+[    0.000000] initial memory mapped : 0 - 20000000
+[    0.000000] init_memory_mapping: 0000000000000000-000000003ff30000
+[    0.000000]  0000000000 - 003fe00000 page 2M
+[    0.000000]  003fe00000 - 003ff30000 page 4k
+[    0.000000] kernel direct mapping tables up to 3ff30000 @ 10000-13000
+[    0.000000] Scanning NUMA topology in Northbridge 24
+[    0.000000] No NUMA configuration found
+[    0.000000] Faking a node at 0000000000000000-000000003ff30000
+[    0.000000] Bootmem setup node 0 0000000000000000-000000003ff30000
+[    0.000000]   NODE_DATA [0000000000011000 - 000000000004ffff]
+[    0.000000]   bootmap [0000000000050000 -  0000000000057fe7] pages 8
+[    0.000000] (6 early reservations) ==> bootmem [0000000000 - 003ff30000]
+[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+[    0.000000]   #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
+[    0.000000]   #2 [0001000000 - 0002fa0ff0]    TEXT DATA BSS ==> [0001000000 - 0002fa0ff0]
+[    0.000000]   #3 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
+[    0.000000]   #4 [0002fa1000 - 0002fa1290]              BRK ==> [0002fa1000 - 0002fa1290]
+[    0.000000]   #5 [0000010000 - 0000011000]          PGTABLE ==> [0000010000 - 0000011000]
+[    0.000000] Scan SMP from ffff880000000000 for 1024 bytes.
+[    0.000000] Scan SMP from ffff88000009fc00 for 1024 bytes.
+[    0.000000] Scan SMP from ffff8800000f0000 for 65536 bytes.
+[    0.000000] found SMP MP-table at [ffff8800000ff780] ff780
+[    0.000000]   mpc: f0fc0-f10f8
+[    0.000000]  [ffffea0000000000-ffffea00019fffff] PMD -> [ffff880003400000-ffff880004dfffff] on node 0
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA      0x00000010 -> 0x00001000
+[    0.000000]   DMA32    0x00001000 -> 0x00100000
+[    0.000000]   Normal   0x00100000 -> 0x00100000
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[2] active PFN ranges
+[    0.000000]     0: 0x00000010 -> 0x0000009f
+[    0.000000]     0: 0x00000100 -> 0x0003ff30
+[    0.000000] On node 0 totalpages: 261823
+[    0.000000]   DMA zone: 104 pages used for memmap
+[    0.000000]   DMA zone: 100 pages reserved
+[    0.000000]   DMA zone: 3779 pages, LIFO batch:0
+[    0.000000]   DMA32 zone: 6547 pages used for memmap
+[    0.000000]   DMA32 zone: 251293 pages, LIFO batch:31
+[    0.000000] Looks like a VIA chipset. Disabling IOMMU. Override with iommu=allowed
+[    0.000000] Intel MultiProcessor Specification v1.4
+[    0.000000]   mpc: f0fc0-f10f8
+[    0.000000] MPTABLE: OEM ID: ASUSTeK 
+[    0.000000] MPTABLE: Product ID: K8V000000000
+[    0.000000] MPTABLE: APIC at: 0xFEE00000
+[    0.000000] Processor #0 (Bootup-CPU)
+[    0.000000] Bus #0 is PCI   
+[    0.000000] Bus #1 is PCI   
+[    0.000000] Bus #2 is ISA   
+[    0.000000] I/O APIC #2 Version 3 at 0xFEC00000.
+[    0.000000] Int: type 3, pol 0, trig 0, bus 02, IRQ 00, APIC ID 2, APIC INT 00
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 01, APIC ID 2, APIC INT 01
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 00, APIC ID 2, APIC INT 02
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 03, APIC ID 2, APIC INT 03
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 04, APIC ID 2, APIC INT 04
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 05, APIC ID 2, APIC INT 05
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 06, APIC ID 2, APIC INT 06
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 07, APIC ID 2, APIC INT 07
+[    0.000000] Int: type 0, pol 1, trig 1, bus 02, IRQ 08, APIC ID 2, APIC INT 08
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 09, APIC ID 2, APIC INT 09
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 0a, APIC ID 2, APIC INT 0a
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 0b, APIC ID 2, APIC INT 0b
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 0c, APIC ID 2, APIC INT 0c
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 0d, APIC ID 2, APIC INT 0d
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 0e, APIC ID 2, APIC INT 0e
+[    0.000000] Int: type 0, pol 0, trig 0, bus 02, IRQ 0f, APIC ID 2, APIC INT 0f
+[    0.000000] Int: type 0, pol 3, trig 3, bus 01, IRQ 00, APIC ID 2, APIC INT 10
+[    0.000000] Int: type 0, pol 3, trig 3, bus 00, IRQ 46, APIC ID 2, APIC INT 16
+[    0.000000] Int: type 0, pol 3, trig 3, bus 00, IRQ 3d, APIC ID 2, APIC INT 14
+[    0.000000] Int: type 0, pol 3, trig 3, bus 00, IRQ 40, APIC ID 2, APIC INT 15
+[    0.000000] Int: type 0, pol 3, trig 3, bus 00, IRQ 41, APIC ID 2, APIC INT 15
+[    0.000000] Int: type 0, pol 3, trig 3, bus 00, IRQ 42, APIC ID 2, APIC INT 15
+[    0.000000] Int: type 0, pol 3, trig 3, bus 00, IRQ 34, APIC ID 2, APIC INT 12
+[    0.000000] Int: type 0, pol 3, trig 3, bus 00, IRQ 1c, APIC ID 2, APIC INT 10
+[    0.000000] Int: type 0, pol 3, trig 3, bus 00, IRQ 28, APIC ID 2, APIC INT 11
+[    0.000000] Lint: type 3, pol 0, trig 0, bus 00, IRQ 00, APIC ID ff, APIC LINT 00
+[    0.000000] Lint: type 1, pol 0, trig 0, bus 00, IRQ 00, APIC ID ff, APIC LINT 01
+[    0.000000] Processors: 1
+[    0.000000] SMP: Allowing 1 CPUs, 0 hotplug CPUs
+[    0.000000] mapped APIC to ffffffffff5fc000 (fee00000)
+[    0.000000] mapped IOAPIC to ffffffffff5fb000 (fec00000)
+[    0.000000] nr_irqs_gsi: 24
+[    0.000000] Allocating PCI resources starting at 40000000 (gap: 40000000:bff80000)
+[    0.000000] Booting paravirtualized kernel on bare hardware
+[    0.000000] NR_CPUS:4096 nr_cpumask_bits:1 nr_cpu_ids:1 nr_node_ids:1
+[    0.000000] PERCPU: Embedded 479 pages at ffff880003045000, static data 1929376 bytes
+[    0.000000] Built 1 zonelists in Node order, mobility grouping on.  Total pages: 255072
+[    0.000000] Policy zone: DMA32
+[    0.000000] Kernel command line: root=/dev/sda1 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200 console=tty debug initcall_debug apic=verbose sysrq_always_enabled 5 ignore_loglevel no_hz=off nmi_watchdog=0 nolapic_timer hpet=disable idle=mwait idle=poll highmem=512m nopat notsc acpi=off pci=nomsi
+[    0.000000] debug: sysrq always enabled.
+[    0.000000] notsc: Kernel compiled with CONFIG_X86_TSC, cannot disable TSC completely.
+[    0.000000] PID hash table entries: 4096 (order: 12, 32768 bytes)
+[    0.000000] Initializing CPU#0
+[    0.000000] Memory: 985400k/1047744k available (8666k kernel code, 452k absent, 61892k reserved, 8317k data, 2820k init)
+[    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] Experimental preemptable hierarchical RCU implementation.
+[    0.000000] NR_IRQS:33024 nr_irqs:256
+[    0.000000] Console: colour VGA+ 80x25
+[    0.000000] console [tty0] enabled, bootconsole disabled
+[    0.000000] console [ttyS0] enabled
+[    0.000000] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
+[    0.000000] ... MAX_LOCKDEP_SUBCLASSES:  8
+[    0.000000] ... MAX_LOCK_DEPTH:          48
+[    0.000000] ... MAX_LOCKDEP_KEYS:        8191
+[    0.000000] ... CLASSHASH_SIZE:          4096
+[    0.000000] ... MAX_LOCKDEP_ENTRIES:     16384
+[    0.000000] ... MAX_LOCKDEP_CHAINS:      32768
+[    0.000000] ... CHAINHASH_SIZE:          16384
+[    0.000000]  memory used by lock dependency info: 6367 kB
+[    0.000000]  per task-struct memory footprint: 2688 bytes
+[    0.000000] ------------------------
+[    0.000000] | Locking API testsuite:
+[    0.000000] ----------------------------------------------------------------------------
+[    0.000000]                                  | spin |wlock |rlock |mutex | wsem | rsem |
+[    0.000000]   --------------------------------------------------------------------------
+[    0.000000]                      A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]                     double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]                   initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]                  bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]   --------------------------------------------------------------------------
+[    0.000000]               recursive read-lock:             |  ok  |             |  ok  |
+[    0.000000]            recursive read-lock #2:             |  ok  |             |  ok  |
+[    0.000000]             mixed read-write-lock:             |  ok  |             |  ok  |
+[    0.000000]             mixed write-read-lock:             |  ok  |             |  ok  |
+[    0.000000]   --------------------------------------------------------------------------
+[    0.000000]      hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+[    0.000000]      soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+[    0.000000]      hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+[    0.000000]      soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+[    0.000000]        sirq-safe-A => hirqs-on/12:  ok  |  ok  |  ok  |
+[    0.000000]        sirq-safe-A => hirqs-on/21:  ok  |  ok  |  ok  |
+[    0.000000]          hard-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+[    0.000000]          soft-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+[    0.000000]          hard-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+[    0.000000]          soft-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+[    0.000000]       hard-irq lock-inversion/123:  ok  |  ok  |  ok  |
+[    0.000000]       soft-irq lock-inversion/123:  ok  |  ok  |  ok  |
+[    0.000000]       hard-irq lock-inversion/132:  ok  |  ok  |  ok  |
+[    0.000000]       soft-irq lock-inversion/132:  ok  |  ok  |  ok  |
+[    0.000000]       hard-irq lock-inversion/213:  ok  |  ok  |  ok  |
+[    0.000000]       soft-irq lock-inversion/213:  ok  |  ok  |  ok  |
+[    0.000000]       hard-irq lock-inversion/231:  ok  |  ok  |  ok  |
+[    0.000000]       soft-irq lock-inversion/231:  ok  |  ok  |  ok  |
+[    0.000000]       hard-irq lock-inversion/312:  ok  |  ok  |  ok  |
+[    0.000000]       soft-irq lock-inversion/312:  ok  |  ok  |  ok  |
+[    0.000000]       hard-irq lock-inversion/321:  ok  |  ok  |  ok  |
+[    0.000000]       soft-irq lock-inversion/321:  ok  |  ok  |  ok  |
+[    0.000000]       hard-irq read-recursion/123:  ok  |
+[    0.000000]       soft-irq read-recursion/123:  ok  |
+[    0.000000]       hard-irq read-recursion/132:  ok  |
+[    0.000000]       soft-irq read-recursion/132:  ok  |
+[    0.000000]       hard-irq read-recursion/213:  ok  |
+[    0.000000]       soft-irq read-recursion/213:  ok  |
+[    0.000000]       hard-irq read-recursion/231:  ok  |
+[    0.000000]       soft-irq read-recursion/231:  ok  |
+[    0.000000]       hard-irq read-recursion/312:  ok  |
+[    0.000000]       soft-irq read-recursion/312:  ok  |
+[    0.000000]       hard-irq read-recursion/321:  ok  |
+[    0.000000]       soft-irq read-recursion/321:  ok  |
+[    0.000000] -------------------------------------------------------
+[    0.000000] Good, all 218 testcases passed! |
+[    0.000000] ---------------------------------
+[    0.000000] ODEBUG: 8 of 8 active objects replaced
+[    0.000000] ODEBUG: selftest passed
+[    0.000000] Fast TSC calibration using PIT
+[    0.000000] Detected 2002.510 MHz processor.
+[    0.003999] Calibrating delay loop... 1966.08 BogoMIPS (lpj=983040)
+[    0.027995] Security Framework initialized
+[    0.028995] TOMOYO Linux initialized
+[    0.030995] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
+[    0.032994] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
+[    0.034994] Mount-cache hash table entries: 256
+[    0.039993] CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+[    0.040993] CPU: L2 Cache: 1024K (64 bytes/line)
+[    0.041993] CPU 0/0x0 -> Node 0
+[    0.042993] tseg: 0000000000
+[    0.043993] mce: CPU supports 5 MCE banks
+[    0.044993] Performance Counters: AMD PMU driver.
+[    0.046992] ... version:                 0
+[    0.047992] ... bit width:               48
+[    0.048992] ... generic counters:        4
+[    0.049992] ... value mask:              0000ffffffffffff
+[    0.050992] ... max period:              00007fffffffffff
+[    0.051992] ... fixed-purpose counters:  0
+[    0.052991] ... counter mask:            000000000000000f
+[    0.053991] SMP alternatives: switching to UP code
+[    0.064990] Freeing SMP alternatives: 42k freed
+[    0.065989] ftrace: converting mcount calls to 0f 1f 44 00 00
+[    0.066989] ftrace: allocating 35363 entries in 139 pages
+[    0.070989] Setting APIC routing to flat
+[    0.071989] enabled ExtINT on CPU#0
+[    0.072988] ENABLING IO-APIC IRQs
+[    0.072988] init IO_APIC IRQs
+[    0.072988]  2-0 (apicid-pin) not connected
+[    0.072988] IOAPIC[0]: Set routing entry (2-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
+[    0.072988] IOAPIC[0]: Set routing entry (2-2 -> 0x30 -> IRQ 0 Mode:0 Active:0)
+[    0.072988] IOAPIC[0]: Set routing entry (2-3 -> 0x33 -> IRQ 3 Mode:0 Active:0)
+[    0.074988] IOAPIC[0]: Set routing entry (2-4 -> 0x34 -> IRQ 4 Mode:0 Active:0)
+[    0.075988] IOAPIC[0]: Set routing entry (2-5 -> 0x35 -> IRQ 5 Mode:0 Active:0)
+[    0.077988] IOAPIC[0]: Set routing entry (2-6 -> 0x36 -> IRQ 6 Mode:0 Active:0)
+[    0.078987] IOAPIC[0]: Set routing entry (2-7 -> 0x37 -> IRQ 7 Mode:0 Active:0)
+[    0.080987] IOAPIC[0]: Set routing entry (2-8 -> 0x38 -> IRQ 8 Mode:0 Active:0)
+[    0.081987] IOAPIC[0]: Set routing entry (2-9 -> 0x39 -> IRQ 9 Mode:0 Active:0)
+[    0.083987] IOAPIC[0]: Set routing entry (2-10 -> 0x3a -> IRQ 10 Mode:0 Active:0)
+[    0.084987] IOAPIC[0]: Set routing entry (2-11 -> 0x3b -> IRQ 11 Mode:0 Active:0)
+[    0.085986] IOAPIC[0]: Set routing entry (2-12 -> 0x3c -> IRQ 12 Mode:0 Active:0)
+[    0.086986] IOAPIC[0]: Set routing entry (2-13 -> 0x3d -> IRQ 13 Mode:0 Active:0)
+[    0.087986] IOAPIC[0]: Set routing entry (2-14 -> 0x3e -> IRQ 14 Mode:0 Active:0)
+[    0.088986] IOAPIC[0]: Set routing entry (2-15 -> 0x3f -> IRQ 15 Mode:0 Active:0)
+[    0.089986]   alloc irq_desc for 16 on node 0
+[    0.089986]   alloc kstat_irqs on node 0
+[    0.090986] IOAPIC[0]: Set routing entry (2-16 -> 0x49 -> IRQ 16 Mode:1 Active:1)
+[    0.091985]   alloc irq_desc for 17 on node 0
+[    0.091985]   alloc kstat_irqs on node 0
+[    0.092985] IOAPIC[0]: Set routing entry (2-17 -> 0x51 -> IRQ 17 Mode:1 Active:1)
+[    0.093985]   alloc irq_desc for 18 on node 0
+[    0.093985]   alloc kstat_irqs on node 0
+[    0.094985] IOAPIC[0]: Set routing entry (2-18 -> 0x59 -> IRQ 18 Mode:1 Active:1)
+[    0.095985]  2-19 (apicid-pin) not connected
+[    0.097985]   alloc irq_desc for 20 on node 0
+[    0.097985]   alloc kstat_irqs on node 0
+[    0.098984] IOAPIC[0]: Set routing entry (2-20 -> 0x61 -> IRQ 20 Mode:1 Active:1)
+[    0.099984]   alloc irq_desc for 21 on node 0
+[    0.099984]   alloc kstat_irqs on node 0
+[    0.100984] IOAPIC[0]: Set routing entry (2-21 -> 0x69 -> IRQ 21 Mode:1 Active:1)
+[    0.101984]   alloc irq_desc for 22 on node 0
+[    0.101984]   alloc kstat_irqs on node 0
+[    0.102984] IOAPIC[0]: Set routing entry (2-22 -> 0x71 -> IRQ 22 Mode:1 Active:1)
+[    0.103984]  2-23 (apicid-pin) not connected
+[    0.105983] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=0 pin2=0
+[    0.116982] CPU0: AMD Athlon(tm) 64 Processor 3200+ stepping 08
+[    0.119981] Disabling APIC timer
+[    0.120981] calling  migration_init+0x0/0x55 @ 1
+[    0.122981] initcall migration_init+0x0/0x55 returned 0 after 976 usecs
+[    0.123981] calling  spawn_ksoftirqd+0x0/0x56 @ 1
+[    0.125980] initcall spawn_ksoftirqd+0x0/0x56 returned 0 after 976 usecs
+[    0.126980] calling  init_call_single_data+0x0/0xae @ 1
+[    0.127980] initcall init_call_single_data+0x0/0xae returned 0 after 0 usecs
+[    0.128980] calling  relay_init+0x0/0x8 @ 1
+[    0.129980] initcall relay_init+0x0/0x8 returned 0 after 0 usecs
+[    0.130980] calling  tracer_alloc_buffers+0x0/0x28b @ 1
+[    0.131979] Testing tracer nop: PASSED
+[    0.133979] initcall tracer_alloc_buffers+0x0/0x28b returned 0 after 1952 usecs
+[    0.134979] calling  init_trace_printk+0x0/0x12 @ 1
+[    0.135979] initcall init_trace_printk+0x0/0x12 returned 0 after 0 usecs
+[    0.136979] Brought up 1 CPUs
+[    0.137978] Total of 1 processors activated (1966.08 BogoMIPS).
+[    0.139978] CPU0 attaching NULL sched-domain.
+[    0.141978] device: 'platform': device_add
+[    0.143978] bus: 'platform': registered
+[    0.144977] Registering sysdev class 'cpu'
+[    0.146977] khelper used greatest stack depth: 5760 bytes left
+[    0.147977] Registering sysdev class 'memory'
+[    0.149977] Registering sys device of class 'memory'
+[    0.150977] Registering sys device 'memory0'
+[    0.152976] Registering sys device of class 'memory'
+[    0.153976] Registering sys device 'memory1'
+[    0.154976] Registering sys device of class 'memory'
+[    0.155976] Registering sys device 'memory2'
+[    0.156976] Registering sys device of class 'memory'
+[    0.157975] Registering sys device 'memory3'
+[    0.158975] Registering sys device of class 'memory'
+[    0.159975] Registering sys device 'memory4'
+[    0.161975] Registering sys device of class 'memory'
+[    0.162975] Registering sys device 'memory5'
+[    0.164974] Registering sys device of class 'memory'
+[    0.165974] Registering sys device 'memory6'
+[    0.166974] Registering sys device of class 'memory'
+[    0.167974] Registering sys device 'memory7'
+[    0.172973] calling  init_mmap_min_addr+0x0/0x16 @ 1
+[    0.173973] initcall init_mmap_min_addr+0x0/0x16 returned 0 after 0 usecs
+[    0.174973] calling  init_cpufreq_transition_notifier_list+0x0/0x1b @ 1
+[    0.175973] initcall init_cpufreq_transition_notifier_list+0x0/0x1b returned 0 after 0 usecs
+[    0.176973] calling  net_ns_init+0x0/0xf5 @ 1
+[    0.177972] initcall net_ns_init+0x0/0xf5 returned 0 after 0 usecs
+[    0.178972] calling  cpufreq_tsc+0x0/0x28 @ 1
+[    0.179972] initcall cpufreq_tsc+0x0/0x28 returned 0 after 0 usecs
+[    0.180972] calling  pci_reboot_init+0x0/0x14 @ 1
+[    0.181972] initcall pci_reboot_init+0x0/0x14 returned 0 after 0 usecs
+[    0.182972] calling  init_smp_flush+0x0/0x3e @ 1
+[    0.183971] initcall init_smp_flush+0x0/0x3e returned 0 after 0 usecs
+[    0.184971] calling  sysctl_init+0x0/0x16 @ 1
+[    0.185971] initcall sysctl_init+0x0/0x16 returned 0 after 0 usecs
+[    0.186971] calling  ksysfs_init+0x0/0xbb @ 1
+[    0.187971] initcall ksysfs_init+0x0/0xbb returned 0 after 0 usecs
+[    0.188971] calling  async_init+0x0/0x44 @ 1
+[    0.189971] initcall async_init+0x0/0x44 returned 0 after 0 usecs
+[    0.190970] calling  init_jiffies_clocksource+0x0/0x12 @ 1
+[    0.191970] initcall init_jiffies_clocksource+0x0/0x12 returned 0 after 0 usecs
+[    0.192970] calling  init_hw_breakpoint+0x0/0x12 @ 1
+[    0.194970] initcall init_hw_breakpoint+0x0/0x12 returned 0 after 0 usecs
+[    0.195970] calling  filelock_init+0x0/0x2e @ 1
+[    0.196969] initcall filelock_init+0x0/0x2e returned 0 after 0 usecs
+[    0.197969] calling  init_misc_binfmt+0x0/0x42 @ 1
+[    0.198969] initcall init_misc_binfmt+0x0/0x42 returned 0 after 0 usecs
+[    0.199969] calling  init_script_binfmt+0x0/0x14 @ 1
+[    0.200969] initcall init_script_binfmt+0x0/0x14 returned 0 after 0 usecs
+[    0.201969] calling  init_elf_binfmt+0x0/0x14 @ 1
+[    0.202969] initcall init_elf_binfmt+0x0/0x14 returned 0 after 0 usecs
+[    0.203968] calling  init_compat_elf_binfmt+0x0/0x14 @ 1
+[    0.204968] initcall init_compat_elf_binfmt+0x0/0x14 returned 0 after 0 usecs
+[    0.205968] calling  debugfs_init+0x0/0x5a @ 1
+[    0.206968] initcall debugfs_init+0x0/0x5a returned 0 after 0 usecs
+[    0.207968] calling  securityfs_init+0x0/0x51 @ 1
+[    0.208968] initcall securityfs_init+0x0/0x51 returned 0 after 0 usecs
+[    0.209967] calling  random32_init+0x0/0xd9 @ 1
+[    0.210967] initcall random32_init+0x0/0xd9 returned 0 after 0 usecs
+[    0.211967] calling  regulator_init+0x0/0x2e @ 1
+[    0.212967] regulator: core version 0.5
+[    0.213967] device class 'regulator': registering
+[    0.215967] initcall regulator_init+0x0/0x2e returned 0 after 2929 usecs
+[    0.216966] calling  cpufreq_core_init+0x0/0x81 @ 1
+[    0.217966] initcall cpufreq_core_init+0x0/0x81 returned 0 after 0 usecs
+[    0.219966] calling  virtio_init+0x0/0x2b @ 1
+[    0.220966] bus: 'virtio': registered
+[    0.221966] initcall virtio_init+0x0/0x2b returned 0 after 976 usecs
+[    0.222966] calling  sock_init+0x0/0x5e @ 1
+[    0.223965] initcall sock_init+0x0/0x5e returned 0 after 0 usecs
+[    0.224965] calling  netpoll_init+0x0/0x41 @ 1
+[    0.225965] initcall netpoll_init+0x0/0x41 returned 0 after 0 usecs
+[    0.226965] calling  netlink_proto_init+0x0/0x142 @ 1
+[    0.227965] NET: Registered protocol family 16
+[    0.228965] initcall netlink_proto_init+0x0/0x142 returned 0 after 976 usecs
+[    0.229964] calling  bdi_class_init+0x0/0x41 @ 1
+[    0.230964] device class 'bdi': registering
+[    0.231964] initcall bdi_class_init+0x0/0x41 returned 0 after 976 usecs
+[    0.232964] calling  kobject_uevent_init+0x0/0x54 @ 1
+[    0.233964] initcall kobject_uevent_init+0x0/0x54 returned 0 after 0 usecs
+[    0.234964] calling  pcibus_class_init+0x0/0x19 @ 1
+[    0.235964] device class 'pci_bus': registering
+[    0.236963] initcall pcibus_class_init+0x0/0x19 returned 0 after 976 usecs
+[    0.237963] calling  pci_driver_init+0x0/0x12 @ 1
+[    0.238963] bus: 'pci': registered
+[    0.239963] initcall pci_driver_init+0x0/0x12 returned 0 after 976 usecs
+[    0.240963] calling  lcd_class_init+0x0/0x4d @ 1
+[    0.241963] device class 'lcd': registering
+[    0.242962] initcall lcd_class_init+0x0/0x4d returned 0 after 976 usecs
+[    0.243962] calling  backlight_class_init+0x0/0x5d @ 1
+[    0.244962] device class 'backlight': registering
+[    0.245962] initcall backlight_class_init+0x0/0x5d returned 0 after 976 usecs
+[    0.246962] calling  tty_class_init+0x0/0x31 @ 1
+[    0.247962] device class 'tty': registering
+[    0.248962] initcall tty_class_init+0x0/0x31 returned 0 after 976 usecs
+[    0.249961] calling  vtconsole_class_init+0x0/0xc2 @ 1
+[    0.250961] device class 'vtconsole': registering
+[    0.251961] device: 'vtcon0': device_add
+[    0.252961] initcall vtconsole_class_init+0x0/0xc2 returned 0 after 1952 usecs
+[    0.253961] calling  register_node_type+0x0/0x7e @ 1
+[    0.254961] Registering sysdev class 'node'
+[    0.256960] initcall register_node_type+0x0/0x7e returned 0 after 1952 usecs
+[    0.257960] calling  spi_init+0x0/0xab @ 1
+[    0.258960] bus: 'spi': registered
+[    0.259960] device class 'spi_master': registering
+[    0.260960] initcall spi_init+0x0/0xab returned 0 after 1952 usecs
+[    0.261960] calling  i2c_init+0x0/0x67 @ 1
+[    0.262959] bus: 'i2c': registered
+[    0.264959] device class 'i2c-adapter': registering
+[    0.265959] bus: 'i2c': add driver dummy
+[    0.266959] initcall i2c_init+0x0/0x67 returned 0 after 3905 usecs
+[    0.268958] calling  amd_postcore_init+0x0/0x7a @ 1
+[    0.269958] node 0 link 0: io port [1000, ffffff]
+[    0.270958] TOM: 0000000040000000 aka 1024M
+[    0.271958] node 0 link 0: mmio [a0000, bffff]
+[    0.272958] node 0 link 0: mmio [40000000, fe0bffff]
+[    0.274958] bus: [00,ff] on node 0 link 0
+[    0.275957] bus: 00 index 0 io port: [0, ffff]
+[    0.276957] bus: 00 index 1 mmio: [a0000, bffff]
+[    0.277957] bus: 00 index 2 mmio: [40000000, fcffffffff]
+[    0.278957] initcall amd_postcore_init+0x0/0x7a returned 0 after 8787 usecs
+[    0.280957] calling  arch_kdebugfs_init+0x0/0x2e @ 1
+[    0.281956] initcall arch_kdebugfs_init+0x0/0x2e returned 0 after 0 usecs
+[    0.282956] calling  mtrr_if_init+0x0/0x63 @ 1
+[    0.283956] initcall mtrr_if_init+0x0/0x63 returned 0 after 0 usecs
+[    0.285956] calling  arch_init_ftrace_syscalls+0x0/0xdd @ 1
+[    0.288955] initcall arch_init_ftrace_syscalls+0x0/0xdd returned 0 after 1952 usecs
+[    0.289955] calling  dmi_id_init+0x0/0xce @ 1
+[    0.290955] device class 'dmi': registering
+[    0.292955] khelper used greatest stack depth: 5632 bytes left
+[    0.293955] device: 'id': device_add
+[    0.295954] initcall dmi_id_init+0x0/0xce returned 0 after 4882 usecs
+[    0.296954] calling  dma_bus_init+0x0/0x3f @ 1
+[    0.297954] device class 'dma': registering
+[    0.299954] initcall dma_bus_init+0x0/0x3f returned 0 after 1952 usecs
+[    0.300954] calling  dma_channel_table_init+0x0/0x10e @ 1
+[    0.301953] initcall dma_channel_table_init+0x0/0x10e returned 0 after 0 usecs
+[    0.302953] calling  dca_init+0x0/0x20 @ 1
+[    0.303953] dca service started, version 1.8
+[    0.304953] device class 'dca': registering
+[    0.306953] initcall dca_init+0x0/0x20 returned 0 after 2929 usecs
+[    0.307953] calling  pci_arch_init+0x0/0x40 @ 1
+[    0.308952] PCI: Using configuration type 1 for base access
+[    0.309952] initcall pci_arch_init+0x0/0x40 returned 0 after 976 usecs
+[    0.310952] calling  topology_init+0x0/0xba @ 1
+[    0.311952] Registering sys device of class 'node'
+[    0.312952] Registering sys device 'node0'
+[    0.313952] Registering sys device of class 'cpu'
+[    0.314951] Registering sys device 'cpu0'
+[    0.315951] initcall topology_init+0x0/0xba returned 0 after 3905 usecs
+[    0.316971] calling  mtrr_init_finialize+0x0/0x3d @ 1
+[    0.317991] initcall mtrr_init_finialize+0x0/0x3d returned 0 after 0 usecs
+[    0.319999] calling  param_sysfs_init+0x0/0xd3 @ 1
+[    0.489000] initcall param_sysfs_init+0x0/0xd3 returned 0 after 164062 usecs
+[    0.490000] calling  audit_watch_init+0x0/0x1f @ 1
+[    0.491000] audit: cannot initialize inotify handle
+[    0.492000] initcall audit_watch_init+0x0/0x1f returned 0 after 976 usecs
+[    0.493000] calling  init_slow_work+0x0/0x38 @ 1
+[    0.494000] initcall init_slow_work+0x0/0x38 returned 0 after 0 usecs
+[    0.495000] calling  default_bdi_init+0x0/0xc5 @ 1
+[    0.496000] device: 'default': device_add
+[    0.498000] initcall default_bdi_init+0x0/0xc5 returned 0 after 1953 usecs
+[    0.499000] calling  init_bio+0x0/0xdb @ 1
+[    0.501000] bio: create slab <bio-0> at 0
+[    0.502000] initcall init_bio+0x0/0xdb returned 0 after 976 usecs
+[    0.503000] calling  fsnotify_init+0x0/0x12 @ 1
+[    0.504000] initcall fsnotify_init+0x0/0x12 returned 0 after 0 usecs
+[    0.505000] calling  fsnotify_notification_init+0x0/0x100 @ 1
+[    0.506000] initcall fsnotify_notification_init+0x0/0x100 returned 0 after 0 usecs
+[    0.507000] calling  cryptomgr_init+0x0/0x12 @ 1
+[    0.508000] initcall cryptomgr_init+0x0/0x12 returned 0 after 0 usecs
+[    0.509000] calling  blk_settings_init+0x0/0x2a @ 1
+[    0.510000] initcall blk_settings_init+0x0/0x2a returned 0 after 0 usecs
+[    0.511000] calling  blk_ioc_init+0x0/0x2a @ 1
+[    0.512000] initcall blk_ioc_init+0x0/0x2a returned 0 after 0 usecs
+[    0.513000] calling  blk_softirq_init+0x0/0x66 @ 1
+[    0.514000] initcall blk_softirq_init+0x0/0x66 returned 0 after 0 usecs
+[    0.515000] calling  genhd_device_init+0x0/0x66 @ 1
+[    0.516000] device class 'block': registering
+[    0.518000] initcall genhd_device_init+0x0/0x66 returned 0 after 1953 usecs
+[    0.519000] calling  gpiolib_debugfs_init+0x0/0x24 @ 1
+[    0.520000] initcall gpiolib_debugfs_init+0x0/0x24 returned 0 after 0 usecs
+[    0.521000] calling  mcp23s08_init+0x0/0x12 @ 1
+[    0.522000] bus: 'spi': add driver mcp23s08
+[    0.523000] initcall mcp23s08_init+0x0/0x12 returned 0 after 976 usecs
+[    0.524000] calling  pci_slot_init+0x0/0x4c @ 1
+[    0.525000] initcall pci_slot_init+0x0/0x4c returned 0 after 0 usecs
+[    0.526000] calling  fbmem_init+0x0/0x98 @ 1
+[    0.527000] device class 'graphics': registering
+[    0.529000] initcall fbmem_init+0x0/0x98 returned 0 after 1953 usecs
+[    0.530000] calling  twl4030reg_init+0x0/0x12 @ 1
+[    0.531000] bus: 'platform': add driver twl4030_reg
+[    0.532000] initcall twl4030reg_init+0x0/0x12 returned 0 after 976 usecs
+[    0.533000] calling  wm8400_regulator_init+0x0/0x12 @ 1
+[    0.534000] bus: 'platform': add driver wm8400-regulator
+[    0.535000] initcall wm8400_regulator_init+0x0/0x12 returned 0 after 976 usecs
+[    0.536000] calling  da903x_regulator_init+0x0/0x12 @ 1
+[    0.537000] bus: 'platform': add driver da903x-regulator
+[    0.538000] initcall da903x_regulator_init+0x0/0x12 returned 0 after 976 usecs
+[    0.539000] calling  pcf50633_regulator_init+0x0/0x12 @ 1
+[    0.540000] bus: 'platform': add driver pcf50633-regltr
+[    0.541000] initcall pcf50633_regulator_init+0x0/0x12 returned 0 after 976 usecs
+[    0.542000] calling  misc_init+0x0/0xb7 @ 1
+[    0.543000] device class 'misc': registering
+[    0.544000] initcall misc_init+0x0/0xb7 returned 0 after 976 usecs
+[    0.545000] calling  tifm_init+0x0/0x85 @ 1
+[    0.546000] bus: 'tifm': registered
+[    0.547000] device class 'tifm_adapter': registering
+[    0.548000] initcall tifm_init+0x0/0x85 returned 0 after 1953 usecs
+[    0.549000] calling  wm8400_module_init+0x0/0x33 @ 1
+[    0.550000] bus: 'i2c': add driver WM8400
+[    0.551000] initcall wm8400_module_init+0x0/0x33 returned 0 after 976 usecs
+[    0.552000] calling  tps_init+0x0/0x81 @ 1
+[    0.554000] tps65010: version 2 May 2005
+[    0.555000] bus: 'i2c': add driver tps65010
+[    0.556000] bus: 'i2c': remove driver tps65010
+[    0.557000] driver: 'tps65010': driver_release
+[    0.569000] bus: 'i2c': add driver tps65010
+[    0.570000] bus: 'i2c': remove driver tps65010
+[    0.571000] driver: 'tps65010': driver_release
+[    0.583000] bus: 'i2c': add driver tps65010
+[    0.584000] bus: 'i2c': remove driver tps65010
+[    0.585000] driver: 'tps65010': driver_release
+[    0.586000] tps65010: no chip?
+[    0.587000] initcall tps_init+0x0/0x81 returned -19 after 32226 usecs
+[    0.588000] calling  twl4030_init+0x0/0x14 @ 1
+[    0.589000] bus: 'i2c': add driver twl4030
+[    0.590000] initcall twl4030_init+0x0/0x14 returned 0 after 976 usecs
+[    0.591000] calling  da903x_init+0x0/0x14 @ 1
+[    0.593000] bus: 'i2c': add driver da903x
+[    0.594000] initcall da903x_init+0x0/0x14 returned 0 after 976 usecs
+[    0.595000] calling  pcf50633_init+0x0/0x14 @ 1
+[    0.596000] bus: 'i2c': add driver pcf50633
+[    0.598000] initcall pcf50633_init+0x0/0x14 returned 0 after 1953 usecs
+[    0.599000] calling  init_scsi+0x0/0x81 @ 1
+[    0.601000] device class 'scsi_host': registering
+[    0.603000] bus: 'scsi': registered
+[    0.604000] device class 'scsi_device': registering
+[    0.605000] SCSI subsystem initialized
+[    0.606000] initcall init_scsi+0x0/0x81 returned 0 after 5859 usecs
+[    0.607000] calling  ata_init+0x0/0x8d @ 1
+[    0.609000] libata version 3.00 loaded.
+[    0.610000] initcall ata_init+0x0/0x8d returned 0 after 1953 usecs
+[    0.611000] calling  phy_init+0x0/0x31 @ 1
+[    0.612000] device class 'mdio_bus': registering
+[    0.613000] bus: 'mdio_bus': registered
+[    0.614000] bus: 'mdio_bus': add driver Generic PHY
+[    0.616000] initcall phy_init+0x0/0x31 returned 0 after 3906 usecs
+[    0.617000] calling  usb_init+0x0/0x173 @ 1
+[    0.619000] bus: 'usb': registered
+[    0.620000] bus: 'usb': add driver usbfs
+[    0.622000] usbcore: registered new interface driver usbfs
+[    0.623000] device class 'usb_device': registering
+[    0.625000] bus: 'usb': add driver hub
+[    0.627000] usbcore: registered new interface driver hub
+[    0.628000] bus: 'usb': add driver usb
+[    0.630000] usbcore: registered new device driver usb
+[    0.631000] initcall usb_init+0x0/0x173 returned 0 after 12695 usecs
+[    0.632000] calling  serio_init+0x0/0x89 @ 1
+[    0.633000] bus: 'serio': registered
+[    0.634000] initcall serio_init+0x0/0x89 returned 0 after 976 usecs
+[    0.635000] calling  gameport_init+0x0/0x89 @ 1
+[    0.636000] bus: 'gameport': registered
+[    0.637000] initcall gameport_init+0x0/0x89 returned 0 after 976 usecs
+[    0.638000] calling  input_init+0x0/0x13d @ 1
+[    0.639000] device class 'input': registering
+[    0.640000] initcall input_init+0x0/0x13d returned 0 after 976 usecs
+[    0.641000] calling  init_dvbdev+0x0/0xd7 @ 1
+[    0.642000] device class 'dvb': registering
+[    0.643000] initcall init_dvbdev+0x0/0xd7 returned 0 after 976 usecs
+[    0.644000] calling  hwmon_init+0x0/0x47 @ 1
+[    0.645000] device class 'hwmon': registering
+[    0.646000] initcall hwmon_init+0x0/0x47 returned 0 after 976 usecs
+[    0.647000] calling  thermal_init+0x0/0x58 @ 1
+[    0.648000] device class 'thermal': registering
+[    0.650000] initcall thermal_init+0x0/0x58 returned 0 after 1953 usecs
+[    0.651000] calling  leds_init+0x0/0x40 @ 1
+[    0.652000] device class 'leds': registering
+[    0.653000] initcall leds_init+0x0/0x40 returned 0 after 976 usecs
+[    0.654000] calling  pci_subsys_init+0x0/0x115 @ 1
+[    0.655000] PCI: Probing PCI hardware
+[    0.656000] PCI: Probing PCI hardware (bus 00)
+[    0.657000] device: 'pci0000:00': device_add
+[    0.658000] device: '0000:00': device_add
+[    0.659000] PCI: Scanning bus 0000:00
+[    0.660000] pci 0000:00:00.0: found [1106:3188] class 000600 header type 00
+[    0.661000] pci 0000:00:00.0: calling quirk_no_ata_d3+0x0/0x20
+[    0.662000] pci 0000:00:00.0: reg 10 32bit mmio: [0xf8000000-0xfbffffff]
+[    0.663000] pci 0000:00:00.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.664000] pci 0000:00:01.0: found [1106:b188] class 000604 header type 01
+[    0.665000] pci 0000:00:01.0: calling quirk_no_ata_d3+0x0/0x20
+[    0.666000] pci 0000:00:01.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.667000] pci 0000:00:01.0: supports D1
+[    0.668000] pci 0000:00:07.0: found [1106:3044] class 000c00 header type 00
+[    0.669000] pci 0000:00:07.0: calling quirk_no_ata_d3+0x0/0x20
+[    0.670000] pci 0000:00:07.0: reg 10 32bit mmio: [0xfde00000-0xfde007ff]
+[    0.671000] pci 0000:00:07.0: reg 14 io port: [0xec00-0xec7f]
+[    0.672000] pci 0000:00:07.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.673000] pci 0000:00:07.0: supports D2
+[    0.674000] pci 0000:00:07.0: PME# supported from D2 D3hot D3cold
+[    0.675000] pci 0000:00:07.0: PME# disabled
+[    0.676000] pci 0000:00:0a.0: found [10b7:1700] class 000200 header type 00
+[    0.677000] pci 0000:00:0a.0: reg 10 32bit mmio: [0xfd900000-0xfd903fff]
+[    0.678000] pci 0000:00:0a.0: reg 14 io port: [0xb000-0xb0ff]
+[    0.679000] pci 0000:00:0a.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.680000] pci 0000:00:0a.0: supports D1 D2
+[    0.681000] pci 0000:00:0a.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.682000] pci 0000:00:0a.0: PME# disabled
+[    0.683000] pci 0000:00:0d.0: found [109e:036e] class 000400 header type 00
+[    0.685000] pci 0000:00:0d.0: reg 10 32bit mmio: [0xf7e00000-0xf7e00fff]
+[    0.686000] pci 0000:00:0d.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.687000] pci 0000:00:0d.1: found [109e:0878] class 000480 header type 00
+[    0.688000] pci 0000:00:0d.1: reg 10 32bit mmio: [0xf7f00000-0xf7f00fff]
+[    0.689000] pci 0000:00:0d.1: calling quirk_resource_alignment+0x0/0x1ba
+[    0.690000] pci 0000:00:0f.0: found [1106:3149] class 000104 header type 00
+[    0.691000] pci 0000:00:0f.0: calling quirk_no_ata_d3+0x0/0x20
+[    0.692000] pci 0000:00:0f.0: reg 10 io port: [0xe800-0xe807]
+[    0.693000] pci 0000:00:0f.0: reg 14 io port: [0xe400-0xe403]
+[    0.694000] pci 0000:00:0f.0: reg 18 io port: [0xe000-0xe007]
+[    0.695000] pci 0000:00:0f.0: reg 1c io port: [0xd800-0xd803]
+[    0.696000] pci 0000:00:0f.0: reg 20 io port: [0xd400-0xd40f]
+[    0.697000] pci 0000:00:0f.0: reg 24 io port: [0xd000-0xd0ff]
+[    0.698000] pci 0000:00:0f.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.699000] pci 0000:00:0f.1: found [1106:0571] class 000101 header type 00
+[    0.700000] pci 0000:00:0f.1: calling quirk_no_ata_d3+0x0/0x20
+[    0.701000] pci 0000:00:0f.1: reg 20 io port: [0xfc00-0xfc0f]
+[    0.702000] pci 0000:00:0f.1: calling quirk_resource_alignment+0x0/0x1ba
+[    0.703000] pci 0000:00:10.0: found [1106:3038] class 000c03 header type 00
+[    0.704000] pci 0000:00:10.0: calling quirk_no_ata_d3+0x0/0x20
+[    0.705000] pci 0000:00:10.0: reg 20 io port: [0xb400-0xb41f]
+[    0.706000] pci 0000:00:10.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.707000] pci 0000:00:10.0: supports D1 D2
+[    0.708000] pci 0000:00:10.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.709000] pci 0000:00:10.0: PME# disabled
+[    0.710000] pci 0000:00:10.1: found [1106:3038] class 000c03 header type 00
+[    0.712000] pci 0000:00:10.1: calling quirk_no_ata_d3+0x0/0x20
+[    0.714000] pci 0000:00:10.1: reg 20 io port: [0xb800-0xb81f]
+[    0.715000] pci 0000:00:10.1: calling quirk_resource_alignment+0x0/0x1ba
+[    0.716000] pci 0000:00:10.1: supports D1 D2
+[    0.717000] pci 0000:00:10.1: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.718000] pci 0000:00:10.1: PME# disabled
+[    0.719000] pci 0000:00:10.2: found [1106:3038] class 000c03 header type 00
+[    0.720000] pci 0000:00:10.2: calling quirk_no_ata_d3+0x0/0x20
+[    0.721000] pci 0000:00:10.2: reg 20 io port: [0xc000-0xc01f]
+[    0.722000] pci 0000:00:10.2: calling quirk_resource_alignment+0x0/0x1ba
+[    0.723000] pci 0000:00:10.2: supports D1 D2
+[    0.724000] pci 0000:00:10.2: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.725000] pci 0000:00:10.2: PME# disabled
+[    0.726000] pci 0000:00:10.3: found [1106:3038] class 000c03 header type 00
+[    0.727000] pci 0000:00:10.3: calling quirk_no_ata_d3+0x0/0x20
+[    0.728000] pci 0000:00:10.3: reg 20 io port: [0xc400-0xc41f]
+[    0.729000] pci 0000:00:10.3: calling quirk_resource_alignment+0x0/0x1ba
+[    0.730000] pci 0000:00:10.3: supports D1 D2
+[    0.731000] pci 0000:00:10.3: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.732000] pci 0000:00:10.3: PME# disabled
+[    0.733000] pci 0000:00:10.4: found [1106:3104] class 000c03 header type 00
+[    0.734000] pci 0000:00:10.4: calling quirk_no_ata_d3+0x0/0x20
+[    0.735000] pci 0000:00:10.4: reg 10 32bit mmio: [0xfdf00000-0xfdf000ff]
+[    0.736000] pci 0000:00:10.4: calling quirk_resource_alignment+0x0/0x1ba
+[    0.737000] pci 0000:00:10.4: supports D1 D2
+[    0.738000] pci 0000:00:10.4: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.739000] pci 0000:00:10.4: PME# disabled
+[    0.740000] pci 0000:00:11.0: found [1106:3227] class 000601 header type 00
+[    0.742000] pci 0000:00:11.0: calling quirk_no_ata_d3+0x0/0x20
+[    0.744000] pci 0000:00:11.0: calling vt8237_force_enable_hpet+0x0/0x15d
+[    0.745000] HPET not enabled in BIOS. You might try hpet=force boot option
+[    0.746000] pci 0000:00:11.0: calling asus_hides_ac97_lpc+0x0/0xd9
+[    0.747000] pci 0000:00:11.0: Enabled onboard AC97/MC97 devices
+[    0.748000] pci 0000:00:11.0: calling quirk_via_bridge+0x0/0x82
+[    0.749000] pci 0000:00:11.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.751000] pci 0000:00:11.0: calling pci_fixup_msi_k8t_onboard_sound+0x0/0xbc
+[    0.752000] pci 0000:00:11.5: found [1106:3059] class 000401 header type 00
+[    0.753000] pci 0000:00:11.5: calling quirk_no_ata_d3+0x0/0x20
+[    0.754000] pci 0000:00:11.5: reg 10 io port: [0xc800-0xc8ff]
+[    0.755000] pci 0000:00:11.5: calling quirk_resource_alignment+0x0/0x1ba
+[    0.756000] pci 0000:00:11.5: supports D1 D2
+[    0.757000] pci 0000:00:11.6: found [1106:3068] class 000780 header type 00
+[    0.758000] pci 0000:00:11.6: calling quirk_no_ata_d3+0x0/0x20
+[    0.759000] pci 0000:00:11.6: reg 10 io port: [0x00-0xff]
+[    0.760000] pci 0000:00:11.6: calling quirk_resource_alignment+0x0/0x1ba
+[    0.761000] pci 0000:00:18.0: found [1022:1100] class 000600 header type 00
+[    0.762000] pci 0000:00:18.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.763000] pci 0000:00:18.1: found [1022:1101] class 000600 header type 00
+[    0.764000] pci 0000:00:18.1: calling quirk_resource_alignment+0x0/0x1ba
+[    0.765000] pci 0000:00:18.2: found [1022:1102] class 000600 header type 00
+[    0.766000] pci 0000:00:18.2: calling quirk_resource_alignment+0x0/0x1ba
+[    0.767000] pci 0000:00:18.3: found [1022:1103] class 000600 header type 00
+[    0.768000] pci 0000:00:18.3: calling quirk_resource_alignment+0x0/0x1ba
+[    0.769000] PCI: Fixups for bus 0000:00
+[    0.770000] pci 0000:00:01.0: scanning behind bridge, config 010100, pass 0
+[    0.771000] PCI: Scanning bus 0000:01
+[    0.772000] pci 0000:01:00.0: found [1002:5964] class 000300 header type 00
+[    0.774000] pci 0000:01:00.0: calling quirk_no_ata_d3+0x0/0x20
+[    0.775000] pci 0000:01:00.0: reg 10 32bit mmio: [0xe8000000-0xefffffff]
+[    0.776000] pci 0000:01:00.0: reg 14 io port: [0xa000-0xa0ff]
+[    0.777000] pci 0000:01:00.0: reg 18 32bit mmio: [0xfd800000-0xfd80ffff]
+[    0.778000] pci 0000:01:00.0: reg 30 32bit mmio: [0xfd700000-0xfd71ffff]
+[    0.779000] pci 0000:01:00.0: calling quirk_resource_alignment+0x0/0x1ba
+[    0.780000] pci 0000:01:00.0: supports D1 D2
+[    0.781000] pci 0000:01:00.1: found [1002:5d44] class 000380 header type 00
+[    0.782000] pci 0000:01:00.1: calling quirk_no_ata_d3+0x0/0x20
+[    0.783000] pci 0000:01:00.1: reg 10 32bit mmio: [0xe0000000-0xe7ffffff]
+[    0.784000] pci 0000:01:00.1: reg 14 32bit mmio: [0xfd600000-0xfd60ffff]
+[    0.785000] pci 0000:01:00.1: calling quirk_resource_alignment+0x0/0x1ba
+[    0.786000] pci 0000:01:00.1: supports D1 D2
+[    0.787000] PCI: Fixups for bus 0000:01
+[    0.788000] pci 0000:00:01.0: bridge io port: [0xa000-0xafff]
+[    0.789000] pci 0000:00:01.0: bridge 32bit mmio: [0xfd300000-0xfd8fffff]
+[    0.790000] pci 0000:00:01.0: bridge 32bit mmio pref: [0xd7b00000-0xf7afffff]
+[    0.791000] PCI: Bus scan for 0000:01 returning with max=01
+[    0.792000] pci 0000:00:01.0: scanning behind bridge, config 010100, pass 1
+[    0.793000] PCI: Bus scan for 0000:00 returning with max=01
+[    0.794000] device: '0000:00:00.0': device_add
+[    0.795000] bus: 'pci': add device 0000:00:00.0
+[    0.796000] device: '0000:00:01.0': device_add
+[    0.797000] bus: 'pci': add device 0000:00:01.0
+[    0.799000] device: '0000:00:07.0': device_add
+[    0.800000] bus: 'pci': add device 0000:00:07.0
+[    0.801000] device: '0000:00:0a.0': device_add
+[    0.802000] bus: 'pci': add device 0000:00:0a.0
+[    0.803000] device: '0000:00:0d.0': device_add
+[    0.805000] bus: 'pci': add device 0000:00:0d.0
+[    0.807000] device: '0000:00:0d.1': device_add
+[    0.808000] bus: 'pci': add device 0000:00:0d.1
+[    0.809000] device: '0000:00:0f.0': device_add
+[    0.810000] bus: 'pci': add device 0000:00:0f.0
+[    0.811000] device: '0000:00:0f.1': device_add
+[    0.812000] bus: 'pci': add device 0000:00:0f.1
+[    0.813000] device: '0000:00:10.0': device_add
+[    0.814000] bus: 'pci': add device 0000:00:10.0
+[    0.815000] device: '0000:00:10.1': device_add
+[    0.816000] bus: 'pci': add device 0000:00:10.1
+[    0.818000] device: '0000:00:10.2': device_add
+[    0.819000] bus: 'pci': add device 0000:00:10.2
+[    0.820000] device: '0000:00:10.3': device_add
+[    0.821000] bus: 'pci': add device 0000:00:10.3
+[    0.822000] device: '0000:00:10.4': device_add
+[    0.823000] bus: 'pci': add device 0000:00:10.4
+[    0.825000] device: '0000:00:11.0': device_add
+[    0.826000] bus: 'pci': add device 0000:00:11.0
+[    0.827000] device: '0000:00:11.5': device_add
+[    0.828000] bus: 'pci': add device 0000:00:11.5
+[    0.829000] device: '0000:00:11.6': device_add
+[    0.830000] bus: 'pci': add device 0000:00:11.6
+[    0.832000] device: '0000:00:18.0': device_add
+[    0.833000] bus: 'pci': add device 0000:00:18.0
+[    0.834000] device: '0000:00:18.1': device_add
+[    0.835000] bus: 'pci': add device 0000:00:18.1
+[    0.837000] device: '0000:00:18.2': device_add
+[    0.838000] bus: 'pci': add device 0000:00:18.2
+[    0.839000] device: '0000:00:18.3': device_add
+[    0.840000] bus: 'pci': add device 0000:00:18.3
+[    0.841000] device: '0000:01:00.0': device_add
+[    0.842000] bus: 'pci': add device 0000:01:00.0
+[    0.844000] device: '0000:01:00.1': device_add
+[    0.845000] bus: 'pci': add device 0000:01:00.1
+[    0.846000] device: '0000:01': device_add
+[    0.848000] pci 0000:00:11.0: VIA IRQ router [1106:3227]
+[    0.850000] initcall pci_subsys_init+0x0/0x115 returned 0 after 190429 usecs
+[    0.851000] calling  proto_init+0x0/0x12 @ 1
+[    0.852000] initcall proto_init+0x0/0x12 returned 0 after 0 usecs
+[    0.853000] calling  net_dev_init+0x0/0x197 @ 1
+[    0.855000] device class 'net': registering
+[    0.856000] device: 'lo': device_add
+[    0.858000] initcall net_dev_init+0x0/0x197 returned 0 after 3906 usecs
+[    0.859000] calling  neigh_init+0x0/0x71 @ 1
+[    0.860000] initcall neigh_init+0x0/0x71 returned 0 after 0 usecs
+[    0.861000] calling  fib_rules_init+0x0/0xa6 @ 1
+[    0.862000] initcall fib_rules_init+0x0/0xa6 returned 0 after 0 usecs
+[    0.863000] calling  pktsched_init+0x0/0xc4 @ 1
+[    0.864000] initcall pktsched_init+0x0/0xc4 returned 0 after 0 usecs
+[    0.865000] calling  tc_filter_init+0x0/0x4c @ 1
+[    0.866000] initcall tc_filter_init+0x0/0x4c returned 0 after 0 usecs
+[    0.867000] calling  tc_action_init+0x0/0x4c @ 1
+[    0.868000] initcall tc_action_init+0x0/0x4c returned 0 after 0 usecs
+[    0.869000] calling  genl_init+0x0/0xd8 @ 1
+[    0.870000] initcall genl_init+0x0/0xd8 returned 0 after 0 usecs
+[    0.871000] calling  wanrouter_init+0x0/0x55 @ 1
+[    0.872000] Sangoma WANPIPE Router v1.1 (c) 1995-2000 Sangoma Technologies Inc.
+[    0.873000] initcall wanrouter_init+0x0/0x55 returned 0 after 976 usecs
+[    0.874000] calling  wireless_nlevent_init+0x0/0x41 @ 1
+[    0.875000] initcall wireless_nlevent_init+0x0/0x41 returned 0 after 0 usecs
+[    0.876000] calling  sysctl_init+0x0/0x49 @ 1
+[    0.877000] initcall sysctl_init+0x0/0x49 returned 0 after 0 usecs
+[    0.878000] calling  pci_iommu_init+0x0/0x12 @ 1
+[    0.879000] bus: 'pci': add driver agpgart-amd64
+[    0.880000] bus: 'pci': driver_probe_device: matched device 0000:00:00.0 with driver agpgart-amd64
+[    0.881000] bus: 'pci': really_probe: probing driver agpgart-amd64 with device 0000:00:00.0
+[    0.882000] agpgart-amd64 0000:00:00.0: AGP bridge [1106/3188]
+[    0.886000] device: 'agpgart': device_add
+[    0.888000] agpgart-amd64 0000:00:00.0: AGP aperture is 64M @ 0xf8000000
+[    0.889000] work_for_cpu used greatest stack depth: 5392 bytes left
+[    0.890000] driver: '0000:00:00.0': driver_bound: bound to device 'agpgart-amd64'
+[    0.891000] bus: 'pci': really_probe: bound device 0000:00:00.0 to driver agpgart-amd64
+[    0.892000] initcall pci_iommu_init+0x0/0x12 returned 0 after 12695 usecs
+[    0.893000] calling  print_all_ICs+0x0/0x95 @ 1
+[    0.894000] 
+[    0.894000] printing PIC contents
+[    0.895000] ... PIC  IMR: fffb
+[    0.895000] ... PIC  IRR: 0001
+[    0.896000] ... PIC  ISR: 0000
+[    0.897000] ... PIC ELCR: 0c20
+[    0.898000] printing local APIC contents on CPU#0/0:
+[    0.898000] ... APIC ID:      00000000 (0)
+[    0.898000] ... APIC VERSION: 00040010
+[    0.898000] ... APIC TASKPRI: 00000000 (00)
+[    0.898000] ... APIC ARBPRI: 00000030 (30)
+[    0.898000] ... APIC PROCPRI: 00000000
+[    0.898000] ... APIC LDR: 01000000
+[    0.898000] ... APIC DFR: ffffffff
+[    0.898000] ... APIC SPIV: 000001ff
+[    0.898000] ... APIC ISR field:
+[    0.898000] 0000000000000000000000000000000000000000000000000000000000000000
+[    0.898000] ... APIC TMR field:
+[    0.898000] 0000000000000000000000000000000000000000000000000000000000000000
+[    0.898000] ... APIC IRR field:
+[    0.898000] 0000000000010000000000000000000000000000000000000000000000000000
+[    0.898000] ... APIC ESR: 00000000
+[    0.898000] ... APIC ICR: 00000000
+[    0.898000] ... APIC ICR2: 00000000
+[    0.898000] ... APIC LVTT: 00010000
+[    0.898000] ... APIC LVTPC: 00000400
+[    0.898000] ... APIC LVT0: 00010700
+[    0.898000] ... APIC LVT1: 00000400
+[    0.898000] ... APIC LVTERR: 000000fe
+[    0.898000] ... APIC TMICT: 00000000
+[    0.898000] ... APIC TMCCT: 00000000
+[    0.898000] ... APIC TDCR: 00000000
+[    0.898000] 
+[    0.899000] number of MP IRQ sources: 25.
+[    0.900000] number of IO-APIC #2 registers: 24.
+[    0.901000] testing the IO APIC.......................
+[    0.902000] 
+[    0.903000] IO APIC #2......
+[    0.904000] .... register #00: 02000000
+[    0.905000] .......    : physical APIC id: 02
+[    0.906000] .......    : Delivery Type: 0
+[    0.907000] .......    : LTS          : 0
+[    0.908000] .... register #01: 00178003
+[    0.909000] .......     : max redirection entries: 0017
+[    0.910000] .......     : PRQ implemented: 1
+[    0.911000] .......     : IO APIC version: 0003
+[    0.912000] .... IRQ redirection table:
+[    0.913000]  NR Dst Mask Trig IRR Pol Stat Dmod Deli Vect:   
+[    0.914000]  00 000 1    0    0   0   0    0    0    00
+[    0.916000]  01 001 0    0    0   0   0    1    1    31
+[    0.918000]  02 001 0    0    0   0   0    1    1    30
+[    0.920000]  03 001 0    0    0   0   0    1    1    33
+[    0.922000]  04 001 0    0    0   0   0    1    1    34
+[    0.924000]  05 001 0    0    0   0   0    1    1    35
+[    0.926000]  06 001 0    0    0   0   0    1    1    36
+[    0.928000]  07 001 0    0    0   0   0    1    1    37
+[    0.930000]  08 001 0    0    0   0   0    1    1    38
+[    0.932000]  09 001 0    0    0   0   0    1    1    39
+[    0.934000]  0a 001 0    0    0   0   0    1    1    3A
+[    0.936000]  0b 001 0    0    0   0   0    1    1    3B
+[    0.938000]  0c 001 0    0    0   0   0    1    1    3C
+[    0.940000]  0d 001 0    0    0   0   0    1    1    3D
+[    0.942000]  0e 001 0    0    0   0   0    1    1    3E
+[    0.944000]  0f 001 0    0    0   0   0    1    1    3F
+[    0.946000]  10 001 1    1    0   1   0    1    1    49
+[    0.948000]  11 001 1    1    0   1   0    1    1    51
+[    0.950000]  12 001 1    1    0   1   0    1    1    59
+[    0.952000]  13 000 1    0    0   0   0    0    0    00
+[    0.954000]  14 001 1    1    0   1   0    1    1    61
+[    0.956000]  15 001 1    1    0   1   0    1    1    69
+[    0.958000]  16 001 1    1    0   1   0    1    1    71
+[    0.960000]  17 000 1    0    0   0   0    0    0    00
+[    0.962000] IRQ to pin mappings:
+[    0.963000] IRQ0 -> 0:2
+[    0.964000] IRQ1 -> 0:1
+[    0.966000] IRQ3 -> 0:3
+[    0.968000] IRQ4 -> 0:4
+[    0.970000] IRQ5 -> 0:5
+[    0.972000] IRQ6 -> 0:6
+[    0.974000] IRQ7 -> 0:7
+[    0.976000] IRQ8 -> 0:8
+[    0.978000] IRQ9 -> 0:9
+[    0.980000] IRQ10 -> 0:10
+[    0.982000] IRQ11 -> 0:11
+[    0.984000] IRQ12 -> 0:12
+[    0.985000] IRQ13 -> 0:13
+[    0.987000] IRQ14 -> 0:14
+[    0.989000] IRQ15 -> 0:15
+[    0.991000] IRQ16 -> 0:16
+[    0.993000] IRQ17 -> 0:17
+[    0.995000] IRQ18 -> 0:18
+[    0.997000] IRQ20 -> 0:20
+[    0.999000] IRQ21 -> 0:21
+[    1.001000] IRQ22 -> 0:22
+[    1.003000] .................................... done.
+[    1.005000] initcall print_all_ICs+0x0/0x95 returned 0 after 108398 usecs
+[    1.006000] calling  hpet_late_init+0x0/0xcf @ 1
+[    1.007000] initcall hpet_late_init+0x0/0xcf returned -19 after 0 usecs
+[    1.008000] calling  clocksource_done_booting+0x0/0x17 @ 1
+[    1.009000] Switching to clocksource jiffies
+[    1.010000] initcall clocksource_done_booting+0x0/0x17 returned 0 after 976 usecs
+[    1.011000] calling  ftrace_init_debugfs+0x0/0xb9 @ 1
+[    1.012000] initcall ftrace_init_debugfs+0x0/0xb9 returned 0 after 0 usecs
+[    1.013000] calling  rb_init_debugfs+0x0/0x2f @ 1
+[    1.014000] initcall rb_init_debugfs+0x0/0x2f returned 0 after 0 usecs
+[    1.015000] calling  tracer_init_debugfs+0x0/0x262 @ 1
+[    1.016000] initcall tracer_init_debugfs+0x0/0x262 returned 0 after 0 usecs
+[    1.017000] calling  init_trace_printk_function_export+0x0/0x2f @ 1
+[    1.018000] initcall init_trace_printk_function_export+0x0/0x2f returned 0 after 0 usecs
+[    1.019000] calling  event_trace_init+0x0/0x1ec @ 1
+[    1.074000] initcall event_trace_init+0x0/0x1ec returned 0 after 52734 usecs
+[    1.075000] calling  ksym_tracer_stat_init+0x0/0x2d @ 1
+[    1.076000] initcall ksym_tracer_stat_init+0x0/0x2d returned 0 after 0 usecs
+[    1.077000] calling  init_pipe_fs+0x0/0x4d @ 1
+[    1.078000] initcall init_pipe_fs+0x0/0x4d returned 0 after 0 usecs
+[    1.079000] calling  eventpoll_init+0x0/0xda @ 1
+[    1.080000] initcall eventpoll_init+0x0/0xda returned 0 after 0 usecs
+[    1.081000] calling  anon_inode_init+0x0/0x128 @ 1
+[    1.082000] initcall anon_inode_init+0x0/0x128 returned 0 after 0 usecs
+[    1.083000] calling  fscache_init+0x0/0xab @ 1
+[    1.084000] Slow work thread pool: Starting up
+[    1.085000] Slow work thread pool: Ready
+[    1.086000] FS-Cache: Loaded
+[    1.087000] initcall fscache_init+0x0/0xab returned 0 after 2929 usecs
+[    1.088000] calling  tomoyo_initerface_init+0x0/0x15b @ 1
+[    1.089000] initcall tomoyo_initerface_init+0x0/0x15b returned 0 after 0 usecs
+[    1.090000] calling  blk_scsi_ioctl_init+0x0/0x297 @ 1
+[    1.091000] initcall blk_scsi_ioctl_init+0x0/0x297 returned 0 after 0 usecs
+[    1.092000] calling  chr_dev_init+0x0/0xac @ 1
+[    1.094000] device class 'mem': registering
+[    1.095000] device: 'mem': device_add
+[    1.096000] device: 'kmem': device_add
+[    1.097000] device: 'null': device_add
+[    1.099000] device: 'port': device_add
+[    1.101000] device: 'zero': device_add
+[    1.102000] device: 'full': device_add
+[    1.103000] device: 'random': device_add
+[    1.105000] device: 'urandom': device_add
+[    1.106000] device: 'kmsg': device_add
+[    1.107000] device: 'oldmem': device_add
+[    1.109000] initcall chr_dev_init+0x0/0xac returned 0 after 14648 usecs
+[    1.111000] calling  firmware_class_init+0x0/0x79 @ 1
+[    1.112000] device class 'firmware': registering
+[    1.113000] initcall firmware_class_init+0x0/0x79 returned 0 after 976 usecs
+[    1.114000] calling  ieee1394_init+0x0/0x260 @ 1
+[    1.115000] bus: 'ieee1394': registered
+[    1.116000] device class 'ieee1394_host': registering
+[    1.118000] device class 'ieee1394_protocol': registering
+[    1.120000] device class 'ieee1394_node': registering
+[    1.121000] device class 'ieee1394': registering
+[    1.122000] bus: 'ieee1394': add driver nodemgr
+[    1.123000] initcall ieee1394_init+0x0/0x260 returned 0 after 7812 usecs
+[    1.124000] calling  cpufreq_gov_performance_init+0x0/0x12 @ 1
+[    1.125000] initcall cpufreq_gov_performance_init+0x0/0x12 returned 0 after 0 usecs
+[    1.126000] calling  cpufreq_gov_userspace_init+0x0/0x12 @ 1
+[    1.127000] initcall cpufreq_gov_userspace_init+0x0/0x12 returned 0 after 0 usecs
+[    1.128000] calling  ssb_modinit+0x0/0x70 @ 1
+[    1.129000] bus: 'ssb': registered
+[    1.130000] initcall ssb_modinit+0x0/0x70 returned 0 after 976 usecs
+[    1.131000] calling  pcibios_assign_resources+0x0/0x74 @ 1
+[    1.132000] pci 0000:00:11.6: BAR 0: got res [0x1000-0x10ff] bus [0x1000-0x10ff] flags 0x20101
+[    1.133000] pci 0000:00:11.6: BAR 0: moved to bus [0x1000-0x10ff] flags 0x20101
+[    1.134000] pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
+[    1.135000] pci 0000:00:01.0:   IO window: 0xa000-0xafff
+[    1.136000] pci 0000:00:01.0:   MEM window: 0xfd300000-0xfd8fffff
+[    1.137000] pci 0000:00:01.0:   PREFETCH window: 0xd7b00000-0xf7afffff
+[    1.138000] pci 0000:00:01.0: calling quirk_via_vlink+0x0/0xd5
+[    1.139000] pci 0000:00:01.0: setting latency timer to 64
+[    1.140000] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
+[    1.141000] pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffffffffffff]
+[    1.142000] pci_bus 0000:01: resource 0 io:  [0xa000-0xafff]
+[    1.143000] pci_bus 0000:01: resource 1 mem: [0xfd300000-0xfd8fffff]
+[    1.144000] pci_bus 0000:01: resource 2 pref mem [0xd7b00000-0xf7afffff]
+[    1.145000] initcall pcibios_assign_resources+0x0/0x74 returned 0 after 12695 usecs
+[    1.146000] calling  sysctl_core_init+0x0/0x38 @ 1
+[    1.147000] initcall sysctl_core_init+0x0/0x38 returned 0 after 0 usecs
+[    1.148000] calling  inet_init+0x0/0x1d7 @ 1
+[    1.149000] NET: Registered protocol family 2
+[    1.150000] IP route cache hash table entries: 32768 (order: 6, 262144 bytes)
+[    1.153000] TCP established hash table entries: 131072 (order: 9, 2097152 bytes)
+[    1.156000] TCP bind hash table entries: 65536 (order: 10, 4718592 bytes)
+[    1.164000] TCP: Hash tables configured (established 131072 bind 65536)
+[    1.165000] TCP reno registered
+[    1.166000] initcall inet_init+0x0/0x1d7 returned 0 after 16601 usecs
+[    1.167000] calling  af_unix_init+0x0/0x55 @ 1
+[    1.168000] NET: Registered protocol family 1
+[    1.169000] initcall af_unix_init+0x0/0x55 returned 0 after 976 usecs
+[    1.170000] calling  populate_rootfs+0x0/0x104 @ 1
+[    1.172000] initcall populate_rootfs+0x0/0x104 returned 0 after 976 usecs
+[    1.173000] calling  i8259A_init_sysfs+0x0/0x22 @ 1
+[    1.174000] Registering sysdev class 'i8259'
+[    1.176000] Registering sys device of class 'i8259'
+[    1.177000] Registering sys device 'i82590'
+[    1.178000] initcall i8259A_init_sysfs+0x0/0x22 returned 0 after 3906 usecs
+[    1.179000] calling  vsyscall_init+0x0/0x60 @ 1
+[    1.180000] initcall vsyscall_init+0x0/0x60 returned 0 after 0 usecs
+[    1.181000] calling  sbf_init+0x0/0xef @ 1
+[    1.182000] initcall sbf_init+0x0/0xef returned 0 after 0 usecs
+[    1.183000] calling  i8237A_init_sysfs+0x0/0x22 @ 1
+[    1.184000] Registering sysdev class 'i8237'
+[    1.186000] Registering sys device of class 'i8237'
+[    1.187000] Registering sys device 'i82370'
+[    1.188000] initcall i8237A_init_sysfs+0x0/0x22 returned 0 after 3906 usecs
+[    1.189000] calling  add_rtc_cmos+0x0/0x42 @ 1
+[    1.190000] Registering platform device 'rtc_cmos'. Parent at platform
+[    1.191000] device: 'rtc_cmos': device_add
+[    1.192000] bus: 'platform': add device rtc_cmos
+[    1.193000] platform rtc_cmos: registered platform RTC device (no PNP device found)
+[    1.194000] initcall add_rtc_cmos+0x0/0x42 returned 0 after 3906 usecs
+[    1.195000] calling  cache_sysfs_init+0x0/0x5b @ 1
+[    1.198000] initcall cache_sysfs_init+0x0/0x5b returned 0 after 1953 usecs
+[    1.199000] calling  mce_init_device+0x0/0xf6 @ 1
+[    1.200000] Registering sysdev class 'machinecheck'
+[    1.201000] Registering sys device of class 'machinecheck'
+[    1.203000] Registering sys device 'machinecheck0'
+[    1.204000] device: 'mcelog': device_add
+[    1.205000] initcall mce_init_device+0x0/0xf6 returned 0 after 4882 usecs
+[    1.206000] calling  threshold_init_device+0x0/0x9a @ 1
+[    1.208000] initcall threshold_init_device+0x0/0x9a returned 0 after 0 usecs
+[    1.209000] calling  thermal_throttle_init_device+0x0/0x6f @ 1
+[    1.210000] initcall thermal_throttle_init_device+0x0/0x6f returned 0 after 0 usecs
+[    1.211000] calling  msr_init+0x0/0x144 @ 1
+[    1.212000] device class 'msr': registering
+[    1.213000] device: 'msr0': device_add
+[    1.215000] initcall msr_init+0x0/0x144 returned 0 after 2929 usecs
+[    1.216000] calling  ioapic_init_sysfs+0x0/0xa7 @ 1
+[    1.217000] Registering sysdev class 'ioapic'
+[    1.218000] Registering sys device of class 'ioapic'
+[    1.219000] Registering sys device 'ioapic0'
+[    1.220000] initcall ioapic_init_sysfs+0x0/0xa7 returned 0 after 2929 usecs
+[    1.221000] calling  add_pcspkr+0x0/0x28 @ 1
+[    1.222000] Registering platform device 'pcspkr'. Parent at platform
+[    1.223000] device: 'pcspkr': device_add
+[    1.224000] bus: 'platform': add device pcspkr
+[    1.225000] initcall add_pcspkr+0x0/0x28 returned 0 after 2929 usecs
+[    1.226000] calling  start_periodic_check_for_corruption+0x0/0x3c @ 1
+[    1.227000] Scanning for low memory corruption every 60 seconds
+[    1.228000] initcall start_periodic_check_for_corruption+0x0/0x3c returned 0 after 976 usecs
+[    1.229000] calling  audit_classes_init+0x0/0xaf @ 1
+[    1.230000] initcall audit_classes_init+0x0/0xaf returned 0 after 0 usecs
+[    1.231000] calling  init+0x0/0x12 @ 1
+[    1.232000] initcall init+0x0/0x12 returned 0 after 0 usecs
+[    1.233000] calling  crc32c_intel_mod_init+0x0/0x20 @ 1
+[    1.234000] initcall crc32c_intel_mod_init+0x0/0x20 returned -19 after 0 usecs
+[    1.235000] calling  init_vdso_vars+0x0/0x220 @ 1
+[    1.236000] initcall init_vdso_vars+0x0/0x220 returned 0 after 0 usecs
+[    1.237000] calling  ia32_binfmt_init+0x0/0x14 @ 1
+[    1.238000] initcall ia32_binfmt_init+0x0/0x14 returned 0 after 0 usecs
+[    1.239000] calling  sysenter_setup+0x0/0xaf @ 1
+[    1.240000] initcall sysenter_setup+0x0/0xaf returned 0 after 0 usecs
+[    1.241000] calling  init_aout_binfmt+0x0/0x14 @ 1
+[    1.242000] initcall init_aout_binfmt+0x0/0x14 returned 0 after 0 usecs
+[    1.243000] calling  init_sched_debug_procfs+0x0/0x2c @ 1
+[    1.244000] initcall init_sched_debug_procfs+0x0/0x2c returned 0 after 0 usecs
+[    1.245000] calling  proc_schedstat_init+0x0/0x22 @ 1
+[    1.246000] initcall proc_schedstat_init+0x0/0x22 returned 0 after 0 usecs
+[    1.247000] calling  proc_execdomains_init+0x0/0x22 @ 1
+[    1.248000] initcall proc_execdomains_init+0x0/0x22 returned 0 after 0 usecs
+[    1.249000] calling  ioresources_init+0x0/0x3c @ 1
+[    1.250000] initcall ioresources_init+0x0/0x3c returned 0 after 0 usecs
+[    1.251000] calling  uid_cache_init+0x0/0x8d @ 1
+[    1.252000] initcall uid_cache_init+0x0/0x8d returned 0 after 0 usecs
+[    1.253000] calling  init_posix_timers+0x0/0x19f @ 1
+[    1.254000] initcall init_posix_timers+0x0/0x19f returned 0 after 0 usecs
+[    1.255000] calling  init_posix_cpu_timers+0x0/0xe5 @ 1
+[    1.256000] initcall init_posix_cpu_timers+0x0/0xe5 returned 0 after 0 usecs
+[    1.257000] calling  nsproxy_cache_init+0x0/0x2d @ 1
+[    1.258000] initcall nsproxy_cache_init+0x0/0x2d returned 0 after 0 usecs
+[    1.259000] calling  timekeeping_init_device+0x0/0x22 @ 1
+[    1.260000] Registering sysdev class 'timekeeping'
+[    1.262000] Registering sys device of class 'timekeeping'
+[    1.263000] Registering sys device 'timekeeping0'
+[    1.264000] initcall timekeeping_init_device+0x0/0x22 returned 0 after 3906 usecs
+[    1.265000] calling  init_clocksource_sysfs+0x0/0x50 @ 1
+[    1.266000] Registering sysdev class 'clocksource'
+[    1.268000] Registering sys device of class 'clocksource'
+[    1.269000] Registering sys device 'clocksource0'
+[    1.270000] initcall init_clocksource_sysfs+0x0/0x50 returned 0 after 3906 usecs
+[    1.271000] calling  init_timer_list_procfs+0x0/0x2c @ 1
+[    1.273000] initcall init_timer_list_procfs+0x0/0x2c returned 0 after 0 usecs
+[    1.274000] calling  init_tstats_procfs+0x0/0x2c @ 1
+[    1.275000] initcall init_tstats_procfs+0x0/0x2c returned 0 after 0 usecs
+[    1.276000] calling  lockdep_proc_init+0x0/0x7c @ 1
+[    1.277000] initcall lockdep_proc_init+0x0/0x7c returned 0 after 0 usecs
+[    1.278000] calling  futex_init+0x0/0x80 @ 1
+[    1.279000] initcall futex_init+0x0/0x80 returned 0 after 0 usecs
+[    1.280000] calling  proc_dma_init+0x0/0x22 @ 1
+[    1.281000] initcall proc_dma_init+0x0/0x22 returned 0 after 0 usecs
+[    1.282000] calling  proc_modules_init+0x0/0x22 @ 1
+[    1.283000] initcall proc_modules_init+0x0/0x22 returned 0 after 0 usecs
+[    1.284000] calling  kallsyms_init+0x0/0x25 @ 1
+[    1.285000] initcall kallsyms_init+0x0/0x25 returned 0 after 0 usecs
+[    1.286000] calling  backtrace_regression_test+0x0/0x105 @ 1
+[    1.287000] ====[ backtrace testing ]===========
+[    1.288000] Testing a backtrace from process context.
+[    1.289000] The following trace is a kernel self test and not a bug!
+[    1.290000] Pid: 1, comm: swapper Not tainted 2.6.31-tip-02377-g78907f0-dirty #88876
+[    1.291000] Call Trace:
+[    1.292000]  [<ffffffff81088d0b>] ? backtrace_regression_test+0x0/0x105
+[    1.293000]  [<ffffffff81088d48>] backtrace_regression_test+0x3d/0x105
+[    1.294000]  [<ffffffff8187149e>] ? printk+0x41/0x43
+[    1.295000]  [<ffffffff81070508>] ? ktime_get+0x6a/0xc9
+[    1.296000]  [<ffffffff81088d0b>] ? backtrace_regression_test+0x0/0x105
+[    1.298000]  [<ffffffff81088d0b>] ? backtrace_regression_test+0x0/0x105
+[    1.299000]  [<ffffffff8100907e>] do_one_initcall+0x73/0x18b
+[    1.300000]  [<ffffffff8226e1e0>] ? early_idt_handler+0x0/0x71
+[    1.301000]  [<ffffffff8226e7c7>] do_basic_setup+0x4a/0x5c
+[    1.302000]  [<ffffffff8226e852>] kernel_init+0x79/0xbc
+[    1.303000]  [<ffffffff8187333a>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+[    1.304000]  [<ffffffff8100c7da>] child_rip+0xa/0x20
+[    1.305000]  [<ffffffff8100c114>] ? restore_args+0x0/0x30
+[    1.306000]  [<ffffffff8226e7d9>] ? kernel_init+0x0/0xbc
+[    1.307000]  [<ffffffff8100c7d0>] ? child_rip+0x0/0x20
+[    1.308000] Testing a backtrace from irq context.
+[    1.309000] The following trace is a kernel self test and not a bug!
+[    1.310000] Pid: 4, comm: ksoftirqd/0 Not tainted 2.6.31-tip-02377-g78907f0-dirty #88876
+[    1.311000] Call Trace:
+[    1.312000]  <IRQ>  [<ffffffff81078b2b>] ? trace_hardirqs_on_caller+0x102/0x140
+[    1.314000]  [<ffffffff81088cfd>] backtrace_test_irq_callback+0xe/0x1c
+[    1.315000]  [<ffffffff81051e7c>] tasklet_action+0xbe/0x135
+[    1.316000]  [<ffffffff81052a0d>] __do_softirq+0x10f/0x1ef
+[    1.317000]  [<ffffffff8100c8dc>] call_softirq+0x1c/0x28
+[    1.318000]  <EOI>  [<ffffffff8100e673>] do_softirq+0x4b/0xa6
+[    1.320000]  [<ffffffff81051ae2>] ksoftirqd+0x99/0x18b
+[    1.321000]  [<ffffffff81051a49>] ? ksoftirqd+0x0/0x18b
+[    1.322000]  [<ffffffff810681f3>] kthread+0x82/0x8a
+[    1.323000]  [<ffffffff8100c7da>] child_rip+0xa/0x20
+[    1.324000]  [<ffffffff8100c114>] ? restore_args+0x0/0x30
+[    1.325000]  [<ffffffff81068171>] ? kthread+0x0/0x8a
+[    1.326000]  [<ffffffff8100c7d0>] ? child_rip+0x0/0x20
+[    1.327000] Testing a saved backtrace.
+[    1.328000] The following trace is a kernel self test and not a bug!
+[    1.329000]  [<ffffffff81017a0b>] save_stack_trace+0x2f/0x4d
+[    1.331000]  [<ffffffff81088ded>] backtrace_regression_test+0xe2/0x105
+[    1.333000]  [<ffffffff8100907e>] do_one_initcall+0x73/0x18b
+[    1.335000]  [<ffffffff8226e7c7>] do_basic_setup+0x4a/0x5c
+[    1.337000]  [<ffffffff8226e852>] kernel_init+0x79/0xbc
+[    1.339000]  [<ffffffff8100c7da>] child_rip+0xa/0x20
+[    1.341000]  [<ffffffffffffffff>] 0xffffffffffffffff
+[    1.343000] ====[ end of backtrace testing ]====
+[    1.344000] initcall backtrace_regression_test+0x0/0x105 returned 0 after 55664 usecs
+[    1.345000] calling  ikconfig_init+0x0/0x39 @ 1
+[    1.346000] initcall ikconfig_init+0x0/0x39 returned 0 after 0 usecs
+[    1.347000] calling  audit_init+0x0/0x153 @ 1
+[    1.348000] audit: initializing netlink socket (disabled)
+[    1.349000] type=2000 audit(1252983384.349:1): initialized
+[    1.350000] initcall audit_init+0x0/0x153 returned 0 after 1953 usecs
+[    1.351000] calling  rcuclassic_trace_init+0x0/0xf7 @ 1
+[    1.352000] initcall rcuclassic_trace_init+0x0/0xf7 returned 0 after 0 usecs
+[    1.353000] calling  utsname_sysctl_init+0x0/0x14 @ 1
+[    1.354000] initcall utsname_sysctl_init+0x0/0x14 returned 0 after 0 usecs
+[    1.355000] calling  init_tracepoints+0x0/0x17 @ 1
+[    1.356000] initcall init_tracepoints+0x0/0x17 returned 0 after 0 usecs
+[    1.357000] calling  ftrace_mod_cmd_init+0x0/0x12 @ 1
+[    1.358000] initcall ftrace_mod_cmd_init+0x0/0x12 returned 0 after 0 usecs
+[    1.359000] calling  init_events+0x0/0x63 @ 1
+[    1.360000] initcall init_events+0x0/0x63 returned 0 after 0 usecs
+[    1.361000] calling  init_sched_switch_trace+0x0/0x12 @ 1
+[    1.363000] Testing tracer sched_switch: PASSED
+[    1.467001] initcall init_sched_switch_trace+0x0/0x12 returned 0 after 101562 usecs
+[    1.468001] calling  init_function_trace+0x0/0x3e @ 1
+[    1.469001] Testing tracer function: PASSED
+[    1.575001] Testing dynamic ftrace: PASSED
+[    1.810001] initcall init_function_trace+0x0/0x3e returned 0 after 333008 usecs
+[    1.811001] calling  init_irqsoff_tracer+0x0/0x2c @ 1
+[    1.812001] Testing tracer irqsoff: .. no entries found ..FAILED!
+[    1.819001] Testing tracer preemptoff: .. no entries found ..FAILED!
+[    1.825001] Testing tracer preemptirqsoff: .. no entries found ..FAILED!
+[    1.830001] initcall init_irqsoff_tracer+0x0/0x2c returned 0 after 17578 usecs
+[    1.831001] calling  stack_trace_init+0x0/0x6b @ 1
+[    1.832001] initcall stack_trace_init+0x0/0x6b returned 0 after 0 usecs
+[    1.833001] calling  init_mmio_trace+0x0/0x12 @ 1
+[    1.834001] initcall init_mmio_trace+0x0/0x12 returned 0 after 0 usecs
+[    1.835001] calling  init_power_trace+0x0/0x12 @ 1
+[    1.836001] initcall init_power_trace+0x0/0x12 returned 0 after 0 usecs
+[    1.837001] calling  init_ksym_trace+0x0/0x4f @ 1
+[    1.838001] Testing tracer ksym_tracer: PASSED
+[    1.853001] initcall init_ksym_trace+0x0/0x4f returned 0 after 14648 usecs
+[    1.854001] calling  perf_counter_sysfs_init+0x0/0x19 @ 1
+[    1.855001] initcall perf_counter_sysfs_init+0x0/0x19 returned 0 after 0 usecs
+[    1.856001] calling  init_per_zone_wmark_min+0x0/0x68 @ 1
+[    1.857001] initcall init_per_zone_wmark_min+0x0/0x68 returned 0 after 0 usecs
+[    1.858001] calling  kswapd_init+0x0/0x6c @ 1
+[    1.859001] initcall kswapd_init+0x0/0x6c returned 0 after 0 usecs
+[    1.860001] calling  init_tmpfs+0x0/0xda @ 1
+[    1.861001] initcall init_tmpfs+0x0/0xda returned 0 after 0 usecs
+[    1.862001] calling  setup_vmstat+0x0/0xc5 @ 1
+[    1.863001] initcall setup_vmstat+0x0/0xc5 returned 0 after 0 usecs
+[    1.864001] calling  mm_sysfs_init+0x0/0x29 @ 1
+[    1.865001] initcall mm_sysfs_init+0x0/0x29 returned 0 after 0 usecs
+[    1.866001] calling  proc_vmalloc_init+0x0/0x25 @ 1
+[    1.867001] initcall proc_vmalloc_init+0x0/0x25 returned 0 after 0 usecs
+[    1.868001] calling  procswaps_init+0x0/0x22 @ 1
+[    1.869001] initcall procswaps_init+0x0/0x22 returned 0 after 0 usecs
+[    1.870001] calling  hugetlb_init+0x0/0x20d @ 1
+[    1.871001] HugeTLB registered 2 MB page size, pre-allocated 0 pages
+[    1.872001] initcall hugetlb_init+0x0/0x20d returned 0 after 976 usecs
+[    1.873001] calling  slab_proc_init+0x0/0x25 @ 1
+[    1.874001] initcall slab_proc_init+0x0/0x25 returned 0 after 0 usecs
+[    1.875001] calling  slab_sysfs_init+0x0/0xf0 @ 1
+[    1.881001] khelper used greatest stack depth: 5168 bytes left
+[    1.918001] initcall slab_sysfs_init+0x0/0xf0 returned 0 after 41015 usecs
+[    1.919001] calling  fasync_init+0x0/0x2a @ 1
+[    1.920001] initcall fasync_init+0x0/0x2a returned 0 after 0 usecs
+[    1.921001] calling  proc_filesystems_init+0x0/0x22 @ 1
+[    1.922001] initcall proc_filesystems_init+0x0/0x22 returned 0 after 0 usecs
+[    1.923001] calling  dnotify_init+0x0/0x80 @ 1
+[    1.925001] initcall dnotify_init+0x0/0x80 returned 0 after 976 usecs
+[    1.926001] calling  inotify_user_setup+0x0/0xbe @ 1
+[    1.928001] initcall inotify_user_setup+0x0/0xbe returned 0 after 976 usecs
+[    1.929001] calling  proc_locks_init+0x0/0x22 @ 1
+[    1.930001] initcall proc_locks_init+0x0/0x22 returned 0 after 0 usecs
+[    1.931001] calling  init_sys32_ioctl+0x0/0x85 @ 1
+[    1.932001] initcall init_sys32_ioctl+0x0/0x85 returned 0 after 0 usecs
+[    1.933001] calling  init_mbcache+0x0/0x14 @ 1
+[    1.934001] initcall init_mbcache+0x0/0x14 returned 0 after 0 usecs
+[    1.935001] calling  dquot_init+0x0/0x105 @ 1
+[    1.936001] VFS: Disk quotas dquot_6.5.2
+[    1.938001] Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    1.939001] initcall dquot_init+0x0/0x105 returned 0 after 2929 usecs
+[    1.940001] calling  init_v2_quota_format+0x0/0x12 @ 1
+[    1.941001] initcall init_v2_quota_format+0x0/0x12 returned 0 after 0 usecs
+[    1.942001] calling  proc_cmdline_init+0x0/0x22 @ 1
+[    1.943001] initcall proc_cmdline_init+0x0/0x22 returned 0 after 0 usecs
+[    1.944001] calling  proc_cpuinfo_init+0x0/0x22 @ 1
+[    1.945001] initcall proc_cpuinfo_init+0x0/0x22 returned 0 after 0 usecs
+[    1.946001] calling  proc_devices_init+0x0/0x22 @ 1
+[    1.947001] initcall proc_devices_init+0x0/0x22 returned 0 after 0 usecs
+[    1.948001] calling  proc_interrupts_init+0x0/0x22 @ 1
+[    1.949001] initcall proc_interrupts_init+0x0/0x22 returned 0 after 0 usecs
+[    1.950001] calling  proc_loadavg_init+0x0/0x22 @ 1
+[    1.951001] initcall proc_loadavg_init+0x0/0x22 returned 0 after 0 usecs
+[    1.952001] calling  proc_meminfo_init+0x0/0x22 @ 1
+[    1.953001] initcall proc_meminfo_init+0x0/0x22 returned 0 after 0 usecs
+[    1.954001] calling  proc_stat_init+0x0/0x22 @ 1
+[    1.955001] initcall proc_stat_init+0x0/0x22 returned 0 after 0 usecs
+[    1.956001] calling  proc_uptime_init+0x0/0x22 @ 1
+[    1.957001] initcall proc_uptime_init+0x0/0x22 returned 0 after 0 usecs
+[    1.958001] calling  proc_version_init+0x0/0x22 @ 1
+[    1.959001] initcall proc_version_init+0x0/0x22 returned 0 after 0 usecs
+[    1.960001] calling  proc_softirqs_init+0x0/0x22 @ 1
+[    1.961001] initcall proc_softirqs_init+0x0/0x22 returned 0 after 0 usecs
+[    1.962001] calling  vmcore_init+0x0/0x78 @ 1
+[    1.963001] initcall vmcore_init+0x0/0x78 returned 0 after 0 usecs
+[    1.964001] calling  proc_kmsg_init+0x0/0x25 @ 1
+[    1.965001] initcall proc_kmsg_init+0x0/0x25 returned 0 after 0 usecs
+[    1.966001] calling  proc_page_init+0x0/0x42 @ 1
+[    1.967001] initcall proc_page_init+0x0/0x42 returned 0 after 0 usecs
+[    1.968001] calling  configfs_init+0x0/0xd5 @ 1
+[    1.969001] initcall configfs_init+0x0/0xd5 returned 0 after 0 usecs
+[    1.970001] calling  init_devpts_fs+0x0/0x4c @ 1
+[    1.972001] initcall init_devpts_fs+0x0/0x4c returned 0 after 976 usecs
+[    1.973001] calling  init_ext3_fs+0x0/0x72 @ 1
+[    1.975001] initcall init_ext3_fs+0x0/0x72 returned 0 after 976 usecs
+[    1.976001] calling  init_ext2_fs+0x0/0x62 @ 1
+[    1.978001] initcall init_ext2_fs+0x0/0x62 returned 0 after 976 usecs
+[    1.979001] calling  init_ext4_fs+0x0/0x107 @ 1
+[    1.983001] initcall init_ext4_fs+0x0/0x107 returned 0 after 2929 usecs
+[    1.984001] calling  journal_init+0x0/0xcf @ 1
+[    1.987001] initcall journal_init+0x0/0xcf returned 0 after 1953 usecs
+[    1.988001] calling  journal_init+0x0/0xec @ 1
+[    1.992001] initcall journal_init+0x0/0xec returned 0 after 1953 usecs
+[    1.993001] calling  init_squashfs_fs+0x0/0x6d @ 1
+[    1.994001] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.995001] initcall init_squashfs_fs+0x0/0x6d returned 0 after 976 usecs
+[    1.996001] calling  init_ramfs_fs+0x0/0x12 @ 1
+[    1.997001] initcall init_ramfs_fs+0x0/0x12 returned 0 after 0 usecs
+[    1.998001] calling  init_hugetlbfs_fs+0x0/0x98 @ 1
+[    2.000001] initcall init_hugetlbfs_fs+0x0/0x98 returned 0 after 976 usecs
+[    2.001001] calling  init_hfsplus_fs+0x0/0x5d @ 1
+[    2.003001] initcall init_hfsplus_fs+0x0/0x5d returned 0 after 976 usecs
+[    2.004001] calling  init_hfs_fs+0x0/0x5d @ 1
+[    2.006001] initcall init_hfs_fs+0x0/0x5d returned 0 after 976 usecs
+[    2.007001] calling  ecryptfs_init+0x0/0x1f9 @ 1
+[    2.015001] device: 'ecryptfs': device_add
+[    2.016001] initcall ecryptfs_init+0x0/0x1f9 returned 0 after 7812 usecs
+[    2.017001] calling  init_nls_cp437+0x0/0x12 @ 1
+[    2.018001] initcall init_nls_cp437+0x0/0x12 returned 0 after 0 usecs
+[    2.019001] calling  init_nls_cp775+0x0/0x12 @ 1
+[    2.020001] initcall init_nls_cp775+0x0/0x12 returned 0 after 0 usecs
+[    2.021001] calling  init_nls_cp860+0x0/0x12 @ 1
+[    2.022001] initcall init_nls_cp860+0x0/0x12 returned 0 after 0 usecs
+[    2.023001] calling  init_nls_cp863+0x0/0x12 @ 1
+[    2.024001] initcall init_nls_cp863+0x0/0x12 returned 0 after 0 usecs
+[    2.025001] calling  init_nls_cp866+0x0/0x12 @ 1
+[    2.026001] initcall init_nls_cp866+0x0/0x12 returned 0 after 0 usecs
+[    2.027001] calling  init_nls_cp932+0x0/0x12 @ 1
+[    2.028001] initcall init_nls_cp932+0x0/0x12 returned 0 after 0 usecs
+[    2.029001] calling  init_nls_euc_jp+0x0/0x48 @ 1
+[    2.030001] initcall init_nls_euc_jp+0x0/0x48 returned 0 after 0 usecs
+[    2.031001] calling  init_nls_cp936+0x0/0x12 @ 1
+[    2.032001] initcall init_nls_cp936+0x0/0x12 returned 0 after 0 usecs
+[    2.033001] calling  init_nls_cp950+0x0/0x12 @ 1
+[    2.034001] initcall init_nls_cp950+0x0/0x12 returned 0 after 0 usecs
+[    2.035001] calling  init_nls_cp1251+0x0/0x12 @ 1
+[    2.036001] initcall init_nls_cp1251+0x0/0x12 returned 0 after 0 usecs
+[    2.037001] calling  init_nls_iso8859_5+0x0/0x12 @ 1
+[    2.038001] initcall init_nls_iso8859_5+0x0/0x12 returned 0 after 0 usecs
+[    2.039001] calling  init_nls_cp1255+0x0/0x12 @ 1
+[    2.040001] initcall init_nls_cp1255+0x0/0x12 returned 0 after 0 usecs
+[    2.041001] calling  init_nls_iso8859_9+0x0/0x12 @ 1
+[    2.042001] initcall init_nls_iso8859_9+0x0/0x12 returned 0 after 0 usecs
+[    2.043001] calling  init_nls_iso8859_13+0x0/0x12 @ 1
+[    2.044001] initcall init_nls_iso8859_13+0x0/0x12 returned 0 after 0 usecs
+[    2.045001] calling  init_nls_koi8_r+0x0/0x12 @ 1
+[    2.046001] initcall init_nls_koi8_r+0x0/0x12 returned 0 after 0 usecs
+[    2.047001] calling  init_nls_utf8+0x0/0x25 @ 1
+[    2.048001] initcall init_nls_utf8+0x0/0x25 returned 0 after 0 usecs
+[    2.049001] calling  init_hpfs_fs+0x0/0x61 @ 1
+[    2.051001] initcall init_hpfs_fs+0x0/0x61 returned 0 after 976 usecs
+[    2.052001] calling  init_ntfs_fs+0x0/0x22f @ 1
+[    2.053001] NTFS driver 2.1.29 [Flags: R/W DEBUG].
+[    2.057001] initcall init_ntfs_fs+0x0/0x22f returned 0 after 3906 usecs
+[    2.059001] calling  init_ufs_fs+0x0/0x62 @ 1
+[    2.061001] initcall init_ufs_fs+0x0/0x62 returned 0 after 976 usecs
+[    2.062001] calling  init_efs_fs+0x0/0x6f @ 1
+[    2.063001] EFS: 1.0a - http://aeschi.ch.eu.org/efs/
+[    2.064001] initcall init_efs_fs+0x0/0x6f returned 0 after 976 usecs
+[    2.065001] calling  init_affs_fs+0x0/0x62 @ 1
+[    2.067001] initcall init_affs_fs+0x0/0x62 returned 0 after 0 usecs
+[    2.068001] calling  init_romfs_fs+0x0/0x87 @ 1
+[    2.069001] ROMFS MTD (C) 2007 Red Hat, Inc.
+[    2.070001] initcall init_romfs_fs+0x0/0x87 returned 0 after 976 usecs
+[    2.071001] calling  init_qnx4_fs+0x0/0x71 @ 1
+[    2.073001] QNX4 filesystem 0.2.3 registered.
+[    2.074001] initcall init_qnx4_fs+0x0/0x71 returned 0 after 1953 usecs
+[    2.075001] calling  init_jfs_fs+0x0/0x260 @ 1
+[    2.077001] JFS: nTxBlock = 7698, nTxLock = 61590
+[    2.086001] initcall init_jfs_fs+0x0/0x260 returned 0 after 9765 usecs
+[    2.088001] calling  ocfs2_init+0x0/0x457 @ 1
+[    2.089001] OCFS2 1.5.0
+[    2.092001] initcall ocfs2_init+0x0/0x457 returned 0 after 2929 usecs
+[    2.093001] calling  ocfs2_stack_glue_init+0x0/0x95 @ 1
+[    2.094001] initcall ocfs2_stack_glue_init+0x0/0x95 returned 0 after 0 usecs
+[    2.095001] calling  init_o2nm+0x0/0xa9 @ 1
+[    2.096001] OCFS2 Node Manager 1.5.0
+[    2.101001] initcall init_o2nm+0x0/0xa9 returned 0 after 4882 usecs
+[    2.103001] calling  init_btrfs_fs+0x0/0x90 @ 1
+[    2.108001] device: 'btrfs-control': device_add
+[    2.109001] Btrfs loaded
+[    2.110001] initcall init_btrfs_fs+0x0/0x90 returned 0 after 5859 usecs
+[    2.111001] calling  init_mqueue_fs+0x0/0xc9 @ 1
+[    2.112001] initcall init_mqueue_fs+0x0/0xc9 returned 0 after 0 usecs
+[    2.113001] calling  key_proc_init+0x0/0x59 @ 1
+[    2.114001] initcall key_proc_init+0x0/0x59 returned 0 after 0 usecs
+[    2.115001] calling  crypto_wq_init+0x0/0x32 @ 1
+[    2.117001] initcall crypto_wq_init+0x0/0x32 returned 0 after 976 usecs
+[    2.118001] calling  crypto_algapi_init+0x0/0xd @ 1
+[    2.119001] initcall crypto_algapi_init+0x0/0xd returned 0 after 0 usecs
+[    2.120001] calling  skcipher_module_init+0x0/0x36 @ 1
+[    2.121001] initcall skcipher_module_init+0x0/0x36 returned 0 after 0 usecs
+[    2.122001] calling  chainiv_module_init+0x0/0x12 @ 1
+[    2.123001] initcall chainiv_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.124001] calling  eseqiv_module_init+0x0/0x12 @ 1
+[    2.125001] initcall eseqiv_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.126001] calling  seqiv_module_init+0x0/0x12 @ 1
+[    2.127001] initcall seqiv_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.128001] calling  hmac_module_init+0x0/0x12 @ 1
+[    2.129001] initcall hmac_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.130001] calling  crypto_xcbc_module_init+0x0/0x12 @ 1
+[    2.131001] initcall crypto_xcbc_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.132001] calling  md4_mod_init+0x0/0x12 @ 1
+[    2.133001] initcall md4_mod_init+0x0/0x12 returned 0 after 0 usecs
+[    2.134001] calling  md5_mod_init+0x0/0x12 @ 1
+[    2.135001] initcall md5_mod_init+0x0/0x12 returned 0 after 0 usecs
+[    2.136001] calling  rmd320_mod_init+0x0/0x12 @ 1
+[    2.137001] initcall rmd320_mod_init+0x0/0x12 returned 0 after 0 usecs
+[    2.138001] calling  sha1_generic_mod_init+0x0/0x12 @ 1
+[    2.140001] initcall sha1_generic_mod_init+0x0/0x12 returned 0 after 0 usecs
+[    2.141001] calling  crypto_ecb_module_init+0x0/0x12 @ 1
+[    2.142001] initcall crypto_ecb_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.143001] calling  crypto_cbc_module_init+0x0/0x12 @ 1
+[    2.144001] initcall crypto_cbc_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.146001] calling  crypto_pcbc_module_init+0x0/0x12 @ 1
+[    2.147001] initcall crypto_pcbc_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.148001] calling  des_generic_mod_init+0x0/0x3f @ 1
+[    2.149001] initcall des_generic_mod_init+0x0/0x3f returned 0 after 0 usecs
+[    2.150001] calling  fcrypt_mod_init+0x0/0x12 @ 1
+[    2.151001] alg: No test for fcrypt (fcrypt-generic)
+[    2.152001] initcall fcrypt_mod_init+0x0/0x12 returned 0 after 976 usecs
+[    2.153001] calling  blowfish_mod_init+0x0/0x12 @ 1
+[    2.155001] initcall blowfish_mod_init+0x0/0x12 returned 0 after 976 usecs
+[    2.156001] calling  twofish_mod_init+0x0/0x12 @ 1
+[    2.157001] initcall twofish_mod_init+0x0/0x12 returned 0 after 0 usecs
+[    2.158001] calling  serpent_mod_init+0x0/0x3f @ 1
+[    2.160001] initcall serpent_mod_init+0x0/0x3f returned 0 after 976 usecs
+[    2.161001] calling  aes_init+0x0/0x12 @ 1
+[    2.162001] initcall aes_init+0x0/0x12 returned 0 after 0 usecs
+[    2.163001] calling  camellia_init+0x0/0x12 @ 1
+[    2.164001] initcall camellia_init+0x0/0x12 returned 0 after 0 usecs
+[    2.165001] calling  arc4_init+0x0/0x12 @ 1
+[    2.166001] initcall arc4_init+0x0/0x12 returned 0 after 0 usecs
+[    2.167001] calling  zlib_mod_init+0x0/0x12 @ 1
+[    2.169001] initcall zlib_mod_init+0x0/0x12 returned 0 after 976 usecs
+[    2.170001] calling  michael_mic_init+0x0/0x12 @ 1
+[    2.171001] initcall michael_mic_init+0x0/0x12 returned 0 after 0 usecs
+[    2.172001] calling  crc32c_mod_init+0x0/0x12 @ 1
+[    2.173001] initcall crc32c_mod_init+0x0/0x12 returned 0 after 0 usecs
+[    2.174001] calling  crypto_authenc_module_init+0x0/0x12 @ 1
+[    2.176001] initcall crypto_authenc_module_init+0x0/0x12 returned 0 after 0 usecs
+[    2.177001] calling  krng_mod_init+0x0/0x12 @ 1
+[    2.178001] alg: No test for stdrng (krng)
+[    2.179001] initcall krng_mod_init+0x0/0x12 returned 0 after 976 usecs
+[    2.180001] calling  proc_genhd_init+0x0/0x3c @ 1
+[    2.181001] initcall proc_genhd_init+0x0/0x3c returned 0 after 0 usecs
+[    2.182001] calling  noop_init+0x0/0x14 @ 1
+[    2.183001] io scheduler noop registered (default)
+[    2.184001] initcall noop_init+0x0/0x14 returned 0 after 976 usecs
+[    2.185001] calling  as_init+0x0/0x14 @ 1
+[    2.186001] io scheduler anticipatory registered
+[    2.187001] initcall as_init+0x0/0x14 returned 0 after 976 usecs
+[    2.188001] calling  cfq_init+0x0/0x94 @ 1
+[    2.190001] io scheduler cfq registered
+[    2.191001] initcall cfq_init+0x0/0x94 returned 0 after 1953 usecs
+[    2.192001] calling  debug_objects_init_debugfs+0x0/0x64 @ 1
+[    2.193001] initcall debug_objects_init_debugfs+0x0/0x64 returned 0 after 0 usecs
+[    2.194001] calling  libcrc32c_mod_init+0x0/0x2c @ 1
+[    2.195001] initcall libcrc32c_mod_init+0x0/0x2c returned 0 after 0 usecs
+[    2.196001] calling  init_kmp+0x0/0x12 @ 1
+[    2.197001] initcall init_kmp+0x0/0x12 returned 0 after 0 usecs
+[    2.198001] calling  init_bm+0x0/0x12 @ 1
+[    2.199001] initcall init_bm+0x0/0x12 returned 0 after 0 usecs
+[    2.200001] calling  init_fsm+0x0/0x12 @ 1
+[    2.201001] initcall init_fsm+0x0/0x12 returned 0 after 0 usecs
+[    2.202001] calling  percpu_counter_startup+0x0/0x2d @ 1
+[    2.203001] initcall percpu_counter_startup+0x0/0x2d returned 0 after 0 usecs
+[    2.204001] calling  pci_init+0x0/0x3a @ 1
+[    2.205001] agpgart-amd64 0000:00:00.0: calling via_no_dac+0x0/0x56
+[    2.206001] agpgart-amd64 0000:00:00.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.207001] agpgart-amd64 0000:00:00.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.208001] agpgart-amd64 0000:00:00.0: calling pci_fixup_video+0x0/0xc0
+[    2.209001] pci 0000:00:01.0: calling via_no_dac+0x0/0x56
+[    2.210001] pci 0000:00:01.0: disabling DAC on VIA PCI bridge
+[    2.211001] pci 0000:00:01.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.212001] pci 0000:00:01.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.213001] pci 0000:00:01.0: calling pci_fixup_video+0x0/0xc0
+[    2.214001] pci 0000:00:07.0: calling via_no_dac+0x0/0x56
+[    2.215001] pci 0000:00:07.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.216001] pci 0000:00:07.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.217001] pci 0000:00:07.0: calling pci_fixup_video+0x0/0xc0
+[    2.218001] pci 0000:00:0a.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.219001] pci 0000:00:0a.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.220001] pci 0000:00:0a.0: calling pci_fixup_video+0x0/0xc0
+[    2.221001] pci 0000:00:0d.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.222001] pci 0000:00:0d.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.223001] pci 0000:00:0d.0: calling pci_fixup_video+0x0/0xc0
+[    2.225001] pci 0000:00:0d.1: calling quirk_cardbus_legacy+0x0/0x27
+[    2.226001] pci 0000:00:0d.1: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.227001] pci 0000:00:0d.1: calling pci_fixup_video+0x0/0xc0
+[    2.228001] pci 0000:00:0f.0: calling via_no_dac+0x0/0x56
+[    2.229001] pci 0000:00:0f.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.230001] pci 0000:00:0f.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.231001] pci 0000:00:0f.0: calling pci_fixup_video+0x0/0xc0
+[    2.232001] pci 0000:00:0f.1: calling via_no_dac+0x0/0x56
+[    2.233001] pci 0000:00:0f.1: calling quirk_cardbus_legacy+0x0/0x27
+[    2.234001] pci 0000:00:0f.1: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.236001] pci 0000:00:0f.1: calling pci_fixup_video+0x0/0xc0
+[    2.237001] pci 0000:00:10.0: calling via_no_dac+0x0/0x56
+[    2.238001] pci 0000:00:10.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.239001] pci 0000:00:10.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.240001] pci 0000:00:10.0: uhci_check_and_reset_hc: legsup = 0x8030
+[    2.241001] pci 0000:00:10.0: Performing full reset
+[    2.242001] pci 0000:00:10.0: calling pci_fixup_video+0x0/0xc0
+[    2.243001] pci 0000:00:10.1: calling via_no_dac+0x0/0x56
+[    2.244001] pci 0000:00:10.1: calling quirk_cardbus_legacy+0x0/0x27
+[    2.245001] pci 0000:00:10.1: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.246001] pci 0000:00:10.1: uhci_check_and_reset_hc: legsup = 0x8030
+[    2.247001] pci 0000:00:10.1: Performing full reset
+[    2.248001] pci 0000:00:10.1: calling pci_fixup_video+0x0/0xc0
+[    2.249001] pci 0000:00:10.2: calling via_no_dac+0x0/0x56
+[    2.250001] pci 0000:00:10.2: calling quirk_cardbus_legacy+0x0/0x27
+[    2.251001] pci 0000:00:10.2: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.252001] pci 0000:00:10.2: uhci_check_and_reset_hc: legsup = 0x8030
+[    2.253001] pci 0000:00:10.2: Performing full reset
+[    2.254001] pci 0000:00:10.2: calling pci_fixup_video+0x0/0xc0
+[    2.255001] pci 0000:00:10.3: calling via_no_dac+0x0/0x56
+[    2.256001] pci 0000:00:10.3: calling quirk_cardbus_legacy+0x0/0x27
+[    2.257001] pci 0000:00:10.3: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.258001] pci 0000:00:10.3: uhci_check_and_reset_hc: legsup = 0x8030
+[    2.259001] pci 0000:00:10.3: Performing full reset
+[    2.260001] pci 0000:00:10.3: calling pci_fixup_video+0x0/0xc0
+[    2.261001] pci 0000:00:10.4: calling via_no_dac+0x0/0x56
+[    2.262001] pci 0000:00:10.4: calling quirk_cardbus_legacy+0x0/0x27
+[    2.263001] pci 0000:00:10.4: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.264001] pci 0000:00:10.4: calling pci_fixup_video+0x0/0xc0
+[    2.265001] pci 0000:00:11.0: calling via_no_dac+0x0/0x56
+[    2.266001] pci 0000:00:11.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.267001] pci 0000:00:11.0: calling quirk_via_vt8237_bypass_apic_deassert+0x0/0x7c
+[    2.268001] pci 0000:00:11.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.269001] pci 0000:00:11.0: calling pci_fixup_video+0x0/0xc0
+[    2.270001] pci 0000:00:11.5: calling via_no_dac+0x0/0x56
+[    2.272001] pci 0000:00:11.5: calling quirk_cardbus_legacy+0x0/0x27
+[    2.273001] pci 0000:00:11.5: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.274001] pci 0000:00:11.5: calling pci_fixup_video+0x0/0xc0
+[    2.275001] pci 0000:00:11.6: calling via_no_dac+0x0/0x56
+[    2.276001] pci 0000:00:11.6: calling quirk_cardbus_legacy+0x0/0x27
+[    2.277001] pci 0000:00:11.6: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.278001] pci 0000:00:11.6: calling pci_fixup_video+0x0/0xc0
+[    2.279001] pci 0000:00:18.0: calling quirk_amd_nb_node+0x0/0x53
+[    2.280001] pci 0000:00:18.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.281001] pci 0000:00:18.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.282001] pci 0000:00:18.0: calling pci_fixup_video+0x0/0xc0
+[    2.283001] pci 0000:00:18.1: calling quirk_amd_nb_node+0x0/0x53
+[    2.284001] pci 0000:00:18.1: calling quirk_cardbus_legacy+0x0/0x27
+[    2.285001] pci 0000:00:18.1: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.286001] pci 0000:00:18.1: calling pci_fixup_video+0x0/0xc0
+[    2.287001] pci 0000:00:18.2: calling quirk_amd_nb_node+0x0/0x53
+[    2.288001] pci 0000:00:18.2: calling quirk_cardbus_legacy+0x0/0x27
+[    2.289001] pci 0000:00:18.2: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.290001] pci 0000:00:18.2: calling pci_fixup_video+0x0/0xc0
+[    2.291001] pci 0000:00:18.3: calling quirk_amd_nb_node+0x0/0x53
+[    2.292001] pci 0000:00:18.3: calling quirk_cardbus_legacy+0x0/0x27
+[    2.293001] pci 0000:00:18.3: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.294001] pci 0000:00:18.3: calling pci_fixup_video+0x0/0xc0
+[    2.295001] pci 0000:01:00.0: calling quirk_cardbus_legacy+0x0/0x27
+[    2.296001] pci 0000:01:00.0: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.297001] pci 0000:01:00.0: calling pci_fixup_video+0x0/0xc0
+[    2.298001] pci 0000:01:00.0: Boot video device
+[    2.299001] pci 0000:01:00.1: calling quirk_cardbus_legacy+0x0/0x27
+[    2.300001] pci 0000:01:00.1: calling quirk_usb_early_handoff+0x0/0xa1
+[    2.301001] pci 0000:01:00.1: calling pci_fixup_video+0x0/0xc0
+[    2.302001] initcall pci_init+0x0/0x3a returned 0 after 94726 usecs
+[    2.303001] calling  pci_proc_init+0x0/0x6b @ 1
+[    2.304001] initcall pci_proc_init+0x0/0x6b returned 0 after 0 usecs
+[    2.305001] calling  pcie_portdrv_init+0x0/0x4c @ 1
+[    2.306001] bus: 'pci_express': registered
+[    2.307001] bus: 'pci': add driver pcieport-driver
+[    2.308001] bus: 'pci': driver_probe_device: matched device 0000:00:01.0 with driver pcieport-driver
+[    2.309001] bus: 'pci': really_probe: probing driver pcieport-driver with device 0000:00:01.0
+[    2.312001] initcall pcie_portdrv_init+0x0/0x4c returned 0 after 5859 usecs
+[    2.313001] calling  ltv350qv_init+0x0/0x12 @ 1
+[    2.314001] bus: 'spi': add driver ltv350qv
+[    2.315001] initcall ltv350qv_init+0x0/0x12 returned 0 after 976 usecs
+[    2.316001] calling  platform_lcd_init+0x0/0x12 @ 1
+[    2.317001] bus: 'platform': add driver platform-lcd
+[    2.318001] initcall platform_lcd_init+0x0/0x12 returned 0 after 976 usecs
+[    2.319001] calling  cr_backlight_init+0x0/0x65 @ 1
+[    2.320001] bus: 'platform': add driver cr_backlight
+[    2.321001] Registering platform device 'cr_backlight'. Parent at platform
+[    2.322001] device: 'cr_backlight': device_add
+[    2.324001] bus: 'platform': add device cr_backlight
+[    2.325001] bus: 'platform': driver_probe_device: matched device cr_backlight with driver cr_backlight
+[    2.326001] bus: 'platform': really_probe: probing driver cr_backlight with device cr_backlight
+[    2.327001] INTEL CARILLO RANCH LPC not found.
+[    2.328001] Carillo Ranch Backlight Driver Initialized.
+[    2.329001] initcall cr_backlight_init+0x0/0x65 returned 0 after 8789 usecs
+[    2.330001] calling  da903x_backlight_init+0x0/0x12 @ 1
+[    2.331001] bus: 'platform': add driver da903x-backlight
+[    2.333001] initcall da903x_backlight_init+0x0/0x12 returned 0 after 1953 usecs
+[    2.334001] calling  mbp_init+0x0/0xf7 @ 1
+[    2.335001] initcall mbp_init+0x0/0xf7 returned -19 after 0 usecs
+[    2.336001] calling  display_class_init+0x0/0x7e @ 1
+[    2.337001] device class 'display': registering
+[    2.339001] initcall display_class_init+0x0/0x7e returned 0 after 1953 usecs
+[    2.340001] calling  pm2fb_init+0x0/0x4d @ 1
+[    2.341001] bus: 'pci': add driver pm2fb
+[    2.343001] initcall pm2fb_init+0x0/0x4d returned 0 after 1953 usecs
+[    2.344001] calling  pm3fb_init+0x0/0x115 @ 1
+[    2.345001] bus: 'pci': add driver pm3fb
+[    2.346001] initcall pm3fb_init+0x0/0x115 returned 0 after 976 usecs
+[    2.347001] calling  nvidiafb_init+0x0/0x52 @ 1
+[    2.348001] nvidiafb_setup START
+[    2.349001] bus: 'pci': add driver nvidiafb
+[    2.350001] initcall nvidiafb_init+0x0/0x52 returned 0 after 1953 usecs
+[    2.351001] calling  viafb_init+0x0/0x55 @ 1
+[    2.353001] VIA Graphics Intergration Chipset framebuffer 2.4 initializing
+[    2.354001] device: 'i2c-0': device_add
+[    4.707003] ioremap failed
+[    4.708003] initcall viafb_init+0x0/0x55 returned -1 after 2299806 usecs
+[    4.709003] initcall viafb_init+0x0/0x55 returned with error code -1 
+[    4.710003] calling  gx1fb_init+0x0/0x4d @ 1
+[    4.711003] bus: 'pci': add driver gx1fb
+[    4.712003] initcall gx1fb_init+0x0/0x4d returned 0 after 976 usecs
+[    4.713003] calling  gxfb_init+0x0/0x84 @ 1
+[    4.714003] bus: 'pci': add driver gxfb
+[    4.715003] initcall gxfb_init+0x0/0x84 returned 0 after 976 usecs
+[    4.716003] calling  lxfb_init+0x0/0xf6 @ 1
+[    4.717003] bus: 'pci': add driver lxfb
+[    4.718003] initcall lxfb_init+0x0/0xf6 returned 0 after 976 usecs
+[    4.719003] calling  imsttfb_init+0x0/0x10c @ 1
+[    4.720003] bus: 'pci': add driver imsttfb
+[    4.721003] initcall imsttfb_init+0x0/0x10c returned 0 after 976 usecs
+[    4.722003] calling  vt8623fb_init+0x0/0x59 @ 1
+[    4.723003] bus: 'pci': add driver vt8623fb
+[    4.724003] initcall vt8623fb_init+0x0/0x59 returned 0 after 976 usecs
+[    4.725003] calling  tridentfb_init+0x0/0x4d @ 1
+[    4.726003] bus: 'pci': add driver tridentfb
+[    4.727003] initcall tridentfb_init+0x0/0x4d returned 0 after 976 usecs
+[    4.728003] calling  vmlfb_init+0x0/0x98 @ 1
+[    4.729003] vmlfb: initializing
+[    4.730003] bus: 'pci': add driver vmlfb
+[    4.731003] initcall vmlfb_init+0x0/0x98 returned 0 after 1953 usecs
+[    4.732003] calling  s3fb_init+0x0/0xf4 @ 1
+[    4.733003] bus: 'pci': add driver s3fb
+[    4.734003] initcall s3fb_init+0x0/0xf4 returned 0 after 976 usecs
+[    4.736003] calling  arkfb_init+0x0/0x59 @ 1
+[    4.737003] bus: 'pci': add driver arkfb
+[    4.738003] initcall arkfb_init+0x0/0x59 returned 0 after 976 usecs
+[    4.739003] calling  sstfb_init+0x0/0x52 @ 1
+[    4.740003] bus: 'pci': add driver sstfb
+[    4.742003] initcall sstfb_init+0x0/0x52 returned 0 after 1953 usecs
+[    4.743003] calling  tmiofb_init+0x0/0x6b @ 1
+[    4.744003] bus: 'platform': add driver tmio-fb
+[    4.746003] initcall tmiofb_init+0x0/0x6b returned 0 after 1953 usecs
+[    4.747003] calling  metronomefb_init+0x0/0x12 @ 1
+[    4.748003] bus: 'platform': add driver metronomefb
+[    4.749003] initcall metronomefb_init+0x0/0x12 returned 0 after 976 usecs
+[    4.750003] calling  broadsheetfb_init+0x0/0x12 @ 1
+[    4.751003] bus: 'platform': add driver broadsheetfb
+[    4.752003] initcall broadsheetfb_init+0x0/0x12 returned 0 after 976 usecs
+[    4.753003] calling  mb862xxfb_init+0x0/0x10 @ 1
+[    4.754003] initcall mb862xxfb_init+0x0/0x10 returned -19 after 0 usecs
+[    4.755003] calling  bq24022_init+0x0/0x19 @ 1
+[    4.756003] bus: 'platform': add driver bq24022
+[    4.757003] bus: 'platform': remove driver bq24022
+[    4.758003] driver: 'bq24022': driver_release
+[    4.759003] initcall bq24022_init+0x0/0x19 returned -19 after 2929 usecs
+[    4.760003] calling  rand_initialize+0x0/0x31 @ 1
+[    4.761003] initcall rand_initialize+0x0/0x31 returned 0 after 0 usecs
+[    4.762003] calling  tty_init+0x0/0xf5 @ 1
+[    4.763003] device: 'tty': device_add
+[    4.764003] device: 'console': device_add
+[    4.765003] device: 'tty0': device_add
+[    4.766003] device class 'vc': registering
+[    4.768003] device: 'vcs': device_add
+[    4.770003] device: 'vcsa': device_add
+[    4.771003] device: 'vcs1': device_add
+[    4.772003] device: 'vcsa1': device_add
+[    4.774003] device: 'tty1': device_add
+[    4.776003] device: 'tty2': device_add
+[    4.777003] device: 'tty3': device_add
+[    4.778003] device: 'tty4': device_add
+[    4.779003] device: 'tty5': device_add
+[    4.781003] device: 'tty6': device_add
+[    4.782003] device: 'tty7': device_add
+[    4.783003] device: 'tty8': device_add
+[    4.784003] device: 'tty9': device_add
+[    4.785003] device: 'tty10': device_add
+[    4.787003] device: 'tty11': device_add
+[    4.788003] device: 'tty12': device_add
+[    4.789003] device: 'tty13': device_add
+[    4.791003] device: 'tty14': device_add
+[    4.792003] device: 'tty15': device_add
+[    4.793003] device: 'tty16': device_add
+[    4.795003] device: 'tty17': device_add
+[    4.796003] device: 'tty18': device_add
+[    4.797003] device: 'tty19': device_add
+[    4.798003] device: 'tty20': device_add
+[    4.800003] device: 'tty21': device_add
+[    4.801003] device: 'tty22': device_add
+[    4.802003] device: 'tty23': device_add
+[    4.804003] device: 'tty24': device_add
+[    4.805003] device: 'tty25': device_add
+[    4.806003] device: 'tty26': device_add
+[    4.808003] device: 'tty27': device_add
+[    4.809003] device: 'tty28': device_add
+[    4.810003] device: 'tty29': device_add
+[    4.811003] device: 'tty30': device_add
+[    4.813003] device: 'tty31': device_add
+[    4.814003] device: 'tty32': device_add
+[    4.815003] device: 'tty33': device_add
+[    4.817003] device: 'tty34': device_add
+[    4.818003] device: 'tty35': device_add
+[    4.819003] device: 'tty36': device_add
+[    4.821003] device: 'tty37': device_add
+[    4.822003] device: 'tty38': device_add
+[    4.823003] device: 'tty39': device_add
+[    4.825003] device: 'tty40': device_add
+[    4.826003] device: 'tty41': device_add
+[    4.827003] device: 'tty42': device_add
+[    4.828003] device: 'tty43': device_add
+[    4.830003] device: 'tty44': device_add
+[    4.831003] device: 'tty45': device_add
+[    4.832003] device: 'tty46': device_add
+[    4.834003] device: 'tty47': device_add
+[    4.835003] device: 'tty48': device_add
+[    4.836003] device: 'tty49': device_add
+[    4.838003] device: 'tty50': device_add
+[    4.839003] device: 'tty51': device_add
+[    4.840003] device: 'tty52': device_add
+[    4.842003] device: 'tty53': device_add
+[    4.843003] device: 'tty54': device_add
+[    4.844003] device: 'tty55': device_add
+[    4.845003] device: 'tty56': device_add
+[    4.847003] device: 'tty57': device_add
+[    4.848003] device: 'tty58': device_add
+[    4.849003] device: 'tty59': device_add
+[    4.851003] device: 'tty60': device_add
+[    4.852003] device: 'tty61': device_add
+[    4.853003] device: 'tty62': device_add
+[    4.855003] device: 'tty63': device_add
+[    4.856003] initcall tty_init+0x0/0xf5 returned 0 after 90820 usecs
+[    4.858003] calling  pty_init+0x0/0x12 @ 1
+[    4.859003] device: 'ptyp0': device_add
+[    4.860003] device: 'ptyp1': device_add
+[    4.861003] device: 'ptyp2': device_add
+[    4.863003] device: 'ptyp3': device_add
+[    4.864003] device: 'ptyp4': device_add
+[    4.865003] device: 'ptyp5': device_add
+[    4.867003] device: 'ptyp6': device_add
+[    4.868003] device: 'ptyp7': device_add
+[    4.869003] device: 'ptyp8': device_add
+[    4.870003] device: 'ptyp9': device_add
+[    4.872003] device: 'ptypa': device_add
+[    4.873003] device: 'ptypb': device_add
+[    4.874003] device: 'ptypc': device_add
+[    4.876003] device: 'ptypd': device_add
+[    4.877003] device: 'ptype': device_add
+[    4.878003] device: 'ptypf': device_add
+[    4.879003] device: 'ptyq0': device_add
+[    4.881003] device: 'ptyq1': device_add
+[    4.882003] device: 'ptyq2': device_add
+[    4.883003] device: 'ptyq3': device_add
+[    4.885003] device: 'ptyq4': device_add
+[    4.886003] device: 'ptyq5': device_add
+[    4.887003] device: 'ptyq6': device_add
+[    4.889003] device: 'ptyq7': device_add
+[    4.890003] device: 'ptyq8': device_add
+[    4.891003] device: 'ptyq9': device_add
+[    4.893003] device: 'ptyqa': device_add
+[    4.894003] device: 'ptyqb': device_add
+[    4.895003] device: 'ptyqc': device_add
+[    4.896003] device: 'ptyqd': device_add
+[    4.898003] device: 'ptyqe': device_add
+[    4.899003] device: 'ptyqf': device_add
+[    4.900003] device: 'ptyr0': device_add
+[    4.902003] device: 'ptyr1': device_add
+[    4.903003] device: 'ptyr2': device_add
+[    4.904003] device: 'ptyr3': device_add
+[    4.906003] device: 'ptyr4': device_add
+[    4.907003] device: 'ptyr5': device_add
+[    4.908003] device: 'ptyr6': device_add
+[    4.910003] device: 'ptyr7': device_add
+[    4.911003] device: 'ptyr8': device_add
+[    4.912003] device: 'ptyr9': device_add
+[    4.913003] device: 'ptyra': device_add
+[    4.915003] device: 'ptyrb': device_add
+[    4.916003] device: 'ptyrc': device_add
+[    4.917003] device: 'ptyrd': device_add
+[    4.919003] device: 'ptyre': device_add
+[    4.920003] device: 'ptyrf': device_add
+[    4.921003] device: 'ptys0': device_add
+[    4.923003] device: 'ptys1': device_add
+[    4.924003] device: 'ptys2': device_add
+[    4.925003] device: 'ptys3': device_add
+[    4.927003] device: 'ptys4': device_add
+[    4.928003] device: 'ptys5': device_add
+[    4.929003] device: 'ptys6': device_add
+[    4.930003] device: 'ptys7': device_add
+[    4.932003] device: 'ptys8': device_add
+[    4.933003] device: 'ptys9': device_add
+[    4.934003] device: 'ptysa': device_add
+[    4.936003] device: 'ptysb': device_add
+[    4.937003] device: 'ptysc': device_add
+[    4.938003] device: 'ptysd': device_add
+[    4.940003] device: 'ptyse': device_add
+[    4.941003] device: 'ptysf': device_add
+[    4.942003] device: 'ptyt0': device_add
+[    4.944003] device: 'ptyt1': device_add
+[    4.945003] device: 'ptyt2': device_add
+[    4.946003] device: 'ptyt3': device_add
+[    4.947003] device: 'ptyt4': device_add
+[    4.949003] device: 'ptyt5': device_add
+[    4.950003] device: 'ptyt6': device_add
+[    4.951003] device: 'ptyt7': device_add
+[    4.953003] device: 'ptyt8': device_add
+[    4.954003] device: 'ptyt9': device_add
+[    4.955003] device: 'ptyta': device_add
+[    4.957003] device: 'ptytb': device_add
+[    4.958003] device: 'ptytc': device_add
+[    4.959003] device: 'ptytd': device_add
+[    4.961003] device: 'ptyte': device_add
+[    4.962003] device: 'ptytf': device_add
+[    4.963003] device: 'ptyu0': device_add
+[    4.964003] device: 'ptyu1': device_add
+[    4.966003] device: 'ptyu2': device_add
+[    4.967003] device: 'ptyu3': device_add
+[    4.968003] device: 'ptyu4': device_add
+[    4.970003] device: 'ptyu5': device_add
+[    4.971003] device: 'ptyu6': device_add
+[    4.972003] device: 'ptyu7': device_add
+[    4.974003] device: 'ptyu8': device_add
+[    4.975003] device: 'ptyu9': device_add
+[    4.976003] device: 'ptyua': device_add
+[    4.978003] device: 'ptyub': device_add
+[    4.979003] device: 'ptyuc': device_add
+[    4.980003] device: 'ptyud': device_add
+[    4.982003] device: 'ptyue': device_add
+[    4.983003] device: 'ptyuf': device_add
+[    4.984003] device: 'ptyv0': device_add
+[    4.985003] device: 'ptyv1': device_add
+[    4.987003] device: 'ptyv2': device_add
+[    4.988003] device: 'ptyv3': device_add
+[    4.989003] device: 'ptyv4': device_add
+[    4.991003] device: 'ptyv5': device_add
+[    4.992003] device: 'ptyv6': device_add
+[    4.993003] device: 'ptyv7': device_add
+[    4.995003] device: 'ptyv8': device_add
+[    4.996003] device: 'ptyv9': device_add
+[    4.997003] device: 'ptyva': device_add
+[    4.998003] device: 'ptyvb': device_add
+[    5.000003] device: 'ptyvc': device_add
+[    5.001003] device: 'ptyvd': device_add
+[    5.002003] device: 'ptyve': device_add
+[    5.004003] device: 'ptyvf': device_add
+[    5.005003] device: 'ptyw0': device_add
+[    5.006003] device: 'ptyw1': device_add
+[    5.008003] device: 'ptyw2': device_add
+[    5.009003] device: 'ptyw3': device_add
+[    5.010003] device: 'ptyw4': device_add
+[    5.012003] device: 'ptyw5': device_add
+[    5.013003] device: 'ptyw6': device_add
+[    5.014003] device: 'ptyw7': device_add
+[    5.015003] device: 'ptyw8': device_add
+[    5.017003] device: 'ptyw9': device_add
+[    5.018003] device: 'ptywa': device_add
+[    5.019003] device: 'ptywb': device_add
+[    5.021003] device: 'ptywc': device_add
+[    5.022003] device: 'ptywd': device_add
+[    5.023003] device: 'ptywe': device_add
+[    5.025003] device: 'ptywf': device_add
+[    5.026003] device: 'ptyx0': device_add
+[    5.027003] device: 'ptyx1': device_add
+[    5.029003] device: 'ptyx2': device_add
+[    5.030003] device: 'ptyx3': device_add
+[    5.031003] device: 'ptyx4': device_add
+[    5.033003] device: 'ptyx5': device_add
+[    5.034003] device: 'ptyx6': device_add
+[    5.035003] device: 'ptyx7': device_add
+[    5.037003] device: 'ptyx8': device_add
+[    5.038003] device: 'ptyx9': device_add
+[    5.039003] device: 'ptyxa': device_add
+[    5.040003] device: 'ptyxb': device_add
+[    5.042003] device: 'ptyxc': device_add
+[    5.043003] device: 'ptyxd': device_add
+[    5.044003] device: 'ptyxe': device_add
+[    5.046003] device: 'ptyxf': device_add
+[    5.047003] device: 'ptyy0': device_add
+[    5.048003] device: 'ptyy1': device_add
+[    5.050003] device: 'ptyy2': device_add
+[    5.051003] device: 'ptyy3': device_add
+[    5.052003] device: 'ptyy4': device_add
+[    5.054003] device: 'ptyy5': device_add
+[    5.055003] device: 'ptyy6': device_add
+[    5.056003] device: 'ptyy7': device_add
+[    5.058003] device: 'ptyy8': device_add
+[    5.059003] device: 'ptyy9': device_add
+[    5.060003] device: 'ptyya': device_add
+[    5.062003] device: 'ptyyb': device_add
+[    5.063003] device: 'ptyyc': device_add
+[    5.064003] device: 'ptyyd': device_add
+[    5.066003] device: 'ptyye': device_add
+[    5.067003] device: 'ptyyf': device_add
+[    5.068003] device: 'ptyz0': device_add
+[    5.069003] device: 'ptyz1': device_add
+[    5.071003] device: 'ptyz2': device_add
+[    5.072003] device: 'ptyz3': device_add
+[    5.073003] device: 'ptyz4': device_add
+[    5.075003] device: 'ptyz5': device_add
+[    5.076003] device: 'ptyz6': device_add
+[    5.077003] device: 'ptyz7': device_add
+[    5.079003] device: 'ptyz8': device_add
+[    5.080003] device: 'ptyz9': device_add
+[    5.081003] device: 'ptyza': device_add
+[    5.083003] device: 'ptyzb': device_add
+[    5.084003] device: 'ptyzc': device_add
+[    5.085003] device: 'ptyzd': device_add
+[    5.087003] device: 'ptyze': device_add
+[    5.088003] device: 'ptyzf': device_add
+[    5.089003] device: 'ptya0': device_add
+[    5.090003] device: 'ptya1': device_add
+[    5.092003] device: 'ptya2': device_add
+[    5.093003] device: 'ptya3': device_add
+[    5.094003] device: 'ptya4': device_add
+[    5.096003] device: 'ptya5': device_add
+[    5.097003] device: 'ptya6': device_add
+[    5.098003] device: 'ptya7': device_add
+[    5.100003] device: 'ptya8': device_add
+[    5.101003] device: 'ptya9': device_add
+[    5.102003] device: 'ptyaa': device_add
+[    5.104003] device: 'ptyab': device_add
+[    5.105003] device: 'ptyac': device_add
+[    5.106003] device: 'ptyad': device_add
+[    5.108003] device: 'ptyae': device_add
+[    5.109003] device: 'ptyaf': device_add
+[    5.110003] device: 'ptyb0': device_add
+[    5.111003] device: 'ptyb1': device_add
+[    5.113003] device: 'ptyb2': device_add
+[    5.114003] device: 'ptyb3': device_add
+[    5.115003] device: 'ptyb4': device_add
+[    5.117003] device: 'ptyb5': device_add
+[    5.118003] device: 'ptyb6': device_add
+[    5.119003] device: 'ptyb7': device_add
+[    5.121003] device: 'ptyb8': device_add
+[    5.122003] device: 'ptyb9': device_add
+[    5.123003] device: 'ptyba': device_add
+[    5.125003] device: 'ptybb': device_add
+[    5.126003] device: 'ptybc': device_add
+[    5.127003] device: 'ptybd': device_add
+[    5.129003] device: 'ptybe': device_add
+[    5.130003] device: 'ptybf': device_add
+[    5.131003] device: 'ptyc0': device_add
+[    5.133003] device: 'ptyc1': device_add
+[    5.134003] device: 'ptyc2': device_add
+[    5.135003] device: 'ptyc3': device_add
+[    5.136003] device: 'ptyc4': device_add
+[    5.138003] device: 'ptyc5': device_add
+[    5.139003] device: 'ptyc6': device_add
+[    5.140003] device: 'ptyc7': device_add
+[    5.142003] device: 'ptyc8': device_add
+[    5.143003] device: 'ptyc9': device_add
+[    5.144003] device: 'ptyca': device_add
+[    5.146003] device: 'ptycb': device_add
+[    5.147003] device: 'ptycc': device_add
+[    5.148003] device: 'ptycd': device_add
+[    5.150003] device: 'ptyce': device_add
+[    5.151003] device: 'ptycf': device_add
+[    5.152003] device: 'ptyd0': device_add
+[    5.154003] device: 'ptyd1': device_add
+[    5.155003] device: 'ptyd2': device_add
+[    5.156003] device: 'ptyd3': device_add
+[    5.158003] device: 'ptyd4': device_add
+[    5.159003] device: 'ptyd5': device_add
+[    5.160003] device: 'ptyd6': device_add
+[    5.162003] device: 'ptyd7': device_add
+[    5.163003] device: 'ptyd8': device_add
+[    5.164003] device: 'ptyd9': device_add
+[    5.166003] device: 'ptyda': device_add
+[    5.167003] device: 'ptydb': device_add
+[    5.168003] device: 'ptydc': device_add
+[    5.170003] device: 'ptydd': device_add
+[    5.171003] device: 'ptyde': device_add
+[    5.172003] device: 'ptydf': device_add
+[    5.173003] device: 'ptye0': device_add
+[    5.175003] device: 'ptye1': device_add
+[    5.176003] device: 'ptye2': device_add
+[    5.177003] device: 'ptye3': device_add
+[    5.179003] device: 'ptye4': device_add
+[    5.180003] device: 'ptye5': device_add
+[    5.181003] device: 'ptye6': device_add
+[    5.183003] device: 'ptye7': device_add
+[    5.184003] device: 'ptye8': device_add
+[    5.185003] device: 'ptye9': device_add
+[    5.187003] device: 'ptyea': device_add
+[    5.188003] device: 'ptyeb': device_add
+[    5.189003] device: 'ptyec': device_add
+[    5.191003] device: 'ptyed': device_add
+[    5.192003] device: 'ptyee': device_add
+[    5.193003] device: 'ptyef': device_add
+[    5.195003] device: 'ttyp0': device_add
+[    5.196003] device: 'ttyp1': device_add
+[    5.197003] device: 'ttyp2': device_add
+[    5.199003] device: 'ttyp3': device_add
+[    5.200003] device: 'ttyp4': device_add
+[    5.201003] device: 'ttyp5': device_add
+[    5.203003] device: 'ttyp6': device_add
+[    5.204003] device: 'ttyp7': device_add
+[    5.205003] device: 'ttyp8': device_add
+[    5.206003] device: 'ttyp9': device_add
+[    5.208003] device: 'ttypa': device_add
+[    5.209003] device: 'ttypb': device_add
+[    5.210003] device: 'ttypc': device_add
+[    5.212003] device: 'ttypd': device_add
+[    5.213003] device: 'ttype': device_add
+[    5.214003] device: 'ttypf': device_add
+[    5.216003] device: 'ttyq0': device_add
+[    5.217003] device: 'ttyq1': device_add
+[    5.218003] device: 'ttyq2': device_add
+[    5.220003] device: 'ttyq3': device_add
+[    5.221003] device: 'ttyq4': device_add
+[    5.222003] device: 'ttyq5': device_add
+[    5.224003] device: 'ttyq6': device_add
+[    5.225003] device: 'ttyq7': device_add
+[    5.226003] device: 'ttyq8': device_add
+[    5.228003] device: 'ttyq9': device_add
+[    5.229003] device: 'ttyqa': device_add
+[    5.230003] device: 'ttyqb': device_add
+[    5.232003] device: 'ttyqc': device_add
+[    5.233003] device: 'ttyqd': device_add
+[    5.234003] device: 'ttyqe': device_add
+[    5.236004] device: 'ttyqf': device_add
+[    5.237004] device: 'ttyr0': device_add
+[    5.238004] device: 'ttyr1': device_add
+[    5.239004] device: 'ttyr2': device_add
+[    5.241004] device: 'ttyr3': device_add
+[    5.242004] device: 'ttyr4': device_add
+[    5.243004] device: 'ttyr5': device_add
+[    5.245004] device: 'ttyr6': device_add
+[    5.246004] device: 'ttyr7': device_add
+[    5.247004] device: 'ttyr8': device_add
+[    5.249004] device: 'ttyr9': device_add
+[    5.250004] device: 'ttyra': device_add
+[    5.251004] device: 'ttyrb': device_add
+[    5.253004] device: 'ttyrc': device_add
+[    5.254004] device: 'ttyrd': device_add
+[    5.255004] device: 'ttyre': device_add
+[    5.257004] device: 'ttyrf': device_add
+[    5.258004] device: 'ttys0': device_add
+[    5.259004] device: 'ttys1': device_add
+[    5.261004] device: 'ttys2': device_add
+[    5.262004] device: 'ttys3': device_add
+[    5.263004] device: 'ttys4': device_add
+[    5.265004] device: 'ttys5': device_add
+[    5.266004] device: 'ttys6': device_add
+[    5.267004] device: 'ttys7': device_add
+[    5.269004] device: 'ttys8': device_add
+[    5.270004] device: 'ttys9': device_add
+[    5.271004] device: 'ttysa': device_add
+[    5.272004] device: 'ttysb': device_add
+[    5.274004] device: 'ttysc': device_add
+[    5.275004] device: 'ttysd': device_add
+[    5.276004] device: 'ttyse': device_add
+[    5.278004] device: 'ttysf': device_add
+[    5.279004] device: 'ttyt0': device_add
+[    5.280004] device: 'ttyt1': device_add
+[    5.282004] device: 'ttyt2': device_add
+[    5.283004] device: 'ttyt3': device_add
+[    5.284004] device: 'ttyt4': device_add
+[    5.286004] device: 'ttyt5': device_add
+[    5.287004] device: 'ttyt6': device_add
+[    5.288004] device: 'ttyt7': device_add
+[    5.290004] device: 'ttyt8': device_add
+[    5.291004] device: 'ttyt9': device_add
+[    5.292004] device: 'ttyta': device_add
+[    5.294004] device: 'ttytb': device_add
+[    5.295004] device: 'ttytc': device_add
+[    5.296004] device: 'ttytd': device_add
+[    5.298004] device: 'ttyte': device_add
+[    5.299004] device: 'ttytf': device_add
+[    5.300004] device: 'ttyu0': device_add
+[    5.302004] device: 'ttyu1': device_add
+[    5.303004] device: 'ttyu2': device_add
+[    5.304004] device: 'ttyu3': device_add
+[    5.306004] device: 'ttyu4': device_add
+[    5.307004] device: 'ttyu5': device_add
+[    5.308004] device: 'ttyu6': device_add
+[    5.310004] device: 'ttyu7': device_add
+[    5.311004] device: 'ttyu8': device_add
+[    5.312004] device: 'ttyu9': device_add
+[    5.314004] device: 'ttyua': device_add
+[    5.315004] device: 'ttyub': device_add
+[    5.316004] device: 'ttyuc': device_add
+[    5.318004] device: 'ttyud': device_add
+[    5.319004] device: 'ttyue': device_add
+[    5.320004] device: 'ttyuf': device_add
+[    5.322004] device: 'ttyv0': device_add
+[    5.323004] device: 'ttyv1': device_add
+[    5.324004] device: 'ttyv2': device_add
+[    5.326004] device: 'ttyv3': device_add
+[    5.327004] device: 'ttyv4': device_add
+[    5.328004] device: 'ttyv5': device_add
+[    5.329004] device: 'ttyv6': device_add
+[    5.331004] device: 'ttyv7': device_add
+[    5.332004] device: 'ttyv8': device_add
+[    5.333004] device: 'ttyv9': device_add
+[    5.335004] device: 'ttyva': device_add
+[    5.336004] device: 'ttyvb': device_add
+[    5.337004] device: 'ttyvc': device_add
+[    5.339004] device: 'ttyvd': device_add
+[    5.340004] device: 'ttyve': device_add
+[    5.341004] device: 'ttyvf': device_add
+[    5.343004] device: 'ttyw0': device_add
+[    5.344004] device: 'ttyw1': device_add
+[    5.345004] device: 'ttyw2': device_add
+[    5.347004] device: 'ttyw3': device_add
+[    5.348004] device: 'ttyw4': device_add
+[    5.349004] device: 'ttyw5': device_add
+[    5.351004] device: 'ttyw6': device_add
+[    5.352004] device: 'ttyw7': device_add
+[    5.353004] device: 'ttyw8': device_add
+[    5.355004] device: 'ttyw9': device_add
+[    5.356004] device: 'ttywa': device_add
+[    5.357004] device: 'ttywb': device_add
+[    5.359004] device: 'ttywc': device_add
+[    5.360004] device: 'ttywd': device_add
+[    5.361004] device: 'ttywe': device_add
+[    5.363004] device: 'ttywf': device_add
+[    5.364004] device: 'ttyx0': device_add
+[    5.365004] device: 'ttyx1': device_add
+[    5.367004] device: 'ttyx2': device_add
+[    5.368004] device: 'ttyx3': device_add
+[    5.369004] device: 'ttyx4': device_add
+[    5.371004] device: 'ttyx5': device_add
+[    5.372004] device: 'ttyx6': device_add
+[    5.373004] device: 'ttyx7': device_add
+[    5.375004] device: 'ttyx8': device_add
+[    5.376004] device: 'ttyx9': device_add
+[    5.377004] device: 'ttyxa': device_add
+[    5.379004] device: 'ttyxb': device_add
+[    5.380004] device: 'ttyxc': device_add
+[    5.381004] device: 'ttyxd': device_add
+[    5.383004] device: 'ttyxe': device_add
+[    5.384004] device: 'ttyxf': device_add
+[    5.385004] device: 'ttyy0': device_add
+[    5.387004] device: 'ttyy1': device_add
+[    5.388004] device: 'ttyy2': device_add
+[    5.389004] device: 'ttyy3': device_add
+[    5.391004] device: 'ttyy4': device_add
+[    5.392004] device: 'ttyy5': device_add
+[    5.393004] device: 'ttyy6': device_add
+[    5.395004] device: 'ttyy7': device_add
+[    5.396004] device: 'ttyy8': device_add
+[    5.397004] device: 'ttyy9': device_add
+[    5.399004] device: 'ttyya': device_add
+[    5.400004] device: 'ttyyb': device_add
+[    5.401004] device: 'ttyyc': device_add
+[    5.403004] device: 'ttyyd': device_add
+[    5.404004] device: 'ttyye': device_add
+[    5.405004] device: 'ttyyf': device_add
+[    5.407004] device: 'ttyz0': device_add
+[    5.408004] device: 'ttyz1': device_add
+[    5.409004] device: 'ttyz2': device_add
+[    5.411004] device: 'ttyz3': device_add
+[    5.412004] device: 'ttyz4': device_add
+[    5.413004] device: 'ttyz5': device_add
+[    5.415004] device: 'ttyz6': device_add
+[    5.416004] device: 'ttyz7': device_add
+[    5.417004] device: 'ttyz8': device_add
+[    5.419004] device: 'ttyz9': device_add
+[    5.420004] device: 'ttyza': device_add
+[    5.421004] device: 'ttyzb': device_add
+[    5.423004] device: 'ttyzc': device_add
+[    5.424004] device: 'ttyzd': device_add
+[    5.425004] device: 'ttyze': device_add
+[    5.427004] device: 'ttyzf': device_add
+[    5.428004] device: 'ttya0': device_add
+[    5.429004] device: 'ttya1': device_add
+[    5.431004] device: 'ttya2': device_add
+[    5.432004] device: 'ttya3': device_add
+[    5.433004] device: 'ttya4': device_add
+[    5.435004] device: 'ttya5': device_add
+[    5.436004] device: 'ttya6': device_add
+[    5.437004] device: 'ttya7': device_add
+[    5.439004] device: 'ttya8': device_add
+[    5.440004] device: 'ttya9': device_add
+[    5.441004] device: 'ttyaa': device_add
+[    5.443004] device: 'ttyab': device_add
+[    5.444004] device: 'ttyac': device_add
+[    5.445004] device: 'ttyad': device_add
+[    5.447004] device: 'ttyae': device_add
+[    5.448004] device: 'ttyaf': device_add
+[    5.449004] device: 'ttyb0': device_add
+[    5.451004] device: 'ttyb1': device_add
+[    5.452004] device: 'ttyb2': device_add
+[    5.453004] device: 'ttyb3': device_add
+[    5.455004] device: 'ttyb4': device_add
+[    5.456004] device: 'ttyb5': device_add
+[    5.457004] device: 'ttyb6': device_add
+[    5.459004] device: 'ttyb7': device_add
+[    5.460004] device: 'ttyb8': device_add
+[    5.461004] device: 'ttyb9': device_add
+[    5.463004] device: 'ttyba': device_add
+[    5.464004] device: 'ttybb': device_add
+[    5.465004] device: 'ttybc': device_add
+[    5.467004] device: 'ttybd': device_add
+[    5.468004] device: 'ttybe': device_add
+[    5.469004] device: 'ttybf': device_add
+[    5.471004] device: 'ttyc0': device_add
+[    5.472004] device: 'ttyc1': device_add
+[    5.473004] device: 'ttyc2': device_add
+[    5.475004] device: 'ttyc3': device_add
+[    5.476004] device: 'ttyc4': device_add
+[    5.477004] device: 'ttyc5': device_add
+[    5.479004] device: 'ttyc6': device_add
+[    5.480004] device: 'ttyc7': device_add
+[    5.481004] device: 'ttyc8': device_add
+[    5.483004] device: 'ttyc9': device_add
+[    5.484004] device: 'ttyca': device_add
+[    5.485004] device: 'ttycb': device_add
+[    5.487004] device: 'ttycc': device_add
+[    5.488004] device: 'ttycd': device_add
+[    5.489004] device: 'ttyce': device_add
+[    5.491004] device: 'ttycf': device_add
+[    5.492004] device: 'ttyd0': device_add
+[    5.493004] device: 'ttyd1': device_add
+[    5.495004] device: 'ttyd2': device_add
+[    5.496004] device: 'ttyd3': device_add
+[    5.497004] device: 'ttyd4': device_add
+[    5.499004] device: 'ttyd5': device_add
+[    5.500004] device: 'ttyd6': device_add
+[    5.501004] device: 'ttyd7': device_add
+[    5.503004] device: 'ttyd8': device_add
+[    5.504004] device: 'ttyd9': device_add
+[    5.505004] device: 'ttyda': device_add
+[    5.507004] device: 'ttydb': device_add
+[    5.508004] device: 'ttydc': device_add
+[    5.509004] device: 'ttydd': device_add
+[    5.511004] device: 'ttyde': device_add
+[    5.512004] device: 'ttydf': device_add
+[    5.514004] device: 'ttye0': device_add
+[    5.515004] device: 'ttye1': device_add
+[    5.516004] device: 'ttye2': device_add
+[    5.517004] device: 'ttye3': device_add
+[    5.519004] device: 'ttye4': device_add
+[    5.520004] device: 'ttye5': device_add
+[    5.522004] device: 'ttye6': device_add
+[    5.523004] device: 'ttye7': device_add
+[    5.524004] device: 'ttye8': device_add
+[    5.526004] device: 'ttye9': device_add
+[    5.527004] device: 'ttyea': device_add
+[    5.528004] device: 'ttyeb': device_add
+[    5.530004] device: 'ttyec': device_add
+[    5.531004] device: 'ttyed': device_add
+[    5.532004] device: 'ttyee': device_add
+[    5.534004] device: 'ttyef': device_add
+[    5.535004] device: 'ptmx': device_add
+[    5.536004] initcall pty_init+0x0/0x12 returned 0 after 661133 usecs
+[    5.537004] calling  sysrq_init+0x0/0x25 @ 1
+[    5.538004] initcall sysrq_init+0x0/0x25 returned 0 after 0 usecs
+[    5.540004] calling  r3964_init+0x0/0x44 @ 1
+[    5.541004] r3964: Philips r3964 Driver $Revision: 1.10 $
+[    5.542004] initcall r3964_init+0x0/0x44 returned 0 after 976 usecs
+[    5.543004] calling  nvram_init+0x0/0x82 @ 1
+[    5.544004] device: 'nvram': device_add
+[    5.546004] Non-volatile memory driver v1.3
+[    5.547004] initcall nvram_init+0x0/0x82 returned 0 after 2929 usecs
+[    5.549004] calling  timeriomem_rng_init+0x0/0x12 @ 1
+[    5.550004] bus: 'platform': add driver timeriomem_rng
+[    5.551004] initcall timeriomem_rng_init+0x0/0x12 returned 0 after 976 usecs
+[    5.553004] calling  agp_init+0x0/0x26 @ 1
+[    5.554004] Linux agpgart interface v0.103
+[    5.555004] initcall agp_init+0x0/0x26 returned 0 after 976 usecs
+[    5.556004] calling  agp_intel_init+0x0/0x29 @ 1
+[    5.557004] bus: 'pci': add driver agpgart-intel
+[    5.558004] initcall agp_intel_init+0x0/0x29 returned 0 after 976 usecs
+[    5.559004] calling  agp_via_init+0x0/0x29 @ 1
+[    5.561004] bus: 'pci': add driver agpgart-via
+[    5.562004] initcall agp_via_init+0x0/0x29 returned 0 after 976 usecs
+[    5.563004] calling  ipmi_init_msghandler_mod+0x0/0xd @ 1
+[    5.564004] bus: 'platform': add driver ipmi
+[    5.565004] ipmi message handler version 39.2
+[    5.566004] initcall ipmi_init_msghandler_mod+0x0/0xd returned 0 after 1953 usecs
+[    5.568004] calling  init_ipmi_devintf+0x0/0x108 @ 1
+[    5.569004] ipmi device interface
+[    5.570004] device class 'ipmi': registering
+[    5.572004] initcall init_ipmi_devintf+0x0/0x108 returned 0 after 2929 usecs
+[    5.573004] calling  init_ipmi_si+0x0/0x261 @ 1
+[    5.574004] bus: 'platform': add driver ipmi_si
+[    5.576004] IPMI System Interface driver.
+[    5.577004] bus: 'pci': add driver ipmi_si
+[    5.579004] bus: 'pci': remove driver ipmi_si
+[    5.581004] driver: 'ipmi_si': driver_release
+[    5.582004] bus: 'platform': remove driver ipmi_si
+[    5.583004] driver: 'ipmi_si': driver_release
+[    5.584004] ipmi_si: Unable to find any System Interface(s)
+[    5.585004] initcall init_ipmi_si+0x0/0x261 returned -19 after 10742 usecs
+[    5.586004] calling  intelfb_init+0x0/0x7e @ 1
+[    5.587004] intelfb: intelfb_init
+[    5.588004] intelfb: Framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM chipsets
+[    5.589004] intelfb: Version 0.9.6
+[    5.590004] intelfb: intelfb_setup
+[    5.591004] intelfb: no options
+[    5.592004] bus: 'pci': add driver intelfb
+[    5.593004] initcall intelfb_init+0x0/0x7e returned 0 after 5859 usecs
+[    5.594004] calling  serial8250_init+0x0/0x145 @ 1
+[    5.595004] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    5.596004] Registering platform device 'serial8250'. Parent at platform
+[    5.597004] device: 'serial8250': device_add
+[    5.598004] bus: 'platform': add device serial8250
+[    5.599004] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+[    5.600004] device: 'ttyS0': device_add
+[    5.602004] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+[    5.604004] device: 'ttyS1': device_add
+[    5.605004] device: 'ttyS2': device_add
+[    5.606004] device: 'ttyS3': device_add
+[    5.608004] bus: 'platform': add driver serial8250
+[    5.609004] bus: 'platform': driver_probe_device: matched device serial8250 with driver serial8250
+[    5.610004] bus: 'platform': really_probe: probing driver serial8250 with device serial8250
+[    5.611004] driver: 'serial8250': driver_bound: bound to device 'serial8250'
+[    5.612004] bus: 'platform': really_probe: bound device serial8250 to driver serial8250
+[    5.613004] initcall serial8250_init+0x0/0x145 returned 0 after 17578 usecs
+[    5.614004] calling  init_kgdboc+0x0/0x16 @ 1
+[    5.615004] initcall init_kgdboc+0x0/0x16 returned 0 after 0 usecs
+[    5.616004] calling  topology_sysfs_init+0x0/0x59 @ 1
+[    5.617004] initcall topology_sysfs_init+0x0/0x59 returned 0 after 0 usecs
+[    5.618004] calling  brd_init+0x0/0x16e @ 1
+[    5.619004] device: 'ram0': device_add
+[    5.621004] device: '1:0': device_add
+[    5.622004] device: 'ram1': device_add
+[    5.623004] device: '1:1': device_add
+[    5.624004] device: 'ram2': device_add
+[    5.626004] device: '1:2': device_add
+[    5.628004] device: 'ram3': device_add
+[    5.629004] device: '1:3': device_add
+[    5.630004] device: 'ram4': device_add
+[    5.632004] device: '1:4': device_add
+[    5.634004] device: 'ram5': device_add
+[    5.635004] device: '1:5': device_add
+[    5.636004] device: 'ram6': device_add
+[    5.638004] device: '1:6': device_add
+[    5.640004] device: 'ram7': device_add
+[    5.641004] device: '1:7': device_add
+[    5.642004] device: 'ram8': device_add
+[    5.644004] device: '1:8': device_add
+[    5.645004] device: 'ram9': device_add
+[    5.646004] device: '1:9': device_add
+[    5.647004] device: 'ram10': device_add
+[    5.649004] device: '1:10': device_add
+[    5.650004] device: 'ram11': device_add
+[    5.651004] device: '1:11': device_add
+[    5.653004] device: 'ram12': device_add
+[    5.654004] device: '1:12': device_add
+[    5.655004] device: 'ram13': device_add
+[    5.657004] device: '1:13': device_add
+[    5.658004] device: 'ram14': device_add
+[    5.660004] device: '1:14': device_add
+[    5.661004] device: 'ram15': device_add
+[    5.662004] device: '1:15': device_add
+[    5.664004] brd: module loaded
+[    5.665004] initcall brd_init+0x0/0x16e returned 0 after 44921 usecs
+[    5.666004] calling  loop_init+0x0/0x196 @ 1
+[    5.667004] device: 'loop0': device_add
+[    5.669004] device: '7:0': device_add
+[    5.670004] device: 'loop1': device_add
+[    5.671004] device: '7:1': device_add
+[    5.672004] device: 'loop2': device_add
+[    5.674004] device: '7:2': device_add
+[    5.675004] device: 'loop3': device_add
+[    5.676004] device: '7:3': device_add
+[    5.678004] device: 'loop4': device_add
+[    5.679004] device: '7:4': device_add
+[    5.680004] device: 'loop5': device_add
+[    5.682004] device: '7:5': device_add
+[    5.684004] device: 'loop6': device_add
+[    5.685004] device: '7:6': device_add
+[    5.686004] device: 'loop7': device_add
+[    5.688004] device: '7:7': device_add
+[    5.689004] loop: module loaded
+[    5.690004] initcall loop_init+0x0/0x196 returned 0 after 22460 usecs
+[    5.691004] calling  cpqarray_init+0x0/0x6f @ 1
+[    5.692004] Compaq SMART2 Driver (v 2.6.0)
+[    5.693004] bus: 'pci': add driver cpqarray
+[    5.695004] bus: 'pci': remove driver cpqarray
+[    5.696004] driver: 'cpqarray': driver_release
+[    5.697004] initcall cpqarray_init+0x0/0x6f returned -19 after 4882 usecs
+[    5.698004] calling  cciss_init+0x0/0x56 @ 1
+[    5.699004] HP CISS Driver (v 3.6.20)
+[    5.701004] bus: 'cciss': registered
+[    5.702004] bus: 'pci': add driver cciss
+[    5.704004] initcall cciss_init+0x0/0x56 returned 0 after 4882 usecs
+[    5.705004] calling  nbd_init+0x0/0x328 @ 1
+[    5.707004] nbd: registered device at major 43
+[    5.708004] device: 'nbd0': device_add
+[    5.710004] device: '43:0': device_add
+[    5.711004] device: 'nbd1': device_add
+[    5.712004] device: '43:1': device_add
+[    5.713004] device: 'nbd2': device_add
+[    5.715004] device: '43:2': device_add
+[    5.716004] device: 'nbd3': device_add
+[    5.717004] device: '43:3': device_add
+[    5.719004] device: 'nbd4': device_add
+[    5.720004] device: '43:4': device_add
+[    5.721004] device: 'nbd5': device_add
+[    5.723004] device: '43:5': device_add
+[    5.724004] device: 'nbd6': device_add
+[    5.725004] device: '43:6': device_add
+[    5.726004] device: 'nbd7': device_add
+[    5.728004] device: '43:7': device_add
+[    5.729004] device: 'nbd8': device_add
+[    5.730004] device: '43:8': device_add
+[    5.732004] device: 'nbd9': device_add
+[    5.733004] device: '43:9': device_add
+[    5.734004] device: 'nbd10': device_add
+[    5.736004] device: '43:10': device_add
+[    5.737004] device: 'nbd11': device_add
+[    5.739004] device: '43:11': device_add
+[    5.740004] device: 'nbd12': device_add
+[    5.741004] device: '43:12': device_add
+[    5.743004] device: 'nbd13': device_add
+[    5.744004] device: '43:13': device_add
+[    5.745004] device: 'nbd14': device_add
+[    5.747004] device: '43:14': device_add
+[    5.748004] device: 'nbd15': device_add
+[    5.750004] device: '43:15': device_add
+[    5.751004] initcall nbd_init+0x0/0x328 returned 0 after 43945 usecs
+[    5.752004] calling  init_cryptoloop+0x0/0x2f @ 1
+[    5.754004] initcall init_cryptoloop+0x0/0x2f returned 0 after 0 usecs
+[    5.755004] calling  carm_init+0x0/0x1b @ 1
+[    5.756004] bus: 'pci': add driver sx8
+[    5.758004] initcall carm_init+0x0/0x1b returned 0 after 1953 usecs
+[    5.759004] calling  ibmasm_init+0x0/0x64 @ 1
+[    5.760004] bus: 'pci': add driver ibmasm
+[    5.761004] ibmasm: IBM ASM Service Processor Driver version 1.0 loaded
+[    5.762004] initcall ibmasm_init+0x0/0x64 returned 0 after 1953 usecs
+[    5.763004] calling  tifm_7xx1_init+0x0/0x1b @ 1
+[    5.764004] bus: 'pci': add driver tifm_7xx1
+[    5.765004] initcall tifm_7xx1_init+0x0/0x1b returned 0 after 976 usecs
+[    5.766004] calling  init_kgdbts+0x0/0x16 @ 1
+[    5.767004] initcall init_kgdbts+0x0/0x16 returned 0 after 0 usecs
+[    5.768004] calling  isl29003_init+0x0/0x14 @ 1
+[    5.769004] bus: 'i2c': add driver isl29003
+[    5.770004] initcall isl29003_init+0x0/0x14 returned 0 after 976 usecs
+[    5.771004] calling  ezx_pcap_init+0x0/0x12 @ 1
+[    5.773004] bus: 'spi': add driver ezx-pcap
+[    5.774004] initcall ezx_pcap_init+0x0/0x12 returned 0 after 976 usecs
+[    5.775004] calling  mac_hid_init+0x0/0xd5 @ 1
+[    5.776004] device: 'input0': device_add
+[    5.778004] input: Macintosh mouse button emulation as /class/input/input0
+[    5.779004] initcall mac_hid_init+0x0/0xd5 returned 0 after 2929 usecs
+[    5.780004] calling  scsi_tgt_init+0x0/0x8b @ 1
+[    5.782004] device: 'tgt': device_add
+[    5.783004] initcall scsi_tgt_init+0x0/0x8b returned 0 after 1953 usecs
+[    5.784004] calling  spi_transport_init+0x0/0x79 @ 1
+[    5.785004] device class 'spi_transport': registering
+[    5.786004] device class 'spi_host': registering
+[    5.787004] initcall spi_transport_init+0x0/0x79 returned 0 after 1953 usecs
+[    5.788004] calling  fc_transport_init+0x0/0x4c @ 1
+[    5.789004] device class 'fc_host': registering
+[    5.790004] device class 'fc_vports': registering
+[    5.791004] device class 'fc_remote_ports': registering
+[    5.792004] device class 'fc_transport': registering
+[    5.793004] initcall fc_transport_init+0x0/0x4c returned 0 after 3906 usecs
+[    5.794004] calling  iscsi_transport_init+0x0/0x14f @ 1
+[    5.795004] Loading iSCSI transport class v2.0-870.
+[    5.796004] device class 'iscsi_transport': registering
+[    5.798004] device class 'iscsi_endpoint': registering
+[    5.799004] device class 'iscsi_host': registering
+[    5.800004] device class 'iscsi_connection': registering
+[    5.801004] device class 'iscsi_session': registering
+[    5.803004] initcall iscsi_transport_init+0x0/0x14f returned 0 after 7812 usecs
+[    5.804004] calling  sas_transport_init+0x0/0xbb @ 1
+[    5.805004] device class 'sas_host': registering
+[    5.806004] device class 'sas_phy': registering
+[    5.807004] device class 'sas_port': registering
+[    5.808004] device class 'sas_device': registering
+[    5.810004] device class 'sas_end_device': registering
+[    5.811004] device class 'sas_expander': registering
+[    5.813004] initcall sas_transport_init+0x0/0xbb returned 0 after 7812 usecs
+[    5.814004] calling  sas_class_init+0x0/0x31 @ 1
+[    5.815004] initcall sas_class_init+0x0/0x31 returned 0 after 0 usecs
+[    5.816004] calling  iscsi_sw_tcp_init+0x0/0x42 @ 1
+[    5.817004] device: 'tcp': device_add
+[    5.818004] iscsi: registered transport (tcp)
+[    5.819004] initcall iscsi_sw_tcp_init+0x0/0x42 returned 0 after 1953 usecs
+[    5.820004] calling  BusLogic_init+0x0/0x58d @ 1
+[    5.821004] initcall BusLogic_init+0x0/0x58d returned 0 after 0 usecs
+[    5.822004] calling  adpt_init+0x0/0x85 @ 1
+[    5.823004] Loading Adaptec I2O RAID: Version 2.4 Build 5go
+[    5.824004] Detecting Adaptec I2O RAID controllers...
+[    5.825004] initcall adpt_init+0x0/0x85 returned -19 after 1953 usecs
+[    5.826004] calling  ahc_linux_init+0x0/0x66 @ 1
+[    5.827004] bus: 'pci': add driver aic7xxx
+[    5.828004] initcall ahc_linux_init+0x0/0x66 returned 0 after 976 usecs
+[    5.829004] calling  aac_init+0x0/0x77 @ 1
+[    5.830004] Adaptec aacraid driver 1.1-5[2461]-ms
+[    5.831004] bus: 'pci': add driver aacraid
+[    5.832004] initcall aac_init+0x0/0x77 returned 0 after 1953 usecs
+[    5.833004] calling  ips_module_init+0x0/0x67 @ 1
+[    5.834004] bus: 'pci': add driver ips
+[    5.835004] bus: 'pci': remove driver ips
+[    5.837004] driver: 'ips': driver_release
+[    5.838004] initcall ips_module_init+0x0/0x67 returned -19 after 3906 usecs
+[    5.839004] calling  init_this_scsi_driver+0x0/0xe8 @ 1
+[    5.841004] scsi: <fdomain> Detection failed (no card)
+[    5.842004] initcall init_this_scsi_driver+0x0/0xe8 returned -19 after 976 usecs
+[    5.843004] calling  dc395x_module_init+0x0/0x1b @ 1
+[    5.845004] bus: 'pci': add driver dc395x
+[    5.846004] initcall dc395x_module_init+0x0/0x1b returned 0 after 976 usecs
+[    5.847004] calling  megaraid_init+0x0/0xbd @ 1
+[    5.848004] bus: 'pci': add driver megaraid_legacy
+[    5.849004] initcall megaraid_init+0x0/0xbd returned 0 after 976 usecs
+[    5.850004] calling  atp870u_init+0x0/0x1b @ 1
+[    5.851004] bus: 'pci': add driver atp870u
+[    5.852004] initcall atp870u_init+0x0/0x1b returned 0 after 976 usecs
+[    5.854004] calling  gdth_init+0x0/0x100 @ 1
+[    5.855004] GDT-HA: Storage RAID Controller Driver. Version: 3.05
+[    5.856004] bus: 'pci': add driver gdth
+[    5.858004] initcall gdth_init+0x0/0x100 returned 0 after 2929 usecs
+[    5.859004] calling  hptiop_module_init+0x0/0x37 @ 1
+[    5.860004] RocketRAID 3xxx/4xxx Controller driver v1.3 (071203)
+[    5.861004] bus: 'pci': add driver hptiop
+[    5.862004] initcall hptiop_module_init+0x0/0x37 returned 0 after 1953 usecs
+[    5.863004] calling  stex_init+0x0/0x30 @ 1
+[    5.864004] stex: Promise SuperTrak EX Driver version: 4.6.0000.3
+[    5.865004] bus: 'pci': add driver stex
+[    5.866004] initcall stex_init+0x0/0x30 returned 0 after 1953 usecs
+[    5.867004] calling  mvs_init+0x0/0x53 @ 1
+[    5.868004] bus: 'pci': add driver mvsas
+[    5.869004] initcall mvs_init+0x0/0x53 returned 0 after 976 usecs
+[    5.870004] calling  init_st+0x0/0x104 @ 1
+[    5.871004] st: Version 20081215, fixed bufsize 32768, s/g segs 256
+[    5.872004] device class 'scsi_tape': registering
+[    5.873004] bus: 'scsi': add driver st
+[    5.874004] initcall init_st+0x0/0x104 returned 0 after 2929 usecs
+[    5.875004] calling  init_sd+0x0/0xff @ 1
+[    5.876004] device class 'scsi_disk': registering
+[    5.877004] bus: 'scsi': add driver sd
+[    5.878004] initcall init_sd+0x0/0xff returned 0 after 1953 usecs
+[    5.879004] calling  ahci_init+0x0/0x1b @ 1
+[    5.880004] bus: 'pci': add driver ahci
+[    5.881004] initcall ahci_init+0x0/0x1b returned 0 after 976 usecs
+[    5.882004] calling  piix_init+0x0/0x29 @ 1
+[    5.883004] bus: 'pci': add driver ata_piix
+[    5.884004] initcall piix_init+0x0/0x29 returned 0 after 976 usecs
+[    5.885004] calling  svia_init+0x0/0x1b @ 1
+[    5.886004] bus: 'pci': add driver sata_via
+[    5.888004] bus: 'pci': driver_probe_device: matched device 0000:00:0f.0 with driver sata_via
+[    5.889004] bus: 'pci': really_probe: probing driver sata_via with device 0000:00:0f.0
+[    5.892004] sata_via 0000:00:0f.0: version 2.4
+[    5.893004] IOAPIC[0]: Set routing entry (2-20 -> 0x61 -> IRQ 20 Mode:1 Active:1)
+[    5.894004] sata_via 0000:00:0f.0: PCI->APIC IRQ transform: INT B -> IRQ 20
+[    5.895004] sata_via 0000:00:0f.0: calling quirk_via_vlink+0x0/0xd5
+[    5.896004] sata_via 0000:00:0f.0: routed to hard irq line 10
+[    5.897004] scsi0 : sata_via
+[    5.900004] device: 'host0': device_add
+[    5.901004] device: 'host0': device_add
+[    5.903004] scsi1 : sata_via
+[    5.904004] device: 'host1': device_add
+[    5.905004] device: 'host1': device_add
+[    5.906004] ata1: SATA max UDMA/133 cmd 0xe800 ctl 0xe400 bmdma 0xd400 irq 20
+[    5.907004] ata2: SATA max UDMA/133 cmd 0xe000 ctl 0xd800 bmdma 0xd408 irq 20
+[    6.109004] ata1: SATA link down 1.5 Gbps (SStatus 0 SControl 300)
+[    6.111004] async_waiting @ 1583
+[    6.112004] async_continuing @ 1583 after 0 usec
+[    6.113004] async_waiting @ 1583
+[    6.114004] async_continuing @ 1583 after 0 usec
+[    6.316005] ata2: SATA link down 1.5 Gbps (SStatus 0 SControl 300)
+[    6.318005] async_waiting @ 1583
+[    6.319005] async_continuing @ 1583 after 0 usec
+[    6.320005] driver: '0000:00:0f.0': driver_bound: bound to device 'sata_via'
+[    6.321005] bus: 'pci': really_probe: bound device 0000:00:0f.0 to driver sata_via
+[    6.323005] initcall svia_init+0x0/0x1b returned 0 after 426758 usecs
+[    6.324005] calling  nv_init+0x0/0x1b @ 1
+[    6.325005] bus: 'pci': add driver sata_nv
+[    6.326005] initcall nv_init+0x0/0x1b returned 0 after 976 usecs
+[    6.327005] calling  mv_init+0x0/0x48 @ 1
+[    6.328005] bus: 'pci': add driver sata_mv
+[    6.329005] bus: 'platform': add driver sata_mv
+[    6.330005] initcall mv_init+0x0/0x48 returned 0 after 1953 usecs
+[    6.331005] calling  amd_init+0x0/0x1b @ 1
+[    6.332005] bus: 'pci': add driver pata_amd
+[    6.333005] initcall amd_init+0x0/0x1b returned 0 after 976 usecs
+[    6.334005] calling  atiixp_init+0x0/0x1b @ 1
+[    6.335005] bus: 'pci': add driver pata_atiixp
+[    6.337005] initcall atiixp_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.338005] calling  cs5530_init+0x0/0x1b @ 1
+[    6.339005] bus: 'pci': add driver pata_cs5530
+[    6.340005] initcall cs5530_init+0x0/0x1b returned 0 after 976 usecs
+[    6.341005] calling  efar_init+0x0/0x1b @ 1
+[    6.342005] bus: 'pci': add driver pata_efar
+[    6.343005] initcall efar_init+0x0/0x1b returned 0 after 976 usecs
+[    6.344005] calling  hpt36x_init+0x0/0x1b @ 1
+[    6.345005] bus: 'pci': add driver pata_hpt366
+[    6.346005] initcall hpt36x_init+0x0/0x1b returned 0 after 976 usecs
+[    6.347005] calling  hpt37x_init+0x0/0x1b @ 1
+[    6.348005] bus: 'pci': add driver pata_hpt37x
+[    6.349005] initcall hpt37x_init+0x0/0x1b returned 0 after 976 usecs
+[    6.350005] calling  hpt3x3_init+0x0/0x1b @ 1
+[    6.351005] bus: 'pci': add driver pata_hpt3x3
+[    6.352005] initcall hpt3x3_init+0x0/0x1b returned 0 after 976 usecs
+[    6.353005] calling  jmicron_init+0x0/0x1b @ 1
+[    6.354005] bus: 'pci': add driver pata_jmicron
+[    6.355005] initcall jmicron_init+0x0/0x1b returned 0 after 976 usecs
+[    6.356005] calling  ns87410_init+0x0/0x1b @ 1
+[    6.357005] bus: 'pci': add driver pata_ns87410
+[    6.358005] initcall ns87410_init+0x0/0x1b returned 0 after 976 usecs
+[    6.359005] calling  ns87415_init+0x0/0x1b @ 1
+[    6.360005] bus: 'pci': add driver pata_ns87415
+[    6.362005] initcall ns87415_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.363005] calling  marvell_init+0x0/0x1b @ 1
+[    6.364005] bus: 'pci': add driver pata_marvell
+[    6.365005] initcall marvell_init+0x0/0x1b returned 0 after 976 usecs
+[    6.367005] calling  oldpiix_init+0x0/0x1b @ 1
+[    6.368005] bus: 'pci': add driver pata_oldpiix
+[    6.369005] initcall oldpiix_init+0x0/0x1b returned 0 after 976 usecs
+[    6.370005] calling  serverworks_init+0x0/0x1b @ 1
+[    6.371005] bus: 'pci': add driver pata_serverworks
+[    6.372005] initcall serverworks_init+0x0/0x1b returned 0 after 976 usecs
+[    6.373005] calling  via_init+0x0/0x1b @ 1
+[    6.374005] bus: 'pci': add driver pata_via
+[    6.375005] bus: 'pci': driver_probe_device: matched device 0000:00:0f.1 with driver pata_via
+[    6.376005] bus: 'pci': really_probe: probing driver pata_via with device 0000:00:0f.1
+[    6.379005] pata_via 0000:00:0f.1: version 0.3.4
+[    6.380005] pata_via 0000:00:0f.1: PCI->APIC IRQ transform: INT A -> IRQ 20
+[    6.381005] pata_via 0000:00:0f.1: calling quirk_via_vlink+0x0/0xd5
+[    6.382005] scsi2 : pata_via
+[    6.383005] device: 'host2': device_add
+[    6.384005] device: 'host2': device_add
+[    6.386005] scsi3 : pata_via
+[    6.387005] device: 'host3': device_add
+[    6.388005] device: 'host3': device_add
+[    6.389005] ata3: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xfc00 irq 14
+[    6.390005] ata4: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xfc08 irq 15
+[    6.545005] async_waiting @ 1607
+[    6.546005] async_continuing @ 1607 after 0 usec
+[    6.547005] async_waiting @ 1607
+[    6.548005] async_continuing @ 1607 after 0 usec
+[    6.707005] ata4.01: ATA-6: HDS722525VLAT80, V36OA60A, max UDMA/100
+[    6.708005] ata4.01: 488397168 sectors, multi 16: LBA48 
+[    6.718005] ata4.01: configured for UDMA/100
+[    6.719005] async_waiting @ 1607
+[    6.720005] async_continuing @ 1607 after 0 usec
+[    6.723005] scsi 3:0:1:0: Direct-Access     ATA      HDS722525VLAT80  V36O PQ: 0 ANSI: 5
+[    6.724005] device: 'target3:0:1': device_add
+[    6.726005] device: '3:0:1:0': device_add
+[    6.727005] bus: 'scsi': add device 3:0:1:0
+[    6.729005] bus: 'scsi': driver_probe_device: matched device 3:0:1:0 with driver st
+[    6.730005] bus: 'scsi': really_probe: probing driver st with device 3:0:1:0
+[    6.731005] bus: 'scsi': driver_probe_device: matched device 3:0:1:0 with driver sd
+[    6.732005] bus: 'scsi': really_probe: probing driver sd with device 3:0:1:0
+[    6.733005] device: '3:0:1:0': device_add
+[    6.734005] sd 3:0:1:0: [sda] 488397168 512-byte logical blocks: (250 GB/232 GiB)
+[    6.735005] sd 3:0:1:0: [sda] Write Protect is off
+[    6.736005] sd 3:0:1:0: [sda] Mode Sense: 00 3a 00 00
+[    6.738005] sd 3:0:1:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    6.739005] device: 'sda': device_add
+[    6.742005]  sda: sda1 sda2
+[    6.755005] device: 'sda1': device_add
+[    6.756005] device: 'sda2': device_add
+[    6.758005] device: '8:0': device_add
+[    6.760005] sd 3:0:1:0: [sda] Attached SCSI disk
+[    6.761005] driver: '3:0:1:0': driver_bound: bound to device 'sd'
+[    6.763005] bus: 'scsi': really_probe: bound device 3:0:1:0 to driver sd
+[    6.764005] device: '3:0:1:0': device_add
+[    6.765005] work_for_cpu used greatest stack depth: 3336 bytes left
+[    6.767005] driver: '0000:00:0f.1': driver_bound: bound to device 'pata_via'
+[    6.768005] bus: 'pci': really_probe: bound device 0000:00:0f.1 to driver pata_via
+[    6.769005] initcall via_init+0x0/0x1b returned 0 after 385742 usecs
+[    6.770005] calling  sl82c105_init+0x0/0x1b @ 1
+[    6.771005] bus: 'pci': add driver pata_sl82c105
+[    6.772005] initcall sl82c105_init+0x0/0x1b returned 0 after 976 usecs
+[    6.773005] calling  e1000_init_module+0x0/0x6c @ 1
+[    6.774005] e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
+[    6.775005] e1000e: Copyright (c) 1999-2008 Intel Corporation.
+[    6.776005] bus: 'pci': add driver e1000e
+[    6.777005] initcall e1000_init_module+0x0/0x6c returned 0 after 2929 usecs
+[    6.779005] calling  ixgb_init_module+0x0/0x4c @ 1
+[    6.781005] Intel(R) PRO/10GbE Network Driver - version 1.0.135-k2-NAPI
+[    6.782005] Copyright (c) 1999-2008 Intel Corporation.
+[    6.783005] bus: 'pci': add driver ixgb
+[    6.785005] initcall ixgb_init_module+0x0/0x4c returned 0 after 3906 usecs
+[    6.786005] calling  atl1_init_module+0x0/0x1b @ 1
+[    6.787005] bus: 'pci': add driver atl1
+[    6.788005] initcall atl1_init_module+0x0/0x1b returned 0 after 976 usecs
+[    6.789005] calling  atl1c_init_module+0x0/0x1b @ 1
+[    6.790005] bus: 'pci': add driver atl1c
+[    6.791005] initcall atl1c_init_module+0x0/0x1b returned 0 after 976 usecs
+[    6.792005] calling  be_init_module+0x0/0x76 @ 1
+[    6.793005] bus: 'pci': add driver be2net
+[    6.795005] initcall be_init_module+0x0/0x76 returned 0 after 1953 usecs
+[    6.796005] calling  cas_init+0x0/0x3d @ 1
+[    6.797005] bus: 'pci': add driver cassini
+[    6.798005] initcall cas_init+0x0/0x3d returned 0 after 976 usecs
+[    6.799005] calling  vortex_init+0x0/0xad @ 1
+[    6.800005] bus: 'pci': add driver 3c59x
+[    6.802005] initcall vortex_init+0x0/0xad returned 0 after 1953 usecs
+[    6.803005] calling  typhoon_init+0x0/0x1b @ 1
+[    6.804005] bus: 'pci': add driver typhoon
+[    6.805005] initcall typhoon_init+0x0/0x1b returned 0 after 976 usecs
+[    6.806005] calling  ne2k_pci_init+0x0/0x1b @ 1
+[    6.807005] bus: 'pci': add driver ne2k-pci
+[    6.808005] initcall ne2k_pci_init+0x0/0x1b returned 0 after 976 usecs
+[    6.809005] calling  pcnet32_init_module+0x0/0x130 @ 1
+[    6.810005] pcnet32.c:v1.35 21.Apr.2008 tsbogend@alpha.franken.de
+[    6.811005] bus: 'pci': add driver pcnet32
+[    6.812005] initcall pcnet32_init_module+0x0/0x130 returned 0 after 1953 usecs
+[    6.813005] calling  e100_init_module+0x0/0x5d @ 1
+[    6.814005] e100: Intel(R) PRO/100 Network Driver, 3.5.24-k2-NAPI
+[    6.815005] e100: Copyright(c) 1999-2006 Intel Corporation
+[    6.816005] bus: 'pci': add driver e100
+[    6.818005] initcall e100_init_module+0x0/0x5d returned 0 after 3906 usecs
+[    6.819005] calling  smsc9420_init_module+0x0/0x40 @ 1
+[    6.820005] bus: 'pci': add driver smsc9420
+[    6.822005] initcall smsc9420_init_module+0x0/0x40 returned 0 after 1953 usecs
+[    6.823005] calling  sis190_init_module+0x0/0x1b @ 1
+[    6.824005] bus: 'pci': add driver sis190
+[    6.826005] initcall sis190_init_module+0x0/0x1b returned 0 after 1953 usecs
+[    6.827005] calling  acenic_init+0x0/0x1b @ 1
+[    6.828005] bus: 'pci': add driver acenic
+[    6.830005] initcall acenic_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.831005] calling  tg3_init+0x0/0x1b @ 1
+[    6.832005] bus: 'pci': add driver tg3
+[    6.833005] initcall tg3_init+0x0/0x1b returned 0 after 976 usecs
+[    6.834005] calling  bnx2x_init+0x0/0x82 @ 1
+[    6.836005] bus: 'pci': add driver bnx2x
+[    6.837005] initcall bnx2x_init+0x0/0x82 returned 0 after 976 usecs
+[    6.838005] calling  skge_init_module+0x0/0x59 @ 1
+[    6.839005] bus: 'pci': add driver skge
+[    6.840005] bus: 'pci': driver_probe_device: matched device 0000:00:0a.0 with driver skge
+[    6.841005] bus: 'pci': really_probe: probing driver skge with device 0000:00:0a.0
+[    6.842005] IOAPIC[0]: Set routing entry (2-17 -> 0x51 -> IRQ 17 Mode:1 Active:1)
+[    6.843005] skge 0000:00:0a.0: PCI->APIC IRQ transform: INT A -> IRQ 17
+[    6.844005] skge 0000:00:0a.0: PCI: Disallowing DAC for device
+[    6.845005] skge 1.13 addr 0xfd900000 irq 17 chip Yukon rev 1
+[    6.846005] device: 'eth0': device_add
+[    6.848005] skge eth0: addr 00:0c:6e:b3:3d:c6
+[    6.849005] driver: '0000:00:0a.0': driver_bound: bound to device 'skge'
+[    6.850005] bus: 'pci': really_probe: bound device 0000:00:0a.0 to driver skge
+[    6.851005] initcall skge_init_module+0x0/0x59 returned 0 after 11718 usecs
+[    6.852005] calling  sky2_init_module+0x0/0x29 @ 1
+[    6.853005] sky2 driver version 1.23
+[    6.854005] bus: 'pci': add driver sky2
+[    6.855005] initcall sky2_init_module+0x0/0x29 returned 0 after 1953 usecs
+[    6.856005] calling  ks8842_init+0x0/0x12 @ 1
+[    6.857005] bus: 'platform': add driver ks8842
+[    6.858005] initcall ks8842_init+0x0/0x12 returned 0 after 976 usecs
+[    6.859005] calling  ks8851_init+0x0/0x12 @ 1
+[    6.861005] bus: 'spi': add driver ks8851
+[    6.862005] initcall ks8851_init+0x0/0x12 returned 0 after 976 usecs
+[    6.863005] calling  starfire_init+0x0/0x1b @ 1
+[    6.864005] bus: 'pci': add driver starfire
+[    6.866005] initcall starfire_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.867005] calling  davicom_init+0x0/0x5d @ 1
+[    6.868005] bus: 'mdio_bus': add driver Davicom DM9161E
+[    6.869005] bus: 'mdio_bus': add driver Davicom DM9161A
+[    6.870005] bus: 'mdio_bus': add driver Davicom DM9131
+[    6.871005] initcall davicom_init+0x0/0x5d returned 0 after 2929 usecs
+[    6.872005] calling  cicada_init+0x0/0x3f @ 1
+[    6.873005] bus: 'mdio_bus': add driver Cicada Cis8204
+[    6.875005] bus: 'mdio_bus': add driver Cicada Cis8201
+[    6.876005] initcall cicada_init+0x0/0x3f returned 0 after 2929 usecs
+[    6.877005] calling  qs6612_init+0x0/0x12 @ 1
+[    6.879005] bus: 'mdio_bus': add driver QS6612
+[    6.880005] initcall qs6612_init+0x0/0x12 returned 0 after 976 usecs
+[    6.881005] calling  smsc_init+0x0/0x99 @ 1
+[    6.882005] bus: 'mdio_bus': add driver SMSC LAN83C185
+[    6.883005] bus: 'mdio_bus': add driver SMSC LAN8187
+[    6.884005] bus: 'mdio_bus': add driver SMSC LAN8700
+[    6.886005] bus: 'mdio_bus': add driver SMSC LAN911x Internal PHY
+[    6.887005] bus: 'mdio_bus': add driver SMSC LAN8710/LAN8720
+[    6.888005] initcall smsc_init+0x0/0x99 returned 0 after 5859 usecs
+[    6.889005] calling  vsc82xx_init+0x0/0x3f @ 1
+[    6.890005] bus: 'mdio_bus': add driver Vitesse VSC8244
+[    6.891005] bus: 'mdio_bus': add driver Vitesse VSC8221
+[    6.893005] initcall vsc82xx_init+0x0/0x3f returned 0 after 2929 usecs
+[    6.894005] calling  broadcom_init+0x0/0xff @ 1
+[    6.895005] bus: 'mdio_bus': add driver Broadcom BCM5411
+[    6.896005] bus: 'mdio_bus': add driver Broadcom BCM5421
+[    6.898005] bus: 'mdio_bus': add driver Broadcom BCM5461
+[    6.899005] bus: 'mdio_bus': add driver Broadcom BCM5464
+[    6.900005] bus: 'mdio_bus': add driver Broadcom BCM5481
+[    6.901005] bus: 'mdio_bus': add driver Broadcom BCM5482
+[    6.903005] bus: 'mdio_bus': add driver Broadcom BCM50610
+[    6.904005] bus: 'mdio_bus': add driver Broadcom BCM57780
+[    6.905005] initcall broadcom_init+0x0/0xff returned 0 after 9765 usecs
+[    6.906005] calling  sundance_init+0x0/0x1b @ 1
+[    6.907005] bus: 'pci': add driver sundance
+[    6.908005] initcall sundance_init+0x0/0x1b returned 0 after 976 usecs
+[    6.909005] calling  net_olddevs_init+0x0/0x1f @ 1
+[    6.910005] initcall net_olddevs_init+0x0/0x1f returned 0 after 0 usecs
+[    6.911005] calling  hp100_module_init+0x0/0x1b @ 1
+[    6.912005] bus: 'pci': add driver hp100
+[    6.913005] initcall hp100_module_init+0x0/0x1b returned 0 after 976 usecs
+[    6.914005] calling  init_nic+0x0/0x1b @ 1
+[    6.915005] bus: 'pci': add driver forcedeth
+[    6.916005] initcall init_nic+0x0/0x1b returned 0 after 976 usecs
+[    6.917005] calling  cp_init+0x0/0x1b @ 1
+[    6.918005] bus: 'pci': add driver 8139cp
+[    6.919005] initcall cp_init+0x0/0x1b returned 0 after 976 usecs
+[    6.920005] calling  rtl8139_init_module+0x0/0x1b @ 1
+[    6.921005] bus: 'pci': add driver 8139too
+[    6.922005] initcall rtl8139_init_module+0x0/0x1b returned 0 after 976 usecs
+[    6.923005] calling  sc92031_init+0x0/0x1b @ 1
+[    6.924005] bus: 'pci': add driver sc92031
+[    6.926005] initcall sc92031_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.927005] calling  eql_init_module+0x0/0x65 @ 1
+[    6.928005] Equalizer2002: Simon Janes (simon@ncm.com) and David S. Miller (davem@redhat.com)
+[    6.929005] device: 'eql': device_add
+[    6.930005] initcall eql_init_module+0x0/0x65 returned 0 after 1953 usecs
+[    6.931005] calling  veth_init+0x0/0x12 @ 1
+[    6.933005] initcall veth_init+0x0/0x12 returned 0 after 0 usecs
+[    6.934005] calling  rtl8169_init_module+0x0/0x1b @ 1
+[    6.935005] bus: 'pci': add driver r8169
+[    6.936005] initcall rtl8169_init_module+0x0/0x1b returned 0 after 976 usecs
+[    6.938005] calling  s2io_starter+0x0/0x1b @ 1
+[    6.939005] bus: 'pci': add driver S2IO
+[    6.940005] initcall s2io_starter+0x0/0x1b returned 0 after 976 usecs
+[    6.941005] calling  usb_rtl8150_init+0x0/0x29 @ 1
+[    6.942005] rtl8150: v0.6.2 (2004/08/27):rtl8150 based usb-ethernet driver
+[    6.943005] bus: 'usb': add driver rtl8150
+[    6.945005] usbcore: registered new interface driver rtl8150
+[    6.946005] initcall usb_rtl8150_init+0x0/0x29 returned 0 after 3906 usecs
+[    6.947005] calling  asix_init+0x0/0x1b @ 1
+[    6.948005] bus: 'usb': add driver asix
+[    6.949005] usbcore: registered new interface driver asix
+[    6.950005] initcall asix_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.951005] calling  cdc_init+0x0/0x1b @ 1
+[    6.952005] bus: 'usb': add driver cdc_ether
+[    6.953005] usbcore: registered new interface driver cdc_ether
+[    6.954005] initcall cdc_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.955005] calling  usbnet_init+0x0/0x1b @ 1
+[    6.956005] bus: 'usb': add driver gl620a
+[    6.957005] usbcore: registered new interface driver gl620a
+[    6.958005] initcall usbnet_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.959005] calling  rndis_init+0x0/0x1b @ 1
+[    6.960005] bus: 'usb': add driver rndis_host
+[    6.961005] usbcore: registered new interface driver rndis_host
+[    6.962005] initcall rndis_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.963005] calling  cdc_subset_init+0x0/0x1b @ 1
+[    6.964005] bus: 'usb': add driver cdc_subset
+[    6.965005] usbcore: registered new interface driver cdc_subset
+[    6.966005] initcall cdc_subset_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.967005] calling  mcs7830_init+0x0/0x1b @ 1
+[    6.968005] bus: 'usb': add driver MOSCHIP usb-ethernet driver
+[    6.969005] usbcore: registered new interface driver MOSCHIP usb-ethernet driver
+[    6.971005] initcall mcs7830_init+0x0/0x1b returned 0 after 2929 usecs
+[    6.972005] calling  usbnet_init+0x0/0x2b @ 1
+[    6.973005] initcall usbnet_init+0x0/0x2b returned 0 after 0 usecs
+[    6.974005] calling  int51x1_init+0x0/0x1b @ 1
+[    6.975005] bus: 'usb': add driver int51x1
+[    6.976005] usbcore: registered new interface driver int51x1
+[    6.977005] initcall int51x1_init+0x0/0x1b returned 0 after 1953 usecs
+[    6.978005] calling  init_orinoco+0x0/0x1d @ 1
+[    6.979005] orinoco 0.15 (David Gibson <hermes@gibson.dropbear.id.au>, Pavel Roskin <proski@gnu.org>, et al)
+[    6.980005] initcall init_orinoco+0x0/0x1d returned 0 after 976 usecs
+[    6.981005] calling  orinoco_nortel_init+0x0/0x30 @ 1
+[    6.982005] orinoco_nortel 0.15 (Tobias Hoffmann & Christoph Jungegger <disdos@traum404.de>)
+[    6.983005] bus: 'pci': add driver orinoco_nortel
+[    6.985005] initcall orinoco_nortel_init+0x0/0x30 returned 0 after 2929 usecs
+[    6.986005] calling  hostap_init+0x0/0x45 @ 1
+[    6.987005] initcall hostap_init+0x0/0x45 returned 0 after 0 usecs
+[    6.988005] calling  init_prism2_plx+0x0/0x1b @ 1
+[    6.989005] bus: 'pci': add driver hostap_plx
+[    6.991005] initcall init_prism2_plx+0x0/0x1b returned 0 after 1953 usecs
+[    6.992005] calling  w840_init+0x0/0x29 @ 1
+[    6.993005] winbond-840.c:v1.01-e (2.4 port) Sep-11-2006  Donald Becker <becker@scyld.com>
+[    6.993005]   http://www.scyld.com/network/drivers.html
+[    6.994005] bus: 'pci': add driver winbond-840
+[    6.996005] initcall w840_init+0x0/0x29 returned 0 after 2929 usecs
+[    6.997005] calling  uli526x_init_module+0x0/0x9e @ 1
+[    6.998005] uli526x: ULi M5261/M5263 net driver, version 0.9.3 (2005-7-29)
+[    6.999005] bus: 'pci': add driver uli526x
+[    7.000005] initcall uli526x_init_module+0x0/0x9e returned 0 after 1953 usecs
+[    7.001005] calling  init_netconsole+0x0/0x161 @ 1
+[    7.002005] console [netcon0] enabled
+[    7.003005] netconsole: network logging started
+[    7.004005] initcall init_netconsole+0x0/0x161 returned 0 after 1953 usecs
+[    7.005005] calling  init+0x0/0x12 @ 1
+[    7.006005] bus: 'virtio': add driver virtio_net
+[    7.008005] initcall init+0x0/0x12 returned 0 after 1953 usecs
+[    7.009005] calling  fusion_init+0x0/0x13f @ 1
+[    7.010005] Fusion MPT base driver 3.04.10
+[    7.011005] Copyright (c) 1999-2008 LSI Corporation
+[    7.012005] initcall fusion_init+0x0/0x13f returned 0 after 1953 usecs
+[    7.013005] calling  mptfc_init+0x0/0xf1 @ 1
+[    7.014005] Fusion MPT FC Host driver 3.04.10
+[    7.015005] bus: 'pci': add driver mptfc
+[    7.017005] initcall mptfc_init+0x0/0xf1 returned 0 after 2929 usecs
+[    7.018005] calling  mptsas_init+0x0/0x10c @ 1
+[    7.019005] Fusion MPT SAS Host driver 3.04.10
+[    7.020005] bus: 'pci': add driver mptsas
+[    7.022005] initcall mptsas_init+0x0/0x10c returned 0 after 2929 usecs
+[    7.023005] calling  mptctl_init+0x0/0x11d @ 1
+[    7.024005] Fusion MPT misc device (ioctl) driver 3.04.10
+[    7.025005] device: 'mptctl': device_add
+[    7.026005] mptctl: Registered with Fusion MPT base driver
+[    7.027005] mptctl: /dev/mptctl @ (major,minor=10,220)
+[    7.028005] initcall mptctl_init+0x0/0x11d returned 0 after 3906 usecs
+[    7.029005] calling  init_raw1394+0x0/0xf4 @ 1
+[    7.030005] device: 'raw1394': device_add
+[    7.032005] ieee1394: raw1394: /dev/raw1394 device initialized
+[    7.033005] bus: 'ieee1394': add driver raw1394
+[    7.035005] initcall init_raw1394+0x0/0xf4 returned 0 after 4882 usecs
+[    7.037005] calling  ether1394_init_module+0x0/0x70 @ 1
+[    7.038005] bus: 'ieee1394': add driver eth1394
+[    7.039005] initcall ether1394_init_module+0x0/0x70 returned 0 after 976 usecs
+[    7.040005] calling  tle62x0_init+0x0/0x12 @ 1
+[    7.042005] bus: 'spi': add driver tle62x0
+[    7.043005] initcall tle62x0_init+0x0/0x12 returned 0 after 976 usecs
+[    7.044005] calling  uwb_subsys_init+0x0/0x51 @ 1
+[    7.046005] device class 'uwb_rc': registering
+[    7.048005] initcall uwb_subsys_init+0x0/0x51 returned 0 after 1953 usecs
+[    7.050005] calling  umc_bus_init+0x0/0x12 @ 1
+[    7.051005] bus: 'umc': registered
+[    7.052005] initcall umc_bus_init+0x0/0x12 returned 0 after 976 usecs
+[    7.053005] calling  whci_init+0x0/0x1b @ 1
+[    7.054005] bus: 'pci': add driver whci
+[    7.055005] initcall whci_init+0x0/0x1b returned 0 after 976 usecs
+[    7.057005] calling  whcrc_driver_init+0x0/0x1b @ 1
+[    7.058005] bus: 'umc': add driver whc-rc
+[    7.059005] initcall whcrc_driver_init+0x0/0x1b returned 0 after 976 usecs
+[    7.060005] calling  hwarc_driver_init+0x0/0x1b @ 1
+[    7.061005] bus: 'usb': add driver hwa-rc
+[    7.063005] usbcore: registered new interface driver hwa-rc
+[    7.064005] initcall hwarc_driver_init+0x0/0x1b returned 0 after 2929 usecs
+[    7.066005] calling  mon_init+0x0/0x117 @ 1
+[    7.067005] device class 'usbmon': registering
+[    7.069005] device: 'usbmon0': device_add
+[    7.070005] initcall mon_init+0x0/0x117 returned 0 after 2929 usecs
+[    7.071005] calling  ehci_hcd_init+0x0/0xe8 @ 1
+[    7.072005] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    7.073005] ehci_hcd: block sizes: qh 192 qtd 96 itd 192 sitd 96
+[    7.074005] bus: 'pci': add driver ehci_hcd
+[    7.075005] bus: 'pci': driver_probe_device: matched device 0000:00:10.4 with driver ehci_hcd
+[    7.076005] bus: 'pci': really_probe: probing driver ehci_hcd with device 0000:00:10.4
+[    7.078005] IOAPIC[0]: Set routing entry (2-21 -> 0x69 -> IRQ 21 Mode:1 Active:1)
+[    7.079005] ehci_hcd 0000:00:10.4: PCI->APIC IRQ transform: INT C -> IRQ 21
+[    7.081005] ehci_hcd 0000:00:10.4: calling quirk_via_vlink+0x0/0xd5
+[    7.082005] ehci_hcd 0000:00:10.4: EHCI Host Controller
+[    7.084005] drivers/usb/core/inode.c: creating file 'devices'
+[    7.085005] drivers/usb/core/inode.c: creating file '001'
+[    7.086005] device: 'usbmon1': device_add
+[    7.088005] ehci_hcd 0000:00:10.4: new USB bus registered, assigned bus number 1
+[    7.089005] ehci_hcd 0000:00:10.4: reset hcs_params 0x4208 dbg=0 cc=4 pcc=2 ordered !ppc ports=8
+[    7.090005] ehci_hcd 0000:00:10.4: reset hcc_params 6872 thresh 7 uframes 256/512/1024
+[    7.091005] ehci_hcd 0000:00:10.4: reset command 080002 (park)=0 ithresh=8 period=1024 Reset HALT
+[    7.092005] ehci_hcd 0000:00:10.4: Enabling legacy PCI PM
+[    7.093005] ehci_hcd 0000:00:10.4: MWI active
+[    7.094005] ehci_hcd 0000:00:10.4: irq 21, io mem 0xfdf00000
+[    7.095005] ehci_hcd 0000:00:10.4: reset command 080002 (park)=0 ithresh=8 period=1024 Reset HALT
+[    7.096005] ehci_hcd 0000:00:10.4: init command 010009 (park)=0 ithresh=1 period=256 RUN
+[    7.104005] ehci_hcd 0000:00:10.4: USB 2.0 started, EHCI 1.00
+[    7.106005] usb usb1: default language 0x0409
+[    7.107005] usb usb1: udev 1, busnum 1, minor = 0
+[    7.108005] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
+[    7.109005] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    7.110005] usb usb1: Product: EHCI Host Controller
+[    7.111005] usb usb1: Manufacturer: Linux 2.6.31-tip-02377-g78907f0-dirty ehci_hcd
+[    7.112005] usb usb1: SerialNumber: 0000:00:10.4
+[    7.113005] device: 'usb1': device_add
+[    7.114005] bus: 'usb': add device usb1
+[    7.115005] usb usb1: uevent
+[    7.117005] bus: 'usb': driver_probe_device: matched device usb1 with driver usb
+[    7.118005] bus: 'usb': really_probe: probing driver usb with device usb1
+[    7.119005] usb usb1: usb_probe_device
+[    7.120005] usb usb1: configuration #1 chosen from 1 choice
+[    7.121005] usb usb1: adding 1-0:1.0 (config #1, interface 0)
+[    7.122005] device: '1-0:1.0': device_add
+[    7.123005] bus: 'usb': add device 1-0:1.0
+[    7.125005] usb 1-0:1.0: uevent
+[    7.126005] bus: 'usb': driver_probe_device: matched device 1-0:1.0 with driver hub
+[    7.127005] bus: 'usb': really_probe: probing driver hub with device 1-0:1.0
+[    7.128005] hub 1-0:1.0: usb_probe_interface
+[    7.129005] hub 1-0:1.0: usb_probe_interface - got id
+[    7.130005] hub 1-0:1.0: USB hub found
+[    7.131005] hub 1-0:1.0: 8 ports detected
+[    7.132005] hub 1-0:1.0: standalone hub
+[    7.133005] hub 1-0:1.0: no power switching (usb 1.0)
+[    7.134005] hub 1-0:1.0: individual port over-current protection
+[    7.135005] hub 1-0:1.0: power on to power good time: 20ms
+[    7.136005] hub 1-0:1.0: local power source is good
+[    7.137005] hub 1-0:1.0: trying to enable port power on non-switchable hub
+[    7.138005] driver: '1-0:1.0': driver_bound: bound to device 'hub'
+[    7.139005] bus: 'usb': really_probe: bound device 1-0:1.0 to driver hub
+[    7.140005] device: 'ep_81': device_add
+[    7.141005] device: 'usbdev1.1': device_add
+[    7.142005] drivers/usb/core/inode.c: creating file '001'
+[    7.143005] driver: 'usb1': driver_bound: bound to device 'usb'
+[    7.144005] bus: 'usb': really_probe: bound device usb1 to driver usb
+[    7.145005] device: 'ep_00': device_add
+[    7.146005] driver: '0000:00:10.4': driver_bound: bound to device 'ehci_hcd'
+[    7.147005] bus: 'pci': really_probe: bound device 0000:00:10.4 to driver ehci_hcd
+[    7.148005] initcall ehci_hcd_init+0x0/0xe8 returned 0 after 74218 usecs
+[    7.149005] calling  oxu_module_init+0x0/0x12 @ 1
+[    7.150005] bus: 'platform': add driver oxu210hp-hcd
+[    7.151005] initcall oxu_module_init+0x0/0x12 returned 0 after 976 usecs
+[    7.152005] calling  isp116x_init+0x0/0x40 @ 1
+[    7.153005] 116x: driver isp116x-hcd, 03 Nov 2005
+[    7.155005] bus: 'platform': add driver isp116x-hcd
+[    7.156005] initcall isp116x_init+0x0/0x40 returned 0 after 2929 usecs
+[    7.158005] calling  ohci_hcd_mod_init+0x0/0xdb @ 1
+[    7.159005] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+[    7.160005] ohci_hcd: block sizes: ed 80 td 96
+[    7.161005] bus: 'pci': add driver ohci_hcd
+[    7.162005] bus: 'ssb': add driver ohci_hcd
+[    7.164005] initcall ohci_hcd_mod_init+0x0/0xdb returned 0 after 4882 usecs
+[    7.165005] calling  uhci_hcd_init+0x0/0x12f @ 1
+[    7.166005] uhci_hcd: USB Universal Host Controller Interface driver
+[    7.168005] bus: 'pci': add driver uhci_hcd
+[    7.169005] bus: 'pci': driver_probe_device: matched device 0000:00:10.0 with driver uhci_hcd
+[    7.170005] bus: 'pci': really_probe: probing driver uhci_hcd with device 0000:00:10.0
+[    7.172005] uhci_hcd 0000:00:10.0: PCI->APIC IRQ transform: INT A -> IRQ 21
+[    7.173005] uhci_hcd 0000:00:10.0: calling quirk_via_vlink+0x0/0xd5
+[    7.174005] uhci_hcd 0000:00:10.0: UHCI Host Controller
+[    7.175005] drivers/usb/core/inode.c: creating file '002'
+[    7.176005] device: 'usbmon2': device_add
+[    7.178005] uhci_hcd 0000:00:10.0: new USB bus registered, assigned bus number 2
+[    7.179005] uhci_hcd 0000:00:10.0: detected 2 ports
+[    7.180005] uhci_hcd 0000:00:10.0: uhci_check_and_reset_hc: cmd = 0x0000
+[    7.181005] uhci_hcd 0000:00:10.0: Performing full reset
+[    7.182005] uhci_hcd 0000:00:10.0: irq 21, io base 0x0000b400
+[    7.184005] usb usb2: default language 0x0409
+[    7.185005] usb usb2: udev 1, busnum 2, minor = 128
+[    7.186005] usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
+[    7.187005] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    7.188005] usb usb2: Product: UHCI Host Controller
+[    7.189005] usb usb2: Manufacturer: Linux 2.6.31-tip-02377-g78907f0-dirty uhci_hcd
+[    7.190005] usb usb2: SerialNumber: 0000:00:10.0
+[    7.191005] device: 'usb2': device_add
+[    7.192005] bus: 'usb': add device usb2
+[    7.193005] usb usb2: uevent
+[    7.194005] bus: 'usb': driver_probe_device: matched device usb2 with driver usb
+[    7.195005] bus: 'usb': really_probe: probing driver usb with device usb2
+[    7.196005] usb usb2: usb_probe_device
+[    7.197005] usb usb2: configuration #1 chosen from 1 choice
+[    7.198005] usb usb2: adding 2-0:1.0 (config #1, interface 0)
+[    7.199005] device: '2-0:1.0': device_add
+[    7.200005] bus: 'usb': add device 2-0:1.0
+[    7.201005] usb 2-0:1.0: uevent
+[    7.202005] bus: 'usb': driver_probe_device: matched device 2-0:1.0 with driver hub
+[    7.203005] bus: 'usb': really_probe: probing driver hub with device 2-0:1.0
+[    7.205005] hub 2-0:1.0: usb_probe_interface
+[    7.206005] hub 2-0:1.0: usb_probe_interface - got id
+[    7.207005] hub 2-0:1.0: USB hub found
+[    7.208005] hub 2-0:1.0: 2 ports detected
+[    7.209005] hub 2-0:1.0: standalone hub
+[    7.210005] hub 2-0:1.0: no power switching (usb 1.0)
+[    7.211005] hub 2-0:1.0: individual port over-current protection
+[    7.212005] hub 2-0:1.0: power on to power good time: 2ms
+[    7.213005] hub 2-0:1.0: local power source is good
+[    7.214005] hub 2-0:1.0: trying to enable port power on non-switchable hub
+[    7.215005] driver: '2-0:1.0': driver_bound: bound to device 'hub'
+[    7.216005] bus: 'usb': really_probe: bound device 2-0:1.0 to driver hub
+[    7.217005] device: 'ep_81': device_add
+[    7.218005] device: 'usbdev2.1': device_add
+[    7.219005] drivers/usb/core/inode.c: creating file '001'
+[    7.221005] driver: 'usb2': driver_bound: bound to device 'usb'
+[    7.222005] bus: 'usb': really_probe: bound device usb2 to driver usb
+[    7.223005] device: 'ep_00': device_add
+[    7.224005] driver: '0000:00:10.0': driver_bound: bound to device 'uhci_hcd'
+[    7.225005] bus: 'pci': really_probe: bound device 0000:00:10.0 to driver uhci_hcd
+[    7.226005] bus: 'pci': driver_probe_device: matched device 0000:00:10.1 with driver uhci_hcd
+[    7.227005] bus: 'pci': really_probe: probing driver uhci_hcd with device 0000:00:10.1
+[    7.229005] uhci_hcd 0000:00:10.1: PCI->APIC IRQ transform: INT A -> IRQ 21
+[    7.230005] uhci_hcd 0000:00:10.1: calling quirk_via_vlink+0x0/0xd5
+[    7.231005] uhci_hcd 0000:00:10.1: UHCI Host Controller
+[    7.232005] drivers/usb/core/inode.c: creating file '003'
+[    7.233005] device: 'usbmon3': device_add
+[    7.234005] uhci_hcd 0000:00:10.1: new USB bus registered, assigned bus number 3
+[    7.235005] uhci_hcd 0000:00:10.1: detected 2 ports
+[    7.236005] uhci_hcd 0000:00:10.1: uhci_check_and_reset_hc: cmd = 0x0000
+[    7.237005] uhci_hcd 0000:00:10.1: Performing full reset
+[    7.239005] uhci_hcd 0000:00:10.1: irq 21, io base 0x0000b800
+[    7.241005] hub 1-0:1.0: state 7 ports 8 chg 0000 evt 0000
+[    7.243005] usb usb3: default language 0x0409
+[    7.244005] usb usb3: udev 1, busnum 3, minor = 256
+[    7.245005] usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
+[    7.246005] usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    7.247005] usb usb3: Product: UHCI Host Controller
+[    7.248005] usb usb3: Manufacturer: Linux 2.6.31-tip-02377-g78907f0-dirty uhci_hcd
+[    7.249005] usb usb3: SerialNumber: 0000:00:10.1
+[    7.250005] device: 'usb3': device_add
+[    7.251005] bus: 'usb': add device usb3
+[    7.252005] usb usb3: uevent
+[    7.253005] bus: 'usb': driver_probe_device: matched device usb3 with driver usb
+[    7.254005] bus: 'usb': really_probe: probing driver usb with device usb3
+[    7.255005] usb usb3: usb_probe_device
+[    7.256005] usb usb3: configuration #1 chosen from 1 choice
+[    7.257005] usb usb3: adding 3-0:1.0 (config #1, interface 0)
+[    7.258005] device: '3-0:1.0': device_add
+[    7.259005] bus: 'usb': add device 3-0:1.0
+[    7.260005] usb 3-0:1.0: uevent
+[    7.261005] bus: 'usb': driver_probe_device: matched device 3-0:1.0 with driver hub
+[    7.262005] bus: 'usb': really_probe: probing driver hub with device 3-0:1.0
+[    7.263005] hub 3-0:1.0: usb_probe_interface
+[    7.264005] hub 3-0:1.0: usb_probe_interface - got id
+[    7.265005] hub 3-0:1.0: USB hub found
+[    7.266005] hub 3-0:1.0: 2 ports detected
+[    7.267005] hub 3-0:1.0: standalone hub
+[    7.268005] hub 3-0:1.0: no power switching (usb 1.0)
+[    7.269005] hub 3-0:1.0: individual port over-current protection
+[    7.270005] hub 3-0:1.0: power on to power good time: 2ms
+[    7.271005] hub 3-0:1.0: local power source is good
+[    7.272005] hub 3-0:1.0: trying to enable port power on non-switchable hub
+[    7.273005] driver: '3-0:1.0': driver_bound: bound to device 'hub'
+[    7.274005] bus: 'usb': really_probe: bound device 3-0:1.0 to driver hub
+[    7.275005] device: 'ep_81': device_add
+[    7.276005] device: 'usbdev3.1': device_add
+[    7.278005] drivers/usb/core/inode.c: creating file '001'
+[    7.279005] driver: 'usb3': driver_bound: bound to device 'usb'
+[    7.280005] bus: 'usb': really_probe: bound device usb3 to driver usb
+[    7.281005] device: 'ep_00': device_add
+[    7.282005] driver: '0000:00:10.1': driver_bound: bound to device 'uhci_hcd'
+[    7.283005] bus: 'pci': really_probe: bound device 0000:00:10.1 to driver uhci_hcd
+[    7.284005] bus: 'pci': driver_probe_device: matched device 0000:00:10.2 with driver uhci_hcd
+[    7.285005] bus: 'pci': really_probe: probing driver uhci_hcd with device 0000:00:10.2
+[    7.287005] uhci_hcd 0000:00:10.2: PCI->APIC IRQ transform: INT B -> IRQ 21
+[    7.288005] uhci_hcd 0000:00:10.2: calling quirk_via_vlink+0x0/0xd5
+[    7.289005] uhci_hcd 0000:00:10.2: UHCI Host Controller
+[    7.290005] drivers/usb/core/inode.c: creating file '004'
+[    7.291005] device: 'usbmon4': device_add
+[    7.292005] uhci_hcd 0000:00:10.2: new USB bus registered, assigned bus number 4
+[    7.293005] uhci_hcd 0000:00:10.2: detected 2 ports
+[    7.294005] uhci_hcd 0000:00:10.2: uhci_check_and_reset_hc: cmd = 0x0000
+[    7.295005] uhci_hcd 0000:00:10.2: Performing full reset
+[    7.297005] uhci_hcd 0000:00:10.2: irq 21, io base 0x0000c000
+[    7.299005] usb usb4: default language 0x0409
+[    7.300005] usb usb4: udev 1, busnum 4, minor = 384
+[    7.301005] usb usb4: New USB device found, idVendor=1d6b, idProduct=0001
+[    7.302005] usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    7.303005] usb usb4: Product: UHCI Host Controller
+[    7.304005] usb usb4: Manufacturer: Linux 2.6.31-tip-02377-g78907f0-dirty uhci_hcd
+[    7.305005] usb usb4: SerialNumber: 0000:00:10.2
+[    7.306005] device: 'usb4': device_add
+[    7.307005] bus: 'usb': add device usb4
+[    7.308005] usb usb4: uevent
+[    7.309005] bus: 'usb': driver_probe_device: matched device usb4 with driver usb
+[    7.310005] bus: 'usb': really_probe: probing driver usb with device usb4
+[    7.311005] usb usb4: usb_probe_device
+[    7.312005] usb usb4: configuration #1 chosen from 1 choice
+[    7.313005] usb usb4: adding 4-0:1.0 (config #1, interface 0)
+[    7.314005] device: '4-0:1.0': device_add
+[    7.316005] uhci_hcd 0000:00:10.0: port 1 portsc 008a,00
+[    7.317005] uhci_hcd 0000:00:10.0: port 2 portsc 008a,00
+[    7.318006] bus: 'usb': add device 4-0:1.0
+[    7.319006] usb 4-0:1.0: uevent
+[    7.320006] bus: 'usb': driver_probe_device: matched device 4-0:1.0 with driver hub
+[    7.321006] bus: 'usb': really_probe: probing driver hub with device 4-0:1.0
+[    7.322006] hub 4-0:1.0: usb_probe_interface
+[    7.323006] hub 4-0:1.0: usb_probe_interface - got id
+[    7.324006] hub 4-0:1.0: USB hub found
+[    7.325006] hub 4-0:1.0: 2 ports detected
+[    7.326006] hub 4-0:1.0: standalone hub
+[    7.327006] hub 4-0:1.0: no power switching (usb 1.0)
+[    7.328006] hub 4-0:1.0: individual port over-current protection
+[    7.329006] hub 4-0:1.0: power on to power good time: 2ms
+[    7.330006] hub 4-0:1.0: local power source is good
+[    7.331006] hub 4-0:1.0: trying to enable port power on non-switchable hub
+[    7.332006] driver: '4-0:1.0': driver_bound: bound to device 'hub'
+[    7.333006] bus: 'usb': really_probe: bound device 4-0:1.0 to driver hub
+[    7.334006] device: 'ep_81': device_add
+[    7.335006] device: 'usbdev4.1': device_add
+[    7.337006] drivers/usb/core/inode.c: creating file '001'
+[    7.338006] driver: 'usb4': driver_bound: bound to device 'usb'
+[    7.339006] bus: 'usb': really_probe: bound device usb4 to driver usb
+[    7.340006] device: 'ep_00': device_add
+[    7.341006] driver: '0000:00:10.2': driver_bound: bound to device 'uhci_hcd'
+[    7.342006] bus: 'pci': really_probe: bound device 0000:00:10.2 to driver uhci_hcd
+[    7.343006] bus: 'pci': driver_probe_device: matched device 0000:00:10.3 with driver uhci_hcd
+[    7.344006] bus: 'pci': really_probe: probing driver uhci_hcd with device 0000:00:10.3
+[    7.346006] uhci_hcd 0000:00:10.3: PCI->APIC IRQ transform: INT B -> IRQ 21
+[    7.347006] uhci_hcd 0000:00:10.3: calling quirk_via_vlink+0x0/0xd5
+[    7.348006] uhci_hcd 0000:00:10.3: UHCI Host Controller
+[    7.349006] drivers/usb/core/inode.c: creating file '005'
+[    7.350006] device: 'usbmon5': device_add
+[    7.351006] uhci_hcd 0000:00:10.3: new USB bus registered, assigned bus number 5
+[    7.352006] uhci_hcd 0000:00:10.3: detected 2 ports
+[    7.353006] uhci_hcd 0000:00:10.3: uhci_check_and_reset_hc: cmd = 0x0000
+[    7.354006] uhci_hcd 0000:00:10.3: Performing full reset
+[    7.355006] uhci_hcd 0000:00:10.3: irq 21, io base 0x0000c400
+[    7.357006] usb usb5: default language 0x0409
+[    7.358006] usb usb5: udev 1, busnum 5, minor = 512
+[    7.359006] usb usb5: New USB device found, idVendor=1d6b, idProduct=0001
+[    7.360006] usb usb5: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    7.361006] usb usb5: Product: UHCI Host Controller
+[    7.362006] usb usb5: Manufacturer: Linux 2.6.31-tip-02377-g78907f0-dirty uhci_hcd
+[    7.363006] usb usb5: SerialNumber: 0000:00:10.3
+[    7.364006] device: 'usb5': device_add
+[    7.365006] bus: 'usb': add device usb5
+[    7.366006] usb usb5: uevent
+[    7.367006] bus: 'usb': driver_probe_device: matched device usb5 with driver usb
+[    7.368006] bus: 'usb': really_probe: probing driver usb with device usb5
+[    7.369006] usb usb5: usb_probe_device
+[    7.370006] usb usb5: configuration #1 chosen from 1 choice
+[    7.371006] usb usb5: adding 5-0:1.0 (config #1, interface 0)
+[    7.372006] device: '5-0:1.0': device_add
+[    7.374006] uhci_hcd 0000:00:10.1: port 1 portsc 018a,00
+[    7.375006] uhci_hcd 0000:00:10.1: port 2 portsc 018a,00
+[    7.377006] bus: 'usb': add device 5-0:1.0
+[    7.378006] usb 5-0:1.0: uevent
+[    7.379006] bus: 'usb': driver_probe_device: matched device 5-0:1.0 with driver hub
+[    7.380006] bus: 'usb': really_probe: probing driver hub with device 5-0:1.0
+[    7.381006] hub 5-0:1.0: usb_probe_interface
+[    7.382006] hub 5-0:1.0: usb_probe_interface - got id
+[    7.383006] hub 5-0:1.0: USB hub found
+[    7.384006] hub 5-0:1.0: 2 ports detected
+[    7.385006] hub 5-0:1.0: standalone hub
+[    7.386006] hub 5-0:1.0: no power switching (usb 1.0)
+[    7.387006] hub 5-0:1.0: individual port over-current protection
+[    7.388006] hub 5-0:1.0: power on to power good time: 2ms
+[    7.389006] hub 5-0:1.0: local power source is good
+[    7.390006] hub 5-0:1.0: trying to enable port power on non-switchable hub
+[    7.391006] driver: '5-0:1.0': driver_bound: bound to device 'hub'
+[    7.392006] bus: 'usb': really_probe: bound device 5-0:1.0 to driver hub
+[    7.393006] device: 'ep_81': device_add
+[    7.394006] device: 'usbdev5.1': device_add
+[    7.396006] drivers/usb/core/inode.c: creating file '001'
+[    7.397006] driver: 'usb5': driver_bound: bound to device 'usb'
+[    7.398006] bus: 'usb': really_probe: bound device usb5 to driver usb
+[    7.399006] device: 'ep_00': device_add
+[    7.400006] driver: '0000:00:10.3': driver_bound: bound to device 'uhci_hcd'
+[    7.401006] bus: 'pci': really_probe: bound device 0000:00:10.3 to driver uhci_hcd
+[    7.402006] initcall uhci_hcd_init+0x0/0x12f returned 0 after 230468 usecs
+[    7.403006] calling  xhci_hcd_init+0x0/0x2c @ 1
+[    7.404006] bus: 'pci': add driver xhci_hcd
+[    7.406006] initcall xhci_hcd_init+0x0/0x2c returned 0 after 1953 usecs
+[    7.407006] calling  hwahc_driver_init+0x0/0x1b @ 1
+[    7.409006] bus: 'usb': add driver hwa-hc
+[    7.410006] usbcore: registered new interface driver hwa-hc
+[    7.411006] initcall hwahc_driver_init+0x0/0x1b returned 0 after 1953 usecs
+[    7.412006] calling  wusbcore_init+0x0/0x73 @ 1
+[    7.414006] initcall wusbcore_init+0x0/0x73 returned 0 after 0 usecs
+[    7.415006] calling  usb_stor_init+0x0/0x50 @ 1
+[    7.416006] Initializing USB Mass Storage driver...
+[    7.417006] bus: 'usb': add driver usb-storage
+[    7.419006] hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0000
+[    7.421006] usbcore: registered new interface driver usb-storage
+[    7.422006] USB Mass Storage support registered.
+[    7.423006] initcall usb_stor_init+0x0/0x50 returned 0 after 6835 usecs
+[    7.424006] calling  usb_usual_init+0x0/0x40 @ 1
+[    7.425006] bus: 'usb': add driver libusual
+[    7.427006] usbcore: registered new interface driver libusual
+[    7.428006] initcall usb_usual_init+0x0/0x40 returned 0 after 2929 usecs
+[    7.429006] calling  cypress_init+0x0/0x1b @ 1
+[    7.431006] bus: 'usb': add driver ums-cypress
+[    7.432006] uhci_hcd 0000:00:10.2: port 1 portsc 018a,00
+[    7.433006] uhci_hcd 0000:00:10.2: port 2 portsc 018a,00
+[    7.434006] usbcore: registered new interface driver ums-cypress
+[    7.435006] initcall cypress_init+0x0/0x1b returned 0 after 3906 usecs
+[    7.436006] calling  karma_init+0x0/0x1b @ 1
+[    7.437006] bus: 'usb': add driver ums-karma
+[    7.438006] usbcore: registered new interface driver ums-karma
+[    7.439006] initcall karma_init+0x0/0x1b returned 0 after 1953 usecs
+[    7.440006] calling  onetouch_init+0x0/0x1b @ 1
+[    7.441006] bus: 'usb': add driver ums-onetouch
+[    7.443006] usbcore: registered new interface driver ums-onetouch
+[    7.444006] initcall onetouch_init+0x0/0x1b returned 0 after 2929 usecs
+[    7.445006] calling  sddr55_init+0x0/0x1b @ 1
+[    7.446006] bus: 'usb': add driver ums-sddr55
+[    7.447006] usbcore: registered new interface driver ums-sddr55
+[    7.448006] initcall sddr55_init+0x0/0x1b returned 0 after 1953 usecs
+[    7.449006] calling  usb_cytherm_init+0x0/0x4a @ 1
+[    7.450006] bus: 'usb': add driver cytherm
+[    7.451006] usbcore: registered new interface driver cytherm
+[    7.452006] cytherm: v1.0:Cypress USB Thermometer driver
+[    7.453006] initcall usb_cytherm_init+0x0/0x4a returned 0 after 2929 usecs
+[    7.454006] calling  usb_idmouse_init+0x0/0x49 @ 1
+[    7.455006] idmouse: 0.6:Siemens ID Mouse FingerTIP Sensor Driver
+[    7.456006] bus: 'usb': add driver idmouse
+[    7.457006] usbcore: registered new interface driver idmouse
+[    7.458006] initcall usb_idmouse_init+0x0/0x49 returned 0 after 2929 usecs
+[    7.459006] calling  ld_usb_init+0x0/0x3b @ 1
+[    7.460006] bus: 'usb': add driver ldusb
+[    7.461006] usbcore: registered new interface driver ldusb
+[    7.463006] initcall ld_usb_init+0x0/0x3b returned 0 after 2929 usecs
+[    7.464006] calling  usb_sevseg_init+0x0/0x3b @ 1
+[    7.465006] bus: 'usb': add driver usbsevseg
+[    7.467006] usbcore: registered new interface driver usbsevseg
+[    7.468006] initcall usb_sevseg_init+0x0/0x3b returned 0 after 2929 usecs
+[    7.469006] calling  i8042_init+0x0/0x11d @ 1
+[    7.470006] bus: 'platform': add driver i8042
+[    7.471006] Registering platform device 'i8042'. Parent at platform
+[    7.472006] device: 'i8042': device_add
+[    7.473006] bus: 'platform': add device i8042
+[    7.474006] bus: 'platform': driver_probe_device: matched device i8042 with driver i8042
+[    7.475006] bus: 'platform': really_probe: probing driver i8042 with device i8042
+[    7.477006] hub 3-0:1.0: state 7 ports 2 chg 0000 evt 0000
+[    7.479006] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    7.480006] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    7.481006] driver: 'i8042': driver_bound: bound to device 'i8042'
+[    7.482006] bus: 'platform': really_probe: bound device i8042 to driver i8042
+[    7.483006] initcall i8042_init+0x0/0x11d returned 0 after 12695 usecs
+[    7.484006] calling  ct82c710_init+0x0/0xc3 @ 1
+[    7.485006] initcall ct82c710_init+0x0/0xc3 returned -19 after 0 usecs
+[    7.486006] calling  serio_raw_init+0x0/0x1b @ 1
+[    7.487006] bus: 'serio': add driver serio_raw
+[    7.488006] device: 'serio0': device_add
+[    7.489006] bus: 'serio': add device serio0
+[    7.491006] uhci_hcd 0000:00:10.3: port 1 portsc 008a,00
+[    7.492006] uhci_hcd 0000:00:10.3: port 2 portsc 018a,00
+[    7.494006] device: 'serio1': device_add
+[    7.495006] bus: 'serio': add device serio1
+[    7.497006] initcall serio_raw_init+0x0/0x1b returned 0 after 9765 usecs
+[    7.498006] calling  fm801_gp_init+0x0/0x1b @ 1
+[    7.500006] bus: 'pci': add driver FM801_gameport
+[    7.502006] initcall fm801_gp_init+0x0/0x1b returned 0 after 1953 usecs
+[    7.503006] calling  mousedev_init+0x0/0x62 @ 1
+[    7.504006] device: 'mice': device_add
+[    7.506006] device: 'mouse0': device_add
+[    7.507006] mice: PS/2 mouse device common for all mice
+[    7.508006] initcall mousedev_init+0x0/0x62 returned 0 after 3906 usecs
+[    7.510006] calling  joydev_init+0x0/0x12 @ 1
+[    7.511006] initcall joydev_init+0x0/0x12 returned 0 after 0 usecs
+[    7.512006] calling  evdev_init+0x0/0x12 @ 1
+[    7.513006] device: 'event0': device_add
+[    7.514006] initcall evdev_init+0x0/0x12 returned 0 after 976 usecs
+[    7.515006] calling  atkbd_init+0x0/0x27 @ 1
+[    7.516006] bus: 'serio': add driver atkbd
+[    7.518006] initcall atkbd_init+0x0/0x27 returned 0 after 1953 usecs
+[    7.519006] calling  lkkbd_init+0x0/0x1b @ 1
+[    7.520006] bus: 'serio': add driver lkkbd
+[    7.521006] bus: 'serio': driver_probe_device: matched device serio0 with driver atkbd
+[    7.522006] bus: 'serio': really_probe: probing driver atkbd with device serio0
+[    7.523006] initcall lkkbd_init+0x0/0x1b returned 0 after 2929 usecs
+[    7.524006] calling  nkbd_init+0x0/0x1b @ 1
+[    7.525006] bus: 'serio': add driver newtonkbd
+[    7.526006] initcall nkbd_init+0x0/0x1b returned 0 after 976 usecs
+[    7.528006] calling  skbd_init+0x0/0x1b @ 1
+[    7.529006] bus: 'serio': add driver stowaway
+[    7.531006] bus: 'serio': driver_probe_device: matched device serio1 with driver atkbd
+[    7.532006] bus: 'serio': really_probe: probing driver atkbd with device serio1
+[    7.534006] initcall skbd_init+0x0/0x1b returned 0 after 4882 usecs
+[    7.535006] calling  usb_acecad_init+0x0/0x38 @ 1
+[    7.536006] bus: 'usb': add driver usb_acecad
+[    7.538006] hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0000
+[    7.540006] usbcore: registered new interface driver usb_acecad
+[    7.541006] acecad: v3.2:USB Acecad Flair tablet driver
+[    7.542006] initcall usb_acecad_init+0x0/0x38 returned 0 after 5859 usecs
+[    7.543006] calling  gtco_init+0x0/0x51 @ 1
+[    7.544006] bus: 'usb': add driver gtco
+[    7.546006] usbcore: registered new interface driver gtco
+[    7.547006] GTCO usb driver version: 2.00.0006initcall gtco_init+0x0/0x51 returned 0 after 3906 usecs
+[    7.549006] calling  wacom_init+0x0/0x44 @ 1
+[    7.550006] bus: 'usb': add driver wacom
+[    7.552006] usbcore: registered new interface driver wacom
+[    7.553006] wacom: v1.51:USB Wacom Graphire and Wacom Intuos tablet driver
+[    7.554006] initcall wacom_init+0x0/0x44 returned 0 after 3906 usecs
+[    7.555006] calling  usb_keyspan_init+0x0/0x3a @ 1
+[    7.556006] bus: 'usb': add driver keyspan_remote
+[    7.557006] usbcore: registered new interface driver keyspan_remote
+[    7.558006] initcall usb_keyspan_init+0x0/0x3a returned 0 after 1953 usecs
+[    7.559006] calling  pcspkr_init+0x0/0x12 @ 1
+[    7.560006] bus: 'platform': add driver pcspkr
+[    7.561006] bus: 'platform': driver_probe_device: matched device pcspkr with driver pcspkr
+[    7.562006] bus: 'platform': really_probe: probing driver pcspkr with device pcspkr
+[    7.563006] device: 'input1': device_add
+[    7.564006] input: PC Speaker as /class/input/input1
+[    7.566006] device: 'event1': device_add
+[    7.567006] driver: 'pcspkr': driver_bound: bound to device 'pcspkr'
+[    7.569006] bus: 'platform': really_probe: bound device pcspkr to driver pcspkr
+[    7.570006] initcall pcspkr_init+0x0/0x12 returned 0 after 9765 usecs
+[    7.571006] calling  rotary_encoder_init+0x0/0x12 @ 1
+[    7.572006] bus: 'platform': add driver rotary-encoder
+[    7.574006] initcall rotary_encoder_init+0x0/0x12 returned 0 after 1953 usecs
+[    7.575006] calling  uinput_init+0x0/0x12 @ 1
+[    7.576006] device: 'uinput': device_add
+[    7.577006] initcall uinput_init+0x0/0x12 returned 0 after 976 usecs
+[    7.578006] calling  i2c_dev_init+0x0/0xb6 @ 1
+[    7.579006] i2c /dev entries driver
+[    7.580006] device class 'i2c-dev': registering
+[    7.582006] bus: 'i2c': add driver dev_driver
+[    7.584006] device: 'i2c-0': device_add
+[    7.585006] initcall i2c_dev_init+0x0/0xb6 returned 0 after 5859 usecs
+[    7.586006] calling  amd756_init+0x0/0x1b @ 1
+[    7.588006] bus: 'pci': add driver amd756_smbus
+[    7.590006] initcall amd756_init+0x0/0x1b returned 0 after 1953 usecs
+[    7.591006] calling  i2c_i801_init+0x0/0xa0 @ 1
+[    7.592006] bus: 'pci': add driver i801_smbus
+[    7.593006] initcall i2c_i801_init+0x0/0xa0 returned 0 after 976 usecs
+[    7.594006] calling  i2c_sis5595_init+0x0/0x1b @ 1
+[    7.596006] bus: 'pci': add driver sis5595_smbus
+[    7.598006] hub 5-0:1.0: state 7 ports 2 chg 0000 evt 0000
+[    7.599006] initcall i2c_sis5595_init+0x0/0x1b returned 0 after 2929 usecs
+[    7.600006] calling  i2c_vt586b_init+0x0/0x1b @ 1
+[    7.601006] bus: 'pci': add driver vt586b_smbus
+[    7.602006] initcall i2c_vt586b_init+0x0/0x1b returned 0 after 976 usecs
+[    7.603006] calling  i2c_gpio_init+0x0/0x31 @ 1
+[    7.604006] bus: 'platform': add driver i2c-gpio
+[    7.605006] initcall i2c_gpio_init+0x0/0x31 returned 0 after 976 usecs
+[    7.607006] calling  ocores_i2c_init+0x0/0x12 @ 1
+[    7.608006] bus: 'platform': add driver ocores-i2c
+[    7.610006] initcall ocores_i2c_init+0x0/0x12 returned 0 after 1953 usecs
+[    7.611006] calling  i2c_adap_simtec_init+0x0/0x12 @ 1
+[    7.612006] bus: 'platform': add driver simtec-i2c
+[    7.613006] initcall i2c_adap_simtec_init+0x0/0x12 returned 0 after 976 usecs
+[    7.614006] calling  i2c_parport_init+0x0/0x14d @ 1
+[    7.616006] i2c-parport-light: adapter type unspecified
+[    7.617006] initcall i2c_parport_init+0x0/0x14d returned -19 after 976 usecs
+[    7.618006] calling  i2c_voodoo3_init+0x0/0x1b @ 1
+[    7.619006] bus: 'pci': add driver voodoo3_smbus
+[    7.620006] initcall i2c_voodoo3_init+0x0/0x1b returned 0 after 976 usecs
+[    7.621006] calling  pca9539_init+0x0/0x14 @ 1
+[    7.622006] bus: 'i2c': add driver pca9539
+[    7.623006] initcall pca9539_init+0x0/0x14 returned 0 after 976 usecs
+[    7.624006] calling  saa7146_vv_init_module+0x0/0x8 @ 1
+[    7.625006] initcall saa7146_vv_init_module+0x0/0x8 returned 0 after 0 usecs
+[    7.626006] calling  videodev_init+0x0/0x89 @ 1
+[    7.627006] Linux video capture interface: v2.00
+[    7.628006] device class 'video4linux': registering
+[    7.629006] initcall videodev_init+0x0/0x89 returned 0 after 1953 usecs
+[    7.630006] calling  v4l2_i2c_drv_init+0x0/0x64 @ 1
+[    7.631006] bus: 'i2c': add driver tuner
+[    7.632006] initcall v4l2_i2c_drv_init+0x0/0x64 returned 0 after 976 usecs
+[    7.633006] calling  v4l2_i2c_drv_init+0x0/0x6d @ 1
+[    7.634006] bus: 'i2c': add driver tvaudio
+[    7.636006] initcall v4l2_i2c_drv_init+0x0/0x6d returned 0 after 1953 usecs
+[    7.637006] calling  v4l2_i2c_drv_init+0x0/0x6d @ 1
+[    7.638006] bus: 'i2c': add driver tda7432
+[    7.639006] initcall v4l2_i2c_drv_init+0x0/0x6d returned 0 after 976 usecs
+[    7.640006] calling  v4l2_i2c_drv_init+0x0/0x6d @ 1
+[    7.642006] bus: 'i2c': add driver saa6588
+[    7.643006] initcall v4l2_i2c_drv_init+0x0/0x6d returned 0 after 976 usecs
+[    7.644006] calling  v4l2_i2c_drv_init+0x0/0x67 @ 1
+[    7.645006] bus: 'i2c': add driver msp3400
+[    7.647006] initcall v4l2_i2c_drv_init+0x0/0x67 returned 0 after 1953 usecs
+[    7.648006] calling  v4l2_i2c_drv_init+0x0/0x6d @ 1
+[    7.649006] bus: 'i2c': add driver cx25840
+[    7.650006] initcall v4l2_i2c_drv_init+0x0/0x6d returned 0 after 976 usecs
+[    7.652006] calling  bttv_init_module+0x0/0xe8 @ 1
+[    7.654006] bttv: driver version 0.9.18 loaded
+[    7.655006] bttv: using 8 buffers with 2080k (520 pages) each for capture
+[    7.656006] bus: 'bttv-sub': registered
+[    7.657006] bus: 'pci': add driver bttv
+[    7.658006] bus: 'pci': driver_probe_device: matched device 0000:00:0d.0 with driver bttv
+[    7.659006] bus: 'pci': really_probe: probing driver bttv with device 0000:00:0d.0
+[    7.660006] bttv: Bt8xx card found (0).
+[    7.661006] IOAPIC[0]: Set routing entry (2-18 -> 0x59 -> IRQ 18 Mode:1 Active:1)
+[    7.662006] bttv 0000:00:0d.0: PCI->APIC IRQ transform: INT A -> IRQ 18
+[    7.663006] bttv0: Bt878 (rev 17) at 0000:00:0d.0, irq: 18, latency: 64, mmio: 0xf7e00000
+[    7.665006] bttv0: detected: Leadtek TV 2000 XP [card=34], PCI subsystem ID is 107d:6609
+[    7.666006] bttv0: using: Leadtek WinFast 2000/ WinFast 2000 XP [card=34,autodetected]
+[    7.667006] IRQ 18/bttv0: IRQF_DISABLED is not guaranteed on shared IRQs
+[    7.668006] bttv0: gpio: en=00000000, out=00000000 in=003ff502 [init]
+[    7.669006] device: 'i2c-1': device_add
+[    7.670006] device: 'i2c-1': device_add
+[    7.674006] bttv0: tuner type=5
+[    7.682006] bttv0: audio absent, no audio device found!
+[    7.687006] device: '1-0061': device_add
+[    7.688006] bus: 'i2c': add device 1-0061
+[    7.689006] bus: 'i2c': driver_probe_device: matched device 1-0061 with driver tuner
+[    7.690006] bus: 'i2c': really_probe: probing driver tuner with device 1-0061
+[    7.691006] tuner 1-0061: chip found @ 0xc2 (bt878 #0 [sw])
+[    7.692006] driver: '1-0061': driver_bound: bound to device 'tuner'
+[    7.693006] bus: 'i2c': really_probe: bound device 1-0061 to driver tuner
+[    7.695006] tuner-simple 1-0061: creating new instance
+[    7.696006] tuner-simple 1-0061: type set to 5 (Philips PAL_BG (FI1216 and compatibles))
+[    7.698006] device: 'video0': device_add
+[    7.699006] bttv0: registered device video0
+[    7.700006] device: 'vbi0': device_add
+[    7.702006] bttv0: registered device vbi0
+[    7.703006] device: 'radio0': device_add
+[    7.705006] bttv0: registered device radio0
+[    7.706006] bttv0: PLL: 28636363 => 35468950 .. ok
+[    7.730006] device: 'input2': device_add
+[    7.731006] input: bttv IR (card=34) as /class/input/input2
+[    7.732006] device: 'event2': device_add
+[    7.733006] driver: '0000:00:0d.0': driver_bound: bound to device 'bttv'
+[    7.734006] bus: 'pci': really_probe: bound device 0000:00:0d.0 to driver bttv
+[    7.735006] initcall bttv_init_module+0x0/0xe8 returned 0 after 79101 usecs
+[    7.736006] calling  cpia_init+0x0/0x6d @ 1
+[    7.737006] V4L-Driver for Vision CPiA based cameras v1.2.3
+[    7.738006] Since in-kernel colorspace conversion is not allowed, it is disabled by default now. Users should fix the applications in case they don't work without conversion reenabled by setting the 'colorspace_conv' module parameter to 1
+[    7.739006] initcall cpia_init+0x0/0x6d returned 0 after 1953 usecs
+[    7.740006] calling  v4l2_i2c_drv_init+0x0/0x6d @ 1
+[    7.741006] bus: 'i2c': add driver saa6752hs
+[    7.743006] initcall v4l2_i2c_drv_init+0x0/0x6d returned 0 after 1953 usecs
+[    7.744006] calling  saa7134_init+0x0/0x4f @ 1
+[    7.745006] saa7130/34: v4l2 driver version 0.2.15 loaded
+[    7.746006] bus: 'pci': add driver saa7134
+[    7.748006] initcall saa7134_init+0x0/0x4f returned 0 after 2929 usecs
+[    7.749006] calling  empress_register+0x0/0x12 @ 1
+[    7.750006] initcall empress_register+0x0/0x12 returned 0 after 0 usecs
+[    7.751006] calling  dvb_register+0x0/0x12 @ 1
+[    7.752006] initcall dvb_register+0x0/0x12 returned 0 after 0 usecs
+[    7.753006] calling  vivi_init+0x0/0x7c @ 1
+[    7.754006] device: 'video1': device_add
+[    7.756006] vivi-000: V4L2 device registered as /dev/video1
+[    7.757006] Video Technology Magazine Virtual Video Capture Board ver 0.6.0 successfully loaded.
+[    7.758006] initcall vivi_init+0x0/0x7c returned 0 after 3906 usecs
+[    7.759006] calling  cx23885_init+0x0/0x37 @ 1
+[    7.760006] cx23885 driver version 0.0.2 loaded
+[    7.761006] bus: 'pci': add driver cx23885
+[    7.763006] initcall cx23885_init+0x0/0x37 returned 0 after 2929 usecs
+[    7.764006] calling  ir_init+0x0/0x14 @ 1
+[    7.766006] bus: 'i2c': add driver ir-kbd-i2c
+[    7.767006] initcall ir_init+0x0/0x14 returned 0 after 976 usecs
+[    7.768006] calling  av7110_init+0x0/0x12 @ 1
+[    7.769006] saa7146: register extension 'dvb'.
+[    7.770006] bus: 'pci': add driver dvb
+[    7.772006] initcall av7110_init+0x0/0x12 returned 0 after 2929 usecs
+[    7.773006] calling  bt878_init_module+0x0/0x52 @ 1
+[    7.774006] bt878: AUDIO driver version 0.0.0 loaded
+[    7.776006] bus: 'pci': add driver bt878
+[    7.777006] initcall bt878_init_module+0x0/0x52 returned 0 after 2929 usecs
+[    7.778006] calling  dvb_bt8xx_init+0x0/0x19 @ 1
+[    7.779006] bus: 'bttv-sub': add driver dvb-bt8xx
+[    7.780006] initcall dvb_bt8xx_init+0x0/0x19 returned 0 after 976 usecs
+[    7.781006] calling  vp7045_usb_module_init+0x0/0x3a @ 1
+[    7.782006] bus: 'usb': add driver dvb_usb_vp7045
+[    7.783006] usbcore: registered new interface driver dvb_usb_vp7045
+[    7.784006] initcall vp7045_usb_module_init+0x0/0x3a returned 0 after 1953 usecs
+[    7.785006] calling  dibusb_module_init+0x0/0x3a @ 1
+[    7.787006] bus: 'usb': add driver dvb_usb_dibusb_mb
+[    7.788006] usbcore: registered new interface driver dvb_usb_dibusb_mb
+[    7.789006] initcall dibusb_module_init+0x0/0x3a returned 0 after 1953 usecs
+[    7.790006] calling  dibusb_mc_module_init+0x0/0x3a @ 1
+[    7.791006] bus: 'usb': add driver dvb_usb_dibusb_mc
+[    7.793006] usbcore: registered new interface driver dvb_usb_dibusb_mc
+[    7.794006] initcall dibusb_mc_module_init+0x0/0x3a returned 0 after 2929 usecs
+[    7.795006] calling  au6610_module_init+0x0/0x3a @ 1
+[    7.796006] bus: 'usb': add driver dvb_usb_au6610
+[    7.797006] usbcore: registered new interface driver dvb_usb_au6610
+[    7.798006] initcall au6610_module_init+0x0/0x3a returned 0 after 1953 usecs
+[    7.799006] calling  digitv_module_init+0x0/0x3a @ 1
+[    7.800006] bus: 'usb': add driver dvb_usb_digitv
+[    7.801006] usbcore: registered new interface driver dvb_usb_digitv
+[    7.802006] initcall digitv_module_init+0x0/0x3a returned 0 after 1953 usecs
+[    7.803006] calling  dib0700_module_init+0x0/0x4e @ 1
+[    7.804006] dib0700: loaded with support for 9 different device-types
+[    7.806006] bus: 'usb': add driver dvb_usb_dib0700
+[    7.808006] usbcore: registered new interface driver dvb_usb_dib0700
+[    7.809006] initcall dib0700_module_init+0x0/0x4e returned 0 after 4882 usecs
+[    7.810006] calling  opera1_module_init+0x0/0x3b @ 1
+[    7.811006] bus: 'usb': add driver opera1
+[    7.812006] usbcore: registered new interface driver opera1
+[    7.813006] initcall opera1_module_init+0x0/0x3b returned 0 after 1953 usecs
+[    7.814006] calling  af9015_usb_module_init+0x0/0x3a @ 1
+[    7.816006] bus: 'usb': add driver dvb_usb_af9015
+[    7.818006] usbcore: registered new interface driver dvb_usb_af9015
+[    7.819006] initcall af9015_usb_module_init+0x0/0x3a returned 0 after 2929 usecs
+[    7.820006] calling  asb100_init+0x0/0x14 @ 1
+[    7.821006] bus: 'i2c': add driver asb100
+[    7.823006] initcall asb100_init+0x0/0x14 returned 0 after 1953 usecs
+[    7.824006] calling  sensors_w83627hf_init+0x0/0x7c @ 1
+[    7.825006] w83627hf: Found W83697HF chip at 0x290
+[    7.826006] bus: 'platform': add driver w83627hf
+[    7.828006] Registering platform device 'w83627hf.656'. Parent at platform
+[    7.829006] device: 'w83627hf.656': device_add
+[    7.830006] bus: 'platform': add device w83627hf.656
+[    7.832006] bus: 'platform': driver_probe_device: matched device w83627hf.656 with driver w83627hf
+[    7.833006] bus: 'platform': really_probe: probing driver w83627hf with device w83627hf.656
+[    7.835006] device: 'hwmon0': device_add
+[    7.837006] driver: 'w83627hf.656': driver_bound: bound to device 'w83627hf'
+[    7.838006] bus: 'platform': really_probe: bound device w83627hf.656 to driver w83627hf
+[    7.839006] initcall sensors_w83627hf_init+0x0/0x7c returned 0 after 13671 usecs
+[    7.840006] calling  sensors_adm1029_init+0x0/0x14 @ 1
+[    7.841006] bus: 'i2c': add driver adm1029
+[    7.842006] initcall sensors_adm1029_init+0x0/0x14 returned 0 after 976 usecs
+[    7.843006] calling  sensors_adm1031_init+0x0/0x14 @ 1
+[    7.844006] bus: 'i2c': add driver adm1031
+[    7.846006] initcall sensors_adm1031_init+0x0/0x14 returned 0 after 1953 usecs
+[    7.847006] calling  sensors_ads7828_init+0x0/0x55 @ 1
+[    7.848006] bus: 'i2c': add driver ads7828
+[    7.849006] initcall sensors_ads7828_init+0x0/0x55 returned 0 after 976 usecs
+[    7.850006] calling  adt7470_init+0x0/0x14 @ 1
+[    7.851006] bus: 'i2c': add driver adt7470
+[    7.852006] initcall adt7470_init+0x0/0x14 returned 0 after 976 usecs
+[    7.853006] calling  applesmc_init+0x0/0x432 @ 1
+[    7.854006] applesmc: supported laptop not found!
+[    7.855006] applesmc: driver init failed (ret=-19)!
+[    7.856006] initcall applesmc_init+0x0/0x432 returned -19 after 1953 usecs
+[    7.857006] calling  f71805f_init+0x0/0x7a @ 1
+[    7.858006] initcall f71805f_init+0x0/0x7a returned -19 after 0 usecs
+[    7.859006] calling  sensors_f75375_init+0x0/0x14 @ 1
+[    7.860006] bus: 'i2c': add driver f75375
+[    7.861006] initcall sensors_f75375_init+0x0/0x14 returned 0 after 976 usecs
+[    7.862006] calling  i5k_amb_init+0x0/0x66 @ 1
+[    7.863006] bus: 'platform': add driver i5k_amb
+[    7.864006] Registering platform device 'i5k_amb.0'. Parent at platform
+[    7.865006] device: 'i5k_amb.0': device_add
+[    7.866006] bus: 'platform': add device i5k_amb.0
+[    7.867006] bus: 'platform': driver_probe_device: matched device i5k_amb.0 with driver i5k_amb
+[    7.868006] bus: 'platform': really_probe: probing driver i5k_amb with device i5k_amb.0
+[    7.869006] initcall i5k_amb_init+0x0/0x66 returned 0 after 5859 usecs
+[    7.870006] calling  sm_it87_init+0x0/0x69 @ 1
+[    7.871006] initcall sm_it87_init+0x0/0x69 returned -19 after 0 usecs
+[    7.872006] calling  lis302dl_init+0x0/0x12 @ 1
+[    7.873006] bus: 'spi': add driver lis3lv02d_spi
+[    7.874006] initcall lis302dl_init+0x0/0x12 returned 0 after 976 usecs
+[    7.875006] calling  sm_lm78_init+0x0/0x6b @ 1
+[    7.876006] bus: 'i2c': add driver lm78
+[    7.877006] initcall sm_lm78_init+0x0/0x6b returned 0 after 976 usecs
+[    7.878006] calling  sensors_lm80_init+0x0/0x14 @ 1
+[    7.879006] bus: 'i2c': add driver lm80
+[    7.880006] initcall sensors_lm80_init+0x0/0x14 returned 0 after 976 usecs
+[    7.881006] calling  sensors_lm83_init+0x0/0x14 @ 1
+[    7.882006] bus: 'i2c': add driver lm83
+[    7.884006] initcall sensors_lm83_init+0x0/0x14 returned 0 after 1953 usecs
+[    7.885006] calling  sensors_lm92_init+0x0/0x14 @ 1
+[    7.886006] bus: 'i2c': add driver lm92
+[    7.887006] initcall sensors_lm92_init+0x0/0x14 returned 0 after 976 usecs
+[    7.888006] calling  lm93_init+0x0/0x14 @ 1
+[    7.889006] bus: 'i2c': add driver lm93
+[    7.891006] initcall lm93_init+0x0/0x14 returned 0 after 1953 usecs
+[    7.892006] calling  ltc4215_init+0x0/0x14 @ 1
+[    7.893006] bus: 'i2c': add driver ltc4215
+[    7.894006] initcall ltc4215_init+0x0/0x14 returned 0 after 976 usecs
+[    7.895006] calling  max1111_init+0x0/0x12 @ 1
+[    7.896006] bus: 'spi': add driver max1111
+[    7.897006] initcall max1111_init+0x0/0x12 returned 0 after 976 usecs
+[    7.898006] calling  pc87360_init+0x0/0xbf @ 1
+[    7.899006] pc87360: PC8736x not detected, module not inserted.
+[    7.900006] initcall pc87360_init+0x0/0xbf returned -19 after 976 usecs
+[    7.901006] calling  pcf8591_init+0x0/0x37 @ 1
+[    7.902006] bus: 'i2c': add driver pcf8591
+[    7.903006] initcall pcf8591_init+0x0/0x37 returned 0 after 976 usecs
+[    7.904006] calling  smsc47m192_init+0x0/0x14 @ 1
+[    7.905006] bus: 'i2c': add driver smsc47m192
+[    7.906006] initcall smsc47m192_init+0x0/0x14 returned 0 after 976 usecs
+[    7.907006] calling  sensors_w83l786ng_init+0x0/0x14 @ 1
+[    7.908006] bus: 'i2c': add driver w83l786ng
+[    7.909006] initcall sensors_w83l786ng_init+0x0/0x14 returned 0 after 976 usecs
+[    7.910006] calling  telephony_init+0x0/0x53 @ 1
+[    7.911006] Linux telephony interface: v1.00
+[    7.912006] initcall telephony_init+0x0/0x53 returned 0 after 976 usecs
+[    7.913006] calling  kcapi_init+0x0/0x98 @ 1
+[    7.914006] CAPI Subsystem Rev 1.1.2.8
+[    7.915006] initcall kcapi_init+0x0/0x98 returned 0 after 976 usecs
+[    7.916006] calling  capi_init+0x0/0x2df @ 1
+[    7.917006] device class 'capi': registering
+[    7.919006] device: 'capi': device_add
+[    7.920006] device: 'capi0': device_add
+[    7.921006] device: 'capi1': device_add
+[    7.923006] device: 'capi2': device_add
+[    7.924006] device: 'capi3': device_add
+[    7.925006] device: 'capi4': device_add
+[    7.927006] device: 'capi5': device_add
+[    7.928006] device: 'capi6': device_add
+[    7.929006] device: 'capi7': device_add
+[    7.931006] device: 'capi8': device_add
+[    7.932006] device: 'capi9': device_add
+[    7.933006] device: 'capi10': device_add
+[    7.935006] device: 'capi11': device_add
+[    7.936006] device: 'capi12': device_add
+[    7.938006] device: 'capi13': device_add
+[    7.939006] device: 'capi14': device_add
+[    7.941006] device: 'capi15': device_add
+[    7.942006] device: 'capi16': device_add
+[    7.943006] device: 'capi17': device_add
+[    7.945006] device: 'capi18': device_add
+[    7.946006] device: 'capi19': device_add
+[    7.948006] device: 'capi20': device_add
+[    7.949006] device: 'capi21': device_add
+[    7.951006] device: 'capi22': device_add
+[    7.952006] device: 'capi23': device_add
+[    7.953006] device: 'capi24': device_add
+[    7.955006] device: 'capi25': device_add
+[    7.956006] device: 'capi26': device_add
+[    7.958006] device: 'capi27': device_add
+[    7.959006] device: 'capi28': device_add
+[    7.961006] device: 'capi29': device_add
+[    7.962006] device: 'capi30': device_add
+[    7.963006] device: 'capi31': device_add
+[    7.965006] capi20: Rev 1.1.2.7: started up with major 68 (middleware+capifs)
+[    7.966006] initcall capi_init+0x0/0x2df returned 0 after 47851 usecs
+[    7.967006] calling  capifs_init+0x0/0xd4 @ 1
+[    7.969006] capifs: Rev 1.1.2.3
+[    7.970006] initcall capifs_init+0x0/0xd4 returned 0 after 1953 usecs
+[    7.971006] calling  b1pci_init+0x0/0xc6 @ 1
+[    7.972006] bus: 'pci': add driver b1pci
+[    7.974006] b1pci: revision 1.1.2.2
+[    7.975006] initcall b1pci_init+0x0/0xc6 returned 0 after 2929 usecs
+[    7.976006] calling  b1_init+0x0/0x82 @ 1
+[    7.977006] b1: revision 1.1.2.2
+[    7.978006] initcall b1_init+0x0/0x82 returned 0 after 976 usecs
+[    7.979006] calling  b1dma_init+0x0/0x82 @ 1
+[    7.980006] b1dma: revision 1.1.2.3
+[    7.981006] initcall b1dma_init+0x0/0x82 returned 0 after 976 usecs
+[    7.982006] calling  b1pcmcia_init+0x0/0xa5 @ 1
+[    7.983006] b1pci: revision 1.1.2.2
+[    7.984006] initcall b1pcmcia_init+0x0/0xa5 returned 0 after 976 usecs
+[    7.985006] calling  t1pci_init+0x0/0xc6 @ 1
+[    7.986006] bus: 'pci': add driver t1pci
+[    7.987006] t1pci: revision 1.1.2.2
+[    7.988006] initcall t1pci_init+0x0/0xc6 returned 0 after 1953 usecs
+[    7.989006] calling  cpufreq_stats_init+0x0/0xa5 @ 1
+[    7.990006] initcall cpufreq_stats_init+0x0/0xa5 returned 0 after 0 usecs
+[    7.991006] calling  cpufreq_gov_powersave_init+0x0/0x12 @ 1
+[    7.992006] initcall cpufreq_gov_powersave_init+0x0/0x12 returned 0 after 0 usecs
+[    7.993006] calling  alix_led_init+0x0/0x111 @ 1
+[    7.994006] initcall alix_led_init+0x0/0x111 returned -19 after 0 usecs
+[    7.995006] calling  pca9532_init+0x0/0x14 @ 1
+[    7.996006] bus: 'i2c': add driver pca9532
+[    7.997006] initcall pca9532_init+0x0/0x14 returned 0 after 976 usecs
+[    7.998006] calling  lp3944_module_init+0x0/0x14 @ 1
+[    7.999006] bus: 'i2c': add driver lp3944
+[    8.000006] initcall lp3944_module_init+0x0/0x14 returned 0 after 976 usecs
+[    8.002006] calling  pca955x_leds_init+0x0/0x14 @ 1
+[    8.003006] bus: 'i2c': add driver leds-pca955x
+[    8.005006] initcall pca955x_leds_init+0x0/0x14 returned 0 after 1953 usecs
+[    8.006006] calling  da903x_led_init+0x0/0x12 @ 1
+[    8.007006] bus: 'platform': add driver da903x-led
+[    8.008006] initcall da903x_led_init+0x0/0x12 returned 0 after 976 usecs
+[    8.009006] calling  defon_trig_init+0x0/0x12 @ 1
+[    8.010006] initcall defon_trig_init+0x0/0x12 returned 0 after 0 usecs
+[    8.011006] calling  ibft_init+0x0/0x1bf @ 1
+[    8.012006] No iBFT detected.
+[    8.013006] initcall ibft_init+0x0/0x1bf returned 0 after 976 usecs
+[    8.014006] calling  ioat_init_module+0x0/0x1b @ 1
+[    8.015006] bus: 'pci': add driver ioatdma
+[    8.017006] initcall ioat_init_module+0x0/0x1b returned 0 after 1953 usecs
+[    8.018006] calling  virtio_pci_init+0x0/0x56 @ 1
+[    8.019006] device: 'virtio-pci': device_add
+[    8.020006] bus: 'pci': add driver virtio-pci
+[    8.021006] initcall virtio_pci_init+0x0/0x56 returned 0 after 1953 usecs
+[    8.022006] calling  init_soundcore+0x0/0x95 @ 1
+[    8.023006] device class 'sound': registering
+[    8.024006] initcall init_soundcore+0x0/0x95 returned 0 after 976 usecs
+[    8.025006] calling  alsa_sound_init+0x0/0xa4 @ 1
+[    8.026006] Advanced Linux Sound Architecture Driver Version 1.0.21.
+[    8.027006] initcall alsa_sound_init+0x0/0xa4 returned 0 after 976 usecs
+[    8.028006] calling  alsa_timer_init+0x0/0xd4 @ 1
+[    8.030006] device: 'timer': device_add
+[    8.031006] initcall alsa_timer_init+0x0/0xd4 returned 0 after 1953 usecs
+[    8.032006] calling  alsa_pcm_init+0x0/0x6c @ 1
+[    8.033006] initcall alsa_pcm_init+0x0/0x6c returned 0 after 0 usecs
+[    8.034006] calling  snd_mem_init+0x0/0x2c @ 1
+[    8.035006] initcall snd_mem_init+0x0/0x2c returned 0 after 0 usecs
+[    8.036006] calling  alsa_pcm_oss_init+0x0/0xa7 @ 1
+[    8.037006] initcall alsa_pcm_oss_init+0x0/0xa7 returned 0 after 0 usecs
+[    8.038006] calling  alsa_seq_init+0x0/0x57 @ 1
+[    8.039006] device: 'seq': device_add
+[    8.041006] initcall alsa_seq_init+0x0/0x57 returned 0 after 1953 usecs
+[    8.042006] calling  alsa_seq_device_init+0x0/0x5b @ 1
+[    8.043006] initcall alsa_seq_device_init+0x0/0x5b returned 0 after 0 usecs
+[    8.044006] calling  snd_soc_init+0x0/0x4d @ 1
+[    8.045006] bus: 'platform': add driver soc-audio
+[    8.047006] initcall snd_soc_init+0x0/0x4d returned 0 after 1953 usecs
+[    8.048006] calling  ad1836_init+0x0/0x31 @ 1
+[    8.049006] bus: 'spi': add driver ad1836-spi
+[    8.051006] initcall ad1836_init+0x0/0x31 returned 0 after 1953 usecs
+[    8.052006] calling  ad1938_init+0x0/0x31 @ 1
+[    8.053006] bus: 'spi': add driver ad1938
+[    8.054006] initcall ad1938_init+0x0/0x31 returned 0 after 976 usecs
+[    8.055006] calling  ad73311_init+0x0/0x12 @ 1
+[    8.056006] No device for DAI AD73311
+[    8.057006] initcall ad73311_init+0x0/0x12 returned 0 after 976 usecs
+[    8.058006] calling  ak4104_init+0x0/0x20 @ 1
+[    8.059006] Asahi Kasei AK4104 ALSA SoC Codec Driver
+[    8.060006] bus: 'spi': add driver ak4104
+[    8.062006] initcall ak4104_init+0x0/0x20 returned 0 after 2929 usecs
+[    8.063006] calling  ak4535_modinit+0x0/0x12 @ 1
+[    8.064006] No device for DAI AK4535
+[    8.065006] initcall ak4535_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.066006] calling  ak4642_modinit+0x0/0x14 @ 1
+[    8.067006] bus: 'i2c': add driver AK4642 I2C Codec
+[    8.069006] initcall ak4642_modinit+0x0/0x14 returned 0 after 1953 usecs
+[    8.070006] calling  cs4270_init+0x0/0x22 @ 1
+[    8.071006] Cirrus Logic CS4270 ALSA SoC Codec Driver
+[    8.072006] bus: 'i2c': add driver cs4270
+[    8.074006] initcall cs4270_init+0x0/0x22 returned 0 after 2929 usecs
+[    8.075006] calling  pcm3008_init+0x0/0x12 @ 1
+[    8.076006] No device for DAI PCM3008 HiFi
+[    8.077006] initcall pcm3008_init+0x0/0x12 returned 0 after 976 usecs
+[    8.078006] calling  dit_modinit+0x0/0x12 @ 1
+[    8.079006] bus: 'platform': add driver spdif-dit
+[    8.080006] initcall dit_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.081006] calling  ssm2602_modinit+0x0/0x12 @ 1
+[    8.082006] No device for DAI SSM2602
+[    8.083006] initcall ssm2602_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.084006] calling  tlv320aic23_modinit+0x0/0x12 @ 1
+[    8.085006] No device for DAI tlv320aic23
+[    8.086006] initcall tlv320aic23_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.087006] calling  aic26_init+0x0/0x12 @ 1
+[    8.088006] bus: 'spi': add driver tlv320aic26
+[    8.089006] initcall aic26_init+0x0/0x12 returned 0 after 976 usecs
+[    8.090006] calling  aic3x_modinit+0x0/0x31 @ 1
+[    8.091006] bus: 'i2c': add driver aic3x I2C Codec
+[    8.092006] initcall aic3x_modinit+0x0/0x31 returned 0 after 976 usecs
+[    8.093006] calling  twl4030_modinit+0x0/0x17 @ 1
+[    8.094006] No device for DAI twl4030
+[    8.095006] No device for DAI twl4030 Voice
+[    8.096006] initcall twl4030_modinit+0x0/0x17 returned 0 after 1953 usecs
+[    8.097006] calling  uda134x_init+0x0/0x12 @ 1
+[    8.098006] No device for DAI UDA134X
+[    8.099006] initcall uda134x_init+0x0/0x12 returned 0 after 976 usecs
+[    8.100006] calling  uda1380_modinit+0x0/0x2a @ 1
+[    8.101006] bus: 'i2c': add driver UDA1380 I2C Codec
+[    8.102006] initcall uda1380_modinit+0x0/0x2a returned 0 after 976 usecs
+[    8.103006] calling  wm8400_codec_init+0x0/0x12 @ 1
+[    8.104006] bus: 'platform': add driver wm8400-codec
+[    8.105006] initcall wm8400_codec_init+0x0/0x12 returned 0 after 976 usecs
+[    8.107006] calling  wm8510_modinit+0x0/0x12 @ 1
+[    8.108006] No device for DAI WM8510 HiFi
+[    8.109006] initcall wm8510_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.110006] calling  wm8523_modinit+0x0/0x2a @ 1
+[    8.111006] bus: 'i2c': add driver WM8523
+[    8.112006] initcall wm8523_modinit+0x0/0x2a returned 0 after 976 usecs
+[    8.113006] calling  wm8580_modinit+0x0/0x2a @ 1
+[    8.114006] bus: 'i2c': add driver wm8580
+[    8.115006] initcall wm8580_modinit+0x0/0x2a returned 0 after 976 usecs
+[    8.116006] calling  wm8728_modinit+0x0/0x12 @ 1
+[    8.117006] No device for DAI WM8728
+[    8.118006] initcall wm8728_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.119006] calling  wm8731_modinit+0x0/0x4a @ 1
+[    8.120006] bus: 'i2c': add driver WM8731 I2C Codec
+[    8.121006] bus: 'spi': add driver wm8731
+[    8.122006] initcall wm8731_modinit+0x0/0x4a returned 0 after 1953 usecs
+[    8.123006] calling  wm8750_modinit+0x0/0x12 @ 1
+[    8.124006] No device for DAI WM8750
+[    8.125006] initcall wm8750_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.126006] calling  wm8753_modinit+0x0/0x4a @ 1
+[    8.127006] bus: 'i2c': add driver wm8753
+[    8.128006] bus: 'spi': add driver wm8753
+[    8.130006] initcall wm8753_modinit+0x0/0x4a returned 0 after 2929 usecs
+[    8.131006] calling  wm8776_modinit+0x0/0x4a @ 1
+[    8.132006] bus: 'i2c': add driver wm8776
+[    8.134006] bus: 'spi': add driver wm8776
+[    8.135006] initcall wm8776_modinit+0x0/0x4a returned 0 after 2929 usecs
+[    8.136006] calling  wm8900_modinit+0x0/0x14 @ 1
+[    8.137006] bus: 'i2c': add driver WM8900
+[    8.138006] initcall wm8900_modinit+0x0/0x14 returned 0 after 976 usecs
+[    8.139006] calling  wm8903_modinit+0x0/0x14 @ 1
+[    8.140006] bus: 'i2c': add driver WM8903
+[    8.141006] initcall wm8903_modinit+0x0/0x14 returned 0 after 976 usecs
+[    8.142006] calling  wm8971_modinit+0x0/0x12 @ 1
+[    8.143006] No device for DAI WM8971
+[    8.144006] initcall wm8971_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.146006] calling  wm8974_modinit+0x0/0x14 @ 1
+[    8.147006] bus: 'i2c': add driver WM8974
+[    8.149006] initcall wm8974_modinit+0x0/0x14 returned 0 after 1953 usecs
+[    8.151006] calling  wm8940_modinit+0x0/0x33 @ 1
+[    8.152006] bus: 'i2c': add driver WM8940 I2C Codec
+[    8.154006] initcall wm8940_modinit+0x0/0x33 returned 0 after 1953 usecs
+[    8.155006] calling  wm8960_modinit+0x0/0x34 @ 1
+[    8.156006] bus: 'i2c': add driver WM8960 I2C Codec
+[    8.158006] initcall wm8960_modinit+0x0/0x34 returned 0 after 1953 usecs
+[    8.160006] calling  wm8961_modinit+0x0/0x34 @ 1
+[    8.161006] bus: 'i2c': add driver wm8961
+[    8.163006] initcall wm8961_modinit+0x0/0x34 returned 0 after 1953 usecs
+[    8.164006] calling  wm8988_modinit+0x0/0x53 @ 1
+[    8.165006] bus: 'i2c': add driver WM8988
+[    8.166006] bus: 'spi': add driver wm8988
+[    8.167006] initcall wm8988_modinit+0x0/0x53 returned 0 after 1953 usecs
+[    8.168006] calling  wm8990_modinit+0x0/0x12 @ 1
+[    8.169006] No device for DAI WM8990 ADC/DAC Primary
+[    8.170006] initcall wm8990_modinit+0x0/0x12 returned 0 after 976 usecs
+[    8.171006] calling  wm8993_modinit+0x0/0x33 @ 1
+[    8.172006] bus: 'i2c': add driver WM8993
+[    8.173006] initcall wm8993_modinit+0x0/0x33 returned 0 after 976 usecs
+[    8.174006] calling  wm9081_modinit+0x0/0x34 @ 1
+[    8.175006] bus: 'i2c': add driver wm9081
+[    8.176006] initcall wm9081_modinit+0x0/0x34 returned 0 after 976 usecs
+[    8.177006] calling  max9877_init+0x0/0x14 @ 1
+[    8.178006] bus: 'i2c': add driver max9877
+[    8.179006] initcall max9877_init+0x0/0x14 returned 0 after 976 usecs
+[    8.181006] calling  alsa_sound_last_init+0x0/0x6f @ 1
+[    8.182006] ALSA device list:
+[    8.183006]   No soundcards found.
+[    8.184006] initcall alsa_sound_last_init+0x0/0x6f returned 0 after 1953 usecs
+[    8.185006] calling  flow_cache_init+0x0/0x1a6 @ 1
+[    8.186006] initcall flow_cache_init+0x0/0x1a6 returned 0 after 0 usecs
+[    8.187006] calling  llc_init+0x0/0x20 @ 1
+[    8.188006] initcall llc_init+0x0/0x20 returned 0 after 0 usecs
+[    8.189006] calling  snap_init+0x0/0x3a @ 1
+[    8.190006] initcall snap_init+0x0/0x3a returned 0 after 0 usecs
+[    8.191006] calling  blackhole_module_init+0x0/0x12 @ 1
+[    8.192006] initcall blackhole_module_init+0x0/0x12 returned 0 after 0 usecs
+[    8.193006] calling  police_init_module+0x0/0x12 @ 1
+[    8.194006] initcall police_init_module+0x0/0x12 returned 0 after 0 usecs
+[    8.195006] calling  mirred_init_module+0x0/0x20 @ 1
+[    8.196006] Mirror/redirect action on
+[    8.197006] initcall mirred_init_module+0x0/0x20 returned 0 after 976 usecs
+[    8.198006] calling  cbq_module_init+0x0/0x12 @ 1
+[    8.199006] initcall cbq_module_init+0x0/0x12 returned 0 after 0 usecs
+[    8.200006] calling  netem_module_init+0x0/0x20 @ 1
+[    8.201006] netem: version 1.2
+[    8.202006] initcall netem_module_init+0x0/0x20 returned 0 after 976 usecs
+[    8.203006] calling  drr_init+0x0/0x12 @ 1
+[    8.204006] initcall drr_init+0x0/0x12 returned 0 after 0 usecs
+[    8.205006] calling  cls_flow_init+0x0/0x12 @ 1
+[    8.206006] initcall cls_flow_init+0x0/0x12 returned 0 after 0 usecs
+[    8.207006] calling  nfnetlink_init+0x0/0x61 @ 1
+[    8.208006] Netfilter messages via NETLINK v0.30.
+[    8.209006] initcall nfnetlink_init+0x0/0x61 returned 0 after 976 usecs
+[    8.210006] calling  nfnetlink_log_init+0x0/0xd8 @ 1
+[    8.211006] initcall nfnetlink_log_init+0x0/0xd8 returned 0 after 0 usecs
+[    8.212006] calling  xt_init+0x0/0x176 @ 1
+[    8.213006] initcall xt_init+0x0/0x176 returned 0 after 0 usecs
+[    8.214006] calling  tcpudp_mt_init+0x0/0x17 @ 1
+[    8.215006] initcall tcpudp_mt_init+0x0/0x17 returned 0 after 0 usecs
+[    8.216006] calling  classify_tg_init+0x0/0x12 @ 1
+[    8.217006] initcall classify_tg_init+0x0/0x12 returned 0 after 0 usecs
+[    8.218006] calling  hl_tg_init+0x0/0x17 @ 1
+[    8.219006] initcall hl_tg_init+0x0/0x17 returned 0 after 0 usecs
+[    8.220006] calling  mark_tg_init+0x0/0x17 @ 1
+[    8.221006] initcall mark_tg_init+0x0/0x17 returned 0 after 0 usecs
+[    8.222006] calling  nflog_tg_init+0x0/0x12 @ 1
+[    8.223006] initcall nflog_tg_init+0x0/0x12 returned 0 after 0 usecs
+[    8.224006] calling  xt_rateest_tg_init+0x0/0x3d @ 1
+[    8.225006] initcall xt_rateest_tg_init+0x0/0x3d returned 0 after 0 usecs
+[    8.226006] calling  tcpmss_tg_init+0x0/0x17 @ 1
+[    8.227006] initcall tcpmss_tg_init+0x0/0x17 returned 0 after 0 usecs
+[    8.228006] calling  comment_mt_init+0x0/0x12 @ 1
+[    8.229006] initcall comment_mt_init+0x0/0x12 returned 0 after 0 usecs
+[    8.230006] calling  hl_mt_init+0x0/0x17 @ 1
+[    8.231006] initcall hl_mt_init+0x0/0x17 returned 0 after 0 usecs
+[    8.232006] calling  length_mt_init+0x0/0x17 @ 1
+[    8.233006] initcall length_mt_init+0x0/0x17 returned 0 after 0 usecs
+[    8.234006] calling  limit_mt_init+0x0/0x12 @ 1
+[    8.235006] initcall limit_mt_init+0x0/0x12 returned 0 after 0 usecs
+[    8.236006] calling  mac_mt_init+0x0/0x12 @ 1
+[    8.237006] initcall mac_mt_init+0x0/0x12 returned 0 after 0 usecs
+[    8.238006] calling  multiport_mt_init+0x0/0x17 @ 1
+[    8.239006] initcall multiport_mt_init+0x0/0x17 returned 0 after 0 usecs
+[    8.240006] calling  realm_mt_init+0x0/0x12 @ 1
+[    8.241006] initcall realm_mt_init+0x0/0x12 returned 0 after 0 usecs
+[    8.242006] calling  sctp_mt_init+0x0/0x17 @ 1
+[    8.243006] initcall sctp_mt_init+0x0/0x17 returned 0 after 0 usecs
+[    8.244006] calling  string_mt_init+0x0/0x17 @ 1
+[    8.245006] initcall string_mt_init+0x0/0x17 returned 0 after 0 usecs
+[    8.246006] calling  tcpmss_mt_init+0x0/0x17 @ 1
+[    8.247006] initcall tcpmss_mt_init+0x0/0x17 returned 0 after 0 usecs
+[    8.248006] calling  time_mt_init+0x0/0x4d @ 1
+[    8.249006] xt_time: kernel timezone is -0000
+[    8.250006] initcall time_mt_init+0x0/0x4d returned 0 after 976 usecs
+[    8.251006] calling  sysctl_ipv4_init+0x0/0x4e @ 1
+[    8.252006] initcall sysctl_ipv4_init+0x0/0x4e returned 0 after 0 usecs
+[    8.253006] calling  ipgre_init+0x0/0xb3 @ 1
+[    8.254006] GRE over IPv4 tunneling driver
+[    8.255006] device: 'gre0': device_add
+[    8.256006] initcall ipgre_init+0x0/0xb3 returned 0 after 1953 usecs
+[    8.257006] calling  ah4_init+0x0/0x68 @ 1
+[    8.258006] initcall ah4_init+0x0/0x68 returned 0 after 0 usecs
+[    8.259006] calling  esp4_init+0x0/0x68 @ 1
+[    8.260006] initcall esp4_init+0x0/0x68 returned 0 after 0 usecs
+[    8.261006] calling  tunnel4_init+0x0/0x68 @ 1
+[    8.262006] initcall tunnel4_init+0x0/0x68 returned 0 after 0 usecs
+[    8.263006] calling  xfrm4_transport_init+0x0/0x17 @ 1
+[    8.264006] initcall xfrm4_transport_init+0x0/0x17 returned 0 after 0 usecs
+[    8.265006] calling  ipv4_netfilter_init+0x0/0x17 @ 1
+[    8.266006] initcall ipv4_netfilter_init+0x0/0x17 returned 0 after 0 usecs
+[    8.267006] calling  inet_diag_init+0x0/0x94 @ 1
+[    8.268006] initcall inet_diag_init+0x0/0x94 returned 0 after 0 usecs
+[    8.269006] calling  tcp_diag_init+0x0/0x12 @ 1
+[    8.270006] initcall tcp_diag_init+0x0/0x12 returned 0 after 0 usecs
+[    8.271006] calling  bictcp_register+0x0/0x12 @ 1
+[    8.272006] TCP bic registered
+[    8.273006] initcall bictcp_register+0x0/0x12 returned 0 after 976 usecs
+[    8.274006] calling  cubictcp_register+0x0/0x65 @ 1
+[    8.275006] TCP cubic registered
+[    8.276006] initcall cubictcp_register+0x0/0x65 returned 0 after 976 usecs
+[    8.277006] calling  hybla_register+0x0/0x12 @ 1
+[    8.278006] TCP hybla registered
+[    8.279006] initcall hybla_register+0x0/0x12 returned 0 after 976 usecs
+[    8.280006] calling  tcp_scalable_register+0x0/0x12 @ 1
+[    8.281006] TCP scalable registered
+[    8.282006] initcall tcp_scalable_register+0x0/0x12 returned 0 after 976 usecs
+[    8.283006] calling  tcp_illinois_register+0x0/0x12 @ 1
+[    8.284006] TCP illinois registered
+[    8.285006] initcall tcp_illinois_register+0x0/0x12 returned 0 after 976 usecs
+[    8.286006] calling  xfrm_user_init+0x0/0x4d @ 1
+[    8.287006] Initializing XFRM netlink socket
+[    8.288006] initcall xfrm_user_init+0x0/0x4d returned 0 after 976 usecs
+[    8.289006] calling  inet6_init+0x0/0x2ca @ 1
+[    8.294006] NET: Registered protocol family 10
+[    8.300006] initcall inet6_init+0x0/0x2ca returned 0 after 9765 usecs
+[    8.301006] calling  xfrm6_transport_init+0x0/0x17 @ 1
+[    8.303006] initcall xfrm6_transport_init+0x0/0x17 returned 0 after 0 usecs
+[    8.304006] calling  ip6_tables_init+0x0/0xaf @ 1
+[    8.306006] ip6_tables: (C) 2000-2006 Netfilter Core Team
+[    8.307006] initcall ip6_tables_init+0x0/0xaf returned 0 after 1953 usecs
+[    8.308006] calling  eui64_mt6_init+0x0/0x12 @ 1
+[    8.309006] initcall eui64_mt6_init+0x0/0x12 returned 0 after 0 usecs
+[    8.310006] calling  ipv6header_mt6_init+0x0/0x12 @ 1
+[    8.311006] initcall ipv6header_mt6_init+0x0/0x12 returned 0 after 0 usecs
+[    8.312006] calling  rt_mt6_init+0x0/0x12 @ 1
+[    8.313006] initcall rt_mt6_init+0x0/0x12 returned 0 after 0 usecs
+[    8.314006] calling  sit_init+0x0/0x71 @ 1
+[    8.315006] IPv6 over IPv4 tunneling driver
+[    8.316006] device: 'sit0': device_add
+[    8.317006] initcall sit_init+0x0/0x71 returned 0 after 1953 usecs
+[    8.318006] calling  packet_init+0x0/0x47 @ 1
+[    8.319006] NET: Registered protocol family 17
+[    8.320006] initcall packet_init+0x0/0x47 returned 0 after 976 usecs
+[    8.322006] calling  dsa_init_module+0x0/0x14 @ 1
+[    8.323006] initcall dsa_init_module+0x0/0x14 returned 0 after 0 usecs
+[    8.324006] calling  edsa_init_module+0x0/0x14 @ 1
+[    8.325006] initcall edsa_init_module+0x0/0x14 returned 0 after 0 usecs
+[    8.326006] calling  mv88e6123_61_65_init+0x0/0x14 @ 1
+[    8.327006] initcall mv88e6123_61_65_init+0x0/0x14 returned 0 after 0 usecs
+[    8.328006] calling  mv88e6131_init+0x0/0x14 @ 1
+[    8.329006] initcall mv88e6131_init+0x0/0x14 returned 0 after 0 usecs
+[    8.330006] calling  dsa_init_module+0x0/0x12 @ 1
+[    8.331006] bus: 'platform': add driver dsa
+[    8.333006] initcall dsa_init_module+0x0/0x12 returned 0 after 1953 usecs
+[    8.334006] calling  atalk_init+0x0/0x8d @ 1
+[    8.335006] NET: Registered protocol family 5
+[    8.336006] initcall atalk_init+0x0/0x8d returned 0 after 976 usecs
+[    8.337006] calling  x25_init+0x0/0x5f @ 1
+[    8.338006] NET: Registered protocol family 9
+[    8.339006] X.25 for Linux Version 0.2
+[    8.340006] initcall x25_init+0x0/0x5f returned 0 after 1953 usecs
+[    8.341006] calling  can_init+0x0/0x11f @ 1
+[    8.342006] can: controller area network core (rev 20090105 abi 8)
+[    8.343006] NET: Registered protocol family 29
+[    8.344006] initcall can_init+0x0/0x11f returned 0 after 1953 usecs
+[    8.345006] calling  raw_module_init+0x0/0x3d @ 1
+[    8.346006] can: raw protocol (rev 20090105)
+[    8.347006] initcall raw_module_init+0x0/0x3d returned 0 after 976 usecs
+[    8.349006] calling  bcm_module_init+0x0/0x5b @ 1
+[    8.350006] can: broadcast manager protocol (rev 20090105 t)
+[    8.351006] initcall bcm_module_init+0x0/0x5b returned 0 after 976 usecs
+[    8.352006] calling  af_rxrpc_init+0x0/0x1a0 @ 1
+[    8.354006] NET: Registered protocol family 33
+[    8.355006] initcall af_rxrpc_init+0x0/0x1a0 returned 0 after 1953 usecs
+[    8.356006] calling  rxkad_init+0x0/0x6b @ 1
+[    8.358006] RxRPC: Registered security type 2 'rxkad'
+[    8.359006] initcall rxkad_init+0x0/0x6b returned 0 after 1953 usecs
+[    8.360006] calling  vlan_proto_init+0x0/0xc7 @ 1
+[    8.361006] 802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
+[    8.362006] All bugs added by David S. Miller <davem@redhat.com>
+[    8.363006] initcall vlan_proto_init+0x0/0xc7 returned 0 after 1953 usecs
+[    8.364006] calling  lib80211_init+0x0/0x20 @ 1
+[    8.365006] lib80211: common routines for IEEE802.11 drivers
+[    8.366006] lib80211_crypt: registered algorithm 'NULL'
+[    8.367006] initcall lib80211_init+0x0/0x20 returned 0 after 1953 usecs
+[    8.368006] calling  lib80211_crypto_wep_init+0x0/0x12 @ 1
+[    8.369006] lib80211_crypt: registered algorithm 'WEP'
+[    8.370006] initcall lib80211_crypto_wep_init+0x0/0x12 returned 0 after 976 usecs
+[    8.371006] calling  lib80211_crypto_ccmp_init+0x0/0x12 @ 1
+[    8.372006] lib80211_crypt: registered algorithm 'CCMP'
+[    8.373006] initcall lib80211_crypto_ccmp_init+0x0/0x12 returned 0 after 976 usecs
+[    8.374006] calling  lib80211_crypto_tkip_init+0x0/0x12 @ 1
+[    8.375007] lib80211_crypt: registered algorithm 'TKIP'
+[    8.376007] initcall lib80211_crypto_tkip_init+0x0/0x12 returned 0 after 976 usecs
+[    8.377007] calling  tipc_init+0x0/0xa8 @ 1
+[    8.378007] TIPC: Activated (version 1.6.4 compiled Sep 15 2009 05:03:29)
+[    8.381007] NET: Registered protocol family 30
+[    8.382007] TIPC: Started in single node mode
+[    8.383007] initcall tipc_init+0x0/0xa8 returned 0 after 4882 usecs
+[    8.384007] calling  dcbnl_init+0x0/0x32 @ 1
+[    8.385007] initcall dcbnl_init+0x0/0x32 returned 0 after 0 usecs
+[    8.386007] calling  mce_debugfs_init+0x0/0x3b @ 1
+[    8.387007] initcall mce_debugfs_init+0x0/0x3b returned 0 after 0 usecs
+[    8.388007] calling  severities_debugfs_init+0x0/0x3b @ 1
+[    8.389007] initcall severities_debugfs_init+0x0/0x3b returned 0 after 0 usecs
+[    8.390007] calling  update_mp_table+0x0/0x222 @ 1
+[    8.391007] initcall update_mp_table+0x0/0x222 returned 0 after 0 usecs
+[    8.392007] calling  lapic_insert_resource+0x0/0x40 @ 1
+[    8.393007] initcall lapic_insert_resource+0x0/0x40 returned 0 after 0 usecs
+[    8.394007] calling  io_apic_bug_finalize+0x0/0x1b @ 1
+[    8.395007] initcall io_apic_bug_finalize+0x0/0x1b returned 0 after 0 usecs
+[    8.396007] calling  check_early_ioremap_leak+0x0/0x67 @ 1
+[    8.397007] initcall check_early_ioremap_leak+0x0/0x67 returned 0 after 0 usecs
+[    8.398007] calling  pat_memtype_list_init+0x0/0x29 @ 1
+[    8.399007] initcall pat_memtype_list_init+0x0/0x29 returned 0 after 0 usecs
+[    8.400007] calling  sched_init_debug+0x0/0x24 @ 1
+[    8.401007] initcall sched_init_debug+0x0/0x24 returned 0 after 0 usecs
+[    8.402007] calling  init_oops_id+0x0/0x36 @ 1
+[    8.403007] initcall init_oops_id+0x0/0x36 returned 0 after 0 usecs
+[    8.404007] calling  disable_boot_consoles+0x0/0x5d @ 1
+[    8.405007] initcall disable_boot_consoles+0x0/0x5d returned 0 after 0 usecs
+[    8.406007] calling  pm_qos_power_init+0x0/0xca @ 1
+[    8.407007] device: 'cpu_dma_latency': device_add
+[    8.408007] device: 'network_latency': device_add
+[    8.410007] device: 'network_throughput': device_add
+[    8.411007] initcall pm_qos_power_init+0x0/0xca returned 0 after 3906 usecs
+[    8.412007] calling  clear_boot_tracer+0x0/0x2d @ 1
+[    8.413007] initcall clear_boot_tracer+0x0/0x2d returned 0 after 0 usecs
+[    8.414007] calling  event_trace_self_tests_init+0x0/0x41 @ 1
+[    8.415007] Running tests on trace events:
+[    8.416007] Testing event kfree_skb: OK
+[    8.419007] Testing event sys_enter_socket: OK
+[    8.423007] Testing event sys_exit_socket: OK
+[    8.426007] Testing event sys_enter_socketpair: OK
+[    8.429007] Testing event sys_exit_socketpair: OK
+[    8.432007] Testing event sys_enter_bind: OK
+[    8.435007] Testing event sys_exit_bind: OK
+[    8.438007] Testing event sys_enter_listen: OK
+[    8.442007] Testing event sys_exit_listen: OK
+[    8.445007] Testing event sys_enter_accept4: OK
+[    8.449007] Testing event sys_exit_accept4: OK
+[    8.453007] Testing event sys_enter_accept: 
+[    8.454007] usb usb2: suspend_rh (auto-stop)
+[    8.455007] usb usb3: suspend_rh (auto-stop)
+[    8.456007] usb usb4: suspend_rh (auto-stop)
+[    8.459007] OK
+[    8.460007] Testing event sys_exit_accept: OK
+[    8.463007] Testing event sys_enter_connect: OK
+[    8.467007] Testing event sys_exit_connect: OK
+[    8.471007] Testing event sys_enter_getsockname: OK
+[    8.474007] Testing event sys_exit_getsockname: OK
+[    8.477007] Testing event sys_enter_getpeername: OK
+[    8.480007] Testing event sys_exit_getpeername: OK
+[    8.483007] Testing event sys_enter_sendto: OK
+[    8.487007] Testing event sys_exit_sendto: OK
+[    8.490007] Testing event sys_enter_recvfrom: OK
+[    8.493007] Testing event sys_exit_recvfrom: OK
+[    8.497007] Testing event sys_enter_setsockopt: OK
+[    8.500007] Testing event sys_exit_setsockopt: OK
+[    8.503007] Testing event sys_enter_getsockopt: OK
+[    8.506007] Testing event sys_exit_getsockopt: OK
+[    8.509007] Testing event sys_enter_shutdown: OK
+[    8.512007] Testing event sys_exit_shutdown: OK
+[    8.516007] Testing event sys_enter_sendmsg: OK
+[    8.520007] Testing event sys_exit_sendmsg: OK
+[    8.524007] Testing event sys_enter_recvmsg: OK
+[    8.528007] Testing event sys_exit_recvmsg: OK
+[    8.533007] Testing event block_rq_abort: OK
+[    8.536007] Testing event block_rq_insert: OK
+[    8.539007] Testing event block_rq_issue: OK
+[    8.542007] Testing event block_rq_requeue: OK
+[    8.546007] Testing event block_rq_complete: OK
+[    8.550007] Testing event block_bio_bounce: OK
+[    8.554007] Testing event block_bio_complete: OK
+[    8.557007] Testing event block_bio_backmerge: OK
+[    8.560007] Testing event block_bio_frontmerge: OK
+[    8.563007] Testing event block_bio_queue: OK
+[    8.566007] Testing event block_getrq: OK
+[    8.569007] Testing event block_sleeprq: OK
+[    8.572007] Testing event block_plug: OK
+[    8.575007] Testing event block_unplug_timer: OK
+[    8.579007] Testing event block_unplug_io: OK
+[    8.582007] Testing event block_split: OK
+[    8.585007] Testing event block_remap: OK
+[    8.588007] Testing event sys_enter_add_key: OK
+[    8.592007] Testing event sys_exit_add_key: OK
+[    8.596007] Testing event sys_enter_request_key: OK
+[    8.599007] Testing event sys_exit_request_key: OK
+[    8.602007] Testing event sys_enter_keyctl: OK
+[    8.606007] Testing event sys_exit_keyctl: OK
+[    8.609007] Testing event sys_enter_mq_open: OK
+[    8.613007] Testing event sys_exit_mq_open: OK
+[    8.617007] Testing event sys_enter_mq_unlink: OK
+[    8.620007] Testing event sys_exit_mq_unlink: OK
+[    8.623007] Testing event sys_enter_mq_timedsend: OK
+[    8.626007] Testing event sys_exit_mq_timedsend: OK
+[    8.629007] Testing event sys_enter_mq_timedreceive: OK
+[    8.632007] Testing event sys_exit_mq_timedreceive: OK
+[    8.635007] Testing event sys_enter_mq_notify: OK
+[    8.638007] Testing event sys_exit_mq_notify: OK
+[    8.641007] Testing event sys_enter_mq_getsetattr: OK
+[    8.644007] Testing event sys_exit_mq_getsetattr: OK
+[    8.647007] Testing event jbd2_checkpoint: OK
+[    8.650007] Testing event jbd2_start_commit: OK
+[    8.654007] Testing event jbd2_commit_locking: OK
+[    8.657007] Testing event jbd2_commit_flushing: OK
+[    8.660007] Testing event jbd2_commit_logging: OK
+[    8.663007] Testing event jbd2_end_commit: OK
+[    8.666007] Testing event jbd2_submit_inode_data: OK
+[    8.669007] Testing event ext4_free_inode: OK
+[    8.672007] Testing event ext4_request_inode: OK
+[    8.675007] Testing event ext4_allocate_inode: OK
+[    8.678007] Testing event ext4_write_begin: OK
+[    8.682007] Testing event ext4_ordered_write_end: OK
+[    8.685007] Testing event ext4_writeback_write_end: OK
+[    8.688007] Testing event ext4_journalled_write_end: OK
+[    8.691007] Testing event ext4_writepage: OK
+[    8.694007] Testing event ext4_da_writepages: OK
+[    8.697007] Testing event ext4_da_writepages_result: OK
+[    8.700007] Testing event ext4_da_write_begin: OK
+[    8.703007] Testing event ext4_da_write_end: 
+[    8.704007] usb usb5: suspend_rh (auto-stop)
+[    8.707007] OK
+[    8.708007] Testing event ext4_discard_blocks: OK
+[    8.711007] Testing event ext4_mb_new_inode_pa: OK
+[    8.714007] Testing event ext4_mb_new_group_pa: OK
+[    8.717007] Testing event ext4_mb_release_inode_pa: OK
+[    8.720007] Testing event ext4_mb_release_group_pa: OK
+[    8.723007] Testing event ext4_discard_preallocations: OK
+[    8.726007] Testing event ext4_mb_discard_preallocations: OK
+[    8.729007] Testing event ext4_request_blocks: OK
+[    8.732007] Testing event ext4_allocate_blocks: OK
+[    8.735007] Testing event ext4_free_blocks: OK
+[    8.739007] Testing event ext4_sync_file: OK
+[    8.742007] Testing event ext4_sync_fs: OK
+[    8.745007] Testing event sys_enter_quotactl: OK
+[    8.748007] Testing event sys_exit_quotactl: OK
+[    8.752007] Testing event sys_enter_flock: OK
+[    8.755007] Testing event sys_exit_flock: OK
+[    8.758007] Testing event sys_enter_eventfd2: OK
+[    8.761007] Testing event sys_exit_eventfd2: OK
+[    8.765007] Testing event sys_enter_eventfd: OK
+[    8.769007] Testing event sys_exit_eventfd: OK
+[    8.773007] Testing event sys_enter_timerfd_create: OK
+[    8.776007] Testing event sys_exit_timerfd_create: OK
+[    8.779007] Testing event sys_enter_timerfd_settime: OK
+[    8.782007] Testing event sys_exit_timerfd_settime: OK
+[    8.785007] Testing event sys_enter_timerfd_gettime: OK
+[    8.788007] Testing event sys_exit_timerfd_gettime: OK
+[    8.791007] Testing event sys_enter_signalfd4: OK
+[    8.794007] Testing event sys_exit_signalfd4: OK
+[    8.797007] Testing event sys_enter_signalfd: OK
+[    8.800007] Testing event sys_exit_signalfd: OK
+[    8.804007] Testing event sys_enter_epoll_create1: OK
+[    8.807007] Testing event sys_exit_epoll_create1: OK
+[    8.810007] Testing event sys_enter_epoll_create: OK
+[    8.813007] Testing event sys_exit_epoll_create: OK
+[    8.816007] Testing event sys_enter_epoll_ctl: OK
+[    8.819007] Testing event sys_exit_epoll_ctl: OK
+[    8.822007] Testing event sys_enter_epoll_wait: OK
+[    8.825007] Testing event sys_exit_epoll_wait: OK
+[    8.828007] Testing event sys_enter_epoll_pwait: OK
+[    8.831007] Testing event sys_exit_epoll_pwait: OK
+[    8.834007] Testing event sys_enter_inotify_init1: OK
+[    8.837007] Testing event sys_exit_inotify_init1: OK
+[    8.840007] Testing event sys_enter_inotify_init: OK
+[    8.843007] Testing event sys_exit_inotify_init: OK
+[    8.846007] Testing event sys_enter_inotify_add_watch: OK
+[    8.850007] Testing event sys_exit_inotify_add_watch: OK
+[    8.853007] Testing event sys_enter_inotify_rm_watch: OK
+[    8.856007] Testing event sys_exit_inotify_rm_watch: OK
+[    8.859007] Testing event sys_enter_ioprio_set: OK
+[    8.862007] Testing event sys_exit_ioprio_set: OK
+[    8.865007] Testing event sys_enter_ioprio_get: OK
+[    8.868007] Testing event sys_exit_ioprio_get: OK
+[    8.871007] Testing event sys_enter_utime: OK
+[    8.874007] Testing event sys_exit_utime: OK
+[    8.877007] Testing event sys_enter_utimensat: OK
+[    8.880007] Testing event sys_exit_utimensat: OK
+[    8.883007] Testing event sys_enter_futimesat: OK
+[    8.886007] Testing event sys_exit_futimesat: OK
+[    8.889007] Testing event sys_enter_utimes: OK
+[    8.893007] Testing event sys_exit_utimes: OK
+[    8.896007] Testing event sys_enter_sync: OK
+[    8.899007] Testing event sys_exit_sync: OK
+[    8.902007] Testing event sys_enter_fsync: OK
+[    8.905007] Testing event sys_exit_fsync: OK
+[    8.908007] Testing event sys_enter_fdatasync: OK
+[    8.911007] Testing event sys_exit_fdatasync: OK
+[    8.914007] Testing event sys_enter_vmsplice: OK
+[    8.917007] Testing event sys_exit_vmsplice: OK
+[    8.921007] Testing event sys_enter_splice: OK
+[    8.925007] Testing event sys_exit_splice: OK
+[    8.928007] Testing event sys_enter_tee: OK
+[    8.931007] Testing event sys_exit_tee: OK
+[    8.934007] Testing event sys_enter_setxattr: OK
+[    8.937007] Testing event sys_exit_setxattr: OK
+[    8.941007] Testing event sys_enter_lsetxattr: OK
+[    8.944007] Testing event sys_exit_lsetxattr: OK
+[    8.947007] Testing event sys_enter_fsetxattr: OK
+[    8.950007] Testing event sys_exit_fsetxattr: OK
+[    8.953007] Testing event sys_enter_getxattr: OK
+[    8.956007] Testing event sys_exit_getxattr: OK
+[    8.960007] Testing event sys_enter_lgetxattr: OK
+[    8.963007] Testing event sys_exit_lgetxattr: OK
+[    8.966007] Testing event sys_enter_fgetxattr: OK
+[    8.969007] Testing event sys_exit_fgetxattr: OK
+[    8.972007] Testing event sys_enter_listxattr: OK
+[    8.975007] Testing event sys_exit_listxattr: OK
+[    8.978007] Testing event sys_enter_llistxattr: OK
+[    8.981007] Testing event sys_exit_llistxattr: OK
+[    8.984007] Testing event sys_enter_flistxattr: OK
+[    8.987007] Testing event sys_exit_flistxattr: OK
+[    8.990007] Testing event sys_enter_removexattr: OK
+[    8.993007] Testing event sys_exit_removexattr: OK
+[    8.996007] Testing event sys_enter_lremovexattr: OK
+[    8.999007] Testing event sys_exit_lremovexattr: OK
+[    9.002007] Testing event sys_enter_fremovexattr: OK
+[    9.005007] Testing event sys_exit_fremovexattr: OK
+[    9.008007] Testing event sys_enter_umount: OK
+[    9.012007] Testing event sys_exit_umount: OK
+[    9.015007] Testing event sys_enter_mount: OK
+[    9.018007] Testing event sys_exit_mount: OK
+[    9.021007] Testing event sys_enter_pivot_root: OK
+[    9.024007] Testing event sys_exit_pivot_root: OK
+[    9.027007] Testing event sys_enter_sysfs: OK
+[    9.030007] Testing event sys_exit_sysfs: OK
+[    9.033007] Testing event sys_enter_getcwd: OK
+[    9.037007] Testing event sys_exit_getcwd: OK
+[    9.040007] Testing event sys_enter_select: OK
+[    9.044007] Testing event sys_exit_select: OK
+[    9.047007] Testing event sys_enter_pselect6: OK
+[    9.050007] Testing event sys_exit_pselect6: OK
+[    9.054007] Testing event sys_enter_poll: OK
+[    9.057007] Testing event sys_exit_poll: OK
+[    9.060007] Testing event sys_enter_ppoll: OK
+[    9.063007] Testing event sys_exit_ppoll: OK
+[    9.066007] Testing event sys_enter_getdents: OK
+[    9.069007] Testing event sys_exit_getdents: OK
+[    9.073007] Testing event sys_enter_getdents64: OK
+[    9.076007] Testing event sys_exit_getdents64: OK
+[    9.079007] Testing event sys_enter_ioctl: OK
+[    9.082007] Testing event sys_exit_ioctl: OK
+[    9.085007] Testing event sys_enter_dup3: OK
+[    9.088007] Testing event sys_exit_dup3: OK
+[    9.091007] Testing event sys_enter_dup2: OK
+[    9.094007] Testing event sys_exit_dup2: OK
+[    9.098007] Testing event sys_enter_dup: OK
+[    9.101007] Testing event sys_exit_dup: OK
+[    9.104007] Testing event sys_enter_fcntl: OK
+[    9.107007] Testing event sys_exit_fcntl: OK
+[    9.110007] Testing event sys_enter_mknodat: OK
+[    9.114007] Testing event sys_exit_mknodat: OK
+[    9.118007] Testing event sys_enter_mknod: OK
+[    9.121007] Testing event sys_exit_mknod: OK
+[    9.124007] Testing event sys_enter_mkdirat: OK
+[    9.128007] Testing event sys_exit_mkdirat: OK
+[    9.132007] Testing event sys_enter_mkdir: OK
+[    9.135007] Testing event sys_exit_mkdir: OK
+[    9.138007] Testing event sys_enter_rmdir: OK
+[    9.141007] Testing event sys_exit_rmdir: OK
+[    9.144007] Testing event sys_enter_unlinkat: OK
+[    9.147007] Testing event sys_exit_unlinkat: OK
+[    9.151007] Testing event sys_enter_unlink: OK
+[    9.155007] Testing event sys_exit_unlink: OK
+[    9.158007] Testing event sys_enter_symlinkat: OK
+[    9.161007] Testing event sys_exit_symlinkat: OK
+[    9.164007] Testing event sys_enter_symlink: OK
+[    9.168007] Testing event sys_exit_symlink: OK
+[    9.172007] Testing event sys_enter_linkat: OK
+[    9.176007] Testing event sys_exit_linkat: OK
+[    9.179007] Testing event sys_enter_link: OK
+[    9.182007] Testing event sys_exit_link: OK
+[    9.185007] Testing event sys_enter_renameat: OK
+[    9.188007] Testing event sys_exit_renameat: OK
+[    9.192007] Testing event sys_enter_rename: OK
+[    9.196007] Testing event sys_exit_rename: OK
+[    9.199007] Testing event sys_enter_pipe2: OK
+[    9.202007] Testing event sys_exit_pipe2: OK
+[    9.205007] Testing event sys_enter_pipe: OK
+[    9.208007] Testing event sys_exit_pipe: OK
+[    9.211007] Testing event sys_enter_newstat: OK
+[    9.215007] Testing event sys_exit_newstat: OK
+[    9.219007] Testing event sys_enter_newlstat: OK
+[    9.222007] Testing event sys_exit_newlstat: OK
+[    9.226007] Testing event sys_enter_newfstatat: OK
+[    9.229007] Testing event sys_exit_newfstatat: OK
+[    9.232007] Testing event sys_enter_newfstat: OK
+[    9.235007] Testing event sys_exit_newfstat: OK
+[    9.239007] Testing event sys_enter_readlinkat: OK
+[    9.242007] Testing event sys_exit_readlinkat: OK
+[    9.245007] Testing event sys_enter_readlink: OK
+[    9.248007] Testing event sys_exit_readlink: OK
+[    9.252007] Testing event sys_enter_ustat: OK
+[    9.255007] Testing event sys_exit_ustat: OK
+[    9.258007] Testing event sys_enter_lseek: OK
+[    9.261007] Testing event sys_exit_lseek: OK
+[    9.264007] Testing event sys_enter_read: OK
+[    9.267007] Testing event sys_exit_read: OK
+[    9.270007] Testing event sys_enter_write: OK
+[    9.273007] Testing event sys_exit_write: OK
+[    9.276007] Testing event sys_enter_readv: OK
+[    9.279007] Testing event sys_exit_readv: OK
+[    9.282007] Testing event sys_enter_writev: OK
+[    9.286007] Testing event sys_exit_writev: OK
+[    9.289007] Testing event sys_enter_preadv: OK
+[    9.293007] Testing event sys_exit_preadv: OK
+[    9.296007] Testing event sys_enter_pwritev: OK
+[    9.300007] Testing event sys_exit_pwritev: OK
+[    9.304007] Testing event sys_enter_sendfile64: OK
+[    9.307007] Testing event sys_exit_sendfile64: OK
+[    9.310007] Testing event sys_enter_statfs: OK
+[    9.314007] Testing event sys_exit_statfs: OK
+[    9.317007] Testing event sys_enter_fstatfs: OK
+[    9.321007] Testing event sys_exit_fstatfs: OK
+[    9.325007] Testing event sys_enter_truncate: OK
+[    9.328007] Testing event sys_exit_truncate: OK
+[    9.332007] Testing event sys_enter_ftruncate: OK
+[    9.335007] Testing event sys_exit_ftruncate: OK
+[    9.338007] Testing event sys_enter_faccessat: OK
+[    9.341007] Testing event sys_exit_faccessat: OK
+[    9.344007] Testing event sys_enter_access: OK
+[    9.348007] Testing event sys_exit_access: OK
+[    9.351007] Testing event sys_enter_chdir: OK
+[    9.354007] Testing event sys_exit_chdir: OK
+[    9.357007] Testing event sys_enter_fchdir: OK
+[    9.361007] Testing event sys_exit_fchdir: OK
+[    9.364007] Testing event sys_enter_chroot: OK
+[    9.368007] Testing event sys_exit_chroot: OK
+[    9.371007] Testing event sys_enter_fchmod: OK
+[    9.375007] Testing event sys_exit_fchmod: OK
+[    9.378007] Testing event sys_enter_fchmodat: OK
+[    9.381007] Testing event sys_exit_fchmodat: OK
+[    9.385007] Testing event sys_enter_chmod: OK
+[    9.388007] Testing event sys_exit_chmod: OK
+[    9.391007] Testing event sys_enter_chown: OK
+[    9.394007] Testing event sys_exit_chown: OK
+[    9.397007] Testing event sys_enter_fchownat: OK
+[    9.400007] Testing event sys_exit_fchownat: OK
+[    9.404007] Testing event sys_enter_lchown: OK
+[    9.408007] Testing event sys_exit_lchown: OK
+[    9.411007] Testing event sys_enter_fchown: OK
+[    9.415007] Testing event sys_exit_fchown: OK
+[    9.418007] Testing event sys_enter_open: OK
+[    9.421007] Testing event sys_exit_open: OK
+[    9.424007] Testing event sys_enter_openat: OK
+[    9.428007] Testing event sys_exit_openat: OK
+[    9.431007] Testing event sys_enter_creat: OK
+[    9.434007] Testing event sys_exit_creat: OK
+[    9.437007] Testing event sys_enter_close: OK
+[    9.440007] Testing event sys_exit_close: OK
+[    9.443007] Testing event sys_enter_vhangup: OK
+[    9.447007] Testing event sys_exit_vhangup: OK
+[    9.451007] Testing event sys_enter_move_pages: OK
+[    9.454007] Testing event sys_exit_move_pages: OK
+[    9.457007] Testing event sys_enter_mbind: OK
+[    9.460007] Testing event sys_exit_mbind: OK
+[    9.463007] Testing event sys_enter_set_mempolicy: OK
+[    9.466008] Testing event sys_exit_set_mempolicy: OK
+[    9.469008] Testing event sys_enter_migrate_pages: OK
+[    9.472008] Testing event sys_exit_migrate_pages: OK
+[    9.475008] Testing event sys_enter_get_mempolicy: OK
+[    9.478008] Testing event sys_exit_get_mempolicy: OK
+[    9.481008] Testing event sys_enter_swapoff: OK
+[    9.485008] Testing event sys_exit_swapoff: OK
+[    9.489008] Testing event sys_enter_swapon: OK
+[    9.493008] Testing event sys_exit_swapon: OK
+[    9.496008] Testing event sys_enter_msync: OK
+[    9.499008] Testing event sys_exit_msync: OK
+[    9.502008] Testing event sys_enter_mremap: OK
+[    9.506008] Testing event sys_exit_mremap: OK
+[    9.509008] Testing event sys_enter_mprotect: OK
+[    9.512008] Testing event sys_exit_mprotect: OK
+[    9.516008] Testing event sys_enter_brk: OK
+[    9.519008] Testing event sys_exit_brk: OK
+[    9.522008] Testing event sys_enter_munmap: OK
+[    9.526008] Testing event sys_exit_munmap: OK
+[    9.529008] Testing event sys_enter_mlock: OK
+[    9.532008] Testing event sys_exit_mlock: OK
+[    9.535008] Testing event sys_enter_munlock: OK
+[    9.539008] Testing event sys_exit_munlock: OK
+[    9.543008] Testing event sys_enter_mlockall: OK
+[    9.546008] Testing event sys_exit_mlockall: OK
+[    9.550008] Testing event sys_enter_munlockall: OK
+[    9.553008] Testing event sys_exit_munlockall: OK
+[    9.556008] Testing event sys_enter_mincore: OK
+[    9.560008] Testing event sys_exit_mincore: OK
+[    9.564008] Testing event sys_enter_madvise: OK
+[    9.568008] Testing event sys_exit_madvise: OK
+[    9.572008] Testing event sys_enter_remap_file_pages: OK
+[    9.575008] Testing event sys_exit_remap_file_pages: OK
+[    9.578008] Testing event kmalloc: OK
+[    9.581008] Testing event kmem_cache_alloc: OK
+[    9.585008] Testing event kmalloc_node: OK
+[    9.588008] Testing event kmem_cache_alloc_node: OK
+[    9.591008] Testing event kfree: OK
+[    9.595008] Testing event kmem_cache_free: OK
+[    9.598008] Testing event sys_enter_perf_counter_open: OK
+[    9.602008] Testing event sys_exit_perf_counter_open: OK
+[    9.605008] Testing event sys_enter_acct: OK
+[    9.608008] Testing event sys_exit_acct: OK
+[    9.611008] Testing event module_load: OK
+[    9.614008] Testing event module_free: OK
+[    9.617008] Testing event module_get: OK
+[    9.620008] Testing event module_put: OK
+[    9.623008] Testing event module_request: OK
+[    9.626008] Testing event sys_enter_delete_module: OK
+[    9.629008] Testing event sys_exit_delete_module: OK
+[    9.632008] Testing event sys_enter_init_module: OK
+[    9.635008] Testing event sys_exit_init_module: OK
+[    9.638008] Testing event sys_enter_set_robust_list: OK
+[    9.641008] Testing event sys_exit_set_robust_list: OK
+[    9.644008] Testing event sys_enter_get_robust_list: OK
+[    9.647008] Testing event sys_exit_get_robust_list: OK
+[    9.650008] Testing event sys_enter_futex: OK
+[    9.653008] Testing event sys_exit_futex: OK
+[    9.656008] Testing event lock_acquire: OK
+[    9.659008] Testing event lock_release: OK
+[    9.662008] Testing event lock_contended: OK
+[    9.665008] Testing event lock_acquired: OK
+[    9.668008] Testing event sys_enter_getgroups: OK
+[    9.671008] Testing event sys_exit_getgroups: OK
+[    9.674008] Testing event sys_enter_setgroups: OK
+[    9.677008] Testing event sys_exit_setgroups: OK
+[    9.680008] Testing event sys_enter_nanosleep: OK
+[    9.683008] Testing event sys_exit_nanosleep: OK
+[    9.686008] Testing event sys_enter_timer_create: OK
+[    9.690008] Testing event sys_exit_timer_create: OK
+[    9.693008] Testing event sys_enter_timer_gettime: OK
+[    9.696008] Testing event sys_exit_timer_gettime: OK
+[    9.699008] Testing event sys_enter_timer_getoverrun: OK
+[    9.702008] Testing event sys_exit_timer_getoverrun: OK
+[    9.705008] Testing event sys_enter_timer_settime: OK
+[    9.708008] Testing event sys_exit_timer_settime: OK
+[    9.711008] Testing event sys_enter_timer_delete: OK
+[    9.714008] Testing event sys_exit_timer_delete: OK
+[    9.717008] Testing event sys_enter_clock_settime: OK
+[    9.720008] Testing event sys_exit_clock_settime: OK
+[    9.723008] Testing event sys_enter_clock_gettime: OK
+[    9.726008] Testing event sys_exit_clock_gettime: OK
+[    9.729008] Testing event sys_enter_clock_getres: OK
+[    9.732008] Testing event sys_exit_clock_getres: OK
+[    9.735008] Testing event sys_enter_clock_nanosleep: OK
+[    9.738008] Testing event sys_exit_clock_nanosleep: OK
+[    9.741008] Testing event workqueue_insertion: OK
+[    9.744008] Testing event workqueue_execution: OK
+[    9.747008] Testing event workqueue_creation: OK
+[    9.751008] Testing event workqueue_destruction: OK
+[    9.754008] Testing event sys_enter_setpriority: OK
+[    9.757008] Testing event sys_exit_setpriority: OK
+[    9.760008] Testing event sys_enter_getpriority: OK
+[    9.763008] Testing event sys_exit_getpriority: OK
+[    9.766008] Testing event sys_enter_reboot: OK
+[    9.770008] Testing event sys_exit_reboot: OK
+[    9.773008] Testing event sys_enter_setregid: OK
+[    9.776008] Testing event sys_exit_setregid: OK
+[    9.780008] Testing event sys_enter_setgid: OK
+[    9.784008] Testing event sys_exit_setgid: OK
+[    9.787008] Testing event sys_enter_setreuid: OK
+[    9.790008] Testing event sys_exit_setreuid: OK
+[    9.794008] Testing event sys_enter_setuid: OK
+[    9.798008] Testing event sys_exit_setuid: OK
+[    9.801008] Testing event sys_enter_setresuid: OK
+[    9.804008] Testing event sys_exit_setresuid: OK
+[    9.807008] Testing event sys_enter_getresuid: OK
+[    9.810008] Testing event sys_exit_getresuid: OK
+[    9.813008] Testing event sys_enter_setresgid: OK
+[    9.816008] Testing event sys_exit_setresgid: OK
+[    9.819008] Testing event sys_enter_getresgid: OK
+[    9.822008] Testing event sys_exit_getresgid: OK
+[    9.825008] Testing event sys_enter_setfsuid: OK
+[    9.828008] Testing event sys_exit_setfsuid: OK
+[    9.832008] Testing event sys_enter_setfsgid: OK
+[    9.835008] Testing event sys_exit_setfsgid: OK
+[    9.839008] Testing event sys_enter_times: OK
+[    9.842008] Testing event sys_exit_times: OK
+[    9.845008] Testing event sys_enter_setpgid: OK
+[    9.849008] Testing event sys_exit_setpgid: OK
+[    9.853008] Testing event sys_enter_getpgid: OK
+[    9.857008] Testing event sys_exit_getpgid: OK
+[    9.861008] Testing event sys_enter_getpgrp: OK
+[    9.865008] Testing event sys_exit_getpgrp: OK
+[    9.869008] Testing event sys_enter_getsid: OK
+[    9.873008] Testing event sys_exit_getsid: OK
+[    9.876008] Testing event sys_enter_setsid: OK
+[    9.880008] Testing event sys_exit_setsid: OK
+[    9.883008] Testing event sys_enter_sethostname: OK
+[    9.886008] Testing event sys_exit_sethostname: OK
+[    9.889008] Testing event sys_enter_setdomainname: OK
+[    9.892008] Testing event sys_exit_setdomainname: OK
+[    9.895008] Testing event sys_enter_getrlimit: OK
+[    9.898008] Testing event sys_exit_getrlimit: OK
+[    9.901008] Testing event sys_enter_setrlimit: OK
+[    9.904008] Testing event sys_exit_setrlimit: OK
+[    9.907008] Testing event sys_enter_getrusage: OK
+[    9.910008] Testing event sys_exit_getrusage: OK
+[    9.913008] Testing event sys_enter_umask: OK
+[    9.916008] Testing event sys_exit_umask: OK
+[    9.919008] Testing event sys_enter_prctl: OK
+[    9.922008] Testing event sys_exit_prctl: OK
+[    9.925008] Testing event sys_enter_restart_syscall: OK
+[    9.928008] Testing event sys_exit_restart_syscall: OK
+[    9.931008] Testing event sys_enter_rt_sigprocmask: OK
+[    9.934008] Testing event sys_exit_rt_sigprocmask: OK
+[    9.937008] Testing event sys_enter_rt_sigpending: OK
+[    9.940008] Testing event sys_exit_rt_sigpending: OK
+[    9.943008] Testing event sys_enter_rt_sigtimedwait: OK
+[    9.946008] Testing event sys_exit_rt_sigtimedwait: OK
+[    9.949008] Testing event sys_enter_kill: OK
+[    9.952008] Testing event sys_exit_kill: OK
+[    9.955008] Testing event sys_enter_tgkill: OK
+[    9.959008] Testing event sys_exit_tgkill: OK
+[    9.962008] Testing event sys_enter_tkill: OK
+[    9.965008] Testing event sys_exit_tkill: OK
+[    9.968008] Testing event sys_enter_rt_sigqueueinfo: OK
+[    9.971008] Testing event sys_exit_rt_sigqueueinfo: OK
+[    9.974008] Testing event sys_enter_rt_tgsigqueueinfo: OK
+[    9.978008] Testing event sys_exit_rt_tgsigqueueinfo: OK
+[    9.981008] Testing event sys_enter_rt_sigaction: OK
+[    9.984008] Testing event sys_exit_rt_sigaction: OK
+[    9.987008] Testing event sys_enter_pause: OK
+[    9.990008] Testing event sys_exit_pause: OK
+[    9.993008] Testing event sys_enter_rt_sigsuspend: OK
+[    9.996008] Testing event sys_exit_rt_sigsuspend: OK
+[    9.999008] Testing event timer_init: OK
+[   10.002008] Testing event timer_start: OK
+[   10.005008] Testing event timer_expire_entry: OK
+[   10.008008] Testing event timer_expire_exit: OK
+[   10.012008] Testing event timer_cancel: OK
+[   10.015008] Testing event hrtimer_init: OK
+[   10.018008] Testing event hrtimer_start: OK
+[   10.021008] Testing event hrtimer_expire_entry: OK
+[   10.024008] Testing event hrtimer_expire_exit: OK
+[   10.027008] Testing event hrtimer_cancel: OK
+[   10.030008] Testing event itimer_state: OK
+[   10.033008] Testing event itimer_expire: OK
+[   10.036008] Testing event sys_enter_alarm: OK
+[   10.039008] Testing event sys_exit_alarm: OK
+[   10.042008] Testing event sys_enter_getpid: OK
+[   10.046008] Testing event sys_exit_getpid: OK
+[   10.049008] Testing event sys_enter_getppid: OK
+[   10.053008] Testing event sys_exit_getppid: OK
+[   10.057008] Testing event sys_enter_getuid: OK
+[   10.061008] Testing event sys_exit_getuid: OK
+[   10.064008] Testing event sys_enter_geteuid: OK
+[   10.068008] Testing event sys_exit_geteuid: OK
+[   10.072008] Testing event sys_enter_getgid: OK
+[   10.076008] Testing event sys_exit_getgid: OK
+[   10.079008] Testing event sys_enter_getegid: OK
+[   10.083008] Testing event sys_exit_getegid: OK
+[   10.087008] Testing event sys_enter_gettid: OK
+[   10.091008] Testing event sys_exit_gettid: OK
+[   10.094008] Testing event sys_enter_sysinfo: OK
+[   10.098008] Testing event sys_exit_sysinfo: OK
+[   10.102008] Testing event sys_enter_ptrace: OK
+[   10.106008] Testing event sys_exit_ptrace: OK
+[   10.109008] Testing event sys_enter_capget: OK
+[   10.113008] Testing event sys_exit_capget: OK
+[   10.116008] Testing event sys_enter_capset: OK
+[   10.120008] Testing event sys_exit_capset: OK
+[   10.123008] Testing event sys_enter_sysctl: OK
+[   10.127008] Testing event sys_exit_sysctl: OK
+[   10.130008] Testing event irq_handler_entry: OK
+[   10.134008] Testing event irq_handler_exit: OK
+[   10.138008] Testing event softirq_entry: OK
+[   10.141008] Testing event softirq_exit: OK
+[   10.144008] Testing event sys_enter_time: OK
+[   10.147008] Testing event sys_exit_time: OK
+[   10.150008] Testing event sys_enter_gettimeofday: OK
+[   10.153008] Testing event sys_exit_gettimeofday: OK
+[   10.156008] Testing event sys_enter_settimeofday: OK
+[   10.159008] Testing event sys_exit_settimeofday: OK
+[   10.162008] Testing event sys_enter_adjtimex: OK
+[   10.165008] Testing event sys_exit_adjtimex: OK
+[   10.169008] Testing event sys_enter_getitimer: OK
+[   10.172008] Testing event sys_exit_getitimer: OK
+[   10.175008] Testing event sys_enter_setitimer: OK
+[   10.178008] Testing event sys_exit_setitimer: OK
+[   10.181008] Testing event sys_enter_exit: OK
+[   10.184008] Testing event sys_exit_exit: OK
+[   10.187008] Testing event sys_enter_exit_group: OK
+[   10.190008] Testing event sys_exit_exit_group: OK
+[   10.193008] Testing event sys_enter_waitid: OK
+[   10.197008] Testing event sys_exit_waitid: OK
+[   10.200008] Testing event sys_enter_wait4: OK
+[   10.203008] Testing event sys_exit_wait4: OK
+[   10.206008] Testing event sys_enter_syslog: OK
+[   10.210008] Testing event sys_exit_syslog: OK
+[   10.213008] Testing event sys_enter_personality: OK
+[   10.216008] Testing event sys_exit_personality: OK
+[   10.219008] Testing event sys_enter_set_tid_address: OK
+[   10.222008] Testing event sys_exit_set_tid_address: OK
+[   10.225008] Testing event sys_enter_unshare: OK
+[   10.229008] Testing event sys_exit_unshare: OK
+[   10.233008] Testing event sched_kthread_stop: OK
+[   10.236008] Testing event sched_kthread_stop_ret: OK
+[   10.239008] Testing event sched_wait_task: OK
+[   10.242008] Testing event sched_wakeup: OK
+[   10.245008] Testing event sched_wakeup_new: OK
+[   10.249008] Testing event sched_switch: OK
+[   10.252008] Testing event sched_migrate_task: OK
+[   10.255008] Testing event sched_process_free: OK
+[   10.258008] Testing event sched_process_exit: OK
+[   10.261008] Testing event sched_process_wait: OK
+[   10.264008] Testing event sched_process_fork: OK
+[   10.267008] Testing event sched_signal_send: OK
+[   10.271008] Testing event sched_stat_wait: OK
+[   10.275008] Testing event sched_stat_runtime: OK
+[   10.278008] Testing event sched_stat_sleep: OK
+[   10.282008] Testing event sched_stat_iowait: OK
+[   10.286008] Testing event sys_enter_sched_setscheduler: OK
+[   10.290008] Testing event sys_exit_sched_setscheduler: OK
+[   10.294008] Testing event sys_enter_sched_setparam: OK
+[   10.297008] Testing event sys_exit_sched_setparam: OK
+[   10.300008] Testing event sys_enter_sched_getscheduler: OK
+[   10.304008] Testing event sys_exit_sched_getscheduler: OK
+[   10.308008] Testing event sys_enter_sched_getparam: OK
+[   10.311008] Testing event sys_exit_sched_getparam: OK
+[   10.314008] Testing event sys_enter_sched_setaffinity: OK
+[   10.318008] Testing event sys_exit_sched_setaffinity: OK
+[   10.321008] Testing event sys_enter_sched_getaffinity: OK
+[   10.325008] Testing event sys_exit_sched_getaffinity: OK
+[   10.328008] Testing event sys_enter_sched_yield: OK
+[   10.331008] Testing event sys_exit_sched_yield: OK
+[   10.334008] Testing event sys_enter_sched_get_priority_max: OK
+[   10.337008] Testing event sys_exit_sched_get_priority_max: OK
+[   10.340008] Testing event sys_enter_sched_get_priority_min: OK
+[   10.343008] Testing event sys_exit_sched_get_priority_min: OK
+[   10.346008] Testing event sys_enter_sched_rr_get_interval: OK
+[   10.349008] Testing event sys_exit_sched_rr_get_interval: OK
+[   10.352008] Testing event sys_enter: OK
+[   10.355008] Testing event sys_exit: OK
+[   10.358008] Testing event sys_enter_mmap: OK
+[   10.361008] Testing event sys_exit_mmap: OK
+[   10.364008] Testing event sys_enter_uname: OK
+[   10.367008] Testing event sys_exit_uname: OK
+[   10.370008] Running tests on trace event systems:
+[   10.371008] Testing event system skb: OK
+[   10.374008] Testing event system block: OK
+[   10.379008] Testing event system jbd2: OK
+[   10.383008] Testing event system ext4: OK
+[   10.388008] Testing event system kmem: OK
+[   10.392008] Testing event system module: OK
+[   10.396008] Testing event system lockdep: OK
+[   10.401008] Testing event system workqueue: OK
+[   10.404008] Testing event system timer: OK
+[   10.408008] Testing event system irq: OK
+[   10.411008] Testing event system sched: OK
+[   10.416008] Testing event system syscalls: OK
+[   10.424008] Running tests on all trace events:
+[   10.425008] Testing all events: OK
+[   10.447008] Running tests again, along with the function tracer
+[   10.448008] Running tests on trace events:
+[   10.449008] Testing event kfree_skb: OK
+[   10.454008] Testing event sys_enter_socket: OK
+[   10.459008] Testing event sys_exit_socket: OK
+[   10.464008] Testing event sys_enter_socketpair: OK
+[   10.468008] Testing event sys_exit_socketpair: OK
+[   10.473008] Testing event sys_enter_bind: OK
+[   10.478008] Testing event sys_exit_bind: OK
+[   10.483008] Testing event sys_enter_listen: OK
+[   10.488008] Testing event sys_exit_listen: OK
+[   10.493008] Testing event sys_enter_accept4: OK
+[   10.498008] Testing event sys_exit_accept4: OK
+[   10.503008] Testing event sys_enter_accept: OK
+[   10.508008] Testing event sys_exit_accept: OK
+[   10.513008] Testing event sys_enter_connect: OK
+[   10.518008] Testing event sys_exit_connect: OK
+[   10.523008] Testing event sys_enter_getsockname: OK
+[   10.527008] Testing event sys_exit_getsockname: OK
+[   10.531008] Testing event sys_enter_getpeername: OK
+[   10.535008] Testing event sys_exit_getpeername: OK
+[   10.539008] Testing event sys_enter_sendto: OK
+[   10.544008] Testing event sys_exit_sendto: OK
+[   10.549008] Testing event sys_enter_recvfrom: OK
+[   10.554008] Testing event sys_exit_recvfrom: OK
+[   10.559008] Testing event sys_enter_setsockopt: OK
+[   10.563008] Testing event sys_exit_setsockopt: OK
+[   10.567008] Testing event sys_enter_getsockopt: OK
+[   10.571008] Testing event sys_exit_getsockopt: OK
+[   10.576008] Testing event sys_enter_shutdown: OK
+[   10.581008] Testing event sys_exit_shutdown: OK
+[   10.586008] Testing event sys_enter_sendmsg: OK
+[   10.591008] Testing event sys_exit_sendmsg: OK
+[   10.596009] Testing event sys_enter_recvmsg: OK
+[   10.601009] Testing event sys_exit_recvmsg: OK
+[   10.606009] Testing event block_rq_abort: OK
+[   10.611009] Testing event block_rq_insert: OK
+[   10.616009] Testing event block_rq_issue: OK
+[   10.621009] Testing event block_rq_requeue: OK
+[   10.626009] Testing event block_rq_complete: OK
+[   10.631009] Testing event block_bio_bounce: OK
+[   10.636009] Testing event block_bio_complete: OK
+[   10.641009] Testing event block_bio_backmerge: OK
+[   10.646009] Testing event block_bio_frontmerge: OK
+[   10.650009] Testing event block_bio_queue: OK
+[   10.655009] Testing event block_getrq: OK
+[   10.659009] Testing event block_sleeprq: OK
+[   10.664009] Testing event block_plug: OK
+[   10.668009] Testing event block_unplug_timer: OK
+[   10.673009] Testing event block_unplug_io: OK
+[   10.678009] Testing event block_split: OK
+[   10.683009] Testing event block_remap: OK
+[   10.687009] Testing event sys_enter_add_key: OK
+[   10.692009] Testing event sys_exit_add_key: OK
+[   10.697009] Testing event sys_enter_request_key: OK
+[   10.701009] Testing event sys_exit_request_key: OK
+[   10.705009] Testing event sys_enter_keyctl: OK
+[   10.710009] Testing event sys_exit_keyctl: OK
+[   10.715009] Testing event sys_enter_mq_open: OK
+[   10.720009] Testing event sys_exit_mq_open: OK
+[   10.725009] Testing event sys_enter_mq_unlink: OK
+[   10.730009] Testing event sys_exit_mq_unlink: OK
+[   10.735009] Testing event sys_enter_mq_timedsend: OK
+[   10.739009] Testing event sys_exit_mq_timedsend: OK
+[   10.743009] Testing event sys_enter_mq_timedreceive: OK
+[   10.748009] Testing event sys_exit_mq_timedreceive: OK
+[   10.753009] Testing event sys_enter_mq_notify: OK
+[   10.758009] Testing event sys_exit_mq_notify: OK
+[   10.763009] Testing event sys_enter_mq_getsetattr: OK
+[   10.768009] Testing event sys_exit_mq_getsetattr: OK
+[   10.772009] Testing event jbd2_checkpoint: OK
+[   10.777009] Testing event jbd2_start_commit: OK
+[   10.782009] Testing event jbd2_commit_locking: OK
+[   10.787009] Testing event jbd2_commit_flushing: OK
+[   10.791009] Testing event jbd2_commit_logging: OK
+[   10.796009] Testing event jbd2_end_commit: OK
+[   10.801009] Testing event jbd2_submit_inode_data: OK
+[   10.805009] Testing event ext4_free_inode: OK
+[   10.810009] Testing event ext4_request_inode: OK
+[   10.815009] Testing event ext4_allocate_inode: OK
+[   10.820009] Testing event ext4_write_begin: OK
+[   10.825009] Testing event ext4_ordered_write_end: OK
+[   10.829009] Testing event ext4_writeback_write_end: OK
+[   10.834009] Testing event ext4_journalled_write_end: OK
+[   10.839009] Testing event ext4_writepage: OK
+[   10.844009] Testing event ext4_da_writepages: OK
+[   10.849009] Testing event ext4_da_writepages_result: OK
+[   10.854009] Testing event ext4_da_write_begin: OK
+[   10.859009] Testing event ext4_da_write_end: OK
+[   10.864009] Testing event ext4_discard_blocks: OK
+[   10.869009] Testing event ext4_mb_new_inode_pa: OK
+[   10.874009] Testing event ext4_mb_new_group_pa: OK
+[   10.878009] Testing event ext4_mb_release_inode_pa: OK
+[   10.883009] Testing event ext4_mb_release_group_pa: OK
+[   10.888009] Testing event ext4_discard_preallocations: OK
+[   10.893009] Testing event ext4_mb_discard_preallocations: OK
+[   10.898009] Testing event ext4_request_blocks: OK
+[   10.903009] Testing event ext4_allocate_blocks: OK
+[   10.907009] Testing event ext4_free_blocks: OK
+[   10.912009] Testing event ext4_sync_file: OK
+[   10.917009] Testing event ext4_sync_fs: OK
+[   10.922009] Testing event sys_enter_quotactl: OK
+[   10.927009] Testing event sys_exit_quotactl: OK
+[   10.932009] Testing event sys_enter_flock: OK
+[   10.937009] Testing event sys_exit_flock: OK
+[   10.942009] Testing event sys_enter_eventfd2: OK
+[   10.947009] Testing event sys_exit_eventfd2: OK
+[   10.952009] Testing event sys_enter_eventfd: OK
+[   10.957009] Testing event sys_exit_eventfd: OK
+[   10.962009] Testing event sys_enter_timerfd_create: OK
+[   10.967009] Testing event sys_exit_timerfd_create: OK
+[   10.972009] Testing event sys_enter_timerfd_settime: OK
+[   10.977009] Testing event sys_exit_timerfd_settime: OK
+[   10.982009] Testing event sys_enter_timerfd_gettime: OK
+[   10.987009] Testing event sys_exit_timerfd_gettime: OK
+[   10.992009] Testing event sys_enter_signalfd4: OK
+[   10.997009] Testing event sys_exit_signalfd4: OK
+[   11.002009] Testing event sys_enter_signalfd: OK
+[   11.007009] Testing event sys_exit_signalfd: OK
+[   11.012009] Testing event sys_enter_epoll_create1: OK
+[   11.017009] Testing event sys_exit_epoll_create1: OK
+[   11.021009] Testing event sys_enter_epoll_create: OK
+[   11.026009] Testing event sys_exit_epoll_create: OK
+[   11.030009] Testing event sys_enter_epoll_ctl: OK
+[   11.035009] Testing event sys_exit_epoll_ctl: OK
+[   11.040009] Testing event sys_enter_epoll_wait: OK
+[   11.044009] Testing event sys_exit_epoll_wait: OK
+[   11.049009] Testing event sys_enter_epoll_pwait: OK
+[   11.053009] Testing event sys_exit_epoll_pwait: OK
+[   11.057009] Testing event sys_enter_inotify_init1: OK
+[   11.062009] Testing event sys_exit_inotify_init1: OK
+[   11.066009] Testing event sys_enter_inotify_init: OK
+[   11.071009] Testing event sys_exit_inotify_init: OK
+[   11.075009] Testing event sys_enter_inotify_add_watch: OK
+[   11.080009] Testing event sys_exit_inotify_add_watch: OK
+[   11.085009] Testing event sys_enter_inotify_rm_watch: OK
+[   11.090009] Testing event sys_exit_inotify_rm_watch: OK
+[   11.095009] Testing event sys_enter_ioprio_set: OK
+[   11.099009] Testing event sys_exit_ioprio_set: OK
+[   11.104009] Testing event sys_enter_ioprio_get: OK
+[   11.108009] Testing event sys_exit_ioprio_get: OK
+[   11.113009] Testing event sys_enter_utime: OK
+[   11.118009] Testing event sys_exit_utime: OK
+[   11.123009] Testing event sys_enter_utimensat: OK
+[   11.128009] Testing event sys_exit_utimensat: OK
+[   11.133009] Testing event sys_enter_futimesat: OK
+[   11.138009] Testing event sys_exit_futimesat: OK
+[   11.143009] Testing event sys_enter_utimes: OK
+[   11.148009] Testing event sys_exit_utimes: OK
+[   11.153009] Testing event sys_enter_sync: OK
+[   11.158009] Testing event sys_exit_sync: OK
+[   11.163009] Testing event sys_enter_fsync: OK
+[   11.168009] Testing event sys_exit_fsync: OK
+[   11.173009] Testing event sys_enter_fdatasync: OK
+[   11.178009] Testing event sys_exit_fdatasync: OK
+[   11.183009] Testing event sys_enter_vmsplice: OK
+[   11.188009] Testing event sys_exit_vmsplice: OK
+[   11.193009] Testing event sys_enter_splice: OK
+[   11.198009] Testing event sys_exit_splice: OK
+[   11.203009] Testing event sys_enter_tee: OK
+[   11.208009] Testing event sys_exit_tee: OK
+[   11.213009] Testing event sys_enter_setxattr: OK
+[   11.218009] Testing event sys_exit_setxattr: OK
+[   11.223009] Testing event sys_enter_lsetxattr: OK
+[   11.228009] Testing event sys_exit_lsetxattr: OK
+[   11.233009] Testing event sys_enter_fsetxattr: OK
+[   11.238009] Testing event sys_exit_fsetxattr: OK
+[   11.243009] Testing event sys_enter_getxattr: OK
+[   11.248009] Testing event sys_exit_getxattr: OK
+[   11.253009] Testing event sys_enter_lgetxattr: OK
+[   11.258009] Testing event sys_exit_lgetxattr: OK
+[   11.263009] Testing event sys_enter_fgetxattr: OK
+[   11.268009] Testing event sys_exit_fgetxattr: OK
+[   11.273009] Testing event sys_enter_listxattr: OK
+[   11.277009] Testing event sys_exit_listxattr: OK
+[   11.282009] Testing event sys_enter_llistxattr: OK
+[   11.286009] Testing event sys_exit_llistxattr: OK
+[   11.291009] Testing event sys_enter_flistxattr: OK
+[   11.295009] Testing event sys_exit_flistxattr: OK
+[   11.300009] Testing event sys_enter_removexattr: OK
+[   11.304009] Testing event sys_exit_removexattr: OK
+[   11.308009] Testing event sys_enter_lremovexattr: OK
+[   11.312009] Testing event sys_exit_lremovexattr: OK
+[   11.316009] Testing event sys_enter_fremovexattr: OK
+[   11.320009] Testing event sys_exit_fremovexattr: OK
+[   11.324009] Testing event sys_enter_umount: OK
+[   11.329009] Testing event sys_exit_umount: OK
+[   11.334009] Testing event sys_enter_mount: OK
+[   11.339009] Testing event sys_exit_mount: OK
+[   11.344009] Testing event sys_enter_pivot_root: OK
+[   11.348009] Testing event sys_exit_pivot_root: OK
+[   11.353009] Testing event sys_enter_sysfs: OK
+[   11.358009] Testing event sys_exit_sysfs: OK
+[   11.363009] Testing event sys_enter_getcwd: OK
+[   11.368009] Testing event sys_exit_getcwd: OK
+[   11.373009] Testing event sys_enter_select: OK
+[   11.378009] Testing event sys_exit_select: OK
+[   11.383009] Testing event sys_enter_pselect6: OK
+[   11.388009] Testing event sys_exit_pselect6: OK
+[   11.393009] Testing event sys_enter_poll: OK
+[   11.398009] Testing event sys_exit_poll: OK
+[   11.403009] Testing event sys_enter_ppoll: OK
+[   11.408009] Testing event sys_exit_ppoll: OK
+[   11.413009] Testing event sys_enter_getdents: OK
+[   11.418009] Testing event sys_exit_getdents: OK
+[   11.423009] Testing event sys_enter_getdents64: OK
+[   11.427009] Testing event sys_exit_getdents64: OK
+[   11.432009] Testing event sys_enter_ioctl: OK
+[   11.437009] Testing event sys_exit_ioctl: OK
+[   11.442009] Testing event sys_enter_dup3: OK
+[   11.447009] Testing event sys_exit_dup3: OK
+[   11.452009] Testing event sys_enter_dup2: OK
+[   11.457009] Testing event sys_exit_dup2: OK
+[   11.462009] Testing event sys_enter_dup: OK
+[   11.467009] Testing event sys_exit_dup: OK
+[   11.472009] Testing event sys_enter_fcntl: OK
+[   11.477009] Testing event sys_exit_fcntl: OK
+[   11.482009] Testing event sys_enter_mknodat: OK
+[   11.487009] Testing event sys_exit_mknodat: OK
+[   11.492009] Testing event sys_enter_mknod: OK
+[   11.497009] Testing event sys_exit_mknod: OK
+[   11.502009] Testing event sys_enter_mkdirat: OK
+[   11.507009] Testing event sys_exit_mkdirat: OK
+[   11.512009] Testing event sys_enter_mkdir: OK
+[   11.517009] Testing event sys_exit_mkdir: OK
+[   11.522009] Testing event sys_enter_rmdir: OK
+[   11.527009] Testing event sys_exit_rmdir: OK
+[   11.532009] Testing event sys_enter_unlinkat: OK
+[   11.537009] Testing event sys_exit_unlinkat: OK
+[   11.542009] Testing event sys_enter_unlink: OK
+[   11.547009] Testing event sys_exit_unlink: OK
+[   11.552009] Testing event sys_enter_symlinkat: OK
+[   11.557009] Testing event sys_exit_symlinkat: OK
+[   11.562009] Testing event sys_enter_symlink: OK
+[   11.567009] Testing event sys_exit_symlink: OK
+[   11.572009] Testing event sys_enter_linkat: OK
+[   11.577009] Testing event sys_exit_linkat: OK
+[   11.582009] Testing event sys_enter_link: OK
+[   11.587009] Testing event sys_exit_link: OK
+[   11.592009] Testing event sys_enter_renameat: OK
+[   11.597009] Testing event sys_exit_renameat: OK
+[   11.602009] Testing event sys_enter_rename: OK
+[   11.607009] Testing event sys_exit_rename: OK
+[   11.612009] Testing event sys_enter_pipe2: OK
+[   11.617009] Testing event sys_exit_pipe2: OK
+[   11.622009] Testing event sys_enter_pipe: OK
+[   11.627009] Testing event sys_exit_pipe: OK
+[   11.632009] Testing event sys_enter_newstat: OK
+[   11.637009] Testing event sys_exit_newstat: OK
+[   11.642009] Testing event sys_enter_newlstat: OK
+[   11.647009] Testing event sys_exit_newlstat: OK
+[   11.652009] Testing event sys_enter_newfstatat: OK
+[   11.656009] Testing event sys_exit_newfstatat: OK
+[   11.660009] Testing event sys_enter_newfstat: OK
+[   11.665009] Testing event sys_exit_newfstat: OK
+[   11.670009] Testing event sys_enter_readlinkat: OK
+[   11.674009] Testing event sys_exit_readlinkat: OK
+[   11.678009] Testing event sys_enter_readlink: OK
+[   11.683009] Testing event sys_exit_readlink: OK
+[   11.688009] Testing event sys_enter_ustat: OK
+[   11.693009] Testing event sys_exit_ustat: OK
+[   11.698009] Testing event sys_enter_lseek: OK
+[   11.703009] Testing event sys_exit_lseek: OK
+[   11.708009] Testing event sys_enter_read: OK
+[   11.713009] Testing event sys_exit_read: OK
+[   11.718009] Testing event sys_enter_write: OK
+[   11.723009] Testing event sys_exit_write: OK
+[   11.728009] Testing event sys_enter_readv: OK
+[   11.733009] Testing event sys_exit_readv: OK
+[   11.738009] Testing event sys_enter_writev: OK
+[   11.743009] Testing event sys_exit_writev: OK
+[   11.748009] Testing event sys_enter_preadv: OK
+[   11.753009] Testing event sys_exit_preadv: OK
+[   11.758009] Testing event sys_enter_pwritev: OK
+[   11.763009] Testing event sys_exit_pwritev: OK
+[   11.768009] Testing event sys_enter_sendfile64: OK
+[   11.772010] Testing event sys_exit_sendfile64: OK
+[   11.777010] Testing event sys_enter_statfs: OK
+[   11.782010] Testing event sys_exit_statfs: OK
+[   11.787010] Testing event sys_enter_fstatfs: OK
+[   11.792010] Testing event sys_exit_fstatfs: OK
+[   11.797010] Testing event sys_enter_truncate: OK
+[   11.802010] Testing event sys_exit_truncate: OK
+[   11.807010] Testing event sys_enter_ftruncate: OK
+[   11.812010] Testing event sys_exit_ftruncate: OK
+[   11.817010] Testing event sys_enter_faccessat: OK
+[   11.822010] Testing event sys_exit_faccessat: OK
+[   11.827010] Testing event sys_enter_access: OK
+[   11.832010] Testing event sys_exit_access: OK
+[   11.837010] Testing event sys_enter_chdir: OK
+[   11.842010] Testing event sys_exit_chdir: OK
+[   11.847010] Testing event sys_enter_fchdir: OK
+[   11.852010] Testing event sys_exit_fchdir: OK
+[   11.857010] Testing event sys_enter_chroot: OK
+[   11.862010] Testing event sys_exit_chroot: OK
+[   11.867010] Testing event sys_enter_fchmod: OK
+[   11.872010] Testing event sys_exit_fchmod: OK
+[   11.877010] Testing event sys_enter_fchmodat: OK
+[   11.882010] Testing event sys_exit_fchmodat: OK
+[   11.887010] Testing event sys_enter_chmod: OK
+[   11.892010] Testing event sys_exit_chmod: OK
+[   11.897010] Testing event sys_enter_chown: OK
+[   11.902010] Testing event sys_exit_chown: OK
+[   11.907010] Testing event sys_enter_fchownat: OK
+[   11.912010] Testing event sys_exit_fchownat: OK
+[   11.917010] Testing event sys_enter_lchown: OK
+[   11.922010] Testing event sys_exit_lchown: OK
+[   11.927010] Testing event sys_enter_fchown: OK
+[   11.932010] Testing event sys_exit_fchown: OK
+[   11.937010] Testing event sys_enter_open: OK
+[   11.942010] Testing event sys_exit_open: OK
+[   11.947010] Testing event sys_enter_openat: OK
+[   11.952010] Testing event sys_exit_openat: OK
+[   11.957010] Testing event sys_enter_creat: OK
+[   11.962010] Testing event sys_exit_creat: OK
+[   11.967010] Testing event sys_enter_close: OK
+[   11.972010] Testing event sys_exit_close: OK
+[   11.977010] Testing event sys_enter_vhangup: OK
+[   11.982010] Testing event sys_exit_vhangup: OK
+[   11.987010] Testing event sys_enter_move_pages: OK
+[   11.991010] Testing event sys_exit_move_pages: OK
+[   11.995010] Testing event sys_enter_mbind: OK
+[   12.000010] Testing event sys_exit_mbind: OK
+[   12.005010] Testing event sys_enter_set_mempolicy: OK
+[   12.010010] Testing event sys_exit_set_mempolicy: OK
+[   12.014010] Testing event sys_enter_migrate_pages: OK
+[   12.019010] Testing event sys_exit_migrate_pages: OK
+[   12.023010] Testing event sys_enter_get_mempolicy: OK
+[   12.028010] Testing event sys_exit_get_mempolicy: OK
+[   12.032010] Testing event sys_enter_swapoff: OK
+[   12.037010] Testing event sys_exit_swapoff: OK
+[   12.042010] Testing event sys_enter_swapon: OK
+[   12.047010] Testing event sys_exit_swapon: OK
+[   12.052010] Testing event sys_enter_msync: OK
+[   12.057010] Testing event sys_exit_msync: OK
+[   12.062010] Testing event sys_enter_mremap: OK
+[   12.067010] Testing event sys_exit_mremap: OK
+[   12.072010] Testing event sys_enter_mprotect: OK
+[   12.077010] Testing event sys_exit_mprotect: OK
+[   12.082010] Testing event sys_enter_brk: OK
+[   12.087010] Testing event sys_exit_brk: OK
+[   12.092010] Testing event sys_enter_munmap: OK
+[   12.097010] Testing event sys_exit_munmap: OK
+[   12.102010] Testing event sys_enter_mlock: OK
+[   12.107010] Testing event sys_exit_mlock: OK
+[   12.112010] Testing event sys_enter_munlock: OK
+[   12.117010] Testing event sys_exit_munlock: OK
+[   12.122010] Testing event sys_enter_mlockall: OK
+[   12.127010] Testing event sys_exit_mlockall: OK
+[   12.132010] Testing event sys_enter_munlockall: OK
+[   12.136010] Testing event sys_exit_munlockall: OK
+[   12.141010] Testing event sys_enter_mincore: OK
+[   12.146010] Testing event sys_exit_mincore: OK
+[   12.151010] Testing event sys_enter_madvise: OK
+[   12.156010] Testing event sys_exit_madvise: OK
+[   12.161010] Testing event sys_enter_remap_file_pages: OK
+[   12.166010] Testing event sys_exit_remap_file_pages: OK
+[   12.171010] Testing event kmalloc: OK
+[   12.176010] Testing event kmem_cache_alloc: OK
+[   12.181010] Testing event kmalloc_node: OK
+[   12.186010] Testing event kmem_cache_alloc_node: OK
+[   12.190010] Testing event kfree: OK
+[   12.195010] Testing event kmem_cache_free: OK
+[   12.200010] Testing event sys_enter_perf_counter_open: OK
+[   12.205010] Testing event sys_exit_perf_counter_open: OK
+[   12.210010] Testing event sys_enter_acct: OK
+[   12.215010] Testing event sys_exit_acct: OK
+[   12.220010] Testing event module_load: OK
+[   12.224010] Testing event module_free: OK
+[   12.228010] Testing event module_get: OK
+[   12.232010] Testing event module_put: OK
+[   12.236010] Testing event module_request: OK
+[   12.241010] Testing event sys_enter_delete_module: OK
+[   12.246010] Testing event sys_exit_delete_module: OK
+[   12.250010] Testing event sys_enter_init_module: OK
+[   12.254010] Testing event sys_exit_init_module: OK
+[   12.258010] Testing event sys_enter_set_robust_list: OK
+[   12.263010] Testing event sys_exit_set_robust_list: OK
+[   12.268010] Testing event sys_enter_get_robust_list: OK
+[   12.273010] Testing event sys_exit_get_robust_list: OK
+[   12.278010] Testing event sys_enter_futex: OK
+[   12.283010] Testing event sys_exit_futex: OK
+[   12.288010] Testing event lock_acquire: OK
+[   12.293010] Testing event lock_release: OK
+[   12.298010] Testing event lock_contended: OK
+[   12.303010] Testing event lock_acquired: OK
+[   12.308010] Testing event sys_enter_getgroups: OK
+[   12.312010] Testing event sys_exit_getgroups: OK
+[   12.317010] Testing event sys_enter_setgroups: OK
+[   12.322010] Testing event sys_exit_setgroups: OK
+[   12.327010] Testing event sys_enter_nanosleep: OK
+[   12.332010] Testing event sys_exit_nanosleep: OK
+[   12.337010] Testing event sys_enter_timer_create: OK
+[   12.341010] Testing event sys_exit_timer_create: OK
+[   12.345010] Testing event sys_enter_timer_gettime: OK
+[   12.350010] Testing event sys_exit_timer_gettime: OK
+[   12.354010] Testing event sys_enter_timer_getoverrun: OK
+[   12.359010] Testing event sys_exit_timer_getoverrun: OK
+[   12.364010] Testing event sys_enter_timer_settime: OK
+[   12.369010] Testing event sys_exit_timer_settime: OK
+[   12.373010] Testing event sys_enter_timer_delete: OK
+[   12.377010] Testing event sys_exit_timer_delete: OK
+[   12.381010] Testing event sys_enter_clock_settime: OK
+[   12.386010] Testing event sys_exit_clock_settime: OK
+[   12.390010] Testing event sys_enter_clock_gettime: OK
+[   12.395010] Testing event sys_exit_clock_gettime: OK
+[   12.399010] Testing event sys_enter_clock_getres: OK
+[   12.403010] Testing event sys_exit_clock_getres: OK
+[   12.407010] Testing event sys_enter_clock_nanosleep: OK
+[   12.412010] Testing event sys_exit_clock_nanosleep: OK
+[   12.417010] Testing event workqueue_insertion: OK
+[   12.422010] Testing event workqueue_execution: OK
+[   12.427010] Testing event workqueue_creation: OK
+[   12.432010] Testing event workqueue_destruction: OK
+[   12.436010] Testing event sys_enter_setpriority: OK
+[   12.440010] Testing event sys_exit_setpriority: OK
+[   12.444010] Testing event sys_enter_getpriority: OK
+[   12.448010] Testing event sys_exit_getpriority: OK
+[   12.452010] Testing event sys_enter_reboot: OK
+[   12.457010] Testing event sys_exit_reboot: OK
+[   12.462010] Testing event sys_enter_setregid: OK
+[   12.467010] Testing event sys_exit_setregid: OK
+[   12.472010] Testing event sys_enter_setgid: OK
+[   12.477010] Testing event sys_exit_setgid: OK
+[   12.482010] Testing event sys_enter_setreuid: OK
+[   12.487010] Testing event sys_exit_setreuid: OK
+[   12.492010] Testing event sys_enter_setuid: OK
+[   12.497010] Testing event sys_exit_setuid: OK
+[   12.502010] Testing event sys_enter_setresuid: OK
+[   12.507010] Testing event sys_exit_setresuid: OK
+[   12.512010] Testing event sys_enter_getresuid: OK
+[   12.516010] Testing event sys_exit_getresuid: OK
+[   12.521010] Testing event sys_enter_setresgid: OK
+[   12.525010] Testing event sys_exit_setresgid: OK
+[   12.530010] Testing event sys_enter_getresgid: OK
+[   12.534010] Testing event sys_exit_getresgid: OK
+[   12.539010] Testing event sys_enter_setfsuid: OK
+[   12.544010] Testing event sys_exit_setfsuid: OK
+[   12.549010] Testing event sys_enter_setfsgid: OK
+[   12.554010] Testing event sys_exit_setfsgid: OK
+[   12.559010] Testing event sys_enter_times: OK
+[   12.564010] Testing event sys_exit_times: OK
+[   12.569010] Testing event sys_enter_setpgid: OK
+[   12.574010] Testing event sys_exit_setpgid: OK
+[   12.579010] Testing event sys_enter_getpgid: OK
+[   12.584010] Testing event sys_exit_getpgid: OK
+[   12.589010] Testing event sys_enter_getpgrp: OK
+[   12.594010] Testing event sys_exit_getpgrp: OK
+[   12.599010] Testing event sys_enter_getsid: OK
+[   12.604010] Testing event sys_exit_getsid: OK
+[   12.609010] Testing event sys_enter_setsid: OK
+[   12.614010] Testing event sys_exit_setsid: OK
+[   12.619010] Testing event sys_enter_sethostname: OK
+[   12.623010] Testing event sys_exit_sethostname: OK
+[   12.627010] Testing event sys_enter_setdomainname: OK
+[   12.632010] Testing event sys_exit_setdomainname: OK
+[   12.636010] Testing event sys_enter_getrlimit: OK
+[   12.641010] Testing event sys_exit_getrlimit: OK
+[   12.646010] Testing event sys_enter_setrlimit: OK
+[   12.651010] Testing event sys_exit_setrlimit: OK
+[   12.656010] Testing event sys_enter_getrusage: OK
+[   12.661010] Testing event sys_exit_getrusage: OK
+[   12.666010] Testing event sys_enter_umask: OK
+[   12.671010] Testing event sys_exit_umask: OK
+[   12.676010] Testing event sys_enter_prctl: OK
+[   12.681010] Testing event sys_exit_prctl: OK
+[   12.686010] Testing event sys_enter_restart_syscall: OK
+[   12.691010] Testing event sys_exit_restart_syscall: OK
+[   12.696010] Testing event sys_enter_rt_sigprocmask: OK
+[   12.701010] Testing event sys_exit_rt_sigprocmask: OK
+[   12.706010] Testing event sys_enter_rt_sigpending: OK
+[   12.711010] Testing event sys_exit_rt_sigpending: OK
+[   12.715010] Testing event sys_enter_rt_sigtimedwait: OK
+[   12.720010] Testing event sys_exit_rt_sigtimedwait: OK
+[   12.725010] Testing event sys_enter_kill: OK
+[   12.730010] Testing event sys_exit_kill: OK
+[   12.735010] Testing event sys_enter_tgkill: OK
+[   12.740010] Testing event sys_exit_tgkill: OK
+[   12.745010] Testing event sys_enter_tkill: OK
+[   12.750010] Testing event sys_exit_tkill: OK
+[   12.755010] Testing event sys_enter_rt_sigqueueinfo: OK
+[   12.760010] Testing event sys_exit_rt_sigqueueinfo: OK
+[   12.765010] Testing event sys_enter_rt_tgsigqueueinfo: OK
+[   12.770010] Testing event sys_exit_rt_tgsigqueueinfo: OK
+[   12.775010] Testing event sys_enter_rt_sigaction: OK
+[   12.779010] Testing event sys_exit_rt_sigaction: OK
+[   12.783010] Testing event sys_enter_pause: OK
+[   12.788010] Testing event sys_exit_pause: OK
+[   12.793010] Testing event sys_enter_rt_sigsuspend: OK
+[   12.798010] Testing event sys_exit_rt_sigsuspend: OK
+[   12.802010] Testing event timer_init: OK
+[   12.806010] Testing event timer_start: OK
+[   12.810010] Testing event timer_expire_entry: OK
+[   12.815010] Testing event timer_expire_exit: OK
+[   12.820010] Testing event timer_cancel: OK
+[   12.825010] Testing event hrtimer_init: OK
+[   12.830010] Testing event hrtimer_start: OK
+[   12.835010] Testing event hrtimer_expire_entry: OK
+[   12.840010] Testing event hrtimer_expire_exit: OK
+[   12.845010] Testing event hrtimer_cancel: OK
+[   12.850010] Testing event itimer_state: OK
+[   12.855010] Testing event itimer_expire: OK
+[   12.860010] Testing event sys_enter_alarm: OK
+[   12.865010] Testing event sys_exit_alarm: OK
+[   12.870010] Testing event sys_enter_getpid: OK
+[   12.875010] Testing event sys_exit_getpid: OK
+[   12.880010] Testing event sys_enter_getppid: OK
+[   12.885010] Testing event sys_exit_getppid: OK
+[   12.890010] Testing event sys_enter_getuid: OK
+[   12.895010] Testing event sys_exit_getuid: OK
+[   12.900010] Testing event sys_enter_geteuid: OK
+[   12.905010] Testing event sys_exit_geteuid: OK
+[   12.910010] Testing event sys_enter_getgid: OK
+[   12.915010] Testing event sys_exit_getgid: OK
+[   12.920010] Testing event sys_enter_getegid: OK
+[   12.925010] Testing event sys_exit_getegid: OK
+[   12.930010] Testing event sys_enter_gettid: OK
+[   12.935010] Testing event sys_exit_gettid: OK
+[   12.940010] Testing event sys_enter_sysinfo: OK
+[   12.945010] Testing event sys_exit_sysinfo: OK
+[   12.950010] Testing event sys_enter_ptrace: OK
+[   12.955010] Testing event sys_exit_ptrace: OK
+[   12.960010] Testing event sys_enter_capget: OK
+[   12.965010] Testing event sys_exit_capget: OK
+[   12.970010] Testing event sys_enter_capset: OK
+[   12.975010] Testing event sys_exit_capset: OK
+[   12.980010] Testing event sys_enter_sysctl: OK
+[   12.985010] Testing event sys_exit_sysctl: OK
+[   12.990011] Testing event irq_handler_entry: OK
+[   12.995011] Testing event irq_handler_exit: OK
+[   13.000011] Testing event softirq_entry: OK
+[   13.005011] Testing event softirq_exit: OK
+[   13.010011] Testing event sys_enter_time: OK
+[   13.015011] Testing event sys_exit_time: OK
+[   13.020011] Testing event sys_enter_gettimeofday: OK
+[   13.024011] Testing event sys_exit_gettimeofday: OK
+[   13.028011] Testing event sys_enter_settimeofday: OK
+[   13.032011] Testing event sys_exit_settimeofday: OK
+[   13.036011] Testing event sys_enter_adjtimex: OK
+[   13.041011] Testing event sys_exit_adjtimex: OK
+[   13.046011] Testing event sys_enter_getitimer: OK
+[   13.051011] Testing event sys_exit_getitimer: OK
+[   13.056011] Testing event sys_enter_setitimer: OK
+[   13.061011] Testing event sys_exit_setitimer: OK
+[   13.066011] Testing event sys_enter_exit: OK
+[   13.071011] Testing event sys_exit_exit: OK
+[   13.076011] Testing event sys_enter_exit_group: OK
+[   13.081011] Testing event sys_exit_exit_group: OK
+[   13.086011] Testing event sys_enter_waitid: OK
+[   13.091011] Testing event sys_exit_waitid: OK
+[   13.096011] Testing event sys_enter_wait4: OK
+[   13.101011] Testing event sys_exit_wait4: OK
+[   13.106011] Testing event sys_enter_syslog: OK
+[   13.111011] Testing event sys_exit_syslog: OK
+[   13.116011] Testing event sys_enter_personality: OK
+[   13.120011] Testing event sys_exit_personality: OK
+[   13.124011] Testing event sys_enter_set_tid_address: OK
+[   13.129011] Testing event sys_exit_set_tid_address: OK
+[   13.134011] Testing event sys_enter_unshare: OK
+[   13.139011] Testing event sys_exit_unshare: OK
+[   13.144011] Testing event sched_kthread_stop: OK
+[   13.149011] Testing event sched_kthread_stop_ret: OK
+[   13.153011] Testing event sched_wait_task: OK
+[   13.158011] Testing event sched_wakeup: OK
+[   13.163011] Testing event sched_wakeup_new: OK
+[   13.168011] Testing event sched_switch: OK
+[   13.173011] Testing event sched_migrate_task: OK
+[   13.178011] Testing event sched_process_free: OK
+[   13.183011] Testing event sched_process_exit: OK
+[   13.188011] Testing event sched_process_wait: OK
+[   13.193011] Testing event sched_process_fork: OK
+[   13.198011] Testing event sched_signal_send: OK
+[   13.203011] Testing event sched_stat_wait: OK
+[   13.208011] Testing event sched_stat_runtime: OK
+[   13.213011] Testing event sched_stat_sleep: OK
+[   13.218011] Testing event sched_stat_iowait: OK
+[   13.223011] Testing event sys_enter_sched_setscheduler: OK
+[   13.228011] Testing event sys_exit_sched_setscheduler: OK
+[   13.233011] Testing event sys_enter_sched_setparam: OK
+[   13.238011] Testing event sys_exit_sched_setparam: OK
+[   13.243011] Testing event sys_enter_sched_getscheduler: OK
+[   13.248011] Testing event sys_exit_sched_getscheduler: OK
+[   13.253011] Testing event sys_enter_sched_getparam: OK
+[   13.258011] Testing event sys_exit_sched_getparam: OK
+[   13.263011] Testing event sys_enter_sched_setaffinity: OK
+[   13.268011] Testing event sys_exit_sched_setaffinity: OK
+[   13.273011] Testing event sys_enter_sched_getaffinity: OK
+[   13.278011] Testing event sys_exit_sched_getaffinity: OK
+[   13.283011] Testing event sys_enter_sched_yield: OK
+[   13.287011] Testing event sys_exit_sched_yield: OK
+[   13.291011] Testing event sys_enter_sched_get_priority_max: OK
+[   13.295011] Testing event sys_exit_sched_get_priority_max: OK
+[   13.300011] Testing event sys_enter_sched_get_priority_min: OK
+[   13.304011] Testing event sys_exit_sched_get_priority_min: OK
+[   13.309011] Testing event sys_enter_sched_rr_get_interval: OK
+[   13.314011] Testing event sys_exit_sched_rr_get_interval: OK
+[   13.319011] Testing event sys_enter: OK
+[   13.323011] Testing event sys_exit: OK
+[   13.328011] Testing event sys_enter_mmap: OK
+[   13.333011] Testing event sys_exit_mmap: OK
+[   13.338011] Testing event sys_enter_uname: OK
+[   13.343011] Testing event sys_exit_uname: OK
+[   13.348011] Running tests on trace event systems:
+[   13.349011] Testing event system skb: OK
+[   13.354011] Testing event system block: OK
+[   13.362011] Testing event system jbd2: OK
+[   13.368011] Testing event system ext4: OK
+[   13.377011] Testing event system kmem: OK
+[   13.383011] Testing event system module: OK
+[   13.388011] Testing event system lockdep: OK
+[   13.395011] Testing event system workqueue: OK
+[   13.400011] Testing event system timer: OK
+[   13.407011] Testing event system irq: OK
+[   13.412011] Testing event system sched: OK
+[   13.420011] Testing event system syscalls: OK
+[   13.434011] Running tests on all trace events:
+[   13.435011] Testing all events: OK
+[   13.482011] initcall event_trace_self_tests_init+0x0/0x41 returned 0 after 4948246 usecs
+[   13.483011] calling  max_swapfiles_check+0x0/0x8 @ 1
+[   13.484011] initcall max_swapfiles_check+0x0/0x8 returned 0 after 0 usecs
+[   13.485011] calling  random32_reseed+0x0/0xab @ 1
+[   13.486011] initcall random32_reseed+0x0/0xab returned 0 after 0 usecs
+[   13.487011] calling  pci_resource_alignment_sysfs_init+0x0/0x19 @ 1
+[   13.488011] initcall pci_resource_alignment_sysfs_init+0x0/0x19 returned 0 after 0 usecs
+[   13.489011] calling  pci_sysfs_init+0x0/0x4c @ 1
+[   13.491011] initcall pci_sysfs_init+0x0/0x4c returned 0 after 976 usecs
+[   13.492011] calling  regulator_init_complete+0x0/0x141 @ 1
+[   13.493011] initcall regulator_init_complete+0x0/0x141 returned 0 after 0 usecs
+[   13.494011] calling  seqgen_init+0x0/0xf @ 1
+[   13.495011] initcall seqgen_init+0x0/0xf returned 0 after 0 usecs
+[   13.496011] calling  hd_init+0x0/0x2f8 @ 1
+[   13.497011] hd: no drives specified - use hd=cyl,head,sectors on kernel command line
+[   13.499011] initcall hd_init+0x0/0x2f8 returned -1 after 1953 usecs
+[   13.500011] initcall hd_init+0x0/0x2f8 returned with error code -1 
+[   13.501011] calling  scsi_complete_async_scans+0x0/0x11d @ 1
+[   13.502011] initcall scsi_complete_async_scans+0x0/0x11d returned 0 after 0 usecs
+[   13.503011] calling  edd_init+0x0/0x226 @ 1
+[   13.504011] BIOS EDD facility v0.16 2004-Jun-25, 1 devices found
+[   13.506011] initcall edd_init+0x0/0x226 returned 0 after 1953 usecs
+[   13.507011] calling  memmap_init+0x0/0xa3 @ 1
+[   13.508011] initcall memmap_init+0x0/0xa3 returned 0 after 0 usecs
+[   13.509011] calling  init_net_drop_monitor+0x0/0x181 @ 1
+[   13.510011] Initalizing network drop monitor service
+[   13.511011] initcall init_net_drop_monitor+0x0/0x181 returned 0 after 976 usecs
+[   13.512011] calling  tcp_congestion_default+0x0/0x12 @ 1
+[   13.513011] initcall tcp_congestion_default+0x0/0x12 returned 0 after 0 usecs
+[   13.514011] calling  initialize_hashrnd+0x0/0x19 @ 1
+[   13.515011] initcall initialize_hashrnd+0x0/0x19 returned 0 after 0 usecs
+[   13.516011] async_waiting @ 1
+[   13.517011] async_continuing @ 1 after 0 usec
+[   13.521011] EXT3-fs: INFO: recovery required on readonly filesystem.
+[   13.522011] EXT3-fs: write access will be enabled during recovery.
+[   13.590011] EXT3-fs: recovery complete.
+[   13.592011] kjournald starting.  Commit interval 5 seconds
+[   13.594011] EXT3-fs: mounted filesystem with writeback data mode.
+[   13.595011] VFS: Mounted root (ext3 filesystem) readonly on device 8:1.
+[   13.596011] async_waiting @ 1
+[   13.597011] async_continuing @ 1 after 0 usec
+[   13.598011] Freeing unused kernel memory: 2820k freed
+[   13.602011] Write protecting the kernel read-only data: 13528k
+[   13.649011] Not activating Mandatory Access Control now since /sbin/tomoyo-init doesn't exist.
+[   14.391012] =============================================================================
+[   14.391012] BUG kmalloc-96: Poison overwritten
+[   14.391012] -----------------------------------------------------------------------------
+[   14.391012] 
+[   14.391012] INFO: 0xffff88003da4a950-0xffff88003da4a988. First byte 0x0 instead of 0x6b
+[   14.391012] INFO: Allocated in bdi_alloc_work+0x20/0x83 age=6 cpu=0 pid=3191
+[   14.391012] INFO: Freed in bdi_work_free+0x1b/0x2f age=4 cpu=0 pid=3193
+[   14.391012] INFO: Slab 0xffffea000190ae10 objects=24 used=13 fp=0xffff88003da4a930 flags=0x200000000000c3
+[   14.391012] INFO: Object 0xffff88003da4a930 @offset=2352 fp=0xffff88003da4a888
+[   14.391012] 
+[   14.391012] Bytes b4 0xffff88003da4a920:  52 a4 fb ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a R¤ûÿ....ZZZZZZZZ
+[   14.391012]   Object 0xffff88003da4a930:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.391012]   Object 0xffff88003da4a940:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.391012]   Object 0xffff88003da4a950:  00 0c 47 3d 00 88 ff ff be 22 11 81 ff ff ff ff ..G=..ÿÿ¾"..ÿÿÿÿ
+[   14.391012]   Object 0xffff88003da4a960:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.391012]   Object 0xffff88003da4a970:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   14.391012]   Object 0xffff88003da4a980:  6b 6b 6b 6b 6b 6b 6b 6b 6a 6b 6b 6b 6b 6b 6b a5 kkkkkkkkjkkkkkk¥
+[   14.391012]  Redzone 0xffff88003da4a990:  bb bb bb bb bb bb bb bb                         »»»»»»»»        
+[   14.391012]  Padding 0xffff88003da4a9d0:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
+[   14.391012] Pid: 3193, comm: mount Not tainted 2.6.31-tip-02377-g78907f0-dirty #88876
+[   14.391012] Call Trace:
+[   14.391012]  [<ffffffff810e6bef>] print_trailer+0x140/0x149
+[   14.391012]  [<ffffffff810e70db>] check_bytes_and_report+0xb7/0xf7
+[   14.391012]  [<ffffffff810e71ec>] check_object+0xd1/0x1b4
+[   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+[   14.391012]  [<ffffffff810e7bee>] alloc_debug_processing+0x7b/0xf7
+[   14.391012]  [<ffffffff810e9842>] __slab_alloc+0x23e/0x282
+[   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+[   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+[   14.391012]  [<ffffffff810e9a8f>] kmem_cache_alloc+0xa1/0x13f
+[   14.391012]  [<ffffffff81112078>] bdi_alloc_work+0x20/0x83
+[   14.391012]  [<ffffffff81112ae2>] bdi_writeback_all+0x66/0x133
+[   14.391012]  [<ffffffff810788b8>] ? mark_held_locks+0x4d/0x6b
+[   14.391012]  [<ffffffff81872268>] ? __mutex_unlock_slowpath+0x12d/0x163
+[   14.391012]  [<ffffffff81078b45>] ? trace_hardirqs_on_caller+0x11c/0x140
+[   14.391012]  [<ffffffff815c35e5>] ? usbfs_fill_super+0x0/0xa8
+[   14.391012]  [<ffffffff81112c87>] writeback_inodes_sb+0x75/0x83
+[   14.391012]  [<ffffffff8111652d>] __sync_filesystem+0x30/0x6b
+[   14.391012]  [<ffffffff81116705>] sync_filesystem+0x3a/0x51
+[   14.391012]  [<ffffffff810f4b23>] do_remount_sb+0x5b/0x11f
+[   14.391012]  [<ffffffff810f59a3>] get_sb_single+0x92/0xad
+[   14.391012]  [<ffffffff815c2f01>] usb_get_sb+0x1b/0x1d
+[   14.391012]  [<ffffffff810f5786>] vfs_kern_mount+0x9e/0x122
+[   14.391012]  [<ffffffff810f5871>] do_kern_mount+0x4c/0xec
+[   14.391012]  [<ffffffff8110dd15>] do_mount+0x1e9/0x236
+[   14.391012]  [<ffffffff8110dde6>] sys_mount+0x84/0xc6
+[   14.391012]  [<ffffffff8187333a>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+[   14.391012]  [<ffffffff8100b642>] system_call_fastpath+0x16/0x1b
+[   14.391012] FIX kmalloc-96: Restoring 0xffff88003da4a950-0xffff88003da4a988=0x6b
+[   14.391012] 
+[   14.391012] FIX kmalloc-96: Marking all objects used
+[   20.597016] usb usb2: uevent
+[   20.606016] usb 2-0:1.0: uevent
+[   20.615016] usb usb3: uevent
+[   20.622016] usb 3-0:1.0: uevent
+[   20.631016] usb usb4: uevent
+[   20.636016] usb 4-0:1.0: uevent
+[   20.642016] usb usb5: uevent
+[   20.655016] usb 5-0:1.0: uevent
+[   20.668016] usb usb1: uevent
+[   20.680016] usb 1-0:1.0: uevent
+[   22.170017] EXT3 FS on sda1, internal journal
+[   22.601017] Adding 2048276k swap on /dev/sda2.  Priority:-1 extents:1 across:2048276k 
+[   23.539018] device: 'vcs2': device_add
+[   23.539018] device: 'vcsa2': device_add
+[   23.558018] device: 'vcs3': device_add
+[   23.566018] device: 'vcsa3': device_add
+[   23.567018] device: 'vcs6': device_add
+[   23.567018] device: 'vcsa6': device_add
+[   23.581018] device: 'vcs4': device_add
+[   23.587018] device: 'vcsa4': device_add
+[   23.588018] device: 'vcs5': device_add
+[   23.588018] device: 'vcsa5': device_add
+[   23.993018] skge eth0: enabling interface
+[   24.014018] ADDRCONF(NETDEV_UP): eth0: link is not ready
+[   24.016018] warning: `sudo' uses deprecated v2 capabilities in a way that may be insecure.
+[   24.019018] warning: `sudo' uses deprecated v2 capabilities in a way that may be insecure.
+[   24.021018] warning: `sudo' uses deprecated v2 capabilities in a way that may be insecure.
+[   26.456020] skge eth0: Link is up at 1000 Mbps, full duplex, flow control both
+[   26.457020] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+[   36.832024] eth0: no IPv6 routers present
+
+--azLHFNyN32YCQGCU--
