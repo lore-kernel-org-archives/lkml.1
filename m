@@ -1,108 +1,387 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZIONEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbZIONFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753657AbZIONEY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 09:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbZIONER
+	id S1753717AbZIONFS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 09:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZIONFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 09:04:17 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54241 "EHLO kernel.dk"
+	Tue, 15 Sep 2009 09:05:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:34016 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753494AbZIONER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 09:04:17 -0400
-Date: Tue, 15 Sep 2009 15:04:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com, tytso@mit.edu,
-       akpm@linux-foundation.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 6/7] writeback: separate starting of sync vs
-	opportunistic writeback
-Message-ID: <20090915130419.GL23126@kernel.dk>
-References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-7-git-send-email-jens.axboe@oracle.com> <20090914133307.GJ24075@duck.suse.cz> <20090914134207.GA14830@infradead.org> <20090914192803.GL14984@kernel.dk> <20090914194242.GM14984@kernel.dk> <20090915090847.GA12169@duck.suse.cz> <20090915091402.GG23126@kernel.dk> <20090915114426.GJ23126@kernel.dk> <20090915125855.GF12169@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090915125855.GF12169@duck.suse.cz>
+	id S1753679AbZIONFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 09:05:10 -0400
+From: jolsa@redhat.com
+To: mingo@elte.hu, rostedt@goodmis.org, lizf@cn.fujitsu.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCHv2] tracing - support multiple pids in set_pid_ftrace file
+Date: Tue, 15 Sep 2009 15:04:53 +0200
+Message-Id: <1253019893-30131-1-git-send-email-jolsa@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15 2009, Jan Kara wrote:
-> On Tue 15-09-09 13:44:26, Jens Axboe wrote:
-> > On Tue, Sep 15 2009, Jens Axboe wrote:
-> > > On Tue, Sep 15 2009, Jan Kara wrote:
-> > > > On Mon 14-09-09 21:42:43, Jens Axboe wrote:
-> > > > > On Mon, Sep 14 2009, Jens Axboe wrote:
-> > > > > > On Mon, Sep 14 2009, Christoph Hellwig wrote:
-> > > > > > > On Mon, Sep 14, 2009 at 03:33:07PM +0200, Jan Kara wrote:
-> > > > > > > > On Mon 14-09-09 11:36:33, Jens Axboe wrote:
-> > > > > > > > > bdi_start_writeback() is currently split into two paths, one for
-> > > > > > > > > WB_SYNC_NONE and one for WB_SYNC_ALL. Add bdi_sync_writeback()
-> > > > > > > > > for WB_SYNC_ALL writeback and let bdi_start_writeback() handle
-> > > > > > > > > only WB_SYNC_NONE.
-> > > > > > > >   What I don't like about this patch is that if somebody sets up
-> > > > > > > > writeback_control with WB_SYNC_ALL mode set and then submits it to disk via
-> > > > > > > > bdi_start_writeback() it will just silently convert his writeback to an
-> > > > > > > > asynchronous one.
-> > > > > > > >   So I'd maybe leave setting of sync_mode to the caller and just WARN_ON if
-> > > > > > > > it does not match the purpose of the function...
-> > > > > > > 
-> > > > > > > Or initialize the wb entirely inside these functions.  For the sync case
-> > > > > > > we really only need a superblock as argument, and for writeback it's
-> > > > > > > bdi + nr_pages.  And also make sure they consistenly return void as
-> > > > > > > no one cares about the return value.
-> > > > > > 
-> > > > > > Yes, I thought about doing that and like that better than the warning.
-> > > > > > Just pass in the needed args and allocate+fill the wbc on stack. I'll
-> > > > > > make that change.
-> > > > > 
-> > > > > That works out much better, imho:
-> > > > > 
-> > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=270c12655d7d11e234d335a8ab0540c02c034b66
-> > > >   Yeah, the code looks better. BTW, how about converting also
-> > > > bdi_writeback_all() to get superblock and nr_pages as an argument?
-> > > > Currently it seems to be the only place "above" flusher thread which uses
-> > > > wbc and it's just constructed in the callers of bdi_writeback_all() and
-> > > > then disassembled inside the function...
-> > > 
-> > > Yes good point, I'll include that too. Thanks!
-> > 
-> > One small problem there, though... Currently all queued writeback is
-> > range cyclic, however with this change then we drop that bit from
-> > sync_inodes_sb() which isn't range_cyclic and instead just specifies the
-> > whole range.
->   I'm not sure I understand your comment but I see a problem that even
-> writeback queued from sync_inodes_sb() is processed by wb_writeback() which
-> sets range_cyclic. That's a bug even in your old patchset.
+Adding the possibility to set more than 1 pid in the set_pid_ftrace file,
+thus allowing to trace more than 1 independent processes.
 
-Indeed, looks like I have to double check all that again.
+Usage:
 
->   Let's have a look at the flags in wbc:
->   nonblocking - Currently only set by direct callers of ->writepage() BUT
->                 originally wb_kupdate() and background_writeout() also
->                 set this flag. Since filesystems and write_cache_pages()
-> 		use the flag we should set it for equivalent writeouts as
->                 well. This should be fixed...
+sh-4.0# echo 284 > ./set_ftrace_pid 
+sh-4.0# cat ./set_ftrace_pid 
+284
+sh-4.0# echo 1 >> ./set_ftrace_pid 
+sh-4.0# echo 0 >> ./set_ftrace_pid 
+sh-4.0# cat ./set_ftrace_pid 
+swapper tasks
+1
+284
+sh-4.0# echo 4 > ./set_ftrace_pid 
+sh-4.0# cat ./set_ftrace_pid 
+4
+sh-4.0# echo > ./set_ftrace_pid 
+sh-4.0# cat ./set_ftrace_pid 
+no pid
+sh-4.0# 
 
-Since this is all handled by the dedicated thread now, dropping the
-nonblocking bit was on purpose. What would the point be, except for
-stopping pdflush being blocked on request allocation?
 
->   encountered_congestion - Checked only by AFS, probably we can get rid of
->                 it now.
->   for_kupdate - Used, we set it properly in wb_writeback() so that is fine.
->   for_reclaim - Used by direct callers of ->writepage(). OK.
->   for_writepages - Only set. Get rid of it.
+wbr,
+jirka
 
-Hmm indeed, that predates the patchset though. But I can queue up a
-removal.
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+---
+ kernel/trace/ftrace.c |  231 ++++++++++++++++++++++++++++++++++--------------
+ kernel/trace/trace.h  |    4 +-
+ 2 files changed, 165 insertions(+), 70 deletions(-)
 
->   range_cyclic - Used. Set also when a caller didn't want it - should be
->                  fixed.
-
-Yes, that one wants fixing. Will probably have to pass that in through
-the 'work' structure.
-
--- 
-Jens Axboe
-
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 8b23d56..0f388e8 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -60,6 +60,13 @@ static int last_ftrace_enabled;
+ /* Quick disabling of function tracer. */
+ int function_trace_stop;
+ 
++/* List for set_ftrace_pid's pids */
++LIST_HEAD(ftrace_pids);
++struct ftrace_pid {
++	struct list_head list;
++	struct pid *pid;
++};
++
+ /*
+  * ftrace_disabled is set when an anomaly is discovered.
+  * ftrace_disabled is much stronger than ftrace_enabled.
+@@ -155,7 +162,7 @@ static int __register_ftrace_function(struct ftrace_ops *ops)
+ 		else
+ 			func = ftrace_list_func;
+ 
+-		if (ftrace_pid_trace) {
++		if (!list_empty(&ftrace_pids)) {
+ 			set_ftrace_pid_function(func);
+ 			func = ftrace_pid_func;
+ 		}
+@@ -203,7 +210,7 @@ static int __unregister_ftrace_function(struct ftrace_ops *ops)
+ 		if (ftrace_list->next == &ftrace_list_end) {
+ 			ftrace_func_t func = ftrace_list->func;
+ 
+-			if (ftrace_pid_trace) {
++			if (!list_empty(&ftrace_pids)) {
+ 				set_ftrace_pid_function(func);
+ 				func = ftrace_pid_func;
+ 			}
+@@ -227,7 +234,7 @@ static void ftrace_update_pid_func(void)
+ 
+ 	func = ftrace_trace_function;
+ 
+-	if (ftrace_pid_trace) {
++	if (!list_empty(&ftrace_pids)) {
+ 		set_ftrace_pid_function(func);
+ 		func = ftrace_pid_func;
+ 	} else {
+@@ -818,7 +825,6 @@ static __init void ftrace_profile_debugfs(struct dentry *d_tracer)
+ #endif /* CONFIG_FUNCTION_PROFILER */
+ 
+ /* set when tracing only a pid */
+-struct pid *ftrace_pid_trace;
+ static struct pid * const ftrace_swapper_pid = &init_struct_pid;
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+@@ -2795,23 +2801,6 @@ static inline void ftrace_startup_enable(int command) { }
+ # define ftrace_shutdown_sysctl()	do { } while (0)
+ #endif /* CONFIG_DYNAMIC_FTRACE */
+ 
+-static ssize_t
+-ftrace_pid_read(struct file *file, char __user *ubuf,
+-		       size_t cnt, loff_t *ppos)
+-{
+-	char buf[64];
+-	int r;
+-
+-	if (ftrace_pid_trace == ftrace_swapper_pid)
+-		r = sprintf(buf, "swapper tasks\n");
+-	else if (ftrace_pid_trace)
+-		r = sprintf(buf, "%u\n", pid_vnr(ftrace_pid_trace));
+-	else
+-		r = sprintf(buf, "no pid\n");
+-
+-	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
+-}
+-
+ static void clear_ftrace_swapper(void)
+ {
+ 	struct task_struct *p;
+@@ -2862,14 +2851,12 @@ static void set_ftrace_pid(struct pid *pid)
+ 	rcu_read_unlock();
+ }
+ 
+-static void clear_ftrace_pid_task(struct pid **pid)
++static void clear_ftrace_pid_task(struct pid *pid)
+ {
+-	if (*pid == ftrace_swapper_pid)
++	if (pid == ftrace_swapper_pid)
+ 		clear_ftrace_swapper();
+ 	else
+-		clear_ftrace_pid(*pid);
+-
+-	*pid = NULL;
++		clear_ftrace_pid(pid);
+ }
+ 
+ static void set_ftrace_pid_task(struct pid *pid)
+@@ -2880,11 +2867,138 @@ static void set_ftrace_pid_task(struct pid *pid)
+ 		set_ftrace_pid(pid);
+ }
+ 
++static int ftrace_pid_add(int p)
++{
++	struct pid *pid;
++	struct ftrace_pid *fpid;
++	int ret = -EINVAL;
++
++	mutex_lock(&ftrace_lock);
++
++	if (!p)
++		pid = ftrace_swapper_pid;
++	else
++		pid = find_get_pid(p);
++
++	if (!pid)
++		goto out;
++
++	list_for_each_entry(fpid, &ftrace_pids, list)
++		if (fpid->pid == pid)
++			goto out_put;
++
++	ret = -ENOMEM;
++
++	fpid = kmalloc(sizeof(*fpid), GFP_KERNEL);
++	if (!fpid)
++		goto out_put;
++
++	list_add(&fpid->list, &ftrace_pids);
++	fpid->pid = pid;
++
++	set_ftrace_pid_task(pid);
++
++	ftrace_update_pid_func();
++	ftrace_startup_enable(0);
++
++	mutex_unlock(&ftrace_lock);
++	return 0;
++
++out_put:
++	if (pid != ftrace_swapper_pid)
++		put_pid(pid);
++
++out:
++	mutex_unlock(&ftrace_lock);
++	return ret;
++}
++
++static void ftrace_pid_reset(void)
++{
++	struct ftrace_pid *fpid, *safe;
++
++	mutex_lock(&ftrace_lock);
++	list_for_each_entry_safe(fpid, safe, &ftrace_pids, list) {
++		struct pid *pid = fpid->pid;
++
++		clear_ftrace_pid_task(pid);
++
++		list_del(&fpid->list);
++		kfree(fpid);
++	}
++
++	ftrace_update_pid_func();
++	ftrace_startup_enable(0);
++
++	mutex_unlock(&ftrace_lock);
++}
++
++static void *fpid_start(struct seq_file *m, loff_t *pos)
++{
++	mutex_lock(&ftrace_lock);
++
++	if (list_empty(&ftrace_pids) && (!*pos))
++		return (void *) 1;
++
++	return seq_list_start(&ftrace_pids, *pos);
++}
++
++static void *fpid_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	if (v == (void *)1)
++		return NULL;
++
++	return seq_list_next(v, &ftrace_pids, pos);
++}
++
++static void fpid_stop(struct seq_file *m, void *p)
++{
++	mutex_unlock(&ftrace_lock);
++}
++
++static int fpid_show(struct seq_file *m, void *v)
++{
++	const struct ftrace_pid *fpid = list_entry(v, struct ftrace_pid, list);
++
++	if (v == (void *)1) {
++		seq_printf(m, "no pid\n");
++		return 0;
++	}
++
++	if (fpid->pid == ftrace_swapper_pid)
++		seq_printf(m, "swapper tasks\n");
++	else
++		seq_printf(m, "%u\n", pid_vnr(fpid->pid));
++
++	return 0;
++}
++
++static const struct seq_operations ftrace_pid_sops = {
++	.start = fpid_start,
++	.next = fpid_next,
++	.stop = fpid_stop,
++	.show = fpid_show,
++};
++
++static int
++ftrace_pid_open(struct inode *inode, struct file *file)
++{
++	int ret = 0;
++
++	if ((file->f_mode & FMODE_WRITE) &&
++	    (file->f_flags & O_TRUNC))
++		ftrace_pid_reset();
++
++	if (file->f_mode & FMODE_READ)
++		ret = seq_open(file, &ftrace_pid_sops);
++
++	return ret;
++}
++
+ static ssize_t
+ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+ 		   size_t cnt, loff_t *ppos)
+ {
+-	struct pid *pid;
+ 	char buf[64];
+ 	long val;
+ 	int ret;
+@@ -2897,57 +3011,38 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+ 
+ 	buf[cnt] = 0;
+ 
++	/*
++	 * Allow "echo > set_ftrace_pid" or "echo -n '' > set_ftrace_pid"
++	 * to clean the filter quietly.
++	 */
++	strstrip(buf);
++	if (strlen(buf) == 0)
++		return 1;
++
+ 	ret = strict_strtol(buf, 10, &val);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	mutex_lock(&ftrace_lock);
+-	if (val < 0) {
+-		/* disable pid tracing */
+-		if (!ftrace_pid_trace)
+-			goto out;
+-
+-		clear_ftrace_pid_task(&ftrace_pid_trace);
+-
+-	} else {
+-		/* swapper task is special */
+-		if (!val) {
+-			pid = ftrace_swapper_pid;
+-			if (pid == ftrace_pid_trace)
+-				goto out;
+-		} else {
+-			pid = find_get_pid(val);
+-
+-			if (pid == ftrace_pid_trace) {
+-				put_pid(pid);
+-				goto out;
+-			}
+-		}
+-
+-		if (ftrace_pid_trace)
+-			clear_ftrace_pid_task(&ftrace_pid_trace);
+-
+-		if (!pid)
+-			goto out;
+-
+-		ftrace_pid_trace = pid;
+-
+-		set_ftrace_pid_task(ftrace_pid_trace);
+-	}
++	ret = ftrace_pid_add(val);
+ 
+-	/* update the function call */
+-	ftrace_update_pid_func();
+-	ftrace_startup_enable(0);
++	return ret ? ret : cnt;
++}
+ 
+- out:
+-	mutex_unlock(&ftrace_lock);
++static int
++ftrace_pid_release(struct inode *inode, struct file *file)
++{
++	if (file->f_mode & FMODE_READ)
++		seq_release(inode, file);
+ 
+-	return cnt;
++	return 0;
+ }
+ 
+ static const struct file_operations ftrace_pid_fops = {
+-	.read = ftrace_pid_read,
+-	.write = ftrace_pid_write,
++	.open		= ftrace_pid_open,
++	.write		= ftrace_pid_write,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= ftrace_pid_release,
+ };
+ 
+ static __init int ftrace_init_debugfs(void)
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index e747162..3ec0b1c 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -521,12 +521,12 @@ print_graph_function(struct trace_iterator *iter)
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 
+-extern struct pid *ftrace_pid_trace;
++extern struct list_head ftrace_pids;
+ 
+ #ifdef CONFIG_FUNCTION_TRACER
+ static inline int ftrace_trace_task(struct task_struct *task)
+ {
+-	if (!ftrace_pid_trace)
++	if (list_empty(&ftrace_pids))
+ 		return 1;
+ 
+ 	return test_tsk_trace_trace(task);
