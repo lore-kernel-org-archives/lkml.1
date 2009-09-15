@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751125AbZIOENK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751179AbZIOEPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751125AbZIOENK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 00:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZIOENI
+	id S1751179AbZIOEPH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 00:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZIOEPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 00:13:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48609 "EHLO
+	Tue, 15 Sep 2009 00:15:05 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48618 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbZIOENG (ORCPT
+	with ESMTP id S1750945AbZIOEPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 00:13:06 -0400
-Date: Tue, 15 Sep 2009 06:16:45 +0200
+	Tue, 15 Sep 2009 00:15:04 -0400
+Date: Tue, 15 Sep 2009 06:18:44 +0200
 From: Arjan van de Ven <arjan@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       peterz@infradead.org
-Subject: Re: [PATCH 5/8] trace: Convert the power tracer into an event
- tracer
-Message-ID: <20090915061645.0375ef60@infradead.org>
-In-Reply-To: <4AAF0D54.2040506@cn.fujitsu.com>
-References: <20090912130306.5d0086ea@infradead.org>
-	<20090912130542.6d314860@infradead.org>
-	<4AAF0D54.2040506@cn.fujitsu.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
+       jens.axboe@oracle.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO
+ performance
+Message-ID: <20090915061844.3c92ee7a@infradead.org>
+In-Reply-To: <20090915061512.0209d956@infradead.org>
+References: <20090915054259.5282e5ba@infradead.org>
+	<20090914205408.578f7f60.akpm@linux-foundation.org>
+	<20090915061512.0209d956@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -33,58 +34,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 11:43:16 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> Arjan van de Ven wrote:
-> >>From f591a0f126263733d606838a5d113b9807b12c84 Mon Sep 17 00:00:00
-> >>2001
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Sat, 12 Sep 2009 07:53:03 +0200
-> > Subject: [PATCH] trace: Convert the power tracer into an event
-> > tracer
-> > 
-> > This patch converts the existing power tracer into an event tracer,
-> > so that power events (C states and frequency changes) can be tracked
-> > via "perf".
-> > 
-> > This also removes the perl script that was used to demo the tracer;
-> > its functionality is being replaced entirely with timechart.
-> > 
+On Tue, 15 Sep 2009 06:15:12 +0200
+Arjan van de Ven <arjan@infradead.org> wrote:
 > 
-> And Documentation/power.txt needs update, or just remove it?
-
-remove it; will do
+> > The timing is awkward.  We could let it sit in Len's tree and
+> > linux-next for a couple of months or we could say what-the-hell and
+> > merge it.
 > 
-> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> 
-> ...
-> 
-> > diff --git a/kernel/trace/power-traces.c
-> > b/kernel/trace/power-traces.c new file mode 100644
-> > index 0000000..cb4fc51
-> > --- /dev/null
-> > +++ b/kernel/trace/power-traces.c
-> 
-> This file is not necessarily needed.
-> 
-> You can just add definition of CREATE_TRACE_POINTS in process.c.
+> If the performance impact wasn't this huge I'd say "let it sit".
+> As it is now, with a nearly 2x performance delta, I'd not be very
+> happy to expose linux users to this regression-like performance drop
+> for another 3 months. 
+>
 
-hmm it seems existing style to do this in kernel/trace/ though
+btw I do not like to use the "regression" word lightly, but kernels
+prior to 2.6.22 or so did not have this performance drop (at least not
+nearly as much), and current ones do. 
 
-> > +
-> > +EXPORT_TRACEPOINT_SYMBOL_GPL(power_start);
-> > +
-> 
-> I think it's power_frequency that needs to be exported?
-
-very valid point, will fix.
-
-thank you for reviewing the patch; I will send an updated patch out
-asap.
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+ 
