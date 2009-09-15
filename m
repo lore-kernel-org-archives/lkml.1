@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbZIOGY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbZIOGfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbZIOGY7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 02:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbZIOGYz
+	id S1757712AbZIOGfG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 02:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbZIOGfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 02:24:55 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:60016 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756804AbZIOGYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 02:24:54 -0400
-Date: Tue, 15 Sep 2009 16:24:57 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] powerpc: Check for unsupported relocs when using
- CONFIG_RELOCATABLE
-Message-ID: <20090915062457.GG10656@bilbo.ozlabs.org>
-Mail-Followup-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <1252994222.8375.201.camel@pasglop>
+	Tue, 15 Sep 2009 02:35:00 -0400
+Received: from mail-yx0-f171.google.com ([209.85.210.171]:39144 "EHLO
+	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754536AbZIOGe7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 02:34:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BrvbBCt8s51oym3ZXyoA7rwGefvA0k1ZkgF7PzZiGKvZ1cb+iJ/9E91YOH9y5p+GSe
+         CtG68YwTOls/TsB6vbVCsDna3KgWck2nYrWqi152bNIYYhs/cViYgf1VM3kxDT71Lw51
+         Fp+23e3MnRRD+DDF2q86RgqeEKu3lMYvY9bd4=
+Date: Mon, 14 Sep 2009 23:34:58 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Suresh Jayaram <sureshjayaram@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Subject: Re: mmotm 2009-09-09-22-56 uploaded
+Message-ID: <20090915063458.GC10232@core.coreip.homeip.net>
+References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org> <38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com> <alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1252994222.8375.201.camel@pasglop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 03:57:02PM +1000, Benjamin Herrenschmidt wrote:
- 
-> diff --git a/arch/powerpc/relocs_check.pl b/arch/powerpc/relocs_check.pl
-> new file mode 100755
-> index 0000000..215e966
-> --- /dev/null
-> +++ b/arch/powerpc/relocs_check.pl
-> @@ -0,0 +1,57 @@
-> +#!/usr/bin/perl
-> +
-> +# Copyright © 2009 IBM Corporation
-> +
-> +# This program is free software; you can redistribute it and/or
-> +# modify it under the terms of the GNU General Public License
-> +# as published by the Free Software Foundation; either version
-> +# 2 of the License, or (at your option) any later version.
-> +
-> +# This script checks the relcoations of a vmlinux for "suspicious"
-> +# relocations.
-> +
-> +use strict;
-> +use warnings;
-> +
-> +if ($#ARGV != 1) {
-> +	print "$#ARGV\n";
+Hi David,
 
-Ooops that line should have been taken out.  Sorry.
+On Mon, Sep 14, 2009 at 09:59:12PM -0700, David Rientjes wrote:
+>
+> The second is an issue with the i8042 driver's laptop table not being NULL 
+> terminated.  This is fixed by Jin Dongming's patch at
+> http://marc.info/?l=linux-kernel&m=125263897713267.
+> 
 
-Yours Tony
+Should be good in my tree/next/mainline now.
+
+-- 
+Dmitry
