@@ -1,82 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751540AbZIOJBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751647AbZIOJBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751540AbZIOJBU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZIOJBP
+	id S1751647AbZIOJBr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZIOJBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:01:15 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:64952 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbZIOJBO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:01:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=d2wMQlUBNk0V47rFOguxuIiLMd3fqMviLi5iRCqJTeO9DrqD1LsiX4XLJ7+dRv16Ne
-         M0Z0nGEGXEi4Vw/Fe9VsAzDREhXVnw2sU9IgY2v5oOtOoOXcyEA15IeepPuXR44BgFSS
-         wytWssHWkjdEsZdCGICFGhGLUPMF850KMCLMM=
+	Tue, 15 Sep 2009 05:01:42 -0400
+Received: from mga14.intel.com ([143.182.124.37]:22695 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751055AbZIOJBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:01:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
+   d="scan'208";a="187728933"
+Date: Tue, 15 Sep 2009 17:01:30 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Tejun Heo <tj@kernel.org>, Nick Piggin <npiggin@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] devmem: handle partial kmem write/read
+Message-ID: <20090915090130.GA4970@localhost>
+References: <20090915021851.168285585@intel.com> <20090915022328.460943370@intel.com> <20090915113811.6b44877c.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <1252998994.5506.0.camel@laptop>
-References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-	 <20090912073906.GA3972@elte.hu> <1252753957.12217.10.camel@ht.satnam>
-	 <1252941416.2964.143.camel@localhost.localdomain>
-	 <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com>
-	 <1252952238.2964.154.camel@localhost.localdomain>
-	 <1252952621.31964.0.camel@twins>
-	 <1252953076.2964.156.camel@localhost.localdomain>
-	 <20090914184123.GC6045@nowhere> <1252998994.5506.0.camel@laptop>
-Date: Tue, 15 Sep 2009 11:01:15 +0200
-Message-ID: <c62985530909150201p3d5ca037g232c9456e6436fc@mail.gmail.com>
-Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree 
-	build warning)
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <srostedt@redhat.com>, Christopher Li <sparse@chrisli.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-sparse@vger.kernel.org, Josh Triplett <josh@freedesktop.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090915113811.6b44877c.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/15, Peter Zijlstra <peterz@infradead.org>:
-> On Mon, 2009-09-14 at 20:41 +0200, Frederic Weisbecker wrote:
->> On Mon, Sep 14, 2009 at 02:31:16PM -0400, Steven Rostedt wrote:
->> > On Mon, 2009-09-14 at 20:23 +0200, Peter Zijlstra wrote:
->> > > On Mon, 2009-09-14 at 14:17 -0400, Steven Rostedt wrote:
->> > > > Frederic, how big can one of those events get. The ring buffer (and
->> > > > TRACE_EVENT) allow up to almost a page size, which is very hefty for
->> > > > the
->> > > > stack. This code needs to either be rewritten or we need to set a
->> > > > limit
->> > > > to the size of a profile entry.
->> > >
->> > > Yeah, that needs to get a re-write.. I've complained about this when
->> > > it
->> > > went in.
->> >
->> > One answer is to create a per cpu buffer that is big enough to hold the
->> > data needed. Then you can disable interrupts an use it without worry.
->> >
->> > If you need to also handle NMIs, then create a per_cpu NMI buffer too,
->> > and use that if "in_nmi()" is true.
->> >
->> > -- Steve
->>
->>
->> Looks like a nice idea.
->>
->> Peter, does that sound acceptable to you to disable interrupts during a
->> profiled tracepoint event?
->
-> It does anyway, a little further down the line, so sure.
+On Tue, Sep 15, 2009 at 10:38:11AM +0800, KAMEZAWA Hiroyuki wrote:
+> On Tue, 15 Sep 2009 10:18:53 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > Return early on partial read/write, which may happen in future.
+> > (eg. hit hwpoison pages)
+> > 
+> Hmm, please modify vread() as you did in vwrite() and
+> 
+> ==
+>                kbuf = (char *)__get_free_page(GFP_KERNEL);
+>                 if (!kbuf)
+>                         return -ENOMEM;
+> ==
+> Add __GFP_ZERO to kbuf allocation, and just ignore vread()'s return value.
+> Then, this will be much simpler.
+
+Thanks, here is the updated patch, which
+- updates vread/vwrite prototype to return 0 (or error code in future).
+- do zero fill in the callers
+Comment updates are ignored for now.
+
+Thanks,
+Fengguang
+---
+
+vmalloc: ignore vmalloc area holes in vread()/vwrite()
+
+Siliently ignore all vmalloc area holes in vread()/vwrite(),
+and report success (or error code in future) to the caller.
+
+When /dev/kmem read()/write() encounters hwpoison page, stop it
+and return the amount of work done till now.
 
 
-Ok I'll fix it soon using Steve's idea then.
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Christoph Lameter <cl@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Tejun Heo <tj@kernel.org>
+CC: Nick Piggin <npiggin@suse.de>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ drivers/char/mem.c      |   16 ++++++++++------
+ include/linux/vmalloc.h |    6 +++---
+ mm/vmalloc.c            |   31 +++++++------------------------
+ 3 files changed, 20 insertions(+), 33 deletions(-)
 
-Thanks.
+--- linux-mm.orig/mm/vmalloc.c	2009-09-15 16:38:49.000000000 +0800
++++ linux-mm/mm/vmalloc.c	2009-09-15 16:39:31.000000000 +0800
+@@ -1752,11 +1752,10 @@ static int aligned_vwrite(char *buf, cha
+  *
+  */
+ 
+-long vread(char *buf, char *addr, unsigned long count)
++int vread(char *buf, char *addr, unsigned long count)
+ {
+ 	struct vm_struct *tmp;
+ 	char *vaddr, *buf_start = buf;
+-	unsigned long buflen = count;
+ 	unsigned long n;
+ 
+ 	/* Don't allow overflow */
+@@ -1790,13 +1789,7 @@ long vread(char *buf, char *addr, unsign
+ finished:
+ 	read_unlock(&vmlist_lock);
+ 
+-	if (buf == buf_start)
+-		return 0;
+-	/* zero-fill memory holes */
+-	if (buf != buf_start + buflen)
+-		memset(buf, 0, buflen - (buf - buf_start));
+-
+-	return buflen;
++	return 0;
+ }
+ 
+ /**
+@@ -1805,10 +1798,8 @@ finished:
+  *	@addr:		vm address.
+  *	@count:		number of bytes to be read.
+  *
+- *	Returns # of bytes which addr and buf should be incresed.
++ *	Returns # of bytes which addr and buf should be increased.
+  *	(same number to @count).
+- *	If [addr...addr+count) doesn't includes any intersect with valid
+- *	vmalloc area, returns 0.
+  *
+  *	This function checks that addr is a valid vmalloc'ed area, and
+  *	copy data from a buffer to the given addr. If specified range of
+@@ -1816,8 +1807,6 @@ finished:
+  *	proper area of @buf. If there are memory holes, no copy to hole.
+  *	IOREMAP area is treated as memory hole and no copy is done.
+  *
+- *	If [addr...addr+count) doesn't includes any intersects with alive
+- *	vm_struct area, returns 0.
+  *	@buf should be kernel's buffer. Because	this function uses KM_USER0,
+  *	the caller should guarantee KM_USER0 is not used.
+  *
+@@ -1829,17 +1818,15 @@ finished:
+  *	The caller should guarantee KM_USER1 is not used.
+  */
+ 
+-long vwrite(char *buf, char *addr, unsigned long count)
++int vwrite(char *buf, char *addr, unsigned long count)
+ {
+ 	struct vm_struct *tmp;
+ 	char *vaddr;
+-	unsigned long n, buflen;
+-	int copied = 0;
++	unsigned long n;
+ 
+ 	/* Don't allow overflow */
+ 	if ((unsigned long) addr + count < count)
+ 		count = -(unsigned long) addr;
+-	buflen = count;
+ 
+ 	read_lock(&vmlist_lock);
+ 	for (tmp = vmlist; count && tmp; tmp = tmp->next) {
+@@ -1856,19 +1843,15 @@ long vwrite(char *buf, char *addr, unsig
+ 		n = vaddr + tmp->size - PAGE_SIZE - addr;
+ 		if (n > count)
+ 			n = count;
+-		if (!(tmp->flags & VM_IOREMAP)) {
++		if (!(tmp->flags & VM_IOREMAP))
+ 			aligned_vwrite(buf, addr, n);
+-			copied++;
+-		}
+ 		buf += n;
+ 		addr += n;
+ 		count -= n;
+ 	}
+ finished:
+ 	read_unlock(&vmlist_lock);
+-	if (!copied)
+-		return 0;
+-	return buflen;
++	return 0;
+ }
+ 
+ /**
+--- linux-mm.orig/include/linux/vmalloc.h	2009-09-15 16:38:49.000000000 +0800
++++ linux-mm/include/linux/vmalloc.h	2009-09-15 16:39:31.000000000 +0800
+@@ -104,9 +104,9 @@ extern void unmap_kernel_range(unsigned 
+ extern struct vm_struct *alloc_vm_area(size_t size);
+ extern void free_vm_area(struct vm_struct *area);
+ 
+-/* for /dev/kmem */
+-extern long vread(char *buf, char *addr, unsigned long count);
+-extern long vwrite(char *buf, char *addr, unsigned long count);
++/* for /dev/kmem and /dev/kcore */
++extern int vread(char *buf, char *addr, unsigned long count);
++extern int vwrite(char *buf, char *addr, unsigned long count);
+ 
+ /*
+  *	Internals.  Dont't use..
+--- linux-mm.orig/drivers/char/mem.c	2009-09-15 15:26:11.000000000 +0800
++++ linux-mm/drivers/char/mem.c	2009-09-15 17:00:45.000000000 +0800
+@@ -399,6 +399,7 @@ static ssize_t read_kmem(struct file *fi
+ 	unsigned long p = *ppos;
+ 	ssize_t low_count, read, sz;
+ 	char * kbuf; /* k-addr because vread() takes vmlist_lock rwlock */
++	int ret = 0;
+ 
+ 	read = 0;
+ 	if (p < (unsigned long) high_memory) {
+@@ -440,13 +441,13 @@ static ssize_t read_kmem(struct file *fi
+ 	}
+ 
+ 	if (count > 0) {
+-		kbuf = (char *)__get_free_page(GFP_KERNEL);
++		kbuf = (char *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
+ 		if (!kbuf)
+ 			return -ENOMEM;
+ 		while (count > 0) {
+ 			sz = size_inside_page(p, count);
+-			sz = vread(kbuf, (char *)p, sz);
+-			if (!sz)
++			ret = vread(kbuf, (char *)p, sz);
++			if (ret)
+ 				break;
+ 			if (copy_to_user(buf, kbuf, sz)) {
+ 				free_page((unsigned long)kbuf);
+@@ -460,7 +461,7 @@ static ssize_t read_kmem(struct file *fi
+ 		free_page((unsigned long)kbuf);
+ 	}
+  	*ppos = p;
+- 	return read;
++ 	return read ? read : ret;
+ }
+ 
+ 
+@@ -524,6 +525,7 @@ static ssize_t write_kmem(struct file * 
+ 	ssize_t wrote = 0;
+ 	ssize_t virtr = 0;
+ 	char * kbuf; /* k-addr because vwrite() takes vmlist_lock rwlock */
++	int ret = 0;
+ 
+ 	if (p < (unsigned long) high_memory) {
+ 		unsigned long to_write = min_t(unsigned long, count,
+@@ -551,7 +553,9 @@ static ssize_t write_kmem(struct file * 
+ 				free_page((unsigned long)kbuf);
+ 				return -EFAULT;
+ 			}
+-			sz = vwrite(kbuf, (char *)p, sz);
++			ret = vwrite(kbuf, (char *)p, sz);
++			if (ret)
++				break;
+ 			count -= sz;
+ 			buf += sz;
+ 			virtr += sz;
+@@ -561,7 +565,7 @@ static ssize_t write_kmem(struct file * 
+ 	}
+ 
+  	*ppos = p;
+- 	return virtr + wrote;
++ 	return virtr + wrote ? virtr + wrote : ret;
+ }
+ #endif
+ 
