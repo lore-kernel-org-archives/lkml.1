@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZIOWUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZIOWgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZIOWUr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 18:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZIOWUm
+	id S1752755AbZIOWgp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 18:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZIOWgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 18:20:42 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:58542 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbZIOWUl (ORCPT
+	Tue, 15 Sep 2009 18:36:41 -0400
+Received: from darkcity.gna.ch ([195.226.6.51]:47140 "EHLO mail.gna.ch"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751117AbZIOWgl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 18:20:41 -0400
-Subject: Re: [PATCH] arm: remove unused code in delay.S
-From: Steve Chen <schen@mvista.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Felipe Contreras <felipe.contreras@gmail.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
-       Marek Vasut <marek.vasut@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <m3k4zzdimy.fsf@intrepid.localdomain>
-References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com>
-	 <20090915103739.GA19519@elf.ucw.cz> <1253017761.3273.117.camel@linux-1lbu>
-	 <200909151541.08852.marek.vasut@gmail.com>
-	 <1253032210.3273.128.camel@linux-1lbu>
-	 <94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com>
-	 <1253043875.3273.131.camel@linux-1lbu>
-	 <m3k4zzdimy.fsf@intrepid.localdomain>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 17:26:49 -0500
-Message-Id: <1253053609.3273.139.camel@linux-1lbu>
+	Tue, 15 Sep 2009 18:36:41 -0400
+X-Greylist: delayed 457 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Sep 2009 18:36:40 EDT
+Subject: Re: [git pull] Please pull powerpc.git next branch
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <1253051488.8375.233.camel@pasglop>
+References: <1252653473.8566.98.camel@pasglop>
+	 <1252999835.8375.205.camel@pasglop>
+	 <alpine.LFD.2.01.0909150943580.4950@localhost.localdomain>
+	 <1253051488.8375.233.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Wed, 16 Sep 2009 00:29:01 +0200
+Message-Id: <1253053741.5669.1990.camel@thor>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 23:04 +0200, Krzysztof Halasa wrote:
-> Steve Chen <schen@mvista.com> writes:
+On Wed, 2009-09-16 at 07:51 +1000, Benjamin Herrenschmidt wrote: 
+> On Tue, 2009-09-15 at 09:53 -0700, Linus Torvalds wrote:
+> > It got a conflict with the AGP merge, but I fixed it up in what _seemed_ 
+> > to be the obvious manner. But somebody should check out the resulting
+> > drivers/char/agp/uninorth-agp.c file.
 > 
-> > +config OLD_CPU_DELAY
-> > +	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
-> > +	bool "Accurate delays"
-> > +	def_bool n
-> > +	help
-> > +	  Enable if observing longer than expected delays and need more
-> > +	  accuracy.  This only applies to older CPUs.
-> > +
+> Thanks. 
 > 
-> If it's that simple then why not enable the extra delay code
-> unconditionally when compiling for those CPUs?
-> 
-> We don't need "do something better" options.
+> Michel, can you dbl check it ?
 
-If I know for sure that these are the processors that need that block of
-code, your suggestion makes perfect sense.  Unfortunately, I don't know.
-My primary goals are
-
-1.  Put a stop to this thread (so far I have failed miserably)
-2.  Document that block of code.
-3.  If it makes someone's life easier.. it would be a bonus.
-
-Steve
+Looks good to me, thanks.
 
 
+-- 
+Earthling Michel Dänzer           |                http://www.vmware.com
+Libre software enthusiast         |          Debian, X and DRI developer
