@@ -1,43 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbZIOT1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbZIOT33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbZIOT1d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 15:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbZIOT1b
+	id S1754949AbZIOT33 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 15:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZIOT32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 15:27:31 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:54437 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbZIOT1a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 15:27:30 -0400
-Date: Tue, 15 Sep 2009 20:27:30 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] backlight: Provide two stage registration
-Message-ID: <20090915192730.GA8152@srcf.ucam.org>
-References: <1253031583-11286-1-git-send-email-mjg@redhat.com> <1253042322.30165.52.camel@dax.rpnet.com>
+	Tue, 15 Sep 2009 15:29:28 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51386 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752019AbZIOT31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 15:29:27 -0400
+Date: Tue, 15 Sep 2009 21:29:30 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: npiggin@suse.de
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/5] fs: fix bdi writeback use after free 2
+Message-ID: <20090915192930.GQ23126@kernel.dk>
+References: <20090915191903.290006007@suse.de> <20090915192243.247202587@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253042322.30165.52.camel@dax.rpnet.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090915192243.247202587@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 08:18:42PM +0100, Richard Purdie wrote:
+On Wed, Sep 16 2009, npiggin@suse.de wrote:
+> work can be gone after wb_clear_pending, so load the sb from it first.
 
-> Could we not pass an optional pointer to a properties structure to
-> create the backlight with instead or find a better way to solve this?
+This one is already moot, I fixed that in an earlier patch.
 
-That'd work, but it'd involve significant refactoring of all the 
-drivers - we really need to be setting max_brightness before 
-device_register() is called. I suspect it'd be an even larger delta 
-against mainline.
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> ---
+>  fs/fs-writeback.c |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/fs/fs-writeback.c
+> ===================================================================
+> --- linux-2.6.orig/fs/fs-writeback.c
+> +++ linux-2.6/fs/fs-writeback.c
+> @@ -783,6 +783,7 @@ long wb_do_writeback(struct bdi_writebac
+>  
+>  	while ((work = get_next_work_item(bdi, wb)) != NULL) {
+>  		enum writeback_sync_modes sync_mode;
+> +		struct super_block *sb;
+>  
+>  		nr_pages = work->nr_pages;
+>  
+> @@ -794,6 +795,8 @@ long wb_do_writeback(struct bdi_writebac
+>  		else
+>  			sync_mode = work->sync_mode;
+>  
+> +		sb = work->sb;
+> +
+>  		/*
+>  		 * If this isn't a data integrity operation, just notify
+>  		 * that we have seen this work and we are now starting it.
+> @@ -801,7 +804,7 @@ long wb_do_writeback(struct bdi_writebac
+>  		if (sync_mode == WB_SYNC_NONE)
+>  			wb_clear_pending(wb, work);
+>  
+> -		wrote += wb_writeback(wb, nr_pages, work->sb, sync_mode, 0);
+> +		wrote += wb_writeback(wb, nr_pages, sb, sync_mode, 0);
+>  
+>  		/*
+>  		 * This is a data integrity writeback, so only do the
+> 
+> 
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Jens Axboe
+
