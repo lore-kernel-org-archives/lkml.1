@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZIOPyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZIOP4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbZIOPyy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 11:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZIOPyv
+	id S1754027AbZIOP4o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 11:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbZIOP4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 11:54:51 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:20467 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752019AbZIOPyu convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 11:56:37 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:59771 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754059AbZIOP4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 11:54:50 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Tue, 15 Sep 2009 11:56:37 -0400
+Message-ID: <4AAFB8F3.4000209@vflare.org>
+Date: Tue, 15 Sep 2009 21:25:31 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-x-cr-hashedpuzzle: Bbzt D1dJ GZlE HV+I I1fd KFV9 KJEU NFIM OHg/ OveQ VJku a9lK bF9L bP0M dH+Q e19a;3;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA7AHIAYQBuAGQAeQAuAGQAdQBuAGwAYQBwAEAAbwByAGEAYwBsAGUALgBjAG8AbQA7AHQAbwByAHYAYQBsAGQAcwBAAGwAaQBuAHUAeAAtAGYAbwB1AG4AZABhAHQAaQBvAG4ALgBvAHIAZwA=;Sosha1_v1;7;{119BBEAC-41E1-4585-8108-50B1B5EC2333};YQBzAGkAbgBoAGEAQAB6AGUAdQBnAG0AYQBzAHkAcwB0AGUAbQBzAC4AYwBvAG0A;Tue, 15 Sep 2009 15:54:09 GMT;UgBFADoAIABbAFAAQQBUAEMASABdACAAYwBsAGUAYQBuAHUAcAAgAGwAZQBnAGEAYwB5ACAAYwBvAG4AcwBvAGwAZQBfAHAAcgBpAG4AdAAgAGYAdQBuAGMAdABpAG8AbgA=
-Content-class: urn:content-classes:message
-Subject: RE: [PATCH] cleanup legacy console_print function
-x-cr-puzzleid: {119BBEAC-41E1-4585-8108-50B1B5EC2333}
-Date: Tue, 15 Sep 2009 08:54:09 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501F10081@exchange.ZeugmaSystems.local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] cleanup legacy console_print function
-Thread-Index: Aco1aMQxdhFi13Z5ScWJ5alsGZFHxwAAAF6gACzyaoA=
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: "Anirban Sinha" <ASinha@zeugmasystems.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>
+To: Greg KH <greg@kroah.com>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mm-cc@laptop.org, Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-1?Q?Fr=E9?= =?ISO-8859-1?Q?d=E9ric_Weisbecker?= 
+	<fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/4] virtual block device driver (ramzswap)
+References: <200909100215.36350.ngupta@vflare.org> <200909100249.26284.ngupta@vflare.org> <84144f020909141310y164b2d1ak44dd6945d35e6ec@mail.gmail.com> <d760cf2d0909142339i30d74a9dic7ece86e7227c2e2@mail.gmail.com> <84144f020909150030h1f9d8062sc39057b55a7ba6c0@mail.gmail.com> <d760cf2d0909150121i7f6f45b9p76f8eb89ab0d5882@mail.gmail.com> <84144f020909150130r573df1e1jfe359b88387f94ad@mail.gmail.com> <20090915152641.GA22667@kroah.com>
+In-Reply-To: <20090915152641.GA22667@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/15/2009 08:56 PM, Greg KH wrote:
+> On Tue, Sep 15, 2009 at 11:30:16AM +0300, Pekka Enberg wrote:
+>> Btw, Nitin, why are you targeting drivers/block and not
+>> drivers/staging at this point? It seems obvious enough that there are
+>> still some issues that need to be ironed out (like the CONFIG_ARM
+>> thing) so submitting the driver for inclusion in drivers/staging and
+>> fixing it up there incrementally would likely save you from a lot of
+>> trouble. Greg, does ramzswap sound like something that you'd be
+>> willing to take?
 >
->Here you go!
+> If it is self-contained, actually builds, and there is an active
+> developer who is working getting it merged into the main kernel tree,
+> then yes, I will be willing to take it into the drivers/staging/ tree.
+> Just send me the patches.
 >
 
-Thanks Linus for committing the patch.
+It is self contained (except for swap notify callback part). I will send
+revised patches addressing some of coding issues raised in reviews and moving
+everything over to drivers/staging.
 
-    Ani
-
+Thanks,
+Nitin
 
