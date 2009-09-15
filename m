@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbZIOOpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbZIOOqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520AbZIOOpP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZIOOpN
+	id S1754531AbZIOOqf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZIOOqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:45:13 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:51094 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754238AbZIOOpM (ORCPT
+	Tue, 15 Sep 2009 10:46:31 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48454 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753821AbZIOOqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:45:12 -0400
-To: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] DRBD for 2.6.32
-Content-Disposition: inline
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-Cc: Andrew Morton <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-X-OTRS-FollowUp-SenderType: agent
-Date: Tue, 15 Sep 2009 16:45:13 +0200
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 15 Sep 2009 10:46:30 -0400
+Subject: Re: [PATCHv2] tracing - support multiple pids in set_pid_ftrace
+ file
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: jolsa@redhat.com
+Cc: mingo@elte.hu, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
+In-Reply-To: <1253019893-30131-1-git-send-email-jolsa@redhat.com>
+References: <1253019893-30131-1-git-send-email-jolsa@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 15 Sep 2009 10:46:33 -0400
+Message-Id: <1253025993.20020.111.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909151645.14256.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, 2009-09-15 at 15:04 +0200, jolsa@redhat.com wrote:
+> Adding the possibility to set more than 1 pid in the set_pid_ftrace file,
+> thus allowing to trace more than 1 independent processes.
+> 
+> Usage:
+> 
+> sh-4.0# echo 284 > ./set_ftrace_pid 
+> sh-4.0# cat ./set_ftrace_pid 
+> 284
+> sh-4.0# echo 1 >> ./set_ftrace_pid 
+> sh-4.0# echo 0 >> ./set_ftrace_pid 
+> sh-4.0# cat ./set_ftrace_pid 
+> swapper tasks
+> 1
+> 284
+> sh-4.0# echo 4 > ./set_ftrace_pid 
+> sh-4.0# cat ./set_ftrace_pid 
+> 4
+> sh-4.0# echo > ./set_ftrace_pid 
+> sh-4.0# cat ./set_ftrace_pid 
+> no pid
+> sh-4.0# 
+> 
 
-Please pull
-git://git.drbd.org/linux-2.6-drbd.git drbd
+A quick look at the patch looks fine to me.
 
-DRBD is a shared-nothing, replicated block device. It is designed to
-serve as a building block for high availability clusters and
-in this context, is a "drop-in" replacement for shared storage.
+Li, I know you reviewed the previous version. Do you have time to look
+at this one again? If so, could you, and add a "Reviewed-by" line.
 
-It has been discussed and reviewed on the list since March,
-and Andrew has asked us to send a pull request for 2.6.32-rc1.
+Thanks,
 
-Stephen added us to linux-next in July, and our most recent 
-build failure against Jens' 2.6.32-rc1 updates was ironed out this 
-morning. So it should be in fairly good shape.
+-- Steve
 
- Documentation/blockdev/drbd/DRBD-8.3-data-packets.svg          |  588 +
- Documentation/blockdev/drbd/DRBD-data-packets.svg              |  459 +
- Documentation/blockdev/drbd/README.txt                         |   16
- Documentation/blockdev/drbd/conn-states-8.dot                  |   18
- Documentation/blockdev/drbd/disk-states-8.dot                  |   16
- Documentation/blockdev/drbd/drbd-connection-state-overview.dot |   85
- Documentation/blockdev/drbd/node-states-8.dot                  |   14
- MAINTAINERS                                                    |   13
- drivers/block/Kconfig                                          |    2
- drivers/block/Makefile                                         |    1
- drivers/block/drbd/Kconfig                                     |   82
- drivers/block/drbd/Makefile                                    |    8
- drivers/block/drbd/drbd_actlog.c                               | 1484 +++
- drivers/block/drbd/drbd_bitmap.c                               | 1327 ++
- drivers/block/drbd/drbd_int.h                                  | 2258 +++++
- drivers/block/drbd/drbd_main.c                                 | 3735 ++++++++
- drivers/block/drbd/drbd_nl.c                                   | 2365 +++++
- drivers/block/drbd/drbd_proc.c                                 |  266
- drivers/block/drbd/drbd_receiver.c                             | 4456 ++++++++++
- drivers/block/drbd/drbd_req.c                                  | 1132 ++
- drivers/block/drbd/drbd_req.h                                  |  327
- drivers/block/drbd/drbd_strings.c                              |  113
- drivers/block/drbd/drbd_tracing.c                              |  753 +
- drivers/block/drbd/drbd_tracing.h                              |   87
- drivers/block/drbd/drbd_vli.h                                  |  351
- drivers/block/drbd/drbd_worker.c                               | 1529 +++
- drivers/block/drbd/drbd_wrappers.h                             |   91
- include/linux/drbd.h                                           |  349
- include/linux/drbd_limits.h                                    |  137
- include/linux/drbd_nl.h                                        |  137
- include/linux/drbd_tag_magic.h                                 |   83
- include/linux/lru_cache.h                                      |  294
- lib/Kconfig                                                    |    3
- lib/Makefile                                                   |    2
- lib/lru_cache.c                                                |  560 +
- 35 files changed, 23141 insertions(+)
 
--phil
