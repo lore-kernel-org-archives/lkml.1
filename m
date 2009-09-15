@@ -1,99 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbZIONnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZIONuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbZIONnt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 09:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbZIONnn
+	id S1754200AbZIONuq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 09:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbZIONum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 09:43:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42501 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbZIONnm (ORCPT
+	Tue, 15 Sep 2009 09:50:42 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:51520 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753592AbZIONuk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 09:43:42 -0400
-Subject: Re: [PATCH 2/2] tracing: Export ftrace API for kernel modules
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       fweisbec@gmail.com, "Frank Ch. Eigler" <fche@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, paulus@samba.org,
-       systemtap@sources.redhat.com
-In-Reply-To: <4AAF6728.6010807@bk.jp.nec.com>
-References: <4AAF6728.6010807@bk.jp.nec.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 15 Sep 2009 09:43:44 -0400
-Message-Id: <1253022224.20020.102.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 09:50:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=qImhmx2GRI81DticmgDjUPijTdiGd/H8Q5jBoROjpt13rAH6kDwRigz1OtjYT89XCt
+         cGJglVtzP0M+OHUnQZkMJQpDjg+Z8Ztci4+aSse81LdMD8ogfxRKl0rdo260T0v3mPIV
+         L9Yj+SigoVBAjULGXvMpdXR82gBYj1WcaLNTk=
+Message-ID: <4AAF9BAF.3030109@gmail.com>
+Date: Tue, 15 Sep 2009 09:50:39 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com>
+In-Reply-To: <4AAF95D1.1080600@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE58C3AB1B03AC57412E22747"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 19:06 +0900, Atsushi Tsuji wrote:
-> Export register_ and unresgister_ftrace_function_probe to modules. This can
-> be used by SystemTap.
-> 
-> Signed-off-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-> ---
->  kernel/trace/ftrace.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index 5ef8f59..9c32291 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -2042,6 +2042,7 @@ register_ftrace_function_probe(char *glob, struct ftrace_probe_ops *ops,
->  
->  	return count;
->  }
-> +EXPORT_SYMBOL_GPL(register_ftrace_function_probe);
->  
->  enum {
->  	PROBE_TEST_FUNC		= 1,
-> @@ -2108,6 +2109,7 @@ unregister_ftrace_function_probe(char *glob, struct ftrace_probe_ops *ops,
->  	__unregister_ftrace_function_probe(glob, ops, data,
->  					  PROBE_TEST_FUNC | PROBE_TEST_DATA);
->  }
-> +EXPORT_SYMBOL_GPL(unregister_ftrace_function_probe);
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE58C3AB1B03AC57412E22747
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I have to NAK this as is. There's a reason I never exported these to
-modules, and that is because they are not module safe. There's nothing
-to stop a module from registering a probe and then being removed. Then
-the function probe will still be called causing a kernel panic.
+Avi Kivity wrote:
+> On 09/15/2009 04:03 PM, Gregory Haskins wrote:
+>>
+>>> In this case the x86 is the owner and the ppc boards use translated
+>>> access.  Just switch drivers and device and it falls into place.
+>>>
+>>>     =20
+>> You could switch vbus roles as well, I suppose.
+>=20
+> Right, there's not real difference in this regard.
+>=20
+>> Another potential
+>> option is that he can stop mapping host memory on the guest so that it=
+
+>> follows the more traditional model.  As a bus-master device, the ppc
+>> boards should have access to any host memory at least in the GFP_DMA
+>> range, which would include all relevant pointers here.
+>>
+>> I digress:  I was primarily addressing the concern that Ira would need=
+
+>> to manage the "host" side of the link using hvas mapped from userspace=
+
+>> (even if host side is the ppc boards).  vbus abstracts that access so =
+as
+>> to allow something other than userspace/hva mappings.  OTOH, having ea=
+ch
+>> ppc board run a userspace app to do the mapping on its behalf and feed=
+
+>> it to vhost is probably not a huge deal either.  Where vhost might
+>> really fall apart is when any assumptions about pageable memory occur,=
+
+>> if any.
+>>   =20
+>=20
+> Why?  vhost will call get_user_pages() or copy_*_user() which ought to
+> do the right thing.
+
+I was speaking generally, not specifically to Ira's architecture.  What
+I mean is that vbus was designed to work without assuming that the
+memory is pageable.  There are environments in which the host is not
+capable of mapping hvas/*page, but the memctx->copy_to/copy_from
+paradigm could still work (think rdma, for instance).
+
+>=20
+>> As an aside: a bigger issue is that, iiuc, Ira wants more than a singl=
+e
+>> ethernet channel in his design (multiple ethernets, consoles, etc).  A=
+
+>> vhost solution in this environment is incomplete.
+>>   =20
+>=20
+> Why?  Instantiate as many vhost-nets as needed.
+
+a) what about non-ethernets?
+b) what do you suppose this protocol to aggregate the connections would
+look like? (hint: this is what a vbus-connector does).
+c) how do you manage the configuration, especially on a per-board basis?
+
+>=20
+>> Note that Ira's architecture highlights that vbus's explicit managemen=
+t
+>> interface is more valuable here than it is in KVM, since KVM already h=
+as
+>> its own management interface via QEMU.
+>>   =20
+>=20
+> vhost-net and vbus both need management, vhost-net via ioctls and vbus
+> via configfs.
+
+Actually I have patches queued to allow vbus to be managed via ioctls as
+well, per your feedback (and it solves the permissions/lifetime
+critisims in alacrityvm-v0.1).
+
+>  The only difference is the implementation.  vhost-net
+> leaves much more to userspace, that's the main difference.
+
+Also,
+
+*) vhost is virtio-net specific, whereas vbus is a more generic device
+model where thing like virtio-net or venet ride on top.
+
+*) vhost is only designed to work with environments that look very
+similar to a KVM guest (slot/hva translatable).  vbus can bridge various
+environments by abstracting the key components (such as memory access).
+
+*) vhost requires an active userspace management daemon, whereas vbus
+can be driven by transient components, like scripts (ala udev)
+
+Kind Regards,
+-Greg
 
 
-Now I know of two ways to fix this.
 
-1) The simple way. Up the module ref count so once it registers a
-function it can never be disabled. Of course there's the "force module
-unload" but people should not do that anyway.
+--------------enigE58C3AB1B03AC57412E22747
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-2) Create a second hook handler for modules. That is the function caller
-for modules will go to a wrapper first. This wrapper could disable
-interrupts or grab a lock or something that would prevent a module from
-being unloaded as the hooks are being called. Perhaps even disabling
-preemption while calling the hooks will be enough (this is not something
-I want the normal function caller to do). And the current function
-tracer will optimize that if only one function is registered to mcount,
-then the mcount caller will call that function directly.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-It will still need to up the mod ref count when a probe is added, but it
-can also remove it.
+iEYEARECAAYFAkqvm68ACgkQP5K2CMvXmqGjeACfaeq+q8+zPvMaTCbdNBdPCaWg
+brsAoIQkXtftjfx+YbkfDtWCeVwCtpDw
+=W5uC
+-----END PGP SIGNATURE-----
 
-
-The problem with the current method, is that a probe can be executing at
-anytime. Here's an example if we did it your way.
-
-1. module installed
-2. module adds probe
-3. function X in kernel calls probe but gets preempted.
-4. module removes probe
-5. module unistalled
-6. function X in kernel continues to run probe but probe no longer
-exists --- Oops!
-
--- Steve
-
-
+--------------enigE58C3AB1B03AC57412E22747--
