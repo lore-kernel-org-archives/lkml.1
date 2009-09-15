@@ -1,112 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbZIOXVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbZIOXY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbZIOXVX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 19:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZIOXVV
+	id S1758746AbZIOXY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 19:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZIOXYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 19:21:21 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:36603 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753083AbZIOXVU (ORCPT
+	Tue, 15 Sep 2009 19:24:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47172 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753019AbZIOXYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 19:21:20 -0400
-Date: Wed, 16 Sep 2009 01:21:20 +0200 (CEST)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: unfair io behaviour for high load interactive use still present
- in 2.6.31
-In-Reply-To: <2612a5ee-4141-43d2-a009-090eac352aa2@n2g2000vba.googlegroups.com>
-Message-ID: <alpine.DEB.2.00.0909160043050.14727@sebohet.brgvxre.pu>
-References: <dkAXF-4Gg-25@gated-at.bofh.it> <2612a5ee-4141-43d2-a009-090eac352aa2@n2g2000vba.googlegroups.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463760128-17271239-1253056881=:14727"
+	Tue, 15 Sep 2009 19:24:24 -0400
+Date: Tue, 15 Sep 2009 16:23:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, arjan@infradead.org, lenb@kernel.org,
+       mingo@elte.hu, yanmin_zhang@linux.intel.com, jens.axboe@oracle.com,
+       ink@jurassic.park.msu.ru, Corrado Zoccolo <czoccolo@gmail.com>
+Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO
+ performance
+Message-Id: <20090915162306.66c5ce9d.akpm@linux-foundation.org>
+In-Reply-To: <20090915054259.5282e5ba@infradead.org>
+References: <20090915054259.5282e5ba@infradead.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, 15 Sep 2009 05:42:59 +0200
+Arjan van de Ven <arjan@infradead.org> wrote:
 
----1463760128-17271239-1253056881=:14727
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+> Fix the menu idle governor which balances power savings, energy efficiency
+> and performance impact.
 
-Hi Daniel,
+This patch clashes a bit with
+cpuidle-menu-governor-reduce-latency-on-exit.patch (which was sent to
+the ACPI maintainers a month ago and ignored).
 
-Yesterday Daniel J Blueman wrote:
-
-> On Sep 15, 8:50 am, Tobias Oetiker <t...@oetiker.ch> wrote:
-> > Experts,
-> >
-> > We run several busy NFS file servers with Areca HW Raid + LVM2 + ext3
-> >
-> > We find that the read bandwidth falls dramatically as well as the
-> > response times going up to several seconds as soon as the system
-> > comes under heavy write strain.
->
-> It's worthwhile checking:
-
->  - that the ext3 filesystem starts at a stripe-aligned offset
-
-yep
-
->  - that the ext3 filesystem was created with the correct
->  stripe-width and stride (chunk) size
-
-yep
-
->  - due to the larger amount of memory, ext4 may be a big win (due
->  to delayed allocate), if you'll stay with a newer kernel
-
-ext4 does not seem to change much
-
-Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
-
-dm-18             0.00     0.00    0.00  316.60     0.00     1.24     8.00  2590.22   99.29   3.16 100.00
-dm-18             0.00     0.00    1.60 1211.60     0.01     4.73     8.00   692.64 2925.31   0.76  92.00
-dm-18             0.00     0.00    2.00 4541.40     0.01    17.74     8.00  1858.21  413.23   0.22  99.52
-dm-18             0.00     0.00    0.00 1341.80     0.00     5.24     8.00  1084.59  239.59   0.68  90.96
-dm-18             0.00     0.00   10.00 3739.80     0.04    14.61     8.00   914.32  447.29   0.25  93.12
-dm-18             0.00     0.00    2.60 2474.20     0.01     9.66     8.00   537.33   23.88   0.36  89.36
-dm-18             0.00     0.00    2.00 2569.00     0.01    10.04     8.00  1215.49  658.95   0.33  85.92
+<im-fed-up-with-this-crap-ill-just-merge-it-and-if-it-breaks-dont-blame-me>
 
 
->  - if you have battery backup at the right levels:
->   - performance may be better mounting the ext3 filesystem with
-> 'barrier=0'
+I restaged cpuidle-menu-governor-reduce-latency-on-exit.patch so it
+goes after cpuidle-fix-the-menu-governor-to-boost-io-performance.patch.
+perhaps you could take a look at Corrado's change?
 
-the results look pretty much the same
+ 
 
-Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+From: Corrado Zoccolo <czoccolo@gmail.com>
 
-dm-18             0.00     0.00    1.40 9272.00     0.01    36.22     8.00   413.57  111.78   0.10  88.64
-dm-18             0.00     0.00    4.20   71.80     0.02     0.28     8.00    78.24  471.06  12.83  97.52
-dm-18             0.00     0.00    0.60 4183.20     0.00    16.34     8.00   988.32  216.66   0.24 100.00
-dm-18             0.00     0.00    3.60  792.80     0.01     3.10     8.00  1098.60 1535.50   0.93  74.16
-dm-18             0.00     0.00    1.60 6161.20     0.01    24.07     8.00   407.17   42.46   0.16  99.60
-dm-18             0.00     0.00    0.00 2128.60     0.00     8.31     8.00  2497.56  368.99   0.47  99.92
-dm-18             0.00     0.00    2.60 2657.80     0.01    10.38     8.00  1507.78  937.57   0.34  91.28
-dm-18             0.00     0.00    5.80 8872.20     0.02    34.66     8.00   455.43  130.94   0.09  79.20
-dm-18             0.00     0.00    2.20 4981.20     0.01    19.46     8.00  1058.84  245.39   0.19  92.24
+Move the state residency accounting and statistics computation off the hot
+exit path.
 
+On exit, the need to recompute statistics is recorded, and new statistics
+will be computed when menu_select is called again.
 
->   - performance may improve mounting 'data=writeback'
+The expected effect is to reduce processor wakeup latency from sleep
+(C-states).  We are speaking of few hundreds of cycles reduction out of a
+several microseconds latency (determined by the hardware transition), so
+it is difficult to measure.
 
-here the effect is that writes get delayed much longer ... it
-almost seems as if they got delayed until the reads were done ...
+Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Adam Belay <abelay@novell.com
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-What I am really interested is not perfomance (the total throughput
-of the system is pretty ok) the problem is just that there are such
-big read delays under heavy load which makes interactive use pretty
-hard.
+ drivers/cpuidle/governors/menu.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-cheers
-tobi
+diff -puN drivers/cpuidle/governors/menu.c~cpuidle-menu-governor-reduce-latency-on-exit drivers/cpuidle/governors/menu.c
+--- a/drivers/cpuidle/governors/menu.c~cpuidle-menu-governor-reduce-latency-on-exit
++++ a/drivers/cpuidle/governors/menu.c
+@@ -96,6 +96,7 @@
+ 
+ struct menu_device {
+ 	int		last_state_idx;
++	int             needs_update;
+ 
+ 	unsigned int	expected_us;
+ 	u64		predicted_us;
+@@ -166,6 +167,8 @@ static inline int performance_multiplier
+ 
+ static DEFINE_PER_CPU(struct menu_device, menu_devices);
+ 
++static void menu_update(struct cpuidle_device *dev);
++
+ /**
+  * menu_select - selects the next idle state to enter
+  * @dev: the CPU
+@@ -180,6 +183,11 @@ static int menu_select(struct cpuidle_de
+ 	data->last_state_idx = 0;
+ 	data->exit_us = 0;
+ 
++	if (data->needs_update) {
++		menu_update(dev);
++		data->needs_update = 0;
++	}
++
+ 	/* Special case when user has set very strict latency requirement */
+ 	if (unlikely(latency_req == 0))
+ 		return 0;
+@@ -231,7 +239,7 @@ static int menu_select(struct cpuidle_de
+ }
+ 
+ /**
+- * menu_reflect - attempts to guess what happened after entry
++ * menu_reflect - records that data structures need update
+  * @dev: the CPU
+  *
+  * NOTE: it's important to be fast here because this operation will add to
+@@ -240,6 +248,16 @@ static int menu_select(struct cpuidle_de
+ static void menu_reflect(struct cpuidle_device *dev)
+ {
+ 	struct menu_device *data = &__get_cpu_var(menu_devices);
++	data->needs_update = 1;
++}
++
++/**
++ * menu_update - attempts to guess what happened after entry
++ * @dev: the CPU
++ */
++static void menu_update(struct cpuidle_device *dev)
++{
++	struct menu_device *data = &__get_cpu_var(menu_devices);
+ 	int last_idx = data->last_state_idx;
+ 	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
+ 	struct cpuidle_state *target = &dev->states[last_idx];
+_
 
-
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
----1463760128-17271239-1253056881=:14727--
