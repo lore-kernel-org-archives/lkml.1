@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZIOQYC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZIOQbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbZIOQYC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 12:24:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZIOQYB
+	id S1755159AbZIOQbi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 12:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZIOQbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 12:24:01 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:51159 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754949AbZIOQYA (ORCPT
+	Tue, 15 Sep 2009 12:31:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53948 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753349AbZIOQbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 12:24:00 -0400
-Subject: Re: [PATCH] arm: remove unused code in delay.S
-From: Steve Chen <schen@mvista.com>
-To: Marek Vasut <marek.vasut@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Felipe Contreras <felipe.contreras@gmail.com>,
-       Jamie Lokier <jamie@shareable.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-In-Reply-To: <200909151541.08852.marek.vasut@gmail.com>
-References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com>
-	 <20090915103739.GA19519@elf.ucw.cz> <1253017761.3273.117.camel@linux-1lbu>
-	 <200909151541.08852.marek.vasut@gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 11:30:10 -0500
-Message-Id: <1253032210.3273.128.camel@linux-1lbu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 12:31:34 -0400
+Date: Tue, 15 Sep 2009 09:30:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
+In-Reply-To: <20090915040601.GE4507@mail.oracle.com>
+Message-ID: <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
+References: <20090911200458.GA15416@mail.oracle.com> <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain> <20090914221434.GA4507@mail.oracle.com> <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain> <20090915000417.GC4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain> <20090915005417.GD4507@mail.oracle.com> <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain> <20090915040601.GE4507@mail.oracle.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 15:41 +0200, Marek Vasut wrote:
-> > -#if 0
-> > +#if CONFIG_OLD_CPU_DELAY
+
+
+On Mon, 14 Sep 2009, Joel Becker wrote:
+> > 
+> > If you're talking about falling back to manually just copying the data, 
+> > then nobody is interested in that. User space can do that better with a 
+> > simple read-write loop or with splice, or whatever. There's no reaason 
+> > what-so-ever to do that.
 > 
-> ifdef please
-> 
-I assume this a vote in favor of considering this patch as an
-alternative :)  The updated patch is below.  Since I'm only summarizing
-the e-mail thread and put them into a patch (which is a less time
-consuming process than continue reading and deleting e-mails on this
-thread), contributors can add signed off before submitting to Russel.
+> 	I'm talking about any facility for copying that isn't just a
+> userspace loop.  Like your discussion of network filesystems.
 
-Document #if 0 code block in delay.S and make it selectable for compile.
+HOW?
 
-Signed-off-by: Steve Chen <schen@mvista.com>
+We need to have a per-filesystem interface to that. 
 
----
+Having a '->copyfile()' function would be great.
 
- arch/arm/Kconfig     |    8 ++++++++
- arch/arm/lib/delay.S |    2 +-
- 2 files changed, 9 insertions(+), 1 deletions(-)
+But don't you see how _idiotic_ it is to then also having a '->reflink()' 
+function that does _conceptually_ the exact same thing, except it does it 
+by incrementing a usage count instead?
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index aef63c8..ca8d535 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -813,6 +813,14 @@ config ARM_ERRATA_460075
- 	  ACTLR register. Note that setting specific bits in the ACTLR
-register
- 	  may not be available in non-secure mode.
- 
-+config OLD_CPU_DELAY
-+	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
-+	bool "Accurate delays for older CPU"
-+	def_bool n
-+	help
-+	  Enable if observing longer than expected delays and need more
-+	  accurate delays on older CPUs.
-+
- endmenu
- 
- source "arch/arm/common/Kconfig"
-diff --git a/arch/arm/lib/delay.S b/arch/arm/lib/delay.S
-index 8d6a876..67e679b 100644
---- a/arch/arm/lib/delay.S
-+++ b/arch/arm/lib/delay.S
-@@ -42,7 +42,7 @@ ENTRY(__const_udelay)				@ 0 <= r0 <= 0x7fffff06
- @ Delay routine
- ENTRY(__delay)
- 		subs	r0, r0, #1
--#if 0
-+#ifdef CONFIG_OLD_CPU_DELAY
- 		movls	pc, lr
- 		subs	r0, r0, #1
- 		movls	pc, lr
+Do you see why I'm so unhappy to add a ->reflink() function? 
 
+> 	Hence I brought this to the filesystem summit and then fsdevel
+> rather than just implementing it in ocfs2.  I know NFS folks were in the
+> room in April, and they said the call definition was workable.  Can't
+> remember if CIFS folks were there, but I think so.
 
+It's not workable if you define the 'reflink()' function to not use any 
+disk space on the filesystem. Because SMB _will_ do a copy (and I presume 
+the NFS thing will too). So it would not in general be what you call 
+reflink, it will not be a "snapshot".
+
+So if you _define_ the semantics of "reflink" to be that it's atomic and 
+doesn't use any new diskspace (apart from the new inode/directory entry, 
+of course), then it will be almost totally useless to other filesystems.
+
+In fact, it's entirely possible to have filesystems that can avoid copying 
+the _data_ blocks, but would need to copy the indirect blocks - maybe the 
+data blocks are ref-counted, but the metadata needs to be per-file (I can 
+see many reasons to do it that way, even if it's organized as a tree - 
+it's how we do page table COW, for example, and it makes some things much 
+simpler).
+
+Would that be a 'reflink()' or not? I have no way of knowing, because you 
+have decided on reflink on a purely ocfs2-specific implementation basis. 
+But I do know that such a filesystem would be perfectly happy to have a 
+'copyfile' function.
+
+This is why I want the VFS pointers to be about _semantics_, not about 
+some random implementation detail.
+
+			Linus
