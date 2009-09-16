@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZIPLsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZIPLn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZIPLsd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 07:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbZIPLsc
+	id S1755987AbZIPLn3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 07:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZIPLn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 07:48:32 -0400
-Received: from mail-px0-f176.google.com ([209.85.216.176]:62594 "EHLO
-	mail-px0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756002AbZIPLsb convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 07:43:28 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:35778 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbZIPLn1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 07:48:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=I2vLOinju/SJzky6ylT3QkuGb6az1w6e+e7rSL4p1AQ5MMRMV0ALdZm7/HqxmJOorg
-         cVLqULp4gzEoC9nrHC3bGg3rZSxECvQwqLTRYuA+jWBvy+A4/Wvp+qhUH/sSe98yDDed
-         xXbe3wUiMcGTKmeiZSNoPovlfYM+yv9ywItPg=
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0909161211100.12659@sister.anvils>
-References: <20090915021851.168285585@intel.com>
-	 <20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090915082200.GA2588@localhost>
-	 <Pine.LNX.4.64.0909151057020.26095@sister.anvils>
-	 <10f740e80909160201l4834369s75e63fe8df0991aa@mail.gmail.com>
-	 <Pine.LNX.4.64.0909161211100.12659@sister.anvils>
-Date: Wed, 16 Sep 2009 13:42:20 +0200
-X-Google-Sender-Auth: aae3cff8d31a6ef3
-Message-ID: <10f740e80909160442w470f70cao28a3b6de3e5689b4@mail.gmail.com>
-Subject: Re: [PATCH 0/3] /proc/kmem cleanups and hwpoison bits
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org, sparclinux@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 16 Sep 2009 07:43:27 -0400
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Subject: [PATCH] media: video: pwc: Use kernel's simple_strtol()
+Date: Wed, 16 Sep 2009 14:42:27 +0300
+Message-Id: <1253101347-25038-1-git-send-email-andy.shevchenko@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
+X-OriginalArrivalTime: 16 Sep 2009 11:42:29.0935 (UTC) FILETIME=[C58C6BF0:01CA36C2]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 13:26, Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> On Wed, 16 Sep 2009, Geert Uytterhoeven wrote:
->> On Tue, Sep 15, 2009 at 12:16, Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
->> > Warning: it may be rubbish, it may just be a hack which appeared to
->> > work for me the last time I tried, on a particular address range of a
->> > particular set of configurations of a particular set of architectures
->> > (x86_32, x86_64, powerpc64).  I've never thought it through enough to
->> > consider submitting, but it _might_ contain something useful for you
->> > to factor into your own efforts.
->> >
->> > Sorry for chucking it over the wall to you in this way, but I guess
->> > that's better than just sitting quietly on it for a few more years.
->> >
->> > Certainly-Not-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
->
-> I think that gives a good idea of the status of this patch:
-> I'm not making any policy decisions here or submitting to any tree.
+From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
 
-OK, that was my understanding, too.
+Change own implementation of atoi() by simple_strtol(x, NULL, 10).
 
-But I thought it would hurt to verify. You never know who's gonna take
-your patch and (try to) sneak it in ;-)
+Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+---
+ drivers/media/video/pwc/pwc-if.c |   13 +++----------
+ 1 files changed, 3 insertions(+), 10 deletions(-)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
+index f976df4..cb995c6 100644
+--- a/drivers/media/video/pwc/pwc-if.c
++++ b/drivers/media/video/pwc/pwc-if.c
+@@ -68,6 +68,7 @@
+ #endif
+ #include <linux/vmalloc.h>
+ #include <asm/io.h>
++#include <linux/kernel.h>		/* simple_strtol() */
+ 
+ #include "pwc.h"
+ #include "pwc-kiara.h"
+@@ -1916,17 +1917,9 @@ disconnect_out:
+ 	unlock_kernel();
+ }
+ 
+-/* *grunt* We have to do atoi ourselves :-( */
+-static int pwc_atoi(const char *s)
++static inline int pwc_atoi(const char *s)
+ {
+-	int k = 0;
+-
+-	k = 0;
+-	while (*s != '\0' && *s >= '0' && *s <= '9') {
+-		k = 10 * k + (*s - '0');
+-		s++;
+-	}
+-	return k;
++	return (int)simple_strtol(s, NULL, 10);
+ }
+ 
+ 
+-- 
+1.5.6.5
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
