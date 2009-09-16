@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759864AbZIPRAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759840AbZIPRDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759864AbZIPRAg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 13:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbZIPRAc
+	id S1759840AbZIPRDe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 13:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZIPRD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 13:00:32 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:49443 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753283AbZIPRAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 13:00:31 -0400
-Date: Wed, 16 Sep 2009 10:00:28 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: ipv4 regression in 2.6.31 ?
-Message-ID: <20090916100028.654f7893@nehalam>
-In-Reply-To: <20090916052304.GA4894@ff.dom.local>
-References: <20090914093128.4d709ff6@nehalam>
-	<20090915081354.GA10037@ff.dom.local>
-	<20090915155719.22bae41e@nehalam>
-	<20090916052304.GA4894@ff.dom.local>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Sep 2009 13:03:29 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:50735 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753544AbZIPRD2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 13:03:28 -0400
+Date: Wed, 16 Sep 2009 22:33:14 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: dipankar@in.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+Message-ID: <20090916170314.GH15538@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+ <1253016701.5506.73.camel@laptop>
+ <20090916152820.GA12571@in.ibm.com>
+ <1253115171.7180.1.camel@laptop>
+ <20090916162459.GB12571@in.ibm.com>
+ <1253118916.7180.6.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1253118916.7180.6.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009 05:23:04 +0000
-Jarek Poplawski <jarkao2@gmail.com> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-16 18:35:16]:
 
-> On Tue, Sep 15, 2009 at 03:57:19PM -0700, Stephen Hemminger wrote:
-> > On Tue, 15 Sep 2009 08:13:55 +0000
-> > Jarek Poplawski <jarkao2@gmail.com> wrote:
-> > 
-> > > On 14-09-2009 18:31, Stephen Hemminger wrote:
-> > > > On Mon, 14 Sep 2009 17:55:05 +0200
-> > > > Stephan von Krawczynski <skraw@ithnet.com> wrote:
-> > > > 
-> > > >> On Mon, 14 Sep 2009 15:57:03 +0200
-> > > >> Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> > > >>
-> > > >>> Stephan von Krawczynski a A~(c)crit :
-> > > >>>> Hello all,
-> > > ...
-> > > >>> rp_filter - INTEGER
-> > > >>>         0 - No source validation.
-> > > >>>         1 - Strict mode as defined in RFC3704 Strict Reverse Path
-> > > >>>             Each incoming packet is tested against the FIB and if the interface
-> > > >>>             is not the best reverse path the packet check will fail.
-> > > >>>             By default failed packets are discarded.
-> > > >>>         2 - Loose mode as defined in RFC3704 Loose Reverse Path
-> > > >>>             Each incoming packet's source address is also tested against the FIB
-> > > >>>             and if the source address is not reachable via any interface
-> > > >>>             the packet check will fail.
-> > > ...
-> > > > RP filter did not work correctly in 2.6.30. The code added to to the loose
-> > > > mode caused a bug; the rp_filter value was being computed as:
-> > > >   rp_filter = interface_value & all_value;
-> > > > So in order to get reverse path filter both would have to be set.
-> > > > 
-> > > > In 2.6.31 this was change to:
-> > > >    rp_filter = max(interface_value, all_value);
-> > > > 
-> > > > This was the intended behaviour, if user asks all interfaces to have rp
-> > > > filtering turned on, then set /proc/sys/net/ipv4/conf/all/rp_filter = 1
-> > > > or to turn on just one interface, set it for just that interface.
-> > > 
-> > > Alas this max() formula handles also cases where both values are set
-> > > and it doesn't look very natural/"user friendly" to me. Especially
-> > > with something like this: all_value = 2; interface_value = 1
-> > > Why would anybody care to bother with interface_value in such a case?
-> > > 
-> > > "All" suggests "default" in this context, so I'd rather expect
-> > > something like:
-> > >     rp_filter = interface_value ? : all_value;
-> > > which gives "the inteded behaviour" too, plus more...
-> > > 
-> > > We'd only need to add e.g.:
-> > >  0 - Default ("all") validation. (No source validation if "all" is 0).
-> > >  3 - No source validation on this interface.
-> > 
-> > More values == more confusion.
-> > I chose the maxconf() method to make rp_filter consistent with other
-> > multi valued variables (arp_announce and arp_ignore).
+> On Wed, 2009-09-16 at 21:54 +0530, Dipankar Sarma wrote:
 > 
-> This additional value is not necessary (it'd give as superpowers).
-> Max seems logical to me only when values are sorted (especially if
-> max is the strictest).
+> > No, for this specific case, latency isn't an issue. The issue is -
+> > how do we cede unused vcpus to hypervisor for better energy management ?
+> > Yes, it can be done by a hypervisor manager telling the kernel to
+> > offline and make a bunch of vcpus "inactive". It does have to choose
+> > offline (release vcpu) vs. inactive (cede but guranteed if needed).
+> > The problem is that long ago we exported a lot of hotplug stuff to
+> > userspace through the sysfs interface and we cannot do something
+> > inside the kernel without keeping the sysfs stuff consistent.
+> > This seems like a sane way to do that without undoing all the
+> > virtual cpu hotplug infrastructure in different supporting archs.
+> 
+> I'm still not getting it..
+> 
+> Suppose we have some guest, it booted with 4 cpus.
+> 
+> We then offline 2 of them.
+> 
+> Apparently this LPAR binds guest cpus to physical cpus?
+> So we use a hypervisor interface to reclaim these 2 offlined cpus and
+> re-assign them to some other guest.
+> 
+> So far so good, right?
+> 
+> Now if you were to try and online the cpus in the guest, it'd fail
+> because the cpus aren't backed anymore, and the hot-plug simply
+> times-out and fails.
+> 
+> And we're still good, right?
 
-The values had to be unsorted because of the requirement to retain
-interface compatibility with older releases.
--- 
+The requirement differ here.  If we had offlined 2 vCPUs for the
+purpose of system reconfiguration, the expected behavior with offline
+interface will work right.  However the proposed cede interface is
+needed when we want them to temporarily go away but still come back
+when we do an online.  We want the online to always succeed since the
+backing physical resources are not relinquished.  The proposed
+interface facilitates offline without relinquishing the physical
+resources assigned to LPARs.
+
+--Vaidy
+
