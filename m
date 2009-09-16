@@ -1,83 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbZIPASt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbZIPAYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbZIPASt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 20:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbZIPASn
+	id S1757962AbZIPAYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 20:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZIPAYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 20:18:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33124 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752155AbZIPASn (ORCPT
+	Tue, 15 Sep 2009 20:24:11 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:19717 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753141AbZIPAYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 20:18:43 -0400
-Date: Tue, 15 Sep 2009 17:18:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: dedekind1@gmail.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       kmpark@infradead.org, linux-mtd@lists.infradead.org
-Subject: Re: 2.6.32 -mm merge plans
-Message-Id: <20090915171826.4bd7f1d4.akpm@linux-foundation.org>
-In-Reply-To: <20090916000357.GD23923@linux-sh.org>
-References: <20090915161535.db0a6904.akpm@linux-foundation.org>
-	<20090916000357.GD23923@linux-sh.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 20:24:10 -0400
+X-Trace: 259194392/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.4.183/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.4.183
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAIjMr0pPRQS3/2dsb2JhbACBU94KhBcF
+X-IronPort-AV: E=Sophos;i="4.44,393,1249254000"; 
+   d="scan'208";a="259194392"
+Date: Wed, 16 Sep 2009 01:23:26 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Ingo Molnar <mingo@elte.hu>
+cc: Yinghai Lu <yinghai@kernel.org>, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Xiao Guangrong <xiaooguangrong@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: reservetop fix disables mem=
+In-Reply-To: <20090824182713.GB9785@elte.hu>
+Message-ID: <Pine.LNX.4.64.0909160117260.6814@sister.anvils>
+References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils>
+ <4A92D029.8090807@kernel.org> <20090824182713.GB9785@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009 09:03:57 +0900
-Paul Mundt <lethal@linux-sh.org> wrote:
-
-> On Tue, Sep 15, 2009 at 04:15:35PM -0700, Andrew Morton wrote:
-> > mtd-make-onenand-genericc-more-generic.patch
-> > mtd-nand-add-page-parameter-to-all-read_page-read_page_raw-apis.patch
-> > mtd-nand-add-new-ecc-mode-ecc_hw_oob_first.patch
-> > mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips.patch
-> > mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips-update.patch
-> > mtd-jffs2-fix-read-buffer-overflow.patch
-> > mtd-prevent-a-read-from-eraseregions.patch
-> > mtd-prevent-a-read-from-regions.patch
-> > mtd-jedec_probe-fix-nec-upd29f064115-detection.patch
-> > mtdpart-memory-accessor-interface-for-mtd-layer.patch
+On Mon, 24 Aug 2009, Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> > Hugh Dickins wrote:
+> > > I find the "mem=" boot parameter disabled in today's linux-next:
+> > > reverting the tip commit below fixes that.
+> > > 
+> > > Hugh
+> > > 
+> > > From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> > > Date: Thu, 20 Aug 2009 12:23:11 +0000 (+0800)
+> > > Subject: x86: Fix system crash when loading with "reservetop" parameter
+> > > X-Git-Url: http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fmingo%2Flinux-2.6-x86.git;a=commitdiff_plain;h=8126dec32738421afa362114337331337b4be17f
+> > > 
+> > > x86: Fix system crash when loading with "reservetop" parameter
+> > > 
+> > > The system will die if the kernel is booted with "reservetop"
+> > > parameter, in present code, parse "reservetop" parameter after
+> > > early_ioremap_init(), and some function still use
+> > > early_ioremap() after it.
+> > > 
+> > > The problem is, "reservetop" parameter can modify
+> > > 'FIXADDR_TOP', then the virtual address got by early_ioremap()
+> > > is base on old 'FIXADDR_TOP', but the page mapping is base on
+> > > new 'FIXADDR_TOP', it will occur page fault, and the IDT is not
+> > > prepare yet, so, the system is dead.
+> > > 
+> > > So, put parse_early_param() in the front of
+> > > early_ioremap_init() in this patch.
+> > > 
+> > > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> > > Cc: yinghai@kernel.org
+> > > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > > LKML-Reference: <4A8D402F.4080805@cn.fujitsu.com>
+> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > ---
+> > > 
+> > > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> > > index 63f32d2..02643cc 100644
+> > > --- a/arch/x86/kernel/setup.c
+> > > +++ b/arch/x86/kernel/setup.c
+> > > @@ -711,6 +711,11 @@ void __init setup_arch(char **cmdline_p)
+> > >  	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+> > >  #endif
+> > >  
+> > > +	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
+> > > +	*cmdline_p = command_line;
+> > > +
+> > > +	parse_early_param();
+> > > +
+> > >  	/* VMI may relocate the fixmap; do this before touching ioremap area */
+> > >  	vmi_init();
+> > >  
+> > > @@ -793,11 +798,6 @@ void __init setup_arch(char **cmdline_p)
+> > >  #endif
+> > >  #endif
+> > >  
+> > > -	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
+> > > -	*cmdline_p = command_line;
+> > > -
+> > > -	parse_early_param();
+> > > -
+> > >  #ifdef CONFIG_X86_64
+> > >  	check_efer();
+> > >  #endif
 > > 
-> >   -> dwmw2
+> > yes, that patch will break other built-in command too.
 > > 
-> Regarding mtd-make-onenand-genericc-more-generic.patch, I'm not really
-> sure what happened. To recap:
+> > need drop that patch.
 > 
-> It was posted to the mtd list here:
-> 
-> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026805.html
-> 
-> Kyungmin objected to the driver name change here:
-> 
-> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026807.html
-> 
-> I pointed out that the rough rationale for the name change here:
-> 
-> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026808.html
-> 
-> and offered to redo the patch keeping the old name if Kyungmin felt the
-> rationale wasn't valid, but received no reply. Subsequently, Artem
-> mentioned that he had merged it in to his l2-mtd-2.6.git tree here:
-> 
-> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026866.html
-> 
-> which subsequently seems to not actually have happened.
-> 
-> This is a pretty trivial patch, and I don't mind respinning it in
-> whatever form folks are content with. I had assumed given the mention
-> that it had been merged in to the l2 tree that the rationale was
-> sufficient for merging.
+> done. Was nervous about the patch already:
 
-I don't think that Artem's tree is in linux-next, so I have no
-visibility of what's happening with that patch.
+Somehow it seems to have undropped itself, so mem= stopped working
+again in recent mmotm/linux-next; and it looks like today the
+undropped patch has made its way to Linus - I've not built current
+git to check, but I think you'll find mem= is now broken there.
 
-I do think that Artem's tree should be in linux-next.
+Hugh
 
-I guess I'll just hose the patch at dwmw2 and will see what happens.  I
-sent it on Aug 6, with no effect.
-
+> 
+>   http://lkml.org/lkml/2009/8/21/127
+> 
+> > also the problem was caused by vmi patch, and that commit should 
+> > be reverted.
+> >
+> > commit ae8d04e2ecbb233926860e9ce145eac19c7835dc
+> > Author: Zachary Amsden <zach@vmware.com>
+> > Date:   Sat Dec 13 12:36:58 2008 -0800
+> > 
+> >     x86 Fix VMI crash on boot in 2.6.28-rc8
+> >     
+> >     VMI initialiation can relocate the fixmap, causing early_ioremap to
+> >     malfunction if it is initialized before the relocation.  To fix this,
+> >     VMI activation is split into two phases; the detection, which must
+> >     happen before setting up ioremap, and the activation, which must happen
+> >     after parsing early boot parameters.
+> >     
+> >     This fixes a crash on boot when VMI is enabled under VMware.
+> >     
+> >     Signed-off-by: Zachary Amsden <zach@vmware.com>
+> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > 
+> > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> > index 9d5674f..bdec76e 100644
+> > --- a/arch/x86/kernel/setup.c
+> > +++ b/arch/x86/kernel/setup.c
+> > @@ -794,6 +794,9 @@ void __init setup_arch(char **cmdline_p)
+> >         printk(KERN_INFO "Command line: %s\n", boot_command_line);
+> >  #endif
+> >  
+> > +       /* VMI may relocate the fixmap; do this before touching ioremap area */
+> > +       vmi_init();
+> > +
+> >         early_cpu_init();
+> >         early_ioremap_init();
+> >  
+> > @@ -880,13 +883,8 @@ void __init setup_arch(char **cmdline_p)
+> >         check_efer();
+> >  #endif
+> >  
+> > -#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
+> > -       /*
+> > -        * Must be before kernel pagetables are setup
+> > -        * or fixmap area is touched.
+> > -        */
+> > -       vmi_init();
+> > -#endif
+> > +       /* Must be before kernel pagetables are setup */
+> > +       vmi_activate();
+> >  
+> >         /* after early param, so could get panic from serial */
+> >         reserve_early_setup_data();
+> > 
+> > 
+> > and according to
+> > http://lkml.org/lkml/2008/12/10/388
+> > http://lkml.org/lkml/2008/12/10/456
+> > 
+> > Zachary should split reserve_top_address() to two functions... 
+> > before sending that patch to Linus
+> 
+> mind looking at this yourself if interested? Zachary has not been 
+> active for quite some time.
+> 
+> 	Ingo
