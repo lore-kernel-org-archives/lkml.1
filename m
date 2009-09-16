@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZIPNnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbZIPNnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbZIPNnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZIPNnQ
+	id S1756832AbZIPNnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZIPNnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:43:16 -0400
-Received: from kroah.org ([198.145.64.141]:60670 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 09:43:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44373 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751617AbZIPNnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 09:43:16 -0400
-Date: Wed, 16 Sep 2009 06:41:15 -0700
-From: Greg KH <greg@kroah.com>
-To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       stable-review@kernel.org
-Subject: Re: [patch 00/74] 2.6.30.5-stable review
-Message-ID: <20090916134115.GA24965@kroah.com>
-References: <20090813195705.GA22393@kroah.com>
- <4A850395.4050204@pardus.org.tr>
- <20090814161523.GA11228@suse.de>
- <4A85984A.3050808@pardus.org.tr>
- <20090915230140.GA24848@kroah.com>
- <4AB08434.10002@pardus.org.tr>
+	id S1752199AbZIPNno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 09:43:44 -0400
+Date: Wed, 16 Sep 2009 15:43:46 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 10/16] writeback: splice dirty inode entries to default
+	bdi on bdi_destroy()
+Message-ID: <20090916134346.GM26030@duck.suse.cz>
+References: <1253107494-20160-1-git-send-email-jens.axboe@oracle.com> <1253107494-20160-11-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AB08434.10002@pardus.org.tr>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1253107494-20160-11-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 09:22:44AM +0300, Ozan Çağlayan wrote:
-> Greg KH wrote On 16-09-2009 02:01:
-> > Ugh, with .31 out, all of these are just not worth adding to the tree
-> > anymore, I'd like to only make one more .30 release, so if we can not
-> > include these, it makes my life a lot easier.
-> >   
-> By one more .30 release do you mean .8 or .7?
+On Wed 16-09-09 15:24:48, Jens Axboe wrote:
+> We cannot safely ensure that the inodes are all gone at this point
+> in time, and we must not destroy this bdi with inodes having off it.
+> So just splice our entries to the default bdi since that one will
+> always persist.
+  I'd at least add a comment like
+"XXX: This is probably a bug but let's workaround it for now."
+  And either remove the code or update the comment when this gets resolved.
 
-.8.
-
-thanks,
-
-greg k-h
+								Honza 
+> 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  mm/backing-dev.c |   14 +++++++++++++-
+>  1 files changed, 13 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+> index fd93566..3d3accb 100644
+> --- a/mm/backing-dev.c
+> +++ b/mm/backing-dev.c
+> @@ -668,7 +668,19 @@ void bdi_destroy(struct backing_dev_info *bdi)
+>  {
+>  	int i;
+>  
+> -	WARN_ON(bdi_has_dirty_io(bdi));
+> +	/*
+> +	 * Splice our entries to the default_backing_dev_info, if this
+> +	 * bdi disappears
+> +	 */
+> +	if (bdi_has_dirty_io(bdi)) {
+> +		struct bdi_writeback *dst = &default_backing_dev_info.wb;
+> +
+> +		spin_lock(&inode_lock);
+> +		list_splice(&bdi->wb.b_dirty, &dst->b_dirty);
+> +		list_splice(&bdi->wb.b_io, &dst->b_io);
+> +		list_splice(&bdi->wb.b_more_io, &dst->b_more_io);
+> +		spin_unlock(&inode_lock);
+> +	}
+>  
+>  	bdi_unregister(bdi);
+>  
+> -- 
+> 1.6.4.1.207.g68ea
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
