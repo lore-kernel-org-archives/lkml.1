@@ -1,96 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZIPCw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZIPCyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbZIPCw2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 22:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZIPCwW
+	id S1754621AbZIPCyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 22:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZIPCye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 22:52:22 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47761 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbZIPCwW (ORCPT
+	Tue, 15 Sep 2009 22:54:34 -0400
+Received: from mail-yw0-f180.google.com ([209.85.211.180]:36769 "EHLO
+	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbZIPCyd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 22:52:22 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 16 Sep 2009 11:50:15 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 2/3] devmem: check vmalloc address on kmem read/write
-Message-Id: <20090916115015.0aeddc01.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090916014958.836124324@intel.com>
-References: <20090916013939.656308742@intel.com>
-	<20090916014958.836124324@intel.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 22:54:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Sp3FKQg/qG87Ed52ep6A5VrPcS8hkFY6ZHE3ZCzvSiDWCAMOgtoIWpF/grEF6IoGWC
+         MPecCC45MfSPLelGp5KDkHfCupPJabU4VR3Wtn1Sv4jxOdJW6PnPZWXhzQeTMm4zbqrV
+         LPNGNKcgSWbmADzbHPEuZvgerSFhtc/J8sBeg=
+MIME-Version: 1.0
+In-Reply-To: <1252967767.11643.286.camel@desktop>
+References: <1252958896-25150-1-git-send-email-vapier@gentoo.org> 
+	<1252961412.11643.215.camel@desktop> <8bd0f97a0909141357y60d7807bm99146d757e6f61da@mail.gmail.com> 
+	<1252962263.11643.232.camel@desktop> <8bd0f97a0909141407i26b39f9bq133a62be381601b5@mail.gmail.com> 
+	<1252963292.11643.259.camel@desktop> <8bd0f97a0909141517i3535bb84j4cbac0cd986d4914@mail.gmail.com> 
+	<1252967767.11643.286.camel@desktop>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 15 Sep 2009 22:54:17 -0400
+Message-ID: <8bd0f97a0909151954k1061f92dhbc6dcd7a6ccdcdd@mail.gmail.com>
+Subject: Re: [PATCH 00/72] Blackfin updates for 2.6.32
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009 09:39:41 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Mon, Sep 14, 2009 at 18:36, Daniel Walker wrote:
+> On Mon, 2009-09-14 at 18:17 -0400, Mike Frysinger wrote:
+>> this code i had rewritten and as fallout, the style changed.  looks
+>> fine to me, and no, this particular checpatch "error" is not always
+>> worthwhile (like in this case).
+>
+> Have you read Documentation/CodingStyle ? Can you better explain why
+> your don't want to follow that document ? Most people accept that to be
+> the style of code in Linux, and that is what checkpatch checks for..
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Otherwise vmalloc_to_page() will BUG().
-> 
-> This also makes the kmem read/write implementation aligned with mem(4):
-> "References to nonexistent locations cause errors to be returned." Here
-> we return -ENXIO (inspired by Hugh) if no bytes have been transfered
-> to/from user space, otherwise return partial read/write results.
-> 
-seems reasonable.
-
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-> CC: Greg Kroah-Hartman <gregkh@suse.de>
-> CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  drivers/char/mem.c |    8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> --- linux-mm.orig/drivers/char/mem.c	2009-09-16 08:52:17.000000000 +0800
-> +++ linux-mm/drivers/char/mem.c	2009-09-16 09:15:03.000000000 +0800
-> @@ -443,6 +443,10 @@ static ssize_t read_kmem(struct file *fi
->  			return -ENOMEM;
->  		while (count > 0) {
->  			sz = size_inside_page(p, count);
-> +			if (!is_vmalloc_or_module_addr((void *)p)) {
-> +				err = -ENXIO;
-> +				break;
-> +			}
->  			err = vread(kbuf, (char *)p, sz);
->  			if (err)
->  				break;
-> @@ -543,6 +547,10 @@ static ssize_t write_kmem(struct file * 
->  			unsigned long sz = size_inside_page(p, count);
->  			unsigned long n;
->  
-> +			if (!is_vmalloc_or_module_addr((void *)p)) {
-> +				err = -ENXIO;
-> +				break;
-> +			}
->  			n = copy_from_user(kbuf, buf, sz);
->  			if (n) {
->  				err = -EFAULT;
-> 
-> -- 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+sorry, never heard of Documentation/
+-mike
