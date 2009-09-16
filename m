@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbZIPNRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751517AbZIPNVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759038AbZIPNRl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZIPNRl
+	id S1751517AbZIPNVH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZIPNVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:17:41 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34544 "EHLO smtps.tip.net.au"
+	Wed, 16 Sep 2009 09:21:06 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35008 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751653AbZIPNRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 09:17:40 -0400
-Date: Wed, 16 Sep 2009 23:17:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.32 -mm Blackfin patches
-Message-Id: <20090916231735.50c6a742.sfr@canb.auug.org.au>
-In-Reply-To: <8bd0f97a0909160553r4dae0eb7j345dea2a68fa4310@mail.gmail.com>
-References: <8bd0f97a0909152056h61bfc487g6b8631966c6d72be@mail.gmail.com>
-	<20090915211810.d1b83015.akpm@linux-foundation.org>
-	<8bd0f97a0909152124n186278feja97a7257548b3eb7@mail.gmail.com>
-	<20090916160651.88b10377.sfr@canb.auug.org.au>
-	<8bd0f97a0909160553r4dae0eb7j345dea2a68fa4310@mail.gmail.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__16_Sep_2009_23_17_35_+1000_TySD/VF5g95ZaKAo"
+	id S1750696AbZIPNVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 09:21:05 -0400
+Date: Wed, 16 Sep 2009 15:21:08 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 10/11] writeback: splice dirty inode entries to default
+	bdi on bdi_destroy()
+Message-ID: <20090916132108.GP23126@kernel.dk>
+References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com> <1253038617-30204-11-git-send-email-jens.axboe@oracle.com> <20090916131249.GG26030@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090916131249.GG26030@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__16_Sep_2009_23_17_35_+1000_TySD/VF5g95ZaKAo
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Sep 16 2009, Jan Kara wrote:
+> On Tue 15-09-09 20:16:56, Jens Axboe wrote:
+> > We cannot safely ensure that the inodes are all gone at this point
+> > in time, and we must not destroy this bdi with inodes having off it.
+>                                                         ^^^ hanging
+> 
+> > So just splice our entries to the default bdi since that one will
+> > always persist.
+>   BTW: Why can't we make sure all inodes on the BDI are clean when we
+> destroy it? Common sence would suggest that we better should be able to do
+> it :).
+>   Maybe it's because most users of private BDI do not call bdi_unregister
+> but rather directly bdi_destroy? Is this correct behavior?
 
-Hi Mike,
+Not sure yet, it's on the TODO. This basically works around the problem
+for now at least. With dm at least, I'm seeing inodes still hanging off
+the bdi after we have done a sync_blockdev(bdev, 1);.
 
-On Wed, 16 Sep 2009 08:53:46 -0400 Mike Frysinger <vapier.adi@gmail.com> wr=
-ote:
->
-> ok, please replace the current Blackfin tree:
->     git://git.kernel.org/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.g=
-it#for-linus
-> with my Blackfin tree:
->     git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin.git#for=
--linus
->=20
-> and i'll try to keep it updated
+-- 
+Jens Axboe
 
-Done. It will be in tomorrow's linux-next.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__16_Sep_2009_23_17_35_+1000_TySD/VF5g95ZaKAo
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqw5W8ACgkQjjKRsyhoI8zhdwCfag52Bv1/Iw/ys7hnDOfaKvpa
-EAcAniLwOpmF2mvY/GZPmdhBBuf+ZCGz
-=aiG3
------END PGP SIGNATURE-----
-
---Signature=_Wed__16_Sep_2009_23_17_35_+1000_TySD/VF5g95ZaKAo--
