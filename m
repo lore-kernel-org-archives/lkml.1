@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933648AbZIPWkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760519AbZIPWml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933648AbZIPWkf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933619AbZIPWkZ
+	id S1760519AbZIPWml (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933653AbZIPWkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:40:25 -0400
-Received: from kroah.org ([198.145.64.141]:48984 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:40:37 -0400
+Received: from kroah.org ([198.145.64.141]:48988 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760381AbZIPWkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:40:04 -0400
+	id S1760384AbZIPWkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:40:05 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:17 2009
-Message-Id: <20090916223716.909441419@mini.kroah.org>
+Message-Id: <20090916223717.042342662@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:38 -0700
+Date: Wed, 16 Sep 2009 15:36:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [patch 25/45] mlx4_core: Allocate and map sufficient ICM memory for EQ context
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 26/45] perf stat: Change noise calculation to use stddev
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=mlx4_core-allocate-and-map-sufficient-icm-memory-for-eq-context.patch
+Content-Disposition: inline; filename=perf-stat-change-noise-calculation-to-use-stddev.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,148 +29,290 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Roland Dreier <rolandd@cisco.com>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-commit fa0681d2129732027355d6b7083dd8932b9b799d upstream.
+commit 506d4bc8d5dab20d84624aa07cdc6dcd77915d52 upstream.
 
-The current implementation allocates a single host page for EQ context
-memory, which was OK when we only allocated a few EQs.  However, since
-we now allocate an EQ for each CPU core, this patch removes the
-hard-coded limit (which we exceed with 4 KB pages and 128 byte EQ
-context entries with 32 CPUs) and uses the same ICM table code as all
-other context tables, which ends up simplifying the code quite a bit
-while fixing the problem.
+The current noise computation does:
 
-This problem was actually hit in practice on a dual-socket Nehalem box
-with 16 real hardware threads and sufficiently odd ACPI tables that it
-shows on boot
+ \Sum abs(n_i - avg(n)) * N^-1.5
 
-    SMP: Allowing 32 CPUs, 16 hotplug CPUs
+Which is (afaik) not a regular noise function, and needs the
+complete sample set available to post-process.
 
-so num_possible_cpus() ends up 32, and mlx4 ends up creating 33 MSI-X
-interrupts and 33 EQs.  This mlx4 bug means that mlx4 can't even
-initialize at all on this quite mainstream system.
+Change this to use a regular stddev computation which can be
+done by keeping a two sums:
 
-Reported-by: Eli Cohen <eli@mellanox.co.il>
-Tested-by: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+ stddev = sqrt( 1/N (\Sum n_i^2) - avg(n)^2 )
+
+For which we only need to keep \Sum n_i and \Sum n_i^2.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: <stable@kernel.org>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/mlx4/eq.c   |   42 ------------------------------------------
- drivers/net/mlx4/main.c |    9 ++++++---
- drivers/net/mlx4/mlx4.h |    7 +------
- 3 files changed, 7 insertions(+), 51 deletions(-)
+ tools/perf/builtin-stat.c |  170 ++++++++++++++++++----------------------------
+ 1 file changed, 69 insertions(+), 101 deletions(-)
 
---- a/drivers/net/mlx4/eq.c
-+++ b/drivers/net/mlx4/eq.c
-@@ -526,48 +526,6 @@ static void mlx4_unmap_clr_int(struct ml
- 	iounmap(priv->clr_base);
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -82,19 +82,32 @@ static u64			runtime_cycles[MAX_RUN];
+ static u64			event_res[MAX_RUN][MAX_COUNTERS][3];
+ static u64			event_scaled[MAX_RUN][MAX_COUNTERS];
+ 
+-static u64			event_res_avg[MAX_COUNTERS][3];
+-static u64			event_res_noise[MAX_COUNTERS][3];
++struct stats
++{
++	double sum;
++	double sum_sq;
++};
+ 
+-static u64			event_scaled_avg[MAX_COUNTERS];
++static double avg_stats(struct stats *stats)
++{
++	return stats->sum / run_count;
++}
+ 
+-static u64			runtime_nsecs_avg;
+-static u64			runtime_nsecs_noise;
++/*
++ * stddev = sqrt(1/N (\Sum n_i^2) - avg(n)^2)
++ */
++static double stddev_stats(struct stats *stats)
++{
++	double avg = stats->sum / run_count;
+ 
+-static u64			walltime_nsecs_avg;
+-static u64			walltime_nsecs_noise;
++	return sqrt(stats->sum_sq/run_count - avg*avg);
++}
+ 
+-static u64			runtime_cycles_avg;
+-static u64			runtime_cycles_noise;
++struct stats			event_res_stats[MAX_COUNTERS][3];
++struct stats			event_scaled_stats[MAX_COUNTERS];
++struct stats			runtime_nsecs_stats;
++struct stats			walltime_nsecs_stats;
++struct stats			runtime_cycles_stats;
+ 
+ #define MATCH_EVENT(t, c, counter)			\
+ 	(attrs[counter].type == PERF_TYPE_##t &&	\
+@@ -278,42 +291,37 @@ static int run_perf_stat(int argc __used
+ 	return WEXITSTATUS(status);
  }
  
--int mlx4_map_eq_icm(struct mlx4_dev *dev, u64 icm_virt)
--{
--	struct mlx4_priv *priv = mlx4_priv(dev);
--	int ret;
--
--	/*
--	 * We assume that mapping one page is enough for the whole EQ
--	 * context table.  This is fine with all current HCAs, because
--	 * we only use 32 EQs and each EQ uses 64 bytes of context
--	 * memory, or 1 KB total.
--	 */
--	priv->eq_table.icm_virt = icm_virt;
--	priv->eq_table.icm_page = alloc_page(GFP_HIGHUSER);
--	if (!priv->eq_table.icm_page)
--		return -ENOMEM;
--	priv->eq_table.icm_dma  = pci_map_page(dev->pdev, priv->eq_table.icm_page, 0,
--					       PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);
--	if (pci_dma_mapping_error(dev->pdev, priv->eq_table.icm_dma)) {
--		__free_page(priv->eq_table.icm_page);
--		return -ENOMEM;
--	}
--
--	ret = mlx4_MAP_ICM_page(dev, priv->eq_table.icm_dma, icm_virt);
--	if (ret) {
--		pci_unmap_page(dev->pdev, priv->eq_table.icm_dma, PAGE_SIZE,
--			       PCI_DMA_BIDIRECTIONAL);
--		__free_page(priv->eq_table.icm_page);
--	}
--
--	return ret;
--}
--
--void mlx4_unmap_eq_icm(struct mlx4_dev *dev)
--{
--	struct mlx4_priv *priv = mlx4_priv(dev);
--
--	mlx4_UNMAP_ICM(dev, priv->eq_table.icm_virt, 1);
--	pci_unmap_page(dev->pdev, priv->eq_table.icm_dma, PAGE_SIZE,
--		       PCI_DMA_BIDIRECTIONAL);
--	__free_page(priv->eq_table.icm_page);
--}
--
- int mlx4_alloc_eq_table(struct mlx4_dev *dev)
+-static void print_noise(u64 *count, u64 *noise)
++static void print_noise(double avg, double stddev)
  {
- 	struct mlx4_priv *priv = mlx4_priv(dev);
---- a/drivers/net/mlx4/main.c
-+++ b/drivers/net/mlx4/main.c
-@@ -525,7 +525,10 @@ static int mlx4_init_icm(struct mlx4_dev
- 		goto err_unmap_aux;
+ 	if (run_count > 1)
+-		fprintf(stderr, "   ( +- %7.3f%% )",
+-			(double)noise[0]/(count[0]+1)*100.0);
++		fprintf(stderr, "   ( +- %7.3f%% )", 100*stddev / avg);
+ }
+ 
+-static void nsec_printout(int counter, u64 *count, u64 *noise)
++static void nsec_printout(int counter, double avg, double stddev)
+ {
+-	double msecs = (double)count[0] / 1000000;
++	double msecs = avg / 1e6;
+ 
+ 	fprintf(stderr, " %14.6f  %-24s", msecs, event_name(counter));
+ 
+ 	if (MATCH_EVENT(SOFTWARE, SW_TASK_CLOCK, counter)) {
+-		if (walltime_nsecs_avg)
+-			fprintf(stderr, " # %10.3f CPUs ",
+-				(double)count[0] / (double)walltime_nsecs_avg);
++		fprintf(stderr, " # %10.3f CPUs ",
++				avg / avg_stats(&walltime_nsecs_stats));
+ 	}
+-	print_noise(count, noise);
++	print_noise(avg, stddev);
+ }
+ 
+-static void abs_printout(int counter, u64 *count, u64 *noise)
++static void abs_printout(int counter, double avg, double stddev)
+ {
+-	fprintf(stderr, " %14Ld  %-24s", count[0], event_name(counter));
++	fprintf(stderr, " %14.0f  %-24s", avg, event_name(counter));
+ 
+-	if (runtime_cycles_avg &&
+-	    MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter)) {
++	if (MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter)) {
+ 		fprintf(stderr, " # %10.3f IPC  ",
+-			(double)count[0] / (double)runtime_cycles_avg);
++				avg / avg_stats(&runtime_cycles_stats));
+ 	} else {
+-		if (runtime_nsecs_avg) {
+-			fprintf(stderr, " # %10.3f M/sec",
+-				(double)count[0]/runtime_nsecs_avg*1000.0);
+-		}
++		fprintf(stderr, " # %10.3f M/sec",
++				1000.0 * avg / avg_stats(&runtime_nsecs_stats));
+ 	}
+-	print_noise(count, noise);
++	print_noise(avg, stddev);
+ }
+ 
+ /*
+@@ -321,12 +329,12 @@ static void abs_printout(int counter, u6
+  */
+ static void print_counter(int counter)
+ {
+-	u64 *count, *noise;
++	double avg, stddev;
+ 	int scaled;
+ 
+-	count = event_res_avg[counter];
+-	noise = event_res_noise[counter];
+-	scaled = event_scaled_avg[counter];
++	avg    = avg_stats(&event_res_stats[counter][0]);
++	stddev = stddev_stats(&event_res_stats[counter][0]);
++	scaled = avg_stats(&event_scaled_stats[counter]);
+ 
+ 	if (scaled == -1) {
+ 		fprintf(stderr, " %14s  %-24s\n",
+@@ -335,36 +343,34 @@ static void print_counter(int counter)
  	}
  
--	err = mlx4_map_eq_icm(dev, init_hca->eqc_base);
-+	err = mlx4_init_icm_table(dev, &priv->eq_table.table,
-+				  init_hca->eqc_base, dev_cap->eqc_entry_sz,
-+				  dev->caps.num_eqs, dev->caps.num_eqs,
-+				  0, 0);
- 	if (err) {
- 		mlx4_err(dev, "Failed to map EQ context memory, aborting.\n");
- 		goto err_unmap_cmpt;
-@@ -668,7 +671,7 @@ err_unmap_mtt:
- 	mlx4_cleanup_icm_table(dev, &priv->mr_table.mtt_table);
+ 	if (nsec_counter(counter))
+-		nsec_printout(counter, count, noise);
++		nsec_printout(counter, avg, stddev);
+ 	else
+-		abs_printout(counter, count, noise);
++		abs_printout(counter, avg, stddev);
++
++	if (scaled) {
++		double avg_enabled, avg_running;
++
++		avg_enabled = avg_stats(&event_res_stats[counter][1]);
++		avg_running = avg_stats(&event_res_stats[counter][2]);
  
- err_unmap_eq:
--	mlx4_unmap_eq_icm(dev);
-+	mlx4_cleanup_icm_table(dev, &priv->eq_table.table);
+-	if (scaled)
+ 		fprintf(stderr, "  (scaled from %.2f%%)",
+-			(double) count[2] / count[1] * 100);
++				100 * avg_running / avg_enabled);
++	}
  
- err_unmap_cmpt:
- 	mlx4_cleanup_icm_table(dev, &priv->eq_table.cmpt_table);
-@@ -698,11 +701,11 @@ static void mlx4_free_icms(struct mlx4_d
- 	mlx4_cleanup_icm_table(dev, &priv->qp_table.qp_table);
- 	mlx4_cleanup_icm_table(dev, &priv->mr_table.dmpt_table);
- 	mlx4_cleanup_icm_table(dev, &priv->mr_table.mtt_table);
-+	mlx4_cleanup_icm_table(dev, &priv->eq_table.table);
- 	mlx4_cleanup_icm_table(dev, &priv->eq_table.cmpt_table);
- 	mlx4_cleanup_icm_table(dev, &priv->cq_table.cmpt_table);
- 	mlx4_cleanup_icm_table(dev, &priv->srq_table.cmpt_table);
- 	mlx4_cleanup_icm_table(dev, &priv->qp_table.cmpt_table);
--	mlx4_unmap_eq_icm(dev);
+ 	fprintf(stderr, "\n");
+ }
  
- 	mlx4_UNMAP_ICM_AUX(dev);
- 	mlx4_free_icm(dev, priv->fw.aux_icm, 0);
---- a/drivers/net/mlx4/mlx4.h
-+++ b/drivers/net/mlx4/mlx4.h
-@@ -205,9 +205,7 @@ struct mlx4_eq_table {
- 	void __iomem	      **uar_map;
- 	u32			clr_mask;
- 	struct mlx4_eq	       *eq;
--	u64			icm_virt;
--	struct page	       *icm_page;
--	dma_addr_t		icm_dma;
-+	struct mlx4_icm_table	table;
- 	struct mlx4_icm_table	cmpt_table;
- 	int			have_irq;
- 	u8			inta_pin;
-@@ -373,9 +371,6 @@ u64 mlx4_make_profile(struct mlx4_dev *d
- 		      struct mlx4_dev_cap *dev_cap,
- 		      struct mlx4_init_hca_param *init_hca);
+-/*
+- * normalize_noise noise values down to stddev:
+- */
+-static void normalize_noise(u64 *val)
++static void update_stats(const char *name, int idx, struct stats *stats, u64 *val)
+ {
+-	double res;
++	double sq = *val;
  
--int mlx4_map_eq_icm(struct mlx4_dev *dev, u64 icm_virt);
--void mlx4_unmap_eq_icm(struct mlx4_dev *dev);
+-	res = (double)*val / (run_count * sqrt((double)run_count));
 -
- int mlx4_cmd_init(struct mlx4_dev *dev);
- void mlx4_cmd_cleanup(struct mlx4_dev *dev);
- void mlx4_cmd_event(struct mlx4_dev *dev, u16 token, u8 status, u64 out_param);
+-	*val = (u64)res;
+-}
+-
+-static void update_avg(const char *name, int idx, u64 *avg, u64 *val)
+-{
+-	*avg += *val;
++	stats->sum += *val;
++	stats->sum_sq += sq * sq;
+ 
+ 	if (verbose > 1)
+ 		fprintf(stderr, "debug: %20s[%d]: %Ld\n", name, idx, *val);
+ }
++
+ /*
+  * Calculate the averages and noises:
+  */
+@@ -376,61 +382,22 @@ static void calc_avg(void)
+ 		fprintf(stderr, "\n");
+ 
+ 	for (i = 0; i < run_count; i++) {
+-		update_avg("runtime", 0, &runtime_nsecs_avg, runtime_nsecs + i);
+-		update_avg("walltime", 0, &walltime_nsecs_avg, walltime_nsecs + i);
+-		update_avg("runtime_cycles", 0, &runtime_cycles_avg, runtime_cycles + i);
++		update_stats("runtime", 0, &runtime_nsecs_stats, runtime_nsecs + i);
++		update_stats("walltime", 0, &walltime_nsecs_stats, walltime_nsecs + i);
++		update_stats("runtime_cycles", 0, &runtime_cycles_stats, runtime_cycles + i);
+ 
+ 		for (j = 0; j < nr_counters; j++) {
+-			update_avg("counter/0", j,
+-				event_res_avg[j]+0, event_res[i][j]+0);
+-			update_avg("counter/1", j,
+-				event_res_avg[j]+1, event_res[i][j]+1);
+-			update_avg("counter/2", j,
+-				event_res_avg[j]+2, event_res[i][j]+2);
++			update_stats("counter/0", j,
++				event_res_stats[j]+0, event_res[i][j]+0);
++			update_stats("counter/1", j,
++				event_res_stats[j]+1, event_res[i][j]+1);
++			update_stats("counter/2", j,
++				event_res_stats[j]+2, event_res[i][j]+2);
+ 			if (event_scaled[i][j] != (u64)-1)
+-				update_avg("scaled", j,
+-					event_scaled_avg + j, event_scaled[i]+j);
+-			else
+-				event_scaled_avg[j] = -1;
+-		}
+-	}
+-	runtime_nsecs_avg /= run_count;
+-	walltime_nsecs_avg /= run_count;
+-	runtime_cycles_avg /= run_count;
+-
+-	for (j = 0; j < nr_counters; j++) {
+-		event_res_avg[j][0] /= run_count;
+-		event_res_avg[j][1] /= run_count;
+-		event_res_avg[j][2] /= run_count;
+-	}
+-
+-	for (i = 0; i < run_count; i++) {
+-		runtime_nsecs_noise +=
+-			abs((s64)(runtime_nsecs[i] - runtime_nsecs_avg));
+-		walltime_nsecs_noise +=
+-			abs((s64)(walltime_nsecs[i] - walltime_nsecs_avg));
+-		runtime_cycles_noise +=
+-			abs((s64)(runtime_cycles[i] - runtime_cycles_avg));
+-
+-		for (j = 0; j < nr_counters; j++) {
+-			event_res_noise[j][0] +=
+-				abs((s64)(event_res[i][j][0] - event_res_avg[j][0]));
+-			event_res_noise[j][1] +=
+-				abs((s64)(event_res[i][j][1] - event_res_avg[j][1]));
+-			event_res_noise[j][2] +=
+-				abs((s64)(event_res[i][j][2] - event_res_avg[j][2]));
++				update_stats("scaled", j,
++					event_scaled_stats + j, event_scaled[i]+j);
+ 		}
+ 	}
+-
+-	normalize_noise(&runtime_nsecs_noise);
+-	normalize_noise(&walltime_nsecs_noise);
+-	normalize_noise(&runtime_cycles_noise);
+-
+-	for (j = 0; j < nr_counters; j++) {
+-		normalize_noise(&event_res_noise[j][0]);
+-		normalize_noise(&event_res_noise[j][1]);
+-		normalize_noise(&event_res_noise[j][2]);
+-	}
+ }
+ 
+ static void print_stat(int argc, const char **argv)
+@@ -457,10 +424,11 @@ static void print_stat(int argc, const c
+ 
+ 	fprintf(stderr, "\n");
+ 	fprintf(stderr, " %14.9f  seconds time elapsed",
+-			(double)walltime_nsecs_avg/1e9);
++			avg_stats(&walltime_nsecs_stats)/1e9);
+ 	if (run_count > 1) {
+ 		fprintf(stderr, "   ( +- %7.3f%% )",
+-			100.0*(double)walltime_nsecs_noise/(double)walltime_nsecs_avg);
++				100*stddev_stats(&walltime_nsecs_stats) /
++				avg_stats(&walltime_nsecs_stats));
+ 	}
+ 	fprintf(stderr, "\n\n");
+ }
 
 
