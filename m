@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbZIPQl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbZIPQnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759827AbZIPQl3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759791AbZIPQlY
+	id S1759912AbZIPQnr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759852AbZIPQne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:41:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36392 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759801AbZIPQlU (ORCPT
+	Wed, 16 Sep 2009 12:43:34 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40116 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759815AbZIPQnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:41:20 -0400
-Date: Wed, 16 Sep 2009 09:40:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Roland Dreier <rdreier@cisco.com>
-cc: akpm@linux-foundation.org, jsquyres@cisco.com, linux-rdma@vger.kernel.org,
-       general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] please pull ummunotify
-In-Reply-To: <ada1vm6g8dq.fsf@cisco.com>
-Message-ID: <alpine.LFD.2.01.0909160939460.4950@localhost.localdomain>
-References: <aday6omhz9d.fsf@cisco.com> <ada1vm6g8dq.fsf@cisco.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Sep 2009 12:43:09 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH v2] Linker script cleanup for avr32
+Date: Wed, 16 Sep 2009 12:40:46 -0400
+Message-Id: <1253119247-19174-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an updated version of the patch series I sent in late July
+cleaning up the avr32 architecture's linker scripts.  The only change is
+that it is rebased on top of Linus's current master.
 
+This cross-architecture linker script cleanup project is in
+preparation for adding support for building the kernel with
+-ffunction-sections -fdata-sections, which is a prerequisite for
+Ksplice.
 
-On Wed, 16 Sep 2009, Roland Dreier wrote:
-> 
-> Sorry to hassle you about this, but I would like to know where things
-> stand.  I know (from the reflink discussion if nothing else) that you're
-> definitely not bashful about telling people when their code sucks, so
-> this silent treatment has me really flustered.  I've been showering and
-> brushing my teeth and everything, honest!
+Nelson Elhage (1):
+  avr32: clean up linker script using standard macros.
 
-I just haven't had time to look into the issue, so I'm merging the code 
-that I know I need to merge, and hopefully I'll have a breather later when 
-I can actually look at code and the thread it all spawned.,
+ arch/avr32/kernel/vmlinux.lds.S |   64 +++++---------------------------------
+ 1 files changed, 9 insertions(+), 55 deletions(-)
 
-		Linus
