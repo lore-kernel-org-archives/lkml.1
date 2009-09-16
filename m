@@ -1,38 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZIPG3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZIPGgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbZIPG3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 02:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZIPG3q
+	id S1756117AbZIPGgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 02:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZIPGgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 02:29:46 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:50228 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbZIPG3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 02:29:46 -0400
-Date: Wed, 16 Sep 2009 08:29:49 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: Limit blk_iopoll sysctl to CONFIG_BLOCK=y.
-Message-ID: <20090916062949.GA23126@kernel.dk>
-References: <20090916062627.GB5805@linux-sh.org>
+	Wed, 16 Sep 2009 02:36:21 -0400
+Received: from ns1.primeinteractive.net ([195.95.205.253]:56229 "EHLO
+	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbZIPGgU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 02:36:20 -0400
+Message-ID: <4AB08744.1020102@primeinteractive.net>
+Date: Wed, 16 Sep 2009 08:35:48 +0200
+From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090916062627.GB5805@linux-sh.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+CC: Jan Kara <jack@suse.cz>, Justin Maggard <jmaggard10@gmail.com>,
+       Eric Sandeen <sandeen@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: ext4+quota+nfs issue
+References: <4AA5E5F3.30309@primeinteractive.net> <4AA72C14.1020005@primeinteractive.net> <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz> <4AA7C38E.8020306@redhat.com> <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com> <4AA7FBD7.9080406@primeinteractive.net> <4AAA5FCC.2010707@primeinteractive.net> <20090914175056.GE25549@duck.suse.cz> <20090914185228.GA5984@skywalker.linux.vnet.ibm.com>
+In-Reply-To: <20090914185228.GA5984@skywalker.linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16 2009, Paul Mundt wrote:
-> blk_iopoll_enabled is defined in block/blk-iopoll.c, which is only built
-> in the CONFIG_BLOCK=y case. Make the sysctl depend on this, too.
-> 
-> Fixes up the CONFIG_BLOCK=n build.
+On 9/14/2009 8:52 PM, Aneesh Kumar K.V wrote:
+> On Mon, Sep 14, 2009 at 07:50:56PM +0200, Jan Kara wrote:
+>    
+>>    I've found some time to look into this and I can see a few problems in
+>> the code. Firstly, what may cause your problems:
+>>    vfs_dq_claim_blocks() is called in ext4_mb_mark_diskspace_used(). But
+>> as far as I can understand the code, ext4_mb_normalize_request() can
+>> increase the amount of space we really allocate and thus we try to
+>> allocate more blocks than we have actually reserved in quota. Aneesh, is
+>> that right?
+>>      
+> ext4_mb_mark_diskspace_used use ac->ac_b_ex.fe_len which is NOT the normalized
+> request len. it is min(allocated_len, original_len). So i guess that code
+> should be safe
+>
+>
+>    
+>>    Secondly, ext4_da_reserve_space() seems to have a bug that it can reserve
+>> quota blocks multiple times if ext4_claim_free_blocks() fail and we retry
+>> the allocation. We should release the quota reservation before restarting.
+>> Actually, when we find out we cannot reserve quota space, we could force
+>> some delayed allocated writes to disk (thus possibly release some quota
+>> in case we have overestimated the amount of blocks needed). But that's
+>> a different issue.
+>>      
+> That would imply the file system was full. But the dumpe2fs ouput list
+> large number of free blocks. But yes the code should have released the
+> quota reservation before trying block reservation again.
+>
+>
+>    
 
-Already sent in, but Linus hasn't pulled it yet.
+file system is fresh but unfortunately already used and I can't 
+"re-format" it. Is there a way around this? I think that FS was created 
+by "mkfs.ext4 -j /dev....."
 
-
--- 
-Jens Axboe
+>>    Thirdly, ext4_indirect_calc_metadata_amount() is wrong for sparse files.
+>> The worst case is 3 metadata blocks per data block if we make the file
+>> sufficiently sparse and there's no easy way around that...
+>>
+>>      
+> -aneesh
+>    
 
