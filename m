@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZIPNrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758777AbZIPNvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356AbZIPNrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZIPNrl
+	id S1758777AbZIPNvl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZIPNvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:47:41 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56581 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbZIPNrk (ORCPT
+	Wed, 16 Sep 2009 09:51:40 -0400
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:44542
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752746AbZIPNvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 09:47:40 -0400
-Date: Wed, 16 Sep 2009 14:47:21 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Steve Chen <schen@mvista.com>,
-       Felipe Contreras <felipe.contreras@gmail.com>,
-       Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
-       Marek Vasut <marek.vasut@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] arm: remove unused code in delay.S
-Message-ID: <20090916134721.GA11218@n2100.arm.linux.org.uk>
-References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com> <20090915103739.GA19519@elf.ucw.cz> <1253017761.3273.117.camel@linux-1lbu> <200909151541.08852.marek.vasut@gmail.com> <1253032210.3273.128.camel@linux-1lbu> <94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com> <1253043875.3273.131.camel@linux-1lbu> <m3k4zzdimy.fsf@intrepid.localdomain>
+	Wed, 16 Sep 2009 09:51:38 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KQ2H5S-03-4MO-01
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: <torvalds@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: <norsk5@yahoo.com>, <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Subject: [GIT PULL] AMD64 EDAC updates, p2
+Date: Wed, 16 Sep 2009 15:50:45 +0200
+Message-ID: <1253109050-31165-1-git-send-email-borislav.petkov@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 16 Sep 2009 13:51:19.0691 (UTC) FILETIME=[C4D795B0:01CA36D4]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3k4zzdimy.fsf@intrepid.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 11:04:37PM +0200, Krzysztof Halasa wrote:
-> Steve Chen <schen@mvista.com> writes:
-> 
-> > +config OLD_CPU_DELAY
-> > +	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
-> > +	bool "Accurate delays"
-> > +	def_bool n
-> > +	help
-> > +	  Enable if observing longer than expected delays and need more
-> > +	  accuracy.  This only applies to older CPUs.
-> > +
-> 
-> If it's that simple then why not enable the extra delay code
-> unconditionally when compiling for those CPUs?
+Hi Linus,
 
-Because it's really not that clear cut.  Eg, ARM610 and ARM710 work
-better with it, but StrongARM suffers from delays being too short.
-Having a kernel configured for all those processors used to be common
-(since the Acorn RiscPC had pluggable CPU cards, which could be one
-of those processors.)
+please pull the second update for EDAC which include proper build fixes
+for AMD64 EDAC module and EDAC MCE code and some cleanups. There is
+still some more minor stuff pending which depends on patches in -tip but
+I'll push it later on.
 
-It's really something that only experienced people should worry
-about, and not Joe "kernel-builder" Bloggs.
+Thanks.
+
+The following changes since commit 0cb583fd2862f19ea88b02eb307d11c09e51e2f8:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/ide-next-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
+
+Andreas Herrmann (1):
+      x86, EDAC: Provide function to return NodeId of a CPU
+
+Borislav Petkov (2):
+      amd64_edac: cleanup amd64_check_ecc_enabled
+      amd64_edac: check NB MCE bank enable on the current node properly
+
+Ingo Molnar (1):
+      amd64_edac: build driver only on AMD hardware
+
+Wan Wei (1):
+      amd64_edac: Rewrite unganged mode code of f10_early_channel_count
+
+ arch/x86/include/asm/processor.h |    2 +
+ arch/x86/kernel/cpu/amd.c        |   10 ++
+ drivers/edac/Kconfig             |    2 +-
+ drivers/edac/amd64_edac.c        |  175 ++++++++++++++++----------------------
+ drivers/edac/edac_mce_amd.c      |    2 +-
+ 5 files changed, 88 insertions(+), 103 deletions(-)
+
