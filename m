@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbZIPN7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZIPOBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbZIPN7n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZIPN7l
+	id S1755997AbZIPOBg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 10:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbZIPOBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:59:41 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:39798 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751106AbZIPN7k convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 09:59:40 -0400
+	Wed, 16 Sep 2009 10:01:34 -0400
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:54646 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751585AbZIPOBd convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 10:01:33 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Build error on arm in crypto/cast6.c
+Date: Wed, 16 Sep 2009 16:01:34 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-crypto@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
 MIME-Version: 1.0
-In-Reply-To: <20090916131543.GA21107@infradead.org>
-References: <20090915181247.GA32167@kroah.com> <20090916124533.GA11222@infradead.org> 
-	<20090916125919.GA24154@suse.de> <20090916131543.GA21107@infradead.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 16 Sep 2009 15:59:29 +0200
-Message-ID: <ac3eb2510909160659u776f8268x2b792938f119653c@mail.gmail.com>
-Subject: Re: [GIT PATCH] driver core patches for 2.6.31-git
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200909161601.35662.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Sep 2009 14:01:36.0309 (UTC) FILETIME=[34600650:01CA36D6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 15:15, Christoph Hellwig <hch@infradead.org> wrote:
-> On Wed, Sep 16, 2009 at 05:59:19AM -0700, Greg KH wrote:
+$ git describe master
+v2.6.31-4547-g0cb583f
 
-> It's a very bad way to expose kernel state, and the same problem the
-> original devfs had.  A good kernel state filesystem is immutable to
-> changes from userspace, that is fully controlled by the kernel.  The
-> problem with devfs and your new devfstmpfs is that you have both
-> userspace and the kernel manipulating the same object.  Which for
-> example makes life time management impossible.
+gcc version 4.3.2
 
-It's well defined. When the device goes away, the node is removed, in
-the same way the sysfs device is removed, and if userspace has
-created/replaced the node, it has control over it and the kernel does
-not touch it anymore. There is no known problem with that and no
-difference how udev works today on all common systems.
+crypto/cast6.c:372:39: error: macro "W" passed 2 arguments, but takes just 1
+crypto/cast6.c:372: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+crypto/cast6.c:413:16: error: macro "W" passed 2 arguments, but takes just 1
+crypto/cast6.c: In function ‘cast6_setkey’:
+crypto/cast6.c:413: error: ‘W’ undeclared (first use in this function)
+crypto/cast6.c:413: error: (Each undeclared identifier is reported only once
+crypto/cast6.c:413: error: for each function it appears in.)
+crypto/cast6.c:414:20: error: macro "W" passed 2 arguments, but takes just 1
 
-If wanted, at the time you guys come up with a working union-mount, we
-can make the kernel-maintained dev-filesystem read-only and mount a
-tmpfs on-top of it. But we are not there at the moment.
+Strange thing is that this file does not look to have changed.
 
-> I also know who gladly killed it
+Maybe it's a result of enabling the new config option CRYPTO_DEV_MV_CESA?
 
-And for good reason. The naming scheme was as wrong as it could be. We
-have a completely different situation today.
-
-> just to re-introduce the same thing years later,
-
-It's not the same at all. There is udev today, and a well-defined way
-to work with /dev, synchronized across all distros. Nothing really
-changes with devtpmfs, it just gets simpler, has less races, and is a
-lot more reliable.
-
-It's a logical extension to sysfs, not much more. We create all the
-things in /sys, why shouldn't we create the few nodes too, and make
-many things much easier?
-
-Kay
+Cheers,
+FJP
