@@ -1,81 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbZIPA2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZIPAlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbZIPA2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 20:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZIPA2p
+	id S1754484AbZIPAlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 20:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZIPAlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 20:28:45 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53262 "EHLO
+	Tue, 15 Sep 2009 20:41:14 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53878 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbZIPA2o (ORCPT
+	with ESMTP id S1751838AbZIPAlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 20:28:44 -0400
+	Tue, 15 Sep 2009 20:41:13 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 16 Sep 2009 09:26:44 +0900
+Date: Wed, 16 Sep 2009 09:39:06 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Ben Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-Subject: [BUGFIX][mmotm] fix walk system ram range patch (Was Re: mmotm on
- powerpc: walk_memory_resource?
-Message-Id: <20090916092644.fb53279a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0909152224400.29857@sister.anvils>
-References: <Pine.LNX.4.64.0909152224400.29857@sister.anvils>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
+       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] /proc/kmem cleanups and hwpoison bits
+Message-Id: <20090916093906.8bef9bba.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0909151057020.26095@sister.anvils>
+References: <20090915021851.168285585@intel.com>
+	<20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090915082200.GA2588@localhost>
+	<Pine.LNX.4.64.0909151057020.26095@sister.anvils>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 22:36:26 +0100 (BST)
+On Tue, 15 Sep 2009 11:16:36 +0100 (BST)
 Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-
-> Recent mmotm builds on powerpc have been failing with
-> 
-> arch/powerpc/mm/mem.c:169: error: ‘walk_memory_resource’ undeclared here (not in a function)
-> cc1: warnings being treated as errors
-> arch/powerpc/mm/mem.c:169: error: type defaults to ‘int’ in declaration of ‘walk_memory_resource’
-> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
-> 
-Thank you for pointing out.
--Kame
-==
-
-
-walk-system-ram-range.patch renames walk_memory_resource()
-to be walk_system_ram_range().
-But powerpc has its own one and it's exported.
-(Because ehea driver (IBM's one) uses this, powerpc export this.)
-
-> arch/powerpc/mm/mem.c:169: error: ‘walk_memory_resource’ undeclared here (not in a function)
-> cc1: warnings being treated as errors
-> arch/powerpc/mm/mem.c:169: error: type defaults to ‘int’ in declaration of ‘walk_memory_resource’
-> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
-> 
-The patch failed to update powerpc's EXPORT_SYMBOL, this patch fixes it.
-
-Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- arch/powerpc/mm/mem.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
-===================================================================
---- mmotm-2.6.31-Sep14.orig/arch/powerpc/mm/mem.c
-+++ mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
-@@ -166,7 +166,7 @@ walk_system_ram_range(unsigned long star
- 	}
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(walk_memory_resource);
-+EXPORT_SYMBOL_GPL(walk_system_ram_range);
  
- /*
-  * Initialize the bootmem system and give it all the memory we
+> Sorry guys, I'm picking this mail pretty much at random
+> as something to reply to.
+> 
+> I'm interested to notice such work going on in drivers/char/mem.c,
+> and don't have time to join in - you interact a lot faster than I
+> manage, and I've other priorities to attend to; but thought I should
+> at least send over the patch I've been including in my private debug
+> kernels for the last couple of years (rebased to 2.6.31), which lets
+> me peek and poke into /dev/kmem as I occasionally wish.
+> 
+> Warning: it may be rubbish, it may just be a hack which appeared to
+> work for me the last time I tried, on a particular address range of a
+> particular set of configurations of a particular set of architectures
+> (x86_32, x86_64, powerpc64).  I've never thought it through enough to
+> consider submitting, but it _might_ contain something useful for you
+> to factor into your own efforts.
+> 
+yes. thank you. very interesting.
+
+> Sorry for chucking it over the wall to you in this way, but I guess
+> that's better than just sitting quietly on it for a few more years.
+> 
+Hmm..Hmm..
+
+Then, concept of this patch is
+
+  - just use copy_from/to_user()
+  - avoid unnecessary get_user_pages().
+
+Ah....yes,
+Because /dev/kmem accesses a page per iteration, new vread/vwrite
+which can handle memory holes may be overkill ;)
+And unlike /proc/kcore,  /dev/kmem can return -ENXIO  when the caller
+touches memory hole. 
+
+Very impressive. Thank you.
+-Kame
+
+
+> Certainly-Not-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> ---
+> 
+>  drivers/char/mem.c |  265 +++++++++++++++----------------------------
+>  fs/read_write.c    |    9 +
+>  2 files changed, 105 insertions(+), 169 deletions(-)
+> 
+> but if completed would also remove vread() and vwrite() from
+> 
+>  include/linux/vmalloc.h
+>  mm/nommu.c
+>  mm/vmalloc.c
+> 
+> --- 2.6.31/drivers/char/mem.c	2009-09-09 23:13:59.000000000 +0100
+> +++ 2.6.31d/drivers/char/mem.c	2009-09-10 09:38:30.000000000 +0100
+> @@ -405,203 +405,134 @@ static ssize_t read_oldmem(struct file *
+>  static ssize_t read_kmem(struct file *file, char __user *buf, 
+>  			 size_t count, loff_t *ppos)
+>  {
+> -	unsigned long p = *ppos;
+> -	ssize_t low_count, read, sz;
+> -	char * kbuf; /* k-addr because vread() takes vmlist_lock rwlock */
+> -
+> -	read = 0;
+> -	if (p < (unsigned long) high_memory) {
+> -		low_count = count;
+> -		if (count > (unsigned long) high_memory - p)
+> -			low_count = (unsigned long) high_memory - p;
+> -
+> -#ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
+> -		/* we don't have page 0 mapped on sparc and m68k.. */
+> -		if (p < PAGE_SIZE && low_count > 0) {
+> -			size_t tmp = PAGE_SIZE - p;
+> -			if (tmp > low_count) tmp = low_count;
+> -			if (clear_user(buf, tmp))
+> -				return -EFAULT;
+> -			buf += tmp;
+> -			p += tmp;
+> -			read += tmp;
+> -			low_count -= tmp;
+> -			count -= tmp;
+> -		}
+> -#endif
+> -		while (low_count > 0) {
+> -			/*
+> -			 * Handle first page in case it's not aligned
+> -			 */
+> -			if (-p & (PAGE_SIZE - 1))
+> -				sz = -p & (PAGE_SIZE - 1);
+> -			else
+> -				sz = PAGE_SIZE;
+> -
+> -			sz = min_t(unsigned long, sz, low_count);
+> -
+> -			/*
+> -			 * On ia64 if a page has been mapped somewhere as
+> -			 * uncached, then it must also be accessed uncached
+> -			 * by the kernel or data corruption may occur
+> -			 */
+> -			kbuf = xlate_dev_kmem_ptr((char *)p);
+> -
+> -			if (copy_to_user(buf, kbuf, sz))
+> -				return -EFAULT;
+> -			buf += sz;
+> -			p += sz;
+> -			read += sz;
+> -			low_count -= sz;
+> -			count -= sz;
+> -		}
+> -	}
+> +	char stack_kbuf[64];
+> +	char *kbuf = stack_kbuf;
+> +	unsigned long kaddr = *ppos;
+> +	char *kptr;
+> +	size_t part;
+> +	unsigned long left;
+> +	ssize_t done = 0;
+> +	ssize_t err = 0;
+> +	mm_segment_t oldfs = get_fs();
+>  
+> -	if (count > 0) {
+> +	if (count > sizeof(stack_kbuf)) {
+>  		kbuf = (char *)__get_free_page(GFP_KERNEL);
+>  		if (!kbuf)
+>  			return -ENOMEM;
+> -		while (count > 0) {
+> -			int len = count;
+> -
+> -			if (len > PAGE_SIZE)
+> -				len = PAGE_SIZE;
+> -			len = vread(kbuf, (char *)p, len);
+> -			if (!len)
+> -				break;
+> -			if (copy_to_user(buf, kbuf, len)) {
+> -				free_page((unsigned long)kbuf);
+> -				return -EFAULT;
+> -			}
+> -			count -= len;
+> -			buf += len;
+> -			read += len;
+> -			p += len;
+> -		}
+> -		free_page((unsigned long)kbuf);
+> -	}
+> - 	*ppos = p;
+> - 	return read;
+> -}
+> -
+> -
+> -static inline ssize_t
+> -do_write_kmem(void *p, unsigned long realp, const char __user * buf,
+> -	      size_t count, loff_t *ppos)
+> -{
+> -	ssize_t written, sz;
+> -	unsigned long copied;
+> -
+> -	written = 0;
+> -#ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
+> -	/* we don't have page 0 mapped on sparc and m68k.. */
+> -	if (realp < PAGE_SIZE) {
+> -		unsigned long sz = PAGE_SIZE - realp;
+> -		if (sz > count)
+> -			sz = count;
+> -		/* Hmm. Do something? */
+> -		buf += sz;
+> -		p += sz;
+> -		realp += sz;
+> -		count -= sz;
+> -		written += sz;
+>  	}
+> -#endif
+> -
+> -	while (count > 0) {
+> -		char *ptr;
+> -		/*
+> -		 * Handle first page in case it's not aligned
+> -		 */
+> -		if (-realp & (PAGE_SIZE - 1))
+> -			sz = -realp & (PAGE_SIZE - 1);
+> -		else
+> -			sz = PAGE_SIZE;
+> -
+> -		sz = min_t(unsigned long, sz, count);
+>  
+> +	part = min(count, (size_t)(PAGE_SIZE - (kaddr & ~PAGE_MASK)));
+> +	while (part && !err) {
+>  		/*
+>  		 * On ia64 if a page has been mapped somewhere as
+>  		 * uncached, then it must also be accessed uncached
+>  		 * by the kernel or data corruption may occur
+>  		 */
+> -		ptr = xlate_dev_kmem_ptr(p);
+> +		kptr = (char *) kaddr;
+> +		if (kptr >= (char *)PAGE_OFFSET && kptr < (char *)high_memory)
+> +			kptr = xlate_dev_kmem_ptr(kptr);
+> +
+> +		set_fs(KERNEL_DS);
+> +		pagefault_disable();
+> +		left = __copy_from_user_inatomic(
+> +				kbuf, (__force char __user *) kptr, part);
+> +		pagefault_enable();
+> +		set_fs(oldfs);
+> +
+> +		if (left) {
+> +			err = -ENXIO;
+> +			part -= left;
+> +			if (!part)
+> +				break;
+> +		}
+>  
+> -		copied = copy_from_user(ptr, buf, sz);
+> -		if (copied) {
+> -			written += sz - copied;
+> -			if (written)
+> +		left = copy_to_user(buf, kbuf, part);
+> +		if (left) {
+> +			err = -EFAULT;
+> +			part -= left;
+> +			if (!part)
+>  				break;
+> -			return -EFAULT;
+>  		}
+> -		buf += sz;
+> -		p += sz;
+> -		realp += sz;
+> -		count -= sz;
+> -		written += sz;
+> +
+> +		buf += part;
+> +		kaddr += part;
+> +		done += part;
+> +		count -= part;
+> +		part = min(count, (size_t)PAGE_SIZE);
+>  	}
+>  
+> -	*ppos += written;
+> -	return written;
+> +	if (kbuf != stack_kbuf)
+> +		free_page((unsigned long)kbuf);
+> + 	*ppos = kaddr;
+> + 	return done? : err;
+>  }
+>  
+> -
+>  /*
+>   * This function writes to the *virtual* memory as seen by the kernel.
+>   */
+>  static ssize_t write_kmem(struct file * file, const char __user * buf, 
+>  			  size_t count, loff_t *ppos)
+>  {
+> -	unsigned long p = *ppos;
+> -	ssize_t wrote = 0;
+> -	ssize_t virtr = 0;
+> -	ssize_t written;
+> -	char * kbuf; /* k-addr because vwrite() takes vmlist_lock rwlock */
+> -
+> -	if (p < (unsigned long) high_memory) {
+> -
+> -		wrote = count;
+> -		if (count > (unsigned long) high_memory - p)
+> -			wrote = (unsigned long) high_memory - p;
+> -
+> -		written = do_write_kmem((void*)p, p, buf, wrote, ppos);
+> -		if (written != wrote)
+> -			return written;
+> -		wrote = written;
+> -		p += wrote;
+> -		buf += wrote;
+> -		count -= wrote;
+> -	}
+> +	char stack_kbuf[64];
+> +	char *kbuf = stack_kbuf;
+> +	unsigned long kaddr = *ppos;
+> +	char *kptr;
+> +	size_t part;
+> +	unsigned long left;
+> +	ssize_t done = 0;
+> +	ssize_t err = 0;
+> +	mm_segment_t oldfs = get_fs();
+>  
+> -	if (count > 0) {
+> +	if (count > sizeof(stack_kbuf)) {
+>  		kbuf = (char *)__get_free_page(GFP_KERNEL);
+>  		if (!kbuf)
+> -			return wrote ? wrote : -ENOMEM;
+> -		while (count > 0) {
+> -			int len = count;
+> -
+> -			if (len > PAGE_SIZE)
+> -				len = PAGE_SIZE;
+> -			if (len) {
+> -				written = copy_from_user(kbuf, buf, len);
+> -				if (written) {
+> -					if (wrote + virtr)
+> -						break;
+> -					free_page((unsigned long)kbuf);
+> -					return -EFAULT;
+> -				}
+> -			}
+> -			len = vwrite(kbuf, (char *)p, len);
+> -			count -= len;
+> -			buf += len;
+> -			virtr += len;
+> -			p += len;
+> +			return -ENOMEM;
+> +	}
+> +
+> +	part = min(count, (size_t)(PAGE_SIZE - (kaddr & ~PAGE_MASK)));
+> +	while (part && !err) {
+> +		left = copy_from_user(kbuf, buf, part);
+> +		if (left) {
+> +			err = -EFAULT;
+> +			part -= left;
+> +			if (!part)
+> +				break;
+>  		}
+> -		free_page((unsigned long)kbuf);
+> +
+> +		/*
+> +		 * On ia64 if a page has been mapped somewhere as
+> +		 * uncached, then it must also be accessed uncached
+> +		 * by the kernel or data corruption may occur
+> +		 */
+> +		kptr = (char *) kaddr;
+> +		if (kptr >= (char *)PAGE_OFFSET && kptr < (char *)high_memory)
+> +			kptr = xlate_dev_kmem_ptr(kptr);
+> +
+> +		set_fs(KERNEL_DS);
+> +		pagefault_disable();
+> +		left = __copy_to_user_inatomic(
+> +				(__force char __user *) kptr, kbuf, part);
+> +		pagefault_enable();
+> +		set_fs(oldfs);
+> +
+> +		if (left) {
+> +			err = -ENXIO;
+> +			part -= left;
+> +			if (!part)
+> +				break;
+> +		}
+> +
+> +		buf += part;
+> +		kaddr += part;
+> +		done += part;
+> +		count -= part;
+> +		part = min(count, (size_t)PAGE_SIZE);
+>  	}
+>  
+> - 	*ppos = p;
+> - 	return virtr + wrote;
+> +	if (kbuf != stack_kbuf)
+> +		free_page((unsigned long)kbuf);
+> + 	*ppos = kaddr;
+> + 	return done? : err;
+>  }
+>  #endif
+>  
+> --- 2.6.31/fs/read_write.c	2009-09-09 23:13:59.000000000 +0100
+> +++ 2.6.31d/fs/read_write.c	2009-09-10 09:38:30.000000000 +0100
+> @@ -222,8 +222,13 @@ int rw_verify_area(int read_write, struc
+>  	if (unlikely((ssize_t) count < 0))
+>  		return retval;
+>  	pos = *ppos;
+> -	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+> -		return retval;
+> +	if (pos >= 0) {
+> +		if (unlikely((loff_t) (pos + count) < 0))
+> +			count = 1 + (size_t) LLONG_MAX - pos;
+> +	} else {
+> +		if (unlikely((loff_t) (pos + count) > 0))
+> +			count = - pos;
+> +	}
+>  
+>  	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+>  		retval = locks_mandatory_area(
+> 
 
