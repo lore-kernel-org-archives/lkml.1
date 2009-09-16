@@ -1,61 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZIPImt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbZIPIqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbZIPImt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 04:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZIPIms
+	id S1758115AbZIPIqn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 04:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbZIPIql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 04:42:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60903
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752181AbZIPImr (ORCPT
+	Wed, 16 Sep 2009 04:46:41 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37806 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757787AbZIPIqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 04:42:47 -0400
-Date: Wed, 16 Sep 2009 01:43:04 -0700 (PDT)
-Message-Id: <20090916.014304.54377480.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 16 Sep 2009 04:46:40 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 16 Sep 2009 17:44:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       oleg@redhat.com
+Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling
+ (Was  Re: Question: how to handle too big f_pos
+Message-Id: <20090916174434.219ddd04.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <2375c9f90909160120u151b0449x2eac665080a3ae82@mail.gmail.com>
+References: <20090914032901.GA16189@localhost>
+	<20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+	<2375c9f90909160120u151b0449x2eac665080a3ae82@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ah, sorry. I should CC: you.
 
-This kills off the long unnecessary sparc PROM console driver, and
-updates the default configs.
+On Wed, 16 Sep 2009 16:20:32 +0800
+Américo Wang <xiyou.wangcong@gmail.com> wrote:
 
-Please pull, thanks a lot!
+> On Wed, Sep 16, 2009 at 1:29 PM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> >
+> > The problem:
+> >> I'm writing a patch against /dev/kmem...I found a problem.
+> >>
+> >> /dev/kmem (and /proc/<pid>/mem) puts virtual addres to f->f_pos.
+> >>
+> >> but f->f_pos is always negative and rw_verify_ara() returns -EINVAL always.
+> >
+> > Changed CC: List.
+> >
+> > This is a trial to consider how to fix negative f_pos problem shown in above.
+> >
+> > Hmm, even after this patch, x86's vsyscall area is not readable.
+> > ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0  [vsyscall]
+> > But maybe no problems. (now, it cannot be read, anyway.)
+> >
+> > I tested /dev/kmem on x86-64 and this works fine. I added a fix for
+> > /proc/<pid>/mem because I know ia64's hugetlbe area is not readable
+> > via /proc/<pid>/mem. (But I'm not sure other 64bit arch has this
+> > kind of problems in /proc/<pid>/mem)
+> >
+> > ==
+> > From: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
+> >
+> > Modifying rw_verify_area()'s negative f_pos check.
+> >
+> > Now, rw_verify_area() has this check
+> >   if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+> >                return -EINVAL
+> >
+> > And access to special files as /dev/mem,kmem, /proc/<pid>/mem
+> > returns unexpected -EINVAL.
+> > (For example, ia64 maps hugetlb at 0x8000000000000000- region)
+> >
+> > This patch tries to make range check more precise by using
+> > llseek ops defined per special files.
+> >
+> > Signed-off-by: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> >  fs/proc/base.c  |   22 +++++++++++++++++-----
+> >  fs/read_write.c |   39 +++++++++++++++++++++++++++++++++++++--
+> >  2 files changed, 54 insertions(+), 7 deletions(-)
+> >
+> > Index: mmotm-2.6.31-Sep14/fs/read_write.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/fs/read_write.c
+> > +++ mmotm-2.6.31-Sep14/fs/read_write.c
+> > @@ -205,6 +205,37 @@ bad:
+> >  }
+> >  #endif
+> >
+> > +static int
+> > +__verify_negative_pos_range(struct file *file, loff_t pos, size_t count)
+> > +{
+> > +       unsigned long long upos, end;
+> > +       loff_t ret;
+> > +
+> > +       /* disallow overflow */
+> > +       upos = (unsigned long long)pos;
+> > +       end = upos + count;
+> > +       if (end < pos)
+> > +               return -EOVERFLOW;
+> > +       /*
+> > +        * Sanity check...subsystem has to provide llseek for handle big pos.
+> > +        * Subsystem's llseek should verify f_pos's value comaparing with its
+> > +        * max file size.
+> > +        * Note1: generic file ops' llseek cannot handle negative pos.
+> > +        * Note2: should we take care of pos == -EINVAL ?
+> > +        * Note3: we check flags and ops here for avoiding taking locks in.
+> > +        * default_lseek.
+> > +        */
+> > +       ret = -EINVAL;
+> > +       if ((file->f_mode & FMODE_LSEEK) &&
+> > +           (file->f_op && file->f_op->llseek)) {
+> > +               ret = vfs_llseek(file, 0, SEEK_CUR);
+> > +               if (ret == pos)
+> > +                       return 0;
+> > +       }
+> > +
+> > +       return (int)ret;
+> > +}
+> > +
+> >  /*
+> >  * rw_verify_area doesn't like huge counts. We limit
+> >  * them to something that fits in "int" so that others
+> > @@ -222,8 +253,12 @@ int rw_verify_area(int read_write, struc
+> >        if (unlikely((ssize_t) count < 0))
+> >                return retval;
+> >        pos = *ppos;
+> > -       if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+> > -               return retval;
+> > +       if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
+> > +               /* some files requires special care */
+> > +               retval = __verify_negative_pos_range(file, pos, count);
+> > +               if (retval)
+> > +                       return retval;
+> > +       }
+> >
+> >        if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+> >                retval = locks_mandatory_area(
+> > Index: mmotm-2.6.31-Sep14/fs/proc/base.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
+> > +++ mmotm-2.6.31-Sep14/fs/proc/base.c
+> > @@ -903,18 +903,30 @@ out_no_task:
+> >
+> >  loff_t mem_lseek(struct file *file, loff_t offset, int orig)
+> >  {
+> > +       struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
+> > +       unsigned long long new_offset = -EINVAL;
+> 
+> 
+> Why not make 'new_offset' as loff_t? This can make your code easier.
+> 
+loff_t is "long long", I wanted "unsigned long long" for showing
+f_pos here is treated as "unsigned".
 
-The following changes since commit 0cb583fd2862f19ea88b02eb307d11c09e51e2f8:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/ide-next-2.6
 
-are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+> > +
+> > +       if (!task) /* lseek's spec doesn't allow -ESRCH but... */
+> 
+> 
+> No worry, we have many ESRCH for proc files.
+> 
+I know ;)
 
-David S. Miller (2):
-      sparc: Kill PROM console driver.
-      sparc: Update defconfigs.
+> > +               return -ESRCH;
+> > +
+> >        switch (orig) {
+> >        case 0:
+> > -               file->f_pos = offset;
+> > +               new_offset = offset;
+> >                break;
+> >        case 1:
+> > -               file->f_pos += offset;
+> > +               new_offset = (unsigned long long)f->f_pos + offset;
+> >                break;
+> >        default:
+> > -               return -EINVAL;
+> > +               new_offset = -EINVAL;
+> > +               break;
+> >        }
+> > -       force_successful_syscall_return();
+> > -       return file->f_pos;
+> > +       if (new_offset < (unsigned long long)TASK_SIZE_OF(task)) {
+> 
+> 
+> Hmm, why this check?
+> 
+2 reasons.
 
- Documentation/dontdiff               |    1 -
- arch/sparc/configs/sparc32_defconfig |   44 ++-
- arch/sparc/configs/sparc64_defconfig |   51 ++--
- arch/sparc/kernel/setup_32.c         |    2 -
- arch/sparc/kernel/setup_64.c         |    2 -
- drivers/char/vt.c                    |    3 -
- drivers/video/console/.gitignore     |    2 -
- drivers/video/console/Kconfig        |    9 +-
- drivers/video/console/Makefile       |   12 -
- drivers/video/console/prom.uni       |   11 -
- drivers/video/console/promcon.c      |  598 ----------------------------------
- scripts/Makefile                     |    1 -
- 12 files changed, 56 insertions(+), 680 deletions(-)
- delete mode 100644 drivers/video/console/.gitignore
- delete mode 100644 drivers/video/console/prom.uni
- delete mode 100644 drivers/video/console/promcon.c
+  1. If this lseek has to check something, this is it.
+  2. On architecture where 32bit program can ran on 64bit,
+     moving f_pos above 4G is out-of-range, for example.
+
+But mem_read() will catch any bad f_pos, anyway. So, just making
+allow all f_pos here is maybe a choice. Considering lseek,
+providing this range check here is not so bad.
+
+Thanks.
+-Kame
+
+> > +               file->f_pos = (loff_t)new_offset;
+> > +               force_successful_syscall_return();
+> > +       } else
+> > +               new_offset = -EINVAL;
+> > +       put_task_struct(task);
+> > +       return (loff_t)new_offset;
+> >  }
+> >
+> >  static const struct file_operations proc_mem_operations = {
+> 
+> Thanks.
+> 
+
