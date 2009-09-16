@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbZIPQpC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759946AbZIPQrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbZIPQpC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:45:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759870AbZIPQo4
+	id S1759946AbZIPQrg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759886AbZIPQra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:44:56 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:41026 "EHLO
+	Wed, 16 Sep 2009 12:47:30 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:42448 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759826AbZIPQoz (ORCPT
+	by vger.kernel.org with ESMTP id S1759815AbZIPQr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:44:55 -0400
+	Wed, 16 Sep 2009 12:47:28 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Geert Uytterhoeven <geert@linux-m68k.org>,
        Roman Zippel <zippel@linux-m68k.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH v2 0/2] Linker script cleanup patches for m68k
-Date: Wed, 16 Sep 2009 12:44:24 -0400
-Message-Id: <1253119466-19488-1-git-send-email-tabbott@ksplice.com>
+       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [PATCH v2 1/2] m68k: Make thread_info.h usable from assembly.
+Date: Wed, 16 Sep 2009 12:44:25 -0400
+Message-Id: <1253119466-19488-2-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1253119466-19488-1-git-send-email-tabbott@ksplice.com>
+References: <1253119466-19488-1-git-send-email-tabbott@ksplice.com>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an updated version of the patch series I sent on September 6
-cleaning up the m68k architecture's linker scripts.  The only change is
-that it is rebased on top of Linus's current master.
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-m68k@lists.linux-m68k.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/m68k/include/asm/thread_info_mm.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-This cross-architecture linker script cleanup project is in
-preparation for adding support for building the kernel with
--ffunction-sections -fdata-sections, which is a prerequisite for
-Ksplice.
-
-Tim Abbott (2):
-  m68k: Make thread_info.h usable from assembly.
-  m68k: Cleanup linker scripts using new linker script macros.
-
- arch/m68k/include/asm/thread_info_mm.h |    2 +
- arch/m68k/kernel/vmlinux-std.lds       |   53 ++++++-------------------------
- arch/m68k/kernel/vmlinux-sun3.lds      |   53 ++++++--------------------------
- 3 files changed, 23 insertions(+), 85 deletions(-)
+diff --git a/arch/m68k/include/asm/thread_info_mm.h b/arch/m68k/include/asm/thread_info_mm.h
+index b6da388..5f36cf1 100644
+--- a/arch/m68k/include/asm/thread_info_mm.h
++++ b/arch/m68k/include/asm/thread_info_mm.h
+@@ -8,6 +8,7 @@
+ #include <asm/types.h>
+ #include <asm/page.h>
+ 
++#ifndef __ASSEMBLY__
+ struct thread_info {
+ 	struct task_struct	*task;		/* main task structure */
+ 	unsigned long		flags;
+@@ -16,6 +17,7 @@ struct thread_info {
+ 	__u32 cpu; /* should always be 0 on m68k */
+ 	struct restart_block    restart_block;
+ };
++#endif /* __ASSEMBLY__ */
+ 
+ #define PREEMPT_ACTIVE		0x4000000
+ 
+-- 
+1.6.3.3
 
