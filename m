@@ -1,110 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbZIPMGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbZIPMHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbZIPMGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbZIPMGt
+	id S1758765AbZIPMHL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757286AbZIPMHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:06:49 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45864 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbZIPMGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:06:48 -0400
-Message-ID: <84889d57a3943f47b3ee0df6d1ff25c2.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <2375c9f90909160213q7e011117hd4e4ea2f386ed42a@mail.gmail.com>
-References: <20090914032901.GA16189@localhost>
-    <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
-    <2375c9f90909160120u151b0449x2eac665080a3ae82@mail.gmail.com>
-    <20090916174434.219ddd04.kamezawa.hiroyu@jp.fujitsu.com>
-    <2375c9f90909160213q7e011117hd4e4ea2f386ed42a@mail.gmail.com>
-Date: Wed, 16 Sep 2009 21:06:48 +0900 (JST)
-Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling
- (Was  Re: Question: how to handle too big f_pos
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: Am=?ISO-2022-JP?B?P3JpY29fV2FuZw==?= <xiyou.wangcong@gmail.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Wu Fengguang" <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       oleg@redhat.com
-User-Agent: SquirrelMail/1.4.16
+	Wed, 16 Sep 2009 08:07:08 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46758 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758042AbZIPMHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:07:06 -0400
+Date: Wed, 16 Sep 2009 14:07:08 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 02/11] writeback: get rid of wbc->for_writepages
+Message-ID: <20090916120708.GB26030@duck.suse.cz>
+References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com> <1253038617-30204-3-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253038617-30204-3-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Américo_Wang wrote:
-> On Wed, Sep 16, 2009 at 4:44 PM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> Ah, sorry. I should CC: you.
->
->
-> No problem. :)
->
->>> > --- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
->>> > +++ mmotm-2.6.31-Sep14/fs/proc/base.c
->>> > @@ -903,18 +903,30 @@ out_no_task:
->>> >
->>> > ?loff_t mem_lseek(struct file *file, loff_t offset, int orig)
->>> > ?{
->>> > + ? ? ? struct task_struct *task =
->>> get_proc_task(file->f_path.dentry->d_inode);
->>> > + ? ? ? unsigned long long new_offset = -EINVAL;
->>>
->>>
->>> Why not make 'new_offset' as loff_t? This can make your code easier.
->>>
->> loff_t is "long long", I wanted "unsigned long long" for showing
->> f_pos here is treated as "unsigned".
->>
->
->
-> Yeah, the same as for __verify_negative_pos_range(), right...
->
->
-> <snip>
->
->>> > ? ? ? ?}
->>> > - ? ? ? force_successful_syscall_return();
->>> > - ? ? ? return file->f_pos;
->>> > + ? ? ? if (new_offset < (unsigned long long)TASK_SIZE_OF(task)) {
->>>
->>>
->>> Hmm, why this check?
->>>
->> 2 reasons.
->>
->> ?1. If this lseek has to check something, this is it.
->> ?2. On architecture where 32bit program can ran on 64bit,
->> ? ? moving f_pos above 4G is out-of-range, for example.
->>
->> But mem_read() will catch any bad f_pos, anyway. So, just making
->> allow all f_pos here is maybe a choice. Considering lseek,
->> providing this range check here is not so bad.
->
-> Ok, I misunderstood the macro 'TASK_SIZE_OF', then no problem.
->
-> Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
->
-Ah, very sorry. I noticed I didn't handle pread/pwrite, splice, etc...
-I'll do retry.
+On Tue 15-09-09 20:16:48, Jens Axboe wrote:
+> It's only set, it's never checked. Kill it.
+  Acked-by: Jan Kara <jack@suse.cz>
 
-Sorry,
--Kame
+							Honza
 
-
-> Thanks.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
+> 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/afs/write.c              |    1 -
+>  fs/btrfs/ordered-data.c     |    1 -
+>  fs/jbd2/commit.c            |    1 -
+>  fs/nfs/write.c              |    1 -
+>  include/linux/writeback.h   |    1 -
+>  include/trace/events/ext4.h |    6 ++----
+>  mm/page-writeback.c         |    2 --
+>  7 files changed, 2 insertions(+), 11 deletions(-)
+> 
+> diff --git a/fs/afs/write.c b/fs/afs/write.c
+> index c2e7a7f..c63a3c8 100644
+> --- a/fs/afs/write.c
+> +++ b/fs/afs/write.c
+> @@ -712,7 +712,6 @@ int afs_writeback_all(struct afs_vnode *vnode)
+>  		.bdi		= mapping->backing_dev_info,
+>  		.sync_mode	= WB_SYNC_ALL,
+>  		.nr_to_write	= LONG_MAX,
+> -		.for_writepages = 1,
+>  		.range_cyclic	= 1,
+>  	};
+>  	int ret;
+> diff --git a/fs/btrfs/ordered-data.c b/fs/btrfs/ordered-data.c
+> index d6f0806..7b2f401 100644
+> --- a/fs/btrfs/ordered-data.c
+> +++ b/fs/btrfs/ordered-data.c
+> @@ -740,7 +740,6 @@ int btrfs_fdatawrite_range(struct address_space *mapping, loff_t start,
+>  		.nr_to_write = mapping->nrpages * 2,
+>  		.range_start = start,
+>  		.range_end = end,
+> -		.for_writepages = 1,
+>  	};
+>  	return btrfs_writepages(mapping, &wbc);
+>  }
+> diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+> index 7b4088b..0df600e 100644
+> --- a/fs/jbd2/commit.c
+> +++ b/fs/jbd2/commit.c
+> @@ -220,7 +220,6 @@ static int journal_submit_inode_data_buffers(struct address_space *mapping)
+>  		.nr_to_write = mapping->nrpages * 2,
+>  		.range_start = 0,
+>  		.range_end = i_size_read(mapping->host),
+> -		.for_writepages = 1,
+>  	};
+>  
+>  	ret = generic_writepages(mapping, &wbc);
+> diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+> index 120acad..53eb26c 100644
+> --- a/fs/nfs/write.c
+> +++ b/fs/nfs/write.c
+> @@ -1490,7 +1490,6 @@ static int nfs_write_mapping(struct address_space *mapping, int how)
+>  		.nr_to_write = LONG_MAX,
+>  		.range_start = 0,
+>  		.range_end = LLONG_MAX,
+> -		.for_writepages = 1,
+>  	};
+>  
+>  	return __nfs_write_mapping(mapping, &wbc, how);
+> diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+> index d347632..48a054e 100644
+> --- a/include/linux/writeback.h
+> +++ b/include/linux/writeback.h
+> @@ -50,7 +50,6 @@ struct writeback_control {
+>  	unsigned encountered_congestion:1; /* An output: a queue is full */
+>  	unsigned for_kupdate:1;		/* A kupdate writeback */
+>  	unsigned for_reclaim:1;		/* Invoked from the page allocator */
+> -	unsigned for_writepages:1;	/* This is a writepages() call */
+>  	unsigned range_cyclic:1;	/* range_start is cyclic */
+>  	unsigned more_io:1;		/* more io to be dispatched */
+>  	/*
+> diff --git a/include/trace/events/ext4.h b/include/trace/events/ext4.h
+> index 7d8b5bc..8d433c4 100644
+> --- a/include/trace/events/ext4.h
+> +++ b/include/trace/events/ext4.h
+> @@ -227,7 +227,6 @@ TRACE_EVENT(ext4_da_writepages,
+>  		__field(	char,	nonblocking		)
+>  		__field(	char,	for_kupdate		)
+>  		__field(	char,	for_reclaim		)
+> -		__field(	char,	for_writepages		)
+>  		__field(	char,	range_cyclic		)
+>  	),
+>  
+> @@ -241,16 +240,15 @@ TRACE_EVENT(ext4_da_writepages,
+>  		__entry->nonblocking	= wbc->nonblocking;
+>  		__entry->for_kupdate	= wbc->for_kupdate;
+>  		__entry->for_reclaim	= wbc->for_reclaim;
+> -		__entry->for_writepages	= wbc->for_writepages;
+>  		__entry->range_cyclic	= wbc->range_cyclic;
+>  	),
+>  
+> -	TP_printk("dev %s ino %lu nr_t_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d for_writepages %d range_cyclic %d",
+> +	TP_printk("dev %s ino %lu nr_t_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d range_cyclic %d",
+>  		  jbd2_dev_to_name(__entry->dev), __entry->ino, __entry->nr_to_write,
+>  		  __entry->pages_skipped, __entry->range_start,
+>  		  __entry->range_end, __entry->nonblocking,
+>  		  __entry->for_kupdate, __entry->for_reclaim,
+> -		  __entry->for_writepages, __entry->range_cyclic)
+> +		  __entry->range_cyclic)
+>  );
+>  
+>  TRACE_EVENT(ext4_da_writepages_result,
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 25e7770..64c01d0 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -1019,12 +1019,10 @@ int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
+>  
+>  	if (wbc->nr_to_write <= 0)
+>  		return 0;
+> -	wbc->for_writepages = 1;
+>  	if (mapping->a_ops->writepages)
+>  		ret = mapping->a_ops->writepages(mapping, wbc);
+>  	else
+>  		ret = generic_writepages(mapping, wbc);
+> -	wbc->for_writepages = 0;
+>  	return ret;
+>  }
+>  
+> -- 
+> 1.6.4.1.207.g68ea
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
