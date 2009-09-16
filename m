@@ -1,52 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbZIPB2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZIPBdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbZIPB2Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 21:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZIPB2H
+	id S1753548AbZIPBdg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 21:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZIPBdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 21:28:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57737 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752371AbZIPB2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 21:28:07 -0400
-Message-ID: <4AB03F23.7080605@kernel.org>
-Date: Wed, 16 Sep 2009 10:28:03 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [GIT PULL] percpu for v2.6.32
-References: <4AAF411C.2040501@kernel.org> <alpine.DEB.1.10.0909151510010.3340@V090114053VZO-1> <4AAFE9B2.1030006@kernel.org> <alpine.DEB.1.10.0909151531490.3340@V090114053VZO-1> <4AAFEF48.8000607@sgi.com>
-In-Reply-To: <4AAFEF48.8000607@sgi.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Sep 2009 21:33:33 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64174 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZIPBdc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 21:33:32 -0400
+Subject: Re: [PATCHv2] tracing - support multiple pids in set_pid_ftrace
+ file
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: jolsa@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <4AB038A7.2070108@cn.fujitsu.com>
+References: <1253019893-30131-1-git-send-email-jolsa@redhat.com>
+	 <4AB038A7.2070108@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 15 Sep 2009 21:33:33 -0400
+Message-Id: <1253064813.20020.171.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 16 Sep 2009 01:28:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 2009-09-16 at 09:00 +0800, Li Zefan wrote:
+> jolsa@redhat.com wrote:
+> > Adding the possibility to set more than 1 pid in the set_pid_ftrace file,
+> > thus allowing to trace more than 1 independent processes.
+> > 
+> > Usage:
+> > 
+> > sh-4.0# echo 284 > ./set_ftrace_pid 
+> > sh-4.0# cat ./set_ftrace_pid 
+> > 284
+> > sh-4.0# echo 1 >> ./set_ftrace_pid 
+> > sh-4.0# echo 0 >> ./set_ftrace_pid 
+> > sh-4.0# cat ./set_ftrace_pid 
+> > swapper tasks
+> > 1
+> > 284
+> > sh-4.0# echo 4 > ./set_ftrace_pid 
+> > sh-4.0# cat ./set_ftrace_pid 
+> > 4
+> > sh-4.0# echo > ./set_ftrace_pid 
+> > sh-4.0# cat ./set_ftrace_pid 
+> > no pid
+> > sh-4.0# 
+> > 
+> > 
+> > wbr,
+> > jirka
+> > 
+> > Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> 
+> Looks good.
+> 
+> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Mike Travis wrote:
-> We certainly have some in our labs but I'm not sure of one that's
-> externally accessible.  If there's a pre-defined test you'd like to
-> run, you can send me the details.  Otherwise, I'll check around and
-> see if there's a system available remotely.
+Thanks!
 
-The proposed broken patch is in the following thread.  It works on ski
-emulator but ski doesn't support SMP, so...
+> 
+> a few nitpicks.
+> 
+> >  /* set when tracing only a pid */
+> 
+> This comment should be removed too.
 
- http://thread.gmane.org/gmane.linux.kernel.cross-arch/4132
+Yeah, it goes with the deleted pointer below.
 
-The patch shouldn't be too broken.  It probably needs slight tweaks
-here and there.  Just testing and providing logs would be helpful
-enough.
+> 
+> > -struct pid *ftrace_pid_trace;
+> >  static struct pid * const ftrace_swapper_pid = &init_struct_pid;
+> >  
+> ...
+> > +static int ftrace_pid_add(int p)
+> > +{
+> > +	struct pid *pid;
+> > +	struct ftrace_pid *fpid;
+> > +	int ret = -EINVAL;
+> > +
+> > +	mutex_lock(&ftrace_lock);
+> > +
+> > +	if (!p)
+> > +		pid = ftrace_swapper_pid;
+> > +	else
+> > +		pid = find_get_pid(p);
+> > +
+> > +	if (!pid)
+> > +		goto out;
+> > +
+> > +	list_for_each_entry(fpid, &ftrace_pids, list)
+> > +		if (fpid->pid == pid)
+> > +			goto out_put;
+> 
+> rather than returning EINVAL, return EEXIST or just return 0?
 
-Thanks.
+I agree, return 0, if it already exists, there's no harm in it returning
+success.
 
--- 
-tejun
+-- Steve
+
+
