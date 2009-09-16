@@ -1,111 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZIPMG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbZIPMGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758317AbZIPMG1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756046AbZIPMGY
+	id S1758672AbZIPMGu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbZIPMGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:06:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40829 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757164AbZIPMGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:06:23 -0400
-Date: Wed, 16 Sep 2009 14:06:23 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 01/11] fs: remove bdev->bd_inode_backing_dev_info
-Message-ID: <20090916120623.GA26030@duck.suse.cz>
-References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com> <1253038617-30204-2-git-send-email-jens.axboe@oracle.com>
+	Wed, 16 Sep 2009 08:06:49 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45864 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbZIPMGs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:06:48 -0400
+Message-ID: <84889d57a3943f47b3ee0df6d1ff25c2.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <2375c9f90909160213q7e011117hd4e4ea2f386ed42a@mail.gmail.com>
+References: <20090914032901.GA16189@localhost>
+    <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+    <2375c9f90909160120u151b0449x2eac665080a3ae82@mail.gmail.com>
+    <20090916174434.219ddd04.kamezawa.hiroyu@jp.fujitsu.com>
+    <2375c9f90909160213q7e011117hd4e4ea2f386ed42a@mail.gmail.com>
+Date: Wed, 16 Sep 2009 21:06:48 +0900 (JST)
+Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling
+ (Was  Re: Question: how to handle too big f_pos
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: Am=?ISO-2022-JP?B?P3JpY29fV2FuZw==?= <xiyou.wangcong@gmail.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Wu Fengguang" <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       oleg@redhat.com
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253038617-30204-2-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 15-09-09 20:16:47, Jens Axboe wrote:
-> It has been unused since it was introduced in:
-> 
-> commit 520808bf20e90fdbdb320264ba7dd5cf9d47dcac
-> Author: Andrew Morton <akpm@osdl.org>
-> Date:   Fri May 21 00:46:17 2004 -0700
-> 
->     [PATCH] block device layer: separate backing_dev_info infrastructure
-> 
-> So lets just kill it.
-> 
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-  Fine with me: Acked-by: Jan Kara <jack@suse.cz>
+Américo_Wang wrote:
+> On Wed, Sep 16, 2009 at 4:44 PM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> Ah, sorry. I should CC: you.
+>
+>
+> No problem. :)
+>
+>>> > --- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
+>>> > +++ mmotm-2.6.31-Sep14/fs/proc/base.c
+>>> > @@ -903,18 +903,30 @@ out_no_task:
+>>> >
+>>> > ?loff_t mem_lseek(struct file *file, loff_t offset, int orig)
+>>> > ?{
+>>> > + ? ? ? struct task_struct *task =
+>>> get_proc_task(file->f_path.dentry->d_inode);
+>>> > + ? ? ? unsigned long long new_offset = -EINVAL;
+>>>
+>>>
+>>> Why not make 'new_offset' as loff_t? This can make your code easier.
+>>>
+>> loff_t is "long long", I wanted "unsigned long long" for showing
+>> f_pos here is treated as "unsigned".
+>>
+>
+>
+> Yeah, the same as for __verify_negative_pos_range(), right...
+>
+>
+> <snip>
+>
+>>> > ? ? ? ?}
+>>> > - ? ? ? force_successful_syscall_return();
+>>> > - ? ? ? return file->f_pos;
+>>> > + ? ? ? if (new_offset < (unsigned long long)TASK_SIZE_OF(task)) {
+>>>
+>>>
+>>> Hmm, why this check?
+>>>
+>> 2 reasons.
+>>
+>> ?1. If this lseek has to check something, this is it.
+>> ?2. On architecture where 32bit program can ran on 64bit,
+>> ? ? moving f_pos above 4G is out-of-range, for example.
+>>
+>> But mem_read() will catch any bad f_pos, anyway. So, just making
+>> allow all f_pos here is maybe a choice. Considering lseek,
+>> providing this range check here is not so bad.
+>
+> Ok, I misunderstood the macro 'TASK_SIZE_OF', then no problem.
+>
+> Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+>
+Ah, very sorry. I noticed I didn't handle pread/pwrite, splice, etc...
+I'll do retry.
 
-								Honza
-> ---
->  fs/block_dev.c        |    1 -
->  fs/inode.c            |    4 +---
->  fs/nilfs2/the_nilfs.c |    4 +---
->  include/linux/fs.h    |    1 -
->  4 files changed, 2 insertions(+), 8 deletions(-)
-> 
-> diff --git a/fs/block_dev.c b/fs/block_dev.c
-> index 3581a4e..71e7e03 100644
-> --- a/fs/block_dev.c
-> +++ b/fs/block_dev.c
-> @@ -420,7 +420,6 @@ static void bdev_destroy_inode(struct inode *inode)
->  {
->  	struct bdev_inode *bdi = BDEV_I(inode);
->  
-> -	bdi->bdev.bd_inode_backing_dev_info = NULL;
->  	kmem_cache_free(bdev_cachep, bdi);
->  }
->  
-> diff --git a/fs/inode.c b/fs/inode.c
-> index ae7b67e..b2ba83d 100644
-> --- a/fs/inode.c
-> +++ b/fs/inode.c
-> @@ -182,9 +182,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
->  	if (sb->s_bdev) {
->  		struct backing_dev_info *bdi;
->  
-> -		bdi = sb->s_bdev->bd_inode_backing_dev_info;
-> -		if (!bdi)
-> -			bdi = sb->s_bdev->bd_inode->i_mapping->backing_dev_info;
-> +		bdi = sb->s_bdev->bd_inode->i_mapping->backing_dev_info;
->  		mapping->backing_dev_info = bdi;
->  	}
->  	inode->i_private = NULL;
-> diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
-> index d4168e2..ad391a8 100644
-> --- a/fs/nilfs2/the_nilfs.c
-> +++ b/fs/nilfs2/the_nilfs.c
-> @@ -591,9 +591,7 @@ int init_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi, char *data)
->  
->  	nilfs->ns_mount_state = le16_to_cpu(sbp->s_state);
->  
-> -	bdi = nilfs->ns_bdev->bd_inode_backing_dev_info;
-> -	if (!bdi)
-> -		bdi = nilfs->ns_bdev->bd_inode->i_mapping->backing_dev_info;
-> +	bdi = nilfs->ns_bdev->bd_inode->i_mapping->backing_dev_info;
->  	nilfs->ns_bdi = bdi ? : &default_backing_dev_info;
->  
->  	/* Finding last segment */
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index b21cf6b..db29588 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -655,7 +655,6 @@ struct block_device {
->  	int			bd_invalidated;
->  	struct gendisk *	bd_disk;
->  	struct list_head	bd_list;
-> -	struct backing_dev_info *bd_inode_backing_dev_info;
->  	/*
->  	 * Private data.  You must have bd_claim'ed the block_device
->  	 * to use this.  NOTE:  bd_claim allows an owner to claim
-> -- 
-> 1.6.4.1.207.g68ea
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Sorry,
+-Kame
+
+
+> Thanks.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
