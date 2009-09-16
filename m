@@ -1,117 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbZIPSHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbZIPSLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759854AbZIPSHf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 14:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZIPSHa
+	id S1759917AbZIPSLG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 14:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZIPSLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 14:07:30 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:56447 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753557AbZIPSHa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 14:07:30 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] mfd: Convert WM8350 to use request_threaded_irq()
-Date: Wed, 16 Sep 2009 19:07:32 +0100
-Message-Id: <1253124452-10318-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
+	Wed, 16 Sep 2009 14:11:04 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57726 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753929AbZIPSLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 14:11:02 -0400
+Date: Wed, 16 Sep 2009 14:09:15 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: [PATCH] io-controller: Fix task hanging when there are more
+	than one groups
+Message-ID: <20090916180915.GE5221@redhat.com>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com> <20090915033739.GA4054@redhat.com> <4AB05442.6080004@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB05442.6080004@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of hand rolling our own variant.
+On Wed, Sep 16, 2009 at 10:58:10AM +0800, Gui Jianfeng wrote:
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/mfd/wm8350-core.c       |   24 ++++++------------------
- include/linux/mfd/wm8350/core.h |    1 -
- 2 files changed, 6 insertions(+), 19 deletions(-)
+[..]
+> > o Fixed the issue of not expiring the queue for single ioq schedulers. Reported
+> >   and fixed by Gui.
+> > 
+> > o If an AS queue is not expired for a long time and suddenly somebody
+> >   decides to create a group and launch a job there, in that case old AS
+> >   queue will be expired with a very high value of slice used and will get
+> >   a very high disk time. Fix it by marking the queue as "charge_one_slice"
+> >   and charge the queue only for a single time slice and not for whole
+> >   of the duration when queue was running.
+> > 
+> > o There are cases where in case of AS, excessive queue expiration will take
+> >   place by elevator fair queuing layer because of few reasons.
+> > 	- AS does not anticipate on a queue if there are no competing requests.
+> > 	  So if only a single reader is present in a group, anticipation does
+> > 	  not get turn on.
+> > 
+> > 	- elevator layer does not know that As is anticipating hence initiates
+> > 	  expiry requests in select_ioq() thinking queue is empty.
+> > 
+> > 	- elevaotr layer tries to aggressively expire last empty queue. This
+> > 	  can lead to lof of queue expiry
+> > 
+> > o This patch now starts ANITC_WAIT_NEXT anticipation if last request in the
+> >   queue completed and associated io context is eligible to anticipate. Also
+> >   AS lets elevatory layer know that it is anticipating (elv_ioq_wait_request())
+> >   . This solves above mentioned issues.
+> >  
+> > o Moved some of the code in separate functions to improve readability.
+> > 
+> ...
+> 
+> >  /* A request got completed from io_queue. Do the accounting. */
+> >  void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+> >  {
+> > @@ -3470,16 +3572,16 @@ void elv_ioq_completed_request(struct re
+> >  			elv_set_prio_slice(q->elevator->efqd, ioq);
+> >  			elv_clear_ioq_slice_new(ioq);
+> >  		}
+> > +
+> >  		/*
+> >  		 * If there is only root group present, don't expire the queue
+> >  		 * for single queue ioschedulers (noop, deadline, AS). It is
+> >  		 * unnecessary overhead.
+> >  		 */
+> >  
+> > -		if (is_only_root_group() &&
+> > -			elv_iosched_single_ioq(q->elevator)) {
+> > -			elv_log_ioq(efqd, ioq, "select: only root group,"
+> > -					" no expiry");
+> > +		if (single_ioq_no_timed_expiry(q)) {
+> 
+>   Hi Vivek,
+> 
+>   So we make use of single_ioq_no_timed_expiry() to decide whether there is only
+>   root ioq to be busy, right? But single_ioq_no_timed_expiry() only checks if
+>   the root cgroup is the only group and if there is only one busy_ioq there. As
+>   I explained in previous mail, these two checks are not sufficient to say the
+>   current active ioq comes from root group. Because when the child cgroup is just
+>   removed, and the ioq which belongs to child group is still there(maybe some
+>   requests are in flight). In this case, only root cgroup and only one active ioq
+>   (child ioq) checks are satisfied. So IMHO, in single_ioq_no_timed_expiry() we 
+>   still need to check "efqd->root_group->ioq" is already created to ensure the only
+>   ioq comes from root group. Am i missing something?
+> 
 
-diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-index 9d662a5..ba27c9d 100644
---- a/drivers/mfd/wm8350-core.c
-+++ b/drivers/mfd/wm8350-core.c
-@@ -353,15 +353,15 @@ static void wm8350_irq_call_handler(struct wm8350 *wm8350, int irq)
- }
- 
- /*
-- * wm8350_irq_worker actually handles the interrupts.  Since all
-+ * This is a threaded IRQ handler so can access I2C/SPI.  Since all
-  * interrupts are clear on read the IRQ line will be reasserted and
-  * the physical IRQ will be handled again if another interrupt is
-  * asserted while we run - in the normal course of events this is a
-  * rare occurrence so we save I2C/SPI reads.
-  */
--static void wm8350_irq_worker(struct work_struct *work)
-+static irqreturn_t wm8350_irq(int irq, void *data)
- {
--	struct wm8350 *wm8350 = container_of(work, struct wm8350, irq_work);
-+	struct wm8350 *wm8350 = data;
- 	u16 level_one, status1, status2, comp;
- 
- 	/* TODO: Use block reads to improve performance? */
-@@ -552,16 +552,6 @@ static void wm8350_irq_worker(struct work_struct *work)
- 		}
- 	}
- 
--	enable_irq(wm8350->chip_irq);
--}
--
--static irqreturn_t wm8350_irq(int irq, void *data)
--{
--	struct wm8350 *wm8350 = data;
--
--	disable_irq_nosync(irq);
--	schedule_work(&wm8350->irq_work);
--
- 	return IRQ_HANDLED;
- }
- 
-@@ -1428,9 +1418,8 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
- 
- 	mutex_init(&wm8350->auxadc_mutex);
- 	mutex_init(&wm8350->irq_mutex);
--	INIT_WORK(&wm8350->irq_work, wm8350_irq_worker);
- 	if (irq) {
--		int flags = 0;
-+		int flags = IRQF_ONESHOT;
- 
- 		if (pdata && pdata->irq_high) {
- 			flags |= IRQF_TRIGGER_HIGH;
-@@ -1444,8 +1433,8 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
- 					  WM8350_IRQ_POL);
- 		}
- 
--		ret = request_irq(irq, wm8350_irq, flags,
--				  "wm8350", wm8350);
-+		ret = request_threaded_irq(irq, NULL, wm8350_irq, flags,
-+					   "wm8350", wm8350);
- 		if (ret != 0) {
- 			dev_err(wm8350->dev, "Failed to request IRQ: %d\n",
- 				ret);
-@@ -1505,7 +1494,6 @@ void wm8350_device_exit(struct wm8350 *wm8350)
- 	platform_device_unregister(wm8350->codec.pdev);
- 
- 	free_irq(wm8350->chip_irq, wm8350);
--	flush_work(&wm8350->irq_work);
- 	kfree(wm8350->reg_cache);
- }
- EXPORT_SYMBOL_GPL(wm8350_device_exit);
-diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
-index 969b0b5..1d595de 100644
---- a/include/linux/mfd/wm8350/core.h
-+++ b/include/linux/mfd/wm8350/core.h
-@@ -626,7 +626,6 @@ struct wm8350 {
- 	struct mutex auxadc_mutex;
- 
- 	/* Interrupt handling */
--	struct work_struct irq_work;
- 	struct mutex irq_mutex; /* IRQ table mutex */
- 	struct wm8350_irq irq[WM8350_NUM_IRQ];
- 	int chip_irq;
--- 
-1.6.3.3
+Hi Gui,
 
+The only side effect of not checking for "efqd->root_group->ioq" seems to
+be that this ioq hence io group of the child will not be freed immediately
+and release will be delayed until a some other queue in the system gets
+backlogged or ioscheduler exits. At that point of time, this child queue will
+be expired and ioq and iog will be freed.
+
+The advantage is that if there is IO happening only in child group in that
+case we can avoid expiring that queue.
+
+So may be keeping the queue around for sometime is not a very idea. 
+
+Am I missing something?
+
+Thanks
+Vivek
