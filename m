@@ -1,400 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbZIPCj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZIPCtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbZIPCj0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 22:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZIPCjU
+	id S1753047AbZIPCtk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 22:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZIPCtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 22:39:20 -0400
-Received: from mga14.intel.com ([143.182.124.37]:54884 "EHLO mga14.intel.com"
+	Tue, 15 Sep 2009 22:49:36 -0400
+Received: from mail.lang.hm ([64.81.33.126]:45995 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbZIPCjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 22:39:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,394,1249282800"; 
-   d="scan'208";a="188099185"
-Date: Wed, 16 Sep 2009 10:39:09 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/3] devmem: change vread()/vwrite() prototype to
-	return success or error code
-Message-ID: <20090916023909.GA19361@localhost>
-References: <20090916013939.656308742@intel.com> <20090916014958.722014998@intel.com> <20090916111425.967fd1ff.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1751205AbZIPCtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 22:49:35 -0400
+Date: Tue, 15 Sep 2009 19:49:37 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Tricks to speed up kernel builds
+In-Reply-To: <200909152035.50814.tfjellstrom@shaw.ca>
+Message-ID: <alpine.DEB.2.00.0909151938050.1361@asgard.lang.hm>
+References: <4AAF4ECD.5010401@pardus.org.tr> <200909152035.50814.tfjellstrom@shaw.ca>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090916111425.967fd1ff.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 10:14:25AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Wed, 16 Sep 2009 09:39:40 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Silently ignore all vmalloc area holes in vread()/vwrite(),
-> > and report success (or error code in future) to the caller.
-> >
-> > The original intention is to fix a vwrite() related bug, where
-> > it could return 0 which cannot be handled correctly by its caller
-> > write_kmem(). Then KAMEZAWA recommends to change the prototype
-> > to make the semantics clear.
-> >
-> > CC: Andi Kleen <andi@firstfloor.org>
-> > CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > CC: Christoph Lameter <cl@linux-foundation.org>
-> > CC: Ingo Molnar <mingo@elte.hu>
-> > CC: Tejun Heo <tj@kernel.org>
-> > CC: Nick Piggin <npiggin@suse.de>
-> > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  drivers/char/mem.c      |   24 ++++++++--------
-> >  fs/proc/kcore.c         |    5 ++-
-> >  include/linux/vmalloc.h |    6 ++--
-> >  mm/nommu.c              |    8 ++---
-> >  mm/vmalloc.c            |   55 +++++++++++---------------------------
-> >  5 files changed, 40 insertions(+), 58 deletions(-)
-> >
-> > --- linux-mm.orig/mm/vmalloc.c        2009-09-16 08:52:12.000000000 +0800
-> > +++ linux-mm/mm/vmalloc.c     2009-09-16 09:24:11.000000000 +0800
-> > @@ -1655,7 +1655,6 @@ EXPORT_SYMBOL(vmalloc_32_user);
-> >  static int aligned_vread(char *buf, char *addr, unsigned long count)
-> >  {
-> >       struct page *p;
-> > -     int copied = 0;
-> >
-> >       while (count) {
-> >               unsigned long offset, length;
-> > @@ -1685,16 +1684,14 @@ static int aligned_vread(char *buf, char
-> >
-> >               addr += length;
-> >               buf += length;
-> > -             copied += length;
-> >               count -= length;
-> >       }
-> > -     return copied;
-> > +     return 0;
-> >  }
-> >
-> >  static int aligned_vwrite(char *buf, char *addr, unsigned long count)
-> >  {
-> >       struct page *p;
-> > -     int copied = 0;
-> >
-> >       while (count) {
-> >               unsigned long offset, length;
-> > @@ -1722,10 +1719,9 @@ static int aligned_vwrite(char *buf, cha
-> >               }
-> >               addr += length;
-> >               buf += length;
-> > -             copied += length;
-> >               count -= length;
-> >       }
-> > -     return copied;
-> > +     return 0;
-> >  }
-> >
-> >  /**
-> > @@ -1734,9 +1730,7 @@ static int aligned_vwrite(char *buf, cha
-> >   *   @addr:          vm address.
-> >   *   @count:         number of bytes to be read.
-> >   *
-> > - *   Returns # of bytes which addr and buf should be increased.
-> > - *   (same number to @count). Returns 0 if [addr...addr+count) doesn't
-> > - *   includes any intersect with alive vmalloc area.
-> > + *   Returns 0 on success.
-> 
-> Seems to return 0 _always_. My version retunrs false if it's out-of-range.
-> plz return false if out-of-vmalloc-range.
-> Now, use vmalloc area is exported via /proc/vmallocinfo. Then, it's easy
-> to know "valid" vmalloc area. But users cannot know memory holes in
-> "valid" vmalloc area. So, vread() returns success even if it founds holes.
+On Tue, 15 Sep 2009, Thomas Fjellstrom wrote:
 
-OK, that's fair enough.
+> On Tue September 15 2009, Ozan ?a?layan wrote:
+>> Hi,
+>>
+>> I'd googled a lot about the $subject but couldn't find any detailed
+>> guide about it. So, the followings are what I understand from what I've
+>> found:
+>>
+>> 1. Build inside a tmpfs to avoid I/O bottlenecks,
 
-> Another thought:
-> Should we purge vread/vwrite and just use copy_to/from_user ?
+if you have the ram the system will use it to cache the data, avoiding the 
+I/O bottlenecks.
 
-I like its simplicity. Though I'm afraid I don't know enough to make useful comments.
+the first time you compile you have to wait for the source to be read into 
+ram, but you would have to copy the source to the tmpfs anyway
 
-> To do that, /proc/kcore should be revisited...
-> It has to copy pages one by one in aligned manner.
+>> 2. Use ccache,
+>> 3. Switch governor to performance if supported,
+>> 4. Pass -j to gnu make to parallelize the build process,
+>> 5. Don't build debug symbols a.k.a set CONFIG_DEBUG_INFO=n
+>> 6. There are a bunch of sched patches in tip which apparently improves
+>> things during kbuild
+>> 7. Distribute the work into the local network using icecream, distcc.
+>>
+>> For the -j part, how many jobs should we pass to it? I've seen people
+>> passing
+>>
+>> - NR_of_cores+1
+>> - NR_of_cores x 2 (I think that this is useful when there's 2 threads of
+>> execution per core like HyperThreading?)
 
-You know it used to not rely on vread() ;)
+this is not due to hyperthreading.
 
-> Anyway, it's merge window and not good season for this semantic changes of
-> a function.
+if you do not have the data cached in ram from a prior build, individual 
+compile threads will stall waiting for the source to be read from disk. by 
+having more threads than you have cores you can have some stalled waiting 
+for data while others run and use the cpu cycles.
 
-Agreed. I'll do a bug fix only patch, and leave other decisions to you.
+exactly how much benfit you get, and where things taper off is very 
+dependant on your system (how fast is your I/O, how effectivly does it 
+handle parallel requests)
 
-> >   *
-> >   *   This function checks that addr is a valid vmalloc'ed area, and
-> >   *   copy data from that area to a given buffer. If the given memory range
-> > @@ -1744,23 +1738,21 @@ static int aligned_vwrite(char *buf, cha
-> >   *   proper area of @buf. If there are memory holes, they'll be zero-filled.
-> >   *   IOREMAP area is treated as memory hole and no copy is done.
-> >   *
-> > - *   If [addr...addr+count) doesn't includes any intersects with alive
-> > - *   vm_struct area, returns 0.
-> >   *   @buf should be kernel's buffer. Because this function uses KM_USER0,
-> >   *   the caller should guarantee KM_USER0 is not used.
-> >   *
-> >   *   Note: In usual ops, vread() is never necessary because the caller
-> >   *   should know vmalloc() area is valid and can use memcpy().
-> >   *   This is for routines which have to access vmalloc area without
-> > - *   any informaion, as /dev/kmem.
-> > + *   any information, as /dev/kmem and /dev/kcore.
-> >   *
-> >   */
-> >
-> > -long vread(char *buf, char *addr, unsigned long count)
-> > +int vread(char *buf, char *addr, unsigned long count)
-> >  {
-> >       struct vm_struct *tmp;
-> > -     char *vaddr, *buf_start = buf;
-> > -     unsigned long buflen = count;
-> > +     char *vaddr;
-> > +     char *buf_end = buf + count;
-> >       unsigned long n;
-> >
-> >       /* Don't allow overflow */
-> > @@ -1794,13 +1786,11 @@ long vread(char *buf, char *addr, unsign
-> >  finished:
-> >       read_unlock(&vmlist_lock);
-> >
-> > -     if (buf == buf_start)
-> > -             return 0;
-> >       /* zero-fill memory holes */
-> > -     if (buf != buf_start + buflen)
-> > -             memset(buf, 0, buflen - (buf - buf_start));
-> > +     if (buf != buf_end)
-> > +             memset(buf, 0, buf_end - buf);
-> >
-> > -     return buflen;
-> > +     return 0;
-> >  }
-> >
-> >  /**
-> > @@ -1809,10 +1799,7 @@ finished:
-> >   *   @addr:          vm address.
-> >   *   @count:         number of bytes to be read.
-> >   *
-> > - *   Returns # of bytes which addr and buf should be incresed.
-> > - *   (same number to @count).
-> > - *   If [addr...addr+count) doesn't includes any intersect with valid
-> > - *   vmalloc area, returns 0.
-> > + *   Returns 0 on success.
-> >   *
-> >   *   This function checks that addr is a valid vmalloc'ed area, and
-> >   *   copy data from a buffer to the given addr. If specified range of
-> > @@ -1820,30 +1807,24 @@ finished:
-> >   *   proper area of @buf. If there are memory holes, no copy to hole.
-> >   *   IOREMAP area is treated as memory hole and no copy is done.
-> >   *
-> > - *   If [addr...addr+count) doesn't includes any intersects with alive
-> > - *   vm_struct area, returns 0.
-> >   *   @buf should be kernel's buffer. Because this function uses KM_USER0,
-> >   *   the caller should guarantee KM_USER0 is not used.
-> >   *
-> >   *   Note: In usual ops, vwrite() is never necessary because the caller
-> >   *   should know vmalloc() area is valid and can use memcpy().
-> >   *   This is for routines which have to access vmalloc area without
-> > - *   any informaion, as /dev/kmem.
-> > - *
-> > - *   The caller should guarantee KM_USER1 is not used.
-> > + *   any information, as /dev/kmem.
-> >   */
-> >
-> > -long vwrite(char *buf, char *addr, unsigned long count)
-> > +int vwrite(char *buf, char *addr, unsigned long count)
-> >  {
-> >       struct vm_struct *tmp;
-> >       char *vaddr;
-> > -     unsigned long n, buflen;
-> > -     int copied = 0;
-> > +     unsigned long n;
-> >
-> >       /* Don't allow overflow */
-> >       if ((unsigned long) addr + count < count)
-> >               count = -(unsigned long) addr;
-> > -     buflen = count;
-> >
-> >       read_lock(&vmlist_lock);
-> >       for (tmp = vmlist; count && tmp; tmp = tmp->next) {
-> > @@ -1860,19 +1841,15 @@ long vwrite(char *buf, char *addr, unsig
-> >               n = vaddr + tmp->size - PAGE_SIZE - addr;
-> >               if (n > count)
-> >                       n = count;
-> > -             if (!(tmp->flags & VM_IOREMAP)) {
-> > +             if (!(tmp->flags & VM_IOREMAP))
-> >                       aligned_vwrite(buf, addr, n);
-> > -                     copied++;
-> > -             }
-> >               buf += n;
-> >               addr += n;
-> >               count -= n;
-> >       }
-> >  finished:
-> >       read_unlock(&vmlist_lock);
-> > -     if (!copied)
-> > -             return 0;
-> > -     return buflen;
-> > +     return 0;
-> >  }
-> >
-> >  /**
-> > --- linux-mm.orig/include/linux/vmalloc.h     2009-09-16 08:52:12.000000000 +0800
-> > +++ linux-mm/include/linux/vmalloc.h  2009-09-16 08:52:17.000000000 +0800
-> > @@ -104,9 +104,9 @@ extern void unmap_kernel_range(unsigned
-> >  extern struct vm_struct *alloc_vm_area(size_t size);
-> >  extern void free_vm_area(struct vm_struct *area);
-> >
-> > -/* for /dev/kmem */
-> > -extern long vread(char *buf, char *addr, unsigned long count);
-> > -extern long vwrite(char *buf, char *addr, unsigned long count);
-> > +/* for /dev/kmem and /dev/kcore */
-> > +extern int vread(char *buf, char *addr, unsigned long count);
-> > +extern int vwrite(char *buf, char *addr, unsigned long count);
-> >
-> >  /*
-> >   *   Internals.  Dont't use..
-> > --- linux-mm.orig/drivers/char/mem.c  2009-09-16 08:52:12.000000000 +0800
-> > +++ linux-mm/drivers/char/mem.c       2009-09-16 09:23:00.000000000 +0800
-> > @@ -396,6 +396,7 @@ static ssize_t read_kmem(struct file *fi
-> >       unsigned long p = *ppos;
-> >       ssize_t low_count, read, sz;
-> >       char * kbuf; /* k-addr because vread() takes vmlist_lock rwlock */
-> > +     int err = 0;
-> >
-> >       read = 0;
-> >       if (p < (unsigned long) high_memory) {
-> > @@ -442,12 +443,12 @@ static ssize_t read_kmem(struct file *fi
-> >                       return -ENOMEM;
-> >               while (count > 0) {
-> >                       sz = size_inside_page(p, count);
-> > -                     sz = vread(kbuf, (char *)p, sz);
-> > -                     if (!sz)
-> > +                     err = vread(kbuf, (char *)p, sz);
-> > +                     if (err)
-> >                               break;
-> >                       if (copy_to_user(buf, kbuf, sz)) {
-> > -                             free_page((unsigned long)kbuf);
-> > -                             return -EFAULT;
-> > +                             err = -EFAULT;
-> > +                             break;
-> >                       }
-> >                       count -= sz;
-> >                       buf += sz;
-> > @@ -457,7 +458,7 @@ static ssize_t read_kmem(struct file *fi
-> >               free_page((unsigned long)kbuf);
-> >       }
-> >       *ppos = p;
-> > -     return read;
-> > +     return read ? read : err;
-> >  }
-> >
-> >
-> > @@ -521,6 +522,7 @@ static ssize_t write_kmem(struct file *
-> >       ssize_t wrote = 0;
-> >       ssize_t virtr = 0;
-> >       char * kbuf; /* k-addr because vwrite() takes vmlist_lock rwlock */
-> > +     int err = 0;
-> >
-> >       if (p < (unsigned long) high_memory) {
-> >               unsigned long to_write = min_t(unsigned long, count,
-> > @@ -543,12 +545,12 @@ static ssize_t write_kmem(struct file *
-> >
-> >                       n = copy_from_user(kbuf, buf, sz);
-> >                       if (n) {
-> > -                             if (wrote + virtr)
-> > -                                     break;
-> > -                             free_page((unsigned long)kbuf);
-> > -                             return -EFAULT;
-> > +                             err = -EFAULT;
-> > +                             break;
-> >                       }
-> > -                     sz = vwrite(kbuf, (char *)p, sz);
-> > +                     err = vwrite(kbuf, (char *)p, sz);
-> > +                     if (err)
-> > +                             break;
-> >                       count -= sz;
-> >                       buf += sz;
-> >                       virtr += sz;
-> > @@ -558,7 +560,7 @@ static ssize_t write_kmem(struct file *
-> >       }
-> >
-> >       *ppos = p;
-> > -     return virtr + wrote;
-> > +     return virtr + wrote ? : err;
-> >  }
-> >  #endif
-> >
-> > --- linux-mm.orig/fs/proc/kcore.c     2009-09-16 08:52:12.000000000 +0800
-> > +++ linux-mm/fs/proc/kcore.c  2009-09-16 08:52:17.000000000 +0800
-> > @@ -492,11 +492,14 @@ read_kcore(struct file *file, char __use
-> >                               return -EFAULT;
-> >               } else if (is_vmalloc_or_module_addr((void *)start)) {
-> >                       char * elf_buf;
-> > +                     int err;
-> >
-> >                       elf_buf = kzalloc(tsz, GFP_KERNEL);
-> >                       if (!elf_buf)
-> >                               return -ENOMEM;
-> > -                     vread(elf_buf, (char *)start, tsz);
-> > +                     err = vread(elf_buf, (char *)start, tsz);
-> > +                     if (err)
-> > +                             return err;
-> 
-> This is wrong.
-> 
-> /proc/kcore provides "coredump" image of kernel and it never faults.
-> Then, it doesn't check error code intentionally and just return
-> zero-filled buffer of reuqested length.
+it's probably higher than NR_of_cores +1, but if you have a 8-core or 16 
+core box it's probably less than NR_of_cores x 2 (unless you have a 
+storage subsystem that works well in parallel, say something like a 8 or 
+16 disk raid array)
 
-Ah OK. Will revert this change.
+>> - 64, 128, etc. regardless of the number of cores (Is it really useful
+>> regardless of the CPU)
 
-Thanks,
-Fengguang
+this will overload your system with lots of processes competing for the 
+CPU. it's a good stress test of the system, but inefficiant in processor 
+utilization due to the fact that each time a new thread takes the CPU the 
+cache has been wiped out by other threads.
 
-> >                       /* we have to zero-fill user buffer even if no read */
-> >                       if (copy_to_user(buffer, elf_buf, tsz)) {
-> >                               kfree(elf_buf);
-> > --- linux-mm.orig/mm/nommu.c  2009-09-16 09:01:36.000000000 +0800
-> > +++ linux-mm/mm/nommu.c       2009-09-16 09:02:02.000000000 +0800
-> > @@ -263,20 +263,20 @@ unsigned long vmalloc_to_pfn(const void
-> >  }
-> >  EXPORT_SYMBOL(vmalloc_to_pfn);
-> >
-> > -long vread(char *buf, char *addr, unsigned long count)
-> > +int vread(char *buf, char *addr, unsigned long count)
-> >  {
-> >       memcpy(buf, addr, count);
-> > -     return count;
-> > +     return 0;
-> >  }
-> >
-> > -long vwrite(char *buf, char *addr, unsigned long count)
-> > +int vwrite(char *buf, char *addr, unsigned long count)
-> >  {
-> >       /* Don't allow overflow */
-> >       if ((unsigned long) addr + count < count)
-> >               count = -(unsigned long) addr;
-> >
-> >       memcpy(addr, buf, count);
-> > -     return(count);
-> > +     return 0;
-> >  }
-> >
-> >  /*
-> >
-> > --
-> >
-> >
+>> The curious question is *what build times can you get* with your typical
+>> systems using your speedup tricks (quad core, dual core, etc.) ? What
+>> are other tricks that I can use to even more speed up the build?
+>>
+>> Do you really use icecream/distcc on your daily test builds?
+
+most people don't, some people do. some people have systems that can build 
+the kernel in a handful of seconds (I think the record was 7.5 seconds 
+several years ago) if it is in the memory disk cache and don't need to. 
+others build on architecures that don't have systems that fast and use 
+distcc all the time to get acceptable speed
+
+since many virtualization options will not let a guest OS use more than 
+one real CPU at a time, people who build in virtual systems commonly use 
+this sort of thing to use all the real cores on their system (same as the 
+-j option above)
+
+Linus has been heard to complain that it takes longer to boot a system 
+with a new kernel than to compile it (this was on an enterprise-class 
+system that took a long time for the bios/raid/etc initialization)
+
+
+>> How about nicing/ionicing make on an idle system? Will it make any
+>> difference?
+
+if there is nothing to compete with the kernel build, these don't help.
+
+David Lang
+
+> I've only done a few compiles recently, and I only really use icecream and
+> make -jX to speed up compile times.
+>
+> I have a 4 node icecc cluster, three quad cores (one limited to 2 cores), and
+> one dual core (limited to a single core), which gives 11 total cores I can
+> distribute to, and I usually pass: make -j12
+>
+> Any higher and I don't really see any speedups, any lower, same difference.
+>
+> My last kernel compile (2.6.31-git4) took about 9 minutes.
+>
+>> Thanks a lot
+>> Ozan Caglayan
+>>
+>>
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+>
+>
