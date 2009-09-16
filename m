@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbZIPFYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbZIPF0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160AbZIPFYy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 01:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZIPFYx
+	id S1754751AbZIPF0c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 01:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbZIPF0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 01:24:53 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54186 "EHLO song.cn.fujitsu.com"
+	Wed, 16 Sep 2009 01:26:31 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60221 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751106AbZIPFYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 01:24:52 -0400
-Message-ID: <4AB0774C.5050706@cn.fujitsu.com>
-Date: Wed, 16 Sep 2009 13:27:40 +0800
+	id S1750727AbZIPF0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 01:26:31 -0400
+Message-ID: <4AB077AF.6080800@cn.fujitsu.com>
+Date: Wed, 16 Sep 2009 13:29:19 +0800
 From: Zhaolei <zhaolei@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -19,7 +19,7 @@ To: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 1/2] ftrace: add tracepoint for xtime
+Subject: [PATCH v2 2/2] ftrace: Add timer-source of walltime for ftrace
 References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com> <4AB076DE.10604@cn.fujitsu.com>
 In-Reply-To: <4AB076DE.10604@cn.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -28,131 +28,249 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+We can add a timer-source for ftrace to support wall-time display.
+It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
+http://lkml.org/lkml/2009/7/24/103
 
-This patch can trace current xtime and wall_to_monotonic. Then user can
-use ctime() to convert them to wall time which is easier to be understood,
-especially for flight-recorder which need to get trace event from a kernel
-dump file.
+It need to applys on my patch of:
+[PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
 
-Example of ftrace output:
-          <idle>-0     [000] 20118.489849: gtod_update_xtime: xtime=1243265589.999999824 wall_to_monotonic=3051713268.744158739
-           <...>-4020  [001] 20118.489855: sys_open(filename: bf9e66e0, flags: 98800, mode: bf9e66e0)
-           <...>-4020  [001] 20118.489873: sys_open -> 0xffffffec
-
-ctime(1243265590) = date:Mon May 25 11:33:10 2009
-So we can realize the task with pid 4020 open a file at
-Mon May 25 11:33:10 2009
+We can get following output:
+ # cd /mnt/debugfs/tracing/
+ # cat trace_clock
+ [local] global walltime
+ # echo sched_switch > current_tracer
+ # cat trace
+ # tracer: sched_switch
+ #
+ #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+ #              | |       |          |         |
+             bash-3580  [000]  2916.188093:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000]  2916.188205:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000]  2916.188538:   3580:120:R   + [000]     5:115:S events/0
+             bash-3580  [000]  2916.188599:   3580:120:R ==> [000]     5:115:R events/0
+         events/0-5     [000]  2916.188669:      5:115:S ==> [000]  3580:120:R bash
+ ...
+ # echo walltime > trace_clock
+ # cat trace
+ # tracer: sched_switch
+ #
+ #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
+ #              | |       |                        |         |
+             bash-3580  [000] 2009-08-24 18:03:16.500705:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S ==> [000]     5:115:R events/0
+         events/0-5     [000] 2009-08-24 18:03:16.500815:      5:115:R   + [000]  3578:120:S sshd
+ ...
 
 Changelog:
-v1->v2: Rebased by Zhao Lei <zhaolei@cn.fujitsu.com>
+v1->v2: Rebase to top of tip tree.
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
 ---
- include/trace/events/xtime.h |   38 ++++++++++++++++++++++++++++++++++++++
- kernel/time/ntp.c            |    4 ++++
- kernel/time/timekeeping.c    |    6 ++++++
- 3 files changed, 48 insertions(+), 0 deletions(-)
- create mode 100644 include/trace/events/xtime.h
+ include/linux/trace_clock.h |    1 +
+ kernel/trace/trace.c        |   24 ++++++++++++++++-----
+ kernel/trace/trace.h        |    8 ++++++-
+ kernel/trace/trace_clock.c  |   48 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_output.c |   21 +++++++++++++++---
+ 5 files changed, 91 insertions(+), 11 deletions(-)
 
-diff --git a/include/trace/events/xtime.h b/include/trace/events/xtime.h
-new file mode 100644
-index 0000000..398e679
---- /dev/null
-+++ b/include/trace/events/xtime.h
-@@ -0,0 +1,38 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM xtime
-+
-+#if !defined(_TRACE_XTIME_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_XTIME_H
-+
-+#include <linux/time.h>
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(gtod_update_xtime,
-+
-+	TP_PROTO(struct timespec *xtime, struct timespec *wall_to_monotonic),
-+
-+	TP_ARGS(xtime, wall_to_monotonic),
-+
-+	TP_STRUCT__entry(
-+		__field(	long,	xtime_sec		)
-+		__field(	long,	xtime_nsec		)
-+		__field(	long,	wall_to_monotonic_sec	)
-+		__field(	long,	wall_to_monotonic_nsec	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->xtime_sec		= xtime->tv_sec;
-+		__entry->xtime_nsec		= xtime->tv_nsec;
-+		__entry->wall_to_monotonic_sec	= wall_to_monotonic->tv_sec;
-+		__entry->wall_to_monotonic_nsec	= wall_to_monotonic->tv_nsec;
-+	),
-+
-+	TP_printk("xtime=%ld.%09ld wall_to_monotonic=%ld.%09ld",
-+		  __entry->xtime_sec, __entry->xtime_nsec,
-+		  __entry->wall_to_monotonic_sec, __entry->wall_to_monotonic_nsec)
-+);
-+
-+#endif /* _TRACE_XTIME_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-index 4800f93..fc2f13a 100644
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -15,6 +15,8 @@
- #include <linux/time.h>
- #include <linux/mm.h>
+diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
+index 7a81303..322707e 100644
+--- a/include/linux/trace_clock.h
++++ b/include/linux/trace_clock.h
+@@ -15,5 +15,6 @@
+ extern u64 notrace trace_clock_local(void);
+ extern u64 notrace trace_clock(void);
+ extern u64 notrace trace_clock_global(void);
++extern u64 notrace trace_clock_walltime(void);
  
-+#include <trace/events/xtime.h>
-+
+ #endif /* _LINUX_TRACE_CLOCK_H */
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index fd52a19..160b6a8 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -335,9 +335,10 @@ static struct {
+ } trace_clocks[] = {
+ 	{ trace_clock_local,	"local" },
+ 	{ trace_clock_global,	"global" },
++	{ trace_clock_walltime,	"walltime" },
+ };
+ 
+-int trace_clock_id;
++enum TRACE_CLOCK_TYPE trace_clock_type = TRACE_CLOCK_LOCAL;
+ 
  /*
-  * NTP timekeeping variables:
-  */
-@@ -218,6 +220,8 @@ static enum hrtimer_restart ntp_leap_second(struct hrtimer *timer)
- 		break;
- 	}
+  * trace_parser_get_init - gets the buffer for trace parser
+@@ -1653,8 +1654,17 @@ static void print_lat_help_header(struct seq_file *m)
  
-+	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
-+
- 	write_sequnlock(&xtime_lock);
- 
- 	return res;
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index fb0f46f..42b220f 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -20,6 +20,9 @@
- #include <linux/tick.h>
- #include <linux/stop_machine.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/xtime.h>
-+
- /* Structure holding internal timekeeping values. */
- struct timekeeper {
- 	/* Current clocksource used for timekeeping. */
-@@ -338,6 +341,8 @@ int do_settimeofday(struct timespec *tv)
- 
- 	update_vsyscall(&xtime, timekeeper.clock);
- 
-+	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
-+
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
- 	/* signal hrtimers about time change */
-@@ -811,6 +816,7 @@ void update_wall_time(void)
- 
- 	/* check to see if there is a new clocksource to use */
- 	update_vsyscall(&xtime, timekeeper.clock);
-+	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
+ static void print_func_help_header(struct seq_file *m)
+ {
+-	seq_puts(m, "#           TASK-PID    CPU#    TIMESTAMP  FUNCTION\n");
+-	seq_puts(m, "#              | |       |          |         |\n");
++	if (trace_clock_type == TRACE_CLOCK_WALLTIME) {
++		seq_puts(m, "#           TASK-PID    CPU# "
++			"          TIMESTAMP  FUNCTION\n");
++		seq_puts(m, "#              | |       |   "
++			"                     |         |\n");
++	} else {
++		seq_puts(m, "#           TASK-PID    CPU# "
++			"   TIMESTAMP  FUNCTION\n");
++		seq_puts(m, "#              | |       |   "
++			"       |         |\n");
++	}
  }
  
- /**
+ 
+@@ -3387,8 +3397,8 @@ static ssize_t tracing_clock_read(struct file *filp, char __user *ubuf,
+ 	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++)
+ 		bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter,
+ 			"%s%s%s%s", i ? " " : "",
+-			i == trace_clock_id ? "[" : "", trace_clocks[i].name,
+-			i == trace_clock_id ? "]" : "");
++			i == trace_clock_type ? "[" : "", trace_clocks[i].name,
++			i == trace_clock_type ? "]" : "");
+ 	bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter, "\n");
+ 
+ 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, bufiter);
+@@ -3418,7 +3428,7 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
+ 	if (i == ARRAY_SIZE(trace_clocks))
+ 		return -EINVAL;
+ 
+-	trace_clock_id = i;
++	trace_clock_type = i;
+ 
+ 	mutex_lock(&trace_types_lock);
+ 
+@@ -3428,6 +3438,8 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
+ 
+ 	mutex_unlock(&trace_types_lock);
+ 
++	tracing_reset_online_cpus(&global_trace);
++
+ 	*fpos += cnt;
+ 
+ 	return cnt;
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index e747162..afee4de 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -475,7 +475,13 @@ int trace_array_printk(struct trace_array *tr,
+ 
+ extern unsigned long trace_flags;
+ 
+-extern int trace_clock_id;
++enum TRACE_CLOCK_TYPE {
++	TRACE_CLOCK_LOCAL,
++	TRACE_CLOCK_GLOBAL,
++	TRACE_CLOCK_WALLTIME,
++};
++
++extern enum TRACE_CLOCK_TYPE trace_clock_type;
+ 
+ /* Standard output formatting function used for function return traces */
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
+index b588fd8..2b23023 100644
+--- a/kernel/trace/trace_clock.c
++++ b/kernel/trace/trace_clock.c
+@@ -19,6 +19,7 @@
+ #include <linux/sched.h>
+ #include <linux/ktime.h>
+ #include <linux/trace_clock.h>
++#include <trace/events/xtime.h>
+ 
+ /*
+  * trace_clock_local(): the simplest and least coherent tracing clock.
+@@ -107,3 +108,50 @@ u64 notrace trace_clock_global(void)
+ 
+ 	return now;
+ }
++
++/*
++ * the number of nanoseconds from 1970-1-1 00:00:00 to
++ * machine boots (trace_clock()==0)
++ */
++static u64 base_walltime;
++
++static void sync_base_walltime(struct timespec *ts, u64 traceclock)
++{
++	base_walltime = (u64)ts->tv_sec * NSEC_PER_SEC + ts->tv_nsec -
++			traceclock;
++}
++
++static void probe_gtod_update_xtime(struct timespec *xtime,
++				    struct timespec *wall_to_monotonic)
++{
++	unsigned long flags;
++	u64 traceclock;
++
++	local_irq_save(flags);
++	traceclock = trace_clock();
++	sync_base_walltime(xtime, traceclock);
++	local_irq_restore(flags);
++}
++
++static int __init walltime_init(void)
++{
++	unsigned long flags;
++	struct timespec ts;
++	u64 traceclock;
++
++	local_irq_save(flags);
++	getnstimeofday(&ts);
++	traceclock = trace_clock();
++	sync_base_walltime(&ts, traceclock);
++	local_irq_restore(flags);
++
++	register_trace_gtod_update_xtime(probe_gtod_update_xtime);
++
++	return 0;
++}
++device_initcall_sync(walltime_init);
++
++u64 notrace trace_clock_walltime(void)
++{
++	return base_walltime + trace_clock();
++}
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index f572f44..2116c5f 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -527,15 +527,28 @@ int trace_print_context(struct trace_iterator *iter)
+ {
+ 	struct trace_seq *s = &iter->seq;
+ 	struct trace_entry *entry = iter->ent;
+-	unsigned long long t = ns2usecs(iter->ts);
+-	unsigned long usec_rem = do_div(t, USEC_PER_SEC);
+-	unsigned long secs = (unsigned long)t;
+ 	char comm[TASK_COMM_LEN];
+ 
+ 	trace_find_cmdline(entry->pid, comm);
+ 
+-	return trace_seq_printf(s, "%16s-%-5d [%03d] %5lu.%06lu: ",
++	if (trace_clock_type == TRACE_CLOCK_WALLTIME) {
++		struct tm tm;
++		u32 remainder;
++		time_to_tm(div_u64_rem(iter->ts, NSEC_PER_SEC, &remainder),
++				-sys_tz.tz_minuteswest * 60, &tm);
++		return trace_seq_printf(s, "%16s-%-5d [%03d] "
++				"%04ld-%02d-%02d %02d:%02d:%02d.%06llu: ",
++				comm, entry->pid, iter->cpu,
++				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
++				tm.tm_hour, tm.tm_min, tm.tm_sec,
++				ns2usecs(remainder));
++	} else {
++		unsigned long long t = ns2usecs(iter->ts);
++		unsigned long usec_rem = do_div(t, USEC_PER_SEC);
++		unsigned long secs = (unsigned long)t;
++		return trace_seq_printf(s, "%16s-%-5d [%03d] %5lu.%06lu: ",
+ 				comm, entry->pid, iter->cpu, secs, usec_rem);
++	}
+ }
+ 
+ int trace_print_lat_context(struct trace_iterator *iter)
 -- 
 1.5.5.3
 
