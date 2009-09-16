@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759698AbZIPQeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbZIPQfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759698AbZIPQeF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:34:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759681AbZIPQd7
+	id S1759686AbZIPQfi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759203AbZIPQfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:33:59 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:55005 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759662AbZIPQd4 convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 12:35:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:59751 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754635AbZIPQfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:33:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=w/9n9Ng2Gtx8hiRLdmvHhBIDEswm4gODJcgGAg5LZ5FiFDbLo4qORKOJpoGTbjiHzm
-         TfRkpbCq7/EcvBpgusY/QugBPFIDafacHE0rrWwek2mpoFvbfANil/ZDOq56n1vh7tey
-         QAlJX3N/mNH62VE22zWw0Cpsl84lbhRoHD4g0=
-MIME-Version: 1.0
-In-Reply-To: <20090916090907.2538fca1@jbarnes-g45>
-References: <200909160910.24329.neuro@o2.pl>
-	 <20090916090907.2538fca1@jbarnes-g45>
-Date: Wed, 16 Sep 2009 12:33:58 -0400
-Message-ID: <a728f9f90909160933sba29b49oee2020024866b7d0@mail.gmail.com>
-Subject: Re: Explicitly putting a PCI device to ACPI D0
-From: Alex Deucher <alexdeucher@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Michal Witkowski <neuro@o2.pl>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 16 Sep 2009 12:35:36 -0400
+Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: dipankar@in.ibm.com
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+In-Reply-To: <20090916162459.GB12571@in.ibm.com>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+	 <1253016701.5506.73.camel@laptop> <20090916152820.GA12571@in.ibm.com>
+	 <1253115171.7180.1.camel@laptop>  <20090916162459.GB12571@in.ibm.com>
+Content-Type: text/plain
+Date: Wed, 16 Sep 2009 18:35:16 +0200
+Message-Id: <1253118916.7180.6.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 12:09 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Wed, 16 Sep 2009 09:10:24 +0200
-> Michal Witkowski <neuro@o2.pl> wrote:
->
->> Hi,
->>
->> I've been searching for my answer for a while now, and since I
->> haven't found it anywhere, I've decided to post to LKML, hoping that
->> someone here can help me.
->>
->> First, I'll explain the background of my problem. My grief is the
->> switchable GPU in my Lenovo Ideapad U330. The BIOS supports two
->> options "Discrete only" (only the ATI card is visible on the BUS) and
->> "Switchable" (both ATI and Intel card visible on the bus). The
->> problem is the lack of a third option "Integrated", in which only the
->> Intel card would be powered off. Lenovo refused to introduce such an
->> option into the BIOS, stating that it's a feature request and not a
->> bug.
->>
->> To save battery power I'd like to be able to run on the Intel card.
->> However, with the "Switchable" option, powertop indicates huge power
->> usage (24W), which can only be explained by the fact that both cards
->> draw power.
->>
->> Thus, my question is the following:
->> Is there a way to explicitly put a device into ACPI D0? I would like
->> to do that to the ATI card on boot.
->>
->> I've tried the following code:
->> http://ftp.chg.ru/pub/parallel/scyld/diag/pci-config.c
->> But it didn't work (the ATI card was still on).
->
-> Your best bet might be to load a driver for the ATI card that puts it
-> into PCI D3 state until used.  There may be other ways to save power on
-> the disabled part as well...
->
-> Alex, is this something you've looked at at all?
+On Wed, 2009-09-16 at 21:54 +0530, Dipankar Sarma wrote:
 
-The xf86-video-ati ddx can turn off the displays and reduce the clocks
-and pcie lanes, but I haven't sorted out all the D3 stuff yet.  As for
-the switchable graphics, you might find the page below useful.  No
-idea if it will work or fry your hardware:
-http://ubuntuforums.org/showthread.php?p=7944950
+> No, for this specific case, latency isn't an issue. The issue is -
+> how do we cede unused vcpus to hypervisor for better energy management ?
+> Yes, it can be done by a hypervisor manager telling the kernel to
+> offline and make a bunch of vcpus "inactive". It does have to choose
+> offline (release vcpu) vs. inactive (cede but guranteed if needed).
+> The problem is that long ago we exported a lot of hotplug stuff to
+> userspace through the sysfs interface and we cannot do something
+> inside the kernel without keeping the sysfs stuff consistent.
+> This seems like a sane way to do that without undoing all the
+> virtual cpu hotplug infrastructure in different supporting archs.
 
-Alex
+I'm still not getting it..
+
+Suppose we have some guest, it booted with 4 cpus.
+
+We then offline 2 of them.
+
+Apparently this LPAR binds guest cpus to physical cpus?
+So we use a hypervisor interface to reclaim these 2 offlined cpus and
+re-assign them to some other guest.
+
+So far so good, right?
+
+Now if you were to try and online the cpus in the guest, it'd fail
+because the cpus aren't backed anymore, and the hot-plug simply
+times-out and fails.
+
+And we're still good, right?
+
