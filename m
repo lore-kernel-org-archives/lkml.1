@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbZIPXE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760242AbZIPXKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760180AbZIPXE7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 19:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbZIPXE4
+	id S1760242AbZIPXKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 19:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbZIPXKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 19:04:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45651 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755307AbZIPXEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 19:04:55 -0400
-Date: Wed, 16 Sep 2009 16:03:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: mingo@elte.hu, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] stop_machine: disable preempt in stop machine path
-Message-Id: <20090916160358.7faadb5f.akpm@linux-foundation.org>
-In-Reply-To: <4AB0933E.8020901@cn.fujitsu.com>
-References: <4AB0933E.8020901@cn.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Sep 2009 19:10:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38768 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752866AbZIPXKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 19:10:41 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Graham, David" <david.graham@intel.com>
+Subject: Re: [E1000-devel] [BUG 2.6.30+] e100 sometimes causes oops during resume
+Date: Thu, 17 Sep 2009 01:11:52 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+References: <20090915120538.GA26806@bizet.domek.prywatny> <13830B75AD5A2F42848F92269B11996F5BF592C3@orsmsx509.amr.corp.intel.com>
+In-Reply-To: <13830B75AD5A2F42848F92269B11996F5BF592C3@orsmsx509.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909170111.52204.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009 15:26:54 +0800
-Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+On Wednesday 16 September 2009, Graham, David wrote:
+> A v2.6.30..v2.6.31 diff shows that this is probably exposed by Rafael Wysocki's
+> commit 6905b1f1, which now allows systems with e100 to sleep. If I understand
+> correctly, it looks like these systems simply couldn't sleep before. Is that right Rafael?
 
-> We can disable preempt in stop_cpu(), It can reduce the cpu's waiting time
-> and make stop_machine path faster.
-> 
+The systems where e100 is not power manageable by any means couldn't suspend
+before that commit.  For the other systems, where e100 is power manageable
+either with ACPI or natively, the commit doesn't change anything. 
 
-"it can"?  But does it?  Are there any measurements or observations to
-back this up?
+> I don't think its likely that the commit is a direct cause of the problem, but that the
+> suspend/resume cycle now allows us to see another issue. Maybe e100 is
+> leaking memory on suspend/resume cycles, or something else is leaking memory,
+> or memory is becoming fragmented and the e100 driver is improperly
+> requesting and being failed on an 'atomic' memory allocation  from a heavily
+> fragmented memory map. Or something else.
 
-The kstop threads are already created with create_rt_workqueue() (which
-has super-secret undocumented semantics which I have cleverly
-discovered mean "use SCHED_FIFO").
+I have a couple of test systems with e100 that don't have any resume problems,
+FWIW.
 
-So we won't be getting preempted here anyway?
+Thanks,
+Rafael
