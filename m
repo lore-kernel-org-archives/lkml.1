@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbZIPULq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbZIPUN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758922AbZIPULq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 16:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbZIPULl
+	id S1759916AbZIPUN5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 16:13:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbZIPUN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 16:11:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:57968 "EHLO mx1.redhat.com"
+	Wed, 16 Sep 2009 16:13:56 -0400
+Received: from mail.perches.com ([173.55.12.10]:1210 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754411AbZIPULl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 16:11:41 -0400
-Subject: Re: [PATCH] Fix oprofile regression: select RING_BUFFER_ALLOW_SWAP
-From: Steven Rostedt <srostedt@redhat.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Robert Richter <robert.richter@amd.com>
-In-Reply-To: <200909162156.49239.borntraeger@de.ibm.com>
-References: <200909162156.49239.borntraeger@de.ibm.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Wed, 16 Sep 2009 16:11:30 -0400
-Message-Id: <1253131890.2964.168.camel@localhost.localdomain>
+	id S1755452AbZIPUN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 16:13:56 -0400
+Subject: Re: [PATCH] MAINTAINERS: Move ARM lists to infradead
+From: Joe Perches <joe@perches.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.infradead.org,
+       linux-arm-kernel-owner@lists.infradead.org
+In-Reply-To: <m3d45qpsgl.fsf@intrepid.localdomain>
+References: <1253117388.2567.17.camel@Joe-Laptop.home>
+	 <20090916181018.GA19728@Chamillionaire.breakpoint.cc>
+	 <1253125008.2567.32.camel@Joe-Laptop.home>
+	 <m3d45qpsgl.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Sep 2009 13:13:58 -0700
+Message-Id: <1253132038.10465.5.camel@Joe-Laptop.home>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.27.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-16 at 21:56 +0200, Christian Borntraeger wrote:
-> commit 85bac32c4a52c592b857f2c360cc5ec93a097d70                                                                                                                             
->     ring-buffer: only enable ring_buffer_swap_cpu when needed
-> broke oprofile (at least on s390, but likely on all platforms).
-> 
-> this patch lets oprofile select RING_BUFER_ALLOW_SWAP to make 
-> ring_buffer_swap_cpu usable for oprofile.
+On Wed, 2009-09-16 at 22:03 +0200, Krzysztof Halasa wrote:
+> Joe Perches <joe@perches.com> writes:
+> > I believe it's still moderated.
+> Does that matter to the point we have to put it in the file?
+> Non-spam from non-subscribers passes through, right? The "moderated for
+> non-subscribers" suggests that one should subscribe prior to posting,
+> which is IMHO not the case.
 
-Thanks, I'll apply this for the 32 queue.
+I don't much care which is selected, but I think it's clear
+moderated doesn't mean subscribers-only.
 
--- Steve
+"moderated for non-subscribers" means there might be a
+rejection or a delay before a message is forwarded to a list.
 
-PS. Please send patches to my rostedt@goodmis.org account. I don't
-always read my Red Hat email.
+Here are the lists that are marked "moderated" in MAINTAINERS
 
-> 
-> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-> CC-ed: Steven Rostedt <srostedt@redhat.com> 
-> CC-ed: Ingo Molnar <mingo@elte.hu>
-> CC-ed: Robert Richter <robert.richter@amd.com>                                                                                                                      
-> ---
->  arch/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux-2.6/arch/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/arch/Kconfig
-> +++ linux-2.6/arch/Kconfig
-> @@ -9,6 +9,7 @@ config OPROFILE
->  	depends on TRACING_SUPPORT
->  	select TRACING
->  	select RING_BUFFER
-> +	select RING_BUFFER_ALLOW_SWAP
->  	help
->  	  OProfile is a profiling system capable of profiling the
->  	  whole system, include the kernel, kernel modules, libraries,
+$ grep moderated MAINTAINERS | sort | uniq
+L:	alsa-devel@alsa-project.org (moderated for non-subscribers)
+L:	bluesmoke-devel@lists.sourceforge.net (moderated for non-subscribers)
+L:	linux-am33-list@redhat.com (moderated for non-subscribers)
+L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+L:	linux-geode@lists.infradead.org (moderated for non-subscribers)
+L:	linux-zigbee-devel@lists.sourceforge.net (moderated for non-subscribers)
+L:	ocfs2-devel@oss.oracle.com (moderated for non-subscribers)
+L:	rds-devel@oss.oracle.com (moderated for non-subscribers)
+L:	tpmdd-devel@lists.sourceforge.net (moderated for non-subscribers)
+
 
