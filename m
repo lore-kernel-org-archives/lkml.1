@@ -1,64 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbZIPP74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbZIPQB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbZIPP74 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 11:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759293AbZIPP74
+	id S1759356AbZIPQB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZIPQB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 11:59:56 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:47931 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753644AbZIPP7z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 11:59:55 -0400
-Date: Wed, 16 Sep 2009 11:58:01 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Mike Frysinger <vapier.adi@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Bryan Wu <cooloney@kernel.org>,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH] blackfin: Cleanup linker script using new linker script
- 	macros.
-In-Reply-To: <8bd0f97a0909152013oe652087gf5cd227a1997a5b3@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0909160107500.19188@dr-wily.mit.edu>
-References: <1252292753-11792-1-git-send-email-tabbott@ksplice.com> <8bd0f97a0909152013oe652087gf5cd227a1997a5b3@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 16 Sep 2009 12:01:27 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3939 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759340AbZIPQBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 12:01:21 -0400
+Message-ID: <4AB10B67.2050108@redhat.com>
+Date: Wed, 16 Sep 2009 18:59:35 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com>
+In-Reply-To: <4AB0F1EF.5050102@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009, Mike Frysinger wrote:
+On 09/16/2009 05:10 PM, Gregory Haskins wrote:
+>
+>> If kvm can do it, others can.
+>>      
+> The problem is that you seem to either hand-wave over details like this,
+> or you give details that are pretty much exactly what vbus does already.
+>   My point is that I've already sat down and thought about these issues
+> and solved them in a freely available GPL'ed software package.
+>    
 
-> the larger padding in the initramfs is kind of annoying as i cant see
-> any need to pad it to PAGE_SIZE.  since the initramfs is released with
-> the rest of the init section, it doesnt need whole pages.  a quick
-> test shows that it does waste a few kb in reality.  default build for
-> BF533-STAMP for example shows 0x1000 difference.
-> 
-> in terms of correctness, this change misses a reference to the now
-> deleted .init.ramfs:
-> -       .init.ramfs :
-> -       {
-> -       .....
-> -       }
-> -
->        .text_l1 L1_CODE_START : AT(LOADADDR(.init.ramfs) + SIZEOF(.init.ramfs))
-> 
-> so that .text_l1 needs to updated to refer to the new section before
-> it (.exit.data in this case).  once i make that change, the resulting
-> link looks the same (minus the initramfs thing mentioned earlier), and
-> it does boot.
+In the kernel.  IMO that's the wrong place for it.  Further, if we adopt 
+vbus, if drop compatibility with existing guests or have to support both 
+vbus and virtio-pci.
 
-OK.  I guess we should plan to modify the INIT_DATA_SECTION macro to add 
-another argument specifying an alignment level for .init.ramfs.  It'd be 
-inconvenient to add that right now since there are a lot of patches in 
-linux-next or otherwise in flight that introduce uses of 
-INIT_DATA_SECTION, and those patches would all be broken by changing this 
-now.  Once the dust settles on that for this release, I'll submit a patch 
-adding said argument to INIT_DATA_SECTION.
+> So the question is: is your position that vbus is all wrong and you wish
+> to create a new bus-like thing to solve the problem?
 
-	-Tim Abbott
+I don't intend to create anything new, I am satisfied with virtio.  If 
+it works for Ira, excellent.  If not, too bad.  I believe it will work 
+without too much trouble.
+
+> If so, how is it
+> different from what Ive already done?  More importantly, what specific
+> objections do you have to what Ive done, as perhaps they can be fixed
+> instead of starting over?
+>    
+
+The two biggest objections are:
+- the host side is in the kernel
+- the guest side is a new bus instead of reusing pci (on x86/kvm), 
+making Windows support more difficult
+
+I guess these two are exactly what you think are vbus' greatest 
+advantages, so we'll probably have to extend our agree-to-disagree on 
+this one.
+
+I also had issues with using just one interrupt vector to service all 
+events, but that's easily fixed.
+
+>> There is no guest and host in this scenario.  There's a device side
+>> (ppc) and a driver side (x86).  The driver side can access configuration
+>> information on the device side.  How to multiplex multiple devices is an
+>> interesting exercise for whoever writes the virtio binding for that setup.
+>>      
+> Bingo.  So now its a question of do you want to write this layer from
+> scratch, or re-use my framework.
+>    
+
+You will have to implement a connector or whatever for vbus as well.  
+vbus has more layers so it's probably smaller for vbus.
+
+>>>>
+>>>>          
+>>> I am talking about how we would tunnel the config space for N devices
+>>> across his transport.
+>>>
+>>>        
+>> Sounds trivial.
+>>      
+> No one said it was rocket science.  But it does need to be designed and
+> implemented end-to-end, much of which Ive already done in what I hope is
+> an extensible way.
+>    
+
+It was already implemented three times for virtio, so apparently that's 
+extensible too.
+
+>>   Write an address containing the device number and
+>> register number to on location, read or write data from another.
+>>      
+> You mean like the "u64 devh", and "u32 func" fields I have here for the
+> vbus-kvm connector?
+>
+> http://git.kernel.org/?p=linux/kernel/git/ghaskins/alacrityvm/linux-2.6.git;a=blob;f=include/linux/vbus_pci.h;h=fe337590e644017392e4c9d9236150adb2333729;hb=ded8ce2005a85c174ba93ee26f8d67049ef11025#l64
+>
+>    
+
+Probably.
+
+
+
+>>> That sounds convenient given his hardware, but it has its own set of
+>>> problems.  For one, the configuration/inventory of these boards is now
+>>> driven by the wrong side and has to be addressed.
+>>>        
+>> Why is it the wrong side?
+>>      
+> "Wrong" is probably too harsh a word when looking at ethernet.  Its
+> certainly "odd", and possibly inconvenient.  It would be like having
+> vhost in a KVM guest, and virtio-net running on the host.  You could do
+> it, but its weird and awkward.  Where it really falls apart and enters
+> the "wrong" category is for non-symmetric devices, like disk-io.
+>
+>    
+
+
+It's not odd or wrong or wierd or awkward.  An ethernet NIC is not 
+symmetric, one side does DMA and issues interrupts, the other uses its 
+own memory.  That's exactly the case with Ira's setup.
+
+If the ppc boards were to emulate a disk controller, you'd run 
+virtio-blk on x86 and vhost-blk on the ppc boards.
+
+>>> Second, the role
+>>> reversal will likely not work for many models other than ethernet (e.g.
+>>> virtio-console or virtio-blk drivers running on the x86 board would be
+>>> naturally consuming services from the slave boards...virtio-net is an
+>>> exception because 802.x is generally symmetrical).
+>>>
+>>>        
+>> There is no role reversal.
+>>      
+> So if I have virtio-blk driver running on the x86 and vhost-blk device
+> running on the ppc board, I can use the ppc board as a block-device.
+> What if I really wanted to go the other way?
+>    
+
+You mean, if the x86 board was able to access the disks and dma into the 
+ppb boards memory?  You'd run vhost-blk on x86 and virtio-net on ppc.
+
+As long as you don't use the words "guest" and "host" but keep to 
+"driver" and "device", it all works out.
+
+>> The side doing dma is the device, the side
+>> accessing its own memory is the driver.  Just like that other 1e12
+>> driver/device pairs out there.
+>>      
+> IIUC, his ppc boards really can be seen as "guests" (they are linux
+> instances that are utilizing services from the x86, not the other way
+> around).
+
+They aren't guests.  Guests don't dma into their host's memory.
+
+> vhost forces the model to have the ppc boards act as IO-hosts,
+> whereas vbus would likely work in either direction due to its more
+> refined abstraction layer.
+>    
+
+vhost=device=dma, virtio=driver=own-memory.
+
+>> Of course vhost is incomplete, in the same sense that Linux is
+>> incomplete.  Both require userspace.
+>>      
+> A vhost based solution to Iras design is missing more than userspace.
+> Many of those gaps are addressed by a vbus based solution.
+>    
+
+Maybe.  Ira can fill the gaps or use vbus.
+
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
