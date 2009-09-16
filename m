@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760622AbZIPWrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760611AbZIPWrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760622AbZIPWrR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760306AbZIPWq7
+	id S1760611AbZIPWrP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760316AbZIPWq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:46:59 -0400
-Received: from kroah.org ([198.145.64.141]:48912 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:46:57 -0400
+Received: from kroah.org ([198.145.64.141]:48929 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760304AbZIPWjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:39:46 -0400
+	id S1760306AbZIPWjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:39:47 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:14 2009
-Message-Id: <20090916223714.392730496@mini.kroah.org>
+Message-Id: <20090916223714.527518502@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:21 -0700
+Date: Wed, 16 Sep 2009 15:36:22 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Bob Copeland <me@bobcopeland.com>,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 08/45] cfg80211: fix looping soft lockup in find_ie()
+Subject: [patch 09/45] ath5k: write PCU registers on initial reset
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=cfg80211-fix-looping-soft-lockup-in-find_ie.patch
+Content-Disposition: inline; filename=ath5k-write-pcu-registers-on-initial-reset.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,81 +32,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Bob Copeland <me@bobcopeland.com>
 
-commit fcc6cb0c13555e78c2d47257b6d1b5e59b0c419a upstream.
+commit 3355443ad7601991affa5992b0d53870335af765 upstream.
 
-The find_ie() function uses a size_t for the len parameter, and
-directly uses len as a loop variable.  If any received packets
-are malformed, it is possible for the decrease of len to overflow,
-and since the result is unsigned, the loop will not terminate.
-Change it to a signed int so the loop conditional works for
-negative values.
+"Ath5k: unify resets"
+introduced a regression into 2.6.28 where the PCU registers are never
+initialized, due to ath5k_reset() always passing true for change_channel.
+We subsequently program a lot of these registers but several may start
+in an unknown state.
 
-This fixes the following soft lockup:
-
-[38573.102007] BUG: soft lockup - CPU#0 stuck for 61s! [phy0:2230]
-[38573.102007] Modules linked in: aes_i586 aes_generic fuse af_packet ipt_REJECT xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state iptable_filter ip_tables x_tables acpi_cpufreq binfmt_misc dm_mirror dm_region_hash dm_log dm_multipath dm_mod kvm_intel kvm uinput i915 arc4 ecb drm snd_hda_codec_idt ath5k snd_hda_intel hid_apple mac80211 usbhid appletouch snd_hda_codec snd_pcm ath cfg80211 snd_timer i2c_algo_bit ohci1394 video snd processor ieee1394 rfkill ehci_hcd sg sky2 backlight snd_page_alloc uhci_hcd joydev output ac thermal button battery sr_mod applesmc cdrom input_polldev evdev unix [last unloaded: scsi_wait_scan]
-[38573.102007] irq event stamp: 2547724535
-[38573.102007] hardirqs last  enabled at (2547724534): [<c1002ffc>] restore_all_notrace+0x0/0x18
-[38573.102007] hardirqs last disabled at (2547724535): [<c10038f4>] apic_timer_interrupt+0x28/0x34
-[38573.102007] softirqs last  enabled at (92950144): [<c103ab48>] __do_softirq+0x108/0x210
-[38573.102007] softirqs last disabled at (92950274): [<c1348e74>] _spin_lock_bh+0x14/0x80
-[38573.102007]
-[38573.102007] Pid: 2230, comm: phy0 Tainted: G        W  (2.6.31-rc7-wl #8) MacBook1,1
-[38573.102007] EIP: 0060:[<f8ea2d50>] EFLAGS: 00010292 CPU: 0
-[38573.102007] EIP is at cmp_ies+0x30/0x180 [cfg80211]
-[38573.102007] EAX: 00000082 EBX: 00000000 ECX: ffffffc1 EDX: d8efd014
-[38573.102007] ESI: ffffff7c EDI: 0000004d EBP: eee2dc50 ESP: eee2dc3c
-[38573.102007]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[38573.102007] CR0: 8005003b CR2: d8efd014 CR3: 01694000 CR4: 000026d0
-[38573.102007] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-[38573.102007] DR6: ffff0ff0 DR7: 00000400
-[38573.102007] Call Trace:
-[38573.102007]  [<f8ea2f8d>] cmp_bss+0xed/0x100 [cfg80211]
-[38573.102007]  [<f8ea33e4>] cfg80211_bss_update+0x84/0x410 [cfg80211]
-[38573.102007]  [<f8ea3884>] cfg80211_inform_bss_frame+0x114/0x180 [cfg80211]
-[38573.102007]  [<f97255ff>] ieee80211_bss_info_update+0x4f/0x180 [mac80211]
-[38573.102007]  [<f972b118>] ieee80211_rx_bss_info+0x88/0xf0 [mac80211]
-[38573.102007]  [<f9739297>] ? ieee802_11_parse_elems+0x27/0x30 [mac80211]
-[38573.102007]  [<f972b224>] ieee80211_rx_mgmt_probe_resp+0xa4/0x1c0 [mac80211]
-[38573.102007]  [<f972bc59>] ieee80211_sta_rx_queued_mgmt+0x919/0xc50 [mac80211]
-[38573.102007]  [<c1009707>] ? sched_clock+0x27/0xa0
-[38573.102007]  [<c1009707>] ? sched_clock+0x27/0xa0
-[38573.102007]  [<c105ffd0>] ? mark_held_locks+0x60/0x80
-[38573.102007]  [<c1348be5>] ? _spin_unlock_irqrestore+0x55/0x70
-[38573.102007]  [<c134baa5>] ? sub_preempt_count+0x85/0xc0
-[38573.102007]  [<c1348bce>] ? _spin_unlock_irqrestore+0x3e/0x70
-[38573.102007]  [<c12c1c0f>] ? skb_dequeue+0x4f/0x70
-[38573.102007]  [<f972c021>] ieee80211_sta_work+0x91/0xb80 [mac80211]
-[38573.102007]  [<c1009707>] ? sched_clock+0x27/0xa0
-[38573.102007]  [<c134baa5>] ? sub_preempt_count+0x85/0xc0
-[38573.102007]  [<c10479af>] worker_thread+0x18f/0x320
-[38573.102007]  [<c104794e>] ? worker_thread+0x12e/0x320
-[38573.102007]  [<c1348be5>] ? _spin_unlock_irqrestore+0x55/0x70
-[38573.102007]  [<f972bf90>] ? ieee80211_sta_work+0x0/0xb80 [mac80211]
-[38573.102007]  [<c104cbb0>] ? autoremove_wake_function+0x0/0x50
-[38573.102007]  [<c1047820>] ? worker_thread+0x0/0x320
-[38573.102007]  [<c104c854>] kthread+0x84/0x90
-[38573.102007]  [<c104c7d0>] ? kthread+0x0/0x90
-[38573.102007]  [<c1003ab7>] kernel_thread_helper+0x7/0x10
-
+Reported-by: Forrest Zhang <forrest@hifulltech.com>
 Signed-off-by: Bob Copeland <me@bobcopeland.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/wireless/scan.c |    2 +-
+ drivers/net/wireless/ath/ath5k/base.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/wireless/scan.c
-+++ b/net/wireless/scan.c
-@@ -97,7 +97,7 @@ void cfg80211_bss_expire(struct cfg80211
- 		dev->bss_generation++;
- }
- 
--static u8 *find_ie(u8 num, u8 *ies, size_t len)
-+static u8 *find_ie(u8 num, u8 *ies, int len)
- {
- 	while (len > 2 && ies[0] != num) {
- 		len -= ies[1] + 2;
+--- a/drivers/net/wireless/ath/ath5k/base.c
++++ b/drivers/net/wireless/ath/ath5k/base.c
+@@ -2676,7 +2676,7 @@ ath5k_reset(struct ath5k_softc *sc, stru
+ 		sc->curchan = chan;
+ 		sc->curband = &sc->sbands[chan->band];
+ 	}
+-	ret = ath5k_hw_reset(ah, sc->opmode, sc->curchan, true);
++	ret = ath5k_hw_reset(ah, sc->opmode, sc->curchan, chan != NULL);
+ 	if (ret) {
+ 		ATH5K_ERR(sc, "can't reset hardware (%d)\n", ret);
+ 		goto err;
 
 
