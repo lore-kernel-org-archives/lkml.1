@@ -1,139 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbZIPJfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbZIPJfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758581AbZIPJfE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 05:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbZIPJfD
+	id S1758449AbZIPJfz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 05:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZIPJfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 05:35:03 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42390 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751733AbZIPJfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 05:35:01 -0400
-Date: Wed, 16 Sep 2009 10:35:06 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 1/4] mm: m(un)lock avoid ZERO_PAGE
-Message-ID: <20090916093506.GB1993@csn.ul.ie>
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909152127240.22199@sister.anvils> <Pine.LNX.4.64.0909152130260.22199@sister.anvils>
+	Wed, 16 Sep 2009 05:35:53 -0400
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:41436 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164AbZIPJfw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 05:35:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=I2TlJgdTyBJjKXupgLSZrfFjM0QIy/P65H/oVGABN35QtztsjPQfXoQax27vOAJO5D
+         e7fZSdNN1RLfjenomwuk/ETHVB4/0YctuQmx7PjzBJ7eZT6C5HB5PUNgPGRcPv4wlKNW
+         GJomtVx4Ht92gCyxTFdnRDueopy5kQ1hOSFmM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0909152130260.22199@sister.anvils>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Date: Wed, 16 Sep 2009 17:35:56 +0800
+Message-ID: <2375c9f90909160235m1f052df0qb001f8243ed9291e@mail.gmail.com>
+Subject: kcore patches (was Re: 2.6.32 -mm merge plans)
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kamezawa.hiroyu@jp.fujitsu.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 09:31:49PM +0100, Hugh Dickins wrote:
-> I'm still reluctant to clutter __get_user_pages() with another flag,
-> just to avoid touching ZERO_PAGE count in mlock(); though we can add
-> that later if it shows up as an issue in practice.
-> 
-> But when mlocking, we can test page->mapping slightly earlier, to avoid
-> the potentially bouncy rescheduling of lock_page on ZERO_PAGE - mlock
-> didn't lock_page in olden ZERO_PAGE days, so we might have regressed.
-> 
-> And when munlocking, it turns out that FOLL_DUMP coincidentally does
-> what's needed to avoid all updates to ZERO_PAGE, so use that here also.
-> Plus add comment suggested by KAMEZAWA Hiroyuki.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
-> 
->  mm/mlock.c |   49 ++++++++++++++++++++++++++++++++++++-------------
->  1 file changed, 36 insertions(+), 13 deletions(-)
-> 
-> --- mm0/mm/mlock.c	2009-09-14 16:34:37.000000000 +0100
-> +++ mm1/mm/mlock.c	2009-09-15 17:32:03.000000000 +0100
-> @@ -198,17 +198,26 @@ static long __mlock_vma_pages_range(stru
->  		for (i = 0; i < ret; i++) {
->  			struct page *page = pages[i];
->  
-> -			lock_page(page);
-> -			/*
-> -			 * Because we lock page here and migration is blocked
-> -			 * by the elevated reference, we need only check for
-> -			 * file-cache page truncation.  This page->mapping
-> -			 * check also neatly skips over the ZERO_PAGE(),
-> -			 * though if that's common we'd prefer not to lock it.
-> -			 */
-> -			if (page->mapping)
-> -				mlock_vma_page(page);
-> -			unlock_page(page);
-> +			if (page->mapping) {
-> +				/*
-> +				 * That preliminary check is mainly to avoid
-> +				 * the pointless overhead of lock_page on the
-> +				 * ZERO_PAGE: which might bounce very badly if
-> +				 * there is contention.  However, we're still
-> +				 * dirtying its cacheline with get/put_page:
-> +				 * we'll add another __get_user_pages flag to
-> +				 * avoid it if that case turns out to matter.
-> +				 */
-> +				lock_page(page);
-> +				/*
-> +				 * Because we lock page here and migration is
-> +				 * blocked by the elevated reference, we need
-> +				 * only check for file-cache page truncation.
-> +				 */
-> +				if (page->mapping)
-> +					mlock_vma_page(page);
-> +				unlock_page(page);
-> +			}
->  			put_page(page);	/* ref from get_user_pages() */
->  		}
->  
-> @@ -309,9 +318,23 @@ void munlock_vma_pages_range(struct vm_a
->  	vma->vm_flags &= ~VM_LOCKED;
->  
->  	for (addr = start; addr < end; addr += PAGE_SIZE) {
-> -		struct page *page = follow_page(vma, addr, FOLL_GET);
-> -		if (page) {
-> +		struct page *page;
-> +		/*
-> +		 * Although FOLL_DUMP is intended for get_dump_page(),
-> +		 * it just so happens that its special treatment of the
-> +		 * ZERO_PAGE (returning an error instead of doing get_page)
-> +		 * suits munlock very well (and if somehow an abnormal page
-> +		 * has sneaked into the range, we won't oops here: great).
-> +		 */
-> +		page = follow_page(vma, addr, FOLL_GET | FOLL_DUMP);
+On Wed, Sep 16, 2009 at 7:15 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>#kcore-fix-proc-kcores-statst_size.patch: is it right?
+>kcore-fix-proc-kcores-statst_size.patch
 
-Ouch, now I get your depraved comment :) . This will be a tricky rule to
-remember in a years time, wouldn't it?
+Hmm, I think KAMEZAWA Hiroyuki's patchset is a much better fix for this.
+Hiroyuki?
 
-> +		if (page && !IS_ERR(page)) {
->  			lock_page(page);
-> +			/*
-> +			 * Like in __mlock_vma_pages_range(),
-> +			 * because we lock page here and migration is
-> +			 * blocked by the elevated reference, we need
-> +			 * only check for file-cache page truncation.
-> +			 */
->  			if (page->mapping)
->  				munlock_vma_page(page);
->  			unlock_page(page);
-> 
-
-Functionally, the patch seems fine and the avoidance of lock_page() is
-nice so.
-
-Reviewed-by: Mel Gorman <mel@csn.ul.ie>
-
-But, as FOLL_DUMP applies to more than core dumping, can it be renamed
-in another follow-on patch?  The fundamental underlying "thing" it does
-is to error instead of faulting the zero page so FOLL_NO_FAULT_ZEROPAGE,
-FOLL_ERRORZERO, FOLL_NOZERO etc? A name like that would simplify the comments
-as FOLL_DUMP would no longer just be a desirable side-effect.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks!
