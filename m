@@ -1,96 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZIPTEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbZIPTNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbZIPTEO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 15:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZIPTEJ
+	id S1757014AbZIPTNh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 15:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbZIPTNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 15:04:09 -0400
-Received: from cmpxchg.org ([85.214.51.133]:40899 "EHLO cmpxchg.org"
+	Wed, 16 Sep 2009 15:13:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40616 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752901AbZIPTEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 15:04:08 -0400
-Date: Wed, 16 Sep 2009 21:04:31 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>
-Subject: Re: [patch] mm: use-once mapped file pages
-Message-ID: <20090916190431.GA20897@cmpxchg.org>
-References: <1252971975-15218-1-git-send-email-hannes@cmpxchg.org> <28c262360909150826s2a0f5f0dpd111640f92d0f5ff@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1755452AbZIPTNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 15:13:31 -0400
+Date: Wed, 16 Sep 2009 19:13:02 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Fix TASK_WAKING & loadaverage breakage
+Message-ID: <tip-bf2add6a0aacf632a71237ac5fc818a82ea12684@git.kernel.org>
+Git-Commit-ID: bf2add6a0aacf632a71237ac5fc818a82ea12684
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360909150826s2a0f5f0dpd111640f92d0f5ff@mail.gmail.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 16 Sep 2009 19:13:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Minchan,
+Commit-ID:  bf2add6a0aacf632a71237ac5fc818a82ea12684
+Gitweb:     http://git.kernel.org/tip/bf2add6a0aacf632a71237ac5fc818a82ea12684
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 16 Sep 2009 21:09:13 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 16 Sep 2009 21:09:13 +0200
 
-On Wed, Sep 16, 2009 at 12:26:27AM +0900, Minchan Kim wrote:
-> Hi, Hannes.
+sched: Fix TASK_WAKING & loadaverage breakage
 
-[snapped stuff Rik answered already]
+Fix this:
 
-> > When dropping into reclaim, the VM has a hard time making progress
-> > with these pages dominating.  And since all mapped pages are treated
-> > equally (i.e. anon pages as well), a major part of the anon working
-> > set is swapped out before the hashing completes as well.
-> >
-> > Failing reclaim and swapping show up pretty quickly in decreasing
-> > overall system interactivity, but also in the throughput of the
-> > hashing process itself.
-> >
-> > This patch implements a use-once strategy for mapped file pages.
-> >
-> > For this purpose, mapped file pages with page table references are not
-> > directly activated at the end of the inactive list anymore but marked
-> > with PG_referenced and sent on another roundtrip on the inactive list.
-> > If such a page comes in again, another page table reference activates
-> > it while the lack thereof leads to its eviction.
-> >
-> > The deactivation path does not clear this mark so that a subsequent
-> > page table reference for a page coming from the active list means
-> > reactivation as well.
-> 
-> It seems to be good idea. but I have a concern about embedded.
-> AFAIK, some CPUs don't have accessed bit by hardware.
-> maybe ARM series.
-> (Nowadays, Some kinds of CPU series just supports access bit.
-> but there are still CPUs that doesn't support it)
-> 
-> I am not sure there are others architecture.
-> Your idea makes mapped page reclaim depend on access bit more tightly.
->  :(
+top - 21:54:00 up  2:59,  1 user,  load average: 432512.33, 426421.74, 417432.74
 
-ARM seems to emulate the accessed bit by ensuring a subsequent access
-will fault when the young bit is cleared, so we should get one extra
-minor fault per finally activated mapped file page as a trade-off.
+Which happens because we now set TASK_WAKING before activate_task().
 
-I am not too concerned about that because it should be a rather rare
-event.  Only fresh pages go through that.  PG_referenced is remembered
-over activation/deactivation and once it's set, a page is treated just
-like it is now: activated if referenced, reclaimed if not.
+Spread out activate_task() in two parts - this is also
+a micro-optimization as try_to_wake_up() is one of the
+hottest path.
 
-So yeah, there is a bit more overhead for ARM to approximate the
-working set initially.  But the results are more trustworthy and we
-get rid of a badly performing corner case in the VM.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> > diff --git a/mm/rmap.c b/mm/rmap.c
-> > index 28aafe2..0c88813 100644
-> > --- a/mm/rmap.c
-> > +++ b/mm/rmap.c
-> > @@ -508,9 +508,6 @@ int page_referenced(struct page *page,
-> >  {
-> >        int referenced = 0;
-> >
-> > -       if (TestClearPageReferenced(page))
-> > -               referenced++;
-> > -
 
-This hunk should also get removed from the !CONFIG_MMU dummy function.
-I'll wait a bit for more feedback and send a fixed revision.
+---
+ kernel/sched.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-Thanks,
-	Hannes
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 5049d95..e3fbd83 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2343,7 +2343,11 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+ 	/*
+ 	 * In order to handle concurrent wakeups and release the rq->lock
+ 	 * we put the task in TASK_WAKING state.
++	 *
++	 * First fix up the nr_uninterruptible count:
+ 	 */
++	if (task_contributes_to_load(p))
++		rq->nr_uninterruptible--;
+ 	p->state = TASK_WAKING;
+ 	task_rq_unlock(rq, &flags);
+ 
+@@ -2381,7 +2385,9 @@ out_activate:
+ 		schedstat_inc(p, se.nr_wakeups_local);
+ 	else
+ 		schedstat_inc(p, se.nr_wakeups_remote);
+-	activate_task(rq, p, 1);
++
++	enqueue_task(rq, p, wakeup);
++	inc_nr_running(rq);
+ 	success = 1;
+ 
+ 	/*
