@@ -1,81 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbZIPKT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757100AbZIPKUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756931AbZIPKT6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 06:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZIPKTz
+	id S1757100AbZIPKUQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 06:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbZIPKUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 06:19:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46318 "EHLO hera.kernel.org"
+	Wed, 16 Sep 2009 06:20:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46343 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756809AbZIPKTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 06:19:54 -0400
-Date: Wed, 16 Sep 2009 10:19:31 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
+	id S1754698AbZIPKUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 06:20:11 -0400
+Date: Wed, 16 Sep 2009 10:19:44 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Complete buddy switches
-Message-ID: <tip-3cb63d527f76e25dbccce4f577f21aecfa2abac7@git.kernel.org>
-Git-Commit-ID: 3cb63d527f76e25dbccce4f577f21aecfa2abac7
+Subject: [tip:sched/core] sched: Add come comments to the sched features
+Message-ID: <tip-e26af0e8b2c9916f1e8a12ddaf52057bbe8ff600@git.kernel.org>
+Git-Commit-ID: e26af0e8b2c9916f1e8a12ddaf52057bbe8ff600
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 16 Sep 2009 10:19:32 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 16 Sep 2009 10:19:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3cb63d527f76e25dbccce4f577f21aecfa2abac7
-Gitweb:     http://git.kernel.org/tip/3cb63d527f76e25dbccce4f577f21aecfa2abac7
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Fri, 11 Sep 2009 12:01:17 +0200
+Commit-ID:  e26af0e8b2c9916f1e8a12ddaf52057bbe8ff600
+Gitweb:     http://git.kernel.org/tip/e26af0e8b2c9916f1e8a12ddaf52057bbe8ff600
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Fri, 11 Sep 2009 12:31:23 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 15 Sep 2009 16:01:02 +0200
+CommitDate: Tue, 15 Sep 2009 16:01:03 +0200
 
-sched: Complete buddy switches
+sched: Add come comments to the sched features
 
-Add a NEXT_BUDDY feature flag to aid in debugging.
+Add text...
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/sched_fair.c     |    3 ++-
- kernel/sched_features.h |    1 +
- 2 files changed, 3 insertions(+), 1 deletions(-)
+ kernel/sched_features.h |   93 +++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 85 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index cea5b82..4f6356e 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1501,7 +1501,8 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
- 	 */
- 	if (sched_feat(LAST_BUDDY) && likely(se->on_rq && curr != rq->idle))
- 		set_last_buddy(se);
--	set_next_buddy(pse);
-+	if (sched_feat(NEXT_BUDDY))
-+		set_next_buddy(pse);
- 
- 	/*
- 	 * We can come here with TIF_NEED_RESCHED already set from new task
 diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 07c8250..6174c12 100644
+index 6174c12..891ea0f 100644
 --- a/kernel/sched_features.h
 +++ b/kernel/sched_features.h
-@@ -14,5 +14,6 @@ SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
- SCHED_FEAT(ASYM_EFF_LOAD, 1)
- SCHED_FEAT(WAKEUP_SYNC, 0)
- SCHED_FEAT(WAKEUP_OVERLAP, 0)
+@@ -1,19 +1,96 @@
++/*
++ * Disregards a certain amount of sleep time (sched_latency_ns) and
++ * considers the task to be running during that period. This gives it
++ * a service deficit on wakeup, allowing it to run sooner.
++ */
+ SCHED_FEAT(NEW_FAIR_SLEEPERS, 0)
++
++/*
++ * By not normalizing the sleep time, heavy tasks get an effective
++ * longer period, and lighter task an effective shorter period they
++ * are considered running.
++ */
+ SCHED_FEAT(NORMALIZED_SLEEPER, 0)
+-SCHED_FEAT(ADAPTIVE_GRAN, 1)
+-SCHED_FEAT(WAKEUP_PREEMPT, 1)
++
++/*
++ * Place new tasks ahead so that they do not starve already running
++ * tasks
++ */
+ SCHED_FEAT(START_DEBIT, 1)
++
++/*
++ * Should wakeups try to preempt running tasks.
++ */
++SCHED_FEAT(WAKEUP_PREEMPT, 1)
++
++/*
++ * Compute wakeup_gran based on task behaviour, clipped to
++ *  [0, sched_wakeup_gran_ns]
++ */
++SCHED_FEAT(ADAPTIVE_GRAN, 1)
++
++/*
++ * When converting the wakeup granularity to virtual time, do it such
++ * that heavier tasks preempting a lighter task have an edge.
++ */
++SCHED_FEAT(ASYM_GRAN, 1)
++
++/*
++ * Always wakeup-preempt SYNC wakeups, see SYNC_WAKEUPS.
++ */
++SCHED_FEAT(WAKEUP_SYNC, 0)
++
++/*
++ * Wakeup preempt based on task behaviour. Tasks that do not overlap
++ * don't get preempted.
++ */
++SCHED_FEAT(WAKEUP_OVERLAP, 0)
++
++/*
++ * Use the SYNC wakeup hint, pipes and the likes use this to indicate
++ * the remote end is likely to consume the data we just wrote, and
++ * therefore has cache benefit from being placed on the same cpu, see
++ * also AFFINE_WAKEUPS.
++ */
++SCHED_FEAT(SYNC_WAKEUPS, 1)
++
++/*
++ * Based on load and program behaviour, see if it makes sense to place
++ * a newly woken task on the same cpu as the task that woke it --
++ * improve cache locality. Typically used with SYNC wakeups as
++ * generated by pipes and the like, see also SYNC_WAKEUPS.
++ */
+ SCHED_FEAT(AFFINE_WAKEUPS, 1)
++
++/*
++ * Prefer to schedule the task we woke last (assuming it failed
++ * wakeup-preemption), since its likely going to consume data we
++ * touched, increases cache locality.
++ */
 +SCHED_FEAT(NEXT_BUDDY, 1)
- SCHED_FEAT(LAST_BUDDY, 1)
++
++/*
++ * Prefer to schedule the task that ran last (when we did
++ * wake-preempt) as that likely will touch the same data, increases
++ * cache locality.
++ */
++SCHED_FEAT(LAST_BUDDY, 1)
++
++/*
++ * Consider buddies to be cache hot, decreases the likelyness of a
++ * cache buddy being migrated away, increases cache locality.
++ */
+ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
+-SCHED_FEAT(SYNC_WAKEUPS, 1)
++
+ SCHED_FEAT(HRTICK, 0)
+ SCHED_FEAT(DOUBLE_TICK, 0)
+-SCHED_FEAT(ASYM_GRAN, 1)
+ SCHED_FEAT(LB_BIAS, 1)
+ SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
+ SCHED_FEAT(ASYM_EFF_LOAD, 1)
+-SCHED_FEAT(WAKEUP_SYNC, 0)
+-SCHED_FEAT(WAKEUP_OVERLAP, 0)
+-SCHED_FEAT(NEXT_BUDDY, 1)
+-SCHED_FEAT(LAST_BUDDY, 1)
++
++/*
++ * Spin-wait on mutex acquisition when the mutex owner is running on
++ * another cpu -- assumes that when the owner is running, it will soon
++ * release the lock. Decreases scheduling overhead.
++ */
  SCHED_FEAT(OWNER_SPIN, 1)
