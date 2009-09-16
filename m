@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbZIPVfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbZIPVSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759969AbZIPVfV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 17:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZIPVfR
+	id S1760039AbZIPVSD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 17:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZIPVR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 17:35:17 -0400
-Received: from kroah.org ([198.145.64.141]:49507 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755386AbZIPVfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 17:35:16 -0400
-Date: Wed, 16 Sep 2009 14:09:56 -0700
-From: Greg KH <greg@kroah.com>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/48] 2.6.27.32-stable review
-Message-ID: <20090916210956.GB24567@kroah.com>
-References: <200909112223.n8BMMSHG002530@hera.kernel.org>
+	Wed, 16 Sep 2009 17:17:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:23053 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbZIPVR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 17:17:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OcwJatw5rRdRDuW99BJGIA/bOb9IixmS+FgqYB7YFJqo/iyDRsD5i++EPci6reYkYf
+         IV6euEf0GYzrtWxzw88IRM7XyzDVsmGTd25WFvExV4Hga69oW+idFpXxb17+6zY1rWef
+         NZAamJuCF3MJEsorxJV/v73g6aN9pswhp3S5o=
+Date: Wed, 16 Sep 2009 23:17:55 +0200
+From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+To: "Graham, David" <david.graham@intel.com>
+Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: [E1000-devel] [BUG 2.6.30+] e100 sometimes causes oops during
+	resume
+Message-ID: <20090916211755.GA2048@bizet.domek.prywatny>
+References: <20090915120538.GA26806@bizet.domek.prywatny> <13830B75AD5A2F42848F92269B11996F5BF592C3@orsmsx509.amr.corp.intel.com> <20090916014448.GA1070@bizet.domek.prywatny> <4AB1536F.9070205@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200909112223.n8BMMSHG002530@hera.kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4AB1536F.9070205@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 12, 2009 at 12:22:22AM +0200, Tilman Schmidt wrote:
-> [On holiday, answering from my nominally internet capable cellphone - please make allowances ...]
-> 
-> The stable patch claiming to correspond to Linus' tree patch
-> 56f7efe48d57dda9e59e23ab161c118271cce815 and merged in 2.6.27.sth
-> (eyact version not at hand) and 2.6.28.10 differs from the backported
-> patch I submitted for stable myself. It breaks the driver completely,
-> causing an oops and system malfunctions as soon as the device is
-> connected. (Sorry for not noticing the vital difference at the time.)
+On Wed, Sep 16, 2009 at 02:06:55PM -0700, Graham, David wrote:
+> Karol Lewandowski wrote:
+>>
+>> I can test, or rather -- start testing this tommorow, if this makes
+>> sense to you.
+>>
+> Yes please Karol, test with 6905b1f1...removed.
 
-No problem.
+Ok.
 
-> The attached patch would fix the error by moving the code inswrted at
-> the wrong place by the broken backported patch,, to the correct place
-> where it went in the original patch. 
 
-I see no patch attached here :(
+> I will continue testing  
+> here too on 2.6.31, though I have not had a repro yet. And are you  
+> performing a standby or hibernate, I want to be sure that I'm resuming  
+> from the same state.
 
-> Alternativelyy, the broken backported could be reverted and my
-> original bacport merged instead, if you can still find it.
+I don't use hibernate, I always suspend to ram.
 
-I can not.
-
-> Sorry for lack of references as i don't have acces to my development
-> machine from here. Hope to have Cleared up the situation, anyway.
-
-Can you send me what you need applied to the latest 2.6.27-stable tree
-to fix this up so we can finally resolve this?
-
-thanks,
-
-greg k-h
+Thanks.
