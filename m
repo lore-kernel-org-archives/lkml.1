@@ -1,186 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbZIPAHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbZIPAIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753962AbZIPAHm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 20:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZIPAHh
+	id S1757970AbZIPAIm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 20:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbZIPAIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 20:07:37 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61120 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753024AbZIPAHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 20:07:36 -0400
-Message-ID: <4AB02BD5.4050107@cn.fujitsu.com>
-Date: Wed, 16 Sep 2009 08:05:41 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH] io-controller: Fix task hanging when there are more	than
- one groups
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com> <20090915033739.GA4054@redhat.com>
-In-Reply-To: <20090915033739.GA4054@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 20:08:39 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:38986 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753099AbZIPAIi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 20:08:38 -0400
+Date: Wed, 16 Sep 2009 10:08:05 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200909160008.n8G085jI032009@localhost.localdomain>
+To: torvalds@linux-foundation.org
+Subject: [git pull] m68knommu arch fixes
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Fri, Sep 11, 2009 at 09:15:42AM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->>> On Wed, Sep 09, 2009 at 03:38:25PM +0800, Gui Jianfeng wrote:
->>>> Vivek Goyal wrote:
->>>>> On Mon, Sep 07, 2009 at 03:40:53PM +0800, Gui Jianfeng wrote:
->>>>>> Hi Vivek,
->>>>>>
->>>>>> I happened to encount a bug when i test IO Controller V9.
->>>>>> When there are three tasks to run concurrently in three group,
->>>>>> that is, one is parent group, and other two tasks are running 
->>>>>> in two different child groups respectively to read or write 
->>>>>> files in some disk, say disk "hdb", The task may hang up, and 
->>>>>> other tasks which access into "hdb" will also hang up.
->>>>>>
->>>>>> The bug only happens when using AS io scheduler.
->>>>>> The following scirpt can reproduce this bug in my box.
->>>>>>
->>>>> Hi Gui,
->>>>>
->>>>> I tried reproducing this on my system and can't reproduce it. All the
->>>>> three processes get killed and system does not hang.
->>>>>
->>>>> Can you please dig deeper a bit into it. 
->>>>>
->>>>> - If whole system hangs or it is just IO to disk seems to be hung.
->>>>     Only when the task is trying do IO to disk it will hang up.
->>>>
->>>>> - Does io scheduler switch on the device work
->>>>     yes, io scheduler can be switched, and the hung task will be resumed.
->>>>
->>>>> - If the system is not hung, can you capture the blktrace on the device.
->>>>>   Trace might give some idea, what's happening.
->>>> I run a "find" task to do some io on that disk, it seems that task hangs 
->>>> when it is issuing getdents() syscall.
->>>> kernel generates the following message:
->>>>
->>>> INFO: task find:3260 blocked for more than 120 seconds.
->>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->>>> find          D a1e95787  1912  3260   2897 0x00000004
->>>>  f6af2db8 00000096 f660075c a1e95787 00000032 f6600270 f6600508 c2037820
->>>>  00000000 c09e0820 f655f0c0 f6af2d8c fffebbf1 00000000 c0447323 f7152a1c
->>>>  0006a144 f7152a1c 0006a144 f6af2e04 f6af2db0 c04438df c2037820 c2037820
->>>> Call Trace:
->>>>  [<c0447323>] ? getnstimeofday+0x57/0xe0
->>>>  [<c04438df>] ? ktime_get_ts+0x4a/0x4e
->>>>  [<c068ab68>] io_schedule+0x47/0x79
->>>>  [<c04c12ee>] sync_buffer+0x36/0x3a
->>>>  [<c068ae14>] __wait_on_bit+0x36/0x5d
->>>>  [<c04c12b8>] ? sync_buffer+0x0/0x3a
->>>>  [<c068ae93>] out_of_line_wait_on_bit+0x58/0x60
->>>>  [<c04c12b8>] ? sync_buffer+0x0/0x3a
->>>>  [<c0440fa4>] ? wake_bit_function+0x0/0x43
->>>>  [<c04c1249>] __wait_on_buffer+0x19/0x1c
->>>>  [<f81e4186>] ext3_bread+0x5e/0x79 [ext3]
->>>>  [<f81e77a8>] htree_dirblock_to_tree+0x1f/0x120 [ext3]
->>>>  [<f81e7923>] ext3_htree_fill_tree+0x7a/0x1bb [ext3]
->>>>  [<c04a01f9>] ? kmem_cache_alloc+0x86/0xf3
->>>>  [<c044c428>] ? trace_hardirqs_on_caller+0x107/0x12f
->>>>  [<c044c45b>] ? trace_hardirqs_on+0xb/0xd
->>>>  [<f81e09e4>] ? ext3_readdir+0x9e/0x692 [ext3]
->>>>  [<f81e0b34>] ext3_readdir+0x1ee/0x692 [ext3]
->>>>  [<c04b1100>] ? filldir64+0x0/0xcd
->>>>  [<c068b86a>] ? mutex_lock_killable_nested+0x2b1/0x2c5
->>>>  [<c068b874>] ? mutex_lock_killable_nested+0x2bb/0x2c5
->>>>  [<c04b12db>] ? vfs_readdir+0x46/0x94
->>>>  [<c04b12fd>] vfs_readdir+0x68/0x94
->>>>  [<c04b1100>] ? filldir64+0x0/0xcd
->>>>  [<c04b1387>] sys_getdents64+0x5e/0x9f
->>>>  [<c04028b4>] sysenter_do_call+0x12/0x32
->>>> 1 lock held by find/3260:
->>>>  #0:  (&sb->s_type->i_mutex_key#7){+.+.+.}, at: [<c04b12db>] vfs_readdir+0x46/0x94
->>>>
->>>> ext3 calls wait_on_buffer() to wait buffer, and schedule the task out in TASK_UNINTERRUPTIBLE
->>>> state, and I found this task will be resumed after a quite long period(more than 10 mins).
->>> Thanks Gui. As Jens said, it does look like a case of missing queue
->>> restart somewhere and now we are stuck, no requests are being dispatched
->>> to the disk and queue is already unplugged.
->>>
->>> Can you please also try capturing the trace of events at io scheduler
->>> (blktrace) to see how did we get into that situation.
->>>
->>> Are you using ide drivers and not libata? As jens said, I will try to make
->>> use of ide drivers and see if I can reproduce it.
->>>
->> Hi Vivek, Jens,
->>
->> Currently, If there's only the root cgroup and no other child cgroup available, io-controller will
->> optimize to stop expiring the current ioq, and we thought the current ioq belongs to root group. But
->> in some cases, this assumption is not true. Consider the following scenario, if there is a child cgroup
->> located in root cgroup, and task A is running in the child cgroup, and task A issues some IOs. Then we
->> kill task A and remove the child cgroup, at this time, there is only root cgroup available. But the ioq
->> is still under service, and from now on, this ioq won't expire because "only root" optimization.
->> The following patch ensures the ioq do belongs to the root group if there's only root group existing.
->>
->> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> 
-> Hi Gui,
-> 
-> I have modified your patch a bit to improve readability. Looking at the
-> issue closely I realized that this optimization of not expiring the 
-> queue can lead to other issues like high vdisktime in certain scenarios.
-> While fixing that also noticed the issue of high rate of as queue
-> expiration in certain cases which could have been avoided. 
-> 
-> Here is a patch which should fix all that. I am still testing this patch
-> to make sure that something is not obiviously broken. Will merge it if
-> there are no issues.
-> 
-> Thanks
-> Vivek
-> 
-> o Fixed the issue of not expiring the queue for single ioq schedulers. Reported
->   and fixed by Gui.
-> 
-> o If an AS queue is not expired for a long time and suddenly somebody
->   decides to create a group and launch a job there, in that case old AS
->   queue will be expired with a very high value of slice used and will get
->   a very high disk time. Fix it by marking the queue as "charge_one_slice"
->   and charge the queue only for a single time slice and not for whole
->   of the duration when queue was running.
-> 
-> o There are cases where in case of AS, excessive queue expiration will take
->   place by elevator fair queuing layer because of few reasons.
-> 	- AS does not anticipate on a queue if there are no competing requests.
-> 	  So if only a single reader is present in a group, anticipation does
-> 	  not get turn on.
-> 
-> 	- elevator layer does not know that As is anticipating hence initiates
-> 	  expiry requests in select_ioq() thinking queue is empty.
-> 
-> 	- elevaotr layer tries to aggressively expire last empty queue. This
-> 	  can lead to lof of queue expiry
-> 
-> o This patch now starts ANITC_WAIT_NEXT anticipation if last request in the
->   queue completed and associated io context is eligible to anticipate. Also
->   AS lets elevatory layer know that it is anticipating (elv_ioq_wait_request())
->   . This solves above mentioned issues.
->  
-> o Moved some of the code in separate functions to improve readability.
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+The following changes since commit 74fca6a42863ffacaf7ba6f1936a9f228950f657:
+  Linus Torvalds (1):
+        Linux 2.6.31
 
-  I'd like to have a try this patch :)
+are available in the git repository at:
 
--- 
-Regards
-Gui Jianfeng
+  git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
 
+Christoph Hellwig (1):
+      m68knommu: convert to asm-generic/hardirq.h
+
+Greg Ungerer (36):
+      m68k: remove unused elia.h include file
+      m68k: merge mmu and non-mmu versions of processor.h
+      m68k: merge mmu and non-mmu versions of irq.h
+      m68k: merge the mmu and non-mmu versions of checksum.h
+      m68k: merge mmu and non-mmu versions of dma.h
+      m68k: clean up comment delimiters in dma.h
+      m68knommu: use general interrupt controller for ColdFire 520x family
+      m68knommu: remove per device interrupt mask setting for ColdFire 520x
+      m68knommu: general interrupt controller for ColdFire many 52xx parts
+      m68knommu: clean up ColdFire 527x interrupt setup
+      m68knommu: clean up ColdFire 528x interrupt setup
+      m68knommu: clean up ColdFire 523x interrupt setup
+      m68knommu: general interrupt controller for ColdFire 532x parts
+      m68knommu: clean up ColdFire 532x interrupt setup
+      m68knommu: use common interrupt controller code for older ColdFire CPU's
+      m68knommu: complete interrupt controller code for the 68328 CPU's
+      m68knommu: complete interrupt controller code for the 68360 CPU
+      m68knommu: remove the common interrupt controller structure
+      m68knommu: remove unecessary interrupt level setting in ColdFire 520x setup
+      m68knommu: remove interrupt masking from ColdFire pit timer
+      m68knommu: remove timer device interrupt setup for ColdFire 532x
+      m68knommu: mask off all interrupts in ColdFire intc-simr controller
+      m68knommu: move ColdFire INTC definitions to new include file
+      m68knommu: remove duplicate ColdFire mcf_autovector() code
+      m68knommu: merge old ColdFire interrupt controller masking macros
+      m68knommu: support code to mask external interrupts on old ColdFire CPU's
+      m68knommu: simplify ColdFire "timers" clock initialization
+      m68knommu: clean up ColdFire 532x CPU timer setup
+      m68knommu: map ColdFire interrupts to correct masking bits
+      m68knommu: clean up old ColdFire timer irq setup
+      m68knommu: add support for second interrupt controller of ColdFire 5249
+      m68knommu: create a speciailized ColdFire 5272 interrupt controller
+      m68knommu: remove ColdFire direct interrupt register access
+      m68knommu: relax IO_SPACE_LIMIT setting
+      m68knommu: remove special interrupt handling code for ne2k support
+      m68knommu: set multi-function pins for ethernet when enabled
+
+Joe Perches (1):
+      arch/m68knommu/kernel/time.c: Remove unnecessary semicolons
+
+Philippe De Muyter (1):
+      m68knommu: fix ColdFire definition of CLOCK_TICK_RATE
+
+Tim Abbott (1):
+      m68knommu: Make PAGE_SIZE available to assembly files.
+
+sfking@fdwdc.com (13):
+      core generic GPIO support for Freescale Coldfire processors.
+      generic GPIO support for the Freescale Coldfire 5206.
+      generic GPIO support for the Freescale Coldire 5206e.
+      generic GPIO support for the Freescale Coldfire 520x.
+      generic GPIO support for the Freescale Coldfire 523x.
+      generic GPIO support for the Freescale Coldfire 5249.
+      generic GPIO support for the Freescale Coldfire 527x.
+      generic GPIO support for the Freescale Coldfire 5272.
+      generic GPIO support for the Freescale Coldfire 528x.
+      generic GPIO support for the Freescale Coldfire 5307.
+      generic GPIO support for the Freescale Coldfire 532x.
+      generic GPIO support for the Freescale Coldfire 5407.
+      generic GPIO support misc files.
+
+ arch/m68k/include/asm/checksum.h             |  173 +++++++-
+ arch/m68k/include/asm/checksum_mm.h          |  148 -------
+ arch/m68k/include/asm/checksum_no.h          |  132 ------
+ arch/m68k/include/asm/dma.h                  |  492 +++++++++++++++++++++-
+ arch/m68k/include/asm/dma_mm.h               |   16 -
+ arch/m68k/include/asm/dma_no.h               |  494 ---------------------
+ arch/m68k/include/asm/elia.h                 |   41 --
+ arch/m68k/include/asm/gpio.h                 |  238 ++++++++++
+ arch/m68k/include/asm/hardirq_no.h           |   10 +-
+ arch/m68k/include/asm/io_no.h                |    2 +-
+ arch/m68k/include/asm/irq.h                  |  135 ++++++-
+ arch/m68k/include/asm/irq_mm.h               |  126 ------
+ arch/m68k/include/asm/irq_no.h               |   26 --
+ arch/m68k/include/asm/m5206sim.h             |   33 +-
+ arch/m68k/include/asm/m520xsim.h             |   77 +++-
+ arch/m68k/include/asm/m523xsim.h             |   77 ++++
+ arch/m68k/include/asm/m5249sim.h             |   54 ++-
+ arch/m68k/include/asm/m5272sim.h             |   62 +++-
+ arch/m68k/include/asm/m527xsim.h             |  169 +++++++
+ arch/m68k/include/asm/m528xsim.h             |  151 +++++++
+ arch/m68k/include/asm/m5307sim.h             |   32 +-
+ arch/m68k/include/asm/m532xsim.h             |  198 ++++-----
+ arch/m68k/include/asm/m5407sim.h             |   28 +-
+ arch/m68k/include/asm/mcfgpio.h              |   40 ++
+ arch/m68k/include/asm/mcfintc.h              |   89 ++++
+ arch/m68k/include/asm/mcfne.h                |   83 ----
+ arch/m68k/include/asm/mcfsim.h               |   95 +----
+ arch/m68k/include/asm/mcfsmc.h               |    6 +-
+ arch/m68k/include/asm/nettel.h               |    4 +-
+ arch/m68k/include/asm/page_no.h              |    4 +-
+ arch/m68k/include/asm/pinmux.h               |   30 ++
+ arch/m68k/include/asm/processor.h            |  171 +++++++-
+ arch/m68k/include/asm/processor_mm.h         |  130 ------
+ arch/m68k/include/asm/processor_no.h         |  143 ------
+ arch/m68k/include/asm/timex.h                |   17 +-
+ arch/m68knommu/Kconfig                       |    6 +
+ arch/m68knommu/kernel/irq.c                  |   26 --
+ arch/m68knommu/kernel/time.c                 |    2 +-
+ arch/m68knommu/lib/checksum.c                |   11 +-
+ arch/m68knommu/platform/5206/Makefile        |    2 +-
+ arch/m68knommu/platform/5206/config.c        |   56 +--
+ arch/m68knommu/platform/5206/gpio.c          |   49 ++
+ arch/m68knommu/platform/5206e/Makefile       |    2 +-
+ arch/m68knommu/platform/5206e/config.c       |   58 +--
+ arch/m68knommu/platform/5206e/gpio.c         |   49 ++
+ arch/m68knommu/platform/520x/Makefile        |    2 +-
+ arch/m68knommu/platform/520x/config.c        |   30 --
+ arch/m68knommu/platform/520x/gpio.c          |  211 +++++++++
+ arch/m68knommu/platform/523x/Makefile        |    2 +-
+ arch/m68knommu/platform/523x/config.c        |   66 +---
+ arch/m68knommu/platform/523x/gpio.c          |  283 ++++++++++++
+ arch/m68knommu/platform/5249/Makefile        |    2 +-
+ arch/m68knommu/platform/5249/config.c        |   49 +--
+ arch/m68knommu/platform/5249/gpio.c          |   65 +++
+ arch/m68knommu/platform/5249/intc2.c         |   59 +++
+ arch/m68knommu/platform/5272/Makefile        |    2 +-
+ arch/m68knommu/platform/5272/config.c        |   78 +---
+ arch/m68knommu/platform/5272/gpio.c          |   81 ++++
+ arch/m68knommu/platform/5272/intc.c          |  138 ++++++
+ arch/m68knommu/platform/527x/Makefile        |    2 +-
+ arch/m68knommu/platform/527x/config.c        |   49 --
+ arch/m68knommu/platform/527x/gpio.c          |  607 ++++++++++++++++++++++++++
+ arch/m68knommu/platform/528x/Makefile        |    2 +-
+ arch/m68knommu/platform/528x/config.c        |   51 +--
+ arch/m68knommu/platform/528x/gpio.c          |  438 +++++++++++++++++++
+ arch/m68knommu/platform/5307/Makefile        |    2 +-
+ arch/m68knommu/platform/5307/config.c        |   65 +--
+ arch/m68knommu/platform/5307/gpio.c          |   49 ++
+ arch/m68knommu/platform/532x/Makefile        |    2 +-
+ arch/m68knommu/platform/532x/config.c        |   53 +---
+ arch/m68knommu/platform/532x/gpio.c          |  337 ++++++++++++++
+ arch/m68knommu/platform/5407/Makefile        |    2 +-
+ arch/m68knommu/platform/5407/config.c        |   68 +--
+ arch/m68knommu/platform/5407/gpio.c          |   49 ++
+ arch/m68knommu/platform/68328/ints.c         |   72 ++--
+ arch/m68knommu/platform/68360/ints.c         |   44 ++-
+ arch/m68knommu/platform/coldfire/Makefile    |   21 +-
+ arch/m68knommu/platform/coldfire/gpio.c      |  127 ++++++
+ arch/m68knommu/platform/coldfire/intc-2.c    |   93 ++++
+ arch/m68knommu/platform/coldfire/intc-simr.c |   78 ++++
+ arch/m68knommu/platform/coldfire/intc.c      |  153 +++++++
+ arch/m68knommu/platform/coldfire/pinmux.c    |   28 ++
+ arch/m68knommu/platform/coldfire/pit.c       |    8 -
+ arch/m68knommu/platform/coldfire/timers.c    |   18 +-
+ arch/m68knommu/platform/coldfire/vectors.c   |   20 +-
+ drivers/net/fec.c                            |   18 +-
+ 86 files changed, 5202 insertions(+), 2309 deletions(-)
+ delete mode 100644 arch/m68k/include/asm/checksum_mm.h
+ delete mode 100644 arch/m68k/include/asm/checksum_no.h
+ delete mode 100644 arch/m68k/include/asm/dma_mm.h
+ delete mode 100644 arch/m68k/include/asm/dma_no.h
+ delete mode 100644 arch/m68k/include/asm/elia.h
+ create mode 100644 arch/m68k/include/asm/gpio.h
+ delete mode 100644 arch/m68k/include/asm/irq_mm.h
+ delete mode 100644 arch/m68k/include/asm/irq_no.h
+ create mode 100644 arch/m68k/include/asm/mcfgpio.h
+ create mode 100644 arch/m68k/include/asm/mcfintc.h
+ create mode 100644 arch/m68k/include/asm/pinmux.h
+ delete mode 100644 arch/m68k/include/asm/processor_mm.h
+ delete mode 100644 arch/m68k/include/asm/processor_no.h
+ create mode 100644 arch/m68knommu/platform/5206/gpio.c
+ create mode 100644 arch/m68knommu/platform/5206e/gpio.c
+ create mode 100644 arch/m68knommu/platform/520x/gpio.c
+ create mode 100644 arch/m68knommu/platform/523x/gpio.c
+ create mode 100644 arch/m68knommu/platform/5249/gpio.c
+ create mode 100644 arch/m68knommu/platform/5249/intc2.c
+ create mode 100644 arch/m68knommu/platform/5272/gpio.c
+ create mode 100644 arch/m68knommu/platform/5272/intc.c
+ create mode 100644 arch/m68knommu/platform/527x/gpio.c
+ create mode 100644 arch/m68knommu/platform/528x/gpio.c
+ create mode 100644 arch/m68knommu/platform/5307/gpio.c
+ create mode 100644 arch/m68knommu/platform/532x/gpio.c
+ create mode 100644 arch/m68knommu/platform/5407/gpio.c
+ create mode 100644 arch/m68knommu/platform/coldfire/gpio.c
+ create mode 100644 arch/m68knommu/platform/coldfire/intc-2.c
+ create mode 100644 arch/m68knommu/platform/coldfire/intc-simr.c
+ create mode 100644 arch/m68knommu/platform/coldfire/intc.c
+ create mode 100644 arch/m68knommu/platform/coldfire/pinmux.c
