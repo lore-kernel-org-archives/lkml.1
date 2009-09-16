@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbZIPEx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbZIPEyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbZIPEx1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 00:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZIPEx0
+	id S1752507AbZIPEyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 00:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZIPEyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 00:53:26 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58668 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZIPEx0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 00:53:26 -0400
-Message-ID: <4AB06EE3.4010509@zytor.com>
-Date: Tue, 15 Sep 2009 21:51:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 16 Sep 2009 00:54:21 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:44979 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750937AbZIPEyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 00:54:21 -0400
+Date: Wed, 16 Sep 2009 10:24:20 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH tracing/kprobes 3/6] ftrace: Fix
+	trace_remove_event_call() to lock trace_event_mutex
+Message-ID: <20090916045420.GA11510@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20090914204847.18779.69409.stgit@dhcp-100-2-132.bos.redhat.com> <20090914204912.18779.68734.stgit@dhcp-100-2-132.bos.redhat.com> <1253071051.20020.177.camel@gandalf.stny.rr.com> <20090916040511.GB5121@nowhere>
 MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH] edac: need to export cpu_llc_id
-References: <20090916093935.6bc2c91f.sfr@canb.auug.org.au> <20090916044151.GB5767@aftab>
-In-Reply-To: <20090916044151.GB5767@aftab>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090916040511.GB5121@nowhere>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/15/2009 09:41 PM, Borislav Petkov wrote:
+On Wed, Sep 16, 2009 at 06:05:12AM +0200, Frederic Weisbecker wrote:
+> On Tue, Sep 15, 2009 at 11:17:30PM -0400, Steven Rostedt wrote:
+> > On Mon, 2009-09-14 at 16:49 -0400, Masami Hiramatsu wrote:
+
+...
+ 
+> It's in tip:/tracing/kprobes, which is not merged into tip/master.
+> I have some pending updates in my tracing/kprobes tree:
 > 
-> proper fix is at http://marc.info/?l=linux-kernel&m=125302459621925
+> Frederic Weisbecker (1):
+>       Merge commit 'tracing/core' into tracing/kprobes
 > 
-> we still have to figure out who's gonna pick it up. Ingo?
+> Masami Hiramatsu (16):
+>       kprobes/x86: Call BUG() when reentering probe into KPROBES_HIT_SS
+>       kprobes/x86-64: Allow to reenter probe on post_handler
+>       kprobes/x86: Fix to add __kprobes to in-kernel fault handing functions
+>       kprobes: Fix to add __kprobes to notify_die
+>       kprobes/x86-64: Fix to move common_interrupt to .kprobes.text
+>       kprobes: Prohibit to probe native_get_debugreg
+>       x86: Allow x86-32 instruction decoder selftest on x86-64
+>       x86: Remove unused config macros from instruction decoder selftest
+>       x86: Add MMX support for instruction decoder
+>       kprobes/x86-32: Move irq-exit functions to kprobes section
+>       x86/ptrace: Fix regs_get_argument_nth() to add correct offset
+>       tracing/kprobes: Fix probe offset to be unsigned
+>       tracing/kprobes: Cleanup kprobe tracer code.
+>       tracing/kprobes: Add event profiling support
+>       tracing/kprobes: Add argument name support
+>       tracing/kprobes: Show event name in trace output
 > 
+> Plus the current set that I'm about to apply, if no problem arises.
+> I should also merge one more time tip:tracing/core into it because
+> it has developed another conflicts against it since then.
+> 
+> Ingo, if you are fine with it, I'll send you a pull request
+> soon.
 
-This was from a tree you pushed straight to Linus, so it's probably
-better you push it directly.
+Frederic,
 
-You can add:
+Could you please add http://lkml.org/lkml/2009/9/15/13 too?
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Ananth
