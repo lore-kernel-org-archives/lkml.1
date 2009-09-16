@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbZIPPrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZIPPtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757706AbZIPPrP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 11:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbZIPPrO
+	id S1753788AbZIPPtG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 11:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbZIPPtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 11:47:14 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:48588 "EHLO e7.ny.us.ibm.com"
+	Wed, 16 Sep 2009 11:49:05 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44677 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753283AbZIPPrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 11:47:14 -0400
-Date: Wed, 16 Sep 2009 08:47:16 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RCU callbacks and TREE_PREEMPT_RCU
-Message-ID: <20090916154716.GC6737@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1253110641.31751.92.camel@pc1117.cambridge.arm.com> <20090916152929.GA6737@linux.vnet.ibm.com> <1253115255.31751.96.camel@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253115255.31751.96.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1753717AbZIPPtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 11:49:04 -0400
+Date: Thu, 17 Sep 2009 01:49:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] edac: need to export cpu_llc_id
+Message-Id: <20090917014901.1011949d.sfr@canb.auug.org.au>
+In-Reply-To: <20090916044151.GB5767@aftab>
+References: <20090916093935.6bc2c91f.sfr@canb.auug.org.au>
+	<20090916044151.GB5767@aftab>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__17_Sep_2009_01_49_01_+1000_nxRBRWLHZDa6lNS2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 04:34:15PM +0100, Catalin Marinas wrote:
-> On Wed, 2009-09-16 at 08:29 -0700, Paul E. McKenney wrote:
-> > On Wed, Sep 16, 2009 at 03:17:21PM +0100, Catalin Marinas wrote:
-> > > When TREE_PREEMPT_RCU is enabled, the rcu list traversing above fails
-> > > with access to 0x6b6b6b6b but it is fine with TREE_PREEMPT_RCU=n and
-> > > TREE_RCU=y. During clean-up, kmemleak objects should no longer be freed
-> > > by other means since kmemleak was disabled and all callbacks are
-> > > ignored. The system is a 900Mhz P3, 256MB RAM, CONFIG_SMP=n.
-> > > 
-> > > Is there something I'm doing wrong in kmemleak or a bug with RCU
-> > > preemption? The kernel oops looks like this:
-> > 
-> > From your description and the code above, I must suspect a bug with
-> > RCU preemption.  A new one, as the only bugs I am currently chasing
-> > involve NR_CPUS>32 (>64 on 64-bit systems).
-> > 
-> > CONFIG_SMP=n implies NR_CPUS==1 in your build, correct?
-> 
-> CONFIG_NR_CPUS=1.
+--Signature=_Thu__17_Sep_2009_01_49_01_+1000_nxRBRWLHZDa6lNS2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I was afraid of that.  ;-)
+Hi Boris,
 
-							Thanx, Paul
+On Wed, 16 Sep 2009 06:41:51 +0200 Borislav Petkov <borislav.petkov@amd.com=
+> wrote:
+>
+> proper fix is at http://marc.info/?l=3Dlinux-kernel&m=3D125302459621925
+
+Great, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__17_Sep_2009_01_49_01_+1000_nxRBRWLHZDa6lNS2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkqxCO0ACgkQjjKRsyhoI8wGZACeNGTizmlI1xcIH8QXLcXKOGMN
+eIMAn10d6UKh1uaUOj2ffodI0FRs4iBq
+=h7Ni
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__17_Sep_2009_01_49_01_+1000_nxRBRWLHZDa6lNS2--
