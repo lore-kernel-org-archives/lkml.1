@@ -1,107 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbZIPXX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760509AbZIPXTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760548AbZIPXX7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 19:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760394AbZIPXX6
+	id S1760509AbZIPXTs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 19:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760399AbZIPXTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 19:23:58 -0400
-Received: from alpha.arachsys.com ([91.203.57.7]:34278 "EHLO
-	alpha.arachsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754501AbZIPXX4 (ORCPT
+	Wed, 16 Sep 2009 19:19:47 -0400
+Received: from mail.pawisda.de ([213.157.4.156]:39140 "EHLO
+	mailrelay.pawisda.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760313AbZIPXTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 19:23:56 -0400
-Date: Thu, 17 Sep 2009 00:19:21 +0100
-From: Chris Webb <chris@arachsys.com>
-To: Mark Lord <liml@rtr.ca>
-Cc: Tejun Heo <teheo@suse.de>, linux-scsi@vger.kernel.org,
-       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-Message-ID: <20090916231921.GL1924@arachsys.com>
-References: <4A9BBC4A.6070708@redhat.com>
- <4A9BC023.10903@kernel.org>
- <20090907114442.GG18831@arachsys.com>
- <20090907115927.GU8710@arachsys.com>
- <20090909120218.GB21829@arachsys.com>
- <4AADF3C4.5060004@kernel.org>
- <4AADF471.2020801@suse.de>
- <4AAE3B9A.2060306@rtr.ca>
- <4AAE3F86.8090804@suse.de>
- <4AAE524C.2030401@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AAE524C.2030401@rtr.ca>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 16 Sep 2009 19:19:46 -0400
+Subject: Re: RCU callbacks and TREE_PREEMPT_RCU
+From: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>
+To: paulmck@linux.vnet.ibm.com
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090916155719.GA10588@linux.vnet.ibm.com>
+References: <1253110641.31751.92.camel@pc1117.cambridge.arm.com>
+	 <20090916152929.GA6737@linux.vnet.ibm.com>
+	 <1253115255.31751.96.camel@pc1117.cambridge.arm.com>
+	 <20090916154716.GC6737@linux.vnet.ibm.com>
+	 <20090916155719.GA10588@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 17 Sep 2009 01:19:46 +0200
+Message-Id: <1253143186.9006.0.camel@queen>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord <liml@rtr.ca> writes:
-
-> I suspect we're missing some info from this specific failure.
-> Looking back at Chris's earlier posting, the whole thing started
-> with a FLUSH_CACHE_EXT failure.  Once that happens, all bets are
-> off on anything that follows.
+On Wed, 2009-09-16 at 08:57 -0700, Paul E. McKenney wrote:
+> On Wed, Sep 16, 2009 at 08:47:16AM -0700, Paul E. McKenney wrote:
+> > On Wed, Sep 16, 2009 at 04:34:15PM +0100, Catalin Marinas wrote:
+> > > On Wed, 2009-09-16 at 08:29 -0700, Paul E. McKenney wrote:
+> > > > On Wed, Sep 16, 2009 at 03:17:21PM +0100, Catalin Marinas wrote:
+> > > > > When TREE_PREEMPT_RCU is enabled, the rcu list traversing above fails
+> > > > > with access to 0x6b6b6b6b but it is fine with TREE_PREEMPT_RCU=n and
+> > > > > TREE_RCU=y. During clean-up, kmemleak objects should no longer be freed
+> > > > > by other means since kmemleak was disabled and all callbacks are
+> > > > > ignored. The system is a 900Mhz P3, 256MB RAM, CONFIG_SMP=n.
+> > > > > 
+> > > > > Is there something I'm doing wrong in kmemleak or a bug with RCU
+> > > > > preemption? The kernel oops looks like this:
+> > > > 
+> > > > From your description and the code above, I must suspect a bug with
+> > > > RCU preemption.  A new one, as the only bugs I am currently chasing
+> > > > involve NR_CPUS>32 (>64 on 64-bit systems).
+> > > > 
+> > > > CONFIG_SMP=n implies NR_CPUS==1 in your build, correct?
+> > > 
+> > > CONFIG_NR_CPUS=1.
+> > 
+> > I was afraid of that.  ;-)
 > 
-> >Everything will be running fine when suddenly:
-> >
-> >  ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-> >  ata1.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-> >          res 40/00:00:80:17:91/00:00:37:00:00/40 Emask 0x4 (timeout)
-> >  ata1.00: status: { DRDY }
-> >  ata1: hard resetting link
-> >  ata1: softreset failed (device not ready)
-> >  ata1: hard resetting link
-> >  ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> >  ata1.00: configured for UDMA/133
-> >  ata1: EH complete
-> >  end_request: I/O error, dev sda, sector 1465147272
-> >  md: super_written gets error=-5, uptodate=0
-> >  raid10: Disk failure on sda3, disabling device.
-> >  raid10: Operation continuing on 5 devices.
+> PS to previous -- there -is- a bug in mainline for TREE_PREEMPT_RCU for
+> single-CPU operation, but it is with synchronize_rcu() rather than
+> call_rcu().  The fix is in tip/core/urgent, commit #366b04ca.  Or see
+> the following patch.
+> 
+> So, could you please give the following patch a try?
 
-Hi Mark. Yes, when the first timeout after a clean boot happens, it's with
-an 0xea flush command every time:
+Sadly this does not fix the issue, is there any further information I
+can provide to you?
 
-  [...]
-  ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-  ata5.00: ATA-8: ST3750523AS, CC34, max UDMA/133
-  ata5.00: 1465149168 sectors, multi 0: LBA48 NCQ (depth 31/32)
-  ata5.00: configured for UDMA/133
-  scsi 4:0:0:0: Direct-Access     ATA      ST3750523AS      CC34 PQ: 0 ANSI: 5
-  sd 4:0:0:0: [sde] 1465149168 512-byte hardware sectors: (750 GB/698 GiB)
-  sd 4:0:0:0: [sde] Write Protect is off
-  sd 4:0:0:0: [sde] Mode Sense: 00 3a 00 00
-  sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-  sd 4:0:0:0: [sde] 1465149168 512-byte hardware sectors: (750 GB/698 GiB)
-  sd 4:0:0:0: [sde] Write Protect is off
-  sd 4:0:0:0: [sde] Mode Sense: 00 3a 00 00
-  sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-   sde: sde1 sde2 sde3
-  sd 4:0:0:0: [sde] Attached SCSI disk
-  sd 4:0:0:0: Attached scsi generic sg4 type 0
+Regards, Eric
 
-  [later]
-  ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-  ata5.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-           res 40/00:00:00:4f:c2/00:00:00:00:00/40 Emask 0x4 (timeout)
-  ata5.00: status: { DRDY }
-  ata5: hard resetting link
-  ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-  ata5.00: configured for UDMA/133
-  ata5: EH complete
-  sd 4:0:0:0: [sde] 1465149168 512-byte hardware sectors: (750 GB/698 GiB)
-  sd 4:0:0:0: [sde] Write Protect is off
-  sd 4:0:0:0: [sde] Mode Sense: 00 3a 00 00
-  sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-  end_request: I/O error, dev sde, sector 1465147264
-  md: super_written gets error=-5, uptodate=0
-  raid10: Disk failure on sde3, disabling device.
-  raid10: Operation continuing on 4 devices.
-
-Best wishes,
-
-Chris.
