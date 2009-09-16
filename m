@@ -1,113 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbZIPMrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbZIPMrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759007AbZIPMrB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:47:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758950AbZIPMq7
+	id S1758987AbZIPMrh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758930AbZIPMrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:46:59 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:53144 "EHLO mail-out1.uio.no"
+	Wed, 16 Sep 2009 08:47:35 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40407 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752927AbZIPMq5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:46:57 -0400
-Subject: Re: BUG: oops in gss_validate on 2.6.31
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Aioanei Rares <krnl.list@gmail.com>
-Cc: Bastian Blank <bastian@waldi.eu.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <4AB22E13.6020501@gmail.com>
-References: <20090916102953.GA18674@wavehammer.waldi.eu.org>
-	 <1253104249.5154.3.camel@heimdal.trondhjem.org>
-	 <4AB22E13.6020501@gmail.com>
-Content-Type: text/plain; charset=US-ASCII
-Date: Wed, 16 Sep 2009 08:46:56 -0400
-Message-Id: <1253105216.5154.8.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7BIT
-X-UiO-Ratelimit-Test: rcpts/h 7 msgs/h 2 sum rcpts/h 13 sum msgs/h 2 total rcpts 1467 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: D0B93B9B032495059A0725CA3D03926F20B20474
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 2 total 256 max/h 6 blacklist 0 greylist 0 ratelimit 0
+	id S1758118AbZIPMrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:47:35 -0400
+Date: Wed, 16 Sep 2009 13:47:40 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
+       Minchan Kim <minchan.kim@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 1/4] mm: m(un)lock avoid ZERO_PAGE
+Message-ID: <20090916124740.GD1993@csn.ul.ie>
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909152127240.22199@sister.anvils> <Pine.LNX.4.64.0909152130260.22199@sister.anvils> <20090916093506.GB1993@csn.ul.ie> <Pine.LNX.4.64.0909161226500.12659@sister.anvils>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0909161226500.12659@sister.anvils>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-17 at 15:39 +0300, Aioanei Rares wrote:
-> Trond Myklebust wrote:
-> > On Wed, 2009-09-16 at 12:29 +0200, Bastian Blank wrote:
-> >   
-> >> Hi
-> >>
-> >> Since 2.6.31 my gssapi authenticated nfs oopses.
-> >>
-> >> BUG: unable to handle kernel NULL pointer dereference at 00000010
-> >> IP: [<f8dd594a>] gss_validate+0xad/0x175 [auth_rpcgss]
-> >> *pdpt = 0000000001473001 *pde = 0000000000000000
-> >> Oops: 0000 [#1] SMP
-> >> last sysfs file: /sys/devices/virtual/block/dm-13/range
-> >> Modules linked in: kvm_intel kvm ext4 jbd2 crc16 usb_storage usbhid hid i915 drm i2c_algo_bit sco bridge stp bnep rfcomm l2cap xt_mac ipt_REJECT xt_tcpudp xt_conntrack iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 ip_tables x_tables tun nfsd exportfs nfs lockd fscache nfs_acl deflate zlib_deflate ctr twofish twofish_common camellia serpent blowfish cast5 des_generic xcbc rmd160 sha1_generic hmac crypto_null af_key fuse rpcsec_gss_krb5 auth_rpcgss sunrpc loop acpi_cpufreq arc4 snd_hda_codec_analog ecb snd_hda_intel snd_hda_codec iwl3945 snd_hwdep iwlcore snd_pcm snd_seq snd_timer thinkpad_acpi snd_seq_device nsc_ircc i2c_i801 btusb mac80211 i2c_core serio_raw snd soundcore battery button psmouse processor rng_core snd_page_alloc evdev nvram ac cfg80211 bluetooth irda rfkill crc_ccitt ext3 jbd mbcache sha256_generic aes_i586 aes_generic cbc dm_crypt dm_mod sd_mod crc_t10dif ata_generic ide_pci_generic ahci libata scsi_mod sdhci_pci piix sdhci firewire_ohci firewire_core crc_itu_t ide_core mmc_core led_class uhci_hcd ehci_hcd usbcore nls_base e1000e intel_agp agpgart video output thermal fan thermal_sys [last unloaded: kvm]
-> >>
-> >> Pid: 2025, comm: rpciod/0 Not tainted (2.6.31-trunk-686-bigmem #1) 170255G
-> >> EIP: 0060:[<f8dd594a>] EFLAGS: 00010246 CPU: 0
-> >> EIP is at gss_validate+0xad/0x175 [auth_rpcgss]
-> >> EAX: d5d7e830 EBX: f60f5ef8 ECX: f60f5ee4 EDX: f60f5ef8
-> >> ESI: 00000025 EDI: 00000000 EBP: cdc30bc0 ESP: f60f5edc
-> >>  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> >> Process rpciod/0 (pid: 2025, ti=f60f4000 task=f6685ae0 task.ti=f60f4000)
-> >> Stack:
-> >>  f5c512c0 d5d7e830 00000025 d5d7e830 f60f5ef4 00000004 9cd00000 f60f5ef4
-> >> <0> 00000004 00000000 00000000 00000000 00000001 00000000 f847888c 00000004
-> >> <0> 00000004 be91f5c4 cdc30bc0 f5c512c0 d5d7e828 f3c807f8 f8d9de34 be91f5c4
-> >> Call Trace:
-> >>  [<f8d9de34>] ? rpcauth_checkverf+0x4a/0x60 [sunrpc]
-> >>  [<f8d972a0>] ? call_decode+0x30f/0x5de [sunrpc]
-> >>  [<f8d96199>] ? rpcproc_decode_null+0x0/0x21 [sunrpc]
-> >>  [<f8d9d246>] ? __rpc_execute+0x76/0x21e [sunrpc]
-> >>  [<c10528b6>] ? worker_thread+0x146/0x1d9
-> >>  [<f8d9d473>] ? rpc_async_schedule+0x0/0x29 [sunrpc]
-> >>  [<c105710f>] ? autoremove_wake_function+0x0/0x4f
-> >>  [<c1052770>] ? worker_thread+0x0/0x1d9
-> >>  [<c1056d7f>] ? kthread+0x7a/0x7f
-> >>  [<c1056d05>] ? kthread+0x0/0x7f
-> >>  [<c1009d07>] ? kernel_thread_helper+0x7/0x10
-> >> Code: 24 18 89 da 89 44 24 10 8d 44 24 10 c7 44 24 14 04 00 00 00 e8 a4 f0 fc ff 89 da 8b 44 24 04 89 74 24 08 8d 4c 24 08 89 44 24 0c <8b> 47 10 e8 3c 16 00 00 3d 00 00 0c 00 89 c2 75 0a 8d 45 28 f0
-> >> EIP: [<f8dd594a>] gss_validate+0xad/0x175 [auth_rpcgss] SS:ESP 0068:f60f5edc
-> >> CR2: 0000000000000010
-> >> ---[ end trace 92895856d62132dd ]---
-> >>
-> >> I saw this two times in the last days. Always under load. I've never
-> >> seen this with 2.6.30. The server is a 2.6.30 machine.
-> >>     
-> >
-> > Hmm... I don't see any obvious candidates in the changelog. My only
-> > guess is that something is amiss after the merge of the nfsv4.1
-> > backchannel code.
-> >
-> > Would you be able to do a git bisect in order to finger the culprit?
-> >
-> > Cheers
-> >   Trond
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-> >   
-> Guess i'll have to look into some manuals, since I'm not my git-fu is 
-> weak, and I'll get back to you. Meanwhile I'll test my .config with a 
-> release kernel.
+On Wed, Sep 16, 2009 at 12:40:23PM +0100, Hugh Dickins wrote:
+> On Wed, 16 Sep 2009, Mel Gorman wrote:
+> > On Tue, Sep 15, 2009 at 09:31:49PM +0100, Hugh Dickins wrote:
+> > > 
+> > > And when munlocking, it turns out that FOLL_DUMP coincidentally does
+> > > what's needed to avoid all updates to ZERO_PAGE, so use that here also.
+> ...
+> > >  	for (addr = start; addr < end; addr += PAGE_SIZE) {
+> > > -		struct page *page = follow_page(vma, addr, FOLL_GET);
+> > > -		if (page) {
+> > > +		struct page *page;
+> > > +		/*
+> > > +		 * Although FOLL_DUMP is intended for get_dump_page(),
+> > > +		 * it just so happens that its special treatment of the
+> > > +		 * ZERO_PAGE (returning an error instead of doing get_page)
+> > > +		 * suits munlock very well (and if somehow an abnormal page
+> > > +		 * has sneaked into the range, we won't oops here: great).
+> > > +		 */
+> > > +		page = follow_page(vma, addr, FOLL_GET | FOLL_DUMP);
+> > 
+> > Ouch, now I get your depraved comment :) . This will be a tricky rule to
+> > remember in a years time, wouldn't it?
+> 
+> I rely more upon git and grep than memory; I hope others do too.
+> (And that's partly why I put "get_dump_page" into the comment line.)
+> 
 
-I believe that starting with something along the lines of
+True and the comment is pretty explicit.
 
-	git bisect start v2.6.31 v2.6.30 -- net/sunrpc include/linux/sunrpc
+> > Functionally, the patch seems fine and the avoidance of lock_page() is
+> > nice so.
+> > 
+> > Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> Thanks.
+> 
+> > 
+> > But, as FOLL_DUMP applies to more than core dumping, can it be renamed
+> > in another follow-on patch?  The fundamental underlying "thing" it does
+> > is to error instead of faulting the zero page so FOLL_NO_FAULT_ZEROPAGE,
+> > FOLL_ERRORZERO, FOLL_NOZERO etc? A name like that would simplify the comments
+> > as FOLL_DUMP would no longer just be a desirable side-effect.
+> 
+> At this moment, particularly after the years of FOLL_ANON confusion,
+> I feel pretty strongly that this flag is there for coredumping; and
+> it's just a happy accident that it happens also to be useful for munlock.
+> And if their needs diverge later, FOLL_DUMP will do whatever dumping
+> wants, and FOLL_MUNLOCK or something with a longer name will do
+> whatever munlocking wants.
+> 
 
-should be the most efficient thing to do. Then use 'git bisect bad' and
-'git bisect good' to label the resulting kernels as bad or good.
+Ok, that's reasonable. You want to avoid any temptation of abuse of flag
+and a reviewer will spot abuse of something called FOLL_DUMP easier than
+something like FOLL_NOZERO.
 
-Cheers
-  Trond
+> I suspect that if I could think of a really snappy name for the flag,
+> that didn't just send us away to study the source to see what it
+> really does, I'd be glad to change to that.  But at the moment,
+> I'm happier sticking with FOLL_DUMP myself.
+> 
 
+Grand. Thanks for clarifying and explaining.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
