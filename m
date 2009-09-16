@@ -1,122 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbZIPMVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZIPMZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758848AbZIPMVm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758650AbZIPMVl
+	id S1758870AbZIPMZY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758512AbZIPMZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:21:41 -0400
-Received: from mail-yx0-f171.google.com ([209.85.210.171]:46760 "EHLO
-	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798AbZIPMVk convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 08:25:23 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:14846 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292AbZIPMZW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:21:40 -0400
+	Wed, 16 Sep 2009 08:25:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tcGsiHOk3iq4JfT7Dh9YIvxuS1g3J52nzPI+8y4qGwJ6pItUuoui/nbJ/o5QzYFweE
-         dSXgvsmXfkPSICSTGQoxLbWRSmM5Ab/FQ6ap0m/NqC5NEC5UmNFG47v8a+wuIDm6jAsF
-         XTfZ4T84KhZkU7te4rB/o06UUxJ/1ldjTSJGg=
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=s3unAyripWk3jnA8OF6fhEXL2p4hqqrrNqqaf7Rl2cUttcZkyCj2BVwQKWgot7aLvx
+         RdaGN33s5YlSCLN47sy9hcfXnzTnU0T6regcLnidwZDuMRTsP5HL4rLUQ3aFpEEbFtAn
+         mNKa4b25O2fsY/5nFP00I728VwQOh5GlrAKTw=
+From: Volker Armin Hemmann <volkerarmin@googlemail.com>
+To: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31 ehci problem - mouse dead on scroll
+Date: Wed, 16 Sep 2009 14:25:18 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31r4; KDE/4.3.1; x86_64; ; )
+Cc: linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+References: <200909142015.56698.volkerarmin@googlemail.com> <200909161356.26691.volkerarmin@googlemail.com> <200909161412.05041.oliver@neukum.org>
+In-Reply-To: <200909161412.05041.oliver@neukum.org>
 MIME-Version: 1.0
-In-Reply-To: <20090915122632.GC31840@csn.ul.ie>
-References: <202cde0e0909132218k70c31a5u922636914e603ad4@mail.gmail.com>
-	 <20090915122632.GC31840@csn.ul.ie>
-Date: Thu, 17 Sep 2009 00:21:42 +1200
-Message-ID: <202cde0e0909160521v41a0d9f2wb1e4fe1e379e8971@mail.gmail.com>
-Subject: Re: [PATCH 2/3] Helper which returns the huge page at a given address 
-	(Take 3)
-From: Alexey Korolev <akorolex@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 8BIT
+Message-Id: <200909161425.18729.volkerarmin@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 12:26 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> On Mon, Sep 14, 2009 at 05:18:53PM +1200, Alexey Korolev wrote:
->> This patch provides helper function which returns the huge page at a
->> given address for population before the page has been faulted.
->> It is possible to call hugetlb_get_user_page function in file mmap
->> procedure to get pages before they have been requested by user level.
->>
->
-> Worth spelling out that this is similar in principal to get_user_pages()
-> but not as painful to use in this specific context.
->
+On Mittwoch 16 September 2009, Oliver Neukum wrote:
+> Am Mittwoch, 16. September 2009 13:56:26 schrieb Volker Armin Hemmann:
+> > ok, I am done. Was back earlier then expected and had  an
+> > all-awake-night, so lots of time:
+> 
+> Thank you very much for the great testing.
+> 
+> > with
+> > USB selective suspend/resume and wakeup on
+> >
+> > Root Hub Transaction Translators on
+> > Improved Transaction Translator scheduling off
+> >
+> > mouse is fine
+> >
+> >
+> > with
+> > USB selective suspend/resume and wakeup on
+> >
+> > Root Hub Transaction Translators off
+> > Improved Transaction Translator scheduling on
+> >
+> > mouse is fine
+> 
+> So this is an EHCI root hub problem most likely.
+> This means we need to include Alan, master of ehci.
+> 
+> He'll need additional debugging info. Do you know how to get
+> at the ehci registers through debugfs?
+> Furthermore, if you have a hub can you try to attach your mouse
+> through a hub?
+> 
+> 	Regards
+> 		Oliver
+> 
 
-Right. I'll do this. Seems it is important to clearly mention that
-this function do not introduce new functionality.
 
->> include/linux/hugetlb.h |    3 +++
->> mm/hugetlb.c            |   23 +++++++++++++++++++++++
->> 2 files changed, 26 insertions(+)
->>
->> ---
->> Signed-off-by: Alexey Korolev <akorolev@infradead.org>
->
-> Patch formatting nit.
->
-> diffstat goes below the --- and signed-off-bys go above it.
->
-Right. To be fixed.
+emm, the mouse is attached through a powered 4port usb 2.0 hub. That is the 
+only way to get it working. If I attach it directly (without loading ohci) it 
+does not work (well, only tried with both Transaction Translator options off), 
+and if I load ohci before I connect it, it is very very jerky. So jerky in 
+fact, that I considered douzends of lockups a day a better alternative.
 
->>
->> +/*
->> + * hugetlb_get_user_page returns the page at a given address for population
->> + * before the page has been faulted.
->> + */
->> +struct page *hugetlb_get_user_page(struct vm_area_struct *vma,
->> +                                 unsigned long address)
->> +{
->
-> Your leader and comments say that the function can be used before the pages
-> have been faulted. It would presumably require that this function be called
-> from within a mmap() handler.
->
-> What is happening because you call follow_hugetlb_page() is that the pages
-> get faulted as part of your mmap() operation. This might make the overall
-> operation more expensive than you expected. I don't know if what you really
-> intended was to allocate the huge page, insert it into the page cache and
-> have it faulted later if the process actually references the page.
->
-> Similarly the leader and comments imply that you expect this to be
-> called as part of the mmap() operation. However, nothing would appear to
-> prevent the driver calling this function once the page is already
-> faulted. Is this intentional?
+debugfs is mounted (and usbmon too.):
 
-The implication was not intende. You are correct, the function can be
-called later. The leader and comment can be rewritten to make this
-clear.
+ cat /sys/kernel/debug/usb/ehci/0000:00:12.2/registers
+bus pci, device 0000:00:12.2
+EHCI Host Controller
+EHCI 1.00, hcd state 1
+ownership 00000001
+SMI sts/enable 0xc0080000
+structural params 0x00102306
+capability params 0x0000a072
+status 4008 Periodic FLR
+command 010019 (park)=0 ithresh=1 Periodic period=256 RUN
+intrenable 37 IAA FATAL PCD ERR INT
+uframe 232f
+port 1 status 001000 POWER sig=se0
+port 2 status 001005 POWER sig=se0 PE CONNECT
+port 3 status 001000 POWER sig=se0
+port 4 status 001000 POWER sig=se0
+port 5 status 001000 POWER sig=se0
+port 6 status 001000 POWER sig=se0
+irq normal 20356 err 2 reclaim 16 (lost 0)
+complete 20359 unlink 0
 
->> +     int ret;
->> +     int cnt = 1;
->> +     struct page *pg;
->> +     struct hstate *h = hstate_vma(vma);
->> +
->> +     address = address & huge_page_mask(h);
->> +     ret = follow_hugetlb_page(vma->vm_mm, vma, &pg,
->> +                             NULL, &address, &cnt, 0, 0);
->> +     if (ret < 0)
->> +             return ERR_PTR(ret);
->> +     put_page(pg);
->> +
->> +     return pg;
->> +}
->
-> I think the caller should be responsible for calling put_page().  Otherwise
-> there is an outside chance that the page would disappear from you unexpectedly
-> depending on exactly how the driver was implemented. It would also
-> behave slightly more like get_user_pages().
->
-Correct. Lets have behaviour similar to get_user_pages in order to prevent
-misunderstanding. Put_page will be removed.
+cat /sys/kernel/debug/usb/ehci/0000:00:13.2/registers
+bus pci, device 0000:00:13.2
+EHCI Host Controller
+EHCI 1.00, hcd state 1
+ownership 00000001
+SMI sts/enable 0xc0080000
+structural params 0x00102306
+capability params 0x0000a072
+status 0008 FLR
+command 010009 (park)=0 ithresh=1 period=256 RUN
+intrenable 37 IAA FATAL PCD ERR INT
+uframe 3a34
+port 1 status 001000 POWER sig=se0
+port 2 status 001000 POWER sig=se0
+port 3 status 001000 POWER sig=se0
+port 4 status 001000 POWER sig=se0
+port 5 status 001000 POWER sig=se0
+port 6 status 001000 POWER sig=se0
+irq normal 0 err 0 reclaim 0 (lost 0)
+complete 0 unlink 0
 
-Thank you very much for review. Now I am about to clear out the
-mistakes and will pay a lot more attention to patch descriptions and
-comments.
+this is with 'all off', translators off selective resume off.
 
-Thanks,
-Alexey
+
+Gl�ck Auf,
+Volker
+
+
