@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZIPD4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752429AbZIPD5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbZIPD4n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 23:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZIPD4j
+	id S1752429AbZIPD5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 23:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZIPD5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 23:56:39 -0400
-Received: from mail-yw0-f180.google.com ([209.85.211.180]:40174 "EHLO
+	Tue, 15 Sep 2009 23:57:49 -0400
+Received: from mail-yw0-f180.google.com ([209.85.211.180]:56920 "EHLO
 	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbZIPD4j convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751076AbZIPD5t convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 23:56:39 -0400
+	Tue, 15 Sep 2009 23:57:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=qLC7/vE0rsYkYMGcNsIVRWkbY5CV4su4Yq9ytG1fpsPDhUfIm1UxZGaqBY8R5nHncl
-         FXHJRTaO931ORsRcBgYiMf54NX8iluGVD/lL9fzTf9u966fUpBDedIV8frnuegR90X7p
-         cqSKVn280g9BSTQ3ZTDZ34ta+4D8sSPC0rtYc=
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=AXxq39dQ8IqdWNlHOquFP/KUpMZmbIM0GnwM/gLpsfyLw+ge7mtuMf0wLfUfpWLepv
+         xaEEpcTP5tvj5NZnxR9Sdet8WwzGUmHxcSlRj8nneDPWWamEYaKNn+UyByaDK95/Pn5X
+         0kJK9sXciXfpdTaYC76fur+ZdgwKbDeZTC/Mw=
 MIME-Version: 1.0
+In-Reply-To: <20090916034555.GA2756@core.coreip.homeip.net>
+References: <20090915055224.GD1132@core.coreip.homeip.net> 
+	<1253066440-25555-1-git-send-email-vapier@gentoo.org> <20090916034555.GA2756@core.coreip.homeip.net>
 From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 15 Sep 2009 23:56:21 -0400
-Message-ID: <8bd0f97a0909152056h61bfc487g6b8631966c6d72be@mail.gmail.com>
-Subject: Re: 2.6.32 -mm Blackfin patches
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Date: Tue, 15 Sep 2009 23:57:32 -0400
+Message-ID: <8bd0f97a0909152057v2049371aif4118691d56165c8@mail.gmail.com>
+Subject: Re: [PATCH v4] input/keyboard: new OpenCores Keyboard Controller 
+	driver
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Javier Herrero <jherrero@hvsistemas.es>, Bryan Wu <cooloney@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 19:15, Andrew Morton wrote:
-> blackfin-convert-to-use-arch_gettimeoffset.patch
-
-i thought John was merging this via some sort of patch series, but i
-can pick it up in the Blackfin tree to make sure things are really
-sane
-
-> blackfin-fix-read-buffer-overflow.patch
-
-the latter patch i merged into my tree (and i thought that i followed
-up in the original posting about this)
-
-> checkpatch-possible-types-else-cannot-start-a-type.patch
-> checkpatch-handle-c99-comments-correctly-performance-issue.patch
-> checkpatch-indent-checks-stop-when-we-run-out-of-continuation-lines.patch
-> checkpatch-make-f-alias-file-add-help-more-verbose-help-message.patch
-> checkpatch-format-strings-should-not-have-brackets-in-macros.patch
-> checkpatch-limit-sn-un-matches-to-actual-bit-sizes.patch
-> checkpatch-version-029.patch
-> checkpatch-add-some-common-blackfin-checks.patch
+On Tue, Sep 15, 2009 at 23:45, Dmitry Torokhov wrote:
+> On Tue, Sep 15, 2009 at 10:00:40PM -0400, Mike Frysinger wrote:
+>> +
+>> +static int __devexit opencores_kbd_remove(struct platform_device *pdev)
+>> +{
+>> +     struct opencores_kbd *opencores_kbd = platform_get_drvdata(pdev);
+>> +
+>> +     free_irq(opencores_kbd->irq, opencores_kbd);
+>> +
+>> +     input_unregister_device(opencores_kbd->input);
+>> +     kfree(opencores_kbd);
 >
->  Grumpy.  These spit perl warnings but maintainer won't talk to me.
+> You need to do iounmap and free the memory region here as well.
 
-the last one shouldnt cause any warnings at all ;)
+ugh, i remembered i would have to do this while writing the initial
+code, but forgot while double checking the different error paths
 -mike
