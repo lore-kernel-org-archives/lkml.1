@@ -1,107 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZIPBwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZIPBnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbZIPBwG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 21:52:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZIPBvt
+	id S1753960AbZIPBnM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 21:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZIPBnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 21:51:49 -0400
-Received: from mga14.intel.com ([143.182.124.37]:14785 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753128AbZIPBvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 21:51:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,394,1249282800"; 
-   d="scan'208";a="188088270"
-Message-Id: <20090916014958.969524517@intel.com>
-References: <20090916013939.656308742@intel.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 16 Sep 2009 09:39:42 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Wu Fengguang <fengguang.wu@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: [PATCH 3/3] HWPOISON: prevent /dev/kmem users from accessing hwpoison pages
-Content-Disposition: inline; filename=kmem-dev-kmem.patch
+	Tue, 15 Sep 2009 21:43:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43357 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752200AbZIPBnI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 21:43:08 -0400
+Date: Tue, 15 Sep 2009 18:42:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: 2.6.32 -mm merge plans (cgroups)
+Message-Id: <20090915184237.13160e2a.akpm@linux-foundation.org>
+In-Reply-To: <6599ad830909151740n2affe0daw27618ccae9c737d6@mail.gmail.com>
+References: <6599ad830909151740n2affe0daw27618ccae9c737d6@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When /dev/kmem read()/write() encounters hwpoison page, stop it
-and return the amount of work done till now.
+On Tue, 15 Sep 2009 17:40:15 -0700 Paul Menage <menage@google.com> wrote:
 
-Vmalloc pages are not checked for now, to avoid conflicts with
-ongoing vread/vwrite works.
+> How much longer is the merge window open for?
 
-CC: Greg KH <greg@kroah.com>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Tejun Heo <tj@kernel.org>
-CC: Nick Piggin <npiggin@suse.de>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/char/mem.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+A week.
 
---- linux-mm.orig/drivers/char/mem.c	2009-09-16 09:25:34.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2009-09-16 09:25:43.000000000 +0800
-@@ -427,6 +427,9 @@ static ssize_t read_kmem(struct file *fi
- 			 */
- 			kbuf = xlate_dev_kmem_ptr((char *)p);
- 
-+			if (unlikely(virt_addr_valid(kbuf) &&
-+				     PageHWPoison(virt_to_page(kbuf))))
-+				return -EIO;
- 			if (copy_to_user(buf, kbuf, sz))
- 				return -EFAULT;
- 			buf += sz;
-@@ -472,6 +475,7 @@ do_write_kmem(unsigned long p, const cha
- {
- 	ssize_t written, sz;
- 	unsigned long copied;
-+	int err = 0;
- 
- 	written = 0;
- #ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-@@ -498,13 +502,19 @@ do_write_kmem(unsigned long p, const cha
- 		 */
- 		ptr = xlate_dev_kmem_ptr((char *)p);
- 
-+		if (unlikely(virt_addr_valid(ptr) &&
-+			     PageHWPoison(virt_to_page(ptr)))) {
-+			err = -EIO;
-+			break;
-+		}
-+
- 		copied = copy_from_user(ptr, buf, sz);
- 		if (copied) {
- 			written += sz - copied;
--			if (written)
--				break;
--			return -EFAULT;
-+			err = -EFAULT;
-+			break;
- 		}
-+
- 		buf += sz;
- 		p += sz;
- 		count -= sz;
-@@ -512,7 +522,7 @@ do_write_kmem(unsigned long p, const cha
- 	}
- 
- 	*ppos += written;
--	return written;
-+	return written ? written : err;
- }
- 
- 
+> It's probably safest to
+> hold these in -mm for now since we've not resolved the potential races
+> in the signal handler accesses; I'll try to find some time to work on
+> them this week or next.
 
--- 
+It's not a great time to be fixing these things up.
+
+What would happen if we merged it as-is?  Can we be confident that the
+resulting bugs won't impact others and that we can get them all fixed
+up reasonably promptly?
 
