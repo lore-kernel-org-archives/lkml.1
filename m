@@ -1,169 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759010AbZIPMqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbZIPMpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759010AbZIPMqa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbZIPMq2
+	id S1758955AbZIPMpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758945AbZIPMpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:46:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:15676 "EHLO mx1.redhat.com"
+	Wed, 16 Sep 2009 08:45:45 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:58766 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758933AbZIPMpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:45:44 -0400
+	id S1758930AbZIPMpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:45:38 -0400
 From: Avi Kivity <avi@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>, Marcelo Tosatti <mtosatti@redhat.com>
 Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] core, x86: Add user return notifiers
-Date: Wed, 16 Sep 2009 15:45:31 +0300
-Message-Id: <1253105134-8862-2-git-send-email-avi@redhat.com>
+Subject: [PATCH 2/4] KVM: VMX: Move MSR_KERNEL_GS_BASE out of the vmx autoload msr area
+Date: Wed, 16 Sep 2009 15:45:32 +0300
+Message-Id: <1253105134-8862-3-git-send-email-avi@redhat.com>
 In-Reply-To: <1253105134-8862-1-git-send-email-avi@redhat.com>
 References: <1253105134-8862-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a general per-cpu notifier that is called whenever the kernel is
-about to return to userspace.  The notifier uses a thread_info flag
-and existing checks, so there is no impact on user return or context
-switch fast paths.
+Currently MSR_KERNEL_GS_BASE is saved and restored as part of the
+guest/host msr reloading.  Since we wish to lazy-restore all the other
+msrs, save and reload MSR_KERNEL_GS_BASE explicitly instead of using
+the common code.
 
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/Kconfig                       |   10 ++++++++++
- arch/x86/Kconfig                   |    1 +
- arch/x86/include/asm/thread_info.h |    7 +++++--
- arch/x86/kernel/process.c          |    2 ++
- arch/x86/kernel/signal.c           |    3 +++
- kernel/Makefile                    |    1 +
- 6 files changed, 22 insertions(+), 2 deletions(-)
+ arch/x86/kvm/vmx.c |   34 +++++++++++++++++++++-------------
+ 1 files changed, 21 insertions(+), 13 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 99193b1..2275b46 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -70,6 +70,13 @@ config KRETPROBES
- 	def_bool y
- 	depends on KPROBES && HAVE_KRETPROBES
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index d3213ac..547881a 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -80,7 +80,8 @@ struct vcpu_vmx {
+ 	int                   save_nmsrs;
+ 	int                   msr_offset_efer;
+ #ifdef CONFIG_X86_64
+-	int                   msr_offset_kernel_gs_base;
++	u64 		      msr_host_kernel_gs_base;
++	u64 		      msr_guest_kernel_gs_base;
+ #endif
+ 	struct vmcs          *vmcs;
+ 	struct {
+@@ -183,7 +184,7 @@ static void ept_save_pdptrs(struct kvm_vcpu *vcpu);
+  */
+ static const u32 vmx_msr_index[] = {
+ #ifdef CONFIG_X86_64
+-	MSR_SYSCALL_MASK, MSR_LSTAR, MSR_CSTAR, MSR_KERNEL_GS_BASE,
++	MSR_SYSCALL_MASK, MSR_LSTAR, MSR_CSTAR,
+ #endif
+ 	MSR_EFER, MSR_K6_STAR,
+ };
+@@ -649,10 +650,10 @@ static void vmx_save_host_state(struct kvm_vcpu *vcpu)
+ #endif
  
-+config USER_RETURN_NOTIFIER
-+	bool
-+	depends on HAVE_USER_RETURN_NOTIFIER
-+	help
-+	  Provide a kernel-internal notification when a cpu is about to
-+	  switch to user mode.
-+
- config HAVE_IOREMAP_PROT
- 	bool
- 
-@@ -113,4 +120,7 @@ config HAVE_DMA_API_DEBUG
- config HAVE_DEFAULT_NO_SPIN_MUTEXES
- 	bool
- 
-+config HAVE_USER_RETURN_NOTIFIER
-+	bool
-+
- source "kernel/gcov/Kconfig"
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 13ffa5d..5fc4fae 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -50,6 +50,7 @@ config X86
- 	select HAVE_KERNEL_BZIP2
- 	select HAVE_KERNEL_LZMA
- 	select HAVE_ARCH_KMEMCHECK
-+	select HAVE_USER_RETURN_NOTIFIER
- 
- config OUTPUT_FORMAT
- 	string
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index fad7d40..a8f46de 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -83,6 +83,7 @@ struct thread_info {
- #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
- #define TIF_SECCOMP		8	/* secure computing */
- #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
-+#define TIF_USER_RETURN_NOTIFY	11	/* notify kernel of userspace return */
- #define TIF_NOTSC		16	/* TSC is not accessible in userland */
- #define TIF_IA32		17	/* 32bit process */
- #define TIF_FORK		18	/* ret_from_fork */
-@@ -107,6 +108,7 @@ struct thread_info {
- #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
- #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
- #define _TIF_MCE_NOTIFY		(1 << TIF_MCE_NOTIFY)
-+#define _TIF_USER_RETURN_NOTIFY	(1 << TIF_USER_RETURN_NOTIFY)
- #define _TIF_NOTSC		(1 << TIF_NOTSC)
- #define _TIF_IA32		(1 << TIF_IA32)
- #define _TIF_FORK		(1 << TIF_FORK)
-@@ -141,13 +143,14 @@ struct thread_info {
- 
- /* Only used for 64 bit */
- #define _TIF_DO_NOTIFY_MASK						\
--	(_TIF_SIGPENDING|_TIF_MCE_NOTIFY|_TIF_NOTIFY_RESUME)
-+	(_TIF_SIGPENDING | _TIF_MCE_NOTIFY | _TIF_NOTIFY_RESUME |	\
-+	 _TIF_USER_RETURN_NOTIFY)
- 
- /* flags to check in __switch_to() */
- #define _TIF_WORK_CTXSW							\
- 	(_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_NOTSC)
- 
--#define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
-+#define _TIF_WORK_CTXSW_PREV (_TIF_WORK_CTXSW|_TIF_USER_RETURN_NOTIFY)
- #define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW|_TIF_DEBUG)
- 
- #define PREEMPT_ACTIVE		0x10000000
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 071166a..7ea6972 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -9,6 +9,7 @@
- #include <linux/pm.h>
- #include <linux/clockchips.h>
- #include <linux/random.h>
-+#include <linux/user-return-notifier.h>
- #include <trace/power.h>
- #include <asm/system.h>
- #include <asm/apic.h>
-@@ -227,6 +228,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
- 		 */
- 		memset(tss->io_bitmap, 0xff, prev->io_bitmap_max);
- 	}
-+	propagate_user_return_notify(prev_p, next_p);
+ #ifdef CONFIG_X86_64
+-	if (is_long_mode(&vmx->vcpu))
+-		save_msrs(vmx->host_msrs +
+-			  vmx->msr_offset_kernel_gs_base, 1);
+-
++	if (is_long_mode(&vmx->vcpu)) {
++		rdmsrl(MSR_KERNEL_GS_BASE, vmx->msr_host_kernel_gs_base);
++		wrmsrl(MSR_KERNEL_GS_BASE, vmx->msr_guest_kernel_gs_base);
++	}
+ #endif
+ 	load_msrs(vmx->guest_msrs, vmx->save_nmsrs);
+ 	load_transition_efer(vmx);
+@@ -686,6 +687,12 @@ static void __vmx_load_host_state(struct vcpu_vmx *vmx)
+ 	save_msrs(vmx->guest_msrs, vmx->save_nmsrs);
+ 	load_msrs(vmx->host_msrs, vmx->save_nmsrs);
+ 	reload_host_efer(vmx);
++#ifdef CONFIG_X86_64
++	if (is_long_mode(&vmx->vcpu)) {
++		rdmsrl(MSR_KERNEL_GS_BASE, vmx->msr_guest_kernel_gs_base);
++		wrmsrl(MSR_KERNEL_GS_BASE, vmx->msr_host_kernel_gs_base);
++	}
++#endif
  }
  
- int sys_fork(struct pt_regs *regs)
-diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-index 4c57875..bc0db10 100644
---- a/arch/x86/kernel/signal.c
-+++ b/arch/x86/kernel/signal.c
-@@ -19,6 +19,7 @@
- #include <linux/stddef.h>
- #include <linux/personality.h>
- #include <linux/uaccess.h>
-+#include <linux/user-return-notifier.h>
+ static void vmx_load_host_state(struct vcpu_vmx *vmx)
+@@ -915,9 +922,6 @@ static void setup_msrs(struct vcpu_vmx *vmx)
+ 		index = __find_msr_index(vmx, MSR_CSTAR);
+ 		if (index >= 0)
+ 			move_msr_up(vmx, index, save_nmsrs++);
+-		index = __find_msr_index(vmx, MSR_KERNEL_GS_BASE);
+-		if (index >= 0)
+-			move_msr_up(vmx, index, save_nmsrs++);
+ 		/*
+ 		 * MSR_K6_STAR is only needed on long mode guests, and only
+ 		 * if efer.sce is enabled.
+@@ -929,10 +933,6 @@ static void setup_msrs(struct vcpu_vmx *vmx)
+ #endif
+ 	vmx->save_nmsrs = save_nmsrs;
  
- #include <asm/processor.h>
- #include <asm/ucontext.h>
-@@ -870,6 +871,8 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
- 		clear_thread_flag(TIF_NOTIFY_RESUME);
- 		tracehook_notify_resume(regs);
- 	}
-+	if (thread_info_flags & _TIF_USER_RETURN_NOTIFY)
-+		fire_user_return_notifiers();
+-#ifdef CONFIG_X86_64
+-	vmx->msr_offset_kernel_gs_base =
+-		__find_msr_index(vmx, MSR_KERNEL_GS_BASE);
+-#endif
+ 	vmx->msr_offset_efer = __find_msr_index(vmx, MSR_EFER);
  
- #ifdef CONFIG_X86_32
- 	clear_thread_flag(TIF_IRET);
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 2093a69..11c5de5 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -100,6 +100,7 @@ obj-$(CONFIG_RING_BUFFER) += trace/
- obj-$(CONFIG_SMP) += sched_cpupri.o
- obj-$(CONFIG_SLOW_WORK) += slow-work.o
- obj-$(CONFIG_PERF_COUNTERS) += perf_counter.o
-+obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
- 
- ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+ 	if (cpu_has_vmx_msr_bitmap()) {
+@@ -990,6 +990,10 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
+ 	case MSR_GS_BASE:
+ 		data = vmcs_readl(GUEST_GS_BASE);
+ 		break;
++	case MSR_KERNEL_GS_BASE:
++		vmx_load_host_state(to_vmx(vcpu));
++		data = to_vmx(vcpu)->msr_guest_kernel_gs_base;
++		break;
+ 	case MSR_EFER:
+ 		return kvm_get_msr_common(vcpu, msr_index, pdata);
+ #endif
+@@ -1043,6 +1047,10 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
+ 	case MSR_GS_BASE:
+ 		vmcs_writel(GUEST_GS_BASE, data);
+ 		break;
++	case MSR_KERNEL_GS_BASE:
++		vmx_load_host_state(vmx);
++		vmx->msr_guest_kernel_gs_base = data;
++		break;
+ #endif
+ 	case MSR_IA32_SYSENTER_CS:
+ 		vmcs_write32(GUEST_SYSENTER_CS, data);
 -- 
 1.6.4.1
 
