@@ -1,149 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbZIPMQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbZIPMQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758839AbZIPMQU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbZIPMQS
+	id S932131AbZIPMQj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758848AbZIPMQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:16:18 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47039 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758770AbZIPMQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:16:17 -0400
-Date: Wed, 16 Sep 2009 14:16:20 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 05/11] Assign bdi in super_block
-Message-ID: <20090916121620.GD26030@duck.suse.cz>
-References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com> <1253038617-30204-6-git-send-email-jens.axboe@oracle.com>
+	Wed, 16 Sep 2009 08:16:38 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:51263 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758847AbZIPMQh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:16:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=QePsPcVeoUCZUZQO7jROKyt+BaGF4VDLXx5YX/Dv3DDC/BvokWt88Cln6HXkqCBEMn
+         Y8DreZQMCGI7ZNnOU8nrK805L+bAnN1pvkLslqtuYz8xEUgwiQ4OAVgToBxsb9g2pXPm
+         M2CuKc6z+zZJEeSoN54Y62MTV2LhmV5LmGd8g=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253038617-30204-6-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090916120529.GB18050@centrinvest.ru>
+References: <1253101347-25038-1-git-send-email-andy.shevchenko@gmail.com>
+	 <20090916120529.GB18050@centrinvest.ru>
+Date: Wed, 16 Sep 2009 15:16:40 +0300
+Message-ID: <5ec8ebd50909160516p18fa428ica75ba94a2a40c27@mail.gmail.com>
+Subject: Re: [PATCH] media: video: pwc: Use kernel's simple_strtol()
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>, linux-kernel@vger.kernel.org,
+       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 15-09-09 20:16:51, Jens Axboe wrote:
-> We do this automatically in get_sb_bdev() from the set_bdev_super()
-> callback. Filesystems that have their own private backing_dev_info
-> must assign that in ->fill_super().
-> 
-> Note that ->s_bdi assignment is required for proper writeback!
-> 
-> Acked-by: Christoph Hellwig <hch@infradead.org>
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  fs/btrfs/disk-io.c |    1 +
->  fs/fuse/inode.c    |    2 ++
->  fs/super.c         |    6 ++++++
->  fs/sync.c          |    9 ++++++++-
->  fs/ubifs/super.c   |    1 +
->  include/linux/fs.h |    1 +
->  6 files changed, 19 insertions(+), 1 deletions(-)
-  I think we agreed that NFS needs to assign it's private BDI to sb->s_bdi,
-didn't we? From Tronds comment, that should be enough.
+On Wed, Sep 16, 2009 at 3:05 PM, Andrey Panin <pazke@centrinvest.ru> wrote:
+>> Change own implementation of atoi() by simple_strtol(x, NULL, 10).
+> Why did you keep the wrapper itself then ?
+I could change in all places, but it's only tiny inline function.
 
-									Honza
-> diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
-> index 15831d5..8b81927 100644
-> --- a/fs/btrfs/disk-io.c
-> +++ b/fs/btrfs/disk-io.c
-> @@ -1600,6 +1600,7 @@ struct btrfs_root *open_ctree(struct super_block *sb,
->  
->  	sb->s_blocksize = 4096;
->  	sb->s_blocksize_bits = blksize_bits(4096);
-> +	sb->s_bdi = &fs_info->bdi;
->  
->  	/*
->  	 * we set the i_size on the btree inode to the max possible int.
-> diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-> index 4567db6..e5dbecd 100644
-> --- a/fs/fuse/inode.c
-> +++ b/fs/fuse/inode.c
-> @@ -894,6 +894,8 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
->  	if (err)
->  		goto err_put_conn;
->  
-> +	sb->s_bdi = &fc->bdi;
-> +
->  	/* Handle umasking inside the fuse code */
->  	if (sb->s_flags & MS_POSIXACL)
->  		fc->dont_mask = 1;
-> diff --git a/fs/super.c b/fs/super.c
-> index 9cda337..b03fea8 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -707,6 +707,12 @@ static int set_bdev_super(struct super_block *s, void *data)
->  {
->  	s->s_bdev = data;
->  	s->s_dev = s->s_bdev->bd_dev;
-> +
-> +	/*
-> +	 * We set the bdi here to the queue backing, file systems can
-> +	 * overwrite this in ->fill_super()
-> +	 */
-> +	s->s_bdi = &bdev_get_queue(s->s_bdev)->backing_dev_info;
->  	return 0;
->  }
->  
-> diff --git a/fs/sync.c b/fs/sync.c
-> index 1923409..c08467a 100644
-> --- a/fs/sync.c
-> +++ b/fs/sync.c
-> @@ -27,6 +27,13 @@
->   */
->  static int __sync_filesystem(struct super_block *sb, int wait)
->  {
-> +	/*
-> +	 * This should be safe, as we require bdi backing to actually
-> +	 * write out data in the first place
-> +	 */
-> +	if (!sb->s_bdi)
-> +		return 0;
-> +
->  	/* Avoid doing twice syncing and cache pruning for quota sync */
->  	if (!wait) {
->  		writeout_quota_sb(sb, -1);
-> @@ -101,7 +108,7 @@ restart:
->  		spin_unlock(&sb_lock);
->  
->  		down_read(&sb->s_umount);
-> -		if (!(sb->s_flags & MS_RDONLY) && sb->s_root)
-> +		if (!(sb->s_flags & MS_RDONLY) && sb->s_root && sb->s_bdi)
->  			__sync_filesystem(sb, wait);
->  		up_read(&sb->s_umount);
->  
-> diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
-> index 51763aa..c4af069 100644
-> --- a/fs/ubifs/super.c
-> +++ b/fs/ubifs/super.c
-> @@ -1980,6 +1980,7 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
->  	if (err)
->  		goto out_bdi;
->  
-> +	sb->s_bdi = &c->bdi;
->  	sb->s_fs_info = c;
->  	sb->s_magic = UBIFS_SUPER_MAGIC;
->  	sb->s_blocksize = UBIFS_BLOCK_SIZE;
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index db29588..90162fb 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1342,6 +1342,7 @@ struct super_block {
->  	int			s_nr_dentry_unused;	/* # of dentry on lru */
->  
->  	struct block_device	*s_bdev;
-> +	struct backing_dev_info *s_bdi;
->  	struct mtd_info		*s_mtd;
->  	struct list_head	s_instances;
->  	struct quota_info	s_dquot;	/* Diskquota specific options */
-> -- 
-> 1.6.4.1.207.g68ea
-> 
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+With Best Regards,
+Andy Shevchenko
