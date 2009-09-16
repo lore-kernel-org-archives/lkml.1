@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbZIPN0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbZIPN1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbZIPN0y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZIPNYz
+	id S1754616AbZIPN1I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZIPNYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:24:55 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57897 "EHLO kernel.dk"
+	Wed, 16 Sep 2009 09:24:51 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57905 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751733AbZIPNYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751751AbZIPNYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Sep 2009 09:24:47 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
        akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 01/16] fs: remove bdev->bd_inode_backing_dev_info
-Date: Wed, 16 Sep 2009 15:24:39 +0200
-Message-Id: <1253107494-20160-2-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 02/16] writeback: get rid of wbc->for_writepages
+Date: Wed, 16 Sep 2009 15:24:40 +0200
+Message-Id: <1253107494-20160-3-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.4.1.207.g68ea
 In-Reply-To: <1253107494-20160-1-git-send-email-jens.axboe@oracle.com>
 References: <1253107494-20160-1-git-send-email-jens.axboe@oracle.com>
@@ -24,79 +24,128 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It has been unused since it was introduced in:
-
-commit 520808bf20e90fdbdb320264ba7dd5cf9d47dcac
-Author: Andrew Morton <akpm@osdl.org>
-Date:   Fri May 21 00:46:17 2004 -0700
-
-    [PATCH] block device layer: separate backing_dev_info infrastructure
-
-So lets just kill it.
+It's only set, it's never checked. Kill it.
 
 Acked-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/block_dev.c        |    1 -
- fs/inode.c            |    4 +---
- fs/nilfs2/the_nilfs.c |    4 +---
- include/linux/fs.h    |    1 -
- 4 files changed, 2 insertions(+), 8 deletions(-)
+ fs/afs/write.c              |    1 -
+ fs/btrfs/ordered-data.c     |    1 -
+ fs/jbd2/commit.c            |    1 -
+ fs/nfs/write.c              |    1 -
+ include/linux/writeback.h   |    1 -
+ include/trace/events/ext4.h |    6 ++----
+ mm/page-writeback.c         |    2 --
+ 7 files changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 3581a4e..71e7e03 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -420,7 +420,6 @@ static void bdev_destroy_inode(struct inode *inode)
- {
- 	struct bdev_inode *bdi = BDEV_I(inode);
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index c2e7a7f..c63a3c8 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -712,7 +712,6 @@ int afs_writeback_all(struct afs_vnode *vnode)
+ 		.bdi		= mapping->backing_dev_info,
+ 		.sync_mode	= WB_SYNC_ALL,
+ 		.nr_to_write	= LONG_MAX,
+-		.for_writepages = 1,
+ 		.range_cyclic	= 1,
+ 	};
+ 	int ret;
+diff --git a/fs/btrfs/ordered-data.c b/fs/btrfs/ordered-data.c
+index d6f0806..7b2f401 100644
+--- a/fs/btrfs/ordered-data.c
++++ b/fs/btrfs/ordered-data.c
+@@ -740,7 +740,6 @@ int btrfs_fdatawrite_range(struct address_space *mapping, loff_t start,
+ 		.nr_to_write = mapping->nrpages * 2,
+ 		.range_start = start,
+ 		.range_end = end,
+-		.for_writepages = 1,
+ 	};
+ 	return btrfs_writepages(mapping, &wbc);
+ }
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index 7b4088b..0df600e 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -220,7 +220,6 @@ static int journal_submit_inode_data_buffers(struct address_space *mapping)
+ 		.nr_to_write = mapping->nrpages * 2,
+ 		.range_start = 0,
+ 		.range_end = i_size_read(mapping->host),
+-		.for_writepages = 1,
+ 	};
  
--	bdi->bdev.bd_inode_backing_dev_info = NULL;
- 	kmem_cache_free(bdev_cachep, bdi);
+ 	ret = generic_writepages(mapping, &wbc);
+diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+index 120acad..53eb26c 100644
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -1490,7 +1490,6 @@ static int nfs_write_mapping(struct address_space *mapping, int how)
+ 		.nr_to_write = LONG_MAX,
+ 		.range_start = 0,
+ 		.range_end = LLONG_MAX,
+-		.for_writepages = 1,
+ 	};
+ 
+ 	return __nfs_write_mapping(mapping, &wbc, how);
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index d347632..48a054e 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -50,7 +50,6 @@ struct writeback_control {
+ 	unsigned encountered_congestion:1; /* An output: a queue is full */
+ 	unsigned for_kupdate:1;		/* A kupdate writeback */
+ 	unsigned for_reclaim:1;		/* Invoked from the page allocator */
+-	unsigned for_writepages:1;	/* This is a writepages() call */
+ 	unsigned range_cyclic:1;	/* range_start is cyclic */
+ 	unsigned more_io:1;		/* more io to be dispatched */
+ 	/*
+diff --git a/include/trace/events/ext4.h b/include/trace/events/ext4.h
+index 7d8b5bc..8d433c4 100644
+--- a/include/trace/events/ext4.h
++++ b/include/trace/events/ext4.h
+@@ -227,7 +227,6 @@ TRACE_EVENT(ext4_da_writepages,
+ 		__field(	char,	nonblocking		)
+ 		__field(	char,	for_kupdate		)
+ 		__field(	char,	for_reclaim		)
+-		__field(	char,	for_writepages		)
+ 		__field(	char,	range_cyclic		)
+ 	),
+ 
+@@ -241,16 +240,15 @@ TRACE_EVENT(ext4_da_writepages,
+ 		__entry->nonblocking	= wbc->nonblocking;
+ 		__entry->for_kupdate	= wbc->for_kupdate;
+ 		__entry->for_reclaim	= wbc->for_reclaim;
+-		__entry->for_writepages	= wbc->for_writepages;
+ 		__entry->range_cyclic	= wbc->range_cyclic;
+ 	),
+ 
+-	TP_printk("dev %s ino %lu nr_t_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d for_writepages %d range_cyclic %d",
++	TP_printk("dev %s ino %lu nr_t_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d range_cyclic %d",
+ 		  jbd2_dev_to_name(__entry->dev), __entry->ino, __entry->nr_to_write,
+ 		  __entry->pages_skipped, __entry->range_start,
+ 		  __entry->range_end, __entry->nonblocking,
+ 		  __entry->for_kupdate, __entry->for_reclaim,
+-		  __entry->for_writepages, __entry->range_cyclic)
++		  __entry->range_cyclic)
+ );
+ 
+ TRACE_EVENT(ext4_da_writepages_result,
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index dd73d29..abc648f 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -1020,12 +1020,10 @@ int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
+ 
+ 	if (wbc->nr_to_write <= 0)
+ 		return 0;
+-	wbc->for_writepages = 1;
+ 	if (mapping->a_ops->writepages)
+ 		ret = mapping->a_ops->writepages(mapping, wbc);
+ 	else
+ 		ret = generic_writepages(mapping, wbc);
+-	wbc->for_writepages = 0;
+ 	return ret;
  }
  
-diff --git a/fs/inode.c b/fs/inode.c
-index ae7b67e..b2ba83d 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -182,9 +182,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
- 	if (sb->s_bdev) {
- 		struct backing_dev_info *bdi;
- 
--		bdi = sb->s_bdev->bd_inode_backing_dev_info;
--		if (!bdi)
--			bdi = sb->s_bdev->bd_inode->i_mapping->backing_dev_info;
-+		bdi = sb->s_bdev->bd_inode->i_mapping->backing_dev_info;
- 		mapping->backing_dev_info = bdi;
- 	}
- 	inode->i_private = NULL;
-diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
-index d4168e2..ad391a8 100644
---- a/fs/nilfs2/the_nilfs.c
-+++ b/fs/nilfs2/the_nilfs.c
-@@ -591,9 +591,7 @@ int init_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi, char *data)
- 
- 	nilfs->ns_mount_state = le16_to_cpu(sbp->s_state);
- 
--	bdi = nilfs->ns_bdev->bd_inode_backing_dev_info;
--	if (!bdi)
--		bdi = nilfs->ns_bdev->bd_inode->i_mapping->backing_dev_info;
-+	bdi = nilfs->ns_bdev->bd_inode->i_mapping->backing_dev_info;
- 	nilfs->ns_bdi = bdi ? : &default_backing_dev_info;
- 
- 	/* Finding last segment */
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b21cf6b..db29588 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -655,7 +655,6 @@ struct block_device {
- 	int			bd_invalidated;
- 	struct gendisk *	bd_disk;
- 	struct list_head	bd_list;
--	struct backing_dev_info *bd_inode_backing_dev_info;
- 	/*
- 	 * Private data.  You must have bd_claim'ed the block_device
- 	 * to use this.  NOTE:  bd_claim allows an owner to claim
 -- 
 1.6.4.1.207.g68ea
 
