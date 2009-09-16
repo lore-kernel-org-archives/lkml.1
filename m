@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760307AbZIPWj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbZIPWkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760307AbZIPWj7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760345AbZIPWjy
+	id S1760387AbZIPWkE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760349AbZIPWj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:39:54 -0400
-Received: from kroah.org ([198.145.64.141]:48919 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:39:56 -0400
+Received: from kroah.org ([198.145.64.141]:48929 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760333AbZIPWjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:39:51 -0400
+	id S1760340AbZIPWjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:39:52 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:15 2009
-Message-Id: <20090916223715.315062589@mini.kroah.org>
+Message-Id: <20090916223715.431178121@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:27 -0700
+Date: Wed, 16 Sep 2009 15:36:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: [patch 14/45] fix undefined reference to user_shm_unlock
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 15/45] perf_counter: Fix buffer overflow in perf_copy_attr()
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=fix-undefined-reference-to-user_shm_unlock.patch
+Content-Disposition: inline; filename=perf_counter-fix-buffer-overflow-in-perf_copy_attr.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,37 +31,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 
-commit 2195d2818c37bdf263865f1e9effccdd9fc5f9d4 upstream.
+commit b3e62e35058fc744ac794611f4e79bcd1c5a4b83 upstream.
 
-My 353d5c30c666580347515da609dd74a2b8e9b828 "mm: fix hugetlb bug due to
-user_shm_unlock call" broke the CONFIG_SYSVIPC !CONFIG_MMU build of both
-2.6.31 and 2.6.30.6: "undefined reference to `user_shm_unlock'".
+If we pass a big size data over perf_counter_open() syscall,
+the kernel will copy this data to a small buffer, it will
+cause kernel crash.
 
-gcc didn't understand my comment! so couldn't figure out to optimize
-away user_shm_unlock() from the error path in the hugetlb-less case, as
-it does elsewhere.  Help it to do so, in a language it understands.
+This bug makes the kernel unsafe and non-root local user can
+trigger it.
 
-Reported-by: Mike Frysinger <vapier@gentoo.org>
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Acked-by: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <4AAF37D4.5010706@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- ipc/shm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/perf_counter.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -410,7 +410,7 @@ static int newseg(struct ipc_namespace *
- 	return error;
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -4171,6 +4171,7 @@ static int perf_copy_attr(struct perf_co
+ 			if (val)
+ 				goto err_size;
+ 		}
++		size = sizeof(*attr);
+ 	}
  
- no_id:
--	if (shp->mlock_user)	/* shmflg & SHM_HUGETLB case */
-+	if (is_file_hugepages(file) && shp->mlock_user)
- 		user_shm_unlock(size, shp->mlock_user);
- 	fput(file);
- no_file:
+ 	ret = copy_from_user(attr, uattr, size);
 
 
