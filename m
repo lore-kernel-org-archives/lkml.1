@@ -1,152 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbZIPHwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZIPHyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754275AbZIPHwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 03:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZIPHw3
+	id S1754576AbZIPHyP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 03:54:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZIPHyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 03:52:29 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:35996 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbZIPHw2 (ORCPT
+	Wed, 16 Sep 2009 03:54:13 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:50115 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbZIPHyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 03:52:28 -0400
-Date: Wed, 16 Sep 2009 08:52:19 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-Subject: Re: fanotify as syscalls
-Message-ID: <20090916075219.GA22024@shareable.org>
-References: <20090911212731.GA19901@shareable.org> <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com> <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org> <20090914140720.GA8564@ioremap.net> <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com> <20090915201620.GB32192@ioremap.net> <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com> <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain> <1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com>
+	Wed, 16 Sep 2009 03:54:13 -0400
+Date: Wed, 16 Sep 2009 09:54:12 +0200 (CEST)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: unfair io behaviour for high load interactive use still present
+ in 2.6.31
+In-Reply-To: <4e5e476b0909160029l296efe2fk7b873ac68f6bb6a3@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0909160935240.14727@sebohet.brgvxre.pu>
+References: <alpine.DEB.2.00.0909150844140.19305@sebohet.brgvxre.pu>  <4e5e476b0909150753k699a2f5awadc666a9b3afebfa@mail.gmail.com>  <alpine.DEB.2.00.0909152305030.14727@sebohet.brgvxre.pu> <4e5e476b0909160029l296efe2fk7b873ac68f6bb6a3@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463760128-146789849-1253087653=:14727"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris wrote:
-> On Tue, 2009-09-15 at 16:49 -0700, Linus Torvalds wrote:
-> > And btw, I still want to know what's so wonderful about fanotify that we 
-> > would actually want yet-another-filesystem-notification-interface. So I'm 
-> > not sayying that I'll take a system call interface.
-> 
-> The real thing that fanotify provides is an open fd with the event
-> rather than some arbitrary 'watch descriptor' that userspace must
-> somehow magically map back to data on disk.  This means that it could be
-> used to provide subtree notification, which inotify is completely
-> incapable of doing.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-That's a bit of a spurious claim.
+---1463760128-146789849-1253087653=:14727
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-- fanotify does not provide subtree notification in it's
-  present form.  When it is extended to do that, why wouldn't
-  inotify be as well?  That's an fsnotify feature, common to both.
+HI Corrado,
 
-- fanotify does not provide notification at all for some events that
-  you get with inotify.  It is not a superset, so you can't use
-  fanotify to provide a subtree-capable equivalent to inotify.  What
-  a mess when you need the combination of both features!
+Today Corrado Zoccolo wrote:
 
-- fanotify requires you call readlink(/proc/fd/N) for every event to
-  get the path.  It's not a particularly efficient way to get it,
-  especially when an apps wants to know if it's something in it's
-  region of interest but doesn't care about the actual path.
-  When an apps knows it needs the map back to to path, why make it
-  slow to get it?  That "extensible data format" is being
-  underutilised...
+> Hi Tobias,
+> On Tue, Sep 15, 2009 at 11:07 PM, Tobias Oetiker <tobi@oetiker.ch> wrote:
+> >
+> > Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+> > ---------------------------------------------------------------------------------------------------------
+> > dm-18             0.00     0.00    0.00 2566.80     0.00    10.03     8.00  2224.74  737.62   0.39 100.00
+> > dm-18             0.00     0.00    9.60  679.00     0.04     2.65     8.00   400.41 1029.73   1.35  92.80
+> > dm-18             0.00     0.00    0.00 2080.80     0.00     8.13     8.00   906.58  456.45   0.48 100.00
+> > dm-18             0.00     0.00    0.00 2349.20     0.00     9.18     8.00  1351.17  491.44   0.43 100.00
+> > dm-18             0.00     0.00    3.80  665.60     0.01     2.60     8.00   906.72 1098.75   1.39  93.20
+> > dm-18             0.00     0.00    0.00 1811.20     0.00     7.07     8.00  1008.23  725.34   0.55 100.00
+> > dm-18             0.00     0.00    0.00 2632.60     0.00    10.28     8.00  1651.18  640.61   0.38 100.00
+> >
+>
+> Good.
+> The high await is normal for writes, especially since you get so many
+> queued requests.
+> can you post the output of "grep -r .  /sys/block/_device_/queue/" and
+> iostat for your real devices?
+> This should not affect reads, that will preempt writes with cfq.
 
-- fanotify's descriptor may be race-prone as a way to get the subtree
-  used for access, because any of the parent directories could have
-  moved and even been deleted before the app calls
-  readlink(/proc/fd/N).  I don't know if a _reliable_ way to track
-  changes in a subtree can be built on it.  Maybe it can but it
-  appears this hasn't been analysed.  It depends on
-  readlink(/proc/fd/N)'s behaviour when the dentry's have been
-  changed, among other things.
+/sys/block/sdc/queue/nr_requests:128
+/sys/block/sdc/queue/read_ahead_kb:128
+/sys/block/sdc/queue/max_hw_sectors_kb:2048
+/sys/block/sdc/queue/max_sectors_kb:512
+/sys/block/sdc/queue/scheduler:noop anticipatory deadline [cfq]
+/sys/block/sdc/queue/hw_sector_size:512
+/sys/block/sdc/queue/logical_block_size:512
+/sys/block/sdc/queue/physical_block_size:512
+/sys/block/sdc/queue/minimum_io_size:512
+/sys/block/sdc/queue/optimal_io_size:0
+/sys/block/sdc/queue/rotational:1
+/sys/block/sdc/queue/nomerges:0
+/sys/block/sdc/queue/rq_affinity:0
+/sys/block/sdc/queue/iostats:1
+/sys/block/sdc/queue/iosched/quantum:4
+/sys/block/sdc/queue/iosched/fifo_expire_sync:124
+/sys/block/sdc/queue/iosched/fifo_expire_async:248
+/sys/block/sdc/queue/iosched/back_seek_max:16384
+/sys/block/sdc/queue/iosched/back_seek_penalty:2
+/sys/block/sdc/queue/iosched/slice_sync:100
+/sys/block/sdc/queue/iosched/slice_async:40
+/sys/block/sdc/queue/iosched/slice_async_rq:2
+/sys/block/sdc/queue/iosched/slice_idle:8
 
-- Does the descriptor cause umount to fail when user does "do some
-  stuff in baz; umount baz", or does it serialise nicely?  That's one
-  of inotify's nice features - it doesn't cause umounts to fail.
+but as I said in my original post. I have done extensive tests,
+twiddly all the knobs I know of and the only thing that never
+changed, was that as soon as writers come into play, the readers
+get starved pretty thorowly.
 
-> And it can be used to provide system wide notification.  We all know
-> who wants that.
+> >
+> > in the read/write test the write rate stais down, but the rMB/s is even worse and the await is also way up,
+> > so I guess the bad performance is not to blame on the the cache in the controller ...
+> >
+> > Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+> > ---------------------------------------------------------------------------------------------------------
+> > dm-18             0.00     0.00    0.00 1225.80     0.00     4.79     8.00  1050.49  807.38   0.82 100.00
+> > dm-18             0.00     0.00    0.00 1721.80     0.00     6.73     8.00  1823.67  807.20   0.58 100.00
+> > dm-18             0.00     0.00    0.00 1128.00     0.00     4.41     8.00   617.94  832.52   0.89 100.00
+> > dm-18             0.00     0.00    0.00  838.80     0.00     3.28     8.00   873.04 1056.37   1.19 100.00
+> > dm-18             0.00     0.00   39.60  347.80     0.15     1.36     8.00   590.27 1880.05   2.57  99.68
+> > dm-18             0.00     0.00    0.00 1626.00     0.00     6.35     8.00   983.85  452.72   0.62 100.00
+> > dm-18             0.00     0.00    0.00 1117.00     0.00     4.36     8.00  1047.16 1117.78   0.90 100.00
+> > dm-18             0.00     0.00    0.00 1319.20     0.00     5.15     8.00   840.64  573.39   0.76 100.00
+> >
+>
+> This is interesting. it seems no reads are happening at all here.
+> I suspect that this and your observation that the real read throughput
+> is much higher, can be explained because your readers mostly read from
+> the page cache.
 
-People who want to break out of chroot/namespace jails using the
-conveniently provided open file descriptor? :-)
 
-Seriously, what does system-wide fanotify do when run from a
-chroot/namespace/cgroup, and a file outside them is accessed?
+> Can you describe better how the test workload is structured,
+> especially regarding cache?
+> How do you say that some tars are just readers, and some are just
+> writers? I suppose you pre-fault-in the input for writers, and you
+> direct output to /dev/null for readers? Are all readers reading from
+> different directories?
 
-If the event is delivered with file desciptor, that's a security hole.
-If it's not delivered, that sounds like working subtree support?
+they are NOT ... what I do is this (http://tobi.oetiker.ch/fspunisher).
 
-I'd expect anti-malware to want to be run inside VMs quite often...
+* get a copy of the linux kernel source an place it on tmpfs
 
-Note that there's no such thing as "the real system root" any more.
+* unpack 4 copies of the linux kernel for each reader process
 
-> It provides an extensible data format which allows growth impossible in
-> inotify.  I don't know if anyone remember the inotify patches which
-> wanted to overload the inotify cookie field for some other information,
-> but inotify information extension is not reasonable or backwards
-> compatible.
+* sync and echo 3 >/proc/sys/vm/drop_caches  (this should loose all
+  cache)
 
-I agree with this (although that's what flags are for -- see clone).
+* start the readers, each on its private copy of the kernel source,
+  as prepared above writing their output to /dev/null.
 
-I don't have a problem with the next interface being fanotify (despite
-arguing a lot); I just want to see the next one being useful for the
-things I would otherwise be proposing my own yet-another-interface
-for.  So we don't need a fourth one soon after the third due to
-easily foreseen limitations.
+* start an equal amount of tars unpacking the kernel archive from
+  tmpfs into separate directories, next to the readers source
+  directories.
 
-> I've got private commitments for two very large anti malware companies,
-> both of which unprotect and hack syscall tables in their customer's
-> kernels, that they would like to move to an fanotify interface.  Both
-> Red Hat and Suse have expressed interest in these patches and have
-> contributed to the patch set.
-> 
-> The patch set is actually rather small (entire set of about 20 patches
-> is 1800 lines) as it builds on the fsnotify work already in 2.6.31 to
-> reuse code from inotify rather than reimplement the same things over and
-> over (like we previously had with inotify and dnotify)
+the goal of this exercise is to simulate independent writers and
+readers while excluding the cache as much as possible since I want
+to see how the system deals with accessing the actual disk device
+and not the local cache.
+>
+> Few things to check:
+> * are the cpus saturated during the test?
+nope
 
-I don't have any problem with either of these, and _fs_notify
-generally seems like an improvement.  I don't have a problem with
-fanotify either.  For what it does, it's ok.
+> * are the readers mostly in state 'D', or 'S', or 'R'?
 
-> Don't know what else to say.....
+they are almost alway in D (same as the writers) sleeping for IO
 
-Answer questions about use-cases that you're not interested in?  Why
-block them?  What about Evigny's request for an event without an open
-fd - because he needs the pid information (inotify doesn't provide)
-but not the fd?
+> * did you try 'as' I/O scheduler?
 
-Sorry to be so harsh.  I'm really trying to make sure we don't repeat
-the mistakes of dnotify and inotify, and end up with a third interface
-which also is too restrictive (because it's good enough for your
-anti-malware and HSM customers) so that a fourth interface will be
-needed soon after.
+yes, this helps the readers a bit
+but it does not help the 'smoothness'
+of the system operation
 
-I'd like to be able to use it from some applications to accelerate
-userspace caching of things (faster Make, faster Samba) without
-penalising all other applications touching unrelated parts of the
-filesystem.  The attitude "you can live with 10% slowdown" worries me.
-I'm sure that can be fixed with a bit of care.
+> * how big are your volumes?
 
-If the intention is to maintain fanotify and inotify side-by-side for
-different uses (because fanotify returns open descriptors and blocks
-the accessing process until acked), that's ok with me.  It makes
-sense.  But then it's messy that neither offers a superset of the
-other regarding which files and events are tracked.
+100 G
 
-If it's right that inotify has no room for extensibility (I'm not sure
-about this), than it appears we already made a mess with dnotify and
-inotify, so it would be a shame to repeat the same mistakes again.
-Let's get the next one right, even it takes a bit longer, ok?
+> * what is the average load on the system?
 
--- Jamie
+24 (or however many tars I start since they al want to run all the
+time and are all waiting for IO)
+
+> * with i/o controller patches, what happens if you put readers in one
+> domain and writers in the other?
+
+will try ... note though that this would have to happen
+automatically since I can not know before hand who writes and who
+reads ...
+
+> Are you willing to test some patches? I'm working on patches to reduce
+> read latency, that may be interesting to you.
+
+by all means ... to repeat my goal, I want to see the readers not
+starved by the writers, also I have a hunch that the handling of
+metadata updates/access in the filesystem may play a role here.
+In the dd tests these do not play a role but in real life I find
+that often the problem is getting at the file, not reading the file
+once I have it ... this is especially tricky to test since there is
+good caching on this and this can pretty quickly distort the
+results if not handled carefully.
+
+cheers
+tobi
+
+-- 
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+---1463760128-146789849-1253087653=:14727--
