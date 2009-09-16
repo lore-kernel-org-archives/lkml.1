@@ -1,33 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbZIPIZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbZIPIZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757616AbZIPIZO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 04:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZIPIZM
+	id S1757627AbZIPIZy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 04:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbZIPIZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 04:25:12 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:46364 "EHLO
+	Wed, 16 Sep 2009 04:25:53 -0400
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:42145 "EHLO
 	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757599AbZIPIZI convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757532AbZIPIZv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 04:25:08 -0400
+	Wed, 16 Sep 2009 04:25:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=pNdiw14h1zW8hB9QmbkXXQ/V/j/0tVRb9HNV4iGkQjaYN7tS0Lsfb570se1Q98uetx
-         xNJnmdizdu6KTEzUyAwi3D6F/T4R7hT7bPPd4mmFFx6XdosqYAvpf+zmklV0O2k02Mjb
-         nPjIJafmiR+TduMx0wrI4Jg7UzCjgyAeKZV78=
+        b=l43MIZmGvaj8z1kZHnWLDbIK8VPVpgIGNQOhOa9wSf0IZNXxsnpVKR10Y/Hx6O59DH
+         Y8GwhR/X5uBlxyY9EdwKm3oQEEpxfSv+IYnkFBwML/QQdewzNmetRP8Tudsejc3622ST
+         GIzCX29WLySOBWLvS9H8EKxWT4SlQO03ESmwc=
 MIME-Version: 1.0
-In-Reply-To: <20090916092644.fb53279a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.00.0909152315380.25569@chino.kir.corp.google.com>
 References: <Pine.LNX.4.64.0909152224400.29857@sister.anvils>
 	 <20090916092644.fb53279a.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 16 Sep 2009 16:25:12 +0800
-Message-ID: <2375c9f90909160125x5ec67af0p3a25a555d30d38a3@mail.gmail.com>
+	 <alpine.DEB.1.00.0909152315380.25569@chino.kir.corp.google.com>
+Date: Wed, 16 Sep 2009 16:25:54 +0800
+Message-ID: <2375c9f90909160125t20b8cce0w18dddbccdf2010a@mail.gmail.com>
 Subject: Re: [BUGFIX][mmotm] fix walk system ram range patch (Was Re: mmotm on 
 	powerpc: walk_memory_resource?
 From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+To: David Rientjes <rientjes@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
        Andrew Morton <akpm@linux-foundation.org>,
        Ben Herrenschmidt <benh@kernel.crashing.org>,
        linux-kernel@vger.kernel.org
@@ -37,56 +39,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/16 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
-> On Tue, 15 Sep 2009 22:36:26 +0100 (BST)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+On Wed, Sep 16, 2009 at 2:16 PM, David Rientjes <rientjes@google.com> wrote:
+> On Wed, 16 Sep 2009, KAMEZAWA Hiroyuki wrote:
 >
->> Recent mmotm builds on powerpc have been failing with
+>> Index: mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
+>> ===================================================================
+>> --- mmotm-2.6.31-Sep14.orig/arch/powerpc/mm/mem.c
+>> +++ mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
+>> @@ -166,7 +166,7 @@ walk_system_ram_range(unsigned long star
+>>       }
+>>       return ret;
+>>  }
+>> -EXPORT_SYMBOL_GPL(walk_memory_resource);
+>> +EXPORT_SYMBOL_GPL(walk_system_ram_range);
 >>
->> arch/powerpc/mm/mem.c:169: error: ‘walk_memory_resource’ undeclared here (not in a function)
->> cc1: warnings being treated as errors
->> arch/powerpc/mm/mem.c:169: error: type defaults to ‘int’ in declaration of ‘walk_memory_resource’
->> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
+>>  /*
+>>   * Initialize the bootmem system and give it all the memory we
 >>
-> Thank you for pointing out.
-> -Kame
-> ==
 >
->
-> walk-system-ram-range.patch renames walk_memory_resource()
-> to be walk_system_ram_range().
-> But powerpc has its own one and it's exported.
-> (Because ehea driver (IBM's one) uses this, powerpc export this.)
->
->> arch/powerpc/mm/mem.c:169: error: ‘walk_memory_resource’ undeclared here (not in a function)
->> cc1: warnings being treated as errors
->> arch/powerpc/mm/mem.c:169: error: type defaults to ‘int’ in declaration of ‘walk_memory_resource’
->> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
->>
-> The patch failed to update powerpc's EXPORT_SYMBOL, this patch fixes it.
->
-> Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Um, doesn't drivers/infiniband/hw/ehca/ehca_mrmw.c need to be fixed too?
 
-
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
-
->
-> ---
->  arch/powerpc/mm/mem.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Index: mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep14.orig/arch/powerpc/mm/mem.c
-> +++ mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
-> @@ -166,7 +166,7 @@ walk_system_ram_range(unsigned long star
->        }
->        return ret;
->  }
-> -EXPORT_SYMBOL_GPL(walk_memory_resource);
-> +EXPORT_SYMBOL_GPL(walk_system_ram_range);
->
->  /*
->  * Initialize the bootmem system and give it all the memory we
->
+Yes, all callers of walk_memory_resource() should be fixed.
