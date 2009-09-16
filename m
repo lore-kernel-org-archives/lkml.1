@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbZIPGx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbZIPGzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757063AbZIPGx5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 02:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbZIPGx4
+	id S1757199AbZIPGzL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 02:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZIPGzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 02:53:56 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:44706 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753024AbZIPGx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 02:53:56 -0400
-Date: Wed, 16 Sep 2009 08:53:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: BUG: sleeping function called from invalid context at
-	mm/slub.c:1717
-Message-ID: <20090916065359.GB23126@kernel.dk>
-References: <20090915085441.GF23126@kernel.dk> <alpine.LNX.2.00.0909151202560.17028@wotan.suse.de>
+	Wed, 16 Sep 2009 02:55:09 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:38459 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbZIPGzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 02:55:07 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=EIjMh9dv0idvcy5BCnGTGUYuy16gf+2o6A0yOzBkdt17082z6EuduPMEHdkMPU6sH
+	K9UNIxgmE2UnT4kEi254A==
+Date: Tue, 15 Sep 2009 23:55:03 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, heiko.carstens@de.ibm.com, mingo@elte.hu,
+       npiggin@suse.de, sachinp@in.ibm.com
+Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and
+ S390
+In-Reply-To: <1253083059.5478.1.camel@penberg-laptop>
+Message-ID: <alpine.DEB.1.00.0909152351510.13366@chino.kir.corp.google.com>
+References: <1253083059.5478.1.camel@penberg-laptop>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0909151202560.17028@wotan.suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15 2009, Jiri Kosina wrote:
-> On Tue, 15 Sep 2009, Jens Axboe wrote:
+On Wed, 16 Sep 2009, Pekka Enberg wrote:
+
+> The SLQB allocator is known to be broken on certain PowerPC and S390
+> configurations. Disable the allocator in Kconfig for those architectures
+> until the issues are resolved.
 > 
-> > This is new with todays -git:
-> > 
-> > BUG: sleeping function called from invalid context at mm/slub.c:1717
-> > in_atomic(): 1, irqs_disabled(): 1, pid: 0, name: swapper
-> > Pid: 0, comm: swapper Not tainted 2.6.31 #206
-> > Call Trace:
-> >  <IRQ>  [<ffffffff8103eb23>] __might_sleep+0xf3/0x110
-> >  [<ffffffff810e4d83>] kmem_cache_alloc+0x123/0x170
-> >  [<ffffffff813306c9>] hid_input_report+0x89/0x3a0
-> >  [<ffffffffa00cd5f4>] hid_ctrl+0xa4/0x1f0 [usbhid]
-> >  [<ffffffff8108a4c7>] ? handle_IRQ_event+0xa7/0x1e0
-> >  [<ffffffffa004da1f>] usb_hcd_giveback_urb+0x3f/0xa0 [usbcore]
-> >  [<ffffffffa0074ab4>] uhci_giveback_urb+0xb4/0x240 [uhci_hcd]
-> >  [<ffffffffa00750e7>] uhci_scan_schedule+0x357/0xab0 [uhci_hcd]
-> >  [<ffffffffa0077a01>] uhci_irq+0x91/0x190 [uhci_hcd]
-> >  [<ffffffffa004d44e>] usb_hcd_irq+0x2e/0x70 [usbcore]
-> >  [<ffffffff8108a4c7>] handle_IRQ_event+0xa7/0x1e0
-> >  [<ffffffff8108c58c>] handle_fasteoi_irq+0x7c/0xf0
-> >  [<ffffffff8100f176>] handle_irq+0x46/0xa0
-> >  [<ffffffff8100e49a>] do_IRQ+0x6a/0xf0
-> >  [<ffffffff8100c853>] ret_from_intr+0x0/0xa
-> > 
-> > And I notice there's a HID merge from yesterday, Jiri CC'ed.
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: Sachin Sant <sachinp@in.ibm.com>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  init/Kconfig |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> Thanks for letting me know. The patch below should fix it.
+> diff --git a/init/Kconfig b/init/Kconfig
+> index c0d8a47..aaeddeb 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -1033,6 +1033,7 @@ config SLUB
+>  
+>  config SLQB
+>  	bool "SLQB (Queued allocator)"
+> +	depends on !PPC && !S390
+>  	help
+>  	  SLQB is a proposed new slab allocator.
+>  
 
-Yes that works, thanks Jiri!
+I think this should be (!PPC && !S390) || EXPERIMENTAL so that it can 
+still be enabled for debugging and development.
 
--- 
-Jens Axboe
-
+Is this in preparation for slqb inclusion as a non-default slab allocator 
+in 2.6.32?  2.6.33?
