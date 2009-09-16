@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZIPB0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbZIPB2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZIPB0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 21:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZIPB0t
+	id S1753659AbZIPB2Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 21:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZIPB2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 21:26:49 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:46010 "EHLO mx1.redhat.com"
+	Tue, 15 Sep 2009 21:28:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57737 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbZIPB0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 21:26:48 -0400
-Subject: Re: fanotify as syscalls
-From: Eric Paris <eparis@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, Jamie Lokier <jamie@shareable.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
-In-Reply-To: <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain>
-References: <20090911.114620.260824240.davem@davemloft.net>
-	 <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com>
-	 <20090911204602.GA19371@shareable.org>
-	 <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
-	 <20090911212731.GA19901@shareable.org>
-	 <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
-	 <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org>
-	  <20090914140720.GA8564@ioremap.net>
-	 <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
-	 <20090915201620.GB32192@ioremap.net>
-	 <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
-	 <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 15 Sep 2009 21:26:31 -0400
-Message-Id: <1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+	id S1752371AbZIPB2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 21:28:07 -0400
+Message-ID: <4AB03F23.7080605@kernel.org>
+Date: Wed, 16 Sep 2009 10:28:03 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Mike Travis <travis@sgi.com>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [GIT PULL] percpu for v2.6.32
+References: <4AAF411C.2040501@kernel.org> <alpine.DEB.1.10.0909151510010.3340@V090114053VZO-1> <4AAFE9B2.1030006@kernel.org> <alpine.DEB.1.10.0909151531490.3340@V090114053VZO-1> <4AAFEF48.8000607@sgi.com>
+In-Reply-To: <4AAFEF48.8000607@sgi.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 16 Sep 2009 01:28:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 16:49 -0700, Linus Torvalds wrote:
+Hello,
 
-> And btw, I still want to know what's so wonderful about fanotify that we 
-> would actually want yet-another-filesystem-notification-interface. So I'm 
-> not sayying that I'll take a system call interface.
+Mike Travis wrote:
+> We certainly have some in our labs but I'm not sure of one that's
+> externally accessible.  If there's a pre-defined test you'd like to
+> run, you can send me the details.  Otherwise, I'll check around and
+> see if there's a system available remotely.
 
-The real thing that fanotify provides is an open fd with the event
-rather than some arbitrary 'watch descriptor' that userspace must
-somehow magically map back to data on disk.  This means that it could be
-used to provide subtree notification, which inotify is completely
-incapable of doing.  And it can be used to provide system wide
-notification.  We all know who wants that.
+The proposed broken patch is in the following thread.  It works on ski
+emulator but ski doesn't support SMP, so...
 
-It provides an extensible data format which allows growth impossible in
-inotify.  I don't know if anyone remember the inotify patches which
-wanted to overload the inotify cookie field for some other information,
-but inotify information extension is not reasonable or backwards
-compatible.
+ http://thread.gmane.org/gmane.linux.kernel.cross-arch/4132
 
-fanotify also allows userspace to make access decisions and cache those
-in the kernel.  Useful for integrity checkers (anti-malware people) and
-for hierarchical storage management people.
+The patch shouldn't be too broken.  It probably needs slight tweaks
+here and there.  Just testing and providing logs would be helpful
+enough.
 
-I've got private commitments for two very large anti malware companies,
-both of which unprotect and hack syscall tables in their customer's
-kernels, that they would like to move to an fanotify interface.  Both
-Red Hat and Suse have expressed interest in these patches and have
-contributed to the patch set.
+Thanks.
 
-The patch set is actually rather small (entire set of about 20 patches
-is 1800 lines) as it builds on the fsnotify work already in 2.6.31 to
-reuse code from inotify rather than reimplement the same things over and
-over (like we previously had with inotify and dnotify)
-
-Don't know what else to say.....
-
--Eric
-
+-- 
+tejun
