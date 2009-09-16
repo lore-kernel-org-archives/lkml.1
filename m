@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbZIPWTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZIPWUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758039AbZIPWTp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758026AbZIPWTi
+	id S1756971AbZIPWUH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757004AbZIPWTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:19:38 -0400
-Received: from kroah.org ([198.145.64.141]:49803 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:19:34 -0400
+Received: from kroah.org ([198.145.64.141]:49807 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757000AbZIPWSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:18:34 -0400
+	id S1757040AbZIPWSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:18:35 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:15:06 2009
-Message-Id: <20090916221506.633681567@mini.kroah.org>
+Message-Id: <20090916221506.761243734@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:13:27 -0700
+Date: Wed, 16 Sep 2009 15:13:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 07/10] powerpc/pseries: Fix to handle slb resize across migration
+       Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 08/10] sound: oxygen: work around MCE when changing volume
 References: <20090916221320.283781925@mini.kroah.org>
-Content-Disposition: inline; filename=powerpc-pseries-fix-to-handle-slb-resize-across-migration.patch
+Content-Disposition: inline; filename=sound-oxygen-work-around-mce-when-changing-volume.patch
 In-Reply-To: <20090916221529.GA28162@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,164 +29,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Brian King <brking@linux.vnet.ibm.com>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit 46db2f86a3b2a94e0b33e0b4548fb7b7b6bdff66 upstream.
+commit f1bc07af9a9edc5c1d4bdd971f7099316ed2e405 upstream.
 
-The SLB can change sizes across a live migration, which was not
-being handled, resulting in possible machine crashes during
-migration if migrating to a machine which has a smaller max SLB
-size than the source machine. Fix this by first reducing the
-SLB size to the minimum possible value, which is 32, prior to
-migration. Then during the device tree update which occurs after
-migration, we make the call to ensure the SLB gets updated. Also
-add the slb_size to the lparcfg output so that the migration
-tools can check to make sure the kernel has this capability
-before allowing migration in scenarios where the SLB size will change.
+When the volume is changed continuously (e.g., when the user drags a
+volume slider with the mouse), the driver does lots of I2C writes.
+Apparently, the sound chip can get confused when we poll the I2C status
+register too much, and fails to complete a read from it.  On the PCI-E
+models, the PCI-E/PCI bridge gets upset by this and generates a machine
+check exception.
 
-BenH: Fixed #include <asm/mmu-hash64.h> -> <asm/mmu.h> to avoid
-      breaking ppc32 build
+To avoid this, this patch replaces the polling with an unconditional
+wait that is guaranteed to be long enough.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Tested-by: Johann Messner <johann.messner at jku.at>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/include/asm/mmu-hash64.h     |    2 ++
- arch/powerpc/kernel/lparcfg.c             |    3 +++
- arch/powerpc/kernel/rtas.c                |    7 ++++++-
- arch/powerpc/mm/slb.c                     |   16 ++++++++++++----
- arch/powerpc/platforms/pseries/reconfig.c |    9 ++++++++-
- 5 files changed, 31 insertions(+), 6 deletions(-)
+ sound/pci/oxygen/oxygen_io.c |   11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
 
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -41,6 +41,7 @@ extern char initial_stab[];
+--- a/sound/pci/oxygen/oxygen_io.c
++++ b/sound/pci/oxygen/oxygen_io.c
+@@ -214,17 +214,8 @@ EXPORT_SYMBOL(oxygen_write_spi);
  
- #define SLB_NUM_BOLTED		3
- #define SLB_CACHE_ENTRIES	8
-+#define SLB_MIN_SIZE		32
- 
- /* Bits in the SLB ESID word */
- #define SLB_ESID_V		ASM_CONST(0x0000000008000000) /* valid */
-@@ -299,6 +300,7 @@ extern void slb_flush_and_rebolt(void);
- extern void stab_initialize(unsigned long stab);
- 
- extern void slb_vmalloc_update(void);
-+extern void slb_set_size(u16 size);
- #endif /* __ASSEMBLY__ */
- 
- /*
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -35,6 +35,7 @@
- #include <asm/prom.h>
- #include <asm/vdso_datapage.h>
- #include <asm/vio.h>
-+#include <asm/mmu.h>
- 
- #define MODULE_VERS "1.8"
- #define MODULE_NAME "lparcfg"
-@@ -485,6 +486,8 @@ static int pseries_lparcfg_data(struct s
- 
- 	seq_printf(m, "shared_processor_mode=%d\n", lppaca[0].shared_proc);
- 
-+	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
-+
- 	return 0;
- }
- 
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -38,6 +38,7 @@
- #include <asm/syscalls.h>
- #include <asm/smp.h>
- #include <asm/atomic.h>
-+#include <asm/mmu.h>
- 
- struct rtas_t rtas = {
- 	.lock = SPIN_LOCK_UNLOCKED
-@@ -665,6 +666,7 @@ static void rtas_percpu_suspend_me(void 
+ void oxygen_write_i2c(struct oxygen *chip, u8 device, u8 map, u8 data)
  {
- 	long rc;
- 	unsigned long msr_save;
-+	u16 slb_size = mmu_slb_size;
- 	int cpu;
- 	struct rtas_suspend_me_data *data =
- 		(struct rtas_suspend_me_data *)info;
-@@ -686,13 +688,16 @@ static void rtas_percpu_suspend_me(void 
- 		/* All other cpus are in H_JOIN, this cpu does
- 		 * the suspend.
- 		 */
-+		slb_set_size(SLB_MIN_SIZE);
- 		printk(KERN_DEBUG "calling ibm,suspend-me on cpu %i\n",
- 		       smp_processor_id());
- 		data->error = rtas_call(data->token, 0, 1, NULL);
+-	unsigned long timeout;
+-
+ 	/* should not need more than about 300 us */
+-	timeout = jiffies + msecs_to_jiffies(1);
+-	do {
+-		if (!(oxygen_read16(chip, OXYGEN_2WIRE_BUS_STATUS)
+-		      & OXYGEN_2WIRE_BUSY))
+-			break;
+-		udelay(1);
+-		cond_resched();
+-	} while (time_after_eq(timeout, jiffies));
++	msleep(1);
  
--		if (data->error)
-+		if (data->error) {
- 			printk(KERN_DEBUG "ibm,suspend-me returned %d\n",
- 			       data->error);
-+			slb_set_size(slb_size);
-+		}
- 	} else {
- 		printk(KERN_ERR "H_JOIN on cpu %i failed with rc = %ld\n",
- 		       smp_processor_id(), rc);
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -247,14 +247,22 @@ void switch_slb(struct task_struct *tsk,
- static inline void patch_slb_encoding(unsigned int *insn_addr,
- 				      unsigned int immed)
- {
--	/* Assume the instruction had a "0" immediate value, just
--	 * "or" in the new value
--	 */
--	*insn_addr |= immed;
-+	*insn_addr = (*insn_addr & 0xffff0000) | immed;
- 	flush_icache_range((unsigned long)insn_addr, 4+
- 			   (unsigned long)insn_addr);
- }
- 
-+void slb_set_size(u16 size)
-+{
-+	extern unsigned int *slb_compare_rr_to_size;
-+
-+	if (mmu_slb_size == size)
-+		return;
-+
-+	mmu_slb_size = size;
-+	patch_slb_encoding(slb_compare_rr_to_size, mmu_slb_size);
-+}
-+
- void slb_initialize(void)
- {
- 	unsigned long linear_llp, vmalloc_llp, io_llp;
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -20,6 +20,7 @@
- #include <asm/machdep.h>
- #include <asm/uaccess.h>
- #include <asm/pSeries_reconfig.h>
-+#include <asm/mmu.h>
- 
- 
- 
-@@ -439,9 +440,15 @@ static int do_update_property(char *buf,
- 	if (!newprop)
- 		return -ENOMEM;
- 
-+	if (!strcmp(name, "slb-size") || !strcmp(name, "ibm,slb-size"))
-+		slb_set_size(*(int *)value);
-+
- 	oldprop = of_find_property(np, name,NULL);
--	if (!oldprop)
-+	if (!oldprop) {
-+		if (strlen(name))
-+			return prom_add_property(np, newprop);
- 		return -ENODEV;
-+	}
- 
- 	rc = prom_update_property(np, newprop, oldprop);
- 	if (rc)
+ 	oxygen_write8(chip, OXYGEN_2WIRE_MAP, map);
+ 	oxygen_write8(chip, OXYGEN_2WIRE_DATA, data);
 
 
