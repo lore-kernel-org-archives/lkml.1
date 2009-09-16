@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933653AbZIPWrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933626AbZIPWr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933653AbZIPWrd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933552AbZIPWrE
+	id S933626AbZIPWr1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760305AbZIPWrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:47:04 -0400
-Received: from kroah.org ([198.145.64.141]:48917 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:47:00 -0400
+Received: from kroah.org ([198.145.64.141]:48919 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760297AbZIPWjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:39:44 -0400
+	id S1760295AbZIPWjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:39:45 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:14 2009
-Message-Id: <20090916223714.118636080@mini.kroah.org>
+Message-Id: <20090916223714.254153168@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:19 -0700
+Date: Wed, 16 Sep 2009 15:36:20 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        James Bottomley <James.Bottomley@suse.de>
-Subject: [patch 06/45] SCSI: fix oops during scsi scanning
+Subject: [patch 07/45] SCSI: libsrp: fix memory leak in srp_ring_free()
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=scsi-fix-oops-during-scsi-scanning.patch
+Content-Disposition: inline; filename=scsi-libsrp-fix-memory-leak-in-srp_ring_free.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,105 +31,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: James Bottomley <James.Bottomley@suse.de>
+From: Bart Van Assche <bart.vanassche@gmail.com>
 
-commit ea038f63ac52439e7816295fa6064fe95e6c1f51 upstream.
+commit afffd3dabe5209882c8cc59a373a4d33b5db304a upstream.
 
-Chris Webb reported:
-  p0# uname -a
-  Linux f7ea8425-d45b-490f-a738-d181d0df6963.host.elastichosts.com 2.6.30.4-elastic-lon-p #2 SMP PREEMPT Thu Aug 20 14:30:50 BST 2009 x86_64 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz GenuineIntel GNU/Linux
-  p0# zgrep SCAN_ASYNC /proc/config.gz
-  # CONFIG_SCSI_SCAN_ASYNC is not set
+This patch fixes a memory leak in the libsrp function srp_ring_free().
+It is not documented whether or not this function should free the ring
+pointer itself. But the source code of the callers of this function
+(srp_target_alloc() and srp_target_free()) makes it clear that
+srp_ring_free() should deallocate the ring pointer itself. Furthermore,
+the patch below makes srp_ring_free() deallocate all memory allocated by
+srp_ring_alloc().
 
-  p0# cat /var/log/kern/2009-08-20
-  [...]
-  15:27:10.485 kernel: scsi9 : iSCSI Initiator over TCP/IP
-  15:27:11.493 kernel: scsi 9:0:0:0: RAID              IET      Controller       0001 PQ: 0 ANSI: 5
-  15:27:11.493 kernel: scsi 9:0:0:0: Attached scsi generic sg6 type 12
-  15:27:11.495 kernel: scsi 9:0:0:1: Direct-Access     IET      VIRTUAL-DISK     0001 PQ: 0 ANSI: 5
-  15:27:11.495 kernel: sd 9:0:0:1: Attached scsi generic sg7 type 0
-  15:27:11.495 kernel: sd 9:0:0:1: [sdg] 4194304 512-byte hardware sectors: (2.14 GB/2.00 GiB)
-  15:27:11.495 kernel: sd 9:0:0:1: [sdg] Write Protect is off
-  15:27:11.495 kernel: sd 9:0:0:1: [sdg] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
-  15:27:13.012 kernel: sdg:<6>scsi 9:0:0:1: [sdg] Unhandled error code
-  15:27:13.012 kernel: scsi 9:0:0:1: [sdg] Result: hostbyte=0x07 driverbyte=0x00
-  15:27:13.012 kernel: end_request: I/O error, dev sdg, sector 0
-  15:27:13.012 kernel: Buffer I/O error on device sdg, logical block 0
-  15:27:13.012 kernel: ldm_validate_partition_table(): Disk read failed.
-  15:27:13.012 kernel: unable to read partition table
-  15:27:13.014 kernel: BUG: unable to handle kernel NULL pointer dereference at 0000000000000010
-  15:27:13.014 kernel: IP: [<ffffffff803f0d77>] disk_part_iter_next+0x74/0xfd
-  15:27:13.014 kernel: PGD 82ad0b067 PUD 82cd7e067 PMD 0
-  15:27:13.014 kernel: Oops: 0000 [#1] PREEMPT SMP
-  15:27:13.014 kernel: last sysfs file: /sys/devices/platform/host9/session4/iscsi_session/session4/ifacename
-  15:27:13.014 kernel: CPU 5
-  15:27:13.014 kernel: Modules linked in:
-  15:27:13.014 kernel: Pid: 13999, comm: async/0 Not tainted 2.6.30.4-elastic-lon-p #2 X7DBN
-  15:27:13.014 kernel: RIP: 0010:[<ffffffff803f0d77>]  [<ffffffff803f0d77>] disk_part_iter_next+0x74/0xfd
-  15:27:13.014 kernel: RSP: 0018:ffff88066afa3dd0  EFLAGS: 00010246
-  15:27:13.014 kernel: RAX: ffff88082b58a000 RBX: ffff88066afa3e00 RCX: 0000000000000000
-  15:27:13.014 kernel: RDX: 0000000000000000 RSI: ffff88082b58a000 RDI: 0000000000000000
-  15:27:13.014 kernel: RBP: ffff88066afa3df0 R08: ffff88066afa2000 R09: ffff8806a204f000
-  15:27:13.014 kernel: R10: 000000fb12c7d274 R11: ffff8806c2bf0628 R12: ffff88066afa3e00
-  15:27:13.014 kernel: R13: ffff88082c829a00 R14: 0000000000000000 R15: ffff8806bc50c920
-  15:27:13.014 kernel: FS:  0000000000000000(0000) GS:ffff88002818a000(0000) knlGS:0000000000000000
-  15:27:13.014 kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-  15:27:13.014 kernel: CR2: 0000000000000010 CR3: 000000082ade3000 CR4: 00000000000426e0
-  15:27:13.014 kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-  15:27:13.014 kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-  15:27:13.014 kernel: Process async/0 (pid: 13999, threadinfo ffff88066afa2000, task ffff8806c2bf05e0)
-  15:27:13.014 kernel: Stack:
-  15:27:13.014 kernel: 0000000000000000 ffff88066afa3e00 ffff88066afa3e00 ffff88082c829a00
-  15:27:13.014 kernel: ffff88066afa3e40 ffffffff80306feb ffff88082b58a000 0000000000000000
-  15:27:13.014 kernel: 0000000000000001 ffff8806bc50c920 ffff88066afa3e40 ffff88082b58a000
-  15:27:13.014 kernel: Call Trace:
-  15:27:13.014 kernel: [<ffffffff80306feb>] register_disk+0x122/0x13a
-  15:27:13.014 kernel: [<ffffffff803f0b0f>] add_disk+0xaa/0x106
-  15:27:13.014 kernel: [<ffffffff80493609>] sd_probe_async+0x198/0x25b
-  15:27:13.014 kernel: [<ffffffff80270482>] async_thread+0x10c/0x20d
-  15:27:13.014 kernel: [<ffffffff802545ff>] ? default_wake_function+0x0/0xf
-  15:27:13.014 kernel: [<ffffffff80270376>] ? async_thread+0x0/0x20d
-  15:27:13.014 kernel: [<ffffffff8026ad89>] kthread+0x55/0x80
-  15:27:13.014 kernel: [<ffffffff8022be6a>] child_rip+0xa/0x20
-  15:27:13.014 kernel: [<ffffffff8026ad34>] ? kthread+0x0/0x80
-  15:27:13.014 kernel: [<ffffffff8022be60>] ? child_rip+0x0/0x20
-  15:27:13.014 kernel: Code: c8 ff 80 e1 0c b9 00 00 00 00 0f 44 c1 41 83 cd ff 48 8d 7a 20 48 be ff ff ff ff 08 00 00 00 48 b9 00 00 00 00 08 00 00 00 eb 50 <8b> 42 10 41 bd 01 00 00 00 eb db 4c 63 c2 4e 8d 04 c7 4d 8b 20
-  15:27:13.015 kernel: RIP  [<ffffffff803f0d77>] disk_part_iter_next+0x74/0xfd
-  15:27:13.015 kernel: RSP <ffff88066afa3dd0>
-  15:27:13.015 kernel: CR2: 0000000000000010
-  15:27:13.015 kernel: ---[ end trace 6104b56ef5590e25 ]---
+This patch affects the ibmvstgt driver, which is the only in-tree driver
+that calls the srp_ring_free() function (indirectly).
 
-The problem is caused because the async scanning split in sd.c doesn't hold
-any reference to the device when it kicks off the async piece.  What's
-happening is that an iSCSI disconnect is destorying the device again *before*
-the async sd scanning thread even starts.  Fix this by taking a reference
-before starting the thread and dropping it again when the thread completes.
-
-Reported-by: Chris Webb <chris@arachsys.com>
+Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
+Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/sd.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/scsi/libsrp.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -2021,6 +2021,7 @@ static void sd_probe_async(void *data, a
- 
- 	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
- 		  sdp->removable ? "removable " : "");
-+	put_device(&sdkp->dev);
+--- a/drivers/scsi/libsrp.c
++++ b/drivers/scsi/libsrp.c
+@@ -124,6 +124,7 @@ static void srp_ring_free(struct device 
+ 		dma_free_coherent(dev, size, ring[i]->buf, ring[i]->dma);
+ 		kfree(ring[i]);
+ 	}
++	kfree(ring);
  }
  
- /**
-@@ -2106,6 +2107,7 @@ static int sd_probe(struct device *dev)
- 
- 	get_device(&sdp->sdev_gendev);
- 
-+	get_device(&sdkp->dev);	/* prevent release before async_schedule */
- 	async_schedule(sd_probe_async, sdkp);
- 
- 	return 0;
+ int srp_target_alloc(struct srp_target *target, struct device *dev,
 
 
