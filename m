@@ -1,98 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbZIPLlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZIPLlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbZIPLlI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 07:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZIPLlI
+	id S1755980AbZIPLlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 07:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZIPLlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 07:41:08 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:3792 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752260AbZIPLlH (ORCPT
+	Wed, 16 Sep 2009 07:41:19 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:46500 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755839AbZIPLlR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 07:41:07 -0400
-X-Trace: 259367232/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.7.143/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.7.143
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAOdrsEpPRQeP/2dsb2JhbACBU9wfhBcF
-X-IronPort-AV: E=Sophos;i="4.44,397,1249254000"; 
-   d="scan'208";a="259367232"
-Date: Wed, 16 Sep 2009 12:40:23 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Wed, 16 Sep 2009 07:41:17 -0400
+Date: Wed, 16 Sep 2009 12:41:07 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Alan Cox <alan@linux.intel.com>
+Cc: Eric Paris <eparis@redhat.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 1/4] mm: m(un)lock avoid ZERO_PAGE
-In-Reply-To: <20090916093506.GB1993@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0909161226500.12659@sister.anvils>
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
- <Pine.LNX.4.64.0909152127240.22199@sister.anvils>
- <Pine.LNX.4.64.0909152130260.22199@sister.anvils> <20090916093506.GB1993@csn.ul.ie>
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org
+Subject: Re: fanotify as syscalls
+Message-ID: <20090916114107.GB29359@shareable.org>
+References: <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org> <20090914140720.GA8564@ioremap.net> <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com> <20090915201620.GB32192@ioremap.net> <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com> <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain> <1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com> <20090916075219.GA22024@shareable.org> <20090916114111.2228f0fc@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090916114111.2228f0fc@linux.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009, Mel Gorman wrote:
-> On Tue, Sep 15, 2009 at 09:31:49PM +0100, Hugh Dickins wrote:
-> > 
-> > And when munlocking, it turns out that FOLL_DUMP coincidentally does
-> > what's needed to avoid all updates to ZERO_PAGE, so use that here also.
-...
-> >  	for (addr = start; addr < end; addr += PAGE_SIZE) {
-> > -		struct page *page = follow_page(vma, addr, FOLL_GET);
-> > -		if (page) {
-> > +		struct page *page;
-> > +		/*
-> > +		 * Although FOLL_DUMP is intended for get_dump_page(),
-> > +		 * it just so happens that its special treatment of the
-> > +		 * ZERO_PAGE (returning an error instead of doing get_page)
-> > +		 * suits munlock very well (and if somehow an abnormal page
-> > +		 * has sneaked into the range, we won't oops here: great).
-> > +		 */
-> > +		page = follow_page(vma, addr, FOLL_GET | FOLL_DUMP);
+Alan Cox wrote:
+> > - fanotify does not provide subtree notification in it's
+> >   present form.  When it is extended to do that, why wouldn't
+> >   inotify be as well?  That's an fsnotify feature, common to both.
 > 
-> Ouch, now I get your depraved comment :) . This will be a tricky rule to
-> remember in a years time, wouldn't it?
+> Because inotify gives you no reliable access to the object monitored as
+> the name passed back is not an object reference and is racy. Inotify is
+> fine for making pretty icons pop up on desktops and making file
+> selectors update, but it is somewhat inadequate for indexers and
+> completely useless for stuff like HSM.
 
-I rely more upon git and grep than memory; I hope others do too.
-(And that's partly why I put "get_dump_page" into the comment line.)
+That was my point.  (Why do people keep not getting it?)
 
-> Functionally, the patch seems fine and the avoidance of lock_page() is
-> nice so.
+You can't rely on the name being non-racy, but you _can_ reliably
+invalidate application-level caches from the sequence of events
+including file writes, creates, renames, links, unlinks, mounts.  And
+revalidate such caches by the absence of pending events.
+
+(There is one obscure case which inotify is missing, though, which
+means it cannot detect file changes in certain cases with hard links.
+I intend to fix that one.)
+
+For that, an inode isn't useful, a descriptor isn't useful, a
+directory descriptor/inode and pathname isn't useful, and file write
+events by themselves aren't useful.  None of them quite do it by
+themselves.
+
+But with the correct combination of events, you can maintain very
+efficient application-level caching of file data / directory listing
+and lookups / stat results you have previously read from the
+filesystem.  That's because the information you have previously
+depended upon, including path lookups, are all notified as one sort of
+inotify event or another when changed.
+
+Which doesn't sound all that special until you realise you can very
+quickly revalidate application-caches of any data structure calculated
+from reading things from the filesystem, no matter how many
+prerequisites or how complex the data structures, in a single system
+call.  Amortised over many revalidations if you have them in parallel.
+
+That can apply to things like git, make, ccache, samba, rsync, httpd
+path walks, and virtually any "web templating" framework.  Of course
+it takes userspace support as well, but that's where I'm coming from
+regarding "acceleration" and the essential kernel infrastructure.
+
+Clearly, I'm going to have to explain with working code :-)
+
+> but it is somewhat inadequate for indexers
+
+For indexers, the real inadequacy is the need to attach inotify
+watches to every directory at system startup, and to stat() everything
+to check it hasn't changed since the indexer was last running.  Both
+are very slow on a large directory tree.  The former can be dealt with
+using subtree watches (yes, even with hard links - I have proposed an
+algorithm for this but I think nobody understood it ;-).  The latter
+needs filesystem support for a persistent change attribute.
+
+> > - fanotify requires you call readlink(/proc/fd/N) for every event to
+> >   get the path.  It's not a particularly efficient way to get it,
 > 
-> Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+> IFF you want the path, but the path isn't usually the most valuable bit.
+> Plus you'll find the readlink is extremely quick anyway.
 
-Thanks.
+I agree, you don't usually want the whole path.
 
+So what was the point about fanotify making subtree tracking possible
+with it's file descriptor, if not by readlink(/proc/fd/N)?
+Descriptors don't tell you which subtree a file is in any better than
+inotify watches.  I.e. they do, if you track them and their containing
+directories all individually.
+
+> > People who want to break out of chroot/namespace jails using the
+> > conveniently provided open file descriptor? :-)
 > 
-> But, as FOLL_DUMP applies to more than core dumping, can it be renamed
-> in another follow-on patch?  The fundamental underlying "thing" it does
-> is to error instead of faulting the zero page so FOLL_NO_FAULT_ZEROPAGE,
-> FOLL_ERRORZERO, FOLL_NOZERO etc? A name like that would simplify the comments
-> as FOLL_DUMP would no longer just be a desirable side-effect.
+> chroot isn't a security model. You can already do this with AF_UNIX
+> sockets (and there are apps that intentionally use fchdir that way)
 
-At this moment, particularly after the years of FOLL_ANON confusion,
-I feel pretty strongly that this flag is there for coredumping; and
-it's just a happy accident that it happens also to be useful for munlock.
-And if their needs diverge later, FOLL_DUMP will do whatever dumping
-wants, and FOLL_MUNLOCK or something with a longer name will do
-whatever munlocking wants.
+Ah, no.  AF_UNIX works with explicit sender cooperation.
 
-I suspect that if I could think of a really snappy name for the flag,
-that didn't just send us away to study the source to see what it
-really does, I'd be glad to change to that.  But at the moment,
-I'm happier sticking with FOLL_DUMP myself.
+fanotify gives you access to files without sender cooperation, as it
+intercepts every open().
 
-Hugh
+> > I'd expect anti-malware to want to be run inside VMs quite often...
+> 
+> Inside of containers - unlikely.
+
+Why not?  Some people run entire distributions in containiners, and
+present them as VMs to the world for other people to admin.
+
+> > the accessing process until acked), that's ok with me.  It makes
+> > sense.  But then it's messy that neither offers a superset of the
+> > other regarding which files and events are tracked.
+> 
+> Agreed.
+
+In the end this is my main gripe.
+
+-- Jamie
+
