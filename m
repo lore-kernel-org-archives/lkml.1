@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbZIPHBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbZIPHBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbZIPHBI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 03:01:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbZIPHBI
+	id S1757411AbZIPHBu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 03:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbZIPHBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 03:01:08 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57544 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756849AbZIPHBG (ORCPT
+	Wed, 16 Sep 2009 03:01:48 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:37693 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757149AbZIPHBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 03:01:06 -0400
-Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and S390
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, heiko.carstens@de.ibm.com, mingo@elte.hu,
-       npiggin@suse.de, sachinp@in.ibm.com
-In-Reply-To: <alpine.DEB.1.00.0909152351510.13366@chino.kir.corp.google.com>
-References: <1253083059.5478.1.camel@penberg-laptop>
-	 <alpine.DEB.1.00.0909152351510.13366@chino.kir.corp.google.com>
-Date: Wed, 16 Sep 2009 10:01:08 +0300
-Message-Id: <1253084468.6749.27.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Wed, 16 Sep 2009 03:01:47 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=wq8rcL5zc8ECTY1z2Ej+RICnLyVcVVD1r8QtukEtjWx4w8j9zeHKa0gPHbQxf/hMk
+	E2KXbPBqlYDhQLxWZtzmA==
+Date: Wed, 16 Sep 2009 00:01:41 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Kurt Roeckx <kurt@roeckx.be>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Jones <davej@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+Subject: Re: [Bug #13780] NULL pointer dereference loading powernowk8
+In-Reply-To: <20090916064708.GA25472@roeckx.be>
+Message-ID: <alpine.DEB.1.00.0909152359131.13366@chino.kir.corp.google.com>
+References: <aIL9jMAYJnG.A.WjH.M3BpKB@chimera> <200909080112.14997.rjw@sisk.pl> <20090908194653.GA3517@roeckx.be> <200909102259.15144.rjw@sisk.pl> <alpine.DEB.1.00.0909151642100.24059@chino.kir.corp.google.com> <20090916064708.GA25472@roeckx.be>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Wed, 16 Sep 2009, Kurt Roeckx wrote:
 
-On Wed, 16 Sep 2009, Pekka Enberg wrote:
-> > The SLQB allocator is known to be broken on certain PowerPC and S390
-> > configurations. Disable the allocator in Kconfig for those architectures
-> > until the issues are resolved.
+> On Tue, Sep 15, 2009 at 04:45:37PM -0700, David Rientjes wrote:
+> > On Thu, 10 Sep 2009, Rafael J. Wysocki wrote:
 > > 
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Cc: Christoph Lameter <cl@linux-foundation.org>
-> > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Nick Piggin <npiggin@suse.de>
-> > Cc: Sachin Sant <sachinp@in.ibm.com>
-> > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> > ---
-> >  init/Kconfig |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > > > So I did a biset, and this is the result:
+> > > > $ git bisect good
+> > > > 0e64a0c982c06a6b8f5e2a7f29eb108fdf257b2f is first bad commit
 > > 
-> > diff --git a/init/Kconfig b/init/Kconfig
-> > index c0d8a47..aaeddeb 100644
-> > --- a/init/Kconfig
-> > +++ b/init/Kconfig
-> > @@ -1033,6 +1033,7 @@ config SLUB
-> >  
-> >  config SLQB
-> >  	bool "SLQB (Queued allocator)"
-> > +	depends on !PPC && !S390
-> >  	help
-> >  	  SLQB is a proposed new slab allocator.
-> >  
+> > 0e64a0c has this cleanup, which isn't equivalent to the previous code:
+> 
+> Please look at the patch I attached to the bug report.  There is
+> other code that is not equivalent.  It's in comment #17:
+> http://bugzilla.kernel.org/show_bug.cgi?id=13780#c17
+> 
+> And the patch itself:
+> http://bugzilla.kernel.org/attachment.cgi?id=23048
+> 
+> This patch fixes my problem.
+> 
 
-On Tue, 2009-09-15 at 23:55 -0700, David Rientjes wrote:
-> I think this should be (!PPC && !S390) || EXPERIMENTAL so that it can 
-> still be enabled for debugging and development.
-
-Everybody enables EXPERIMENTAL so that seems pointless. Developers can
-hack Kconfig locally, no?
-
-On Tue, 2009-09-15 at 23:55 -0700, David Rientjes wrote:
-> Is this in preparation for slqb inclusion as a non-default slab
-> allocator in 2.6.32?  2.6.33?
-
-Non-default for 2.6.32.
-
-			Pekka
-
+Ah, I hadn't noticed you attached a patch there that fixes the issue for 
+you.  Is it en-route to Dave Jones so that it can make its way upstream?
