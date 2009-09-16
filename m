@@ -1,130 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZIPHXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZIPHV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbZIPHXW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 03:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZIPHXT
+	id S1757381AbZIPHV7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 03:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZIPHV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 03:23:19 -0400
-Received: from mail-yx0-f171.google.com ([209.85.210.171]:55042 "EHLO
-	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbZIPHXS convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 03:21:57 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:26986 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbZIPHV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 03:23:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LE8bas+KqyVHYHCjag864cR4HllQBR5ho+Z0uD9qch4cybYu1AW8X/+SVy1lsEZQh/
-         zxW+sPqVaJNjY6loZQAFkID1mNnkvmAYinY4xxuMw0K1e3rmlpK1HldLwn35zBTTyifn
-         /Tsz3j5p8UAsFHkD0KhRQ5rRiw10PEqroRBAE=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LNX.2.00.0909151202560.17028@wotan.suse.de>
-References: <20090915085441.GF23126@kernel.dk>
-	 <alpine.LNX.2.00.0909151202560.17028@wotan.suse.de>
-Date: Wed, 16 Sep 2009 16:16:46 +0900
-Message-ID: <28c262360909160016m19edee02g9215669f854e1026@mail.gmail.com>
-Subject: Re: BUG: sleeping function called from invalid context at 
-	mm/slub.c:1717
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 16 Sep 2009 03:21:56 -0400
+Subject: Re: 2.6.32 -mm merge plans
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       dwmw2@infradead.org, kmpark@infradead.org,
+       linux-mtd@lists.infradead.org
+In-Reply-To: <8bd0f97a0909152051s4a25b9eej581c68a3b10fda3@mail.gmail.com>
+References: <20090915161535.db0a6904.akpm@linux-foundation.org>
+	 <20090916000357.GD23923@linux-sh.org>
+	 <20090915171826.4bd7f1d4.akpm@linux-foundation.org>
+	 <8bd0f97a0909152051s4a25b9eej581c68a3b10fda3@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Sep 2009 10:21:09 +0300
+Message-Id: <1253085669.3778.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Sep 2009 07:21:37.0460 (UTC) FILETIME=[53F24740:01CA369E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Jiri.
+On Tue, 2009-09-15 at 23:51 -0400, Mike Frysinger wrote:
+> On Tue, Sep 15, 2009 at 20:18, Andrew Morton wrote:
+> > On Wed, 16 Sep 2009 09:03:57 +0900 Paul Mundt wrote:
+> >> On Tue, Sep 15, 2009 at 04:15:35PM -0700, Andrew Morton wrote:
+> >> > mtd-make-onenand-genericc-more-generic.patch
+> >> > mtd-nand-add-page-parameter-to-all-read_page-read_page_raw-apis.patch
+> >> > mtd-nand-add-new-ecc-mode-ecc_hw_oob_first.patch
+> >> > mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips.patch
+> >> > mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips-update.patch
+> >> > mtd-jffs2-fix-read-buffer-overflow.patch
+> >> > mtd-prevent-a-read-from-eraseregions.patch
+> >> > mtd-prevent-a-read-from-regions.patch
+> >> > mtd-jedec_probe-fix-nec-upd29f064115-detection.patch
+> >> > mtdpart-memory-accessor-interface-for-mtd-layer.patch
+> >> >
+> >> >   -> dwmw2
+> >>
+> >> Regarding mtd-make-onenand-genericc-more-generic.patch, I'm not really
+> >> sure what happened. To recap:
+> >>
+> >> It was posted to the mtd list here:
+> >>
+> >> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026805.html
+> >>
+> >> Kyungmin objected to the driver name change here:
+> >>
+> >> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026807.html
+> >>
+> >> I pointed out that the rough rationale for the name change here:
+> >>
+> >> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026808.html
+> >>
+> >> and offered to redo the patch keeping the old name if Kyungmin felt the
+> >> rationale wasn't valid, but received no reply. Subsequently, Artem
+> >> mentioned that he had merged it in to his l2-mtd-2.6.git tree here:
+> >>
+> >> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026866.html
+> >>
+> >> which subsequently seems to not actually have happened.
+> >>
+> >> This is a pretty trivial patch, and I don't mind respinning it in
+> >> whatever form folks are content with. I had assumed given the mention
+> >> that it had been merged in to the l2 tree that the rationale was
+> >> sufficient for merging.
+> >
+> > I don't think that Artem's tree is in linux-next, so I have no
+> > visibility of what's happening with that patch.
+> >
+> > I do think that Artem's tree should be in linux-next.
+> >
+> > I guess I'll just hose the patch at dwmw2 and will see what happens.  I
+> > sent it on Aug 6, with no effect.
+> 
+> i guess i shouldnt try and bounce a few more mtd patches through you huh ...
+> 
+> http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=shortlog;h=for-mtd
+> 
+> hopefully they make it in this cycle (they were posted a while ago to
+> the mtd lists w/feedback addressed)
 
-On Tue, Sep 15, 2009 at 7:10 PM, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Tue, 15 Sep 2009, Jens Axboe wrote:
->
->> This is new with todays -git:
->>
->> BUG: sleeping function called from invalid context at mm/slub.c:1717
->> in_atomic(): 1, irqs_disabled(): 1, pid: 0, name: swapper
->> Pid: 0, comm: swapper Not tainted 2.6.31 #206
->> Call Trace:
->> †<IRQ> †[<ffffffff8103eb23>] __might_sleep+0xf3/0x110
->> †[<ffffffff810e4d83>] kmem_cache_alloc+0x123/0x170
->> †[<ffffffff813306c9>] hid_input_report+0x89/0x3a0
->> †[<ffffffffa00cd5f4>] hid_ctrl+0xa4/0x1f0 [usbhid]
->> †[<ffffffff8108a4c7>] ? handle_IRQ_event+0xa7/0x1e0
->> †[<ffffffffa004da1f>] usb_hcd_giveback_urb+0x3f/0xa0 [usbcore]
->> †[<ffffffffa0074ab4>] uhci_giveback_urb+0xb4/0x240 [uhci_hcd]
->> †[<ffffffffa00750e7>] uhci_scan_schedule+0x357/0xab0 [uhci_hcd]
->> †[<ffffffffa0077a01>] uhci_irq+0x91/0x190 [uhci_hcd]
->> †[<ffffffffa004d44e>] usb_hcd_irq+0x2e/0x70 [usbcore]
->> †[<ffffffff8108a4c7>] handle_IRQ_event+0xa7/0x1e0
->> †[<ffffffff8108c58c>] handle_fasteoi_irq+0x7c/0xf0
->> †[<ffffffff8100f176>] handle_irq+0x46/0xa0
->> †[<ffffffff8100e49a>] do_IRQ+0x6a/0xf0
->> †[<ffffffff8100c853>] ret_from_intr+0x0/0xa
->>
->> And I notice there's a HID merge from yesterday, Jiri CC'ed.
->
-> Thanks for letting me know. The patch below should fix it.
->
->
->
-> From: Jiri Kosina <jkosina@suse.cz>
-> Subject: [PATCH] HID: fix non-atomic allocation in hid_input_report
->
-> 'interrupt' variable can't be used to safely determine whether
-> we are running in atomic context or not, as we might be called from
-> during control transfer completion through hid_ctrl() in atomic
-> context with interrupt == 0.
+Well, these patches have been sitting in my tree in dunno for long as
+well. They are still there:
 
-I am not a USB expert so It might be dump comment. :)
-
-We have to change description of hid_input_report.
-
- * @interrupt: called from atomic?
-
-I think it lost meaning.
-I am worried that interrupt variable is propagated down
-to sub functions. Is it right on sub functions?
-
-One more thing, I am concerned about increasing
-GFP_ATOMIC customers although we can avoid it.
-Is it called rarely?
-Could you find a alternative method to overcome this issue?
-
-
->
-> Reported-by: Jens Axboe <jens.axboe@oracle.com>
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> ---
-> †drivers/hid/hid-core.c | † †3 +--
-> †1 files changed, 1 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-> index 342b7d3..ca9bb26 100644
-> --- a/drivers/hid/hid-core.c
-> +++ b/drivers/hid/hid-core.c
-> @@ -1089,8 +1089,7 @@ int hid_input_report(struct hid_device *hid, int type, u8 *data, int size, int i
-> † † † † † † † †return -1;
-> † † † †}
->
-> - † † † buf = kmalloc(sizeof(char) * HID_DEBUG_BUFSIZE,
-> - † † † † † † † † † † † interrupt ? GFP_ATOMIC : GFP_KERNEL);
-> + † † † buf = kmalloc(sizeof(char) * HID_DEBUG_BUFSIZE, GFP_ATOMIC);
->
-> † † † †if (!buf) {
-> † † † † † † † †report = hid_get_report(report_enum, data);
-> --
-> 1.5.6
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at †http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at †http://www.tux.org/lkml/
->
-
-
+http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/951d5f4097ccf8c41ccbab6d4116509b89b705fd
+and below.
 
 -- 
-Kind regards,
-Minchan Kim
+Best Regards,
+Artem Bityutskiy (–ê—Ä—Ç—ë–º –ë–∏—Ç—é—Ü–∫–∏–π)
+
