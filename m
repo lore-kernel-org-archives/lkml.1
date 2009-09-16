@@ -1,121 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758478AbZIPOJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbZIPOLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758478AbZIPOJQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 10:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZIPOJO
+	id S1758932AbZIPOLB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 10:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZIPOLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 10:09:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45203 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbZIPOJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 10:09:13 -0400
-Date: Wed, 16 Sep 2009 16:09:13 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, tytso@mit.edu, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Ext3: data=guarded mode
-Message-ID: <20090916140913.GN26030@duck.suse.cz>
-References: <1252422595-4554-1-git-send-email-chris.mason@oracle.com> <1252422595-4554-3-git-send-email-chris.mason@oracle.com> <20090915172924.GI12169@duck.suse.cz> <20090915183906.GE23965@think>
+	Wed, 16 Sep 2009 10:11:00 -0400
+Received: from mail-qy0-f193.google.com ([209.85.221.193]:41091 "EHLO
+	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbZIPOK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 10:10:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=Z/oEA1grPPR83HMRMwgkWzwp5Rgxnk5rSF8xczkkEuqAYKO6QjpxxgATkLi2MuKzSm
+         3pC9XH2QVoI1ZX4CiliLxektfDHx3o6qCitEqdQ04MNCIZlWobI3SZ0UpmKWWXSmNGKo
+         KsInYq69wRAqx2Rjen2u3XJy2ZuP3lrMWYO/o=
+Message-ID: <4AB0F1EF.5050102@gmail.com>
+Date: Wed, 16 Sep 2009 10:10:55 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090915183906.GE23965@think>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Avi Kivity <avi@redhat.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com>
+In-Reply-To: <4AB0E2A2.3080409@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig96A6E6B1F5308E397068EC7E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 15-09-09 14:39:06, Chris Mason wrote:
-> On Tue, Sep 15, 2009 at 07:29:24PM +0200, Jan Kara wrote:
-> > > +static int orphan_del(handle_t *handle, struct inode *inode, int must_log)
-> > > +{
-> > > +	int ret = 0;
-> > > +	struct list_head *ordered_list;
-> > > +
-> > > +	ordered_list = &EXT3_I(inode)->ordered_buffers.ordered_list;
-> > > +
-> > > +	/* fast out when data=guarded isn't on */
-> > > +	if (!ext3_should_guard_data(inode)) {
-> > > +		WARN_ON(must_log);
-> > > +		return ext3_orphan_del(handle, inode);
-> > > +	}
-> > > +
-> > > +	ext3_ordered_lock(inode);
-> > > +	if (inode->i_nlink && list_empty(ordered_list)) {
-> > > +		ext3_ordered_unlock(inode);
-> > > +
-> > > +		lock_super(inode->i_sb);
-> > > +
-> > > +		/*
-> > > +		 * now that we have the lock make sure we are allowed to
-> > > +		 * get rid of the orphan.  This way we make sure our
-> > > +		 * test isn't happening concurrently with someone else
-> > > +		 * adding an orphan.  Memory barrier for the ordered list.
-> > > +		 */
-> > > +		smp_mb();
-> > > +		if (inode->i_nlink == 0 || !list_empty(ordered_list)) {
-> >   The code here still looks suspicious.
-> > 1) Inodes can be on orphan list with i_nlink > 0 when a write failed for
-> >    some reason and we have to truncate blocks instantiated beyond i_size.
-> >    Those places (similarly as truncate) expect that while they hold i_mutex
-> >    they are safe doing what they want with the orphan list. This code would
-> >    happily remove the inode from orphan list...
-> 
-> The only risky place for this is the work thread doing the ordered
-> writes.  Truncate gets around it by waiting for the ordered completions.
-> I'll add the wait to the error handlers as well.
-  You probably mean guarded writes. I agree.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig96A6E6B1F5308E397068EC7E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> > 2) Cannot it happen that:
-> >      CPU1
-> > orphan_del()
-> >   if (inode->i_nlink && list_empty(ordered_list)) {
-> > 	ext3_ordered_unlock(inode);
-> > 	lock_super(inode->i_sb);
-> > 	smp_mb();
-> > 	if (inode->i_nlink == 0 || !list_empty(ordered_list)) {
-> > 
-> >      CPU2
-> > journal_dirty_data_guarded_fn()
-> >   ret = ext3_add_ordered_extent(inode, offset, bh);
-> >   if (ret == 0 && buffer_dataguarded(bh) &&
-> >       list_empty(&EXT3_I(inode)->i_orphan) &&
-> >       !(EXT3_SB(inode->i_sb)->s_mount_state & EXT3_ORPHAN_FS)) - list isn't
-> > empty yet so we don't add inode to orphan list, but on CPU1, we go ahead
-> > and remove inode from the orphan list...
-> 
-> This used to have a check after the orphan_del to re-add the orphan if
-> we raced with the end_io handlers.  I removed it because I thought it
-> was over-paranoid, but I see that you're right.  So, I'll put that one
-> back in.
-  Hmm, that will probably work but it's ugly :(. The ugliness is localized
-in the guarded mode code so probably we can bear it for a while but I'll
-certainly try to look into what we can do to get rid of it :).
+Avi Kivity wrote:
+> On 09/16/2009 02:44 PM, Gregory Haskins wrote:
+>> The problem isn't where to find the models...the problem is how to
+>> aggregate multiple models to the guest.
+>>   =20
+>=20
+> You mean configuration?
+>=20
+>>> You instantiate multiple vhost-nets.  Multiple ethernet NICs is a
+>>> supported configuration for kvm.
+>>>     =20
+>> But this is not KVM.
+>>
+>>   =20
+>=20
+> If kvm can do it, others can.
 
-> > > diff --git a/include/linux/ext3_fs_i.h b/include/linux/ext3_fs_i.h
-> > > index ca1bfe9..a6cf26d 100644
-> > > --- a/include/linux/ext3_fs_i.h
-> > > +++ b/include/linux/ext3_fs_i.h
-> > > @@ -137,6 +180,8 @@ struct ext3_inode_info {
-> > >  	 * by other means, so we have truncate_mutex.
-> > >  	 */
-> > >  	struct mutex truncate_mutex;
-> > > +
-> > > +	struct ext3_ordered_buffers ordered_buffers;
-> > >  	struct inode vfs_inode;
-> > >  };
-> >   Hmm, how hard would it be to hide especially this behind
-> > CONFIG_EXT3_GUARDED_DATA so that we can avoid increasing inode size for
-> > users which are not interested in the new guarded mode?
-> 
-> I'm not too picky, but it would litter the code with #ifdefs around the
-> guarded functions.  I'd rather not.
-  Looking into the code, it needn't be too bad if we define a a few
-functions as empty in !guarded case. I'll have a look at it for the next
-version of your patch.
+The problem is that you seem to either hand-wave over details like this,
+or you give details that are pretty much exactly what vbus does already.
+ My point is that I've already sat down and thought about these issues
+and solved them in a freely available GPL'ed software package.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+So the question is: is your position that vbus is all wrong and you wish
+to create a new bus-like thing to solve the problem?  If so, how is it
+different from what Ive already done?  More importantly, what specific
+objections do you have to what Ive done, as perhaps they can be fixed
+instead of starting over?
+
+>=20
+>>>> His slave boards surface themselves as PCI devices to the x86
+>>>> host.  So how do you use that to make multiple vhost-based devices (=
+say
+>>>> two virtio-nets, and a virtio-console) communicate across the
+>>>> transport?
+>>>>
+>>>>       =20
+>>> I don't really see the difference between 1 and N here.
+>>>     =20
+>> A KVM surfaces N virtio-devices as N pci-devices to the guest.  What d=
+o
+>> we do in Ira's case where the entire guest represents itself as a PCI
+>> device to the host, and nothing the other way around?
+>>   =20
+>=20
+> There is no guest and host in this scenario.  There's a device side
+> (ppc) and a driver side (x86).  The driver side can access configuratio=
+n
+> information on the device side.  How to multiplex multiple devices is a=
+n
+> interesting exercise for whoever writes the virtio binding for that set=
+up.
+
+Bingo.  So now its a question of do you want to write this layer from
+scratch, or re-use my framework.
+
+>=20
+>>>> There are multiple ways to do this, but what I am saying is that
+>>>> whatever is conceived will start to look eerily like a vbus-connecto=
+r,
+>>>> since this is one of its primary purposes ;)
+>>>>
+>>>>       =20
+>>> I'm not sure if you're talking about the configuration interface or d=
+ata
+>>> path here.
+>>>     =20
+>> I am talking about how we would tunnel the config space for N devices
+>> across his transport.
+>>   =20
+>=20
+> Sounds trivial.
+
+No one said it was rocket science.  But it does need to be designed and
+implemented end-to-end, much of which Ive already done in what I hope is
+an extensible way.
+
+>  Write an address containing the device number and
+> register number to on location, read or write data from another.
+
+You mean like the "u64 devh", and "u32 func" fields I have here for the
+vbus-kvm connector?
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/ghaskins/alacrityvm/linux-2.6=
+=2Egit;a=3Dblob;f=3Dinclude/linux/vbus_pci.h;h=3Dfe337590e644017392e4c9d9=
+236150adb2333729;hb=3Dded8ce2005a85c174ba93ee26f8d67049ef11025#l64
+
+> Just
+> like the PCI cf8/cfc interface.
+>=20
+>>> They aren't in the "guest".  The best way to look at it is
+>>>
+>>> - a device side, with a dma engine: vhost-net
+>>> - a driver side, only accessing its own memory: virtio-net
+>>>
+>>> Given that Ira's config has the dma engine in the ppc boards, that's
+>>> where vhost-net would live (the ppc boards acting as NICs to the x86
+>>> board, essentially).
+>>>     =20
+>> That sounds convenient given his hardware, but it has its own set of
+>> problems.  For one, the configuration/inventory of these boards is now=
+
+>> driven by the wrong side and has to be addressed.
+>=20
+> Why is it the wrong side?
+
+"Wrong" is probably too harsh a word when looking at ethernet.  Its
+certainly "odd", and possibly inconvenient.  It would be like having
+vhost in a KVM guest, and virtio-net running on the host.  You could do
+it, but its weird and awkward.  Where it really falls apart and enters
+the "wrong" category is for non-symmetric devices, like disk-io.
+
+>=20
+>> Second, the role
+>> reversal will likely not work for many models other than ethernet (e.g=
+=2E
+>> virtio-console or virtio-blk drivers running on the x86 board would be=
+
+>> naturally consuming services from the slave boards...virtio-net is an
+>> exception because 802.x is generally symmetrical).
+>>   =20
+>=20
+> There is no role reversal.
+
+So if I have virtio-blk driver running on the x86 and vhost-blk device
+running on the ppc board, I can use the ppc board as a block-device.
+What if I really wanted to go the other way?
+
+> The side doing dma is the device, the side
+> accessing its own memory is the driver.  Just like that other 1e12
+> driver/device pairs out there.
+
+IIUC, his ppc boards really can be seen as "guests" (they are linux
+instances that are utilizing services from the x86, not the other way
+around).  vhost forces the model to have the ppc boards act as IO-hosts,
+whereas vbus would likely work in either direction due to its more
+refined abstraction layer.
+
+>=20
+>>> I have no idea, that's for Ira to solve.
+>>>     =20
+>> Bingo.  Thus my statement that the vhost proposal is incomplete.  You
+>> have the virtio-net and vhost-net pieces covering the fast-path
+>> end-points, but nothing in the middle (transport, aggregation,
+>> config-space), and nothing on the management-side.  vbus provides most=
+
+>> of the other pieces, and can even support the same virtio-net protocol=
+
+>> on top.  The remaining part would be something like a udev script to
+>> populate the vbus with devices on board-insert events.
+>>   =20
+>=20
+> Of course vhost is incomplete, in the same sense that Linux is
+> incomplete.  Both require userspace.
+
+A vhost based solution to Iras design is missing more than userspace.
+Many of those gaps are addressed by a vbus based solution.
+
+>=20
+>>> If he could fake the PCI
+>>> config space as seen by the x86 board, he would just show the normal =
+pci
+>>> config and use virtio-pci (multiple channels would show up as a
+>>> multifunction device).  Given he can't, he needs to tunnel the virtio=
+
+>>> config space some other way.
+>>>     =20
+>> Right, and note that vbus was designed to solve this.  This tunneling
+>> can, of course, be done without vbus using some other design.  However=
+,
+>> whatever solution is created will look incredibly close to what I've
+>> already done, so my point is "why reinvent it"?
+>>   =20
+>=20
+> virtio requires binding for this tunnelling, so does vbus.
+
+We aren't talking about virtio.  Virtio would work with either vbus or
+vhost.  This is purely a question of what the layers below virtio and
+the device backend looks like.
+
+>  Its the same problem with the same solution.
+
+I disagree.
+
+Kind Regards,
+-Greg
+
+
+
+--------------enig96A6E6B1F5308E397068EC7E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqw8e8ACgkQP5K2CMvXmqE+cwCfVWx10aAmZSOf8h+AHJ+349hq
+1j8An0MQ1dT//bW4eUIdHLNrS/qwwEil
+=TYzE
+-----END PGP SIGNATURE-----
+
+--------------enig96A6E6B1F5308E397068EC7E--
