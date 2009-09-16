@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZIPG5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZIPG5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757254AbZIPG5G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 02:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbZIPG5E
+	id S1757341AbZIPG5J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 02:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbZIPG5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 02:57:04 -0400
-Received: from bamako.nerim.net ([62.4.17.28]:53652 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753729AbZIPG5D convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 02:57:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57231
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754940AbZIPG5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 02:57:03 -0400
-Date: Wed, 16 Sep 2009 08:57:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: =?UTF-8?B?UGF3ZcWC?= Sikora <pluto@agmk.net>
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
-       LMML <linux-media@vger.kernel.org>
-Subject: Re: [2.6.31] ir-kbd-i2c oops.
-Message-ID: <20090916085701.6e883600@hyperion.delvare>
-In-Reply-To: <200909160300.28382.pluto@agmk.net>
-References: <200909160300.28382.pluto@agmk.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	Wed, 16 Sep 2009 02:57:04 -0400
+Date: Tue, 15 Sep 2009 23:57:21 -0700 (PDT)
+Message-Id: <20090915.235721.252164710.davem@davemloft.net>
+To: jie.yang@atheros.com
+Cc: miles.lane@gmail.com, chris.snook@gmail.com, jcliburn@gmail.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Patch net-next]atl1e:fix 2.6.31-git4 -- ATL1E 0000:03:00.0:
+ DMA-API: device driver frees DMA
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <12530821133392-git-send-email-jie.yang@atheros.com>
+References: <12530821133392-git-send-email-jie.yang@atheros.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pawel,
+From: <jie.yang@atheros.com>
+Date: Wed, 16 Sep 2009 14:21:53 +0800
 
-On Wed, 16 Sep 2009 03:00:28 +0200, Paweł Sikora wrote:
-> the latest 2.6.31 kernel oopses in ir-kbd-i2c on my box:
-> afaics the 2.6.28.10 is also affected.
 > 
-> http://imgbin.org/index.php?page=image&id=776
-> http://imgbin.org/index.php?page=image&id=777
-> http://imgbin.org/index.php?page=image&id=778
+> [   25.059969] WARNING: at lib/dma-debug.c:816 check_unmap+0x383/0x55c()
+> [   25.059976] Hardware name: 1000HE
+> [   25.059984] ATL1E 0000:03:00.0: DMA-API: device driver frees DMA
+>     memory with wrong function [device address=0x0000000036b92802] 
+>     [size=90 bytes] [mapped as single] [unmapped as page]
 > 
-> installed pinnacle tv card with infra-red receiver:
-> 
-> 05:00.0 Multimedia controller: Philips Semiconductors SAA7133/SAA7135
->         Video Broadcast Decoder (rev d1)
->         Subsystem: Pinnacle Systems Inc. PCTV 110i (saa7133)
->         Kernel driver in use: saa7134
->         Kernel modules: saa7134
-> 
-> if you need i'll provide more information.
-> please, CC me on reply.
+> use the wrong API when free dma. So when map dma use a flag to demostrate
+> whether it is 'pci_map_single' or 'pci_map_page'. When free the dma, check
+> the flags to select the right APIs('pci_unmap_single' or 'pci_unmap_page').
+>  
+> Signed-off-by: Jie Yang <jie.yang@atheros.com>
 
-This would have best been posted to linux-media... Cc'd.
+An 'unsigned long' is an enormous type to use just to store
+3 bits of information.  Use a u16 or similar to compact the
+size of struct atl1e_tx_buffer
 
-I think this would be fixed by the following patch:
-http://patchwork.kernel.org/patch/45707/
+Also, it looks terribly ugle to define the flag macros, some with
+three leading zeros in the hexadecimal values and one without.
 
-Can you please give it a try?
+Please make them consistent, thanks.
 
-If I am correct then only kernel 2.6.31 would be affected, 2.6.30
-wouldn't be.
-
--- 
-Jean Delvare
+Generally, I see that this change was put together very hastily
+and without very much care.
