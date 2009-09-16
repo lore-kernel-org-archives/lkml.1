@@ -1,161 +1,385 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZIPNeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbZIPNgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757329AbZIPNeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZIPNeP
+	id S1758185AbZIPNgc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758321AbZIPNgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:34:15 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44006 "EHLO mx2.suse.de"
+	Wed, 16 Sep 2009 09:36:31 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44047 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbZIPNeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 09:34:14 -0400
-Date: Wed, 16 Sep 2009 15:34:16 +0200
+	id S1751432AbZIPNg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 09:36:29 -0400
+Date: Wed, 16 Sep 2009 15:36:31 +0200
 From: Jan Kara <jack@suse.cz>
 To: Jens Axboe <jens.axboe@oracle.com>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
        akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 05/16] fs: Assign bdi in super_block
-Message-ID: <20090916133416.GK26030@duck.suse.cz>
-References: <1253107494-20160-1-git-send-email-jens.axboe@oracle.com> <1253107494-20160-6-git-send-email-jens.axboe@oracle.com>
+Subject: Re: [PATCH 09/16] writeback: separate starting of sync vs
+	opportunistic writeback
+Message-ID: <20090916133631.GL26030@duck.suse.cz>
+References: <1253107494-20160-1-git-send-email-jens.axboe@oracle.com> <1253107494-20160-10-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253107494-20160-6-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1253107494-20160-10-git-send-email-jens.axboe@oracle.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 16-09-09 15:24:43, Jens Axboe wrote:
-> We do this automatically in get_sb_bdev() from the set_bdev_super()
-> callback. Filesystems that have their own private backing_dev_info
-> must assign that in ->fill_super().
+On Wed 16-09-09 15:24:47, Jens Axboe wrote:
+> bdi_start_writeback() is currently split into two paths, one for
+> WB_SYNC_NONE and one for WB_SYNC_ALL. Add bdi_sync_writeback()
+> for WB_SYNC_ALL writeback and let bdi_start_writeback() handle
+> only WB_SYNC_NONE.
 > 
-> Note that ->s_bdi assignment is required for proper writeback!
+> Push down the writeback_control allocation and only accept the
+> parameters that make sense for each function. This cleans up
+> the API considerably.
 > 
-> Acked-by: Christoph Hellwig <hch@infradead.org>
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-  Looks good. Acked-by: Jan Kara <jack@suse.cz>
+  Looks good.
+Acked-by: Jan Kara <jack@suse.cz>
 
 								Honza
 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 > ---
->  fs/btrfs/disk-io.c |    1 +
->  fs/fuse/inode.c    |    2 ++
->  fs/nfs/super.c     |    2 ++
->  fs/super.c         |    6 ++++++
->  fs/sync.c          |    9 ++++++++-
->  fs/ubifs/super.c   |    1 +
->  include/linux/fs.h |    1 +
->  7 files changed, 21 insertions(+), 1 deletions(-)
+>  fs/fs-writeback.c           |  132 ++++++++++++++++++++++---------------------
+>  fs/ubifs/budget.c           |   20 +------
+>  include/linux/backing-dev.h |    2 +-
+>  include/linux/writeback.h   |    4 +-
+>  mm/page-writeback.c         |   12 +---
+>  5 files changed, 75 insertions(+), 95 deletions(-)
 > 
-> diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
-> index 15831d5..8b81927 100644
-> --- a/fs/btrfs/disk-io.c
-> +++ b/fs/btrfs/disk-io.c
-> @@ -1600,6 +1600,7 @@ struct btrfs_root *open_ctree(struct super_block *sb,
->  
->  	sb->s_blocksize = 4096;
->  	sb->s_blocksize_bits = blksize_bits(4096);
-> +	sb->s_bdi = &fs_info->bdi;
->  
->  	/*
->  	 * we set the i_size on the btree inode to the max possible int.
-> diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-> index 4567db6..e5dbecd 100644
-> --- a/fs/fuse/inode.c
-> +++ b/fs/fuse/inode.c
-> @@ -894,6 +894,8 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
->  	if (err)
->  		goto err_put_conn;
->  
-> +	sb->s_bdi = &fc->bdi;
-> +
->  	/* Handle umasking inside the fuse code */
->  	if (sb->s_flags & MS_POSIXACL)
->  		fc->dont_mask = 1;
-> diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-> index 867f705..de93569 100644
-> --- a/fs/nfs/super.c
-> +++ b/fs/nfs/super.c
-> @@ -1918,6 +1918,8 @@ static inline void nfs_initialise_sb(struct super_block *sb)
->  	if (server->flags & NFS_MOUNT_NOAC)
->  		sb->s_flags |= MS_SYNCHRONOUS;
->  
-> +	sb->s_bdi = &server->backing_dev_info;
-> +
->  	nfs_super_set_maxbytes(sb, server->maxfilesize);
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 59b3ee6..5887328 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -74,14 +74,10 @@ static inline bool bdi_work_on_stack(struct bdi_work *work)
 >  }
 >  
-> diff --git a/fs/super.c b/fs/super.c
-> index 9cda337..b03fea8 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -707,6 +707,12 @@ static int set_bdev_super(struct super_block *s, void *data)
+>  static inline void bdi_work_init(struct bdi_work *work,
+> -				 struct writeback_control *wbc)
+> +				 struct wb_writeback_args *args)
 >  {
->  	s->s_bdev = data;
->  	s->s_dev = s->s_bdev->bd_dev;
-> +
-> +	/*
-> +	 * We set the bdi here to the queue backing, file systems can
-> +	 * overwrite this in ->fill_super()
-> +	 */
-> +	s->s_bdi = &bdev_get_queue(s->s_bdev)->backing_dev_info;
->  	return 0;
+>  	INIT_RCU_HEAD(&work->rcu_head);
+> -	work->args.sb = wbc->sb;
+> -	work->args.nr_pages = wbc->nr_to_write;
+> -	work->args.sync_mode = wbc->sync_mode;
+> -	work->args.range_cyclic = wbc->range_cyclic;
+> -	work->args.for_kupdate = 0;
+> +	work->args = *args;
+>  	work->state = WS_USED;
 >  }
 >  
-> diff --git a/fs/sync.c b/fs/sync.c
-> index 1923409..c08467a 100644
-> --- a/fs/sync.c
-> +++ b/fs/sync.c
-> @@ -27,6 +27,13 @@
+> @@ -194,7 +190,7 @@ static void bdi_wait_on_work_clear(struct bdi_work *work)
+>  }
+>  
+>  static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+> -				 struct writeback_control *wbc)
+> +				 struct wb_writeback_args *args)
+>  {
+>  	struct bdi_work *work;
+>  
+> @@ -204,7 +200,7 @@ static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+>  	 */
+>  	work = kmalloc(sizeof(*work), GFP_ATOMIC);
+>  	if (work) {
+> -		bdi_work_init(work, wbc);
+> +		bdi_work_init(work, args);
+>  		bdi_queue_work(bdi, work);
+>  	} else {
+>  		struct bdi_writeback *wb = &bdi->wb;
+> @@ -214,24 +210,54 @@ static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+>  	}
+>  }
+>  
+> -void bdi_start_writeback(struct writeback_control *wbc)
+> +/**
+> + * bdi_sync_writeback - start and wait for writeback
+> + * @bdi: the backing device to write from
+> + * @sb: write inodes from this super_block
+> + *
+> + * Description:
+> + *   This does WB_SYNC_ALL data integrity writeback and waits for the
+> + *   IO to complete. Callers must hold the sb s_umount semaphore for
+> + *   reading, to avoid having the super disappear before we are done.
+> + */
+> +static void bdi_sync_writeback(struct backing_dev_info *bdi,
+> +			       struct super_block *sb)
+>  {
+> -	/*
+> -	 * WB_SYNC_NONE is opportunistic writeback. If this allocation fails,
+> -	 * bdi_queue_work() will wake up the thread and flush old data. This
+> -	 * should ensure some amount of progress in freeing memory.
+> -	 */
+> -	if (wbc->sync_mode != WB_SYNC_ALL)
+> -		bdi_alloc_queue_work(wbc->bdi, wbc);
+> -	else {
+> -		struct bdi_work work;
+> +	struct wb_writeback_args args = {
+> +		.sb		= sb,
+> +		.sync_mode	= WB_SYNC_ALL,
+> +		.nr_pages	= LONG_MAX,
+> +		.range_cyclic	= 0,
+> +	};
+> +	struct bdi_work work;
+>  
+> -		bdi_work_init(&work, wbc);
+> -		work.state |= WS_ONSTACK;
+> +	bdi_work_init(&work, &args);
+> +	work.state |= WS_ONSTACK;
+>  
+> -		bdi_queue_work(wbc->bdi, &work);
+> -		bdi_wait_on_work_clear(&work);
+> -	}
+> +	bdi_queue_work(bdi, &work);
+> +	bdi_wait_on_work_clear(&work);
+> +}
+> +
+> +/**
+> + * bdi_start_writeback - start writeback
+> + * @bdi: the backing device to write from
+> + * @nr_pages: the number of pages to write
+> + *
+> + * Description:
+> + *   This does WB_SYNC_NONE opportunistic writeback. The IO is only
+> + *   started when this function returns, we make no guarentees on
+> + *   completion. Caller need not hold sb s_umount semaphore.
+> + *
+> + */
+> +void bdi_start_writeback(struct backing_dev_info *bdi, long nr_pages)
+> +{
+> +	struct wb_writeback_args args = {
+> +		.sync_mode	= WB_SYNC_NONE,
+> +		.nr_pages	= nr_pages,
+> +		.range_cyclic	= 1,
+> +	};
+> +
+> +	bdi_alloc_queue_work(bdi, &args);
+>  }
+>  
+>  /*
+> @@ -863,23 +889,25 @@ int bdi_writeback_task(struct bdi_writeback *wb)
+>  }
+>  
+>  /*
+> - * Schedule writeback for all backing devices. Can only be used for
+> - * WB_SYNC_NONE writeback, WB_SYNC_ALL should use bdi_start_writeback()
+> - * and pass in the superblock.
+> + * Schedule writeback for all backing devices. This does WB_SYNC_NONE
+> + * writeback, for integrity writeback see bdi_sync_writeback().
 >   */
->  static int __sync_filesystem(struct super_block *sb, int wait)
+> -static void bdi_writeback_all(struct writeback_control *wbc)
+> +static void bdi_writeback_all(struct super_block *sb, long nr_pages)
 >  {
-> +	/*
-> +	 * This should be safe, as we require bdi backing to actually
-> +	 * write out data in the first place
-> +	 */
-> +	if (!sb->s_bdi)
-> +		return 0;
-> +
->  	/* Avoid doing twice syncing and cache pruning for quota sync */
->  	if (!wait) {
->  		writeout_quota_sb(sb, -1);
-> @@ -101,7 +108,7 @@ restart:
->  		spin_unlock(&sb_lock);
+> +	struct wb_writeback_args args = {
+> +		.sb		= sb,
+> +		.nr_pages	= nr_pages,
+> +		.sync_mode	= WB_SYNC_NONE,
+> +	};
+>  	struct backing_dev_info *bdi;
 >  
->  		down_read(&sb->s_umount);
-> -		if (!(sb->s_flags & MS_RDONLY) && sb->s_root)
-> +		if (!(sb->s_flags & MS_RDONLY) && sb->s_root && sb->s_bdi)
->  			__sync_filesystem(sb, wait);
->  		up_read(&sb->s_umount);
+> -	WARN_ON(wbc->sync_mode == WB_SYNC_ALL);
+> -
+>  	rcu_read_lock();
 >  
-> diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
-> index 51763aa..c4af069 100644
-> --- a/fs/ubifs/super.c
-> +++ b/fs/ubifs/super.c
-> @@ -1980,6 +1980,7 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
->  	if (err)
->  		goto out_bdi;
+>  	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list) {
+>  		if (!bdi_has_dirty_io(bdi))
+>  			continue;
 >  
-> +	sb->s_bdi = &c->bdi;
->  	sb->s_fs_info = c;
->  	sb->s_magic = UBIFS_SUPER_MAGIC;
->  	sb->s_blocksize = UBIFS_BLOCK_SIZE;
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index db29588..90162fb 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1342,6 +1342,7 @@ struct super_block {
->  	int			s_nr_dentry_unused;	/* # of dentry on lru */
+> -		bdi_alloc_queue_work(bdi, wbc);
+> +		bdi_alloc_queue_work(bdi, &args);
+>  	}
 >  
->  	struct block_device	*s_bdev;
-> +	struct backing_dev_info *s_bdi;
->  	struct mtd_info		*s_mtd;
->  	struct list_head	s_instances;
->  	struct quota_info	s_dquot;	/* Diskquota specific options */
+>  	rcu_read_unlock();
+> @@ -891,17 +919,10 @@ static void bdi_writeback_all(struct writeback_control *wbc)
+>   */
+>  void wakeup_flusher_threads(long nr_pages)
+>  {
+> -	struct writeback_control wbc = {
+> -		.sync_mode	= WB_SYNC_NONE,
+> -		.older_than_this = NULL,
+> -		.range_cyclic	= 1,
+> -	};
+> -
+>  	if (nr_pages == 0)
+>  		nr_pages = global_page_state(NR_FILE_DIRTY) +
+>  				global_page_state(NR_UNSTABLE_NFS);
+> -	wbc.nr_to_write = nr_pages;
+> -	bdi_writeback_all(&wbc);
+> +	bdi_writeback_all(NULL, nr_pages);
+>  }
+>  
+>  static noinline void block_dump___mark_inode_dirty(struct inode *inode)
+> @@ -1048,7 +1069,7 @@ EXPORT_SYMBOL(__mark_inode_dirty);
+>   * on the writer throttling path, and we get decent balancing between many
+>   * throttled threads: we don't want them all piling up on inode_sync_wait.
+>   */
+> -static void wait_sb_inodes(struct writeback_control *wbc)
+> +static void wait_sb_inodes(struct super_block *sb)
+>  {
+>  	struct inode *inode, *old_inode = NULL;
+>  
+> @@ -1056,7 +1077,7 @@ static void wait_sb_inodes(struct writeback_control *wbc)
+>  	 * We need to be protected against the filesystem going from
+>  	 * r/o to r/w or vice versa.
+>  	 */
+> -	WARN_ON(!rwsem_is_locked(&wbc->sb->s_umount));
+> +	WARN_ON(!rwsem_is_locked(&sb->s_umount));
+>  
+>  	spin_lock(&inode_lock);
+>  
+> @@ -1067,7 +1088,7 @@ static void wait_sb_inodes(struct writeback_control *wbc)
+>  	 * In which case, the inode may not be on the dirty list, but
+>  	 * we still have to wait for that writeout.
+>  	 */
+> -	list_for_each_entry(inode, &wbc->sb->s_inodes, i_sb_list) {
+> +	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+>  		struct address_space *mapping;
+>  
+>  		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+> @@ -1107,14 +1128,8 @@ static void wait_sb_inodes(struct writeback_control *wbc)
+>   * for IO completion of submitted IO. The number of pages submitted is
+>   * returned.
+>   */
+> -long writeback_inodes_sb(struct super_block *sb)
+> +void writeback_inodes_sb(struct super_block *sb)
+>  {
+> -	struct writeback_control wbc = {
+> -		.sb		= sb,
+> -		.sync_mode	= WB_SYNC_NONE,
+> -		.range_start	= 0,
+> -		.range_end	= LLONG_MAX,
+> -	};
+>  	unsigned long nr_dirty = global_page_state(NR_FILE_DIRTY);
+>  	unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
+>  	long nr_to_write;
+> @@ -1122,9 +1137,7 @@ long writeback_inodes_sb(struct super_block *sb)
+>  	nr_to_write = nr_dirty + nr_unstable +
+>  			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
+>  
+> -	wbc.nr_to_write = nr_to_write;
+> -	bdi_writeback_all(&wbc);
+> -	return nr_to_write - wbc.nr_to_write;
+> +	bdi_writeback_all(sb, nr_to_write);
+>  }
+>  EXPORT_SYMBOL(writeback_inodes_sb);
+>  
+> @@ -1135,21 +1148,10 @@ EXPORT_SYMBOL(writeback_inodes_sb);
+>   * This function writes and waits on any dirty inode belonging to this
+>   * super_block. The number of pages synced is returned.
+>   */
+> -long sync_inodes_sb(struct super_block *sb)
+> +void sync_inodes_sb(struct super_block *sb)
+>  {
+> -	struct writeback_control wbc = {
+> -		.sb		= sb,
+> -		.bdi		= sb->s_bdi,
+> -		.sync_mode	= WB_SYNC_ALL,
+> -		.range_start	= 0,
+> -		.range_end	= LLONG_MAX,
+> -	};
+> -	long nr_to_write = LONG_MAX; /* doesn't actually matter */
+> -
+> -	wbc.nr_to_write = nr_to_write;
+> -	bdi_start_writeback(&wbc);
+> -	wait_sb_inodes(&wbc);
+> -	return nr_to_write - wbc.nr_to_write;
+> +	bdi_sync_writeback(sb->s_bdi, sb);
+> +	wait_sb_inodes(sb);
+>  }
+>  EXPORT_SYMBOL(sync_inodes_sb);
+>  
+> diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
+> index 1c8991b..ee1ce68 100644
+> --- a/fs/ubifs/budget.c
+> +++ b/fs/ubifs/budget.c
+> @@ -54,29 +54,15 @@
+>   * @nr_to_write: how many dirty pages to write-back
+>   *
+>   * This function shrinks UBIFS liability by means of writing back some amount
+> - * of dirty inodes and their pages. Returns the amount of pages which were
+> - * written back. The returned value does not include dirty inodes which were
+> - * synchronized.
+> + * of dirty inodes and their pages.
+>   *
+>   * Note, this function synchronizes even VFS inodes which are locked
+>   * (@i_mutex) by the caller of the budgeting function, because write-back does
+>   * not touch @i_mutex.
+>   */
+> -static int shrink_liability(struct ubifs_info *c, int nr_to_write)
+> +static void shrink_liability(struct ubifs_info *c, int nr_to_write)
+>  {
+> -	int nr_written;
+> -
+> -	nr_written = writeback_inodes_sb(c->vfs_sb);
+> -	if (!nr_written) {
+> -		/*
+> -		 * Re-try again but wait on pages/inodes which are being
+> -		 * written-back concurrently (e.g., by pdflush).
+> -		 */
+> -		nr_written = sync_inodes_sb(c->vfs_sb);
+> -	}
+> -
+> -	dbg_budg("%d pages were written back", nr_written);
+> -	return nr_written;
+> +	writeback_inodes_sb(c->vfs_sb);
+>  }
+>  
+>  /**
+> diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
+> index 859e797..0ee33c2 100644
+> --- a/include/linux/backing-dev.h
+> +++ b/include/linux/backing-dev.h
+> @@ -101,7 +101,7 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+>  		const char *fmt, ...);
+>  int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev);
+>  void bdi_unregister(struct backing_dev_info *bdi);
+> -void bdi_start_writeback(struct writeback_control *wbc);
+> +void bdi_start_writeback(struct backing_dev_info *bdi, long nr_pages);
+>  int bdi_writeback_task(struct bdi_writeback *wb);
+>  int bdi_has_dirty_io(struct backing_dev_info *bdi);
+>  
+> diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+> index 48a054e..75cf586 100644
+> --- a/include/linux/writeback.h
+> +++ b/include/linux/writeback.h
+> @@ -68,8 +68,8 @@ struct writeback_control {
+>   */	
+>  struct bdi_writeback;
+>  int inode_wait(void *);
+> -long writeback_inodes_sb(struct super_block *);
+> -long sync_inodes_sb(struct super_block *);
+> +void writeback_inodes_sb(struct super_block *);
+> +void sync_inodes_sb(struct super_block *);
+>  void writeback_inodes_wbc(struct writeback_control *wbc);
+>  long wb_do_writeback(struct bdi_writeback *wb, int force_wait);
+>  void wakeup_flusher_threads(long nr_pages);
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 12c3d84..1eea4fa 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -582,16 +582,8 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  	if ((laptop_mode && pages_written) ||
+>  	    (!laptop_mode && ((nr_writeback = global_page_state(NR_FILE_DIRTY)
+>  					  + global_page_state(NR_UNSTABLE_NFS))
+> -					  > background_thresh))) {
+> -		struct writeback_control wbc = {
+> -			.bdi		= bdi,
+> -			.sync_mode	= WB_SYNC_NONE,
+> -			.nr_to_write	= nr_writeback,
+> -		};
+> -
+> -
+> -		bdi_start_writeback(&wbc);
+> -	}
+> +					  > background_thresh)))
+> +		bdi_start_writeback(bdi, nr_writeback);
+>  }
+>  
+>  void set_page_dirty_balance(struct page *page, int page_mkwrite)
 > -- 
 > 1.6.4.1.207.g68ea
 > 
