@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbZIPRTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbZIPRW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757967AbZIPRTK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 13:19:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZIPRTJ
+	id S1758792AbZIPRW4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 13:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbZIPRWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 13:19:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53393
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752543AbZIPRTI (ORCPT
+	Wed, 16 Sep 2009 13:22:55 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52092 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756892AbZIPRWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 13:19:08 -0400
-Date: Wed, 16 Sep 2009 10:19:24 -0700 (PDT)
-Message-Id: <20090916.101924.186960949.davem@davemloft.net>
-To: tabbott@ksplice.com
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       geofft@ksplice.com
-Subject: Re: [PATCH v2] sparc: Clean up linker script using new linker
- script macros.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1253119592-19598-2-git-send-email-tabbott@ksplice.com>
-References: <1253119592-19598-1-git-send-email-tabbott@ksplice.com>
-	<1253119592-19598-2-git-send-email-tabbott@ksplice.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 16 Sep 2009 13:22:49 -0400
+Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: svaidy@linux.vnet.ibm.com
+Cc: dipankar@in.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+In-Reply-To: <20090916170314.GH15538@dirshya.in.ibm.com>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+	 <1253016701.5506.73.camel@laptop> <20090916152820.GA12571@in.ibm.com>
+	 <1253115171.7180.1.camel@laptop> <20090916162459.GB12571@in.ibm.com>
+	 <1253118916.7180.6.camel@laptop>
+	 <20090916170314.GH15538@dirshya.in.ibm.com>
+Content-Type: text/plain
+Date: Wed, 16 Sep 2009 19:22:35 +0200
+Message-Id: <1253121755.7180.8.camel@laptop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tim Abbott <tabbott@ksplice.com>
-Date: Wed, 16 Sep 2009 12:46:32 -0400
+On Wed, 2009-09-16 at 22:33 +0530, Vaidyanathan Srinivasan wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-16 18:35:16]:
+> 
+> > On Wed, 2009-09-16 at 21:54 +0530, Dipankar Sarma wrote:
+> > 
+> > > No, for this specific case, latency isn't an issue. The issue is -
+> > > how do we cede unused vcpus to hypervisor for better energy management ?
+> > > Yes, it can be done by a hypervisor manager telling the kernel to
+> > > offline and make a bunch of vcpus "inactive". It does have to choose
+> > > offline (release vcpu) vs. inactive (cede but guranteed if needed).
+> > > The problem is that long ago we exported a lot of hotplug stuff to
+> > > userspace through the sysfs interface and we cannot do something
+> > > inside the kernel without keeping the sysfs stuff consistent.
+> > > This seems like a sane way to do that without undoing all the
+> > > virtual cpu hotplug infrastructure in different supporting archs.
+> > 
+> > I'm still not getting it..
+> > 
+> > Suppose we have some guest, it booted with 4 cpus.
+> > 
+> > We then offline 2 of them.
+> > 
+> > Apparently this LPAR binds guest cpus to physical cpus?
+> > So we use a hypervisor interface to reclaim these 2 offlined cpus and
+> > re-assign them to some other guest.
+> > 
+> > So far so good, right?
+> > 
+> > Now if you were to try and online the cpus in the guest, it'd fail
+> > because the cpus aren't backed anymore, and the hot-plug simply
+> > times-out and fails.
+> > 
+> > And we're still good, right?
+> 
+> The requirement differ here.  If we had offlined 2 vCPUs for the
+> purpose of system reconfiguration, the expected behavior with offline
+> interface will work right.  However the proposed cede interface is
+> needed when we want them to temporarily go away but still come back
+> when we do an online.  We want the online to always succeed since the
+> backing physical resources are not relinquished.  The proposed
+> interface facilitates offline without relinquishing the physical
+> resources assigned to LPARs.
 
-> @@ -51,70 +51,27 @@ SECTIONS
->  	_etext = .;
->  
->  	RO_DATA(PAGE_SIZE)
-> -	.data :	{
-> -		DATA_DATA
-> -		CONSTRUCTORS
-> -	}
->  	.data1 : {
->  		*(.data1)
->  	}
-> -	. = ALIGN(SMP_CACHE_BYTES);
-> -	.data.cacheline_aligned : {
-> -		*(.data.cacheline_aligned)
-> -	}
-> -	. = ALIGN(SMP_CACHE_BYTES);
-> -	.data.read_mostly : {
-> -		*(.data.read_mostly)
-> -	}
-> +	RW_DATA_SECTION(SMP_CACHE_BYTES, 0, THREAD_SIZE)
-> +
+Then make that the platform default and leave the lpar management to
+whatever pokes at the lpar?
 
-Can you do this cleanup without moving the relative locations of .data
-and .data1 sections?
