@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbZIPWdC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbZIPWdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbZIPWdC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:33:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757938AbZIPWcp
+	id S1758574AbZIPWdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760204AbZIPWcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:32:45 -0400
-Received: from kroah.org ([198.145.64.141]:40935 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:32:54 -0400
+Received: from kroah.org ([198.145.64.141]:40939 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757941AbZIPWcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:32:33 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:29:01 2009
-Message-Id: <20090916222901.862708454@mini.kroah.org>
+	id S1755256AbZIPWce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:32:34 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:29:02 2009
+Message-Id: <20090916222902.000624166@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:28:27 -0700
+Date: Wed, 16 Sep 2009 15:28:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 08/24] powerpc/ps3: Workaround for flash memory I/O error
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
+       James Morris <jmorris@namei.org>
+Subject: [patch 09/24] TPM: Fixup boot probe timeout for tpm_tis driver
 References: <20090916222819.244332644@mini.kroah.org>
-Content-Disposition: inline; filename=powerpc-ps3-workaround-for-flash-memory-i-o-error.patch
+Content-Disposition: inline; filename=tpm-fixup-boot-probe-timeout-for-tpm_tis-driver.patch
 In-Reply-To: <20090916222934.GA31846@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,126 +31,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 
-commit bc00351edd5c1b84d48c3fdca740fedfce4ae6ce upstream.
+commit ec57935837a78f9661125b08a5d08b697568e040 upstream.
 
-A workaround for flash memory I/O errors when the PS3 internal
-hard disk has not been formatted for OtherOS use.
+When probing the device in tpm_tis_init the call request_locality
+uses timeout_a, which wasn't being initalized until after
+request_locality. This results in request_locality falsely timing
+out if the chip is still starting. Move the initialization to before
+request_locality.
 
-This error condition mainly effects 'Live CD' users who have not
-formatted the PS3's internal hard disk for OtherOS.
+This probably only matters for embedded cases (ie mine), a BIOS likely
+gets the TPM into a state where this code path isn't necessary.
 
-Fixes errors similar to these when using the ps3-flash-util
-or ps3-boot-game-os programs:
-
-  ps3flash read failed 0x2050000
-  os_area_header_read: read error: os_area_header: Input/output error
-  main:627: os_area_read_hp error.
-  ERROR: can't change boot flag
-
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Signed-off-by: James Morris <jmorris@namei.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ps3/ps3stor_lib.c |   65 +++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 62 insertions(+), 3 deletions(-)
+ drivers/char/tpm/tpm_tis.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- a/drivers/ps3/ps3stor_lib.c
-+++ b/drivers/ps3/ps3stor_lib.c
-@@ -23,6 +23,65 @@
- #include <asm/lv1call.h>
- #include <asm/ps3stor.h>
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -450,6 +450,12 @@ static int tpm_tis_init(struct device *d
+ 		goto out_err;
+ 	}
  
-+/*
-+ * A workaround for flash memory I/O errors when the internal hard disk
-+ * has not been formatted for OtherOS use.  Delay disk close until flash
-+ * memory is closed.
-+ */
++	/* Default timeouts */
++	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
++	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
++	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
++	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
 +
-+static struct ps3_flash_workaround {
-+	int flash_open;
-+	int disk_open;
-+	struct ps3_system_bus_device *disk_sbd;
-+} ps3_flash_workaround;
-+
-+static int ps3stor_open_hv_device(struct ps3_system_bus_device *sbd)
-+{
-+	int error = ps3_open_hv_device(sbd);
-+
-+	if (error)
-+		return error;
-+
-+	if (sbd->match_id == PS3_MATCH_ID_STOR_FLASH)
-+		ps3_flash_workaround.flash_open = 1;
-+
-+	if (sbd->match_id == PS3_MATCH_ID_STOR_DISK)
-+		ps3_flash_workaround.disk_open = 1;
-+
-+	return 0;
-+}
-+
-+static int ps3stor_close_hv_device(struct ps3_system_bus_device *sbd)
-+{
-+	int error;
-+
-+	if (sbd->match_id == PS3_MATCH_ID_STOR_DISK
-+		&& ps3_flash_workaround.disk_open
-+		&& ps3_flash_workaround.flash_open) {
-+		ps3_flash_workaround.disk_sbd = sbd;
-+		return 0;
-+	}
-+
-+	error = ps3_close_hv_device(sbd);
-+
-+	if (error)
-+		return error;
-+
-+	if (sbd->match_id == PS3_MATCH_ID_STOR_DISK)
-+		ps3_flash_workaround.disk_open = 0;
-+
-+	if (sbd->match_id == PS3_MATCH_ID_STOR_FLASH) {
-+		ps3_flash_workaround.flash_open = 0;
-+
-+		if (ps3_flash_workaround.disk_sbd) {
-+			ps3_close_hv_device(ps3_flash_workaround.disk_sbd);
-+			ps3_flash_workaround.disk_open = 0;
-+			ps3_flash_workaround.disk_sbd = NULL;
-+		}
-+	}
-+
-+	return 0;
-+}
+ 	if (request_locality(chip, 0) != 0) {
+ 		rc = -ENODEV;
+ 		goto out_err;
+@@ -457,12 +463,6 @@ static int tpm_tis_init(struct device *d
  
- static int ps3stor_probe_access(struct ps3_storage_device *dev)
- {
-@@ -90,7 +149,7 @@ int ps3stor_setup(struct ps3_storage_dev
- 	int error, res, alignment;
- 	enum ps3_dma_page_size page_size;
+ 	vendor = ioread32(chip->vendor.iobase + TPM_DID_VID(0));
  
--	error = ps3_open_hv_device(&dev->sbd);
-+	error = ps3stor_open_hv_device(&dev->sbd);
- 	if (error) {
- 		dev_err(&dev->sbd.core,
- 			"%s:%u: ps3_open_hv_device failed %d\n", __func__,
-@@ -166,7 +225,7 @@ fail_free_irq:
- fail_sb_event_receive_port_destroy:
- 	ps3_sb_event_receive_port_destroy(&dev->sbd, dev->irq);
- fail_close_device:
--	ps3_close_hv_device(&dev->sbd);
-+	ps3stor_close_hv_device(&dev->sbd);
- fail:
- 	return error;
- }
-@@ -193,7 +252,7 @@ void ps3stor_teardown(struct ps3_storage
- 			"%s:%u: destroy event receive port failed %d\n",
- 			__func__, __LINE__, error);
- 
--	error = ps3_close_hv_device(&dev->sbd);
-+	error = ps3stor_close_hv_device(&dev->sbd);
- 	if (error)
- 		dev_err(&dev->sbd.core,
- 			"%s:%u: ps3_close_hv_device failed %d\n", __func__,
+-	/* Default timeouts */
+-	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
+-	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-
+ 	dev_info(dev,
+ 		 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
+ 		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
 
 
