@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZIPGgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbZIPGhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756117AbZIPGgW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 02:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZIPGgV
+	id S1755771AbZIPGhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 02:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZIPGhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 02:36:21 -0400
-Received: from ns1.primeinteractive.net ([195.95.205.253]:56229 "EHLO
-	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbZIPGgU (ORCPT
+	Wed, 16 Sep 2009 02:37:38 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51775 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752044AbZIPGhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 02:36:20 -0400
-Message-ID: <4AB08744.1020102@primeinteractive.net>
-Date: Wed, 16 Sep 2009 08:35:48 +0200
-From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-CC: Jan Kara <jack@suse.cz>, Justin Maggard <jmaggard10@gmail.com>,
-       Eric Sandeen <sandeen@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: ext4+quota+nfs issue
-References: <4AA5E5F3.30309@primeinteractive.net> <4AA72C14.1020005@primeinteractive.net> <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz> <4AA7C38E.8020306@redhat.com> <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com> <4AA7FBD7.9080406@primeinteractive.net> <4AAA5FCC.2010707@primeinteractive.net> <20090914175056.GE25549@duck.suse.cz> <20090914185228.GA5984@skywalker.linux.vnet.ibm.com>
-In-Reply-To: <20090914185228.GA5984@skywalker.linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 16 Sep 2009 02:37:38 -0400
+Subject: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and S390
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, cl@linux-foundation.org,
+       heiko.carstens@de.ibm.com, mingo@elte.hu, npiggin@suse.de,
+       sachinp@in.ibm.com
+Date: Wed, 16 Sep 2009 09:37:39 +0300
+Message-Id: <1253083059.5478.1.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/14/2009 8:52 PM, Aneesh Kumar K.V wrote:
-> On Mon, Sep 14, 2009 at 07:50:56PM +0200, Jan Kara wrote:
->    
->>    I've found some time to look into this and I can see a few problems in
->> the code. Firstly, what may cause your problems:
->>    vfs_dq_claim_blocks() is called in ext4_mb_mark_diskspace_used(). But
->> as far as I can understand the code, ext4_mb_normalize_request() can
->> increase the amount of space we really allocate and thus we try to
->> allocate more blocks than we have actually reserved in quota. Aneesh, is
->> that right?
->>      
-> ext4_mb_mark_diskspace_used use ac->ac_b_ex.fe_len which is NOT the normalized
-> request len. it is min(allocated_len, original_len). So i guess that code
-> should be safe
->
->
->    
->>    Secondly, ext4_da_reserve_space() seems to have a bug that it can reserve
->> quota blocks multiple times if ext4_claim_free_blocks() fail and we retry
->> the allocation. We should release the quota reservation before restarting.
->> Actually, when we find out we cannot reserve quota space, we could force
->> some delayed allocated writes to disk (thus possibly release some quota
->> in case we have overestimated the amount of blocks needed). But that's
->> a different issue.
->>      
-> That would imply the file system was full. But the dumpe2fs ouput list
-> large number of free blocks. But yes the code should have released the
-> quota reservation before trying block reservation again.
->
->
->    
+The SLQB allocator is known to be broken on certain PowerPC and S390
+configurations. Disable the allocator in Kconfig for those architectures
+until the issues are resolved.
 
-file system is fresh but unfortunately already used and I can't 
-"re-format" it. Is there a way around this? I think that FS was created 
-by "mkfs.ext4 -j /dev....."
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Sachin Sant <sachinp@in.ibm.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ init/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
->>    Thirdly, ext4_indirect_calc_metadata_amount() is wrong for sparse files.
->> The worst case is 3 metadata blocks per data block if we make the file
->> sufficiently sparse and there's no easy way around that...
->>
->>      
-> -aneesh
->    
+diff --git a/init/Kconfig b/init/Kconfig
+index c0d8a47..aaeddeb 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1033,6 +1033,7 @@ config SLUB
+ 
+ config SLQB
+ 	bool "SLQB (Queued allocator)"
++	depends on !PPC && !S390
+ 	help
+ 	  SLQB is a proposed new slab allocator.
+ 
+-- 
+1.5.6.3
+
+
 
