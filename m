@@ -1,131 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZIPLlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZIPLsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZIPLlU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 07:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZIPLlT
+	id S1756039AbZIPLsd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 07:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbZIPLsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 07:41:19 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:46500 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755839AbZIPLlR (ORCPT
+	Wed, 16 Sep 2009 07:48:32 -0400
+Received: from mail-px0-f176.google.com ([209.85.216.176]:62594 "EHLO
+	mail-px0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756002AbZIPLsb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 07:41:17 -0400
-Date: Wed, 16 Sep 2009 12:41:07 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Alan Cox <alan@linux.intel.com>
-Cc: Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org
-Subject: Re: fanotify as syscalls
-Message-ID: <20090916114107.GB29359@shareable.org>
-References: <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org> <20090914140720.GA8564@ioremap.net> <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com> <20090915201620.GB32192@ioremap.net> <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com> <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain> <1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com> <20090916075219.GA22024@shareable.org> <20090916114111.2228f0fc@linux.intel.com>
+	Wed, 16 Sep 2009 07:48:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=I2vLOinju/SJzky6ylT3QkuGb6az1w6e+e7rSL4p1AQ5MMRMV0ALdZm7/HqxmJOorg
+         cVLqULp4gzEoC9nrHC3bGg3rZSxECvQwqLTRYuA+jWBvy+A4/Wvp+qhUH/sSe98yDDed
+         xXbe3wUiMcGTKmeiZSNoPovlfYM+yv9ywItPg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090916114111.2228f0fc@linux.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0909161211100.12659@sister.anvils>
+References: <20090915021851.168285585@intel.com>
+	 <20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090915082200.GA2588@localhost>
+	 <Pine.LNX.4.64.0909151057020.26095@sister.anvils>
+	 <10f740e80909160201l4834369s75e63fe8df0991aa@mail.gmail.com>
+	 <Pine.LNX.4.64.0909161211100.12659@sister.anvils>
+Date: Wed, 16 Sep 2009 13:42:20 +0200
+X-Google-Sender-Auth: aae3cff8d31a6ef3
+Message-ID: <10f740e80909160442w470f70cao28a3b6de3e5689b4@mail.gmail.com>
+Subject: Re: [PATCH 0/3] /proc/kmem cleanups and hwpoison bits
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
+       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-m68k@vger.kernel.org, sparclinux@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> > - fanotify does not provide subtree notification in it's
-> >   present form.  When it is extended to do that, why wouldn't
-> >   inotify be as well?  That's an fsnotify feature, common to both.
-> 
-> Because inotify gives you no reliable access to the object monitored as
-> the name passed back is not an object reference and is racy. Inotify is
-> fine for making pretty icons pop up on desktops and making file
-> selectors update, but it is somewhat inadequate for indexers and
-> completely useless for stuff like HSM.
+On Wed, Sep 16, 2009 at 13:26, Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+> On Wed, 16 Sep 2009, Geert Uytterhoeven wrote:
+>> On Tue, Sep 15, 2009 at 12:16, Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+>> > Warning: it may be rubbish, it may just be a hack which appeared to
+>> > work for me the last time I tried, on a particular address range of a
+>> > particular set of configurations of a particular set of architectures
+>> > (x86_32, x86_64, powerpc64).  I've never thought it through enough to
+>> > consider submitting, but it _might_ contain something useful for you
+>> > to factor into your own efforts.
+>> >
+>> > Sorry for chucking it over the wall to you in this way, but I guess
+>> > that's better than just sitting quietly on it for a few more years.
+>> >
+>> > Certainly-Not-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+>
+> I think that gives a good idea of the status of this patch:
+> I'm not making any policy decisions here or submitting to any tree.
 
-That was my point.  (Why do people keep not getting it?)
+OK, that was my understanding, too.
 
-You can't rely on the name being non-racy, but you _can_ reliably
-invalidate application-level caches from the sequence of events
-including file writes, creates, renames, links, unlinks, mounts.  And
-revalidate such caches by the absence of pending events.
+But I thought it would hurt to verify. You never know who's gonna take
+your patch and (try to) sneak it in ;-)
 
-(There is one obscure case which inotify is missing, though, which
-means it cannot detect file changes in certain cases with hard links.
-I intend to fix that one.)
+Gr{oetje,eeting}s,
 
-For that, an inode isn't useful, a descriptor isn't useful, a
-directory descriptor/inode and pathname isn't useful, and file write
-events by themselves aren't useful.  None of them quite do it by
-themselves.
+						Geert
 
-But with the correct combination of events, you can maintain very
-efficient application-level caching of file data / directory listing
-and lookups / stat results you have previously read from the
-filesystem.  That's because the information you have previously
-depended upon, including path lookups, are all notified as one sort of
-inotify event or another when changed.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Which doesn't sound all that special until you realise you can very
-quickly revalidate application-caches of any data structure calculated
-from reading things from the filesystem, no matter how many
-prerequisites or how complex the data structures, in a single system
-call.  Amortised over many revalidations if you have them in parallel.
-
-That can apply to things like git, make, ccache, samba, rsync, httpd
-path walks, and virtually any "web templating" framework.  Of course
-it takes userspace support as well, but that's where I'm coming from
-regarding "acceleration" and the essential kernel infrastructure.
-
-Clearly, I'm going to have to explain with working code :-)
-
-> but it is somewhat inadequate for indexers
-
-For indexers, the real inadequacy is the need to attach inotify
-watches to every directory at system startup, and to stat() everything
-to check it hasn't changed since the indexer was last running.  Both
-are very slow on a large directory tree.  The former can be dealt with
-using subtree watches (yes, even with hard links - I have proposed an
-algorithm for this but I think nobody understood it ;-).  The latter
-needs filesystem support for a persistent change attribute.
-
-> > - fanotify requires you call readlink(/proc/fd/N) for every event to
-> >   get the path.  It's not a particularly efficient way to get it,
-> 
-> IFF you want the path, but the path isn't usually the most valuable bit.
-> Plus you'll find the readlink is extremely quick anyway.
-
-I agree, you don't usually want the whole path.
-
-So what was the point about fanotify making subtree tracking possible
-with it's file descriptor, if not by readlink(/proc/fd/N)?
-Descriptors don't tell you which subtree a file is in any better than
-inotify watches.  I.e. they do, if you track them and their containing
-directories all individually.
-
-> > People who want to break out of chroot/namespace jails using the
-> > conveniently provided open file descriptor? :-)
-> 
-> chroot isn't a security model. You can already do this with AF_UNIX
-> sockets (and there are apps that intentionally use fchdir that way)
-
-Ah, no.  AF_UNIX works with explicit sender cooperation.
-
-fanotify gives you access to files without sender cooperation, as it
-intercepts every open().
-
-> > I'd expect anti-malware to want to be run inside VMs quite often...
-> 
-> Inside of containers - unlikely.
-
-Why not?  Some people run entire distributions in containiners, and
-present them as VMs to the world for other people to admin.
-
-> > the accessing process until acked), that's ok with me.  It makes
-> > sense.  But then it's messy that neither offers a superset of the
-> > other regarding which files and events are tracked.
-> 
-> Agreed.
-
-In the end this is my main gripe.
-
--- Jamie
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
