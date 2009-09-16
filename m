@@ -1,109 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbZIPS4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZIPTEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbZIPS4x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 14:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbZIPS4t
+	id S1756056AbZIPTEO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 15:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZIPTEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 14:56:49 -0400
-Received: from mail-yx0-f171.google.com ([209.85.210.171]:35836 "EHLO
-	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363AbZIPS4s convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 14:56:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=P+3/VbM/siUX8dzZvi0OFxvryBfWWHggETGgQIyd98v0W3mPa1GUr9gy3rRmU4jHRw
-         UmCJgzlsbkM6BxmEndo0kjREPJn6QRSDJ8kCdx38z6HEzx2fEmQbEf3v1Q6BHF9rw8af
-         mCmbq7IQh4nJd4xXzcSdH9lwEKfjFH/TLYdoE=
-MIME-Version: 1.0
-In-Reply-To: <1253095348.25791.6.camel@eight.analog.com>
-References: <1253095348.25791.6.camel@eight.analog.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 16 Sep 2009 14:56:29 -0400
-Message-ID: <8bd0f97a0909161156x3cf83b51tb01f6c890abf8594@mail.gmail.com>
-Subject: Re: [PATCH][uart] fit blackfin uart over sport driver into common 
-	uart inftrastructure (v2)
-To: sonic zhang <sonic.adi@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Serial <linux-serial@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 16 Sep 2009 15:04:09 -0400
+Received: from cmpxchg.org ([85.214.51.133]:40899 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752901AbZIPTEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 15:04:08 -0400
+Date: Wed, 16 Sep 2009 21:04:31 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>
+Subject: Re: [patch] mm: use-once mapped file pages
+Message-ID: <20090916190431.GA20897@cmpxchg.org>
+References: <1252971975-15218-1-git-send-email-hannes@cmpxchg.org> <28c262360909150826s2a0f5f0dpd111640f92d0f5ff@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360909150826s2a0f5f0dpd111640f92d0f5ff@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 06:02, sonic zhang wrote:
-> 3. Move most platform data into arch specific board files.
+Hello Minchan,
 
-might as well do it right now since you've done most of it already.
-i.e. all of the peripheral logic should be in the boards, not the
-driver.  so the bfin_uart_pin_req_sportx lists should get moved to the
-platform resources as well as the SPORT base addresses.
+On Wed, Sep 16, 2009 at 12:26:27AM +0900, Minchan Kim wrote:
+> Hi, Hannes.
 
-then we get proper device bindings between ttySS# and SPORT# by using
-the .id field.  ttySS0 should always be SPORT0, ttySS1 should always
-be SPORT1, etc...
+[snapped stuff Rik answered already]
 
-> Signed-off-by: Michael Frysinger <michael.frysinger@analog.com>
+> > When dropping into reclaim, the VM has a hard time making progress
+> > with these pages dominating.  And since all mapped pages are treated
+> > equally (i.e. anon pages as well), a major part of the anon working
+> > set is swapped out before the hashing completes as well.
+> >
+> > Failing reclaim and swapping show up pretty quickly in decreasing
+> > overall system interactivity, but also in the throughput of the
+> > hashing process itself.
+> >
+> > This patch implements a use-once strategy for mapped file pages.
+> >
+> > For this purpose, mapped file pages with page table references are not
+> > directly activated at the end of the inactive list anymore but marked
+> > with PG_referenced and sent on another roundtrip on the inactive list.
+> > If such a page comes in again, another page table reference activates
+> > it while the lack thereof leads to its eviction.
+> >
+> > The deactivation path does not clear this mark so that a subsequent
+> > page table reference for a page coming from the active list means
+> > reactivation as well.
+> 
+> It seems to be good idea. but I have a concern about embedded.
+> AFAIK, some CPUs don't have accessed bit by hardware.
+> maybe ARM series.
+> (Nowadays, Some kinds of CPU series just supports access bit.
+> but there are still CPUs that doesn't support it)
+> 
+> I am not sure there are others architecture.
+> Your idea makes mapped page reclaim depend on access bit more tightly.
+>  :(
 
-you shouldnt add s-o-b tags for people who didnt opt for them ... i
-was sleeping when you wrote, committed, and e-mailed out these
-changes.  i also handt posted these changes yet because i knew there
-were still issues to be worked out.
+ARM seems to emulate the accessed bit by ensuring a subsequent access
+will fault when the young bit is cleared, so we should get one extra
+minor fault per finally activated mapped file page as a trade-off.
 
-> --- a/drivers/serial/bfin_sport_uart.c
-> +++ b/drivers/serial/bfin_sport_uart.c
-> +#define DRV_NAME "bfin-sport-uart"
-> +#define DEVICE_NAME    "ttySS"
+I am not too concerned about that because it should be a rather rare
+event.  Only fresh pages go through that.  PG_referenced is remembered
+over activation/deactivation and once it's set, a page is treated just
+like it is now: activated if referenced, reclaimed if not.
 
-should really use the dev_* functions for output rather than the pr_*
-ones, but if you dont do that, you should add before the #include's:
-#define pr_fmt(fmt) DRV_NAME ": " fmt
+So yeah, there is a bit more overhead for ARM to approximate the
+working set initially.  But the results are more trustworthy and we
+get rid of a badly performing corner case in the VM.
 
->        tclkdiv = sclk/(2 * baud_rate) - 1;
-> -       tfsdiv = 12;
-> -       rclkdiv = sclk/(2 * baud_rate * 3) - 1;
-> +       rclkdiv = sclk/(2 * baud_rate * 2) - 1;
+> > diff --git a/mm/rmap.c b/mm/rmap.c
+> > index 28aafe2..0c88813 100644
+> > --- a/mm/rmap.c
+> > +++ b/mm/rmap.c
+> > @@ -508,9 +508,6 @@ int page_referenced(struct page *page,
+> >  {
+> >        int referenced = 0;
+> >
+> > -       if (TestClearPageReferenced(page))
+> > -               referenced++;
+> > -
 
-missing space around the "/"
+This hunk should also get removed from the !CONFIG_MMU dummy function.
+I'll wait a bit for more feedback and send a fixed revision.
 
-> -static int sport_uart_suspend(struct platform_device *dev, pm_message_t state)
-> +#ifdef CONFIG_PM
-> +static int sport_uart_suspend(struct platform_device *pdev, pm_message_t state)
->  {
-> -       struct sport_uart_port *sport = platform_get_drvdata(dev);
-> +       struct sport_uart_port *sport = platform_get_drvdata(pdev);
->
-> -       pr_debug("%s enter\n", __func__);
-> +       dev_dbg(&pdev->dev, "%s enter\n", __func__);
->        if (sport)
->                uart_suspend_port(&sport_uart_reg, &sport->port);
->
->        return 0;
->  }
->
-> -static int sport_uart_resume(struct platform_device *dev)
-> +static int sport_uart_resume(struct platform_device *pdev)
->  {
-> -       struct sport_uart_port *sport = platform_get_drvdata(dev);
-> +       struct sport_uart_port *sport = platform_get_drvdata(pdev);
->
-> -       pr_debug("%s enter\n", __func__);
-> +       dev_dbg(&pdev->dev, "%s enter\n", __func__);
->        if (sport)
->                uart_resume_port(&sport_uart_reg, &sport->port);
->
->        return 0;
->  }
-
-these need updating to the new dev_pm_opts structure.  see the changes
-i just did to the adp558-keys driver for a simple example.
-
-> --- a/drivers/serial/bfin_sport_uart.h
-> +++ b/drivers/serial/bfin_sport_uart.h
-
-while you're in here, you might as well add the proper #ifndef header protection
--mike
+Thanks,
+	Hannes
