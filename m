@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZIPOBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbZIPODE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbZIPOBg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 10:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbZIPOBe
+	id S1757532AbZIPODE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 10:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbZIPODD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 10:01:34 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:54646 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751585AbZIPOBd convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 10:01:33 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-kernel@vger.kernel.org
-Subject: Build error on arm in crypto/cast6.c
-Date: Wed, 16 Sep 2009 16:01:34 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-crypto@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
+	Wed, 16 Sep 2009 10:03:03 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:28809 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbZIPODB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 10:03:01 -0400
+Message-ID: <4AB0F013.8050608@redhat.com>
+Date: Wed, 16 Sep 2009 17:02:59 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200909161601.35662.elendil@planet.nl>
-X-OriginalArrivalTime: 16 Sep 2009 14:01:36.0309 (UTC) FILETIME=[34600650:01CA36D6]
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 0/5] Another set of Nested SVM fixes and cleanups
+References: <1253107459-8967-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1253107459-8967-1-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$ git describe master
-v2.6.31-4547-g0cb583f
+On 09/16/2009 04:24 PM, Joerg Roedel wrote:
+> Hi,
+>
+> this series of patches contain another set of cleanups and an important fix to
+> the Nested SVM code. These patches make the TSC handling code for SVM aware of
+> a nested guest. This fixes the TSC running backwards on guest and nested guest.
+> The backwards running TSC resulted in stalled guests when kvm-clock was
+> enabled. Please consider to apply.
+>
+>    
 
-gcc version 4.3.2
+Looks good.  3, 4 needed for 2.6.32-rc as well, yes?
 
-crypto/cast6.c:372:39: error: macro "W" passed 2 arguments, but takes just 1
-crypto/cast6.c:372: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-crypto/cast6.c:413:16: error: macro "W" passed 2 arguments, but takes just 1
-crypto/cast6.c: In function ‘cast6_setkey’:
-crypto/cast6.c:413: error: ‘W’ undeclared (first use in this function)
-crypto/cast6.c:413: error: (Each undeclared identifier is reported only once
-crypto/cast6.c:413: error: for each function it appears in.)
-crypto/cast6.c:414:20: error: macro "W" passed 2 arguments, but takes just 1
+-- 
+error compiling committee.c: too many arguments to function
 
-Strange thing is that this file does not look to have changed.
-
-Maybe it's a result of enabling the new config option CRYPTO_DEV_MV_CESA?
-
-Cheers,
-FJP
