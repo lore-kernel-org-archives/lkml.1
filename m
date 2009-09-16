@@ -1,130 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZIPMZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758884AbZIPMZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbZIPMZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758512AbZIPMZX
+	id S1758884AbZIPMZo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758873AbZIPMZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:25:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:14846 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752292AbZIPMZW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:25:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=s3unAyripWk3jnA8OF6fhEXL2p4hqqrrNqqaf7Rl2cUttcZkyCj2BVwQKWgot7aLvx
-         RdaGN33s5YlSCLN47sy9hcfXnzTnU0T6regcLnidwZDuMRTsP5HL4rLUQ3aFpEEbFtAn
-         mNKa4b25O2fsY/5nFP00I728VwQOh5GlrAKTw=
-From: Volker Armin Hemmann <volkerarmin@googlemail.com>
-To: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31 ehci problem - mouse dead on scroll
-Date: Wed, 16 Sep 2009 14:25:18 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31r4; KDE/4.3.1; x86_64; ; )
-Cc: linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
-References: <200909142015.56698.volkerarmin@googlemail.com> <200909161356.26691.volkerarmin@googlemail.com> <200909161412.05041.oliver@neukum.org>
-In-Reply-To: <200909161412.05041.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200909161425.18729.volkerarmin@googlemail.com>
+	Wed, 16 Sep 2009 08:25:42 -0400
+Received: from ns.penguin.cz ([84.21.108.25]:34352 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758859AbZIPMZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:25:41 -0400
+Subject: Re: Zaurus suspend saga
+From: Stanislav Brabec <utx@penguin.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, Eric Miao <eric.y.miao@gmail.com>,
+       Richard Purdie <rpurdie@rpsys.net>, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
+       Andrea Adami <andrea.adami@gmail.com>
+In-Reply-To: <20090907114815.GA23361@n2100.arm.linux.org.uk>
+References: <20090906052653.GB1324@ucw.cz>
+	 <1252276145.17852.15.camel@dax.rpnet.com>
+	 <f17812d70909061806y651c390w1faa5364f0fb6ddc@mail.gmail.com>
+	 <20090907110307.GK23450@elf.ucw.cz>
+	 <1252323270.14911.20.camel@hammer.suse.cz>
+	 <20090907114815.GA23361@n2100.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Wed, 16 Sep 2009 14:25:40 +0200
+Message-Id: <1253103940.5902.2.camel@hammer.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mittwoch 16 September 2009, Oliver Neukum wrote:
-> Am Mittwoch, 16. September 2009 13:56:26 schrieb Volker Armin Hemmann:
-> > ok, I am done. Was back earlier then expected and had  an
-> > all-awake-night, so lots of time:
+Russell King - ARM Linux wrote:
+> On Mon, Sep 07, 2009 at 01:34:29PM +0200, Stanislav Brabec wrote:
+> > Serial after resume. (regression)
 > 
-> Thank you very much for the great testing.
+> If you pass no_console_suspend, the console serial port doesn't have its
+> state saved and restored upon resume.  This is something I pointed out
+> while I was serial maintainer and got ignored...
 > 
-> > with
-> > USB selective suspend/resume and wakeup on
-> >
-> > Root Hub Transaction Translators on
-> > Improved Transaction Translator scheduling off
-> >
-> > mouse is fine
-> >
-> >
-> > with
-> > USB selective suspend/resume and wakeup on
-> >
-> > Root Hub Transaction Translators off
-> > Improved Transaction Translator scheduling on
-> >
-> > mouse is fine
-> 
-> So this is an EHCI root hub problem most likely.
-> This means we need to include Alan, master of ehci.
-> 
-> He'll need additional debugging info. Do you know how to get
-> at the ehci registers through debugfs?
-> Furthermore, if you have a hub can you try to attach your mouse
-> through a hub?
-> 
-> 	Regards
-> 		Oliver
-> 
+> I think you'll find that it'll work if you don't pass no_console_suspend,
+> though you won't get the messages between the console itself being
+> suspended and subsequently resumed.
 
+I sent a possible fix of this problem to LKML:
+http://lkml.org/lkml/2009/9/15/206
 
-emm, the mouse is attached through a powered 4port usb 2.0 hub. That is the 
-only way to get it working. If I attach it directly (without loading ohci) it 
-does not work (well, only tried with both Transaction Translator options off), 
-and if I load ohci before I connect it, it is very very jerky. So jerky in 
-fact, that I considered douzends of lockups a day a better alternative.
-
-debugfs is mounted (and usbmon too.):
-
- cat /sys/kernel/debug/usb/ehci/0000:00:12.2/registers
-bus pci, device 0000:00:12.2
-EHCI Host Controller
-EHCI 1.00, hcd state 1
-ownership 00000001
-SMI sts/enable 0xc0080000
-structural params 0x00102306
-capability params 0x0000a072
-status 4008 Periodic FLR
-command 010019 (park)=0 ithresh=1 Periodic period=256 RUN
-intrenable 37 IAA FATAL PCD ERR INT
-uframe 232f
-port 1 status 001000 POWER sig=se0
-port 2 status 001005 POWER sig=se0 PE CONNECT
-port 3 status 001000 POWER sig=se0
-port 4 status 001000 POWER sig=se0
-port 5 status 001000 POWER sig=se0
-port 6 status 001000 POWER sig=se0
-irq normal 20356 err 2 reclaim 16 (lost 0)
-complete 20359 unlink 0
-
-cat /sys/kernel/debug/usb/ehci/0000:00:13.2/registers
-bus pci, device 0000:00:13.2
-EHCI Host Controller
-EHCI 1.00, hcd state 1
-ownership 00000001
-SMI sts/enable 0xc0080000
-structural params 0x00102306
-capability params 0x0000a072
-status 0008 FLR
-command 010009 (park)=0 ithresh=1 period=256 RUN
-intrenable 37 IAA FATAL PCD ERR INT
-uframe 3a34
-port 1 status 001000 POWER sig=se0
-port 2 status 001000 POWER sig=se0
-port 3 status 001000 POWER sig=se0
-port 4 status 001000 POWER sig=se0
-port 5 status 001000 POWER sig=se0
-port 6 status 001000 POWER sig=se0
-irq normal 0 err 0 reclaim 0 (lost 0)
-complete 0 unlink 0
-
-this is with 'all off', translators off selective resume off.
-
-
-Glück Auf,
-Volker
-
+-- 
+Stanislav Brabec
+http://www.penguin.cz/~utx
 
