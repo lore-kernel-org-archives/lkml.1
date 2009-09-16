@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZIPWSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbZIPWTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbZIPWSs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757540AbZIPWSl
+	id S1758039AbZIPWTp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758026AbZIPWTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:18:41 -0400
-Received: from kroah.org ([198.145.64.141]:49800 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:19:38 -0400
+Received: from kroah.org ([198.145.64.141]:49803 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756978AbZIPWSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:18:33 -0400
+	id S1757000AbZIPWSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:18:34 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:15:06 2009
-Message-Id: <20090916221506.492585155@mini.kroah.org>
+Message-Id: <20090916221506.633681567@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:13:26 -0700
+Date: Wed, 16 Sep 2009 15:13:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 06/10] libata: fix off-by-one error in ata_tf_read_block()
+       Brian King <brking@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch 07/10] powerpc/pseries: Fix to handle slb resize across migration
 References: <20090916221320.283781925@mini.kroah.org>
-Content-Disposition: inline; filename=libata-fix-off-by-one-error-in-ata_tf_read_block.patch
+Content-Disposition: inline; filename=powerpc-pseries-fix-to-handle-slb-resize-across-migration.patch
 In-Reply-To: <20090916221529.GA28162@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,42 +30,164 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Tejun Heo <htejun@gmail.com>
+From: Brian King <brking@linux.vnet.ibm.com>
 
-commit ac8672ea922bde59acf50eaa1eaa1640a6395fd2 upstream.
+commit 46db2f86a3b2a94e0b33e0b4548fb7b7b6bdff66 upstream.
 
-ata_tf_read_block() has off-by-one error when converting CHS address
-to LBA.  The bug isn't very visible because ata_tf_read_block() is
-used only when generating sense data for a failed RW command and CHS
-addressing isn't used too often these days.
+The SLB can change sizes across a live migration, which was not
+being handled, resulting in possible machine crashes during
+migration if migrating to a machine which has a smaller max SLB
+size than the source machine. Fix this by first reducing the
+SLB size to the minimum possible value, which is 32, prior to
+migration. Then during the device tree update which occurs after
+migration, we make the call to ensure the SLB gets updated. Also
+add the slb_size to the lparcfg output so that the migration
+tools can check to make sure the kernel has this capability
+before allowing migration in scenarios where the SLB size will change.
 
-This problem was spotted by Atsushi Nemoto.
+BenH: Fixed #include <asm/mmu-hash64.h> -> <asm/mmu.h> to avoid
+      breaking ppc32 build
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-core.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/mmu-hash64.h     |    2 ++
+ arch/powerpc/kernel/lparcfg.c             |    3 +++
+ arch/powerpc/kernel/rtas.c                |    7 ++++++-
+ arch/powerpc/mm/slb.c                     |   16 ++++++++++++----
+ arch/powerpc/platforms/pseries/reconfig.c |    9 ++++++++-
+ 5 files changed, 31 insertions(+), 6 deletions(-)
 
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -565,7 +565,13 @@ u64 ata_tf_read_block(struct ata_taskfil
- 		head = tf->device & 0xf;
- 		sect = tf->lbal;
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -41,6 +41,7 @@ extern char initial_stab[];
  
--		block = (cyl * dev->heads + head) * dev->sectors + sect;
-+		if (!sect) {
-+			ata_dev_printk(dev, KERN_WARNING, "device reported "
-+				       "invalid CHS sector 0\n");
-+			sect = 1; /* oh well */
-+		}
+ #define SLB_NUM_BOLTED		3
+ #define SLB_CACHE_ENTRIES	8
++#define SLB_MIN_SIZE		32
+ 
+ /* Bits in the SLB ESID word */
+ #define SLB_ESID_V		ASM_CONST(0x0000000008000000) /* valid */
+@@ -299,6 +300,7 @@ extern void slb_flush_and_rebolt(void);
+ extern void stab_initialize(unsigned long stab);
+ 
+ extern void slb_vmalloc_update(void);
++extern void slb_set_size(u16 size);
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -35,6 +35,7 @@
+ #include <asm/prom.h>
+ #include <asm/vdso_datapage.h>
+ #include <asm/vio.h>
++#include <asm/mmu.h>
+ 
+ #define MODULE_VERS "1.8"
+ #define MODULE_NAME "lparcfg"
+@@ -485,6 +486,8 @@ static int pseries_lparcfg_data(struct s
+ 
+ 	seq_printf(m, "shared_processor_mode=%d\n", lppaca[0].shared_proc);
+ 
++	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
 +
-+		block = (cyl * dev->heads + head) * dev->sectors + sect - 1;
- 	}
+ 	return 0;
+ }
  
- 	return block;
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -38,6 +38,7 @@
+ #include <asm/syscalls.h>
+ #include <asm/smp.h>
+ #include <asm/atomic.h>
++#include <asm/mmu.h>
+ 
+ struct rtas_t rtas = {
+ 	.lock = SPIN_LOCK_UNLOCKED
+@@ -665,6 +666,7 @@ static void rtas_percpu_suspend_me(void 
+ {
+ 	long rc;
+ 	unsigned long msr_save;
++	u16 slb_size = mmu_slb_size;
+ 	int cpu;
+ 	struct rtas_suspend_me_data *data =
+ 		(struct rtas_suspend_me_data *)info;
+@@ -686,13 +688,16 @@ static void rtas_percpu_suspend_me(void 
+ 		/* All other cpus are in H_JOIN, this cpu does
+ 		 * the suspend.
+ 		 */
++		slb_set_size(SLB_MIN_SIZE);
+ 		printk(KERN_DEBUG "calling ibm,suspend-me on cpu %i\n",
+ 		       smp_processor_id());
+ 		data->error = rtas_call(data->token, 0, 1, NULL);
+ 
+-		if (data->error)
++		if (data->error) {
+ 			printk(KERN_DEBUG "ibm,suspend-me returned %d\n",
+ 			       data->error);
++			slb_set_size(slb_size);
++		}
+ 	} else {
+ 		printk(KERN_ERR "H_JOIN on cpu %i failed with rc = %ld\n",
+ 		       smp_processor_id(), rc);
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -247,14 +247,22 @@ void switch_slb(struct task_struct *tsk,
+ static inline void patch_slb_encoding(unsigned int *insn_addr,
+ 				      unsigned int immed)
+ {
+-	/* Assume the instruction had a "0" immediate value, just
+-	 * "or" in the new value
+-	 */
+-	*insn_addr |= immed;
++	*insn_addr = (*insn_addr & 0xffff0000) | immed;
+ 	flush_icache_range((unsigned long)insn_addr, 4+
+ 			   (unsigned long)insn_addr);
+ }
+ 
++void slb_set_size(u16 size)
++{
++	extern unsigned int *slb_compare_rr_to_size;
++
++	if (mmu_slb_size == size)
++		return;
++
++	mmu_slb_size = size;
++	patch_slb_encoding(slb_compare_rr_to_size, mmu_slb_size);
++}
++
+ void slb_initialize(void)
+ {
+ 	unsigned long linear_llp, vmalloc_llp, io_llp;
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -20,6 +20,7 @@
+ #include <asm/machdep.h>
+ #include <asm/uaccess.h>
+ #include <asm/pSeries_reconfig.h>
++#include <asm/mmu.h>
+ 
+ 
+ 
+@@ -439,9 +440,15 @@ static int do_update_property(char *buf,
+ 	if (!newprop)
+ 		return -ENOMEM;
+ 
++	if (!strcmp(name, "slb-size") || !strcmp(name, "ibm,slb-size"))
++		slb_set_size(*(int *)value);
++
+ 	oldprop = of_find_property(np, name,NULL);
+-	if (!oldprop)
++	if (!oldprop) {
++		if (strlen(name))
++			return prom_add_property(np, newprop);
+ 		return -ENODEV;
++	}
+ 
+ 	rc = prom_update_property(np, newprop, oldprop);
+ 	if (rc)
 
 
