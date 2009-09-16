@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbZIPWkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbZIPWkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760408AbZIPWkJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760378AbZIPWkE
+	id S1760328AbZIPWkO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760407AbZIPWkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:40:04 -0400
-Received: from kroah.org ([198.145.64.141]:48953 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:40:09 -0400
+Received: from kroah.org ([198.145.64.141]:48956 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760341AbZIPWjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:39:54 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:15 2009
-Message-Id: <20090916223715.733319934@mini.kroah.org>
+	id S1760348AbZIPWjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:39:55 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:16 2009
+Message-Id: <20090916223715.891840230@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:30 -0700
+Date: Wed, 16 Sep 2009 15:36:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Paul Mackerras <paulus@samba.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 17/45] powerpc/perf_counters: Reduce stack usage of power_check_constraints
+Subject: [patch 18/45] powerpc: Fix bug where perf_counters breaks oprofile
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=powerpc-perf_counters-reduce-stack-usage-of-power_check_constraints.patch
+Content-Disposition: inline; filename=powerpc-fix-bug-where-perf_counters-breaks-oprofile.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,178 +32,156 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Paul Mackerras <paulus@samba.org>
 
-commit e51ee31e8af22948dcc3b115978469b09c96c3fd upstream.
+commit a6dbf93a2ad853585409e715eb96dca9177e3c39 upstream.
 
-Michael Ellerman reported stack-frame size warnings being produced
-for power_check_constraints(), which uses an 8*8 array of u64 and
-two 8*8 arrays of unsigned long, which are currently allocated on the
-stack, along with some other smaller variables.  These arrays come
-to 1.5kB on 64-bit or 1kB on 32-bit, which is a bit too much for the
-stack.
+Currently there is a bug where if you use oprofile on a pSeries
+machine, then use perf_counters, then use oprofile again, oprofile
+will not work correctly; it will lose the PMU configuration the next
+time the hypervisor does a partition context switch, and thereafter
+won't count anything.
 
-This fixes the problem by putting these arrays in the existing
-per-cpu cpu_hw_counters struct.  This is OK because two of the call
-sites have interrupts disabled already; for the third call site we
-use get_cpu_var, which disables preemption, so we know we won't
-get a context switch while we're in power_check_constraints().
-Note that power_check_constraints() can be called during context
-switch but is not called from interrupts.
+Maynard Johnson identified the sequence causing the problem:
+- oprofile setup calls ppc_enable_pmcs(), which calls
+  pseries_lpar_enable_pmcs, which tells the hypervisor that we want
+  to use the PMU, and sets the "PMU in use" flag in the lppaca.
+  This flag tells the hypervisor whether it needs to save and restore
+  the PMU config.
+- The perf_counter code sets and clears the "PMU in use" flag directly
+  as it context-switches the PMU between tasks, and leaves it clear
+  when it finishes.
+- oprofile setup, called for a new oprofile run, calls ppc_enable_pmcs,
+  which does nothing because it has already been called.  In particular
+  it doesn't set the "PMU in use" flag.
 
-Reported-by: Michael Ellerman <michael@ellerman.id.au>
+This fixes the problem by arranging for ppc_enable_pmcs to always set
+the "PMU in use" flag.  It makes the perf_counter code call
+ppc_enable_pmcs also rather than calling the lower-level function
+directly, and removes the setting of the "PMU in use" flag from
+pseries_lpar_enable_pmcs, since that is now done in its caller.
+
+This also removes the declaration of pasemi_enable_pmcs because it
+isn't defined anywhere.
+
+Reported-by: Maynard Johnson <mpjohn@us.ibm.com>
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/kernel/perf_counter.c |   55 +++++++++++++++++++++----------------
- 1 file changed, 32 insertions(+), 23 deletions(-)
+ arch/powerpc/include/asm/pmc.h         |   16 ++++++++++++++--
+ arch/powerpc/kernel/perf_counter.c     |   13 +++----------
+ arch/powerpc/kernel/sysfs.c            |    3 +++
+ arch/powerpc/platforms/pseries/setup.c |    4 ----
+ 4 files changed, 20 insertions(+), 16 deletions(-)
 
+--- a/arch/powerpc/include/asm/pmc.h
++++ b/arch/powerpc/include/asm/pmc.h
+@@ -27,10 +27,22 @@ extern perf_irq_t perf_irq;
+ 
+ int reserve_pmc_hardware(perf_irq_t new_perf_irq);
+ void release_pmc_hardware(void);
++void ppc_enable_pmcs(void);
+ 
+ #ifdef CONFIG_PPC64
+-void power4_enable_pmcs(void);
+-void pasemi_enable_pmcs(void);
++#include <asm/lppaca.h>
++
++static inline void ppc_set_pmu_inuse(int inuse)
++{
++	get_lppaca()->pmcregs_in_use = inuse;
++}
++
++extern void power4_enable_pmcs(void);
++
++#else /* CONFIG_PPC64 */
++
++static inline void ppc_set_pmu_inuse(int inuse) { }
++
+ #endif
+ 
+ #endif /* __KERNEL__ */
 --- a/arch/powerpc/kernel/perf_counter.c
 +++ b/arch/powerpc/kernel/perf_counter.c
-@@ -32,6 +32,9 @@ struct cpu_hw_counters {
- 	unsigned long mmcr[3];
- 	struct perf_counter *limited_counter[MAX_LIMITED_HWCOUNTERS];
- 	u8  limited_hwidx[MAX_LIMITED_HWCOUNTERS];
-+	u64 alternatives[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
-+	unsigned long amasks[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
-+	unsigned long avalues[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
- };
- DEFINE_PER_CPU(struct cpu_hw_counters, cpu_hw_counters);
- 
-@@ -245,13 +248,11 @@ static void write_pmc(int idx, unsigned 
-  * and see if any combination of alternative codes is feasible.
-  * The feasible set is returned in event[].
-  */
--static int power_check_constraints(u64 event[], unsigned int cflags[],
-+static int power_check_constraints(struct cpu_hw_counters *cpuhw,
-+				   u64 event[], unsigned int cflags[],
- 				   int n_ev)
+@@ -65,7 +65,6 @@ static inline unsigned long perf_ip_adju
  {
- 	unsigned long mask, value, nv;
--	u64 alternatives[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
--	unsigned long amasks[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
--	unsigned long avalues[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
- 	unsigned long smasks[MAX_HWCOUNTERS], svalues[MAX_HWCOUNTERS];
- 	int n_alt[MAX_HWCOUNTERS], choice[MAX_HWCOUNTERS];
- 	int i, j;
-@@ -266,21 +267,23 @@ static int power_check_constraints(u64 e
- 		if ((cflags[i] & PPMU_LIMITED_PMC_REQD)
- 		    && !ppmu->limited_pmc_event(event[i])) {
- 			ppmu->get_alternatives(event[i], cflags[i],
--					       alternatives[i]);
--			event[i] = alternatives[i][0];
-+					       cpuhw->alternatives[i]);
-+			event[i] = cpuhw->alternatives[i][0];
- 		}
--		if (ppmu->get_constraint(event[i], &amasks[i][0],
--					 &avalues[i][0]))
-+		if (ppmu->get_constraint(event[i], &cpuhw->amasks[i][0],
-+					 &cpuhw->avalues[i][0]))
- 			return -1;
- 	}
- 	value = mask = 0;
- 	for (i = 0; i < n_ev; ++i) {
--		nv = (value | avalues[i][0]) + (value & avalues[i][0] & addf);
-+		nv = (value | cpuhw->avalues[i][0]) +
-+			(value & cpuhw->avalues[i][0] & addf);
- 		if ((((nv + tadd) ^ value) & mask) != 0 ||
--		    (((nv + tadd) ^ avalues[i][0]) & amasks[i][0]) != 0)
-+		    (((nv + tadd) ^ cpuhw->avalues[i][0]) &
-+		     cpuhw->amasks[i][0]) != 0)
- 			break;
- 		value = nv;
--		mask |= amasks[i][0];
-+		mask |= cpuhw->amasks[i][0];
- 	}
- 	if (i == n_ev)
- 		return 0;	/* all OK */
-@@ -291,10 +294,11 @@ static int power_check_constraints(u64 e
- 	for (i = 0; i < n_ev; ++i) {
- 		choice[i] = 0;
- 		n_alt[i] = ppmu->get_alternatives(event[i], cflags[i],
--						  alternatives[i]);
-+						  cpuhw->alternatives[i]);
- 		for (j = 1; j < n_alt[i]; ++j)
--			ppmu->get_constraint(alternatives[i][j],
--					     &amasks[i][j], &avalues[i][j]);
-+			ppmu->get_constraint(cpuhw->alternatives[i][j],
-+					     &cpuhw->amasks[i][j],
-+					     &cpuhw->avalues[i][j]);
- 	}
- 
- 	/* enumerate all possibilities and see if any will work */
-@@ -313,11 +317,11 @@ static int power_check_constraints(u64 e
- 		 * where k > j, will satisfy the constraints.
- 		 */
- 		while (++j < n_alt[i]) {
--			nv = (value | avalues[i][j]) +
--				(value & avalues[i][j] & addf);
-+			nv = (value | cpuhw->avalues[i][j]) +
-+				(value & cpuhw->avalues[i][j] & addf);
- 			if ((((nv + tadd) ^ value) & mask) == 0 &&
--			    (((nv + tadd) ^ avalues[i][j])
--			     & amasks[i][j]) == 0)
-+			    (((nv + tadd) ^ cpuhw->avalues[i][j])
-+			     & cpuhw->amasks[i][j]) == 0)
- 				break;
- 		}
- 		if (j >= n_alt[i]) {
-@@ -339,7 +343,7 @@ static int power_check_constraints(u64 e
- 			svalues[i] = value;
- 			smasks[i] = mask;
- 			value = nv;
--			mask |= amasks[i][j];
-+			mask |= cpuhw->amasks[i][j];
- 			++i;
- 			j = -1;
- 		}
-@@ -347,7 +351,7 @@ static int power_check_constraints(u64 e
- 
- 	/* OK, we have a feasible combination, tell the caller the solution */
- 	for (i = 0; i < n_ev; ++i)
--		event[i] = alternatives[i][choice[i]];
-+		event[i] = cpuhw->alternatives[i][choice[i]];
+ 	return 0;
+ }
+-static inline void perf_set_pmu_inuse(int inuse) { }
+ static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp) { }
+ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
+ {
+@@ -96,11 +95,6 @@ static inline unsigned long perf_ip_adju
  	return 0;
  }
  
-@@ -752,7 +756,7 @@ int hw_perf_group_sched_in(struct perf_c
- 		return -EAGAIN;
- 	if (check_excludes(cpuhw->counter, cpuhw->flags, n0, n))
- 		return -EAGAIN;
--	i = power_check_constraints(cpuhw->events, cpuhw->flags, n + n0);
-+	i = power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n + n0);
- 	if (i < 0)
- 		return -EAGAIN;
- 	cpuhw->n_counters = n0 + n;
-@@ -807,7 +811,7 @@ static int power_pmu_enable(struct perf_
- 	cpuhw->flags[n0] = counter->hw.counter_base;
- 	if (check_excludes(cpuhw->counter, cpuhw->flags, n0, 1))
- 		goto out;
--	if (power_check_constraints(cpuhw->events, cpuhw->flags, n0 + 1))
-+	if (power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n0 + 1))
- 		goto out;
+-static inline void perf_set_pmu_inuse(int inuse)
+-{
+-	get_lppaca()->pmcregs_in_use = inuse;
+-}
+-
+ /*
+  * The user wants a data address recorded.
+  * If we're not doing instruction sampling, give them the SDAR
+@@ -535,8 +529,7 @@ void hw_perf_disable(void)
+ 		 * Check if we ever enabled the PMU on this cpu.
+ 		 */
+ 		if (!cpuhw->pmcs_enabled) {
+-			if (ppc_md.enable_pmcs)
+-				ppc_md.enable_pmcs();
++			ppc_enable_pmcs();
+ 			cpuhw->pmcs_enabled = 1;
+ 		}
  
- 	counter->hw.config = cpuhw->events[n0];
-@@ -1012,6 +1016,7 @@ const struct pmu *hw_perf_counter_init(s
- 	unsigned int cflags[MAX_HWCOUNTERS];
- 	int n;
- 	int err;
-+	struct cpu_hw_counters *cpuhw;
+@@ -598,7 +591,7 @@ void hw_perf_enable(void)
+ 		mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
+ 		mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
+ 		if (cpuhw->n_counters == 0)
+-			perf_set_pmu_inuse(0);
++			ppc_set_pmu_inuse(0);
+ 		goto out_enable;
+ 	}
  
- 	if (!ppmu)
- 		return ERR_PTR(-ENXIO);
-@@ -1090,7 +1095,11 @@ const struct pmu *hw_perf_counter_init(s
- 	cflags[n] = flags;
- 	if (check_excludes(ctrs, cflags, n, 1))
- 		return ERR_PTR(-EINVAL);
--	if (power_check_constraints(events, cflags, n + 1))
+@@ -631,7 +624,7 @@ void hw_perf_enable(void)
+ 	 * bit set and set the hardware counters to their initial values.
+ 	 * Then unfreeze the counters.
+ 	 */
+-	perf_set_pmu_inuse(1);
++	ppc_set_pmu_inuse(1);
+ 	mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
+ 	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
+ 	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -17,6 +17,7 @@
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+ #include <asm/smp.h>
++#include <asm/pmc.h>
+ 
+ #include "cacheinfo.h"
+ 
+@@ -123,6 +124,8 @@ static DEFINE_PER_CPU(char, pmcs_enabled
+ 
+ void ppc_enable_pmcs(void)
+ {
++	ppc_set_pmu_inuse(1);
 +
-+	cpuhw = &get_cpu_var(cpu_hw_counters);
-+	err = power_check_constraints(cpuhw, events, cflags, n + 1);
-+	put_cpu_var(cpu_hw_counters);
-+	if (err)
- 		return ERR_PTR(-EINVAL);
+ 	/* Only need to enable them once */
+ 	if (__get_cpu_var(pmcs_enabled))
+ 		return;
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -223,10 +223,6 @@ static void pseries_lpar_enable_pmcs(voi
+ 	set = 1UL << 63;
+ 	reset = 0;
+ 	plpar_hcall_norets(H_PERFMON, set, reset);
+-
+-	/* instruct hypervisor to maintain PMCs */
+-	if (firmware_has_feature(FW_FEATURE_SPLPAR))
+-		get_lppaca()->pmcregs_in_use = 1;
+ }
  
- 	counter->hw.config = events[n];
+ static void __init pseries_discover_pic(void)
 
 
