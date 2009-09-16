@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbZIPK3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbZIPKYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753007AbZIPK3A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 06:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbZIPK27
+	id S1758764AbZIPKYJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 06:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbZIPKYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 06:28:59 -0400
-Received: from mga05.intel.com ([192.55.52.89]:28784 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750801AbZIPK26 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 06:28:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,396,1249282800"; 
-   d="scan'208";a="727424061"
-Date: Wed, 16 Sep 2009 11:23:32 +0100
-From: Alan Cox <alan@linux.intel.com>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Amit Shah <amit.shah@redhat.com>, rusty@rustcorp.com.au,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
- generic guest and host communication
-Message-ID: <20090916112332.6bf981a5@linux.intel.com>
-In-Reply-To: <4AAA8A56.3040707@codemonkey.ws>
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com>
-	<1252678386-17404-2-git-send-email-amit.shah@redhat.com>
-	<20090911170010.34c80f2d@linux.intel.com>
-	<20090911163806.GB25535@amit-x200.redhat.com>
-	<4AAA8838.1080106@codemonkey.ws>
-	<20090911173307.GB27046@amit-x200.redhat.com>
-	<4AAA8A56.3040707@codemonkey.ws>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Sep 2009 06:24:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46620 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758749AbZIPKX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 06:23:59 -0400
+Date: Wed, 16 Sep 2009 10:23:36 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Feature to disable APERF/MPERF cpu_power
+Message-ID: <tip-8e6598af3f35629c37249a610cf13e73f70db279@git.kernel.org>
+Git-Commit-ID: 8e6598af3f35629c37249a610cf13e73f70db279
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 16 Sep 2009 10:23:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This device is very much a serial port.  I don't see any reason not
-> to treat it like one.
+Commit-ID:  8e6598af3f35629c37249a610cf13e73f70db279
+Gitweb:     http://git.kernel.org/tip/8e6598af3f35629c37249a610cf13e73f70db279
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Thu, 3 Sep 2009 13:20:03 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 15 Sep 2009 16:51:28 +0200
 
-Here are a few
+sched: Feature to disable APERF/MPERF cpu_power
 
-- You don't need POSIX multi-open semantics, hangup and the like
-- Seek makes sense on some kinds of fixed attributes
-- TTY has a relatively large memory overhead per device
-- Sysfs is what everything else uses
-- Sysfs has some rather complete lifetime management you'll need to
-  redo by hand
-- You don't need idiotic games with numbering spaces
+I suspect a feed-back loop between cpuidle and the aperf/mperf
+cpu_power bits, where when we have idle C-states lower the ratio,
+which leads to lower cpu_power and then less load, which generates
+more idle time, etc..
 
-Abusing tty for this is ridiculous. In some ways putting much of it in
-kernel is ridiculous too as you can do it with a FUSE fs or simply
-export the info guest-guest using SNMP.
+Put in a knob to disable it.
 
-Alan
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/sched.c          |   12 ++++++++++--
+ kernel/sched_features.h |    5 +++++
+ 2 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c210321..e8e603b 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3602,11 +3602,19 @@ static void update_cpu_power(struct sched_domain *sd, int cpu)
+ 	unsigned long power = SCHED_LOAD_SCALE;
+ 	struct sched_group *sdg = sd->groups;
+ 
+-	power *= arch_scale_freq_power(sd, cpu);
++	if (sched_feat(ARCH_POWER))
++		power *= arch_scale_freq_power(sd, cpu);
++	else
++		power *= default_scale_freq_power(sd, cpu);
++
+ 	power >>= SCHED_LOAD_SHIFT;
+ 
+ 	if ((sd->flags & SD_SHARE_CPUPOWER) && weight > 1) {
+-		power *= arch_scale_smt_power(sd, cpu);
++		if (sched_feat(ARCH_POWER))
++			power *= arch_scale_smt_power(sd, cpu);
++		else
++			power *= default_scale_smt_power(sd, cpu);
++
+ 		power >>= SCHED_LOAD_SHIFT;
+ 	}
+ 
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index e98c2e8..294e10e 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -82,6 +82,11 @@ SCHED_FEAT(LAST_BUDDY, 1)
+  */
+ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
+ 
++/*
++ * Use arch dependent cpu power functions
++ */
++SCHED_FEAT(ARCH_POWER, 0)
++
+ SCHED_FEAT(HRTICK, 0)
+ SCHED_FEAT(DOUBLE_TICK, 0)
+ SCHED_FEAT(LB_BIAS, 1)
