@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757682AbZIPIop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZIPIod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757682AbZIPIop (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 04:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757969AbZIPIoc
+	id S1758051AbZIPIod (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 04:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbZIPIoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 04:44:32 -0400
-Received: from mga02.intel.com ([134.134.136.20]:43151 "EHLO mga02.intel.com"
+	Wed, 16 Sep 2009 04:44:30 -0400
+Received: from mga01.intel.com ([192.55.52.88]:5499 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757957AbZIPImz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 04:42:55 -0400
+	id S1757950AbZIPIm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 04:42:56 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,396,1249282800"; 
-   d="scan'208";a="448946667"
+   d="scan'208";a="493936863"
 From: Sheng Yang <sheng@linux.intel.com>
 To: Keir Fraser <keir.fraser@eu.citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Cc: Jun Nakajima <jun.nakajima@intel.com>, Eddie Dong <eddie.dong@intel.com>,
        linux-kernel@vger.kernel.org, xen-devel <xen-devel@lists.xensource.com>,
        Sheng Yang <sheng@linux.intel.com>
-Subject: [RFC][PATCH 09/10] xen/hybrid: Make event channel work with QEmu emulated devices
-Date: Wed, 16 Sep 2009 16:42:30 +0800
-Message-Id: <1253090551-7969-10-git-send-email-sheng@linux.intel.com>
+Subject: [RFC][PATCH 10/10] xen/hybrid: Enable grant table and xenbus
+Date: Wed, 16 Sep 2009 16:42:31 +0800
+Message-Id: <1253090551-7969-11-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253090551-7969-1-git-send-email-sheng@linux.intel.com>
 References: <1253090551-7969-1-git-send-email-sheng@linux.intel.com>
@@ -28,296 +28,278 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We mapped each IOAPIC pin to a VIRQ, so that we can deliver interrupt through
-these VIRQs.
+Now vnif and vbd drivers can work.
 
-We also use GENERIC_INTERRUPT_VECTOR as the noficiation vector for hypervisor
-to notify guest about the event.
-
-Then we don't need IOAPIC/LAPIC now...
+Notice one memory region(0xfbfe0000ul - 0xfc000000ul) would be reserved in the
+bios E820 table. This memory region would be used as grant table.
 
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 ---
- arch/x86/kernel/smpboot.c   |   14 ++++++++++++
- arch/x86/xen/enlighten.c    |   49 +++++++++++++++++++++++++++++++++++++++++++
- arch/x86/xen/irq.c          |   15 +++++++++++-
- drivers/xen/events.c        |   47 +++++++++++++++++++++++++++++++++++++++++
- include/xen/events.h        |    1 +
- include/xen/hvm.h           |    5 ++++
- include/xen/interface/xen.h |    6 ++++-
- 7 files changed, 134 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/xen/hypervisor.h |    3 +
+ arch/x86/xen/enlighten.c              |    1 +
+ drivers/block/xen-blkfront.c          |    3 +
+ drivers/input/xen-kbdfront.c          |    4 ++
+ drivers/net/xen-netfront.c            |    3 +
+ drivers/video/xen-fbfront.c           |    4 ++
+ drivers/xen/grant-table.c             |   67 ++++++++++++++++++++++++++++++++-
+ drivers/xen/xenbus/xenbus_probe.c     |   23 ++++++++++-
+ 8 files changed, 103 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 58d24ef..39c1890 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -67,6 +67,10 @@
+diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
+index 7eee836..267fa43 100644
+--- a/arch/x86/include/asm/xen/hypervisor.h
++++ b/arch/x86/include/asm/xen/hypervisor.h
+@@ -41,6 +41,7 @@ enum xen_domain_type {
+ 	XEN_NATIVE,		/* running on bare hardware    */
+ 	XEN_PV_DOMAIN,		/* running in a PV domain      */
+ 	XEN_HVM_DOMAIN,		/* running in a Xen hvm domain */
++	XEN_HYBRID_DOMAIN,
+ };
  
- #include <asm/smpboot_hooks.h>
+ #ifdef CONFIG_XEN
+@@ -55,6 +56,8 @@ extern void xen_start_hybrid(void);
+ 				 xen_domain_type == XEN_PV_DOMAIN)
+ #define xen_hvm_domain()	(xen_domain() &&			\
+ 				 xen_domain_type == XEN_HVM_DOMAIN)
++#define xen_hybrid_domain()	(xen_domain() &&			\
++				 xen_domain_type == XEN_HYBRID_DOMAIN)
  
-+#ifdef CONFIG_XEN
-+#include <asm/xen/hypervisor.h>
-+#endif
-+
- #ifdef CONFIG_X86_32
- u8 apicid_2_node[MAX_APICID];
- static int low_mappings;
-@@ -1062,6 +1066,11 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
- 	}
- 	set_cpu_sibling_map(0);
- 
-+#ifdef CONFIG_XEN
-+	if (xen_hybrid_evtchn_enabled())
-+		goto out;
-+#endif
-+
- 	enable_IR_x2apic();
- #ifdef CONFIG_X86_64
- 	default_setup_apic_routing();
-@@ -1131,6 +1140,11 @@ void __init native_smp_cpus_done(unsigned int max_cpus)
- {
- 	pr_debug("Boot done.\n");
- 
-+#ifdef CONFIG_XEN
-+	if (xen_hybrid_evtchn_enabled())
-+		return;
-+#endif
-+
- 	impress_friends();
- #ifdef CONFIG_X86_IO_APIC
- 	setup_ioapic_dest();
+ #define XEN_HYBRID_ENABLED	    (1u << 0)
+ #define XEN_HYBRID_TIMER_ENABLED    (1u << 1)
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 18aba22..f515584 100644
+index f515584..6c4f0c1 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -54,6 +54,10 @@
- #include <asm/reboot.h>
+@@ -1129,6 +1129,7 @@ static int init_hybrid_info(void)
+ 	pv_info = xen_info;
+ 	pv_info.kernel_rpl = 0;
  
- #include <xen/hvm.h>
-+#include <xen/events.h>
-+#include <asm/acpi.h>
-+#include <asm/irq_vectors.h>
-+#include <asm/irq.h>
- 
- #include "xen-ops.h"
- #include "mmu.h"
-@@ -1055,6 +1059,8 @@ static void __init xen_hybrid_banner(void)
- 
- 	if (xen_hybrid_timer_enabled())
- 		printk(KERN_INFO "Hybrid feature: PV Timer enabled\n");
-+	if (xen_hybrid_evtchn_enabled())
-+		printk(KERN_INFO "Hybrid feature: Event channel enabled\n");
- }
- 
- static int xen_para_available(void)
-@@ -1102,6 +1108,10 @@ static int init_hybrid_info(void)
- 		xen_hybrid_status |= XEN_HYBRID_TIMER_ENABLED;
- 		flags |= HVM_HYBRID_TIMER;
- 	}
-+	if (edx & XEN_CPUID_FEAT2_HYBRID_EVTCHN) {
-+		xen_hybrid_status |= XEN_HYBRID_EVTCHN_ENABLED;
-+		flags |= HVM_HYBRID_EVTCHN;
-+	}
- 
- 	/* We only support 1 page of hypercall for now */
- 	if (pages != 1)
-@@ -1144,9 +1154,27 @@ static int __init init_shared_info(void)
++	xen_domain_type = XEN_HYBRID_DOMAIN;
  	return 0;
  }
  
-+static int set_callback_via(uint64_t via)
-+{
-+	struct xen_hvm_param a;
-+
-+	a.domid = DOMID_SELF;
-+	a.index = HVM_PARAM_CALLBACK_IRQ;
-+	a.value = via;
-+	return HYPERVISOR_hvm_op(HVMOP_set_param, &a);
-+}
-+
-+void do_hybrid_intr(void)
-+{
-+	per_cpu(irq_count, smp_processor_id())++;
-+	xen_evtchn_do_upcall(get_irq_regs());
-+	per_cpu(irq_count, smp_processor_id())--;
-+}
-+
- void __init xen_start_hybrid(void)
- {
- 	int r;
-+	uint64_t callback_via;
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index a6cbf7b..14188ed 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -1072,6 +1072,9 @@ static int __init xlblk_init(void)
+ 	if (!xen_domain())
+ 		return -ENODEV;
  
- 	if (!xen_para_available())
- 		return;
-@@ -1163,5 +1191,26 @@ void __init xen_start_hybrid(void)
- 		pv_time_ops = xen_time_ops;
- 		pv_apic_ops = xen_apic_ops;
- 	}
++	if (xen_hybrid_domain() && !xen_hybrid_evtchn_enabled())
++		return -ENODEV;
 +
-+	if (xen_hybrid_evtchn_enabled()) {
-+		pv_apic_ops = xen_apic_ops;
-+#ifdef CONFIG_X86_LOCAL_APIC
+ 	if (register_blkdev(XENVBD_MAJOR, DEV_NAME)) {
+ 		printk(KERN_WARNING "xen_blk: can't get major %d with name %s\n",
+ 		       XENVBD_MAJOR, DEV_NAME);
+diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+index 928d2ed..a82b6aa 100644
+--- a/drivers/input/xen-kbdfront.c
++++ b/drivers/input/xen-kbdfront.c
+@@ -338,6 +338,10 @@ static int __init xenkbd_init(void)
+ 	if (!xen_domain())
+ 		return -ENODEV;
+ 
++	/* Xen Hybrid domain don't need vkbd */
++	if (xen_hybrid_domain())
++		return -ENODEV;
++
+ 	/* Nothing to do if running in dom0. */
+ 	if (xen_initial_domain())
+ 		return -ENODEV;
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index f673253..3ad2c45 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1806,6 +1806,9 @@ static int __init netif_init(void)
+ 	if (!xen_domain())
+ 		return -ENODEV;
+ 
++	if (xen_hybrid_domain() && !xen_hybrid_evtchn_enabled())
++		return -ENODEV;
++
+ 	if (xen_initial_domain())
+ 		return 0;
+ 
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index 2493f05..b423248 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -683,6 +683,10 @@ static int __init xenfb_init(void)
+ 	if (!xen_domain())
+ 		return -ENODEV;
+ 
++	/* Don't enable vfb in Xen hybrid domain */
++	if (xen_hybrid_domain())
++		return -ENODEV;
++
+ 	/* Nothing to do if running in dom0. */
+ 	if (xen_initial_domain())
+ 		return -ENODEV;
+diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
+index 7d8f531..3e4ac4a 100644
+--- a/drivers/xen/grant-table.c
++++ b/drivers/xen/grant-table.c
+@@ -45,6 +45,9 @@
+ #include <asm/pgtable.h>
+ #include <asm/sync_bitops.h>
+ 
++#include <xen/interface/memory.h>
++#include <linux/io.h>
++#include <asm/e820.h>
+ 
+ /* External tools reserve first few grant table entries. */
+ #define NR_RESERVED_ENTRIES 8
+@@ -440,12 +443,33 @@ static inline unsigned int max_nr_grant_frames(void)
+ 	return xen_max;
+ }
+ 
++static unsigned long hybrid_resume_frames;
++
+ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
+ {
+ 	struct gnttab_setup_table setup;
+ 	unsigned long *frames;
+ 	unsigned int nr_gframes = end_idx + 1;
+ 	int rc;
++	struct xen_add_to_physmap xatp;
++	unsigned int i = end_idx;
++
++	if (xen_hybrid_domain() && xen_hybrid_evtchn_enabled()) {
 +		/*
-+		 * set up the basic apic ops.
++		 * Loop backwards, so that the first hypercall has the largest
++		 * index, ensuring that the table will grow only once.
 +		 */
-+		set_xen_basic_apic_ops();
-+#endif
++		do {
++			xatp.domid = DOMID_SELF;
++			xatp.idx = i;
++			xatp.space = XENMAPSPACE_grant_table;
++			xatp.gpfn = (hybrid_resume_frames >> PAGE_SHIFT) + i;
++			if (HYPERVISOR_memory_op(XENMEM_add_to_physmap, &xatp))
++				BUG();
++		} while (i-- > start_idx);
 +
-+		callback_via = HVM_CALLBACK_VECTOR(GENERIC_INTERRUPT_VECTOR);
-+		set_callback_via(callback_via);
-+
-+		generic_interrupt_extension = do_hybrid_intr;
-+
-+		disable_acpi();
-+		disable_apic = 1;
-+
-+		machine_ops = xen_machine_ops;
-+		smp_ops.smp_send_stop = paravirt_nop;
++		return 0;
 +	}
+ 
+ 	frames = kmalloc(nr_gframes * sizeof(unsigned long), GFP_ATOMIC);
+ 	if (!frames)
+@@ -472,11 +496,47 @@ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
+ 	return 0;
  }
  
-diff --git a/arch/x86/xen/irq.c b/arch/x86/xen/irq.c
-index 52885c1..edca1c4 100644
---- a/arch/x86/xen/irq.c
-+++ b/arch/x86/xen/irq.c
-@@ -66,6 +66,9 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_restore_fl);
- 
- static void xen_irq_disable(void)
- {
-+	if (xen_hybrid_evtchn_enabled())
-+		asm volatile("cli" : : : "memory");
++#define GNTTAB_START	    0xfbfe0000ul
++#define GNTTAB_SIZE	    0x20000ul
 +
- 	/* There's a one instruction preempt window here.  We need to
- 	   make sure we're don't switch CPUs between getting the vcpu
- 	   pointer and updating the mask. */
-@@ -79,6 +82,9 @@ static void xen_irq_enable(void)
+ int gnttab_resume(void)
  {
- 	struct vcpu_info *vcpu;
- 
-+	if (xen_hybrid_evtchn_enabled())
-+		asm volatile("sti" : : : "memory");
+-	if (max_nr_grant_frames() < nr_grant_frames)
++	unsigned int max_nr_gframes;
 +
- 	/* We don't need to worry about being preempted here, since
- 	   either a) interrupts are disabled, so no preemption, or b)
- 	   the caller is confused and is trying to re-enable interrupts
-@@ -137,6 +143,11 @@ void __init xen_init_irq_ops()
- 
- void __init xen_hybrid_init_irq_ops(void)
- {
--	pv_irq_ops.safe_halt = xen_safe_halt;
--	pv_irq_ops.halt = xen_halt;
-+	if (!xen_hybrid_evtchn_enabled()) {
-+		pv_irq_ops.safe_halt = xen_safe_halt;
-+		pv_irq_ops.halt = xen_halt;
-+	} else {
-+		pv_irq_ops = xen_irq_ops;
-+		pv_irq_ops.adjust_exception_frame = paravirt_nop;
++	max_nr_gframes = max_nr_grant_frames();
++	if (max_nr_gframes < nr_grant_frames)
+ 		return -ENOSYS;
+-	return gnttab_map(0, nr_grant_frames - 1);
++
++	if (!(xen_hybrid_domain() && xen_hybrid_evtchn_enabled()))
++		return gnttab_map(0, nr_grant_frames - 1);
++
++	if (!hybrid_resume_frames) {
++		/* Check if e820 reserved the related region */
++		if (!e820_all_mapped(GNTTAB_START,
++					GNTTAB_START + GNTTAB_SIZE, 2)) {
++			printk(KERN_WARNING
++				"Fail to found grant table region in e820!\n");
++			return -ENODEV;
++		}
++		if (PAGE_SIZE * max_nr_gframes > GNTTAB_SIZE) {
++			printk(KERN_WARNING
++				"Grant table size exceed the limit!\n");
++			return -EINVAL;
++		}
++
++		hybrid_resume_frames = GNTTAB_START;
++		shared = ioremap(hybrid_resume_frames,
++				 PAGE_SIZE * max_nr_gframes);
++		if (shared == NULL) {
++			printk(KERN_WARNING
++				"Fail to ioremap gnttab share frames\n");
++			return -ENOMEM;
++		}
 +	}
++
++	gnttab_map(0, nr_grant_frames - 1);
++
++	return 0;
  }
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 30963af..4973b70 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -40,6 +40,8 @@
- #include <xen/interface/xen.h>
- #include <xen/interface/event_channel.h>
  
-+#include <asm/desc.h>
-+
- /*
-  * This lock protects updates to the following mapping and reference-count
-  * arrays. The lock does not need to be acquired to read the mapping tables.
-@@ -931,4 +933,49 @@ void __init xen_init_IRQ(void)
- 		mask_evtchn(i);
+ int gnttab_suspend(void)
+@@ -512,6 +572,9 @@ static int __devinit gnttab_init(void)
+ 	if (!xen_domain())
+ 		return -ENODEV;
  
- 	irq_ctx_init(smp_processor_id());
++	if (xen_hybrid_domain() && !xen_hybrid_evtchn_enabled())
++		return -ENODEV;
 +
-+	if (!xen_hybrid_evtchn_enabled())
+ 	nr_grant_frames = 1;
+ 	boot_max_nr_grant_frames = __max_nr_grant_frames();
+ 
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index 773d1cf..4b87605 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -53,6 +53,8 @@
+ #include <xen/events.h>
+ #include <xen/page.h>
+ 
++#include <xen/hvm.h>
++
+ #include "xenbus_comms.h"
+ #include "xenbus_probe.h"
+ 
+@@ -828,6 +830,9 @@ static int __init xenbus_probe_init(void)
+ 	if (!xen_domain())
+ 		goto out_error;
+ 
++	if (xen_hybrid_domain() && !xen_hybrid_evtchn_enabled())
++		goto out_error;
++
+ 	/* Register ourselves with the kernel bus subsystem */
+ 	err = bus_register(&xenbus_frontend.bus);
+ 	if (err)
+@@ -844,10 +849,19 @@ static int __init xenbus_probe_init(void)
+ 		/* dom0 not yet supported */
+ 	} else {
+ 		xenstored_ready = 1;
+-		xen_store_evtchn = xen_start_info->store_evtchn;
+-		xen_store_mfn = xen_start_info->store_mfn;
++		if (xen_hybrid_domain()) {
++			xen_store_evtchn =
++				hvm_get_parameter(HVM_PARAM_STORE_EVTCHN);
++			xen_store_mfn =
++				hvm_get_parameter(HVM_PARAM_STORE_PFN);
++			xen_store_interface =
++				ioremap(xen_store_mfn << PAGE_SHIFT, PAGE_SIZE);
++		} else {
++			xen_store_evtchn = xen_start_info->store_evtchn;
++			xen_store_mfn = xen_start_info->store_mfn;
++			xen_store_interface = mfn_to_virt(xen_store_mfn);
++		}
+ 	}
+-	xen_store_interface = mfn_to_virt(xen_store_mfn);
+ 
+ 	/* Initialize the interface to xenstore. */
+ 	err = xs_init();
+@@ -959,6 +973,9 @@ static void wait_for_devices(struct xenbus_driver *xendrv)
+ 	if (!ready_to_wait_for_devices || !xen_domain())
+ 		return;
+ 
++	if (xen_hybrid_domain() && !xen_hybrid_evtchn_enabled())
 +		return;
 +
-+	for (i = 0; i < NR_IRQS_LEGACY; i++) {
-+		struct evtchn_bind_virq bind_virq;
-+		struct irq_desc *desc = irq_to_desc(i);
-+		int virq, evtchn;
-+
-+		virq = i + VIRQ_EMUL_PIN_START;
-+		bind_virq.virq = virq;
-+		bind_virq.vcpu = 0;
-+
-+		if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_virq,
-+						&bind_virq) != 0)
-+			BUG();
-+
-+		evtchn = bind_virq.port;
-+		evtchn_to_irq[evtchn] = i;
-+		irq_info[i] = mk_virq_info(evtchn, virq);
-+
-+		desc->status = IRQ_DISABLED;
-+		desc->action = NULL;
-+		desc->depth = 1;
-+
-+		/*
-+		 * 16 old-style INTA-cycle interrupts:
-+		 */
-+		set_irq_chip_and_handler_name(i, &xen_dynamic_chip,
-+					handle_level_irq, "event");
-+	}
-+
-+	/*
-+	 * Cover the whole vector space, no vector can escape
-+	 * us. (some of these will be overridden and become
-+	 * 'special' SMP interrupts)
-+	 */
-+	for (i = 0; i < (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
-+		int vector = FIRST_EXTERNAL_VECTOR + i;
-+		if (vector != IA32_SYSCALL_VECTOR)
-+			set_intr_gate(vector, interrupt[i]);
-+	}
-+
-+	/* generic IPI for platform specific use, now used for hybrid */
-+	alloc_intr_gate(GENERIC_INTERRUPT_VECTOR, generic_interrupt);
- }
-diff --git a/include/xen/events.h b/include/xen/events.h
-index 0d5f1ad..a21c68f 100644
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -53,4 +53,5 @@ bool xen_test_irq_pending(int irq);
-    irq will be disabled so it won't deliver an interrupt. */
- void xen_poll_irq(int irq);
- 
-+void xen_evtchn_do_upcall(struct pt_regs *regs);
- #endif	/* _XEN_EVENTS_H */
-diff --git a/include/xen/hvm.h b/include/xen/hvm.h
-index 4ea8887..c66d788 100644
---- a/include/xen/hvm.h
-+++ b/include/xen/hvm.h
-@@ -20,4 +20,9 @@ static inline unsigned long hvm_get_parameter(int idx)
- 	return xhv.value;
- }
- 
-+#define HVM_CALLBACK_VIA_TYPE_VECTOR 0x2
-+#define HVM_CALLBACK_VIA_TYPE_SHIFT 56
-+#define HVM_CALLBACK_VECTOR(x) (((uint64_t)HVM_CALLBACK_VIA_TYPE_VECTOR)<<\
-+				HVM_CALLBACK_VIA_TYPE_SHIFT | (x))
-+
- #endif /* XEN_HVM_H__ */
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
-index 2befa3e..9282ff7 100644
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -90,7 +90,11 @@
- #define VIRQ_ARCH_6    22
- #define VIRQ_ARCH_7    23
- 
--#define NR_VIRQS       24
-+#define VIRQ_EMUL_PIN_START 24
-+#define VIRQ_EMUL_PIN_NUM 16
-+
-+#define NR_VIRQS       40
-+
- /*
-  * MMU-UPDATE REQUESTS
-  *
+ 	while (exists_disconnected_device(drv)) {
+ 		if (time_after(jiffies, timeout))
+ 			break;
 -- 
 1.5.4.5
 
