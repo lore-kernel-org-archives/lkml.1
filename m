@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbZIPMny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbZIPMqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758860AbZIPMny (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbZIPMnx
+	id S1758992AbZIPMqL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbZIPMp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:43:53 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:43483 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbZIPMnx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:43:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=g9cnPwWpT84gqOz9o6v4yAPeTRDvCp/zU2T2Xro7i45/R5shhsCIc/NIOHodbODQqz
-         Qb/ZNqt/ztKzToneMQ5AJRdJNd0jYzuzj39ZeeYKpMtWg+bdC/N8vhDy/RCnzfj6HH6C
-         zhk/iyzTI+U3aujCV0WWaM2IAS0F6wqj8urz8=
-MIME-Version: 1.0
-In-Reply-To: <1253103989-25635-1-git-send-email-andy.shevchenko@gmail.com>
-References: <20090916120529.GB18050@centrinvest.ru>
-	 <1253103989-25635-1-git-send-email-andy.shevchenko@gmail.com>
-Date: Wed, 16 Sep 2009 15:43:55 +0300
-X-Google-Sender-Auth: 0fe81d90cd4008af
-Message-ID: <84144f020909160543s38daa8ebs989b9da09802d681@mail.gmail.com>
-Subject: Re: [PATCH v2] media: video: pwc: Use kernel's simple_strtol()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 16 Sep 2009 08:45:57 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:62116 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758931AbZIPMpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:45:45 -0400
+From: Avi Kivity <avi@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Marcelo Tosatti <mtosatti@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] User return notifiers / just-in-time MSR switching for KVM
+Date: Wed, 16 Sep 2009 15:45:30 +0300
+Message-Id: <1253105134-8862-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 3:26 PM, Andy Shevchenko
-<andy.shevchenko@gmail.com> wrote:
-> @@ -2078,13 +2066,13 @@ static int __init usb_pwc_init(void)
->                                }
->                                else {
->                                        /* No type or serial number specified, just a number. */
-> -                                       device_hint[i].device_node = pwc_atoi(s);
-> +                                       device_hint[i].device_node = (int)simple_strtol(s, NULL, 10);
+The various x86 syscall related MSRs (MSR_LSTAR and friends, EFER when SCE
+needs to be updated) are fairly expensive to read or write.  Since different
+operating systems can set different values for these MSRs, KVM needs to reload
+them when switching to a different guest or to the host.
 
-What's with all the casting to int?
+Switching on every guest entry/exit is too expensive, so KVM reloads on
+guest preemption, which is a lot rarer.  Even so, preemption based reload
+is suboptimal:
+
+- if we're switching to a kernel thread and back, there's no need to reload
+  the MSRs.  Examples of kernel threads we're likely to switch to are:
+
+  - the idle task
+  - a threaded interrupt handler
+  - a kernel-mode virtio server (vhost-net)
+
+- if we're switching to a guest running the same OS, the MSRs will have the
+  same values and there's no need to reload them
+
+- if the guest and host run the same OS, again the MSRs need not be reloaded.
+
+This patchset implements just-in-time reloads to defer them to the last
+possible instant.  When we do reload, we check whether the values have in
+fact changed and reload conditionally.
+
+For the just-in-time reloads the first patch implements "user return
+notifiers", a callback invoked just before return to userspace.  This has
+been written so that there is no code impact if KVM is not configured, and
+no runtime impact if KVM is not running.
+
+The patchset improves guest/idle/guest switches by about 2000 cycles.
+
+Avi Kivity (4):
+  core, x86: Add user return notifiers
+  KVM: VMX: Move MSR_KERNEL_GS_BASE out of the vmx autoload msr area
+  KVM: x86 shared msr infrastructure
+  KVM: VMX: Use shared msr infrastructure
+
+ arch/Kconfig                       |   10 +++
+ arch/x86/Kconfig                   |    1 +
+ arch/x86/include/asm/kvm_host.h    |    3 +
+ arch/x86/include/asm/thread_info.h |    7 +-
+ arch/x86/kernel/process.c          |    2 +
+ arch/x86/kernel/signal.c           |    3 +
+ arch/x86/kvm/Kconfig               |    1 +
+ arch/x86/kvm/vmx.c                 |  142 +++++++++++++++--------------------
+ arch/x86/kvm/x86.c                 |   79 ++++++++++++++++++++
+ kernel/Makefile                    |    1 +
+ 10 files changed, 166 insertions(+), 83 deletions(-)
+
