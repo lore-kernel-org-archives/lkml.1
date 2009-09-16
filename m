@@ -1,72 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933599AbZIPX05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbZIPXhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933599AbZIPX05 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 19:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760398AbZIPX0z
+	id S1760599AbZIPXhX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 19:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbZIPXhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 19:26:55 -0400
-Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:50153 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755281AbZIPX0y (ORCPT
+	Wed, 16 Sep 2009 19:37:21 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:19887 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754531AbZIPXhU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 19:26:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
-	:date:message-id:mime-version:content-type; q=dns; s=sasl; b=EfQ
-	n4H9ftCd5ZwrZbN55kgVfZ2Yw8fQXoJT3TcuQkHhQ+MbqmpFfwtnTsp5VXmHg7C5
-	WOHFBmCnWM7ocBb0U9Lb7AP+1VBdmxd/hNnKewL5ikgshDwlCl4G7eCkwXF0C5Ha
-	CAJHjPy4T3oy8f1ngZE7iF8MoyFqQgqok2m77Zm4=
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.4.4
-From: Junio C Hamano <gitster@pobox.com>
-Date: Wed, 16 Sep 2009 16:26:42 -0700
-Message-ID: <7v4or2wjwt.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 16 Sep 2009 19:37:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CaAaVkSDJTETjhD/iStgVOmk/LSSmg97HMh2YmC36BJlZ4W7jxZxOg7fULpQmkVVpH
+         YI8+FjcUU8AaYX3S+YtgeqLBo+ePvL/QXoMWsubyQO5Di+nEUy3/FC4NXAt4lgPYd1T0
+         a8xNPKlyWneVjorz9Xf022OL4R5ahBc8UVOGk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: 6AF82356-A318-11DE-8152-8B19076EA04E-77302942!a-pb-sasl-sd.pobox.com
+In-Reply-To: <20090916203747.GB5068@nowhere>
+References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
+	 <20090826201330.GA18761@orion> <20090914203749.GF6045@nowhere>
+	 <a4423d670909141433g18659aay6e177b1302e5b4a0@mail.gmail.com>
+	 <20090916203747.GB5068@nowhere>
+Date: Thu, 17 Sep 2009 03:37:22 +0400
+Message-ID: <a4423d670909161637r67c933a0n2c142898ea493f22@mail.gmail.com>
+Subject: Re: [PATCH 0/4] kill-the-bkl/reiserfs: fix some lock dependency 
+	inversions
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/9/17 Frederic Weisbecker <fweisbec@gmail.com>:
+> On Tue, Sep 15, 2009 at 01:33:42AM +0400, Alexander Beregalov wrote:
+>> > Hi Alexander,
+>> >
+>> > It should be fixed now, still in the following tree:
+>>
+>> Hi!
+>> Another one, similar:
+>> It is v2.6.31-3123-g99bc470 plus your 805031859(kill-the-bkl/reiserfs:
+>> panic in case of lock imbalance), UP.
+>
+>
+>
+> Although I can't reproduce it, I think I see how that can happen.
+>
+> On mount time, we have the following dependency:
+>
+> reiserfs_lock -> bdev_mutex -> sysfs_mutex
+>
+> which happens while calling journal_init_dev() because
+> we open the device there.
+>
+> But also in case of mmap on a reiserfs filesystem we
+> may call reiserfs_readpages(), holding the reiserfs lock
+> while already holding mm->mmap_sem
+>
+> The above dependency is then updated:
+>
+> mmap_sem
+>     |
+>     |
+>     ------- reiserfs_lock -> bdev_mutex -> sysfs_mutex
+>
+> And later, while doing a readdir() on a sysfs directory,
+> sysfs calls filldir, which might_fault, and then might grab
+> mmap_sem. filldir is called there while holding sys_mutex,
+> creating the new following dependency
+>
+> sysfs_mutex -> mmap_sem
+>
+> Hence the inversion.
+> It seems the deadlock can't ever happen, I even don't see
+> corner cases where it could happen.
+>
+> But still, this dependency should disappear.
+>
+> Could you please tell me if the following patch makes it shut down?
+>
+> Otherwise, I may need your config. I don't know why, but I suspect
+> the lock_acquire(mmap_sem) in might_fault doesn't trigger needed the lockdep
+> check, although I have the appropriate debug config, at least it seems.
+> But anyway, it should also happen in my box but it doesn't...
+>
+> Thanks!
+>
+> The patch:
+Yes, it is working!
 
-The latest maintenance release GIT 1.6.4.4 is available at the
-usual places:
-
-  http://www.kernel.org/pub/software/scm/git/
-
-  git-1.6.4.4.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.4.4.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.4.4.tar.{gz,bz2}		(preformatted docs)
-
-The RPM binary packages for a few architectures are found in:
-
-  RPMS/$arch/git-*-1.6.4.4-1.fc9.$arch.rpm	(RPM)
-
-This is primarily to fix a http regression introduced by 1.6.4.3
-
-GIT v1.6.4.4 Release Notes
-==========================
-
-Fixes since v1.6.4.4
---------------------
-
-* The workaround for Github server that sometimes gave 500 (Internal server
-  error) response to HEAD requests in 1.6.4.3 introduced a regression that
-  caused re-fetching projects over http to segfault in certain cases due
-  to uninitialized pointer being freed.
-
-* "git pull" on an unborn branch used to consider anything in the work
-  tree and the index discardable.
-
-* "git diff -b/w" did not work well on the incomplete line at the end of
-  the file, due to an incorrect hashing of lines in the low-level xdiff
-  routines.
-
-* "git checkout-index --prefix=$somewhere" used to work when $somewhere is
-  a symbolic link to a directory elsewhere, but v1.6.4.2 broke it.
-
-* "git unpack-objects --strict", invoked when receive.fsckobjects
-  configuration is set in the receiving repository of "git push", did not
-  properly check the objects, especially the submodule links, it received.
-
-Other minor documentation updates are included.
+>
+> diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+> index d23d6d7..59f7a4c 100644
+> --- a/fs/reiserfs/journal.c
+> +++ b/fs/reiserfs/journal.c
+> @@ -2801,11 +2801,14 @@ int journal_init(struct super_block *sb, const char *j_dev_name,
+>                goto free_and_return;
+>        }
+>
+> +       reiserfs_write_unlock(sb);
+>        if (journal_init_dev(sb, journal, j_dev_name) != 0) {
+>                reiserfs_warning(sb, "sh-462",
+>                                 "unable to initialize jornal device");
+> +               reiserfs_write_lock(sb);
+>                goto free_and_return;
+>        }
+> +       reiserfs_write_lock(sb);
+>
+>        rs = SB_DISK_SUPER_BLOCK(sb);
+>
+>
+>
