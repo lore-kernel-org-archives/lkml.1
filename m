@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbZIPWq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760397AbZIPWqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760299AbZIPWq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760305AbZIPWjr
+	id S1760397AbZIPWqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760320AbZIPWju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:39:47 -0400
-Received: from kroah.org ([198.145.64.141]:48909 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:39:50 -0400
+Received: from kroah.org ([198.145.64.141]:48912 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760276AbZIPWjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:39:42 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:13 2009
-Message-Id: <20090916223713.797208638@mini.kroah.org>
+	id S1757944AbZIPWjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:39:43 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:14 2009
+Message-Id: <20090916223713.953025868@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:17 -0700
+Date: Wed, 16 Sep 2009 15:36:18 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Kashyap Desai <kashyap.desai@lsi.com>,
        James Bottomley <James.Bottomley@suse.de>
-Subject: [patch 04/45] [SCSI] mpt2sas: setting SDEV into RUNNING state from Interrupt context
+Subject: [patch 05/45] [SCSI] mpt2sas: Raid 10 Volume is showing as Raid 1E in dmesg
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=mpt2sas-setting-sdev-into-running-state-from-interrupt-context.patch
+Content-Disposition: inline; filename=mpt2sas-raid-10-volume-is-showing-as-raid-1e-in-dmesg.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,16 +32,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Kashyap, Desai <kashyap.desai@lsi.com>
 
-commit 34a03bef2202d0c9983a8da0a8abaee37d285847 upstream.
+commit ed79f1280d1bc54f168abcffc8c3e0bf8ffb1873 upstream.
 
-Changing SDEV Running state from interrupt context. Previously It was
-handle in work queue thread. With this change It will not wait for work
-queue thread to execute scsih_ublock_io_device to put SDEV into Running
-state. This will reduce delay for Device becoming RUNNING.
-
-Modified this patch considering James comment "Not to change SDEV state
-using  scsi_device_set_state API, instead use scsi_internal_device_unblock
-scsi_internal_device_block API"
+This patch modifies the slave_configure callback so the messages that get sent
+to system log for RAID1E volumes contain the string "RAID10" instead of
+"RAID1E". These messages contain information regarding what kind of scsi device
+is being added. Certain OEMS can enable displaying the RAID10 string instead of
+RAID1E via manufacturing page 10.   The driver will read this config page at
+driver load time, then determine from the GenericFlags0 bits whether display
+the RAID10 or RAID1E string, also even drive count is taken into consideration.
 
 Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
 Reviewed-by: Eric Moore <Eric.moore@lsi.com>
@@ -49,80 +48,202 @@ Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/mpt2sas/mpt2sas_base.h  |    2 ++
- drivers/scsi/mpt2sas/mpt2sas_scsih.c |   17 +++++++++++------
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ drivers/scsi/mpt2sas/mpt2sas_base.c   |    7 ++-
+ drivers/scsi/mpt2sas/mpt2sas_base.h   |   37 ++++++++++++++++++++
+ drivers/scsi/mpt2sas/mpt2sas_config.c |   61 ++++++++++++++++++++++++++++++++++
+ drivers/scsi/mpt2sas/mpt2sas_scsih.c  |    8 +++-
+ 4 files changed, 109 insertions(+), 4 deletions(-)
 
+--- a/drivers/scsi/mpt2sas/mpt2sas_base.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_base.c
+@@ -1542,6 +1542,8 @@ _base_display_ioc_capabilities(struct MP
+ 	   (ioc->bios_pg3.BiosVersion & 0x0000FF00) >> 8,
+ 	    ioc->bios_pg3.BiosVersion & 0x000000FF);
+ 
++	_base_display_dell_branding(ioc);
++
+ 	printk(MPT2SAS_INFO_FMT "Protocol=(", ioc->name);
+ 
+ 	if (ioc->facts.ProtocolFlags & MPI2_IOCFACTS_PROTOCOL_SCSI_INITIATOR) {
+@@ -1554,8 +1556,6 @@ _base_display_ioc_capabilities(struct MP
+ 		i++;
+ 	}
+ 
+-	_base_display_dell_branding(ioc);
+-
+ 	i = 0;
+ 	printk("), ");
+ 	printk("Capabilities=(");
+@@ -1627,6 +1627,9 @@ _base_static_config_pages(struct MPT2SAS
+ 	u32 iounit_pg1_flags;
+ 
+ 	mpt2sas_config_get_manufacturing_pg0(ioc, &mpi_reply, &ioc->manu_pg0);
++	if (ioc->ir_firmware)
++		mpt2sas_config_get_manufacturing_pg10(ioc, &mpi_reply,
++		    &ioc->manu_pg10);
+ 	mpt2sas_config_get_bios_pg2(ioc, &mpi_reply, &ioc->bios_pg2);
+ 	mpt2sas_config_get_bios_pg3(ioc, &mpi_reply, &ioc->bios_pg3);
+ 	mpt2sas_config_get_ioc_pg8(ioc, &mpi_reply, &ioc->ioc_pg8);
 --- a/drivers/scsi/mpt2sas/mpt2sas_base.h
 +++ b/drivers/scsi/mpt2sas/mpt2sas_base.h
-@@ -802,5 +802,7 @@ void mpt2sas_transport_update_phy_link_c
-    u16 attached_handle, u8 phy_number, u8 link_rate);
- extern struct sas_function_template mpt2sas_transport_functions;
- extern struct scsi_transport_template *mpt2sas_transport_template;
-+extern int scsi_internal_device_block(struct scsi_device *sdev);
-+extern int scsi_internal_device_unblock(struct scsi_device *sdev);
+@@ -197,6 +197,38 @@ struct MPT2SAS_TARGET {
+  * @block: device is in SDEV_BLOCK state
+  * @tlr_snoop_check: flag used in determining whether to disable TLR
+  */
++
++/* OEM Identifiers */
++#define MFG10_OEM_ID_INVALID                   (0x00000000)
++#define MFG10_OEM_ID_DELL                      (0x00000001)
++#define MFG10_OEM_ID_FSC                       (0x00000002)
++#define MFG10_OEM_ID_SUN                       (0x00000003)
++#define MFG10_OEM_ID_IBM                       (0x00000004)
++
++/* GENERIC Flags 0*/
++#define MFG10_GF0_OCE_DISABLED                 (0x00000001)
++#define MFG10_GF0_R1E_DRIVE_COUNT              (0x00000002)
++#define MFG10_GF0_R10_DISPLAY                  (0x00000004)
++#define MFG10_GF0_SSD_DATA_SCRUB_DISABLE       (0x00000008)
++#define MFG10_GF0_SINGLE_DRIVE_R0              (0x00000010)
++
++/* OEM Specific Flags will come from OEM specific header files */
++typedef struct _MPI2_CONFIG_PAGE_MAN_10 {
++    MPI2_CONFIG_PAGE_HEADER Header;                                 /* 00h */
++    U8                      OEMIdentifier;                          /* 04h */
++    U8                      Reserved1;                              /* 05h */
++    U16                     Reserved2;                              /* 08h */
++    U32                     Reserved3;                              /* 0Ch */
++    U32                     GenericFlags0;                          /* 10h */
++    U32                     GenericFlags1;                          /* 14h */
++    U32                     Reserved4;                              /* 18h */
++    U32                     OEMSpecificFlags0;                      /* 1Ch */
++    U32                     OEMSpecificFlags1;                      /* 20h */
++    U32                     Reserved5[18];                          /* 24h-60h*/
++} MPI2_CONFIG_PAGE_MAN_10,
++  MPI2_POINTER PTR_MPI2_CONFIG_PAGE_MAN_10,
++  Mpi2ManufacturingPage10_t, MPI2_POINTER pMpi2ManufacturingPage10_t;
++
+ struct MPT2SAS_DEVICE {
+ 	struct MPT2SAS_TARGET *sas_target;
+ 	unsigned int	lun;
+@@ -461,6 +493,7 @@ typedef void (*MPT_ADD_SGE)(void *paddr,
+  * @facts: static facts data
+  * @pfacts: static port facts data
+  * @manu_pg0: static manufacturing page 0
++ * @manu_pg10: static manufacturing page 10
+  * @bios_pg2: static bios page 2
+  * @bios_pg3: static bios page 3
+  * @ioc_pg8: static ioc page 8
+@@ -663,6 +696,7 @@ struct MPT2SAS_ADAPTER {
+ 	dma_addr_t	diag_buffer_dma[MPI2_DIAG_BUF_TYPE_COUNT];
+ 	u8		diag_buffer_status[MPI2_DIAG_BUF_TYPE_COUNT];
+ 	u32		unique_id[MPI2_DIAG_BUF_TYPE_COUNT];
++	Mpi2ManufacturingPage10_t manu_pg10;
+ 	u32		product_specific[MPI2_DIAG_BUF_TYPE_COUNT][23];
+ 	u32		diagnostic_flags[MPI2_DIAG_BUF_TYPE_COUNT];
+ };
+@@ -734,6 +768,8 @@ void mpt2sas_config_done(struct MPT2SAS_
+ int mpt2sas_config_get_number_hba_phys(struct MPT2SAS_ADAPTER *ioc, u8 *num_phys);
+ int mpt2sas_config_get_manufacturing_pg0(struct MPT2SAS_ADAPTER *ioc,
+     Mpi2ConfigReply_t *mpi_reply, Mpi2ManufacturingPage0_t *config_page);
++int mpt2sas_config_get_manufacturing_pg10(struct MPT2SAS_ADAPTER *ioc,
++    Mpi2ConfigReply_t *mpi_reply, Mpi2ManufacturingPage10_t *config_page);
+ int mpt2sas_config_get_bios_pg2(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+     *mpi_reply, Mpi2BiosPage2_t *config_page);
+ int mpt2sas_config_get_bios_pg3(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+@@ -776,7 +812,6 @@ int mpt2sas_config_get_volume_handle(str
+     u16 *volume_handle);
+ int mpt2sas_config_get_volume_wwid(struct MPT2SAS_ADAPTER *ioc, u16 volume_handle,
+     u64 *wwid);
+-
+ /* ctl shared API */
+ extern struct device_attribute *mpt2sas_host_attrs[];
+ extern struct device_attribute *mpt2sas_dev_attrs[];
+--- a/drivers/scsi/mpt2sas/mpt2sas_config.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_config.c
+@@ -426,6 +426,67 @@ mpt2sas_config_get_manufacturing_pg0(str
+ }
  
- #endif /* MPT2SAS_BASE_H_INCLUDED */
+ /**
++ * mpt2sas_config_get_manufacturing_pg10 - obtain manufacturing page 10
++ * @ioc: per adapter object
++ * @mpi_reply: reply mf payload returned from firmware
++ * @config_page: contents of the config page
++ * Context: sleep.
++ *
++ * Returns 0 for success, non-zero for failure.
++ */
++int
++mpt2sas_config_get_manufacturing_pg10(struct MPT2SAS_ADAPTER *ioc,
++    Mpi2ConfigReply_t *mpi_reply, Mpi2ManufacturingPage10_t *config_page)
++{
++	Mpi2ConfigRequest_t mpi_request;
++	int r;
++	struct config_request mem;
++
++	memset(config_page, 0, sizeof(Mpi2ManufacturingPage10_t));
++	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
++	mpi_request.Function = MPI2_FUNCTION_CONFIG;
++	mpi_request.Action = MPI2_CONFIG_ACTION_PAGE_HEADER;
++	mpi_request.Header.PageType = MPI2_CONFIG_PAGETYPE_MANUFACTURING;
++	mpi_request.Header.PageNumber = 10;
++	mpi_request.Header.PageVersion = MPI2_MANUFACTURING0_PAGEVERSION;
++	mpt2sas_base_build_zero_len_sge(ioc, &mpi_request.PageBufferSGE);
++	r = _config_request(ioc, &mpi_request, mpi_reply,
++	    MPT2_CONFIG_PAGE_DEFAULT_TIMEOUT);
++	if (r)
++		goto out;
++
++	mpi_request.Action = MPI2_CONFIG_ACTION_PAGE_READ_CURRENT;
++	mpi_request.Header.PageVersion = mpi_reply->Header.PageVersion;
++	mpi_request.Header.PageNumber = mpi_reply->Header.PageNumber;
++	mpi_request.Header.PageType = mpi_reply->Header.PageType;
++	mpi_request.Header.PageLength = mpi_reply->Header.PageLength;
++	mem.config_page_sz = le16_to_cpu(mpi_reply->Header.PageLength) * 4;
++	if (mem.config_page_sz > ioc->config_page_sz) {
++		r = _config_alloc_config_dma_memory(ioc, &mem);
++		if (r)
++			goto out;
++	} else {
++		mem.config_page_dma = ioc->config_page_dma;
++		mem.config_page = ioc->config_page;
++	}
++	ioc->base_add_sg_single(&mpi_request.PageBufferSGE,
++	    MPT2_CONFIG_COMMON_SGLFLAGS | mem.config_page_sz,
++	    mem.config_page_dma);
++	r = _config_request(ioc, &mpi_request, mpi_reply,
++	    MPT2_CONFIG_PAGE_DEFAULT_TIMEOUT);
++	if (!r)
++		memcpy(config_page, mem.config_page,
++		    min_t(u16, mem.config_page_sz,
++		    sizeof(Mpi2ManufacturingPage10_t)));
++
++	if (mem.config_page_sz > ioc->config_page_sz)
++		_config_free_config_dma_memory(ioc, &mem);
++
++ out:
++	return r;
++}
++
++/**
+  * mpt2sas_config_get_bios_pg2 - obtain bios page 2
+  * @ioc: per adapter object
+  * @mpi_reply: reply mf payload returned from firmware
 --- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
 +++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-@@ -2222,7 +2222,7 @@ _scsih_ublock_io_device(struct MPT2SAS_A
- 			    MPT2SAS_INFO_FMT "SDEV_RUNNING: "
- 			    "handle(0x%04x)\n", ioc->name, handle));
- 			sas_device_priv_data->block = 0;
--			scsi_device_set_state(sdev, SDEV_RUNNING);
-+			scsi_internal_device_unblock(sdev);
- 		}
- 	}
- }
-@@ -2251,7 +2251,7 @@ _scsih_block_io_device(struct MPT2SAS_AD
- 			    MPT2SAS_INFO_FMT "SDEV_BLOCK: "
- 			    "handle(0x%04x)\n", ioc->name, handle));
- 			sas_device_priv_data->block = 1;
--			scsi_device_set_state(sdev, SDEV_BLOCK);
-+			scsi_internal_device_block(sdev);
- 		}
- 	}
- }
-@@ -2327,6 +2327,7 @@ _scsih_block_io_to_children_attached_dir
- 	u16 handle;
- 	u16 reason_code;
- 	u8 phy_number;
-+	u8 link_rate;
- 
- 	for (i = 0; i < event_data->NumEntries; i++) {
- 		handle = le16_to_cpu(event_data->PHY[i].AttachedDevHandle);
-@@ -2337,6 +2338,11 @@ _scsih_block_io_to_children_attached_dir
- 		    MPI2_EVENT_SAS_TOPO_RC_MASK;
- 		if (reason_code == MPI2_EVENT_SAS_TOPO_RC_DELAY_NOT_RESPONDING)
- 			_scsih_block_io_device(ioc, handle);
-+		if (reason_code == MPI2_EVENT_SAS_TOPO_RC_PHY_CHANGED) {
-+			link_rate = event_data->PHY[i].LinkRate >> 4;
-+			if (link_rate >= MPI2_SAS_NEG_LINK_RATE_1_5)
-+				_scsih_ublock_io_device(ioc, handle);
-+		}
- 	}
- }
- 
-@@ -3708,6 +3714,9 @@ _scsih_remove_device(struct MPT2SAS_ADAP
- 	    le32_to_cpu(mpi_reply.IOCLogInfo)));
- 
-  out:
-+
-+	_scsih_ublock_io_device(ioc, handle);
-+
- 	mpt2sas_transport_port_remove(ioc, sas_device->sas_address,
- 	    sas_device->parent_handle);
- 
-@@ -3887,10 +3896,6 @@ _scsih_sas_topology_change_event(struct 
- 						   link_rate_);
- 				}
- 			}
--			if (reason_code == MPI2_EVENT_SAS_TOPO_RC_PHY_CHANGED) {
--				if (link_rate_ >= MPI2_SAS_NEG_LINK_RATE_1_5)
--					_scsih_ublock_io_device(ioc, handle);
--			}
- 			if (reason_code == MPI2_EVENT_SAS_TOPO_RC_TARG_ADDED) {
- 				if (link_rate_ < MPI2_SAS_NEG_LINK_RATE_1_5)
- 					break;
+@@ -1501,7 +1501,13 @@ _scsih_slave_configure(struct scsi_devic
+ 			break;
+ 		case MPI2_RAID_VOL_TYPE_RAID1E:
+ 			qdepth = MPT2SAS_RAID_QUEUE_DEPTH;
+-			r_level = "RAID1E";
++			if (ioc->manu_pg10.OEMIdentifier &&
++			    (ioc->manu_pg10.GenericFlags0 &
++			    MFG10_GF0_R10_DISPLAY) &&
++			    !(raid_device->num_pds % 2))
++				r_level = "RAID10";
++			else
++				r_level = "RAID1E";
+ 			break;
+ 		case MPI2_RAID_VOL_TYPE_RAID1:
+ 			qdepth = MPT2SAS_RAID_QUEUE_DEPTH;
 
 
