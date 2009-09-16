@@ -1,50 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760375AbZIPXRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbZIPXX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760375AbZIPXRw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 19:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760293AbZIPXRu
+	id S1760548AbZIPXX7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 19:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760394AbZIPXX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 19:17:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38790 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755456AbZIPXRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 19:17:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Subject: Re: [BUG 2.6.30+] e100 sometimes causes oops during resume
-Date: Thu, 17 Sep 2009 01:18:53 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "Graham, David" <david.graham@intel.com>
-References: <20090915120538.GA26806@bizet.domek.prywatny>
-In-Reply-To: <20090915120538.GA26806@bizet.domek.prywatny>
+	Wed, 16 Sep 2009 19:23:58 -0400
+Received: from alpha.arachsys.com ([91.203.57.7]:34278 "EHLO
+	alpha.arachsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754501AbZIPXX4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 19:23:56 -0400
+Date: Thu, 17 Sep 2009 00:19:21 +0100
+From: Chris Webb <chris@arachsys.com>
+To: Mark Lord <liml@rtr.ca>
+Cc: Tejun Heo <teheo@suse.de>, linux-scsi@vger.kernel.org,
+       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+Message-ID: <20090916231921.GL1924@arachsys.com>
+References: <4A9BBC4A.6070708@redhat.com>
+ <4A9BC023.10903@kernel.org>
+ <20090907114442.GG18831@arachsys.com>
+ <20090907115927.GU8710@arachsys.com>
+ <20090909120218.GB21829@arachsys.com>
+ <4AADF3C4.5060004@kernel.org>
+ <4AADF471.2020801@suse.de>
+ <4AAE3B9A.2060306@rtr.ca>
+ <4AAE3F86.8090804@suse.de>
+ <4AAE524C.2030401@rtr.ca>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909170118.53965.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAE524C.2030401@rtr.ca>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 September 2009, Karol Lewandowski wrote:
-> Hello,
+Mark Lord <liml@rtr.ca> writes:
+
+> I suspect we're missing some info from this specific failure.
+> Looking back at Chris's earlier posting, the whole thing started
+> with a FLUSH_CACHE_EXT failure.  Once that happens, all bets are
+> off on anything that follows.
 > 
-> I'm getting following oops sometimes during resume on my Thinkpad T21
-> (where "sometimes" means about 10/1 good/bad ratio):
-> 
-> ifconfig: page allocation failure. order:5, mode:0x8020
+> >Everything will be running fine when suddenly:
+> >
+> >  ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> >  ata1.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+> >          res 40/00:00:80:17:91/00:00:37:00:00/40 Emask 0x4 (timeout)
+> >  ata1.00: status: { DRDY }
+> >  ata1: hard resetting link
+> >  ata1: softreset failed (device not ready)
+> >  ata1: hard resetting link
+> >  ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> >  ata1.00: configured for UDMA/133
+> >  ata1: EH complete
+> >  end_request: I/O error, dev sda, sector 1465147272
+> >  md: super_written gets error=-5, uptodate=0
+> >  raid10: Disk failure on sda3, disabling device.
+> >  raid10: Operation continuing on 5 devices.
 
-Well, this only tells you that an attempt to make order 5 allocation failed,
-which is not unusual at all.
+Hi Mark. Yes, when the first timeout after a clean boot happens, it's with
+an 0xea flush command every time:
 
-Allocations of this order are quite likely to fail if memory is fragmented,
-the probability of which rises with the number of suspend-resume cycles already
-carried out.
+  [...]
+  ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  ata5.00: ATA-8: ST3750523AS, CC34, max UDMA/133
+  ata5.00: 1465149168 sectors, multi 0: LBA48 NCQ (depth 31/32)
+  ata5.00: configured for UDMA/133
+  scsi 4:0:0:0: Direct-Access     ATA      ST3750523AS      CC34 PQ: 0 ANSI: 5
+  sd 4:0:0:0: [sde] 1465149168 512-byte hardware sectors: (750 GB/698 GiB)
+  sd 4:0:0:0: [sde] Write Protect is off
+  sd 4:0:0:0: [sde] Mode Sense: 00 3a 00 00
+  sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+  sd 4:0:0:0: [sde] 1465149168 512-byte hardware sectors: (750 GB/698 GiB)
+  sd 4:0:0:0: [sde] Write Protect is off
+  sd 4:0:0:0: [sde] Mode Sense: 00 3a 00 00
+  sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+   sde: sde1 sde2 sde3
+  sd 4:0:0:0: [sde] Attached SCSI disk
+  sd 4:0:0:0: Attached scsi generic sg4 type 0
 
-I guess the driver releases its DMA buffer during suspend and attempts to
-allocate it back on resume, which is not really smart (if that really is the
-case).
+  [later]
+  ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+  ata5.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+           res 40/00:00:00:4f:c2/00:00:00:00:00/40 Emask 0x4 (timeout)
+  ata5.00: status: { DRDY }
+  ata5: hard resetting link
+  ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  ata5.00: configured for UDMA/133
+  ata5: EH complete
+  sd 4:0:0:0: [sde] 1465149168 512-byte hardware sectors: (750 GB/698 GiB)
+  sd 4:0:0:0: [sde] Write Protect is off
+  sd 4:0:0:0: [sde] Mode Sense: 00 3a 00 00
+  sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+  end_request: I/O error, dev sde, sector 1465147264
+  md: super_written gets error=-5, uptodate=0
+  raid10: Disk failure on sde3, disabling device.
+  raid10: Operation continuing on 4 devices.
 
-Thanks,
-Rafael
+Best wishes,
+
+Chris.
