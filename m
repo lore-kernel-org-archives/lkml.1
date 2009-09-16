@@ -1,251 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbZIPOLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbZIPOQC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758932AbZIPOLB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 10:11:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZIPOLA
+	id S1758846AbZIPOQC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 10:16:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZIPOQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 10:11:00 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:41091 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbZIPOK6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 10:10:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=Z/oEA1grPPR83HMRMwgkWzwp5Rgxnk5rSF8xczkkEuqAYKO6QjpxxgATkLi2MuKzSm
-         3pC9XH2QVoI1ZX4CiliLxektfDHx3o6qCitEqdQ04MNCIZlWobI3SZ0UpmKWWXSmNGKo
-         KsInYq69wRAqx2Rjen2u3XJy2ZuP3lrMWYO/o=
-Message-ID: <4AB0F1EF.5050102@gmail.com>
-Date: Wed, 16 Sep 2009 10:10:55 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Wed, 16 Sep 2009 10:16:01 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:29796 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbZIPOQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 10:16:00 -0400
+Message-ID: <4AB0F366.6080000@redhat.com>
+Date: Wed, 16 Sep 2009 10:17:10 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com>
-In-Reply-To: <4AB0E2A2.3080409@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig96A6E6B1F5308E397068EC7E"
+To: rostedt@goodmis.org
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH tracing/kprobes 2/6] ftrace: Fix trace_add_event_call()
+ to initialize list
+References: <20090914204847.18779.69409.stgit@dhcp-100-2-132.bos.redhat.com>	 <20090914204904.18779.59422.stgit@dhcp-100-2-132.bos.redhat.com> <1253058681.20020.147.camel@gandalf.stny.rr.com>
+In-Reply-To: <1253058681.20020.147.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig96A6E6B1F5308E397068EC7E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Avi Kivity wrote:
-> On 09/16/2009 02:44 PM, Gregory Haskins wrote:
->> The problem isn't where to find the models...the problem is how to
->> aggregate multiple models to the guest.
->>   =20
->=20
-> You mean configuration?
->=20
->>> You instantiate multiple vhost-nets.  Multiple ethernet NICs is a
->>> supported configuration for kvm.
->>>     =20
->> But this is not KVM.
+Steven Rostedt wrote:
+> On Mon, 2009-09-14 at 16:49 -0400, Masami Hiramatsu wrote:
+>> Initialize event_call.list and handle failuer path in trace_add_event_call()
+>> for fixing below bug which occurred when I tried to add invalid event twice.
 >>
->>   =20
->=20
-> If kvm can do it, others can.
+>> Could not create debugfs 'kmalloc' directory
+>> Failed to register kprobe event: kmalloc
+>> Faild to register probe event(-1)
+>> ------------[ cut here ]------------
+>> WARNING: at /home/mhiramat/ksrc/random-tracing/lib/list_debug.c:26
+>> __list_add+0x27/0x5c()
+>> Hardware name:
+>> list_add corruption. next->prev should be prev (c07d78cc), but was
+>> 00001000. (next=d854236c).
+>> Modules linked in: sunrpc uinput virtio_net virtio_balloon i2c_piix4 pcspkr
+>> i2c_core virtio_blk virtio_pci virtio_ring virtio [last unloaded:
+>> scsi_wait_scan]
+>> Pid: 1394, comm: tee Not tainted 2.6.31-rc9 #51
+>> Call Trace:
+>>  [<c0438424>] warn_slowpath_common+0x65/0x7c
+>>  [<c05371b3>] ? __list_add+0x27/0x5c
+>>  [<c043846f>] warn_slowpath_fmt+0x24/0x27
+>>  [<c05371b3>] __list_add+0x27/0x5c
+>>  [<c047f050>] list_add+0xa/0xc
+>>  [<c047f8f5>] trace_add_event_call+0x60/0x97
+>>  [<c0483133>] command_trace_probe+0x42c/0x51b
+>>  [<c044a1b3>] ? remove_wait_queue+0x22/0x27
+>>  [<c042a9c0>] ? __wake_up+0x32/0x3b
+>>  [<c04832f6>] probes_write+0xd4/0x10a
+>>  [<c0483222>] ? probes_write+0x0/0x10a
+>>  [<c04b27a9>] vfs_write+0x80/0xdf
+>>  [<c04b289c>] sys_write+0x3b/0x5d
+>>  [<c0670d41>] syscall_call+0x7/0xb
+>> ---[ end trace 2b962b5dc1fdc07d ]---
+>>
+>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>> Cc: Jim Keniston <jkenisto@us.ibm.com>
+>> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+>> Cc: Andi Kleen <ak@linux.intel.com>
+>> Cc: Christoph Hellwig <hch@infradead.org>
+>> Cc: Frank Ch. Eigler <fche@redhat.com>
+>> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+>> Cc: H. Peter Anvin <hpa@zytor.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> Cc: Jason Baron <jbaron@redhat.com>
+>> Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+>> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> Cc: Li Zefan <lizf@cn.fujitsu.com>
+>> Cc: Peter Zijlstra <peterz@infradead.org>
+>> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>> Cc: Steven Rostedt <rostedt@goodmis.org>
+>> Cc: Tom Zanussi <tzanussi@gmail.com>
+>> ---
+>>
+>>  kernel/trace/trace_events.c |    6 +++++-
+>>  1 files changed, 5 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+>> index ba34920..38e82a5 100644
+>> --- a/kernel/trace/trace_events.c
+>> +++ b/kernel/trace/trace_events.c
+>> @@ -1009,10 +1009,14 @@ static int __trace_add_event_call(struct ftrace_event_call *call)
+>>  	if (!d_events)
+>>  		return -ENOENT;
+>>  
+>> +	INIT_LIST_HEAD(&call->list);
+> 
+> The INIT_LIST_HEAD is not needed here. The list_add will assign it.
 
-The problem is that you seem to either hand-wave over details like this,
-or you give details that are pretty much exactly what vbus does already.
- My point is that I've already sat down and thought about these issues
-and solved them in a freely available GPL'ed software package.
+Without initializing it, list debugging code warns always :-)
+Please see, __list_add()@lib/list_debug.c
 
-So the question is: is your position that vbus is all wrong and you wish
-to create a new bus-like thing to solve the problem?  If so, how is it
-different from what Ive already done?  More importantly, what specific
-objections do you have to what Ive done, as perhaps they can be fixed
-instead of starting over?
-
->=20
->>>> His slave boards surface themselves as PCI devices to the x86
->>>> host.  So how do you use that to make multiple vhost-based devices (=
-say
->>>> two virtio-nets, and a virtio-console) communicate across the
->>>> transport?
->>>>
->>>>       =20
->>> I don't really see the difference between 1 and N here.
->>>     =20
->> A KVM surfaces N virtio-devices as N pci-devices to the guest.  What d=
-o
->> we do in Ira's case where the entire guest represents itself as a PCI
->> device to the host, and nothing the other way around?
->>   =20
->=20
-> There is no guest and host in this scenario.  There's a device side
-> (ppc) and a driver side (x86).  The driver side can access configuratio=
-n
-> information on the device side.  How to multiplex multiple devices is a=
-n
-> interesting exercise for whoever writes the virtio binding for that set=
-up.
-
-Bingo.  So now its a question of do you want to write this layer from
-scratch, or re-use my framework.
-
->=20
->>>> There are multiple ways to do this, but what I am saying is that
->>>> whatever is conceived will start to look eerily like a vbus-connecto=
-r,
->>>> since this is one of its primary purposes ;)
->>>>
->>>>       =20
->>> I'm not sure if you're talking about the configuration interface or d=
-ata
->>> path here.
->>>     =20
->> I am talking about how we would tunnel the config space for N devices
->> across his transport.
->>   =20
->=20
-> Sounds trivial.
-
-No one said it was rocket science.  But it does need to be designed and
-implemented end-to-end, much of which Ive already done in what I hope is
-an extensible way.
-
->  Write an address containing the device number and
-> register number to on location, read or write data from another.
-
-You mean like the "u64 devh", and "u32 func" fields I have here for the
-vbus-kvm connector?
-
-http://git.kernel.org/?p=3Dlinux/kernel/git/ghaskins/alacrityvm/linux-2.6=
-=2Egit;a=3Dblob;f=3Dinclude/linux/vbus_pci.h;h=3Dfe337590e644017392e4c9d9=
-236150adb2333729;hb=3Dded8ce2005a85c174ba93ee26f8d67049ef11025#l64
-
-> Just
-> like the PCI cf8/cfc interface.
->=20
->>> They aren't in the "guest".  The best way to look at it is
->>>
->>> - a device side, with a dma engine: vhost-net
->>> - a driver side, only accessing its own memory: virtio-net
->>>
->>> Given that Ira's config has the dma engine in the ppc boards, that's
->>> where vhost-net would live (the ppc boards acting as NICs to the x86
->>> board, essentially).
->>>     =20
->> That sounds convenient given his hardware, but it has its own set of
->> problems.  For one, the configuration/inventory of these boards is now=
-
->> driven by the wrong side and has to be addressed.
->=20
-> Why is it the wrong side?
-
-"Wrong" is probably too harsh a word when looking at ethernet.  Its
-certainly "odd", and possibly inconvenient.  It would be like having
-vhost in a KVM guest, and virtio-net running on the host.  You could do
-it, but its weird and awkward.  Where it really falls apart and enters
-the "wrong" category is for non-symmetric devices, like disk-io.
-
->=20
->> Second, the role
->> reversal will likely not work for many models other than ethernet (e.g=
-=2E
->> virtio-console or virtio-blk drivers running on the x86 board would be=
-
->> naturally consuming services from the slave boards...virtio-net is an
->> exception because 802.x is generally symmetrical).
->>   =20
->=20
-> There is no role reversal.
-
-So if I have virtio-blk driver running on the x86 and vhost-blk device
-running on the ppc board, I can use the ppc board as a block-device.
-What if I really wanted to go the other way?
-
-> The side doing dma is the device, the side
-> accessing its own memory is the driver.  Just like that other 1e12
-> driver/device pairs out there.
-
-IIUC, his ppc boards really can be seen as "guests" (they are linux
-instances that are utilizing services from the x86, not the other way
-around).  vhost forces the model to have the ppc boards act as IO-hosts,
-whereas vbus would likely work in either direction due to its more
-refined abstraction layer.
-
->=20
->>> I have no idea, that's for Ira to solve.
->>>     =20
->> Bingo.  Thus my statement that the vhost proposal is incomplete.  You
->> have the virtio-net and vhost-net pieces covering the fast-path
->> end-points, but nothing in the middle (transport, aggregation,
->> config-space), and nothing on the management-side.  vbus provides most=
-
->> of the other pieces, and can even support the same virtio-net protocol=
-
->> on top.  The remaining part would be something like a udev script to
->> populate the vbus with devices on board-insert events.
->>   =20
->=20
-> Of course vhost is incomplete, in the same sense that Linux is
-> incomplete.  Both require userspace.
-
-A vhost based solution to Iras design is missing more than userspace.
-Many of those gaps are addressed by a vbus based solution.
-
->=20
->>> If he could fake the PCI
->>> config space as seen by the x86 board, he would just show the normal =
-pci
->>> config and use virtio-pci (multiple channels would show up as a
->>> multifunction device).  Given he can't, he needs to tunnel the virtio=
-
->>> config space some other way.
->>>     =20
->> Right, and note that vbus was designed to solve this.  This tunneling
->> can, of course, be done without vbus using some other design.  However=
-,
->> whatever solution is created will look incredibly close to what I've
->> already done, so my point is "why reinvent it"?
->>   =20
->=20
-> virtio requires binding for this tunnelling, so does vbus.
-
-We aren't talking about virtio.  Virtio would work with either vbus or
-vhost.  This is purely a question of what the layers below virtio and
-the device backend looks like.
-
->  Its the same problem with the same solution.
-
-I disagree.
-
-Kind Regards,
--Greg
+Thank you,
 
 
+-- 
+Masami Hiramatsu
 
---------------enig96A6E6B1F5308E397068EC7E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+e-mail: mhiramat@redhat.com
 
-iEYEARECAAYFAkqw8e8ACgkQP5K2CMvXmqE+cwCfVWx10aAmZSOf8h+AHJ+349hq
-1j8An0MQ1dT//bW4eUIdHLNrS/qwwEil
-=TYzE
------END PGP SIGNATURE-----
-
---------------enig96A6E6B1F5308E397068EC7E--
