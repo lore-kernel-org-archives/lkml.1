@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759006AbZIPTpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759041AbZIPTrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759006AbZIPTpK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 15:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbZIPTpI
+	id S1759041AbZIPTrH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 15:47:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbZIPTrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 15:45:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41513 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754252AbZIPTpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 15:45:07 -0400
-Date: Wed, 16 Sep 2009 21:45:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Epic regression in throughput since v2.6.23
-Message-ID: <20090916194507.GA27456@elte.hu>
-References: <20090906205952.GA6516@elte.hu> <87hbvdiogq.fsf@depni.sinp.msu.ru> <873a6xdqwq.fsf@depni.sinp.msu.ru> <20090909155223.GA12065@elte.hu> <87my53vo6d.fsf@depni.sinp.msu.ru> <20090910065306.GB3920@elte.hu> <87ljkm9yew.fsf@depni.sinp.msu.ru> <20090911061024.GA27833@elte.hu> <87iqfmx3tr.fsf@depni.sinp.msu.ru>
+	Wed, 16 Sep 2009 15:47:05 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:46307 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754614AbZIPTrE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 15:47:04 -0400
+Date: Wed, 16 Sep 2009 21:51:56 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Oliver Neukum <oliver@neukum.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>, laurent.pinchart@skynet.be,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: usb autosuspend is history after S2R (also on 2.6.31; UVC?)
+Message-ID: <20090916195156.GA30867@electric-eye.fr.zoreil.com>
+References: <20090915185145.GA31490@rhlx01.hs-esslingen.de> <200909152148.29662.oliver@neukum.org> <20090916181910.GA28260@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87iqfmx3tr.fsf@depni.sinp.msu.ru>
+In-Reply-To: <20090916181910.GA28260@rhlx01.hs-esslingen.de>
+X-Organisation: Land of Sunshine Inc.
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andreas Mohr <andi@lisas.de> :
+[...]
+> Anyway, doesn't change the fact that the r8169 WOL PHY setting is toast
+> after every S2R as well ;)
 
-* Serge Belyshev <belyshev@depni.sinp.msu.ru> wrote:
+Stealth tester, he ?
 
-> Note that the disabling NEW_FAIR_SLEEPERS doesn't fix 3% regression 
-> from v2.6.23, but instead makes "make -j4" runtime another 2% worse 
-> (27.05 -> 27.72).
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 50c6a3c..e0af22f 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -3962,8 +3962,7 @@ static int rtl8169_resume(struct device *device)
+ 		goto out;
+ 
+ 	netif_device_attach(dev);
+-
+-	rtl8169_schedule_work(dev, rtl8169_reset_task);
++	netif_wake_queue(dev);
+ out:
+ 	return 0;
+ }
 
-Ok, i think we've got a handle on that finally - mind checking latest 
--tip?
-
-	Ingo
+-- 
+Ueimor
