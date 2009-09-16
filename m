@@ -1,78 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZIPHIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbZIPHLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbZIPHIL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 03:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbZIPHIJ
+	id S1757455AbZIPHLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 03:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbZIPHLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 03:08:09 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55058 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbZIPHII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 03:08:08 -0400
-Message-ID: <4AB08E8D.3050102@cn.fujitsu.com>
-Date: Wed, 16 Sep 2009 15:06:53 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Wed, 16 Sep 2009 03:11:34 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:25910 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753737AbZIPHLe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 03:11:34 -0400
+Message-ID: <4AB08F43.3080603@gmail.com>
+Date: Wed, 16 Sep 2009 10:09:55 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
 To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, Paulo Marques <pmarques@grupopie.com>
-Subject: Re: [PATCH] kallsyms: Fix segfault in prefix_underscores_count().
-References: <20090916050845.GA5805@linux-sh.org> <4AB085A6.8000605@cn.fujitsu.com> <20090916064840.GC5805@linux-sh.org>
-In-Reply-To: <20090916064840.GC5805@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       dwmw2@infradead.org, kmpark@infradead.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: 2.6.32 -mm merge plans
+References: <20090915161535.db0a6904.akpm@linux-foundation.org> <20090916000357.GD23923@linux-sh.org>
+In-Reply-To: <20090916000357.GD23923@linux-sh.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Sep 2009 07:10:24.0742 (UTC) FILETIME=[C2F9A860:01CA369C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> But..as the name "prefix_underscores_count" suggests, shouldn't
->> it be:
->> 	while (*tail == '_')
->> 		tail++;
->> ??
+On 09/16/2009 03:03 AM, Paul Mundt wrote:
+> On Tue, Sep 15, 2009 at 04:15:35PM -0700, Andrew Morton wrote:
+>> mtd-make-onenand-genericc-more-generic.patch
+>> mtd-nand-add-page-parameter-to-all-read_page-read_page_raw-apis.patch
+>> mtd-nand-add-new-ecc-mode-ecc_hw_oob_first.patch
+>> mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips.patch
+>> mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips-update.patch
+>> mtd-jffs2-fix-read-buffer-overflow.patch
+>> mtd-prevent-a-read-from-eraseregions.patch
+>> mtd-prevent-a-read-from-regions.patch
+>> mtd-jedec_probe-fix-nec-upd29f064115-detection.patch
+>> mtdpart-memory-accessor-interface-for-mtd-layer.patch
 >>
-> Yes, that was what I did initially as well, but the behaviour is not
-> exactly the same, and I wanted an explanation from Lai if there were some
-> other intentions for the code. In any event, simplifying it still manages
-> to do the right thing, so I'm fine with that.
-> 
+>>    ->  dwmw2
+>>
+> Regarding mtd-make-onenand-genericc-more-generic.patch, I'm not really
+> sure what happened. To recap:
+>
+> It was posted to the mtd list here:
+>
+> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026805.html
+>
+> Kyungmin objected to the driver name change here:
+>
+> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026807.html
+>
+> I pointed out that the rough rationale for the name change here:
+>
+> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026808.html
+>
+> and offered to redo the patch keeping the old name if Kyungmin felt the
+> rationale wasn't valid, but received no reply. Subsequently, Artem
+> mentioned that he had merged it in to his l2-mtd-2.6.git tree here:
+>
+> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026866.html
+>
+> which subsequently seems to not actually have happened.
 
-I know what happened.
+Well, I did put my patch to my l2-mtd-2.6.git tree:
 
-Lai sent this patch:
-	http://lkml.org/lkml/2009/3/13/72
+http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/6e6e7d0e163148c620b4807b1ffac973f9805f20
 
-And he himself found the bug, and fixed it and resent it:
-	http://lkml.org/lkml/2009/3/13/156
+I just put it to the dunno branch which means "I did not review this".
+The master branch contains the stuff I did review.
 
-But Andrew mistakenly picked up the former one.
+And the idea was that dwmw2 would then take a look at all these patches
+and merge them. He did merge the stuff from the master branch, but did not
+merge the stuff from the dunno branch (yet).
 
-> ------------------------
-> Subject: [PATCH] kallsyms: Fix segfault in prefix_underscores_count().
-> 
-> Commit b478b782e110fdb4135caa3062b6d687e989d994 "kallsyms, tracing:
-> output more proper symbol name" introduces a "bugfix" that introduces
-> a segfault in kallsyms in my configurations.
-> 
-> The cause is the introduction of prefix_underscores_count() which
-> attempts to count underscores, even in symbols that do not have them.
-> As a result, it just uselessly runs past the end of the buffer until it
-> crashes:
-> 
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
->   KSYM    .tmp_kallsyms1.S
-> /bin/sh: line 1: 16934 Done                    sh-linux-gnu-nm -n .tmp_vmlinux1
->      16935 Segmentation fault      | scripts/kallsyms > .tmp_kallsyms1.S
-> make: *** [.tmp_kallsyms1.S] Error 139
-> 
-> This simplifies the logic and just does a straightforward count.
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
+> This is a pretty trivial patch, and I don't mind respinning it in
+> whatever form folks are content with. I had assumed given the mention
+> that it had been merged in to the l2 tree that the rationale was
+> sufficient for merging.
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+I know it is frustrating when maintainers ignore patches, we feel this pain
+with ARM patches, for example. It is unpleasant to re-send patches 4 times,
+and get zero response, not even "I have not time now" one. On the other hand,
+I understand maintainers who are busy with other things.
+
+So I just try to help by collecting people's stuff, review _some_ of it, but
+I do not merge this upstream.
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
