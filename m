@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZIPD6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750980AbZIPEEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbZIPD6P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 23:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbZIPD6P
+	id S1750980AbZIPEEF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 00:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbZIPEEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 23:58:15 -0400
-Received: from fifo99.com ([67.223.236.141]:59540 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751076AbZIPD6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 23:58:14 -0400
-Subject: Re: [PATCH 00/72] Blackfin updates for 2.6.32
-From: Daniel Walker <dwalker@fifo99.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-In-Reply-To: <8bd0f97a0909152021p71eb7be4mfaae4e1af5876740@mail.gmail.com>
-References: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
-	 <1252961412.11643.215.camel@desktop>
-	 <8bd0f97a0909141357y60d7807bm99146d757e6f61da@mail.gmail.com>
-	 <1252962263.11643.232.camel@desktop>
-	 <8bd0f97a0909141407i26b39f9bq133a62be381601b5@mail.gmail.com>
-	 <1252963292.11643.259.camel@desktop>
-	 <8bd0f97a0909141517i3535bb84j4cbac0cd986d4914@mail.gmail.com>
-	 <1252967767.11643.286.camel@desktop>
-	 <8bd0f97a0909151956k6cc20944we1ccb6c5188c4edb@mail.gmail.com>
-	 <1253070408.11643.540.camel@desktop>
-	 <8bd0f97a0909152021p71eb7be4mfaae4e1af5876740@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 20:59:10 -0700
-Message-Id: <1253073550.11643.562.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Sep 2009 00:04:04 -0400
+Received: from mail-yw0-f180.google.com ([209.85.211.180]:64734 "EHLO
+	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbZIPEED convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 00:04:03 -0400
+X-Greylist: delayed 374 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Sep 2009 00:04:03 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=axE1/xae72jX7GTlDftL7PHI+ZSbIBb3ofZDMF5tXpwU7gLdKWFy8WC4Cjq0+ArHNH
+         0/1JAZcY+B1gV2v92TxPrzl8+5oho/ZiPLtrwE8O88R8pYO5YFEZ+vDIVmFDa4asql9c
+         EbD6b4qAZcgWpRCkU6CtaQILIb8dtGFQqjhWs=
+MIME-Version: 1.0
+In-Reply-To: <3c17e3570909152049nd801aeds3915e5889d6181f0@mail.gmail.com>
+References: <1252966719-27557-1-git-send-email-vapier@gentoo.org> 
+	<20090915062050.GB10232@core.coreip.homeip.net> <8bd0f97a0909150419p1048bfe9j243fa30a0581b198@mail.gmail.com> 
+	<20090915162655.GB29241@core.coreip.homeip.net> <3c17e3570909152049nd801aeds3915e5889d6181f0@mail.gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 16 Sep 2009 00:03:46 -0400
+Message-ID: <8bd0f97a0909152103m4848fe9ayb5835a6844ea4ca1@mail.gmail.com>
+Subject: Re: [PATCH] input/keyboard: add ADP5588 QWERTY I2C Keyboard Input 
+	device driver
+To: Barry Song <21cnbao@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Robin Getz <rgetz@blackfin.uclinux.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 23:21 -0400, Mike Frysinger wrote:
-> On Tue, Sep 15, 2009 at 23:06, Daniel Walker wrote:
-> > On Tue, 2009-09-15 at 22:56 -0400, Mike Frysinger wrote:
-> >> On Mon, Sep 14, 2009 at 18:36, Daniel Walker wrote:
-> >> > If you ultimately don't correct these changes, I'd ask that in the
-> >> > future you submit pull requests for the blackfin architecture instead of
-> >> > sending individual patches ..
-> >>
-> >> you havent been following anything related to how Blackfin (or any
-> >> arch?) patches are merged.  this patch series is for review only from
-> >> my tree.  no one is picking these up because they've already been
-> >> picked up.
-> >
-> > Picked up by Linus? You know this isn't the "blackfin" list right? You
-> > don't seem to care too about review your getting from _this_ list. So
-> > why in the world are you sending your patches (all 72 of them!) here ..
-> 
-> Linus doesnt pick up random patches, he does pull requests.  Blackfin
-> patches already get reviewed on the Blackfin list (during original
-> commit and later merge).  i post all the patches for sanity checking
-> things we may have missed (it happens).  any sane mailer makes it
-> trivial to delete/ignore a single thread, and for anyone reading LKML,
-> not using a sane mailer is a poor excuse.  i'm open to review of real
-> issues with the code (locking / leaks / design problems / etc...).
-> forcing a respin of patches for a minor style difference is noise.
+On Tue, Sep 15, 2009 at 23:49, Barry Song wrote:
+> On Wed, Sep 16, 2009 at 12:26 AM, Dmitry Torokhov wrote:
+>> On Tue, Sep 15, 2009 at 07:19:14AM -0400, Mike Frysinger wrote:
+>>> On Tue, Sep 15, 2009 at 02:20, Dmitry Torokhov wrote:
+>>> > BTW, maybe you shoudl convert to threaded IRQs here?
+>>>
+>>> yes, after your suggestion for the previous driver, we've been looking
+>>> at all our input drivers to convert to threaded IRQs.  do we need to
+>>> convert all of them before acceptance, or can we merge now and post an
+>>> updated patch after ?
+>>
+>> It really depends on the driver. If there is a race between IRQ and the
+>> WQ in the driver I will request you to fix it one way or another before
+>> accepting the driver (and quite often using threaded IRQ gets rid of the
+>> race). In the cases like this particular driver though I am not even
+>> convinced that we need threaded IRQ. The driver is not expected to
+>> generate lots of events rapidly so using keventd as it does now is
+>> probably the best solution.
+>
+> Even though CONFIG_GENERIC_HARDIRQS is almost always "y", in case
+> CONFIG_GENERIC_HARDIRQS is "n" not "y", threaded_irq will become
+> original irq, drivers will not work. So is it necessary to check the
+> dependence of GENERIC_HARDIRQS while using threaded_irq?
 
-I read all of LKML, sane mailer or not _your_ patches are noise .. You
-have your own mailing list. You have no good reason to post that many
-patches here, and it's more than likely no one is reviewing them (except
-me, and your ignoring my valid comments) .. If you have specific patches
-that have questionable "locking, leaks, or design problems" that's
-welcome, but not what your doing..
-
-Daniel
-
-
+when is GENERIC_HARDIRQS not "y" ?  a quick check shows only s390/m68k
+dont set it to "y" in their arch Kconfig ?  s390 isnt going to use any
+of these drivers, and m68k will eventually update (m68knommu already
+has !?).
+-mike
