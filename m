@@ -1,111 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751715AbZIPEmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbZIPEme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751715AbZIPEmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 00:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZIPEmX
+	id S1752234AbZIPEme (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 00:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZIPEmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 00:42:23 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:57591 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbZIPEmW (ORCPT
+	Wed, 16 Sep 2009 00:42:32 -0400
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:31335 "EHLO
+	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbZIPEm0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 00:42:22 -0400
-Date: Tue, 15 Sep 2009 21:40:48 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
-Message-ID: <20090916044047.GA30453@mail.oracle.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Mark Fasheh <mfasheh@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	ocfs2-devel@oss.oracle.com
-References: <20090914221434.GA4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain>
- <20090915000417.GC4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
- <20090915005417.GD4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
- <20090915040601.GE4507@mail.oracle.com>
- <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
- <20090915214530.GA11060@mail.oracle.com>
- <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
+	Wed, 16 Sep 2009 00:42:26 -0400
+X-SpamScore: 2
+X-BigFish: VPS2(zz1432R98dNzz1202hzz3198u327alz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KQ1RQJ-02-7IE-02
+X-M-MSG: 
+Date: Wed, 16 Sep 2009 06:41:51 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] edac: need to export cpu_llc_id
+Message-ID: <20090916044151.GB5767@aftab>
+References: <20090916093935.6bc2c91f.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
+In-Reply-To: <20090916093935.6bc2c91f.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4AB06CA4.0072:SCFMA4539814,ss=1,fgs=0
+X-OriginalArrivalTime: 16 Sep 2009 04:41:50.0691 (UTC) FILETIME=[01C96B30:01CA3688]
+X-Bypass-Agent: EF-1;
+X-Reverse-DNS: unknown
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 09:20:47PM -0700, Linus Torvalds wrote:
-> On Tue, 15 Sep 2009, Joel Becker wrote:
-> >
-> > 	Perhaps ->copyfile takes the following flags:
-> > 
-> > #define ALLOW_COW_SHARED	0x0001
-> > #define REQUIRE_COW_SHARED	0x0002
-> > #define REQUIRE_BASIC_ATTRS	0x0004
-> > #define REQUIRE_FULL_ATTRS	0x0008
-> > #define REQUIRE_ATOMIC		0x0010
-> > #define SNAPSHOT		(REQUIRE_COW_SHARED |
-> > 				 REQUIRE_BASIC_ATTRS |
-> > 				 REQUIRE_ATOMIC)
-> > #define SNAPSHOT_PRESERVE	(SNAPSHOT | REQUIRE_FULL_ATTRS)
-> > 
-> > Thus, sys_reflink/sys_snapfile(oldpath, newpath, 0) becomes:
-> > ...
+Hi Stephen,
+
+On Wed, Sep 16, 2009 at 09:39:35AM +1000, Stephen Rothwell wrote:
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
 > 
-> Yes. The above all sounds sane to me.
+> ERROR: "per_cpu__cpu_llc_id" [drivers/edac/edac_core.ko] undefined!
+> 
+> Caused by commit b69b29de65fe4078b125acc9dea34be82f7c362c ("EDAC, AMD:
+> carve out MCi_STATUS decoding").
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/x86/kernel/smpboot.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index a25eeec..04c74b4 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -100,6 +100,7 @@ EXPORT_SYMBOL(smp_num_siblings);
+>  
+>  /* Last level cache ID of each logical CPU */
+>  DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
+> +EXPORT_PER_CPU_SYMBOL(cpu_llc_id);
+>  
+>  /* representing HT siblings of each logical CPU */
+>  DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
+> -- 
+> 1.6.3.3
 
-	Ok.  Where do you see the exposure level?  What I mean is, I
-just defined a vfs op that handles these things, but accessed it via two
-syscalls, sys_snapfile() and sys_copyfile().  We could also just provide
-one system call and allow userspace to use these flags itself, creating
-snapfile(3) and copyfile(3) in libc, hiding the details (kind of like
-clone being hidden by pthreads, though ignoring that pthreads has
-"issues").  Or we could explicitly make this the public API and expect
-something like cp(1) to directly use the flags.  Thoughts?
+proper fix is at http://marc.info/?l=linux-kernel&m=125302459621925
 
-> I still worry that especially the non-atomic case will want some kind of 
-> partial-copy updates (think graphical file managers that want to show the 
-> progress of the copy), and that (think EINTR and continuing) makes me 
-> think "that could get really complex really quickly", but that's something 
-> that the NFS/SMB people would have to pipe up on. I'm pretty sure the NFS 
-> spec has some kind "partial completion notification" model, I dunno about 
-> SMB.
-
-	I'm really wary of combining a ranged interface with this one.
-Not only does it make no sense for snapshots, but I think it falls down
-in any "create a new inode" scheme entirely.
-	btrfs has an ioctl that basically says "link up range x->y of
-file 1 to file 2".  Chris is using the underlying machinery to implement
-reflink, but I think the concept actually would work nicely as a splice
-flag.  If you have two existing files, not creating one, you can just
-ask splice to do efficient things with a SPLICE_F_EFFICIENT_COPY for
-yoru CIFS COPY-style thing or SPLICE_F_COW_COPY for btrfs- and
-ocfs2-style data sharing.
-
-Joel
+we still have to figure out who's gonna pick it up. Ingo?
 
 -- 
+Regards/Gruss,
+Boris.
 
-"Nothing is wrong with California that a rise in the ocean level
- wouldn't cure."
-        - Ross MacDonald
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
