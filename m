@@ -1,92 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbZIPGqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZIPGwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756629AbZIPGqu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 02:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbZIPGqt
+	id S1756996AbZIPGwL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 02:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZIPGwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 02:46:49 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42001 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753505AbZIPGqs (ORCPT
+	Wed, 16 Sep 2009 02:52:10 -0400
+Received: from gerard.telenet-ops.be ([195.130.132.48]:60365 "EHLO
+	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbZIPGwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 02:46:48 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 16 Sep 2009 15:44:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 16 Sep 2009 02:52:09 -0400
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Sep 2009 02:52:09 EDT
+Date: Wed, 16 Sep 2009 08:47:08 +0200
+From: Kurt Roeckx <kurt@roeckx.be>
 To: David Rientjes <rientjes@google.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ben Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-Subject: [BUGFIX] fix walk systm ram range for infiniband (Was Re:
- [BUGFIX][mmotm] fix walk system ram range patch (Was Re: mmotm on powerpc:
- walk_memory_resource?
-Message-Id: <20090916154439.b08932c8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.1.00.0909152315380.25569@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0909152224400.29857@sister.anvils>
-	<20090916092644.fb53279a.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.1.00.0909152315380.25569@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Jones <davej@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+Subject: Re: [Bug #13780] NULL pointer dereference loading powernowk8
+Message-ID: <20090916064708.GA25472@roeckx.be>
+References: <aIL9jMAYJnG.A.WjH.M3BpKB@chimera>
+ <200909080112.14997.rjw@sisk.pl>
+ <20090908194653.GA3517@roeckx.be>
+ <200909102259.15144.rjw@sisk.pl>
+ <alpine.DEB.1.00.0909151642100.24059@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0909151642100.24059@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 23:16:47 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
-
-> On Wed, 16 Sep 2009, KAMEZAWA Hiroyuki wrote:
+On Tue, Sep 15, 2009 at 04:45:37PM -0700, David Rientjes wrote:
+> On Thu, 10 Sep 2009, Rafael J. Wysocki wrote:
 > 
-> > Index: mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
-> > ===================================================================
-> > --- mmotm-2.6.31-Sep14.orig/arch/powerpc/mm/mem.c
-> > +++ mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
-> > @@ -166,7 +166,7 @@ walk_system_ram_range(unsigned long star
-> >  	}
-> >  	return ret;
-> >  }
-> > -EXPORT_SYMBOL_GPL(walk_memory_resource);
-> > +EXPORT_SYMBOL_GPL(walk_system_ram_range);
-> >  
-> >  /*
-> >   * Initialize the bootmem system and give it all the memory we
-> > 
+> > > So I did a biset, and this is the result:
+> > > $ git bisect good
+> > > 0e64a0c982c06a6b8f5e2a7f29eb108fdf257b2f is first bad commit
 > 
-> Um, doesn't drivers/infiniband/hw/ehca/ehca_mrmw.c need to be fixed too?
+> 0e64a0c has this cleanup, which isn't equivalent to the previous code:
+
+Please look at the patch I attached to the bug report.  There is
+other code that is not equivalent.  It's in comment #17:
+http://bugzilla.kernel.org/show_bug.cgi?id=13780#c17
+
+And the patch itself:
+http://bugzilla.kernel.org/attachment.cgi?id=23048
+
+This patch fixes my problem.
+
+> @@ -779,11 +834,12 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
+>  		goto err_out;
+>  	}
+>  
+> -	if ((data->acpi_data.control_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
+> -		(data->acpi_data.status_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
+> +	space_id = data->acpi_data.control_register.space_id;
+> +	if ((space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
+> +		(space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
+>  		dprintk("Invalid control/status registers (%x - %x)\n",
+>  			data->acpi_data.control_register.space_id,
+> -			data->acpi_data.status_register.space_id);
+> +			space_id);
+>  		goto err_out;
+>  	}
+>  
+> This got fixed in 2c701b1 in 2.6.31-rc8, so this is most likely the 
+> problem that Kurt was encountering.
 > 
-Hmm?..yes. nice catch...
-my GTAGS doesn't catch it...maybe need to be updated..
-I'm sorry that I didn't imagine this is widely used because this was under
-CONFIG_MEMORY_HOTPLUG....
+> Kurt, could you try 2.6.31 and see if you still experience the issue?  If 
+> not, this can be closed.
 
-How about this ?
-==
-walk-system-ram-range.patch failes to catch recent change in
-inifiniband. This is a fix.
+I also noticed this difference (comment #18), patched it, and
+tried it.  This is not the issue.  Also note that I tested the
+2.6.31-rc9 kernel which still had the problem.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- drivers/infiniband/hw/ehca/ehca_mrmw.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: mmotm-2.6.31-Sep14/drivers/infiniband/hw/ehca/ehca_mrmw.c
-===================================================================
---- mmotm-2.6.31-Sep14.orig/drivers/infiniband/hw/ehca/ehca_mrmw.c
-+++ mmotm-2.6.31-Sep14/drivers/infiniband/hw/ehca/ehca_mrmw.c
-@@ -2463,7 +2463,7 @@ int ehca_create_busmap(void)
- 	int ret;
- 
- 	ehca_mr_len = 0;
--	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
-+	ret = walk_system_ram_range(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
- 				   ehca_create_busmap_callback);
- 	return ret;
- }
+The bug report might be a little confusing since after comment #18
+there are older mails pasted in the bug report.
 
 
-
+Kurt
 
