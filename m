@@ -1,46 +1,391 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZIPCIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZIPCQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbZIPCIX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 22:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbZIPCIS
+	id S1754042AbZIPCQk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 22:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZIPCQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 22:08:18 -0400
-Received: from mga09.intel.com ([134.134.136.24]:62650 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751680AbZIPCIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 22:08:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,394,1249282800"; 
-   d="scan'208";a="448864794"
-Subject: Re: x86-PAT tree merge causes keyboard problems
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AB018C0.30203@zytor.com>
-References: <20090915205259.GA1910@phenom2.trippelsdorf.de>
-	 <4AB018C0.30203@zytor.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 15 Sep 2009 19:07:39 -0700
-Message-Id: <1253066859.2667.1.camel@sbs-t61.sc.intel.com>
+	Tue, 15 Sep 2009 22:16:36 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38406 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbZIPCQf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 22:16:35 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 16 Sep 2009 11:14:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
+       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 1/3] devmem: change vread()/vwrite() prototype to return
+ success or error code
+Message-Id: <20090916111425.967fd1ff.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090916014958.722014998@intel.com>
+References: <20090916013939.656308742@intel.com>
+	<20090916014958.722014998@intel.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 15:44 -0700, H. Peter Anvin wrote:
-> We need more information about your system, the lspci -vv and dmidecode
-> output, as well as your entire dmesg, and a dump of
-> /debug/x86/pat_memtype_list.
+On Wed, 16 Sep 2009 09:39:40 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-I am able to reproduce similar such mem type conflict messages on my
-system. Will look more detailed into this tomorrow.
+> Silently ignore all vmalloc area holes in vread()/vwrite(),
+> and report success (or error code in future) to the caller.
+> 
+> The original intention is to fix a vwrite() related bug, where
+> it could return 0 which cannot be handled correctly by its caller
+> write_kmem(). Then KAMEZAWA recommends to change the prototype
+> to make the semantics clear.
+> 
+> CC: Andi Kleen <andi@firstfloor.org>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Christoph Lameter <cl@linux-foundation.org>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Tejun Heo <tj@kernel.org>
+> CC: Nick Piggin <npiggin@suse.de>
+> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  drivers/char/mem.c      |   24 ++++++++--------
+>  fs/proc/kcore.c         |    5 ++-
+>  include/linux/vmalloc.h |    6 ++--
+>  mm/nommu.c              |    8 ++---
+>  mm/vmalloc.c            |   55 +++++++++++---------------------------
+>  5 files changed, 40 insertions(+), 58 deletions(-)
+> 
+> --- linux-mm.orig/mm/vmalloc.c	2009-09-16 08:52:12.000000000 +0800
+> +++ linux-mm/mm/vmalloc.c	2009-09-16 09:24:11.000000000 +0800
+> @@ -1655,7 +1655,6 @@ EXPORT_SYMBOL(vmalloc_32_user);
+>  static int aligned_vread(char *buf, char *addr, unsigned long count)
+>  {
+>  	struct page *p;
+> -	int copied = 0;
+>  
+>  	while (count) {
+>  		unsigned long offset, length;
+> @@ -1685,16 +1684,14 @@ static int aligned_vread(char *buf, char
+>  
+>  		addr += length;
+>  		buf += length;
+> -		copied += length;
+>  		count -= length;
+>  	}
+> -	return copied;
+> +	return 0;
+>  }
+>  
+>  static int aligned_vwrite(char *buf, char *addr, unsigned long count)
+>  {
+>  	struct page *p;
+> -	int copied = 0;
+>  
+>  	while (count) {
+>  		unsigned long offset, length;
+> @@ -1722,10 +1719,9 @@ static int aligned_vwrite(char *buf, cha
+>  		}
+>  		addr += length;
+>  		buf += length;
+> -		copied += length;
+>  		count -= length;
+>  	}
+> -	return copied;
+> +	return 0;
+>  }
+>  
+>  /**
+> @@ -1734,9 +1730,7 @@ static int aligned_vwrite(char *buf, cha
+>   *	@addr:		vm address.
+>   *	@count:		number of bytes to be read.
+>   *
+> - *	Returns # of bytes which addr and buf should be increased.
+> - *	(same number to @count). Returns 0 if [addr...addr+count) doesn't
+> - *	includes any intersect with alive vmalloc area.
+> + *	Returns 0 on success.
 
-thanks,
-suresh
+Seems to return 0 _always_. My version retunrs false if it's out-of-range.
+plz return false if out-of-vmalloc-range.
+Now, use vmalloc area is exported via /proc/vmallocinfo. Then, it's easy
+to know "valid" vmalloc area. But users cannot know memory holes in
+"valid" vmalloc area. So, vread() returns success even if it founds holes.
+
+Another thought:
+Should we purge vread/vwrite and just use copy_to/from_user ?
+To do that, /proc/kcore should be revisited...
+It has to copy pages one by one in aligned manner.
+
+Anyway, it's merge window and not good season for this semantic changes of
+a function.
+
+>   *
+>   *	This function checks that addr is a valid vmalloc'ed area, and
+>   *	copy data from that area to a given buffer. If the given memory range
+> @@ -1744,23 +1738,21 @@ static int aligned_vwrite(char *buf, cha
+>   *	proper area of @buf. If there are memory holes, they'll be zero-filled.
+>   *	IOREMAP area is treated as memory hole and no copy is done.
+>   *
+> - *	If [addr...addr+count) doesn't includes any intersects with alive
+> - *	vm_struct area, returns 0.
+>   *	@buf should be kernel's buffer. Because	this function uses KM_USER0,
+>   *	the caller should guarantee KM_USER0 is not used.
+>   *
+>   *	Note: In usual ops, vread() is never necessary because the caller
+>   *	should know vmalloc() area is valid and can use memcpy().
+>   *	This is for routines which have to access vmalloc area without
+> - *	any informaion, as /dev/kmem.
+> + *	any information, as /dev/kmem and /dev/kcore.
+>   *
+>   */
+>  
+> -long vread(char *buf, char *addr, unsigned long count)
+> +int vread(char *buf, char *addr, unsigned long count)
+>  {
+>  	struct vm_struct *tmp;
+> -	char *vaddr, *buf_start = buf;
+> -	unsigned long buflen = count;
+> +	char *vaddr;
+> +	char *buf_end = buf + count;
+>  	unsigned long n;
+>  
+>  	/* Don't allow overflow */
+> @@ -1794,13 +1786,11 @@ long vread(char *buf, char *addr, unsign
+>  finished:
+>  	read_unlock(&vmlist_lock);
+>  
+> -	if (buf == buf_start)
+> -		return 0;
+>  	/* zero-fill memory holes */
+> -	if (buf != buf_start + buflen)
+> -		memset(buf, 0, buflen - (buf - buf_start));
+> +	if (buf != buf_end)
+> +		memset(buf, 0, buf_end - buf);
+>  
+> -	return buflen;
+> +	return 0;
+>  }
+>  
+>  /**
+> @@ -1809,10 +1799,7 @@ finished:
+>   *	@addr:		vm address.
+>   *	@count:		number of bytes to be read.
+>   *
+> - *	Returns # of bytes which addr and buf should be incresed.
+> - *	(same number to @count).
+> - *	If [addr...addr+count) doesn't includes any intersect with valid
+> - *	vmalloc area, returns 0.
+> + *	Returns 0 on success.
+>   *
+>   *	This function checks that addr is a valid vmalloc'ed area, and
+>   *	copy data from a buffer to the given addr. If specified range of
+> @@ -1820,30 +1807,24 @@ finished:
+>   *	proper area of @buf. If there are memory holes, no copy to hole.
+>   *	IOREMAP area is treated as memory hole and no copy is done.
+>   *
+> - *	If [addr...addr+count) doesn't includes any intersects with alive
+> - *	vm_struct area, returns 0.
+>   *	@buf should be kernel's buffer. Because	this function uses KM_USER0,
+>   *	the caller should guarantee KM_USER0 is not used.
+>   *
+>   *	Note: In usual ops, vwrite() is never necessary because the caller
+>   *	should know vmalloc() area is valid and can use memcpy().
+>   *	This is for routines which have to access vmalloc area without
+> - *	any informaion, as /dev/kmem.
+> - *
+> - *	The caller should guarantee KM_USER1 is not used.
+> + *	any information, as /dev/kmem.
+>   */
+>  
+> -long vwrite(char *buf, char *addr, unsigned long count)
+> +int vwrite(char *buf, char *addr, unsigned long count)
+>  {
+>  	struct vm_struct *tmp;
+>  	char *vaddr;
+> -	unsigned long n, buflen;
+> -	int copied = 0;
+> +	unsigned long n;
+>  
+>  	/* Don't allow overflow */
+>  	if ((unsigned long) addr + count < count)
+>  		count = -(unsigned long) addr;
+> -	buflen = count;
+>  
+>  	read_lock(&vmlist_lock);
+>  	for (tmp = vmlist; count && tmp; tmp = tmp->next) {
+> @@ -1860,19 +1841,15 @@ long vwrite(char *buf, char *addr, unsig
+>  		n = vaddr + tmp->size - PAGE_SIZE - addr;
+>  		if (n > count)
+>  			n = count;
+> -		if (!(tmp->flags & VM_IOREMAP)) {
+> +		if (!(tmp->flags & VM_IOREMAP))
+>  			aligned_vwrite(buf, addr, n);
+> -			copied++;
+> -		}
+>  		buf += n;
+>  		addr += n;
+>  		count -= n;
+>  	}
+>  finished:
+>  	read_unlock(&vmlist_lock);
+> -	if (!copied)
+> -		return 0;
+> -	return buflen;
+> +	return 0;
+>  }
+>  
+>  /**
+> --- linux-mm.orig/include/linux/vmalloc.h	2009-09-16 08:52:12.000000000 +0800
+> +++ linux-mm/include/linux/vmalloc.h	2009-09-16 08:52:17.000000000 +0800
+> @@ -104,9 +104,9 @@ extern void unmap_kernel_range(unsigned 
+>  extern struct vm_struct *alloc_vm_area(size_t size);
+>  extern void free_vm_area(struct vm_struct *area);
+>  
+> -/* for /dev/kmem */
+> -extern long vread(char *buf, char *addr, unsigned long count);
+> -extern long vwrite(char *buf, char *addr, unsigned long count);
+> +/* for /dev/kmem and /dev/kcore */
+> +extern int vread(char *buf, char *addr, unsigned long count);
+> +extern int vwrite(char *buf, char *addr, unsigned long count);
+>  
+>  /*
+>   *	Internals.  Dont't use..
+> --- linux-mm.orig/drivers/char/mem.c	2009-09-16 08:52:12.000000000 +0800
+> +++ linux-mm/drivers/char/mem.c	2009-09-16 09:23:00.000000000 +0800
+> @@ -396,6 +396,7 @@ static ssize_t read_kmem(struct file *fi
+>  	unsigned long p = *ppos;
+>  	ssize_t low_count, read, sz;
+>  	char * kbuf; /* k-addr because vread() takes vmlist_lock rwlock */
+> +	int err = 0;
+>  
+>  	read = 0;
+>  	if (p < (unsigned long) high_memory) {
+> @@ -442,12 +443,12 @@ static ssize_t read_kmem(struct file *fi
+>  			return -ENOMEM;
+>  		while (count > 0) {
+>  			sz = size_inside_page(p, count);
+> -			sz = vread(kbuf, (char *)p, sz);
+> -			if (!sz)
+> +			err = vread(kbuf, (char *)p, sz);
+> +			if (err)
+>  				break;
+>  			if (copy_to_user(buf, kbuf, sz)) {
+> -				free_page((unsigned long)kbuf);
+> -				return -EFAULT;
+> +				err = -EFAULT;
+> +				break;
+>  			}
+>  			count -= sz;
+>  			buf += sz;
+> @@ -457,7 +458,7 @@ static ssize_t read_kmem(struct file *fi
+>  		free_page((unsigned long)kbuf);
+>  	}
+>   	*ppos = p;
+> - 	return read;
+> +	return read ? read : err;
+>  }
+>  
+>  
+> @@ -521,6 +522,7 @@ static ssize_t write_kmem(struct file * 
+>  	ssize_t wrote = 0;
+>  	ssize_t virtr = 0;
+>  	char * kbuf; /* k-addr because vwrite() takes vmlist_lock rwlock */
+> +	int err = 0;
+>  
+>  	if (p < (unsigned long) high_memory) {
+>  		unsigned long to_write = min_t(unsigned long, count,
+> @@ -543,12 +545,12 @@ static ssize_t write_kmem(struct file * 
+>  
+>  			n = copy_from_user(kbuf, buf, sz);
+>  			if (n) {
+> -				if (wrote + virtr)
+> -					break;
+> -				free_page((unsigned long)kbuf);
+> -				return -EFAULT;
+> +				err = -EFAULT;
+> +				break;
+>  			}
+> -			sz = vwrite(kbuf, (char *)p, sz);
+> +			err = vwrite(kbuf, (char *)p, sz);
+> +			if (err)
+> +				break;
+>  			count -= sz;
+>  			buf += sz;
+>  			virtr += sz;
+> @@ -558,7 +560,7 @@ static ssize_t write_kmem(struct file * 
+>  	}
+>  
+>   	*ppos = p;
+> - 	return virtr + wrote;
+> +	return virtr + wrote ? : err;
+>  }
+>  #endif
+>  
+> --- linux-mm.orig/fs/proc/kcore.c	2009-09-16 08:52:12.000000000 +0800
+> +++ linux-mm/fs/proc/kcore.c	2009-09-16 08:52:17.000000000 +0800
+> @@ -492,11 +492,14 @@ read_kcore(struct file *file, char __use
+>  				return -EFAULT;
+>  		} else if (is_vmalloc_or_module_addr((void *)start)) {
+>  			char * elf_buf;
+> +			int err;
+>  
+>  			elf_buf = kzalloc(tsz, GFP_KERNEL);
+>  			if (!elf_buf)
+>  				return -ENOMEM;
+> -			vread(elf_buf, (char *)start, tsz);
+> +			err = vread(elf_buf, (char *)start, tsz);
+> +			if (err)
+> +				return err;
+
+This is wrong.
+
+/proc/kcore provides "coredump" image of kernel and it never faults.
+Then, it doesn't check error code intentionally and just return
+zero-filled buffer of reuqested length.
+
+Thanks,
+-Kame
+
+
+>  			/* we have to zero-fill user buffer even if no read */
+>  			if (copy_to_user(buffer, elf_buf, tsz)) {
+>  				kfree(elf_buf);
+> --- linux-mm.orig/mm/nommu.c	2009-09-16 09:01:36.000000000 +0800
+> +++ linux-mm/mm/nommu.c	2009-09-16 09:02:02.000000000 +0800
+> @@ -263,20 +263,20 @@ unsigned long vmalloc_to_pfn(const void 
+>  }
+>  EXPORT_SYMBOL(vmalloc_to_pfn);
+>  
+> -long vread(char *buf, char *addr, unsigned long count)
+> +int vread(char *buf, char *addr, unsigned long count)
+>  {
+>  	memcpy(buf, addr, count);
+> -	return count;
+> +	return 0;
+>  }
+>  
+> -long vwrite(char *buf, char *addr, unsigned long count)
+> +int vwrite(char *buf, char *addr, unsigned long count)
+>  {
+>  	/* Don't allow overflow */
+>  	if ((unsigned long) addr + count < count)
+>  		count = -(unsigned long) addr;
+>  
+>  	memcpy(addr, buf, count);
+> -	return(count);
+> +	return 0;
+>  }
+>  
+>  /*
+> 
+> -- 
+> 
+> 
 
