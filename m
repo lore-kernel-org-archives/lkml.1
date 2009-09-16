@@ -1,59 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933500AbZIPVDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760088AbZIPVBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933500AbZIPVDs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 17:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760084AbZIPVDp
+	id S1760088AbZIPVBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 17:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760065AbZIPVBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 17:03:45 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:53072 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754808AbZIPVDo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 17:03:44 -0400
-Subject: Re: [PATCH] arm: new W macro to WORD_ACCESS
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
-       linux-arm-kernel@lists.infradead.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <20090916175812.GA18993@Chamillionaire.breakpoint.cc>
-References: <200909161601.35662.elendil@planet.nl>
-	 <20090916175812.GA18993@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 16 Sep 2009 21:59:27 +0100
-Message-Id: <1253134767.19743.3.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 16 Sep 2009 17:01:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:20953 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756044AbZIPVBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 17:01:19 -0400
+Message-ID: <4AB151D7.10402@redhat.com>
+Date: Thu, 17 Sep 2009 00:00:07 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com> <4AB10B67.2050108@redhat.com> <4AB13B09.5040308@gmail.com>
+In-Reply-To: <4AB13B09.5040308@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Sep 2009 20:59:28.0647 (UTC) FILETIME=[94A73170:01CA3710]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-16 at 19:58 +0200, Sebastian Andrzej Siewior wrote:
-> As reported by Frans Pop the new global macro W on ARM which is included
-> via
-> |arch/arm/include/asm/uaccess.h:20
-> |include/linux/uaccess.h:5
-> |include/linux/crypto.h:26
-> |crypto/cast6.c:23
-> 
-> leads to a build error because the crypto/cast6.c defines a function
-> which is named W.
+On 09/16/2009 10:22 PM, Gregory Haskins wrote:
+> Avi Kivity wrote:
+>    
+>> On 09/16/2009 05:10 PM, Gregory Haskins wrote:
+>>      
+>>>> If kvm can do it, others can.
+>>>>
+>>>>          
+>>> The problem is that you seem to either hand-wave over details like this,
+>>> or you give details that are pretty much exactly what vbus does already.
+>>>    My point is that I've already sat down and thought about these issues
+>>> and solved them in a freely available GPL'ed software package.
+>>>
+>>>        
+>> In the kernel.  IMO that's the wrong place for it.
+>>      
+> 3) "in-kernel": You can do something like virtio-net to vhost to
+> potentially meet some of the requirements, but not all.
+>
+> In order to fully meet (3), you would need to do some of that stuff you
+> mentioned in the last reply with muxing device-nr/reg-nr.  In addition,
+> we need to have a facility for mapping eventfds and establishing a
+> signaling mechanism (like PIO+qid), etc. KVM does this with
+> IRQFD/IOEVENTFD, but we dont have KVM in this case so it needs to be
+> invented.
+>    
 
-This was already reported by Alexey Dobriyan and I included his patch in
-my Thumb-2 branch (and -next for now):
+irqfd/eventfd is the abstraction layer, it doesn't need to be reabstracted.
 
-http://linux-arm.org/git?p=linux-2.6.git;a=commitdiff;h=4fb3c2e2ab3549308a1b1663296d165e45d72ba5
+> To meet performance, this stuff has to be in kernel and there has to be
+> a way to manage it.
 
-Since this macro is only used in ARM assembly code, the patch simply
-adds some ifdefs around it.
+and management belongs in userspace.
 
-Russell, if you are OK with Alexey's patch, I'll send you a pull request
-(though for only one patch, alternatively just merge it manually).
+> Since vbus was designed to do exactly that, this is
+> what I would advocate.  You could also reinvent these concepts and put
+> your own mux and mapping code in place, in addition to all the other
+> stuff that vbus does.  But I am not clear why anyone would want to.
+>    
+
+Maybe they like their backward compatibility and Windows support.
+
+> So no, the kernel is not the wrong place for it.  Its the _only_ place
+> for it.  Otherwise, just use (1) and be done with it.
+>
+>    
+
+I'm talking about the config stuff, not the data path.
+
+>>   Further, if we adopt
+>> vbus, if drop compatibility with existing guests or have to support both
+>> vbus and virtio-pci.
+>>      
+> We already need to support both (at least to support Ira).  virtio-pci
+> doesn't work here.  Something else (vbus, or vbus-like) is needed.
+>    
+
+virtio-ira.
+
+>>> So the question is: is your position that vbus is all wrong and you wish
+>>> to create a new bus-like thing to solve the problem?
+>>>        
+>> I don't intend to create anything new, I am satisfied with virtio.  If
+>> it works for Ira, excellent.  If not, too bad.
+>>      
+> I think that about sums it up, then.
+>    
+
+Yes.  I'm all for reusing virtio, but I'm not going switch to vbus or 
+support both for this esoteric use case.
+
+>>> If so, how is it
+>>> different from what Ive already done?  More importantly, what specific
+>>> objections do you have to what Ive done, as perhaps they can be fixed
+>>> instead of starting over?
+>>>
+>>>        
+>> The two biggest objections are:
+>> - the host side is in the kernel
+>>      
+> As it needs to be.
+>    
+
+vhost-net somehow manages to work without the config stuff in the kernel.
+
+> With all due respect, based on all of your comments in aggregate I
+> really do not think you are truly grasping what I am actually building here.
+>    
+
+Thanks.
+
+
+
+>>> Bingo.  So now its a question of do you want to write this layer from
+>>> scratch, or re-use my framework.
+>>>
+>>>        
+>> You will have to implement a connector or whatever for vbus as well.
+>> vbus has more layers so it's probably smaller for vbus.
+>>      
+> Bingo!
+
+(addictive, isn't it)
+
+> That is precisely the point.
+>
+> All the stuff for how to map eventfds, handle signal mitigation, demux
+> device/function pointers, isolation, etc, are built in.  All the
+> connector has to do is transport the 4-6 verbs and provide a memory
+> mapping/copy function, and the rest is reusable.  The device models
+> would then work in all environments unmodified, and likewise the
+> connectors could use all device-models unmodified.
+>    
+
+Well, virtio has a similar abstraction on the guest side.  The host side 
+abstraction is limited to signalling since all configuration is in 
+userspace.  vhost-net ought to work for lguest and s390 without change.
+
+>> It was already implemented three times for virtio, so apparently that's
+>> extensible too.
+>>      
+> And to my point, I'm trying to commoditize as much of that process as
+> possible on both the front and backends (at least for cases where
+> performance matters) so that you don't need to reinvent the wheel for
+> each one.
+>    
+
+Since you're interested in any-to-any connectors it makes sense to you.  
+I'm only interested in kvm-host-to-kvm-guest, so reducing the already 
+minor effort to implement a new virtio binding has little appeal to me.
+
+>> You mean, if the x86 board was able to access the disks and dma into the
+>> ppb boards memory?  You'd run vhost-blk on x86 and virtio-net on ppc.
+>>      
+> But as we discussed, vhost doesn't work well if you try to run it on the
+> x86 side due to its assumptions about pagable "guest" memory, right?  So
+> is that even an option?  And even still, you would still need to solve
+> the aggregation problem so that multiple devices can coexist.
+>    
+
+I don't know.  Maybe it can be made to work and maybe it cannot.  It 
+probably can with some determined hacking.
 
 -- 
-Catalin
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
