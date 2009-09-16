@@ -1,134 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbZIPJJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZIPJCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbZIPJJe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 05:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758063AbZIPJJc
+	id S1758127AbZIPJCU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 05:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757707AbZIPJCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 05:09:32 -0400
-Received: from mail-pz0-f190.google.com ([209.85.222.190]:57877 "EHLO
-	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758015AbZIPJJb convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 05:02:18 -0400
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:57996 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757572AbZIPJCR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 05:09:31 -0400
+	Wed, 16 Sep 2009 05:02:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=YVp2/XU/2AhvWDO+TA+kOcQGsgRCYRp+yEQdfeQtDoFDmh7BOvp3tyZ0u9mbj25jc3
-         8zZ+UbT26yKY8Kqdr9nXiHu8g5BQN7hRH718C1MnPmKIVpefAluxKwmqrRoz1dTtsWZp
-         ibmq9n7EcaG8axp0SYMhTSxlwD/ATAkRZ/QLM=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=K05KJSFQ2M2ELg0lf8jPcGLU3BpD0aUNJnDzJuJoYEIZAsR41AH9hMnSnAqb1tlU6N
+         OwOcbPIOVyvCAcknSA45ZkrvENpJKYWOXefXP3RvugoI4ZXW1oj3v+A1ESjIxiRiTOI3
+         XclRdP/56hMjcna6T+ytdJg4t2c7v5ireTGGI=
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0909151057020.26095@sister.anvils>
-References: <20090915021851.168285585@intel.com>
-	 <20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090915082200.GA2588@localhost>
-	 <Pine.LNX.4.64.0909151057020.26095@sister.anvils>
-Date: Wed, 16 Sep 2009 11:01:17 +0200
-X-Google-Sender-Auth: b47acf45ad9ca1cb
-Message-ID: <10f740e80909160201l4834369s75e63fe8df0991aa@mail.gmail.com>
-Subject: Re: [PATCH 0/3] /proc/kmem cleanups and hwpoison bits
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org, sparclinux@vger.kernel.org
+In-Reply-To: <7d8fb81e0909160101m4244b24bq1cc0f650bcc9dca1@mail.gmail.com>
+References: <7d8fb81e0909160101m4244b24bq1cc0f650bcc9dca1@mail.gmail.com>
+Date: Wed, 16 Sep 2009 17:02:20 +0800
+Message-ID: <2375c9f90909160202p59fe30a2neb20b7000cf270cb@mail.gmail.com>
+Subject: Re: BUG: kernel oops in 2.6.23.14 - unable to handle kernel paging 
+	request
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Vinubalaji Gopal <vinubalaji@gmail.com>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 12:16, Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> On Tue, 15 Sep 2009, Wu Fengguang wrote:
->> On Tue, Sep 15, 2009 at 11:09:39AM +0800, KAMEZAWA Hiroyuki wrote:
->> > On Tue, 15 Sep 2009 10:18:51 +0800
->> > Wu Fengguang <fengguang.wu@intel.com> wrote:
->> >
->> > > Hi Kame,
->> > >
->> > > Here are 3 more kmem patches in my queue. Comments are welcome.
->> > > If you feel good about them, I can send all recent kmem cleanup
->> > > patches for you.
->> > >
->> >
->> > This is my quick hack. But I don't want to be an obstacle for you.
->> > So, I'll wait for your updates.
->>
->> Thanks. This is also a bug fix: vmalloc_to_page() will otherwise BUG()
->> on !is_vmalloc_or_module_addr() pages.
->>
->> > ==
->> > Now, /dev/kmem's read/write vmalloc area doesn't do
->> > range-check. Because vread/vwrite traverse vmalloc area list
->> > under system-wide spinlock, it's better to avoid unnecessary
->> > to do unnecessary calls to vread/vwrite.
->>
->> is_vmalloc_or_module_addr() could be put to either read_kmem()
->> or aligned_vread(), and I'm fine with both.
->>
->> It looks like vread can be shared by kmem and kcore :)
->>
->> > And, vread/vwrite returns 0 if we accessed memory holes.
->> > We can avoid copy-to-user in read side, we just ignore at write.
->> >
->> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> > ---
->> >  drivers/char/mem.c |   27 +++++++++++++++++++--------
->> >  1 file changed, 19 insertions(+), 8 deletions(-)
+On Wed, Sep 16, 2009 at 4:01 PM, Vinubalaji Gopal <vinubalaji@gmail.com> wrote:
+> Hi all,
 >
-> Sorry guys, I'm picking this mail pretty much at random
-> as something to reply to.
->
-> I'm interested to notice such work going on in drivers/char/mem.c,
-> and don't have time to join in - you interact a lot faster than I
-> manage, and I've other priorities to attend to; but thought I should
-> at least send over the patch I've been including in my private debug
-> kernels for the last couple of years (rebased to 2.6.31), which lets
-> me peek and poke into /dev/kmem as I occasionally wish.
->
-> Warning: it may be rubbish, it may just be a hack which appeared to
-> work for me the last time I tried, on a particular address range of a
-> particular set of configurations of a particular set of architectures
-> (x86_32, x86_64, powerpc64).  I've never thought it through enough to
-> consider submitting, but it _might_ contain something useful for you
-> to factor into your own efforts.
->
-> Sorry for chucking it over the wall to you in this way, but I guess
-> that's better than just sitting quietly on it for a few more years.
->
-> Certainly-Not-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
->
->  drivers/char/mem.c |  265 +++++++++++++++----------------------------
->  fs/read_write.c    |    9 +
->  2 files changed, 105 insertions(+), 169 deletions(-)
->
-> but if completed would also remove vread() and vwrite() from
->
->  include/linux/vmalloc.h
->  mm/nommu.c
->  mm/vmalloc.c
->
-> --- 2.6.31/drivers/char/mem.c   2009-09-09 23:13:59.000000000 +0100
-> +++ 2.6.31d/drivers/char/mem.c  2009-09-10 09:38:30.000000000 +0100
+> I got the following kernel oops message on kernel version 2.6.23. Have
+> been searching the list archives, bug database and googling different
+> terms related to this oops message, but can't find anything. Any idea
+> on what could be causing this - a hardware failure or a bug in the
+> kernel? This is happening very rarely and is hard to reproduce :(.
+> This kernel is a patched kernel with ipsets and bootsplash.
 
-> -#ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-> -               /* we don't have page 0 mapped on sparc and m68k.. */
 
-Is this `feature' removed?
+Does the original kernel have the same problem? If yes, could
+you please try 2.6.31?
 
-Gr{oetje,eeting}s,
+>
+> Thanks in advance.
+>
+> BUG: unable to handle kernel paging request at virtual address 000c0000
+>  printing eip:
+> c01723b0
+> *pde = 00000000
+> Oops: 0000 [#347]
+> SMP
+> Modules linked in:
+> CPU:    0
+> EIP:    0060:[<c01723b0>]       Tainted: G      B D VLI
+> EIFLAGS: 000010206   (2.6.23)
+> EIP is at __kill_fasync+0x10/0x60
+> eax: 000c0000   ebx: 000c0000   ecx: 00020001   edx: 0000001d
+> esi: 0000001d   edi: 00020001   ebp: 0000000c   esp: d36ebdd4
+> ds: 007b   es: 007b   fs: 00d8   gs: 033   ss: 0068
+> Process bounce (pid: 29145, ti=d36ea000 task=c2f37aa0 task.ti=d36ea000)
+> Stack: 00000000 d5e0c740 000c0000 ccc7792c c0674045 000c0000 d5e11580 c067730f
+>       00000000 ccc77900 d3a58600 c072b22a d36ebe1c 00000000 d5e11580 d5e113c0
+>       d36ebe78 d36ebe98 00000000 000071d9 00000194 00000194 00000000 00000000
+> Call Trace:
+>  [<c0674045>] sock_value_async+0x55/0x80
+>  [<c067730f>] sock_def_readable+0x5f/0x80
+>  [<c072b22a>] unix_stream_sendmsg+0x1ea/0x320
+>  [<c0673b3d>] do_sock_write+0x9d/0xb0
+>  [<c-673ba4>] sock_aio_write+0x54/0x70
+>  [<c01477d5>] find_lock_page+0x25/0x90
+>  [<c0166660>] do_sync_write+0xc0/0x100
+>  [<c0133700>] autoremove_wake_function+0x0/0x50
+>  [<c0114d29>] do_page_fault+0x1b/0x630
+>  [<c01667d9>] vfs_write+0x139/0x150
+>  [<c01668b7>] sys_write+047/080
+>  [<c0102b3e>] syscall_call+0x7/0xb
+>  =======================
+> Code: 04 a1 04 fe a5 c0 89 fa e0 be 12 ff ff eb bf b6 00 00 00 00 8d
+> bf 00 00 00 00 57 89 cf 56 09 d6 53 03 ec 04 05 c0 74 24 <81> 3b 01 46
+> 00 00 75 31 0b 43 0c 83 c0 28 83 fe 17 74 1d 8b 53
+> EIP: [<c01723b0>] __kill_fasync+0x10/0x60 SS:ESP 0068:d36ebdd4
 
-						Geert
+Interesting call trace...
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+It says you are writing to a Unix datagram socket, seems this happens
+in softirq context? Mind to try script/markup_oops.pl?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+If you have a debug kernel, what does `addr2line -e vmlinux 0xc01723b0`
+say?
+
+Thanks.
