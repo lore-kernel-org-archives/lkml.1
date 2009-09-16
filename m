@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZIPL10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZIPLas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbZIPL10 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 07:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZIPL1Z
+	id S1754519AbZIPLas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 07:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZIPLar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 07:27:25 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:7053 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752162AbZIPL1Y (ORCPT
+	Wed, 16 Sep 2009 07:30:47 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:57348 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbZIPLaq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 07:27:24 -0400
-X-Trace: 259362144/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.7.143/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.7.143
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAGJosEpPRQeP/2dsb2JhbACBU9t2hBcF
-X-IronPort-AV: E=Sophos;i="4.44,397,1249254000"; 
-   d="scan'208";a="259362144"
-Date: Wed, 16 Sep 2009 12:26:36 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Wu Fengguang <fengguang.wu@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH 0/3] /proc/kmem cleanups and hwpoison bits
-In-Reply-To: <10f740e80909160201l4834369s75e63fe8df0991aa@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0909161211100.12659@sister.anvils>
-References: <20090915021851.168285585@intel.com> 
- <20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com> 
- <20090915082200.GA2588@localhost>  <Pine.LNX.4.64.0909151057020.26095@sister.anvils>
- <10f740e80909160201l4834369s75e63fe8df0991aa@mail.gmail.com>
+	Wed, 16 Sep 2009 07:30:46 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: fanotify as syscalls
+Date: Wed, 16 Sep 2009 13:30:26 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-9-generic; KDE/4.3.1; x86_64; ; )
+Cc: Evgeniy Polyakov <zbr@ioremap.net>, Jamie Lokier <jamie@shareable.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org,
+       torvalds@linux-foundation.org
+References: <20090911.114620.260824240.davem@davemloft.net> <20090915201620.GB32192@ioremap.net> <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
+In-Reply-To: <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1472666607-1253100396=:12659"
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909161330.26815.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+boMJfX4Gj69FYtYjkQ2pMumU627LFdO/Fwsr
+ 9FZs2g1o99se1sTcHjDNDZrMv58PSygXDroguQv/O2cYuQqXa2
+ ku0+JEuaoVbhUu4jN6lsQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tuesday 15 September 2009, Eric Paris wrote:
+> fanotify_modify_mark_at() --- like inotify_add_watch and rm_watch
+> fanotify_modify_mark_fd() --- same but with an fd instead of a path
 
---8323584-1472666607-1253100396=:12659
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+I think these two can be merged into one without adding complexity,
+in the same way that sys_utimensat can take a file descriptor or
+a path or both.
 
-On Wed, 16 Sep 2009, Geert Uytterhoeven wrote:
-> On Tue, Sep 15, 2009 at 12:16, Hugh Dickins <hugh.dickins@tiscali.co.uk> =
-wrote:
-> > Warning: it may be rubbish, it may just be a hack which appeared to
-> > work for me the last time I tried, on a particular address range of a
-> > particular set of configurations of a particular set of architectures
-> > (x86_32, x86_64, powerpc64). =C2=A0I've never thought it through enough=
- to
-> > consider submitting, but it _might_ contain something useful for you
-> > to factor into your own efforts.
-> >
-> > Sorry for chucking it over the wall to you in this way, but I guess
-> > that's better than just sitting quietly on it for a few more years.
-> >
-> > Certainly-Not-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> fanotify_response() --- userspace tells the kernel what to do if requested/allowed
+>    (could probably be done using write() to the fanotify fd)
+> fanotify_exclude() --- a horrid syscall which might be better as an ioctl since it isn't strongly typed....
 
-I think that gives a good idea of the status of this patch:
-I'm not making any policy decisions here or submitting to any tree.
+Please don't use an ioctl here. While ioctl is fine for character devices
+and sort of fine for sockets, I think it would be very bad style to use
+it on file descriptors that you get back from specialized syscalls like
+fanotify_init. Do one or the other, but do it consistently.
 
-> > --- 2.6.31/drivers/char/mem.c =C2=A0 2009-09-09 23:13:59.000000000 +010=
-0
-> > +++ 2.6.31d/drivers/char/mem.c =C2=A02009-09-10 09:38:30.000000000 +010=
-0
->=20
-> > -#ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-> > - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /* we don't have pag=
-e 0 mapped on sparc and m68k.. */
->=20
-> Is this `feature' removed?
+Why is it not strongly typed anyway? Something like
 
-The feature that some arches don't have page zero mapped?
-No, I could hardly change that from drivers/char/mem.c,
-and wouldn't wish to.
+int fanotify_ignore_sb(int fanotify_fd, unsigned int flag,
+                       long f_type, fsid_t f_fsid);
 
-The feature that reading from one unmapped page gave zeroes
-and writing to it threw away what you wrote?  Yes, in making
-that patch, I was thinking that if we cope with unmapped areas
-elsewhere by returning -ENXIO, it made little sense to have
-special code to do something different for page zero.
+would be type safe, although I think it would be better to only handle
+one of the two cases. Can you think of a case that you can't handle if
+you have to decide between them and only do one interface (f_type or fsid)?
 
-But of course there might be userspace compatibility reasons
-why that couldn't change e.g. a body of /dev/kmem users who
-would be surprised by an error right at the "start" (though
-in kmem's case, they've already had to seek to get anywhere).
-
-Take the patch as saying "hmm, I wonder if we could do it this way".
-
-Hugh
---8323584-1472666607-1253100396=:12659--
+	Arnd <><
