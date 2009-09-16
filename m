@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZIPHtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbZIPHzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbZIPHtR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 03:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZIPHtN
+	id S1754872AbZIPHzT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 03:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZIPHzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 03:49:13 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:63946 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752220AbZIPHtN (ORCPT
+	Wed, 16 Sep 2009 03:55:19 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55292 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbZIPHzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 03:49:13 -0400
-Date: Wed, 16 Sep 2009 09:48:49 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-Message-ID: <20090916074848.GB4870@osiris.boeblingen.de.ibm.com>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
- <1253016701.5506.73.camel@laptop>
- <20090915145834.GG4846@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090915145834.GG4846@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 16 Sep 2009 03:55:18 -0400
+Date: Wed, 16 Sep 2009 16:51:29 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       balbir@linux.vnet.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: memcg merge for 2.6.32 (was Re: 2.6.32 -mm merge plans)
+Message-Id: <20090916165129.a75879ae.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090916073727.GP4846@balbir.in.ibm.com>
+References: <20090915161535.db0a6904.akpm@linux-foundation.org>
+	<20090916073727.GP4846@balbir.in.ibm.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 08:28:34PM +0530, Balbir Singh wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-15 14:11:41]:
+On Wed, 16 Sep 2009 13:07:27 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> * Andrew Morton <akpm@linux-foundation.org> [2009-09-15 16:15:35]:
 > 
-> > On Tue, 2009-09-15 at 17:36 +0530, Gautham R Shenoy wrote:
-> > > This patchset contains the offline state driver implemented for
-> > > pSeries. For pSeries, we define three available_hotplug_states. They are:
-> > > 
-> > >         online: The processor is online.
-> > > 
-> > >         offline: This is the the default behaviour when the cpu is offlined
-> > >         even in the absense of this driver. The CPU would call make an
-> > >         rtas_stop_self() call and hand over the CPU back to the resource pool,
-> > >         thereby effectively deallocating that vCPU from the LPAR.
-> > >         NOTE: This would result in a configuration change to the LPAR
-> > >         which is visible to the outside world.
-> > > 
-> > >         inactive: This cedes the vCPU to the hypervisor with a cede latency
-> > >         specifier value 2.
-> > >         NOTE: This option does not result in a configuration change
-> > >         and the vCPU would be still entitled to the LPAR to which it earlier
-> > >         belong to.
-> > > 
-> > > Any feedback on the patchset will be immensely valuable.
 > > 
-> > I still think its a layering violation... its the hypervisor manager
-> > that should be bothered in what state an off-lined cpu is in. 
-> >
+> > memcg-remove-the-overhead-associated-with-the-root-cgroup.patch
+> > memcg-remove-the-overhead-associated-with-the-root-cgroup-fix.patch
+> > memcg-remove-the-overhead-associated-with-the-root-cgroup-fix-2.patch
+> > #memcg-add-comments-explaining-memory-barriers.patch: needs update (Balbir)
+> > memcg-add-comments-explaining-memory-barriers.patch
+> > memcg-add-comments-explaining-memory-barriers-checkpatch-fixes.patch
+> > memory-controller-soft-limit-documentation-v9.patch
+> > memory-controller-soft-limit-interface-v9.patch
+> > memory-controller-soft-limit-organize-cgroups-v9.patch
+> > memory-controller-soft-limit-organize-cgroups-v9-fix.patch
+> > memory-controller-soft-limit-refactor-reclaim-flags-v9.patch
+> > memory-controller-soft-limit-reclaim-on-contention-v9.patch
+> > memory-controller-soft-limit-reclaim-on-contention-v9-fix.patch
+> > memory-controller-soft-limit-reclaim-on-contention-v9-fix-softlimit-css-refcnt-handling.patch
+> > memory-controller-soft-limit-reclaim-on-contention-v9-fix-softlimit-css-refcnt-handling-fix.patch
+> > memcg-improve-resource-counter-scalability.patch
+> > memcg-improve-resource-counter-scalability-checkpatch-fixes.patch
+> > memcg-improve-resource-counter-scalability-v5.patch
+> > memcg-show-swap-usage-in-stat-file.patch
+> > memcg-show-swap-usage-in-stat-file-fix.patch
+> > 
+> >   Merge after checking with Balbir
 > 
-> From a design standpoint where we stand today is
 > 
-> 1. A cede indicates that the CPU is no longer needed and can be
-> reassigned (remember we do dedicated CPU partitions in power)
-> 2. What this patch is trying to do is to say "We don't need the
-> CPU, but please don't reassign, put it to sleep"
+> I think these are ready for merging, I'll let Kame and Daisuke comment
+> on it more. The resource counter scalability patch is the most
+> important patch in the series.
+> 
+I don't have any objection for merging these patches.
 
-FWIW, this sounds exactly like the same we have already on s390.
-But back then I didn't consider adding a common code infrastructure
-would make sense :)
 
-Besides the "online" attribute we have an additional "configure"
-attribute to which can only be written if the cpu is offline.
-Writing a "0" to it would mean that you currently won't need the cpu
-anymore and the hypervisor is free to reassign the cpu to a different
-LPAR.
-Writing a "1" to it means you want to use it. If there are enough
-resources you will get it. If not.. bad luck.
+Daisuke Nishimura.
