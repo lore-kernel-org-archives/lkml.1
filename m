@@ -1,177 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZIPFcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZIPFaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbZIPFcL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 01:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZIPFcK
+	id S1755019AbZIPFaV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 01:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbZIPFaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 01:32:10 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54982 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751617AbZIPFcJ (ORCPT
+	Wed, 16 Sep 2009 01:30:20 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:56450 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbZIPFaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 01:32:09 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 16 Sep 2009 14:29:56 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       oleg@redhat.com
-Subject: [RFC][PATCH][bugfix] more checks for negative f_pos handling (Was
- Re: Question: how to handle too big f_pos
-Message-Id: <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090914032901.GA16189@localhost>
-	<20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Sep 2009 01:30:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=oP53XapfUjpMHnXIwLWkwr8ZxhEfVIUm9Se3MEe6ka6RD5TUfyPztoVz+jG+0sFwtQ
+         cpizYKQYkZXMbxirUj64xpeOlfTbZquPe++rGYn57fR+ON/gRDJ0puKVDaweDsMsTBqK
+         0oQzri5/i1zvVZIFHvexeG08SqzX4bmt2+Pdw=
+Date: Wed, 16 Sep 2009 07:30:19 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [GIT PULL v2] tracing/kprobes: v1 + two fixes
+Message-ID: <20090916053017.GD5121@nowhere>
+References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <1251344087-28719-1-git-send-email-fweisbec@gmail.com> <20090827152625.GB32553@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090827152625.GB32553@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-The problem:
-> I'm writing a patch against /dev/kmem...I found a problem.
+On Thu, Aug 27, 2009 at 05:26:25PM +0200, Ingo Molnar wrote:
 > 
-> /dev/kmem (and /proc/<pid>/mem) puts virtual addres to f->f_pos.
+> It would also be nice to have a pie-in-the-sky list of usecases and 
+> workflows where this would be useful, and of future planned 
+> features. (maybe we want some of them before we merge it upstream)
 > 
-> but f->f_pos is always negative and rw_verify_ara() returns -EINVAL always.
+> Why would the upstream kernel want to have this feature, and what is 
+> the road ahead in terms of integration into tooling?
+> 
+> Thanks,
+> 
+> 	Ingo
 
-Changed CC: List. 
 
-This is a trial to consider how to fix negative f_pos problem shown in above.
 
-Hmm, even after this patch, x86's vsyscall area is not readable.
-ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0  [vsyscall]
-But maybe no problems. (now, it cannot be read, anyway.)
+In term, it would have the same skyline than static tracepoints events.
+It already has actually, it supports filters, perf, etc...
 
-I tested /dev/kmem on x86-64 and this works fine. I added a fix for
-/proc/<pid>/mem because I know ia64's hugetlbe area is not readable
-via /proc/<pid>/mem. (But I'm not sure other 64bit arch has this
-kind of problems in /proc/<pid>/mem)
+For now one have yet to create these tracepoints through debugfs.
 
-==
-From: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
+So what does it bring us?
 
-Modifying rw_verify_area()'s negative f_pos check.
+First of all, the ability to profile the kernel at every random points.
 
-Now, rw_verify_area() has this check
-   if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
-		return -EINVAL
+2) It can be useful as a single counter
 
-And access to special files as /dev/mem,kmem, /proc/<pid>/mem
-returns unexpected -EINVAL.
-(For example, ia64 maps hugetlb at 0x8000000000000000- region)
+Say you want to trace:
 
-This patch tries to make range check more precise by using
-llseek ops defined per special files.
+long sys_kill(int pid, int sig)
 
-Signed-off-by: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
----
- fs/proc/base.c  |   22 +++++++++++++++++-----
- fs/read_write.c |   39 +++++++++++++++++++++++++++++++++++++--
- 2 files changed, 54 insertions(+), 7 deletions(-)
+(I know it's a bad example, we already have syscalls tracepoints, it's just
+for the example).
 
-Index: mmotm-2.6.31-Sep14/fs/read_write.c
-===================================================================
---- mmotm-2.6.31-Sep14.orig/fs/read_write.c
-+++ mmotm-2.6.31-Sep14/fs/read_write.c
-@@ -205,6 +205,37 @@ bad:
- }
- #endif
- 
-+static int
-+__verify_negative_pos_range(struct file *file, loff_t pos, size_t count)
-+{
-+	unsigned long long upos, end;
-+	loff_t ret;
-+
-+	/* disallow overflow */
-+	upos = (unsigned long long)pos;
-+	end = upos + count;
-+	if (end < pos)
-+		return -EOVERFLOW;
-+	/*
-+	 * Sanity check...subsystem has to provide llseek for handle big pos.
-+	 * Subsystem's llseek should verify f_pos's value comaparing with its
-+	 * max file size.
-+	 * Note1: generic file ops' llseek cannot handle negative pos.
-+	 * Note2: should we take care of pos == -EINVAL ?
-+	 * Note3: we check flags and ops here for avoiding taking locks in.
-+	 * default_lseek.
-+	 */
-+	ret = -EINVAL;
-+	if ((file->f_mode & FMODE_LSEEK) &&
-+	    (file->f_op && file->f_op->llseek)) {
-+		ret = vfs_llseek(file, 0, SEEK_CUR);
-+		if (ret == pos)
-+			return 0;
-+	}
-+
-+	return (int)ret;
-+}
-+
- /*
-  * rw_verify_area doesn't like huge counts. We limit
-  * them to something that fits in "int" so that others
-@@ -222,8 +253,12 @@ int rw_verify_area(int read_write, struc
- 	if (unlikely((ssize_t) count < 0))
- 		return retval;
- 	pos = *ppos;
--	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
--		return retval;
-+	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
-+		/* some files requires special care */
-+		retval = __verify_negative_pos_range(file, pos, count);
-+		if (retval)
-+			return retval;
-+	}
- 
- 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
- 		retval = locks_mandatory_area(
-Index: mmotm-2.6.31-Sep14/fs/proc/base.c
-===================================================================
---- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
-+++ mmotm-2.6.31-Sep14/fs/proc/base.c
-@@ -903,18 +903,30 @@ out_no_task:
- 
- loff_t mem_lseek(struct file *file, loff_t offset, int orig)
- {
-+	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-+	unsigned long long new_offset = -EINVAL;
-+
-+	if (!task) /* lseek's spec doesn't allow -ESRCH but... */
-+		return -ESRCH;
-+
- 	switch (orig) {
- 	case 0:
--		file->f_pos = offset;
-+		new_offset = offset;
- 		break;
- 	case 1:
--		file->f_pos += offset;
-+		new_offset = (unsigned long long)f->f_pos + offset;
- 		break;
- 	default:
--		return -EINVAL;
-+		new_offset = -EINVAL;
-+		break;
- 	}
--	force_successful_syscall_return();
--	return file->f_pos;
-+	if (new_offset < (unsigned long long)TASK_SIZE_OF(task)) {
-+		file->f_pos = (loff_t)new_offset;
-+		force_successful_syscall_return();
-+	} else
-+		new_offset = -EINVAL;
-+	put_task_struct(task);
-+	return (loff_t)new_offset;
- }
- 
- static const struct file_operations proc_mem_operations = {
+
+And you want to see who is calling most this function. You could probably just
+do:
+
+	sudo perf record -f -a -g
+	./perf report
+
+And look at the result by looking at your function in the list, then
+look at its callchain.
+
+Of course the timer could give you the overhead of send_signal,
+but:
+
+- at the cost of profiling the whole system
+- putting a kprobe there plus -c 1 on record would give you more
+  accurate results, you won't loose any callchains
+
+
+2) It can be useful as a tracepoint
+
+
+Now you have your profile, and you want to know more about it.
+You may want to know which signal and which task are often concerned
+in this function call.
+
+So you can fetch the pid and sig arguments, you can also set pid=a0
+and sig=a1 in the kprobes debugfs interface, so that the format
+takes these names intead of the raw a0,a1.
+
+If you want a high level of details, you can just do
+
+	perf trace
+
+And look at the result.
+
+	sig_kill: (common headers), pid=... sig=...
+
+
+That, in essence, is a live patching trace_printk(),
+something that I personally miss every day.
+
+Also in my perf trace TODO list is the ability to implement a
+sorting by fields:
+
+        ./perf trace -s pid
+
+        pid = 4765
+         |
+         |
+         ------------ sig_kill: .... pid = 4765, sig = 7
+         |
+         ------------ sig_kill: .... pid = 4765, sig = 10
+         |
+         ------------ etc...
+
+        pid = 7645
+         |
+         |
+         ------------ etc...
+
+
+In my perf trace TODO list is also the ability to get the callchains:
+
+	./perf trace -s pid -g
+
+        pid = 4765
+         |
+         |
+         ------------ sig_kill: .... pid = 4765, sig = 7
+         |              |
+         |              |
+         |              -------- caller 1
+         |              |
+         |              -------- caller 2
+         |              |
+         |              -------- caller 3
+         |              |
+         |              --------- .....
+         |
+         ------------ .......
+
+
+3) It can find *much* more sunchine with C-expressions
+
+
+I've used kprobes events through debugfs for debugging purposes.
+If you just want to fetch the arguments of a function or global
+variables, it's fine and easy to use.
+But once you want to digg and diplay some local, variables,
+it takes too much time and pain (find in which ip you can fetch
+which register which matches which variable you want).
+
+As you know, Masami has posted a translator from C-like level
+expressions to kprobes debugfs command line using libdwarf.
+
+One of the plans is to make a perf integration of this tool
+so that one can fetch values from variables names (global and local)
+and set such smart dynamic tracepoints everywhere in the kernel
+(if it's not __kprobe annotated).
+
+Concerning the possible syntax and workflow of this tool,
+it's in daily open debate :)
+
+
+	Frederic.
 
