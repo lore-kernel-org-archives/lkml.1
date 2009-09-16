@@ -1,45 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZIPBnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZIPBo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbZIPBnM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 21:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZIPBnI
+	id S1754067AbZIPBo7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 21:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZIPBox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 21:43:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43357 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752200AbZIPBnI (ORCPT
+	Tue, 15 Sep 2009 21:44:53 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:60313 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751205AbZIPBow (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 21:43:08 -0400
-Date: Tue, 15 Sep 2009 18:42:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Menage <menage@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.32 -mm merge plans (cgroups)
-Message-Id: <20090915184237.13160e2a.akpm@linux-foundation.org>
-In-Reply-To: <6599ad830909151740n2affe0daw27618ccae9c737d6@mail.gmail.com>
-References: <6599ad830909151740n2affe0daw27618ccae9c737d6@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 21:44:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=juuF1EJ4CGxt88JTgJyl5/5sQ08x7hwg6qDIHwM7SDfu9le65NMGFPlxJkhyowNOMy
+         4gKrGvCnrUxi/BlwmNl7PGqmeXmAsGQTMMKDT4nPxwwcJnpTi0tAi8YjtXz71gGx9dMK
+         pDuCPDduhUmozrzgr0SOFyX8zuvoaYsUBZwQ4=
+Date: Wed, 16 Sep 2009 03:44:48 +0200
+From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+To: "Graham, David" <david.graham@intel.com>
+Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: [E1000-devel] [BUG 2.6.30+] e100 sometimes causes oops during
+	resume
+Message-ID: <20090916014448.GA1070@bizet.domek.prywatny>
+References: <20090915120538.GA26806@bizet.domek.prywatny> <13830B75AD5A2F42848F92269B11996F5BF592C3@orsmsx509.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <13830B75AD5A2F42848F92269B11996F5BF592C3@orsmsx509.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 17:40:15 -0700 Paul Menage <menage@google.com> wrote:
+On Tue, Sep 15, 2009 at 03:54:20PM -0700, Graham, David wrote:
 
-> How much longer is the merge window open for?
+> A v2.6.30..v2.6.31 diff shows that this is probably exposed by
+> Rafael Wysocki's commit 6905b1f1, which now allows systems with e100
+> to sleep. If I understand correctly, it looks like these systems
+> simply couldn't sleep before. Is that right Rafael?.
 
-A week.
+Probably true, but that wasn't the case for my (I guess
+ACPI-controlled) system.
 
-> It's probably safest to
-> hold these in -mm for now since we've not resolved the potential races
-> in the signal handler accesses; I'll try to find some time to work on
-> them this week or next.
 
-It's not a great time to be fixing these things up.
+> I don't think its likely that the commit is a direct cause of the
+> problem, but that the suspend/resume cycle now allows us to see
+> another issue.
 
-What would happen if we merged it as-is?  Can we be confident that the
-resulting bugs won't impact others and that we can get them all fixed
-up reasonably promptly?
+>From my (very limited) understanding commit message is at least in
+conflict with patch body.
 
+Precisely patch was supposed to "Fix this problem by ignoring the
+return value of pci_set_power_state() in __e100_power_off()."
+
+That patch is doing something rather different -- it returns 0, yes,
+but it also ignores 'wake' bool as set by __e100_shutdown().  That
+seems wrong to me.
+
+
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -2895,12 +2895,13 @@ static void __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ 
+ static int __e100_power_off(struct pci_dev *pdev, bool wake)
+ {
+-       if (wake) {
++       if (wake)
+                return pci_prepare_to_sleep(pdev);
+-       } else {
+-               pci_wake_from_d3(pdev, false);
+-               return pci_set_power_state(pdev, PCI_D3hot);
+-       }
++
++       pci_wake_from_d3(pdev, false);
++       pci_set_power_state(pdev, PCI_D3hot);
++
++       return 0;
+ }
+
+
+Correct patch would be that (hand-made), right?
+
+
++++ b/drivers/net/e100.c
+@@ -2895,12 +2895,13 @@ static void __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ 
+ static int __e100_power_off(struct pci_dev *pdev, bool wake)
+ {
+        if (wake) {
+                return pci_prepare_to_sleep(pdev);
+        } else {
+                pci_wake_from_d3(pdev, false);
+-               return pci_set_power_state(pdev, PCI_D3hot);
++               pci_set_power_state(pdev, PCI_D3hot);
+        }
++
++       return 0;
+ }
+
+I can test, or rather -- start testing this tommorow, if this makes
+sense to you.
+
+Thanks.
