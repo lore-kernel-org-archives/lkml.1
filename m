@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbZIPPet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZIPPhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbZIPPet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 11:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbZIPPeq
+	id S1754297AbZIPPhU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 11:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbZIPPhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 11:34:46 -0400
-Received: from vena.lwn.net ([206.168.112.25]:33998 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754192AbZIPPeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 11:34:44 -0400
-Date: Wed, 16 Sep 2009 09:34:46 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: "Kay, Allen M" <allen.m.kay@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] enabling ACS P2P upstream forwarding
-Message-ID: <20090916093446.5ea81b8a@bike.lwn.net>
-In-Reply-To: <1253059937.11643.527.camel@desktop>
-References: <57C9024A16AD2D4C97DC78E552063EA3E05DC218@orsmsx505.amr.corp.intel.com>
-	<1253059937.11643.527.camel@desktop>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Wed, 16 Sep 2009 11:37:19 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:50073 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752839AbZIPPhS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 11:37:18 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: iwlagn: order 2 page allocation failures
+Date: Wed, 16 Sep 2009 17:37:16 +0200
+User-Agent: KMail/1.9.9
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
+       Assaf Krauss <assaf.krauss@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Mohamed Abbas <mohamed.abbas@intel.com>
+References: <200909060941.01810.elendil@planet.nl> <200909161636.20590.elendil@planet.nl> <20090916150239.GG1993@csn.ul.ie>
+In-Reply-To: <20090916150239.GG1993@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909161737.20643.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Sep 2009 15:37:21.0051 (UTC) FILETIME=[948216B0:01CA36E3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 17:12:17 -0700
-Daniel Walker <dwalker@fifo99.com> wrote:
+On Wednesday 16 September 2009, Mel Gorman wrote:
+> > kcryptd: page allocation failure. order:2, mode:0x4020
+> > Pid: 1347, comm: kcryptd Not tainted 2.6.31-rc9 #16
+>
+> Is this with Reinette Chatre's patch applied or vanilla?
 
-> Both times that you've submitted this the patch has been corrupt.. Your
-> mailer, or something is adding little "=20" or "=3D" all over.
-
-That looks a lot like *your* mail client not understanding
-quoted-printable encoding.  QP can be a pain, but it is a legitimate
-encoding; the message in question looks fine in claws.
-
-jon
+Vanilla.
