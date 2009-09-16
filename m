@@ -1,197 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZIPIUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbZIPIYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbZIPIUe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 04:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbZIPIUc
+	id S1757590AbZIPIYy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 04:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbZIPIYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 04:20:32 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:40893 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbZIPIU3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 04:20:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SaGfeoSjp7bAYaUhIBH+FkOz9hkQ0b1Y/VduQAqPJW0PZ/T2ZDPjE+SJZUuXivKKFq
-         m2KpUnkmPu4QC72gE5IVDiMuxdkyD4P3VA5YaSoZ3+nVNZQuLQA3k+5ZTNQz5swAGtut
-         nDWPhV72GyOnxkqwdT2fjw9/idRbhDzPvvp2M=
+	Wed, 16 Sep 2009 04:24:53 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:24838 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757524AbZIPIYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 04:24:51 -0400
+Message-ID: <4AB0A070.1050400@redhat.com>
+Date: Wed, 16 Sep 2009 11:23:12 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090914032901.GA16189@localhost>
-	 <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 16 Sep 2009 16:20:32 +0800
-Message-ID: <2375c9f90909160120u151b0449x2eac665080a3ae82@mail.gmail.com>
-Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling (Was 
-	Re: Question: how to handle too big f_pos
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       oleg@redhat.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com>
+In-Reply-To: <4AAFF437.7060100@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 1:29 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On 09/15/2009 11:08 PM, Gregory Haskins wrote:
 >
-> The problem:
->> I'm writing a patch against /dev/kmem...I found a problem.
->>
->> /dev/kmem (and /proc/<pid>/mem) puts virtual addres to f->f_pos.
->>
->> but f->f_pos is always negative and rw_verify_ara() returns -EINVAL always.
+>> There's virtio-console, virtio-blk etc.  None of these have kernel-mode
+>> servers, but these could be implemented if/when needed.
+>>      
+> IIUC, Ira already needs at least ethernet and console capability.
 >
-> Changed CC: List.
->
-> This is a trial to consider how to fix negative f_pos problem shown in above.
->
-> Hmm, even after this patch, x86's vsyscall area is not readable.
-> ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0  [vsyscall]
-> But maybe no problems. (now, it cannot be read, anyway.)
->
-> I tested /dev/kmem on x86-64 and this works fine. I added a fix for
-> /proc/<pid>/mem because I know ia64's hugetlbe area is not readable
-> via /proc/<pid>/mem. (But I'm not sure other 64bit arch has this
-> kind of problems in /proc/<pid>/mem)
->
-> ==
-> From: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> Modifying rw_verify_area()'s negative f_pos check.
->
-> Now, rw_verify_area() has this check
->   if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
->                return -EINVAL
->
-> And access to special files as /dev/mem,kmem, /proc/<pid>/mem
-> returns unexpected -EINVAL.
-> (For example, ia64 maps hugetlb at 0x8000000000000000- region)
->
-> This patch tries to make range check more precise by using
-> llseek ops defined per special files.
->
-> Signed-off-by: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  fs/proc/base.c  |   22 +++++++++++++++++-----
->  fs/read_write.c |   39 +++++++++++++++++++++++++++++++++++++--
->  2 files changed, 54 insertions(+), 7 deletions(-)
->
-> Index: mmotm-2.6.31-Sep14/fs/read_write.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep14.orig/fs/read_write.c
-> +++ mmotm-2.6.31-Sep14/fs/read_write.c
-> @@ -205,6 +205,37 @@ bad:
->  }
->  #endif
->
-> +static int
-> +__verify_negative_pos_range(struct file *file, loff_t pos, size_t count)
-> +{
-> +       unsigned long long upos, end;
-> +       loff_t ret;
-> +
-> +       /* disallow overflow */
-> +       upos = (unsigned long long)pos;
-> +       end = upos + count;
-> +       if (end < pos)
-> +               return -EOVERFLOW;
-> +       /*
-> +        * Sanity check...subsystem has to provide llseek for handle big pos.
-> +        * Subsystem's llseek should verify f_pos's value comaparing with its
-> +        * max file size.
-> +        * Note1: generic file ops' llseek cannot handle negative pos.
-> +        * Note2: should we take care of pos == -EINVAL ?
-> +        * Note3: we check flags and ops here for avoiding taking locks in.
-> +        * default_lseek.
-> +        */
-> +       ret = -EINVAL;
-> +       if ((file->f_mode & FMODE_LSEEK) &&
-> +           (file->f_op && file->f_op->llseek)) {
-> +               ret = vfs_llseek(file, 0, SEEK_CUR);
-> +               if (ret == pos)
-> +                       return 0;
-> +       }
-> +
-> +       return (int)ret;
-> +}
-> +
->  /*
->  * rw_verify_area doesn't like huge counts. We limit
->  * them to something that fits in "int" so that others
-> @@ -222,8 +253,12 @@ int rw_verify_area(int read_write, struc
->        if (unlikely((ssize_t) count < 0))
->                return retval;
->        pos = *ppos;
-> -       if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
-> -               return retval;
-> +       if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
-> +               /* some files requires special care */
-> +               retval = __verify_negative_pos_range(file, pos, count);
-> +               if (retval)
-> +                       return retval;
-> +       }
->
->        if (unlikely(inode->i_flock && mandatory_lock(inode))) {
->                retval = locks_mandatory_area(
-> Index: mmotm-2.6.31-Sep14/fs/proc/base.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
-> +++ mmotm-2.6.31-Sep14/fs/proc/base.c
-> @@ -903,18 +903,30 @@ out_no_task:
->
->  loff_t mem_lseek(struct file *file, loff_t offset, int orig)
->  {
-> +       struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-> +       unsigned long long new_offset = -EINVAL;
+>    
 
+He's welcome to pick up the necessary code from qemu.
 
-Why not make 'new_offset' as loff_t? This can make your code easier.
+>>> b) what do you suppose this protocol to aggregate the connections would
+>>> look like? (hint: this is what a vbus-connector does).
+>>>
+>>>        
+>> You mean multilink?  You expose the device as a multiqueue.
+>>      
+> No, what I mean is how do you surface multiple ethernet and consoles to
+> the guests?  For Ira's case, I think he needs at minimum at least one of
+> each, and he mentioned possibly having two unique ethernets at one point.
+>    
 
-> +
-> +       if (!task) /* lseek's spec doesn't allow -ESRCH but... */
+You instantiate multiple vhost-nets.  Multiple ethernet NICs is a 
+supported configuration for kvm.
 
+> His slave boards surface themselves as PCI devices to the x86
+> host.  So how do you use that to make multiple vhost-based devices (say
+> two virtio-nets, and a virtio-console) communicate across the transport?
+>    
 
-No worry, we have many ESRCH for proc files.
+I don't really see the difference between 1 and N here.
 
-> +               return -ESRCH;
-> +
->        switch (orig) {
->        case 0:
-> -               file->f_pos = offset;
-> +               new_offset = offset;
->                break;
->        case 1:
-> -               file->f_pos += offset;
-> +               new_offset = (unsigned long long)f->f_pos + offset;
->                break;
->        default:
-> -               return -EINVAL;
-> +               new_offset = -EINVAL;
-> +               break;
->        }
-> -       force_successful_syscall_return();
-> -       return file->f_pos;
-> +       if (new_offset < (unsigned long long)TASK_SIZE_OF(task)) {
+> There are multiple ways to do this, but what I am saying is that
+> whatever is conceived will start to look eerily like a vbus-connector,
+> since this is one of its primary purposes ;)
+>    
 
+I'm not sure if you're talking about the configuration interface or data 
+path here.
 
-Hmm, why this check?
-
-> +               file->f_pos = (loff_t)new_offset;
-> +               force_successful_syscall_return();
-> +       } else
-> +               new_offset = -EINVAL;
-> +       put_task_struct(task);
-> +       return (loff_t)new_offset;
->  }
+>>> c) how do you manage the configuration, especially on a per-board basis?
+>>>
+>>>        
+>> pci (for kvm/x86).
+>>      
+> Ok, for kvm understood (and I would also add "qemu" to that mix).  But
+> we are talking about vhost's application in a non-kvm environment here,
+> right?.
 >
->  static const struct file_operations proc_mem_operations = {
+> So if the vhost-X devices are in the "guest",
 
-Thanks.
+They aren't in the "guest".  The best way to look at it is
+
+- a device side, with a dma engine: vhost-net
+- a driver side, only accessing its own memory: virtio-net
+
+Given that Ira's config has the dma engine in the ppc boards, that's 
+where vhost-net would live (the ppc boards acting as NICs to the x86 
+board, essentially).
+
+> and the x86 board is just
+> a slave...How do you tell each ppc board how many devices and what
+> config (e.g. MACs, etc) to instantiate?  Do you assume that they should
+> all be symmetric and based on positional (e.g. slot) data?  What if you
+> want asymmetric configurations (if not here, perhaps in a different
+> environment)?
+>    
+
+I have no idea, that's for Ira to solve.  If he could fake the PCI 
+config space as seen by the x86 board, he would just show the normal pci 
+config and use virtio-pci (multiple channels would show up as a 
+multifunction device).  Given he can't, he needs to tunnel the virtio 
+config space some other way.
+
+>> Yes.  virtio is really virtualization oriented.
+>>      
+> I would say that its vhost in particular that is virtualization
+> oriented.  virtio, as a concept, generally should work in physical
+> systems, if perhaps with some minor modifications.  The biggest "limit"
+> is having "virt" in its name ;)
+>    
+
+Let me rephrase.  The virtio developers are virtualization oriented.  If 
+it works for non-virt applications, that's good, but not a design goal.
+
+-- 
+error compiling committee.c: too many arguments to function
+
