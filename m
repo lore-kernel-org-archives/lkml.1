@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZIPKeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZIPKqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbZIPKeI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 06:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbZIPKeE
+	id S1753274AbZIPKqv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 06:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZIPKqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 06:34:04 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:53879 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755044AbZIPKeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 06:34:03 -0400
-Date: Wed, 16 Sep 2009 12:34:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at mm/backing-dev.c:637 bdi_destroy+0x28/0x70()
-Message-ID: <20090916103406.GE23126@kernel.dk>
-References: <8db1092f0909160242s6856df5ax1bb909272f6c6869@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8db1092f0909160242s6856df5ax1bb909272f6c6869@mail.gmail.com>
+	Wed, 16 Sep 2009 06:46:51 -0400
+Received: from mga06.intel.com ([134.134.136.21]:43639 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751847AbZIPKqu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 06:46:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,397,1249282800"; 
+   d="scan'208";a="448975004"
+Date: Wed, 16 Sep 2009 11:41:11 +0100
+From: Alan Cox <alan@linux.intel.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Eric Paris <eparis@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org
+Subject: Re: fanotify as syscalls
+Message-ID: <20090916114111.2228f0fc@linux.intel.com>
+In-Reply-To: <20090916075219.GA22024@shareable.org>
+References: <20090911212731.GA19901@shareable.org>
+	<1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
+	<20090912094110.GB24709@ioremap.net>
+	<20090914001759.GB30621@shareable.org>
+	<20090914140720.GA8564@ioremap.net>
+	<1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
+	<20090915201620.GB32192@ioremap.net>
+	<1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
+	<alpine.LFD.2.01.0909151643540.4950@localhost.localdomain>
+	<1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com>
+	<20090916075219.GA22024@shareable.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16 2009, Maciej Rutecki wrote:
-> Last known good: 2.6.31
-> Bad: 26.31-git4
-> 
-> During reboot i got:
-> WARNING: at mm/backing-dev.c:637 bdi_destroy+0x28/0x70()
-> 
-> Screen picture:
-> http://unixy.pl/maciek/download/kernel/2.6.31-git4/shutdown.jpg
-> 
-> Dmesg:
-> http://unixy.pl/maciek/download/kernel/2.6.31-git4/dmesg-2.6.31-git4.txt
+> - fanotify does not provide subtree notification in it's
+>   present form.  When it is extended to do that, why wouldn't
+>   inotify be as well?  That's an fsnotify feature, common to both.
 
-Thanks, this one is fixed and just waiting for Linus to pull it in.
+Because inotify gives you no reliable access to the object monitored as
+the name passed back is not an object reference and is racy. Inotify is
+fine for making pretty icons pop up on desktops and making file
+selectors update, but it is somewhat inadequate for indexers and
+completely useless for stuff like HSM.
 
--- 
-Jens Axboe
+> - fanotify requires you call readlink(/proc/fd/N) for every event to
+>   get the path.  It's not a particularly efficient way to get it,
+
+IFF you want the path, but the path isn't usually the most valuable bit.
+Plus you'll find the readlink is extremely quick anyway.
+
+> People who want to break out of chroot/namespace jails using the
+> conveniently provided open file descriptor? :-)
+
+chroot isn't a security model. You can already do this with AF_UNIX
+sockets (and there are apps that intentionally use fchdir that way)
+
+> I'd expect anti-malware to want to be run inside VMs quite often...
+
+Inside of containers - unlikely. Inside of guests sure but thats not
+going to relevant to fanotify()
+
+> the accessing process until acked), that's ok with me.  It makes
+> sense.  But then it's messy that neither offers a superset of the
+> other regarding which files and events are tracked.
+
+Agreed.
 
