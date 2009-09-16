@@ -1,95 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759032AbZIPM5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbZIPM6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759032AbZIPM5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758937AbZIPM5K
+	id S1753688AbZIPM6v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZIPM6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:57:10 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:32784 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752963AbZIPM5I (ORCPT
+	Wed, 16 Sep 2009 08:58:51 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:60760 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbZIPM6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:57:08 -0400
-Date: Wed, 16 Sep 2009 13:56:58 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Alan Cox <alan@linux.intel.com>, Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org
-Subject: Re: fanotify as syscalls
-Message-ID: <20090916125658.GF29359@shareable.org>
-References: <20090914140720.GA8564@ioremap.net> <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com> <20090915201620.GB32192@ioremap.net> <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com> <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain> <1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com> <20090916075219.GA22024@shareable.org> <20090916114111.2228f0fc@linux.intel.com> <20090916114107.GB29359@shareable.org> <20090916130127.439c9222@lxorguk.ukuu.org.uk>
+	Wed, 16 Sep 2009 08:58:50 -0400
+Date: Wed, 16 Sep 2009 14:58:52 +0200 (CEST)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: vgoyal@redhat.com
+cc: linux-kernel@vger.kernel.org
+Subject: io-controller: file system meta data operations
+Message-ID: <alpine.DEB.2.00.0909161445440.11232@sebohet.brgvxre.pu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090916130127.439c9222@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> > You can't rely on the name being non-racy, but you _can_ reliably
-> > invalidate application-level caches from the sequence of events
-> > including file writes, creates, renames, links, unlinks, mounts.  And
-> > revalidate such caches by the absence of pending events.
-> 
-> You can't however create the caches reliably because you've no idea if
-> you are referencing the right object in the first place - which is why
-> you want a handle in these cases. I see fanotify as a handle producing
-> addition to inotify, not as a replacement (plus some other bits around
-> open blocking for HSM etc)
+Hi Vivek,
 
-There are two sets of events getting mixed up here.  Inode events -
-reads, writes, truncates, chmods; and directory events - renames,
-links, creates, unlinks.
+I am trying to optimize user-experience on a busy NFS server.
 
-Inode events alone _not enough_ to maintain caches, and here's why.
+I think much could be achieved if the following was true.
 
-With a file descriptor for an _inode_ event, that's fine.  If you have
-{ int fd1 = open("/foo/bar"), fd2 = open("/foo/baz"); } early in your
-program, and later cached_file_read(fd1) and cached_file_read(fd2),
-you have to recognise the inode number and invalidate both.
+  get a response to file system meta data operations (opendir,
+  readdir, stat, mkdir, unlink) within 200 ms even under heavy
+  read/write strain ...
 
-You have to call fstat() on the event's descriptor and then look up a
-device+inode number in your own table.  (The inotify way doesn't need
-the fstat() but is otherwise the same).
+In the course of my research I also tried the io-controller patches.
 
-That's fine for files you're keeping open and only want to know if the
-content changes _of an open file_.
+My test setup consists of several tar processes keeping a disk busy
+by packing and unpacking Linux kernels.
 
-But that's not so useful.
+I was able to bring read and write bandwidth into balance by
+putting the reading and writing tars in to different cgroups.
 
-More often, you want to validate cached_file_read("/foo/bar").  That
-is, validate what you'd get if you opened that path _now_ and read it.
-Same for cached_stat("/foo/bar") to cache permissions, and other
-things like that.
+Unfortunately this did not seem to help my goal since meta data
+operations do not seem to get treated differently from normal
+operations (or maybe even worse?)
 
-That needs to validate the path lookup _and_ the inode state.
+Is there a way to get io-controller to help me with this?
 
-For that, we need directory events, and they must include the name in
-the directory that's affected.  If you receive a directory event
-involving name "bar" in directory (identified by inode) "/foo", you
-invalidate cached_file_read("/foo/bar") and cached_stat("/foo/bar").
-
-Oh, but wait, how do we know the inode for the directory in our event
-still refers to "/foo"?  Answer: We're also watching it's parent
-directory "/".  Assuming no reordering of certain events, that's ok.
-
-That way, by watching "/", "/foo" and "/foo/bar", when you receive no
-events you validate the results of cached_file_read("/foo/bar") and
-cached_stat("/foo/bar").  A lot to set up, but fast to check.  Worth
-it if you're checking a lot of things that rarely change.
-
-If you receive inode events while watching the parent directory of the
-path used to access the inode, then you can avoid watching "/foo/bar",
-and just watch the path of parent directories.  That saves an order of
-magnitude of watches typically.  fanotify offers something similar,
-and in this case the event is probably more useful than inotify's.
-
-(The above is even hard-link-safe, if you do it right.  I won't
-complicate the explanation with details).
-
--- Jamie
+cheers
+tobi
+-- 
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
