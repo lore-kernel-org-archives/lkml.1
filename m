@@ -1,76 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbZIPMFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZIPMG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbZIPMFd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757678AbZIPMFc
+	id S1758317AbZIPMG1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756046AbZIPMGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:05:32 -0400
-Received: from centrinvest.ru ([94.25.115.130]:58448 "EHLO centrinvest.ru"
+	Wed, 16 Sep 2009 08:06:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40829 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757622AbZIPMF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:05:29 -0400
-From: "Andrey Panin" <pazke@centrinvest.ru>
-Date: Wed, 16 Sep 2009 16:05:29 +0400
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
-Subject: Re: [PATCH] media: video: pwc: Use kernel's simple_strtol()
-Message-ID: <20090916120529.GB18050@centrinvest.ru>
-Mail-Followup-To: Andy Shevchenko <andy.shevchenko@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
-References: <1253101347-25038-1-git-send-email-andy.shevchenko@gmail.com>
+	id S1757164AbZIPMGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:06:23 -0400
+Date: Wed, 16 Sep 2009 14:06:23 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 01/11] fs: remove bdev->bd_inode_backing_dev_info
+Message-ID: <20090916120623.GA26030@duck.suse.cz>
+References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com> <1253038617-30204-2-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253101347-25038-1-git-send-email-andy.shevchenko@gmail.com>
-X-Uname: Linux 2.6.26-1-amd64 x86_64
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Anti-Virus: kav4lms: continue
+In-Reply-To: <1253038617-30204-2-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 259, 09 16, 2009 at 02:42:27PM +0300, Andy Shevchenko wrote:
-> From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+On Tue 15-09-09 20:16:47, Jens Axboe wrote:
+> It has been unused since it was introduced in:
 > 
-> Change own implementation of atoi() by simple_strtol(x, NULL, 10).
+> commit 520808bf20e90fdbdb320264ba7dd5cf9d47dcac
+> Author: Andrew Morton <akpm@osdl.org>
+> Date:   Fri May 21 00:46:17 2004 -0700
+> 
+>     [PATCH] block device layer: separate backing_dev_info infrastructure
+> 
+> So lets just kill it.
+> 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+  Fine with me: Acked-by: Jan Kara <jack@suse.cz>
 
-Why did you keep the wrapper itself then ?
-
-
-> Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+								Honza
 > ---
->  drivers/media/video/pwc/pwc-if.c |   13 +++----------
->  1 files changed, 3 insertions(+), 10 deletions(-)
+>  fs/block_dev.c        |    1 -
+>  fs/inode.c            |    4 +---
+>  fs/nilfs2/the_nilfs.c |    4 +---
+>  include/linux/fs.h    |    1 -
+>  4 files changed, 2 insertions(+), 8 deletions(-)
 > 
-> diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
-> index f976df4..cb995c6 100644
-> --- a/drivers/media/video/pwc/pwc-if.c
-> +++ b/drivers/media/video/pwc/pwc-if.c
-> @@ -68,6 +68,7 @@
->  #endif
->  #include <linux/vmalloc.h>
->  #include <asm/io.h>
-> +#include <linux/kernel.h>		/* simple_strtol() */
->  
->  #include "pwc.h"
->  #include "pwc-kiara.h"
-> @@ -1916,17 +1917,9 @@ disconnect_out:
->  	unlock_kernel();
->  }
->  
-> -/* *grunt* We have to do atoi ourselves :-( */
-> -static int pwc_atoi(const char *s)
-> +static inline int pwc_atoi(const char *s)
+> diff --git a/fs/block_dev.c b/fs/block_dev.c
+> index 3581a4e..71e7e03 100644
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -420,7 +420,6 @@ static void bdev_destroy_inode(struct inode *inode)
 >  {
-> -	int k = 0;
-> -
-> -	k = 0;
-> -	while (*s != '\0' && *s >= '0' && *s <= '9') {
-> -		k = 10 * k + (*s - '0');
-> -		s++;
-> -	}
-> -	return k;
-> +	return (int)simple_strtol(s, NULL, 10);
+>  	struct bdev_inode *bdi = BDEV_I(inode);
+>  
+> -	bdi->bdev.bd_inode_backing_dev_info = NULL;
+>  	kmem_cache_free(bdev_cachep, bdi);
 >  }
+>  
+> diff --git a/fs/inode.c b/fs/inode.c
+> index ae7b67e..b2ba83d 100644
+> --- a/fs/inode.c
+> +++ b/fs/inode.c
+> @@ -182,9 +182,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
+>  	if (sb->s_bdev) {
+>  		struct backing_dev_info *bdi;
+>  
+> -		bdi = sb->s_bdev->bd_inode_backing_dev_info;
+> -		if (!bdi)
+> -			bdi = sb->s_bdev->bd_inode->i_mapping->backing_dev_info;
+> +		bdi = sb->s_bdev->bd_inode->i_mapping->backing_dev_info;
+>  		mapping->backing_dev_info = bdi;
+>  	}
+>  	inode->i_private = NULL;
+> diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
+> index d4168e2..ad391a8 100644
+> --- a/fs/nilfs2/the_nilfs.c
+> +++ b/fs/nilfs2/the_nilfs.c
+> @@ -591,9 +591,7 @@ int init_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi, char *data)
+>  
+>  	nilfs->ns_mount_state = le16_to_cpu(sbp->s_state);
+>  
+> -	bdi = nilfs->ns_bdev->bd_inode_backing_dev_info;
+> -	if (!bdi)
+> -		bdi = nilfs->ns_bdev->bd_inode->i_mapping->backing_dev_info;
+> +	bdi = nilfs->ns_bdev->bd_inode->i_mapping->backing_dev_info;
+>  	nilfs->ns_bdi = bdi ? : &default_backing_dev_info;
+>  
+>  	/* Finding last segment */
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index b21cf6b..db29588 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -655,7 +655,6 @@ struct block_device {
+>  	int			bd_invalidated;
+>  	struct gendisk *	bd_disk;
+>  	struct list_head	bd_list;
+> -	struct backing_dev_info *bd_inode_backing_dev_info;
+>  	/*
+>  	 * Private data.  You must have bd_claim'ed the block_device
+>  	 * to use this.  NOTE:  bd_claim allows an owner to claim
+> -- 
+> 1.6.4.1.207.g68ea
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
