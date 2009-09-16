@@ -1,54 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZIPPeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751585AbZIPPe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbZIPPeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 11:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZIPPeQ
+	id S1751585AbZIPPe0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 11:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZIPPeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 11:34:16 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:64212 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750920AbZIPPeP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 11:34:15 -0400
-Subject: Re: RCU callbacks and TREE_PREEMPT_RCU
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090916152929.GA6737@linux.vnet.ibm.com>
-References: <1253110641.31751.92.camel@pc1117.cambridge.arm.com>
-	 <20090916152929.GA6737@linux.vnet.ibm.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 16 Sep 2009 16:34:15 +0100
-Message-Id: <1253115255.31751.96.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Sep 2009 15:34:16.0564 (UTC) FILETIME=[268B9B40:01CA36E3]
+	Wed, 16 Sep 2009 11:34:23 -0400
+Received: from kroah.org ([198.145.64.141]:33667 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752596AbZIPPeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 11:34:19 -0400
+Date: Wed, 16 Sep 2009 08:34:16 -0700
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org
+Subject: Re: [GIT PATCH] STAGING patches for 2.6.31-git
+Message-ID: <20090916153416.GA27133@kroah.com>
+References: <20090915190520.GA834@kroah.com>
+ <alpine.LFD.2.01.0909160813400.4950@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0909160813400.4950@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-16 at 08:29 -0700, Paul E. McKenney wrote:
-> On Wed, Sep 16, 2009 at 03:17:21PM +0100, Catalin Marinas wrote:
-> > When TREE_PREEMPT_RCU is enabled, the rcu list traversing above fails
-> > with access to 0x6b6b6b6b but it is fine with TREE_PREEMPT_RCU=n and
-> > TREE_RCU=y. During clean-up, kmemleak objects should no longer be freed
-> > by other means since kmemleak was disabled and all callbacks are
-> > ignored. The system is a 900Mhz P3, 256MB RAM, CONFIG_SMP=n.
+On Wed, Sep 16, 2009 at 08:26:14AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 15 Sep 2009, Greg KH wrote:
 > > 
-> > Is there something I'm doing wrong in kmemleak or a bug with RCU
-> > preemption? The kernel oops looks like this:
+> > Overall, we almost broke even with our cleanups and removals for what
+> > was done here:
+> >  1267 files changed, 297615 insertions(+), 214568 deletions(-)
 > 
-> From your description and the code above, I must suspect a bug with
-> RCU preemption.  A new one, as the only bugs I am currently chasing
-> involve NR_CPUS>32 (>64 on 64-bit systems).
+> Actually, it's
 > 
-> CONFIG_SMP=n implies NR_CPUS==1 in your build, correct?
+>  1253 files changed, 287789 insertions(+), 209389 deletions(-)
+> 
+> but there are so many changed files that the default rename detection 
+> limit kicks in, and your git will have only looked at 100% identical 
+> renames. So you missed things like:
+> 
+>  rename drivers/staging/{rt2860 => rt3090}/link_list.h (99%)
+>  copy drivers/staging/{rt2870/md4.h => rt3090/mlme_ex.h} (56%)
+>  copy drivers/staging/{rt2860/md4.h => rt3090/mlme_ex_def.h} (67%)
+>  copy drivers/staging/{rt2860/md4.h => rt3090/netif_block.h} (72%)
+>  rename drivers/staging/{rt2870/md4.h => rt3090/rt33xx.h} (79%)
+>  ...
+> 
+> Now, admittedly the 'copy' ones are dubious: it's picking up on the 
+> f*cking Ralink GPL copyright template, which is the bulk of those files. 
+> But that in itself is interesting information, even if I personally find 
+> mindless copyright templates very annoying.
+> 
+> Anyway, extended rename detection (ie the non-exact one that can't just 
+> look at the SHA1's and say "those are identical") gets disabled if your 
+> rename matrix is large (cost function: n*m where 'n' is number of added 
+> files, and 'm' is number of deleted ones), which triggers for your staging 
+> tree because you had both deletions and creations.
+> 
+> The default git limit is set fairly low, because it's set for small 
+> machines with limited amounts of memory in particular. I suspect you might 
+> want to add
+> 
+> 	[diff]
+> 		renamelimit=0
+> 
+> to your ~/.gitconfig, since you probably don't use particularly weak 
+> machines, and that will disable the limiting. Then you'd get the full 
+> renames in all their glory.
 
-CONFIG_NR_CPUS=1.
+Ah, ok, will do, didn't know about that.  Thanks for the info.
 
--- 
-Catalin
+> Without it, you'll see just:
+> 
+>  copy drivers/staging/{rtl8192su => rtl8192e}/dot11d.h (100%)
+>  rename drivers/staging/{rtl8192su => rtl8192e/ieee80211}/dot11d.h (100%)
+>  rename drivers/staging/{rtl8192su => rtl8192e}/ieee80211/rtl_crypto.h (100%)
+>  rename drivers/staging/{rtl8187se => rtl8192e}/ieee80211_crypt.h (100%)
+> 
+> while with it, you'll see examples of lots of cases of header files where 
+> there is more copyright header than actual content ;(
 
+Yeah, this company is known for just taking a whole new version of
+everything for their next driver, and only changing tiny bits.  It's
+something I'm working on getting resolved with them...
+
+thanks,
+
+greg k-h
