@@ -1,67 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751513AbZIPElX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751715AbZIPEmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751513AbZIPElX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 00:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZIPElW
+	id S1751715AbZIPEmX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 00:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZIPEmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 00:41:22 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:59209 "EHLO
-	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751106AbZIPElV convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 00:42:23 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:57591 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751333AbZIPEmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 00:41:21 -0400
-X-SpamScore: 2
-X-BigFish: VPS2(zz1432R98dNzz1202hzz3198u327alz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KQ1ROR-02-7HJ-02
-X-M-MSG: 
-Date: Wed, 16 Sep 2009 06:40:29 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG] compile error with edac_mce_amd.c as module
-Message-ID: <20090916044029.GA5767@aftab>
-References: <1253044479.20020.125.camel@gandalf.stny.rr.com>
+	Wed, 16 Sep 2009 00:42:22 -0400
+Date: Tue, 15 Sep 2009 21:40:48 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
+Message-ID: <20090916044047.GA30453@mail.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	ocfs2-devel@oss.oracle.com
+References: <20090914221434.GA4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain>
+ <20090915000417.GC4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
+ <20090915005417.GD4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
+ <20090915040601.GE4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
+ <20090915214530.GA11060@mail.oracle.com>
+ <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253044479.20020.125.camel@gandalf.stny.rr.com>
+In-Reply-To: <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 16 Sep 2009 04:40:32.0588 (UTC) FILETIME=[D33BD8C0:01CA3687]
-X-Reverse-DNS: ausb3extmailp02.amd.com
-Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4AB06CA4.0072:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 03:54:39PM -0400, Steven Rostedt wrote:
-> The file drivers/edac/edac_mce_amd.c references a kernel variable that
-> is not exported for modules.
+On Tue, Sep 15, 2009 at 09:20:47PM -0700, Linus Torvalds wrote:
+> On Tue, 15 Sep 2009, Joel Becker wrote:
+> >
+> > 	Perhaps ->copyfile takes the following flags:
+> > 
+> > #define ALLOW_COW_SHARED	0x0001
+> > #define REQUIRE_COW_SHARED	0x0002
+> > #define REQUIRE_BASIC_ATTRS	0x0004
+> > #define REQUIRE_FULL_ATTRS	0x0008
+> > #define REQUIRE_ATOMIC		0x0010
+> > #define SNAPSHOT		(REQUIRE_COW_SHARED |
+> > 				 REQUIRE_BASIC_ATTRS |
+> > 				 REQUIRE_ATOMIC)
+> > #define SNAPSHOT_PRESERVE	(SNAPSHOT | REQUIRE_FULL_ATTRS)
+> > 
+> > Thus, sys_reflink/sys_snapfile(oldpath, newpath, 0) becomes:
+> > ...
 > 
->  ERROR: "per_cpu__cpu_llc_id" [drivers/edac/edac_core.ko] undefined!
-> 
-> 
-> The variable in question is located in arch/x86/kernel/smpboot.c
-> 
-> /* Last level cache ID of each logical CPU */
-> DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
-> 
-> and is not exported to modules.
-> 
-> This is from the latest Linus repo. I can supply a config if requested.
+> Yes. The above all sounds sane to me.
 
-Sorry for that, proper fix is already there:
-http://marc.info/?l=linux-kernel&m=125302459621925
+	Ok.  Where do you see the exposure level?  What I mean is, I
+just defined a vfs op that handles these things, but accessed it via two
+syscalls, sys_snapfile() and sys_copyfile().  We could also just provide
+one system call and allow userspace to use these flags itself, creating
+snapfile(3) and copyfile(3) in libc, hiding the details (kind of like
+clone being hidden by pthreads, though ignoring that pthreads has
+"issues").  Or we could explicitly make this the public API and expect
+something like cp(1) to directly use the flags.  Thoughts?
+
+> I still worry that especially the non-atomic case will want some kind of 
+> partial-copy updates (think graphical file managers that want to show the 
+> progress of the copy), and that (think EINTR and continuing) makes me 
+> think "that could get really complex really quickly", but that's something 
+> that the NFS/SMB people would have to pipe up on. I'm pretty sure the NFS 
+> spec has some kind "partial completion notification" model, I dunno about 
+> SMB.
+
+	I'm really wary of combining a ranged interface with this one.
+Not only does it make no sense for snapshots, but I think it falls down
+in any "create a new inode" scheme entirely.
+	btrfs has an ioctl that basically says "link up range x->y of
+file 1 to file 2".  Chris is using the underlying machinery to implement
+reflink, but I think the concept actually would work nicely as a splice
+flag.  If you have two existing files, not creating one, you can just
+ask splice to do efficient things with a SPLICE_F_EFFICIENT_COPY for
+yoru CIFS COPY-style thing or SPLICE_F_COW_COPY for btrfs- and
+ocfs2-style data sharing.
+
+Joel
 
 -- 
-Regards/Gruss,
-Boris.
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+"Nothing is wrong with California that a rise in the ocean level
+ wouldn't cure."
+        - Ross MacDonald
 
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
