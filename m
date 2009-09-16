@@ -1,130 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbZIPQha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZIPRn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759709AbZIPQha (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759636AbZIPQh1
+	id S1759705AbZIPRn1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 13:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbZIPRnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:37:27 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:40555 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759620AbZIPQh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:37:26 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: linux-arm-kernel@lists.infradead.org, avictor.za@gmail.com
-Cc: linux-kernel@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH] at91: add AC97 support to at91sam9g45 series and at91sam9m10g45ek board
-Date: Wed, 16 Sep 2009 19:41:42 +0200
-Message-Id: <1253122902-15647-2-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1253122902-15647-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1253122902-15647-1-git-send-email-nicolas.ferre@atmel.com>
+	Wed, 16 Sep 2009 13:43:21 -0400
+Received: from mail-ew0-f227.google.com ([209.85.219.227]:49675 "EHLO
+	mail-ew0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754098AbZIPRnU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 13:43:20 -0400
+Date: Wed, 16 Sep 2009 22:43:18 +0500
+From: Constantin Baranov <const@mimas.ru>
+To: Julian Calaby <julian.calaby@gmail.com>,
+       James Bottomley <James.Bottomley@suse.de>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] hwmon: Driver for SCSI/ATA temperature sensors
+Message-Id: <20090916224318.72be99ac.const@mimas.ru>
+In-Reply-To: <646765f40909142257t560b314dt74d4158a497f0460@mail.gmail.com>
+References: <20090913040104.ab1d0b69.const@mimas.ru>
+	<1252850453.23599.13.camel@mulgrave.site>
+	<646765f40909142257t560b314dt74d4158a497f0460@mail.gmail.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the support of AC97 on the at91sam9g45 chip series and -ek board.
-It will share the code with AVR32 ac97c alsa driver "atmel_ac97c".
+On Mon, 14 Sep 2009 17:00:20 +0200 Pavel Machek <pavel@ucw.cz> wrote:
+> Well, having unified kernel<->user interface for temperature sensors
+> makes sense.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- arch/arm/mach-at91/at91sam9g45_devices.c |   55 ++++++++++++++++++++++++++++++
- arch/arm/mach-at91/board-sam9m10g45ek.c  |   10 +++++
- 2 files changed, 65 insertions(+), 0 deletions(-)
+This is my exact motivation.
 
-diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
-index 45720c8..d581cff 100644
---- a/arch/arm/mach-at91/at91sam9g45_devices.c
-+++ b/arch/arm/mach-at91/at91sam9g45_devices.c
-@@ -598,6 +598,61 @@ void __init at91_add_device_spi(struct spi_board_info *devices, int nr_devices)
- 
- 
- /* --------------------------------------------------------------------
-+ *  AC97
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_SND_ATMEL_AC97C) || defined(CONFIG_SND_ATMEL_AC97C_MODULE)
-+static u64 ac97_dmamask = DMA_BIT_MASK(32);
-+static struct ac97c_platform_data ac97_data;
-+
-+static struct resource ac97_resources[] = {
-+	[0] = {
-+		.start	= AT91SAM9G45_BASE_AC97C,
-+		.end	= AT91SAM9G45_BASE_AC97C + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT91SAM9G45_ID_AC97C,
-+		.end	= AT91SAM9G45_ID_AC97C,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at91sam9g45_ac97_device = {
-+	.name		= "atmel_ac97c",
-+	.id		= 0,
-+	.dev		= {
-+				.dma_mask		= &ac97_dmamask,
-+				.coherent_dma_mask	= DMA_BIT_MASK(32),
-+				.platform_data		= &ac97_data,
-+	},
-+	.resource	= ac97_resources,
-+	.num_resources	= ARRAY_SIZE(ac97_resources),
-+};
-+
-+void __init at91_add_device_ac97(struct ac97c_platform_data *data)
-+{
-+	if (!data)
-+		return;
-+
-+	at91_set_A_periph(AT91_PIN_PD8, 0);	/* AC97FS */
-+	at91_set_A_periph(AT91_PIN_PD9, 0);	/* AC97CK */
-+	at91_set_A_periph(AT91_PIN_PD7, 0);	/* AC97TX */
-+	at91_set_A_periph(AT91_PIN_PD6, 0);	/* AC97RX */
-+
-+	/* reset */
-+	if (data->reset_pin)
-+		at91_set_gpio_output(data->reset_pin, 0);
-+
-+	ac97_data = *data;
-+	platform_device_register(&at91sam9g45_ac97_device);
-+}
-+#else
-+void __init at91_add_device_ac97(struct ac97c_platform_data *data) {}
-+#endif
-+
-+
-+/* --------------------------------------------------------------------
-  *  LCD Controller
-  * -------------------------------------------------------------------- */
- 
-diff --git a/arch/arm/mach-at91/board-sam9m10g45ek.c b/arch/arm/mach-at91/board-sam9m10g45ek.c
-index b8558ea..64c3843 100644
---- a/arch/arm/mach-at91/board-sam9m10g45ek.c
-+++ b/arch/arm/mach-at91/board-sam9m10g45ek.c
-@@ -311,6 +311,14 @@ static void __init ek_add_device_buttons(void) {}
- 
- 
- /*
-+ * AC97
-+ * reset_pin is not connected: NRST
-+ */
-+static struct ac97c_platform_data ek_ac97_data = {
-+};
-+
-+
-+/*
-  * LEDs ... these could all be PWM-driven, for variable brightness
-  */
- static struct gpio_led ek_leds[] = {
-@@ -372,6 +380,8 @@ static void __init ek_board_init(void)
- 	at91_add_device_lcdc(&ek_lcdc_data);
- 	/* Push Buttons */
- 	ek_add_device_buttons();
-+	/* AC97 */
-+	at91_add_device_ac97(&ek_ac97_data);
- 	/* LEDs */
- 	at91_gpio_leds(ek_leds, ARRAY_SIZE(ek_leds));
- 	at91_pwm_leds(ek_pwm_led, ARRAY_SIZE(ek_pwm_led));
--- 
-1.5.6.5
+On Tue, 15 Sep 2009 15:57:39 +1000 Julian Calaby <julian.calaby@gmail.com> wrote:
+> On Mon, Sep 14, 2009 at 00:00, James Bottomley <James.Bottomley@suse.de> wrote:
+> > So really, given the complexity of just obtaining the data and the
+> > problem of matching which data to obtain to which device you have, why
+> > not just use smartctl from userspace for monitoring?  you could even
+> > just plug into smartd, it seems to have most of the necessary heuristics
+> > built in already.
+> 
+> There's even a util called hddtemp which handles all this and has a
+> database of smart attributes to use for most drives.
 
+Of course, I know about both smartctl and hddtemp tools.
+
+On Sun, 13 Sep 2009 09:00:53 -0500 James Bottomley <James.Bottomley@suse.de> wrote:
+> The basic problem are the effects.  Right at the moment it tries to send
+> an ATA_16 encapsulated SMART command to every SCSI device in the system.
+> We simply can't allow this.  A huge number of SCSI presenting USB
+> devices are known to lock up when they see either ATA_X encapsulation or
+> SMART commands.  It's not really even safe to send ATA_X to SCSI
+> devices.  The modern ones should all error out fine, but the older ones
+> are likely to be less tolerant.
+
+I looked for reliable method of classifying devices. Unfortunately,
+without success. Maybe it's better to disable automatic scanning and provide
+a user (udev) with ability to enable monitoring on explicitly pointed device.
+
+> Smart attribute 194 is highly vendor specific ... for instance my new
+> SATA drive doesn't implement it (it does implement 190 instead).
+
+Unfortunately, every SMART attribute is either reserved or vendor specific
+as per T13. AFAIK, 194 is the most popular. That's why I have chosen it
+in the first version. However, attribute number (and interpretation method
+as well) may become configurable. Moreover, we can use hddtemp database
+to initially configure scsitemp. And use unified hwmon interface later :)
