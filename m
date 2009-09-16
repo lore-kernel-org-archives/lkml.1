@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbZIOX7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZIPAEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630AbZIOX7Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 19:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbZIOX7V
+	id S1753864AbZIPAEO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 20:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZIPAEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 19:59:21 -0400
-Received: from mga03.intel.com ([143.182.124.21]:23707 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526AbZIOX7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 19:59:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,393,1249282800"; 
-   d="scan'208";a="188060731"
-Date: Wed, 16 Sep 2009 07:59:01 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] hwpoison: fix uninitialized warning
-Message-ID: <20090915235901.GB6431@localhost>
-References: <Pine.LNX.4.64.0909152206220.28874@sister.anvils>
+	Tue, 15 Sep 2009 20:04:11 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:40208 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752708AbZIPAEL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 20:04:11 -0400
+Date: Wed, 16 Sep 2009 09:03:57 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, kmpark@infradead.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: 2.6.32 -mm merge plans
+Message-ID: <20090916000357.GD23923@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Artem Bityutskiy <dedekind1@gmail.com>,
+	linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+	kmpark@infradead.org, linux-mtd@lists.infradead.org
+References: <20090915161535.db0a6904.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0909152206220.28874@sister.anvils>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090915161535.db0a6904.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 05:19:07AM +0800, Hugh Dickins wrote:
-> Fix mmotm build warning, presumably also in linux-next:
-> mm/memory.c: In function `do_swap_page':
-> mm/memory.c:2498: warning: `pte' may be used uninitialized in this function
-
-Thanks for the fix!
-
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
-> I've only noticed this warning on one machine, the powerpc: certainly it
-> needs CONFIG_MIGRATION or CONFIG_MEMORY_FAILURE to see it, but I thought
-> I had one of those set on other machines - just musing in case it's being
-> masked elsewhere by some other bug...
+On Tue, Sep 15, 2009 at 04:15:35PM -0700, Andrew Morton wrote:
+> mtd-make-onenand-genericc-more-generic.patch
+> mtd-nand-add-page-parameter-to-all-read_page-read_page_raw-apis.patch
+> mtd-nand-add-new-ecc-mode-ecc_hw_oob_first.patch
+> mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips.patch
+> mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips-update.patch
+> mtd-jffs2-fix-read-buffer-overflow.patch
+> mtd-prevent-a-read-from-eraseregions.patch
+> mtd-prevent-a-read-from-regions.patch
+> mtd-jedec_probe-fix-nec-upd29f064115-detection.patch
+> mtdpart-memory-accessor-interface-for-mtd-layer.patch
 > 
->  mm/memory.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>   -> dwmw2
 > 
-> --- mmotm/mm/memory.c	2009-09-14 16:34:37.000000000 +0100
-> +++ linux/mm/memory.c	2009-09-15 22:00:48.000000000 +0100
-> @@ -2495,7 +2495,7 @@ static int do_swap_page(struct mm_struct
->  		} else if (is_hwpoison_entry(entry)) {
->  			ret = VM_FAULT_HWPOISON;
->  		} else {
-> -			print_bad_pte(vma, address, pte, NULL);
-> +			print_bad_pte(vma, address, orig_pte, NULL);
->  			ret = VM_FAULT_OOM;
->  		}
->  		goto out;
+Regarding mtd-make-onenand-genericc-more-generic.patch, I'm not really
+sure what happened. To recap:
+
+It was posted to the mtd list here:
+
+http://lists.infradead.org/pipermail/linux-mtd/2009-August/026805.html
+
+Kyungmin objected to the driver name change here:
+
+http://lists.infradead.org/pipermail/linux-mtd/2009-August/026807.html
+
+I pointed out that the rough rationale for the name change here:
+
+http://lists.infradead.org/pipermail/linux-mtd/2009-August/026808.html
+
+and offered to redo the patch keeping the old name if Kyungmin felt the
+rationale wasn't valid, but received no reply. Subsequently, Artem
+mentioned that he had merged it in to his l2-mtd-2.6.git tree here:
+
+http://lists.infradead.org/pipermail/linux-mtd/2009-August/026866.html
+
+which subsequently seems to not actually have happened.
+
+This is a pretty trivial patch, and I don't mind respinning it in
+whatever form folks are content with. I had assumed given the mention
+that it had been merged in to the l2 tree that the rationale was
+sufficient for merging.
