@@ -1,46 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759876AbZIPQ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759864AbZIPRAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759876AbZIPQ5V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759704AbZIPQ5R
+	id S1759864AbZIPRAg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 13:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbZIPRAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:57:17 -0400
-Received: from fifo99.com ([67.223.236.141]:39188 "EHLO fifo99.com"
+	Wed, 16 Sep 2009 13:00:32 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:49443 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759671AbZIPQ5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:57:16 -0400
-Subject: Re: [PATCH] enabling ACS P2P upstream forwarding
-From: Daniel Walker <dwalker@fifo99.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jonathan Corbet <corbet@lwn.net>, "Kay, Allen M" <allen.m.kay@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
-In-Reply-To: <20090916174144.3282614c@lxorguk.ukuu.org.uk>
-References: <57C9024A16AD2D4C97DC78E552063EA3E05DC218@orsmsx505.amr.corp.intel.com>
-	 <1253059937.11643.527.camel@desktop> <20090916093446.5ea81b8a@bike.lwn.net>
-	 <1253119153.11643.583.camel@desktop>
-	 <20090916174144.3282614c@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Wed, 16 Sep 2009 09:58:14 -0700
-Message-Id: <1253120294.11643.588.camel@desktop>
+	id S1753283AbZIPRAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 13:00:31 -0400
+Date: Wed, 16 Sep 2009 10:00:28 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: ipv4 regression in 2.6.31 ?
+Message-ID: <20090916100028.654f7893@nehalam>
+In-Reply-To: <20090916052304.GA4894@ff.dom.local>
+References: <20090914093128.4d709ff6@nehalam>
+	<20090915081354.GA10037@ff.dom.local>
+	<20090915155719.22bae41e@nehalam>
+	<20090916052304.GA4894@ff.dom.local>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-16 at 17:41 +0100, Alan Cox wrote:
-> > Shouldn't all patches be sent as plain text untouched? I don't think I
-> > should necessarily need a specific email client to strip off some
-> > characters..
+On Wed, 16 Sep 2009 05:23:04 +0000
+Jarek Poplawski <jarkao2@gmail.com> wrote:
+
+> On Tue, Sep 15, 2009 at 03:57:19PM -0700, Stephen Hemminger wrote:
+> > On Tue, 15 Sep 2009 08:13:55 +0000
+> > Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > 
+> > > On 14-09-2009 18:31, Stephen Hemminger wrote:
+> > > > On Mon, 14 Sep 2009 17:55:05 +0200
+> > > > Stephan von Krawczynski <skraw@ithnet.com> wrote:
+> > > > 
+> > > >> On Mon, 14 Sep 2009 15:57:03 +0200
+> > > >> Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> > > >>
+> > > >>> Stephan von Krawczynski a A~(c)crit :
+> > > >>>> Hello all,
+> > > ...
+> > > >>> rp_filter - INTEGER
+> > > >>>         0 - No source validation.
+> > > >>>         1 - Strict mode as defined in RFC3704 Strict Reverse Path
+> > > >>>             Each incoming packet is tested against the FIB and if the interface
+> > > >>>             is not the best reverse path the packet check will fail.
+> > > >>>             By default failed packets are discarded.
+> > > >>>         2 - Loose mode as defined in RFC3704 Loose Reverse Path
+> > > >>>             Each incoming packet's source address is also tested against the FIB
+> > > >>>             and if the source address is not reachable via any interface
+> > > >>>             the packet check will fail.
+> > > ...
+> > > > RP filter did not work correctly in 2.6.30. The code added to to the loose
+> > > > mode caused a bug; the rp_filter value was being computed as:
+> > > >   rp_filter = interface_value & all_value;
+> > > > So in order to get reverse path filter both would have to be set.
+> > > > 
+> > > > In 2.6.31 this was change to:
+> > > >    rp_filter = max(interface_value, all_value);
+> > > > 
+> > > > This was the intended behaviour, if user asks all interfaces to have rp
+> > > > filtering turned on, then set /proc/sys/net/ipv4/conf/all/rp_filter = 1
+> > > > or to turn on just one interface, set it for just that interface.
+> > > 
+> > > Alas this max() formula handles also cases where both values are set
+> > > and it doesn't look very natural/"user friendly" to me. Especially
+> > > with something like this: all_value = 2; interface_value = 1
+> > > Why would anybody care to bother with interface_value in such a case?
+> > > 
+> > > "All" suggests "default" in this context, so I'd rather expect
+> > > something like:
+> > >     rp_filter = interface_value ? : all_value;
+> > > which gives "the inteded behaviour" too, plus more...
+> > > 
+> > > We'd only need to add e.g.:
+> > >  0 - Default ("all") validation. (No source validation if "all" is 0).
+> > >  3 - No source validation on this interface.
+> > 
+> > More values == more confusion.
+> > I chose the maxconf() method to make rp_filter consistent with other
+> > multi valued variables (arp_announce and arp_ignore).
 > 
-> Plain text is 7bit (netascii). People have unicode names.
+> This additional value is not necessary (it'd give as superpowers).
+> Max seems logical to me only when values are sorted (especially if
+> max is the strictest).
 
-Is "=20" or "=3D" unicode encodings? Seems like we do allow UTF-8 for
-patches.. For this patch I don't see why you would need unicode in the
-actual patch content or for names tho.
-
-Daniel
-
+The values had to be unsorted because of the requirement to retain
+interface compatibility with older releases.
+-- 
