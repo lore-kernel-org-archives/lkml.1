@@ -1,128 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbZIPV1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760143AbZIPV2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760153AbZIPV1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 17:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZIPV1m
+	id S1760143AbZIPV2q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 17:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760051AbZIPV2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 17:27:42 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:56634 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754921AbZIPV1l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 17:27:41 -0400
-Date: Wed, 16 Sep 2009 16:27:41 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Ashwin Ganti <ashwin.ganti@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH staging] p9auth: a few fixes
-Message-ID: <20090916212741.GA19295@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 16 Sep 2009 17:28:43 -0400
+Received: from mga01.intel.com ([192.55.52.88]:4718 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754919AbZIPV2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 17:28:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,399,1249282800"; 
+   d="scan'208";a="727601624"
+Subject: Re: x86-PAT tree merge causes keyboard problems
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AB07F39.4080205@zytor.com>
+References: <20090915205259.GA1910@phenom2.trippelsdorf.de>
+	 <4AB018C0.30203@zytor.com> <20090916052657.GA1897@phenom2.trippelsdorf.de>
+	 <4AB07F39.4080205@zytor.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Wed, 16 Sep 2009 14:28:03 -0700
+Message-Id: <1253136483.4119.12.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. The memory into which we copy 'u1@u2' needs space for u1, @,
-	u2, and a final \0 which strcat copies in.
-2. Strsep changes the value of its first argument.  So use a
-	temporary variable to pass to it, so we pass the original
-	value to kfree!
-3. Allocate an extra char to user_buf, because we need a trailing \0
-	since we later kstrdup it.
+On Tue, 2009-09-15 at 23:01 -0700, H. Peter Anvin wrote:
+> Okay, that explains the keyboard failure.  What you're really seeing is
+> a systemic failure of the X server.  Suresh thought it might be mapping
+> the frame buffer incorrectly.
 
-I am about to send out an LTP testcase for this driver, but
-in addition the correctness of the hashing can be verified as
-follows:
+Markus, Can you please check if the appended patch fixes the issue? It
+seems to fix the issue for me.
 
- #include <stdio.h>
- #include <stdlib.h>
- #include <unistd.h>
-
-int main(int argc, char *argv[])
-{
-        char in[41], out[20];
-        unsigned int v;
-        int i, ret;
-
-        ret = read(STDIN_FILENO, in, 40);
-        if (ret != 40)
-                exit(1);
-        in[40] = '\0';
-        for (i = 0; i < 20; i++) {
-                sscanf(&in[2*i], "%02x", &v);
-                out[i] = v;
-        }
-        write(STDOUT_FILENO, out, 20);
-}
-
-as root, to test userid 501 switching to uid 0, choosing
-'random' string 'ab':
-
-echo -n "501@0" > plain
-openssl sha1  -hmac 'ab' plain |awk '{ print $2 '} > dgst
-./unhex < dgst > dgst.u
-mknod /dev/caphash 504 0
-mknod /dev/capuse 504 1
-chmod ugo+w /dev/capuse
-cat dgst.u > /dev/caphash
-
-as uid 501,
-echo "501@0@ab" > /dev/capuse
-id -u  # should now show 0.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+thanks,
+suresh
 ---
- drivers/staging/p9auth/p9auth.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/p9auth/p9auth.c b/drivers/staging/p9auth/p9auth.c
-index 9111dcb..8ccfff7 100644
---- a/drivers/staging/p9auth/p9auth.c
-+++ b/drivers/staging/p9auth/p9auth.c
-@@ -183,7 +183,7 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
- 	user_buf_running = NULL;
- 	hash_str = NULL;
- 	node_ptr = kmalloc(sizeof(struct cap_node), GFP_KERNEL);
--	user_buf = kzalloc(count, GFP_KERNEL);
-+	user_buf = kzalloc(count+1, GFP_KERNEL);
- 	if (!node_ptr || !user_buf)
- 		goto out;
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: x86, pat: don't use rb-tree based lookup in reserve_memtype()
+
+Recent enhancement of rb-tree based lookup exposed a  bug with the lookup
+mechanism in the reserve_memtype() which ensures that there are no conflicting
+memtype requests for the memory range.
+
+memtype_rb_search() returns an entry which has a start address <= new start
+address. And from here we traverse the linear linked list to check if there
+any conflicts with the existing mappings. As the rbtree is based on the
+start address of the memory range, it is quite possible that we have several
+overlapped mappings whose start address is much less than new requested start
+but the end is >= new requested end. This results in conflicting memtype
+mappings.
+
+Same bug exists with the old code which uses cached_entry from where
+we traverse the linear linked list. But the new rb-tree code exposes this
+bug fairly easily.
+
+For now, don't use the memtype_rb_search() and always start the search from
+the head of linear linked list in reserve_memtype(). Linear linked list
+for most of the systems grow's to few 10's of entries(as we track memory type
+of RAM pages using struct page). So we should be ok for now.
+
+We still retain the rbtree and use it to speed up free_memtype() which
+doesn't have the same bug(as we know what exactly we are searching for
+in free_memtype).
+
+Also use list_for_each_entry_from() in free_memtype() so that we start
+the search from rb-tree lookup result.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index d7ebc3a..7257cf3 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -424,17 +424,9 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
  
-@@ -207,6 +207,7 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
- 		list_add(&(node_ptr->list), &(dev->head->list));
- 		node_ptr = NULL;
- 	} else {
-+		char *tmpu;
- 		if (!cap_devices[0].head ||
- 				list_empty(&(cap_devices[0].head->list))) {
- 			retval = -EINVAL;
-@@ -218,10 +219,10 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
- 		 * need to split it and hash 'user1@user2' using 'randomstring'
- 		 * as the key.
- 		 */
--		user_buf_running = kstrdup(user_buf, GFP_KERNEL);
--		source_user = strsep(&user_buf_running, "@");
--		target_user = strsep(&user_buf_running, "@");
--		rand_str = strsep(&user_buf_running, "@");
-+		tmpu = user_buf_running = kstrdup(user_buf, GFP_KERNEL);
-+		source_user = strsep(&tmpu, "@");
-+		target_user = strsep(&tmpu, "@");
-+		rand_str = tmpu;
- 		if (!source_user || !target_user || !rand_str) {
- 			retval = -EINVAL;
- 			goto out;
-@@ -229,7 +230,8 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
+ 	spin_lock(&memtype_lock);
  
- 		/* hash the string user1@user2 with rand_str as the key */
- 		len = strlen(source_user) + strlen(target_user) + 1;
--		hash_str = kzalloc(len, GFP_KERNEL);
-+		/* src, @, len, \0 */
-+		hash_str = kzalloc(len+1, GFP_KERNEL);
- 		strcat(hash_str, source_user);
- 		strcat(hash_str, "@");
- 		strcat(hash_str, target_user);
--- 
-1.6.1
+-	entry = memtype_rb_search(&memtype_rbroot, new->start);
+-	if (likely(entry != NULL)) {
+-		/* To work correctly with list_for_each_entry_continue */
+-		entry = list_entry(entry->nd.prev, struct memtype, nd);
+-	} else {
+-		entry = list_entry(&memtype_list, struct memtype, nd);
+-	}
+-
+ 	/* Search for existing mapping that overlaps the current range */
+ 	where = NULL;
+-	list_for_each_entry_continue(entry, &memtype_list, nd) {
++	list_for_each_entry(entry, &memtype_list, nd) {
+ 		if (end <= entry->start) {
+ 			where = entry->nd.prev;
+ 			break;
+@@ -532,7 +524,7 @@ int free_memtype(u64 start, u64 end)
+ 	 * in sorted start address
+ 	 */
+ 	saved_entry = entry;
+-	list_for_each_entry(entry, &memtype_list, nd) {
++	list_for_each_entry_from(entry, &memtype_list, nd) {
+ 		if (entry->start == start && entry->end == end) {
+ 			rb_erase(&entry->rb, &memtype_rbroot);
+ 			list_del(&entry->nd);
+
 
