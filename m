@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZIPLn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbZIPLmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbZIPLn3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 07:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZIPLn2
+	id S1755905AbZIPLmy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 07:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbZIPLmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 07:43:28 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:35778 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754123AbZIPLn1 (ORCPT
+	Wed, 16 Sep 2009 07:42:53 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:53189 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753788AbZIPLmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 07:43:27 -0400
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
+	Wed, 16 Sep 2009 07:42:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=clrmI1i4j5MI96OcrVyrCTHC9EzWAm9+vmzrkKiFQz9QOsauvpK8B68cIqmgDt3Kvs
+         u01YP6ynZFTbeRvycMoBWuoOx1SNVm2jDW43MKgzLKkYHXDtRiZnW7ok2FR5rklF0ZSq
+         FI6U3RvrX9+UzoDgHhN2oe0ScCYR2Vv6P1pjM=
+MIME-Version: 1.0
+Date: Wed, 16 Sep 2009 17:12:56 +0530
+Message-ID: <55f89e6d0909160442i18e0d7e1gba4b7a539598bb1e@mail.gmail.com>
+Subject: linux-2.6.31 compilation error : include/trace/events/kmem.h:47: 
+	undefined reference to `.L1443'
+From: Ananth M <mekaananth@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
-Subject: [PATCH] media: video: pwc: Use kernel's simple_strtol()
-Date: Wed, 16 Sep 2009 14:42:27 +0300
-Message-Id: <1253101347-25038-1-git-send-email-andy.shevchenko@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-X-OriginalArrivalTime: 16 Sep 2009 11:42:29.0935 (UTC) FILETIME=[C58C6BF0:01CA36C2]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Hi All
 
-Change own implementation of atoi() by simple_strtol(x, NULL, 10).
+    I downloaded the latest stable kernel : i.e linux-2.6.31 today and
+tried to compile the kernel in my desktop, with default configuaration
+(not changed any config values )
+   My desktop machine has : RHEL 4 with GCC version 3.4.6
 
-Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
----
- drivers/media/video/pwc/pwc-if.c |   13 +++----------
- 1 files changed, 3 insertions(+), 10 deletions(-)
+    I am getting the following error , during linking
 
-diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
-index f976df4..cb995c6 100644
---- a/drivers/media/video/pwc/pwc-if.c
-+++ b/drivers/media/video/pwc/pwc-if.c
-@@ -68,6 +68,7 @@
- #endif
- #include <linux/vmalloc.h>
- #include <asm/io.h>
-+#include <linux/kernel.h>		/* simple_strtol() */
- 
- #include "pwc.h"
- #include "pwc-kiara.h"
-@@ -1916,17 +1917,9 @@ disconnect_out:
- 	unlock_kernel();
- }
- 
--/* *grunt* We have to do atoi ourselves :-( */
--static int pwc_atoi(const char *s)
-+static inline int pwc_atoi(const char *s)
- {
--	int k = 0;
--
--	k = 0;
--	while (*s != '\0' && *s >= '0' && *s <= '9') {
--		k = 10 * k + (*s - '0');
--		s++;
--	}
--	return k;
-+	return (int)simple_strtol(s, NULL, 10);
- }
- 
- 
--- 
-1.5.6.5
+ CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  GEN     .version
+  CHK     include/linux/compile.h
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+drivers/built-in.o(.init.text+0x3d80): In function `con_init':
+include/trace/events/kmem.h:47: undefined reference to `.L1443'
+make: *** [.tmp_vmlinux1] Error 1
 
+
+
+
+    I noticed ( through mailing list ) that the same problem was
+observed by some other developers and they planned to compile without
+tracer option. I also disabled the tracer option and compiled, but
+still the same error exists.
+    Can any one help me on this?
+
+Thank you
+Regards
+Ananth
