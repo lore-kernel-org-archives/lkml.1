@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbZIPOT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759138AbZIPOTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759110AbZIPOT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 10:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZIPOT1
+	id S1759138AbZIPOTi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 10:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbZIPOTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 10:19:27 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:14689
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751418AbZIPOT0 (ORCPT
+	Wed, 16 Sep 2009 10:19:35 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:50630 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755430AbZIPOTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 10:19:26 -0400
-X-SpamScore: -26
-X-BigFish: VPS-26(zz1432R98dN936eM9371Pzz1202hzzz32i203h6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KQ2IFL-03-6TB-01
-Date: Wed, 16 Sep 2009 16:18:58 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 0/5] Another set of Nested SVM fixes and cleanups
-Message-ID: <20090916141858.GH8480@amd.com>
-References: <1253107459-8967-1-git-send-email-joerg.roedel@amd.com>
- <4AB0F013.8050608@redhat.com>
+	Wed, 16 Sep 2009 10:19:31 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Wei Chong Tan <weichong78@gmail.com>
+Subject: Re: PATCH: ARCH in builddeb
+Date: Wed, 16 Sep 2009 16:19:31 +0200
+User-Agent: KMail/1.9.9
+Cc: sam@ravnborg.org, max@stro.at, linux-kernel@vger.kernel.org
+References: <31cb94fa0909132225l6cb98739o59d105ef480d1cd2@mail.gmail.com> <200909142301.17936.elendil@planet.nl>
+In-Reply-To: <200909142301.17936.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4AB0F013.8050608@redhat.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 16 Sep 2009 14:18:58.0893 (UTC) FILETIME=[A1CDB7D0:01CA36D8]
+Message-Id: <200909161619.33461.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Sep 2009 14:19:34.0370 (UTC) FILETIME=[B6F31420:01CA36D8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 05:02:59PM +0300, Avi Kivity wrote:
-> On 09/16/2009 04:24 PM, Joerg Roedel wrote:
-> >Hi,
-> >
-> >this series of patches contain another set of cleanups and an important fix to
-> >the Nested SVM code. These patches make the TSC handling code for SVM aware of
-> >a nested guest. This fixes the TSC running backwards on guest and nested guest.
-> >The backwards running TSC resulted in stalled guests when kvm-clock was
-> >enabled. Please consider to apply.
-> >
-> 
-> Looks good.  3, 4 needed for 2.6.32-rc as well, yes?
+On Monday 14 September 2009, Frans Pop wrote:
+> On Monday 14 September 2009, Wei Chong Tan wrote:
+> > I was using "make ARCH=i386 deb-pkg" in the kernel on a 64bit machine
+> > and found out that the .deb package created was _amd64.deb.
+> > Consequently, I modify the builddeb script to take into account the
+> > ARCH environment variable.
+>
+> Thanks for the patch. I'd like to give it some testing though as I fear
+> it may break one other use case that currently somehow does work
+> correctly.
+>
+> If I cross-compile for arm with EABI set in the config, the script
+> currently correctly generates an armel package (probably through
+> dpkg-cross).
+>
+> Possibly your change would override that and change it to arm. I don't
+> know for sure it will go wrong, but it does need testing. I'll let you
+> know.
 
-Yes, would be good since these two are real bugfixes. Probably also
-relevant for -stable.
+Yes, it is as I feared. Your patch results in an "arm" package when I do a 
+cross-build for "armel" (for which I must of course set ARCH to "arm" as 
+armel is not a valid Linux architecture).
 
-	Joerg
+I agree that being able to build i386 on amd64 is a valuable option and I 
+have actually run into that issue myself (and solved it by building in an 
+i386 chroot).
 
+A possible solution could be to check that CROSS_COMPILE is *not* set, but 
+I'm not sure if that would be the correct solution. Input from others on 
+this would be welcome.
 
+Cheers,
+FJP
