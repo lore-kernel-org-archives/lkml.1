@@ -1,98 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZIPAIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZIPAL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbZIPAIX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 20:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZIPAIS
+	id S1754540AbZIPAL2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 20:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZIPALX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 20:08:18 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52252 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753141AbZIPAIR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 20:08:17 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH 1/4] mm: m(un)lock avoid ZERO_PAGE
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       Mel Gorman <mel@csn.ul.ie>, Minchan Kim <minchan.kim@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0909152130260.22199@sister.anvils>
-References: <Pine.LNX.4.64.0909152127240.22199@sister.anvils> <Pine.LNX.4.64.0909152130260.22199@sister.anvils>
-Message-Id: <20090916090348.DB89.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 15 Sep 2009 20:11:23 -0400
+Received: from fifo99.com ([67.223.236.141]:47223 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753478AbZIPALW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 20:11:22 -0400
+Subject: Re: [PATCH] enabling ACS P2P upstream forwarding
+From: Daniel Walker <dwalker@fifo99.com>
+To: "Kay, Allen M" <allen.m.kay@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E05DC218@orsmsx505.amr.corp.intel.com>
+References: <57C9024A16AD2D4C97DC78E552063EA3E05DC218@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Tue, 15 Sep 2009 17:12:17 -0700
+Message-Id: <1253059937.11643.527.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 16 Sep 2009 09:08:15 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm still reluctant to clutter __get_user_pages() with another flag,
-> just to avoid touching ZERO_PAGE count in mlock(); though we can add
-> that later if it shows up as an issue in practice.
+On Tue, 2009-09-15 at 16:44 -0700, Kay, Allen M wrote:
+> This patch enables P2P upstream forwarding in ACS capable PCIe switches.  This solves two potential problems in virtualization environment where a PCIe device is assigned to a guest domain using a HW iommu such as VT-d:
 > 
-> But when mlocking, we can test page->mapping slightly earlier, to avoid
-> the potentially bouncy rescheduling of lock_page on ZERO_PAGE - mlock
-> didn't lock_page in olden ZERO_PAGE days, so we might have regressed.
+> 1) Unintentional failure caused by guest physical address programmed into the device's DMA that happens to match the memory address range of other downstream ports in the same PCIe switch.  This causes the PCI transaction to go to the matching downstream port instead of go to the root complex to get translated by VT-d as it should be.
 > 
-> And when munlocking, it turns out that FOLL_DUMP coincidentally does
-> what's needed to avoid all updates to ZERO_PAGE, so use that here also.
-> Plus add comment suggested by KAMEZAWA Hiroyuki.
+> 2) Malicious guest software intentionally attacks another downstream PCIe device by programming the DMA address into the assigned device that matches memory address range of the downstream PCIe port.
 > 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
+> We are in process of implementing device filtering software in KVM/XEN management software to allow device assignment of PCIe devices behind a PCIe switch only if it has ACS capability and with the P2P upstream forwarding bits enabled.  This patch is intended to work for both KVM and Xen environments.
 > 
->  mm/mlock.c |   49 ++++++++++++++++++++++++++++++++++++-------------
->  1 file changed, 36 insertions(+), 13 deletions(-)
-> 
-> --- mm0/mm/mlock.c	2009-09-14 16:34:37.000000000 +0100
-> +++ mm1/mm/mlock.c	2009-09-15 17:32:03.000000000 +0100
-> @@ -198,17 +198,26 @@ static long __mlock_vma_pages_range(stru
->  		for (i = 0; i < ret; i++) {
->  			struct page *page = pages[i];
->  
-> -			lock_page(page);
-> -			/*
-> -			 * Because we lock page here and migration is blocked
-> -			 * by the elevated reference, we need only check for
-> -			 * file-cache page truncation.  This page->mapping
-> -			 * check also neatly skips over the ZERO_PAGE(),
-> -			 * though if that's common we'd prefer not to lock it.
-> -			 */
-> -			if (page->mapping)
-> -				mlock_vma_page(page);
-> -			unlock_page(page);
-> +			if (page->mapping) {
-> +				/*
-> +				 * That preliminary check is mainly to avoid
-> +				 * the pointless overhead of lock_page on the
-> +				 * ZERO_PAGE: which might bounce very badly if
-> +				 * there is contention.  However, we're still
-> +				 * dirtying its cacheline with get/put_page:
-> +				 * we'll add another __get_user_pages flag to
-> +				 * avoid it if that case turns out to matter.
-> +				 */
-> +				lock_page(page);
-> +				/*
-> +				 * Because we lock page here and migration is
-> +				 * blocked by the elevated reference, we need
-> +				 * only check for file-cache page truncation.
-> +				 */
-> +				if (page->mapping)
-> +					mlock_vma_page(page);
-> +				unlock_page(page);
-> +			}
->  			put_page(page);	/* ref from get_user_pages() */
->  		}
-
-Yes, I have similar patch :-)
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: Allen Kay allen.m.kay@intel.com
 
 
+Both times that you've submitted this the patch has been corrupt.. Your
+mailer, or something is adding little "=20" or "=3D" all over. For
+instance,
 
+"Signed-off-by: Allen Kay allen.m.kay@intel.com
+
+---
+
+ drivers/pci/pci.c        |   37 +++++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h        |    1 +
+ drivers/pci/probe.c      |    3 +++
+ include/linux/pci_regs.h |   14 ++++++++++++++
+ 4 files changed, 55 insertions(+)
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 7b70312..e70abde 100644
+..."
+
+
+So there's no way to test or apply your patch .. Most reviewers are just
+going to walk away if they see stuff like this..
+
+Daniel
 
