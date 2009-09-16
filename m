@@ -1,155 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759909AbZIPQqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759750AbZIPQ4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759909AbZIPQqz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbZIPQqv
+	id S1759750AbZIPQ4c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759516AbZIPQ40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:46:51 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:42144 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759751AbZIPQqu (ORCPT
+	Wed, 16 Sep 2009 12:56:26 -0400
+Received: from mail-yx0-f171.google.com ([209.85.210.171]:43347 "EHLO
+	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753907AbZIPQ4Z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:46:50 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Geoffrey Thomas <geofft@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH v2] sparc: Clean up linker script using new linker script macros.
-Date: Wed, 16 Sep 2009 12:46:32 -0400
-Message-Id: <1253119592-19598-2-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1253119592-19598-1-git-send-email-tabbott@ksplice.com>
-References: <1253119592-19598-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Wed, 16 Sep 2009 12:56:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=t271b1CiXxWQOwQo7sqn9KJQgSq4HbOvlIwWhXpMen1CRpp+fBjt6m0+yIawczYaRf
+         IJ5am/NCSoKcxN4NOWkixfNWtPTzgBCsjnSaOVCoKcbJQZm3xbgCHyom9y2dq9GYthHq
+         cn0duvRyvPt37Ypl7napb4BsP1tzHaO7NfYLk=
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.1.10.0909160107500.19188@dr-wily.mit.edu>
+References: <1252292753-11792-1-git-send-email-tabbott@ksplice.com> 
+	<8bd0f97a0909152013oe652087gf5cd227a1997a5b3@mail.gmail.com> 
+	<alpine.DEB.1.10.0909160107500.19188@dr-wily.mit.edu>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 16 Sep 2009 12:56:08 -0400
+Message-ID: <8bd0f97a0909160956m46a59e93ydd19fdbf3fb984f5@mail.gmail.com>
+Subject: Re: [PATCH] blackfin: Cleanup linker script using new linker script 
+	macros.
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Bryan Wu <cooloney@kernel.org>,
+       uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geoffrey Thomas <geofft@ksplice.com>
+On Wed, Sep 16, 2009 at 11:58, Tim Abbott wrote:
+> On Tue, 15 Sep 2009, Mike Frysinger wrote:
+>> the larger padding in the initramfs is kind of annoying as i cant see
+>> any need to pad it to PAGE_SIZE.  since the initramfs is released with
+>> the rest of the init section, it doesnt need whole pages.  a quick
+>> test shows that it does waste a few kb in reality.  default build for
+>> BF533-STAMP for example shows 0x1000 difference.
+>
+> OK.  I guess we should plan to modify the INIT_DATA_SECTION macro to add
+> another argument specifying an alignment level for .init.ramfs.  It'd be
+> inconvenient to add that right now since there are a lot of patches in
+> linux-next or otherwise in flight that introduce uses of
+> INIT_DATA_SECTION, and those patches would all be broken by changing this
+> now.  Once the dust settles on that for this release, I'll submit a patch
+> adding said argument to INIT_DATA_SECTION.
 
-Signed-off-by: Geoffrey Thomas <geofft@ksplice.com>
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: David S. Miller <davem@davemloft.net>
----
- arch/sparc/kernel/vmlinux.lds.S |   75 ++++-----------------------------------
- 1 files changed, 7 insertions(+), 68 deletions(-)
-
-diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
-index 866390f..4e59925 100644
---- a/arch/sparc/kernel/vmlinux.lds.S
-+++ b/arch/sparc/kernel/vmlinux.lds.S
-@@ -51,70 +51,27 @@ SECTIONS
- 	_etext = .;
- 
- 	RO_DATA(PAGE_SIZE)
--	.data :	{
--		DATA_DATA
--		CONSTRUCTORS
--	}
- 	.data1 : {
- 		*(.data1)
- 	}
--	. = ALIGN(SMP_CACHE_BYTES);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
--	}
--	. = ALIGN(SMP_CACHE_BYTES);
--	.data.read_mostly : {
--		*(.data.read_mostly)
--	}
-+	RW_DATA_SECTION(SMP_CACHE_BYTES, 0, THREAD_SIZE)
-+
- 	/* End of data section */
- 	_edata = .;
- 
--	/* init_task */
--	. = ALIGN(THREAD_SIZE);
--	.data.init_task : {
--		*(.data.init_task)
--	}
- 	.fixup : {
- 		__start___fixup = .;
- 		*(.fixup)
- 		__stop___fixup = .;
- 	}
--	. = ALIGN(16);
--	__ex_table : {
--		__start___ex_table = .;
--		*(__ex_table)
--		__stop___ex_table = .;
--	}
-+	EXCEPTION_TABLE(16)
- 	NOTES
- 
- 	. = ALIGN(PAGE_SIZE);
--	.init.text : {
--		__init_begin = .;
--		_sinittext = .;
--		INIT_TEXT
--		_einittext = .;
--	}
-+	__init_begin = ALIGN(PAGE_SIZE);
-+	INIT_TEXT_SECTION(PAGE_SIZE)
- 	__init_text_end = .;
--	.init.data : {
--		INIT_DATA
--	}
--	. = ALIGN(16);
--	.init.setup : {
--		__setup_start = .;
--		*(.init.setup)
--		__setup_end = .;
--	}
--	.initcall.init : {
--		__initcall_start = .;
--		INITCALLS
--		__initcall_end = .;
--	}
--	.con_initcall.init : {
--		__con_initcall_start = .;
--		*(.con_initcall.init)
--		__con_initcall_end = .;
--	}
--	SECURITY_INIT
-+	INIT_DATA_SECTION(16)
- 
- 	. = ALIGN(4);
- 	.tsb_ldquad_phys_patch : {
-@@ -146,29 +103,11 @@ SECTIONS
- 		__sun4v_2insn_patch_end = .;
- 	}
- 
--#ifdef CONFIG_BLK_DEV_INITRD
--	. = ALIGN(PAGE_SIZE);
--	.init.ramfs : {
--		__initramfs_start = .;
--		*(.init.ramfs)
--		__initramfs_end = .;
--	}
--#endif
--
- 	PERCPU(PAGE_SIZE)
- 
- 	. = ALIGN(PAGE_SIZE);
- 	__init_end = .;
--	__bss_start = .;
--	.sbss : {
--		*(.sbss)
--		*(.scommon)
--	}
--	.bss : {
--		*(.dynbss)
--		*(.bss)
--		*(COMMON)
--	}
-+	BSS_SECTION(0, 0, 0)
- 	_end = . ;
- 
- 	STABS_DEBUG
--- 
-1.6.3.3
-
+sounds good to me.  too bad the function alignment isnt specified in
+arch linkage.h, otherwise i'd suggest we default to that rather than
+PAGE_SIZE.  as seen in the current Blackfin linker script, we only
+need the normal .text alignment of 4 bytes.
+-mike
