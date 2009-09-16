@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbZIPQmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759718AbZIPQiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759860AbZIPQmn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759796AbZIPQmh
+	id S1759718AbZIPQiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933538AbZIPQiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:42:37 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:39788 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759735AbZIPQmg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:42:36 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>, linux-alpha@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH v2 3/3] Optimize the ordering of sections in RW_DATA_SECTION.
-Date: Wed, 16 Sep 2009 12:38:39 -0400
-Message-Id: <1253119119-18956-4-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1253119119-18956-1-git-send-email-tabbott@ksplice.com>
-References: <1253119119-18956-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Wed, 16 Sep 2009 12:38:17 -0400
+Received: from fifo99.com ([67.223.236.141]:60797 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932373AbZIPQiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 12:38:16 -0400
+Subject: Re: [PATCH] enabling ACS P2P upstream forwarding
+From: Daniel Walker <dwalker@fifo99.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: "Kay, Allen M" <allen.m.kay@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
+In-Reply-To: <20090916093446.5ea81b8a@bike.lwn.net>
+References: <57C9024A16AD2D4C97DC78E552063EA3E05DC218@orsmsx505.amr.corp.intel.com>
+	 <1253059937.11643.527.camel@desktop> <20090916093446.5ea81b8a@bike.lwn.net>
+Content-Type: text/plain
+Date: Wed, 16 Sep 2009 09:39:13 -0700
+Message-Id: <1253119153.11643.583.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
----
- include/asm-generic/vmlinux.lds.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Wed, 2009-09-16 at 09:34 -0600, Jonathan Corbet wrote:
+> On Tue, 15 Sep 2009 17:12:17 -0700
+> Daniel Walker <dwalker@fifo99.com> wrote:
+> 
+> > Both times that you've submitted this the patch has been corrupt.. Your
+> > mailer, or something is adding little "=20" or "=3D" all over.
+> 
+> That looks a lot like *your* mail client not understanding
+> quoted-printable encoding.  QP can be a pain, but it is a legitimate
+> encoding; the message in question looks fine in claws.
 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index a43223a..6357b04 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -720,12 +720,12 @@
- 	. = ALIGN(PAGE_SIZE);						\
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {				\
- 		INIT_TASK_DATA(inittask)				\
-+		NOSAVE_DATA						\
-+		PAGE_ALIGNED_DATA(pagealigned)				\
- 		CACHELINE_ALIGNED_DATA(cacheline)			\
- 		READ_MOSTLY_DATA(cacheline)				\
- 		DATA_DATA						\
- 		CONSTRUCTORS						\
--		NOSAVE_DATA						\
--		PAGE_ALIGNED_DATA(pagealigned)				\
- 	}
- 
- #define INIT_TEXT_SECTION(inittext_align)				\
--- 
-1.6.3.3
+Shouldn't all patches be sent as plain text untouched? I don't think I
+should necessarily need a specific email client to strip off some
+characters..
+
+Daniel
 
