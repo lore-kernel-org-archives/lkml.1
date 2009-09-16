@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbZIPTYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbZIPTcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758897AbZIPTYx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 15:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbZIPTYs
+	id S1758950AbZIPTcD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 15:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbZIPTcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 15:24:48 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:50595 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758643AbZIPTYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 15:24:47 -0400
-X-Greylist: delayed 44057 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Sep 2009 15:24:47 EDT
-From: Michal Witkowski <neuro@o2.pl>
-To: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: Explicitly putting a PCI device to ACPI D0
-Date: Wed, 16 Sep 2009 21:24:36 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.30-ARCH; KDE/4.3.1; x86_64; ; )
-References: <200909160910.24329.neuro@o2.pl> <20090916090907.2538fca1@jbarnes-g45> <a728f9f90909160933sba29b49oee2020024866b7d0@mail.gmail.com>
-In-Reply-To: <a728f9f90909160933sba29b49oee2020024866b7d0@mail.gmail.com>
-Cc: linux-kernel@vger.kernel.org
+	Wed, 16 Sep 2009 15:32:00 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37289 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754580AbZIPTcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 15:32:00 -0400
+Date: Wed, 16 Sep 2009 15:31:37 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Nelson Elhage <nelhage@ksplice.com>
+Subject: Re: [PATCH v2 2/2] arm: Clean up linker script using new linker
+ script macros.
+In-Reply-To: <20090916191928.GC16457@n2100.arm.linux.org.uk>
+Message-ID: <alpine.DEB.1.10.0909161522510.2942@dr-wily.mit.edu>
+References: <1253119195-19056-1-git-send-email-tabbott@ksplice.com> <1253119195-19056-3-git-send-email-tabbott@ksplice.com> <20090916191928.GC16457@n2100.arm.linux.org.uk>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909162124.36234.neuro@o2.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 of September 2009 18:33:58 you wrote:
-> The xf86-video-ati ddx can turn off the displays and reduce the clocks
-> and pcie lanes, but I haven't sorted out all the D3 stuff yet.  As for
-> the switchable graphics, you might find the page below useful.  No
-> idea if it will work or fry your hardware:
-> http://ubuntuforums.org/showthread.php?p=7944950
-> 
-> Alex
-> 
+On Wed, 16 Sep 2009, Russell King - ARM Linux wrote:
 
-Thank you very very much :)
-The above kernel module worked wonders for me.
+> On Wed, Sep 16, 2009 at 12:39:55PM -0400, Tim Abbott wrote:
+> > This patch is mostly a straightforward translation. The primary side
+> > effect to the resulting vmlinux should be to increase the alignment on
+> > the initramfs to the standard PAGE_SIZE from 32 bytes.
+> 
+> I notice you're not sending this to the ARM lists, which means it's
+> not getting a full review (eg, by Nico who knows the XIP issues in
+> here).  Are you sure this is correct for both the XIP and non-XIP
+> cases?
 
-Cheers,
-Michal
+I can resend to the ARM lists if it will work -- I didn't do so this time 
+because I seem to recall that only subscribers can post; maybe I 
+misunderstood the MAINTAINERS entry?
+
+L:      linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+
+Looking at the code, there's definitely something wrong in relation to 
+CONFIG_XIP_KERNEL; I'll fix this and repost CCing 
+linux-arm-kernel@lists.arm.linux.org.uk.
+
+	-Tim Abbott
