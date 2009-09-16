@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbZIPQ2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZIPQ0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759667AbZIPQ2l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbZIPQ2e
+	id S1759659AbZIPQ0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759597AbZIPQ0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:28:34 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:56487 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752473AbZIPQ2d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:28:33 -0400
-Date: Wed, 16 Sep 2009 12:26:04 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Jeff Layton <jlayton@redhat.com>
-cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
-In-Reply-To: <20090915183405.2797b05e@tlielax.poochiereds.net>
-Message-ID: <alpine.DEB.1.10.0909161224420.21599@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1> <20090905071052.50501826@tlielax.poochiereds.net> <alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1> <20090909125352.1c7b57d2@tlielax.poochiereds.net> <alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
- <20090909132039.1ca47cd4@tlielax.poochiereds.net> <alpine.DEB.1.10.0909091327370.32067@V090114053VZO-1> <20090909140257.35ede0cc@tlielax.poochiereds.net> <alpine.DEB.1.10.0909091724200.15746@V090114053VZO-1> <20090909205548.4858b524@zanovar.poochiereds.net>
- <alpine.DEB.1.10.0909101419310.29762@V090114053VZO-1> <20090910153347.2f2616e8@barsoom.rdu.redhat.com> <alpine.DEB.1.10.0909101541460.28418@V090114053VZO-1> <20090910165757.43b77874@tlielax.poochiereds.net> <alpine.DEB.1.10.0909101721180.27669@V090114053VZO-1>
- <20090910201932.5b8356e2@tlielax.poochiereds.net> <alpine.DEB.1.10.0909141600300.24371@V090114053VZO-1> <20090915183405.2797b05e@tlielax.poochiereds.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Sep 2009 12:26:41 -0400
+Received: from mga11.intel.com ([192.55.52.93]:55993 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753662AbZIPQ0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 12:26:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,398,1249282800"; 
+   d="scan'208";a="494064605"
+Subject: Re: iwlagn: order 2 page allocation failures
+From: reinette chatre <reinette.chatre@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "Krauss, Assaf" <assaf.krauss@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Abbas, Mohamed" <mohamed.abbas@intel.com>
+In-Reply-To: <20090916150239.GG1993@csn.ul.ie>
+References: <200909060941.01810.elendil@planet.nl>
+	 <20090909165545.GK24614@csn.ul.ie> <200909091919.16461.elendil@planet.nl>
+	 <200909161636.20590.elendil@planet.nl>  <20090916150239.GG1993@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 16 Sep 2009 09:26:43 -0700
+Message-Id: <1253118403.26521.418.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009, Jeff Layton wrote:
+On Wed, 2009-09-16 at 08:02 -0700, Mel Gorman wrote:
+> If vanilla, Reinette, is your patch already upstream or in a subsystem
+> tree somewhere?
 
-> Yow, that version of mount.cifs is really old. I wonder if it may be
-> passing bad mount options to the kernel? Might be interesting to strace
-> that. Something like:
->
-> # strace -f -s 256 -e mount mount -t cifs //chiprodfs2/company /mnt -ouser=clameter,domain=xxx
->
-> ...it'll probably have a cleartext password in it so you might want to
-> doctor the options a bit before sending along if you do.
->
-> Alternately, you might just want to try a newer version of mount.cifs
-> and see whether that fixes this.
+Not yet. 
 
-Tried a newer version of mount.cifs without any change.
+Reinette
 
-> > I cannot mount the clameter dir on the 32 bit box. Hangs. So I will mount
-> > /company.
-> >
->
-> Actually, the trace of a hanging mount would probably be interesting.
->
-> Does the 32-bit capture that you sent represent a mount attempt that
-> hung? Or was it successful?
-
-No it was successful.
-
-> What's the "devname" that you're giving to the mount command for the
-> "clameter" dir? If there's more than 1 path component after the
-> hostname, then the problem may be in the old version of mount.cifs.
-> Some of them had broken handling for path prefixes.
-
-its //machinename/company/clameter
-
-So two components.
 
