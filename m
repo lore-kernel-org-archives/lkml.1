@@ -1,171 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753060AbZIPNGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbZIPNGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753060AbZIPNGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbZIPNGg
+	id S1759034AbZIPNGu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbZIPNGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 16 Sep 2009 09:06:47 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35997 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757476AbZIPNGg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Sep 2009 09:06:36 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52858 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757286AbZIPNGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 09:06:34 -0400
-Date: Wed, 16 Sep 2009 15:06:37 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 04/11] writeback: make wb_writeback() take an argument
-	structure
-Message-ID: <20090916130637.GN23126@kernel.dk>
-References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com> <1253038617-30204-5-git-send-email-jens.axboe@oracle.com> <20090916125359.GE26030@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090916125359.GE26030@duck.suse.cz>
+Subject: Re: [PATCH 1/2] tracing: Fix minor bugs for
+ __unregister_ftrace_function_probe
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       fweisbec@gmail.com, "Frank Ch. Eigler" <fche@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, paulus@samba.org,
+       systemtap@sources.redhat.com
+In-Reply-To: <4AAF6726.5090905@bk.jp.nec.com>
+References: <4AAF6726.5090905@bk.jp.nec.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 16 Sep 2009 09:06:38 -0400
+Message-Id: <1253106398.20020.192.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16 2009, Jan Kara wrote:
-> On Tue 15-09-09 20:16:50, Jens Axboe wrote:
-> > We need to be able to pass in range_cyclic as well, so instead
-> > of growing yet another argument, split the arguments into a
-> > struct wb_writeback_args structure that we can use internally.
-> > Also makes it easier to just copy all members to an on-stack
-> > struct, since we can't access work after clearing the pending
-> > bit.
-> > 
-> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > ---
-> >  fs/fs-writeback.c |   97 +++++++++++++++++++++++++++++++----------------------
-> >  1 files changed, 57 insertions(+), 40 deletions(-)
-> > 
-> > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> > index 783ed44..1dd11d1 100644
-> > --- a/fs/fs-writeback.c
-> > +++ b/fs/fs-writeback.c
-> > @@ -35,6 +35,17 @@
-> >  int nr_pdflush_threads;
-> >  
-> >  /*
-> > + * Passed into wb_writeback(), essentially a subset of writeback_control
-> > + */
-> > +struct wb_writeback_args {
-> > +	long nr_pages;
-> > +	struct super_block *sb;
-> > +	enum writeback_sync_modes sync_mode;
-> > +	int for_kupdate;
-> > +	int range_cyclic;
-> > +};
->   You can save a few bytes by using bit-fields for for_kupdate and
-> range_cyclic fields the same way as is done in wbc.
+On Tue, 2009-09-15 at 19:06 +0900, Atsushi Tsuji wrote:
+> Fix the condition of strcmp for "*".
+> Also fix NULL pointer dereference when glob is NULL.
+> 
+> Signed-off-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
 
-I was unsure whether that would be reliable for copying. Seems it
-should.
 
-> > @@ -69,9 +78,10 @@ static inline void bdi_work_init(struct bdi_work *work,
-> >  				 struct writeback_control *wbc)
-> >  {
-> >  	INIT_RCU_HEAD(&work->rcu_head);
-> > -	work->sb = wbc->sb;
-> > -	work->nr_pages = wbc->nr_to_write;
-> > -	work->sync_mode = wbc->sync_mode;
-> > +	work->args.sb = wbc->sb;
-> > +	work->args.nr_pages = wbc->nr_to_write;
-> > +	work->args.sync_mode = wbc->sync_mode;
-> > +	work->args.range_cyclic = wbc->range_cyclic;
-> >  	work->state = WS_USED;
-> >  }
->   We don't pass for_kupdate here. But probably that's fine since noone else
-> should set it. But maybe we should at least initialize it?
+This is a real fix, I'll pull it in separately.
 
-Good idea, will set it.
+Thanks!
 
-> > @@ -673,29 +682,35 @@ static long wb_writeback(struct bdi_writeback *wb, long nr_pages,
-> >  		oldest_jif = jiffies -
-> >  				msecs_to_jiffies(dirty_expire_interval * 10);
-> >  	}
-> > +	if (!wbc.range_cyclic) {
-> > +		wbc.range_start = 0;
-> > +		wbc.range_end = LLONG_MAX;
-> > +	}
-> >  
-> >  	for (;;) {
-> > -		/*
-> > -		 * Don't flush anything for non-integrity writeback where
-> > -		 * no nr_pages was given
-> > -		 */
-> > -		if (!for_kupdate && nr_pages <= 0 && sync_mode == WB_SYNC_NONE)
-> > -			break;
-> > +		if (!args->for_kupdate && args->nr_pages <= 0) {
-> > +			/*
-> > +			 * Don't flush anything for non-integrity writeback
-> > +			 * where no nr_pages was given
-> > +			 */
-> > +			if (args->sync_mode == WB_SYNC_NONE)
-> > +				break;
-> >  
-> > -		/*
-> > -		 * If no specific pages were given and this is just a
-> > -		 * periodic background writeout and we are below the
-> > -		 * background dirty threshold, don't do anything
-> > -		 */
-> > -		if (for_kupdate && nr_pages <= 0 && !over_bground_thresh())
-> > -			break;
-> > +			/*
-> > +			 * If no specific pages were given and this is just a
-> > +			 * periodic background writeout and we are below the
-> > +			 * background dirty threshold, don't do anything
-> > +			 */
-> > +			if (!over_bground_thresh())
-> > +				break;
-> > +		}
->   This chunk actually changes the behavior since previously the second
-> condition had for_kupdate and not !for_kupdate. But revisiting this code,
-> the pdflush-style writeback still doesn't work how it used to. Merging
-> kupdate-style and pdflush-style writeback isn't that easy.
->   For the first one we want to flush only the expired inodes, but we should
-> guarantee we really flush them.
->   For the second one we want to flush as much data as possible and don't
-> really care about which inodes we flush. We only have to work until we hit
-> the background threshold.
->   So probably check_old_data_flush() has to issue a kupdate-style writeback
-> like it does now and then it should loop submitting normal WB_SYNC_NONE
-> writeback until we get below background threshold. In theory, we could use
-> the look in wb_writeback() like we try now but that would mean we have to
-> pass another flag, whether this is a pdflush style writeback or not.
+-- Steve
 
-Good spotting, I'll fix that up and have the old flush continue until
-!over_bground_thresh(). It would be nice to get rid of the weird special
-casing in wb_writeback() and just retain it as a worker, pushing the
-logic into the internal callers.
-
-> >  		wbc.more_io = 0;
-> >  		wbc.encountered_congestion = 0;
-> >  		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
-> >  		wbc.pages_skipped = 0;
-> >  		writeback_inodes_wb(wb, &wbc);
-> > -		nr_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> > +		args->nr_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> >  		wrote += MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> >  
-> >  		/*
-> > @@ -749,8 +764,14 @@ static long wb_check_old_data_flush(struct bdi_writeback *wb)
-> >  			global_page_state(NR_UNSTABLE_NFS) +
-> >  			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
-> >  
-> > -	if (nr_pages)
-> > -		return wb_writeback(wb, nr_pages, NULL, WB_SYNC_NONE, 1);
-> > +	if (nr_pages) {
-> > +		struct wb_writeback_args args = {
-> > +			.nr_pages	= nr_pages,
-> > +			.sync_mode	= WB_SYNC_NONE,
-> > +		};
->   We should set for_kupdate here.
-
-Indeed, thanks.
-
--- 
-Jens Axboe
+> ---
+>  kernel/trace/ftrace.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 8c804e2..5ef8f59 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -2059,9 +2059,9 @@ __unregister_ftrace_function_probe(char *glob, struct ftrace_probe_ops *ops,
+>  	int i, len = 0;
+>  	char *search;
+>  
+> -	if (glob && (strcmp(glob, "*") || !strlen(glob)))
+> +	if (glob && (strcmp(glob, "*") == 0 || !strlen(glob)))
+>  		glob = NULL;
+> -	else {
+> +	else if (glob) {
+>  		int not;
+>  
+>  		type = ftrace_setup_glob(glob, strlen(glob), &search, &not);
 
