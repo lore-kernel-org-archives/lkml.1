@@ -1,35 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbZIPTeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758985AbZIPTh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758680AbZIPTeA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 15:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZIPTdz
+	id S1758985AbZIPTh1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 15:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZIPThW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 15:33:55 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33749 "EHLO
+	Wed, 16 Sep 2009 15:37:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37443 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259AbZIPTdy (ORCPT
+	with ESMTP id S1754400AbZIPThV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 15:33:54 -0400
-Subject: Re: [PATCH v2 1/2] ftrace: add tracepoint for xtime
+	Wed, 16 Sep 2009 15:37:21 -0400
+Subject: Re: Re: [PATCH v2 2/2] ftrace: Add timer-source of walltime for
+ ftrace
 From: Steven Rostedt <rostedt@goodmis.org>
 Reply-To: rostedt@goodmis.org
 To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       john stultz <johnstul@us.ibm.com>
-In-Reply-To: <4AB0774C.5050706@cn.fujitsu.com>
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AB0885C.4010504@cn.fujitsu.com>
 References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com>
 	 <4A89213C.5090109@cn.fujitsu.com>
 	 <20090818215620.A63C.A69D9226@jp.fujitsu.com>
 	 <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com>
 	 <4A939CDF.2000407@cn.fujitsu.com> <4AB076DE.10604@cn.fujitsu.com>
-	 <4AB0774C.5050706@cn.fujitsu.com>
+	 <4AB077AF.6080800@cn.fujitsu.com> <20090916055928.GF5121@nowhere>
+	 <4AB0885C.4010504@cn.fujitsu.com>
 Content-Type: text/plain
 Organization: Kihon Technologies Inc.
-Date: Wed, 16 Sep 2009 15:33:56 -0400
-Message-Id: <1253129636.20020.213.camel@gandalf.stny.rr.com>
+Date: Wed, 16 Sep 2009 15:37:23 -0400
+Message-Id: <1253129843.20020.214.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
@@ -37,34 +38,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-16 at 13:27 +0800, Zhaolei wrote:
-> From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+On Wed, 2009-09-16 at 14:40 +0800, Zhaolei wrote:
+> Frederic Weisbecker wrote:
+> > On Wed, Sep 16, 2009 at 01:29:19PM +0800, Zhaolei wrote:
+> >> We can add a timer-source for ftrace to support wall-time display.
+> >> It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
+> >> http://lkml.org/lkml/2009/7/24/103
+> >>
+> >> It need to applys on my patch of:
+> >> [PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
+> >>
+> Hello, Frederic
 > 
-> This patch can trace current xtime and wall_to_monotonic. Then user can
-> use ctime() to convert them to wall time which is easier to be understood,
-> especially for flight-recorder which need to get trace event from a kernel
-> dump file.
+> Thanks for your review.
 > 
-> Example of ftrace output:
->           <idle>-0     [000] 20118.489849: gtod_update_xtime: xtime=1243265589.999999824 wall_to_monotonic=3051713268.744158739
->            <...>-4020  [001] 20118.489855: sys_open(filename: bf9e66e0, flags: 98800, mode: bf9e66e0)
->            <...>-4020  [001] 20118.489873: sys_open -> 0xffffffec
+> >> We can get following output:
+> >>  # cd /mnt/debugfs/tracing/
+> >>  # cat trace_clock
+> >>  [local] global walltime
+> >>  # echo sched_switch > current_tracer
+> >>  # cat trace
+> >>  # tracer: sched_switch
+> >>  #
+> >>  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> >>  #              | |       |          |         |
+> >>              bash-3580  [000]  2916.188093:   3580:120:S   + [000]  3580:120:S bash
+> >>              bash-3580  [000]  2916.188205:   3580:120:S   + [000]  3580:120:S bash
+> >>              bash-3580  [000]  2916.188538:   3580:120:R   + [000]     5:115:S events/0
+> >>              bash-3580  [000]  2916.188599:   3580:120:R ==> [000]     5:115:R events/0
+> >>          events/0-5     [000]  2916.188669:      5:115:S ==> [000]  3580:120:R bash
+> >>  ...
+> >>  # echo walltime > trace_clock
+> >>  # cat trace
+> >>  # tracer: sched_switch
+> >>  #
+> >>  #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
+> >>  #              | |       |                        |         |
+> > 
+> > 
+> > 
+> > 
+> > The headers seem a bit broken. Is it a copy paste effect or?
 > 
-> ctime(1243265590) = date:Mon May 25 11:33:10 2009
-> So we can realize the task with pid 4020 open a file at
-> Mon May 25 11:33:10 2009
+> No, it is a format bug of patch.
+> I'll fix it.
 > 
-> Changelog:
-> v1->v2: Rebased by Zhao Lei <zhaolei@cn.fujitsu.com>
+> > 
+> > 
+> > 
+> >>              bash-3580  [000] 2009-08-24 18:03:16.500705:   3580:120:S   + [000]  3580:120:S bash
+> >>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
+> >>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
+> >>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S ==> [000]     5:115:R events/0
+> >>          events/0-5     [000] 2009-08-24 18:03:16.500815:      5:115:R   + [000]  3578:120:S sshd
+> >>  ...
+> > 
+> > 
+> > But nice result :)
+> > 
+> > 
+> >> Changelog:
+> >> v1->v2: Rebase to top of tip tree.
+> >>
+> >> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> >> ---
+> >>  include/linux/trace_clock.h |    1 +
+> >>  kernel/trace/trace.c        |   24 ++++++++++++++++-----
+> >>  kernel/trace/trace.h        |    8 ++++++-
+> >>  kernel/trace/trace_clock.c  |   48 +++++++++++++++++++++++++++++++++++++++++++
+> >>  kernel/trace/trace_output.c |   21 +++++++++++++++---
+> >>  5 files changed, 91 insertions(+), 11 deletions(-)
+> >>
+> >> diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
+> >> index 7a81303..322707e 100644
+> >> --- a/include/linux/trace_clock.h
+> >> +++ b/include/linux/trace_clock.h
+> >> @@ -15,5 +15,6 @@
+> >>  extern u64 notrace trace_clock_local(void);
+> >>  extern u64 notrace trace_clock(void);
+> >>  extern u64 notrace trace_clock_global(void);
+> >> +extern u64 notrace trace_clock_walltime(void);
+> >>  
+> >>  #endif /* _LINUX_TRACE_CLOCK_H */
+> >> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> >> index fd52a19..160b6a8 100644
+> >> --- a/kernel/trace/trace.c
+> >> +++ b/kernel/trace/trace.c
+> >> @@ -335,9 +335,10 @@ static struct {
+> >>  } trace_clocks[] = {
+> >>  	{ trace_clock_local,	"local" },
+> >>  	{ trace_clock_global,	"global" },
+> >> +	{ trace_clock_walltime,	"walltime" },
+> >>  };
+> >>  
+> >> -int trace_clock_id;
+> >> +enum TRACE_CLOCK_TYPE trace_clock_type = TRACE_CLOCK_LOCAL;
+> > 
+> > 
+> > 
+> > Uppercase names are usually reserved for CPP macros.
 > 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  include/trace/events/xtime.h |   38 ++++++++++++++++++++++++++++++++++++++
->  kernel/time/ntp.c            |    4 ++++
->  kernel/time/timekeeping.c    |    6 ++++++
+> I'll rename it.
 
-This patch will need an ACK from Thomas Gleixner and/or John Stultz.
+After the fixes that Frederic suggested, and the required timekeeping
+ACKS, I'll queue up your next version for v2.6.33. Looking forward to
+your new patches.
+
+
+Thanks,
 
 -- Steve
 
