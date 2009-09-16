@@ -1,112 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbZIPJ3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbZIPJhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbZIPJ3a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 05:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZIPJ33
+	id S932135AbZIPJhG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 05:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZIPJhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 05:29:29 -0400
-Received: from mail.atheros.com ([12.36.123.2]:52735 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751649AbZIPJ32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 05:29:28 -0400
-From: <jie.yang@atheros.com>
-To: <davem@davemloft.net>
-CC: <miles.lane@gmail.com>, <chris.snook@gmail.com>, <jcliburn@gmail.com>,
-       <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       Jie Yang <jie.yang@atheros.com>
-Subject: [Patch net-next]atl1e:fix 2.6.31-git4 -- ATL1E 0000:03:00.0: DMA-API: device driver frees DMA
-Date: Wed, 16 Sep 2009 17:28:30 +0800
-Message-ID: <12530933101782-git-send-email-jie.yang@atheros.com>
-X-Mailer: git-send-email 1.5.2.2
+	Wed, 16 Sep 2009 05:37:05 -0400
+Received: from 175.210.DSNET ([203.110.175.210]:4611 "EHLO mail.atheros.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752111AbZIPJhE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 05:37:04 -0400
+X-Greylist: delayed 324 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Sep 2009 05:37:04 EDT
+From: Jie Yang <Jie.Yang@Atheros.com>
+To: Daniel Walker <dwalker@fifo99.com>
+CC: "davem@davemloft.net" <davem@davemloft.net>,
+       "miles.lane@gmail.com" <miles.lane@gmail.com>,
+       "chris.snook@gmail.com" <chris.snook@gmail.com>,
+       "jcliburn@gmail.com" <jcliburn@gmail.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 16 Sep 2009 17:31:40 +0800
+Subject: RE: [Patch net-next]atl1e:fix 2.6.31-git4 -- ATL1E 0000:03:00.0:
+ DMA-API: device driver frees DMA
+Thread-Topic: [Patch net-next]atl1e:fix 2.6.31-git4 -- ATL1E 0000:03:00.0:
+ DMA-API: device driver frees DMA
+Thread-Index: Aco2rX2tRNxWqDBvR2uSP8/glOl+BwAAtfiA
+Message-ID: <72981EBCFD196144B7C6999B9FC34A9A493DE96CD7@SHEXMB-01.global.atheros.com>
+References: <12530821133392-git-send-email-jie.yang@atheros.com>
+ <1253092251.11643.569.camel@desktop>
+In-Reply-To: <1253092251.11643.569.camel@desktop>
+Accept-Language: zh-CN, en-US
+Content-Language: zh-CN
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: zh-CN, en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use the wrong API when free dma. So when map dma use a flag to demostrate whether it is 'pci_map_single' or 'pci_map_page'. When free the dma, check the flags to select the right APIs('pci_unmap_single' or 'pci_unmap_page').
+On Wednesday, September 16, 2009 5:11 PM
+Daniel Walker <dwalker@fifo99.com> wrote:
 
-set the flags type to u16  instead of unsigned long  on David's comments.
+> On Wed, 2009-09-16 at 14:21 +0800, jie.yang@atheros.com wrote:
+> > -           pci_unmap_page(pdev, tx_buffer->dma,
+> > +           if (tx_buffer->flags & ATL1E_TX_PCIMAP_SINGLE)
+> > +               pci_unmap_single(pdev, tx_buffer->dma,
+> > +                   tx_buffer->length, PCI_DMA_TODEVICE);
+> > +           else if (tx_buffer->flags & ATL1E_TX_PCIMAP_PAGE)
+> > +               pci_unmap_page(pdev, tx_buffer->dma,
+>
+> Could you run this through checkpatch, and fix any errors if
+> find? It looks like you uses spaces for tabs in the code
+> above, maybe in the other block too..
+>
+> Daniel
+>
+>
 
-Signed-off-by: Jie Yang <jie.yang@atheros.com>
----
+ou, my mistake, just resend.
 
-diff --git a/drivers/net/atl1e/atl1e.h b/drivers/net/atl1e/atl1e.h
-index ba48220..490d3b3 100644
---- a/drivers/net/atl1e/atl1e.h
-+++ b/drivers/net/atl1e/atl1e.h
-@@ -377,10 +377,19 @@ struct atl1e_hw {
-  */
- struct atl1e_tx_buffer {
- 	struct sk_buff *skb;
-+	u16 flags;
-+#define ATL1E_TX_PCIMAP_SINGLE		0x0001
-+#define ATL1E_TX_PCIMAP_PAGE		0x0002
-+#define ATL1E_TX_PCIMAP_TYPE_MASK	0x0003
- 	u16 length;
- 	dma_addr_t dma;
- };
- 
-+#define ATL1E_SET_PCIMAP_TYPE(tx_buff, type) do {		\
-+	((tx_buff)->flags) &= ~ATL1E_TX_PCIMAP_TYPE_MASK;	\
-+	((tx_buff)->flags) |= (type);				\
-+	} while (0)
-+
- struct atl1e_rx_page {
- 	dma_addr_t	dma;    /* receive rage DMA address */
- 	u8		*addr;   /* receive rage virtual address */
-diff --git a/drivers/net/atl1e/atl1e_main.c b/drivers/net/atl1e/atl1e_main.c
-index 69b830f..955da73 100644
---- a/drivers/net/atl1e/atl1e_main.c
-+++ b/drivers/net/atl1e/atl1e_main.c
-@@ -635,7 +635,11 @@ static void atl1e_clean_tx_ring(struct atl1e_adapter *adapter)
- 	for (index = 0; index < ring_count; index++) {
- 		tx_buffer = &tx_ring->tx_buffer[index];
- 		if (tx_buffer->dma) {
--			pci_unmap_page(pdev, tx_buffer->dma,
-+			if (tx_buffer->flags & ATL1E_TX_PCIMAP_SINGLE)
-+				pci_unmap_single(pdev, tx_buffer->dma,
-+					tx_buffer->length, PCI_DMA_TODEVICE);
-+			else if (tx_buffer->flags & ATL1E_TX_PCIMAP_PAGE)
-+				pci_unmap_page(pdev, tx_buffer->dma,
- 					tx_buffer->length, PCI_DMA_TODEVICE);
- 			tx_buffer->dma = 0;
- 		}
-@@ -1220,7 +1224,11 @@ static bool atl1e_clean_tx_irq(struct atl1e_adapter *adapter)
- 	while (next_to_clean != hw_next_to_clean) {
- 		tx_buffer = &tx_ring->tx_buffer[next_to_clean];
- 		if (tx_buffer->dma) {
--			pci_unmap_page(adapter->pdev, tx_buffer->dma,
-+			if (tx_buffer->flags & ATL1E_TX_PCIMAP_SINGLE)
-+				pci_unmap_single(adapter->pdev, tx_buffer->dma,
-+					tx_buffer->length, PCI_DMA_TODEVICE);
-+			else if (tx_buffer->flags & ATL1E_TX_PCIMAP_PAGE)
-+				pci_unmap_page(adapter->pdev, tx_buffer->dma,
- 					tx_buffer->length, PCI_DMA_TODEVICE);
- 			tx_buffer->dma = 0;
- 		}
-@@ -1741,6 +1749,7 @@ static void atl1e_tx_map(struct atl1e_adapter *adapter,
- 		tx_buffer->length = map_len;
- 		tx_buffer->dma = pci_map_single(adapter->pdev,
- 					skb->data, hdr_len, PCI_DMA_TODEVICE);
-+		ATL1E_SET_PCIMAP_TYPE(tx_buffer, ATL1E_TX_PCIMAP_SINGLE);
- 		mapped_len += map_len;
- 		use_tpd->buffer_addr = cpu_to_le64(tx_buffer->dma);
- 		use_tpd->word2 = (use_tpd->word2 & (~TPD_BUFLEN_MASK)) |
-@@ -1766,6 +1775,7 @@ static void atl1e_tx_map(struct atl1e_adapter *adapter,
- 		tx_buffer->dma =
- 			pci_map_single(adapter->pdev, skb->data + mapped_len,
- 					map_len, PCI_DMA_TODEVICE);
-+		ATL1E_SET_PCIMAP_TYPE(tx_buffer, ATL1E_TX_PCIMAP_SINGLE);
- 		mapped_len  += map_len;
- 		use_tpd->buffer_addr = cpu_to_le64(tx_buffer->dma);
- 		use_tpd->word2 = (use_tpd->word2 & (~TPD_BUFLEN_MASK)) |
-@@ -1801,6 +1811,7 @@ static void atl1e_tx_map(struct atl1e_adapter *adapter,
- 						(i * MAX_TX_BUF_LEN),
- 						tx_buffer->length,
- 						PCI_DMA_TODEVICE);
-+			ATL1E_SET_PCIMAP_TYPE(tx_buffer, ATL1E_TX_PCIMAP_PAGE);
- 			use_tpd->buffer_addr = cpu_to_le64(tx_buffer->dma);
- 			use_tpd->word2 = (use_tpd->word2 & (~TPD_BUFLEN_MASK)) |
- 					((cpu_to_le32(tx_buffer->length) &
-
+Best  wishes
+jie
