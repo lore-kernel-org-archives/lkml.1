@@ -1,63 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZIPWNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbZIPWSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbZIPWNZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZIPWNW
+	id S1756810AbZIPWSb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbZIPWS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:13:22 -0400
-Received: from mga02.intel.com ([134.134.136.20]:15524 "EHLO mga02.intel.com"
+	Wed, 16 Sep 2009 18:18:29 -0400
+Received: from kroah.org ([198.145.64.141]:49776 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753551AbZIPWNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:13:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,400,1249282800"; 
-   d="scan'208";a="551236758"
-Subject: Re: WARNING: at net/mac80211/scan.c:267
- ieee80211_scan_completed+0x299/0x2b0 	[mac80211]()
-From: reinette chatre <reinette.chatre@intel.com>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       "ilw@linux.intel.com" <ilw@linux.intel.com>,
-       "Zhu, Yi" <yi.zhu@intel.com>
-In-Reply-To: <8db1092f0909161259i5e007282i42f426bc2d0fc0c4@mail.gmail.com>
-References: <8db1092f0909160236i5d2b1f31k3ec289fbd9ac0bfa@mail.gmail.com>
-	 <1253122055.26521.431.camel@rc-desk>
-	 <8db1092f0909161036t5bae781eqa6f0a0df308ec4cd@mail.gmail.com>
-	 <1253124149.26521.438.camel@rc-desk>
-	 <8db1092f0909161259i5e007282i42f426bc2d0fc0c4@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 16 Sep 2009 15:13:06 -0700
-Message-Id: <1253139186.26521.449.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1754836AbZIPWS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:18:28 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:15:05 2009
+Message-Id: <20090916221505.716776628@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 16 Sep 2009 15:13:21 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Roland McGrath <roland@redhat.com>, James Morris <jmorris@namei.org>
+Subject: [patch 01/10] binfmt_elf: fix PT_INTERP bss handling
+References: <20090916221320.283781925@mini.kroah.org>
+Content-Disposition: inline; filename=binfmt_elf-fix-pt_interp-bss-handling.patch
+In-Reply-To: <20090916221529.GA28162@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Maciej,
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-On Wed, 2009-09-16 at 12:59 -0700, Maciej Rutecki wrote:
+------------------
+From: Roland McGrath <roland@redhat.com>
 
-> Script (wifi_wpa.sh):
-> #!/bin/sh
-> INTERFACE=wlan0
-> WPA_FILE=/etc/wpa_supplicant/wpa_supplicant.conf
-> DRIVER=wext
-> ifconfig eth0 down
-> ifconfig $INTERFACE up
-> sleep 3
-> killall wpa_supplicant &> /dev/null
-> wpa_supplicant -c $WPA_FILE -D $DRIVER -i $INTERFACE -B
-> dhclient $INTERFACE
+commit 9f0ab4a3f0fdb1ff404d150618ace2fa069bb2e1 upstream.
 
-I think there is a potential race here. You start wpa_supplicant in
-background and then immediately request an IP. It is not guaranteed at
-this point that you are associated.
+In fs/binfmt_elf.c, load_elf_interp() calls padzero() for .bss even if
+the PT_LOAD has no PROT_WRITE and no .bss.  This generates EFAULT.
 
-Could you perform the last three steps of your script manually?
+Here is a small test case.  (Yes, there are other, useful PT_INTERP
+which have only .text and no .data/.bss.)
 
-Reinette
+	----- ptinterp.S
+	_start: .globl _start
+		 nop
+		 int3
+	-----
+	$ gcc -m32 -nostartfiles -nostdlib -o ptinterp ptinterp.S
+	$ gcc -m32 -Wl,--dynamic-linker=ptinterp -o hello hello.c
+	$ ./hello
+	Segmentation fault  # during execve() itself
+
+	After applying the patch:
+	$ ./hello
+	Trace trap  # user-mode execution after execve() finishes
+
+If the ELF headers are actually self-inconsistent, then dying is fine.
+But having no PROT_WRITE segment is perfectly normal and correct if
+there is no segment with p_memsz > p_filesz (i.e. bss).  John Reiser
+suggested checking for PROT_WRITE in the bss logic.  I think it makes
+most sense to simply apply the bss logic only when there is bss.
+
+This patch looks less trivial than it is due to some reindentation.
+It just moves the "if (last_bss > elf_bss) {" test up to include the
+partial-page bss logic as well as the more-pages bss logic.
+
+Reported-by: John Reiser <jreiser@bitwagon.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: James Morris <jmorris@namei.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/binfmt_elf.c |   28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -496,22 +496,22 @@ static unsigned long load_elf_interp(str
+ 		}
+ 	}
+ 
+-	/*
+-	 * Now fill out the bss section.  First pad the last page up
+-	 * to the page boundary, and then perform a mmap to make sure
+-	 * that there are zero-mapped pages up to and including the 
+-	 * last bss page.
+-	 */
+-	if (padzero(elf_bss)) {
+-		error = -EFAULT;
+-		goto out_close;
+-	}
++	if (last_bss > elf_bss) {
++		/*
++		 * Now fill out the bss section.  First pad the last page up
++		 * to the page boundary, and then perform a mmap to make sure
++		 * that there are zero-mapped pages up to and including the
++		 * last bss page.
++		 */
++		if (padzero(elf_bss)) {
++			error = -EFAULT;
++			goto out_close;
++		}
+ 
+-	/* What we have mapped so far */
+-	elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
++		/* What we have mapped so far */
++		elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
+ 
+-	/* Map the last of the bss segment */
+-	if (last_bss > elf_bss) {
++		/* Map the last of the bss segment */
+ 		down_write(&current->mm->mmap_sem);
+ 		error = do_brk(elf_bss, last_bss - elf_bss);
+ 		up_write(&current->mm->mmap_sem);
 
 
