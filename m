@@ -1,60 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbZIPGhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbZIPGht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbZIPGhk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 02:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZIPGhi
+	id S1756816AbZIPGht (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 02:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbZIPGhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 02:37:38 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51775 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbZIPGhi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 02:37:38 -0400
-Subject: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and S390
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, cl@linux-foundation.org,
-       heiko.carstens@de.ibm.com, mingo@elte.hu, npiggin@suse.de,
-       sachinp@in.ibm.com
-Date: Wed, 16 Sep 2009 09:37:39 +0300
-Message-Id: <1253083059.5478.1.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 16 Sep 2009 02:37:47 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61208 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756193AbZIPGhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 02:37:42 -0400
+Message-ID: <4AB0885C.4010504@cn.fujitsu.com>
+Date: Wed, 16 Sep 2009 14:40:28 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH v2 2/2] ftrace: Add timer-source of walltime for ftrace
+References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com> <4AB076DE.10604@cn.fujitsu.com> <4AB077AF.6080800@cn.fujitsu.com> <20090916055928.GF5121@nowhere>
+In-Reply-To: <20090916055928.GF5121@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The SLQB allocator is known to be broken on certain PowerPC and S390
-configurations. Disable the allocator in Kconfig for those architectures
-until the issues are resolved.
+Frederic Weisbecker wrote:
+> On Wed, Sep 16, 2009 at 01:29:19PM +0800, Zhaolei wrote:
+>> We can add a timer-source for ftrace to support wall-time display.
+>> It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
+>> http://lkml.org/lkml/2009/7/24/103
+>>
+>> It need to applys on my patch of:
+>> [PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
+>>
+Hello, Frederic
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- init/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Thanks for your review.
 
-diff --git a/init/Kconfig b/init/Kconfig
-index c0d8a47..aaeddeb 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1033,6 +1033,7 @@ config SLUB
- 
- config SLQB
- 	bool "SLQB (Queued allocator)"
-+	depends on !PPC && !S390
- 	help
- 	  SLQB is a proposed new slab allocator.
- 
--- 
-1.5.6.3
+>> We can get following output:
+>>  # cd /mnt/debugfs/tracing/
+>>  # cat trace_clock
+>>  [local] global walltime
+>>  # echo sched_switch > current_tracer
+>>  # cat trace
+>>  # tracer: sched_switch
+>>  #
+>>  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+>>  #              | |       |          |         |
+>>              bash-3580  [000]  2916.188093:   3580:120:S   + [000]  3580:120:S bash
+>>              bash-3580  [000]  2916.188205:   3580:120:S   + [000]  3580:120:S bash
+>>              bash-3580  [000]  2916.188538:   3580:120:R   + [000]     5:115:S events/0
+>>              bash-3580  [000]  2916.188599:   3580:120:R ==> [000]     5:115:R events/0
+>>          events/0-5     [000]  2916.188669:      5:115:S ==> [000]  3580:120:R bash
+>>  ...
+>>  # echo walltime > trace_clock
+>>  # cat trace
+>>  # tracer: sched_switch
+>>  #
+>>  #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
+>>  #              | |       |                        |         |
+> 
+> 
+> 
+> 
+> The headers seem a bit broken. Is it a copy paste effect or?
 
+No, it is a format bug of patch.
+I'll fix it.
 
+> 
+> 
+> 
+>>              bash-3580  [000] 2009-08-24 18:03:16.500705:   3580:120:S   + [000]  3580:120:S bash
+>>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
+>>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
+>>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S ==> [000]     5:115:R events/0
+>>          events/0-5     [000] 2009-08-24 18:03:16.500815:      5:115:R   + [000]  3578:120:S sshd
+>>  ...
+> 
+> 
+> But nice result :)
+> 
+> 
+>> Changelog:
+>> v1->v2: Rebase to top of tip tree.
+>>
+>> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+>> ---
+>>  include/linux/trace_clock.h |    1 +
+>>  kernel/trace/trace.c        |   24 ++++++++++++++++-----
+>>  kernel/trace/trace.h        |    8 ++++++-
+>>  kernel/trace/trace_clock.c  |   48 +++++++++++++++++++++++++++++++++++++++++++
+>>  kernel/trace/trace_output.c |   21 +++++++++++++++---
+>>  5 files changed, 91 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
+>> index 7a81303..322707e 100644
+>> --- a/include/linux/trace_clock.h
+>> +++ b/include/linux/trace_clock.h
+>> @@ -15,5 +15,6 @@
+>>  extern u64 notrace trace_clock_local(void);
+>>  extern u64 notrace trace_clock(void);
+>>  extern u64 notrace trace_clock_global(void);
+>> +extern u64 notrace trace_clock_walltime(void);
+>>  
+>>  #endif /* _LINUX_TRACE_CLOCK_H */
+>> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+>> index fd52a19..160b6a8 100644
+>> --- a/kernel/trace/trace.c
+>> +++ b/kernel/trace/trace.c
+>> @@ -335,9 +335,10 @@ static struct {
+>>  } trace_clocks[] = {
+>>  	{ trace_clock_local,	"local" },
+>>  	{ trace_clock_global,	"global" },
+>> +	{ trace_clock_walltime,	"walltime" },
+>>  };
+>>  
+>> -int trace_clock_id;
+>> +enum TRACE_CLOCK_TYPE trace_clock_type = TRACE_CLOCK_LOCAL;
+> 
+> 
+> 
+> Uppercase names are usually reserved for CPP macros.
+
+I'll rename it.
+
+Thanks
+Zhaolei
 
