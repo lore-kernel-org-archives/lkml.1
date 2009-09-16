@@ -1,156 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbZIPMHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbZIPMI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758765AbZIPMHL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757286AbZIPMHI
+	id S1758675AbZIPMI1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZIPMIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:07:08 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46758 "EHLO mx1.suse.de"
+	Wed, 16 Sep 2009 08:08:25 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40928 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758042AbZIPMHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:07:06 -0400
-Date: Wed, 16 Sep 2009 14:07:08 +0200
+	id S1756044AbZIPMIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:08:24 -0400
+Date: Wed, 16 Sep 2009 14:08:27 +0200
 From: Jan Kara <jack@suse.cz>
 To: Jens Axboe <jens.axboe@oracle.com>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
        akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 02/11] writeback: get rid of wbc->for_writepages
-Message-ID: <20090916120708.GB26030@duck.suse.cz>
-References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com> <1253038617-30204-3-git-send-email-jens.axboe@oracle.com>
+Subject: Re: [PATCH 03/11] writeback: merely wakeup flusher thread if work
+	allocation fails for WB_SYNC_NONE
+Message-ID: <20090916120827.GC26030@duck.suse.cz>
+References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com> <1253038617-30204-4-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253038617-30204-3-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1253038617-30204-4-git-send-email-jens.axboe@oracle.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 15-09-09 20:16:48, Jens Axboe wrote:
-> It's only set, it's never checked. Kill it.
-  Acked-by: Jan Kara <jack@suse.cz>
-
-							Honza
-
+On Tue 15-09-09 20:16:49, Jens Axboe wrote:
+> From: Christoph Hellwig <hch@infradead.org>
 > 
+> Since it's an opportunistic writeback and not a data integrity action,
+> don't punt to blocking writeback. Just wakeup the thread and it will
+> flush old data.
+> 
+> Signed-off-by: Christoph Hellwig <hch@infradead.org>
 > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+  Looks good. Acked-by: Jan Kara <jack@suse.cz>
+
+									Honza
 > ---
->  fs/afs/write.c              |    1 -
->  fs/btrfs/ordered-data.c     |    1 -
->  fs/jbd2/commit.c            |    1 -
->  fs/nfs/write.c              |    1 -
->  include/linux/writeback.h   |    1 -
->  include/trace/events/ext4.h |    6 ++----
->  mm/page-writeback.c         |    2 --
->  7 files changed, 2 insertions(+), 11 deletions(-)
+>  fs/fs-writeback.c |   46 ++++++++++++++--------------------------------
+>  1 files changed, 14 insertions(+), 32 deletions(-)
 > 
-> diff --git a/fs/afs/write.c b/fs/afs/write.c
-> index c2e7a7f..c63a3c8 100644
-> --- a/fs/afs/write.c
-> +++ b/fs/afs/write.c
-> @@ -712,7 +712,6 @@ int afs_writeback_all(struct afs_vnode *vnode)
->  		.bdi		= mapping->backing_dev_info,
->  		.sync_mode	= WB_SYNC_ALL,
->  		.nr_to_write	= LONG_MAX,
-> -		.for_writepages = 1,
->  		.range_cyclic	= 1,
->  	};
->  	int ret;
-> diff --git a/fs/btrfs/ordered-data.c b/fs/btrfs/ordered-data.c
-> index d6f0806..7b2f401 100644
-> --- a/fs/btrfs/ordered-data.c
-> +++ b/fs/btrfs/ordered-data.c
-> @@ -740,7 +740,6 @@ int btrfs_fdatawrite_range(struct address_space *mapping, loff_t start,
->  		.nr_to_write = mapping->nrpages * 2,
->  		.range_start = start,
->  		.range_end = end,
-> -		.for_writepages = 1,
->  	};
->  	return btrfs_writepages(mapping, &wbc);
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 628235c..783ed44 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -75,13 +75,6 @@ static inline void bdi_work_init(struct bdi_work *work,
+>  	work->state = WS_USED;
 >  }
-> diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-> index 7b4088b..0df600e 100644
-> --- a/fs/jbd2/commit.c
-> +++ b/fs/jbd2/commit.c
-> @@ -220,7 +220,6 @@ static int journal_submit_inode_data_buffers(struct address_space *mapping)
->  		.nr_to_write = mapping->nrpages * 2,
->  		.range_start = 0,
->  		.range_end = i_size_read(mapping->host),
-> -		.for_writepages = 1,
->  	};
 >  
->  	ret = generic_writepages(mapping, &wbc);
-> diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-> index 120acad..53eb26c 100644
-> --- a/fs/nfs/write.c
-> +++ b/fs/nfs/write.c
-> @@ -1490,7 +1490,6 @@ static int nfs_write_mapping(struct address_space *mapping, int how)
->  		.nr_to_write = LONG_MAX,
->  		.range_start = 0,
->  		.range_end = LLONG_MAX,
-> -		.for_writepages = 1,
->  	};
+> -static inline void bdi_work_init_on_stack(struct bdi_work *work,
+> -					  struct writeback_control *wbc)
+> -{
+> -	bdi_work_init(work, wbc);
+> -	work->state |= WS_ONSTACK;
+> -}
+> -
+>  /**
+>   * writeback_in_progress - determine whether there is writeback in progress
+>   * @bdi: the device's backing_dev_info structure.
+> @@ -207,34 +200,23 @@ static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
 >  
->  	return __nfs_write_mapping(mapping, &wbc, how);
-> diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-> index d347632..48a054e 100644
-> --- a/include/linux/writeback.h
-> +++ b/include/linux/writeback.h
-> @@ -50,7 +50,6 @@ struct writeback_control {
->  	unsigned encountered_congestion:1; /* An output: a queue is full */
->  	unsigned for_kupdate:1;		/* A kupdate writeback */
->  	unsigned for_reclaim:1;		/* Invoked from the page allocator */
-> -	unsigned for_writepages:1;	/* This is a writepages() call */
->  	unsigned range_cyclic:1;	/* range_start is cyclic */
->  	unsigned more_io:1;		/* more io to be dispatched */
->  	/*
-> diff --git a/include/trace/events/ext4.h b/include/trace/events/ext4.h
-> index 7d8b5bc..8d433c4 100644
-> --- a/include/trace/events/ext4.h
-> +++ b/include/trace/events/ext4.h
-> @@ -227,7 +227,6 @@ TRACE_EVENT(ext4_da_writepages,
->  		__field(	char,	nonblocking		)
->  		__field(	char,	for_kupdate		)
->  		__field(	char,	for_reclaim		)
-> -		__field(	char,	for_writepages		)
->  		__field(	char,	range_cyclic		)
->  	),
+>  void bdi_start_writeback(struct writeback_control *wbc)
+>  {
+> -	const bool must_wait = wbc->sync_mode == WB_SYNC_ALL;
+> -	struct bdi_work work_stack, *work = NULL;
+> -
+> -	if (!must_wait)
+> -		work = bdi_alloc_work(wbc);
+> +	/*
+> +	 * WB_SYNC_NONE is opportunistic writeback. If this allocation fails,
+> +	 * bdi_queue_work() will wake up the thread and flush old data. This
+> +	 * should ensure some amount of progress in freeing memory.
+> +	 */
+> +	if (wbc->sync_mode != WB_SYNC_ALL) {
+> +		struct bdi_work *w = bdi_alloc_work(wbc);
 >  
-> @@ -241,16 +240,15 @@ TRACE_EVENT(ext4_da_writepages,
->  		__entry->nonblocking	= wbc->nonblocking;
->  		__entry->for_kupdate	= wbc->for_kupdate;
->  		__entry->for_reclaim	= wbc->for_reclaim;
-> -		__entry->for_writepages	= wbc->for_writepages;
->  		__entry->range_cyclic	= wbc->range_cyclic;
->  	),
+> -	if (!work) {
+> -		work = &work_stack;
+> -		bdi_work_init_on_stack(work, wbc);
+> -	}
+> +		bdi_queue_work(wbc->bdi, w);
+> +	} else {
+> +		struct bdi_work work;
 >  
-> -	TP_printk("dev %s ino %lu nr_t_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d for_writepages %d range_cyclic %d",
-> +	TP_printk("dev %s ino %lu nr_t_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d range_cyclic %d",
->  		  jbd2_dev_to_name(__entry->dev), __entry->ino, __entry->nr_to_write,
->  		  __entry->pages_skipped, __entry->range_start,
->  		  __entry->range_end, __entry->nonblocking,
->  		  __entry->for_kupdate, __entry->for_reclaim,
-> -		  __entry->for_writepages, __entry->range_cyclic)
-> +		  __entry->range_cyclic)
->  );
+> -	bdi_queue_work(wbc->bdi, work);
+> +		bdi_work_init(&work, wbc);
+> +		work.state |= WS_ONSTACK;
 >  
->  TRACE_EVENT(ext4_da_writepages_result,
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 25e7770..64c01d0 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -1019,12 +1019,10 @@ int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
->  
->  	if (wbc->nr_to_write <= 0)
->  		return 0;
-> -	wbc->for_writepages = 1;
->  	if (mapping->a_ops->writepages)
->  		ret = mapping->a_ops->writepages(mapping, wbc);
->  	else
->  		ret = generic_writepages(mapping, wbc);
-> -	wbc->for_writepages = 0;
->  	return ret;
+> -	/*
+> -	 * If the sync mode is WB_SYNC_ALL, block waiting for the work to
+> -	 * complete. If not, we only need to wait for the work to be started,
+> -	 * if we allocated it on-stack. We use the same mechanism, if the
+> -	 * wait bit is set in the bdi_work struct, then threads will not
+> -	 * clear pending until after they are done.
+> -	 *
+> -	 * Note that work == &work_stack if must_wait is true, so we don't
+> -	 * need to do call_rcu() here ever, since the completion path will
+> -	 * have done that for us.
+> -	 */
+> -	if (must_wait || work == &work_stack) {
+> -		bdi_wait_on_work_clear(work);
+> -		if (work != &work_stack)
+> -			call_rcu(&work->rcu_head, bdi_work_free);
+> +		bdi_queue_work(wbc->bdi, &work);
+> +		bdi_wait_on_work_clear(&work);
+>  	}
 >  }
 >  
 > -- 
