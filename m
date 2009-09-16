@@ -1,155 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbZIPDIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZIPDGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbZIPDIE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 23:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZIPDHw
+	id S1753899AbZIPDGE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 23:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZIPDF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 23:07:52 -0400
-Received: from mga14.intel.com ([143.182.124.37]:7197 "EHLO mga14.intel.com"
+	Tue, 15 Sep 2009 23:05:58 -0400
+Received: from fifo99.com ([67.223.236.141]:46552 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751680AbZIPDHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 23:07:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,394,1249282800"; 
-   d="scan'208";a="188105373"
-Message-Id: <20090916030604.442255475@intel.com>
-References: <20090916030009.585103525@intel.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 16 Sep 2009 11:00:13 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <greg@kroah.com>, Wu Fengguang <fengguang.wu@intel.com>
-CC: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Tejun Heo <tj@kernel.org>
-CC: Nick Piggin <npiggin@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: [PATCH 4/4] HWPOISON: stop /dev/mem users from accessing hwpoison pages
-Content-Disposition: inline; filename=kmem-dev-mem.patch
+	id S1751119AbZIPDF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 23:05:58 -0400
+Subject: Re: [PATCH 00/72] Blackfin updates for 2.6.32
+From: Daniel Walker <dwalker@fifo99.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+In-Reply-To: <8bd0f97a0909151956k6cc20944we1ccb6c5188c4edb@mail.gmail.com>
+References: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
+	 <1252961412.11643.215.camel@desktop>
+	 <8bd0f97a0909141357y60d7807bm99146d757e6f61da@mail.gmail.com>
+	 <1252962263.11643.232.camel@desktop>
+	 <8bd0f97a0909141407i26b39f9bq133a62be381601b5@mail.gmail.com>
+	 <1252963292.11643.259.camel@desktop>
+	 <8bd0f97a0909141517i3535bb84j4cbac0cd986d4914@mail.gmail.com>
+	 <1252967767.11643.286.camel@desktop>
+	 <8bd0f97a0909151956k6cc20944we1ccb6c5188c4edb@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 15 Sep 2009 20:06:48 -0700
+Message-Id: <1253070408.11643.540.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Return EIO when user space tries to read/write/mmap hwpoison pages
-via the /dev/mem interface.
+On Tue, 2009-09-15 at 22:56 -0400, Mike Frysinger wrote:
+> On Mon, Sep 14, 2009 at 18:36, Daniel Walker wrote:
+> > If you ultimately don't correct these changes, I'd ask that in the
+> > future you submit pull requests for the blackfin architecture instead of
+> > sending individual patches ..
+> 
+> you havent been following anything related to how Blackfin (or any
+> arch?) patches are merged.  this patch series is for review only from
+> my tree.  no one is picking these up because they've already been
+> picked up.
 
-The approach: rename range_is_allowed() to devmem_check_pfn_range(), and
-add PageHWPoison() test into it. So as to fail the whole request if it
-contains any hwpoison page. Partial write into physical memory seems
-don't make much sense, and user space can avoid this limit by doing
-1-page read/writes.
+Picked up by Linus? You know this isn't the "blackfin" list right? You
+don't seem to care too about review your getting from _this_ list. So
+why in the world are you sending your patches (all 72 of them!) here ..
 
-CC: Greg KH <greg@kroah.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reviewed-by: Andi Kleen <andi@firstfloor.org>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/char/mem.c |   37 ++++++++++++++++++++-----------------
- 1 file changed, 20 insertions(+), 17 deletions(-)
-
---- linux-mm.orig/drivers/char/mem.c	2009-09-16 09:57:36.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2009-09-16 09:59:37.000000000 +0800
-@@ -90,31 +90,28 @@ static inline int valid_mmap_phys_addr_r
- }
- #endif
- 
--#ifdef CONFIG_STRICT_DEVMEM
--static inline int range_is_allowed(unsigned long pfn, unsigned long size)
-+static int devmem_check_pfn_range(unsigned long pfn, unsigned long size)
- {
- 	u64 from = ((u64)pfn) << PAGE_SHIFT;
- 	u64 to = from + size;
- 	u64 cursor = from;
- 
- 	while (cursor < to) {
-+#ifdef CONFIG_STRICT_DEVMEM
- 		if (!devmem_is_allowed(pfn)) {
- 			printk(KERN_INFO
- 		"Program %s tried to access /dev/mem between %Lx->%Lx.\n",
- 				current->comm, from, to);
--			return 0;
-+			return -EPERM;
- 		}
-+#endif
-+		if (pfn_valid(pfn) && PageHWPoison(pfn_to_page(pfn)))
-+			return -EIO;
- 		cursor += PAGE_SIZE;
- 		pfn++;
- 	}
--	return 1;
--}
--#else
--static inline int range_is_allowed(unsigned long pfn, unsigned long size)
--{
--	return 1;
-+	return 0;
- }
--#endif
- 
- void __attribute__((weak)) unxlate_dev_mem_ptr(unsigned long phys, void *addr)
- {
-@@ -151,11 +148,13 @@ static ssize_t read_mem(struct file * fi
- 
- 	while (count > 0) {
- 		unsigned long remaining;
-+		int err;
- 
- 		sz = size_inside_page(p, count);
- 
--		if (!range_is_allowed(p >> PAGE_SHIFT, count))
--			return -EPERM;
-+		err = devmem_check_pfn_range(p >> PAGE_SHIFT, count);
-+		if (err)
-+			return err;
- 
- 		/*
- 		 * On ia64 if a page has been mapped somewhere as
-@@ -185,9 +184,10 @@ static ssize_t write_mem(struct file * f
- 			 size_t count, loff_t *ppos)
- {
- 	unsigned long p = *ppos;
--	ssize_t written, sz;
- 	unsigned long copied;
-+	ssize_t written, sz;
- 	void *ptr;
-+	int err;
- 
- 	if (!valid_phys_addr_range(p, count))
- 		return -EFAULT;
-@@ -209,8 +209,9 @@ static ssize_t write_mem(struct file * f
- 	while (count > 0) {
- 		sz = size_inside_page(p, count);
- 
--		if (!range_is_allowed(p >> PAGE_SHIFT, sz))
--			return -EPERM;
-+		err = devmem_check_pfn_range(p >> PAGE_SHIFT, sz);
-+		if (err)
-+			return err;
- 
- 		/*
- 		 * On ia64 if a page has been mapped somewhere as
-@@ -298,6 +299,7 @@ static struct vm_operations_struct mmap_
- static int mmap_mem(struct file * file, struct vm_area_struct * vma)
- {
- 	size_t size = vma->vm_end - vma->vm_start;
-+	int err;
- 
- 	if (!valid_mmap_phys_addr_range(vma->vm_pgoff, size))
- 		return -EINVAL;
-@@ -305,8 +307,9 @@ static int mmap_mem(struct file * file, 
- 	if (!private_mapping_ok(vma))
- 		return -ENOSYS;
- 
--	if (!range_is_allowed(vma->vm_pgoff, size))
--		return -EPERM;
-+	err = devmem_check_pfn_range(vma->vm_pgoff, size);
-+	if (err)
-+		return err;
- 
- 	if (!phys_mem_access_prot_allowed(file, vma->vm_pgoff, size,
- 						&vma->vm_page_prot))
-
--- 
+Daniel
 
