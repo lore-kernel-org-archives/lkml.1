@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbZIPWSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbZIPWTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756810AbZIPWSb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbZIPWS3
+	id S1758292AbZIPWTv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758103AbZIPWTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:18:29 -0400
-Received: from kroah.org ([198.145.64.141]:49776 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:19:42 -0400
+Received: from kroah.org ([198.145.64.141]:49781 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754836AbZIPWS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:18:28 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:15:05 2009
-Message-Id: <20090916221505.716776628@mini.kroah.org>
+	id S1755321AbZIPWS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:18:29 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:15:06 2009
+Message-Id: <20090916221505.894792349@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:13:21 -0700
+Date: Wed, 16 Sep 2009 15:13:22 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roland McGrath <roland@redhat.com>, James Morris <jmorris@namei.org>
-Subject: [patch 01/10] binfmt_elf: fix PT_INTERP bss handling
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch 02/10] powerpc/ps3: Workaround for flash memory I/O error
 References: <20090916221320.283781925@mini.kroah.org>
-Content-Disposition: inline; filename=binfmt_elf-fix-pt_interp-bss-handling.patch
+Content-Disposition: inline; filename=powerpc-ps3-workaround-for-flash-memory-i-o-error.patch
 In-Reply-To: <20090916221529.GA28162@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,87 +30,126 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Roland McGrath <roland@redhat.com>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 
-commit 9f0ab4a3f0fdb1ff404d150618ace2fa069bb2e1 upstream.
+commit bc00351edd5c1b84d48c3fdca740fedfce4ae6ce upstream.
 
-In fs/binfmt_elf.c, load_elf_interp() calls padzero() for .bss even if
-the PT_LOAD has no PROT_WRITE and no .bss.  This generates EFAULT.
+A workaround for flash memory I/O errors when the PS3 internal
+hard disk has not been formatted for OtherOS use.
 
-Here is a small test case.  (Yes, there are other, useful PT_INTERP
-which have only .text and no .data/.bss.)
+This error condition mainly effects 'Live CD' users who have not
+formatted the PS3's internal hard disk for OtherOS.
 
-	----- ptinterp.S
-	_start: .globl _start
-		 nop
-		 int3
-	-----
-	$ gcc -m32 -nostartfiles -nostdlib -o ptinterp ptinterp.S
-	$ gcc -m32 -Wl,--dynamic-linker=ptinterp -o hello hello.c
-	$ ./hello
-	Segmentation fault  # during execve() itself
+Fixes errors similar to these when using the ps3-flash-util
+or ps3-boot-game-os programs:
 
-	After applying the patch:
-	$ ./hello
-	Trace trap  # user-mode execution after execve() finishes
+  ps3flash read failed 0x2050000
+  os_area_header_read: read error: os_area_header: Input/output error
+  main:627: os_area_read_hp error.
+  ERROR: can't change boot flag
 
-If the ELF headers are actually self-inconsistent, then dying is fine.
-But having no PROT_WRITE segment is perfectly normal and correct if
-there is no segment with p_memsz > p_filesz (i.e. bss).  John Reiser
-suggested checking for PROT_WRITE in the bss logic.  I think it makes
-most sense to simply apply the bss logic only when there is bss.
-
-This patch looks less trivial than it is due to some reindentation.
-It just moves the "if (last_bss > elf_bss) {" test up to include the
-partial-page bss logic as well as the more-pages bss logic.
-
-Reported-by: John Reiser <jreiser@bitwagon.com>
-Signed-off-by: Roland McGrath <roland@redhat.com>
-Signed-off-by: James Morris <jmorris@namei.org>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/binfmt_elf.c |   28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+ drivers/ps3/ps3stor_lib.c |   65 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 62 insertions(+), 3 deletions(-)
 
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -496,22 +496,22 @@ static unsigned long load_elf_interp(str
- 		}
- 	}
+--- a/drivers/ps3/ps3stor_lib.c
++++ b/drivers/ps3/ps3stor_lib.c
+@@ -23,6 +23,65 @@
+ #include <asm/lv1call.h>
+ #include <asm/ps3stor.h>
  
--	/*
--	 * Now fill out the bss section.  First pad the last page up
--	 * to the page boundary, and then perform a mmap to make sure
--	 * that there are zero-mapped pages up to and including the 
--	 * last bss page.
--	 */
--	if (padzero(elf_bss)) {
--		error = -EFAULT;
--		goto out_close;
--	}
-+	if (last_bss > elf_bss) {
-+		/*
-+		 * Now fill out the bss section.  First pad the last page up
-+		 * to the page boundary, and then perform a mmap to make sure
-+		 * that there are zero-mapped pages up to and including the
-+		 * last bss page.
-+		 */
-+		if (padzero(elf_bss)) {
-+			error = -EFAULT;
-+			goto out_close;
++/*
++ * A workaround for flash memory I/O errors when the internal hard disk
++ * has not been formatted for OtherOS use.  Delay disk close until flash
++ * memory is closed.
++ */
++
++static struct ps3_flash_workaround {
++	int flash_open;
++	int disk_open;
++	struct ps3_system_bus_device *disk_sbd;
++} ps3_flash_workaround;
++
++static int ps3stor_open_hv_device(struct ps3_system_bus_device *sbd)
++{
++	int error = ps3_open_hv_device(sbd);
++
++	if (error)
++		return error;
++
++	if (sbd->match_id == PS3_MATCH_ID_STOR_FLASH)
++		ps3_flash_workaround.flash_open = 1;
++
++	if (sbd->match_id == PS3_MATCH_ID_STOR_DISK)
++		ps3_flash_workaround.disk_open = 1;
++
++	return 0;
++}
++
++static int ps3stor_close_hv_device(struct ps3_system_bus_device *sbd)
++{
++	int error;
++
++	if (sbd->match_id == PS3_MATCH_ID_STOR_DISK
++		&& ps3_flash_workaround.disk_open
++		&& ps3_flash_workaround.flash_open) {
++		ps3_flash_workaround.disk_sbd = sbd;
++		return 0;
++	}
++
++	error = ps3_close_hv_device(sbd);
++
++	if (error)
++		return error;
++
++	if (sbd->match_id == PS3_MATCH_ID_STOR_DISK)
++		ps3_flash_workaround.disk_open = 0;
++
++	if (sbd->match_id == PS3_MATCH_ID_STOR_FLASH) {
++		ps3_flash_workaround.flash_open = 0;
++
++		if (ps3_flash_workaround.disk_sbd) {
++			ps3_close_hv_device(ps3_flash_workaround.disk_sbd);
++			ps3_flash_workaround.disk_open = 0;
++			ps3_flash_workaround.disk_sbd = NULL;
 +		}
++	}
++
++	return 0;
++}
  
--	/* What we have mapped so far */
--	elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
-+		/* What we have mapped so far */
-+		elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
+ static int ps3stor_probe_access(struct ps3_storage_device *dev)
+ {
+@@ -90,7 +149,7 @@ int ps3stor_setup(struct ps3_storage_dev
+ 	int error, res, alignment;
+ 	enum ps3_dma_page_size page_size;
  
--	/* Map the last of the bss segment */
--	if (last_bss > elf_bss) {
-+		/* Map the last of the bss segment */
- 		down_write(&current->mm->mmap_sem);
- 		error = do_brk(elf_bss, last_bss - elf_bss);
- 		up_write(&current->mm->mmap_sem);
+-	error = ps3_open_hv_device(&dev->sbd);
++	error = ps3stor_open_hv_device(&dev->sbd);
+ 	if (error) {
+ 		dev_err(&dev->sbd.core,
+ 			"%s:%u: ps3_open_hv_device failed %d\n", __func__,
+@@ -166,7 +225,7 @@ fail_free_irq:
+ fail_sb_event_receive_port_destroy:
+ 	ps3_sb_event_receive_port_destroy(&dev->sbd, dev->irq);
+ fail_close_device:
+-	ps3_close_hv_device(&dev->sbd);
++	ps3stor_close_hv_device(&dev->sbd);
+ fail:
+ 	return error;
+ }
+@@ -193,7 +252,7 @@ void ps3stor_teardown(struct ps3_storage
+ 			"%s:%u: destroy event receive port failed %d\n",
+ 			__func__, __LINE__, error);
+ 
+-	error = ps3_close_hv_device(&dev->sbd);
++	error = ps3stor_close_hv_device(&dev->sbd);
+ 	if (error)
+ 		dev_err(&dev->sbd.core,
+ 			"%s:%u: ps3_close_hv_device failed %d\n", __func__,
 
 
