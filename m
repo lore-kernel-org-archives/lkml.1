@@ -1,122 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbZIPSLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759889AbZIPSKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759917AbZIPSLG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 14:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZIPSLE
+	id S1759889AbZIPSKf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 14:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZIPSK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 14:11:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:57726 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753929AbZIPSLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 14:11:02 -0400
-Date: Wed, 16 Sep 2009 14:09:15 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH] io-controller: Fix task hanging when there are more
-	than one groups
-Message-ID: <20090916180915.GE5221@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com> <20090915033739.GA4054@redhat.com> <4AB05442.6080004@cn.fujitsu.com>
+	Wed, 16 Sep 2009 14:10:29 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:59198 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751845AbZIPSK3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 14:10:29 -0400
+Date: Wed, 16 Sep 2009 20:10:18 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Joe Perches <joe@perches.com>
+Cc: linux-arm-kernel@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel-owner@lists.infradead.org
+Subject: Re: [PATCH] MAINTAINERS: Move ARM lists to infradead
+Message-ID: <20090916181018.GA19728@Chamillionaire.breakpoint.cc>
+References: <1253117388.2567.17.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <4AB05442.6080004@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1253117388.2567.17.camel@Joe-Laptop.home>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 10:58:10AM +0800, Gui Jianfeng wrote:
+* Joe Perches | 2009-09-16 09:09:48 [-0700]:
 
-[..]
-> > o Fixed the issue of not expiring the queue for single ioq schedulers. Reported
-> >   and fixed by Gui.
-> > 
-> > o If an AS queue is not expired for a long time and suddenly somebody
-> >   decides to create a group and launch a job there, in that case old AS
-> >   queue will be expired with a very high value of slice used and will get
-> >   a very high disk time. Fix it by marking the queue as "charge_one_slice"
-> >   and charge the queue only for a single time slice and not for whole
-> >   of the duration when queue was running.
-> > 
-> > o There are cases where in case of AS, excessive queue expiration will take
-> >   place by elevator fair queuing layer because of few reasons.
-> > 	- AS does not anticipate on a queue if there are no competing requests.
-> > 	  So if only a single reader is present in a group, anticipation does
-> > 	  not get turn on.
-> > 
-> > 	- elevator layer does not know that As is anticipating hence initiates
-> > 	  expiry requests in select_ioq() thinking queue is empty.
-> > 
-> > 	- elevaotr layer tries to aggressively expire last empty queue. This
-> > 	  can lead to lof of queue expiry
-> > 
-> > o This patch now starts ANITC_WAIT_NEXT anticipation if last request in the
-> >   queue completed and associated io context is eligible to anticipate. Also
-> >   AS lets elevatory layer know that it is anticipating (elv_ioq_wait_request())
-> >   . This solves above mentioned issues.
-> >  
-> > o Moved some of the code in separate functions to improve readability.
-> > 
-> ...
+>Signed-off-by: Joe Perches <joe@perches.com>
+>
+>diff --git a/MAINTAINERS b/MAINTAINERS
+>index 9117b65..d5a14ff 100644
+>--- a/MAINTAINERS
+>+++ b/MAINTAINERS
+>@@ -497,7 +497,7 @@ F:	arch/arm/include/asm/floppy.h
 > 
-> >  /* A request got completed from io_queue. Do the accounting. */
-> >  void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
-> >  {
-> > @@ -3470,16 +3572,16 @@ void elv_ioq_completed_request(struct re
-> >  			elv_set_prio_slice(q->elevator->efqd, ioq);
-> >  			elv_clear_ioq_slice_new(ioq);
-> >  		}
-> > +
-> >  		/*
-> >  		 * If there is only root group present, don't expire the queue
-> >  		 * for single queue ioschedulers (noop, deadline, AS). It is
-> >  		 * unnecessary overhead.
-> >  		 */
-> >  
-> > -		if (is_only_root_group() &&
-> > -			elv_iosched_single_ioq(q->elevator)) {
-> > -			elv_log_ioq(efqd, ioq, "select: only root group,"
-> > -					" no expiry");
-> > +		if (single_ioq_no_timed_expiry(q)) {
-> 
->   Hi Vivek,
-> 
->   So we make use of single_ioq_no_timed_expiry() to decide whether there is only
->   root ioq to be busy, right? But single_ioq_no_timed_expiry() only checks if
->   the root cgroup is the only group and if there is only one busy_ioq there. As
->   I explained in previous mail, these two checks are not sufficient to say the
->   current active ioq comes from root group. Because when the child cgroup is just
->   removed, and the ioq which belongs to child group is still there(maybe some
->   requests are in flight). In this case, only root cgroup and only one active ioq
->   (child ioq) checks are satisfied. So IMHO, in single_ioq_no_timed_expiry() we 
->   still need to check "efqd->root_group->ioq" is already created to ensure the only
->   ioq comes from root group. Am i missing something?
-> 
+> ARM PORT
+> M:	Russell King <linux@arm.linux.org.uk>
+>-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+>+L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+> W:	http://www.arm.linux.org.uk/
 
-Hi Gui,
+As far as I remember David moved the list over to infradead and the list no
+longer moderated. Did this change?
 
-The only side effect of not checking for "efqd->root_group->ioq" seems to
-be that this ioq hence io group of the child will not be freed immediately
-and release will be delayed until a some other queue in the system gets
-backlogged or ioscheduler exits. At that point of time, this child queue will
-be expired and ioq and iog will be freed.
-
-The advantage is that if there is IO happening only in child group in that
-case we can avoid expiring that queue.
-
-So may be keeping the queue around for sometime is not a very idea. 
-
-Am I missing something?
-
-Thanks
-Vivek
+Sebastian
