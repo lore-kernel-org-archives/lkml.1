@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZIPNpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbZIPNbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbZIPNpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZIPNpm
+	id S1758008AbZIPNbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZIPNbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:45:42 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:44095 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZIPNpm (ORCPT
-	<rfc822;<linux-kernel@vger.kernel.org>>);
-	Wed, 16 Sep 2009 09:45:42 -0400
-Date: Wed, 16 Sep 2009 09:31:04 -0400
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-To: Sheng Yang <sheng@linux.intel.com>
-Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Eddie Dong <eddie.dong@intel.com>, linux-kernel@vger.kernel.org,
-       Jun Nakajima <jun.nakajima@intel.com>
-Subject: Re: [Xen-devel] [RFC][PATCH 0/10] Xen Hybrid extension support
-Message-ID: <20090916133104.GB14725@phenom.dumpdata.com>
-References: <1253090551-7969-1-git-send-email-sheng@linux.intel.com>
+	Wed, 16 Sep 2009 09:31:36 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:34179 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752099AbZIPNbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 09:31:36 -0400
+Date: Wed, 16 Sep 2009 15:31:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] writeback fixes and cleanups
+Message-ID: <20090916133138.GQ23126@kernel.dk>
+References: <20090915194955.GV23126@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253090551-7969-1-git-send-email-sheng@linux.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4AB0EC00.0144:SCFSTAT5015188,ss=1,fgs=0
+In-Reply-To: <20090915194955.GV23126@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 04:42:21PM +0800, Sheng Yang wrote:
-> Hi, Keir & Jeremy
+On Tue, Sep 15 2009, Jens Axboe wrote:
+> Hi,
 > 
-> This patchset enabled Xen Hybrid extension support.
-> 
-> As we know that PV guest have performance issue with x86_64 that guest kernel
-> and userspace resistent in the same ring, then the necessary TLB flushes when
-> switch between guest userspace and guest kernel cause overhead, and much more
-> syscall overhead is also introduced. The Hybrid Extension estimated these
-> overhead by putting guest kernel back in (non-root) ring0 then achieve the better
-> performance than PV guest.
+> This should conclude the major updates to the previous writeback
+> inclusion, and has a bunch of must have fixes from Nick as well. So I
+> think we should include this sooner rather than later, should also fix
+> Ingo's bug report.
 
-What was the overhead? Is there a step-by-step list of operations you did
-to figure out the performance numbers? 
+Linus, JFYI, the diffstat now looks like this:
 
-I am asking this b/c at some point I would like to compare the pv-ops vs native
-and I am not entirely sure what is the best way to do this.
+  git://git.kernel.dk/linux-2.6-block.git writeback
+
+Christoph Hellwig (1):
+      writeback: merely wakeup flusher thread if work allocation fails for WB_SYNC_NONE
+
+Jens Axboe (11):
+      fs: remove bdev->bd_inode_backing_dev_info
+      writeback: get rid of wbc->for_writepages
+      writeback: make wb_writeback() take an argument structure
+      fs: Assign bdi in super_block
+      writeback: only use bdi_writeback_all() for WB_SYNC_NONE writeout
+      writeback: use RCU to protect bdi_list
+      writeback: inline allocation failure handling in bdi_alloc_queue_work()
+      writeback: separate starting of sync vs opportunistic writeback
+      writeback: splice dirty inode entries to default bdi on bdi_destroy()
+      writeback: add comments to bdi_work structure
+      writeback: use schedule_timeout_interruptible()
+
+Nick Piggin (4):
+      writeback: remove smp_mb(), it's not needed with list_add_tail_rcu()
+      writeback: improve scalability of bdi writeback work queues
+      writeback: Fix bdi use after free in wb_work_complete()
+      writeback: fix possible bdi writeback refcounting problem
+
+ fs/afs/write.c              |    1 -
+ fs/block_dev.c              |    1 -
+ fs/btrfs/disk-io.c          |    1 +
+ fs/btrfs/ordered-data.c     |    1 -
+ fs/fs-writeback.c           |  345 ++++++++++++++++++++-----------------------
+ fs/fuse/inode.c             |    2 +
+ fs/inode.c                  |    4 +-
+ fs/jbd2/commit.c            |    1 -
+ fs/nfs/super.c              |    2 +
+ fs/nfs/write.c              |    1 -
+ fs/nilfs2/the_nilfs.c       |    4 +-
+ fs/super.c                  |    6 +
+ fs/sync.c                   |    9 +-
+ fs/ubifs/budget.c           |   20 +--
+ fs/ubifs/super.c            |    1 +
+ include/linux/backing-dev.h |    3 +-
+ include/linux/fs.h          |    2 +-
+ include/linux/writeback.h   |    5 +-
+ include/trace/events/ext4.h |    6 +-
+ mm/backing-dev.c            |   90 +++++++++---
+ mm/page-writeback.c         |   22 +--
+ 21 files changed, 264 insertions(+), 263 deletions(-)
+
+-- 
+Jens Axboe
 
