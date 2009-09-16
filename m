@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760397AbZIPWqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933653AbZIPWrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760397AbZIPWqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760320AbZIPWju
+	id S933653AbZIPWrd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933552AbZIPWrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:39:50 -0400
-Received: from kroah.org ([198.145.64.141]:48912 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:47:04 -0400
+Received: from kroah.org ([198.145.64.141]:48917 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757944AbZIPWjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:39:43 -0400
+	id S1760297AbZIPWjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:39:44 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:14 2009
-Message-Id: <20090916223713.953025868@mini.kroah.org>
+Message-Id: <20090916223714.118636080@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:18 -0700
+Date: Wed, 16 Sep 2009 15:36:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kashyap Desai <kashyap.desai@lsi.com>,
        James Bottomley <James.Bottomley@suse.de>
-Subject: [patch 05/45] [SCSI] mpt2sas: Raid 10 Volume is showing as Raid 1E in dmesg
+Subject: [patch 06/45] SCSI: fix oops during scsi scanning
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=mpt2sas-raid-10-volume-is-showing-as-raid-1e-in-dmesg.patch
+Content-Disposition: inline; filename=scsi-fix-oops-during-scsi-scanning.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,220 +29,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Kashyap, Desai <kashyap.desai@lsi.com>
+From: James Bottomley <James.Bottomley@suse.de>
 
-commit ed79f1280d1bc54f168abcffc8c3e0bf8ffb1873 upstream.
+commit ea038f63ac52439e7816295fa6064fe95e6c1f51 upstream.
 
-This patch modifies the slave_configure callback so the messages that get sent
-to system log for RAID1E volumes contain the string "RAID10" instead of
-"RAID1E". These messages contain information regarding what kind of scsi device
-is being added. Certain OEMS can enable displaying the RAID10 string instead of
-RAID1E via manufacturing page 10.   The driver will read this config page at
-driver load time, then determine from the GenericFlags0 bits whether display
-the RAID10 or RAID1E string, also even drive count is taken into consideration.
+Chris Webb reported:
+  p0# uname -a
+  Linux f7ea8425-d45b-490f-a738-d181d0df6963.host.elastichosts.com 2.6.30.4-elastic-lon-p #2 SMP PREEMPT Thu Aug 20 14:30:50 BST 2009 x86_64 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz GenuineIntel GNU/Linux
+  p0# zgrep SCAN_ASYNC /proc/config.gz
+  # CONFIG_SCSI_SCAN_ASYNC is not set
 
-Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
-Reviewed-by: Eric Moore <Eric.moore@lsi.com>
+  p0# cat /var/log/kern/2009-08-20
+  [...]
+  15:27:10.485 kernel: scsi9 : iSCSI Initiator over TCP/IP
+  15:27:11.493 kernel: scsi 9:0:0:0: RAID              IET      Controller       0001 PQ: 0 ANSI: 5
+  15:27:11.493 kernel: scsi 9:0:0:0: Attached scsi generic sg6 type 12
+  15:27:11.495 kernel: scsi 9:0:0:1: Direct-Access     IET      VIRTUAL-DISK     0001 PQ: 0 ANSI: 5
+  15:27:11.495 kernel: sd 9:0:0:1: Attached scsi generic sg7 type 0
+  15:27:11.495 kernel: sd 9:0:0:1: [sdg] 4194304 512-byte hardware sectors: (2.14 GB/2.00 GiB)
+  15:27:11.495 kernel: sd 9:0:0:1: [sdg] Write Protect is off
+  15:27:11.495 kernel: sd 9:0:0:1: [sdg] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+  15:27:13.012 kernel: sdg:<6>scsi 9:0:0:1: [sdg] Unhandled error code
+  15:27:13.012 kernel: scsi 9:0:0:1: [sdg] Result: hostbyte=0x07 driverbyte=0x00
+  15:27:13.012 kernel: end_request: I/O error, dev sdg, sector 0
+  15:27:13.012 kernel: Buffer I/O error on device sdg, logical block 0
+  15:27:13.012 kernel: ldm_validate_partition_table(): Disk read failed.
+  15:27:13.012 kernel: unable to read partition table
+  15:27:13.014 kernel: BUG: unable to handle kernel NULL pointer dereference at 0000000000000010
+  15:27:13.014 kernel: IP: [<ffffffff803f0d77>] disk_part_iter_next+0x74/0xfd
+  15:27:13.014 kernel: PGD 82ad0b067 PUD 82cd7e067 PMD 0
+  15:27:13.014 kernel: Oops: 0000 [#1] PREEMPT SMP
+  15:27:13.014 kernel: last sysfs file: /sys/devices/platform/host9/session4/iscsi_session/session4/ifacename
+  15:27:13.014 kernel: CPU 5
+  15:27:13.014 kernel: Modules linked in:
+  15:27:13.014 kernel: Pid: 13999, comm: async/0 Not tainted 2.6.30.4-elastic-lon-p #2 X7DBN
+  15:27:13.014 kernel: RIP: 0010:[<ffffffff803f0d77>]  [<ffffffff803f0d77>] disk_part_iter_next+0x74/0xfd
+  15:27:13.014 kernel: RSP: 0018:ffff88066afa3dd0  EFLAGS: 00010246
+  15:27:13.014 kernel: RAX: ffff88082b58a000 RBX: ffff88066afa3e00 RCX: 0000000000000000
+  15:27:13.014 kernel: RDX: 0000000000000000 RSI: ffff88082b58a000 RDI: 0000000000000000
+  15:27:13.014 kernel: RBP: ffff88066afa3df0 R08: ffff88066afa2000 R09: ffff8806a204f000
+  15:27:13.014 kernel: R10: 000000fb12c7d274 R11: ffff8806c2bf0628 R12: ffff88066afa3e00
+  15:27:13.014 kernel: R13: ffff88082c829a00 R14: 0000000000000000 R15: ffff8806bc50c920
+  15:27:13.014 kernel: FS:  0000000000000000(0000) GS:ffff88002818a000(0000) knlGS:0000000000000000
+  15:27:13.014 kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+  15:27:13.014 kernel: CR2: 0000000000000010 CR3: 000000082ade3000 CR4: 00000000000426e0
+  15:27:13.014 kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+  15:27:13.014 kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+  15:27:13.014 kernel: Process async/0 (pid: 13999, threadinfo ffff88066afa2000, task ffff8806c2bf05e0)
+  15:27:13.014 kernel: Stack:
+  15:27:13.014 kernel: 0000000000000000 ffff88066afa3e00 ffff88066afa3e00 ffff88082c829a00
+  15:27:13.014 kernel: ffff88066afa3e40 ffffffff80306feb ffff88082b58a000 0000000000000000
+  15:27:13.014 kernel: 0000000000000001 ffff8806bc50c920 ffff88066afa3e40 ffff88082b58a000
+  15:27:13.014 kernel: Call Trace:
+  15:27:13.014 kernel: [<ffffffff80306feb>] register_disk+0x122/0x13a
+  15:27:13.014 kernel: [<ffffffff803f0b0f>] add_disk+0xaa/0x106
+  15:27:13.014 kernel: [<ffffffff80493609>] sd_probe_async+0x198/0x25b
+  15:27:13.014 kernel: [<ffffffff80270482>] async_thread+0x10c/0x20d
+  15:27:13.014 kernel: [<ffffffff802545ff>] ? default_wake_function+0x0/0xf
+  15:27:13.014 kernel: [<ffffffff80270376>] ? async_thread+0x0/0x20d
+  15:27:13.014 kernel: [<ffffffff8026ad89>] kthread+0x55/0x80
+  15:27:13.014 kernel: [<ffffffff8022be6a>] child_rip+0xa/0x20
+  15:27:13.014 kernel: [<ffffffff8026ad34>] ? kthread+0x0/0x80
+  15:27:13.014 kernel: [<ffffffff8022be60>] ? child_rip+0x0/0x20
+  15:27:13.014 kernel: Code: c8 ff 80 e1 0c b9 00 00 00 00 0f 44 c1 41 83 cd ff 48 8d 7a 20 48 be ff ff ff ff 08 00 00 00 48 b9 00 00 00 00 08 00 00 00 eb 50 <8b> 42 10 41 bd 01 00 00 00 eb db 4c 63 c2 4e 8d 04 c7 4d 8b 20
+  15:27:13.015 kernel: RIP  [<ffffffff803f0d77>] disk_part_iter_next+0x74/0xfd
+  15:27:13.015 kernel: RSP <ffff88066afa3dd0>
+  15:27:13.015 kernel: CR2: 0000000000000010
+  15:27:13.015 kernel: ---[ end trace 6104b56ef5590e25 ]---
+
+The problem is caused because the async scanning split in sd.c doesn't hold
+any reference to the device when it kicks off the async piece.  What's
+happening is that an iSCSI disconnect is destorying the device again *before*
+the async sd scanning thread even starts.  Fix this by taking a reference
+before starting the thread and dropping it again when the thread completes.
+
+Reported-by: Chris Webb <chris@arachsys.com>
 Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/mpt2sas/mpt2sas_base.c   |    7 ++-
- drivers/scsi/mpt2sas/mpt2sas_base.h   |   37 ++++++++++++++++++++
- drivers/scsi/mpt2sas/mpt2sas_config.c |   61 ++++++++++++++++++++++++++++++++++
- drivers/scsi/mpt2sas/mpt2sas_scsih.c  |    8 +++-
- 4 files changed, 109 insertions(+), 4 deletions(-)
+ drivers/scsi/sd.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/scsi/mpt2sas/mpt2sas_base.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_base.c
-@@ -1542,6 +1542,8 @@ _base_display_ioc_capabilities(struct MP
- 	   (ioc->bios_pg3.BiosVersion & 0x0000FF00) >> 8,
- 	    ioc->bios_pg3.BiosVersion & 0x000000FF);
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -2021,6 +2021,7 @@ static void sd_probe_async(void *data, a
  
-+	_base_display_dell_branding(ioc);
-+
- 	printk(MPT2SAS_INFO_FMT "Protocol=(", ioc->name);
- 
- 	if (ioc->facts.ProtocolFlags & MPI2_IOCFACTS_PROTOCOL_SCSI_INITIATOR) {
-@@ -1554,8 +1556,6 @@ _base_display_ioc_capabilities(struct MP
- 		i++;
- 	}
- 
--	_base_display_dell_branding(ioc);
--
- 	i = 0;
- 	printk("), ");
- 	printk("Capabilities=(");
-@@ -1627,6 +1627,9 @@ _base_static_config_pages(struct MPT2SAS
- 	u32 iounit_pg1_flags;
- 
- 	mpt2sas_config_get_manufacturing_pg0(ioc, &mpi_reply, &ioc->manu_pg0);
-+	if (ioc->ir_firmware)
-+		mpt2sas_config_get_manufacturing_pg10(ioc, &mpi_reply,
-+		    &ioc->manu_pg10);
- 	mpt2sas_config_get_bios_pg2(ioc, &mpi_reply, &ioc->bios_pg2);
- 	mpt2sas_config_get_bios_pg3(ioc, &mpi_reply, &ioc->bios_pg3);
- 	mpt2sas_config_get_ioc_pg8(ioc, &mpi_reply, &ioc->ioc_pg8);
---- a/drivers/scsi/mpt2sas/mpt2sas_base.h
-+++ b/drivers/scsi/mpt2sas/mpt2sas_base.h
-@@ -197,6 +197,38 @@ struct MPT2SAS_TARGET {
-  * @block: device is in SDEV_BLOCK state
-  * @tlr_snoop_check: flag used in determining whether to disable TLR
-  */
-+
-+/* OEM Identifiers */
-+#define MFG10_OEM_ID_INVALID                   (0x00000000)
-+#define MFG10_OEM_ID_DELL                      (0x00000001)
-+#define MFG10_OEM_ID_FSC                       (0x00000002)
-+#define MFG10_OEM_ID_SUN                       (0x00000003)
-+#define MFG10_OEM_ID_IBM                       (0x00000004)
-+
-+/* GENERIC Flags 0*/
-+#define MFG10_GF0_OCE_DISABLED                 (0x00000001)
-+#define MFG10_GF0_R1E_DRIVE_COUNT              (0x00000002)
-+#define MFG10_GF0_R10_DISPLAY                  (0x00000004)
-+#define MFG10_GF0_SSD_DATA_SCRUB_DISABLE       (0x00000008)
-+#define MFG10_GF0_SINGLE_DRIVE_R0              (0x00000010)
-+
-+/* OEM Specific Flags will come from OEM specific header files */
-+typedef struct _MPI2_CONFIG_PAGE_MAN_10 {
-+    MPI2_CONFIG_PAGE_HEADER Header;                                 /* 00h */
-+    U8                      OEMIdentifier;                          /* 04h */
-+    U8                      Reserved1;                              /* 05h */
-+    U16                     Reserved2;                              /* 08h */
-+    U32                     Reserved3;                              /* 0Ch */
-+    U32                     GenericFlags0;                          /* 10h */
-+    U32                     GenericFlags1;                          /* 14h */
-+    U32                     Reserved4;                              /* 18h */
-+    U32                     OEMSpecificFlags0;                      /* 1Ch */
-+    U32                     OEMSpecificFlags1;                      /* 20h */
-+    U32                     Reserved5[18];                          /* 24h-60h*/
-+} MPI2_CONFIG_PAGE_MAN_10,
-+  MPI2_POINTER PTR_MPI2_CONFIG_PAGE_MAN_10,
-+  Mpi2ManufacturingPage10_t, MPI2_POINTER pMpi2ManufacturingPage10_t;
-+
- struct MPT2SAS_DEVICE {
- 	struct MPT2SAS_TARGET *sas_target;
- 	unsigned int	lun;
-@@ -461,6 +493,7 @@ typedef void (*MPT_ADD_SGE)(void *paddr,
-  * @facts: static facts data
-  * @pfacts: static port facts data
-  * @manu_pg0: static manufacturing page 0
-+ * @manu_pg10: static manufacturing page 10
-  * @bios_pg2: static bios page 2
-  * @bios_pg3: static bios page 3
-  * @ioc_pg8: static ioc page 8
-@@ -663,6 +696,7 @@ struct MPT2SAS_ADAPTER {
- 	dma_addr_t	diag_buffer_dma[MPI2_DIAG_BUF_TYPE_COUNT];
- 	u8		diag_buffer_status[MPI2_DIAG_BUF_TYPE_COUNT];
- 	u32		unique_id[MPI2_DIAG_BUF_TYPE_COUNT];
-+	Mpi2ManufacturingPage10_t manu_pg10;
- 	u32		product_specific[MPI2_DIAG_BUF_TYPE_COUNT][23];
- 	u32		diagnostic_flags[MPI2_DIAG_BUF_TYPE_COUNT];
- };
-@@ -734,6 +768,8 @@ void mpt2sas_config_done(struct MPT2SAS_
- int mpt2sas_config_get_number_hba_phys(struct MPT2SAS_ADAPTER *ioc, u8 *num_phys);
- int mpt2sas_config_get_manufacturing_pg0(struct MPT2SAS_ADAPTER *ioc,
-     Mpi2ConfigReply_t *mpi_reply, Mpi2ManufacturingPage0_t *config_page);
-+int mpt2sas_config_get_manufacturing_pg10(struct MPT2SAS_ADAPTER *ioc,
-+    Mpi2ConfigReply_t *mpi_reply, Mpi2ManufacturingPage10_t *config_page);
- int mpt2sas_config_get_bios_pg2(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
-     *mpi_reply, Mpi2BiosPage2_t *config_page);
- int mpt2sas_config_get_bios_pg3(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
-@@ -776,7 +812,6 @@ int mpt2sas_config_get_volume_handle(str
-     u16 *volume_handle);
- int mpt2sas_config_get_volume_wwid(struct MPT2SAS_ADAPTER *ioc, u16 volume_handle,
-     u64 *wwid);
--
- /* ctl shared API */
- extern struct device_attribute *mpt2sas_host_attrs[];
- extern struct device_attribute *mpt2sas_dev_attrs[];
---- a/drivers/scsi/mpt2sas/mpt2sas_config.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_config.c
-@@ -426,6 +426,67 @@ mpt2sas_config_get_manufacturing_pg0(str
+ 	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
+ 		  sdp->removable ? "removable " : "");
++	put_device(&sdkp->dev);
  }
  
  /**
-+ * mpt2sas_config_get_manufacturing_pg10 - obtain manufacturing page 10
-+ * @ioc: per adapter object
-+ * @mpi_reply: reply mf payload returned from firmware
-+ * @config_page: contents of the config page
-+ * Context: sleep.
-+ *
-+ * Returns 0 for success, non-zero for failure.
-+ */
-+int
-+mpt2sas_config_get_manufacturing_pg10(struct MPT2SAS_ADAPTER *ioc,
-+    Mpi2ConfigReply_t *mpi_reply, Mpi2ManufacturingPage10_t *config_page)
-+{
-+	Mpi2ConfigRequest_t mpi_request;
-+	int r;
-+	struct config_request mem;
-+
-+	memset(config_page, 0, sizeof(Mpi2ManufacturingPage10_t));
-+	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
-+	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-+	mpi_request.Action = MPI2_CONFIG_ACTION_PAGE_HEADER;
-+	mpi_request.Header.PageType = MPI2_CONFIG_PAGETYPE_MANUFACTURING;
-+	mpi_request.Header.PageNumber = 10;
-+	mpi_request.Header.PageVersion = MPI2_MANUFACTURING0_PAGEVERSION;
-+	mpt2sas_base_build_zero_len_sge(ioc, &mpi_request.PageBufferSGE);
-+	r = _config_request(ioc, &mpi_request, mpi_reply,
-+	    MPT2_CONFIG_PAGE_DEFAULT_TIMEOUT);
-+	if (r)
-+		goto out;
-+
-+	mpi_request.Action = MPI2_CONFIG_ACTION_PAGE_READ_CURRENT;
-+	mpi_request.Header.PageVersion = mpi_reply->Header.PageVersion;
-+	mpi_request.Header.PageNumber = mpi_reply->Header.PageNumber;
-+	mpi_request.Header.PageType = mpi_reply->Header.PageType;
-+	mpi_request.Header.PageLength = mpi_reply->Header.PageLength;
-+	mem.config_page_sz = le16_to_cpu(mpi_reply->Header.PageLength) * 4;
-+	if (mem.config_page_sz > ioc->config_page_sz) {
-+		r = _config_alloc_config_dma_memory(ioc, &mem);
-+		if (r)
-+			goto out;
-+	} else {
-+		mem.config_page_dma = ioc->config_page_dma;
-+		mem.config_page = ioc->config_page;
-+	}
-+	ioc->base_add_sg_single(&mpi_request.PageBufferSGE,
-+	    MPT2_CONFIG_COMMON_SGLFLAGS | mem.config_page_sz,
-+	    mem.config_page_dma);
-+	r = _config_request(ioc, &mpi_request, mpi_reply,
-+	    MPT2_CONFIG_PAGE_DEFAULT_TIMEOUT);
-+	if (!r)
-+		memcpy(config_page, mem.config_page,
-+		    min_t(u16, mem.config_page_sz,
-+		    sizeof(Mpi2ManufacturingPage10_t)));
-+
-+	if (mem.config_page_sz > ioc->config_page_sz)
-+		_config_free_config_dma_memory(ioc, &mem);
-+
-+ out:
-+	return r;
-+}
-+
-+/**
-  * mpt2sas_config_get_bios_pg2 - obtain bios page 2
-  * @ioc: per adapter object
-  * @mpi_reply: reply mf payload returned from firmware
---- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-@@ -1501,7 +1501,13 @@ _scsih_slave_configure(struct scsi_devic
- 			break;
- 		case MPI2_RAID_VOL_TYPE_RAID1E:
- 			qdepth = MPT2SAS_RAID_QUEUE_DEPTH;
--			r_level = "RAID1E";
-+			if (ioc->manu_pg10.OEMIdentifier &&
-+			    (ioc->manu_pg10.GenericFlags0 &
-+			    MFG10_GF0_R10_DISPLAY) &&
-+			    !(raid_device->num_pds % 2))
-+				r_level = "RAID10";
-+			else
-+				r_level = "RAID1E";
- 			break;
- 		case MPI2_RAID_VOL_TYPE_RAID1:
- 			qdepth = MPT2SAS_RAID_QUEUE_DEPTH;
+@@ -2106,6 +2107,7 @@ static int sd_probe(struct device *dev)
+ 
+ 	get_device(&sdp->sdev_gendev);
+ 
++	get_device(&sdkp->dev);	/* prevent release before async_schedule */
+ 	async_schedule(sd_probe_async, sdkp);
+ 
+ 	return 0;
 
 
