@@ -1,125 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbZIPN50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbZIPN7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbZIPN50 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZIPN5X
+	id S1753383AbZIPN7n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZIPN7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:57:23 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:42627 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZIPN5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 09:57:22 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       David Howells <dhowells@redhat.com>,
-       Bernd Schmidt <bernds_cb1@t-online.de>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] NOMMU: add support for Memory Protection Units (MPU)
-Date: Wed, 16 Sep 2009 09:57:10 -0400
-Message-Id: <1253109430-4732-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.rc1
-In-Reply-To: <1247581340-20031-1-git-send-email-vapier@gentoo.org>
-References: <1247581340-20031-1-git-send-email-vapier@gentoo.org>
+	Wed, 16 Sep 2009 09:59:41 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:39798 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751106AbZIPN7k convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 09:59:40 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090916131543.GA21107@infradead.org>
+References: <20090915181247.GA32167@kroah.com> <20090916124533.GA11222@infradead.org> 
+	<20090916125919.GA24154@suse.de> <20090916131543.GA21107@infradead.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 16 Sep 2009 15:59:29 +0200
+Message-ID: <ac3eb2510909160659u776f8268x2b792938f119653c@mail.gmail.com>
+Subject: Re: [GIT PATCH] driver core patches for 2.6.31-git
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bernd Schmidt <bernds_cb1@t-online.de>
+On Wed, Sep 16, 2009 at 15:15, Christoph Hellwig <hch@infradead.org> wrote:
+> On Wed, Sep 16, 2009 at 05:59:19AM -0700, Greg KH wrote:
 
-Some architectures (like the Blackfin arch) implement some of the
-"simpler" features that one would expect out of a MMU such as memory
-protection.  In our case, we actually get read/write/exec protection
-down to the page boundary so processes can't stomp on each other let
-alone the kernel.  There is a performance decrease (which depends greatly
-on the workload) however as the hardware/software interaction was not
-optimized at design time.
+> It's a very bad way to expose kernel state, and the same problem the
+> original devfs had.  A good kernel state filesystem is immutable to
+> changes from userspace, that is fully controlled by the kernel.  The
+> problem with devfs and your new devfstmpfs is that you have both
+> userspace and the kernel manipulating the same object.  Which for
+> example makes life time management impossible.
 
-Signed-off-by: Bernd Schmidt <bernds_cb1@t-online.de>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Acked-by: David Howells <dhowells@redhat.com>
----
- kernel/module.c |    5 +++++
- mm/nommu.c      |   21 +++++++++++++++++++++
- 2 files changed, 26 insertions(+), 0 deletions(-)
+It's well defined. When the device goes away, the node is removed, in
+the same way the sysfs device is removed, and if userspace has
+created/replaced the node, it has control over it and the kernel does
+not touch it anymore. There is no known problem with that and no
+difference how udev works today on all common systems.
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 05ce49c..90af6a1 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -47,6 +47,7 @@
- #include <linux/rculist.h>
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-+#include <asm/mmu_context.h>
- #include <linux/license.h>
- #include <asm/sections.h>
- #include <linux/tracepoint.h>
-@@ -1535,6 +1536,10 @@ static void free_module(struct module *mod)
- 
- 	/* Finally, free the core (containing the module structure) */
- 	module_free(mod, mod->module_core);
-+
-+#ifdef CONFIG_MPU
-+	update_protections(current->mm);
-+#endif
- }
- 
- void *__symbol_get(const char *symbol)
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 66e81e7..b73f4be 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -33,6 +33,7 @@
- #include <asm/uaccess.h>
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
-+#include <asm/mmu_context.h>
- #include "internal.h"
- 
- static inline __attribute__((format(printf, 1, 2)))
-@@ -627,6 +628,22 @@ static void put_nommu_region(struct vm_region *region)
- }
- 
- /*
-+ * update protection on a vma
-+ */
-+static void protect_vma(struct vm_area_struct *vma, unsigned long flags)
-+{
-+#ifdef CONFIG_MPU
-+	struct mm_struct *mm = vma->vm_mm;
-+	long start = vma->vm_start & PAGE_MASK;
-+	while (start < vma->vm_end) {
-+		protect_page(mm, start, flags);
-+		start += PAGE_SIZE;
-+	}
-+	update_protections(mm);
-+#endif
-+}
-+
-+/*
-  * add a VMA into a process's mm_struct in the appropriate place in the list
-  * and tree and add to the address space's page tree also if not an anonymous
-  * page
-@@ -645,6 +662,8 @@ static void add_vma_to_mm(struct mm_struct *mm, struct vm_area_struct *vma)
- 	mm->map_count++;
- 	vma->vm_mm = mm;
- 
-+	protect_vma(vma, vma->vm_flags);
-+
- 	/* add the VMA to the mapping */
- 	if (vma->vm_file) {
- 		mapping = vma->vm_file->f_mapping;
-@@ -707,6 +726,8 @@ static void delete_vma_from_mm(struct vm_area_struct *vma)
- 
- 	kenter("%p", vma);
- 
-+	protect_vma(vma, 0);
-+
- 	mm->map_count--;
- 	if (mm->mmap_cache == vma)
- 		mm->mmap_cache = NULL;
--- 
-1.6.5.rc1
+If wanted, at the time you guys come up with a working union-mount, we
+can make the kernel-maintained dev-filesystem read-only and mount a
+tmpfs on-top of it. But we are not there at the moment.
 
+> I also know who gladly killed it
+
+And for good reason. The naming scheme was as wrong as it could be. We
+have a completely different situation today.
+
+> just to re-introduce the same thing years later,
+
+It's not the same at all. There is udev today, and a well-defined way
+to work with /dev, synchronized across all distros. Nothing really
+changes with devtpmfs, it just gets simpler, has less races, and is a
+lot more reliable.
+
+It's a logical extension to sysfs, not much more. We create all the
+things in /sys, why shouldn't we create the few nodes too, and make
+many things much easier?
+
+Kay
