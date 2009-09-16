@@ -1,72 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZIPRn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbZIPRo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759705AbZIPRn1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 13:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbZIPRnV
+	id S1759747AbZIPRo5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 13:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbZIPRox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 13:43:21 -0400
-Received: from mail-ew0-f227.google.com ([209.85.219.227]:49675 "EHLO
-	mail-ew0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754098AbZIPRnU (ORCPT
+	Wed, 16 Sep 2009 13:44:53 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41643 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753283AbZIPRow (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 13:43:20 -0400
-Date: Wed, 16 Sep 2009 22:43:18 +0500
-From: Constantin Baranov <const@mimas.ru>
-To: Julian Calaby <julian.calaby@gmail.com>,
-       James Bottomley <James.Bottomley@suse.de>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] hwmon: Driver for SCSI/ATA temperature sensors
-Message-Id: <20090916224318.72be99ac.const@mimas.ru>
-In-Reply-To: <646765f40909142257t560b314dt74d4158a497f0460@mail.gmail.com>
-References: <20090913040104.ab1d0b69.const@mimas.ru>
-	<1252850453.23599.13.camel@mulgrave.site>
-	<646765f40909142257t560b314dt74d4158a497f0460@mail.gmail.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 16 Sep 2009 13:44:52 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] mfd: Convert WM8350 to use request_threaded_irq()
+Date: Wed, 16 Sep 2009 18:44:52 +0100
+Message-Id: <1253123092-8278-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009 17:00:20 +0200 Pavel Machek <pavel@ucw.cz> wrote:
-> Well, having unified kernel<->user interface for temperature sensors
-> makes sense.
+Instead of hand rolling our own variant.
 
-This is my exact motivation.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm8350-core.c       |   22 +++++-----------------
+ include/linux/mfd/wm8350/core.h |    1 -
+ 2 files changed, 5 insertions(+), 18 deletions(-)
 
-On Tue, 15 Sep 2009 15:57:39 +1000 Julian Calaby <julian.calaby@gmail.com> wrote:
-> On Mon, Sep 14, 2009 at 00:00, James Bottomley <James.Bottomley@suse.de> wrote:
-> > So really, given the complexity of just obtaining the data and the
-> > problem of matching which data to obtain to which device you have, why
-> > not just use smartctl from userspace for monitoring?  you could even
-> > just plug into smartd, it seems to have most of the necessary heuristics
-> > built in already.
-> 
-> There's even a util called hddtemp which handles all this and has a
-> database of smart attributes to use for most drives.
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index 9d662a5..7ca0f94 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -353,15 +353,15 @@ static void wm8350_irq_call_handler(struct wm8350 *wm8350, int irq)
+ }
+ 
+ /*
+- * wm8350_irq_worker actually handles the interrupts.  Since all
++ * This is a threaded IRQ handler so can access I2C/SPI.  Since all
+  * interrupts are clear on read the IRQ line will be reasserted and
+  * the physical IRQ will be handled again if another interrupt is
+  * asserted while we run - in the normal course of events this is a
+  * rare occurrence so we save I2C/SPI reads.
+  */
+-static void wm8350_irq_worker(struct work_struct *work)
++static irqreturn_t wm8350_irq(int irq, void *data)
+ {
+-	struct wm8350 *wm8350 = container_of(work, struct wm8350, irq_work);
++	struct wm8350 *wm8350 = data;
+ 	u16 level_one, status1, status2, comp;
+ 
+ 	/* TODO: Use block reads to improve performance? */
+@@ -552,16 +552,6 @@ static void wm8350_irq_worker(struct work_struct *work)
+ 		}
+ 	}
+ 
+-	enable_irq(wm8350->chip_irq);
+-}
+-
+-static irqreturn_t wm8350_irq(int irq, void *data)
+-{
+-	struct wm8350 *wm8350 = data;
+-
+-	disable_irq_nosync(irq);
+-	schedule_work(&wm8350->irq_work);
+-
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -1428,7 +1418,6 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ 
+ 	mutex_init(&wm8350->auxadc_mutex);
+ 	mutex_init(&wm8350->irq_mutex);
+-	INIT_WORK(&wm8350->irq_work, wm8350_irq_worker);
+ 	if (irq) {
+ 		int flags = 0;
+ 
+@@ -1444,8 +1433,8 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ 					  WM8350_IRQ_POL);
+ 		}
+ 
+-		ret = request_irq(irq, wm8350_irq, flags,
+-				  "wm8350", wm8350);
++		ret = request_threaded_irq(irq, NULL, wm8350_irq, flags,
++					   "wm8350", wm8350);
+ 		if (ret != 0) {
+ 			dev_err(wm8350->dev, "Failed to request IRQ: %d\n",
+ 				ret);
+@@ -1505,7 +1494,6 @@ void wm8350_device_exit(struct wm8350 *wm8350)
+ 	platform_device_unregister(wm8350->codec.pdev);
+ 
+ 	free_irq(wm8350->chip_irq, wm8350);
+-	flush_work(&wm8350->irq_work);
+ 	kfree(wm8350->reg_cache);
+ }
+ EXPORT_SYMBOL_GPL(wm8350_device_exit);
+diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
+index 969b0b5..1d595de 100644
+--- a/include/linux/mfd/wm8350/core.h
++++ b/include/linux/mfd/wm8350/core.h
+@@ -626,7 +626,6 @@ struct wm8350 {
+ 	struct mutex auxadc_mutex;
+ 
+ 	/* Interrupt handling */
+-	struct work_struct irq_work;
+ 	struct mutex irq_mutex; /* IRQ table mutex */
+ 	struct wm8350_irq irq[WM8350_NUM_IRQ];
+ 	int chip_irq;
+-- 
+1.6.3.3
 
-Of course, I know about both smartctl and hddtemp tools.
-
-On Sun, 13 Sep 2009 09:00:53 -0500 James Bottomley <James.Bottomley@suse.de> wrote:
-> The basic problem are the effects.  Right at the moment it tries to send
-> an ATA_16 encapsulated SMART command to every SCSI device in the system.
-> We simply can't allow this.  A huge number of SCSI presenting USB
-> devices are known to lock up when they see either ATA_X encapsulation or
-> SMART commands.  It's not really even safe to send ATA_X to SCSI
-> devices.  The modern ones should all error out fine, but the older ones
-> are likely to be less tolerant.
-
-I looked for reliable method of classifying devices. Unfortunately,
-without success. Maybe it's better to disable automatic scanning and provide
-a user (udev) with ability to enable monitoring on explicitly pointed device.
-
-> Smart attribute 194 is highly vendor specific ... for instance my new
-> SATA drive doesn't implement it (it does implement 190 instead).
-
-Unfortunately, every SMART attribute is either reserved or vendor specific
-as per T13. AFAIK, 194 is the most popular. That's why I have chosen it
-in the first version. However, attribute number (and interpretation method
-as well) may become configurable. Moreover, we can use hddtemp database
-to initially configure scsitemp. And use unified hwmon interface later :)
