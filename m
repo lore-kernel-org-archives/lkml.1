@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbZIPPdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZIPPeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751641AbZIPPdQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 11:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZIPPdP
+	id S1752541AbZIPPeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 11:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZIPPeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 11:33:15 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59373 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbZIPPdO (ORCPT
+	Wed, 16 Sep 2009 11:34:16 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:64212 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750920AbZIPPeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 11:33:14 -0400
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: dipankar@in.ibm.com
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-In-Reply-To: <20090916152820.GA12571@in.ibm.com>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	 <1253016701.5506.73.camel@laptop>  <20090916152820.GA12571@in.ibm.com>
+	Wed, 16 Sep 2009 11:34:15 -0400
+Subject: Re: RCU callbacks and TREE_PREEMPT_RCU
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090916152929.GA6737@linux.vnet.ibm.com>
+References: <1253110641.31751.92.camel@pc1117.cambridge.arm.com>
+	 <20090916152929.GA6737@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Wed, 16 Sep 2009 17:32:51 +0200
-Message-Id: <1253115171.7180.1.camel@laptop>
+Organization: ARM Ltd
+Date: Wed, 16 Sep 2009 16:34:15 +0100
+Message-Id: <1253115255.31751.96.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Sep 2009 15:34:16.0564 (UTC) FILETIME=[268B9B40:01CA36E3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-16 at 20:58 +0530, Dipankar Sarma wrote:
-> On Tue, Sep 15, 2009 at 02:11:41PM +0200, Peter Zijlstra wrote:
-> > On Tue, 2009-09-15 at 17:36 +0530, Gautham R Shenoy wrote:
-> > > This patchset contains the offline state driver implemented for
-> > > pSeries. For pSeries, we define three available_hotplug_states. They are:
-> > > 
-> > >         online: The processor is online.
-> > > 
-> > >         offline: This is the the default behaviour when the cpu is offlined
-> > > 
-> > >         inactive: This cedes the vCPU to the hypervisor with a cede latency
-> > > 
-> > > Any feedback on the patchset will be immensely valuable.
+On Wed, 2009-09-16 at 08:29 -0700, Paul E. McKenney wrote:
+> On Wed, Sep 16, 2009 at 03:17:21PM +0100, Catalin Marinas wrote:
+> > When TREE_PREEMPT_RCU is enabled, the rcu list traversing above fails
+> > with access to 0x6b6b6b6b but it is fine with TREE_PREEMPT_RCU=n and
+> > TREE_RCU=y. During clean-up, kmemleak objects should no longer be freed
+> > by other means since kmemleak was disabled and all callbacks are
+> > ignored. The system is a 900Mhz P3, 256MB RAM, CONFIG_SMP=n.
 > > 
-> > I still think its a layering violation... its the hypervisor manager
-> > that should be bothered in what state an off-lined cpu is in. 
+> > Is there something I'm doing wrong in kmemleak or a bug with RCU
+> > preemption? The kernel oops looks like this:
 > 
-> The problem is that all hypervisor managers cannot figure out what sort
-> of latency guest OS can tolerate under the situation. They wouldn't know
-> from what context guest OS has ceded the vcpu. It has to have
-> some sort of hint, which is what the guest OS provides.
+> From your description and the code above, I must suspect a bug with
+> RCU preemption.  A new one, as the only bugs I am currently chasing
+> involve NR_CPUS>32 (>64 on 64-bit systems).
+> 
+> CONFIG_SMP=n implies NR_CPUS==1 in your build, correct?
 
-I'm missing something here, hot-unplug is a slow path and should not
-ever be latency critical..?
+CONFIG_NR_CPUS=1.
+
+-- 
+Catalin
 
