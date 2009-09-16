@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758884AbZIPMZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbZIPM0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758884AbZIPMZo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 08:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758873AbZIPMZm
+	id S1758880AbZIPM0f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 08:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758780AbZIPM0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 08:25:42 -0400
-Received: from ns.penguin.cz ([84.21.108.25]:34352 "EHLO ns.penguin.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758859AbZIPMZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 08:25:41 -0400
-Subject: Re: Zaurus suspend saga
-From: Stanislav Brabec <utx@penguin.cz>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, Eric Miao <eric.y.miao@gmail.com>,
-       Richard Purdie <rpurdie@rpsys.net>, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       Andrea Adami <andrea.adami@gmail.com>
-In-Reply-To: <20090907114815.GA23361@n2100.arm.linux.org.uk>
-References: <20090906052653.GB1324@ucw.cz>
-	 <1252276145.17852.15.camel@dax.rpnet.com>
-	 <f17812d70909061806y651c390w1faa5364f0fb6ddc@mail.gmail.com>
-	 <20090907110307.GK23450@elf.ucw.cz>
-	 <1252323270.14911.20.camel@hammer.suse.cz>
-	 <20090907114815.GA23361@n2100.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Wed, 16 Sep 2009 14:25:40 +0200
-Message-Id: <1253103940.5902.2.camel@hammer.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.91 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Sep 2009 08:26:34 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:59032 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752684AbZIPM0d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 08:26:33 -0400
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Subject: [PATCH v2] media: video: pwc: Use kernel's simple_strtol()
+Date: Wed, 16 Sep 2009 15:26:29 +0300
+Message-Id: <1253103989-25635-1-git-send-email-andy.shevchenko@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <20090916120529.GB18050@centrinvest.ru>
+References: <20090916120529.GB18050@centrinvest.ru>
+X-OriginalArrivalTime: 16 Sep 2009 12:26:29.0586 (UTC) FILETIME=[EAE73320:01CA36C8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
-> On Mon, Sep 07, 2009 at 01:34:29PM +0200, Stanislav Brabec wrote:
-> > Serial after resume. (regression)
-> 
-> If you pass no_console_suspend, the console serial port doesn't have its
-> state saved and restored upon resume.  This is something I pointed out
-> while I was serial maintainer and got ignored...
-> 
-> I think you'll find that it'll work if you don't pass no_console_suspend,
-> though you won't get the messages between the console itself being
-> suspended and subsequently resumed.
+From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
 
-I sent a possible fix of this problem to LKML:
-http://lkml.org/lkml/2009/9/15/206
+Change own implementation of pwc_atoi() by simple_strtol(x, NULL, 10).
 
+Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+---
+ drivers/media/video/pwc/pwc-if.c |   20 ++++----------------
+ 1 files changed, 4 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
+index f976df4..0037a8c 100644
+--- a/drivers/media/video/pwc/pwc-if.c
++++ b/drivers/media/video/pwc/pwc-if.c
+@@ -68,6 +68,7 @@
+ #endif
+ #include <linux/vmalloc.h>
+ #include <asm/io.h>
++#include <linux/kernel.h>		/* simple_strtol() */
+ 
+ #include "pwc.h"
+ #include "pwc-kiara.h"
+@@ -1916,19 +1917,6 @@ disconnect_out:
+ 	unlock_kernel();
+ }
+ 
+-/* *grunt* We have to do atoi ourselves :-( */
+-static int pwc_atoi(const char *s)
+-{
+-	int k = 0;
+-
+-	k = 0;
+-	while (*s != '\0' && *s >= '0' && *s <= '9') {
+-		k = 10 * k + (*s - '0');
+-		s++;
+-	}
+-	return k;
+-}
+-
+ 
+ /*
+  * Initialization code & module stuff
+@@ -2078,13 +2066,13 @@ static int __init usb_pwc_init(void)
+ 				}
+ 				else {
+ 					/* No type or serial number specified, just a number. */
+-					device_hint[i].device_node = pwc_atoi(s);
++					device_hint[i].device_node = (int)simple_strtol(s, NULL, 10);
+ 				}
+ 			}
+ 			else {
+ 				/* There's a colon, so we have at least a type and a device node */
+-				device_hint[i].type = pwc_atoi(s);
+-				device_hint[i].device_node = pwc_atoi(colon + 1);
++				device_hint[i].type = (int)simple_strtol(s, NULL, 10);
++				device_hint[i].device_node = (int)simple_strtol(colon + 1, NULL, 10);
+ 				if (*dot != '\0') {
+ 					/* There's a serial number as well */
+ 					int k;
 -- 
-Stanislav Brabec
-http://www.penguin.cz/~utx
+1.5.6.5
 
