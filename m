@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759745AbZIPQjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbZIPQmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759745AbZIPQjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759689AbZIPQjI
+	id S1759860AbZIPQmn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759796AbZIPQmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:39:08 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37893 "EHLO
+	Wed, 16 Sep 2009 12:42:37 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:39788 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759652AbZIPQjH (ORCPT
+	by vger.kernel.org with ESMTP id S1759735AbZIPQmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:39:07 -0400
+	Wed, 16 Sep 2009 12:42:36 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: linux-kernel@vger.kernel.org
 Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
        Richard Henderson <rth@twiddle.net>, linux-alpha@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Geoffrey Thomas <geofft@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH v2 2/3] alpha: Clean up linker script using new linker script macros.
-Date: Wed, 16 Sep 2009 12:38:38 -0400
-Message-Id: <1253119119-18956-3-git-send-email-tabbott@ksplice.com>
+       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH v2 3/3] Optimize the ordering of sections in RW_DATA_SECTION.
+Date: Wed, 16 Sep 2009 12:38:39 -0400
+Message-Id: <1253119119-18956-4-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1253119119-18956-1-git-send-email-tabbott@ksplice.com>
 References: <1253119119-18956-1-git-send-email-tabbott@ksplice.com>
@@ -28,139 +27,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geoffrey Thomas <geofft@ksplice.com>
-
-Note that .data.page_aligned and .data.cacheline_aligned are now after
-_data; it was probably a bug that they were before it.
-
-Also, some explicit ALIGN(8)'s between various initcall sections were
-removed; this should be harmless as the implicit alignment of
-initcall_t was already 8.
-
-Signed-off-by: Geoffrey Thomas <geofft@ksplice.com>
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Richard Henderson <rth@twiddle.net>
 ---
- arch/alpha/kernel/vmlinux.lds.S |   90 ++++-----------------------------------
- 1 files changed, 9 insertions(+), 81 deletions(-)
+ include/asm-generic/vmlinux.lds.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index 82803df..2906665 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -32,84 +32,21 @@ SECTIONS
- 	} :kernel
- 
- 	RODATA
--
--	/* Exception table */
--	. = ALIGN(16);
--	__ex_table : {
--		__start___ex_table = .;
--		*(__ex_table)
--		__stop___ex_table = .;
--	}
-+	EXCEPTION_TABLE(16)
- 
- 	/* Will be freed after init */
--	. = ALIGN(PAGE_SIZE);
--	/* Init code and data */
--	__init_begin = .;
--	.init.text : {
--		_sinittext = .;
--		INIT_TEXT
--		_einittext = .;
--	}
--	.init.data : {
--		INIT_DATA
--	}
--
--	. = ALIGN(16);
--	.init.setup : {
--		__setup_start = .;
--		*(.init.setup)
--		__setup_end = .;
--	}
--
--	. = ALIGN(8);
--	.initcall.init : {
--		__initcall_start = .;
--		INITCALLS
--		__initcall_end = .;
--	}
--
--#ifdef CONFIG_BLK_DEV_INITRD
--	. = ALIGN(PAGE_SIZE);
--	.init.ramfs : {
--		__initramfs_start = .;
--		*(.init.ramfs)
--		__initramfs_end = .;
--	}
--#endif
--
--	. = ALIGN(8);
--	.con_initcall.init : {
--		__con_initcall_start = .;
--		*(.con_initcall.init)
--		__con_initcall_end = .;
--	}
--
--	. = ALIGN(8);
--	SECURITY_INIT
--
-+	__init_begin = ALIGN(PAGE_SIZE);
-+	INIT_TEXT_SECTION(PAGE_SIZE)
-+	INIT_DATA_SECTION(16)
- 	PERCPU(PAGE_SIZE)
--
--	. = ALIGN(2 * PAGE_SIZE);
-+	/* Align to THREAD_SIZE rather than PAGE_SIZE here so any padding page
-+	   needed for the THREAD_SIZE aligned init_task gets freed after init */
-+	. = ALIGN(THREAD_SIZE);
- 	__init_end = .;
- 	/* Freed after init ends here */
- 
--	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : {
--		*(.data.page_aligned)
--	}
--
--	. = ALIGN(64);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
--	}
--
- 	_data = .;
--	/* Data */
--	.data : {
--		INIT_TASK_DATA(THREAD_SIZE)
--		DATA_DATA
--		CONSTRUCTORS
--	}
-+	RW_DATA_SECTION(64, PAGE_SIZE, THREAD_SIZE)
- 
- 	.got : {
- 		*(.got)
-@@ -119,16 +56,7 @@ SECTIONS
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index a43223a..6357b04 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -720,12 +720,12 @@
+ 	. = ALIGN(PAGE_SIZE);						\
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {				\
+ 		INIT_TASK_DATA(inittask)				\
++		NOSAVE_DATA						\
++		PAGE_ALIGNED_DATA(pagealigned)				\
+ 		CACHELINE_ALIGNED_DATA(cacheline)			\
+ 		READ_MOSTLY_DATA(cacheline)				\
+ 		DATA_DATA						\
+ 		CONSTRUCTORS						\
+-		NOSAVE_DATA						\
+-		PAGE_ALIGNED_DATA(pagealigned)				\
  	}
- 	_edata = .;	/* End of data section */
  
--	__bss_start = .;
--	.sbss : {
--		*(.sbss)
--		*(.scommon)
--	}
--	.bss : {
--		*(.bss)
--		*(COMMON)
--	}
--	__bss_stop = .;
-+	BSS_SECTION(0, 0, 0)
- 	_end = .;
- 
- 	.mdebug 0 : {
+ #define INIT_TEXT_SECTION(inittext_align)				\
 -- 
 1.6.3.3
 
