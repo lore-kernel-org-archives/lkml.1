@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760040AbZIPVi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbZIPVjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760040AbZIPVi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 17:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZIPVi6
+	id S1760092AbZIPVjn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 17:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760055AbZIPVji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 17:38:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:10750 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbZIPVi5 (ORCPT
+	Wed, 16 Sep 2009 17:39:38 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:47364 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753583AbZIPVjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 17:38:57 -0400
+	Wed, 16 Sep 2009 17:39:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=JpH5jgrnmhTMlI1Nx/A/ZhYM5gA1xfUDUax+OkkNUJt0HsgUVbS1Isg8o/r6CEMelV
-         8QdqqscIh0vHc8Cw5T7Akq7NB/voXWVDcGskYgdG0cgGiwBc9LxdPQ0xMeeBoY1V9eiF
-         4dUbFK9FdGetpHJJVinmNSubKVKwlVo6ZtM1w=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=QjjSA917HBnCmFsKukP7KkT7k305gGAPrbSCECxdMoK2D5XzDW2P7hP/kiLWhXi8nJ
+         xqtgpaMI+fZLhnB/0ZoWddR2gCGglv4oQL3R5k68MXpLrIvjjiz6SBPfkGjozOuaAIjX
+         azPnYbfZqEkOn6qt1aVz7JA1iFi60oiiGFbbs=
 From: Felipe Contreras <felipe.contreras@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: [PATCH v2 0/6] Trivial warning cleanups
-Date: Thu, 17 Sep 2009 00:38:37 +0300
-Message-Id: <1253137123-18047-1-git-send-email-felipe.contreras@gmail.com>
+Cc: Felipe Contreras <felipe.contreras@gmail.com>, x86@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Vegard Nossum <vegardno@ifi.uio.no>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alok N Kataria <akataria@vmware.com>,
+       "Tan, Wei Chong" <wei.chong.tan@intel.com>, Len Brown <lenb@kernel.org>,
+       Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       Bob Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org
+Subject: [PATCH v2 1/6] Trivial whitespace cleanups
+Date: Thu, 17 Sep 2009 00:38:38 +0300
+Message-Id: <1253137123-18047-2-git-send-email-felipe.contreras@gmail.com>
 X-Mailer: git-send-email 1.6.5.rc1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1253137123-18047-1-git-send-email-felipe.contreras@gmail.com>
+References: <1253137123-18047-1-git-send-email-felipe.contreras@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-This patch series fixes all the warnings I get when building a kernel for my
-laptop. Plus a few style issues cleanups.
-
-v2: comments from Daniel Walker, and Mike Frysinger
-
-Felipe Contreras (6):
-  Trivial whitespace cleanups
-  kbuild: fix warning when domainname is not available
-  kbuild: mkcompile_h: trivial cleanups
-  acpi: fix a bunch of style issues on 'actypes.h'
-  acpi: fix trivial warning
-  acpi: fix trivial warnings caused by previous commmit
-
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+---
  arch/x86/include/asm/string_32.h |    1 -
  arch/x86/kernel/tsc.c            |    2 +-
- drivers/acpi/acpica/exfldio.c    |    8 ++++----
  drivers/acpi/acpica/tbfadt.c     |    1 -
- include/acpi/actypes.h           |   36 ++++++++++++++++++------------------
- scripts/mkcompile_h              |   12 +++++++++---
- 6 files changed, 32 insertions(+), 28 deletions(-)
+ 3 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/include/asm/string_32.h b/arch/x86/include/asm/string_32.h
+index c86f452..ae907e6 100644
+--- a/arch/x86/include/asm/string_32.h
++++ b/arch/x86/include/asm/string_32.h
+@@ -65,7 +65,6 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
+ 	case 4:
+ 		*(int *)to = *(int *)from;
+ 		return to;
+-
+ 	case 3:
+ 		*(short *)to = *(short *)from;
+ 		*((char *)to + 2) = *((char *)from + 2);
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 71f4368..8a2fc11 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -670,7 +670,7 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+ 			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
+ 			(val == CPUFREQ_RESUMECHANGE)) {
+-		*lpj = 	cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
++		*lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+ 
+ 		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
+ 		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+diff --git a/drivers/acpi/acpica/tbfadt.c b/drivers/acpi/acpica/tbfadt.c
+index 82b02dc..c016335 100644
+--- a/drivers/acpi/acpica/tbfadt.c
++++ b/drivers/acpi/acpica/tbfadt.c
+@@ -275,7 +275,6 @@ void acpi_tb_parse_fadt(u32 table_index)
+ 
+ void acpi_tb_create_local_fadt(struct acpi_table_header *table, u32 length)
+ {
+-
+ 	/*
+ 	 * Check if the FADT is larger than the largest table that we expect
+ 	 * (the ACPI 2.0/3.0 version). If so, truncate the table, and issue
+-- 
+1.6.5.rc1
 
