@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbZIPWSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZIPWSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbZIPWSz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZIPWSn
+	id S1757409AbZIPWSh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbZIPWSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:18:43 -0400
-Received: from kroah.org ([198.145.64.141]:49789 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:18:35 -0400
+Received: from kroah.org ([198.145.64.141]:49794 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756583AbZIPWSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:18:30 -0400
+	id S1756929AbZIPWSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:18:31 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:15:06 2009
-Message-Id: <20090916221506.058405734@mini.kroah.org>
+Message-Id: <20090916221506.226614681@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:13:23 -0700
+Date: Wed, 16 Sep 2009 15:13:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
-       James Morris <jmorris@namei.org>
-Subject: [patch 03/10] TPM: Fixup boot probe timeout for tpm_tis driver
+       Jan Kara <jack@suse.cz>
+Subject: [patch 04/10] udf: Use device size when drive reported bogus number of written blocks
 References: <20090916221320.283781925@mini.kroah.org>
-Content-Disposition: inline; filename=tpm-fixup-boot-probe-timeout-for-tpm_tis-driver.patch
+Content-Disposition: inline; filename=udf-use-device-size-when-drive-reported-bogus-number-of-written-blocks.patch
 In-Reply-To: <20090916221529.GA28162@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,55 +29,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+From: Jan Kara <jack@suse.cz>
 
-commit ec57935837a78f9661125b08a5d08b697568e040 upstream.
+commit 24a5d59f3477bcff4c069ff4d0ca9a3e037d0235 upstream.
 
-When probing the device in tpm_tis_init the call request_locality
-uses timeout_a, which wasn't being initalized until after
-request_locality. This results in request_locality falsely timing
-out if the chip is still starting. Move the initialization to before
-request_locality.
+Some drives report 0 as the number of written blocks when there are some blocks
+recorded. Use device size in such case so that we can automagically mount such
+media.
 
-This probably only matters for embedded cases (ie mine), a BIOS likely
-gets the TPM into a state where this code path isn't necessary.
-
-Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Signed-off-by: James Morris <jmorris@namei.org>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/tpm/tpm_tis.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ fs/udf/lowlevel.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -450,6 +450,12 @@ static int tpm_tis_init(struct device *d
- 		goto out_err;
- 	}
+--- a/fs/udf/lowlevel.c
++++ b/fs/udf/lowlevel.c
+@@ -56,7 +56,12 @@ unsigned long udf_get_last_block(struct 
+ 	struct block_device *bdev = sb->s_bdev;
+ 	unsigned long lblock = 0;
  
-+	/* Default timeouts */
-+	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-+	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
-+	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-+	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-+
- 	if (request_locality(chip, 0) != 0) {
- 		rc = -ENODEV;
- 		goto out_err;
-@@ -457,12 +463,6 @@ static int tpm_tis_init(struct device *d
+-	if (ioctl_by_bdev(bdev, CDROM_LAST_WRITTEN, (unsigned long) &lblock))
++	/*
++	 * ioctl failed or returned obviously bogus value?
++	 * Try using the device size...
++	 */
++	if (ioctl_by_bdev(bdev, CDROM_LAST_WRITTEN, (unsigned long) &lblock) ||
++	    lblock == 0)
+ 		lblock = bdev->bd_inode->i_size >> sb->s_blocksize_bits;
  
- 	vendor = ioread32(chip->vendor.iobase + TPM_DID_VID(0));
- 
--	/* Default timeouts */
--	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
--	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
--	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
--	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
--
- 	dev_info(dev,
- 		 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
- 		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
+ 	if (lblock)
 
 
