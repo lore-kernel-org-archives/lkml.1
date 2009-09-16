@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbZIPR14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbZIPQZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758803AbZIPR14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 13:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758776AbZIPR1y
+	id S1759631AbZIPQZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759598AbZIPQZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 13:27:54 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:63491 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753929AbZIPR1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 13:27:53 -0400
-Date: Wed, 16 Sep 2009 13:27:43 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: David Miller <davem@davemloft.net>
-cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       geofft@ksplice.com
-Subject: Re: [PATCH v2] sparc: Clean up linker script using new linker script
- macros.
-In-Reply-To: <20090916.101924.186960949.davem@davemloft.net>
-Message-ID: <alpine.DEB.1.10.0909161322260.2942@dr-wily.mit.edu>
-References: <1253119592-19598-1-git-send-email-tabbott@ksplice.com> <1253119592-19598-2-git-send-email-tabbott@ksplice.com> <20090916.101924.186960949.davem@davemloft.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Wed, 16 Sep 2009 12:25:24 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:63353 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759596AbZIPQZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 12:25:22 -0400
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+To: linux-usb@vger.kernel.org, avictor.za@gmail.com
+Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
+       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com,
+       linux-arm-kernel@lists.infradead.org, nicolas.ferre@atmel.com
+Subject: [PATCH] at91: use gpiolib calls for USB vbus pin on at91sam9g45
+Date: Wed, 16 Sep 2009 19:29:29 +0200
+Message-Id: <1253122169-14806-1-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <4AB10F7D.9060706@atmel.com>
+References: <4AB10F7D.9060706@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009, David Miller wrote:
+Change pin configuration for USB vbus on at91sam9g45: use the generic gpiolib
+call instead of the at91 specific one.
+Use gpio_request() function with same identifier for OHCI and EHCI hosts as
+they are sharing the same pin.
 
-> Can you do this cleanup without moving the relative locations of .data
-> and .data1 sections?
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+This patch is on top of at91sam9g45 USB integration one:
+"[PATCH 2/2] at91/USB: at91sam9g45 series USB host integration"
+http://lkml.org/lkml/2009/6/9/221
 
-Yes, if you just swap RW_DATA_SECTION and .data1 so it looks like
+ arch/arm/mach-at91/at91sam9g45_devices.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-RW_DATA_SECTION(SMP_CACHE_BYTES, 0, THREAD_SIZE)
-.data1 : {
-	*(.data1)
-}
-
-instead, that would preserve their relative locations.
-
-Currently, switching to RW_DATA_SECTION would still result in a change in 
-their relative position that .data.page_aligned and .data.nosave would be 
-between .data and .data1 (not sure if that is relevant on sparc). (this 
-will change when <http://lkml.org/lkml/2009/9/16/396> is merged).
-
-	-Tim Abbott
-
+diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
+index 5be8cf2..7d939c0 100644
+--- a/arch/arm/mach-at91/at91sam9g45_devices.c
++++ b/arch/arm/mach-at91/at91sam9g45_devices.c
+@@ -118,8 +118,10 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
+ 
+ 	/* Enable VBus control for UHP ports */
+ 	for (i = 0; i < data->ports; i++) {
+-		if (data->vbus_pin[i])
+-			at91_set_gpio_output(data->vbus_pin[i], 0);
++		if (data->vbus_pin[i]) {
++			gpio_request(data->vbus_pin[i], "usb host vbus");
++			gpio_direction_output(data->vbus_pin[i], 0);
++		}
+ 	}
+ 
+ 	usbh_ohci_data = *data;
+@@ -173,8 +175,10 @@ void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data)
+ 
+ 	/* Enable VBus control for UHP ports */
+ 	for (i = 0; i < data->ports; i++) {
+-		if (data->vbus_pin[i])
+-			at91_set_gpio_output(data->vbus_pin[i], 0);
++		if (data->vbus_pin[i]) {
++			gpio_request(data->vbus_pin[i], "usb host vbus");
++			gpio_direction_output(data->vbus_pin[i], 0);
++		}
+ 	}
+ 
+ 	usbh_ehci_data = *data;
+-- 
+1.5.6.5
 
