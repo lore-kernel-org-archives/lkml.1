@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbZIPDtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZIPDvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991AbZIPDtx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 23:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZIPDtt
+	id S1755217AbZIPDvo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 23:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZIPDvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 23:49:49 -0400
-Received: from mail-yx0-f171.google.com ([209.85.210.171]:56344 "EHLO
-	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbZIPDts convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 23:51:42 -0400
+Received: from mail-yw0-f180.google.com ([209.85.211.180]:35042 "EHLO
+	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbZIPDvl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 23:49:48 -0400
+	Tue, 15 Sep 2009 23:51:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:from:date:message-id:subject:to
          :cc:content-type:content-transfer-encoding;
-        b=rABC8Trxr15+M9PJkTWE+Tcx9nG/vj/vrLV5+XRLQ9S3f7athLMFdp6xMa2HnuOifv
-         pEshYXeLkLjmH8jNcVwcxNlLo2gdq9prgcN4340GIblFMj70+9uT9+jaxZNPWmpqJTxX
-         Ub6Hsf+L7XAqFbawIEVHDUMnVPm7DOISnkvJQ=
+        b=dLr5dQgFSudnqZc1wNn0ZXorjJRisj4HJmihgfKKCrDbPttcxh8oFVlhcGlR5hvKwS
+         flLzNrLlo3tbnsF+DH+g4tBCyOO8k6RVlULYLf8XzAq3RkllEBM6MZt3DICkcDRKnIxn
+         eS9+mxBiwG4p0An9tnhRomCbg1NSHQImZ6lcI=
 MIME-Version: 1.0
-In-Reply-To: <20090915162655.GB29241@core.coreip.homeip.net>
-References: <1252966719-27557-1-git-send-email-vapier@gentoo.org> 
-	<20090915062050.GB10232@core.coreip.homeip.net> <8bd0f97a0909150419p1048bfe9j243fa30a0581b198@mail.gmail.com> 
-	<20090915162655.GB29241@core.coreip.homeip.net>
-From: Barry Song <21cnbao@gmail.com>
-Date: Wed, 16 Sep 2009 11:49:32 +0800
-Message-ID: <3c17e3570909152049nd801aeds3915e5889d6181f0@mail.gmail.com>
-Subject: Re: [PATCH] input/keyboard: add ADP5588 QWERTY I2C Keyboard Input 
-	device driver
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
+In-Reply-To: <20090915171826.4bd7f1d4.akpm@linux-foundation.org>
+References: <20090915161535.db0a6904.akpm@linux-foundation.org> 
+	<20090916000357.GD23923@linux-sh.org> <20090915171826.4bd7f1d4.akpm@linux-foundation.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 15 Sep 2009 23:51:25 -0400
+Message-ID: <8bd0f97a0909152051s4a25b9eej581c68a3b10fda3@mail.gmail.com>
+Subject: Re: 2.6.32 -mm merge plans
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, dedekind1@gmail.com,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org, kmpark@infradead.org,
+       linux-mtd@lists.infradead.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 12:26 AM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> On Tue, Sep 15, 2009 at 07:19:14AM -0400, Mike Frysinger wrote:
->> On Tue, Sep 15, 2009 at 02:20, Dmitry Torokhov wrote:
->> > On Mon, Sep 14, 2009 at 06:18:39PM -0400, Mike Frysinger wrote:
->> >> +static int __devexit adp5588_remove(struct i2c_client *client)
->> >> +{
->> >> +     struct adp5588_kpad *kpad = dev_get_drvdata(&client->dev);
->> >> +
->> >> +     adp5588_write(client, CFG, 0);
->> >> +     free_irq(client->irq, kpad);
+On Tue, Sep 15, 2009 at 20:18, Andrew Morton wrote:
+> On Wed, 16 Sep 2009 09:03:57 +0900 Paul Mundt wrote:
+>> On Tue, Sep 15, 2009 at 04:15:35PM -0700, Andrew Morton wrote:
+>> > mtd-make-onenand-genericc-more-generic.patch
+>> > mtd-nand-add-page-parameter-to-all-read_page-read_page_raw-apis.patch
+>> > mtd-nand-add-new-ecc-mode-ecc_hw_oob_first.patch
+>> > mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips.patch
+>> > mtd-nand-davinci-add-4-bit-ecc-support-for-large-page-nand-chips-update.patch
+>> > mtd-jffs2-fix-read-buffer-overflow.patch
+>> > mtd-prevent-a-read-from-eraseregions.patch
+>> > mtd-prevent-a-read-from-regions.patch
+>> > mtd-jedec_probe-fix-nec-upd29f064115-detection.patch
+>> > mtdpart-memory-accessor-interface-for-mtd-layer.patch
 >> >
->> > cancel_work_sync() is missing. Could you try the updated version below?
+>> >   -> dwmw2
 >>
->> i dont think i have any adp5588 hardware.  Robin: do we have any in
->> Norwood ?  otherwise, it'll have to wait for Michael to get back to
->> double check.
+>> Regarding mtd-make-onenand-genericc-more-generic.patch, I'm not really
+>> sure what happened. To recap:
 >>
->> > BTW, maybe you shoudl convert to threaded IRQs here?
+>> It was posted to the mtd list here:
 >>
->> yes, after your suggestion for the previous driver, we've been looking
->> at all our input drivers to convert to threaded IRQs.  do we need to
->> convert all of them before acceptance, or can we merge now and post an
->> updated patch after ?
+>> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026805.html
+>>
+>> Kyungmin objected to the driver name change here:
+>>
+>> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026807.html
+>>
+>> I pointed out that the rough rationale for the name change here:
+>>
+>> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026808.html
+>>
+>> and offered to redo the patch keeping the old name if Kyungmin felt the
+>> rationale wasn't valid, but received no reply. Subsequently, Artem
+>> mentioned that he had merged it in to his l2-mtd-2.6.git tree here:
+>>
+>> http://lists.infradead.org/pipermail/linux-mtd/2009-August/026866.html
+>>
+>> which subsequently seems to not actually have happened.
+>>
+>> This is a pretty trivial patch, and I don't mind respinning it in
+>> whatever form folks are content with. I had assumed given the mention
+>> that it had been merged in to the l2 tree that the rationale was
+>> sufficient for merging.
 >
-> It really depends on the driver. If there is a race between IRQ and the
-> WQ in the driver I will request you to fix it one way or another before
-> accepting the driver (and quite often using threaded IRQ gets rid of the
-> race). In the cases like this particular driver though I am not even
-> convinced that we need threaded IRQ. The driver is not expected to
-> generate lots of events rapidly so using keventd as it does now is
-> probably the best solution.
-Even though CONFIG_GENERIC_HARDIRQS is almost always "y", in case
-CONFIG_GENERIC_HARDIRQS is "n" not "y", threaded_irq will become
-original irq, drivers will not work. So is it necessary to check the
-dependence of GENERIC_HARDIRQS while using threaded_irq?
+> I don't think that Artem's tree is in linux-next, so I have no
+> visibility of what's happening with that patch.
 >
-> --
-> Dmitry
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-input" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I do think that Artem's tree should be in linux-next.
 >
+> I guess I'll just hose the patch at dwmw2 and will see what happens.  I
+> sent it on Aug 6, with no effect.
+
+i guess i shouldnt try and bounce a few more mtd patches through you huh ...
+
+http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=shortlog;h=for-mtd
+
+hopefully they make it in this cycle (they were posted a while ago to
+the mtd lists w/feedback addressed)
+-mike
