@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760434AbZIPWk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760547AbZIPWoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760434AbZIPWk5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760345AbZIPWkv
+	id S1760547AbZIPWoe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933596AbZIPWoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:40:51 -0400
-Received: from kroah.org ([198.145.64.141]:55380 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:44:22 -0400
+Received: from kroah.org ([198.145.64.141]:55383 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932110AbZIPWkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:40:11 -0400
+	id S1760239AbZIPWkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:40:14 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:18 2009
-Message-Id: <20090916223718.283870494@mini.kroah.org>
+Message-Id: <20090916223718.433647359@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:47 -0700
+Date: Wed, 16 Sep 2009 15:36:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [patch 34/45] KVM: VMX: Check cpl before emulating debug register access
+       Glauber Costa <glommer@redhat.com>, Avi Kivity <avi@redhat.com>
+Subject: [patch 35/45] KVM guest: fix bogus wallclock physical address calculation
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-vmx-check-cpl-before-emulating-debug-register-access.patch
+Content-Disposition: inline; filename=kvm-guest-fix-bogus-wallclock-physical-address-calculation.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,66 +29,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Avi Kivity <avi@redhat.com>
+From: Glauber Costa <glommer@redhat.com>
 
-commit 0a79b009525b160081d75cef5dbf45817956acf2 upstream.
+commit a20316d2aa41a8f4fd171648bad8f044f6060826 upstream.
 
-Debug registers may only be accessed from cpl 0.  Unfortunately, vmx will
-code to emulate the instruction even though it was issued from guest
-userspace, possibly leading to an unexpected trap later.
+The use of __pa() to calculate the address of a C-visible symbol
+is wrong, and can lead to unpredictable results. See arch/x86/include/asm/page.h
+for details.
 
+It should be replaced with __pa_symbol(), that does the correct math here,
+by taking relocations into account.  This ensures the correct wallclock data
+structure physical address is passed to the hypervisor.
+
+Signed-off-by: Glauber Costa <glommer@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/kvm_host.h |    1 +
- arch/x86/kvm/vmx.c              |    2 ++
- arch/x86/kvm/x86.c              |   13 +++++++++++++
- 3 files changed, 16 insertions(+)
+ arch/x86/kernel/kvmclock.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -618,6 +618,7 @@ void kvm_queue_exception(struct kvm_vcpu
- void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code);
- void kvm_inject_page_fault(struct kvm_vcpu *vcpu, unsigned long cr2,
- 			   u32 error_code);
-+bool kvm_require_cpl(struct kvm_vcpu *vcpu, int required_cpl);
+--- a/arch/x86/kernel/kvmclock.c
++++ b/arch/x86/kernel/kvmclock.c
+@@ -50,8 +50,8 @@ static unsigned long kvm_get_wallclock(v
+ 	struct timespec ts;
+ 	int low, high;
  
- int kvm_pic_set_irq(void *opaque, int irq, int level);
+-	low = (int)__pa(&wall_clock);
+-	high = ((u64)__pa(&wall_clock) >> 32);
++	low = (int)__pa_symbol(&wall_clock);
++	high = ((u64)__pa_symbol(&wall_clock) >> 32);
+ 	native_write_msr(MSR_KVM_WALL_CLOCK, low, high);
  
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -2841,6 +2841,8 @@ static int handle_dr(struct kvm_vcpu *vc
- 	unsigned long val;
- 	int dr, reg;
- 
-+	if (!kvm_require_cpl(vcpu, 0))
-+		return 1;
- 	dr = vmcs_readl(GUEST_DR7);
- 	if (dr & DR7_GD) {
- 		/*
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -215,6 +215,19 @@ static void __queue_exception(struct kvm
- }
- 
- /*
-+ * Checks if cpl <= required_cpl; if true, return true.  Otherwise queue
-+ * a #GP and return false.
-+ */
-+bool kvm_require_cpl(struct kvm_vcpu *vcpu, int required_cpl)
-+{
-+	if (kvm_x86_ops->get_cpl(vcpu) <= required_cpl)
-+		return true;
-+	kvm_queue_exception_e(vcpu, GP_VECTOR, 0);
-+	return false;
-+}
-+EXPORT_SYMBOL_GPL(kvm_require_cpl);
-+
-+/*
-  * Load the pae pdptrs.  Return true is they are all valid.
-  */
- int load_pdptrs(struct kvm_vcpu *vcpu, unsigned long cr3)
+ 	vcpu_time = &get_cpu_var(hv_clock);
 
 
