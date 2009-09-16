@@ -1,76 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbZIPUh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbZIPUh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760012AbZIPUh4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 16:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759982AbZIPUhu
+	id S1760032AbZIPUh7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 16:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760019AbZIPUh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 16:37:50 -0400
-Received: from mail-yx0-f171.google.com ([209.85.210.171]:42710 "EHLO
-	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759989AbZIPUht convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 16:37:57 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:53223 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759989AbZIPUhv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 16:37:49 -0400
+	Wed, 16 Sep 2009 16:37:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=NvJOXX09faPaC4/u/5BRTFW0yw7RzXBjUv55B01DPnQwa9hWqcGez8T2MXTAH12xNA
-         NaEwBo9Eird7IA154YGIUK/3RoM0+3wsL5xl5Z4BtjbPZQSufyGQ53sCpEjvKBJ66h+M
-         fl55qM+mOFbPAMLDN8PqYCBorYAtrcKx6ipdU=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WxlUzxQLFXefX1hlaYqDDSlMhKxmqhJdbEBHhTu/qPHtKGakeUl4xQcIYmD6ZJm2IG
+         koXT0/qw37lKQLiyTMJGLAe+/mgWQpTtQsijnVoBbUoyRI7WHxVi5pKT5mOrlKbVDgVY
+         4XJq0i5TK9XsOpmZ9E+ZU+gnsxeHFvyDglDNI=
+Date: Wed, 16 Sep 2009 22:37:50 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] kill-the-bkl/reiserfs: fix some lock dependency
+	inversions
+Message-ID: <20090916203747.GB5068@nowhere>
+References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com> <20090826201330.GA18761@orion> <20090914203749.GF6045@nowhere> <a4423d670909141433g18659aay6e177b1302e5b4a0@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090916202655.GA17153@merkur.ravnborg.org>
-References: <1252292753-11792-1-git-send-email-tabbott@ksplice.com> 
-	<8bd0f97a0909152013oe652087gf5cd227a1997a5b3@mail.gmail.com> 
-	<alpine.DEB.1.10.0909160107500.19188@dr-wily.mit.edu> <20090916202655.GA17153@merkur.ravnborg.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 16 Sep 2009 16:37:32 -0400
-Message-ID: <8bd0f97a0909161337v6edbe204wfd83b4c3118b3a27@mail.gmail.com>
-Subject: Re: [PATCH] blackfin: Cleanup linker script using new linker script 
-	macros.
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Tim Abbott <tabbott@ksplice.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670909141433g18659aay6e177b1302e5b4a0@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 16:26, Sam Ravnborg wrote:
-> On Wed, Sep 16, 2009 at 11:58:01AM -0400, Tim Abbott wrote:
->> On Tue, 15 Sep 2009, Mike Frysinger wrote:
->> > the larger padding in the initramfs is kind of annoying as i cant see
->> > any need to pad it to PAGE_SIZE.  since the initramfs is released with
->> > the rest of the init section, it doesnt need whole pages.  a quick
->> > test shows that it does waste a few kb in reality.  default build for
->> > BF533-STAMP for example shows 0x1000 difference.
->> >
->> > in terms of correctness, this change misses a reference to the now
->> > deleted .init.ramfs:
->> > -       .init.ramfs :
->> > -       {
->> > -       .....
->> > -       }
->> > -
->> >        .text_l1 L1_CODE_START : AT(LOADADDR(.init.ramfs) + SIZEOF(.init.ramfs))
->> >
->> > so that .text_l1 needs to updated to refer to the new section before
->> > it (.exit.data in this case).  once i make that change, the resulting
->> > link looks the same (minus the initramfs thing mentioned earlier), and
->> > it does boot.
->>
->> OK.  I guess we should plan to modify the INIT_DATA_SECTION macro to add
->> another argument specifying an alignment level for .init.ramfs.  It'd be
->> inconvenient to add that right now since there are a lot of patches in
->> linux-next or otherwise in flight that introduce uses of
->> INIT_DATA_SECTION, and those patches would all be broken by changing this
->> now.  Once the dust settles on that for this release, I'll submit a patch
->> adding said argument to INIT_DATA_SECTION.
->
-> But this is all discarded during runtime so the added alignment has no cost in the end - no?
+On Tue, Sep 15, 2009 at 01:33:42AM +0400, Alexander Beregalov wrote:
+> > Hi Alexander,
+> >
+> > It should be fixed now, still in the following tree:
+> 
+> Hi!
+> Another one, similar:
+> It is v2.6.31-3123-g99bc470 plus your 805031859(kill-the-bkl/reiserfs:
+> panic in case of lock imbalance), UP.
 
-once things are booted, there should be no difference.  but
-storage/boot costs increase (you have to store/extract/copy that extra
-data).  you know how miserly we embedded people like to be ;).
--mike
+
+
+Although I can't reproduce it, I think I see how that can happen.
+
+On mount time, we have the following dependency:
+
+reiserfs_lock -> bdev_mutex -> sysfs_mutex
+
+which happens while calling journal_init_dev() because
+we open the device there.
+
+But also in case of mmap on a reiserfs filesystem we
+may call reiserfs_readpages(), holding the reiserfs lock
+while already holding mm->mmap_sem
+
+The above dependency is then updated:
+
+mmap_sem
+     |
+     |
+     ------- reiserfs_lock -> bdev_mutex -> sysfs_mutex
+
+And later, while doing a readdir() on a sysfs directory,
+sysfs calls filldir, which might_fault, and then might grab
+mmap_sem. filldir is called there while holding sys_mutex,
+creating the new following dependency
+
+sysfs_mutex -> mmap_sem
+
+Hence the inversion.
+It seems the deadlock can't ever happen, I even don't see
+corner cases where it could happen.
+
+But still, this dependency should disappear.
+
+Could you please tell me if the following patch makes it shut down?
+
+Otherwise, I may need your config. I don't know why, but I suspect
+the lock_acquire(mmap_sem) in might_fault doesn't trigger needed the lockdep
+check, although I have the appropriate debug config, at least it seems.
+But anyway, it should also happen in my box but it doesn't...
+
+Thanks!
+
+The patch:
+
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index d23d6d7..59f7a4c 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -2801,11 +2801,14 @@ int journal_init(struct super_block *sb, const char *j_dev_name,
+ 		goto free_and_return;
+ 	}
+ 
++	reiserfs_write_unlock(sb);
+ 	if (journal_init_dev(sb, journal, j_dev_name) != 0) {
+ 		reiserfs_warning(sb, "sh-462",
+ 				 "unable to initialize jornal device");
++		reiserfs_write_lock(sb);
+ 		goto free_and_return;
+ 	}
++	reiserfs_write_lock(sb);
+ 
+ 	rs = SB_DISK_SUPER_BLOCK(sb);
+ 
+
