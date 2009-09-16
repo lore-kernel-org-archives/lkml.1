@@ -1,87 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbZIPWUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbZIPWcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758425AbZIPWUV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbZIPWUR
+	id S1758202AbZIPWcl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757938AbZIPWcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:20:17 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:40745 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758073AbZIPWUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:20:15 -0400
-Message-ID: <4AB164A0.8000402@codemonkey.ws>
-Date: Wed, 16 Sep 2009 17:20:16 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
-MIME-Version: 1.0
-To: Alan Cox <alan@linux.intel.com>
-CC: Amit Shah <amit.shah@redhat.com>, rusty@rustcorp.com.au,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] virtio_console: Add support for multiple ports for generic
- guest and host communication
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com>	<1252678386-17404-2-git-send-email-amit.shah@redhat.com>	<20090911170010.34c80f2d@linux.intel.com>	<20090911163806.GB25535@amit-x200.redhat.com>	<4AAA8838.1080106@codemonkey.ws>	<20090911173307.GB27046@amit-x200.redhat.com>	<4AAA8A56.3040707@codemonkey.ws> <20090916112332.6bf981a5@linux.intel.com>
-In-Reply-To: <20090916112332.6bf981a5@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Sep 2009 18:32:33 -0400
+Received: from kroah.org ([198.145.64.141]:40901 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756962AbZIPWc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:32:26 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:29:00 2009
+Message-Id: <20090916222900.766305892@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 16 Sep 2009 15:28:20 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Stephen Kitt <steve@sk2.org>, Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 01/24] Input: joydev - decouple axis and button map ioctls from input constants
+References: <20090916222819.244332644@mini.kroah.org>
+Content-Disposition: inline; filename=input-joydev-decouple-axis-and-button-map-ioctls-from-input-constants.patch
+In-Reply-To: <20090916222934.GA31846@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> This device is very much a serial port.  I don't see any reason not
->> to treat it like one.
->>     
->
-> Here are a few
->
-> - You don't need POSIX multi-open semantics, hangup and the like
->   
+2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
-We do actually want hangup and a few other of the tty specific ops.  The 
-only thing we really don't want is a baud rate.
+------------------
+From: Stephen Kitt <steve@sk2.org>
 
-> - Seek makes sense on some kinds of fixed attributes
->   
+commit ec8b4b7085605e801a7740a2c3c33256aebe249c upstream.
 
-I don't think we're dealing with fixed attributes.  These are streams.  
-Fundamentally, this is a paravirtual uart.  The improvement over a 
-standard uart is that there can be a larger number of ports, ports can 
-have some identification associated with them, and we are not 
-constrained to the emulated hardware interface which doesn't exist on 
-certain platforms (like s390).
+The KEY_MAX change in 2.6.28 changed the values of the JSIOCSBTNMAP and
+JSIOCGBTNMAP constants; software compiled with the old values no longer
+works with kernels following 2.6.28, because the ioctl switch statement
+no longer matches the values given by the software. This patch handles
+these ioctls independently of the length of data specified, and applies the
+same treatment to JSIOCSAXMAP and JSIOCGAXMAP which currently depend on
+ABS_MAX.
 
-> - TTY has a relatively large memory overhead per device
-> - Sysfs is what everything else uses
-> - Sysfs has some rather complete lifetime management you'll need to
->   redo by hand
->   
+Signed-off-by: Stephen Kitt <steve@sk2.org>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-sysfs doesn't model streaming data which is what this driver provides.
+---
+ drivers/input/joydev.c |   66 ++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 41 insertions(+), 25 deletions(-)
 
-> - You don't need idiotic games with numbering spaces
->
-> Abusing tty for this is ridiculous.
+--- a/drivers/input/joydev.c
++++ b/drivers/input/joydev.c
+@@ -457,8 +457,11 @@ static int joydev_ioctl_common(struct jo
+ 				unsigned int cmd, void __user *argp)
+ {
+ 	struct input_dev *dev = joydev->handle.dev;
++	size_t len;
+ 	int i, j;
++	const char *name;
+ 
++	/* Process fixed-sized commands. */
+ 	switch (cmd) {
+ 
+ 	case JS_SET_CAL:
+@@ -500,9 +503,22 @@ static int joydev_ioctl_common(struct jo
+ 		return copy_to_user(argp, joydev->corr,
+ 			sizeof(joydev->corr[0]) * joydev->nabs) ? -EFAULT : 0;
+ 
+-	case JSIOCSAXMAP:
+-		if (copy_from_user(joydev->abspam, argp,
+-				   sizeof(__u8) * (ABS_MAX + 1)))
++	}
++
++	/*
++	 * Process variable-sized commands (the axis and button map commands
++	 * are considered variable-sized to decouple them from the values of
++	 * ABS_MAX and KEY_MAX).
++	 */
++	switch (cmd & ~IOCSIZE_MASK) {
++
++	case (JSIOCSAXMAP & ~IOCSIZE_MASK):
++		len = min_t(size_t, _IOC_SIZE(cmd), sizeof(joydev->abspam));
++		/*
++		 * FIXME: we should not copy into our axis map before
++		 * validating the data.
++		 */
++		if (copy_from_user(joydev->abspam, argp, len))
+ 			return -EFAULT;
+ 
+ 		for (i = 0; i < joydev->nabs; i++) {
+@@ -512,13 +528,17 @@ static int joydev_ioctl_common(struct jo
+ 		}
+ 		return 0;
+ 
+-	case JSIOCGAXMAP:
+-		return copy_to_user(argp, joydev->abspam,
+-			sizeof(__u8) * (ABS_MAX + 1)) ? -EFAULT : 0;
+-
+-	case JSIOCSBTNMAP:
+-		if (copy_from_user(joydev->keypam, argp,
+-				   sizeof(__u16) * (KEY_MAX - BTN_MISC + 1)))
++	case (JSIOCGAXMAP & ~IOCSIZE_MASK):
++		len = min_t(size_t, _IOC_SIZE(cmd), sizeof(joydev->abspam));
++		return copy_to_user(argp, joydev->abspam, len) ? -EFAULT : 0;
++
++	case (JSIOCSBTNMAP & ~IOCSIZE_MASK):
++		len = min_t(size_t, _IOC_SIZE(cmd), sizeof(joydev->keypam));
++		/*
++		 * FIXME: we should not copy into our keymap before
++		 * validating the data.
++		 */
++		if (copy_from_user(joydev->keypam, argp, len))
+ 			return -EFAULT;
+ 
+ 		for (i = 0; i < joydev->nkey; i++) {
+@@ -530,23 +550,19 @@ static int joydev_ioctl_common(struct jo
+ 
+ 		return 0;
+ 
+-	case JSIOCGBTNMAP:
+-		return copy_to_user(argp, joydev->keypam,
+-			sizeof(__u16) * (KEY_MAX - BTN_MISC + 1)) ? -EFAULT : 0;
++	case (JSIOCGBTNMAP & ~IOCSIZE_MASK):
++		len = min_t(size_t, _IOC_SIZE(cmd), sizeof(joydev->keypam));
++		return copy_to_user(argp, joydev->keypam, len) ? -EFAULT : 0;
++
++	case JSIOCGNAME(0):
++		name = dev->name;
++		if (!name)
++			return 0;
+ 
+-	default:
+-		if ((cmd & ~IOCSIZE_MASK) == JSIOCGNAME(0)) {
+-			int len;
+-			if (!dev->name)
+-				return 0;
+-			len = strlen(dev->name) + 1;
+-			if (len > _IOC_SIZE(cmd))
+-				len = _IOC_SIZE(cmd);
+-			if (copy_to_user(argp, dev->name, len))
+-				return -EFAULT;
+-			return len;
+-		}
++		len = min_t(size_t, _IOC_SIZE(cmd), strlen(name) + 1);
++		return copy_to_user(argp, name, len) ? -EFAULT : len;
+ 	}
++
+ 	return -EINVAL;
+ }
+ 
 
-If the argument is that tty is an awkward interface that should only be 
-used for legacy purposes, then sure, we should just implement a new 
-userspace interface for this.  In fact, this is probably supported by 
-the very existence of hvc.
 
-On the other hand, this is fundamentally a paravirtual serial device.  
-Since serial devices are exposed via the tty subsystem, it seems like a 
-logical choice.
-
->  In some ways putting much of it in
-> kernel is ridiculous too as you can do it with a FUSE fs or simply
-> export the info guest-guest using SNMP.
->   
-
-This device cannot be implemented as-is in userspace because it depends 
-on DMA which precludes the use of something like uio_pci.  We could 
-modify the device to avoid dma if the feeling was that there was no 
-interest in putting this in the kernel.
-
-Regards,
-
-Anthony Liguori
