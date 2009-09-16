@@ -1,187 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbZIPQB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759216AbZIPQZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbZIPQB2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZIPQB1
+	id S1759216AbZIPQZv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbZIPQZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:01:27 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:3939 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759340AbZIPQBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:01:21 -0400
-Message-ID: <4AB10B67.2050108@redhat.com>
-Date: Wed, 16 Sep 2009 18:59:35 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com>
-In-Reply-To: <4AB0F1EF.5050102@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Sep 2009 12:25:46 -0400
+Received: from mail.pawisda.de ([213.157.4.156]:38957 "EHLO
+	mailrelay.pawisda.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759594AbZIPQZp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 12:25:45 -0400
+X-Greylist: delayed 1494 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Sep 2009 12:25:45 EDT
+Subject: Re: RCU callbacks and TREE_PREEMPT_RCU
+From: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>
+To: paulmck@linux.vnet.ibm.com
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090916155719.GA10588@linux.vnet.ibm.com>
+References: <1253110641.31751.92.camel@pc1117.cambridge.arm.com>
+	 <20090916152929.GA6737@linux.vnet.ibm.com>
+	 <1253115255.31751.96.camel@pc1117.cambridge.arm.com>
+	 <20090916154716.GC6737@linux.vnet.ibm.com>
+	 <20090916155719.GA10588@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-g4RHcn6Lqoy28Gb8Vwx/"
+Date: Wed, 16 Sep 2009 18:00:50 +0200
+Message-Id: <1253116850.3493.12.camel@queen>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/16/2009 05:10 PM, Gregory Haskins wrote:
->
->> If kvm can do it, others can.
->>      
-> The problem is that you seem to either hand-wave over details like this,
-> or you give details that are pretty much exactly what vbus does already.
->   My point is that I've already sat down and thought about these issues
-> and solved them in a freely available GPL'ed software package.
->    
 
-In the kernel.  IMO that's the wrong place for it.  Further, if we adopt 
-vbus, if drop compatibility with existing guests or have to support both 
-vbus and virtio-pci.
+--=-g4RHcn6Lqoy28Gb8Vwx/
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> So the question is: is your position that vbus is all wrong and you wish
-> to create a new bus-like thing to solve the problem?
+On Wed, 2009-09-16 at 08:57 -0700, Paul E. McKenney wrote:
+> On Wed, Sep 16, 2009 at 08:47:16AM -0700, Paul E. McKenney wrote:
+> > On Wed, Sep 16, 2009 at 04:34:15PM +0100, Catalin Marinas wrote:
+> > > On Wed, 2009-09-16 at 08:29 -0700, Paul E. McKenney wrote:
+> > > > On Wed, Sep 16, 2009 at 03:17:21PM +0100, Catalin Marinas wrote:
+> > > > > When TREE_PREEMPT_RCU is enabled, the rcu list traversing above f=
+ails
+> > > > > with access to 0x6b6b6b6b but it is fine with TREE_PREEMPT_RCU=3D=
+n and
+> > > > > TREE_RCU=3Dy. During clean-up, kmemleak objects should no longer =
+be freed
+> > > > > by other means since kmemleak was disabled and all callbacks are
+> > > > > ignored. The system is a 900Mhz P3, 256MB RAM, CONFIG_SMP=3Dn.
+> > > > >=20
+> > > > > Is there something I'm doing wrong in kmemleak or a bug with RCU
+> > > > > preemption? The kernel oops looks like this:
+> > > >=20
+> > > > From your description and the code above, I must suspect a bug with
+> > > > RCU preemption.  A new one, as the only bugs I am currently chasing
+> > > > involve NR_CPUS>32 (>64 on 64-bit systems).
+> > > >=20
+> > > > CONFIG_SMP=3Dn implies NR_CPUS=3D=3D1 in your build, correct?
+> > >=20
+> > > CONFIG_NR_CPUS=3D1.
+> >=20
+> > I was afraid of that.  ;-)
+>=20
+> PS to previous -- there -is- a bug in mainline for TREE_PREEMPT_RCU for
+> single-CPU operation, but it is with synchronize_rcu() rather than
+> call_rcu().  The fix is in tip/core/urgent, commit #366b04ca.  Or see
+> the following patch.
+>=20
+> So, could you please give the following patch a try?
 
-I don't intend to create anything new, I am satisfied with virtio.  If 
-it works for Ira, excellent.  If not, too bad.  I believe it will work 
-without too much trouble.
+I'll give it a try.
 
-> If so, how is it
-> different from what Ive already done?  More importantly, what specific
-> objections do you have to what Ive done, as perhaps they can be fixed
-> instead of starting over?
->    
+Thanks, Eric
 
-The two biggest objections are:
-- the host side is in the kernel
-- the guest side is a new bus instead of reusing pci (on x86/kvm), 
-making Windows support more difficult
+> Commit-ID:  366b04ca60c70479e2959fe8485b87ff380fdbbf
+> Gitweb:     http://git.kernel.org/tip/366b04ca60c70479e2959fe8485b87ff380=
+fdbbf
+> Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> AuthorDate: Sun, 13 Sep 2009 09:15:11 -0700
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Tue, 15 Sep 2009 08:43:59 +0200
+>=20
+> rcu: Fix synchronize_rcu() for TREE_PREEMPT_RCU
+>=20
+> The redirection of synchronize_sched() to synchronize_rcu() was
+> appropriate for TREE_RCU, but not for TREE_PREEMPT_RCU.
+>=20
+> Fix this by creating an underlying synchronize_sched().  TREE_RCU
+> then redirects synchronize_rcu() to synchronize_sched(), while
+> TREE_PREEMPT_RCU has its own version of synchronize_rcu().
+>=20
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Cc: laijs@cn.fujitsu.com
+> Cc: dipankar@in.ibm.com
+> Cc: akpm@linux-foundation.org
+> Cc: mathieu.desnoyers@polymtl.ca
+> Cc: josh@joshtriplett.org
+> Cc: dvhltc@us.ibm.com
+> Cc: niv@us.ibm.com
+> Cc: peterz@infradead.org
+> Cc: rostedt@goodmis.org
+> Cc: Valdis.Kletnieks@vt.edu
+> LKML-Reference: <12528585111916-git-send-email->
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>=20
+>=20
+> ---
+>  include/linux/rcupdate.h |   23 +++++------------------
+>  include/linux/rcutree.h  |    4 ++--
+>  kernel/rcupdate.c        |   44 ++++++++++++++++++++++++++++++++++++++++=
++++-
+>  3 files changed, 50 insertions(+), 21 deletions(-)
+>=20
+> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> index 95e0615..39dce83 100644
+> --- a/include/linux/rcupdate.h
+> +++ b/include/linux/rcupdate.h
+> @@ -52,8 +52,13 @@ struct rcu_head {
+>  };
+>=20
+>  /* Exported common interfaces */
+> +#ifdef CONFIG_TREE_PREEMPT_RCU
+>  extern void synchronize_rcu(void);
+> +#else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+> +#define synchronize_rcu synchronize_sched
+> +#endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
+>  extern void synchronize_rcu_bh(void);
+> +extern void synchronize_sched(void);
+>  extern void rcu_barrier(void);
+>  extern void rcu_barrier_bh(void);
+>  extern void rcu_barrier_sched(void);
+> @@ -262,24 +267,6 @@ struct rcu_synchronize {
+>  extern void wakeme_after_rcu(struct rcu_head  *head);
+>=20
+>  /**
+> - * synchronize_sched - block until all CPUs have exited any non-preempti=
+ve
+> - * kernel code sequences.
+> - *
+> - * This means that all preempt_disable code sequences, including NMI and
+> - * hardware-interrupt handlers, in progress on entry will have completed
+> - * before this primitive returns.  However, this does not guarantee that
+> - * softirq handlers will have completed, since in some kernels, these
+> - * handlers can run in process context, and can block.
+> - *
+> - * This primitive provides the guarantees made by the (now removed)
+> - * synchronize_kernel() API.  In contrast, synchronize_rcu() only
+> - * guarantees that rcu_read_lock() sections will have completed.
+> - * In "classic RCU", these two guarantees happen to be one and
+> - * the same, but can differ in realtime RCU implementations.
+> - */
+> -#define synchronize_sched() __synchronize_sched()
+> -
+> -/**
+>   * call_rcu - Queue an RCU callback for invocation after a grace period.
+>   * @head: structure to be used for queueing the RCU updates.
+>   * @func: actual update function to be invoked after the grace period
+> diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+> index a893077..00d08c0 100644
+> --- a/include/linux/rcutree.h
+> +++ b/include/linux/rcutree.h
+> @@ -53,6 +53,8 @@ static inline void __rcu_read_unlock(void)
+>  	preempt_enable();
+>  }
+>=20
+> +#define __synchronize_sched() synchronize_rcu()
+> +
+>  static inline void exit_rcu(void)
+>  {
+>  }
+> @@ -68,8 +70,6 @@ static inline void __rcu_read_unlock_bh(void)
+>  	local_bh_enable();
+>  }
+>=20
+> -#define __synchronize_sched() synchronize_rcu()
+> -
+>  extern void call_rcu_sched(struct rcu_head *head,
+>  			   void (*func)(struct rcu_head *rcu));
+>=20
+> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> index bd5d5c8..28d2f24 100644
+> --- a/kernel/rcupdate.c
+> +++ b/kernel/rcupdate.c
+> @@ -74,6 +74,8 @@ void wakeme_after_rcu(struct rcu_head  *head)
+>  	complete(&rcu->completion);
+>  }
+>=20
+> +#ifdef CONFIG_TREE_PREEMPT_RCU
+> +
+>  /**
+>   * synchronize_rcu - wait until a grace period has elapsed.
+>   *
+> @@ -87,7 +89,7 @@ void synchronize_rcu(void)
+>  {
+>  	struct rcu_synchronize rcu;
+>=20
+> -	if (rcu_blocking_is_gp())
+> +	if (!rcu_scheduler_active)
+>  		return;
+>=20
+>  	init_completion(&rcu.completion);
+> @@ -98,6 +100,46 @@ void synchronize_rcu(void)
+>  }
+>  EXPORT_SYMBOL_GPL(synchronize_rcu);
+>=20
+> +#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+> +
+> +/**
+> + * synchronize_sched - wait until an rcu-sched grace period has elapsed.
+> + *
+> + * Control will return to the caller some time after a full rcu-sched
+> + * grace period has elapsed, in other words after all currently executin=
+g
+> + * rcu-sched read-side critical sections have completed.   These read-si=
+de
+> + * critical sections are delimited by rcu_read_lock_sched() and
+> + * rcu_read_unlock_sched(), and may be nested.  Note that preempt_disabl=
+e(),
+> + * local_irq_disable(), and so on may be used in place of
+> + * rcu_read_lock_sched().
+> + *
+> + * This means that all preempt_disable code sequences, including NMI and
+> + * hardware-interrupt handlers, in progress on entry will have completed
+> + * before this primitive returns.  However, this does not guarantee that
+> + * softirq handlers will have completed, since in some kernels, these
+> + * handlers can run in process context, and can block.
+> + *
+> + * This primitive provides the guarantees made by the (now removed)
+> + * synchronize_kernel() API.  In contrast, synchronize_rcu() only
+> + * guarantees that rcu_read_lock() sections will have completed.
+> + * In "classic RCU", these two guarantees happen to be one and
+> + * the same, but can differ in realtime RCU implementations.
+> + */
+> +void synchronize_sched(void)
+> +{
+> +	struct rcu_synchronize rcu;
+> +
+> +	if (rcu_blocking_is_gp())
+> +		return;
+> +
+> +	init_completion(&rcu.completion);
+> +	/* Will wake me after RCU finished. */
+> +	call_rcu_sched(&rcu.head, wakeme_after_rcu);
+> +	/* Wait for it. */
+> +	wait_for_completion(&rcu.completion);
+> +}
+> +EXPORT_SYMBOL_GPL(synchronize_sched);
+> +
+>  /**
+>   * synchronize_rcu_bh - wait until an rcu_bh grace period has elapsed.
+>   *
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>=20
 
-I guess these two are exactly what you think are vbus' greatest 
-advantages, so we'll probably have to extend our agree-to-disagree on 
-this one.
+--=-g4RHcn6Lqoy28Gb8Vwx/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-I also had issues with using just one interrupt vector to service all 
-events, but that's easily fixed.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
->> There is no guest and host in this scenario.  There's a device side
->> (ppc) and a driver side (x86).  The driver side can access configuration
->> information on the device side.  How to multiplex multiple devices is an
->> interesting exercise for whoever writes the virtio binding for that setup.
->>      
-> Bingo.  So now its a question of do you want to write this layer from
-> scratch, or re-use my framework.
->    
+iEYEABECAAYFAkqxC7AACgkQgT9PqHll51X0xgCeKwKdQGRIbTn6R1IhfdihboFC
+i3IAniWKr5PTvfaaCJ6d40ckc3f1/wDt
+=/AKb
+-----END PGP SIGNATURE-----
 
-You will have to implement a connector or whatever for vbus as well.  
-vbus has more layers so it's probably smaller for vbus.
-
->>>>
->>>>          
->>> I am talking about how we would tunnel the config space for N devices
->>> across his transport.
->>>
->>>        
->> Sounds trivial.
->>      
-> No one said it was rocket science.  But it does need to be designed and
-> implemented end-to-end, much of which Ive already done in what I hope is
-> an extensible way.
->    
-
-It was already implemented three times for virtio, so apparently that's 
-extensible too.
-
->>   Write an address containing the device number and
->> register number to on location, read or write data from another.
->>      
-> You mean like the "u64 devh", and "u32 func" fields I have here for the
-> vbus-kvm connector?
->
-> http://git.kernel.org/?p=linux/kernel/git/ghaskins/alacrityvm/linux-2.6.git;a=blob;f=include/linux/vbus_pci.h;h=fe337590e644017392e4c9d9236150adb2333729;hb=ded8ce2005a85c174ba93ee26f8d67049ef11025#l64
->
->    
-
-Probably.
-
-
-
->>> That sounds convenient given his hardware, but it has its own set of
->>> problems.  For one, the configuration/inventory of these boards is now
->>> driven by the wrong side and has to be addressed.
->>>        
->> Why is it the wrong side?
->>      
-> "Wrong" is probably too harsh a word when looking at ethernet.  Its
-> certainly "odd", and possibly inconvenient.  It would be like having
-> vhost in a KVM guest, and virtio-net running on the host.  You could do
-> it, but its weird and awkward.  Where it really falls apart and enters
-> the "wrong" category is for non-symmetric devices, like disk-io.
->
->    
-
-
-It's not odd or wrong or wierd or awkward.  An ethernet NIC is not 
-symmetric, one side does DMA and issues interrupts, the other uses its 
-own memory.  That's exactly the case with Ira's setup.
-
-If the ppc boards were to emulate a disk controller, you'd run 
-virtio-blk on x86 and vhost-blk on the ppc boards.
-
->>> Second, the role
->>> reversal will likely not work for many models other than ethernet (e.g.
->>> virtio-console or virtio-blk drivers running on the x86 board would be
->>> naturally consuming services from the slave boards...virtio-net is an
->>> exception because 802.x is generally symmetrical).
->>>
->>>        
->> There is no role reversal.
->>      
-> So if I have virtio-blk driver running on the x86 and vhost-blk device
-> running on the ppc board, I can use the ppc board as a block-device.
-> What if I really wanted to go the other way?
->    
-
-You mean, if the x86 board was able to access the disks and dma into the 
-ppb boards memory?  You'd run vhost-blk on x86 and virtio-net on ppc.
-
-As long as you don't use the words "guest" and "host" but keep to 
-"driver" and "device", it all works out.
-
->> The side doing dma is the device, the side
->> accessing its own memory is the driver.  Just like that other 1e12
->> driver/device pairs out there.
->>      
-> IIUC, his ppc boards really can be seen as "guests" (they are linux
-> instances that are utilizing services from the x86, not the other way
-> around).
-
-They aren't guests.  Guests don't dma into their host's memory.
-
-> vhost forces the model to have the ppc boards act as IO-hosts,
-> whereas vbus would likely work in either direction due to its more
-> refined abstraction layer.
->    
-
-vhost=device=dma, virtio=driver=own-memory.
-
->> Of course vhost is incomplete, in the same sense that Linux is
->> incomplete.  Both require userspace.
->>      
-> A vhost based solution to Iras design is missing more than userspace.
-> Many of those gaps are addressed by a vbus based solution.
->    
-
-Maybe.  Ira can fill the gaps or use vbus.
-
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+--=-g4RHcn6Lqoy28Gb8Vwx/--
 
