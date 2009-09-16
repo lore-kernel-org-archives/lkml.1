@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbZIPNoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZIPNrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118AbZIPNoD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 09:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbZIPNoB
+	id S1753356AbZIPNrm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 09:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZIPNrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 09:44:01 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:48993 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752593AbZIPNoA (ORCPT
+	Wed, 16 Sep 2009 09:47:41 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56581 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460AbZIPNrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 09:44:00 -0400
-Date: Wed, 16 Sep 2009 09:44:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Volker Armin Hemmann <volkerarmin@googlemail.com>
-cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.31 ehci problem - mouse dead on scroll
-In-Reply-To: <200909161425.18729.volkerarmin@googlemail.com>
-Message-ID: <Pine.LNX.4.44L0.0909160939230.8236-100000@netrider.rowland.org>
+	Wed, 16 Sep 2009 09:47:40 -0400
+Date: Wed, 16 Sep 2009 14:47:21 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Steve Chen <schen@mvista.com>,
+       Felipe Contreras <felipe.contreras@gmail.com>,
+       Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
+       Marek Vasut <marek.vasut@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+Message-ID: <20090916134721.GA11218@n2100.arm.linux.org.uk>
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com> <20090915103739.GA19519@elf.ucw.cz> <1253017761.3273.117.camel@linux-1lbu> <200909151541.08852.marek.vasut@gmail.com> <1253032210.3273.128.camel@linux-1lbu> <94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com> <1253043875.3273.131.camel@linux-1lbu> <m3k4zzdimy.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3k4zzdimy.fsf@intrepid.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009, Volker Armin Hemmann wrote:
+On Tue, Sep 15, 2009 at 11:04:37PM +0200, Krzysztof Halasa wrote:
+> Steve Chen <schen@mvista.com> writes:
+> 
+> > +config OLD_CPU_DELAY
+> > +	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
+> > +	bool "Accurate delays"
+> > +	def_bool n
+> > +	help
+> > +	  Enable if observing longer than expected delays and need more
+> > +	  accuracy.  This only applies to older CPUs.
+> > +
+> 
+> If it's that simple then why not enable the extra delay code
+> unconditionally when compiling for those CPUs?
 
-> emm, the mouse is attached through a powered 4port usb 2.0 hub. That is the 
-> only way to get it working. If I attach it directly (without loading ohci) it 
-> does not work (well, only tried with both Transaction Translator options off), 
-> and if I load ohci before I connect it, it is very very jerky. So jerky in 
-> fact, that I considered douzends of lockups a day a better alternative.
+Because it's really not that clear cut.  Eg, ARM610 and ARM710 work
+better with it, but StrongARM suffers from delays being too short.
+Having a kernel configured for all those processors used to be common
+(since the Acorn RiscPC had pluggable CPU cards, which could be one
+of those processors.)
 
-That is a separate issue and it is a serious bug.  If anything, the 
-behavior with OHCI should be better than with EHCI.  This is worth 
-pursuing farther.  A usbmon log combined with the dmesg log would help.  
-There's no need to include all the boot-up messages in the dmesg log; 
-you can clear the log buffer before plugging in the mouse.
-
-In fact, we can probably forget about the EHCI issue.  If it works okay 
-with the newer TT scheduler, that should be good enough.
-
-Alan Stern
-
+It's really something that only experienced people should worry
+about, and not Joe "kernel-builder" Bloggs.
