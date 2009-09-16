@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760487AbZIPWll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760469AbZIPWlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760487AbZIPWll (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760436AbZIPWlB
+	id S1760469AbZIPWlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760443AbZIPWlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:41:01 -0400
-Received: from kroah.org ([198.145.64.141]:55449 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:41:05 -0400
+Received: from kroah.org ([198.145.64.141]:55453 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933617AbZIPWkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:40:24 -0400
+	id S933626AbZIPWk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:40:27 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:37:19 2009
-Message-Id: <20090916223719.521373239@mini.kroah.org>
+Message-Id: <20090916223719.697894760@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:36:55 -0700
+Date: Wed, 16 Sep 2009 15:36:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 42/45] libata: fix off-by-one error in ata_tf_read_block()
+       Alexander Duyck <alexander.h.duyck@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 43/45] PCI quirk: update 82576 device ids in SR-IOV quirks list
 References: <20090916223613.597295240@mini.kroah.org>
-Content-Disposition: inline; filename=libata-fix-off-by-one-error-in-ata_tf_read_block.patch
+Content-Disposition: inline; filename=pci-quirk-update-82576-device-ids-in-sr-iov-quirks-list.patch
 In-Reply-To: <20090916223739.GA4789@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,42 +31,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Tejun Heo <htejun@gmail.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-commit ac8672ea922bde59acf50eaa1eaa1640a6395fd2 upstream.
+commit 6f1186be4feb3364d3a52cbea81e43e4d5296196 upstream.
 
-ata_tf_read_block() has off-by-one error when converting CHS address
-to LBA.  The bug isn't very visible because ata_tf_read_block() is
-used only when generating sense data for a failed RW command and CHS
-addressing isn't used too often these days.
+This patch adds the most recent additions to the list of 82576 device IDs
+to the list of devices needing the SR-IOV quirk.
 
-This problem was spotted by Atsushi Nemoto.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-core.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/pci/quirks.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -709,7 +709,13 @@ u64 ata_tf_read_block(struct ata_taskfil
- 		head = tf->device & 0xf;
- 		sect = tf->lbal;
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -2494,6 +2494,7 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_I
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x10e7, quirk_i82576_sriov);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x10e8, quirk_i82576_sriov);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x150a, quirk_i82576_sriov);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x150d, quirk_i82576_sriov);
  
--		block = (cyl * dev->heads + head) * dev->sectors + sect;
-+		if (!sect) {
-+			ata_dev_printk(dev, KERN_WARNING, "device reported "
-+				       "invalid CHS sector 0\n");
-+			sect = 1; /* oh well */
-+		}
-+
-+		block = (cyl * dev->heads + head) * dev->sectors + sect - 1;
- 	}
+ #endif	/* CONFIG_PCI_IOV */
  
- 	return block;
 
 
