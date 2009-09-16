@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbZIPGzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZIPG5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbZIPGzL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 02:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZIPGzJ
+	id S1757254AbZIPG5G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 02:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbZIPG5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 02:55:09 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38459 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbZIPGzH (ORCPT
+	Wed, 16 Sep 2009 02:57:04 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:53652 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753729AbZIPG5D convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 02:55:07 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=EIjMh9dv0idvcy5BCnGTGUYuy16gf+2o6A0yOzBkdt17082z6EuduPMEHdkMPU6sH
-	K9UNIxgmE2UnT4kEi254A==
-Date: Tue, 15 Sep 2009 23:55:03 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, heiko.carstens@de.ibm.com, mingo@elte.hu,
-       npiggin@suse.de, sachinp@in.ibm.com
-Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and
- S390
-In-Reply-To: <1253083059.5478.1.camel@penberg-laptop>
-Message-ID: <alpine.DEB.1.00.0909152351510.13366@chino.kir.corp.google.com>
-References: <1253083059.5478.1.camel@penberg-laptop>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Wed, 16 Sep 2009 02:57:03 -0400
+Date: Wed, 16 Sep 2009 08:57:01 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: =?UTF-8?B?UGF3ZcWC?= Sikora <pluto@agmk.net>
+Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+       LMML <linux-media@vger.kernel.org>
+Subject: Re: [2.6.31] ir-kbd-i2c oops.
+Message-ID: <20090916085701.6e883600@hyperion.delvare>
+In-Reply-To: <200909160300.28382.pluto@agmk.net>
+References: <200909160300.28382.pluto@agmk.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009, Pekka Enberg wrote:
+Hi Pawel,
 
-> The SLQB allocator is known to be broken on certain PowerPC and S390
-> configurations. Disable the allocator in Kconfig for those architectures
-> until the issues are resolved.
+On Wed, 16 Sep 2009 03:00:28 +0200, Paweł Sikora wrote:
+> the latest 2.6.31 kernel oopses in ir-kbd-i2c on my box:
+> afaics the 2.6.28.10 is also affected.
 > 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Sachin Sant <sachinp@in.ibm.com>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  init/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+> http://imgbin.org/index.php?page=image&id=776
+> http://imgbin.org/index.php?page=image&id=777
+> http://imgbin.org/index.php?page=image&id=778
 > 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index c0d8a47..aaeddeb 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -1033,6 +1033,7 @@ config SLUB
->  
->  config SLQB
->  	bool "SLQB (Queued allocator)"
-> +	depends on !PPC && !S390
->  	help
->  	  SLQB is a proposed new slab allocator.
->  
+> installed pinnacle tv card with infra-red receiver:
+> 
+> 05:00.0 Multimedia controller: Philips Semiconductors SAA7133/SAA7135
+>         Video Broadcast Decoder (rev d1)
+>         Subsystem: Pinnacle Systems Inc. PCTV 110i (saa7133)
+>         Kernel driver in use: saa7134
+>         Kernel modules: saa7134
+> 
+> if you need i'll provide more information.
+> please, CC me on reply.
 
-I think this should be (!PPC && !S390) || EXPERIMENTAL so that it can 
-still be enabled for debugging and development.
+This would have best been posted to linux-media... Cc'd.
 
-Is this in preparation for slqb inclusion as a non-default slab allocator 
-in 2.6.32?  2.6.33?
+I think this would be fixed by the following patch:
+http://patchwork.kernel.org/patch/45707/
+
+Can you please give it a try?
+
+If I am correct then only kernel 2.6.31 would be affected, 2.6.30
+wouldn't be.
+
+-- 
+Jean Delvare
