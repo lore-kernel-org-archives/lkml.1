@@ -1,193 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbZIPOgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbZIPOiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752106AbZIPOgV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 10:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZIPOgT
+	id S1752226AbZIPOiE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 10:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZIPOiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 10:36:19 -0400
-Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:52931 "EHLO
-	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751294AbZIPOgS (ORCPT
+	Wed, 16 Sep 2009 10:38:04 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:64689 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbZIPOiC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 10:36:18 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: iwlagn: order 2 page allocation failures
-Date: Wed, 16 Sep 2009 16:36:16 +0200
-User-Agent: KMail/1.9.9
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
-       Assaf Krauss <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Mohamed Abbas <mohamed.abbas@intel.com>
-References: <200909060941.01810.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie> <200909091919.16461.elendil@planet.nl>
-In-Reply-To: <200909091919.16461.elendil@planet.nl>
+	Wed, 16 Sep 2009 10:38:02 -0400
+Date: Wed, 16 Sep 2009 10:37:56 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: tytso@mit.edu, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Ext3: data=guarded mode
+Message-ID: <20090916143756.GC2641@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Jan Kara <jack@suse.cz>, tytso@mit.edu,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <1252422595-4554-1-git-send-email-chris.mason@oracle.com>
+ <1252422595-4554-3-git-send-email-chris.mason@oracle.com>
+ <20090915172924.GI12169@duck.suse.cz>
+ <20090915183906.GE23965@think>
+ <20090916140913.GN26030@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909161636.20590.elendil@planet.nl>
-X-OriginalArrivalTime: 16 Sep 2009 14:36:20.0751 (UTC) FILETIME=[0ECCA1F0:01CA36DB]
+In-Reply-To: <20090916140913.GN26030@duck.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt016.oracle.com [141.146.116.25]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4AB0F845.0217:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 September 2009, Frans Pop wrote:
-> On Wednesday 09 September 2009, you wrote:
-> > The problem with this theory is that the patches have been in since
-> > Nov 2008 but reports are only showing up now.  Frans, how sure are you
-> > that this is a recent problem? Is it readily reproducible?
->
-> The only thing I can say here is that I've never seen the issue before
-> (and thanks to logcheck I certainly would have).
-> The laptop is in constant use, but I rarely stress the memory like that.
-> Swap is almost always at 0.
+On Wed, Sep 16, 2009 at 04:09:13PM +0200, Jan Kara wrote:
+> On Tue 15-09-09 14:39:06, Chris Mason wrote:
 
-JFYI, it happened again yesterday.
-The first time it was swapper, here it's kcryptd. The top part of the
-trace is the same.
+[ ... ]
 
-kcryptd: page allocation failure. order:2, mode:0x4020
-Pid: 1347, comm: kcryptd Not tainted 2.6.31-rc9 #16
-Call Trace:
- <IRQ>  [<ffffffff810790b0>] __alloc_pages_nodemask+0x542/0x58a
- [<ffffffff81256a62>] ? _spin_unlock+0x9/0xb
- [<ffffffff811da481>] ? __alloc_skb+0x3c/0x15b
- [<ffffffffa0355644>] ? iwl_rx_allocate+0xac/0x208 [iwlcore]
- [<ffffffff81079153>] __get_free_pages+0x12/0x41
- [<ffffffff810982c5>] __kmalloc_track_caller+0x3b/0xec
- [<ffffffff811da4ab>] __alloc_skb+0x66/0x15b
- [<ffffffffa0355644>] iwl_rx_allocate+0xac/0x208 [iwlcore]
- [<ffffffffa03557b6>] iwl_rx_replenish_now+0x16/0x23 [iwlcore]
- [<ffffffffa037c8e3>] iwl_rx_handle+0x356/0x39a [iwlagn]
- [<ffffffffa00212a2>] ? scsi_io_completion+0x3a8/0x3d1 [scsi_mod]
- [<ffffffffa037ce27>] iwl_irq_tasklet_legacy+0x500/0x74f [iwlagn]
- [<ffffffffa001a81b>] ? scsi_finish_command+0xec/0xf5 [scsi_mod]
- [<ffffffff8103dff0>] tasklet_action+0x71/0xbc
- [<ffffffff8103e877>] __do_softirq+0x9b/0x12c
- [<ffffffff8100cb7c>] call_softirq+0x1c/0x28
- [<ffffffff8100e694>] do_softirq+0x34/0x72
- [<ffffffff8103e601>] irq_exit+0x3f/0x79
- [<ffffffff8100dd95>] do_IRQ+0xa3/0xba
- [<ffffffff8100c413>] ret_from_intr+0x0/0xa
- <EOI>  [<ffffffffa01fb5b8>] ? enc128+0x243/0x80b [aes_x86_64]
- [<ffffffffa01fc72b>] ? aes_encrypt+0xd/0xf [aes_x86_64]
- [<ffffffffa01e92b6>] ? crypto_cbc_encrypt+0x12c/0x18e [cbc]
- [<ffffffff81078c9b>] ? __alloc_pages_nodemask+0x12d/0x58a
- [<ffffffffa01fc71e>] ? aes_encrypt+0x0/0xf [aes_x86_64]
- [<ffffffff81113ea0>] ? async_encrypt+0x38/0x3a
- [<ffffffff81075a94>] ? mempool_alloc+0x5b/0x113
- [<ffffffffa01c5b53>] ? crypt_convert+0x1f9/0x278 [dm_crypt]
- [<ffffffffa01c5ff5>] ? kcryptd_crypt+0x423/0x449 [dm_crypt]
- [<ffffffffa01c5bd2>] ? kcryptd_crypt+0x0/0x449 [dm_crypt]
- [<ffffffff81048bc5>] ? worker_thread+0x132/0x1ca
- [<ffffffff8104c647>] ? autoremove_wake_function+0x0/0x38
- [<ffffffff81048a93>] ? worker_thread+0x0/0x1ca
- [<ffffffff8104c325>] ? kthread+0x8f/0x97
- [<ffffffff8100ca7a>] ? child_rip+0xa/0x20
- [<ffffffff8104c296>] ? kthread+0x0/0x97
- [<ffffffff8100ca70>] ? child_rip+0x0/0x20
-Mem-Info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-CPU    1: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: hi:  186, btch:  31 usd: 172
-CPU    1: hi:  186, btch:  31 usd: 163
-Active_anon:278449 active_file:18846 inactive_anon:93192
- inactive_file:18343 unevictable:407 dirty:0 writeback:7726 unstable:0
- free:25175 slab:10409 mapped:34634 pagetables:4385 bounce:0
-DMA free:7924kB min:40kB low:48kB high:60kB active_anon:2220kB inactive_anon:2464kB
-   active_file:1084kB inactive_file:1608kB unevictable:0kB present:15336kB pages_scanned:0
-   all_unreclaimable? no
-lowmem_reserve[]: 0 1976 1976 1976
-DMA32 free:92776kB min:5664kB low:7080kB high:8496kB active_anon:1111448kB inactive_anon:370432kB
-   active_file:74300kB inactive_file:71764kB unevictable:1628kB present:2023748kB pages_scanned:32
-   all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 63*4kB 59*8kB 26*16kB 34*32kB 23*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 1*4096kB = 7924kB
-DMA32: 18882*4kB 2076*8kB 10*16kB 1*32kB 1*64kB 1*128kB 1*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 92776kB
-82554 total pagecache pages
-44961 pages in swap cache
-Swap cache stats: add 160004, delete 115046, find 2431510/2434120
-Free swap  = 1549576kB
-Total swap = 2097144kB
-518064 pages RAM
-10323 pages reserved
-117029 pages shared
-398165 pages non-shared
-iwlagn 0000:10:00.0: Can not allocate SKB buffers
-kcryptd: page allocation failure. order:2, mode:0x4020
-Pid: 1347, comm: kcryptd Not tainted 2.6.31-rc9 #16
-Call Trace:
- <IRQ>  [<ffffffff810790b0>] __alloc_pages_nodemask+0x542/0x58a
- [<ffffffff81256a62>] ? _spin_unlock+0x9/0xb
- [<ffffffff811da481>] ? __alloc_skb+0x3c/0x15b
- [<ffffffffa0355644>] ? iwl_rx_allocate+0xac/0x208 [iwlcore]
- [<ffffffff81079153>] __get_free_pages+0x12/0x41
- [<ffffffff810982c5>] __kmalloc_track_caller+0x3b/0xec
- [<ffffffff811da4ab>] __alloc_skb+0x66/0x15b
- [<ffffffffa0355644>] iwl_rx_allocate+0xac/0x208 [iwlcore]
- [<ffffffffa03557b6>] iwl_rx_replenish_now+0x16/0x23 [iwlcore]
- [<ffffffffa037c90e>] iwl_rx_handle+0x381/0x39a [iwlagn]
- [<ffffffffa00212a2>] ? scsi_io_completion+0x3a8/0x3d1 [scsi_mod]
- [<ffffffffa037ce27>] iwl_irq_tasklet_legacy+0x500/0x74f [iwlagn]
- [<ffffffffa001a81b>] ? scsi_finish_command+0xec/0xf5 [scsi_mod]
- [<ffffffff8103dff0>] tasklet_action+0x71/0xbc
- [<ffffffff8103e877>] __do_softirq+0x9b/0x12c
- [<ffffffff8100cb7c>] call_softirq+0x1c/0x28
- [<ffffffff8100e694>] do_softirq+0x34/0x72
- [<ffffffff8103e601>] irq_exit+0x3f/0x79
- [<ffffffff8100dd95>] do_IRQ+0xa3/0xba
- [<ffffffff8100c413>] ret_from_intr+0x0/0xa
- <EOI>  [<ffffffffa01fb5b8>] ? enc128+0x243/0x80b [aes_x86_64]
- [<ffffffffa01fc72b>] ? aes_encrypt+0xd/0xf [aes_x86_64]
- [<ffffffffa01e92b6>] ? crypto_cbc_encrypt+0x12c/0x18e [cbc]
- [<ffffffff81078c9b>] ? __alloc_pages_nodemask+0x12d/0x58a
- [<ffffffffa01fc71e>] ? aes_encrypt+0x0/0xf [aes_x86_64]
- [<ffffffff81113ea0>] ? async_encrypt+0x38/0x3a
- [<ffffffff81075a94>] ? mempool_alloc+0x5b/0x113
- [<ffffffffa01c5b53>] ? crypt_convert+0x1f9/0x278 [dm_crypt]
- [<ffffffffa01c5ff5>] ? kcryptd_crypt+0x423/0x449 [dm_crypt]
- [<ffffffffa01c5bd2>] ? kcryptd_crypt+0x0/0x449 [dm_crypt]
- [<ffffffff81048bc5>] ? worker_thread+0x132/0x1ca
- [<ffffffff8104c647>] ? autoremove_wake_function+0x0/0x38
- [<ffffffff81048a93>] ? worker_thread+0x0/0x1ca
- [<ffffffff8104c325>] ? kthread+0x8f/0x97
- [<ffffffff8100ca7a>] ? child_rip+0xa/0x20
- [<ffffffff8104c296>] ? kthread+0x0/0x97
- [<ffffffff8100ca70>] ? child_rip+0x0/0x20
-Mem-Info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-CPU    1: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: hi:  186, btch:  31 usd: 172
-CPU    1: hi:  186, btch:  31 usd: 173
-Active_anon:277951 active_file:18714 inactive_anon:93068
- inactive_file:18252 unevictable:407 dirty:0 writeback:7726 unstable:0
- free:25861 slab:10409 mapped:34634 pagetables:4385 bounce:0
-DMA free:7924kB min:40kB low:48kB high:60kB active_anon:2220kB inactive_anon:2464kB
-   active_file:1084kB inactive_file:1608kB unevictable:0kB present:15336kB pages_scanned:0
-   all_unreclaimable? no
-lowmem_reserve[]: 0 1976 1976 1976
-DMA32 free:95520kB min:5664kB low:7080kB high:8496kB active_anon:1109584kB inactive_anon:369808kB
-   active_file:73772kB inactive_file:71400kB unevictable:1628kB present:2023748kB pages_scanned:66
-   all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 63*4kB 59*8kB 26*16kB 34*32kB 23*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 1*4096kB = 7924kB
-DMA32: 19178*4kB 2285*8kB 3*16kB 1*32kB 1*64kB 1*128kB 1*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 95520kB
-81717 total pagecache pages
-44349 pages in swap cache
-Swap cache stats: add 160008, delete 115659, find 2431510/2434120
-Free swap  = 1549560kB
-Total swap = 2097144kB
-518064 pages RAM
-10323 pages reserved
-117031 pages shared
-398265 pages non-shared
-iwlagn 0000:10:00.0: Can not allocate SKB buffers
+> > >   The code here still looks suspicious.
+> > > 1) Inodes can be on orphan list with i_nlink > 0 when a write failed for
+> > >    some reason and we have to truncate blocks instantiated beyond i_size.
+> > >    Those places (similarly as truncate) expect that while they hold i_mutex
+> > >    they are safe doing what they want with the orphan list. This code would
+> > >    happily remove the inode from orphan list...
+> > 
+> > The only risky place for this is the work thread doing the ordered
+> > writes.  Truncate gets around it by waiting for the ordered completions.
+> > I'll add the wait to the error handlers as well.
+>   You probably mean guarded writes. I agree.
+
+Sorry, guarded in ext3 is ordered in btrfs and I'm easily confused.
+
+> 
+> > > 2) Cannot it happen that:
+> > >      CPU1
+> > > orphan_del()
+> > >   if (inode->i_nlink && list_empty(ordered_list)) {
+> > > 	ext3_ordered_unlock(inode);
+> > > 	lock_super(inode->i_sb);
+> > > 	smp_mb();
+> > > 	if (inode->i_nlink == 0 || !list_empty(ordered_list)) {
+> > > 
+> > >      CPU2
+> > > journal_dirty_data_guarded_fn()
+> > >   ret = ext3_add_ordered_extent(inode, offset, bh);
+> > >   if (ret == 0 && buffer_dataguarded(bh) &&
+> > >       list_empty(&EXT3_I(inode)->i_orphan) &&
+> > >       !(EXT3_SB(inode->i_sb)->s_mount_state & EXT3_ORPHAN_FS)) - list isn't
+> > > empty yet so we don't add inode to orphan list, but on CPU1, we go ahead
+> > > and remove inode from the orphan list...
+> > 
+> > This used to have a check after the orphan_del to re-add the orphan if
+> > we raced with the end_io handlers.  I removed it because I thought it
+> > was over-paranoid, but I see that you're right.  So, I'll put that one
+> > back in.
+>   Hmm, that will probably work but it's ugly :(. The ugliness is localized
+> in the guarded mode code so probably we can bear it for a while but I'll
+> certainly try to look into what we can do to get rid of it :).
+
+;)
+
+> 
+> > > > diff --git a/include/linux/ext3_fs_i.h b/include/linux/ext3_fs_i.h
+> > > > index ca1bfe9..a6cf26d 100644
+> > > > --- a/include/linux/ext3_fs_i.h
+> > > > +++ b/include/linux/ext3_fs_i.h
+> > > > @@ -137,6 +180,8 @@ struct ext3_inode_info {
+> > > >  	 * by other means, so we have truncate_mutex.
+> > > >  	 */
+> > > >  	struct mutex truncate_mutex;
+> > > > +
+> > > > +	struct ext3_ordered_buffers ordered_buffers;
+> > > >  	struct inode vfs_inode;
+> > > >  };
+> > >   Hmm, how hard would it be to hide especially this behind
+> > > CONFIG_EXT3_GUARDED_DATA so that we can avoid increasing inode size for
+> > > users which are not interested in the new guarded mode?
+> > 
+> > I'm not too picky, but it would litter the code with #ifdefs around the
+> > guarded functions.  I'd rather not.
+>   Looking into the code, it needn't be too bad if we define a a few
+> functions as empty in !guarded case. I'll have a look at it for the next
+> version of your patch.
+
+Fair enough, I plan on hammering out the next version today or tomorrow.
+
+-chris
+
