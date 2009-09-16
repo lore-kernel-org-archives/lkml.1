@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZIPBUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZIPB0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbZIPBUd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 21:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZIPBUa
+	id S1753446AbZIPB0w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 21:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZIPB0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 21:20:30 -0400
-Received: from mga01.intel.com ([192.55.52.88]:15572 "EHLO mga01.intel.com"
+	Tue, 15 Sep 2009 21:26:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:46010 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752077AbZIPBUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 21:20:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,393,1249282800"; 
-   d="scan'208";a="493833851"
-Subject: Re: [PATCH -v3] crypto: Add PCLMULQDQ accelerated GHASH
- implementation
-From: Huang Ying <ying.huang@intel.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <1253025731.11643.333.camel@desktop>
-References: <1252993367.15717.340.camel@yhuang-dev.sh.intel.com>
-	 <1253025731.11643.333.camel@desktop>
-Content-Type: text/plain
-Date: Wed, 16 Sep 2009 09:20:32 +0800
-Message-Id: <1253064032.15717.369.camel@yhuang-dev.sh.intel.com>
+	id S1751003AbZIPB0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 21:26:48 -0400
+Subject: Re: fanotify as syscalls
+From: Eric Paris <eparis@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Evgeniy Polyakov <zbr@ioremap.net>, Jamie Lokier <jamie@shareable.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
+In-Reply-To: <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain>
+References: <20090911.114620.260824240.davem@davemloft.net>
+	 <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com>
+	 <20090911204602.GA19371@shareable.org>
+	 <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
+	 <20090911212731.GA19901@shareable.org>
+	 <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
+	 <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org>
+	  <20090914140720.GA8564@ioremap.net>
+	 <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
+	 <20090915201620.GB32192@ioremap.net>
+	 <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
+	 <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 15 Sep 2009 21:26:31 -0400
+Message-Id: <1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 22:42 +0800, Daniel Walker wrote: 
-> On Tue, 2009-09-15 at 13:42 +0800, Huang Ying wrote:
-> > Hi, Herbert,
-> > 
-> > The dependency to irq_fpu_usable has been merged by linus' tree.
-> > 
-> > Best Regards,
-> > Huang Ying
-> > -------------------------------------------------------------------------->
-> > PCLMULQDQ is used to accelerate the most time-consuming part of GHASH,
-> > carry-less multiplication. More information about PCLMULQDQ can be
-> > found at:
-> > 
-> > http://software.intel.com/en-us/articles/carry-less-multiplication-and-its-usage-for-computing-the-gcm-mode/
-> > 
-> > Because PCLMULQDQ changes XMM state, its usage must be enclosed with
-> > kernel_fpu_begin/end, which can be used only in process context, the
-> > acceleration is implemented as crypto_ahash. That is, request in soft
-> > IRQ context will be defered to the cryptd kernel thread.
-> > 
-> > v3:
-> >  - Revise GHASH implementation, performance increase about 2x.
-> 
-> 
-> You have three style issues in this patch, for instance you shouldn't
-> set values inside if() statements .. If you run checkpatch on this it
-> will tell you all the style problems. Could you run this through
-> checkpatch and fix any errors it's find ?
+On Tue, 2009-09-15 at 16:49 -0700, Linus Torvalds wrote:
 
-Thanks, I will fix them.
+> And btw, I still want to know what's so wonderful about fanotify that we 
+> would actually want yet-another-filesystem-notification-interface. So I'm 
+> not sayying that I'll take a system call interface.
 
-Best Regards,
-Huang Ying
+The real thing that fanotify provides is an open fd with the event
+rather than some arbitrary 'watch descriptor' that userspace must
+somehow magically map back to data on disk.  This means that it could be
+used to provide subtree notification, which inotify is completely
+incapable of doing.  And it can be used to provide system wide
+notification.  We all know who wants that.
+
+It provides an extensible data format which allows growth impossible in
+inotify.  I don't know if anyone remember the inotify patches which
+wanted to overload the inotify cookie field for some other information,
+but inotify information extension is not reasonable or backwards
+compatible.
+
+fanotify also allows userspace to make access decisions and cache those
+in the kernel.  Useful for integrity checkers (anti-malware people) and
+for hierarchical storage management people.
+
+I've got private commitments for two very large anti malware companies,
+both of which unprotect and hack syscall tables in their customer's
+kernels, that they would like to move to an fanotify interface.  Both
+Red Hat and Suse have expressed interest in these patches and have
+contributed to the patch set.
+
+The patch set is actually rather small (entire set of about 20 patches
+is 1800 lines) as it builds on the fsnotify work already in 2.6.31 to
+reuse code from inotify rather than reimplement the same things over and
+over (like we previously had with inotify and dnotify)
+
+Don't know what else to say.....
+
+-Eric
 
