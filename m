@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbZIPJPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbZIPIZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbZIPJPA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 05:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbZIPJO7
+	id S1757616AbZIPIZO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 04:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZIPIZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 05:14:59 -0400
-Received: from mail-px0-f176.google.com ([209.85.216.176]:45007 "EHLO
-	mail-px0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758134AbZIPJO7 (ORCPT
+	Wed, 16 Sep 2009 04:25:12 -0400
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:46364 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757599AbZIPIZI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 05:14:59 -0400
+	Wed, 16 Sep 2009 04:25:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=V4a4jXak46qpF+SPuFYXgC+Dj9b6U4WpBPPeVdT/HwmyOHuMTT0bEyUX445keGG0Fx
-         9r+W0RVmgk2Ig2VEvFE2SYXLvaclMhbbpH/w7/1V7FtnUn+tx2rvKrZ/uqAVNDCbLk+3
-         eh1b24PYLaeGy5Bi/8tVfrlJCaoW0OA9kdg40=
-From: Jinzc <zhenchengjin@gmail.com>
-To: NeilBrown <neilb@suse.de>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] md: set the md raid 4,5,6  thead name by its level
-Date: Wed, 16 Sep 2009 16:24:43 +0800
-Message-Id: <1253089483-3862-1-git-send-email-zhenchengjin@gmail.com>
-X-Mailer: git-send-email 1.6.0.6
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pNdiw14h1zW8hB9QmbkXXQ/V/j/0tVRb9HNV4iGkQjaYN7tS0Lsfb570se1Q98uetx
+         xNJnmdizdu6KTEzUyAwi3D6F/T4R7hT7bPPd4mmFFx6XdosqYAvpf+zmklV0O2k02Mjb
+         nPjIJafmiR+TduMx0wrI4Jg7UzCjgyAeKZV78=
+MIME-Version: 1.0
+In-Reply-To: <20090916092644.fb53279a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <Pine.LNX.4.64.0909152224400.29857@sister.anvils>
+	 <20090916092644.fb53279a.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Wed, 16 Sep 2009 16:25:12 +0800
+Message-ID: <2375c9f90909160125x5ec67af0p3a25a555d30d38a3@mail.gmail.com>
+Subject: Re: [BUGFIX][mmotm] fix walk system ram range patch (Was Re: mmotm on 
+	powerpc: walk_memory_resource?
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ben Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the current edition, if you create a md raid 4,5,6
-the name of md thread is mdx_raid5. If you create a raid 4,6
-the name mdx_raid4, mdx_raid6 are better than mdx_raid5.
+2009/9/16 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+> On Tue, 15 Sep 2009 22:36:26 +0100 (BST)
+> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+>
+>> Recent mmotm builds on powerpc have been failing with
+>>
+>> arch/powerpc/mm/mem.c:169: error: ‘walk_memory_resource’ undeclared here (not in a function)
+>> cc1: warnings being treated as errors
+>> arch/powerpc/mm/mem.c:169: error: type defaults to ‘int’ in declaration of ‘walk_memory_resource’
+>> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
+>>
+> Thank you for pointing out.
+> -Kame
+> ==
+>
+>
+> walk-system-ram-range.patch renames walk_memory_resource()
+> to be walk_system_ram_range().
+> But powerpc has its own one and it's exported.
+> (Because ehea driver (IBM's one) uses this, powerpc export this.)
+>
+>> arch/powerpc/mm/mem.c:169: error: ‘walk_memory_resource’ undeclared here (not in a function)
+>> cc1: warnings being treated as errors
+>> arch/powerpc/mm/mem.c:169: error: type defaults to ‘int’ in declaration of ‘walk_memory_resource’
+>> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
+>>
+> The patch failed to update powerpc's EXPORT_SYMBOL, this patch fixes it.
+>
+> Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Signed-off-by: Jinzc <zhenchengjin@gmail.com>
----
- drivers/md/raid5.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index b8a2c5d..f78f711 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -4334,6 +4334,7 @@ static raid5_conf_t *setup_conf(mddev_t *mddev)
- 	int raid_disk, memory;
- 	mdk_rdev_t *rdev;
- 	struct disk_info *disk;
-+	char thread_name[64];
- 
- 	if (mddev->new_level != 5
- 	    && mddev->new_level != 4
-@@ -4447,10 +4448,12 @@ static raid5_conf_t *setup_conf(mddev_t *mddev)
- 		printk(KERN_INFO "raid5: allocated %dkB for %s\n",
- 			memory, mdname(mddev));
- 
--	conf->thread = md_register_thread(raid5d, mddev, "%s_raid5");
-+	sprintf(thread_name, "%%s_raid%d", conf->level);
-+	conf->thread = md_register_thread(raid5d, mddev, thread_name);
-+
- 	if (!conf->thread) {
- 		printk(KERN_ERR
--		       "raid5: couldn't allocate thread for %s\n",
-+		       "raid%d: couldn't allocate thread for %s\n", conf->level,
- 		       mdname(mddev));
- 		goto abort;
- 	}
--- 
-1.6.1.3
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
 
+>
+> ---
+>  arch/powerpc/mm/mem.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
+> ===================================================================
+> --- mmotm-2.6.31-Sep14.orig/arch/powerpc/mm/mem.c
+> +++ mmotm-2.6.31-Sep14/arch/powerpc/mm/mem.c
+> @@ -166,7 +166,7 @@ walk_system_ram_range(unsigned long star
+>        }
+>        return ret;
+>  }
+> -EXPORT_SYMBOL_GPL(walk_memory_resource);
+> +EXPORT_SYMBOL_GPL(walk_system_ram_range);
+>
+>  /*
+>  * Initialize the bootmem system and give it all the memory we
+>
