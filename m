@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbZIPPUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbZIPPXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759269AbZIPPUk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 11:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759229AbZIPPUj
+	id S1759285AbZIPPXQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 11:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759277AbZIPPXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 11:20:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50610 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759222AbZIPPUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 11:20:38 -0400
-Date: Thu, 17 Sep 2009 01:20:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] first round of PCI updates for 2.6.32
-Message-Id: <20090917012035.e7b8b425.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.2.01.0909160753000.4950@localhost.localdomain>
-References: <20090915132105.2fdd1d45@jbarnes-g45>
-	<alpine.LFD.2.01.0909160753000.4950@localhost.localdomain>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__17_Sep_2009_01_20_35_+1000_Q6FxS/OgmzIBxub1"
+	Wed, 16 Sep 2009 11:23:14 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:60668 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759271AbZIPPXN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 11:23:13 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+Date: Wed, 16 Sep 2009 17:22:37 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-9-generic; KDE/4.3.1; x86_64; ; )
+Cc: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+References: <20090914164750.GB3745@redhat.com> <200909161657.42628.arnd@arndb.de> <20090916151329.GC5513@redhat.com>
+In-Reply-To: <20090916151329.GC5513@redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909161722.37606.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX183NgoHRjP+YMpSUMaf5FtblG94v60hZ/3Ypkh
+ Ri9RT/XitRuOjEQbTeZxkBV/8TLJog+qnlu0nAzln0gSJI10zS
+ da66O/5qGbUhklrhq8r3A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__17_Sep_2009_01_20_35_+1000_Q6FxS/OgmzIBxub1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 16 September 2009, Michael S. Tsirkin wrote:
+> On Wed, Sep 16, 2009 at 04:57:42PM +0200, Arnd Bergmann wrote:
+> > On Tuesday 15 September 2009, Michael S. Tsirkin wrote:
+> > > Userspace in x86 maps a PCI region, uses it for communication with ppc?
+> > 
+> > This might have portability issues. On x86 it should work, but if the
+> > host is powerpc or similar, you cannot reliably access PCI I/O memory
+> > through copy_tofrom_user but have to use memcpy_toio/fromio or readl/writel
+> > calls, which don't work on user pointers.
+> > 
+> > Specifically on powerpc, copy_from_user cannot access unaligned buffers
+> > if they are on an I/O mapping.
+> > 
+> We are talking about doing this in userspace, not in kernel.
 
-Hi Linus,
+Ok, that's fine then. I thought the idea was to use the vhost_net driver
+to access the user memory, which would be a really cute hack otherwise,
+as you'd only need to provide the eventfds from a hardware specific
+driver and could use the regular virtio_net on the other side.
 
-On Wed, 16 Sep 2009 07:55:59 -0700 (PDT) Linus Torvalds <torvalds@linux-fou=
-ndation.org> wrote:
->
-> This one clashed trivially with the powerpc merge ("move pci_64.c device=
-=20
-> tree scanning code into pci-common.c" clashes with "PCI/powerpc: support
-> PCIe fundamental reset.")
->=20
-> I fixed it up, and I'm pretty sure it's all ok (it really was just a=20
-> function movement and a single new added line), but ppc PCI people should=
-=20
-> double-check the result.
-
-It looks good and matches the fix I have been carrying in linux-next for
-some time.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__17_Sep_2009_01_20_35_+1000_Q6FxS/OgmzIBxub1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqxAkQACgkQjjKRsyhoI8w/cwCcCYqG4ZD6zUC1aRcd2TA1lObx
-CDEAoK5y7/1HcS6xHB7IHvaRwVGm9589
-=Ifex
------END PGP SIGNATURE-----
-
---Signature=_Thu__17_Sep_2009_01_20_35_+1000_Q6FxS/OgmzIBxub1--
+	Arnd <><
