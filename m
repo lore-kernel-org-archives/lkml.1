@@ -1,277 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbZIPF0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZIPFcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbZIPF0c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 01:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbZIPF0b
+	id S1754927AbZIPFcL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 01:32:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZIPFcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 01:26:31 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60221 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbZIPF0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 01:26:31 -0400
-Message-ID: <4AB077AF.6080800@cn.fujitsu.com>
-Date: Wed, 16 Sep 2009 13:29:19 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 2/2] ftrace: Add timer-source of walltime for ftrace
-References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com> <4AB076DE.10604@cn.fujitsu.com>
-In-Reply-To: <4AB076DE.10604@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 Sep 2009 01:32:10 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54982 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751617AbZIPFcJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 01:32:09 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 16 Sep 2009 14:29:56 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       oleg@redhat.com
+Subject: [RFC][PATCH][bugfix] more checks for negative f_pos handling (Was
+ Re: Question: how to handle too big f_pos
+Message-Id: <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090914032901.GA16189@localhost>
+	<20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can add a timer-source for ftrace to support wall-time display.
-It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
-http://lkml.org/lkml/2009/7/24/103
 
-It need to applys on my patch of:
-[PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
+The problem:
+> I'm writing a patch against /dev/kmem...I found a problem.
+> 
+> /dev/kmem (and /proc/<pid>/mem) puts virtual addres to f->f_pos.
+> 
+> but f->f_pos is always negative and rw_verify_ara() returns -EINVAL always.
 
-We can get following output:
- # cd /mnt/debugfs/tracing/
- # cat trace_clock
- [local] global walltime
- # echo sched_switch > current_tracer
- # cat trace
- # tracer: sched_switch
- #
- #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
- #              | |       |          |         |
-             bash-3580  [000]  2916.188093:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000]  2916.188205:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000]  2916.188538:   3580:120:R   + [000]     5:115:S events/0
-             bash-3580  [000]  2916.188599:   3580:120:R ==> [000]     5:115:R events/0
-         events/0-5     [000]  2916.188669:      5:115:S ==> [000]  3580:120:R bash
- ...
- # echo walltime > trace_clock
- # cat trace
- # tracer: sched_switch
- #
- #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
- #              | |       |                        |         |
-             bash-3580  [000] 2009-08-24 18:03:16.500705:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S ==> [000]     5:115:R events/0
-         events/0-5     [000] 2009-08-24 18:03:16.500815:      5:115:R   + [000]  3578:120:S sshd
- ...
+Changed CC: List. 
 
-Changelog:
-v1->v2: Rebase to top of tip tree.
+This is a trial to consider how to fix negative f_pos problem shown in above.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+Hmm, even after this patch, x86's vsyscall area is not readable.
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0  [vsyscall]
+But maybe no problems. (now, it cannot be read, anyway.)
+
+I tested /dev/kmem on x86-64 and this works fine. I added a fix for
+/proc/<pid>/mem because I know ia64's hugetlbe area is not readable
+via /proc/<pid>/mem. (But I'm not sure other 64bit arch has this
+kind of problems in /proc/<pid>/mem)
+
+==
+From: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Modifying rw_verify_area()'s negative f_pos check.
+
+Now, rw_verify_area() has this check
+   if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+		return -EINVAL
+
+And access to special files as /dev/mem,kmem, /proc/<pid>/mem
+returns unexpected -EINVAL.
+(For example, ia64 maps hugetlb at 0x8000000000000000- region)
+
+This patch tries to make range check more precise by using
+llseek ops defined per special files.
+
+Signed-off-by: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- include/linux/trace_clock.h |    1 +
- kernel/trace/trace.c        |   24 ++++++++++++++++-----
- kernel/trace/trace.h        |    8 ++++++-
- kernel/trace/trace_clock.c  |   48 +++++++++++++++++++++++++++++++++++++++++++
- kernel/trace/trace_output.c |   21 +++++++++++++++---
- 5 files changed, 91 insertions(+), 11 deletions(-)
+ fs/proc/base.c  |   22 +++++++++++++++++-----
+ fs/read_write.c |   39 +++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 54 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
-index 7a81303..322707e 100644
---- a/include/linux/trace_clock.h
-+++ b/include/linux/trace_clock.h
-@@ -15,5 +15,6 @@
- extern u64 notrace trace_clock_local(void);
- extern u64 notrace trace_clock(void);
- extern u64 notrace trace_clock_global(void);
-+extern u64 notrace trace_clock_walltime(void);
+Index: mmotm-2.6.31-Sep14/fs/read_write.c
+===================================================================
+--- mmotm-2.6.31-Sep14.orig/fs/read_write.c
++++ mmotm-2.6.31-Sep14/fs/read_write.c
+@@ -205,6 +205,37 @@ bad:
+ }
+ #endif
  
- #endif /* _LINUX_TRACE_CLOCK_H */
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index fd52a19..160b6a8 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -335,9 +335,10 @@ static struct {
- } trace_clocks[] = {
- 	{ trace_clock_local,	"local" },
- 	{ trace_clock_global,	"global" },
-+	{ trace_clock_walltime,	"walltime" },
- };
- 
--int trace_clock_id;
-+enum TRACE_CLOCK_TYPE trace_clock_type = TRACE_CLOCK_LOCAL;
- 
- /*
-  * trace_parser_get_init - gets the buffer for trace parser
-@@ -1653,8 +1654,17 @@ static void print_lat_help_header(struct seq_file *m)
- 
- static void print_func_help_header(struct seq_file *m)
- {
--	seq_puts(m, "#           TASK-PID    CPU#    TIMESTAMP  FUNCTION\n");
--	seq_puts(m, "#              | |       |          |         |\n");
-+	if (trace_clock_type == TRACE_CLOCK_WALLTIME) {
-+		seq_puts(m, "#           TASK-PID    CPU# "
-+			"          TIMESTAMP  FUNCTION\n");
-+		seq_puts(m, "#              | |       |   "
-+			"                     |         |\n");
-+	} else {
-+		seq_puts(m, "#           TASK-PID    CPU# "
-+			"   TIMESTAMP  FUNCTION\n");
-+		seq_puts(m, "#              | |       |   "
-+			"       |         |\n");
++static int
++__verify_negative_pos_range(struct file *file, loff_t pos, size_t count)
++{
++	unsigned long long upos, end;
++	loff_t ret;
++
++	/* disallow overflow */
++	upos = (unsigned long long)pos;
++	end = upos + count;
++	if (end < pos)
++		return -EOVERFLOW;
++	/*
++	 * Sanity check...subsystem has to provide llseek for handle big pos.
++	 * Subsystem's llseek should verify f_pos's value comaparing with its
++	 * max file size.
++	 * Note1: generic file ops' llseek cannot handle negative pos.
++	 * Note2: should we take care of pos == -EINVAL ?
++	 * Note3: we check flags and ops here for avoiding taking locks in.
++	 * default_lseek.
++	 */
++	ret = -EINVAL;
++	if ((file->f_mode & FMODE_LSEEK) &&
++	    (file->f_op && file->f_op->llseek)) {
++		ret = vfs_llseek(file, 0, SEEK_CUR);
++		if (ret == pos)
++			return 0;
 +	}
- }
- 
- 
-@@ -3387,8 +3397,8 @@ static ssize_t tracing_clock_read(struct file *filp, char __user *ubuf,
- 	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++)
- 		bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter,
- 			"%s%s%s%s", i ? " " : "",
--			i == trace_clock_id ? "[" : "", trace_clocks[i].name,
--			i == trace_clock_id ? "]" : "");
-+			i == trace_clock_type ? "[" : "", trace_clocks[i].name,
-+			i == trace_clock_type ? "]" : "");
- 	bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter, "\n");
- 
- 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, bufiter);
-@@ -3418,7 +3428,7 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
- 	if (i == ARRAY_SIZE(trace_clocks))
- 		return -EINVAL;
- 
--	trace_clock_id = i;
-+	trace_clock_type = i;
- 
- 	mutex_lock(&trace_types_lock);
- 
-@@ -3428,6 +3438,8 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
- 
- 	mutex_unlock(&trace_types_lock);
- 
-+	tracing_reset_online_cpus(&global_trace);
 +
- 	*fpos += cnt;
- 
- 	return cnt;
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index e747162..afee4de 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -475,7 +475,13 @@ int trace_array_printk(struct trace_array *tr,
- 
- extern unsigned long trace_flags;
- 
--extern int trace_clock_id;
-+enum TRACE_CLOCK_TYPE {
-+	TRACE_CLOCK_LOCAL,
-+	TRACE_CLOCK_GLOBAL,
-+	TRACE_CLOCK_WALLTIME,
-+};
++	return (int)ret;
++}
 +
-+extern enum TRACE_CLOCK_TYPE trace_clock_type;
- 
- /* Standard output formatting function used for function return traces */
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
-diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
-index b588fd8..2b23023 100644
---- a/kernel/trace/trace_clock.c
-+++ b/kernel/trace/trace_clock.c
-@@ -19,6 +19,7 @@
- #include <linux/sched.h>
- #include <linux/ktime.h>
- #include <linux/trace_clock.h>
-+#include <trace/events/xtime.h>
- 
  /*
-  * trace_clock_local(): the simplest and least coherent tracing clock.
-@@ -107,3 +108,50 @@ u64 notrace trace_clock_global(void)
- 
- 	return now;
- }
-+
-+/*
-+ * the number of nanoseconds from 1970-1-1 00:00:00 to
-+ * machine boots (trace_clock()==0)
-+ */
-+static u64 base_walltime;
-+
-+static void sync_base_walltime(struct timespec *ts, u64 traceclock)
-+{
-+	base_walltime = (u64)ts->tv_sec * NSEC_PER_SEC + ts->tv_nsec -
-+			traceclock;
-+}
-+
-+static void probe_gtod_update_xtime(struct timespec *xtime,
-+				    struct timespec *wall_to_monotonic)
-+{
-+	unsigned long flags;
-+	u64 traceclock;
-+
-+	local_irq_save(flags);
-+	traceclock = trace_clock();
-+	sync_base_walltime(xtime, traceclock);
-+	local_irq_restore(flags);
-+}
-+
-+static int __init walltime_init(void)
-+{
-+	unsigned long flags;
-+	struct timespec ts;
-+	u64 traceclock;
-+
-+	local_irq_save(flags);
-+	getnstimeofday(&ts);
-+	traceclock = trace_clock();
-+	sync_base_walltime(&ts, traceclock);
-+	local_irq_restore(flags);
-+
-+	register_trace_gtod_update_xtime(probe_gtod_update_xtime);
-+
-+	return 0;
-+}
-+device_initcall_sync(walltime_init);
-+
-+u64 notrace trace_clock_walltime(void)
-+{
-+	return base_walltime + trace_clock();
-+}
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index f572f44..2116c5f 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -527,15 +527,28 @@ int trace_print_context(struct trace_iterator *iter)
- {
- 	struct trace_seq *s = &iter->seq;
- 	struct trace_entry *entry = iter->ent;
--	unsigned long long t = ns2usecs(iter->ts);
--	unsigned long usec_rem = do_div(t, USEC_PER_SEC);
--	unsigned long secs = (unsigned long)t;
- 	char comm[TASK_COMM_LEN];
- 
- 	trace_find_cmdline(entry->pid, comm);
- 
--	return trace_seq_printf(s, "%16s-%-5d [%03d] %5lu.%06lu: ",
-+	if (trace_clock_type == TRACE_CLOCK_WALLTIME) {
-+		struct tm tm;
-+		u32 remainder;
-+		time_to_tm(div_u64_rem(iter->ts, NSEC_PER_SEC, &remainder),
-+				-sys_tz.tz_minuteswest * 60, &tm);
-+		return trace_seq_printf(s, "%16s-%-5d [%03d] "
-+				"%04ld-%02d-%02d %02d:%02d:%02d.%06llu: ",
-+				comm, entry->pid, iter->cpu,
-+				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-+				tm.tm_hour, tm.tm_min, tm.tm_sec,
-+				ns2usecs(remainder));
-+	} else {
-+		unsigned long long t = ns2usecs(iter->ts);
-+		unsigned long usec_rem = do_div(t, USEC_PER_SEC);
-+		unsigned long secs = (unsigned long)t;
-+		return trace_seq_printf(s, "%16s-%-5d [%03d] %5lu.%06lu: ",
- 				comm, entry->pid, iter->cpu, secs, usec_rem);
+  * rw_verify_area doesn't like huge counts. We limit
+  * them to something that fits in "int" so that others
+@@ -222,8 +253,12 @@ int rw_verify_area(int read_write, struc
+ 	if (unlikely((ssize_t) count < 0))
+ 		return retval;
+ 	pos = *ppos;
+-	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+-		return retval;
++	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
++		/* some files requires special care */
++		retval = __verify_negative_pos_range(file, pos, count);
++		if (retval)
++			return retval;
 +	}
+ 
+ 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+ 		retval = locks_mandatory_area(
+Index: mmotm-2.6.31-Sep14/fs/proc/base.c
+===================================================================
+--- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
++++ mmotm-2.6.31-Sep14/fs/proc/base.c
+@@ -903,18 +903,30 @@ out_no_task:
+ 
+ loff_t mem_lseek(struct file *file, loff_t offset, int orig)
+ {
++	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
++	unsigned long long new_offset = -EINVAL;
++
++	if (!task) /* lseek's spec doesn't allow -ESRCH but... */
++		return -ESRCH;
++
+ 	switch (orig) {
+ 	case 0:
+-		file->f_pos = offset;
++		new_offset = offset;
+ 		break;
+ 	case 1:
+-		file->f_pos += offset;
++		new_offset = (unsigned long long)f->f_pos + offset;
+ 		break;
+ 	default:
+-		return -EINVAL;
++		new_offset = -EINVAL;
++		break;
+ 	}
+-	force_successful_syscall_return();
+-	return file->f_pos;
++	if (new_offset < (unsigned long long)TASK_SIZE_OF(task)) {
++		file->f_pos = (loff_t)new_offset;
++		force_successful_syscall_return();
++	} else
++		new_offset = -EINVAL;
++	put_task_struct(task);
++	return (loff_t)new_offset;
  }
  
- int trace_print_lat_context(struct trace_iterator *iter)
--- 
-1.5.5.3
-
+ static const struct file_operations proc_mem_operations = {
 
