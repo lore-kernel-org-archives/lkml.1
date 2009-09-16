@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZIPKqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbZIPLK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbZIPKqv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 06:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZIPKqv
+	id S1754276AbZIPLK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 07:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbZIPLKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 06:46:51 -0400
-Received: from mga06.intel.com ([134.134.136.21]:43639 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751847AbZIPKqu (ORCPT
+	Wed, 16 Sep 2009 07:10:24 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:41425 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbZIPLKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 06:46:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,397,1249282800"; 
-   d="scan'208";a="448975004"
-Date: Wed, 16 Sep 2009 11:41:11 +0100
-From: Alan Cox <alan@linux.intel.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, hch@infradead.org
-Subject: Re: fanotify as syscalls
-Message-ID: <20090916114111.2228f0fc@linux.intel.com>
-In-Reply-To: <20090916075219.GA22024@shareable.org>
-References: <20090911212731.GA19901@shareable.org>
-	<1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
-	<20090912094110.GB24709@ioremap.net>
-	<20090914001759.GB30621@shareable.org>
-	<20090914140720.GA8564@ioremap.net>
-	<1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
-	<20090915201620.GB32192@ioremap.net>
-	<1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
-	<alpine.LFD.2.01.0909151643540.4950@localhost.localdomain>
-	<1253064391.5213.37.camel@dhcp231-106.rdu.redhat.com>
-	<20090916075219.GA22024@shareable.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+	Wed, 16 Sep 2009 07:10:24 -0400
+Date: Wed, 16 Sep 2009 20:10:26 +0900 (JST)
+Message-Id: <20090916.201026.71092560.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       dhaval@linux.vnet.ibm.com, jens.axboe@oracle.com, agk@redhat.com,
+       akpm@linux-foundation.org, nauman@google.com,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com
+Subject: Re: dm-ioband fairness in terms of sectors seems to be killing disk
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090915214032.GB3711@redhat.com>
+References: <20090903131146.GA12041@redhat.com>
+	<20090904.101222.226781140.ryov@valinux.co.jp>
+	<20090915214032.GB3711@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - fanotify does not provide subtree notification in it's
->   present form.  When it is extended to do that, why wouldn't
->   inotify be as well?  That's an fsnotify feature, common to both.
+Hi Vivek,
 
-Because inotify gives you no reliable access to the object monitored as
-the name passed back is not an object reference and is racy. Inotify is
-fine for making pretty icons pop up on desktops and making file
-selectors update, but it is somewhat inadequate for indexers and
-completely useless for stuff like HSM.
+Vivek Goyal <vgoyal@redhat.com> wrote:
+> Hi Ryo,
+> 
+> I am running a sequential reader in one group and few random reader and
+> writers in second group. Both groups are of same weight. I ran fio scripts
+> for 60 seconds and then looked at the output. In this case looks like we just
+> kill the throughput of sequential reader and disk (because random
+> readers/writers take over).
 
-> - fanotify requires you call readlink(/proc/fd/N) for every event to
->   get the path.  It's not a particularly efficient way to get it,
+Thank you for testing dm-ioband. 
 
-IFF you want the path, but the path isn't usually the most valuable bit.
-Plus you'll find the readlink is extremely quick anyway.
+I ran your script on my environment, and here are the results.
 
-> People who want to break out of chroot/namespace jails using the
-> conveniently provided open file descriptor? :-)
+                        Throughput  [KiB/s]
+              vanilla     dm-ioband            dm-ioband   
+                       (io-throttle = 4)  (io-throttle = 50)
+  randread      312           392                 368
+  randwrite      11            12                  10
+  seqread      4341           651                1599
 
-chroot isn't a security model. You can already do this with AF_UNIX
-sockets (and there are apps that intentionally use fchdir that way)
+I ran the script on dm-ioband under two conditions, one is that the
+io-throttle options is set to 4, and the other is set to 50. When
+there are some in-flight IO requests in the group and those numbers
+exceed io-throttle, then dm-ioband gives priority to the group and the
+group can issue subsequent IO requests in preference to the other
+groups. 50 io-throttle means that it cancels this mechanism, so the
+seq-read got more bandwidth than 4 io-throttle.
 
-> I'd expect anti-malware to want to be run inside VMs quite often...
+I tried to test with 2.6.31-rc7 and io-controller v9, but unfortunately,
+a kernel panic happened. I'll try to test with your io-controller
+again later.
+ 
+> with io scheduler based io controller, we see increased throughput for
+> seqential reader as compared to CFQ, because now random readers are
+> running in a separate group and hence reader gets isolation from random
+> readers.
 
-Inside of containers - unlikely. Inside of guests sure but thats not
-going to relevant to fanotify()
+I summarized your results in a tabular format.
 
-> the accessing process until acked), that's ok with me.  It makes
-> sense.  But then it's messy that neither offers a superset of the
-> other regarding which files and events are tracked.
+                   Throughput [KiB/s]
+             vanilla io-controller  dm-ioband
+randread        257        161          314
+randwrite        11         45           15
+seqread        5598       9556          631
 
-Agreed.
+On the result of io-controller, the throughput of seqread was
+increased but randread was decreased against vanilla. Did it perform as
+you expected? Was disktime consumed equally on each group according to
+the weight settings? Could you tell me your opinion what an
+io-controller should do when this kind of workload is applied?
 
+Thanks,
+Ryo Tsuruta
