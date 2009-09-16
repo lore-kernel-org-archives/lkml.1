@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbZIPQlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbZIPQni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759761AbZIPQlh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 12:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759818AbZIPQl1
+	id S1759904AbZIPQni (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 12:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759890AbZIPQnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 12:41:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51060 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759796AbZIPQlU (ORCPT
+	Wed, 16 Sep 2009 12:43:31 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40118 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759835AbZIPQnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 12:41:20 -0400
-Date: Wed, 16 Sep 2009 17:41:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Jonathan Corbet <corbet@lwn.net>, "Kay, Allen M" <allen.m.kay@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] enabling ACS P2P upstream forwarding
-Message-ID: <20090916174144.3282614c@lxorguk.ukuu.org.uk>
-In-Reply-To: <1253119153.11643.583.camel@desktop>
-References: <57C9024A16AD2D4C97DC78E552063EA3E05DC218@orsmsx505.amr.corp.intel.com>
-	<1253059937.11643.527.camel@desktop>
-	<20090916093446.5ea81b8a@bike.lwn.net>
-	<1253119153.11643.583.camel@desktop>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Sep 2009 12:43:09 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: linux-ia64@vger.kernel.org
+Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH v2 0/3] Linker script cleanup patches for ia64
+Date: Wed, 16 Sep 2009 12:42:41 -0400
+Message-Id: <1253119364-19359-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Shouldn't all patches be sent as plain text untouched? I don't think I
-> should necessarily need a specific email client to strip off some
-> characters..
+This is an updated version of the patch series I sent in late July
+cleaning up the ia64 architecture's linker scripts.  The only change is
+that it is rebased on top of Linus's current master.
 
-Plain text is 7bit (netascii). People have unicode names.
+This cross-architecture linker script cleanup project is in
+preparation for adding support for building the kernel with
+-ffunction-sections -fdata-sections, which is a prerequisite for
+Ksplice.
+
+	-Tim Abbott
+
+Nelson Elhage (2):
+  ia64: Use standard macros for page-aligned data.
+  ia64: Clean up linker script using standard macros.
+
+Tim Abbott (1):
+  ia64: Use .ref.text, not .text.init for start_ap.
+
+ arch/ia64/kernel/head.S        |    4 +-
+ arch/ia64/kernel/vmlinux.lds.S |  112 +++++-----------------------------------
+ 2 files changed, 15 insertions(+), 101 deletions(-)
+
