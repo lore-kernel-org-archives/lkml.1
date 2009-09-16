@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbZIPWfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbZIPWgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760269AbZIPWfW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 18:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757619AbZIPWc6
+	id S1760291AbZIPWgb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 18:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbZIPWci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 18:32:58 -0400
-Received: from kroah.org ([198.145.64.141]:40919 "EHLO coco.kroah.org"
+	Wed, 16 Sep 2009 18:32:38 -0400
+Received: from kroah.org ([198.145.64.141]:40922 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757572AbZIPWc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 18:32:29 -0400
+	id S1755185AbZIPWca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 18:32:30 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Sep 16 15:29:01 2009
-Message-Id: <20090916222901.250338017@mini.kroah.org>
+Message-Id: <20090916222901.411537914@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Sep 2009 15:28:23 -0700
+Date: Wed, 16 Sep 2009 15:28:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Bob Copeland <me@bobcopeland.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 04/24] ath5k: write PCU registers on initial reset
+       Roland McGrath <roland@redhat.com>, James Morris <jmorris@namei.org>
+Subject: [patch 05/24] binfmt_elf: fix PT_INTERP bss handling
 References: <20090916222819.244332644@mini.kroah.org>
-Content-Disposition: inline; filename=ath5k-write-pcu-registers-on-initial-reset.patch
+Content-Disposition: inline; filename=binfmt_elf-fix-pt_interp-bss-handling.patch
 In-Reply-To: <20090916222934.GA31846@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +29,87 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Bob Copeland <me@bobcopeland.com>
+From: Roland McGrath <roland@redhat.com>
 
-commit 3355443ad7601991affa5992b0d53870335af765 upstream.
+commit 9f0ab4a3f0fdb1ff404d150618ace2fa069bb2e1 upstream.
 
-"Ath5k: unify resets"
-introduced a regression into 2.6.28 where the PCU registers are never
-initialized, due to ath5k_reset() always passing true for change_channel.
-We subsequently program a lot of these registers but several may start
-in an unknown state.
+In fs/binfmt_elf.c, load_elf_interp() calls padzero() for .bss even if
+the PT_LOAD has no PROT_WRITE and no .bss.  This generates EFAULT.
 
-Reported-by: Forrest Zhang <forrest@hifulltech.com>
-Signed-off-by: Bob Copeland <me@bobcopeland.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Here is a small test case.  (Yes, there are other, useful PT_INTERP
+which have only .text and no .data/.bss.)
+
+	----- ptinterp.S
+	_start: .globl _start
+		 nop
+		 int3
+	-----
+	$ gcc -m32 -nostartfiles -nostdlib -o ptinterp ptinterp.S
+	$ gcc -m32 -Wl,--dynamic-linker=ptinterp -o hello hello.c
+	$ ./hello
+	Segmentation fault  # during execve() itself
+
+	After applying the patch:
+	$ ./hello
+	Trace trap  # user-mode execution after execve() finishes
+
+If the ELF headers are actually self-inconsistent, then dying is fine.
+But having no PROT_WRITE segment is perfectly normal and correct if
+there is no segment with p_memsz > p_filesz (i.e. bss).  John Reiser
+suggested checking for PROT_WRITE in the bss logic.  I think it makes
+most sense to simply apply the bss logic only when there is bss.
+
+This patch looks less trivial than it is due to some reindentation.
+It just moves the "if (last_bss > elf_bss) {" test up to include the
+partial-page bss logic as well as the more-pages bss logic.
+
+Reported-by: John Reiser <jreiser@bitwagon.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: James Morris <jmorris@namei.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath5k/base.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/binfmt_elf.c |   28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -2623,7 +2623,7 @@ ath5k_reset(struct ath5k_softc *sc, stru
- 		sc->curchan = chan;
- 		sc->curband = &sc->sbands[chan->band];
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -501,22 +501,22 @@ static unsigned long load_elf_interp(str
+ 		}
  	}
--	ret = ath5k_hw_reset(ah, sc->opmode, sc->curchan, true);
-+	ret = ath5k_hw_reset(ah, sc->opmode, sc->curchan, chan != NULL);
- 	if (ret) {
- 		ATH5K_ERR(sc, "can't reset hardware (%d)\n", ret);
- 		goto err;
+ 
+-	/*
+-	 * Now fill out the bss section.  First pad the last page up
+-	 * to the page boundary, and then perform a mmap to make sure
+-	 * that there are zero-mapped pages up to and including the 
+-	 * last bss page.
+-	 */
+-	if (padzero(elf_bss)) {
+-		error = -EFAULT;
+-		goto out_close;
+-	}
++	if (last_bss > elf_bss) {
++		/*
++		 * Now fill out the bss section.  First pad the last page up
++		 * to the page boundary, and then perform a mmap to make sure
++		 * that there are zero-mapped pages up to and including the
++		 * last bss page.
++		 */
++		if (padzero(elf_bss)) {
++			error = -EFAULT;
++			goto out_close;
++		}
+ 
+-	/* What we have mapped so far */
+-	elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
++		/* What we have mapped so far */
++		elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
+ 
+-	/* Map the last of the bss segment */
+-	if (last_bss > elf_bss) {
++		/* Map the last of the bss segment */
+ 		down_write(&current->mm->mmap_sem);
+ 		error = do_brk(elf_bss, last_bss - elf_bss);
+ 		up_write(&current->mm->mmap_sem);
 
 
