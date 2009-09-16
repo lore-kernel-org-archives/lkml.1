@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbZIPVET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbZIPVfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933565AbZIPVET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 17:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933511AbZIPVEM
+	id S1759969AbZIPVfV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 17:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZIPVfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 17:04:12 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:44925 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760083AbZIPVEL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 17:04:11 -0400
-X-IronPort-AV: E=Sophos;i="4.44,400,1249272000"; 
-   d="scan'208";a="4517741"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH] input/keyboard: add ADP5588 QWERTY I2C Keyboard Input device driver
-Date: Wed, 16 Sep 2009 17:07:34 -0400
-User-Agent: KMail/1.9.5
-CC: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       "Hennerich, Michael" <michael.hennerich@analog.com>,
-       "Bryan Wu" <cooloney@kernel.org>
-References: <1252966719-27557-1-git-send-email-vapier@gentoo.org> <20090915062050.GB10232@core.coreip.homeip.net> <8bd0f97a0909150419p1048bfe9j243fa30a0581b198@mail.gmail.com>
-In-Reply-To: <8bd0f97a0909150419p1048bfe9j243fa30a0581b198@mail.gmail.com>
+	Wed, 16 Sep 2009 17:35:17 -0400
+Received: from kroah.org ([198.145.64.141]:49507 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755386AbZIPVfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 17:35:16 -0400
+Date: Wed, 16 Sep 2009 14:09:56 -0700
+From: Greg KH <greg@kroah.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/48] 2.6.27.32-stable review
+Message-ID: <20090916210956.GB24567@kroah.com>
+References: <200909112223.n8BMMSHG002530@hera.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-ID: <200909161707.34804.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 16 Sep 2009 21:03:19.0669 (UTC) FILETIME=[1E5A5A50:01CA3711]
+In-Reply-To: <200909112223.n8BMMSHG002530@hera.kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 15 Sep 2009 07:19, Mike Frysinger pondered:
-> On Tue, Sep 15, 2009 at 02:20, Dmitry Torokhov wrote:
-> > On Mon, Sep 14, 2009 at 06:18:39PM -0400, Mike Frysinger wrote:
-> >> +static int __devexit adp5588_remove(struct i2c_client *client)
-> >> +{
-> >> +     struct adp5588_kpad *kpad = dev_get_drvdata(&client->dev);
-> >> +
-> >> +     adp5588_write(client, CFG, 0);
-> >> +     free_irq(client->irq, kpad);
-> >
-> > cancel_work_sync() is missing. Could you try the updated version below?
+On Sat, Sep 12, 2009 at 12:22:22AM +0200, Tilman Schmidt wrote:
+> [On holiday, answering from my nominally internet capable cellphone - please make allowances ...]
 > 
-> i dont think i have any adp5588 hardware.  Robin: do we have any in
-> Norwood?  otherwise, it'll have to wait for Michael to get back to
-> double check.
+> The stable patch claiming to correspond to Linus' tree patch
+> 56f7efe48d57dda9e59e23ab161c118271cce815 and merged in 2.6.27.sth
+> (eyact version not at hand) and 2.6.28.10 differs from the backported
+> patch I submitted for stable myself. It breaks the driver completely,
+> causing an oops and system malfunctions as soon as the device is
+> connected. (Sorry for not noticing the vital difference at the time.)
 
-I think Michael has the only hardware at the moment.
+No problem.
 
-He will be back on Monday.
+> The attached patch would fix the error by moving the code inswrted at
+> the wrong place by the broken backported patch,, to the correct place
+> where it went in the original patch. 
+
+I see no patch attached here :(
+
+> Alternativelyy, the broken backported could be reverted and my
+> original bacport merged instead, if you can still find it.
+
+I can not.
+
+> Sorry for lack of references as i don't have acces to my development
+> machine from here. Hope to have Cleared up the situation, anyway.
+
+Can you send me what you need applied to the latest 2.6.27-stable tree
+to fix this up so we can finally resolve this?
+
+thanks,
+
+greg k-h
