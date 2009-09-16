@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZIPIET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZIPIK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbZIPIET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 04:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbZIPIER
+	id S1755192AbZIPIK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 04:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbZIPIK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 04:04:17 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:52061 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755253AbZIPIEO (ORCPT
+	Wed, 16 Sep 2009 04:10:26 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59865 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754412AbZIPIKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 04:04:14 -0400
-Date: Wed, 16 Sep 2009 10:04:04 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org, mingo@elte.hu,
-       npiggin@suse.de, sachinp@in.ibm.com
-Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and S390
-Message-ID: <20090916080404.GC4870@osiris.boeblingen.de.ibm.com>
-References: <1253083059.5478.1.camel@penberg-laptop>
- <alpine.DEB.1.00.0909152351510.13366@chino.kir.corp.google.com>
- <1253084468.6749.27.camel@penberg-laptop>
+	Wed, 16 Sep 2009 04:10:24 -0400
+Message-ID: <4AB09D17.7040802@bk.jp.nec.com>
+Date: Wed, 16 Sep 2009 17:08:55 +0900
+From: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253084468.6749.27.camel@penberg-laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, paulus@samba.org,
+       systemtap@sources.redhat.com
+Subject: Re: [PATCH 0/2] tracing: Tracing integration - dynamic ftrace for
+ SystemTap
+References: <4AAF6724.9080201@bk.jp.nec.com>	 <1253009731.5506.39.camel@laptop>  <1253009974.5506.41.camel@laptop>	 <1253021324.20020.88.camel@gandalf.stny.rr.com> <1253021816.5506.78.camel@laptop>
+In-Reply-To: <1253021816.5506.78.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 10:01:08AM +0300, Pekka Enberg wrote:
-> On Wed, 16 Sep 2009, Pekka Enberg wrote:
-> > > The SLQB allocator is known to be broken on certain PowerPC and S390
-> > > configurations. Disable the allocator in Kconfig for those architectures
-> > > until the issues are resolved.
-
-Looks ok to me. I'll debug s390 when time permits.
-
-> > >  init/Kconfig |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/init/Kconfig b/init/Kconfig
-> > > index c0d8a47..aaeddeb 100644
-> > > --- a/init/Kconfig
-> > > +++ b/init/Kconfig
-> > > @@ -1033,6 +1033,7 @@ config SLUB
-> > >  
-> > >  config SLQB
-> > >  	bool "SLQB (Queued allocator)"
-> > > +	depends on !PPC && !S390
-> > >  	help
-> > >  	  SLQB is a proposed new slab allocator.
-> > >  
+Peter Zijlstra wrote:
+> On Tue, 2009-09-15 at 09:28 -0400, Steven Rostedt wrote:
+>> On Tue, 2009-09-15 at 12:19 +0200, Peter Zijlstra wrote:
+>>> On Tue, 2009-09-15 at 12:15 +0200, Peter Zijlstra wrote:
+>>>> On Tue, 2009-09-15 at 19:06 +0900, Atsushi Tsuji wrote:
+>>>>> The patches doesn't contain the performance counters integration,
+>>>>> since it is still in development. I think following implementations are
+>>>>> needed:
+>>>>> - add new type to perf_id (like PERF_TYPE_FTRACE)
+>>>>> - add event ids to struct dyn_ftrace
+>>>>> - add interfaces to reference event ids by user (via debugfs?)
+>>>>> - add probe function to count ftrace events (call do_perf_swcounter_event)
+>>>> That's long since been done,.. 
+>>> Or are you talking about the mcount thing? Simply expose the mcount hook
+>>> as a regular tracepoint and perf can already use it.
+>>>
 > 
-> On Tue, 2009-09-15 at 23:55 -0700, David Rientjes wrote:
-> > I think this should be (!PPC && !S390) || EXPERIMENTAL so that it can 
-> > still be enabled for debugging and development.
+>> I'm not sure what you mean by exposing the mcount hook as a tracepoint.
+>> Or you mean make it a special file in debug/tracing/events/ that lets
+>> you enable it as a profile trace?
 > 
-> Everybody enables EXPERIMENTAL so that seems pointless. Developers can
-> hack Kconfig locally, no?
+> Either make it a single tracepoint on which you can apply filters or
+> make it generate a tracepoint per mcount site, I don't really mind ;-)
+> 
+> If kprobes can live in the same space, then surely the function tracer
+> can too ;-)
 
-Exactly.
+Thank you for your comments.
+
+I understood that I need to make the mechanism to dynamically add tracepoints using
+a mcount hook. I'll try to make it.
+
+Thanks,
+Atsushi
