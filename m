@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759934AbZIPUSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbZIPUVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759934AbZIPUSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 16:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbZIPUR5
+	id S1759941AbZIPUVZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 16:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZIPUVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 16:17:57 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:54761 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754737AbZIPUR5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 16:17:57 -0400
-Date: Thu, 17 Sep 2009 01:47:49 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: svaidy@linux.vnet.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-Message-ID: <20090916201749.GA19107@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com> <1253016701.5506.73.camel@laptop> <20090916152820.GA12571@in.ibm.com> <1253115171.7180.1.camel@laptop> <20090916162459.GB12571@in.ibm.com> <1253118916.7180.6.camel@laptop> <20090916170314.GH15538@dirshya.in.ibm.com> <1253121755.7180.8.camel@laptop>
+	Wed, 16 Sep 2009 16:21:19 -0400
+Received: from h155.mvista.com ([63.81.120.155]:49710 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754400AbZIPUVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 16:21:19 -0400
+Message-ID: <4AB148B7.90306@ru.mvista.com>
+Date: Thu, 17 Sep 2009 00:21:11 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253121755.7180.8.camel@laptop>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Steve Chen <schen@mvista.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Felipe Contreras <felipe.contreras@gmail.com>,
+       Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
+       Marek Vasut <marek.vasut@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com>	<20090915103739.GA19519@elf.ucw.cz>	<1253017761.3273.117.camel@linux-1lbu>	<200909151541.08852.marek.vasut@gmail.com>	<1253032210.3273.128.camel@linux-1lbu>	<94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com>	<1253043875.3273.131.camel@linux-1lbu>	<m3k4zzdimy.fsf@intrepid.localdomain>	<1253053609.3273.139.camel@linux-1lbu>	<m33a6nddvd.fsf@intrepid.localdomain>	<1253089566.3273.152.camel@linux-1lbu>	<m3ljkfoywm.fsf@intrepid.localdomain> <1253112555.3273.164.camel@linux-1lbu>
+In-Reply-To: <1253112555.3273.164.camel@linux-1lbu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 07:22:35PM +0200, Peter Zijlstra wrote:
-> On Wed, 2009-09-16 at 22:33 +0530, Vaidyanathan Srinivasan wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-16 18:35:16]:
-> > 
-> > > Now if you were to try and online the cpus in the guest, it'd fail
-> > > because the cpus aren't backed anymore, and the hot-plug simply
-> > > times-out and fails.
-> > > 
-> > > And we're still good, right?
-> > 
-> > The requirement differ here.  If we had offlined 2 vCPUs for the
-> > purpose of system reconfiguration, the expected behavior with offline
-> > interface will work right.  However the proposed cede interface is
-> > needed when we want them to temporarily go away but still come back
-> > when we do an online.  We want the online to always succeed since the
-> > backing physical resources are not relinquished.  The proposed
-> > interface facilitates offline without relinquishing the physical
-> > resources assigned to LPARs.
-> 
-> Then make that the platform default and leave the lpar management to
-> whatever pokes at the lpar?
+Hello.
 
-That could have worked - however lpar management already uses
-the same sysfs interface to poke. The current semantics make the lpar 
-vcpu deconfig state the platform default assuming that it will be used for
-lpar management. The only clean way to do this without breaking lpar
-management stuff is to add another state - "inactive" and retain backward
-compatibility.
+Steve Chen wrote:
 
-Thanks
-Dipankar
+>>> +config OLD_CPU_DELAY
+>>> +	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
+>>> +	bool "Accurate delays for some older CPUs"
+>>> +	def_bool n
+>>> +	help
+>>> +	  Try enable this if observing longer than expected delays and need
+>>> +	  more accuracy.  May cause instability in some CPUs.
+>>> +
+>>>       
+>> There is still this uncertain "accurate" in the text. Why don't just
+>>
+>> +	bool "Different delay() code for some older CPUs"
+>>     
+>
+> Sounds good.  I also update text under help to better quantify
+> "accuracy".  Updated patch below.  Separately, as Russel pointed out,
+> this should only be done by experienced people, so we even bother with
+> this patch since the only people should touch this are the people who
+> knows all the details.
+>
+> Document #if 0 code block in delay.S and make it selectable for compile.
+>
+> Signed-off-by: Steve Chen <schen@mvista.com>
+>
+> ---
+>
+>  arch/arm/Kconfig     |    8 ++++++++
+>  arch/arm/lib/delay.S |    2 +-
+>  2 files changed, 9 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index aef63c8..ca8d535 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -813,6 +813,14 @@ config ARM_ERRATA_460075
+>  	  ACTLR register. Note that setting specific bits in the ACTLR
+> register
+>  	  may not be available in non-secure mode.
+>  
+> +config OLD_CPU_DELAY
+> +	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
+> +	bool "Different delay() code for some older CPUs"
+> +	def_bool n
+> +	help
+> +	  Try enable this if observing longer than expected delays.  This code
+>   
+
+   Only "enabling"... ;-)
+
+WBR, Sergei
+
+
