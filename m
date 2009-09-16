@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZIPLas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbZIPLlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbZIPLas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 07:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZIPLar
+	id S1755794AbZIPLlI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 07:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZIPLlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 07:30:47 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:57348 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbZIPLaq (ORCPT
+	Wed, 16 Sep 2009 07:41:08 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:3792 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752260AbZIPLlH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 07:30:46 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: fanotify as syscalls
-Date: Wed, 16 Sep 2009 13:30:26 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-9-generic; KDE/4.3.1; x86_64; ; )
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, Jamie Lokier <jamie@shareable.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org,
-       torvalds@linux-foundation.org
-References: <20090911.114620.260824240.davem@davemloft.net> <20090915201620.GB32192@ioremap.net> <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 16 Sep 2009 07:41:07 -0400
+X-Trace: 259367232/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.7.143/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.7.143
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAOdrsEpPRQeP/2dsb2JhbACBU9wfhBcF
+X-IronPort-AV: E=Sophos;i="4.44,397,1249254000"; 
+   d="scan'208";a="259367232"
+Date: Wed, 16 Sep 2009 12:40:23 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
+       Minchan Kim <minchan.kim@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 1/4] mm: m(un)lock avoid ZERO_PAGE
+In-Reply-To: <20090916093506.GB1993@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0909161226500.12659@sister.anvils>
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
+ <Pine.LNX.4.64.0909152127240.22199@sister.anvils>
+ <Pine.LNX.4.64.0909152130260.22199@sister.anvils> <20090916093506.GB1993@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909161330.26815.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+boMJfX4Gj69FYtYjkQ2pMumU627LFdO/Fwsr
- 9FZs2g1o99se1sTcHjDNDZrMv58PSygXDroguQv/O2cYuQqXa2
- ku0+JEuaoVbhUu4jN6lsQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 September 2009, Eric Paris wrote:
-> fanotify_modify_mark_at() --- like inotify_add_watch and rm_watch
-> fanotify_modify_mark_fd() --- same but with an fd instead of a path
+On Wed, 16 Sep 2009, Mel Gorman wrote:
+> On Tue, Sep 15, 2009 at 09:31:49PM +0100, Hugh Dickins wrote:
+> > 
+> > And when munlocking, it turns out that FOLL_DUMP coincidentally does
+> > what's needed to avoid all updates to ZERO_PAGE, so use that here also.
+...
+> >  	for (addr = start; addr < end; addr += PAGE_SIZE) {
+> > -		struct page *page = follow_page(vma, addr, FOLL_GET);
+> > -		if (page) {
+> > +		struct page *page;
+> > +		/*
+> > +		 * Although FOLL_DUMP is intended for get_dump_page(),
+> > +		 * it just so happens that its special treatment of the
+> > +		 * ZERO_PAGE (returning an error instead of doing get_page)
+> > +		 * suits munlock very well (and if somehow an abnormal page
+> > +		 * has sneaked into the range, we won't oops here: great).
+> > +		 */
+> > +		page = follow_page(vma, addr, FOLL_GET | FOLL_DUMP);
+> 
+> Ouch, now I get your depraved comment :) . This will be a tricky rule to
+> remember in a years time, wouldn't it?
 
-I think these two can be merged into one without adding complexity,
-in the same way that sys_utimensat can take a file descriptor or
-a path or both.
+I rely more upon git and grep than memory; I hope others do too.
+(And that's partly why I put "get_dump_page" into the comment line.)
 
-> fanotify_response() --- userspace tells the kernel what to do if requested/allowed
->    (could probably be done using write() to the fanotify fd)
-> fanotify_exclude() --- a horrid syscall which might be better as an ioctl since it isn't strongly typed....
+> Functionally, the patch seems fine and the avoidance of lock_page() is
+> nice so.
+> 
+> Reviewed-by: Mel Gorman <mel@csn.ul.ie>
 
-Please don't use an ioctl here. While ioctl is fine for character devices
-and sort of fine for sockets, I think it would be very bad style to use
-it on file descriptors that you get back from specialized syscalls like
-fanotify_init. Do one or the other, but do it consistently.
+Thanks.
 
-Why is it not strongly typed anyway? Something like
+> 
+> But, as FOLL_DUMP applies to more than core dumping, can it be renamed
+> in another follow-on patch?  The fundamental underlying "thing" it does
+> is to error instead of faulting the zero page so FOLL_NO_FAULT_ZEROPAGE,
+> FOLL_ERRORZERO, FOLL_NOZERO etc? A name like that would simplify the comments
+> as FOLL_DUMP would no longer just be a desirable side-effect.
 
-int fanotify_ignore_sb(int fanotify_fd, unsigned int flag,
-                       long f_type, fsid_t f_fsid);
+At this moment, particularly after the years of FOLL_ANON confusion,
+I feel pretty strongly that this flag is there for coredumping; and
+it's just a happy accident that it happens also to be useful for munlock.
+And if their needs diverge later, FOLL_DUMP will do whatever dumping
+wants, and FOLL_MUNLOCK or something with a longer name will do
+whatever munlocking wants.
 
-would be type safe, although I think it would be better to only handle
-one of the two cases. Can you think of a case that you can't handle if
-you have to decide between them and only do one interface (f_type or fsid)?
+I suspect that if I could think of a really snappy name for the flag,
+that didn't just send us away to study the source to see what it
+really does, I'd be glad to change to that.  But at the moment,
+I'm happier sticking with FOLL_DUMP myself.
 
-	Arnd <><
+Hugh
