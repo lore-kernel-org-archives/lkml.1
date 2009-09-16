@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZIPAlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbZIPAjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZIPAlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 20:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZIPAlO
+	id S1754320AbZIPAjo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 20:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZIPAji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 20:41:14 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53878 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751838AbZIPAlN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 20:41:13 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 16 Sep 2009 09:39:06 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 15 Sep 2009 20:39:38 -0400
+Received: from mga14.intel.com ([143.182.124.37]:1990 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751003AbZIPAjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 20:39:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,393,1249282800"; 
+   d="scan'208";a="188071153"
+Date: Wed, 16 Sep 2009 08:39:23 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
 To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
        Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH 0/3] /proc/kmem cleanups and hwpoison bits
-Message-Id: <20090916093906.8bef9bba.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <20090916003923.GA7562@localhost>
+References: <20090915021851.168285585@intel.com> <20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com> <20090915082200.GA2588@localhost> <Pine.LNX.4.64.0909151057020.26095@sister.anvils>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0909151057020.26095@sister.anvils>
-References: <20090915021851.168285585@intel.com>
-	<20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090915082200.GA2588@localhost>
-	<Pine.LNX.4.64.0909151057020.26095@sister.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 11:16:36 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
- 
+Hugh,
+
+On Tue, Sep 15, 2009 at 06:16:36PM +0800, Hugh Dickins wrote:
 > Sorry guys, I'm picking this mail pretty much at random
 > as something to reply to.
 > 
@@ -55,27 +52,19 @@ Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
 > consider submitting, but it _might_ contain something useful for you
 > to factor into your own efforts.
 > 
-yes. thank you. very interesting.
-
 > Sorry for chucking it over the wall to you in this way, but I guess
 > that's better than just sitting quietly on it for a few more years.
-> 
-Hmm..Hmm..
 
-Then, concept of this patch is
+It's good to see a totally different approach. Although I'm not sure
+if it provides equal functionality or error handling, it does amazed
+me by rewriting read_kmem/write_kmem in such short code (without any
+supporting functions!).
 
-  - just use copy_from/to_user()
-  - avoid unnecessary get_user_pages().
+It looks that your ENXIO makes more sense than EFAULT we used for
+nonexistent address :)
 
-Ah....yes,
-Because /dev/kmem accesses a page per iteration, new vread/vwrite
-which can handle memory holes may be overkill ;)
-And unlike /proc/kcore,  /dev/kmem can return -ENXIO  when the caller
-touches memory hole. 
-
-Very impressive. Thank you.
--Kame
-
+Thanks,
+Fengguang
 
 > Certainly-Not-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 > ---
@@ -412,5 +401,3 @@ Very impressive. Thank you.
 >  
 >  	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
 >  		retval = locks_mandatory_area(
-> 
-
