@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbZIPStj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbZIPSuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755466AbZIPStj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 14:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZIPStd
+	id S1755758AbZIPSuP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 14:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbZIPSuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 14:49:33 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2212 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754812AbZIPStd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 14:49:33 -0400
-Date: Wed, 16 Sep 2009 14:47:49 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH 20/23] io-controller: Per cgroup request descriptor
-	support
-Message-ID: <20090916184749.GF5221@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-21-git-send-email-vgoyal@redhat.com> <e98e18940909141133m5186b780r3215ce15141e4f87@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e98e18940909141133m5186b780r3215ce15141e4f87@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 16 Sep 2009 14:50:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46462 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754420AbZIPSuL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 14:50:11 -0400
+Subject: Re: [tip:sched/core] sched: Disable wakeup balancing
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-182a85f8a119c789610a9d464f4129ded9f3c107@git.kernel.org>
+References: <new-submission>
+	 <tip-182a85f8a119c789610a9d464f4129ded9f3c107@git.kernel.org>
+Content-Type: text/plain
+Date: Wed, 16 Sep 2009 20:50:00 +0200
+Message-Id: <1253127000.7166.11.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 11:33:37AM -0700, Nauman Rafique wrote:
-
-[..]
-> >  struct request *blk_get_request(struct request_queue *q, int rw, gfp_t gfp_mask)
-> >  {
-> >        struct request *rq;
-> > +       struct request_list *rl;
-> >
-> >        BUG_ON(rw != READ && rw != WRITE);
-> >
-> >        spin_lock_irq(q->queue_lock);
-> > +       rl = blk_get_request_list(q, NULL);
-> >        if (gfp_mask & __GFP_WAIT) {
-> >                rq = get_request_wait(q, rw, NULL);
-> >        } else {
-> > -               rq = get_request(q, rw, NULL, gfp_mask);
-> > +               rq = get_request(q, rw, NULL, gfp_mask, rl, NULL);
-> >                if (!rq)
-> >                        spin_unlock_irq(q->queue_lock);
-> >        }
-> > @@ -1085,12 +1269,13 @@ void __blk_put_request(struct request_queue *q, struct request *req)
-> >        if (req->cmd_flags & REQ_ALLOCED) {
-> >                int is_sync = rq_is_sync(req) != 0;
-> >                int priv = req->cmd_flags & REQ_ELVPRIV;
-> > +               struct request_list *rl = rq_rl(q, req);
-> >
-> >                BUG_ON(!list_empty(&req->queuelist));
-> >                BUG_ON(!hlist_unhashed(&req->hash));
-> >
-> >                blk_free_request(q, req);
-> > -               freed_request(q, is_sync, priv);
-> > +               freed_request(q, is_sync, priv, rl);
+On Wed, 2009-09-16 at 15:10 +0000, tip-bot for Peter Zijlstra wrote:
+> Commit-ID:  182a85f8a119c789610a9d464f4129ded9f3c107
+> Gitweb:     http://git.kernel.org/tip/182a85f8a119c789610a9d464f4129ded9f3c107
+> Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+> AuthorDate: Wed, 16 Sep 2009 13:24:49 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 16 Sep 2009 16:44:33 +0200
 > 
-> We have a potential memory bug here. freed_request should be called
-> before blk_free_request as blk_free_request might result in release of
-> cgroup, and request_list. Calling freed_request after blk_free_request
-> would result in operations on freed memory.
+> sched: Disable wakeup balancing
 > 
+> Sysbench thinks SD_BALANCE_WAKE is too agressive and kbuild doesn't
+> really mind too much, SD_BALANCE_NEWIDLE picks up most of the
+> slack.
+> 
+> On a dual socket, quad core, dual thread nehalem system:
+> 
+> sysbench (--num_threads=16):
+> 
+>  SD_BALANCE_WAKE-: 13982 tx/s
+>  SD_BALANCE_WAKE+: 15688 tx/s
 
-Good point Nauman. freeing rq will drop reference on the io queue. Which
-in turn will drop reference on io group and if associated cgroup is
-already gone, then io group will be freed hence request list pointer is
-no more valid and any operation on that is bad.
+I got the + and - confused it seems.. sysbench is faster without
+BALANCE_WAKE.
 
-So either we can take a reference on the queue, call free_request() and
-then drop the reference or we can call freed_request() before
-blk_free_request(). Calling freed_request() before blk_free_request()
-sounds better to me. The only thing is that this function name and other
-dependent function names should now be freeing_request() instead of
-freed_request(). :-)
+> kbuild (-j16):
+> 
+>  SD_BALANCE_WAKE-: 47.648295846  seconds time elapsed   ( +-   0.312% )
+>  SD_BALANCE_WAKE+: 47.608607360  seconds time elapsed   ( +-   0.026% )
 
-Will move freed_request() before blk_free_request() in next version.
 
-Thanks
-Vivek
