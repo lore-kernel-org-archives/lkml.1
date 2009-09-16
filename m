@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbZIPRW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZIPRWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbZIPRW4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 13:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbZIPRWz
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 13:22:55 -0400
-Received: from casper.infradead.org ([85.118.1.10]:52092 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756892AbZIPRWt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1758272AbZIPRWt (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 16 Sep 2009 13:22:49 -0400
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-Cc: dipankar@in.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-In-Reply-To: <20090916170314.GH15538@dirshya.in.ibm.com>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	 <1253016701.5506.73.camel@laptop> <20090916152820.GA12571@in.ibm.com>
-	 <1253115171.7180.1.camel@laptop> <20090916162459.GB12571@in.ibm.com>
-	 <1253118916.7180.6.camel@laptop>
-	 <20090916170314.GH15538@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 16 Sep 2009 19:22:35 +0200
-Message-Id: <1253121755.7180.8.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZIPRWs
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 16 Sep 2009 13:22:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57218 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753732AbZIPRWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 13:22:47 -0400
+From: Jan Kara <jack@suse.cz>
+To: jens.axboe@oracle.com
+Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: [PATCH] fs: Fix busyloop in wb_writeback()
+Date: Wed, 16 Sep 2009 19:22:48 +0200
+Message-Id: <1253121768-20673-1-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-16 at 22:33 +0530, Vaidyanathan Srinivasan wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-16 18:35:16]:
-> 
-> > On Wed, 2009-09-16 at 21:54 +0530, Dipankar Sarma wrote:
-> > 
-> > > No, for this specific case, latency isn't an issue. The issue is -
-> > > how do we cede unused vcpus to hypervisor for better energy management ?
-> > > Yes, it can be done by a hypervisor manager telling the kernel to
-> > > offline and make a bunch of vcpus "inactive". It does have to choose
-> > > offline (release vcpu) vs. inactive (cede but guranteed if needed).
-> > > The problem is that long ago we exported a lot of hotplug stuff to
-> > > userspace through the sysfs interface and we cannot do something
-> > > inside the kernel without keeping the sysfs stuff consistent.
-> > > This seems like a sane way to do that without undoing all the
-> > > virtual cpu hotplug infrastructure in different supporting archs.
-> > 
-> > I'm still not getting it..
-> > 
-> > Suppose we have some guest, it booted with 4 cpus.
-> > 
-> > We then offline 2 of them.
-> > 
-> > Apparently this LPAR binds guest cpus to physical cpus?
-> > So we use a hypervisor interface to reclaim these 2 offlined cpus and
-> > re-assign them to some other guest.
-> > 
-> > So far so good, right?
-> > 
-> > Now if you were to try and online the cpus in the guest, it'd fail
-> > because the cpus aren't backed anymore, and the hot-plug simply
-> > times-out and fails.
-> > 
-> > And we're still good, right?
-> 
-> The requirement differ here.  If we had offlined 2 vCPUs for the
-> purpose of system reconfiguration, the expected behavior with offline
-> interface will work right.  However the proposed cede interface is
-> needed when we want them to temporarily go away but still come back
-> when we do an online.  We want the online to always succeed since the
-> backing physical resources are not relinquished.  The proposed
-> interface facilitates offline without relinquishing the physical
-> resources assigned to LPARs.
+If all inodes are under writeback (e.g. in case when there's only one inode
+with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
+to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
+waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
+write anything.
 
-Then make that the platform default and leave the lpar management to
-whatever pokes at the lpar?
+CC: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/fs-writeback.c |   19 ++++++++++++++++++-
+ 1 files changed, 18 insertions(+), 1 deletions(-)
+
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 8e1e5e1..c59d673 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -706,6 +706,7 @@ static long wb_writeback(struct bdi_writeback *wb,
+ 	};
+ 	unsigned long oldest_jif;
+ 	long wrote = 0;
++	struct inode *inode;
+ 
+ 	if (wbc.for_kupdate) {
+ 		wbc.older_than_this = &oldest_jif;
+@@ -747,8 +748,24 @@ static long wb_writeback(struct bdi_writeback *wb,
+ 		 * If we ran out of stuff to write, bail unless more_io got set
+ 		 */
+ 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+-			if (wbc.more_io && !wbc.for_kupdate)
++			if (wbc.more_io && !wbc.for_kupdate) {
++				if (wbc.nr_to_write < MAX_WRITEBACK_PAGES)
++					continue;
++				/*
++				 * Nothing written. Wait for some inode to
++				 * become available for writeback. Otherwise
++				 * we'll just busyloop.
++				 */
++				spin_lock(&inode_lock);
++				if (!list_empty(&wb->b_more_io))  {
++					inode = list_entry(
++							wb->b_more_io.prev,
++							struct inode, i_list);
++					inode_wait_for_writeback(inode);
++				}
++				spin_unlock(&inode_lock);
+ 				continue;
++			}
+ 			break;
+ 		}
+ 	}
+-- 
+1.6.0.2
 
