@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbZIPJTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbZIPJTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbZIPJTQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 05:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbZIPJTQ
+	id S1758263AbZIPJTh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 05:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758249AbZIPJTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 05:19:16 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:41661 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbZIPJTP (ORCPT
+	Wed, 16 Sep 2009 05:19:36 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:56781 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758063AbZIPJTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 05:19:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FNg5fJeNqJSPQaYfcrkWWZm1Yu+DSXlXMNEHYZDPU+30/TIxv6rCnE5m26IezGydKJ
-         01/1I5y2mjH0Q4gLGnWaucZHcRiyhEn0KpL7fCaGilxMCnLg8YyGefEclwWBzgbc6kn9
-         MZsMVzrelEoMXFgbezz4Uwk4Fm1xlZzY6z5c0=
-Date: Wed, 16 Sep 2009 11:19:11 +0200
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Cc: "Graham, David" <david.graham@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: [E1000-devel] [BUG 2.6.30+] e100 sometimes causes oops during
-	resume
-Message-ID: <20090916091911.GA1496@bizet.domek.prywatny>
-References: <20090915120538.GA26806@bizet.domek.prywatny> <13830B75AD5A2F42848F92269B11996F5BF592C3@orsmsx509.amr.corp.intel.com> <20090916014448.GA1070@bizet.domek.prywatny>
+	Wed, 16 Sep 2009 05:19:36 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [GIT PULL] DRBD for 2.6.32
+Date: Wed, 16 Sep 2009 11:19:35 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+References: <200909151645.14256.philipp.reisner@linbit.com> <20090916094421.DB8F.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090916094421.DB8F.A69D9226@jp.fujitsu.com>
+X-OTRS-FollowUp-SenderType: agent
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090916014448.GA1070@bizet.domek.prywatny>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200909161119.36565.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 03:44:48AM +0200, Karol Lewandowski wrote:
-> On Tue, Sep 15, 2009 at 03:54:20PM -0700, Graham, David wrote:
-> 
-> > A v2.6.30..v2.6.31 diff shows that this is probably exposed by
-> > Rafael Wysocki's commit 6905b1f1, which now allows systems with e100
-> > to sleep. If I understand correctly, it looks like these systems
-> > simply couldn't sleep before. Is that right Rafael?.
-> 
-> Probably true, but that wasn't the case for my (I guess
-> ACPI-controlled) system.
-> 
-> 
-> > I don't think its likely that the commit is a direct cause of the
-> > problem, but that the suspend/resume cycle now allows us to see
-> > another issue.
-> 
-> From my (very limited) understanding commit message is at least in
-> conflict with patch body.
+On Wednesday 16 September 2009 02:46:34 KOSAKI Motohiro wrote:
+> > Hi Linus,
+> >
+> > Please pull
+> > git://git.drbd.org/linux-2.6-drbd.git drbd
+> >
+> > DRBD is a shared-nothing, replicated block device. It is designed to
+> > serve as a building block for high availability clusters and
+> > in this context, is a "drop-in" replacement for shared storage.
+> >
+> > It has been discussed and reviewed on the list since March,
+> > and Andrew has asked us to send a pull request for 2.6.32-rc1.
+> >
+> > Stephen added us to linux-next in July, and our most recent
+> > build failure against Jens' 2.6.32-rc1 updates was ironed out this
+> > morning. So it should be in fairly good shape.
+>
+> I'm sorry for my delayed pointing out.
+> if anyone add new feature, its Kconfig default parameter should be N.
+>
+> but AFAIK, DRBD use M. I hope you change it. At least, typical desktop user
+> don't use DRBD.
+>
+> Thanks.
 
-No, it isn't, I must just go to bed earlier than 4AM. :/
+Ok. I have changed the default to N.
 
-Sorry for noise.
+-Phil
+
