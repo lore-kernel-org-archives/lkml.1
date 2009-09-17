@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZIQA2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbZIQAaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbZIQA2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 20:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZIQA2S
+	id S1753664AbZIQAaL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 20:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZIQAaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 20:28:18 -0400
-Received: from mail-ew0-f227.google.com ([209.85.219.227]:37555 "EHLO
+	Wed, 16 Sep 2009 20:30:08 -0400
+Received: from mail-ew0-f227.google.com ([209.85.219.227]:64751 "EHLO
 	mail-ew0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbZIQA2R convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752251AbZIQAaH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 20:28:17 -0400
+	Wed, 16 Sep 2009 20:30:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=TVuE+bF5VJbShokKV8/VDhDvH4MSbqtzvlRa2N+IWHoYVh5tsJw7378UGAPmC9fBGC
-         Ffqbd3G6ztY2gY8hMpGSYQY9idp0bxPeOS4ih/g8t9xl27u7f7ukz2D++cl3jdHBh+T0
-         +QcSk4ZjSWgv4KClBhsvYZ8J3EtmuORTL5OYU=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=VRmOuXM082orEFwqarfjSb4rdHVgj2rKecWD6yqb1OuggI1Q2cId8qUGFaQzt1dyEO
+         ZPD9t8Hm1mn9g5d1HPFeyWXYfwxw4Jo3XmbBFZTMWayPgEJTh/AWk/cmkC9LPSPifu0p
+         L2Y0JhOLUDqExbTG7W1YykMJWLdJ8H7E6+MDw=
 MIME-Version: 1.0
-In-Reply-To: <024601ca372d$09ad9fb0$1d08df10$@com>
-References: <023c01ca3724$9f90fcb0$deb2f610$@com> <alpine.DEB.2.00.0909161656150.3124@makko.or.mcafeemobile.com> 
-	<024601ca372d$09ad9fb0$1d08df10$@com>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Wed, 16 Sep 2009 20:28:00 -0400
-Message-ID: <3e8340490909161728n5dc5f90gc0ab261bd5cec33e@mail.gmail.com>
-Subject: Re: epoll and closed file descriptors
-To: Gilad Benjamini <gilad@altornetworks.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200908201031.00256.lfpg.dev@gmail.com>
+References: <d12c1890908101630m2a4d0d68yf6dc1e0e0e4f4314@mail.gmail.com>
+	 <d12c1890908191446k5497d9c8t2f355074eb7ca4ff@mail.gmail.com>
+	 <m1k50zi4is.fsf@fess.ebiederm.org>
+	 <200908201031.00256.lfpg.dev@gmail.com>
+Date: Wed, 16 Sep 2009 21:30:09 -0300
+Message-ID: <d12c1890909161730y663fe4f3s5b7e764a53d971ba@mail.gmail.com>
+Subject: Re: Flooded by do_IRQ: 0.91 No irq handler for vector
+From: Luis Fernando Planella Gonzalez <lfpg.dev@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 8:23 PM, Gilad Benjamini
-<gilad@altornetworks.com> wrote:
-> Davide wrote:
->> On Wed, 16 Sep 2009, Gilad Benjamini wrote:
->>
->> > I am running repeatedly into a scenario  where epoll notifies
->> userland of
->> > events on a closed file descriptor.
->> > I am running a single thread application, on a single CPU machine so
->> > multiple threads isn't the issue.
->> >
->> > A sample set of events that I have seen
->> > - File descriptor (13) for a socket is closed
->> > - epoll_wait returns with no events.
->> > - Several epoll related calls happen
->> > - More than 20 seconds after the "close", epoll_wait finds an event
->> on fd 13
->> > with EPOLLIN|EPOLLERR|EPOLLHUP.
->> > - epoll_wait continues to report this event
->>
->> Epoll removes the fd from its container, when the last instance of the
->> underlying kernel file pointer is released (or when you explicitly
->> remove it with epoll_ctl(EPOLL_CTL_DEL)).
->> If you continue to get the event, it means that someone else has an
->> instance of the socket (that, looking at the events, saw a shutdown)
->> open,
->> by hence keeping the kernel object alive.
->> If you don't want to see the events, just remove the socket from the
->> epoll
->> set before closing.
->> Or, you remove the socket the first time you see an EPOLLHUP.
->>
->>
->>
->> - Davide
->
-> I would, but epoll is preventing me from doing so.
-> Early in sys_epoll_ctl there are these lines
->
->  file = fget(epfd);
->  if (!file)
->    goto error_return;
->
-> Leaving me in a kind of dead lock
+Just to point out that I've upgraded to 2.6.31.0 and the bug is still there...
+Just in case the problem is with the VIA board, is there anything
+which can be done to try to debug?
+--
+Luis Fernando Planella Gonzalez
 
-You could dup() the file descriptor before handing it to curl, and use
-your own copy for epoll operations.
+>> > Well, as I've installed sidux, it has upgraded the kernel to 2.6.30.5,
+>> > but the error is the same.
+>> > I've also tried:
+>> > * noapic: the message changes to do_IRQ: 0.55 No irq handler for
+>> > vector (irq -1), but then the X server fails to start
+>>
+>> Interesting...
+>>
+>> > * noacpi: have no effect on the error message.
+>>
+>> There is something very strange about your box.  Possibly it is
+>> just VIA interrupt controller madness.  VIA has been known
+>> to interrupt interrupt related fields in creative ways, and
+>> we may be on the edge of another of these.
+> Probably. My mother board is an Asus P5VD2-X, which is based on VIA PT890:
+> http://br.asus.com/products.aspx?l1=3&l2=11&l3=346&l4=0&model=1362&modelmenu=1 (sorry, link in portuguese)
+>
+>>
+>> I expect it is going to come down to writing a patch to dump out
+>> all of the interrupt routing state on the system and to see what
+>> is generating the totally unexpected interrupt and then to work our
+>> way backwards from there.
+>>
+>> The fact that the vector number is changing indicates that it is
+>> a programmable something that is causing the problem.
+>>
+>> I'm drawing a blank on which patch to write up.
+>>
+>> Eric
+>>
+> Thanks again.
+>
+> --
+> Luis Fernando Planella Gonzalez
+>
