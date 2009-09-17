@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZIQLpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757092AbZIQLww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbZIQLpm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 07:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756868AbZIQLpl
+	id S1757092AbZIQLww (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 07:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZIQLww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 07:45:41 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:60600 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756829AbZIQLpk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 07:45:40 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Caveh Jalali <ecaveh@gmail.com>
-Subject: Re: [patch] Makefile: can't build modules outside the kernel tree if it was built using O=
-Date: Thu, 17 Sep 2009 13:45:30 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-9-generic; KDE/4.3.1; x86_64; ; )
-Cc: sam@ravnborg.org, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com>
-In-Reply-To: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909171345.30988.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+WV7YiTeFIXFc5903MiEKw7FdctsKtdJTFp6B
- a+iVwQbYQAPg0DdsvjlN+Rcs0j8AXn6FCwFm8jN4cXPoy1/1sY
- ovwGVmhksT6phrCUqoGmA==
+	Thu, 17 Sep 2009 07:52:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45655 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752470AbZIQLwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 07:52:51 -0400
+Date: Thu, 17 Sep 2009 13:52:52 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Sachin Sant <sachinp@in.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, heiko.carstens@de.ibm.com, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and S390
+Message-ID: <20090917115252.GO18404@wotan.suse.de>
+References: <1253083059.5478.1.camel@penberg-laptop> <20090917100841.GF13002@csn.ul.ie> <1253183365.4975.20.camel@penberg-laptop> <20090917105707.GA7205@csn.ul.ie> <4AB21C3D.2080202@in.ibm.com> <20090917113837.GK18404@wotan.suse.de> <84144f020909170443y5f8c3c8fo7d2a4163e636f368@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020909170443y5f8c3c8fo7d2a4163e636f368@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 September 2009, Caveh Jalali wrote:
-
-> when the platform specific include directories were shuffled around
-> without updating the
-> top level Makefile.  however, i think this FAIL is generic, and not
-> limited to powerpc.
-> here's a patch to the top level Makefile to teach it about the shuffled files:
+On Thu, Sep 17, 2009 at 02:43:38PM +0300, Pekka Enberg wrote:
+> Hi Nick,
 > 
+> Mel Gorman wrote:
+> >> >I have access to a ppc machine but not necessarily one with a memoryless
+> >> >nodes
+> >> >that can reproduce this problem.
+> >> >
+> >> >Assuming Sachin is the reporter and we are in the same company, maybe I
+> >> >have access to the machine. Sachin, can you mail me privately what this
+> >> >machine is called and lets see can I get some time on that machine? By
+> >> >any chance, was this bisected or did it just show up when SLQB became
+> >> >the default?
 > 
-> --- /local/caveh/linux/linux-2.6.31/Makefile    2009-09-09
-> 15:13:59.000000000 -0700
-> +++ Makefile    2009-09-16 12:23:05.000000000 -0700
-> @@ -958,9 +958,9 @@ ifneq ($(KBUILD_SRC),)
->                 echo "  in the '$(srctree)' directory.";\
->                 /bin/false; \
->         fi;
-> -       $(Q)if [ ! -d include2 ]; then                                  \
-> -           mkdir -p include2;                                          \
-> -           ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;     \
-> +       $(Q)if [ ! -d include2 ]; then                                   \
-> +           mkdir -p include2;                                           \
-> +           ln -fsn $(srctree)/arch/$(SRCARCH)/include/asm include2/asm; \
->         fi
->  endif
+> On Thu, Sep 17, 2009 at 04:53:41PM +0530, Sachin Sant wrote:
+> >> Have sent you the access details for the machine. This bug showed
+> >> up when SLQB was enabled as default in linux-next
+> 
+> On Thu, Sep 17, 2009 at 2:38 PM, Nick Piggin <npiggin@suse.de> wrote:
+> > Maybe it will be better to hold off merging until this is
+> > debugged then? If it is merged as a non-default option, then
+> > I can't see it being a huge issue to merge it a bit after the
+> > window? It doesn't touch anything else...
+> 
+> Me sending anything but bug fixes to Linus after the merge window is
+> closed...? That's one scary thought!
 
-I think we should no longer have the include2 directory at all with new kernels.
+Well, I don't know if it is much different than merging with known
+bugs and expecting to resolve them. Maybe it circumvents the
+_letter_ of the merge window law, but in spirit it is probably
+nicer to merge after fixing the bug :)
 
-LINUXINCLUDE already contains the right path in theory:
-
-LINUXINCLUDE    := -Iinclude \
-                   $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
-                   -I$(srctree)/arch/$(hdr-arch)/include               \
-                   -include include/linux/autoconf.h
-
-I'm not sure what goes wrong here. What is the gcc command line you see?
-
-	Arnd <><
+But I'll let you decide how to proceed.
+ 
