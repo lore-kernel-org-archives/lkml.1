@@ -1,84 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZIQNeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbZIQNfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbZIQNeF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 09:34:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZIQNeE
+	id S1757074AbZIQNfT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 09:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbZIQNfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 09:34:04 -0400
-Received: from thunk.org ([69.25.196.29]:53963 "EHLO thunker.thunk.org"
+	Thu, 17 Sep 2009 09:35:18 -0400
+Received: from rtr.ca ([76.10.145.34]:52783 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751810AbZIQNeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 09:34:02 -0400
-Date: Thu, 17 Sep 2009 09:34:01 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Clemens Eisserer <linuxhippy@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Howto switch off ext4's delayed allocation?
-Message-ID: <20090917133401.GC24438@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Clemens Eisserer <linuxhippy@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <194f62550909090403x16e61cc1g3a23593085de0b@mail.gmail.com> <194f62550909160532q248cb45coee639a2da10292a@mail.gmail.com> <20090916163822.GA15451@mit.edu> <194f62550909161141n5730049cra2643ce1654a7aaf@mail.gmail.com>
+	id S1753864AbZIQNfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 09:35:17 -0400
+Message-ID: <4AB23B17.2040204@rtr.ca>
+Date: Thu, 17 Sep 2009 09:35:19 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <194f62550909161141n5730049cra2643ce1654a7aaf@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Tejun Heo <tj@kernel.org>
+Cc: Chris Webb <chris@arachsys.com>, Ric Wheeler <rwheeler@redhat.com>,
+       Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <20090916222842.GB16053@arachsys.com> <4AB17905.90606@kernel.org>
+In-Reply-To: <4AB17905.90606@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 02:41:09PM -0400, Clemens Eisserer wrote:
+Tejun Heo wrote:
+> Hello,
 > 
-> > If you can run a strace on eclipse while and then arrange to edit an
-> > existing file and save it, it would be interesting to see what the
-> > heck it is doing.
-> I'll have a look.
+> Chris Webb wrote:
+>> Hi Tejun. Thanks for following up to this. We've done some more
+>> experimentation over the last couple of days based on your
+>> suggestions and thoughts.
+>>
+>> Tejun Heo <tj@kernel.org> writes:
+>>> Seriously, it's most likely a hardware malfunction although I can't tell
+>>> where the problem is with the given data.  Get the hardware fixed.
+>> We know this isn't caused by a single faulty piece of hardware,
+>> because we have a cluster of identical machines and all have shown
+>> this behaviour. This doesn't mean that there isn't a hardware
+>> problem, but if there is one, it's a design problem or firmware bug
+>> affecting all of our hosts.
+> 
+> If it's multiple machines, it's much less likely to be faulty drives,
+> but if the machines are configured mostly identically, hardware
+> problems can't be ruled out either.
+> 
+>> There have also been a few reports of problems which look very
+>> similar in this thread from people with somewhat different hardware
+>> and drives to ours.
+> 
+> I wouldn't connect the reported cases too eagerly at this point.  Too
+> many different causes end up showing similar symptoms especially with
+> timeouts.
+> 
+>>> The aboves are IDENTIFY.  Who's issuing IDENTIFY regularly?  It isn't
+>>> from the regular IO paths or md.  It's probably being issued via SG_IO
+>>> from userland.  These failures don't affect normal operation.
+>> [...]
+>>> Oooh, another possibility is the above continuous IDENTIFY tries.
+>>> Doing things like that generally isn't a good idea because vendors
+>>> don't expect IDENTIFY to be mixed regularly with normal IOs and
+>>> firmwares aren't tested against that.  Even smart commands sometimes
+>>> cause problems.  So, finding out the thing which is obsessed with the
+>>> identity of the drive and stopping it might help.
+>> We tracked this down to some (excessively frequent!) monitoring we
+>> were doing using smartctl. Things were improved considerably by
+>> stopping smartd and disabling all callers of smartctl, although it
+>> doesn't appear to have been a cure. The frequency of these timeouts
+>> during resync seems to have gone from about once every two hours to
+>> about once a day, which means we've been able to complete some
+>> resyncs whereas we were unable to before.
+> 
+> That's interesting.  One important side effect of issuing IDENTIFY is
+> that they will serialize command streams as they are not NCQ commands
+> and thus could change command patterns significantly.
+..
 
-Thanks, but no need.  I did some investigating, and when I found that
-kwrite was doing a truncate-and-rewrite, I did some more digging, and
-found that we had a bug in our truncate hueristics.  I'll get this
-fixed for 2.6.32, and it will be a candidate for the 2.6.31 stable
-tree.
+SMART is the opcode that is most frequently implicated here, not IDENTIFY.
+Note that even a barrier FLUSH CACHE is non NCQ and will serialize the stream.
 
-(This needs to get backported for ext3 as well.)
+Cheers
 
-						 - Ted
-
-commit dbc380bc2268bed9faa687b2ec1f98a7706b5909
-Author: Theodore Ts'o <tytso@mit.edu>
-Date:   Thu Sep 17 09:33:32 2009 -0400
-
-    ext4: Fix the alloc on close after a truncate hueristic
-    
-    In an attempt to avoid doing an unneeded flush after opening a
-    (previously non-existent) file with O_CREAT|O_TRUNC, the code only
-    triggered the hueristic if ei->disksize was non-zero.  Turns out that
-    the VFS doesn't call ->truncate() if the file doesn't exist, and
-    ei->disksize is always zero even if the file previously existed.  So
-    remove the test, since it isn't necessary and in fact disabled the
-    hueristic.
-    
-    Thanks to Clemens Eisserer that he was seeing problems with files
-    written using kwrite and eclipse after sudden crashes caused by a
-    buggy Intel video driver.
-    
-    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 9887a0c..4abd683 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -3973,8 +3973,7 @@ void ext4_truncate(struct inode *inode)
- 	if (!ext4_can_truncate(inode))
- 		return;
- 
--	if (ei->i_disksize && inode->i_size == 0 &&
--	    !test_opt(inode->i_sb, NO_AUTO_DA_ALLOC))
-+	if (inode->i_size == 0 && !test_opt(inode->i_sb, NO_AUTO_DA_ALLOC))
- 		ei->i_state |= EXT4_STATE_DA_ALLOC_CLOSE;
- 
- 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
