@@ -1,87 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbZIQWgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbZIQWiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753224AbZIQWgU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 18:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZIQWgR
+	id S1752038AbZIQWiW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 18:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZIQWiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 18:36:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46197 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbZIQWgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 18:36:14 -0400
-Date: Thu, 17 Sep 2009 22:35:54 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, lizf@cn.fujitsu.com, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, lizf@cn.fujitsu.com, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4AB1F827.8040905@cn.fujitsu.com>
-References: <4AB1F827.8040905@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf trace: Sample timestamp and cpu when using record flag
-Message-ID: <tip-1281a49b7aa865a1f0d60e2b28410e6234fc686b@git.kernel.org>
-Git-Commit-ID: 1281a49b7aa865a1f0d60e2b28410e6234fc686b
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 22:35:55 +0000 (UTC)
+	Thu, 17 Sep 2009 18:38:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43910 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750741AbZIQWiU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 18:38:20 -0400
+Date: Thu, 17 Sep 2009 15:38:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, linux-kernel@vger.kernel.org,
+       linux-alpha@vger.kernel.org
+Subject: Re: [RESEND] [PATCH] Convert alpha to use arch_gettimeoffset()
+Message-Id: <20090917153801.894f4108.akpm@linux-foundation.org>
+In-Reply-To: <1247789647.7398.5.camel@localhost.localdomain>
+References: <1247789647.7398.5.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1281a49b7aa865a1f0d60e2b28410e6234fc686b
-Gitweb:     http://git.kernel.org/tip/1281a49b7aa865a1f0d60e2b28410e6234fc686b
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Thu, 17 Sep 2009 16:49:43 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 18 Sep 2009 00:30:25 +0200
+On Thu, 16 Jul 2009 17:14:07 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
-perf trace: Sample timestamp and cpu when using record flag
+> This patch converts alpha to use GENERIC_TIME via the arch_getoffset()
+> infrastructure, reducing the amount of arch specific code we need to
+> maintain.
+> 
+> I suspect the alpha arch could even be further improved to provide and
+> rpcc() based clocksource, but not having the hardware, I don't feel
+> comfortable attempting the more complicated conversion (but I'd be glad
+> to help if anyone else is interested).
+> 
+> This patch applies on top of Linus' current -git tree (2.6.31-rc3).
+> 
+> I've taken my best swing at converting this, but I'm not 100% confident
+> I got it right. My cross-compiler is now too old, so I couldn't check if
+> it builds. So any assistance from arch maintainers or testers to get
+> this merged would be great.
+> 
 
-Sample timestamp and cpu just like the -R option.
+It breaks the build:
 
-Before:
-            init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
-            init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
-            init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=1 handler=i8042
-            init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
-            init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=1 handler=i8042
-
-After:
-            init-0     [001]  7364.568965353: irq_handler_entry: irq=18 handler=eth0
-            init-0     [001]  7365.530226877: irq_handler_entry: irq=1 handler=i8042
-            init-0     [001]  7365.542831563: irq_handler_entry: irq=18 handler=eth0
-            init-0     [001]  7365.644156299: irq_handler_entry: irq=18 handler=eth0
-            init-0     [001]  7365.694556201: irq_handler_entry: irq=18 handler=eth0
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <4AB1F827.8040905@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+cc1: warnings being treated as errors
+arch/alpha/kernel/time.c: In function 'arch_gettimeoffset':
+arch/alpha/kernel/time.c:413: warning: unused variable 'partial_tick'
+arch/alpha/kernel/time.c:413: warning: unused variable 'delta_cycles'
+make[1]: *** [arch/alpha/kernel/time.o] Error 1
 
 
+u32 arch_gettimeoffset(void)
+{
+	unsigned long delta_cycles, delta_usec, partial_tick;
+
+#ifdef CONFIG_SMP
+	/* Until and unless we figure out how to get cpu cycle counters
+	   in sync and keep them there, we can't use the rpcc tricks.  */
+	delta_usec = 0;
+#else
+	delta_cycles = rpcc() - state.last_time;
+	partial_tick = state.partial_tick;
+	/*
+	 * usec = cycles * ticks_per_cycle * 2**48 * 1e6 / (2**48 * ticks)
+	 *	= cycles * (s_t_p_c) * 1e6 / (2**48 * ticks)
+	 *	= cycles * (s_t_p_c) * 15625 / (2**42 * ticks)
+	 *
+	 * which, given a 600MHz cycle and a 1024Hz tick, has a
+	 * dynamic range of about 1.7e17, which is less than the
+	 * 1.8e19 in an unsigned long, so we are safe from overflow.
+	 *
+	 * Round, but with .5 up always, since .5 to even is harder
+	 * with no clear gain.
+	 */
+
+	delta_usec = (delta_cycles * state.scaled_ticks_per_cycle 
+		      + partial_tick) * 15625;
+	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
+#endif
+
+	return delta_usec * 1000;
+}
+
+I converted the CONFIG_SMP=y case into a plain old `return 0;'.  Which
+means that we could turn the CONFIG_SMP=y case into a static inline,
+really.
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+cc1: warnings being treated as errors
+arch/alpha/kernel/time.c: In function 'arch_gettimeoffset':
+arch/alpha/kernel/time.c:413: warning: unused variable 'partial_tick'
+arch/alpha/kernel/time.c:413: warning: unused variable 'delta_cycles'
+make[1]: *** [arch/alpha/kernel/time.o] Error 1
+
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: John Stultz <johnstul@us.ibm.com>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: john stultz <johnstul@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- tools/perf/util/parse-events.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 910283c..a9bdcab 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -425,8 +425,11 @@ parse_single_tracepoint_event(char *sys_name,
- 	int fd;
+ arch/alpha/kernel/time.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+--- a/arch/alpha/kernel/time.c~alpha-convert-to-use-arch_gettimeoffset-fix
++++ a/arch/alpha/kernel/time.c
+@@ -410,13 +410,13 @@ time_init(void)
+  */
+ u32 arch_gettimeoffset(void)
+ {
+-	unsigned long delta_cycles, delta_usec, partial_tick;
+-
+ #ifdef CONFIG_SMP
+ 	/* Until and unless we figure out how to get cpu cycle counters
+ 	   in sync and keep them there, we can't use the rpcc tricks.  */
+-	delta_usec = 0;
++	return 0;
+ #else
++	unsigned long delta_cycles, delta_usec, partial_tick;
++
+ 	delta_cycles = rpcc() - state.last_time;
+ 	partial_tick = state.partial_tick;
+ 	/*
+@@ -435,9 +435,8 @@ u32 arch_gettimeoffset(void)
+ 	delta_usec = (delta_cycles * state.scaled_ticks_per_cycle 
+ 		      + partial_tick) * 15625;
+ 	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
+-#endif
+-
+ 	return delta_usec * 1000;
++#endif
+ }
  
- 	if (flags) {
--		if (!strncmp(flags, "record", strlen(flags)))
-+		if (!strncmp(flags, "record", strlen(flags))) {
- 			attr->sample_type |= PERF_SAMPLE_RAW;
-+			attr->sample_type |= PERF_SAMPLE_TIME;
-+			attr->sample_type |= PERF_SAMPLE_CPU;
-+		}
- 	}
- 
- 	snprintf(evt_path, MAXPATHLEN, "%s/%s/%s/id", debugfs_path,
+ /*
+_
+
