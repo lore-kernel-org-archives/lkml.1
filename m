@@ -1,25 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbZIQWiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZIQWkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752038AbZIQWiW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 18:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZIQWiV
+	id S1752735AbZIQWkt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 18:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZIQWkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 18:38:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43910 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750741AbZIQWiU (ORCPT
+	Thu, 17 Sep 2009 18:40:49 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52998 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750741AbZIQWks (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 18:38:20 -0400
-Date: Thu, 17 Sep 2009 15:38:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, linux-kernel@vger.kernel.org,
-       linux-alpha@vger.kernel.org
-Subject: Re: [RESEND] [PATCH] Convert alpha to use arch_gettimeoffset()
-Message-Id: <20090917153801.894f4108.akpm@linux-foundation.org>
-In-Reply-To: <1247789647.7398.5.camel@localhost.localdomain>
-References: <1247789647.7398.5.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 17 Sep 2009 18:40:48 -0400
+Date: Thu, 17 Sep 2009 23:41:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was:
+  Re: [PATCH] Remove broken by design and by implementation devtmpfs 
+ maintenance disaster)
+Message-ID: <20090917234144.2f8eb1f2@lxorguk.ukuu.org.uk>
+In-Reply-To: <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<20090917125759.GA4045@kroah.com>
+	<m1ab0tcwep.fsf@fess.ebiederm.org>
+	<20090917185306.GA28635@elte.hu>
+	<ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com>
+	<alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>
+	<ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,118 +37,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Jul 2009 17:14:07 -0700
-john stultz <johnstul@us.ibm.com> wrote:
+> That's true. I guess there are a few more devices that need special
+> permissions. We could make that happen, so people could probably run a
 
-> This patch converts alpha to use GENERIC_TIME via the arch_getoffset()
-> infrastructure, reducing the amount of arch specific code we need to
-> maintain.
-> 
-> I suspect the alpha arch could even be further improved to provide and
-> rpcc() based clocksource, but not having the hardware, I don't feel
-> comfortable attempting the more complicated conversion (but I'd be glad
-> to help if anyone else is interested).
-> 
-> This patch applies on top of Linus' current -git tree (2.6.31-rc3).
-> 
-> I've taken my best swing at converting this, but I'm not 100% confident
-> I got it right. My cross-compiler is now too old, so I couldn't check if
-> it builds. So any assistance from arch maintainers or testers to get
-> this merged would be great.
-> 
+I think this is misleading somewhat as were Ingo's init stuff to all run
+as root then the permissions were fine. In other words it does what it
+says on the tin (the real debate is whether it does it right)
 
-It breaks the build:
+You should only need /dev/null and /dev/zero to get sanity. The console
+is opened by init and inherited. You might want to also fix the
+permissions by default on /dev/tty as some scripts tend to get grumpy
+without it. /dev/tty is a magic hook to the process group controlling tty
+so has no real permissions impact being 0666.
 
-cc1: warnings being treated as errors
-arch/alpha/kernel/time.c: In function 'arch_gettimeoffset':
-arch/alpha/kernel/time.c:413: warning: unused variable 'partial_tick'
-arch/alpha/kernel/time.c:413: warning: unused variable 'delta_cycles'
-make[1]: *** [arch/alpha/kernel/time.o] Error 1
+The rest should essentially work out of the box - mount is done as root
+to mount the real fs stuff so root only is ok, the console is inherited
+so /dev/tty or just fd 0/1/2. Once you get to mingetty it will run as
+root and permission manage the devices.
 
-
-u32 arch_gettimeoffset(void)
-{
-	unsigned long delta_cycles, delta_usec, partial_tick;
-
-#ifdef CONFIG_SMP
-	/* Until and unless we figure out how to get cpu cycle counters
-	   in sync and keep them there, we can't use the rpcc tricks.  */
-	delta_usec = 0;
-#else
-	delta_cycles = rpcc() - state.last_time;
-	partial_tick = state.partial_tick;
-	/*
-	 * usec = cycles * ticks_per_cycle * 2**48 * 1e6 / (2**48 * ticks)
-	 *	= cycles * (s_t_p_c) * 1e6 / (2**48 * ticks)
-	 *	= cycles * (s_t_p_c) * 15625 / (2**42 * ticks)
-	 *
-	 * which, given a 600MHz cycle and a 1024Hz tick, has a
-	 * dynamic range of about 1.7e17, which is less than the
-	 * 1.8e19 in an unsigned long, so we are safe from overflow.
-	 *
-	 * Round, but with .5 up always, since .5 to even is harder
-	 * with no clear gain.
-	 */
-
-	delta_usec = (delta_cycles * state.scaled_ticks_per_cycle 
-		      + partial_tick) * 15625;
-	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
-#endif
-
-	return delta_usec * 1000;
-}
-
-I converted the CONFIG_SMP=y case into a plain old `return 0;'.  Which
-means that we could turn the CONFIG_SMP=y case into a static inline,
-really.
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-cc1: warnings being treated as errors
-arch/alpha/kernel/time.c: In function 'arch_gettimeoffset':
-arch/alpha/kernel/time.c:413: warning: unused variable 'partial_tick'
-arch/alpha/kernel/time.c:413: warning: unused variable 'delta_cycles'
-make[1]: *** [arch/alpha/kernel/time.o] Error 1
-
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: John Stultz <johnstul@us.ibm.com>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: john stultz <johnstul@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/alpha/kernel/time.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
---- a/arch/alpha/kernel/time.c~alpha-convert-to-use-arch_gettimeoffset-fix
-+++ a/arch/alpha/kernel/time.c
-@@ -410,13 +410,13 @@ time_init(void)
-  */
- u32 arch_gettimeoffset(void)
- {
--	unsigned long delta_cycles, delta_usec, partial_tick;
--
- #ifdef CONFIG_SMP
- 	/* Until and unless we figure out how to get cpu cycle counters
- 	   in sync and keep them there, we can't use the rpcc tricks.  */
--	delta_usec = 0;
-+	return 0;
- #else
-+	unsigned long delta_cycles, delta_usec, partial_tick;
-+
- 	delta_cycles = rpcc() - state.last_time;
- 	partial_tick = state.partial_tick;
- 	/*
-@@ -435,9 +435,8 @@ u32 arch_gettimeoffset(void)
- 	delta_usec = (delta_cycles * state.scaled_ticks_per_cycle 
- 		      + partial_tick) * 15625;
- 	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
--#endif
--
- 	return delta_usec * 1000;
-+#endif
- }
- 
- /*
-_
-
+Alan
