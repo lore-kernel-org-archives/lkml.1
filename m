@@ -1,49 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760492AbZIQBee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbZIQBfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760492AbZIQBee (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 21:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbZIQBec
+	id S1760645AbZIQBfs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 21:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759841AbZIQBfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 21:34:32 -0400
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:51306 "EHLO
-	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758357AbZIQBeb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 21:34:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=EP66C3VBeOTmu5agorR5ql6ZVisiGlARXs2EszWnktKfqReG3nKcH35Q98HyPlSerd
-         9xpJqXPEkNkBX7nY4UvBAO1/I2pvNXrl4Kd5We0yKJmTu0TMHN/HFo9fX2MUn5Y6prjS
-         h9diwbpPI3Ct/KbgQStouufVq3HhOmMO2ut+Y=
+	Wed, 16 Sep 2009 21:35:46 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34075 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754238AbZIQBfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 21:35:45 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jinzc <zhenchengjin@gmail.com>
+Date: Thu, 17 Sep 2009 11:36:52 +1000
 MIME-Version: 1.0
-In-Reply-To: <20090917112604.acbae122.sfr@canb.auug.org.au>
-References: <20090917112604.acbae122.sfr@canb.auug.org.au>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 16 Sep 2009 21:34:15 -0400
-Message-ID: <8bd0f97a0909161834j328abe5aq96b7cb69893d1094@mail.gmail.com>
-Subject: Re: linux-next: manual merge of the blackfin tree with Linus' tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19121.37556.237576.950694@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] md: set the md raid 4,5,6  thead name by its level
+In-Reply-To: message from Jinzc on Wednesday September 16
+References: <1253091297-3889-1-git-send-email-zhenchengjin@gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 21:26, Stephen Rothwell wrote:
-> Today's linux-next merge of the blackfin tree got a conflict in
-> arch/blackfin/mm/sram-alloc.c between commit
-> b9bf3121af348d9255f1c917830fe8c2df52efcb ("percpu: use
-> DEFINE_PER_CPU_SHARED_ALIGNED()") from Linus' tree and commit
-> 40bf94d6d1158fb6d6d67a666e6b16ab6ac3986e ("Blackfin: push SRAM locks down
-> into related ifdefs") from the blackfin tree.
->
-> The latter moved the code that the former modified.  I fixed it up (see
-> below) and can carry the fix for a while.
+On Wednesday September 16, zhenchengjin@gmail.com wrote:
+> the current edition, if you create a md raid 4,5,6
+> the name of md thread is mdx_raid5. If you create a raid 4,6
+> the name mdx_raid4, mdx_raid6 are better than mdx_raid5.
 
-ive pulled down the latest mainline and rebased my branch onto it.
-thanks for the heads up.
--mike
+Thanks for the suggestion and the patch.
+
+I would like to achieve the same thing a little differently.
+Primarily I am using the personality name rather than combining the
+level number with "raid".  The result is the same.
+See below.
+
+Thanks,
+NeilBrown
+
+
+From: NeilBrown <neilb@suse.de>
+Date: Thu, 17 Sep 2009 11:34:57 +1000
+Subject: [PATCH] md: Improve name of threads created by md_register_thread
+
+The management thread for raid4,5,6 arrays are all called
+mdX_raid5, independent of the actual raid level, which is wrong and
+can be confusion.
+
+So change md_register_thread to use the name from the personality
+unless no alternate name (like 'resync' or 'reshape') is given.
+
+This is simpler and more correct.
+
+Cc: Jinzc <zhenchengjin@gmail.com>
+Signed-off-by: NeilBrown <neilb@suse.de>
+---
+ drivers/md/md.c        |    9 ++++++---
+ drivers/md/multipath.c |    2 +-
+ drivers/md/raid1.c     |    2 +-
+ drivers/md/raid10.c    |    2 +-
+ drivers/md/raid5.c     |    6 +++---
+ 5 files changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 84e358d..878773a 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -4371,7 +4371,7 @@ static int do_md_run(mddev_t * mddev)
+ 			set_bit(MD_RECOVERY_RUNNING, &mddev->recovery);
+ 			mddev->sync_thread = md_register_thread(md_do_sync,
+ 								mddev,
+-								"%s_resync");
++								"resync");
+ 			if (!mddev->sync_thread) {
+ 				printk(KERN_ERR "%s: could not start resync"
+ 				       " thread...\n",
+@@ -5784,7 +5784,10 @@ mdk_thread_t *md_register_thread(void (*run) (mddev_t *), mddev_t *mddev,
+ 	thread->run = run;
+ 	thread->mddev = mddev;
+ 	thread->timeout = MAX_SCHEDULE_TIMEOUT;
+-	thread->tsk = kthread_run(md_thread, thread, name, mdname(thread->mddev));
++	thread->tsk = kthread_run(md_thread, thread,
++				  "%s_%s",
++				  mdname(thread->mddev),
++				  name ?: mddev->pers->name);
+ 	if (IS_ERR(thread->tsk)) {
+ 		kfree(thread);
+ 		return NULL;
+@@ -6898,7 +6901,7 @@ void md_check_recovery(mddev_t *mddev)
+ 			}
+ 			mddev->sync_thread = md_register_thread(md_do_sync,
+ 								mddev,
+-								"%s_resync");
++								"resync");
+ 			if (!mddev->sync_thread) {
+ 				printk(KERN_ERR "%s: could not start resync"
+ 					" thread...\n", 
+diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
+index 17b2bf1..5277b35 100644
+--- a/drivers/md/multipath.c
++++ b/drivers/md/multipath.c
+@@ -503,7 +503,7 @@ static int multipath_run (mddev_t *mddev)
+ 	}
+ 
+ 	{
+-		mddev->thread = md_register_thread(multipathd, mddev, "%s_multipath");
++		mddev->thread = md_register_thread(multipathd, mddev, NULL);
+ 		if (!mddev->thread) {
+ 			printk(KERN_ERR "multipath: couldn't allocate thread"
+ 				" for %s\n", mdname(mddev));
+diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
+index 8726fd7..f1db87c 100644
+--- a/drivers/md/raid1.c
++++ b/drivers/md/raid1.c
+@@ -2045,7 +2045,7 @@ static int run(mddev_t *mddev)
+ 	conf->last_used = j;
+ 
+ 
+-	mddev->thread = md_register_thread(raid1d, mddev, "%s_raid1");
++	mddev->thread = md_register_thread(raid1d, mddev, NULL);
+ 	if (!mddev->thread) {
+ 		printk(KERN_ERR
+ 		       "raid1: couldn't allocate thread for %s\n",
+diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
+index 8befc3e..a9bf503 100644
+--- a/drivers/md/raid10.c
++++ b/drivers/md/raid10.c
+@@ -2188,7 +2188,7 @@ static int run(mddev_t *mddev)
+ 	}
+ 
+ 
+-	mddev->thread = md_register_thread(raid10d, mddev, "%s_raid10");
++	mddev->thread = md_register_thread(raid10d, mddev, NULL);
+ 	if (!mddev->thread) {
+ 		printk(KERN_ERR
+ 		       "raid10: couldn't allocate thread for %s\n",
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index 5d5dce5..958bf02 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -4448,7 +4448,7 @@ static raid5_conf_t *setup_conf(mddev_t *mddev)
+ 		printk(KERN_INFO "raid5: allocated %dkB for %s\n",
+ 			memory, mdname(mddev));
+ 
+-	conf->thread = md_register_thread(raid5d, mddev, "%s_raid5");
++	conf->thread = md_register_thread(raid5d, mddev, NULL);
+ 	if (!conf->thread) {
+ 		printk(KERN_ERR
+ 		       "raid5: couldn't allocate thread for %s\n",
+@@ -4614,7 +4614,7 @@ static int run(mddev_t *mddev)
+ 		set_bit(MD_RECOVERY_RESHAPE, &mddev->recovery);
+ 		set_bit(MD_RECOVERY_RUNNING, &mddev->recovery);
+ 		mddev->sync_thread = md_register_thread(md_do_sync, mddev,
+-							"%s_reshape");
++							"reshape");
+ 	}
+ 
+ 	/* read-ahead size must cover two whole stripes, which is
+@@ -5032,7 +5032,7 @@ static int raid5_start_reshape(mddev_t *mddev)
+ 	set_bit(MD_RECOVERY_RESHAPE, &mddev->recovery);
+ 	set_bit(MD_RECOVERY_RUNNING, &mddev->recovery);
+ 	mddev->sync_thread = md_register_thread(md_do_sync, mddev,
+-						"%s_reshape");
++						"reshape");
+ 	if (!mddev->sync_thread) {
+ 		mddev->recovery = 0;
+ 		spin_lock_irq(&conf->device_lock);
+-- 
+1.6.3.3
+
