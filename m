@@ -1,121 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbZIQWyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbZIQXCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753419AbZIQWyQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 18:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZIQWyP
+	id S1753613AbZIQXCz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 19:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZIQXCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 18:54:15 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:53206 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbZIQWyO convert rfc822-to-8bit (ORCPT
+	Thu, 17 Sep 2009 19:02:53 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:13937 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbZIQXCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 18:54:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=d4pCveKKXTjTJISl4J5ZWQglXNepZoB2tErvGCIJHsuG4uSYrlioyT4RrwBqB5OWK3
-         Pb9WwJRG8LspvY+TswofkEN4W9Ten5SFyJy/jv8WCr/GYYXM0yPB33rvDvaxPexd4tVd
-         CZHWezakfrK2hUFcW/wKK8pVjwccxG8yO0DC8=
+	Thu, 17 Sep 2009 19:02:52 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:from:date:message-id:subject:to:cc:
+	content-type:x-system-of-record;
+	b=QB8kxuSHPa1ukT7XEdmHHO0C6zTpbRsoCdmq9p9hkO6/8LWB0JsCgQccv77x+FMs3
+	QfGnM5a7BqkFL2W2JCffA==
 MIME-Version: 1.0
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901D41E44@mi8nycmail19.Mi8.com>
-References: <1253224997-7422-1-git-send-email-vapier@gentoo.org> 
-	<BD79186B4FD85F4B8E60E381CAEE190901D41E44@mi8nycmail19.Mi8.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 17 Sep 2009 18:53:58 -0400
-Message-ID: <8bd0f97a0909171553s1b7ee725x728bbca2f49511a9@mail.gmail.com>
-Subject: Re: [spi-devel-general] [PATCH 1/2] spi: new SPI bus 
-	lock/unlockfunctions
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: spi-devel-general@lists.sourceforge.net,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Yi Li <yi.li@analog.com>, Andrew Morton <akpm@linux-foundation.org>,
+From: "Jung-Ik (John) Lee" <jilee@google.com>
+Date: Thu, 17 Sep 2009 16:02:31 -0700
+Message-ID: <8b5805ff0909171602v3dc10db9i5920be3a2abf2e04@mail.gmail.com>
+Subject: [PATCH] libata:ide: Fix udma timings of pdc202xx_old controllers
+To: sshtylyov@ru.mvista.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 18:45, H Hartley Sweeten wrote:
-> On Thursday, September 17, 2009 3:03 PM, Mike Frysinger wrote:
->> From: Yi Li <yi.li@analog.com>
->>
->> For some MMC cards over SPI bus, it needs to lock the SPI bus for its own
->> use.  The SPI transfer must not be interrupted by other SPI devices that
->> share the SPI bus with SPI MMC card.
->>
->> This patch introduces 2 APIs for SPI bus locking operation.
->>
->>  /**
->> + * spi_lock_bus - lock SPI bus for exclusive access
->> + * @spi: device which want to lock the bus
->> + * Context: any
->> + *
->> + * Once the caller owns exclusive access to the SPI bus,
->> + * only messages for this device will be transferred.
->> + * Messages for other devices are queued but not transferred until
->> + * the bus owner unlock the bus.
->> + *
->> + * The caller may call spi_lock_bus() before spi_sync() or spi_async().
->> + * So this call may be used in irq and other contexts which can't sleep,
->> + * as well as from task contexts which can sleep.
->> + *
->> + * It returns zero on success, else a negative error code.
->> + */
->> +int spi_lock_bus(struct spi_device *spi)
->> +{
->> +     if (spi->master->lock_bus)
->> +             return spi->master->lock_bus(spi);
->> +     else
->> +             return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(spi_lock_bus);
->> +
->> +/**
->> + * spi_unlock_bus - unlock SPI bus
->> + * @spi: device which want to unlock the bus
->> + * Context: any
->> + *
->> + * The caller has called spi_lock_bus() to lock the bus. It calls
->> + * spi_unlock_bus() to release the bus so messages for other devices
->> + * can be transferred.
->> + *
->> + * If the caller did not call spi_lock_bus() before, spi_unlock_bus()
->> + * should have no effect.
->> + *
->> + * It returns zero on success, else a negative error code.
->> + */
->> +int spi_unlock_bus(struct spi_device *spi)
->> +{
->> +     if (spi->master->unlock_bus)
->> +             return spi->master->unlock_bus(spi);
->> +     else
->> +             return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(spi_unlock_bus);
->> +
->> +/**
->
-> I assume the spi master driver must supply the {lock/unlock}_bus methods
-> to properly support the locking.
+From: John(Jung-Ik) Lee <jilee@google.com>
 
-currently, yes.  a common solution would be nice.  ideas/patches welcome ;).
+Fix udma timings of pdc202xx_old controllers.
+MB=1, MC=1 (0x20, 0x01) for all UDMA modes of pdc2026{57}.
 
-> But, by returning 0 when the methods
-> are not supplied you are basically saying all the current master drivers
-> in mainline support bus locking.  I think this is really only "true" if
-> spi->master->num_chipselect == 1.
+Signed-off-by: John(Jung-Ik) Lee <jilee@google.com>
+---
 
-right, but that is no different from what we have today.  there is no
-way for a client to guarantee exclusive access, so you cant write code
-assuming it in the first place.  the only consumer thus far (mmc_spi)
-actually errors out if such conditions exist.
+ drivers/ata/pata_pdc202xx_old.c |   15 +++------------
+ drivers/ide/pdc202xx_old.c      |    8 +++++---
+ 2 files changed, 8 insertions(+), 15 deletions(-)
 
-in other words, we arent breaking anything.
+diff --git a/drivers/ata/pata_pdc202xx_old.c b/drivers/ata/pata_pdc202xx_old.c
+index 2f3c9be..ae76a9e 100644
+--- a/drivers/ata/pata_pdc202xx_old.c
++++ b/drivers/ata/pata_pdc202xx_old.c
+@@ -97,14 +97,6 @@ static void pdc202xx_set_dmamode(struct ata_port
+*ap, struct ata_device *adev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+ 	int port = 0x60 + 8 * ap->port_no + 4 * adev->devno;
+-	static u8 udma_timing[6][2] = {
+-		{ 0x60, 0x03 },	/* 33 Mhz Clock */
+-		{ 0x40, 0x02 },
+-		{ 0x20, 0x01 },
+-		{ 0x40, 0x02 },	/* 66 Mhz Clock */
+-		{ 0x20, 0x01 },
+-		{ 0x20, 0x01 }
+-	};
+ 	static u8 mdma_timing[3][2] = {
+ 		{ 0xe0, 0x0f },
+ 		{ 0x60, 0x04 },
+@@ -119,10 +111,9 @@ static void pdc202xx_set_dmamode(struct ata_port
+*ap, struct ata_device *adev)
+ 	r_cp &= ~0x0F;
 
-> Also, do you have a master driver that does have the {lock/unlock}_bus
-> methods?  I would like to see how you handled it.
+ 	if (adev->dma_mode >= XFER_UDMA_0) {
+-		int speed = adev->dma_mode - XFER_UDMA_0;
+-		r_bp |= udma_timing[speed][0];
+-		r_cp |= udma_timing[speed][1];
+-
++		/* MB=1, MC=1 for all UDMA modes of pdc2026{57} */
++		r_bp |= 0x20;
++		r_cp |= 0x01;
+ 	} else {
+ 		int speed = adev->dma_mode - XFER_MW_DMA_0;
+ 		r_bp |= mdma_timing[speed][0];
+diff --git a/drivers/ide/pdc202xx_old.c b/drivers/ide/pdc202xx_old.c
+index cb812f3..95c58dd 100644
+--- a/drivers/ide/pdc202xx_old.c
++++ b/drivers/ide/pdc202xx_old.c
+@@ -51,11 +51,13 @@ static void pdc202xx_set_mode(ide_drive_t *drive,
+const u8 speed)
 
-http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=commitdiff;h=cc54fa8ed63e11a000031bc650d41d57b441803d
--mike
+ 	switch(speed) {
+ 		case XFER_UDMA_5:
+-		case XFER_UDMA_4:	TB = 0x20; TC = 0x01; break;
+-		case XFER_UDMA_2:	TB = 0x20; TC = 0x01; break;
++		case XFER_UDMA_4:
+ 		case XFER_UDMA_3:
+-		case XFER_UDMA_1:	TB = 0x40; TC = 0x02; break;
++		case XFER_UDMA_2:
++		case XFER_UDMA_1:
+ 		case XFER_UDMA_0:
++		/* MB=1, MC=1 for all UDMA modes of pdc2026{57} */
++					TB = 0x20; TC = 0x01; break;
+ 		case XFER_MW_DMA_2:	TB = 0x60; TC = 0x03; break;
+ 		case XFER_MW_DMA_1:	TB = 0x60; TC = 0x04; break;
+ 		case XFER_MW_DMA_0:	TB = 0xE0; TC = 0x0F; break;
