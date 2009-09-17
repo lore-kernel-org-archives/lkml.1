@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZIQVXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbZIQVcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbZIQVXV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 17:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZIQVXV
+	id S1754466AbZIQVcN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 17:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbZIQVcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 17:23:21 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:22101 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbZIQVXU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 17:23:20 -0400
-Subject: [PATCH v2] arm: remove unused code in delay.S
-From: Steve Chen <schen@mvista.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Felipe Contreras <felipe.contreras@gmail.com>,
-       linux-kernel@vger.kernel.org, Marek Vasut <marek.vasut@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20090917194119.GA12510@n2100.arm.linux.org.uk>
-References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com>
-	 <20090915103739.GA19519@elf.ucw.cz> <1253017761.3273.117.camel@linux-1lbu>
-	 <200909151541.08852.marek.vasut@gmail.com>
-	 <1253032210.3273.128.camel@linux-1lbu>
-	 <94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com>
-	 <1253043875.3273.131.camel@linux-1lbu>
-	 <m3k4zzdimy.fsf@intrepid.localdomain>
-	 <20090916134721.GA11218@n2100.arm.linux.org.uk>
-	 <20090917193257.GA10599@shareable.org>
-	 <20090917194119.GA12510@n2100.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 17 Sep 2009 16:29:38 -0500
-Message-Id: <1253222978.3273.236.camel@linux-1lbu>
+	Thu, 17 Sep 2009 17:32:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:51035 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750974AbZIQVcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 17:32:09 -0400
+Subject: Re: kernel panic - not syncing: out of memory and no killable
+ processes
+From: Eric Paris <eparis@redhat.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <alpine.DEB.1.00.0909171417020.19006@chino.kir.corp.google.com>
+References: <1253158603.5213.204.camel@dhcp231-106.rdu.redhat.com>
+	 <1253191435.5213.209.camel@dhcp231-106.rdu.redhat.com>
+	 <alpine.DEB.1.00.0909171326340.31112@chino.kir.corp.google.com>
+	 <1253219756.5213.348.camel@dhcp231-106.rdu.redhat.com>
+	 <1253221309.5213.350.camel@dhcp231-106.rdu.redhat.com>
+	 <1253222149.5213.352.camel@dhcp231-106.rdu.redhat.com>
+	 <alpine.DEB.1.00.0909171417020.19006@chino.kir.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Sep 2009 17:31:59 -0400
+Message-Id: <1253223119.5213.359.camel@dhcp231-106.rdu.redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document #if 0 code block in delay.S and make it selectable for compile.
+On Thu, 2009-09-17 at 14:24 -0700, David Rientjes wrote:
+> On Thu, 17 Sep 2009, Eric Paris wrote:
 
-Signed-off-by: Steve Chen <schen@mvista.com>
+> Looks udevd related, and you mentioned that this is the point where it 
+> always panics in your initial report.  It doesn't appear to be a VM issue.  
+> Finding that change between next-20090911 and next-20090914 may be time 
+> consuming.
 
----
+Absolutely 100% udevd related.  It always pops right when udev starts.
+Every time.  I don't know how to get that to come out on the serial
+port, you only get to see the kernel messages (although there is nothing
+on the screen other than "Starting udev"
 
- arch/arm/Kconfig     |   14 ++++++++++++++
- arch/arm/lib/delay.S |    2 +-
- 2 files changed, 15 insertions(+), 1 deletions(-)
+Reverting 3f2aa307c4d26b4ed6509d0a79e8254c9e07e921 causes the problem to
+go away.  I now am running a 79b520e87e kernel + your patch (adding
+console_verbose()) + reverting 3f2aa307c4d2 and it seems to be working.
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index aef63c8..ed8bf14 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -813,6 +813,20 @@ config ARM_ERRATA_460075
- 	  ACTLR register. Note that setting specific bits in the ACTLR
-register
- 	  may not be available in non-secure mode.
- 
-+config OLD_CPU_DELAY
-+	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
-+	bool "Different delay() code for some older CPUs"
-+	def_bool n
-+	help
-+	  Enable this if observing longer than expected delays.  This code
-+	  improves delay accuracy for some CPUs.  However, it can also cause
-+	  delay duration to be too short for others which leads to stability
-+	  issues.
-+
-+	  In other words, do not enable unless you can guarantee that the
-+	  processor (or ALL of the processors if building a generic kernel)
-+	  delays for at least the time requested after enabling.
-+
- endmenu
- 
- source "arch/arm/common/Kconfig"
-diff --git a/arch/arm/lib/delay.S b/arch/arm/lib/delay.S
-index 8d6a876..67e679b 100644
---- a/arch/arm/lib/delay.S
-+++ b/arch/arm/lib/delay.S
-@@ -42,7 +42,7 @@ ENTRY(__const_udelay)				@ 0 <= r0 <= 0x7fffff06
- @ Delay routine
- ENTRY(__delay)
- 		subs	r0, r0, #1
--#if 0
-+#ifdef CONFIG_OLD_CPU_DELAY
- 		movls	pc, lr
- 		subs	r0, r0, #1
- 		movls	pc, lr
-
+-Eric
 
