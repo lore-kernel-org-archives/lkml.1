@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZIQURd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZIQUSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbZIQURd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZIQUR3
+	id S1753687AbZIQUSN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZIQUSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:17:29 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:62968 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752904AbZIQUR2 (ORCPT
+	Thu, 17 Sep 2009 16:18:11 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:33136 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbZIQUSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:17:28 -0400
-Message-ID: <4AB29974.70602@vlnb.net>
-Date: Fri, 18 Sep 2009 00:17:56 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 17 Sep 2009 16:18:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BXVl8q7VCnFQG+jyTo6sxU2kIC5Y3C7pFANZ5FUvgOwHxq3Bt9q1tOTYWPNe7I4/Fw
+         jAzt4rmAvkvWhuWeinrEQFDZusZkhllGXZIndxsTjaH564J727BSUTd3lXwm/6R/13/+
+         TIsnNoAEuVE2Y2NJa3I9DERPYBGDT/COEvbok=
+Date: Fri, 18 Sep 2009 00:18:13 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: test for "spurious" IRQ ignores possible IRQ_WAKE_THREAD value
+Message-ID: <20090917201813.GG8817@lenovo>
+References: <alpine.LFD.2.00.0909141627500.4124@localhost> <alpine.LFD.2.00.0909141632390.4329@localhost> <20090917193416.GE8817@lenovo> <alpine.LFD.2.00.0909171605320.5014@localhost>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       scst-devel <scst-devel@lists.sourceforge.net>
-Subject: [ANNOUNCE]: Support of QLogic Fibre Channel 4/8Gb (24xx/25xx) HBA's
- added in target driver for SCST qla2x00t
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+vD7XNaSujx5zBtqLCCpywtP++neyJwXLj7M7
- nAOb2+27bBhLEOH9jpCTncjh0q0xQdySOx4EwtnFhMiZC5wDn1
- qhr8dSk05b1TzstLkDuVQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0909171605320.5014@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+[Robert P. J. Day - Thu, Sep 17, 2009 at 04:08:32PM -0400]
+...
+| > Hi Robert,
+| >
+| > It could that IRQ_WAKE_THREAD is just missed here. I suppose it was
+| > brough there as thread irq merged. But I think only Thomas know for
+| > sure, I definitely miss something :) CC'ed
+| 
+|   actually, after a bit more reading, i found this in
+| kernel/irq/handle.c:
+|                 ...
+|                 switch (ret) {
+|                 case IRQ_WAKE_THREAD:
+|                         /*
+|                          * Set result to handled so the spurious check
+|                          * does not trigger.
+|                          */
+|                         ret = IRQ_HANDLED;
+|                         ...
+| 
+| so it looks like that value of IRQ_WAKE_THREAD is simply "mapped" to
+| IRQ_HANDLED, and perhaps that's done before __report_bad_irq is ever
+| called so that that latter routine never sees a value of
+| IRQ_WAKE_THREAD.  but that's just a guess.
+| 
+| rday
+| --
 
-I'm glad to announce a merge of support of 4/8Gb (24xx/25xx) QLogic 
-HBA's in SCST target driver qla2x00t v2.0.
+yeah, Thomas just pointed it too :) The note_interrupt is
+called after handle_IRQ_event (except a few drivers which
+don;t use threaded irq) so it doesnt reach bad irq state
+with IRQ_WAKE_THREAD, for now at least.
 
-Throughout the last three years ID7 and I have been working on an 
-enterprise class Fibre Channel target based on the QLogic range of 4/8Gb 
-HBA's. This has been solely funded by ID7 over the last years however 
-given the positive contributions by many of the SCST community both 
-personal and commercial, ID7 have chosen to merge with existing QLogic's 
-open source driver qla2x00t and introduce the driver under GPL license 
-for community use.
-
-This driver was designed from ground up to perform at the highest of 
-levels and interoperate with leading infrastructures, accordingly the 
-design and flow is much more focused and structured whilst the stability 
-is as you would expect at the Enterprise level.
-
-Although there is a current QLogic target driver qla_isp, this driver 
-has the key advantage that it was designed to be as simple as possible. 
-As the result, this driver is a lot smaller, cleaner and mainline Linux 
-kernel ready. After some cosmetic cleanups it's going to be pushed for 
-the in-kernel inclusion together other SCST patches.
-
-Another advantage is that this driver fully supports FC tapes, including 
-transport level retries on data delivery problems.
-
-At the moment qla2x00t v2.0 is available only from the SCST SVN trunk. 
-You can download it by command:
-
-$ svn co https://scst.svn.sourceforge.net/svnroot/scst/trunk
-
-You can always find the latest info about qla2x00t driver from its page 
-http://scst.sourceforge.net/target_qla2x0t.html.
-
-Once again we are grateful for all the positive work and contributions 
-and hopeful that this target helps drive SCST further forward as an 
-Enterprise class target. We encourage people to introduce and evaluate 
-this target driver.
-
-Vladislav Bolkhovitin,
-Mark Klarzynski, ID7 Ltd. (http://www.id-7.com)
+	-- Cyrill
