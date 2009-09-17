@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760273AbZIQSry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760401AbZIQSsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760273AbZIQSry (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbZIQSrt
+	id S1760401AbZIQSsx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZIQSsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:47:49 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:33383 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760205AbZIQSrm (ORCPT
+	Thu, 17 Sep 2009 14:48:50 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:32008 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759215AbZIQSrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:47:42 -0400
+	Thu, 17 Sep 2009 14:47:47 -0400
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Subject: [PATCH 16/20] cciss: Add lunid attribute to each logical drive in /sys
+Subject: [PATCH 17/20] cciss: fix some magic numbers in the raid-level decoding
 To: akpm@linux-foundation.org, axboe@kernel.dk
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        andrew.patterson@hp.com, mikem@beardog.cce.hp.com,
        scameron@beardog.cce.hp.com
-Date: Thu, 17 Sep 2009 13:48:10 -0500
-Message-ID: <20090917184810.15105.56428.stgit@beardog.cce.hp.com>
+Date: Thu, 17 Sep 2009 13:48:15 -0500
+Message-ID: <20090917184815.15105.11105.stgit@beardog.cce.hp.com>
 In-Reply-To: <20090917184310.15105.43508.stgit@beardog.cce.hp.com>
 References: <20090917184310.15105.43508.stgit@beardog.cce.hp.com>
 User-Agent: StGIT/0.14.3
@@ -28,74 +28,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add lunid attribute to each logical drive at
-/sys/devices/<dev>/ccissX/cXdY/lunid for controller X,
-logical drive Y
+cciss: fix some magic numbers in the raid-level decoding
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
 
- .../ABI/testing/sysfs-bus-pci-devices-cciss        |    7 +++++
- drivers/block/cciss.c                              |   26 ++++++++++++++++++++
- 2 files changed, 33 insertions(+), 0 deletions(-)
+ drivers/block/cciss.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-index ac3429d..5a6c8d3 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-+++ b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-@@ -38,3 +38,10 @@ Kernel Version:	2.6.31
- Contact:	iss_storagedev@hp.com
- Description:	Kicks of a rescan of the controller to discover logical
- 		drive topology changes.
-+
-+Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/lunid
-+Date:		August 2009
-+Kernel Version: 2.6.31
-+Contact:	iss_storagedev@hp.com
-+Description:	Displays the 8-byte LUN ID used to address logical
-+		drive Y of controller X.
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 0ff665e..a8684d0 100644
+index a8684d0..84f15ec 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -578,6 +578,31 @@ static ssize_t dev_show_rev(struct device *dev,
- }
- DEVICE_ATTR(rev, S_IRUGO, dev_show_rev, NULL);
+@@ -254,8 +254,6 @@ static inline void removeQ(CommandList_struct *c)
  
-+static ssize_t cciss_show_lunid(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	drive_info_struct *drv = dev_get_drvdata(dev);
-+	struct ctlr_info *h = to_hba(drv->dev->parent);
-+	unsigned long flags;
-+	unsigned char lunid[8];
-+
-+	spin_lock_irqsave(CCISS_LOCK(h->ctlr), flags);
-+	if (h->busy_configuring) {
-+		spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
-+		return -EBUSY;
-+	}
-+	if (!drv->heads) {
-+		spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
-+		return -ENOTTY;
-+	}
-+	memcpy(lunid, drv->LunID, sizeof(lunid));
-+	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
-+	return snprintf(buf, 20, "0x%02x%02x%02x%02x%02x%02x%02x%02x\n",
-+		lunid[0], lunid[1], lunid[2], lunid[3],
-+		lunid[4], lunid[5], lunid[6], lunid[7]);
-+}
-+DEVICE_ATTR(lunid, S_IRUGO, cciss_show_lunid, NULL);
-+
- static struct attribute *cciss_host_attrs[] = {
- 	&dev_attr_rescan.attr,
- 	NULL
-@@ -603,6 +628,7 @@ static struct attribute *cciss_dev_attrs[] = {
- 	&dev_attr_model.attr,
- 	&dev_attr_vendor.attr,
- 	&dev_attr_rev.attr,
-+	&dev_attr_lunid.attr,
- 	NULL
+ #include "cciss_scsi.c"		/* For SCSI tape support */
+ 
+-#define RAID_UNKNOWN 6
+-
+ #ifdef CONFIG_PROC_FS
+ 
+ /*
+@@ -267,6 +265,7 @@ static inline void removeQ(CommandList_struct *c)
+ static const char *raid_label[] = { "0", "4", "1(1+0)", "5", "5+1", "ADG",
+ 	"UNKNOWN"
  };
++#define RAID_UNKNOWN (sizeof(raid_label) / sizeof(raid_label[0])-1)
  
+ static struct proc_dir_entry *proc_cciss;
+ 
+@@ -340,7 +339,7 @@ static int cciss_seq_show(struct seq_file *seq, void *v)
+ 	vol_sz_frac *= 100;
+ 	sector_div(vol_sz_frac, ENG_GIG_FACTOR);
+ 
+-	if (drv->raid_level > 5)
++	if (drv->raid_level < 0 || drv->raid_level > RAID_UNKNOWN)
+ 		drv->raid_level = RAID_UNKNOWN;
+ 	seq_printf(seq, "cciss/c%dd%d:"
+ 			"\t%4u.%02uGB\tRAID %s\n",
 
