@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZIQPVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbZIQPXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbZIQPVG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 11:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbZIQPVG
+	id S1755408AbZIQPXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 11:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZIQPVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 11:21:06 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:53996 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753163AbZIQPVE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 11:21:04 -0400
-Date: Thu, 17 Sep 2009 11:21:07 -0400
-To: Michal Simek <monstr@monstr.eu>
-Cc: microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       Greg Ungerer <gerg@uclinux.org>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>
-Subject: Re: =?us-ascii?B?PT91cy1hc2NpaT9RPz01Qm1p?=
-	=?us-ascii?B?Y3JvYmxhemU9MkR1Y2xpbnV4PTVEPTIwUmU9M0E9MjA9NUJQQVRDSD01RD0y?=
-	=?us-ascii?Q?0Actually=3D20show=3D20KiB=3D20rather=3D20than=3D20pages=3D2?=
-	=?us-ascii?Q?0in=3D20=3D22Freeing=3D20initrd?=
-Message-ID: <20090917152107.GX23700@csclub.uwaterloo.ca>
-References: <20090915165037.GA23702@csclub.uwaterloo.ca> <4AB1E78D.3070007@snapgear.com> <4AB1F9B0.10103@monstr.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AB1F9B0.10103@monstr.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Thu, 17 Sep 2009 11:21:49 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50757 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752892AbZIQPVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 11:21:46 -0400
+From: Jan Kara <jack@suse.cz>
+To: linux-fsdevel@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       linux-mm@kvack.org, npiggin@suse.de
+Subject: [RFC] [PATCH 0/7] Improve VFS to handle better mmaps when blocksize < pagesize (v3)
+Date: Thu, 17 Sep 2009 17:21:40 +0200
+Message-Id: <1253200907-31392-1-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 10:56:16AM +0200, Michal Simek wrote:
-> Greg Ungerer wrote:
-> > Hi Lennart,
-> > 
-> > Lennart Sorensen wrote:
-> >> Fix "Freeing initrd memory:" message on h3800, m68knommu and microblaze
-> >> to show kilobytes as claimed rather than number of pages.
-> >>
-> >> Signed-off-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> > 
-> > Looks ok to me. I can take and push the m68knommu part separately.
-> > Or if Andrew wants to take it all as one, here is an:
-> > 
-> > Acked-by: Greg Ungerer <gerg@uclinux.org>
-> 
-> As Greg wrote. It will be the best to push it separately. IMHO it
-> will be faster. It is up to you. If you want to add it to microblaze
-> branch please send only patch for microblaze.
-> 
-> If not.
-> 
-> Acked-by: Michal Simek <monstr@monstr.eu>
 
-Oh right how silly of me.  3 seperate patches would have been nicer I
-guess.  The original code is certainly copied from one place to the others
-although I have no idea which architecture was the first to get it wrong.
+  Hi,
 
-Would everyone prefer I made 3 patches instead and resent them?
+  here is my next attempt to solve a problems arising with mmaped writes when
+blocksize < pagesize. To recall what's the problem:
 
--- 
-Len Sorensen
+We'd like to use page_mkwrite() to allocate blocks under a page which is
+becoming writeably mmapped in some process address space. This allows a
+filesystem to return a page fault if there is not enough space available, user
+exceeds quota or similar problem happens, rather than silently discarding data
+later when writepage is called.
+
+On filesystems where blocksize < pagesize the situation is complicated though.
+Think for example that blocksize = 1024, pagesize = 4096 and a process does:
+  ftruncate(fd, 0);
+  pwrite(fd, buf, 1024, 0);
+  map = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED, fd, 0);
+  map[0] = 'a';  ----> page_mkwrite() for index 0 is called
+  ftruncate(fd, 10000); /* or even pwrite(fd, buf, 1, 10000) */
+  fsync(fd); ----> writepage() for index 0 is called
+
+At the moment page_mkwrite() is called, filesystem can allocate only one block
+for the page because i_size == 1024. Otherwise it would create blocks beyond
+i_size which is generally undesirable. But later at writepage() time, we would
+like to have blocks allocated for the whole page (and in principle we have to
+allocate them because user could have filled the page with data after the
+second ftruncate()).
+---
+
+  The patches depend on Nick's truncate calling convention rewrite. The first
+three patches in the patchset are just cleanups. The series converts ext4 and
+ext2 filesystems just to give an idea how conversion of a filesystem will
+look like.
+  A few notes to the changes the main patch (patch number 4) does:
+1) zeroing of tail of the last block now does not happen in writepage (which is
+racy anyway as Nick pointed out) and foo_truncate_page but rather when i_size
+is going to be extended.
+2) writeback path does not care about i_size anymore, it uses buffer flags
+instead. An exception is a nobh case where we have to use i_size. Thus
+filesystems not using nobh code can update i_size in write_end without holding
+page_lock.  Filesystems using nobh code still have to update i_size under the
+page_lock since otherwise __mpage_writepage could come early, write just part
+of the page, and clear all dirty bits, thus causing a data loss.
+3) converted filesystems have to make sure that the buffers with valid data
+to write are either mapped or delay before they call block_write_full_page.
+The idea is that they should use page_mkwrite() to setup buffers.
+
+  Both ext2 and ext4 have survived some beating with fsx-linux so they should
+be at least moderately safe to use :). Any comments?
+									Honza
