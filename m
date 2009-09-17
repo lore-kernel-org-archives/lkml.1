@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbZIQQfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbZIQQgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758569AbZIQQfq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 12:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbZIQQfp
+	id S1758610AbZIQQgl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 12:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZIQQgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 12:35:45 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:44373 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753300AbZIQQfp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 12:35:45 -0400
-Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
- maintenance disaster
-From: Scott James Remnant <scott@canonical.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
+	Thu, 17 Sep 2009 12:36:40 -0400
+Received: from mga11.intel.com ([192.55.52.93]:56807 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753420AbZIQQgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 12:36:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,404,1249282800"; 
+   d="scan'208";a="727862150"
+Date: Thu, 17 Sep 2009 09:36:36 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
-In-Reply-To: <20090917141303.428fe73c@lxorguk.ukuu.org.uk>
-References: <m1y6oef08k.fsf@fess.ebiederm.org>
-	 <ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
-	 <20090917141303.428fe73c@lxorguk.ukuu.org.uk>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-zv+tMy1/hBPF6qGZDaNB"
-Date: Thu, 17 Sep 2009 17:35:32 +0100
-Message-Id: <1253205332.4718.9.camel@quest>
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] pci: overwite pci bridge res regs to get big range
+Message-ID: <20090917093636.01db2a74@jbarnes-g45>
+In-Reply-To: <4AAD78C6.2010300@kernel.org>
+References: <4AAD78C6.2010300@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 13 Sep 2009 15:57:10 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  drivers/pci/setup-bus.c |   13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/drivers/pci/setup-bus.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/setup-bus.c
+> +++ linux-2.6/drivers/pci/setup-bus.c
+> @@ -299,8 +299,17 @@ static struct resource *find_free_bus_re
+>  		r = bus->resource[i];
+>  		if (r == &ioport_resource || r == &iomem_resource)
+>  			continue;
+> -		if (r && (r->flags & type_mask) == type
+> && !r->parent)
+> -			return r;
+> +		if (r && (r->flags & type_mask) == type) {
+> +			if (!r->parent)
+> +				return r;
+> +			/*
+> +			 * if there is no child under that, we
+> should release
+> +			 * and use it. don't need to reset it,
+> pbus_size_* will
+> +			 * set it again
+> +			 */
+> +			if (!r->child && !release_resource(r))
+> +				return r;
+> +		}
+>  	}
+>  	return NULL;
+>  }
 
---=-zv+tMy1/hBPF6qGZDaNB
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This does seem like a good way of getting some extra bus space... We
+should have all the child resources of a given bus by this point so it
+seems like it would be safe.
 
-On Thu, 2009-09-17 at 14:13 +0100, Alan Cox wrote:
+You ok with this Linus?
 
-> > >  * A static dev is faster.
-> >=20
-> > A static /dev is unreliable and unpredictable, and can not be used in
-> > any not very limited and controlled environment. It's pure theory for
->=20
-> Moblin appears to be the fastest boot and doesn't use it. I fact Arjan
-> seems pretty anti
->=20
-And of the "ordinary" distros, Ubuntu has the fastest boot and we are
-very keen to use devtmpfs, and I am very pro.
-
-
-I don't really see the issue here.  If Arjan doesn't want to use
-devtmpfs for Moblin, he doesn't have to.  We want to use devtmpfs for
-Ubuntu, and I'm pretty sure that SuSE, Fedora and RedHat all want to too
-based on the signed off and tested-by of the patch.
-
-If there are bugs, they can be fixed as we go.  It certainly works for
-me, and we've even found udev bugs as a result of it.
-
-Scott
---=20
-Scott James Remnant
-scott@canonical.com
-
---=-zv+tMy1/hBPF6qGZDaNB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkqyZVQACgkQSnQiFMl4yK4G7gCfck+R0TWXqIee3UNdaAQhuDuA
-pCoAniU2r9eoK/qXnloe8UyUQcpK/deh
-=vAtT
------END PGP SIGNATURE-----
-
---=-zv+tMy1/hBPF6qGZDaNB--
-
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
