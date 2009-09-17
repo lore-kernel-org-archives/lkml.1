@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933554AbZIQDca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933678AbZIQDcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933554AbZIQDca (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 23:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758423AbZIQDc3
+	id S933678AbZIQDcl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 23:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760009AbZIQDck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 23:32:29 -0400
-Received: from mail.windriver.com ([147.11.1.11]:57790 "EHLO
+	Wed, 16 Sep 2009 23:32:40 -0400
+Received: from mail.windriver.com ([147.11.1.11]:57828 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758284AbZIQDc3 (ORCPT
+	with ESMTP id S1759983AbZIQDcj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 23:32:29 -0400
-Message-ID: <4AB1ADCD.9070407@windriver.com>
-Date: Wed, 16 Sep 2009 22:32:29 -0500
+	Wed, 16 Sep 2009 23:32:39 -0400
+Message-ID: <4AB1ADD7.10600@windriver.com>
+Date: Wed, 16 Sep 2009 22:32:39 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
 To: Alan Stern <stern@rowland.harvard.edu>
 CC: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] usb console,usb-serial: fix regression use of serial->console
-References: <Pine.LNX.4.44L0.0909162326270.24041-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0909162326270.24041-100000@netrider.rowland.org>
+Subject: Re: [PATCH 1/3] usb console: fix mutex lock regression
+References: <Pine.LNX.4.44L0.0909162324460.24041-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0909162324460.24041-100000@netrider.rowland.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Sep 2009 03:32:29.0001 (UTC) FILETIME=[7BA3AB90:01CA3747]
+X-OriginalArrivalTime: 17 Sep 2009 03:32:38.0797 (UTC) FILETIME=[817A6BD0:01CA3747]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -31,61 +31,24 @@ Alan Stern wrote:
 > On Wed, 16 Sep 2009, Jason Wessel wrote:
 >
 >   
->> During the 2.6.32 development usb serial tty interface was changed.
->> This change caused the usb serial driver to crash when used as a
->> system console.
->>
->> The open and close of the raw hardware has to be protected by the
->> serial->console variable so either the console code does the open and
->> close or the higher level tty based driver executes the open and
->> close.
->>
->> * In serial_open() the raw open must be protected by serial->console
->> * In serial_down() the test_and_clear_bit must be executed before
->>   leaving the function if the device is a serial console
->> * serial_release() should no longer protect for the console condition
->>   due to the 2.6.32 interface changes.  The actual low level close
->>   protection is accounted for in serial_down()
->>
->> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
->> Cc: Greg KH <gregkh@suse.de>
->> Cc: Alan Stern <stern@rowland.harvard.edu>
->>
->> ---
->>  drivers/usb/serial/usb-serial.c |   28 +++++++++++++---------------
->>  1 files changed, 13 insertions(+), 15 deletions(-)
->>
->> diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
->> index ff75a35..3d35ed2 100644
->> --- a/drivers/usb/serial/usb-serial.c
->> +++ b/drivers/usb/serial/usb-serial.c
->> @@ -267,10 +267,14 @@ static int serial_open(struct tty_struct *tty, struct file *filp)
->>  		if (mutex_lock_interruptible(&port->mutex))
->>  			return -ERESTARTSYS;
->>  		mutex_lock(&serial->disc_mutex);
->> -		if (serial->disconnected)
->> +		if (serial->disconnected) {
->>  			retval = -ENODEV;
->> -		else
->> -			retval = port->serial->type->open(tty, port);
->> +		} else {
->> +			if (port->console)
->> +				retval = 0;
->> +			else
->> +				retval = port->serial->type->open(tty, port);
->> +		}
->>  		mutex_unlock(&serial->disc_mutex);
->>  		mutex_unlock(&port->mutex);
->>  		if (retval)
+>> During the 2.6.32 development the use of serial->disc_mutex was
+>> introduced.  In usb_console_setup() the call to
+>> usb_serial_get_by_index() will obtain this mutex. The
+>> usb_console_setup() must release the mutex before it completes else
+>> later calls to the usb serial core will hang.
 >>     
 >
-> This part of the patch shouldn't be necessary.  The console device
-> should always be open.
+> Apparently you didn't see my patch:
+>
+> 	http://marc.info/?l=linux-usb&m=125209260714221&w=2
+>
+> Did this not get into linus-next?  Greg?
 >
 >   
 
-With your other patch you just mentioned, I absolutely agree.  This does
-not need to be tracked in this manner and I don't believe this patch is
-needed either.
+Maybe it was not merged at the time.   We'll wait to hear from Greg.
+
+Certainly I would opt to use your more complete implementation. 
 
 
+Jason.
