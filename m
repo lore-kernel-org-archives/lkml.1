@@ -1,86 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759047AbZIQScN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbZIQSml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759047AbZIQScN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZIQScL
+	id S1759031AbZIQSml (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZIQSmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:32:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44065 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752243AbZIQScK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:32:10 -0400
-Date: Thu, 17 Sep 2009 20:31:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] first round of PCI updates for 2.6.32
-Message-ID: <20090917183120.GA1675@elte.hu>
-References: <20090915132105.2fdd1d45@jbarnes-g45> <20090917173012.GA11155@elte.hu> <4AB275A1.8020005@kernel.org>
+	Thu, 17 Sep 2009 14:42:40 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:61764 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbZIQSmj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 14:42:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=EQiSJYj4EXepE3cvlAMmXrUdQprS0TC3LZgZgC7OxT/Cp/mOveNlD8ooZmCxMfCjSw
+         NFOIA15rwB44hd32l8TIUMYxjN/xn5RGfkiTxeZeRqMhod90cxd/R/DmB1jytQd9VFYu
+         cHmXeM6miYIh67KulP4QjznhdfbLE5Xu+x4Y4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AB275A1.8020005@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090917133401.GC24438@mit.edu>
+References: <194f62550909090403x16e61cc1g3a23593085de0b@mail.gmail.com>
+	 <194f62550909160532q248cb45coee639a2da10292a@mail.gmail.com>
+	 <20090916163822.GA15451@mit.edu>
+	 <194f62550909161141n5730049cra2643ce1654a7aaf@mail.gmail.com>
+	 <20090917133401.GC24438@mit.edu>
+Date: Thu, 17 Sep 2009 14:37:31 -0400
+Message-ID: <194f62550909171137t10c28c33t438d2e75a347f95@mail.gmail.com>
+Subject: Re: Howto switch off ext4's delayed allocation?
+From: Clemens Eisserer <linuxhippy@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Thanks, but no need.  I did some investigating, and when I found that
+> kwrite was doing a truncate-and-rewrite, I did some more digging, and
+> found that we had a bug in our truncate hueristics.  I'll get this
+> fixed for 2.6.32, and it will be a candidate for the 2.6.31 stable
+> tree.
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+Cool, thanks a lot :)
 
-> Ingo Molnar wrote:
-> > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > 
-> >> The following changes since commit 332a3392188e0ad966543c87b8da2b9d246f301d:
-> >>   Linus Torvalds (1):
-> >>         Merge git://git.kernel.org/.../herbert/crypto-2.6
-> > 
-> > Since this went upstream -tip tests have been triggering nasty bootup 
-> > crashes in the PCI code:
-> > 
-> > [    4.366174] initcall pci_proc_init+0x0/0x7a returned 0 after 976 usecs
-> > [    4.373009] calling  pcie_portdrv_init+0x0/0x60 @ 1
-> > [    4.378368] bus: 'pci_express': registered
-> > [    4.382009] bus: 'pci': add driver pcieport-driver
-> > [    4.387058] bus: 'pci': driver_probe_device: matched device 0000:00:0b.0 with driver pcieport-driver
-> > [    4.396005] bus: 'pci': really_probe: probing driver pcieport-driver with device 0000:00:0b.0
-> > [    4.404056] cpumask_of_node(255): node > nr_node_ids(16)
-> 
-> please check
-> 
-> [PATCH] x86/pci: retore 32bit to node0 as default node
-> 
-> to fix crash on 32bit system
-> 
-> diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-> index 5db96d4..e562ade 100644
-> --- a/arch/x86/pci/common.c
-> +++ b/arch/x86/pci/common.c
-> @@ -646,9 +646,7 @@ int get_mp_bus_to_node(int busnum)
->  
->  #else /* CONFIG_X86_32 */
->  
-> -static unsigned char mp_bus_to_node[BUS_NR] = {
-> -	[0 ... BUS_NR - 1] = -1
-> -};
-> +static unsigned char mp_bus_to_node[BUS_NR];
->  
->  void set_mp_bus_to_node(int busnum, int node)
->  {
-
-This seems to have done the trick, thanks!
-
-Tested-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+- Clemens
