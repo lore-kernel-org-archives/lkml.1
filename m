@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbZIQSLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbZIQSS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbZIQSLc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbZIQSLb
+	id S1753528AbZIQSS2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZIQSS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:11:31 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:59445 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbZIQSLb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:11:31 -0400
-Date: Thu, 17 Sep 2009 19:11:33 +0100
-From: Andrew Price <andy@andrewprice.me.uk>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: rt2x00dev.c:405: error: =?utf-8?Q?too_?=
-	=?utf-8?Q?few_arguments_to_function_=E2=80=98rt2x00crypto=5Frx=5Finsert?=
-	=?utf-8?B?X2l24oCZ?=
-Message-ID: <20090917181133.GA5797@sucs.org>
-Mail-Followup-To: Andrew Price <andy@andrewprice.me.uk>,
-	"John W. Linville" <linville@tuxdriver.com>,
-	Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org
-References: <20090917154138.GA31844@sucs.org> <20090917172358.GC2577@tuxdriver.com>
+	Thu, 17 Sep 2009 14:18:27 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:54002 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751038AbZIQSS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 14:18:26 -0400
+Date: Thu, 17 Sep 2009 19:18:32 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       heiko.carstens@de.ibm.com, mingo@elte.hu, sachinp@in.ibm.com
+Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and S390
+Message-ID: <20090917181831.GA714@csn.ul.ie>
+References: <1253083059.5478.1.camel@penberg-laptop> <20090917100841.GF13002@csn.ul.ie> <1253183365.4975.20.camel@penberg-laptop> <20090917105707.GA7205@csn.ul.ie> <1253186019.4975.32.camel@penberg-laptop> <20090917111828.GB7205@csn.ul.ie> <20090917114116.GL18404@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090917172358.GC2577@tuxdriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090917114116.GL18404@wotan.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 01:23:59PM -0400, John W. Linville wrote:
-> On Thu, Sep 17, 2009 at 04:41:39PM +0100, Andrew Price wrote:
-> > Hi Ivo,
+On Thu, Sep 17, 2009 at 01:41:16PM +0200, Nick Piggin wrote:
+> On Thu, Sep 17, 2009 at 12:18:28PM +0100, Mel Gorman wrote:
+> > On Thu, Sep 17, 2009 at 02:13:39PM +0300, Pekka Enberg wrote:
+> > > On Thu, 2009-09-17 at 11:08 +0100, Mel Gorman wrote:
+> > > > > > The danger is if SLQB is being silently disabled, it'll never be noticed
+> > > > > > or debugged :/
+> > > > > 
+> > > > > Maybe, but that's not an excuse to push something that's known to break. 
+> > > 
+> > > On Thu, 2009-09-17 at 11:57 +0100, Mel Gorman wrote:
+> > > > Wow, this is from back in May! Lame.
+> > > 
+> > > Heh, my (lame) excuse is lack of relevant hardware.... ;-)
+> > > 
 > > 
-> > Apologies if this has already been reported. Building today's mainline
-> > kernel (ab86e5) I'm seeing this error:
-> > 
-> > drivers/net/wireless/rt2x00/rt2x00dev.c: In function ‘rt2x00lib_rxdone’:
-> > drivers/net/wireless/rt2x00/rt2x00dev.c:405: warning: passing argument 3 of ‘rt2x00crypto_rx_insert_iv’ makes integer from pointer without a cast
-> > drivers/net/wireless/rt2x00/rt2x00dev.c:405: error: too few arguments to function ‘rt2x00crypto_rx_insert_iv’
+> > I'm not blaming you. It's just ... unfortunate :/
 > 
-> Strange...I don't see this warning.  Are you sure you have a clean checkout?
+> Ahh... it's pretty lame of me. Sachin has been a willing tester :(
+> I have spent quite a few hours looking at it but I never found
+> many good leads. Much appreciated if you can make more progress on
+> it.
 
-I double-checked:
+Nothing much so far. I've reproduced the problem based on 2.6.31 and slqb-core
+from Pekka's tree but not a whole pile else. I don't know SLQB at all so the
+investigation is fuzzy. It appears to initialise SLQB ok but crashes later when
+setting up SCSI. Not 100% sure what the triggering event is but it might be
+userspace starting up and other CPUs get involved, possibly corrupting lists.
 
-- git status returned no changes
-- git clean -fqdx
-- ccache -C
-- Retried the build
+This machine has two CPUs (0, 1) and two nodes with actual memory (2,3).
+After applying a patch to kmem_cache_create, I see in the console
 
-and still got the same error. Is this something to do with the second
-definition of rt2x00crypto_rx_insert_iv still having an l2pad parameter...
+MEL::Creating cache pgd_cache CPU 0 Node 0
+MEL::Creating cache pmd_cache CPU 0 Node 0
+MEL::Creating cache pid_namespace CPU 0 Node 0
+MEL::Creating cache shmem_inode_cache CPU 0 Node 0
+MEL::Creating cache scsi_data_buffer CPU 1 Node 0
 
-This (untested) patch fixes the build for me:
+It crashes at this point during creation before the struct kmem_cache has
+been allocated from kmem_cache_cache. Note it's kmem_cache_cache we are
+failing to allocate from, not scsi_data_buffer.
 
---
+I have no theories yet but will stick with it. Any suggestions on where
+to investigate are welcome. Will pick this up again tomorrow.
 
-diff --git a/drivers/net/wireless/rt2x00/rt2x00lib.h b/drivers/net/wireless/rt2x00/rt2x00lib.h
-index 5462cb5..567f029 100644
---- a/drivers/net/wireless/rt2x00/rt2x00lib.h
-+++ b/drivers/net/wireless/rt2x00/rt2x00lib.h
-@@ -380,7 +380,7 @@ static inline void rt2x00crypto_tx_insert_iv(struct sk_buff *skb,
- {
- }
- 
--static inline void rt2x00crypto_rx_insert_iv(struct sk_buff *skb, bool l2pad,
-+static inline void rt2x00crypto_rx_insert_iv(struct sk_buff *skb,
- 					     unsigned int header_length,
- 					     struct rxdone_entry_desc *rxdesc)
- {
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
