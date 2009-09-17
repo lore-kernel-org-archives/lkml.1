@@ -1,75 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbZIQI7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbZIQJNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbZIQI7v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 04:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZIQI7v
+	id S1758273AbZIQJNd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 05:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757696AbZIQJNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 04:59:51 -0400
-Received: from mga06.intel.com ([134.134.136.21]:13533 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752152AbZIQI7u (ORCPT
+	Thu, 17 Sep 2009 05:13:32 -0400
+Received: from 30.mail-out.ovh.net ([213.186.62.213]:47558 "HELO
+	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758090AbZIQJN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 04:59:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,402,1249282800"; 
-   d="scan'208";a="551358685"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [Xen-devel] [RFC][PATCH 0/10] Xen Hybrid extension support
-Date: Thu, 17 Sep 2009 16:59:47 +0800
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; x86_64; ; )
-Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       "xen-devel" <xen-devel@lists.xensource.com>,
-       Eddie Dong <eddie.dong@intel.com>, linux-kernel@vger.kernel.org,
-       Jun Nakajima <jun.nakajima@intel.com>
-References: <1253090551-7969-1-git-send-email-sheng@linux.intel.com> <20090916133104.GB14725@phenom.dumpdata.com>
-In-Reply-To: <20090916133104.GB14725@phenom.dumpdata.com>
+	Thu, 17 Sep 2009 05:13:29 -0400
+Date: Thu, 17 Sep 2009 11:00:38 +0200
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-usb@vger.kernel.org, patrice.vilchez@atmel.com,
+       linux-kernel@vger.kernel.org, david-b@pacbell.net, avictor.za@gmail.com,
+       haavard.skinnemoen@atmel.com, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] at91: use gpiolib calls for USB vbus pin on at91sam9g45
+Message-ID: <20090917090038.GD29905@game.jcrosoft.org>
+References: <4AB10F7D.9060706@atmel.com>
+ <1253122169-14806-1-git-send-email-nicolas.ferre@atmel.com>
+ <20090916215328.GG4172@game.jcrosoft.org>
+ <4AB1EFC5.2060707@atmel.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909171659.48569.sheng@linux.intel.com>
+In-Reply-To: <4AB1EFC5.2060707@atmel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Ovh-Tracer-Id: 18296436437471374188
+X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|U 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 September 2009 21:31:04 Konrad Rzeszutek Wilk wrote:
-> On Wed, Sep 16, 2009 at 04:42:21PM +0800, Sheng Yang wrote:
-> > Hi, Keir & Jeremy
-> >
-> > This patchset enabled Xen Hybrid extension support.
-> >
-> > As we know that PV guest have performance issue with x86_64 that guest
-> > kernel and userspace resistent in the same ring, then the necessary TLB
-> > flushes when switch between guest userspace and guest kernel cause
-> > overhead, and much more syscall overhead is also introduced. The Hybrid
-> > Extension estimated these overhead by putting guest kernel back in
-> > (non-root) ring0 then achieve the better performance than PV guest.
->
-> What was the overhead? Is there a step-by-step list of operations you did
-> to figure out the performance numbers?
+On 10:13 Thu 17 Sep     , Nicolas Ferre wrote:
+> Jean-Christophe PLAGNIOL-VILLARD :
+> > On 19:29 Wed 16 Sep     , Nicolas Ferre wrote:
+> >> Change pin configuration for USB vbus on at91sam9g45: use the generic gpiolib
+> >> call instead of the at91 specific one.
+> >> Use gpio_request() function with same identifier for OHCI and EHCI hosts as
+> >> they are sharing the same pin.
+> >>
+> >> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> >> ---
+> >> This patch is on top of at91sam9g45 USB integration one:
+> >> "[PATCH 2/2] at91/USB: at91sam9g45 series USB host integration"
+> >> http://lkml.org/lkml/2009/6/9/221
+> >>
+> >>  arch/arm/mach-at91/at91sam9g45_devices.c |   12 ++++++++----
+> >>  1 files changed, 8 insertions(+), 4 deletions(-)
+> >>
+> >> diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
+> >> index 5be8cf2..7d939c0 100644
+> >> --- a/arch/arm/mach-at91/at91sam9g45_devices.c
+> >> +++ b/arch/arm/mach-at91/at91sam9g45_devices.c
+> >> @@ -118,8 +118,10 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
+> >>  
+> >>  	/* Enable VBus control for UHP ports */
+> >>  	for (i = 0; i < data->ports; i++) {
+> >> -		if (data->vbus_pin[i])
+> >> -			at91_set_gpio_output(data->vbus_pin[i], 0);
+> >> +		if (data->vbus_pin[i]) {
+> >> +			gpio_request(data->vbus_pin[i], "usb host vbus");
+> >> +			gpio_direction_output(data->vbus_pin[i], 0);
+> >> +		}
+> >>  	}
+> >>  
+> >>  	usbh_ohci_data = *data;
+> >> @@ -173,8 +175,10 @@ void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data)
+> >>  
+> >>  	/* Enable VBus control for UHP ports */
+> >>  	for (i = 0; i < data->ports; i++) {
+> >> -		if (data->vbus_pin[i])
+> >> -			at91_set_gpio_output(data->vbus_pin[i], 0);
+> >> +		if (data->vbus_pin[i]) {
+> >> +			gpio_request(data->vbus_pin[i], "usb host vbus");
+> >> +			gpio_direction_output(data->vbus_pin[i], 0);
+> >> +		}
+> >>  	}
+> > as you do the same think for ehci & ohci why not factorize it?
+> 
+> Just because you may choose only one or the other controller.
+> For instance, if you only want ohci, you can disable ehci selection and
+> always have its configuration done.
+I agree but both configuration function share some code which could be
+factorize, is it not?
 
-The overhead I mentioned is, in x86_64 pv guest, every syscall would be goes 
-to hypervisor first, then hypervisor transmit it to guest kernel, finally 
-guest kernel goes back to guest userspace. Due to the involvement of 
-hypervisor, there is certainly overhead. And every transition result in TLB 
-flush. In 32bit pv guest, guest use #int82 to emulate syscall, which can 
-specific the privilege level, so that hypervisor don't need involve. 
-
-And sorry, I don't have a step-by-step list for the performance tunning. All 
-above is a known issue of x86_64 pv guest.
->
-> I am asking this b/c at some point I would like to compare the pv-ops vs
-> native and I am not entirely sure what is the best way to do this.
-
-Sorry, I don't have much advise on this. If you means tuning, what I can 
-purposed is just running some microbenchmark(lmbench is a favor of mine), 
-collect (guest) hot function with xenoprofile and compare the result of native 
-and pv-ops to figure out the gap...
-
--- 
-regards
-Yang, Sheng
+Best Regards,
+J.
