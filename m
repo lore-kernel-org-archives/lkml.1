@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933573AbZIQDIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbZIQDQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933573AbZIQDIW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 23:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757949AbZIQDIV
+	id S1759810AbZIQDQs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 23:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbZIQDQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 23:08:21 -0400
-Received: from mail.windriver.com ([147.11.1.11]:54808 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755241AbZIQDIS (ORCPT
+	Wed, 16 Sep 2009 23:16:47 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:64388 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756600AbZIQDQr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 23:08:18 -0400
-From: Jason Wessel <jason.wessel@windriver.com>
-To: gregkh@suse.de
-Cc: linux-usb@vger.kernel.org, stern@rowland.harvard.edu,
-       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 3/3] usb console,usb-serial: pass initial console baud on to first tty open
-Date: Wed, 16 Sep 2009 22:08:07 -0500
-Message-Id: <1253156887-31597-4-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1253156887-31597-3-git-send-email-jason.wessel@windriver.com>
-References: <1253156887-31597-1-git-send-email-jason.wessel@windriver.com>
- <1253156887-31597-2-git-send-email-jason.wessel@windriver.com>
- <1253156887-31597-3-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 17 Sep 2009 03:08:17.0869 (UTC) FILETIME=[1AB27FD0:01CA3744]
+	Wed, 16 Sep 2009 23:16:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OmPX8FRdSf0HHavDwBd3S1jPe2Q8X0Fj2+8UZJYYdx1CtkGxXA8WthRS9BJuFwa/MR
+         DVhZon6E5ePHHduTxHmxjRRoHj717eD+JBIUDi8PbF1bKt/DGUTtQIYfM5Wj1AqZq90+
+         7bcNvp/EkTvGku0M6YZOQDg4tvddCDYO2pXz0=
+MIME-Version: 1.0
+In-Reply-To: <1bc66b163326564dafb5a7dd8959fd56.squirrel@webmail-b.css.fujitsu.com>
+References: <2375c9f90909160235m1f052df0qb001f8243ed9291e@mail.gmail.com>
+	 <1bc66b163326564dafb5a7dd8959fd56.squirrel@webmail-b.css.fujitsu.com>
+Date: Thu, 17 Sep 2009 11:09:17 +0800
+Message-ID: <2375c9f90909162009w5cca547ah5df74972694eab09@mail.gmail.com>
+Subject: Re: kcore patches (was Re: 2.6.32 -mm merge plans)
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The first open of the usb serial HW has the termios initialized to the
-default of 9600 baud, and this will override what ever was setup via
-the original console initialization.
+2009/9/16 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+> Am�+1rico_Wang さんは書きました：
+>> On Wed, Sep 16, 2009 at 7:15 AM, Andrew Morton
+>> <akpm@linux-foundation.org> wrote:
+>>>#kcore-fix-proc-kcores-statst_size.patch: is it right?
+>>>kcore-fix-proc-kcores-statst_size.patch
+>>
+>> Hmm, I think KAMEZAWA Hiroyuki's patchset is a much better fix for this.
+>> Hiroyuki?
+>>
+> Hmm ? My set is not agaisnt "file size" of /proc/kcore.
+>
+> One problem of this patch is..this makes size of /proc/kcore as 0 bytes.
+> Then, objdump cannot read this. (it checks file size.)
+> readelf can read this. (it ignores file size.)
 
-The solution is to save the console baud rate and re-use it later on
-the first tty open, so as to allow the use of baud rates other than
-the default 9600 for the usb serial console.
+Hmm, ok.
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Cc: Greg KH <gregkh@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>
 
----
- drivers/usb/serial/console.c    |    1 +
- drivers/usb/serial/usb-serial.c |    8 ++++++--
- include/linux/usb/serial.h      |    1 +
- 3 files changed, 8 insertions(+), 2 deletions(-)
+>
+> I wonder what you mention is.... because we know precise kclist_xxx
+> after my series, we can calculate kcore's size in precise by
+> get_kcore_size().
 
-diff --git a/drivers/usb/serial/console.c b/drivers/usb/serial/console.c
-index 166ba4e..4fd5b52 100644
---- a/drivers/usb/serial/console.c
-+++ b/drivers/usb/serial/console.c
-@@ -175,6 +175,7 @@ static int usb_console_setup(struct console *co, char *options)
- 	/* The console is special in terms of closing the device so
- 	 * indicate this port is now acting as a system console. */
- 	port->console = 1;
-+	port->console_init_baud = baud;
- 	retval = 0;
- 	mutex_unlock(&serial->disc_mutex);
- 
-diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
-index 3d35ed2..f931738 100644
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -270,10 +270,14 @@ static int serial_open(struct tty_struct *tty, struct file *filp)
- 		if (serial->disconnected) {
- 			retval = -ENODEV;
- 		} else {
--			if (port->console)
-+			if (port->console) {
-+				tty_encode_baud_rate(tty,
-+				     port->console_init_baud,
-+				     port->console_init_baud);
- 				retval = 0;
--			else
-+			} else {
- 				retval = port->serial->type->open(tty, port);
-+			}
- 		}
- 		mutex_unlock(&serial->disc_mutex);
- 		mutex_unlock(&port->mutex);
-diff --git a/include/linux/usb/serial.h b/include/linux/usb/serial.h
-index c17eb64..a7c8725 100644
---- a/include/linux/usb/serial.h
-+++ b/include/linux/usb/serial.h
-@@ -109,6 +109,7 @@ struct usb_serial_port {
- 	char			throttled;
- 	char			throttle_req;
- 	char			console;
-+	int			console_init_baud;
- 	unsigned long		sysrq; /* sysrq timeout */
- 	struct device		dev;
- 	enum port_dev_state	dev_state;
--- 
-1.6.4.rc1
 
+Yeah, that is why I think your patchset for kcore can replace this.
+
+>
+> It seems /proc's inode->i_size is "static" and we cannot
+> provides return value of get_kcore_size() directly. It may need
+> some work and should depends on my kclist_xxx patch sets which are not
+> in merge candidates. If you can wait, I'll do some work for fixing this
+> problem. (but will not be able to merge directly against upstream.)
+>
+> But for now, we have to use some fixed value....and using above
+> patch for 2.6.31 is not very bad.
+
+
+Just saw your new patchset for this, I will review them.
+
+Thanks.
