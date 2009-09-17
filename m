@@ -1,240 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbZIQQiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbZIQQkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbZIQQiR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 12:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbZIQQiO
+	id S1758667AbZIQQkv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 12:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZIQQku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 12:38:14 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36370 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758539AbZIQQiL (ORCPT
+	Thu, 17 Sep 2009 12:40:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37225 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751718AbZIQQkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 12:38:11 -0400
-Date: Thu, 17 Sep 2009 18:38:06 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Joel Becker <Joel.Becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
-Message-ID: <20090917183806.4c9d1849@infradead.org>
-In-Reply-To: <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain>
-References: <20090914221434.GA4507@mail.oracle.com>
-	<alpine.LFD.2.01.0909141614350.4950@localhost.localdomain>
-	<20090915000417.GC4507@mail.oracle.com>
-	<alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
-	<20090915005417.GD4507@mail.oracle.com>
-	<alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
-	<20090915040601.GE4507@mail.oracle.com>
-	<alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
-	<20090915214530.GA11060@mail.oracle.com>
-	<alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
-	<20090916044047.GA30453@mail.oracle.com>
-	<alpine.LFD.2.01.0909170856050.4950@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 17 Sep 2009 12:40:49 -0400
+Date: Thu, 17 Sep 2009 09:40:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jamie Lokier <jamie@shareable.org>
+cc: Evgeniy Polyakov <zbr@ioremap.net>, Eric Paris <eparis@redhat.com>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
+Subject: Re: fanotify as syscalls
+In-Reply-To: <20090916122723.GE29359@shareable.org>
+Message-ID: <alpine.LFD.2.01.0909170934450.4950@localhost.localdomain>
+References: <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com> <20090911212731.GA19901@shareable.org> <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com> <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org> <20090914140720.GA8564@ioremap.net>
+ <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com> <20090915201620.GB32192@ioremap.net> <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com> <20090916120523.GA12830@ioremap.net> <20090916122723.GE29359@shareable.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Sep 2009 09:29:14 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> 
-> 
-> On Tue, 15 Sep 2009, Joel Becker wrote:
-> > 
-> > 	Ok.  Where do you see the exposure level?  What I mean is, I
-> > just defined a vfs op that handles these things, but accessed it
-> > via two syscalls, sys_snapfile() and sys_copyfile().  We could also
-> > just provide one system call and allow userspace to use these flags
-> > itself, creating snapfile(3) and copyfile(3) in libc
-> 
-> Why would anybody want to hide it at all? Why even the libc hiding?
-> 
-> Nobody is going to use this except for special apps. Let them see
-> what they can do, in all its glory. 
-> 
-> > > I still worry that especially the non-atomic case will want some
-> > > kind of partial-copy updates (think graphical file managers that
-> > > want to show the progress of the copy), and that (think EINTR and
-> > > continuing) makes me think "that could get really complex really
-> > > quickly", but that's something that the NFS/SMB people would have
-> > > to pipe up on. I'm pretty sure the NFS spec has some kind
-> > > "partial completion notification" model, I dunno about SMB.
-> > 
-> > 	I'm really wary of combining a ranged interface with this
-> > one. Not only does it make no sense for snapshots, but I think it
-> > falls down in any "create a new inode" scheme entirely.
-> 
-> Oh, I wouldn't suggest a ranged interface, just one that allows for
-> status updates and cancelling - _if_ the initial op isn't atomic to
-> begin with. There's also the issue of concurrency in IO: maybe you
-> want to start several things without necessarily waiting for them
-> (think high-throughput "cp -R" on NFS or something like that).
-> 
-> So I'd suggest something like having two system calls: one to start
-> the operation, and one to control it. And for a filesystem that does
-> atomic copies, the 'start' one obviously would also finish it, so the
-> 'control' it would be a no-op, because there would never be any
-> outstanding ones.
-> 
-> See what I'm saying? It wouldn't complicate _your_ life, but it would 
-> allow for filesystems that can't do it atomically (or even quickly).
-> 
-> So the first one would be something like
-> 
-> 	int copyfile(const char *src, const char *dest, unsigned long
-> flags);
-> 
-> which would return:
-> 
->  - zero on success
->  - negative (with errno) on error
->  - positive cookie on "I started it, here's my cookie". For extra
-> bonus points, maybe the cookie would actually be a file descriptor
-> (for poll/select users), but it would _not_ be a file descriptor to
-> the resulting _file_, it would literally be a "cookie" to the actual 
->    copyfile event.
-> 
-> and then for ocfs2 you'd never return positive cookies. You'd never
-> have to worry about it.
-> 
-> Then the second interface would be something like
-> 
-> 	int copyfile_ctrl(long cookie, unsigned long cmd);
-> 
-> where you'd just have some way to wait for completion and ask how
-> much has been copied. The 'cmd' would be some set of 'cancel',
-> 'status' or 'uninterruptible wait' or whatever, and the return value
-> would again be
-> 
->  - negative (with errno) for errors (copy failed) - cookie released
->  - zero for 'done' - cookie released
->  - positive for 'percent remaining' or whatever - cookie still valid
-> 
-> and this would be another callback into the filesystem code, but
-> you'd never have to worry about it, since you'd never see it (just
-> leave it NULL).
-> 
-> NOTE! The above is a rough idea - I have not spent tons of time
-> thinking about it, or looking at exactly what something like NFS
-> would really want. But the _concept_ is simple, and usage should be
-> pretty trivial. A simple case would be something like this:
-> 
->    int copy_file(const char *src, const char *dst)
->    {
-> 	/* Start a file copy */
-> 	int cookie = copyfile(src, dst, 0);
-> 
-> 	/* Async case? */
-> 	if (cookie > 0) {
-> 		int ret;
-> 
-> 		while ((ret = copyfile_ctrl(cookie, COPYFILE_WAIT)) >
-> 0) /* nothing */;
-> 
-> 		/* Error handling is shared for async/sync */
-> 		cookie = ret;
-> 	}
-> 	if (cookie < 0) {
-> 		perror("copyfile failed");
-> 		return -1;
-> 	}
-> 	return 0;
->    }
-> 
-> doesn't that look fairly easy to use?
-> 
-> And the advantage here is that you _can_ - still fairly easily - do
-> much more involved things. For example, let's say that you wanted to
-> do a very efficient parallel copy, so you'd do something like this:
-> 
-> 	#define MAX_PEND 10
-> 	static int pending[MAX_PEND];
-> 	static int nr_pending = 0;
-> 
-> 	static int wait_for_completion(int nr_left)
-> 	{
-> 		int ret;
-> 
-> 		while (nr_pending > nr_left) {
-> 			int cookie = pending[0], i;
-> 
-> 			/* Wait for completion of the oldest entry */
-> 			while ((i = copyfile_ctrl(cookie,
-> COPYFILE_WAIT)) > 0) /* nothing */;
-> 
-> 			/* Save the "we had an error" case */
-> 			if (i < 0)
-> 				ret = i;
-> 
-> 			/* Move the other entries down */
-> 			memmove(pending, pending+1,
-> sizeof(int)*--nr_pending); }
-> 		return ret;
-> 	}
-> 
-> 	int start_copy(src, dst)
-> 	{
-> 		int cookie, ret;
-> 
-> 		cookie = copyfile(src, dst, 0);
-> 		if (cookie <= 0)
-> 			return cookie;
-> 
-> 		ret = 0;
-> 		if (nr_pending == MAX_PENDING)
-> 			ret = wait_for_completion(pending,
-> MAX_PENDING/2);
-> 
-> 		pending[nr_pending++] = cookie;
-> 		return ret;
-> 	}
-> 
-> 	int stop_copy(void)
-> 	{
-> 		return wait_for_completion(pending, 0);
-> 	}
-> 
-> which basically ends up having ten copyfile() calls outstanding (and
-> when we hit the limit, we wait for half of them to complete), so now
-> you can do an efficient "cp -R" with concurrent server-side IO. And
-> it wasn't so hard, was it?
-> 
-> (Ok, so the above would need to be fleshed out to remember the
-> filenames so that you can report _which_ file failed etc, but you get
-> the idea).
-> 
-> And again, it wouldn't be any more complicated for your case. Your 
-> copyfile would always just return 0 or negative for error. But it
-> would be _way_ more powerful for filesystems that want to do
-> potentially lots of IO for the file copy.
-> 
-> I dunno. The above seems like a fairly simple and powerful interface,
-> and I _think_ it would be ok for NFS and CIFS. And in fact, if that
-> whole "background copy" ends up being used a lot, maybe even a local
-> filesystem would implement it just to get easy overlapping IO - even
-> if it would just be a trivial common wrapper function that says
-> "start a thread to do a trivial manual copy".
-
-or make it one level simpler?
-Have a "wait for all started copies" call only.... saves a ton of book
-keeping, and is likely what people will use it for in the end anyway.
 
 
-(implementation wise the fallback implementation could then just use
-the async function calls if it wanted to, and just wait for all copies
-to finish in the complete call)
+On Wed, 16 Sep 2009, Jamie Lokier wrote:
+> 
+> I'd forgotten about Linus' strace argument.  That's a good one.
+> 
+> Of course everything should be a syscall by that argument :-)
 
+Oh yes, everything _should_ be a syscall.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+The problem is that many things are too "amorphous" to be system calls, 
+and don't have any sane generic semantics (ie they only act on a specific 
+device node). So we have ioctl's etc for those things.
+
+And then we have page faults. I've long wished that from a system call 
+tracing standpoint we could show page faults as pseudo-system-calls (at 
+least as long as they happen from user space - trying to handle nesting is 
+not worth it). It would make it _so_ much more obvious what the 
+performance patterns are if you could just do
+
+	strace -ttT firefox
+
+for the cold-cache case and you'd see where the time is really spent.
+
+(yeah, yeah, you can get that kind of information other ways, but it's a 
+hell of a lot less convenient than just getting a nice trace with 
+timestamps).
+
+> And strace can trace some ioctls and setsockopts.  (But it's never
+> pretty to see isatty() showing in strace as SNDCTL_TMR_TIMEBASE :-)
+
+Yes, strace can fix things up, and show "send a packet" as "fanotify". But 
+it's nasty and hard. 
+
+Quite frankly, I have _never_ever_ seen a good reason for talking to the 
+kernel with some idiotic packet interface. It's just a fancy way to do 
+ioctl's, and everybody knows that ioctl's are bad and evil. Why are fancy 
+packet interfaces suddenly much better?
+
+			Linus
