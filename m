@@ -1,222 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZIQO46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZIQPDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478AbZIQO46 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 10:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZIQO45
+	id S1752633AbZIQPDZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 11:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbZIQPDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 10:56:57 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:49912 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752293AbZIQO45 (ORCPT
+	Thu, 17 Sep 2009 11:03:24 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:50059 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbZIQPDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 10:56:57 -0400
-Subject: Re: [GIT] HID patches for 2.6.32 merge window
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.2.00.0909171519030.17028@wotan.suse.de>
-References: <alpine.LNX.2.00.0909132014310.17028@wotan.suse.de>
-	 <1252922794.3421.3.camel@localhost.localdomain>
-	 <alpine.LNX.2.00.0909141210590.17028@wotan.suse.de>
-	 <1252926408.3421.7.camel@localhost.localdomain>
-	 <alpine.LNX.2.00.0909151630180.17028@wotan.suse.de>
-	 <1253154629.28416.13.camel@localhost.localdomain>
-	 <alpine.LNX.2.00.0909171519030.17028@wotan.suse.de>
-Content-Type: text/plain
-Date: Thu, 17 Sep 2009 07:56:52 -0700
-Message-Id: <1253199412.28416.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Sep 2009 11:03:23 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAITssUqrR7MV/2dsb2JhbADGYohOAZA4BYQY
+X-IronPort-AV: E=Sophos;i="4.44,404,1249257600"; 
+   d="scan'208";a="390685556"
+From: Roland Dreier <rdreier@cisco.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       general@lists.openfabrics.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins>
+	<adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com>
+	<1253198976.14935.27.camel@laptop>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 17 Sep 2009 08:03:25 -0700
+In-Reply-To: <1253198976.14935.27.camel@laptop> (Peter Zijlstra's message of
+	"Thu, 17 Sep 2009 16:49:36 +0200")
+Message-ID: <adazl8td35u.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Sep 2009 15:03:25.0695 (UTC) FILETIME=[01C128F0:01CA37A8]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
 
-> > > diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
-> > > index 09bedeb..75df1e1 100644
-> > > --- a/net/bluetooth/hidp/core.c
-> > > +++ b/net/bluetooth/hidp/core.c
-> > > @@ -576,15 +576,8 @@ static int hidp_session(void *arg)
-> > >  		session->input = NULL;
-> > >  	}
-> > >  
-> > > -	if (session->hid) {
-> > > -		if (session->hid->claimed & HID_CLAIMED_INPUT)
-> > > -			hidinput_disconnect(session->hid);
-> > > -		if (session->hid->claimed & HID_CLAIMED_HIDRAW)
-> > > -			hidraw_disconnect(session->hid);
-> > > -
-> > > +	if (session->hid)
-> > >  		hid_destroy_device(session->hid);
-> > > -		session->hid = NULL;
-> > > -	}
-> > 
-> > can you please leave the session->hid = NULL part inside the code. It is
-> > important that it stays. Other than that
-> > 
-> > Acked-by: Marcel Holtmann <marcel@holtmann.org>
-> 
-> Thanks. I now have the patch below in the queue
-> 
-> 
-> 
-> From: Jiri Kosina <jkosina@suse.cz>
-> Subject: [PATCH] HID: consolidate connect and disconnect into core code
-> 
-> HID core registers input, hidraw and hiddev devices, but leaves
-> unregistering it up to the individual driver, which is not really nice.
-> Let's move all the logic to the core.
-> 
-> Reported-by: Marcel Holtmann <marcel@holtmann.org>
-> Reported-by: Brian Rogers <brian@xyzw.org>
-> Acked-by: Marcel Holtmann <marcel@holtmann.org>
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> ---
->  drivers/hid/hid-core.c        |   11 +++++++++++
->  drivers/hid/usbhid/hid-core.c |   16 +++++-----------
->  include/linux/hid.h           |    3 +++
->  net/bluetooth/hidp/core.c     |    7 -------
->  4 files changed, 19 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-> index ca9bb26..be34d32 100644
-> --- a/drivers/hid/hid-core.c
-> +++ b/drivers/hid/hid-core.c
-> @@ -1237,6 +1237,17 @@ int hid_connect(struct hid_device *hdev, unsigned int connect_mask)
->  }
->  EXPORT_SYMBOL_GPL(hid_connect);
->  
-> +void hid_disconnect(struct hid_device *hdev)
-> +{
-> +	if (hdev->claimed & HID_CLAIMED_INPUT)
-> +		hidinput_disconnect(hdev);
-> +	if (hdev->claimed & HID_CLAIMED_HIDDEV)
-> +		hdev->hiddev_disconnect(hdev);
-> +	if (hdev->claimed & HID_CLAIMED_HIDRAW)
-> +		hidraw_disconnect(hdev);
-> +}
-> +EXPORT_SYMBOL_GPL(hid_disconnect);
-> +
->  /* a list of devices for which there is a specialized driver on HID bus */
->  static const struct hid_device_id hid_blacklist[] = {
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_A4TECH, USB_DEVICE_ID_A4TECH_WCP32PU) },
-> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-> index 1b0e07a..03bd703 100644
-> --- a/drivers/hid/usbhid/hid-core.c
-> +++ b/drivers/hid/usbhid/hid-core.c
-> @@ -1041,13 +1041,6 @@ static void usbhid_stop(struct hid_device *hid)
->  
->  	hid_cancel_delayed_stuff(usbhid);
->  
-> -	if (hid->claimed & HID_CLAIMED_INPUT)
-> -		hidinput_disconnect(hid);
-> -	if (hid->claimed & HID_CLAIMED_HIDDEV)
-> -		hiddev_disconnect(hid);
-> -	if (hid->claimed & HID_CLAIMED_HIDRAW)
-> -		hidraw_disconnect(hid);
-> -
->  	hid->claimed = 0;
->  
->  	usb_free_urb(usbhid->urbin);
-> @@ -1085,7 +1078,7 @@ static struct hid_ll_driver usb_hid_driver = {
->  	.hidinput_input_event = usb_hidinput_input_event,
->  };
->  
-> -static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
-> +static int usbhid_probe(struct usb_interface *intf, const struct usb_device_id *id)
->  {
->  	struct usb_host_interface *interface = intf->cur_altsetting;
->  	struct usb_device *dev = interface_to_usbdev(intf);
-> @@ -1117,6 +1110,7 @@ static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
->  	hid->ff_init = hid_pidff_init;
->  #ifdef CONFIG_USB_HIDDEV
->  	hid->hiddev_connect = hiddev_connect;
-> +	hid->hiddev_disconnect = hiddev_disconnect;
->  	hid->hiddev_hid_event = hiddev_hid_event;
->  	hid->hiddev_report_event = hiddev_report_event;
->  #endif
-> @@ -1177,7 +1171,7 @@ err:
->  	return ret;
->  }
->  
-> -static void hid_disconnect(struct usb_interface *intf)
-> +static void usbhid_disconnect(struct usb_interface *intf)
->  {
->  	struct hid_device *hid = usb_get_intfdata(intf);
->  	struct usbhid_device *usbhid;
-> @@ -1359,8 +1353,8 @@ MODULE_DEVICE_TABLE (usb, hid_usb_ids);
->  
->  static struct usb_driver hid_driver = {
->  	.name =		"usbhid",
-> -	.probe =	hid_probe,
-> -	.disconnect =	hid_disconnect,
-> +	.probe =	usbhid_probe,
-> +	.disconnect =	usbhid_disconnect,
->  #ifdef CONFIG_PM
->  	.suspend =	hid_suspend,
->  	.resume =	hid_resume,
-> diff --git a/include/linux/hid.h b/include/linux/hid.h
-> index a0ebdac..10f6284 100644
-> --- a/include/linux/hid.h
-> +++ b/include/linux/hid.h
-> @@ -494,6 +494,7 @@ struct hid_device {							/* device report descriptor */
->  
->  	/* hiddev event handler */
->  	int (*hiddev_connect)(struct hid_device *, unsigned int);
-> +	void (*hiddev_disconnect)(struct hid_device *);
->  	void (*hiddev_hid_event) (struct hid_device *, struct hid_field *field,
->  				  struct hid_usage *, __s32);
->  	void (*hiddev_report_event) (struct hid_device *, struct hid_report *);
-> @@ -691,6 +692,7 @@ struct hid_device *hid_allocate_device(void);
->  int hid_parse_report(struct hid_device *hid, __u8 *start, unsigned size);
->  int hid_check_keys_pressed(struct hid_device *hid);
->  int hid_connect(struct hid_device *hid, unsigned int connect_mask);
-> +void hid_disconnect(struct hid_device *hid);
->  
->  /**
->   * hid_map_usage - map usage input bits
-> @@ -800,6 +802,7 @@ static inline int __must_check hid_hw_start(struct hid_device *hdev,
->   */
->  static inline void hid_hw_stop(struct hid_device *hdev)
->  {
-> +	hid_disconnect(hdev);
->  	hdev->ll_driver->stop(hdev);
->  }
->  
-> diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
-> index 09bedeb..49d8495 100644
-> --- a/net/bluetooth/hidp/core.c
-> +++ b/net/bluetooth/hidp/core.c
-> @@ -577,11 +577,6 @@ static int hidp_session(void *arg)
->  	}
->  
->  	if (session->hid) {
-> -		if (session->hid->claimed & HID_CLAIMED_INPUT)
-> -			hidinput_disconnect(session->hid);
-> -		if (session->hid->claimed & HID_CLAIMED_HIDRAW)
-> -			hidraw_disconnect(session->hid);
-> -
->  		hid_destroy_device(session->hid);
->  		session->hid = NULL;
->  	}
-> @@ -747,8 +742,6 @@ static void hidp_stop(struct hid_device *hid)
->  	skb_queue_purge(&session->ctrl_transmit);
->  	skb_queue_purge(&session->intr_transmit);
->  
-> -	if (hid->claimed & HID_CLAIMED_INPUT)
-> -		hidinput_disconnect(hid);
->  	hid->claimed = 0;
->  }
+ > Hmm, or are you saying you can only get 1 event per registered range and
+ > allocate the thing on registration? That'd need some registration limit
+ > to avoid DoS scenarios.
 
-is the hid->claimed = 0 still necessary here? Not that it seems to
-really matter, but it would be much cleaner if the HID transport driver
-doesn't have to touch these details.
+Yes, that's what I do.  You're right, I should add a limit... although
+their are lots of ways for userspace to consume arbitrary amounts of
+kernel resources already.
 
-Regards
-
-Marcel
-
-
+ - R.
