@@ -1,52 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbZIQLzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZIQL6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757103AbZIQLzu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 07:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZIQLzt
+	id S1757298AbZIQL6i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 07:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbZIQL6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 07:55:49 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49217 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752750AbZIQLzt (ORCPT
+	Thu, 17 Sep 2009 07:58:35 -0400
+Received: from alpha.arachsys.com ([91.203.57.7]:55083 "EHLO
+	alpha.arachsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757009AbZIQL6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 07:55:49 -0400
-Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and S390
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Sachin Sant <sachinp@in.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, heiko.carstens@de.ibm.com, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090917115252.GO18404@wotan.suse.de>
-References: <1253083059.5478.1.camel@penberg-laptop>
-	 <20090917100841.GF13002@csn.ul.ie>
-	 <1253183365.4975.20.camel@penberg-laptop> <20090917105707.GA7205@csn.ul.ie>
-	 <4AB21C3D.2080202@in.ibm.com> <20090917113837.GK18404@wotan.suse.de>
-	 <84144f020909170443y5f8c3c8fo7d2a4163e636f368@mail.gmail.com>
-	 <20090917115252.GO18404@wotan.suse.de>
-Date: Thu, 17 Sep 2009 14:55:51 +0300
-Message-Id: <1253188551.4975.50.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 17 Sep 2009 07:58:25 -0400
+Date: Thu, 17 Sep 2009 12:57:28 +0100
+From: Chris Webb <chris@arachsys.com>
+To: Tejun Heo <tj@kernel.org>, Neil Brown <neilb@suse.de>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+Message-ID: <20090917115728.GA13854@arachsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19121.33823.893569.486518@notabene.brown>
+ <4AB17905.90606@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-17 at 13:52 +0200, Nick Piggin wrote:
-> > Me sending anything but bug fixes to Linus after the merge window is
-> > closed...? That's one scary thought!
+Tejun Heo <tj@kernel.org> writes:
+
+> The most common cause for FLUSH timeout has been power related issues.
+> This problem becomes more pronounced in RAID configurations because
+> FLUSHes end up being issued to all drives in the array simultaneously
+> causing concurrent power spikes from the drives.  When proper barrier
+> was introduced to md earlier this year, I got two separate reports
+> where brief voltage drops caused by simultaneous FLUSHes led to drives
+> powering off briefly and losing data in its buffer leading to data
+> corruption.  People always think their PSUs are good because they are
+> rated high wattage and bear hefty price tag but many people reporting
+> problems which end up being diagnosed as power problem have these
+> fancy PSUs.
+
+Hi Tejun. This sounds very plausible as a diagnosis. Six drives hanging off the
+single power supply is that maximum that can be fitted in this Supermicro
+chassis, and we have 32GB of RAM and two 4-core Xeon processors in there too,
+so we could well be right at the limit for the rating of the power supply.
+
+> So, if your machines share the same configuration, the first thing I'll do
+> would be to prepare a separate PSU, power it up and connect half of the
+> drives including what used to be the offending one to it and see whether
+> the failure pattern changes.
+
+It's quite hard for us to do this with these machines as we have them managed
+by a third party in a datacentre to which we don't have physical access.
+However, I could very easily get an extra 'test' machine built in there,
+generate a work load that consistently reproduces the problems on the six
+drives, and then retry with an array build from 5, 4, 3 and 2 drives
+successively, taking out the unused drives from chassis, to see if reducing the
+load on the power supply with a smaller array helps.
+
+When I try to write a test case, would it be worth me trying to reproduce
+without md in the loop, e.g. do 6-way simultaneous random-seek+write+sync
+continuously, or is it better to rely on md's barrier support and just do
+random-seek+write via md? Is there a standard work pattern/write size that
+would be particularly likely to provoke power overload problems on drives?
+
+Neil Brown <neilb@suse.de> writes:
+
+> [Chris Webb <chris@arachsys.com> wrote:]
+>
+> > 'cat /proc/mdstat' sometimes hangs before returning during normal
+> > operation, although most of the time it is fine. We have seen hangs of
+> > up to 15-20 seconds during resync. Might this be a less severe example
+> > of the lock-up which causes a timeout and reset after 30 seconds?
+>
+> "cat /proc/mdstat" should only hang if the mddev reconfig_mutex is
+> held for an extended period of time.
+> The reconfig_mutex is held while superblocks are being written.
 > 
-> Well, I don't know if it is much different than merging with known
-> bugs and expecting to resolve them. Maybe it circumvents the
-> _letter_ of the merge window law, but in spirit it is probably
-> nicer to merge after fixing the bug :)
+> So yes, an extended device timeout while updating the md superblock
+> can cause "cat /proc/mdstat" to hang for the duration of the timeout.
+
+Thanks Neil. This implies that when we see these fifteen second hangs reading
+/proc/mdstat without write errors, there are genuinely successful superblock
+writes which are taking fifteen seconds to complete, presumably corresponding
+to flushes which complete but take a full 15s to do so.
+
+Would such very slow (but ultimately successful) flushes be consistent with the
+theory of power supply issues affecting the drives? It feels like the 30s
+timeouts on flush could be just a more severe version of the 15s very slow
+flushes.
+
+Tejun Heo <tj@kernel.org> writes:
+
+> > Some of these timeouts also leave us with a completely dead drive,
+> > and we need to reboot the machine before it can be accessed
+> > again. (Hot plugging it out and back in again isn't sufficient to
+> > bring it back to life, so maybe a controller problem, although other
+> > drives on the same controller stay alive?) An example is [2].
 > 
-> But I'll let you decide how to proceed.
+> Ports behave mostly independently and it sure is possible that one
+> port locks up while others operate fine.  I've never seen such
+> incidents reported for intel ahci's tho.  If you hot unplug and then
+> replug the drive, what does the kernel say?
 
-I'll just wait for a fix to appear. Saves me from sleepless nights while
-worrying for Linus' revenge.
+We've only tried this once, and on that occasion there was nothing in the
+kernel log at all. (I actually telephoned the data centre engineer to ask when
+he was going to do it for us because I didn't see any messages, and it turned
+out he already had!)
 
-			Pekka
+Cheers,
 
+Chris.
