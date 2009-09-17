@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbZIQQkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbZIQQlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758667AbZIQQkv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 12:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZIQQku
+	id S1758684AbZIQQlt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 12:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbZIQQlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 12:40:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37225 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751718AbZIQQkt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 12:40:49 -0400
-Date: Thu, 17 Sep 2009 09:40:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jamie Lokier <jamie@shareable.org>
-cc: Evgeniy Polyakov <zbr@ioremap.net>, Eric Paris <eparis@redhat.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
-Subject: Re: fanotify as syscalls
-In-Reply-To: <20090916122723.GE29359@shareable.org>
-Message-ID: <alpine.LFD.2.01.0909170934450.4950@localhost.localdomain>
-References: <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com> <20090911212731.GA19901@shareable.org> <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com> <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org> <20090914140720.GA8564@ioremap.net>
- <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com> <20090915201620.GB32192@ioremap.net> <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com> <20090916120523.GA12830@ioremap.net> <20090916122723.GE29359@shareable.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Sep 2009 12:41:49 -0400
+Received: from mga01.intel.com ([192.55.52.88]:63779 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460AbZIQQls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 12:41:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,404,1249282800"; 
+   d="scan'208";a="494430304"
+Date: Thu, 17 Sep 2009 09:41:46 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Tiago Vignatti <tiago.vignatti@nokia.com>
+Cc: "dri-devel@lists.sf.net" <dri-devel@lists.sf.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PCI/VGA: fix header commentary
+Message-ID: <20090917094146.736d98e0@jbarnes-g45>
+In-Reply-To: <1252767751-27914-1-git-send-email-tiago.vignatti@nokia.com>
+References: <20090817103733.6b525fb4@jbarnes-g45>
+	<1252767751-27914-1-git-send-email-tiago.vignatti@nokia.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 12 Sep 2009 18:02:31 +0300
+Tiago Vignatti <tiago.vignatti@nokia.com> wrote:
 
-
-On Wed, 16 Sep 2009, Jamie Lokier wrote:
+> Signed-off-by: Tiago Vignatti <tiago.vignatti@nokia.com>
+> ---
 > 
-> I'd forgotten about Linus' strace argument.  That's a good one.
+> Amend this somewhere, Jesse. Thanks.
 > 
-> Of course everything should be a syscall by that argument :-)
+> 
+>  include/linux/vgaarb.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/vgaarb.h b/include/linux/vgaarb.h
+> index e81c64a..290409c 100644
+> --- a/include/linux/vgaarb.h
+> +++ b/include/linux/vgaarb.h
+> @@ -1,5 +1,5 @@
+>  /*
+> - * vgaarb.c
+> + * vgaarb.h
+>   *
+>   * (C) Copyright 2005 Benjamin Herrenschmidt
+> <benh@kernel.crashing.org>
+>   * (C) Copyright 2007 Paulo R. Zanoni <przanoni@gmail.com>
 
-Oh yes, everything _should_ be a syscall.
+I removed the referenced to the filename altogether and replaced it
+with a short comment.  Thanks.
 
-The problem is that many things are too "amorphous" to be system calls, 
-and don't have any sane generic semantics (ie they only act on a specific 
-device node). So we have ioctl's etc for those things.
-
-And then we have page faults. I've long wished that from a system call 
-tracing standpoint we could show page faults as pseudo-system-calls (at 
-least as long as they happen from user space - trying to handle nesting is 
-not worth it). It would make it _so_ much more obvious what the 
-performance patterns are if you could just do
-
-	strace -ttT firefox
-
-for the cold-cache case and you'd see where the time is really spent.
-
-(yeah, yeah, you can get that kind of information other ways, but it's a 
-hell of a lot less convenient than just getting a nice trace with 
-timestamps).
-
-> And strace can trace some ioctls and setsockopts.  (But it's never
-> pretty to see isatty() showing in strace as SNDCTL_TMR_TIMEBASE :-)
-
-Yes, strace can fix things up, and show "send a packet" as "fanotify". But 
-it's nasty and hard. 
-
-Quite frankly, I have _never_ever_ seen a good reason for talking to the 
-kernel with some idiotic packet interface. It's just a fancy way to do 
-ioctl's, and everybody knows that ioctl's are bad and evil. Why are fancy 
-packet interfaces suddenly much better?
-
-			Linus
+-- 
+Jesse Barnes, Intel Open Source Technology Center
