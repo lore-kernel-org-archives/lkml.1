@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZIQSHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbZIQSIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbZIQSHx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbZIQSHx
+	id S1759728AbZIQSIN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759037AbZIQSII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:07:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44918 "EHLO hera.kernel.org"
+	Thu, 17 Sep 2009 14:08:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44932 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750980AbZIQSHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:07:52 -0400
-Date: Thu, 17 Sep 2009 18:07:23 GMT
+	id S1758979AbZIQSIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 14:08:04 -0400
+Date: Thu, 17 Sep 2009 18:07:35 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
@@ -18,34 +18,35 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf_counter: Do not throttle single swcounter events
-Message-ID: <tip-584f7ccaaf27eb67ad137d867518db5c53286304@git.kernel.org>
-Git-Commit-ID: 584f7ccaaf27eb67ad137d867518db5c53286304
+Subject: [tip:perfcounters/core] perf_counter: Allow for a wakeup watermark
+Message-ID: <tip-0c733e0676f27fa325f6ba42f4035db8523abc90@git.kernel.org>
+Git-Commit-ID: 0c733e0676f27fa325f6ba42f4035db8523abc90
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 18:07:23 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 18:07:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  584f7ccaaf27eb67ad137d867518db5c53286304
-Gitweb:     http://git.kernel.org/tip/584f7ccaaf27eb67ad137d867518db5c53286304
+Commit-ID:  0c733e0676f27fa325f6ba42f4035db8523abc90
+Gitweb:     http://git.kernel.org/tip/0c733e0676f27fa325f6ba42f4035db8523abc90
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 17 Sep 2009 18:47:11 +0200
+AuthorDate: Thu, 17 Sep 2009 19:01:10 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Thu, 17 Sep 2009 20:02:46 +0200
 
-perf_counter: Do not throttle single swcounter events
+perf_counter: Allow for a wakeup watermark
 
-We can have swcounter events that contribute more than a single
-count per event, when used with a non-zero period, those can
-generate multiple events, which is when we need throttling.
+Currently we wake the mmap() consumer once every PAGE_SIZE of data
+and/or once event wakeup_events when specified.
 
-However, swcounter that contribute only a single count per event
-can only come as fast as we can run code, hence don't throttle
-them.
+For high speed sampling this results in too many wakeups wrt. the
+buffer size, hence change this.
+
+We move the default wakeup limit to 1/4-th the buffer size, and
+provide for means to manually specify this limit.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
@@ -53,66 +54,116 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/perf_counter.c |   17 +++++++++++++----
- 1 files changed, 13 insertions(+), 4 deletions(-)
+ include/linux/perf_counter.h |   10 ++++++++--
+ kernel/perf_counter.c        |   32 +++++++++++++++++++-------------
+ 2 files changed, 27 insertions(+), 15 deletions(-)
 
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 972f90d..6c1ef72 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -199,10 +199,14 @@ struct perf_counter_attr {
+ 				inherit_stat   :  1, /* per task counts       */
+ 				enable_on_exec :  1, /* next exec enables     */
+ 				task           :  1, /* trace fork/exit       */
++				watermark      :  1, /* wakeup_watermark      */
+ 
+-				__reserved_1   : 50;
++				__reserved_1   : 49;
+ 
+-	__u32			wakeup_events;	/* wakeup every n events */
++	union {
++		__u32		wakeup_events;	  /* wakeup every n events */
++		__u32		wakeup_watermark; /* bytes before wakeup   */
++	};
+ 	__u32			__reserved_2;
+ 
+ 	__u64			__reserved_3;
+@@ -521,6 +525,8 @@ struct perf_mmap_data {
+ 	atomic_t			wakeup;		/* needs a wakeup    */
+ 	atomic_t			lost;		/* nr records lost   */
+ 
++	long				watermark;	/* wakeup watermark  */
++
+ 	struct perf_counter_mmap_page   *user_page;
+ 	void				*data_pages[0];
+ };
 diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 667ab25..fe0d1ad 100644
+index fe0d1ad..29b73b6 100644
 --- a/kernel/perf_counter.c
 +++ b/kernel/perf_counter.c
-@@ -3494,14 +3494,15 @@ static void perf_log_throttle(struct perf_counter *counter, int enable)
-  * Generic counter overflow handling, sampling.
-  */
+@@ -2176,6 +2176,13 @@ static int perf_mmap_data_alloc(struct perf_counter *counter, int nr_pages)
+ 	data->nr_pages = nr_pages;
+ 	atomic_set(&data->lock, -1);
  
--int perf_counter_overflow(struct perf_counter *counter, int nmi,
--			  struct perf_sample_data *data)
-+static int __perf_counter_overflow(struct perf_counter *counter, int nmi,
-+				   int throttle, struct perf_sample_data *data)
- {
- 	int events = atomic_read(&counter->event_limit);
--	int throttle = counter->pmu->unthrottle != NULL;
- 	struct hw_perf_counter *hwc = &counter->hw;
- 	int ret = 0;
- 
-+	throttle = (throttle && counter->pmu->unthrottle != NULL);
++	if (counter->attr.watermark) {
++		data->watermark = min_t(long, PAGE_SIZE * nr_pages,
++				      counter->attr.wakeup_watermark);
++	}
++	if (!data->watermark)
++		data->watermark = max(PAGE_SIZE, PAGE_SIZE * nr_pages / 4);
 +
- 	if (!throttle) {
- 		hwc->interrupts++;
- 	} else {
-@@ -3554,6 +3555,12 @@ int perf_counter_overflow(struct perf_counter *counter, int nmi,
- 	return ret;
- }
+ 	rcu_assign_pointer(counter->data, data);
  
-+int perf_counter_overflow(struct perf_counter *counter, int nmi,
-+			  struct perf_sample_data *data)
-+{
-+	return __perf_counter_overflow(counter, nmi, 1, data);
-+}
-+
- /*
-  * Generic software counter infrastructure
-  */
-@@ -3592,6 +3599,7 @@ static void perf_swcounter_overflow(struct perf_counter *counter,
- 				    int nmi, struct perf_sample_data *data)
+ 	return 0;
+@@ -2517,23 +2524,15 @@ struct perf_output_handle {
+ 	unsigned long		flags;
+ };
+ 
+-static bool perf_output_space(struct perf_mmap_data *data,
+-			      unsigned int offset, unsigned int head)
++static bool perf_output_space(struct perf_mmap_data *data, unsigned long tail,
++			      unsigned long offset, unsigned long head)
  {
- 	struct hw_perf_counter *hwc = &counter->hw;
-+	int throttle = 0;
- 	u64 overflow;
+-	unsigned long tail;
+ 	unsigned long mask;
  
- 	data->period = counter->hw.last_period;
-@@ -3601,13 +3609,14 @@ static void perf_swcounter_overflow(struct perf_counter *counter,
- 		return;
+ 	if (!data->writable)
+ 		return true;
  
- 	for (; overflow; overflow--) {
--		if (perf_counter_overflow(counter, nmi, data)) {
-+		if (__perf_counter_overflow(counter, nmi, throttle, data)) {
- 			/*
- 			 * We inhibit the overflow from happening when
- 			 * hwc->interrupts == MAX_INTERRUPTS.
- 			 */
- 			break;
- 		}
-+		throttle = 0;
- 	}
- }
+ 	mask = (data->nr_pages << PAGE_SHIFT) - 1;
+-	/*
+-	 * Userspace could choose to issue a mb() before updating the tail
+-	 * pointer. So that all reads will be completed before the write is
+-	 * issued.
+-	 */
+-	tail = ACCESS_ONCE(data->user_page->data_tail);
+-	smp_rmb();
  
+ 	offset = (offset - tail) & mask;
+ 	head   = (head   - tail) & mask;
+@@ -2679,7 +2678,7 @@ static int perf_output_begin(struct perf_output_handle *handle,
+ {
+ 	struct perf_counter *output_counter;
+ 	struct perf_mmap_data *data;
+-	unsigned int offset, head;
++	unsigned long tail, offset, head;
+ 	int have_lost;
+ 	struct {
+ 		struct perf_event_header header;
+@@ -2717,16 +2716,23 @@ static int perf_output_begin(struct perf_output_handle *handle,
+ 	perf_output_lock(handle);
+ 
+ 	do {
++		/*
++		 * Userspace could choose to issue a mb() before updating the
++		 * tail pointer. So that all reads will be completed before the
++		 * write is issued.
++		 */
++		tail = ACCESS_ONCE(data->user_page->data_tail);
++		smp_rmb();
+ 		offset = head = atomic_long_read(&data->head);
+ 		head += size;
+-		if (unlikely(!perf_output_space(data, offset, head)))
++		if (unlikely(!perf_output_space(data, tail, offset, head)))
+ 			goto fail;
+ 	} while (atomic_long_cmpxchg(&data->head, offset, head) != offset);
+ 
+ 	handle->offset	= offset;
+ 	handle->head	= head;
+ 
+-	if ((offset >> PAGE_SHIFT) != (head >> PAGE_SHIFT))
++	if (head - tail > data->watermark)
+ 		atomic_set(&data->wakeup, 1);
+ 
+ 	if (have_lost) {
