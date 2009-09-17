@@ -1,59 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbZIQHVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759099AbZIQHXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbZIQHVT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 03:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758557AbZIQHVT
+	id S1759099AbZIQHXi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 03:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758575AbZIQHXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 03:21:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56678 "EHLO mx3.mail.elte.hu"
+	Thu, 17 Sep 2009 03:23:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3761 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758488AbZIQHVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 03:21:18 -0400
-Date: Thu, 17 Sep 2009 09:21:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patchlet] Re: Epic regression in throughput since v2.6.23
-Message-ID: <20090917072117.GA17198@elte.hu>
-References: <20090909155223.GA12065@elte.hu> <87my53vo6d.fsf@depni.sinp.msu.ru> <20090910065306.GB3920@elte.hu> <87ljkm9yew.fsf@depni.sinp.msu.ru> <20090911061024.GA27833@elte.hu> <87iqfmx3tr.fsf@depni.sinp.msu.ru> <20090916194507.GA27456@elte.hu> <87fxamiim4.fsf@depni.sinp.msu.ru> <1253163339.15767.62.camel@marge.simson.net> <1253164000.15767.65.camel@marge.simson.net>
+	id S1758508AbZIQHXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 03:23:36 -0400
+Date: Thu, 17 Sep 2009 10:21:29 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com
+Subject: [PATCHv3 1/2] mm: move use_mm/unuse_mm from aio.c to mm/
+Message-ID: <20090917072129.GB18115@redhat.com>
+References: <cover.1253171695.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253164000.15767.65.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <cover.1253171695.git.mst@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Anyone who wants to do copy to/from user from a kernel thread, needs
+use_mm (like what fs/aio has).  Move that into mm/, to make reusing and
+exporting easier down the line, and make aio use it.  Next intended
+user, besides aio, will be vhost-net.
 
-here's some start-debit versus non-start-debit numbers.
+Acked-by: Andrea Arcangeli <aarcange@redhat.com>
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+ fs/aio.c                    |   47 +------------------------------------
+ include/linux/mmu_context.h |    9 +++++++
+ mm/Makefile                 |    2 +-
+ mm/mmu_context.c            |   55 +++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 66 insertions(+), 47 deletions(-)
+ create mode 100644 include/linux/mmu_context.h
+ create mode 100644 mm/mmu_context.c
 
-The workload: on a dual-core box start and kill 10 loops, once every 
-second. PID 23137 is a shell doing interactive stuff. (running a loop of 
-usleep 100000 and echo)
+diff --git a/fs/aio.c b/fs/aio.c
+index d065b2c..fc21c23 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -24,6 +24,7 @@
+ #include <linux/file.h>
+ #include <linux/mm.h>
+ #include <linux/mman.h>
++#include <linux/mmu_context.h>
+ #include <linux/slab.h>
+ #include <linux/timer.h>
+ #include <linux/aio.h>
+@@ -34,7 +35,6 @@
+ 
+ #include <asm/kmap_types.h>
+ #include <asm/uaccess.h>
+-#include <asm/mmu_context.h>
+ 
+ #if DEBUG > 1
+ #define dprintk		printk
+@@ -595,51 +595,6 @@ static struct kioctx *lookup_ioctx(unsigned long ctx_id)
+ }
+ 
+ /*
+- * use_mm
+- *	Makes the calling kernel thread take on the specified
+- *	mm context.
+- *	Called by the retry thread execute retries within the
+- *	iocb issuer's mm context, so that copy_from/to_user
+- *	operations work seamlessly for aio.
+- *	(Note: this routine is intended to be called only
+- *	from a kernel thread context)
+- */
+-static void use_mm(struct mm_struct *mm)
+-{
+-	struct mm_struct *active_mm;
+-	struct task_struct *tsk = current;
+-
+-	task_lock(tsk);
+-	active_mm = tsk->active_mm;
+-	atomic_inc(&mm->mm_count);
+-	tsk->mm = mm;
+-	tsk->active_mm = mm;
+-	switch_mm(active_mm, mm, tsk);
+-	task_unlock(tsk);
+-
+-	mmdrop(active_mm);
+-}
+-
+-/*
+- * unuse_mm
+- *	Reverses the effect of use_mm, i.e. releases the
+- *	specified mm context which was earlier taken on
+- *	by the calling kernel thread
+- *	(Note: this routine is intended to be called only
+- *	from a kernel thread context)
+- */
+-static void unuse_mm(struct mm_struct *mm)
+-{
+-	struct task_struct *tsk = current;
+-
+-	task_lock(tsk);
+-	tsk->mm = NULL;
+-	/* active_mm is still 'mm' */
+-	enter_lazy_tlb(mm, tsk);
+-	task_unlock(tsk);
+-}
+-
+-/*
+  * Queue up a kiocb to be retried. Assumes that the kiocb
+  * has already been marked as kicked, and places it on
+  * the retry run list for the corresponding ioctx, if it
+diff --git a/include/linux/mmu_context.h b/include/linux/mmu_context.h
+new file mode 100644
+index 0000000..70fffeb
+--- /dev/null
++++ b/include/linux/mmu_context.h
+@@ -0,0 +1,9 @@
++#ifndef _LINUX_MMU_CONTEXT_H
++#define _LINUX_MMU_CONTEXT_H
++
++struct mm_struct;
++
++void use_mm(struct mm_struct *mm);
++void unuse_mm(struct mm_struct *mm);
++
++#endif
+diff --git a/mm/Makefile b/mm/Makefile
+index 5e0bd64..46c3892 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -11,7 +11,7 @@ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
+ 			   maccess.o page_alloc.o page-writeback.o pdflush.o \
+ 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
+ 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
+-			   page_isolation.o mm_init.o $(mmu-y)
++			   page_isolation.o mm_init.o mmu_context.o $(mmu-y)
+ obj-y += init-mm.o
+ 
+ obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
+diff --git a/mm/mmu_context.c b/mm/mmu_context.c
+new file mode 100644
+index 0000000..fd473b5
+--- /dev/null
++++ b/mm/mmu_context.c
+@@ -0,0 +1,55 @@
++/* Copyright (C) 2009 Red Hat, Inc.
++ *
++ * See ../COPYING for licensing terms.
++ */
++
++#include <linux/mm.h>
++#include <linux/mmu_context.h>
++#include <linux/sched.h>
++
++#include <asm/mmu_context.h>
++
++/*
++ * use_mm
++ *	Makes the calling kernel thread take on the specified
++ *	mm context.
++ *	Called by the retry thread execute retries within the
++ *	iocb issuer's mm context, so that copy_from/to_user
++ *	operations work seamlessly for aio.
++ *	(Note: this routine is intended to be called only
++ *	from a kernel thread context)
++ */
++void use_mm(struct mm_struct *mm)
++{
++	struct mm_struct *active_mm;
++	struct task_struct *tsk = current;
++
++	task_lock(tsk);
++	active_mm = tsk->active_mm;
++	atomic_inc(&mm->mm_count);
++	tsk->mm = mm;
++	tsk->active_mm = mm;
++	switch_mm(active_mm, mm, tsk);
++	task_unlock(tsk);
++
++	mmdrop(active_mm);
++}
++
++/*
++ * unuse_mm
++ *	Reverses the effect of use_mm, i.e. releases the
++ *	specified mm context which was earlier taken on
++ *	by the calling kernel thread
++ *	(Note: this routine is intended to be called only
++ *	from a kernel thread context)
++ */
++void unuse_mm(struct mm_struct *mm)
++{
++	struct task_struct *tsk = current;
++
++	task_lock(tsk);
++	tsk->mm = NULL;
++	/* active_mm is still 'mm' */
++	enter_lazy_tlb(mm, tsk);
++	task_unlock(tsk);
++}
+-- 
+1.6.2.5
 
-START_DEBIT:
-
-europe:~> perf sched lat | grep 23137
-  bash:23137            |     34.380 ms |      187 | avg:    0.005 ms | max:    0.017 ms |
-  bash:23137            |     36.410 ms |      188 | avg:    0.005 ms | max:    0.011 ms |
-  bash:23137            |     36.680 ms |      183 | avg:    0.007 ms | max:    0.333 ms |
-
-NO_START_DEBIT:
-
-europe:~> perf sched lat | grep 23137
-  bash:23137            |     35.531 ms |      183 | avg:    0.005 ms | max:    0.019 ms |
-  bash:23137            |     35.511 ms |      188 | avg:    0.007 ms | max:    0.334 ms |
-  bash:23137            |     35.774 ms |      185 | avg:    0.005 ms | max:    0.019 ms |
-
-Seems very similar at first sight.
-
-	Ingo
