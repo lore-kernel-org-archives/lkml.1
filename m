@@ -1,129 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZIQIMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZIQINT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbZIQIMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 04:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZIQIMg
+	id S1753556AbZIQINT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 04:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZIQINS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 04:12:36 -0400
-Received: from www.tglx.de ([62.245.132.106]:34770 "EHLO www.tglx.de"
+	Thu, 17 Sep 2009 04:13:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40062 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752196AbZIQIMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 04:12:34 -0400
-Date: Thu, 17 Sep 2009 10:11:55 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Darren Hart <dvhltc@us.ibm.com>
-cc: "lkml, " <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: futex: wakeup race and futex_q woken state definition
-In-Reply-To: <4AB17A08.50008@us.ibm.com>
-Message-ID: <alpine.LFD.2.00.0909170939080.2889@localhost.localdomain>
-References: <4AB17A08.50008@us.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753308AbZIQINP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 04:13:15 -0400
+Date: Thu, 17 Sep 2009 08:12:39 GMT
+From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Add new wakeup preemption mode: WAKEUP_RUNNING
+Message-ID: <tip-ea3725c5ef1c51023c8ca3b61a433c0915aa7ce4@git.kernel.org>
+Git-Commit-ID: ea3725c5ef1c51023c8ca3b61a433c0915aa7ce4
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 08:12:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren,
+Commit-ID:  ea3725c5ef1c51023c8ca3b61a433c0915aa7ce4
+Gitweb:     http://git.kernel.org/tip/ea3725c5ef1c51023c8ca3b61a433c0915aa7ce4
+Author:     Peter Zijlstra <peterz@infradead.org>
+AuthorDate: Wed, 16 Sep 2009 12:31:31 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 17 Sep 2009 10:09:43 +0200
 
-On Wed, 16 Sep 2009, Darren Hart wrote:
+sched: Add new wakeup preemption mode: WAKEUP_RUNNING
 
-> 2) futex_wait_queue_me() (recently refactored from futex_wait())
->   performs the following test:
-> 
-> 	/*
-> 	 * !plist_node_empty() is safe here without any lock.
-> 	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
-> 	 */
-> 	if (likely(!plist_node_empty(&q->list))) {
-> 		/*
-> 		 * If the timer has already expired, current will already be
-> 		 * flagged for rescheduling. Only call schedule if there
-> 		 * is no timeout, or if it has yet to expire.
-> 		 */
-> 		if (!timeout || timeout->task)
-> 			schedule();
-> 	}
-> 
-> As I understand it, this is to avoid a missed wakeup when a FUTEX_WAKE
-> call occurs after the queue_me() but before the futex_wait() call has
-> had a chance to call schedule() (via futex_wait_queue_me()).  However,
-> as no locks are taken, I don't see what prevents the futex_q from being
-> removed from the hash list after the plist_node_empty() test and before
-> the call to schedule().  In this scenario, the futex_q will not be found
-> on the hash list by subsequent wakers, and it will remain in schedule()
-> until a timeout or signal occurs.
-> 
-> This leads me to the question on the comment: "!plist_node_empty() is
-> safe here without any lock." - Why is that safe?
-> 
-> Secondly, why is the q.lock_ptr test not safe? "q.lock_ptr != 0 is not
-> safe, because of ordering against wakeup."
-> 
-> I understand the definition of the woken state to be
-> "plist_node_empty(&q->list) || q->lock_ptr == 0".  So testing the plist
-> will detect a woken futex sooner than testing for a null lock_ptr, but I
-> don't see how one is more "safe" than the other when no locks are held
-> to prevent the futex_q from vanishing off the list before the call to
-> schedule().
+Create a new wakeup preemption mode, preempt towards tasks that run
+shorter on avg. It sets next buddy to be sure we actually run the task
+we preempted for.
 
-Much of this are historic leftovers.
+Test results:
 
-futex_wait_queue_me()
-{
-	queue_me(q, hb);
+ root@twins:~# while :; do :; done &
+ [1] 6537
+ root@twins:~# while :; do :; done &
+ [2] 6538
+ root@twins:~# while :; do :; done &
+ [3] 6539
+ root@twins:~# while :; do :; done &
+ [4] 6540
 
-	/*
-	 * There might have been scheduling since the queue_me(), as we
-	 * cannot hold a spinlock across the get_user() in case it
-	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
-	 * queueing ourselves into the futex hash. This code thus has to
-	 * rely on the futex_wake() code removing us from hash when it
-	 * wakes us up.
-	 */
+ root@twins:/home/peter# ./latt -c4 sleep 4
+ Entries: 48 (clients=4)
 
-This comment is stale and patently wrong today. There is no get_user()
-while we hold a spinlock. So we should move set_current_state() before
-queue_me()
+ Averages:
+ ------------------------------
+        Max          4750 usec
+        Avg           497 usec
+        Stdev         737 usec
 
-	set_current_state(TASK_INTERRUPTIBLE);
+ root@twins:/home/peter# echo WAKEUP_RUNNING > /debug/sched_features
 
-	/*
-	 * !plist_node_empty() is safe here without any lock.
-	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
-	 */
-	if (likely(!plist_node_empty(&q->list))) {
+ root@twins:/home/peter# ./latt -c4 sleep 4
+ Entries: 48 (clients=4)
 
-If we move set_current_state() before the queue_me() this check is
-still an optimization to avoid the schedule call in case we have been
-woken up already. But the comment is still wrong as the wakeup code
-has changed:
+ Averages:
+ ------------------------------
+        Max            14 usec
+        Avg             5 usec
+        Stdev           3 usec
 
-The old version did:
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+LKML-Reference: <new-submission>
 
-     plist_del(&q->list);
-     wake_up_all(&q->waiters);
-     q->lock_ptr = NULL;
 
-Today we do:
+---
+ include/linux/sched.h   |    2 ++
+ kernel/sched.c          |   17 ++++++++++-------
+ kernel/sched_debug.c    |    1 +
+ kernel/sched_fair.c     |   14 +++++++++++---
+ kernel/sched_features.h |    5 +++++
+ 5 files changed, 29 insertions(+), 10 deletions(-)
 
-     p = q->task;
-     get_task_struct(p);
-     plist_del(&q->list);
-     q->lock_ptr = NULL;
-     wake_up_state(p);
-     put_task_struct(p);
-
-We changed this because it makes no sense to use a waitqueue for a
-single task.
-
-So the whole commentry is stale and needs to be updated.
-
-Thanks,
-
-	tglx
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b4a39bb..8af3d24 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1113,6 +1113,8 @@ struct sched_entity {
+ 	u64			start_runtime;
+ 	u64			avg_wakeup;
+ 
++	u64			avg_running;
++
+ #ifdef CONFIG_SCHEDSTATS
+ 	u64			wait_start;
+ 	u64			wait_max;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 969dfae..3bb4ea2 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2458,6 +2458,7 @@ static void __sched_fork(struct task_struct *p)
+ 	p->se.avg_overlap		= 0;
+ 	p->se.start_runtime		= 0;
+ 	p->se.avg_wakeup		= sysctl_sched_wakeup_granularity;
++	p->se.avg_running		= 0;
+ 
+ #ifdef CONFIG_SCHEDSTATS
+ 	p->se.wait_start			= 0;
+@@ -5310,14 +5311,13 @@ static inline void schedule_debug(struct task_struct *prev)
+ #endif
+ }
+ 
+-static void put_prev_task(struct rq *rq, struct task_struct *prev)
++static void put_prev_task(struct rq *rq, struct task_struct *p)
+ {
+-	if (prev->state == TASK_RUNNING) {
+-		u64 runtime = prev->se.sum_exec_runtime;
++	u64 runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
+ 
+-		runtime -= prev->se.prev_sum_exec_runtime;
+-		runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
++	update_avg(&p->se.avg_running, runtime);
+ 
++	if (p->state == TASK_RUNNING) {
+ 		/*
+ 		 * In order to avoid avg_overlap growing stale when we are
+ 		 * indeed overlapping and hence not getting put to sleep, grow
+@@ -5327,9 +5327,12 @@ static void put_prev_task(struct rq *rq, struct task_struct *prev)
+ 		 * correlates to the amount of cache footprint a task can
+ 		 * build up.
+ 		 */
+-		update_avg(&prev->se.avg_overlap, runtime);
++		runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
++		update_avg(&p->se.avg_overlap, runtime);
++	} else {
++		update_avg(&p->se.avg_running, 0);
+ 	}
+-	prev->sched_class->put_prev_task(rq, prev);
++	p->sched_class->put_prev_task(rq, p);
+ }
+ 
+ /*
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index 5ddbd08..efb8440 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -395,6 +395,7 @@ void proc_sched_show_task(struct task_struct *p, struct seq_file *m)
+ 	PN(se.sum_exec_runtime);
+ 	PN(se.avg_overlap);
+ 	PN(se.avg_wakeup);
++	PN(se.avg_running);
+ 
+ 	nr_switches = p->nvcsw + p->nivcsw;
+ 
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index c741cd9..3e6f78c 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1605,9 +1605,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
+ 		return;
+ 	}
+ 
+-	if (!sched_feat(WAKEUP_PREEMPT))
+-		return;
+-
+ 	if ((sched_feat(WAKEUP_SYNC) && sync) ||
+ 	    (sched_feat(WAKEUP_OVERLAP) &&
+ 	     (se->avg_overlap < sysctl_sched_migration_cost &&
+@@ -1616,6 +1613,17 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
+ 		return;
+ 	}
+ 
++	if (sched_feat(WAKEUP_RUNNING)) {
++		if (pse->avg_running < se->avg_running) {
++			set_next_buddy(pse);
++			resched_task(curr);
++			return;
++		}
++	}
++
++	if (!sched_feat(WAKEUP_PREEMPT))
++		return;
++
+ 	find_matching_se(&se, &pse);
+ 
+ 	BUG_ON(!pse);
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index d5059fd..eba3faa 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -54,6 +54,11 @@ SCHED_FEAT(WAKEUP_SYNC, 0)
+ SCHED_FEAT(WAKEUP_OVERLAP, 0)
+ 
+ /*
++ * Wakeup preemption towards tasks that run short
++ */
++SCHED_FEAT(WAKEUP_RUNNING, 1)
++
++/*
+  * Use the SYNC wakeup hint, pipes and the likes use this to indicate
+  * the remote end is likely to consume the data we just wrote, and
+  * therefore has cache benefit from being placed on the same cpu, see
