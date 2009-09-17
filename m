@@ -1,92 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbZIQJNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZIQJBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbZIQJNd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 05:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757696AbZIQJNc
+	id S1755351AbZIQJBw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 05:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZIQJBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 05:13:32 -0400
-Received: from 30.mail-out.ovh.net ([213.186.62.213]:47558 "HELO
-	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758090AbZIQJN3 (ORCPT
+	Thu, 17 Sep 2009 05:01:51 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:50033 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754686AbZIQJBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 05:13:29 -0400
-Date: Thu, 17 Sep 2009 11:00:38 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linux-usb@vger.kernel.org, patrice.vilchez@atmel.com,
-       linux-kernel@vger.kernel.org, david-b@pacbell.net, avictor.za@gmail.com,
-       haavard.skinnemoen@atmel.com, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] at91: use gpiolib calls for USB vbus pin on at91sam9g45
-Message-ID: <20090917090038.GD29905@game.jcrosoft.org>
-References: <4AB10F7D.9060706@atmel.com>
- <1253122169-14806-1-git-send-email-nicolas.ferre@atmel.com>
- <20090916215328.GG4172@game.jcrosoft.org>
- <4AB1EFC5.2060707@atmel.com>
+	Thu, 17 Sep 2009 05:01:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DvfhE3Q/MhsPrms2TB8lgS49NsUC2V9Za2udC0eA+1Zbbf6ZVwEoOCFskIaHT9DhVF
+         tYmHEz5zl9R6o8GydGtiCKDyjJU092daLSfir1Utu+KhgCgm+sVpU4BTScmhmqOaIho/
+         pC3fhU0dGnyfZYMjkRkjU8JDuoaj188/rqosY=
+Date: Thu, 17 Sep 2009 11:01:50 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] perf tools: Fix memory leak in read_ftrace_printk()
+Message-ID: <20090917090149.GB5184@nowhere>
+References: <4AB1F48F.4070807@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AB1EFC5.2060707@atmel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Ovh-Tracer-Id: 18296436437471374188
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|U 0.5/N
+In-Reply-To: <4AB1F48F.4070807@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10:13 Thu 17 Sep     , Nicolas Ferre wrote:
-> Jean-Christophe PLAGNIOL-VILLARD :
-> > On 19:29 Wed 16 Sep     , Nicolas Ferre wrote:
-> >> Change pin configuration for USB vbus on at91sam9g45: use the generic gpiolib
-> >> call instead of the at91 specific one.
-> >> Use gpio_request() function with same identifier for OHCI and EHCI hosts as
-> >> they are sharing the same pin.
-> >>
-> >> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> >> ---
-> >> This patch is on top of at91sam9g45 USB integration one:
-> >> "[PATCH 2/2] at91/USB: at91sam9g45 series USB host integration"
-> >> http://lkml.org/lkml/2009/6/9/221
-> >>
-> >>  arch/arm/mach-at91/at91sam9g45_devices.c |   12 ++++++++----
-> >>  1 files changed, 8 insertions(+), 4 deletions(-)
-> >>
-> >> diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
-> >> index 5be8cf2..7d939c0 100644
-> >> --- a/arch/arm/mach-at91/at91sam9g45_devices.c
-> >> +++ b/arch/arm/mach-at91/at91sam9g45_devices.c
-> >> @@ -118,8 +118,10 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
-> >>  
-> >>  	/* Enable VBus control for UHP ports */
-> >>  	for (i = 0; i < data->ports; i++) {
-> >> -		if (data->vbus_pin[i])
-> >> -			at91_set_gpio_output(data->vbus_pin[i], 0);
-> >> +		if (data->vbus_pin[i]) {
-> >> +			gpio_request(data->vbus_pin[i], "usb host vbus");
-> >> +			gpio_direction_output(data->vbus_pin[i], 0);
-> >> +		}
-> >>  	}
-> >>  
-> >>  	usbh_ohci_data = *data;
-> >> @@ -173,8 +175,10 @@ void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data)
-> >>  
-> >>  	/* Enable VBus control for UHP ports */
-> >>  	for (i = 0; i < data->ports; i++) {
-> >> -		if (data->vbus_pin[i])
-> >> -			at91_set_gpio_output(data->vbus_pin[i], 0);
-> >> +		if (data->vbus_pin[i]) {
-> >> +			gpio_request(data->vbus_pin[i], "usb host vbus");
-> >> +			gpio_direction_output(data->vbus_pin[i], 0);
-> >> +		}
-> >>  	}
-> > as you do the same think for ehci & ohci why not factorize it?
+On Thu, Sep 17, 2009 at 04:34:23PM +0800, Li Zefan wrote:
+> get_tracing_file() should be paired with put_tracing_file().
 > 
-> Just because you may choose only one or the other controller.
-> For instance, if you only want ohci, you can disable ehci selection and
-> always have its configuration done.
-I agree but both configuration function share some code which could be
-factorize, is it not?
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Best Regards,
-J.
+
+
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+
+> ---
+>  tools/perf/util/trace-event-info.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
+> index 6c9302a..1fd824c 100644
+> --- a/tools/perf/util/trace-event-info.c
+> +++ b/tools/perf/util/trace-event-info.c
+> @@ -458,7 +458,7 @@ static void read_proc_kallsyms(void)
+>  static void read_ftrace_printk(void)
+>  {
+>  	unsigned int size, check_size;
+> -	const char *path;
+> +	char *path;
+>  	struct stat st;
+>  	int ret;
+>  
+> @@ -468,14 +468,15 @@ static void read_ftrace_printk(void)
+>  		/* not found */
+>  		size = 0;
+>  		write_or_die(&size, 4);
+> -		return;
+> +		goto out;
+>  	}
+>  	size = get_size(path);
+>  	write_or_die(&size, 4);
+>  	check_size = copy_file(path);
+>  	if (size != check_size)
+>  		die("error in size of file '%s'", path);
+> -
+> +out:
+> +	put_tracing_file(path);
+>  }
+>  
+>  static struct tracepoint_path *
+> -- 
+> 1.6.3
+> 
+
