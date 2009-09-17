@@ -1,330 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbZIQHWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbZIQHZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758669AbZIQHWt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 03:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758202AbZIQHWr
+	id S1759250AbZIQHZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 03:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758905AbZIQHZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 03:22:47 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52883 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755910AbZIQHWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 03:22:46 -0400
-Date: Thu, 17 Sep 2009 17:22:43 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for September 17
-Message-Id: <20090917172243.67a80fe0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	Thu, 17 Sep 2009 03:25:30 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35210 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758692AbZIQHZa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 03:25:30 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 17 Sep 2009 16:23:24 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "xiyou.wangcong@gmail.com" <xiyou.wangcong@gmail.com>
+Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling v4
+Message-Id: <20090917162324.d60a7950.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090917071428.GA9232@localhost>
+References: <20090914032901.GA16189@localhost>
+	<20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917145319.97f67737.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917150726.9acb0f40.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917062124.GA6964@localhost>
+	<20090917155100.3cc2dfb6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917071428.GA9232@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__17_Sep_2009_17_22_43_+1000_6CSZpjkyp+bMV+6B"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__17_Sep_2009_17_22_43_+1000_6CSZpjkyp+bMV+6B
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 17 Sep 2009 15:14:28 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-Hi all,
+> On Thu, Sep 17, 2009 at 02:51:00PM +0800, KAMEZAWA Hiroyuki wrote:
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > Now, rw_verify_area() checsk f_pos is negative or not. And if
+> > negative, returns -EINVAL.
+> > 
+> > But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
+> > has negative offsets. And we can't do any access via read/write
+> > to the file(device).
+> > 
+> > This patch introduce a flag S_VERYBIG and allow negative file
+> > offsets for big files. (usual files don't allow it.)
+> > 
+> > Changelog: v3->v4
+> >  - make changes in mem.c aligned.
+> >  - change __negative_fpos_check() to return int. 
+> >  - fixed bug in "pos" check.
+> >  - added comments.
+> > 
+> > Changelog: v2->v3
+> >  - fixed bug in rw_verify_area (it cannot be compiled)
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> >  drivers/char/mem.c |   23 +++++++++++++----------
+> >  fs/proc/base.c     |    2 ++
+> >  fs/read_write.c    |   22 ++++++++++++++++++++--
+> >  include/linux/fs.h |    2 ++
+> >  4 files changed, 37 insertions(+), 12 deletions(-)
+> > 
+> > Index: mmotm-2.6.31-Sep14/fs/read_write.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/fs/read_write.c
+> > +++ mmotm-2.6.31-Sep14/fs/read_write.c
+> > @@ -205,6 +205,21 @@ bad:
+> >  }
+> >  #endif
+> >  
+> > +static int
+> > +__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
+> > +{
+> > +	/*
+> > +	 * pos or pos+count is negative here, check overflow.
+> > +	 * too big "count" will be caught in rw_verify_area().
+> > +	 */
+> > +	if ((pos < 0) && (pos + count < pos))
+> > +		return -EOVERFLOW;
+> 
+> This returns -EOVERFLOW when pos=-10 and count=1. What's the intention?
+  Hmm ?
 
-Please do not add code destined for 2.6.33 into linux-next trees until
-(at least) 2.6.32-rc1 is out.  This will hopefully give those who have
-stuff destined for just after -rc1 a chance.
+  pos+count=-9 > -10 ? it's ok. no -EOVERFLOW
 
-Changes since 20090916:
+  pos=-10, count=11, 
+  pos+count=1 > -10, then overflow.
 
-Changed trees: blackfin (new tree from new contact)
-	ia64 (maintainer back from vacation)
+> Just to return a different error code other than -EINVAL?
+> 
+For showing what this "if" checks. EINVAL is better ?
 
-Removed tree: reiserfs-bkl (temporarily, by request)
+Thanks,
+-Kame
 
-We are seeing conflicts move from one tree to another as Linus merges
-them.
 
-The tty.current tree gained a conflict against the net-current tree.
+> Also it seems you did two behavior changes at the same time: the above
+> -EOVERFLOW and the below IS_VERYBIG(). Are they tightly coupled?
+> 
+> > +	/* If !VERYBIG inode, negative pos(pos+count) is not allowed */
+> > +	if (!IS_VERYBIG(inode))
+> > +		return -EINVAL;
+> > +	return 0;
+> > +}
+> > +
+> >  /*
+> >   * rw_verify_area doesn't like huge counts. We limit
+> >   * them to something that fits in "int" so that others
+> > @@ -222,8 +237,11 @@ int rw_verify_area(int read_write, struc
+> >  	if (unlikely((ssize_t) count < 0))
+> >  		return retval;
+> >  	pos = *ppos;
+> > -	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+> > -		return retval;
+> > +	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
+> > +		retval = __negative_fpos_check(inode, pos, count);
+> > +		if (retval)
+> > +			return retval;
+> > +	}
+> 
+> This could look more nicer:
+> 
+>         retval = __negative_fpos_check(inode, pos, count);
+>         if (retval)
+>                 return retval;
+> 
+> But they are all minor issues :)
+> 
+> Thanks,
+> Fengguang
+> 
+> >  
+> >  	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+> >  		retval = locks_mandatory_area(
+> > Index: mmotm-2.6.31-Sep14/include/linux/fs.h
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/include/linux/fs.h
+> > +++ mmotm-2.6.31-Sep14/include/linux/fs.h
+> > @@ -231,6 +231,7 @@ struct inodes_stat_t {
+> >  #define S_NOCMTIME	128	/* Do not update file c/mtime */
+> >  #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+> >  #define S_PRIVATE	512	/* Inode is fs-internal */
+> > +#define S_VERYBIG	1024	/* Allow file's loff_t can be negative */
+> >  
+> >  /*
+> >   * Note that nosuid etc flags are inode-specific: setting some file-system
+> > @@ -265,6 +266,7 @@ struct inodes_stat_t {
+> >  #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
+> >  #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
+> >  #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
+> > +#define IS_VERYBIG(inode)	((inode)->i_flags & S_VERYBIG)
+> >  
+> >  /* the read-only stuff doesn't really belong here, but any other place is
+> >     probably as bad and I don't want to create yet another include file. */
+> > Index: mmotm-2.6.31-Sep14/drivers/char/mem.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/drivers/char/mem.c
+> > +++ mmotm-2.6.31-Sep14/drivers/char/mem.c
+> > @@ -825,22 +825,23 @@ static const struct memdev {
+> >  	const char *name;
+> >  	const struct file_operations *fops;
+> >  	struct backing_dev_info *dev_info;
+> > +	bool	verybig;
+> >  } devlist[] = {
+> > -	[ 1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi },
+> > +	[1]  = { "mem", &mem_fops, &directly_mappable_cdev_bdi, true },
+> >  #ifdef CONFIG_DEVKMEM
+> > -	[ 2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi },
+> > +	[2]  = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi, true },
+> >  #endif
+> > -	[ 3] = {"null", &null_fops, NULL },
+> > +	[3]  = {"null", &null_fops, NULL, false },
+> >  #ifdef CONFIG_DEVPORT
+> > -	[ 4] = { "port", &port_fops, NULL },
+> > +	[4]  = { "port", &port_fops, NULL, false },
+> >  #endif
+> > -	[ 5] = { "zero", &zero_fops, &zero_bdi },
+> > -	[ 6] = { "full", &full_fops, NULL },
+> > -	[ 7] = { "random", &random_fops, NULL },
+> > -	[ 9] = { "urandom", &urandom_fops, NULL },
+> > -	[11] = { "kmsg", &kmsg_fops, NULL },
+> > +	[5]  = { "zero", &zero_fops, &zero_bdi, false },
+> > +	[6]  = { "full", &full_fops, NULL, false },
+> > +	[7]  = { "random", &random_fops, NULL, false },
+> > +	[9]  = { "urandom", &urandom_fops, NULL, false },
+> > +	[11] = { "kmsg", &kmsg_fops, NULL, false },
+> >  #ifdef CONFIG_CRASH_DUMP
+> > -	[12] = { "oldmem", &oldmem_fops, NULL },
+> > +	[12] = { "oldmem", &oldmem_fops, NULL, false },
+> >  #endif
+> >  };
+> >  
+> > @@ -868,6 +869,8 @@ static int memory_open(struct inode *ino
+> >  		ret = dev->fops->open(inode, filp);
+> >  	else
+> >  		ret = 0;
+> > +	if (dev->verybig)
+> > +		inode->i_flags |= S_VERYBIG;
+> >  out:
+> >  	unlock_kernel();
+> >  	return ret;
+> > Index: mmotm-2.6.31-Sep14/fs/proc/base.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
+> > +++ mmotm-2.6.31-Sep14/fs/proc/base.c
+> > @@ -779,6 +779,8 @@ static const struct file_operations proc
+> >  static int mem_open(struct inode* inode, struct file* file)
+> >  {
+> >  	file->private_data = (void*)((long)current->self_exec_id);
+> > +	/* this file is read only and we can catch out-pf-range */
+> > +	inode->i_flags |= S_VERYBIG;
+> >  	return 0;
+> >  }
+> >  
+> 
 
-The input-current tree gained a build failure so I sued the version from
-next-20090916.
-
-the thumb-2 tree lost its conflict.
-
-The blackfin tree gained a conflict against Linus' tree.
-
-The ia64 tree gained a conflict against Linus' tree.
-
-The microblaze tree lost its conflict.
-
-The sh tree lost its conflict.
-
-The ext4 tree gained a conflict against Linus' tree.
-
-The pci tree lost its conflict and merge fix.
-
-The rr tree still has a build failure so I used the version from
-next-20090908.
-
-The driver-core tree lost a conflict and passed 2 others to other trees.
-
-The nfsd tree gained a build failure for which I applied a patch.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 140 trees (counting Linus' and 21 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-CONFLICT (content): Merge conflict in drivers/serial/serial_cs.c
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-$ git reset --hard HEAD^
-Merging refs/next/20090916/input-current
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging thumb-2/thumb-2
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-CONFLICT (content): Merge conflict in arch/blackfin/mm/sram-alloc.c
-Merging cris/for-next
-Merging ia64/test
-CONFLICT (content): Merge conflict in arch/ia64/kernel/vmlinux.lds.S
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-CONFLICT (content): Merge conflict in arch/parisc/include/asm/thread_info.h
-CONFLICT (content): Merge conflict in arch/parisc/kernel/entry.S
-CONFLICT (content): Merge conflict in arch/parisc/kernel/signal.c
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-CONFLICT (content): Merge conflict in include/trace/events/ext4.h
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-CONFLICT (content): Merge conflict in fs/ubifs/super.c
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_lrw.c
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/base/class.c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in drivers/media/video/sh_mobile_ceu_cam=
-era.c
-Merging quota/for_next
-Merging kbuild/master
-CONFLICT (content): Merge conflict in scripts/extract-ikconfig
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/acpi/power.c
-CONFLICT (content): Merge conflict in drivers/pci/dmar.c
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-CONFLICT (content): Merge conflict in drivers/mtd/mtdcore.c
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (delete/modify): arch/x86/include/asm/es7000/apic.h deleted in HEA=
-D and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/es7000=
-/apic.h left in tree.
-CONFLICT (delete/modify): arch/x86/include/asm/numaq/apic.h deleted in HEAD=
- and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/numaq/a=
-pic.h left in tree.
-CONFLICT (content): Merge conflict in drivers/hid/hid-core.c
-CONFLICT (content): Merge conflict in drivers/media/video/em28xx/em28xx.h
-CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134-c=
-ore.c
-CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134.h
-CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
-CONFLICT (content): Merge conflict in drivers/virtio/virtio_ring.c
-CONFLICT (content): Merge conflict in include/linux/kmod.h
-CONFLICT (content): Merge conflict in include/linux/moduleparam.h
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in kernel/cpu.c
-CONFLICT (content): Merge conflict in kernel/extable.c
-CONFLICT (content): Merge conflict in kernel/kmod.c
-CONFLICT (content): Merge conflict in kernel/kthread.c
-CONFLICT (content): Merge conflict in kernel/module.c
-CONFLICT (content): Merge conflict in kernel/params.c
-CONFLICT (content): Merge conflict in kernel/sched_cpupri.c
-CONFLICT (delete/modify): mm/pdflush.c deleted in HEAD and modified in quil=
-t/rr. Version quilt/rr of mm/pdflush.c left in tree.
-$ git reset --hard HEAD^
-Merging refs/next/20090908/rr
-CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
-Merging mmc/next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in fs/fs-writeback.c
-CONFLICT (content): Merge conflict in mm/page-writeback.c
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-CONFLICT (content): Merge conflict in drivers/power/wm97xx_battery.c
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-CONFLICT (content): Merge conflict in firmware/Makefile
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/regulator/Kconfig
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging drbd/drbd
-Merging kmemleak/kmemleak
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
-Applying: tip: fix merge for cupmask update
-Merging oprofile/for-next
-Merging percpu/for-next
-Merging sfi/sfi-test
-CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
-CONFLICT (content): Merge conflict in init/main.c
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-CONFLICT (content): Merge conflict in drivers/scsi/Makefile
-CONFLICT (add/add): Merge conflict in drivers/scsi/pmcraid.c
-CONFLICT (content): Merge conflict in kernel/sysctl.c
-Applying: nfsd: return success for non NFS4 nfs4_state_start
-
---Signature=_Thu__17_Sep_2009_17_22_43_+1000_6CSZpjkyp+bMV+6B
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqx48MACgkQjjKRsyhoI8zEBACfRQYT/AsDyxtT3z6ArhnCGqUq
-Ks8An24KVmreU9n1AduO+QBZ9dblNRwm
-=hdj1
------END PGP SIGNATURE-----
-
---Signature=_Thu__17_Sep_2009_17_22_43_+1000_6CSZpjkyp+bMV+6B--
