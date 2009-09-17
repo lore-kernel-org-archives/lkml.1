@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZIQAfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZIQAin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbZIQAfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 20:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZIQAfT
+	id S1755414AbZIQAin (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 20:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZIQAil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 20:35:19 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37593 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbZIQAfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 20:35:18 -0400
-Date: Thu, 17 Sep 2009 10:35:13 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] edac: need to export cpu_llc_id
-Message-Id: <20090917103513.9a42bdbf.sfr@canb.auug.org.au>
-In-Reply-To: <20090916160420.GA12585@aftab>
-References: <20090916093935.6bc2c91f.sfr@canb.auug.org.au>
-	<20090916044151.GB5767@aftab>
-	<20090917014901.1011949d.sfr@canb.auug.org.au>
-	<20090916160420.GA12585@aftab>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__17_Sep_2009_10_35_13_+1000_QVSrMQEPrlDXi4X8"
+	Wed, 16 Sep 2009 20:38:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40906 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753220AbZIQAik convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 20:38:40 -0400
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX18KctggmXUKzvVhs3YfO6g6NOahgGpLUJzv1N3O0N
+	xhWB8xY+0j/+7B
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: Jiri Kosina <trivial@kernel.org>
+Subject: Re: [PATCH] char/hvc: adding __init macro to char/hvc_vio.c
+Date: Thu, 17 Sep 2009 02:38:39 +0200
+User-Agent: KMail/1.9.10
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Paul Mackerras <paulus@samba.org>, Nicolas Palix <npalix@diku.dk>,
+       Mike Frysinger <vapier@gentoo.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <200908202314.07443.PeterHuewe@gmx.de>
+In-Reply-To: <200908202314.07443.PeterHuewe@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200909170238.40051.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__17_Sep_2009_10_35_13_+1000_QVSrMQEPrlDXi4X8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Boris,
-
-On Wed, 16 Sep 2009 18:04:20 +0200 Borislav Petkov <borislav.petkov@amd.com=
-> wrote:
+Am Thursday 20 August 2009 23:14:06 schrieb Peter Hüwe:
+> From: Peter Huewe <peterhuewe@gmx.de>
 >
-> By the way, fix is already underway to Linus so you might just wait
-> a while before applying it to your linux-next mix and pull it from
-> upstream instead.
+> Trivial patch which adds the __init/__exit macros to the module_init/
+> module_exit functions of char/hvc_vio.c
+>
+> Please have a look at the small patch and either pull it through
+> your tree, or please ack' it so Jiri can pull it through the trivial tree.
+>
+> linux version 2.6.31-rc6 - linus git tree, Do 20. Aug 22:26:06 CEST 2009
+>
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 
-Since Linus hasn't merged your tree yet, I have cherry-picked that one
-commit from your tree into my "fixes" tree for today.  I will drop it
-when Linus takes your tree.
+Hi Jiri,
+this one got merged by Benjamin, so you can drop it from your queue :)
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=948c28fe3001f2c9d852dff2a0b2c69fe7cec91b
 
-Thanks.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__17_Sep_2009_10_35_13_+1000_QVSrMQEPrlDXi4X8
-Content-Type: application/pgp-signature
+@Benjamin: Thanks for merging.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqxhEEACgkQjjKRsyhoI8wjYwCfSUVNG0SXFK7UL/aoRWrVdR7x
-zCIAnjy8FU8KoyNbfnhbBMWEXewX7kt5
-=yW0+
------END PGP SIGNATURE-----
-
---Signature=_Thu__17_Sep_2009_10_35_13_+1000_QVSrMQEPrlDXi4X8--
+Regards,
+Peter
