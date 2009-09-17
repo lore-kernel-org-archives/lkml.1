@@ -1,84 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZIQUOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbZIQUOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbZIQUOB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZIQUOA
+	id S1753291AbZIQUOU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZIQUNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:14:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36868 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbZIQUN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:13:56 -0400
-Date: Thu, 17 Sep 2009 20:13:32 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf sched: Determine the number of CPUs automatically
-Message-ID: <tip-40749d0ff49f99c3661b336fe5e5625207bd925a@git.kernel.org>
-Git-Commit-ID: 40749d0ff49f99c3661b336fe5e5625207bd925a
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 20:13:33 +0000 (UTC)
+	Thu, 17 Sep 2009 16:13:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56492 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752412AbZIQUNh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 16:13:37 -0400
+Date: Thu, 17 Sep 2009 22:13:37 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, fweisbec@gmail.com, peterz@infradead.org,
+       lizf@cn.fujitsu.com
+Subject: [git pull] timechart for -tip
+Message-ID: <20090917221337.7a7b3c81@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  40749d0ff49f99c3661b336fe5e5625207bd925a
-Gitweb:     http://git.kernel.org/tip/40749d0ff49f99c3661b336fe5e5625207bd925a
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 17 Sep 2009 18:24:55 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 17 Sep 2009 22:09:19 +0200
+Please pull the timechart patches into -tip;
+they have been posted to lkml last week, but since then some merge conflicts have been resolved,
+as well as the feedback from Li Zefan have been incorporated.
 
-perf sched: Determine the number of CPUs automatically
+The following changes since commit c6da392f3d7f51e059e1ce80fcb2614e3c8a8a0d:
+  Ingo Molnar (1):
+        Merge branch 'tracing/core'
 
-For 'perf sched map' output, determine max_cpu automatically,
-instead of the static default of 15.
+are available in the git repository at:
 
-[ v2: use sysconf() pointed out by Arjan van de Ven <arjan@infradead.org> ]
+  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-timechart master
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Arjan van de Ven (8):
+      perf: Add a timestamp to fork events
+      perf: Store trace event name/id pairs in perf.data
+      perf: Allow perf utilities to have "callback" options without arguments
+      perf: Add a sample_event type to the event_union
+      trace: Convert the power tracer into an event tracer
+      perf: Add a SVG helper library file
+      perf: Add a perf record --timechart option
+      perf: Add the timechart tool
+
+ Documentation/trace/power.txt              |   17 -
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    7 +-
+ arch/x86/kernel/process.c                  |   28 +-
+ include/linux/perf_counter.h               |    2 +
+ include/trace/events/power.h               |   81 ++
+ kernel/perf_counter.c                      |   11 +-
+ kernel/trace/Makefile                      |    2 +-
+ kernel/trace/power-traces.c                |   20 +
+ kernel/trace/trace.h                       |    3 -
+ kernel/trace/trace_entries.h               |   17 -
+ kernel/trace/trace_power.c                 |  218 ------
+ scripts/tracing/power.pl                   |  108 ---
+ tools/perf/Makefile                        |    8 +
+ tools/perf/builtin-record.c                |   28 +
+ tools/perf/builtin-timechart.c             | 1120 ++++++++++++++++++++++++++++
+ tools/perf/builtin.h                       |    1 +
+ tools/perf/perf.c                          |    1 +
+ tools/perf/util/event.h                    |    8 +
+ tools/perf/util/header.c                   |   59 ++
+ tools/perf/util/header.h                   |    6 +
+ tools/perf/util/parse-events.c             |   25 +
+ tools/perf/util/parse-options.h            |    2 +
+ tools/perf/util/svghelper.c                |  382 ++++++++++
+ tools/perf/util/svghelper.h                |   25 +
+ 24 files changed, 1789 insertions(+), 390 deletions(-)
+ delete mode 100644 Documentation/trace/power.txt
+ create mode 100644 include/trace/events/power.h
+ create mode 100644 kernel/trace/power-traces.c
+ delete mode 100644 kernel/trace/trace_power.c
+ delete mode 100644 scripts/tracing/power.pl
+ create mode 100644 tools/perf/builtin-timechart.c
+ create mode 100644 tools/perf/util/svghelper.c
+ create mode 100644 tools/perf/util/svghelper.h
 
 
----
- tools/perf/builtin-sched.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index f67e351..9e04827 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -1347,7 +1347,7 @@ process_sched_wakeup_event(struct raw_event_sample *raw,
-  * Track the current task - that way we can know whether there's any
-  * weird events, such as a task being switched away that is not current.
-  */
--static int max_cpu = 15;
-+static int max_cpu;
- 
- static u32 curr_pid[MAX_CPUS] = { [0 ... MAX_CPUS-1] = -1 };
- 
-@@ -1818,6 +1818,8 @@ static struct trace_sched_handler map_ops  = {
- 
- static void __cmd_map(void)
- {
-+	max_cpu = sysconf(_SC_NPROCESSORS_CONF);
-+
- 	setup_pager();
- 	read_events();
- 	print_bad_events();
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
