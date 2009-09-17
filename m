@@ -1,85 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbZIQJOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbZIQIzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbZIQJOb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 05:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbZIQJOa
+	id S1754171AbZIQIzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 04:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZIQIzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 05:14:30 -0400
-Received: from gate.in-addr.de ([212.8.193.158]:52164 "EHLO mx.in-addr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757331AbZIQJO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 05:14:29 -0400
-X-Greylist: delayed 1439 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Sep 2009 05:14:29 EDT
-Date: Thu, 17 Sep 2009 10:50:03 +0200
-From: Lars Marowsky-Bree <lmb@suse.de>
-To: Christoph Hellwig <hch@infradead.org>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-Subject: Re: [GIT PULL] DRBD for 2.6.32
-Message-ID: <20090917085003.GR13069@suse.de>
-References: <200909151645.14256.philipp.reisner@linbit.com> <20090915231931.GB7636@infradead.org>
+	Thu, 17 Sep 2009 04:55:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39702 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752787AbZIQIzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 04:55:05 -0400
+Date: Thu, 17 Sep 2009 08:54:36 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Stop buddies from hogging the system
+Message-ID: <tip-de69a80be32445b0a71e8e3b757e584d7beb90f7@git.kernel.org>
+Git-Commit-ID: de69a80be32445b0a71e8e3b757e584d7beb90f7
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090915231931.GB7636@infradead.org>
-X-Ctuhulu: HASTUR
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 08:54:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-09-15T19:19:31, Christoph Hellwig <hch@infradead.org> wrote:
+Commit-ID:  de69a80be32445b0a71e8e3b757e584d7beb90f7
+Gitweb:     http://git.kernel.org/tip/de69a80be32445b0a71e8e3b757e584d7beb90f7
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Thu, 17 Sep 2009 09:01:20 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 17 Sep 2009 10:40:30 +0200
 
-Hi Christoph,
+sched: Stop buddies from hogging the system
 
-> > It has been discussed and reviewed on the list since March,
-> > and Andrew has asked us to send a pull request for 2.6.32-rc1.
-> 
-> The last thing we need is another bloody raid-reimplementation, coupled
-> with a propritary on the wire protocol.  NACK as far as I am concerned.
+Clear buddies more agressively.
 
-You know that several RAID implementations are my primary pet peeve, and
-I would just love to agree with you here. However, reality isn't that
-black-xor-white.
+The (theoretical, haven't actually observed any of this) problem is
+that when we do not select either buddy in pick_next_entity()
+because they are too far ahead of the left-most task, we do not
+clear the buddies.
 
-In reality, a significant number of deployments using this
-implementation exist already. There is no alternative for them yet, much
-less one which would allow them an online migration.  There might be one
-day, if dm-replicator takes off, and the RAID engines between
-md/dm/btrfs/drbd/dm-replicator etc get unified, but as it stands today,
-this doesn't exist.
+This means that as soon as we service the left-most task, these
+same buddies will be tried again on the next schedule. Now if the
+left-most task was a pure hog, it wouldn't have done any wakeups
+and it wouldn't have set buddies of its own. That leads to the old
+buddies dominating, which would lead to bad latencies.
 
-drbd is stable, the code has been significantly cleaned up during the
-LKML dialogue so far. It is very well maintained and supported.
-
-As a mid- to long-term goal, the unification should be pursued, and I
-know that Lars Ellenberg _is_ talking with Heinz about dm-replicator and
-that Neil/Heinz/Alasdair are also occasionally talking with each other.
-
-Until this has happened though, the plurality of solutions exist.
-
-drbd meets the technical/code quality requirements for merging; the
-argument that we should only have one RAID implementation is valid, but
-"should" is overruled by the normative power of facts.
-
-Putting the burden of converging our RAID implementations on drbd is a bit
-too much; this argument would have made sense when dm-raid* was merged,
-but today, we're already carrying several.
-
-Similarly, we support FCoE, AoE, iSCSI, nbd, and if someone proposed
-iSCSI-over-USB, I'm sure we would merge even that abdomination. (I hope
-I didn't give anyone ideas!) We also have several file systems.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Regards,
-    Lars
+---
+ kernel/sched_fair.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
--- 
-Architect Storage/HA, OPS Engineering, Novell, Inc.
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
-
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 3e6f78c..ffee827 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -764,10 +764,10 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
+ 
+ static void __clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+-	if (cfs_rq->last == se)
++	if (!se || cfs_rq->last == se)
+ 		cfs_rq->last = NULL;
+ 
+-	if (cfs_rq->next == se)
++	if (!se || cfs_rq->next == se)
+ 		cfs_rq->next = NULL;
+ }
+ 
+@@ -1646,8 +1646,13 @@ static struct task_struct *pick_next_task_fair(struct rq *rq)
+ 		/*
+ 		 * If se was a buddy, clear it so that it will have to earn
+ 		 * the favour again.
++		 *
++		 * If se was not a buddy, clear the buddies because neither
++		 * was elegible to run, let them earn it again.
++		 *
++		 * IOW. unconditionally clear buddies.
+ 		 */
+-		__clear_buddies(cfs_rq, se);
++		__clear_buddies(cfs_rq, NULL);
+ 		set_next_entity(cfs_rq, se);
+ 		cfs_rq = group_cfs_rq(se);
+ 	} while (cfs_rq);
