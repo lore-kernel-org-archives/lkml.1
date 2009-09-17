@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbZIQSqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759703AbZIQSqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759355AbZIQSqj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759304AbZIQSqh
+	id S1759703AbZIQSqr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbZIQSqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:46:37 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:49060 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759237AbZIQSqe (ORCPT
+	Thu, 17 Sep 2009 14:46:44 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:27032 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759304AbZIQSqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:46:34 -0400
+	Thu, 17 Sep 2009 14:46:40 -0400
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Subject: [PATCH 03/20] cciss: Allow triggering of rescan of logical drive
-	topology via sysfs entry
+Subject: [PATCH 04/20] cciss: Remove some unused code in rebuild_lun_table()
 To: akpm@linux-foundation.org, axboe@kernel.dk
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        andrew.patterson@hp.com, mikem@beardog.cce.hp.com,
        scameron@beardog.cce.hp.com
-Date: Thu, 17 Sep 2009 13:47:03 -0500
-Message-ID: <20090917184703.15105.31661.stgit@beardog.cce.hp.com>
+Date: Thu, 17 Sep 2009 13:47:08 -0500
+Message-ID: <20090917184708.15105.61462.stgit@beardog.cce.hp.com>
 In-Reply-To: <20090917184310.15105.43508.stgit@beardog.cce.hp.com>
 References: <20090917184310.15105.43508.stgit@beardog.cce.hp.com>
 User-Agent: StGIT/0.14.3
@@ -29,94 +28,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Patterson <andrew.patterson@hp.com>
+Remove some unused code in rebuild_lun_table()
 
-Added /sys/bus/pci/devices/<dev>/ccissX/rescan sysfs entry used
-to kick off a rescan that discovers logical drive topology changes.
-
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
-Acked-by: Mike Miller <mike.miller@hp.com>
 ---
 
- .../ABI/testing/sysfs-bus-pci-devices-cciss        |    7 ++++
- drivers/block/cciss.c                              |   36 ++++++++++++++++++--
- 2 files changed, 40 insertions(+), 3 deletions(-)
+ drivers/block/cciss.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-index 0a92a7c..ac3429d 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-+++ b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-@@ -31,3 +31,10 @@ Date:		March 2009
- Kernel Version: 2.6.30
- Contact:	iss_storagedev@hp.com
- Description:	A symbolic link to /sys/block/cciss!cXdY
-+
-+Where:		/sys/bus/pci/devices/<dev>/ccissX/rescan
-+Date:		August 2009
-+Kernel Version:	2.6.31
-+Contact:	iss_storagedev@hp.com
-+Description:	Kicks of a rescan of the controller to discover logical
-+		drive topology changes.
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index e7273a4..763535e 100644
+index 763535e..1d2d614 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -194,6 +194,7 @@ static int sendcmd_withirq_core(ctlr_info_t *h, CommandList_struct *c,
- static int process_sendcmd_error(ctlr_info_t *h, CommandList_struct *c);
+@@ -1707,7 +1707,6 @@ static void cciss_update_drive_info(int ctlr, int drv_index, int first_time)
+ 	unsigned long flags = 0;
+ 	int ret = 0;
+ 	drive_info_struct *drvinfo;
+-	int was_only_controller_node;
  
- static void fail_all_cmds(unsigned long ctlr);
-+static int add_to_scan_list(struct ctlr_info *h);
- static int scan_thread(void *data);
- static int check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c);
+ 	/* Get information about the disk and modify the driver structure */
+ 	inq_buff = kmalloc(sizeof(InquiryData_struct), GFP_KERNEL);
+@@ -1715,13 +1714,6 @@ static void cciss_update_drive_info(int ctlr, int drv_index, int first_time)
+ 	if (inq_buff == NULL || drvinfo == NULL)
+ 		goto mem_msg;
  
-@@ -459,9 +460,19 @@ static void __devinit cciss_procinit(int i)
- #define to_hba(n) container_of(n, struct ctlr_info, dev)
- #define to_drv(n) container_of(n, drive_info_struct, dev)
- 
--static struct device_type cciss_host_type = {
--	.name		= "cciss_host",
--};
-+static ssize_t host_store_rescan(struct device *dev,
-+				 struct device_attribute *attr,
-+				 const char *buf, size_t count)
-+{
-+	struct ctlr_info *h = to_hba(dev);
-+
-+	add_to_scan_list(h);
-+	wake_up_process(cciss_scan_thread);
-+	wait_for_completion_interruptible(&h->scan_wait);
-+
-+	return count;
-+}
-+DEVICE_ATTR(rescan, S_IWUSR, NULL, host_store_rescan);
- 
- static ssize_t dev_show_unique_id(struct device *dev,
- 				 struct device_attribute *attr,
-@@ -565,6 +576,25 @@ static ssize_t dev_show_rev(struct device *dev,
- }
- DEVICE_ATTR(rev, S_IRUGO, dev_show_rev, NULL);
- 
-+static struct attribute *cciss_host_attrs[] = {
-+	&dev_attr_rescan.attr,
-+	NULL
-+};
-+
-+static struct attribute_group cciss_host_attr_group = {
-+	.attrs = cciss_host_attrs,
-+};
-+
-+static struct attribute_group *cciss_host_attr_groups[] = {
-+	&cciss_host_attr_group,
-+	NULL
-+};
-+
-+static struct device_type cciss_host_type = {
-+	.name		= "cciss_host",
-+	.groups		= cciss_host_attr_groups,
-+};
-+
- static struct attribute *cciss_dev_attrs[] = {
- 	&dev_attr_unique_id.attr,
- 	&dev_attr_model.attr,
+-	/* See if we're trying to update the "controller node"
+-	 * this will happen the when the first logical drive gets
+-	 * created by ACU.
+-	 */
+-	was_only_controller_node = (drv_index == 0 &&
+-				h->drv[0].raid_level == -1);
+-
+ 	/* testing to see if 16-byte CDBs are already being used */
+ 	if (h->cciss_read == CCISS_READ_16) {
+ 		cciss_read_capacity_16(h->ctlr, drv_index, 1,
 
