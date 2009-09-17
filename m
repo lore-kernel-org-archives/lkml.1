@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbZIQSrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbZIQSrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760117AbZIQSrO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbZIQSrK
+	id S1760140AbZIQSrX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760120AbZIQSrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:47:10 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:40922 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758222AbZIQSrG (ORCPT
+	Thu, 17 Sep 2009 14:47:14 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:31584 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758222AbZIQSrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:47:06 -0400
+	Thu, 17 Sep 2009 14:47:11 -0400
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Subject: [PATCH 09/20] cciss: Handle special case for sysfs attributes of the
-	first logical drive.
+Subject: [PATCH 10/20] cciss: Clear all sysfs-exposed data for deleted logical
+	drives.
 To: akpm@linux-foundation.org, axboe@kernel.dk
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        andrew.patterson@hp.com, mikem@beardog.cce.hp.com,
        scameron@beardog.cce.hp.com
-Date: Thu, 17 Sep 2009 13:47:34 -0500
-Message-ID: <20090917184734.15105.71632.stgit@beardog.cce.hp.com>
+Date: Thu, 17 Sep 2009 13:47:39 -0500
+Message-ID: <20090917184739.15105.60093.stgit@beardog.cce.hp.com>
 In-Reply-To: <20090917184310.15105.43508.stgit@beardog.cce.hp.com>
 References: <20090917184310.15105.43508.stgit@beardog.cce.hp.com>
 User-Agent: StGIT/0.14.3
@@ -29,83 +29,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For c0dx where x is not 0, we handle deletion and addition simply,
-but for c0d0, there is the special case that even when there's no
-disk, the device node exists so that the controller may be accessed.
-So, for c0d0, we only create the sysfs entries once, when a controller
-is added, and only remove them once, when a controller is being
-taken down.
+When removing a logical drive, clear all the information that is
+now exposed by sysfs (e.g. vendor, model, serial number.)
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
 
- drivers/block/cciss.c |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/block/cciss.c |   31 +++++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 7043b3b..98d8efe 100644
+index 98d8efe..8cd2f8e 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -681,6 +681,10 @@ static long cciss_create_ld_sysfs_entry(struct ctlr_info *h,
- {
- 	struct device *dev;
+@@ -2133,6 +2133,25 @@ mem_msg:
+ 	goto freeret;
+ }
  
-+	/* Special case for c*d0, we only create it once. */
-+	if (drv_index == 0 && h->drv[drv_index].dev != NULL)
-+		return 0;
++static void cciss_clear_drive_info(drive_info_struct *drive_info)
++{
++	/* zero out the disk size info */
++	drive_info->nr_blocks = 0;
++	drive_info->block_size = 0;
++	drive_info->heads = 0;
++	drive_info->sectors = 0;
++	drive_info->cylinders = 0;
++	drive_info->raid_level = -1;
++	memset(drive_info->serial_no, 0, sizeof(drive_info->serial_no));
++	memset(drive_info->model, 0, sizeof(drive_info->model));
++	memset(drive_info->rev, 0, sizeof(drive_info->rev));
++	memset(drive_info->vendor, 0, sizeof(drive_info->vendor));
++	/*
++	 * don't clear the LUNID though, we need to remember which
++	 * one this one is.
++	 */
++}
 +
- 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
- 	if (!dev)
- 		return -ENOMEM;
-@@ -697,9 +701,15 @@ static long cciss_create_ld_sysfs_entry(struct ctlr_info *h,
- /*
-  * Remove sysfs entries for a logical drive.
-  */
--static void cciss_destroy_ld_sysfs_entry(struct ctlr_info *h, int drv_index)
-+static void cciss_destroy_ld_sysfs_entry(struct ctlr_info *h, int drv_index,
-+	int ctlr_exiting)
- {
- 	struct device *dev = h->drv[drv_index].dev;
+ /* This function will deregister the disk and it's queue from the
+  * kernel.  It must be called with the controller lock held and the
+  * drv structures busy_configuring flag set.  It's parameters are:
+@@ -2211,16 +2230,8 @@ static int deregister_disk(ctlr_info_t *h, int drv_index,
+ 	}
+ 
+ 	--h->num_luns;
+-	/* zero out the disk size info */
+-	drv->nr_blocks = 0;
+-	drv->block_size = 0;
+-	drv->heads = 0;
+-	drv->sectors = 0;
+-	drv->cylinders = 0;
+-	drv->raid_level = -1;	/* This can be used as a flag variable to
+-				 * indicate that this element of the drive
+-				 * array is free.
+-				 */
++	cciss_clear_drive_info(drv);
 +
-+	/* special case for c*d0, we only destroy it on controller exit */
-+	if (drv_index == 0 && !ctlr_exiting)
-+		return;
-+
- 	device_del(dev);
- 	put_device(dev); /* the "final" put. */
- 	h->drv[drv_index].dev = NULL;
-@@ -1919,6 +1929,7 @@ static int cciss_add_gendisk(ctlr_info_t *h, __u32 lunid, int controller_node)
- 	drv_index = cciss_find_free_drive_index(h->ctlr, controller_node);
- 	if (drv_index == -1)
- 		return -1;
-+
- 	/*Check if the gendisk needs to be allocated */
- 	if (!h->gendisk[drv_index]) {
- 		h->gendisk[drv_index] =
-@@ -2164,7 +2175,7 @@ static int deregister_disk(ctlr_info_t *h, int drv_index,
- 	if (h->gendisk[0] != disk) {
- 		struct request_queue *q = disk->queue;
- 		if (disk->flags & GENHD_FL_UP) {
--			cciss_destroy_ld_sysfs_entry(h, drv_index);
-+			cciss_destroy_ld_sysfs_entry(h, drv_index, 0);
- 			del_gendisk(disk);
- 		}
- 		if (q) {
-@@ -2210,7 +2221,6 @@ static int deregister_disk(ctlr_info_t *h, int drv_index,
- 				 * indicate that this element of the drive
- 				 * array is free.
- 				 */
--
  	if (clear_all) {
  		/* check to see if it was the last disk */
  		if (drv == h->drv + h->highest_lun) {
-@@ -4328,7 +4338,7 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
- 			struct request_queue *q = disk->queue;
- 
- 			if (disk->flags & GENHD_FL_UP) {
--				cciss_destroy_ld_sysfs_entry(hba[i], j);
-+				cciss_destroy_ld_sysfs_entry(hba[i], j, 1);
- 				del_gendisk(disk);
- 			}
- 			if (q)
 
