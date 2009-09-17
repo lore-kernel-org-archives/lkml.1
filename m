@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZIQUSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZIQURd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbZIQUSc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZIQUSc
+	id S1753575AbZIQURd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZIQUR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:18:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38804 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751923AbZIQUSb (ORCPT
+	Thu, 17 Sep 2009 16:17:29 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:62968 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbZIQUR2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:18:31 -0400
-Date: Thu, 17 Sep 2009 13:17:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Roland Dreier <rdreier@cisco.com>
-cc: Joel Becker <Joel.Becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
-In-Reply-To: <adabpl9ct3y.fsf@cisco.com>
-Message-ID: <alpine.LFD.2.01.0909171316230.4950@localhost.localdomain>
-References: <20090914221434.GA4507@mail.oracle.com> <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain> <20090915000417.GC4507@mail.oracle.com> <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain> <20090915005417.GD4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain> <20090915040601.GE4507@mail.oracle.com> <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain> <20090915214530.GA11060@mail.oracle.com> <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
- <20090916044047.GA30453@mail.oracle.com> <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain> <adabpl9ct3y.fsf@cisco.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 17 Sep 2009 16:17:28 -0400
+Message-ID: <4AB29974.70602@vlnb.net>
+Date: Fri, 18 Sep 2009 00:17:56 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       scst-devel <scst-devel@lists.sourceforge.net>
+Subject: [ANNOUNCE]: Support of QLogic Fibre Channel 4/8Gb (24xx/25xx) HBA's
+ added in target driver for SCST qla2x00t
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+vD7XNaSujx5zBtqLCCpywtP++neyJwXLj7M7
+ nAOb2+27bBhLEOH9jpCTncjh0q0xQdySOx4EwtnFhMiZC5wDn1
+ qhr8dSk05b1TzstLkDuVQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi All,
 
+I'm glad to announce a merge of support of 4/8Gb (24xx/25xx) QLogic 
+HBA's in SCST target driver qla2x00t v2.0.
 
-On Thu, 17 Sep 2009, Roland Dreier wrote:
-> 
-> I guess one bit of semantics to figure out is what happens if copyfile()
-> does the async case but then copyfile_ctrl() returns an error halfway
-> through... is the state of the dest file just undefined?
+Throughout the last three years ID7 and I have been working on an 
+enterprise class Fibre Channel target based on the QLogic range of 4/8Gb 
+HBA's. This has been solely funded by ID7 over the last years however 
+given the positive contributions by many of the SCST community both 
+personal and commercial, ID7 have chosen to merge with existing QLogic's 
+open source driver qla2x00t and introduce the driver under GPL license 
+for community use.
 
-I think that's the one that most filesystems would prefer. Maybe the file 
-is there, it's just that it's only half copied because the filesystem 
-filled up. 
+This driver was designed from ground up to perform at the highest of 
+levels and interoperate with leading infrastructures, accordingly the 
+design and flow is much more focused and structured whilst the stability 
+is as you would expect at the Enterprise level.
 
-Making filesystems give atomicity guarantees would be hard for the async 
-case. 
+Although there is a current QLogic target driver qla_isp, this driver 
+has the key advantage that it was designed to be as simple as possible. 
+As the result, this driver is a lot smaller, cleaner and mainline Linux 
+kernel ready. After some cosmetic cleanups it's going to be pushed for 
+the in-kernel inclusion together other SCST patches.
 
-Of course, if the filesystem can do the copy entirely atomically (ie by 
-just incrementing a refcount), then it can give atomicity guarantees, but 
-then you'd never see the async case either.
+Another advantage is that this driver fully supports FC tapes, including 
+transport level retries on data delivery problems.
 
-		Linus
+At the moment qla2x00t v2.0 is available only from the SCST SVN trunk. 
+You can download it by command:
+
+$ svn co https://scst.svn.sourceforge.net/svnroot/scst/trunk
+
+You can always find the latest info about qla2x00t driver from its page 
+http://scst.sourceforge.net/target_qla2x0t.html.
+
+Once again we are grateful for all the positive work and contributions 
+and hopeful that this target helps drive SCST further forward as an 
+Enterprise class target. We encourage people to introduce and evaluate 
+this target driver.
+
+Vladislav Bolkhovitin,
+Mark Klarzynski, ID7 Ltd. (http://www.id-7.com)
