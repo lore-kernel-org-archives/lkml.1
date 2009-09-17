@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbZIQTfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbZIQTbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754402AbZIQTfo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 15:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZIQTfn
+	id S1752634AbZIQTbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 15:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZIQTbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 15:35:43 -0400
-Received: from mail-qy0-f171.google.com ([209.85.221.171]:49458 "EHLO
-	mail-qy0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbZIQTfm (ORCPT
+	Thu, 17 Sep 2009 15:31:16 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:14347 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbZIQTbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 15:35:42 -0400
-X-Greylist: delayed 414 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Sep 2009 15:35:42 EDT
+	Thu, 17 Sep 2009 15:31:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=nP8ckek1Kev3qRdwUwlOQSzkLNcWL2kC4RnO9uFzIV7oQ3PwOyKTCq4JR6bC136Bd8
-         obJBvRtDArOYshO6DSB7FusGvk8C8efoegl+36helVNXdyix2F63SJAo3V6ktINU4e6p
-         oxIpTjr9ETFe+EWSayGh7awXmhFr8rn7o++rA=
+        b=C/VbVEg67jl7sXL9Am/UPI/VKW7mMJFNnS32IvWPwda3h6a2Caq7+cAYcsRzTpyfxT
+         Eu8PJmCf9+q1iOaiaPnu4XKM3l2jsIAcaoqw0GqxBF5sL2jAVQT2gip8TgZErkotpLz/
+         5hLl5SDrMQUEm7l8lNLBX/OCJQ3Ub2toIyKNE=
 From: getarunks@gmail.com
 To: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
 Cc: eric.miao@marvell.com, mike@compulab.co.il, eric.y.miao@gmail.com,
        Arun KS <getarunks@gmail.com>
 Subject: [PATCH] Adding LED1 & LED2 control for DA9034 backlight driver
-Date: Thu, 17 Sep 2009 12:27:42 -0700
-Message-Id: <1253215662-11404-1-git-send-email-getarunks@gmail.com>
+Date: Thu, 17 Sep 2009 12:30:07 -0700
+Message-Id: <1253215807-11718-1-git-send-email-getarunks@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
