@@ -1,126 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751810AbZIQKJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbZIQJ4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751810AbZIQKJB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 06:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZIQKJA
+	id S1755748AbZIQJ4g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 05:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZIQJ4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 06:09:00 -0400
-Received: from sip.m2j.com.br ([65.111.177.132]:40767 "EHLO www.m2j.com.br"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751483AbZIQKI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 06:08:59 -0400
-X-Greylist: delayed 748 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Sep 2009 06:08:59 EDT
-Message-ID: <4AB207C6.4020107@m2j.com.br>
-Date: Thu, 17 Sep 2009 06:56:22 -0300
-From: Marcelo Pacheco <marcelo@m2j.com.br>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Thu, 17 Sep 2009 05:56:35 -0400
+Received: from hosting.visp.net.lb ([194.146.153.11]:34203 "EHLO
+	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786AbZIQJ4e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 05:56:34 -0400
+From: Denys Fedoryschenko <denys@visp.net.lb>
+Organization: VISP
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: unable to handle kernel NULL pointer / tty / 2.6.31-vanilla/ still persists
+Date: Thu, 17 Sep 2009 12:58:23 +0300
+User-Agent: KMail/1.9.9
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+References: <200909151032.53683.denys@visp.net.lb> <20090917093527.GE5184@nowhere>
+In-Reply-To: <20090917093527.GE5184@nowhere>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: buffered reads on /dev/sdXY use buffers instead of cache memory ?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909171258.23701.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I tried googling this for 2 hours, found nothing that answers this
-I think the answers to some of the questions posed here will be of
-interest to a lot of people
+Sorry it was 2.6.31 vanilla, i change in subject, but forgot to change in 
+body.
 
-Kernel: 2.6.27.29-0.1-pae from OpenSuse 11.1
-All disks are using noop scheduler
-8GB RAM total (all available to linux)
-
-<7>free_area_init_node: node 0, pgdat f2a00000, node_mem_map f2a02000
-<7>  DMA zone: 3964 pages, LIFO batch:0
-<7>  Normal zone: 223300 pages, LIFO batch:31
-<7>  HighMem zone: 1827956 pages, LIFO batch:31
-
-2x 500GB SAS disks using true hardware RAID-1 (/dev/sda is the mirror)
-# lspci -v -s 03:00.0
-03:00.0 SCSI storage controller: LSI Logic / Symbios Logic SAS1068E
-PCI-Express Fusion-MPT SAS (rev 08)
-        Subsystem: Dell SAS 6/iR Adapter RAID Controller
-        Flags: bus master, fast devsel, latency 0, IRQ 214
-        I/O ports at ec00 [size=256]
-        Memory at df7ec000 (64-bit, non-prefetchable) [size=16K]
-        Memory at df7f0000 (64-bit, non-prefetchable) [size=64K]
-        Expansion ROM at df600000 [disabled] [size=1M]
-        Capabilities: [50] Power Management version 2
-        Capabilities: [68] Express Endpoint, MSI 00
-        Capabilities: [98] Message Signalled Interrupts: Mask- 64bit+
-Count=1/1 Enable+
-        Capabilities: [b0] MSI-X: Enable- Mask- TabSize=1
-        Capabilities: [100] Advanced Error Reporting
-                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
-UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSVoil-
-                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO+ CmpltAbrt+
-UnxCmplt+ RxOF- MalfTLP- ECRC- UnsupReq+ ACSVoil-
-                UESvrt: DLP+ SDES- TLP+ FCP+ CmpltTO- CmpltAbrt-
-UnxCmplt- RxOF+ MalfTLP+ ECRC+ UnsupReq- ACSVoil-
-                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout-
-NonFatalErr-
-                CESta:  RxErr- BadTLP+ BadDLLP+ Rollover+ Timeout+
-NonFatalErr-
-                AERCap: First Error Pointer: 00, GenCap+ CGenEn- ChkCap+
-ChkEn-
-        Kernel driver in use: mptsas
-        Kernel modules: mptsas
-
-Bellow is the output from two consecutive calls to dd, to read the first
-2GB from /dev/sda3 (my / reiserfs partition), using 32MB read requests
-If I reduce the test to 512MB, then I get faster (cached) results, but
-cached memory shrinks instead of rises, and buffers covers the 512MB
-transfered
-It looks like buffers are limited to Low (first 960MB) memory, while
-cache aren't
-replacing /dev/sda3 with a large file also caches things (increasing
-cached content instead of buffers)
-
-1 - reading the device never allocate regular cache entries, uses
-buffers only ?
-2 - perhaps this is a 32-bit controller, so it can't allocate buffers on
-high memory ?
-3 - Or the driver is limited to 32-bit addressing ?
-4 - Would all memory be available for buffering if I were running 64-bit
-linux ?
+I had similar crash(old one) in rc7, but it was triggered (seems) by ssh 
+bruteforcing. The new one didnt had any ssh messages nearby, but it can be 
+disconnection of persistent ssh session, that didn't appear in logs.
 
 
-Two consecutive runs reading 1GB using dd (1024 x 1024k reads) and free
-output before/after, notice the 2nd run is actually a little slower
 
-# free; time dd if=/dev/sda3 of=/dev/zero bs=1024k count=1024; free
-             total       used       free     shared    buffers     cached
-Mem:       4096328    4052904      43424          0     622000    2630088
--/+ buffers/cache:     800816    3295512
-Swap:       987956          4     987952
-1024+0 records in
-1024+0 records out
-1073741824 bytes (1.1 GB) copied, 9.99695 s, 107 MB/s
+On Thursday 17 September 2009 12:35:30 Frederic Weisbecker wrote:
+> On Tue, Sep 15, 2009 at 10:32:53AM +0300, Denys Fedoryschenko wrote:
+> > Kernel 2.6.31-rc7
+> > x86 , 32-bit
+> > gcc 4.4.1
+>
+> Hi,
+>
+> If you are on -rc7, then you are missing an important fix:
+>
+> tty: make sure to flush any pending work when halting the ldisc
+>
+> Have you tried with 2.6.31 ?
+>
+> Thanks,
+> Frederic.
+>
+> > Happened on heavy network load, looks like as previous one, seems problem
+> > still persists.
+> > It is hyperthreading Xeon, as i heard on such CPU's SMP bugs most easy to
+> > trigger. But for me triggered after few days of operation.
+> >
+> > Here is oops:
+> >
+> > [273169.803628] BUG: unable to handle kernel NULL pointer dereference at
+> > (null)
+> > [273169.803710] IP: [<c0250f08>] process_echoes+0x65/0x240
+> > [273169.803785] *pdpt = 000000002f97d001 *pde = 0000000000000000
+> > [273169.803854] Oops: 0000 [#1] SMP
+> > [273169.803922] last sysfs
+> > file: /sys/module/nf_conntrack_ipv4/parameters/hashsize
+> > [273169.804045] Modules linked in: ipt_LOG xt_connlimit xt_NOTRACK
+> > iptable_raw ip_gre ipt_REJECT ts_bm xt_string nf_conntrack_netlink
+> > nfnetlink iptable_nat nf_nat nf_c
+> > onntrack_ipv4 nf_conntrack cls_u32 sch_htb tun nf_defrag_ipv
+> > [273169.804068]
+> > [273169.804068] Pid: 6261, comm: login Not tainted
+> > (2.6.31-build-0046-32bit #4)
+> > [273169.804068] EIP: 0060:[<c0250f08>] EFLAGS: 00010202 CPU: 1
+> > [273169.804068] EIP is at process_echoes+0x65/0x240
+> > [273169.804068] EAX: 00000001 EBX: e6cd0800 ECX: 00001f00 EDX: 00001000
+> > [273169.804068] ESI: e6cd0800 EDI: 00000000 EBP: f524ad84 ESP: f524ad5c
+> > [273169.804068]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > [273169.804068] Process login (pid: 6261, ti=f524a000 task=f6910ae0
+> > task.ti=f524a000)
+> > [273169.804068] Stack:
+> > [273169.804068]  e6cd0bc8 e6cd0bdc 00001f00 00000001 00001000 f524ad84
+> > c0250c12 e6cd080a
+> > [273169.804068] <0> e6cd0800 e6cd0958 f524ae94 c02528b5 e6cd0800 c2020220
+> > 00000000 e6cd0bf8
+> > [273169.804068] <0> 00000000 ef07081c 00000000 00000000 ef070820 ef070921
+> > 00000000 00000001
+> > [273169.804068] Call Trace:
+> > [273169.804068]  [<c0250c12>] ? echo_char_raw+0x45/0x4a
+> > [273169.804068]  [<c02528b5>] ? n_tty_receive_buf+0xbaf/0x10a5
+> > [273169.804068]  [<c02fbc5a>] ? schedule+0x75d/0x7c7
+> > [273169.804068]  [<c01706cc>] ? filemap_fault+0x69/0x2e5
+> > [273169.804068]  [<c0253d63>] ? tty_ldisc_try+0x36/0x3c
+> > [273169.804068]  [<c02548f8>] ? flush_to_ldisc+0xf1/0x17f
+> > [273169.804068]  [<c02549e4>] ? tty_flush_to_ldisc+0xd/0xf
+> > [273169.804068]  [<c02518d0>] ? n_tty_read+0x2ac/0x5ad
+> > [273169.804068]  [<c01293e5>] ? default_wake_function+0x0/0xd
+> > [273169.804068]  [<c0251624>] ? n_tty_read+0x0/0x5ad
+> > [273169.804068]  [<c024e1b2>] ? tty_read+0x62/0x99
+> > [273169.804068]  [<c024e150>] ? tty_read+0x0/0x99
+> > [273169.804068]  [<c0190de2>] ? vfs_read+0x87/0x110
+> > [273169.804068]  [<c0190f04>] ? sys_read+0x3b/0x60
+> > [273169.804068]  [<c0102975>] ? syscall_call+0x7/0xb
+> > [273169.804068] Code: 20 00 00 89 45 e0 8b 83 88 03 00 00 8d 90 00 10 00
+> > 00 89 c7 8b 83 90 03 00 00 89 55 e8 03 bb 8c 03 00 00 89 45 e4 e9 63 01
+> > 00 00 <8a> 07 3c ff 0f
+> >  85 35 01 00 00 8d 57 01 3b 55 e8 8d 87 01 f0 ff
+> > [273169.804068] EIP: [<c0250f08>] process_echoes+0x65/0x240 SS:ESP
+> > 0068:f524ad5c
+> > [273169.804068] CR2: 0000000000000000
+> > [273169.807602] ---[ end trace 25fadd9ce705aa28 ]---
+> > [273169.807701] Kernel panic - not syncing: Fatal exception
+> > [273169.807803] Pid: 6261, comm: login Tainted: G      D
+> > 2.6.31-build-0046-32bit #4
+> > [273169.807964] Call Trace:
+> > [273169.808072]  [<c02fb28c>] ? printk+0xf/0x13
+> > [273169.808176]  [<c02fb1dd>] panic+0x39/0xd9
+> > [273169.808278]  [<c01059b7>] oops_end+0x8b/0x9a
+> > [273169.808378]  [<c0118f49>] no_context+0x13d/0x147
+> > [273169.808478]  [<c0119066>] __bad_area_nosemaphore+0x113/0x11b
+> > [273169.808578]  [<c01357b4>] ? lock_timer_base+0x1f/0x3e
+> > [273169.808676]  [<c01359c1>] ? mod_timer+0x108/0x113
+> > [273169.808775]  [<c01190ae>] bad_area+0x30/0x39
+> > [273169.808874]  [<c0119334>] do_page_fault+0x16b/0x26f
+> > [273169.808975]  [<c01191c9>] ? do_page_fault+0x0/0x26f
+> > [273169.809087]  [<c02fd2de>] error_code+0x66/0x6c
+> > [273169.809195]  [<c025007b>] ? tty_release_dev+0x29e/0x3e0
+> > [273169.809377]  [<c01191c9>] ? do_page_fault+0x0/0x26f
+> > [273169.809486]  [<c0250f08>] ? process_echoes+0x65/0x240
+> > [273169.810939]  [<c0250c12>] ? echo_char_raw+0x45/0x4a
+> > [273169.811040]  [<c02528b5>] n_tty_receive_buf+0xbaf/0x10a5
+> > [273169.811156]  [<c02fbc5a>] ? schedule+0x75d/0x7c7
+> > [273169.811267]  [<c01706cc>] ? filemap_fault+0x69/0x2e5
+> > [273169.811368]  [<c0253d63>] ? tty_ldisc_try+0x36/0x3c
+> > [273169.811468]  [<c02548f8>] flush_to_ldisc+0xf1/0x17f
+> > [273169.811571]  [<c02549e4>] tty_flush_to_ldisc+0xd/0xf
+> > [273169.811674]  [<c02518d0>] n_tty_read+0x2ac/0x5ad
+> > [273169.811779]  [<c01293e5>] ? default_wake_function+0x0/0xd
+> > [273169.811884]  [<c0251624>] ? n_tty_read+0x0/0x5ad
+> > [273169.811988]  [<c024e1b2>] tty_read+0x62/0x99
+> > [273169.812105]  [<c024e150>] ? tty_read+0x0/0x99
+> > [273169.812217]  [<c0190de2>] vfs_read+0x87/0x110
+> >
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> > in the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
 
-real    0m10.002s
-user    0m0.000s
-sys     0m2.548s
-             total       used       free     shared    buffers     cached
-Mem:       4096328    4072664      23664          0     734292    2536400
--/+ buffers/cache:     801972    3294356
-Swap:       987956          4     987952
-
-
-# free; time dd if=/dev/sda3 of=/dev/zero bs=1024k count=1024; free
-             total       used       free     shared    buffers     cached
-Mem:       4096328    4074492      21836          0     734296    2538936
--/+ buffers/cache:     801260    3295068
-Swap:       987956          4     987952
-1024+0 records in
-1024+0 records out
-1073741824 bytes (1.1 GB) copied, 11.2107 s, 95.8 MB/s
-
-real    0m11.311s
-user    0m0.004s
-sys     0m2.800s
-             total       used       free     shared    buffers     cached
-Mem:       4096328    4075980      20348          0     735128    2539608
--/+ buffers/cache:     801244    3295084
-Swap:       987956          4     987952
 
