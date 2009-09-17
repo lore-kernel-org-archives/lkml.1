@@ -1,90 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZIQORP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751471AbZIQOVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbZIQORP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 10:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZIQORO
+	id S1751471AbZIQOVY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 10:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbZIQOVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 10:17:14 -0400
-Received: from mail.windriver.com ([147.11.1.11]:61754 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752797AbZIQORM (ORCPT
+	Thu, 17 Sep 2009 10:21:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41300 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbZIQOVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 10:17:12 -0400
-Message-ID: <4AB244E0.1060109@windriver.com>
-Date: Thu, 17 Sep 2009 09:17:04 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Alan Stern <stern@rowland.harvard.edu>, gregkh@suse.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] usb console,usb-serial: pass initial console baud
- on to first tty open
-References: <Pine.LNX.4.44L0.0909162344350.24376-100000@netrider.rowland.org><4AB1B860.4080105@windriver.com><20090917101441.478b3e9b@lxorguk.ukuu.org.uk><4AB22892.8000308@windriver.com><20090917140828.21341c05@lxorguk.ukuu.org.uk> <20090917141913.47f9451b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090917141913.47f9451b@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Sep 2009 10:21:23 -0400
+Date: Thu, 17 Sep 2009 11:20:47 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Steven Toth <stoth@kernellabs.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PULL] http://www.kernellabs.com/hg/~stoth/saa7164-merge
+Message-ID: <20090917112047.1d803838@pedra.chehab.org>
+In-Reply-To: <4AB23B6E.6050001@kernellabs.com>
+References: <4AA08B01.30705@kernellabs.com>
+	<20090917100258.2a5269d9@pedra.chehab.org>
+	<4AB23B6E.6050001@kernellabs.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Sep 2009 14:17:04.0563 (UTC) FILETIME=[88121830:01CA37A1]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Thu, 17 Sep 2009 14:08:28 +0100
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->
->   
->>> -			memset(&dummy, 0, sizeof(struct ktermios));
->>> -			tty->termios = termios;
->>> +			tty->termios = &usb_serial_tty_driver->init_termios;
->>>       
->> That will corrupt the master one which is a reference used for many ports.
->>
->>     
+Em Thu, 17 Sep 2009 09:36:46 -0400
+Steven Toth <stoth@kernellabs.com> escreveu:
 
-I agree. 
+> I should go back and check the other trees, if this field isn't required by the 
+> i2c sub-system then I can remove it from a number of drivers. Of course, this 
+> tree is fairly old and it may have already been done in the 23885 / cx88 / 
+> au0828 tree's by the other devs. I'll look into this.
 
->> You need the serial_install stuff or something similar resurrecting to do
->> this properly.
->>     
->
-> Here's a suggestion on how to do it.
->
-> Add a tty->ops->init_termios()
->
-> Make tty_init_termios() read
->
->        if (tp == NULL) {
->                 tp = kzalloc(sizeof(struct ktermios[2]), GFP_KERNEL);
->                 if (tp == NULL)
->                         return -ENOMEM;
->                 memcpy(tp, &tty->driver->init_termios,
->                                                 sizeof(struct ktermios));
-> 		if (tty->ops->init_termios)
-> 			tty->ops->init_termios(tty);
->                 tty->driver->termios[idx] = tp;
->         }
->
-> Thats a good deal cleaner than the ->install override in the USB patches
-> Greg inherited and will be usable for cleaning up USB stuff too.
->
->   
-Sure we can add another layer of init_termios callbacks, but where is
-the right place to store the termios per console?
+Jean Delvare did a work of cleaning up those fields. they aren't used inside
+i2c. They are meant to be used inside the drivers, for the rare situations where an
+i2c driver needs to know who is the i2c adapter where it is attaching.
 
-Should the "struct console co*" get a new member for the baud, or should
-it get a termios?  The source of the problem is how to inherit the
-termios setting from the first user (the console code in this case).
+> Regardless, I'll generate the i2c patch.
+> 
+> I also have another 2.6.31 related patch stacked up, once mkrufky's tree is also 
+> merged. I'll issue both of these for merge later today.
 
-Before making several more implementations it is probably worth
-discussing few more of the details.  In the current code the ->install
-override has the opportunity to apply the fixup by copying something
-from a "struct console co* termios" if one existed.
+Ok. It were already merged.
 
-Certainly you could do the same thing with the proposed call back you
-mentioned, but then the serial_install() needs to be removed from the
-usb code and the power management setup would need to find a new home...
-or a copy of the new call back would need to go into the
-serial_install() as well.
 
-Jason.
+
+Cheers,
+Mauro
