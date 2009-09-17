@@ -1,61 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZIQVhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751182AbZIQVpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbZIQVhZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 17:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZIQVhX
+	id S1751182AbZIQVpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 17:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZIQVpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 17:37:23 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:39985 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754748AbZIQVhW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 17:37:22 -0400
-Date: Thu, 17 Sep 2009 22:37:23 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Steve Chen <schen@mvista.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Felipe Contreras <felipe.contreras@gmail.com>,
-       linux-kernel@vger.kernel.org, Marek Vasut <marek.vasut@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH v2] arm: remove unused code in delay.S
-Message-ID: <20090917213723.GC10599@shareable.org>
-References: <1253017761.3273.117.camel@linux-1lbu> <200909151541.08852.marek.vasut@gmail.com> <1253032210.3273.128.camel@linux-1lbu> <94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com> <1253043875.3273.131.camel@linux-1lbu> <m3k4zzdimy.fsf@intrepid.localdomain> <20090916134721.GA11218@n2100.arm.linux.org.uk> <20090917193257.GA10599@shareable.org> <20090917194119.GA12510@n2100.arm.linux.org.uk> <1253222978.3273.236.camel@linux-1lbu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253222978.3273.236.camel@linux-1lbu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 17 Sep 2009 17:45:20 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:35705 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750793AbZIQVpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 17:45:19 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] LED Support for ADP5520/ADP5501 MFD PMICs
+Date: Thu, 17 Sep 2009 17:45:21 -0400
+Message-Id: <1253223921-6417-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Chen wrote:
-> +	help
-> +	  Enable this if observing longer than expected delays.  This code
-> +	  improves delay accuracy for some CPUs.  However, it can also cause
-> +	  delay duration to be too short for others which leads to stability
-> +	  issues.
-> +
-> +	  In other words, do not enable unless you can guarantee that the
-> +	  processor (or ALL of the processors if building a generic kernel)
-> +	  delays for at least the time requested after enabling.
-> +
->  endmenu
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-It would be very helpful to mention which CPUs are affected.
-Ok, we don't know exactly...
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/leds/Kconfig        |   10 ++
+ drivers/leds/Makefile       |    1 +
+ drivers/leds/leds-adp5520.c |  222 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 233 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/leds/leds-adp5520.c
 
-But Russell has stated that ARM610 and ARM710 benefit from enabling
-the code, and that it specifically must not be enabled for StrongARM.
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 7c8e712..60108ad 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -229,6 +229,16 @@ config LEDS_BD2802
+ 	  This option enables support for BD2802GU RGB LED driver chips
+ 	  accessed via the I2C bus.
+ 
++config LEDS_ADP5520
++	tristate "LED Support for ADP5520/ADP5501 PMIC"
++	depends on LEDS_CLASS && PMIC_ADP5520
++	help
++	  This option enables support for on-chip LED drivers found
++	  on Analog Devices ADP5520/ADP5501 PMICs.
++
++	  To compile this driver as a module, choose M here: the module will
++	  be called leds-adp5520.
++
+ comment "LED Triggers"
+ 
+ config LEDS_TRIGGERS
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index e8cdcf7..ef8c54a 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -28,6 +28,7 @@ obj-$(CONFIG_LEDS_PCA955X)		+= leds-pca955x.o
+ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
+ obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
+ obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
++obj-$(CONFIG_LEDS_ADP5520)		+= leds-adp5520.o
+ 
+ # LED SPI Drivers
+ obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
+diff --git a/drivers/leds/leds-adp5520.c b/drivers/leds/leds-adp5520.c
+new file mode 100644
+index 0000000..9649764
+--- /dev/null
++++ b/drivers/leds/leds-adp5520.c
+@@ -0,0 +1,222 @@
++/*
++ * LEDs driver for Analog Devices ADP5520/ADP5501 MFD PMICs
++ *
++ * Copyright 2009 Analog Devices Inc.
++ *
++ * Loosely derived from leds-da903x:
++ * Copyright (C) 2008 Compulab, Ltd.
++ * 	Mike Rapoport <mike@compulab.co.il>
++ *
++ * Copyright (C) 2006-2008 Marvell International Ltd.
++ * 	Eric Miao <eric.miao@marvell.com>
++ *
++ * Licensed under the GPL-2 or later.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/leds.h>
++#include <linux/workqueue.h>
++#include <linux/mfd/adp5520.h>
++
++struct adp5520_led {
++	struct led_classdev	cdev;
++	struct work_struct	work;
++	struct device		*master;
++	enum led_brightness	new_brightness;
++	int			id;
++	int			flags;
++};
++
++static void adp5520_led_work(struct work_struct *work)
++{
++	struct adp5520_led *led = container_of(work, struct adp5520_led, work);
++	adp5520_write(led->master, LED1_CURRENT + led->id - 1,
++			 led->new_brightness >> 2);
++}
++
++static void adp5520_led_set(struct led_classdev *led_cdev,
++			   enum led_brightness value)
++{
++	struct adp5520_led *led;
++
++	led = container_of(led_cdev, struct adp5520_led, cdev);
++	led->new_brightness = value;
++	schedule_work(&led->work);
++}
++
++static int adp5520_led_setup(struct adp5520_led *led)
++{
++	struct device *dev = led->master;
++	int flags = led->flags;
++	int ret = 0;
++
++	switch (led->id) {
++	case FLAG_ID_ADP5520_LED1_ADP5501_LED0:
++		ret |= adp5520_set_bits(dev, LED_TIME,
++			(flags >> FLAG_OFFT_SHIFT) & FLAG_OFFT_MASK);
++		ret |= adp5520_set_bits(dev, LED_CONTROL, LED1_EN);
++		break;
++	case FLAG_ID_ADP5520_LED2_ADP5501_LED1:
++		ret |= adp5520_set_bits(dev, LED_TIME,
++			((flags >> FLAG_OFFT_SHIFT) & FLAG_OFFT_MASK) << 2);
++		ret |= adp5520_clr_bits(dev, LED_CONTROL, R3_MODE);
++		ret |= adp5520_set_bits(dev, LED_CONTROL, LED2_EN);
++		break;
++	case FLAG_ID_ADP5520_LED3_ADP5501_LED2:
++		ret |= adp5520_set_bits(dev, LED_TIME,
++			((flags >> FLAG_OFFT_SHIFT) & FLAG_OFFT_MASK) << 4);
++		ret |= adp5520_clr_bits(dev, LED_CONTROL, C3_MODE);
++		ret |= adp5520_set_bits(dev, LED_CONTROL, LED3_EN);
++		break;
++	}
++
++	return ret;
++}
++
++static int __devinit adp5520_led_prepare(struct platform_device *pdev)
++{
++	struct adp5520_leds_platfrom_data *pdata = pdev->dev.platform_data;
++	struct device *dev = pdev->dev.parent;
++	int ret = 0;
++
++	ret |= adp5520_write(dev, LED1_CURRENT, 0);
++	ret |= adp5520_write(dev, LED2_CURRENT, 0);
++	ret |= adp5520_write(dev, LED3_CURRENT, 0);
++	ret |= adp5520_write(dev, LED_TIME, pdata->led_on_time << 6);
++	ret |= adp5520_write(dev, LED_FADE, FADE_VAL(pdata->fade_in,
++		 pdata->fade_out));
++
++	return ret;
++}
++
++static int __devinit adp5520_led_probe(struct platform_device *pdev)
++{
++	struct adp5520_leds_platfrom_data *pdata = pdev->dev.platform_data;
++	struct adp5520_led *led, *led_dat;
++	struct led_info *cur_led;
++	int ret, i;
++
++	if (pdata == NULL) {
++		dev_err(&pdev->dev, "missing platform data\n");
++		return -ENODEV;
++	}
++
++	if (pdata->num_leds > ADP5520_01_MAXLEDS) {
++		dev_err(&pdev->dev, "can't handle more than %d LEDS\n",
++				 ADP5520_01_MAXLEDS);
++		return -EFAULT;
++	}
++
++	led = kzalloc(sizeof(*led) * pdata->num_leds, GFP_KERNEL);
++	if (led == NULL) {
++		dev_err(&pdev->dev, "failed to alloc memory\n");
++		return -ENOMEM;
++	}
++
++	ret = adp5520_led_prepare(pdev);
++
++	if (ret) {
++		dev_err(&pdev->dev, "failed to write\n");
++		goto err_free;
++	}
++
++	for (i = 0; i < pdata->num_leds; ++i) {
++		cur_led = &pdata->leds[i];
++		led_dat = &led[i];
++
++		led_dat->cdev.name = cur_led->name;
++		led_dat->cdev.default_trigger = cur_led->default_trigger;
++		led_dat->cdev.brightness_set = adp5520_led_set;
++		led_dat->cdev.brightness = LED_OFF;
++
++		if (cur_led->flags & FLAG_LED_MASK)
++			led_dat->flags = cur_led->flags;
++		else
++			led_dat->flags = i + 1;
++
++		led_dat->id = led_dat->flags & FLAG_LED_MASK;
++
++		led_dat->master = pdev->dev.parent;
++		led_dat->new_brightness = LED_OFF;
++
++		INIT_WORK(&led_dat->work, adp5520_led_work);
++
++		ret = led_classdev_register(led_dat->master, &led_dat->cdev);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to register LED %d\n",
++				led_dat->id);
++			goto err;
++		}
++
++		ret = adp5520_led_setup(led_dat);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to write\n");
++			i++;
++			goto err;
++		}
++	}
++
++	platform_set_drvdata(pdev, led);
++	return 0;
++
++err:
++	if (i > 0) {
++		for (i = i - 1; i >= 0; i--) {
++			led_classdev_unregister(&led[i].cdev);
++			cancel_work_sync(&led[i].work);
++		}
++	}
++
++err_free:
++	kfree(led);
++	return ret;
++}
++
++static int __devexit adp5520_led_remove(struct platform_device *pdev)
++{
++	struct adp5520_leds_platfrom_data *pdata = pdev->dev.platform_data;
++	struct adp5520_led *led;
++	int i;
++
++	led = platform_get_drvdata(pdev);
++
++	adp5520_clr_bits(led->master, LED_CONTROL,
++		 LED1_EN | LED2_EN | LED3_EN);
++
++	for (i = 0; i < pdata->num_leds; i++) {
++		led_classdev_unregister(&led[i].cdev);
++		cancel_work_sync(&led[i].work);
++	}
++
++	kfree(led);
++	return 0;
++}
++
++static struct platform_driver adp5520_led_driver = {
++	.driver	= {
++		.name	= "adp5520-led",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= adp5520_led_probe,
++	.remove		= __devexit_p(adp5520_led_remove),
++};
++
++static int __init adp5520_led_init(void)
++{
++	return platform_driver_register(&adp5520_led_driver);
++}
++module_init(adp5520_led_init);
++
++static void __exit adp5520_led_exit(void)
++{
++	platform_driver_unregister(&adp5520_led_driver);
++}
++module_exit(adp5520_led_exit);
++
++MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
++MODULE_DESCRIPTION("LEDS ADP5520(01) Driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:adp5520-led");
+-- 
+1.6.5.rc1
 
-Here's an additional paragraph to add on the end:
-
-	ARM610 and ARM710 are known to benefit from enabling this option.
-	It should not be enabled for StrongARMs, because it is known
-	to produce too short delays on those.
-
-Maybe you can adjust the config selectors and default to match?
-
--- Jamie
