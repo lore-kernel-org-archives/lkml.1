@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbZIQS5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759857AbZIQS7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759803AbZIQS5s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758979AbZIQS5r
+	id S1759857AbZIQS7g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbZIQS7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:57:47 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:42827 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758896AbZIQS5r (ORCPT
+	Thu, 17 Sep 2009 14:59:36 -0400
+Received: from zelda.netsplit.com ([87.194.19.211]:49359 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759148AbZIQS7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:57:47 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: fixing "pci=use_crs"
-Date: Thu, 17 Sep 2009 12:57:48 -0600
-User-Agent: KMail/1.9.10
-Cc: Larry Finger <Larry.Finger@lwfinger.net>, Gary Hade <garyhade@us.ibm.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200909161715.24376.bjorn.helgaas@hp.com> <200909171016.50087.bjorn.helgaas@hp.com> <20090917094527.051ca4bc@jbarnes-g45>
-In-Reply-To: <20090917094527.051ca4bc@jbarnes-g45>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200909171257.48851.bjorn.helgaas@hp.com>
+	Thu, 17 Sep 2009 14:59:35 -0400
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+ maintenance disaster
+From: Scott James Remnant <scott@canonical.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kay Sievers <kay.sievers@vrfy.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+In-Reply-To: <20090917194725.355b761c@infradead.org>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	 <ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+	 <20090917141303.428fe73c@lxorguk.ukuu.org.uk>
+	 <1253205332.4718.9.camel@quest>  <20090917194725.355b761c@infradead.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-ccN/QQbpF5T3loNGeG33"
+Date: Thu, 17 Sep 2009 19:59:16 +0100
+Message-Id: <1253213956.4718.18.camel@quest>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 September 2009 10:45:27 am Jesse Barnes wrote:
-> > The extra resources in the old dmesg could be from "pci=use_crs"
-> > being the default, but if that were the case, they should be in
-> > the PNP resource dump.  Did you update the BIOS between those
-> > boots?
-> 
-> FWIW in the CRS problem thread there were other reports of large
-> numbers of PNP resources causing problems.  One solution I considered
-> before we ended up reverting the patch was to increase the number of
-> bus resources we track.  Rather than a small array of resources per
-> bus, we could have a linked list, which would allow us to track an
-> arbitrary number.
 
-I think that might be a good starting point anyway, since I'm not
-aware of any spec that limits the number of apertures a host bridge
-can have.
+--=-ccN/QQbpF5T3loNGeG33
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> We probably want to distinguish between what we read from the hw regs
-> and what's reported in PNP though, so maybe a new list in addition to
-> the existing resource set would be the way to go.  That would allow us
-> to selectively ignore PNP resources on machines where they report bogus
-> ranges (or selectively look at them, either way).
+On Thu, 2009-09-17 at 19:47 +0200, Arjan van de Ven wrote:
 
-When we can read things from hardware registers, I think we have to
-trust that more than anything from other sources.  But I'm not proposing
-any particular solution yet; I just want to get a better understanding
-of what we're seeing.
+> > I don't really see the issue here.  If Arjan doesn't want to use
+> > devtmpfs for Moblin, he doesn't have to.
+>=20
+> my biggest objection was to the use of boot time as argument.
+> That was and still is deceiving and false. There may be other arguments
+> for devfs, but I'm not going to get in the middle of those. But boot
+> time isn't it.
+>=20
+Right, I don't disagree.
 
-Bjorn
+For some distributions devtmpfs allows them to do things without running
+udev early; we long ago restructured Ubuntu so that udev is one of the
+first things we run, therefore don't have that particular problem.
+
+=46rom my POV devtmpfs is useful because it means we can do away with udev
+entirely in certain situations, especially the installer and probably
+our initramfs when we need one too.
+
+The "statically make /dev from /sys" tools don't help, because /dev
+needs to be kept up to date.  And udev is too heavy, or the increased
+maintenance of having a special installer udev is too annoying, etc.
+
+devtmpfs happens to be a neat solution to that problem.
+
+> I do share frustration with Eric on how Kay and Greg have handled this.
+> It really felt like a combination of bullying, ignoring any contrarian
+> argument and just ramming stuff down. Not at all unlike the original
+> devfs fiasco. It has left me with a pretty bad taste in my mouth and
+> am pretty disappointed; I expected better.
+>=20
+I'm not a kernel developer, I'm a plumbing developer, but from my
+outside perspective it seems like the contrary arguments have had a bit
+of an agenda as well and have taken a "must not go in at any cost"
+attitude.
+
+That I find odd.
+
+It's not as if this is critical path, or going in at the expense of
+other functionality or code.  It's just another useful option for people
+who can find a use for it.
+
+Is that really such a tragedy to have?
+
+
+Anyway, I should start packing and stuff.  See you next week!
+
+Scott
+--=20
+Scott James Remnant
+scott@canonical.com
+
+--=-ccN/QQbpF5T3loNGeG33
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkqyhwQACgkQSnQiFMl4yK6eXgCfWQnKh/vRnt92nR2sD991PrgX
+Fq0An0F0hSZyvROr6M2B5A8/46+oFRRX
+=vkbR
+-----END PGP SIGNATURE-----
+
+--=-ccN/QQbpF5T3loNGeG33--
+
