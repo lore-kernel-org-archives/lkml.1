@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbZIQQNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbZIQPl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbZIQQNX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 12:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbZIQQNX
+	id S1756022AbZIQPl6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 11:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZIQPl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 12:13:23 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:51761 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758204AbZIQQNW (ORCPT
+	Thu, 17 Sep 2009 11:41:57 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48573 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751728AbZIQPl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 12:13:22 -0400
-X-Greylist: delayed 1906 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Sep 2009 12:13:22 EDT
-Date: Thu, 17 Sep 2009 16:41:39 +0100
-From: Andrew Price <andy@andrewprice.me.uk>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: rt2x00dev.c:405: error: too =?utf-8?Q?few_?=
-	=?utf-8?Q?arguments_to_function_=E2=80=98rt2x00crypto=5Frx=5Finsert=5Fiv?=
-	=?utf-8?B?4oCZ?=
-Message-ID: <20090917154138.GA31844@sucs.org>
-Mail-Followup-To: Andrew Price <andy@andrewprice.me.uk>,
-	Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 17 Sep 2009 11:41:57 -0400
+Date: Thu, 17 Sep 2009 16:43:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+ maintenance disaster
+Message-ID: <20090917164325.38994b47@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090917132909.GB4779@kroah.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<20090917125759.GA4045@kroah.com>
+	<20090917140548.4e6ee596@lxorguk.ukuu.org.uk>
+	<20090917132909.GB4779@kroah.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ivo,
+> > I've seen nacks from Christoph and from Eric and it seems Al Viro has yet
+> > to review devtmpfs. I'd like to see Al's opinion personally.
+> 
+> That's fine, but as it's just using the standard tmpfs interfaces that
+> other in-kernel virtual filesystems use, it shouldn't need that much
+> review.  The code is quite small as well, and I thought Al was still on
+> an extended vacation.
+> 
+> This code has been reviewed and posted numerous times for over 6 months
+> now, which should be plenty of time for us to be waiting for a review,
+> don't you?
 
-Apologies if this has already been reported. Building today's mainline
-kernel (ab86e5) I'm seeing this error:
+Christoph has already nacked the code and indicated some problems (albeit
+in his inimitably friendly fashion) so you had at least one review, you
+just apparently didn't like the answer.
 
-drivers/net/wireless/rt2x00/rt2x00dev.c: In function ‘rt2x00lib_rxdone’:
-drivers/net/wireless/rt2x00/rt2x00dev.c:405: warning: passing argument 3 of ‘rt2x00crypto_rx_insert_iv’ makes integer from pointer without a cast
-drivers/net/wireless/rt2x00/rt2x00dev.c:405: error: too few arguments to function ‘rt2x00crypto_rx_insert_iv’
-
-$ grep RT2 .config
-CONFIG_RT2X00=y
-# CONFIG_RT2400PCI is not set
-CONFIG_RT2500PCI=y
-# CONFIG_RT2500USB is not set
-# CONFIG_RT2800USB is not set
-CONFIG_RT2X00_LIB_PCI=y
-CONFIG_RT2X00_LIB=y
-CONFIG_RT2X00_LIB_LEDS=y
-# CONFIG_RT2X00_DEBUG is not set
-# CONFIG_RT2860 is not set
-# CONFIG_RT2870 is not set
-
-Andrew
+Alan
