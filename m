@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbZIQSk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbZIQSkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759177AbZIQSk5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759116AbZIQSk5
+	id S1759101AbZIQSkd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbZIQSkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:40:57 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:49592 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759134AbZIQSk4 (ORCPT
+	Thu, 17 Sep 2009 14:40:32 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:6079 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbZIQSkb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:40:56 -0400
-Date: Thu, 17 Sep 2009 14:38:08 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Nick Piggin <npiggin@suse.de>
-cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       heiko.carstens@de.ibm.com, mingo@elte.hu, sachinp@in.ibm.com
-Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and
- S390
-In-Reply-To: <20090917182842.GS18404@wotan.suse.de>
-Message-ID: <alpine.DEB.1.10.0909171437180.5220@V090114053VZO-1>
-References: <1253083059.5478.1.camel@penberg-laptop> <20090917100841.GF13002@csn.ul.ie> <1253183365.4975.20.camel@penberg-laptop> <20090917105707.GA7205@csn.ul.ie> <1253186019.4975.32.camel@penberg-laptop> <20090917111828.GB7205@csn.ul.ie>
- <20090917114116.GL18404@wotan.suse.de> <20090917181831.GA714@csn.ul.ie> <20090917182842.GS18404@wotan.suse.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 17 Sep 2009 14:40:31 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAOceskqrR7PE/2dsb2JhbAC5JohQAZA4BYQcgV0
+X-IronPort-AV: E=Sophos;i="4.44,404,1249257600"; 
+   d="scan'208";a="390830119"
+From: Roland Dreier <rdreier@cisco.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Joel Becker <Joel.Becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
+References: <20090914221434.GA4507@mail.oracle.com>
+	<alpine.LFD.2.01.0909141614350.4950@localhost.localdomain>
+	<20090915000417.GC4507@mail.oracle.com>
+	<alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
+	<20090915005417.GD4507@mail.oracle.com>
+	<alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
+	<20090915040601.GE4507@mail.oracle.com>
+	<alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
+	<20090915214530.GA11060@mail.oracle.com>
+	<alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
+	<20090916044047.GA30453@mail.oracle.com>
+	<alpine.LFD.2.01.0909170856050.4950@localhost.localdomain>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 17 Sep 2009 11:40:33 -0700
+In-Reply-To: <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain> (Linus
+	Torvalds's message of "Thu, 17 Sep 2009 09:29:14 -0700 (PDT)")
+Message-ID: <adabpl9ct3y.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Sep 2009 18:40:34.0242 (UTC) FILETIME=[575FAA20:01CA37C6]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Sep 2009, Nick Piggin wrote:
 
-> > This machine has two CPUs (0, 1) and two nodes with actual memory (2,3).
-> > After applying a patch to kmem_cache_create, I see in the console
-> >
-> > MEL::Creating cache pgd_cache CPU 0 Node 0
-> > MEL::Creating cache pmd_cache CPU 0 Node 0
-> > MEL::Creating cache pid_namespace CPU 0 Node 0
-> > MEL::Creating cache shmem_inode_cache CPU 0 Node 0
-> > MEL::Creating cache scsi_data_buffer CPU 1 Node 0
+ >   int copy_file(const char *src, const char *dst)
+ >   {
+ >	/* Start a file copy */
+ >	int cookie = copyfile(src, dst, 0);
+ >
+ >	/* Async case? */
+ >	if (cookie > 0) {
+ >		int ret;
+ >
+ >		while ((ret = copyfile_ctrl(cookie, COPYFILE_WAIT)) > 0)
+ >			/* nothing */;
+ >
+ >		/* Error handling is shared for async/sync */
+ >		cookie = ret;
+ >	}
+ >	if (cookie < 0) {
+ >		perror("copyfile failed");
+ >		return -1;
+ >	}
 
-So we have two nodes 2,3 nothing on node 0 and we are creating caches on
-the node that does not exist? SLQB assumes node 0 is present?
+I guess one bit of semantics to figure out is what happens if copyfile()
+does the async case but then copyfile_ctrl() returns an error halfway
+through... is the state of the dest file just undefined?
 
+ - R.
