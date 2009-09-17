@@ -1,58 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZIQWkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbZIQWob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752735AbZIQWkt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 18:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZIQWkt
+	id S1753169AbZIQWob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 18:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZIQWob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 18:40:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52998 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750741AbZIQWks (ORCPT
+	Thu, 17 Sep 2009 18:44:31 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:63220 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbZIQWoa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 18:40:48 -0400
-Date: Thu, 17 Sep 2009 23:41:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was:
-  Re: [PATCH] Remove broken by design and by implementation devtmpfs 
- maintenance disaster)
-Message-ID: <20090917234144.2f8eb1f2@lxorguk.ukuu.org.uk>
-In-Reply-To: <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
-References: <m1y6oef08k.fsf@fess.ebiederm.org>
-	<20090917125759.GA4045@kroah.com>
-	<m1ab0tcwep.fsf@fess.ebiederm.org>
-	<20090917185306.GA28635@elte.hu>
-	<ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com>
-	<alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>
-	<ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Sep 2009 18:44:30 -0400
+From: Nitin Gupta <ngupta@vflare.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
+Subject: [PATCH 0/4] compcache: in-memory compressed swapping v3
+Date: Fri, 18 Sep 2009 04:13:28 +0530
+Message-Id: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
+X-Mailer: git-send-email 1.6.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's true. I guess there are a few more devices that need special
-> permissions. We could make that happen, so people could probably run a
+Project home: http://compcache.googlecode.com/
 
-I think this is misleading somewhat as were Ingo's init stuff to all run
-as root then the permissions were fine. In other words it does what it
-says on the tin (the real debate is whether it does it right)
+* Changelog: v3 vs v2
+ - All cleanups as suggested by Pekka.
+ - Move to staging (drivers/block/ramzswap/ -> drivers/staging/ramzswap/).
+ - Remove swap discard hooks -- swap notify support makes these redundant.
+ - Unify duplicate code between init_device() fail path and reset_device().
+ - Fix zero-page accounting.
+ - Do not accept backing swap with bad pages.
 
-You should only need /dev/null and /dev/zero to get sanity. The console
-is opened by init and inherited. You might want to also fix the
-permissions by default on /dev/tty as some scripts tend to get grumpy
-without it. /dev/tty is a magic hook to the process group controlling tty
-so has no real permissions impact being 0666.
+* Changelog: v2 vs initial revision
+ - Use 'struct page' instead of 32-bit PFNs in ramzswap driver and xvmalloc.
+   This is to make these 64-bit safe.
+ - xvmalloc is no longer a separate module and does not export any symbols.
+   Its compiled directly with ramzswap block driver. This is to avoid any
+   last bit of confusion with any other allocator.
+ - set_swap_free_notify() now accepts block_device as parameter instead of
+   swp_entry_t (interface cleanup).
+ - Fix: Make sure ramzswap disksize matches usable pages in backing swap file.
+   This caused initialization error in case backing swap file had intra-page
+   fragmentation.
 
-The rest should essentially work out of the box - mount is done as root
-to mount the real fs stuff so root only is ok, the console is inherited
-so /dev/tty or just fd 0/1/2. Once you get to mingetty it will run as
-root and permission manage the devices.
+It creates RAM based block devices which can be used (only) as swap disks.
+Pages swapped to these disks are compressed and stored in memory itself. This
+is a big win over swapping to slow hard-disk which are typically used as swap
+disk. For flash, these suffer from wear-leveling issues when used as swap disk
+- so again its helpful. For swapless systems, it allows more apps to run for a
+given amount of memory.
 
-Alan
+It can create multiple ramzswap devices (/dev/ramzswapX, X = 0, 1, 2, ...).
+Each of these devices can have separate backing swap (file or disk partition)
+which is used when incompressible page is found or memory limit for device is
+reached.
+
+A separate userspace utility called rzscontrol is used to manage individual
+ramzswap devices.
+
+* Testing notes
+
+Tested on x86, x64, ARM
+ARM:
+ - Cortex-A8 (Beagleboard)
+ - ARM11 (Android G1)
+ - OMAP2420 (Nokia N810)
+
+* Performance
+
+All performance numbers/plots can be found at:
+http://code.google.com/p/compcache/wiki/Performance
+
+Below is a summary of this data:
+
+General:
+ - Swap R/W times are reduced from milliseconds (in case of hard disks)
+down to microseconds.
+
+Positive cases:
+ - Shows 33% improvement in 'scan' benchmark which allocates given amount
+of memory and linearly reads/writes to this region. This benchmark also
+exposes bottlenecks in ramzswap code (global mutex) due to which this gain
+is so small.
+ - On Linux thin clients, it gives the effect of nearly doubling the amount of
+memory.
+
+Negative cases:
+Any workload that has active working set w.r.t. filesystem cache that is
+nearly equal to amount of RAM while has minimal anonymous memory requirement,
+is expected to suffer maximum loss in performance with ramzswap enabled.
+
+Iozone filesystem benchmark can simulate exactly this kind of workload.
+As expected, this test shows performance loss of ~25% with ramzswap.
+
+ drivers/staging/Kconfig                   |    2 +
+ drivers/staging/Makefile                  |    1 +
+ drivers/staging/ramzswap/Kconfig          |   21 +
+ drivers/staging/ramzswap/Makefile         |    3 +
+ drivers/staging/ramzswap/ramzswap.txt     |   51 +
+ drivers/staging/ramzswap/ramzswap_drv.c   | 1462 +++++++++++++++++++++++++++++
+ drivers/staging/ramzswap/ramzswap_drv.h   |  173 ++++
+ drivers/staging/ramzswap/ramzswap_ioctl.h |   50 +
+ drivers/staging/ramzswap/xvmalloc.c       |  533 +++++++++++
+ drivers/staging/ramzswap/xvmalloc.h       |   30 +
+ drivers/staging/ramzswap/xvmalloc_int.h   |   86 ++
+ include/linux/swap.h                      |    5 +
+ mm/swapfile.c                             |   34 +
+ 13 files changed, 2451 insertions(+), 0 deletions(-)
