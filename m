@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbZIQB0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759754AbZIQBaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759902AbZIQB0G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 21:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757065AbZIQB0F
+	id S1759754AbZIQBaT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 21:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZIQBaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 21:26:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41820 "EHLO smtps.tip.net.au"
+	Wed, 16 Sep 2009 21:30:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59455 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755435AbZIQB0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 21:26:03 -0400
-Date: Thu, 17 Sep 2009 11:26:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>
-Subject: linux-next: manual merge of the blackfin tree with Linus' tree
-Message-Id: <20090917112604.acbae122.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	id S1754200AbZIQBaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 21:30:17 -0400
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: arjan@infradead.org, realnc@arcor.de, linux-kernel@vger.kernel.org
+In-Reply-To: <200909162027.29850.elendil@planet.nl>
+References: <20090906205952.GA6516@elte.hu>
+	 <200909082222.44828.elendil@planet.nl> <1252489988.26522.46.camel@pasglop>
+	 <200909091355.56335.elendil@planet.nl>
+	 <200909091355.56335.elendil@planet.nl> <1252632981.8566.10.camel@pasglop>
+	 <200909162027.29850.elendil@planet.nl>
+Content-Type: text/plain
+Date: Thu, 17 Sep 2009 11:29:59 +1000
+Message-Id: <1253150999.8375.329.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
+On Wed, 2009-09-16 at 20:27 +0200, Frans Pop wrote:
+> Benjamin Herrenschmidt wrote:
+> > I'll have a look after the merge window madness. Multiple windows is
+> > also still an option I suppose even if i don't like it that much: we
+> > could support double-click on an app or "global" in the left list,
+> > making that pop a new window with the same content as the right pane for
+> > that app (or global) that updates at the same time as the rest.
+>  
+> I have another request. If I select a specific application to watch (say a 
+> mail client) but it is idle for a while and thus has no latencies, it will 
+> get dropped from the list and thus my selection of it will be lost.
+> 
+> It would be nice if in that case a selected application would stay visible 
+> and selected, or maybe get reselected automatically when it appears again.
 
-Today's linux-next merge of the blackfin tree got a conflict in
-arch/blackfin/mm/sram-alloc.c between commit
-b9bf3121af348d9255f1c917830fe8c2df52efcb ("percpu: use
-DEFINE_PER_CPU_SHARED_ALIGNED()") from Linus' tree and commit
-40bf94d6d1158fb6d6d67a666e6b16ab6ac3986e ("Blackfin: push SRAM locks down
-into related ifdefs") from the blackfin tree.
+Hrm... I though I forced the selected app to remain ... or maybe I
+wanted to do that and failed :-) Ok. On the list. Please ping me next
+week if nothing happens.
 
-The latter moved the code that the former modified.  I fixed it up (see
-below) and can carry the fix for a while.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Ben.
 
-diff --cc arch/blackfin/mm/sram-alloc.c
-index 99e4dbb,e095094..0000000
---- a/arch/blackfin/mm/sram-alloc.c
-+++ b/arch/blackfin/mm/sram-alloc.c
-@@@ -55,6 -50,7 +50,7 @@@ struct sram_piece 
-  	struct sram_piece *next;
-  };
-  
- -static DEFINE_PER_CPU(spinlock_t, l1sram_lock) ____cacheline_aligned_in_smp;
-++static DEFINE_PER_CPU_SHARED_ALIGNED(spinlock_t, l1sram_lock);
-  static DEFINE_PER_CPU(struct sram_piece, free_l1_ssram_head);
-  static DEFINE_PER_CPU(struct sram_piece, used_l1_ssram_head);
-  
-@@@ -68,7 -64,12 +64,12 @@@ static DEFINE_PER_CPU(struct sram_piece
-  static DEFINE_PER_CPU(struct sram_piece, used_l1_data_B_sram_head);
-  #endif
-  
-+ #if L1_DATA_A_LENGTH || L1_DATA_B_LENGTH
- -static DEFINE_PER_CPU(spinlock_t, l1_data_sram_lock) ____cacheline_aligned_in_smp;
-++static DEFINE_PER_CPU_SHARED_ALIGNED(spinlock_t, l1_data_sram_lock);
-+ #endif
-+ 
-  #if L1_CODE_LENGTH != 0
- -static DEFINE_PER_CPU(spinlock_t, l1_inst_sram_lock) ____cacheline_aligned_in_smp;
-++static DEFINE_PER_CPU_SHARED_ALIGNED(spinlock_t, l1_inst_sram_lock);
-  static DEFINE_PER_CPU(struct sram_piece, free_l1_inst_sram_head);
-  static DEFINE_PER_CPU(struct sram_piece, used_l1_inst_sram_head);
-  #endif
+
