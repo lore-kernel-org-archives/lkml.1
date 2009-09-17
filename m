@@ -1,140 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbZIQXsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbZIQXye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbZIQXsD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 19:48:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbZIQXsA
+	id S1754381AbZIQXye (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 19:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZIQXyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 19:48:00 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:59114 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbZIQXry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 19:47:54 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: spi-devel-general@lists.sourceforge.net,
-       David Brownell <dbrownell@users.sourceforge.net>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Yi Li <yi.li@analog.com>
-Subject: [PATCH 5/5] Blackfin SPI: clean up error handling in client setup
-Date: Thu, 17 Sep 2009 19:47:53 -0400
-Message-Id: <1253231273-16423-5-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.rc1
-In-Reply-To: <1253231273-16423-1-git-send-email-vapier@gentoo.org>
-References: <1253231273-16423-1-git-send-email-vapier@gentoo.org>
+	Thu, 17 Sep 2009 19:54:31 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:29323 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbZIQXyb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 19:54:31 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:from:date:message-id:
+	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=yskBC3mFQ8wV3c/yz86ZX7iasGGbXrWmyljUkHDpkxtqiklOqzbMhUUwUJuoEx2As
+	Dob1IsKQ2M/33L3Z/lMRw==
+MIME-Version: 1.0
+In-Reply-To: <20090918002322.54099f94@lxorguk.ukuu.org.uk>
+References: <8b5805ff0909171602v3dc10db9i5920be3a2abf2e04@mail.gmail.com> 
+	<20090918002322.54099f94@lxorguk.ukuu.org.uk>
+From: "Jung-Ik (John) Lee" <jilee@google.com>
+Date: Thu, 17 Sep 2009 16:54:09 -0700
+Message-ID: <8b5805ff0909171654i515c832bm570db9bd5936b11a@mail.gmail.com>
+Subject: Re: [PATCH] libata:ide: Fix udma timings of pdc202xx_old controllers
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: sshtylyov@ru.mvista.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yi Li <yi.li@analog.com>
+On Thu, Sep 17, 2009 at 4:23 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Thu, 17 Sep 2009 16:02:31 -0700
+> "Jung-Ik (John) Lee" <jilee@google.com> wrote:
+>
+>> From: John(Jung-Ik) Lee <jilee@google.com>
+>>
+>> Fix udma timings of pdc202xx_old controllers.
+>> MB=1, MC=1 (0x20, 0x01) for all UDMA modes of pdc2026{57}.
+>
+> On what documentation is this based ?
 
-Make sure we don't leak peripheral/gpio resources when an error occurs
-during setup, and make sure we don't call kfree() twice on the same
-object.  Also add/fix some error messages in the process.
+I have two documents, 20265, and 20267, and both need to set to the
+same single value for all UDMA modes.
 
-Signed-off-by: Yi Li <yi.li@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/spi/spi_bfin5xx.c |   33 ++++++++++++++++++++++++++-------
- 1 files changed, 26 insertions(+), 7 deletions(-)
+Doc 1:
+  PDC20265 Bus Mastering Ultra DMA PCI –ATA/ATAPI Controller
+Specification Rev 2.0
+  #7.17.2, Ultra DMA Data Transfer Speed list
+    For all Ultra DMA mode, MB, MC = 01h, 01h
 
-diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index a8fc922..0dcc2ca 100644
---- a/drivers/spi/spi_bfin5xx.c
-+++ b/drivers/spi/spi_bfin5xx.c
-@@ -1118,8 +1118,10 @@ static int bfin_spi_setup(struct spi_device *spi)
- 	chip = spi_get_ctldata(spi);
- 	if (chip == NULL) {
- 		chip = kzalloc(sizeof(*chip), GFP_KERNEL);
--		if (!chip)
-+		if (!chip) {
-+			dev_err(&spi->dev, "cannot allocate chip data\n");
- 			return -ENOMEM;
-+		}
- 
- 		chip->enable_dma = 0;
- 		chip_info = spi->controller_data;
-@@ -1210,7 +1212,7 @@ static int bfin_spi_setup(struct spi_device *spi)
- 		/* register dma irq handler */
- 		ret = request_dma(drv_data->dma_channel, "BFIN_SPI_DMA");
- 		if (ret) {
--			dev_dbg(&spi->dev,
-+			dev_err(&spi->dev,
- 				"Unable to request BlackFin SPI DMA channel\n");
- 			goto error;
- 		}
-@@ -1219,7 +1221,7 @@ static int bfin_spi_setup(struct spi_device *spi)
- 		ret = set_dma_callback(drv_data->dma_channel,
- 			bfin_spi_dma_irq_handler, drv_data);
- 		if (ret) {
--			dev_dbg(&spi->dev, "Unable to set dma callback\n");
-+			dev_err(&spi->dev, "Unable to set dma callback\n");
- 			goto error;
- 		}
- 		dma_disable_irq(drv_data->dma_channel);
-@@ -1229,7 +1231,7 @@ static int bfin_spi_setup(struct spi_device *spi)
- 		ret = request_irq(drv_data->spi_irq, bfin_spi_pio_irq_handler,
- 			IRQF_DISABLED, "BFIN_SPI", drv_data);
- 		if (ret) {
--			printk(KERN_NOTICE "Unable to register spi IRQ\n");
-+			dev_err(&spi->dev, "Unable to register spi IRQ\n");
- 			goto error;
- 		}
- 		drv_data->irq_requested = 1;
-@@ -1239,8 +1241,10 @@ static int bfin_spi_setup(struct spi_device *spi)
- 
- 	if (chip->chip_select_num == 0) {
- 		ret = gpio_request(chip->cs_gpio, spi->modalias);
--		if (ret)
-+		if (ret) {
-+			dev_err(&spi->dev, "gpio_request() error\n");
- 			goto error;
-+		}
- 		gpio_direction_output(chip->cs_gpio, 1);
- 	}
- 
-@@ -1256,8 +1260,10 @@ static int bfin_spi_setup(struct spi_device *spi)
- 	    chip->chip_select_num <= spi->master->num_chipselect) {
- 		ret = peripheral_request(ssel[spi->master->bus_num]
- 		                         [chip->chip_select_num-1], spi->modalias);
--		if (ret)
-+		if (ret) {
-+			dev_err(&spi->dev, "peripheral_request() error\n");
- 			goto error;
-+		}
- 	}
- 
- 	bfin_spi_cs_deactive(drv_data, chip);
-@@ -1265,10 +1271,21 @@ static int bfin_spi_setup(struct spi_device *spi)
- 
-  error:
- 	if (ret) {
--		kfree(chip);
- 		if (drv_data->dma_requested)
- 			free_dma(drv_data->dma_channel);
- 		drv_data->dma_requested = 0;
-+
-+		if ((chip->chip_select_num > 0)
-+			&& (chip->chip_select_num <= spi->master->num_chipselect))
-+			peripheral_free(ssel[spi->master->bus_num]
-+						[chip->chip_select_num-1]);
-+
-+		if (chip->chip_select_num == 0)
-+			gpio_free(chip->cs_gpio);
-+
-+		kfree(chip);
-+		/* prevent free 'chip' twice */
-+		spi_set_ctldata(spi, NULL);
- 	}
- 
- 	return ret;
-@@ -1294,6 +1311,8 @@ static void bfin_spi_cleanup(struct spi_device *spi)
- 		gpio_free(chip->cs_gpio);
- 
- 	kfree(chip);
-+	/* prevent free 'chip' twice */
-+	spi_set_ctldata(spi, NULL);
- }
- 
- static inline int bfin_spi_init_queue(struct driver_data *drv_data)
--- 
-1.6.5.rc1
+Doc 2:
+  PDC20267 Bus Mastering Ultra DMA PCI –ATA/ATAPI Controller
+Specification Rev 2.0
+  #7.17.2, Ultra DMA Data Transfer Speed list
+    For all Ultra DMA mode, MB, MC = 01h, 01h
 
+Are there other pdc202xx old controllers that are different?
+
+-John
+
+>
+> Alan
+>
