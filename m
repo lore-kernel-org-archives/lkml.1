@@ -1,204 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbZIQHOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbZIQHQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595AbZIQHOh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 03:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758554AbZIQHOg
+	id S1758603AbZIQHQg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 03:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbZIQHQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 03:14:36 -0400
-Received: from mga14.intel.com ([143.182.124.37]:59818 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758503AbZIQHOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 03:14:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,402,1249282800"; 
-   d="scan'208";a="188608350"
-Date: Thu, 17 Sep 2009 15:14:28 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "xiyou.wangcong@gmail.com" <xiyou.wangcong@gmail.com>
-Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling v4
-Message-ID: <20090917071428.GA9232@localhost>
-References: <20090914032901.GA16189@localhost> <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com> <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com> <20090917145319.97f67737.kamezawa.hiroyu@jp.fujitsu.com> <20090917150726.9acb0f40.kamezawa.hiroyu@jp.fujitsu.com> <20090917062124.GA6964@localhost> <20090917155100.3cc2dfb6.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917155100.3cc2dfb6.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 17 Sep 2009 03:16:36 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50549 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758526AbZIQHQf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 03:16:35 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 17 Sep 2009 16:14:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/3][mmotm] updateing size of kcore
+Message-Id: <20090917161432.97e06050.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <2375c9f90909162359m14ec7640m88ddd7ba54d6e793@mail.gmail.com>
+References: <2375c9f90909160235m1f052df0qb001f8243ed9291e@mail.gmail.com>
+	<1bc66b163326564dafb5a7dd8959fd56.squirrel@webmail-b.css.fujitsu.com>
+	<20090917114138.e14a1183.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917114509.a9eb9f2c.kamezawa.hiroyu@jp.fujitsu.com>
+	<2375c9f90909162359m14ec7640m88ddd7ba54d6e793@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 02:51:00PM +0800, KAMEZAWA Hiroyuki wrote:
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Now, rw_verify_area() checsk f_pos is negative or not. And if
-> negative, returns -EINVAL.
-> 
-> But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
-> has negative offsets. And we can't do any access via read/write
-> to the file(device).
-> 
-> This patch introduce a flag S_VERYBIG and allow negative file
-> offsets for big files. (usual files don't allow it.)
-> 
-> Changelog: v3->v4
->  - make changes in mem.c aligned.
->  - change __negative_fpos_check() to return int. 
->  - fixed bug in "pos" check.
->  - added comments.
-> 
-> Changelog: v2->v3
->  - fixed bug in rw_verify_area (it cannot be compiled)
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  drivers/char/mem.c |   23 +++++++++++++----------
->  fs/proc/base.c     |    2 ++
->  fs/read_write.c    |   22 ++++++++++++++++++++--
->  include/linux/fs.h |    2 ++
->  4 files changed, 37 insertions(+), 12 deletions(-)
-> 
-> Index: mmotm-2.6.31-Sep14/fs/read_write.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep14.orig/fs/read_write.c
-> +++ mmotm-2.6.31-Sep14/fs/read_write.c
-> @@ -205,6 +205,21 @@ bad:
->  }
->  #endif
->  
-> +static int
-> +__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
-> +{
-> +	/*
-> +	 * pos or pos+count is negative here, check overflow.
-> +	 * too big "count" will be caught in rw_verify_area().
-> +	 */
-> +	if ((pos < 0) && (pos + count < pos))
-> +		return -EOVERFLOW;
+On Thu, 17 Sep 2009 14:59:35 +0800
+Américo Wang <xiyou.wangcong@gmail.com> wrote:
 
-This returns -EOVERFLOW when pos=-10 and count=1. What's the intention?
-Just to return a different error code other than -EINVAL?
+> On Thu, Sep 17, 2009 at 10:45 AM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> >
+> > After memory hotplug (or other events in future), kcore size
+> > can be modified.
+> >
+> > To update inode->i_size, we have to know inode/dentry but we
+> > can't get it from inside /proc directly.
+> > But considerinyg memory hotplug, kcore image is updated only when
+> > it's opened. Then, updating inode->i_size at open() is enough.
+> >
+> > Cc: WANG Cong <xiyou.wangcong@gmail.com>
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> 
+> This patch looks fine.
+> 
+> However, I am thinking if kcore is the only file under /proc whose size
+> is changed dynamically? If no, that probably means we need to change
+> generic proc code.
+> 
+I tried yesteray, and back to this ;)
 
-Also it seems you did two behavior changes at the same time: the above
--EOVERFLOW and the below IS_VERYBIG(). Are they tightly coupled?
+One thing which makes me confused is that there is no way to get
+inode or dentry from proc_dir_entry.
 
-> +	/* If !VERYBIG inode, negative pos(pos+count) is not allowed */
-> +	if (!IS_VERYBIG(inode))
-> +		return -EINVAL;
-> +	return 0;
-> +}
-> +
->  /*
->   * rw_verify_area doesn't like huge counts. We limit
->   * them to something that fits in "int" so that others
-> @@ -222,8 +237,11 @@ int rw_verify_area(int read_write, struc
->  	if (unlikely((ssize_t) count < 0))
->  		return retval;
->  	pos = *ppos;
-> -	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
-> -		return retval;
-> +	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
-> +		retval = __negative_fpos_check(inode, pos, count);
-> +		if (retval)
-> +			return retval;
-> +	}
+I tried to rewrite proc_getattr() for cheating "ls". But it just works for
+"stat" and inode->i_size is used more widely. So, this implementation now.
 
-This could look more nicer:
+But considering practically, inode->i_size itself is not meaningful in /proc
+files even if it's correct. For example, /proc/vmstat or /proc/stat,
+/proc/<pid>/maps... etc...
 
-        retval = __negative_fpos_check(inode, pos, count);
-        if (retval)
-                return retval;
+inode->i_size will be dynamically changed while reading. Now, most of users
+know regular files under /proc is not a "real" file and handle them in proper
+way. (programs can be used with pipe/stdin works well.)
 
-But they are all minor issues :)
+I wonder /proc/kcore is a special one, which gdb/objdump/readelf may access.
+Above 3 programs are for "usual" files and not considering pseudo files under
+/proc. So, I think adding generic i->i_size support is an overkill until
+there are users depends on that.
 
 Thanks,
-Fengguang
+-Kame
 
->  
->  	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
->  		retval = locks_mandatory_area(
-> Index: mmotm-2.6.31-Sep14/include/linux/fs.h
-> ===================================================================
-> --- mmotm-2.6.31-Sep14.orig/include/linux/fs.h
-> +++ mmotm-2.6.31-Sep14/include/linux/fs.h
-> @@ -231,6 +231,7 @@ struct inodes_stat_t {
->  #define S_NOCMTIME	128	/* Do not update file c/mtime */
->  #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
->  #define S_PRIVATE	512	/* Inode is fs-internal */
-> +#define S_VERYBIG	1024	/* Allow file's loff_t can be negative */
->  
->  /*
->   * Note that nosuid etc flags are inode-specific: setting some file-system
-> @@ -265,6 +266,7 @@ struct inodes_stat_t {
->  #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
->  #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
->  #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
-> +#define IS_VERYBIG(inode)	((inode)->i_flags & S_VERYBIG)
->  
->  /* the read-only stuff doesn't really belong here, but any other place is
->     probably as bad and I don't want to create yet another include file. */
-> Index: mmotm-2.6.31-Sep14/drivers/char/mem.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep14.orig/drivers/char/mem.c
-> +++ mmotm-2.6.31-Sep14/drivers/char/mem.c
-> @@ -825,22 +825,23 @@ static const struct memdev {
->  	const char *name;
->  	const struct file_operations *fops;
->  	struct backing_dev_info *dev_info;
-> +	bool	verybig;
->  } devlist[] = {
-> -	[ 1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi },
-> +	[1]  = { "mem", &mem_fops, &directly_mappable_cdev_bdi, true },
->  #ifdef CONFIG_DEVKMEM
-> -	[ 2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi },
-> +	[2]  = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi, true },
->  #endif
-> -	[ 3] = {"null", &null_fops, NULL },
-> +	[3]  = {"null", &null_fops, NULL, false },
->  #ifdef CONFIG_DEVPORT
-> -	[ 4] = { "port", &port_fops, NULL },
-> +	[4]  = { "port", &port_fops, NULL, false },
->  #endif
-> -	[ 5] = { "zero", &zero_fops, &zero_bdi },
-> -	[ 6] = { "full", &full_fops, NULL },
-> -	[ 7] = { "random", &random_fops, NULL },
-> -	[ 9] = { "urandom", &urandom_fops, NULL },
-> -	[11] = { "kmsg", &kmsg_fops, NULL },
-> +	[5]  = { "zero", &zero_fops, &zero_bdi, false },
-> +	[6]  = { "full", &full_fops, NULL, false },
-> +	[7]  = { "random", &random_fops, NULL, false },
-> +	[9]  = { "urandom", &urandom_fops, NULL, false },
-> +	[11] = { "kmsg", &kmsg_fops, NULL, false },
->  #ifdef CONFIG_CRASH_DUMP
-> -	[12] = { "oldmem", &oldmem_fops, NULL },
-> +	[12] = { "oldmem", &oldmem_fops, NULL, false },
->  #endif
->  };
->  
-> @@ -868,6 +869,8 @@ static int memory_open(struct inode *ino
->  		ret = dev->fops->open(inode, filp);
->  	else
->  		ret = 0;
-> +	if (dev->verybig)
-> +		inode->i_flags |= S_VERYBIG;
->  out:
->  	unlock_kernel();
->  	return ret;
-> Index: mmotm-2.6.31-Sep14/fs/proc/base.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
-> +++ mmotm-2.6.31-Sep14/fs/proc/base.c
-> @@ -779,6 +779,8 @@ static const struct file_operations proc
->  static int mem_open(struct inode* inode, struct file* file)
->  {
->  	file->private_data = (void*)((long)current->self_exec_id);
-> +	/* this file is read only and we can catch out-pf-range */
-> +	inode->i_flags |= S_VERYBIG;
->  	return 0;
->  }
->  
+
+> Thanks!
+> 
+> > ---
+> >  fs/proc/kcore.c |    5 +++++
+> >  1 file changed, 5 insertions(+)
+> >
+> > Index: mmotm-2.6.31-Sep14/fs/proc/kcore.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/fs/proc/kcore.c
+> > +++ mmotm-2.6.31-Sep14/fs/proc/kcore.c
+> > @@ -546,6 +546,11 @@ static int open_kcore(struct inode *inod
+> >                return -EPERM;
+> >        if (kcore_need_update)
+> >                kcore_update_ram();
+> > +       if (i_size_read(inode) != proc_root_kcore->size) {
+> > +               mutex_lock(&inode->i_mutex);
+> > +               i_size_write(inode, proc_root_kcore->size);
+> > +               mutex_unlock(&inode->i_mutex);
+> > +       }
+> >        return 0;
+> >  }
+> >
+> >
+> >
+> 
+
