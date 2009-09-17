@@ -1,137 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZIQHIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbZIQHOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758358AbZIQHIL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 03:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbZIQHIK
+	id S1758546AbZIQHOQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 03:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758481AbZIQHOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 03:08:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57650 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756745AbZIQHIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 03:08:09 -0400
-Message-ID: <4AB1E0F2.6030108@cn.fujitsu.com>
-Date: Thu, 17 Sep 2009 15:10:42 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Re: Re: [PATCH v2 2/2] ftrace: Add timer-source of walltime for
- ftrace
-References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com>	 <4A89213C.5090109@cn.fujitsu.com>	 <20090818215620.A63C.A69D9226@jp.fujitsu.com>	 <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com>	 <4A939CDF.2000407@cn.fujitsu.com> <4AB076DE.10604@cn.fujitsu.com>	 <4AB077AF.6080800@cn.fujitsu.com> <20090916055928.GF5121@nowhere>	 <4AB0885C.4010504@cn.fujitsu.com> <1253129843.20020.214.camel@gandalf.stny.rr.com>
-In-Reply-To: <1253129843.20020.214.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Sep 2009 03:14:16 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:42584 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757476AbZIQHOP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 03:14:15 -0400
+Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Reply-To: tomi.valkeinen@nokia.com
+To: ext Andrew Morton <akpm@linux-foundation.org>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "hvaibhav@ti.com" <hvaibhav@ti.com>, "khasim@ti.com" <khasim@ti.com>,
+       "sakoman@gmail.com" <sakoman@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+In-Reply-To: <20090902151126.f465bb15.akpm@linux-foundation.org>
+References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
+	 <4A9B96A7.5040005@gmail.com>
+	 <5e088bd90908310720p290ba68dwd6106a778fd7c740@mail.gmail.com>
+	 <0680EC522D0CC943BC586913CF3768C0037CE48136@dbde02.ent.ti.com>
+	 <19F8576C6E063C45BE387C64729E73940436A4A9B6@dbde02.ent.ti.com>
+	 <20090831155518.GC16876@atomide.com>	<4A9CC8DB.2050803@gmail.com>
+	 <20090902151126.f465bb15.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Nokia Oyj
+Date: Thu, 17 Sep 2009 10:13:22 +0300
+Message-Id: <1253171604.5927.17.camel@tubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Sep 2009 07:13:30.0206 (UTC) FILETIME=[5BEEF7E0:01CA3766]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 2009-09-16 at 14:40 +0800, Zhaolei wrote:
->> Frederic Weisbecker wrote:
->>> On Wed, Sep 16, 2009 at 01:29:19PM +0800, Zhaolei wrote:
->>>> We can add a timer-source for ftrace to support wall-time display.
->>>> It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
->>>> http://lkml.org/lkml/2009/7/24/103
->>>>
->>>> It need to applys on my patch of:
->>>> [PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
->>>>
->> Hello, Frederic
->>
->> Thanks for your review.
->>
->>>> We can get following output:
->>>>  # cd /mnt/debugfs/tracing/
->>>>  # cat trace_clock
->>>>  [local] global walltime
->>>>  # echo sched_switch > current_tracer
->>>>  # cat trace
->>>>  # tracer: sched_switch
->>>>  #
->>>>  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->>>>  #              | |       |          |         |
->>>>              bash-3580  [000]  2916.188093:   3580:120:S   + [000]  3580:120:S bash
->>>>              bash-3580  [000]  2916.188205:   3580:120:S   + [000]  3580:120:S bash
->>>>              bash-3580  [000]  2916.188538:   3580:120:R   + [000]     5:115:S events/0
->>>>              bash-3580  [000]  2916.188599:   3580:120:R ==> [000]     5:115:R events/0
->>>>          events/0-5     [000]  2916.188669:      5:115:S ==> [000]  3580:120:R bash
->>>>  ...
->>>>  # echo walltime > trace_clock
->>>>  # cat trace
->>>>  # tracer: sched_switch
->>>>  #
->>>>  #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
->>>>  #              | |       |                        |         |
->>>
->>>
->>>
->>> The headers seem a bit broken. Is it a copy paste effect or?
->> No, it is a format bug of patch.
->> I'll fix it.
->>
->>>
->>>
->>>>              bash-3580  [000] 2009-08-24 18:03:16.500705:   3580:120:S   + [000]  3580:120:S bash
->>>>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
->>>>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
->>>>              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S ==> [000]     5:115:R events/0
->>>>          events/0-5     [000] 2009-08-24 18:03:16.500815:      5:115:R   + [000]  3578:120:S sshd
->>>>  ...
->>>
->>> But nice result :)
->>>
->>>
->>>> Changelog:
->>>> v1->v2: Rebase to top of tip tree.
->>>>
->>>> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
->>>> ---
->>>>  include/linux/trace_clock.h |    1 +
->>>>  kernel/trace/trace.c        |   24 ++++++++++++++++-----
->>>>  kernel/trace/trace.h        |    8 ++++++-
->>>>  kernel/trace/trace_clock.c  |   48 +++++++++++++++++++++++++++++++++++++++++++
->>>>  kernel/trace/trace_output.c |   21 +++++++++++++++---
->>>>  5 files changed, 91 insertions(+), 11 deletions(-)
->>>>
->>>> diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
->>>> index 7a81303..322707e 100644
->>>> --- a/include/linux/trace_clock.h
->>>> +++ b/include/linux/trace_clock.h
->>>> @@ -15,5 +15,6 @@
->>>>  extern u64 notrace trace_clock_local(void);
->>>>  extern u64 notrace trace_clock(void);
->>>>  extern u64 notrace trace_clock_global(void);
->>>> +extern u64 notrace trace_clock_walltime(void);
->>>>  
->>>>  #endif /* _LINUX_TRACE_CLOCK_H */
->>>> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->>>> index fd52a19..160b6a8 100644
->>>> --- a/kernel/trace/trace.c
->>>> +++ b/kernel/trace/trace.c
->>>> @@ -335,9 +335,10 @@ static struct {
->>>>  } trace_clocks[] = {
->>>>  	{ trace_clock_local,	"local" },
->>>>  	{ trace_clock_global,	"global" },
->>>> +	{ trace_clock_walltime,	"walltime" },
->>>>  };
->>>>  
->>>> -int trace_clock_id;
->>>> +enum TRACE_CLOCK_TYPE trace_clock_type = TRACE_CLOCK_LOCAL;
->>>
->>>
->>> Uppercase names are usually reserved for CPP macros.
->> I'll rename it.
+Hi,
+
+On Thu, 2009-09-03 at 00:11 +0200, ext Andrew Morton wrote:
+> On Tue, 01 Sep 2009 10:10:19 +0300
+> Artem Bityutskiy <dedekind1@gmail.com> wrote:
 > 
-> After the fixes that Frederic suggested, and the required timekeeping
-> ACKS, I'll queue up your next version for v2.6.33. Looking forward to
-> your new patches.
+> > Andrew,
+> > 
+> > could you please help with merging this piece of (well written) code?
+> > Could you give your blessing to include it into linux-next now, and
+> > merge this during the next merge window?
+> 
+> I'll merge them (after I've looked through them, which I'll do now).  
 
-I'll send new patch after we finish xtime tracepoint's discussion.
+Have you had time to take a look at this?
 
-Thanks
-Zhaolei
+ Tomi
+
+> 
+> But there are more rejects than I'm prepared to cope with.  The various
+> arch/arm files have undergone some changes in linux-next which yield
+> more breakage than I'm prepared to try to fix.  For example,
+> arch/arm/mach-omap2/board-3430sdp.c:sdp3430_config[] ends up being an
+> empty array!
+> 
+> Then there's the matter of these patches, already in -mm:
+> 
+> omapfb-add-support-for-the-apollon-lcd.patch
+> omapfb-add-support-for-mipi-dcs-compatible-lcds.patch
+> omapfb-add-support-for-the-amstrad-delta-lcd.patch
+> omapfb-add-support-for-the-2430sdp-lcd.patch
+> omapfb-add-support-for-the-omap2evm-lcd.patch
+> omapfb-add-support-for-the-3430sdp-lcd.patch
+> omapfb-add-support-for-the-omap3-evm-lcd.patch
+> omapfb-add-support-for-the-omap3-beagle-dvi-output.patch
+> omapfb-add-support-for-the-gumstix-overo-lcd.patch
+> omapfb-add-support-for-the-zoom-mdk-lcd.patch
+> omapfb-add-support-for-rotation-on-the-blizzard-lcd-ctrl.patch
+> n770-enable-lcd-mipi-dcs-in-kconfig.patch
+> omapfb-dispc-various-typo-fixes.patch
+> omapfb-dispc-disable-iface-clocks-along-with-func-clocks.patch
+> omapfb-dispc-enable-wake-up-capability.patch
+> omapfb-dispc-allow-multiple-external-irq-handlers.patch
+> omapfb-suspend-resume-only-if-fb-device-is-already-initialized.patch
+> omapfb-fix-coding-style-remove-dead-line.patch
+> omapfb-add-fb-manual-update-option-to-kconfig.patch
+> omapfb-hwa742-fix-pointer-to-be-const.patch
+> 
 
