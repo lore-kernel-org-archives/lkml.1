@@ -1,134 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbZIQJkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbZIQJmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758307AbZIQJkR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 05:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZIQJkQ
+	id S1758173AbZIQJmM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 05:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZIQJmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 05:40:16 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:23146 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751394AbZIQJkO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 05:40:14 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: aim7 scalability issue on 4 socket machine
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>,
+	Thu, 17 Sep 2009 05:42:12 -0400
+Received: from mga14.intel.com ([143.182.124.37]:21568 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752152AbZIQJmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 05:42:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,403,1249282800"; 
+   d="scan'208";a="188648601"
+Date: Thu, 17 Sep 2009 17:42:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>
-In-Reply-To: <1253179879.2606.37.camel@ymzhang>
-References: <1253179879.2606.37.camel@ymzhang>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Sep 2009 11:40:11 +0200
-Message-Id: <1253180411.8497.1.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "xiyou.wangcong@gmail.com" <xiyou.wangcong@gmail.com>
+Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling v4
+Message-ID: <20090917094203.GA13885@localhost>
+References: <20090914032901.GA16189@localhost> <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com> <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com> <20090917145319.97f67737.kamezawa.hiroyu@jp.fujitsu.com> <20090917150726.9acb0f40.kamezawa.hiroyu@jp.fujitsu.com> <20090917062124.GA6964@localhost> <20090917155100.3cc2dfb6.kamezawa.hiroyu@jp.fujitsu.com> <20090917071428.GA9232@localhost> <20090917162324.d60a7950.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090917162324.d60a7950.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-17 at 17:31 +0800, Zhang, Yanmin wrote:
-> ﻿Aim7 result is bad on my new Nehalem machines (4*8*2 logical cpu). Perf counter
-> shows spinlock consumes 70% cpu time on the machine. Lock_stat shows
-> anon_vma->lock causes most of the spinlock contention. Function tracer shows
-> below call chain creates the spinlock.
+On Thu, Sep 17, 2009 at 03:23:24PM +0800, KAMEZAWA Hiroyuki wrote:
+> On Thu, 17 Sep 2009 15:14:28 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> do_brk => vma_merge =>vma_adjust
+> > On Thu, Sep 17, 2009 at 02:51:00PM +0800, KAMEZAWA Hiroyuki wrote:
+> > > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > 
+> > > Now, rw_verify_area() checsk f_pos is negative or not. And if
+> > > negative, returns -EINVAL.
+> > > 
+> > > But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
+> > > has negative offsets. And we can't do any access via read/write
+> > > to the file(device).
+> > > 
+> > > This patch introduce a flag S_VERYBIG and allow negative file
+> > > offsets for big files. (usual files don't allow it.)
+> > > 
+> > > Changelog: v3->v4
+> > >  - make changes in mem.c aligned.
+> > >  - change __negative_fpos_check() to return int. 
+> > >  - fixed bug in "pos" check.
+> > >  - added comments.
+> > > 
+> > > Changelog: v2->v3
+> > >  - fixed bug in rw_verify_area (it cannot be compiled)
+> > > 
+> > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > ---
+> > >  drivers/char/mem.c |   23 +++++++++++++----------
+> > >  fs/proc/base.c     |    2 ++
+> > >  fs/read_write.c    |   22 ++++++++++++++++++++--
+> > >  include/linux/fs.h |    2 ++
+> > >  4 files changed, 37 insertions(+), 12 deletions(-)
+> > > 
+> > > Index: mmotm-2.6.31-Sep14/fs/read_write.c
+> > > ===================================================================
+> > > --- mmotm-2.6.31-Sep14.orig/fs/read_write.c
+> > > +++ mmotm-2.6.31-Sep14/fs/read_write.c
+> > > @@ -205,6 +205,21 @@ bad:
+> > >  }
+> > >  #endif
+> > >  
+> > > +static int
+> > > +__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
+> > > +{
+> > > +	/*
+> > > +	 * pos or pos+count is negative here, check overflow.
+> > > +	 * too big "count" will be caught in rw_verify_area().
+> > > +	 */
+> > > +	if ((pos < 0) && (pos + count < pos))
+> > > +		return -EOVERFLOW;
+> > 
+> > This returns -EOVERFLOW when pos=-10 and count=1. What's the intention?
+>   Hmm ?
 > 
-> Aim7 consists of lots of subtests. One test is to fork lots of processes and
-> every process calls sbrk for 1000 times to grow/shrink the heap. All the vma of
-> the heap of all sub-processes point to the same anon_vma and use the same
-> anon_vma->lock. When sbrk is called, kernel calls do_brk => vma_merge =>vma_adjust
-> and lock anon_vma->lock to create spinlock contentions.
+>   pos+count=-9 > -10 ? it's ok. no -EOVERFLOW
 > 
-> There is a comment section in front of spin_lock(&anon_vma->lock. It says
-> anon_vma lock can be optimized when just changing vma->vm_end. As a matter
-> of fact, anon_vma->lock is used to protect anon_vma->list when an entry is
-> deleted/inserted or the list is accessed. There is no such deletion/insertion
-> if only vma->end is changed in function vma_adjust.
-> 
-> Below patch fixes it.
-> 
-> Test results with kernel 2.6.31-rc8. The improvement on the machine is about 150%.
+>   pos=-10, count=11, 
+>   pos+count=1 > -10, then overflow.
 
-Did you see Lee's patch?:
+Hmm, it seems less confusing to do
 
- http://lkml.org/lkml/2009/9/9/290
+static int __negative_fpos_check(struct inode *inode,
+                                 unsigned long pos,
+                                 unsigned long count)
+{
+        if (pos + count < pos)
+                return -EOVERFLOW;
+        ...
+}
 
-Added Lee and Hugh to CC, retained the below patch for them.
-
-> ﻿﻿Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
-> 
-> ---
-> 
-> --- linux-2.6.31-rc8/mm/mmap.c	2009-09-03 10:03:57.000000000 +0800
-> +++ linux-2.6.31-rc8_aim7/mm/mmap.c	2009-09-17 19:11:20.000000000 +0800
-> @@ -512,6 +512,7 @@ void vma_adjust(struct vm_area_struct *v
->  	struct anon_vma *anon_vma = NULL;
->  	long adjust_next = 0;
->  	int remove_next = 0;
-> +	int anon_vma_use_lock;
->  
->  	if (next && !insert) {
->  		if (end >= next->vm_end) {
-> @@ -568,22 +569,32 @@ again:			remove_next = 1 + (end > next->
->  		}
->  	}
->  
-> -	/*
-> -	 * When changing only vma->vm_end, we don't really need
-> -	 * anon_vma lock: but is that case worth optimizing out?
-> -	 */
->  	if (vma->anon_vma)
->  		anon_vma = vma->anon_vma;
-> +	anon_vma_use_lock = 0;
->  	if (anon_vma) {
-> -		spin_lock(&anon_vma->lock);
->  		/*
-> -		 * Easily overlooked: when mprotect shifts the boundary,
-> -		 * make sure the expanding vma has anon_vma set if the
-> -		 * shrinking vma had, to cover any anon pages imported.
-> +		 * When changing only vma->vm_end, we don't really need
-> +		 * anon_vma lock.
-> +		 * ana_vma->lock is to protect the access to the list
-> +		 * started from anon_vma->head. If we don't remove or
-> +		 * insert a vma to the list, and also don't access
-> +		 * the list, we don't need  ana_vma->lock.
->  		 */
-> -		if (importer && !importer->anon_vma) {
-> -			importer->anon_vma = anon_vma;
-> -			__anon_vma_link(importer);
-> +		if (remove_next ||
-> +			insert ||
-> +			(importer && !importer->anon_vma)) {
-> +			anon_vma_use_lock = 1;
-> +			spin_lock(&anon_vma->lock);
-> +			/*
-> +			 * Easily overlooked: when mprotect shifts the boundary,
-> +			 * make sure the expanding vma has anon_vma set if the
-> +			 * shrinking vma had, to cover any anon pages imported.
-> +			 */
-> +			if (importer && !importer->anon_vma) {
-> +				importer->anon_vma = anon_vma;
-> +				__anon_vma_link(importer);
-> +			}
->  		}
->  	}
->  
-> @@ -628,7 +639,7 @@ again:			remove_next = 1 + (end > next->
->  		__insert_vm_struct(mm, insert);
->  	}
->  
-> -	if (anon_vma)
-> +	if (anon_vma_use_lock)
->  		spin_unlock(&anon_vma->lock);
->  	if (mapping)
->  		spin_unlock(&mapping->i_mmap_lock);
-> 
-> 
+Thanks,
+Fengguang
 
