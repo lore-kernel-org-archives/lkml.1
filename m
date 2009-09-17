@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbZIQSIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZIQSHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025AbZIQSIE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758906AbZIQSIC
+	id S1758877AbZIQSHx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbZIQSHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:08:02 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44928 "EHLO hera.kernel.org"
+	Thu, 17 Sep 2009 14:07:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44918 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755303AbZIQSH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:07:59 -0400
-Date: Thu, 17 Sep 2009 18:07:09 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
+	id S1750980AbZIQSHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 14:07:52 -0400
+Date: Thu, 17 Sep 2009 18:07:23 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf sched: Determine the number of CPUs automatically
-Message-ID: <tip-5349256ab12dcbc766495cd1cf3651f7203f8564@git.kernel.org>
-Git-Commit-ID: 5349256ab12dcbc766495cd1cf3651f7203f8564
+Subject: [tip:perfcounters/core] perf_counter: Do not throttle single swcounter events
+Message-ID: <tip-584f7ccaaf27eb67ad137d867518db5c53286304@git.kernel.org>
+Git-Commit-ID: 584f7ccaaf27eb67ad137d867518db5c53286304
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,51 +30,89 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5349256ab12dcbc766495cd1cf3651f7203f8564
-Gitweb:     http://git.kernel.org/tip/5349256ab12dcbc766495cd1cf3651f7203f8564
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 17 Sep 2009 18:24:55 +0200
+Commit-ID:  584f7ccaaf27eb67ad137d867518db5c53286304
+Gitweb:     http://git.kernel.org/tip/584f7ccaaf27eb67ad137d867518db5c53286304
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Thu, 17 Sep 2009 18:47:11 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 17 Sep 2009 18:24:55 +0200
+CommitDate: Thu, 17 Sep 2009 20:02:46 +0200
 
-perf sched: Determine the number of CPUs automatically
+perf_counter: Do not throttle single swcounter events
 
-For 'perf sched map' output, determine max_cpu automatically,
-instead of the static default of 15.
+We can have swcounter events that contribute more than a single
+count per event, when used with a non-zero period, those can
+generate multiple events, which is when we need throttling.
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
+However, swcounter that contribute only a single count per event
+can only come as fast as we can run code, hence don't throttle
+them.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-sched.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ kernel/perf_counter.c |   17 +++++++++++++----
+ 1 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index f67e351..947fd71 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -1347,7 +1347,7 @@ process_sched_wakeup_event(struct raw_event_sample *raw,
-  * Track the current task - that way we can know whether there's any
-  * weird events, such as a task being switched away that is not current.
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 667ab25..fe0d1ad 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -3494,14 +3494,15 @@ static void perf_log_throttle(struct perf_counter *counter, int enable)
+  * Generic counter overflow handling, sampling.
   */
--static int max_cpu = 15;
-+static int max_cpu;
  
- static u32 curr_pid[MAX_CPUS] = { [0 ... MAX_CPUS-1] = -1 };
- 
-@@ -1818,6 +1818,9 @@ static struct trace_sched_handler map_ops  = {
- 
- static void __cmd_map(void)
+-int perf_counter_overflow(struct perf_counter *counter, int nmi,
+-			  struct perf_sample_data *data)
++static int __perf_counter_overflow(struct perf_counter *counter, int nmi,
++				   int throttle, struct perf_sample_data *data)
  {
-+	max_cpu = system("exit `grep ^processor /proc/cpuinfo  | wc -l`");
-+	max_cpu = WEXITSTATUS(max_cpu)-1;
+ 	int events = atomic_read(&counter->event_limit);
+-	int throttle = counter->pmu->unthrottle != NULL;
+ 	struct hw_perf_counter *hwc = &counter->hw;
+ 	int ret = 0;
+ 
++	throttle = (throttle && counter->pmu->unthrottle != NULL);
 +
- 	setup_pager();
- 	read_events();
- 	print_bad_events();
+ 	if (!throttle) {
+ 		hwc->interrupts++;
+ 	} else {
+@@ -3554,6 +3555,12 @@ int perf_counter_overflow(struct perf_counter *counter, int nmi,
+ 	return ret;
+ }
+ 
++int perf_counter_overflow(struct perf_counter *counter, int nmi,
++			  struct perf_sample_data *data)
++{
++	return __perf_counter_overflow(counter, nmi, 1, data);
++}
++
+ /*
+  * Generic software counter infrastructure
+  */
+@@ -3592,6 +3599,7 @@ static void perf_swcounter_overflow(struct perf_counter *counter,
+ 				    int nmi, struct perf_sample_data *data)
+ {
+ 	struct hw_perf_counter *hwc = &counter->hw;
++	int throttle = 0;
+ 	u64 overflow;
+ 
+ 	data->period = counter->hw.last_period;
+@@ -3601,13 +3609,14 @@ static void perf_swcounter_overflow(struct perf_counter *counter,
+ 		return;
+ 
+ 	for (; overflow; overflow--) {
+-		if (perf_counter_overflow(counter, nmi, data)) {
++		if (__perf_counter_overflow(counter, nmi, throttle, data)) {
+ 			/*
+ 			 * We inhibit the overflow from happening when
+ 			 * hwc->interrupts == MAX_INTERRUPTS.
+ 			 */
+ 			break;
+ 		}
++		throttle = 0;
+ 	}
+ }
+ 
