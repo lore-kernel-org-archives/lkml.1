@@ -1,191 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbZIQPXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbZIQPWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbZIQPXJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 11:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbZIQPVw
+	id S1755750AbZIQPWk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 11:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZIQPWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 11:21:52 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57255 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753135AbZIQPVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 11:21:46 -0400
-From: Jan Kara <jack@suse.cz>
-To: linux-fsdevel@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       linux-mm@kvack.org, npiggin@suse.de, Jan Kara <jack@suse.cz>
-Subject: [PATCH 7/7] ext2: Convert ext2 to new mkwrite code
-Date: Thu, 17 Sep 2009 17:21:47 +0200
-Message-Id: <1253200907-31392-8-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1253200907-31392-1-git-send-email-jack@suse.cz>
-References: <1253200907-31392-1-git-send-email-jack@suse.cz>
+	Thu, 17 Sep 2009 11:22:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52852 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754532AbZIQPWh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 11:22:37 -0400
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+From: Peter Zijlstra <peterz@infradead.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       general@lists.openfabrics.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <adazl8td35u.fsf@cisco.com>
+References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins>
+	 <adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com>
+	 <1253198976.14935.27.camel@laptop>  <adazl8td35u.fsf@cisco.com>
+Content-Type: text/plain
+Date: Thu, 17 Sep 2009 17:22:24 +0200
+Message-Id: <1253200944.14935.29.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext2/file.c  |   28 +++++++++++++++++++++++++++-
- fs/ext2/inode.c |   54 ++++++++++++++++++++++++++++++++++++++++--------------
- 2 files changed, 67 insertions(+), 15 deletions(-)
+On Thu, 2009-09-17 at 08:03 -0700, Roland Dreier wrote:
+> > Hmm, or are you saying you can only get 1 event per registered range and
+>  > allocate the thing on registration? That'd need some registration limit
+>  > to avoid DoS scenarios.
+> 
+> Yes, that's what I do.  You're right, I should add a limit... although
+> their are lots of ways for userspace to consume arbitrary amounts of
+> kernel resources already.
 
-diff --git a/fs/ext2/file.c b/fs/ext2/file.c
-index 806def9..317cfa0 100644
---- a/fs/ext2/file.c
-+++ b/fs/ext2/file.c
-@@ -19,6 +19,8 @@
-  */
- 
- #include <linux/time.h>
-+#include <linux/mm.h>
-+#include <linux/buffer_head.h>
- #include "ext2.h"
- #include "xattr.h"
- #include "acl.h"
-@@ -38,6 +40,30 @@ static int ext2_release_file (struct inode * inode, struct file * filp)
- 	return 0;
- }
- 
-+static struct vm_operations_struct ext2_file_vm_ops = {
-+	.fault		= filemap_fault,
-+	.page_mkwrite	= noalloc_page_mkwrite,
-+};
-+
-+static struct vm_operations_struct ext2_nobh_file_vm_ops = {
-+	.fault		= filemap_fault,
-+};
-+
-+static int ext2_file_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	struct address_space *mapping = file->f_mapping;
-+
-+	if (!mapping->a_ops->readpage)
-+		return -ENOEXEC;
-+	file_accessed(file);
-+	if (!test_opt(mapping->host->i_sb, NOBH))
-+		vma->vm_ops = &ext2_file_vm_ops;
-+	else
-+		vma->vm_ops = &ext2_nobh_file_vm_ops;
-+	vma->vm_flags |= VM_CAN_NONLINEAR;
-+	return 0;
-+}
-+
- /*
-  * We have mostly NULL's here: the current defaults are ok for
-  * the ext2 filesystem.
-@@ -52,7 +78,7 @@ const struct file_operations ext2_file_operations = {
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl	= ext2_compat_ioctl,
- #endif
--	.mmap		= generic_file_mmap,
-+	.mmap		= ext2_file_mmap,
- 	.open		= generic_file_open,
- 	.release	= ext2_release_file,
- 	.fsync		= simple_fsync,
-diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-index 8ff0f44..75881dd 100644
---- a/fs/ext2/inode.c
-+++ b/fs/ext2/inode.c
-@@ -815,10 +815,35 @@ ext2_nobh_write_begin(struct file *file, struct address_space *mapping,
- 	return ret;
- }
- 
-+/*
-+ * This is mostly used as a fallback function for __mpage_writepage(). We have
-+ * to prepare buffers for block_write_full_page() so that all the buffers that
-+ * should be written are either mapped or delay.
-+ */
- static int ext2_nobh_writepage(struct page *page,
--			struct writeback_control *wbc)
-+			       struct writeback_control *wbc)
- {
--	return nobh_writepage(page, ext2_get_block, wbc);
-+	struct inode *inode = page->mapping->host;
-+	int blocksize = 1 << inode->i_blkbits;
-+	loff_t i_size = i_size_read(inode), start;
-+	struct buffer_head *head, *bh;
-+
-+	if (!page_has_buffers(page)) {
-+		create_empty_buffers(page, blocksize,
-+				     (1 << BH_Dirty)|(1 << BH_Uptodate));
-+	}
-+	head = bh = page_buffers(page);
-+	start = page_offset(page);
-+	do {
-+		if (start >= i_size)
-+			break;
-+		if (!buffer_mapped(bh) && buffer_dirty(bh))
-+			set_buffer_delay(bh);
-+		start += blocksize;
-+		bh = bh->b_this_page;
-+	} while (bh != head);
-+
-+	return block_write_full_page(page, ext2_get_block, wbc);
- }
- 
- static sector_t ext2_bmap(struct address_space *mapping, sector_t block)
-@@ -850,6 +875,7 @@ ext2_writepages(struct address_space *mapping, struct writeback_control *wbc)
- }
- 
- const struct address_space_operations ext2_aops = {
-+	.new_writepage		= 1,
- 	.readpage		= ext2_readpage,
- 	.readpages		= ext2_readpages,
- 	.writepage		= ext2_writepage,
-@@ -864,11 +890,13 @@ const struct address_space_operations ext2_aops = {
- };
- 
- const struct address_space_operations ext2_aops_xip = {
-+	.new_writepage		= 1,
- 	.bmap			= ext2_bmap,
- 	.get_xip_mem		= ext2_get_xip_mem,
- };
- 
- const struct address_space_operations ext2_nobh_aops = {
-+	.new_writepage		= 1,
- 	.readpage		= ext2_readpage,
- 	.readpages		= ext2_readpages,
- 	.writepage		= ext2_nobh_writepage,
-@@ -1167,7 +1195,7 @@ static void ext2_truncate_blocks(struct inode *inode, loff_t offset)
- 
- int ext2_setsize(struct inode *inode, loff_t newsize)
- {
--	loff_t oldsize;
-+	loff_t oldsize = inode->i_size;
- 	int error;
- 
- 	error = inode_newsize_ok(inode, newsize);
-@@ -1182,21 +1210,19 @@ int ext2_setsize(struct inode *inode, loff_t newsize)
- 	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
- 		return -EPERM;
- 
--	if (mapping_is_xip(inode->i_mapping))
--		error = xip_truncate_page(inode->i_mapping, newsize);
--	else if (test_opt(inode->i_sb, NOBH))
--		error = nobh_truncate_page(inode->i_mapping,
--				newsize, ext2_get_block);
--	else
--		error = block_truncate_page(inode->i_mapping,
--				newsize, ext2_get_block);
--	if (error)
--		return error;
-+	if (newsize > oldsize) {
-+		error = block_prepare_hole(inode, oldsize, newsize, 0,
-+					   ext2_get_block);
-+		if (error)
-+			return error;
-+	}
- 
--	oldsize = inode->i_size;
- 	i_size_write(inode, newsize);
- 	truncate_pagecache(inode, oldsize, newsize);
- 
-+	if (newsize > oldsize)
-+		block_finish_hole(inode, oldsize, newsize);
-+
- 	__ext2_truncate_blocks(inode, newsize);
- 
- 	inode->i_mtime = inode->i_ctime = CURRENT_TIME_SEC;
--- 
-1.6.0.2
+I'd be good to work at reducing that number, not adding to it ;-)
+
+But yeah, I currently don't see a very nice match to perf counters.
 
