@@ -1,90 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbZIQNfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZIQNgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757074AbZIQNfT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 09:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbZIQNfS
+	id S1757298AbZIQNgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 09:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbZIQNgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 09:35:18 -0400
-Received: from rtr.ca ([76.10.145.34]:52783 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753864AbZIQNfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 09:35:17 -0400
-Message-ID: <4AB23B17.2040204@rtr.ca>
-Date: Thu, 17 Sep 2009 09:35:19 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Cc: Chris Webb <chris@arachsys.com>, Ric Wheeler <rwheeler@redhat.com>,
-       Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
-       Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <20090916222842.GB16053@arachsys.com> <4AB17905.90606@kernel.org>
-In-Reply-To: <4AB17905.90606@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Sep 2009 09:36:48 -0400
+Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:43997 "EHLO
+	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753962AbZIQNgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 09:36:47 -0400
+Date: Thu, 17 Sep 2009 09:36:46 -0400
+From: Steven Toth <stoth@kernellabs.com>
+Subject: Re: [PULL] http://www.kernellabs.com/hg/~stoth/saa7164-merge
+In-reply-to: <20090917100258.2a5269d9@pedra.chehab.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <4AB23B6E.6050001@kernellabs.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4AA08B01.30705@kernellabs.com>
+ <20090917100258.2a5269d9@pedra.chehab.org>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.1)
+ Gecko/20090715 Thunderbird/3.0b3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
-> 
-> Chris Webb wrote:
->> Hi Tejun. Thanks for following up to this. We've done some more
->> experimentation over the last couple of days based on your
->> suggestions and thoughts.
+On 9/17/09 9:02 AM, Mauro Carvalho Chehab wrote:
+> Em Thu, 03 Sep 2009 23:35:29 -0400
+> Steven Toth<stoth@kernellabs.com>  escreveu:
+>
+>> Hello Mauro,
 >>
->> Tejun Heo <tj@kernel.org> writes:
->>> Seriously, it's most likely a hardware malfunction although I can't tell
->>> where the problem is with the given data.  Get the hardware fixed.
->> We know this isn't caused by a single faulty piece of hardware,
->> because we have a cluster of identical machines and all have shown
->> this behaviour. This doesn't mean that there isn't a hardware
->> problem, but if there is one, it's a design problem or firmware bug
->> affecting all of our hosts.
-> 
-> If it's multiple machines, it's much less likely to be faulty drives,
-> but if the machines are configured mostly identically, hardware
-> problems can't be ruled out either.
-> 
->> There have also been a few reports of problems which look very
->> similar in this thread from people with somewhat different hardware
->> and drives to ours.
-> 
-> I wouldn't connect the reported cases too eagerly at this point.  Too
-> many different causes end up showing similar symptoms especially with
-> timeouts.
-> 
->>> The aboves are IDENTIFY.  Who's issuing IDENTIFY regularly?  It isn't
->>> from the regular IO paths or md.  It's probably being issued via SG_IO
->>> from userland.  These failures don't affect normal operation.
->> [...]
->>> Oooh, another possibility is the above continuous IDENTIFY tries.
->>> Doing things like that generally isn't a good idea because vendors
->>> don't expect IDENTIFY to be mixed regularly with normal IOs and
->>> firmwares aren't tested against that.  Even smart commands sometimes
->>> cause problems.  So, finding out the thing which is obsessed with the
->>> identity of the drive and stopping it might help.
->> We tracked this down to some (excessively frequent!) monitoring we
->> were doing using smartctl. Things were improved considerably by
->> stopping smartd and disabling all callers of smartctl, although it
->> doesn't appear to have been a cure. The frequency of these timeouts
->> during resync seems to have gone from about once every two hours to
->> about once a day, which means we've been able to complete some
->> resyncs whereas we were unable to before.
-> 
-> That's interesting.  One important side effect of issuing IDENTIFY is
-> that they will serialize command streams as they are not NCQ commands
-> and thus could change command patterns significantly.
-..
+>> This patch series adds support for the NXP SAA7164 PCIe A/V bridge used by the
+>> Hauppauge HVR-2200 and HVR-2250 series of products. Support is limited to DVB-T
+>> / ATSC / QAM digital TV only. The driver has been in development (on and off)
+>> for around a year and the KernelLabs saa7164-stable tree (from which this patch
+>> set was prepared) has been in testing worldwide since approx May(?) 2009.
+>>
+>> The project page including links for firmware downloads, MythTV and Wiki
+>> instructions is here: http://www.kernellabs.com/blog/?page_id=17
+>>
+>> Two general observations with the tree:
+>>
+>> 1. The driver is a little verbose during initial module load, I need to trim a
+>> few lines of debug.
+>> 2. During 64bit compile I have one compile time warning to be addressed.
+>>
+>> Both of these will be resolved shortly and should not stop the driver being
+>> merged and made available to a much wider range of testers.
+>>
+>> So, please pull from http://www.kernellabs.com/hg/~stoth/saa7164-merge
+>
+>> SAA7164: Fix i2c eeprom read errors during load (some boards).
+>> From: Steven Toth<stoth@kernellabs.com>
+>> SAA7164: Fix i2c eeprom read errors during load (some boards).
+>> Priority: normal
+>> Signed-off-by: Steven Toth<stoth@kernellabs.com>
+>
+> Please don't repeat the one-line summary as description. There are several cases like the above.
+>
+>>      -  Add the SAA7164 I2C bus identifier
+>
+> --- a/linux/include/linux/i2c-id.h      Thu Sep 03 09:06:34 2009 -0300
+> +++ b/linux/include/linux/i2c-id.h      Sat May 09 12:24:12 2009 -0400
+>
+> +#define I2C_HW_B_SAA7164        0x010024 /* NXP 7164 based tv cards */
+>
+> Why? Are you needing to use this constant somewhere? If not, just drop it and
+> leave the field in blank.
+>
+> Anyway, I won't delay applying it due to that. I'm committing the series. Please send a fix
+> later for the i2c-id above mentioned.
 
-SMART is the opcode that is most frequently implicated here, not IDENTIFY.
-Note that even a barrier FLUSH CACHE is non NCQ and will serialize the stream.
+Thanks.
 
-Cheers
+I should go back and check the other trees, if this field isn't required by the 
+i2c sub-system then I can remove it from a number of drivers. Of course, this 
+tree is fairly old and it may have already been done in the 23885 / cx88 / 
+au0828 tree's by the other devs. I'll look into this.
 
+Regardless, I'll generate the i2c patch.
+
+I also have another 2.6.31 related patch stacked up, once mkrufky's tree is also 
+merged. I'll issue both of these for merge later today.
+
+Thanks again,
+
+-- 
+Steven Toth - Kernel Labs
+http://www.kernellabs.com
