@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbZIQLoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZIQLX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968AbZIQLoh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 07:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbZIQLoh
+	id S1755618AbZIQLX0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 07:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbZIQLXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 07:44:37 -0400
-Received: from relay.heise.de ([193.99.145.50]:60968 "EHLO relay.heise.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756585AbZIQLog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 07:44:36 -0400
-Message-ID: <4AB21BD9.2010401@ct.heise.de>
-Date: Thu, 17 Sep 2009 13:22:01 +0200
-From: Thorsten Leemhuis <thl@ct.heise.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Pls ignore, sorry for the noise (was: Re: block: add blk-iopoll,
- a NAPI like approach for block devices)
-References: <200909150203.n8F239jo018484@hera.kernel.org> <4AB21B6D.2010706@ct.heise.de>
-In-Reply-To: <4AB21B6D.2010706@ct.heise.de>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 17 Sep 2009 07:23:25 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45174 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268AbZIQLXZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 07:23:25 -0400
+Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and S390
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, heiko.carstens@de.ibm.com, mingo@elte.hu,
+       npiggin@suse.de, sachinp@in.ibm.com
+In-Reply-To: <20090917111828.GB7205@csn.ul.ie>
+References: <1253083059.5478.1.camel@penberg-laptop>
+	 <20090917100841.GF13002@csn.ul.ie>
+	 <1253183365.4975.20.camel@penberg-laptop> <20090917105707.GA7205@csn.ul.ie>
+	 <1253186019.4975.32.camel@penberg-laptop> <20090917111828.GB7205@csn.ul.ie>
+Date: Thu, 17 Sep 2009 14:23:27 +0300
+Message-Id: <1253186607.4975.36.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17.09.2009 13:20, Thorsten Leemhuis wrote:
-> http://lwn.net/Articles/346219/
-> On 15.09.2009 04:03, Linux Kernel Mailing List wrote:
->>  * [http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=5e605b64a183a6c0e84cdb99a6f8acb1f8200437 block: add blk-iopoll, a NAPI like approach for block devices]
->>
->> Author:     Jens Axboe <jens.axboe@oracle.com>
->> AuthorDate: Wed Aug 5 09:07:21 2009 +0200
->> Committer:  Jens Axboe <jens.axboe@oracle.com>
->> CommitDate: Fri Sep 11 14:33:31 2009 +0200
-> [...]
+Hi Mel,
 
-Sorry for the noise, typo in the address :-((
+On Thu, 2009-09-17 at 12:18 +0100, Mel Gorman wrote:
+> Please consider disabling it as an option in the rc3 stage or the like.
+> With luck, I'll find a suitable machine in time and see what can be
+> done. I just don't like the idea of x86 defaulting to one allocator and
+> ppc defaulting to another.
 
-CU
-thl
--- 
-Thorsten Leemhuis
- c't- Magazin für Computertechnik       web    http://www.heise.de/ct/
- Heise Zeitschriften Verlag GmbH&Co.KG  phone  +49 (0)511 5352 300
- Helstorfer Str. 7                      icq    140593172
- D-30625 Hannover, Germany              jabber thl_at_work@jabber.ccc.de
+SLQB is _not_ the default allocator in slqb/core and won't be one for
+2.6.32 even if we do manage to sneak the allocator to linus.git.
 
-/* Heise Zeitschriften Verlag GmbH & Co. KG, Registergericht:
-   Amtsgericht Hannover HRA 26709; Persönlich haftende Gesellschafterin:
-   Heise Zeitschriften Verlag Geschäftsführung GmbH, Registergericht:
-   Amtsgericht Hannover, HRB 60405 Geschäftsführer: Ansgar Heise,
-   Steven P. Steinkraus, Dr. Alfons Schräder                          */
+			Pekka
+
