@@ -1,85 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZIQI42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbZIQI5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbZIQI42 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 04:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbZIQI41
+	id S1755028AbZIQI5G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 04:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZIQI5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 04:56:27 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:48612 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755056AbZIQI4Y (ORCPT
+	Thu, 17 Sep 2009 04:57:05 -0400
+Received: from mga06.intel.com ([134.134.136.21]:57156 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752870AbZIQI5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 04:56:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=G843WGDIcinQ043DQe+c4nUqRShmBV/BPC82JQmSLgsC6oUPMPcazbu0NrzjRzuI+l
-         jJTFJvYDk1Wxybn+uPi2xosdonp8u7pitcCQujMd4ddFby0pGZNA3tOzfbygP5P1gZZq
-         As7lNpwg9dIXj+COKjEQTKXhs4TzjIJq/wYGg=
-Date: Thu, 17 Sep 2009 10:56:24 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf trace: Sample timestamp and cpu when using record
-	flag
-Message-ID: <20090917085622.GA5184@nowhere>
-References: <4AB1F827.8040905@cn.fujitsu.com>
+	Thu, 17 Sep 2009 04:57:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,402,1249282800"; 
+   d="scan'208";a="449274372"
+Date: Thu, 17 Sep 2009 10:58:55 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [PATCH] Voltage count for AB3100 regulator
+Message-ID: <20090917085854.GA18862@sortiz.org>
+References: <1253171853-27525-1-git-send-email-linus.walleij@stericsson.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AB1F827.8040905@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1253171853-27525-1-git-send-email-linus.walleij@stericsson.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 04:49:43PM +0800, Li Zefan wrote:
-> Sample timestamp and cpu just like the -R option.
-> 
-> Before:
->             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
->             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
->             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=1 handler=i8042
->             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
->             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=1 handler=i8042
-> 
-> After:
->             init-0     [001]  7364.568965353: irq_handler_entry: irq=18 handler=eth0
->             init-0     [001]  7365.530226877: irq_handler_entry: irq=1 handler=i8042
->             init-0     [001]  7365.542831563: irq_handler_entry: irq=18 handler=eth0
->             init-0     [001]  7365.644156299: irq_handler_entry: irq=18 handler=eth0
->             init-0     [001]  7365.694556201: irq_handler_entry: irq=18 handler=eth0
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Hi Linus,
 
+On Thu, Sep 17, 2009 at 09:17:33AM +0200, Linus Walleij wrote:
+> This sets the number of voltages for the AB3100 regulators so that
+> they play well with the voltage listing functions and can be used
+> properly with the MMC regulator integration glue for example.
+> 
+> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+> Cc: Samuel Ortiz <sameo@linux.intel.com>
+> ---
+> The MFD update containing the AB3100 regulator patch has not yet
+> hit mainline so I guess we'll have to queue this up in Sam's tree
+> too if it's not changing in the next few hours, OK Sam?
+Patch applied.
+I am going to send my pull request to Linus today, yours was the last one I
+take for this merge window.
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cheers,
+Samuel.
 
 
 > ---
->  tools/perf/util/parse-events.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
+>  drivers/regulator/ab3100.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
 > 
-> diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-> index c9ef944..2156269 100644
-> --- a/tools/perf/util/parse-events.c
-> +++ b/tools/perf/util/parse-events.c
-> @@ -425,8 +425,11 @@ parse_single_tracepoint_event(char *sys_name,
->  	int fd;
->  
->  	if (flags) {
-> -		if (!strncmp(flags, "record", strlen(flags)))
-> +		if (!strncmp(flags, "record", strlen(flags))) {
->  			attr->sample_type |= PERF_SAMPLE_RAW;
-> +			attr->sample_type |= PERF_SAMPLE_TIME;
-> +			attr->sample_type |= PERF_SAMPLE_CPU;
-> +		}
->  	}
->  
->  	snprintf(evt_path, MAXPATHLEN, "%s/%s/%s/id", debugfs_path,
+> diff --git a/drivers/regulator/ab3100.c b/drivers/regulator/ab3100.c
+> index 156979d..49aeee8 100644
+> --- a/drivers/regulator/ab3100.c
+> +++ b/drivers/regulator/ab3100.c
+> @@ -521,30 +521,35 @@ ab3100_regulator_desc[AB3100_NUM_REGULATORS] = {
+>  		.name = "LDO_E",
+>  		.id   = AB3100_LDO_E,
+>  		.ops  = &regulator_ops_variable_sleepable,
+> +		.n_voltages = ARRAY_SIZE(ldo_e_buck_typ_voltages),
+>  		.type = REGULATOR_VOLTAGE,
+>  	},
+>  	{
+>  		.name = "LDO_F",
+>  		.id   = AB3100_LDO_F,
+>  		.ops  = &regulator_ops_variable,
+> +		.n_voltages = ARRAY_SIZE(ldo_f_typ_voltages),
+>  		.type = REGULATOR_VOLTAGE,
+>  	},
+>  	{
+>  		.name = "LDO_G",
+>  		.id   = AB3100_LDO_G,
+>  		.ops  = &regulator_ops_variable,
+> +		.n_voltages = ARRAY_SIZE(ldo_g_typ_voltages),
+>  		.type = REGULATOR_VOLTAGE,
+>  	},
+>  	{
+>  		.name = "LDO_H",
+>  		.id   = AB3100_LDO_H,
+>  		.ops  = &regulator_ops_variable,
+> +		.n_voltages = ARRAY_SIZE(ldo_h_typ_voltages),
+>  		.type = REGULATOR_VOLTAGE,
+>  	},
+>  	{
+>  		.name = "LDO_K",
+>  		.id   = AB3100_LDO_K,
+>  		.ops  = &regulator_ops_variable,
+> +		.n_voltages = ARRAY_SIZE(ldo_k_typ_voltages),
+>  		.type = REGULATOR_VOLTAGE,
+>  	},
+>  	{
+> @@ -557,6 +562,7 @@ ab3100_regulator_desc[AB3100_NUM_REGULATORS] = {
+>  		.name = "BUCK",
+>  		.id   = AB3100_BUCK,
+>  		.ops  = &regulator_ops_variable_sleepable,
+> +		.n_voltages = ARRAY_SIZE(ldo_e_buck_typ_voltages),
+>  		.type = REGULATOR_VOLTAGE,
+>  	},
+>  };
 > -- 
-> 1.6.3
+> 1.6.2.1
 > 
 
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
