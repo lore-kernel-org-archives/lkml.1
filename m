@@ -1,135 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbZIQJTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbZIQJWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758557AbZIQJTq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 05:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbZIQJTq
+	id S1758204AbZIQJWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 05:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbZIQJWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 05:19:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41742 "EHLO gir.skynet.ie"
+	Thu, 17 Sep 2009 05:22:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42814 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758037AbZIQJTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 05:19:45 -0400
-Date: Thu, 17 Sep 2009 10:19:50 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alexey Korolev <akorolex@gmail.com>
-Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Helper which returns the huge page at a given
-	address (Take 3)
-Message-ID: <20090917091950.GD13002@csn.ul.ie>
-References: <202cde0e0909132218k70c31a5u922636914e603ad4@mail.gmail.com> <20090915122632.GC31840@csn.ul.ie> <202cde0e0909160521v41a0d9f2wb1e4fe1e379e8971@mail.gmail.com>
+	id S1753882AbZIQJWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 05:22:51 -0400
+Date: Thu, 17 Sep 2009 11:22:53 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       hch@infradead.org, tytso@mit.edu, akpm@linux-foundation.org,
+       trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 10/16] writeback: splice dirty inode entries to default
+	bdi on bdi_destroy()
+Message-ID: <20090917092253.GA16941@duck.suse.cz>
+References: <1253107494-20160-1-git-send-email-jens.axboe@oracle.com> <1253107494-20160-11-git-send-email-jens.axboe@oracle.com> <20090916134346.GM26030@duck.suse.cz> <20090916182932.GR23126@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <202cde0e0909160521v41a0d9f2wb1e4fe1e379e8971@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090916182932.GR23126@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 12:21:42AM +1200, Alexey Korolev wrote:
-> On Wed, Sep 16, 2009 at 12:26 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> > On Mon, Sep 14, 2009 at 05:18:53PM +1200, Alexey Korolev wrote:
-> >> This patch provides helper function which returns the huge page at a
-> >> given address for population before the page has been faulted.
-> >> It is possible to call hugetlb_get_user_page function in file mmap
-> >> procedure to get pages before they have been requested by user level.
-> >>
-> >
-> > Worth spelling out that this is similar in principal to get_user_pages()
-> > but not as painful to use in this specific context.
-> >
+On Wed 16-09-09 20:29:32, Jens Axboe wrote:
+> On Wed, Sep 16 2009, Jan Kara wrote:
+> > On Wed 16-09-09 15:24:48, Jens Axboe wrote:
+> > > We cannot safely ensure that the inodes are all gone at this point
+> > > in time, and we must not destroy this bdi with inodes having off it.
+> > > So just splice our entries to the default bdi since that one will
+> > > always persist.
+> >   I'd at least add a comment like
+> > "XXX: This is probably a bug but let's workaround it for now."
+> >   And either remove the code or update the comment when this gets resolved.
 > 
-> Right. I'll do this. Seems it is important to clearly mention that
-> this function do not introduce new functionality.
-> 
+> Thinking more about it - what if inodes happen to get requeued on the
+> final flush? bdi_destroy() likely can't wait for flushing to happen,
+> since (depending on the tear down cycle), part of the device may be gone
+> already.
+  In WB_SYNC_ALL mode, no inodes can get requeued. You are guaranteed that
+after writeback returns, all data & inodes that were dirty at the time of
+the call are on disk. So unless the filesystem is alive during
+bdi_destroy() nothing should be left on bdi lists.
 
-Indeed.
+> And I did mean __sync_filesystem() -> __sync_blockdev(), since this is
+> what happen on last close. So it could also be that we need something
+> stronger to guarantee that things are really gone.
+  Well, __sync_filesystem() should do all that is needed before calling
+__sync_blockdev(). But doing that with live filesystem is obviously racy...
+If by last close, you mean the time when we unmount the filesystem and thus
+drop the bdev reference, then umount should have synced all the inodes
+(actually, you'd see "Busy inodes on umount" message if it did not) so that
+probably works right.
 
-> >> include/linux/hugetlb.h |    3 +++
-> >> mm/hugetlb.c            |   23 +++++++++++++++++++++++
-> >> 2 files changed, 26 insertions(+)
-> >>
-> >> ---
-> >> Signed-off-by: Alexey Korolev <akorolev@infradead.org>
-> >
-> > Patch formatting nit.
-> >
-> > diffstat goes below the --- and signed-off-bys go above it.
-> >
->
-> Right. To be fixed.
-> 
-
-Thanks
-
-> >>
-> >> +/*
-> >> + * hugetlb_get_user_page returns the page at a given address for population
-> >> + * before the page has been faulted.
-> >> + */
-> >> +struct page *hugetlb_get_user_page(struct vm_area_struct *vma,
-> >> +                                 unsigned long address)
-> >> +{
-> >
-> > Your leader and comments say that the function can be used before the pages
-> > have been faulted. It would presumably require that this function be called
-> > from within a mmap() handler.
-> >
-> > What is happening because you call follow_hugetlb_page() is that the pages
-> > get faulted as part of your mmap() operation. This might make the overall
-> > operation more expensive than you expected. I don't know if what you really
-> > intended was to allocate the huge page, insert it into the page cache and
-> > have it faulted later if the process actually references the page.
-> >
-> > Similarly the leader and comments imply that you expect this to be
-> > called as part of the mmap() operation. However, nothing would appear to
-> > prevent the driver calling this function once the page is already
-> > faulted. Is this intentional?
-> 
-> The implication was not intende. You are correct, the function can be
-> called later. The leader and comment can be rewritten to make this
-> clear.
-> 
-
-Because it can be called later and you do not expect that, consider making
-it impossible or at least very difficult. Assuming you convert this to a
-page cache lookup and insert instead of a page fault, you could BUG_ON if
-the page was already in the page cache for example. This would catch already
-faulted pages as a side-effect.
-
-> >> +     int ret;
-> >> +     int cnt = 1;
-> >> +     struct page *pg;
-> >> +     struct hstate *h = hstate_vma(vma);
-> >> +
-> >> +     address = address & huge_page_mask(h);
-> >> +     ret = follow_hugetlb_page(vma->vm_mm, vma, &pg,
-> >> +                             NULL, &address, &cnt, 0, 0);
-> >> +     if (ret < 0)
-> >> +             return ERR_PTR(ret);
-> >> +     put_page(pg);
-> >> +
-> >> +     return pg;
-> >> +}
-> >
-> > I think the caller should be responsible for calling put_page().  Otherwise
-> > there is an outside chance that the page would disappear from you unexpectedly
-> > depending on exactly how the driver was implemented. It would also
-> > behave slightly more like get_user_pages().
-> >
-> Correct. Lets have behaviour similar to get_user_pages in order to prevent
-> misunderstanding. Put_page will be removed.
-> 
-> Thank you very much for review. Now I am about to clear out the
-> mistakes and will pay a lot more attention to patch descriptions and
-> comments.
-> 
-
-Thanks
-
+									Honza
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
