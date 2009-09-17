@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751286AbZIQHxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbZIQHzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751286AbZIQHxF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 03:53:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZIQHxE
+	id S1752596AbZIQHzK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 03:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZIQHzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 03:53:04 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:45896 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750838AbZIQHxD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 03:53:03 -0400
-Date: Thu, 17 Sep 2009 09:52:59 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Joe Perches <joe@perches.com>
-Cc: linux-arm-kernel@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel-owner@lists.infradead.org
-Subject: Re: [PATCH] MAINTAINERS: Move ARM lists to infradead
-Message-ID: <20090917075259.GA24073@Chamillionaire.breakpoint.cc>
-References: <1253117388.2567.17.camel@Joe-Laptop.home>
- <20090916181018.GA19728@Chamillionaire.breakpoint.cc>
- <1253125008.2567.32.camel@Joe-Laptop.home>
+	Thu, 17 Sep 2009 03:55:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53797 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752019AbZIQHzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 03:55:05 -0400
+Date: Thu, 17 Sep 2009 07:54:35 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Fix TASK_WAKING & loadaverage breakage
+Message-ID: <tip-eb24073bc1fe3e569a855cf38d529fb650c35524@git.kernel.org>
+Git-Commit-ID: eb24073bc1fe3e569a855cf38d529fb650c35524
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1253125008.2567.32.camel@Joe-Laptop.home>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 07:54:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Joe Perches | 2009-09-16 11:16:47 [-0700]:
+Commit-ID:  eb24073bc1fe3e569a855cf38d529fb650c35524
+Gitweb:     http://git.kernel.org/tip/eb24073bc1fe3e569a855cf38d529fb650c35524
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 16 Sep 2009 21:09:13 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 17 Sep 2009 09:51:20 +0200
 
->On Wed, 2009-09-16 at 20:10 +0200, Sebastian Andrzej Siewior wrote:
->> As far as I remember David moved the list over to infradead and the list no
->> longer moderated. Did this change?
->
->I believe it's still moderated.
+sched: Fix TASK_WAKING & loadaverage breakage
 
-[0] is David's original patch which should be merged. Yesterday I've
-sent a patch to the ml from a non-subsribed address and it got through
-with no delay.
+Fix this:
 
-Andrew, could you please drop this patch and pick David's from [0] ?
+top - 21:54:00 up  2:59,  1 user,  load average: 432512.33, 426421.74, 417432.74
 
-[0] http://lists.infradead.org/pipermail/linux-arm-kernel/2009-August/000000.html
+Which happens because we now set TASK_WAKING before activate_task().
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/sched.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 5049d95..969dfae 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2343,7 +2343,11 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+ 	/*
+ 	 * In order to handle concurrent wakeups and release the rq->lock
+ 	 * we put the task in TASK_WAKING state.
++	 *
++	 * First fix up the nr_uninterruptible count:
+ 	 */
++	if (task_contributes_to_load(p))
++		rq->nr_uninterruptible--;
+ 	p->state = TASK_WAKING;
+ 	task_rq_unlock(rq, &flags);
+ 
