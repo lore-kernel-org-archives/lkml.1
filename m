@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbZIQJWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbZIQJYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758204AbZIQJWx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 05:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbZIQJWw
+	id S1753891AbZIQJYi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 05:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZIQJYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 05:22:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42814 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753882AbZIQJWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 05:22:51 -0400
-Date: Thu, 17 Sep 2009 11:22:53 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       hch@infradead.org, tytso@mit.edu, akpm@linux-foundation.org,
-       trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 10/16] writeback: splice dirty inode entries to default
-	bdi on bdi_destroy()
-Message-ID: <20090917092253.GA16941@duck.suse.cz>
-References: <1253107494-20160-1-git-send-email-jens.axboe@oracle.com> <1253107494-20160-11-git-send-email-jens.axboe@oracle.com> <20090916134346.GM26030@duck.suse.cz> <20090916182932.GR23126@kernel.dk>
+	Thu, 17 Sep 2009 05:24:37 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52058 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbZIQJYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 05:24:36 -0400
+Message-ID: <4AB2000A.2030605@cn.fujitsu.com>
+Date: Thu, 17 Sep 2009 17:23:22 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090916182932.GR23126@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] perf tools: Increase MAX_EVENT_LENGTH
+References: <4AB1F48F.4070807@cn.fujitsu.com> <4AB1F4AB.7050205@cn.fujitsu.com> <20090917090255.GC5184@nowhere> <1253178514.14935.4.camel@laptop> <20090917091345.GD5184@nowhere>
+In-Reply-To: <20090917091345.GD5184@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 16-09-09 20:29:32, Jens Axboe wrote:
-> On Wed, Sep 16 2009, Jan Kara wrote:
-> > On Wed 16-09-09 15:24:48, Jens Axboe wrote:
-> > > We cannot safely ensure that the inodes are all gone at this point
-> > > in time, and we must not destroy this bdi with inodes having off it.
-> > > So just splice our entries to the default bdi since that one will
-> > > always persist.
-> >   I'd at least add a comment like
-> > "XXX: This is probably a bug but let's workaround it for now."
-> >   And either remove the code or update the comment when this gets resolved.
+>>>> The name length of some trace events is longer than 30, like
+>>>> sys_enter_sched_get_priority_max and ext4_mb_discard_preallocations.
+>>>>
+>>>> Passing those events to perf-record will fail, try:
+>>>>
+>>>>   # ./perf record -f -e syscalls:sys_enter_sched_get_priority_max -F 1 -a
+>>>>
+>>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>>>> ---
+>>>>  tools/perf/util/parse-events.c |    2 +-
+>>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>>
+>>>> diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+>>>> index 034245e..c9ef944 100644
+>>>> --- a/tools/perf/util/parse-events.c
+>>>> +++ b/tools/perf/util/parse-events.c
+>>>> @@ -145,7 +145,7 @@ static int tp_event_has_id(struct dirent *sys_dir, struct dirent *evt_dir)
+>>>>  	   (strcmp(evt_dirent.d_name, "..")) &&				       \
+>>>>  	   (!tp_event_has_id(&sys_dirent, &evt_dirent)))
+>>>>  
+>>>> -#define MAX_EVENT_LENGTH 30
+>>>> +#define MAX_EVENT_LENGTH 40
+>> This is userspace, is there any reason to be cheap with memory like
+>> this?
+>>
+>> Why not stick in 1024 and be done for a while?
+>>
 > 
-> Thinking more about it - what if inodes happen to get requeued on the
-> final flush? bdi_destroy() likely can't wait for flushing to happen,
-> since (depending on the tear down cycle), part of the device may be gone
-> already.
-  In WB_SYNC_ALL mode, no inodes can get requeued. You are guaranteed that
-after writeback returns, all data & inodes that were dirty at the time of
-the call are on disk. So unless the filesystem is alive during
-bdi_destroy() nothing should be left on bdi lists.
+> Indeed, we may need to go even further than 40 in the future.
+> But I guess 512 would be already sufficient.
+> 
 
-> And I did mean __sync_filesystem() -> __sync_blockdev(), since this is
-> what happen on last close. So it could also be that we need something
-> stronger to guarantee that things are really gone.
-  Well, __sync_filesystem() should do all that is needed before calling
-__sync_blockdev(). But doing that with live filesystem is obviously racy...
-If by last close, you mean the time when we unmount the filesystem and thus
-drop the bdev reference, then umount should have synced all the inodes
-(actually, you'd see "Busy inodes on umount" message if it did not) so that
-probably works right.
+We are not allocating memory for all tracepoints, but only
+those to be profiled, so a larger limit is OK.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+But as the sys_name:evnt_name will be displayed using perf-list
+cmd, I don't think the names will be too long.
+
+Anyway, we decide to make it 512? I'll resend the patch.
+
