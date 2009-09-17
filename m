@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758395AbZIQQQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758495AbZIQQRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758395AbZIQQQu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 12:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758348AbZIQQQt
+	id S1758495AbZIQQRT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 12:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbZIQQRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 12:16:49 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:42042 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758249AbZIQQQt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 12:16:49 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: fixing "pci=use_crs"
-Date: Thu, 17 Sep 2009 10:16:49 -0600
-User-Agent: KMail/1.9.10
-Cc: Gary Hade <garyhade@us.ibm.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200909161715.24376.bjorn.helgaas@hp.com>
-In-Reply-To: <200909161715.24376.bjorn.helgaas@hp.com>
+	Thu, 17 Sep 2009 12:17:18 -0400
+Received: from rtr.ca ([76.10.145.34]:45211 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758255AbZIQQRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 12:17:17 -0400
+Message-ID: <4AB2610F.8010904@rtr.ca>
+Date: Thu, 17 Sep 2009 12:17:19 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Chris Webb <chris@arachsys.com>
+Cc: Tejun Heo <teheo@suse.de>, linux-scsi@vger.kernel.org,
+       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de> <4AAE3B9A.2060306@rtr.ca> <4AAE3F86.8090804@suse.de> <4AAE524C.2030401@rtr.ca> <20090916231921.GL1924@arachsys.com> <4AB239C8.2020203@rtr.ca> <4AB25736.1060601@suse.de> <4AB260CA.8040308@rtr.ca>
+In-Reply-To: <4AB260CA.8040308@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909171016.50087.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 September 2009 05:15:23 pm Bjorn Helgaas wrote:
-> The user currently has to boot with "pci=use_crs" to make
-> hot-add work on some machines.  I think this is a poor
-> user experience, and I'd like to figure out a better solution.
+Mark Lord wrote:
+> Tejun Heo wrote:
+>> Hello,
+>>
+>> Mark Lord wrote:
+>>> Tejun.. do we do a FLUSH CACHE before issuing a non-NCQ command ?
+>>
+>> Nope.
+>>
+>>> If not, then I think we may need to add code to do it.
+>>
+>> Hmm... can you explain a bit more?  That seems rather extreme to me.
+> ..
 > 
-> We tried making "pci=use_crs" the default, which didn't work
-> because it broke machines like Larry's.  I'd like to look
-> at that machine in more detail and figure out what it's doing.
+> You may recall that I first raised this issue about a year ago,
+> when my own RAID0 array (MythTV box) started showing errors very
+> similar to what Chris is reporting.
 > 
-> Larry, would you mind collecting the output of:
+> These were easily triggered by running hddtemp once every few seconds
+> to log drive temperatures during Myth recording sessions.
 > 
->   # dmesg
->   # cat /proc/iomem
->   # lspci -vv
->   # cd /sys/devices/; grep . pnp*/*/{id,resources}
+> hddtemp uses SMART commands.
 > 
-> and attaching them here:
-> 
->     http://bugzilla.kernel.org/show_bug.cgi?id=14183
+> The actual errors in the logs were command timeouts,
+> but at this point I no longer remember which opcode was
+> actually timing out.  Disabling the onboard write cache
+> immediately "cured" the problem, at the expense of MUCH
+> slower I/O times.
+..
 
-Thanks a lot, Larry.
+Speaking of which.. 
 
-It looks like you have an HP box -- what exactly is it and
-what BIOS version do you have?  Maybe I can borrow one to play
-with myself so I don't have to bug you as much.
+Chris:  I wonder if the errors will also vanish in your situation
+by disabling the onboard write-caches in the drives ?
 
-You don't happen to have Windows on it also, do you?  If you do,
-I'd like to know what the device manager says about the PCI bridges.
+Eg.  hdparm -W0 /dev/sd?
 
-Your dmesg from LKML
-(http://thread.gmane.org/gmane.linux.kernel/856413/focus=856458)
-suggests that ACPI told us about a whole bunch of resources:
 
-  pci_bus 0000:00: resource 0 io:  [0x00-0xcf7]
-  pci_bus 0000:00: resource 1 io:  [0xd00-0xffff]
-  pci_bus 0000:00: resource 2 mem: [0x0a0000-0x0bffff]
-  pci_bus 0000:00: resource 3 mem: [0x0c0000-0x0c3fff]
-  pci_bus 0000:00: resource 4 mem: [0x0c4000-0x0c7fff]
-  pci_bus 0000:00: resource 5 mem: [0x0c8000-0x0cbfff]
-  pci_bus 0000:00: resource 6 mem: [0x0cc000-0x0cffff]
-  pci_bus 0000:00: resource 7 mem: [0x0d4000-0x0d7fff]
-  pci_bus 0000:00: resource 8 mem: [0x0d8000-0x0dbfff]
-  pci_bus 0000:00: resource 9 mem: [0x0dc000-0x0dffff]
-  ...
-
-but the new dmesg (http://bugzilla.kernel.org/attachment.cgi?id=23106)
-only has a few:
-
-  pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
-  pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffffffffffff]
-  pci_bus 0000:01: resource 1 mem: [0xfc100000-0xfc1fffff]
-  pci_bus 0000:01: resource 3 io:  [0x00-0xffff]
-  pci_bus 0000:01: resource 4 mem: [0x000000-0xffffffffffffffff]
-  pci_bus 0000:06: resource 0 io:  [0x4000-0x4fff]
-  pci_bus 0000:06: resource 1 mem: [0xf8000000-0xfbffffff]
-  pci_bus 0000:04: resource 1 mem: [0xfc000000-0xfc0fffff]
-
-The extra resources in the old dmesg could be from "pci=use_crs"
-being the default, but if that were the case, they should be in
-the PNP resource dump.  Did you update the BIOS between those
-boots?
-
-Bjorn
