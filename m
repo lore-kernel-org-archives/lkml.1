@@ -1,98 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbZIQENK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbZIQERm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751893AbZIQENK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 00:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZIQENI
+	id S1753182AbZIQERm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 00:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbZIQERl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 00:13:08 -0400
-Received: from mail-qy0-f200.google.com ([209.85.221.200]:42189 "EHLO
-	mail-qy0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbZIQENH (ORCPT
+	Thu, 17 Sep 2009 00:17:41 -0400
+Received: from mail.windriver.com ([147.11.1.11]:63892 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751421AbZIQERl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 00:13:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=JDlqXkqVIzC7N/Fbnh/UbjIjFiLer8rNWigpnuzfbGyevigesriI7Z0fKIwETDS38B
-         yMhpZJV15VxucgI0JdN1J14Zh9Lye/fAHABeMGWSs5nhwQyHq2srd0Zej+zwmHR3EDOS
-         WjIAgOFPe7yTFlKJNl6T+pc+ApwJed+rPLPmE=
-Message-ID: <4AB1B752.4010505@gmail.com>
-Date: Thu, 17 Sep 2009 00:13:06 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 17 Sep 2009 00:17:41 -0400
+Message-ID: <4AB1B860.4080105@windriver.com>
+Date: Wed, 16 Sep 2009 23:17:36 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Avi Kivity <avi@redhat.com>, "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com> <20090917035717.GB3088@redhat.com>
-In-Reply-To: <20090917035717.GB3088@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigEC75824AD85A44F4912F87A4"
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] usb console,usb-serial: pass initial console baud
+ on to first tty open
+References: <Pine.LNX.4.44L0.0909162344350.24376-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0909162344350.24376-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Sep 2009 04:17:36.0160 (UTC) FILETIME=[C93B5A00:01CA374D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigEC75824AD85A44F4912F87A4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Alan Stern wrote:
+> On Wed, 16 Sep 2009, Jason Wessel wrote:
+>
+>   
+>> Alan Stern wrote:
+>>     
+>>> On Wed, 16 Sep 2009, Jason Wessel wrote:
+>>>
+>>>   
+>>>       
+>>>> The first open of the usb serial HW has the termios initialized to the
+>>>> default of 9600 baud, and this will override what ever was setup via
+>>>> the original console initialization.
+>>>>     
+>>>>         
+>>> I don't understand.  The first open of the console hardware occurs in 
+>>> console.c as part of usb_console_setup(), and it uses the baud rate 
+>>> passed in via the console options.  Why does anything need to get 
+>>> saved?
+>>>   
+>>>       
+>> The initialization in console.c is done with a dummy tty structure that
+>> is thrown away.  It is thrown away because it was not connected to any
+>> device handle.
+>>
+>> Any new tty that is opened defaults to 9600 baud, for the mct_u232
+>> driver as an example, if you boot the system with
+>> console=ttyUSB0,115200, when mingetty starts it will inherit 9600 from
+>> the first tty that is opened, vs reading the value from the HW.  Even if
+>> you have a pl2303 and boot with the 115200 baud, you can run "stty -a <
+>> /dev/ttyUSB0" and you will see it reports it is running at 9600.  The
+>> pl2303 driver just happens to work because it handles the baud differently.
+>>
+>> I elected to save the baud because:
+>>
+>> 1) There was no uniform interface to read the current baud from the usb
+>> hardware
+>>
+>> 2) There was no documented API for getting tty to attach when you create
+>> the initial console.
+>>
+>> If there is a better way to fix this, it would be good to continue the
+>> discussion.
+>>     
+>
+> I guess a better approach would be not to throw away the "dummy" tty 
+> structure, thereby keeping the termios structure as well.  But I don't 
+> know if this is practical.
+>
+> How do other serial console drivers handle this?
+>
+>   
 
-Michael S. Tsirkin wrote:
-> On Wed, Sep 16, 2009 at 10:10:55AM -0400, Gregory Haskins wrote:
->>> There is no role reversal.
->> So if I have virtio-blk driver running on the x86 and vhost-blk device=
+My answer goes back to the point #1.
 
->> running on the ppc board, I can use the ppc board as a block-device.
->> What if I really wanted to go the other way?
->=20
-> It seems ppc is the only one that can initiate DMA to an arbitrary
-> address, so you can't do this really, or you can by tunneling each
-> request back to ppc, or doing an extra data copy, but it's unlikely to
-> work well.
->=20
-> The limitation comes from hardware, not from the API we use.
+If we take the 8250 driver for example,  it reads the HW and force sets
+the baud into the termios structure of the real tty.   There are several
+layers but in the example case in 8250.c, the serial8250_set_termios()
+calls uart_get_baud_rate() to establish "the baud rate to use".
 
-Understood, but presumably it can be exposed as a sub-function of the
-ppc's board's register file as a DMA-controller service to the x86.
-This would fall into the "tunnel requests back" category you mention
-above, though I think "tunnel" implies a heavier protocol than it would
-actually require.  This would look more like a PIO cycle to a DMA
-controller than some higher layer protocol.
+As far as I could tell even the uart based serial drivers use a dummy
+termios structure for the initial setup of the console, but do so with
+stack memory instead of heap memory.
 
-You would then utilize that DMA service inside the memctx, and it the
-rest of vbus would work transparently with the existing devices/drivers.
+It looked like the API for the tty subsystem was gradually changing such
+that the ldisc structure could ultimately get shared for use with the
+console, but this work is not complete, so we are somewhere in between.
 
-I do agree it would require some benchmarking to determine its
-feasibility, which is why I was careful to say things like "may work"
-;).  I also do not even know if its possible to expose the service this
-way on his system.  If this design is not possible or performs poorly, I
-admit vbus is just as hosed as vhost in regard to the "role correction"
-benefit.
+The question is what is an acceptable solution?
 
-Kind Regards,
--Greg
+Depending on the route you go you could modify part of the tty
+subsystem, the high level usb serial API to work similarly to the uart
+based serial api.
 
+Jason.
 
---------------enigEC75824AD85A44F4912F87A4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqxt1IACgkQP5K2CMvXmqFcBACdEdK6dMDD1cgvHnfb47PWv9rw
-arAAn0YoNmyNwDHyndyfBYpZXKHxTcPt
-=/ezZ
------END PGP SIGNATURE-----
-
---------------enigEC75824AD85A44F4912F87A4--
