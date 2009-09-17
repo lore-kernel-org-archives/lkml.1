@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbZIQRoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbZIQRqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758743AbZIQRoz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 13:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758721AbZIQRox
+	id S932079AbZIQRqK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 13:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758728AbZIQRqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 13:44:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43418 "EHLO mx3.mail.elte.hu"
+	Thu, 17 Sep 2009 13:46:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60698 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757643AbZIQRow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 13:44:52 -0400
-Date: Thu, 17 Sep 2009 19:44:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: gorcunov@gmail.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [crash] kernel BUG at net/core/pktgen.c:3503!
-Message-ID: <20090917174448.GA9548@elte.hu>
-References: <20090911.202543.52533792.davem@davemloft.net> <20090915183647.GA11628@elte.hu> <20090915185112.GA17587@lenovo> <20090917.102923.174779685.davem@davemloft.net>
+	id S1758721AbZIQRqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 13:46:06 -0400
+Message-ID: <4AB275A1.8020005@kernel.org>
+Date: Thu, 17 Sep 2009 10:45:05 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917.102923.174779685.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] first round of PCI updates for 2.6.32
+References: <20090915132105.2fdd1d45@jbarnes-g45> <20090917173012.GA11155@elte.hu>
+In-Reply-To: <20090917173012.GA11155@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Cyrill Gorcunov <gorcunov@gmail.com>
-> Date: Tue, 15 Sep 2009 22:51:12 +0400
+Ingo Molnar wrote:
+> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 > 
-> > [Ingo Molnar - Tue, Sep 15, 2009 at 08:36:47PM +0200]
-> > | 
-> > | not sure which merge caused this, but i got this boot crash with latest 
-> > | -git:
-> > | 
-> > | calling  flow_cache_init+0x0/0x1b9 @ 1
-> > | initcall flow_cache_init+0x0/0x1b9 returned 0 after 64 usecs
-> > | calling  pg_init+0x0/0x37c @ 1
-> > | pktgen 2.72: Packet Generator for packet performance testing.
-> > | ------------[ cut here ]------------
-> > | kernel BUG at net/core/pktgen.c:3503!
-> > | invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> > | last sysfs file: 
-> > | 
-> > 
-> > Hi Ingo,
-> > 
-> > just curious, will the following patch fix the problem?
-> > I've been fixing problem with familiar symthoms on
-> > system with custome virtual cpu implementation so
-> > it may not help in mainline but anyway :)
+>> The following changes since commit 332a3392188e0ad966543c87b8da2b9d246f301d:
+>>   Linus Torvalds (1):
+>>         Merge git://git.kernel.org/.../herbert/crypto-2.6
 > 
-> Ingo, does Cyrill's patch help?
+> Since this went upstream -tip tests have been triggering nasty bootup 
+> crashes in the PCI code:
+> 
+> [    4.366174] initcall pci_proc_init+0x0/0x7a returned 0 after 976 usecs
+> [    4.373009] calling  pcie_portdrv_init+0x0/0x60 @ 1
+> [    4.378368] bus: 'pci_express': registered
+> [    4.382009] bus: 'pci': add driver pcieport-driver
+> [    4.387058] bus: 'pci': driver_probe_device: matched device 0000:00:0b.0 with driver pcieport-driver
+> [    4.396005] bus: 'pci': really_probe: probing driver pcieport-driver with device 0000:00:0b.0
+> [    4.404056] cpumask_of_node(255): node > nr_node_ids(16)
 
-For now i've turned pktgen off in my tests. Will check it again once 
-things have calmed down somewhat.
+please check
 
-Also, i just tried to reproduce the pktgen crash with latest -git and 
-the config i sent - no luck, so i cannot test Cyrill's patch either.
+[PATCH] x86/pci: retore 32bit to node0 as default node
 
-Btw., we are seeing some other preempt count and task related 
-weirdnesses as well in other code, maybe it's related. No good pattern 
-yet to act upon.
+to fix crash on 32bit system
 
-Anyway - please disregard this bugreport until i've investigated it 
-closer.
-
-	Ingo
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 5db96d4..e562ade 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -646,9 +646,7 @@ int get_mp_bus_to_node(int busnum)
+ 
+ #else /* CONFIG_X86_32 */
+ 
+-static unsigned char mp_bus_to_node[BUS_NR] = {
+-	[0 ... BUS_NR - 1] = -1
+-};
++static unsigned char mp_bus_to_node[BUS_NR];
+ 
+ void set_mp_bus_to_node(int busnum, int node)
+ {
