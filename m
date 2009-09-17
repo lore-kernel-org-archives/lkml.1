@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbZIQAaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbZIQAaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbZIQAaL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 20:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZIQAaI
+	id S1755090AbZIQAaV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 20:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZIQAaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 20:30:08 -0400
-Received: from mail-ew0-f227.google.com ([209.85.219.227]:64751 "EHLO
-	mail-ew0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbZIQAaH convert rfc822-to-8bit (ORCPT
+	Wed, 16 Sep 2009 20:30:18 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:36390 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754186AbZIQAaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 20:30:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=VRmOuXM082orEFwqarfjSb4rdHVgj2rKecWD6yqb1OuggI1Q2cId8qUGFaQzt1dyEO
-         ZPD9t8Hm1mn9g5d1HPFeyWXYfwxw4Jo3XmbBFZTMWayPgEJTh/AWk/cmkC9LPSPifu0p
-         L2Y0JhOLUDqExbTG7W1YykMJWLdJ8H7E6+MDw=
+	Wed, 16 Sep 2009 20:30:17 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 16 Sep 2009 17:30:18 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gilad Benjamini <gilad@altornetworks.com>
+cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: RE: epoll and closed file descriptors
+In-Reply-To: <024601ca372d$09ad9fb0$1d08df10$@com>
+Message-ID: <alpine.DEB.2.00.0909161726090.3124@makko.or.mcafeemobile.com>
+References: <023c01ca3724$9f90fcb0$deb2f610$@com> <alpine.DEB.2.00.0909161656150.3124@makko.or.mcafeemobile.com> <024601ca372d$09ad9fb0$1d08df10$@com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-In-Reply-To: <200908201031.00256.lfpg.dev@gmail.com>
-References: <d12c1890908101630m2a4d0d68yf6dc1e0e0e4f4314@mail.gmail.com>
-	 <d12c1890908191446k5497d9c8t2f355074eb7ca4ff@mail.gmail.com>
-	 <m1k50zi4is.fsf@fess.ebiederm.org>
-	 <200908201031.00256.lfpg.dev@gmail.com>
-Date: Wed, 16 Sep 2009 21:30:09 -0300
-Message-ID: <d12c1890909161730y663fe4f3s5b7e764a53d971ba@mail.gmail.com>
-Subject: Re: Flooded by do_IRQ: 0.91 No irq handler for vector
-From: Luis Fernando Planella Gonzalez <lfpg.dev@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just to point out that I've upgraded to 2.6.31.0 and the bug is still there...
-Just in case the problem is with the VIA board, is there anything
-which can be done to try to debug?
---
-Luis Fernando Planella Gonzalez
+On Wed, 16 Sep 2009, Gilad Benjamini wrote:
 
->> > Well, as I've installed sidux, it has upgraded the kernel to 2.6.30.5,
->> > but the error is the same.
->> > I've also tried:
->> > * noapic: the message changes to do_IRQ: 0.55 No irq handler for
->> > vector (irq -1), but then the X server fails to start
->>
->> Interesting...
->>
->> > * noacpi: have no effect on the error message.
->>
->> There is something very strange about your box.  Possibly it is
->> just VIA interrupt controller madness.  VIA has been known
->> to interrupt interrupt related fields in creative ways, and
->> we may be on the edge of another of these.
-> Probably. My mother board is an Asus P5VD2-X, which is based on VIA PT890:
-> http://br.asus.com/products.aspx?l1=3&l2=11&l3=346&l4=0&model=1362&modelmenu=1 (sorry, link in portuguese)
->
->>
->> I expect it is going to come down to writing a patch to dump out
->> all of the interrupt routing state on the system and to see what
->> is generating the totally unexpected interrupt and then to work our
->> way backwards from there.
->>
->> The fact that the vector number is changing indicates that it is
->> a programmable something that is causing the problem.
->>
->> I'm drawing a blank on which patch to write up.
->>
->> Eric
->>
-> Thanks again.
->
-> --
-> Luis Fernando Planella Gonzalez
->
+> I would, but epoll is preventing me from doing so.
+> Early in sys_epoll_ctl there are these lines
+> 
+>   file = fget(epfd);
+>   if (!file)
+>     goto error_return;
+> 
+> Leaving me in a kind of dead lock
+
+The 'epfd' in there, is the _epoll fd_, which, if fget() fails, means you 
+close it.
+You see likely failing the 'tfile = fget(fd)' (of course, you closed it), 
+so if someone else keeps the socket open and you have no chance in telling 
+it to drop it (really?), you need to remove the socket from the set before 
+closing it.
+
+
+
+- Davide
+
+
