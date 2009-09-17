@@ -1,33 +1,27 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZIOO7O (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 15 Sep 2009 10:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZIOO7K
+	id S1756251AbZIQL3c (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 17 Sep 2009 07:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZIQL3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:59:10 -0400
-Received: from mail3.mwaa.com ([65.122.108.11]:9255 "EHLO mail3.mwaa.com"
+	Thu, 17 Sep 2009 07:29:31 -0400
+Received: from mail2.ecunet.org ([72.250.175.169]:56415 "EHLO mail2.ecunet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754548AbZIOO7J convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:59:09 -0400
-X-Greylist: delayed 665 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Sep 2009 10:59:09 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: Greetings!!!
-Date: Tue, 15 Sep 2009 10:45:14 -0400
-Message-ID: <E0ED4CFA86B6124F8E4756CD10DE6B0A01FACBCE@cfsrv113.mwaa.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Greetings!!!
-Thread-Index: Aco2EyGRhKB/EAUrQuWljafCotGwtg==
-From: "Demski, Kevin" <Kevin.Demski@MWAA.com>
-X-OriginalArrivalTime: 15 Sep 2009 14:45:15.0166 (UTC) FILETIME=[22EC23E0:01CA3613]
+	id S1755020AbZIQL3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 07:29:31 -0400
+Date: Thu, 17 Sep 2009 07:27:59 -0400
+Message-Id: <200909171127.n8HBRxrx013799@ecunet-web-1.ecunet.org>
+From: mnoel@ecunet.org
+Subject: Hello
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ecunet.org [192.168.0.90]); Thu, 17 Sep 2009 07:28:00 -0400 (EDT)
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings!!!
-You have a bank draft of $780,000.00 GPB, which await the outstanding payment of $275GPB.Contact the TNT courier company for claims with your information. Contact person Mr. West Oduduwa,Email:tntcourier-2009@9.cn
+hello,
+
+My name is Monalisa, i am looking for friendship, i hope yo read from you so that i can send you my pictures as we can take it from there. thanks for taking your time to read my mail and looking forward to hearing from you.you can write me via monalisachinda1@yahoo.com
+
+Yours Monalisa
+
+monalisachinda1@yahoo.com
