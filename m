@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbZIQQLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbZIQQQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150AbZIQQLN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 12:11:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbZIQQLM
+	id S1758273AbZIQQQL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 12:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758207AbZIQQQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 12:11:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43437 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754042AbZIQQLM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 12:11:12 -0400
-Date: Thu, 17 Sep 2009 12:11:09 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       drbd-dev@lists.linbit.com, Andrew Morton <akpm@linux-foundation.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Kyle Moffett <kyle@moffetthome.net>, Lars Marowsky-Bree <lmb@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Neil Brown <neilb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       Philipp Reisner <philipp.reisner@linbit.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [GIT PULL] DRBD for 2.6.32
-Message-ID: <20090917161108.GA3361@infradead.org>
-References: <200909151645.14256.philipp.reisner@linbit.com> <20090915231931.GB7636@infradead.org> <20090917081251.GC8045@barkeeper1-xen.linbit> <1253203365.7845.14.camel@mulgrave.site>
+	Thu, 17 Sep 2009 12:16:10 -0400
+Received: from rtr.ca ([76.10.145.34]:45194 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757957AbZIQQQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 12:16:09 -0400
+Message-ID: <4AB260CA.8040308@rtr.ca>
+Date: Thu, 17 Sep 2009 12:16:10 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253203365.7845.14.camel@mulgrave.site>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Tejun Heo <teheo@suse.de>
+Cc: Chris Webb <chris@arachsys.com>, linux-scsi@vger.kernel.org,
+       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de> <4AAE3B9A.2060306@rtr.ca> <4AAE3F86.8090804@suse.de> <4AAE524C.2030401@rtr.ca> <20090916231921.GL1924@arachsys.com> <4AB239C8.2020203@rtr.ca> <4AB25736.1060601@suse.de>
+In-Reply-To: <4AB25736.1060601@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 10:02:45AM -0600, James Bottomley wrote:
-> So I think Christoph's NAK is rooted in the fact that we have a
-> proliferation of in-kernel RAID implementations and he's trying to
-> reunify them all again.
+Tejun Heo wrote:
+> Hello,
 > 
-> As part of the review, reusing the kernel RAID (and actually logging)
-> logic did come up and you added it to your todo list.  Perhaps expanding
-> on the status of that would help, since what's being looked for is that
-> you're not adding more work to the RAID reunification effort and that
-> you do have a plan and preferably a time frame for coming into sync with
-> it.
+> Mark Lord wrote:
+>> Tejun.. do we do a FLUSH CACHE before issuing a non-NCQ command ?
+> 
+> Nope.
+> 
+>> If not, then I think we may need to add code to do it.
+> 
+> Hmm... can you explain a bit more?  That seems rather extreme to me.
+..
 
-Yes.  RDBD has spend tons of time out of tree, and if they want to put
-it in now I think requiring them to do their homework is a good idea.
+You may recall that I first raised this issue about a year ago,
+when my own RAID0 array (MythTV box) started showing errors very
+similar to what Chris is reporting.
 
-Note that the in-kernel raid implementation is just a rather small part
-of this, what's much more important is the user interface.  A big part
-of raid unification is that we can support on proper interface to deal
-with raid vs volume management, and DRBD adds another totally
-incompatible one to that.  We'd be much better off adding the drbd in
-the write protocol (at least the most recent version) to DM instead of
-adding another big chunk of framework.
+These were easily triggered by running hddtemp once every few seconds
+to log drive temperatures during Myth recording sessions.
 
+hddtemp uses SMART commands.
+
+The actual errors in the logs were command timeouts,
+but at this point I no longer remember which opcode was
+actually timing out.  Disabling the onboard write cache
+immediately "cured" the problem, at the expense of MUCH
+slower I/O times.
+
+My theory at the time, was that some non-NCQ commands might be triggering
+an internal FLUSH CACHE within the (Hitachi) drive firmware, which then
+caused the original command to timeout in libata (due to the large amounts
+of data present in the onboard write-caches).
+
+Now that more people are playing the game, we're seeing more and more
+reports of strange interactions with smartd running in the background.
+
+I suspect more and more now that this is an (avoidable) interaction
+between the write-cache and the SMART opcode, and it could perhaps be
+avoided by doing a FLUSH CACHE before any SMART (or non-data command) opcode.
+
+Cheers
