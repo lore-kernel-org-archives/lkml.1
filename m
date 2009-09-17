@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZIQMxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbZIQM6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757701AbZIQMxq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 08:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbZIQMxp
+	id S1758226AbZIQM6M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 08:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbZIQM6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 08:53:45 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:11219 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752542AbZIQMxo (ORCPT
+	Thu, 17 Sep 2009 08:58:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33924 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755501AbZIQM6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 08:53:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=shvGJ5TRpHIW88q/KlZhFMWRTXBpG2jNvKZvqCIt30aa9OBStVxH3a8II9fldlhZqD
-         yRm/6EGiKDFdB3QAZk+177njFgAagFdXG70QXMrVGDjgQU9ndOlkqdSbHkqZBXyfGkmI
-         r69OlAhANOUv0VUX7iqOFWR7Q0ASi4VoigicY=
-Date: Thu, 17 Sep 2009 15:54:01 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86 uaccess_32.h typo
-Message-ID: <20090917125401.GU3717@localdomain.by>
+	Thu, 17 Sep 2009 08:58:11 -0400
+Date: Thu, 17 Sep 2009 05:57:59 -0700
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+	maintenance disaster
+Message-ID: <20090917125759.GA4045@kroah.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <m1y6oef08k.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trivial: correct "that the we don't" typo. 
+On Thu, Sep 17, 2009 at 01:23:39AM -0700, Eric W. Biederman wrote:
+> 
+> devtmpfs has numerous problems.  The once I see from a quick review.
 
-Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
----
+<snip>
 
-diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
-index 5e06259..632fb44 100644
---- a/arch/x86/include/asm/uaccess_32.h
-+++ b/arch/x86/include/asm/uaccess_32.h
-@@ -33,7 +33,7 @@ unsigned long __must_check __copy_from_user_ll_nocache_nozero
-  * Copy data from kernel space to user space.  Caller must check
-  * the specified block with access_ok() before calling this function.
-  * The caller should also make sure he pins the user space address
-- * so that the we don't result in page fault and sleep.
-+ * so that we don't result in page fault and sleep.
-  *
-  * Here we special-case 1, 2 and 4-byte copy_*_user invocations.  On a fault
-  * we return the initial request size (1, 2 or 4), as copy_*_user should do.
+I'm confused, why did you not at least cc: Kay and I on this message, if
+I was a paranoid person, I would think that you were somehow trying to
+skirt around us for some unknown reason :(
 
+I think Kay has raised the proper points already.
+
+greg k-h
