@@ -1,87 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbZIQUJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbZIQUIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752871AbZIQUJH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZIQUJG
+	id S1752476AbZIQUIh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZIQUIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:09:06 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36926 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751611AbZIQUJF convert rfc822-to-8bit (ORCPT
+	Thu, 17 Sep 2009 16:08:35 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:51172 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbZIQUIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:09:05 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs / Novell
-To: Jamie Lokier <jamie@shareable.org>
-Subject: Re: fanotify as syscalls
-Date: Thu, 17 Sep 2009 22:07:01 +0200
-User-Agent: KMail/1.9.9
-Cc: Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-References: <20090912094110.GB24709@ioremap.net> <1253094537.5213.89.camel@dhcp231-106.rdu.redhat.com> <20090916121708.GD29359@shareable.org>
-In-Reply-To: <20090916121708.GD29359@shareable.org>
+	Thu, 17 Sep 2009 16:08:35 -0400
+Date: Thu, 17 Sep 2009 16:08:32 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: test for "spurious" IRQ ignores possible IRQ_WAKE_THREAD value
+In-Reply-To: <20090917193416.GE8817@lenovo>
+Message-ID: <alpine.LFD.2.00.0909171605320.5014@localhost>
+References: <alpine.LFD.2.00.0909141627500.4124@localhost> <alpine.LFD.2.00.0909141632390.4329@localhost> <20090917193416.GE8817@lenovo>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-Disposition: inline
-Message-Id: <200909172207.01764.agruen@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 16 September 2009 14:17:08 Jamie Lokier wrote:
-> Eric Paris wrote:
-> > On Wed, 2009-09-16 at 08:52 +0100, Jamie Lokier wrote:
-> > > Seriously, what does system-wide fanotify do when run from a
-> > > chroot/namespace/cgroup, and a file outside them is accessed?
-> >
-> > At the moment an fanotify global listener is system wide.  Truely system
-> > wide.  A gentleman from suse is looking rectify the problem so that if
-> > run inside a namespace it stays inside the namespace.  Note that this
-> > particular little tidbit is not in the 8 patches I proposed.  At the
-> > moment those just include the UI and basic notification.
+On Thu, 17 Sep 2009, Cyrill Gorcunov wrote:
+
+> [Robert P. J. Day - Mon, Sep 14, 2009 at 04:34:48PM -0400]
+> | On Mon, 14 Sep 2009, Robert P. J. Day wrote:
+> |
+> | >   never ashamed to embarrass myself in public, i just noticed the
+> | > following.  from kernel/irq/spurious.c:
+> | >
+> | > ...
+> | > static void
+> | > __report_bad_irq(unsigned int irq, struct irq_desc *desc,
+> | >                  irqreturn_t action_ret)
+> | > {
+> | >         struct irqaction *action;
+> | >
+> | >         if (action_ret != IRQ_HANDLED && action_ret != IRQ_NONE) {
+> | >                 printk(KERN_ERR "irq event %d: bogus return value %x\n",
+> | >                                 irq, action_ret);
+> | >
+> | >   but from include/linux/irqreturn.h, we see *three* possible return
+> | > values:
+> | >
+> | > enum irqreturn {
+> | >         IRQ_NONE,
+> | >         IRQ_HANDLED,
+> | >         IRQ_WAKE_THREAD,
+> | > };
+> | >
+> | > typedef enum irqreturn irqreturn_t;
+> | > #define IRQ_RETVAL(x)   ((x) != IRQ_NONE)
+> | >
+> | >   is there an inconsistency here?
+> |
+> ...
 >
-> I'll be really interested in the gentleman's solution.
+> Hi Robert,
+>
+> It could that IRQ_WAKE_THREAD is just missed here. I suppose it was
+> brough there as thread irq merged. But I think only Thomas know for
+> sure, I definitely miss something :) CC'ed
 
-I guess Eric meant me.
+  actually, after a bit more reading, i found this in
+kernel/irq/handle.c:
+                ...
+                switch (ret) {
+                case IRQ_WAKE_THREAD:
+                        /*
+                         * Set result to handled so the spurious check
+                         * does not trigger.
+                         */
+                        ret = IRQ_HANDLED;
+                        ...
 
->From my point of view, "global" events make no sense, and fanotify listeners 
-should register which directories they are interested in (e.g., include "/", 
-exclude "/proc"). This takes care of chroots and namespaces as well.
+so it looks like that value of IRQ_WAKE_THREAD is simply "mapped" to
+IRQ_HANDLED, and perhaps that's done before __report_bad_irq is ever
+called so that that latter routine never sees a value of
+IRQ_WAKE_THREAD.  but that's just a guess.
 
-I think we want to register for events on objects rather than in the 
-namespace, i.e., for inodes visible in multiple places because of hardlinks 
-or bind mounts, we get the same kinds of events no matter which path is used. 
-(The path actually used would still show up in /proc/self/fd/x.) When moving 
-registered inodes, the registrations would move with them. This is how 
-inotify works, except that inotify watches are not recursive.
+rday
+--
 
-The difficulty with this is that in the worst case, this would require walking 
-the entire namespace and all cached inodes. I don't see how this could be 
-done for two reasons:
 
- * First, we can't take the vfsmount_lock and dcache_lock for the entire time.
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
- * Second, we would need to pin almost all the inodes, which is a clear no-go.
+        Linux Consulting, Training and Annoying Kernel Pedantry.
 
-   [Why pin?  At least we would need to remember which objects a listener has
-    registered interest in, so we need to pin the inodes.  We could still
-    allow unregistered directory inodes to be thrown out because we can
-    recreate their registration status from the parent. We can't recreate the
-    registration status of non-directories because of hardlinks, though.]
-
-The only other idea I could come up with is to only allow recursive 
-registrations at mount points: instead of inodes, the vfsmounts would be 
-included or excluded (probably automatically including bind mounts). This has 
-one big drawback though: users would no longer be able to watch arbitrary 
-subtrees anymore. Privileged users could still arrange to watch almost all 
-subtrees with bind mounts (mount --bind /foo/bar /foo/bar).
-
-Any ideas?
-
-Thanks,
-Andreas
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
