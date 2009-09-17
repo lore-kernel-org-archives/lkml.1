@@ -1,88 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbZIQT54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752495AbZIQT6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752432AbZIQT54 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 15:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZIQT5t
+	id S1752495AbZIQT6k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 15:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZIQT6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 15:57:49 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35941 "EHLO
+	Thu, 17 Sep 2009 15:58:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35954 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbZIQT5n (ORCPT
+	with ESMTP id S1751530AbZIQT5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 15:57:43 -0400
-Message-Id: <20090917195746.436527380@goodmis.org>
+	Thu, 17 Sep 2009 15:57:44 -0400
+Message-Id: <20090917195746.788621564@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 17 Sep 2009 15:55:12 -0400
+Date: Thu, 17 Sep 2009 15:55:13 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 4/5] [PATCH 4/5] softirq: add BLOCK_IOPOLL to softirq_to_name
+       Zhaolei <zhaolei@cn.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 5/5] [PATCH 5/5] vsnprintf: remove duplicate comment of vsnprintf
 References: <20090917195508.189551309@goodmis.org>
-Content-Disposition: inline; filename=0004-softirq-add-BLOCK_IOPOLL-to-softirq_to_name.patch
+Content-Disposition: inline; filename=0005-vsnprintf-remove-duplicate-comment-of-vsnprintf.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+From: Steven Rostedt <srostedt@redhat.com>
 
-With BLOCK_IOPOLL_SOFTIRQ added, softirq_to_name[] and
-show_softirq_name() needs to be updated.
+Remove the duplicate comment of bstr_printf that is the same as the
+vsnprintf.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4AB20398.8070209@cn.fujitsu.com>
+Add the 's' option to the comment for the pointer function. This is
+more of an internal function so the little duplication of the comment
+here is OK.
+
+Reported-by: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/events/irq.h |   21 +++++++++++----------
- kernel/softirq.c           |    2 +-
- 2 files changed, 12 insertions(+), 11 deletions(-)
+ lib/vsprintf.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-index 1cb0c3a..b89f9db 100644
---- a/include/trace/events/irq.h
-+++ b/include/trace/events/irq.h
-@@ -8,16 +8,17 @@
- #include <linux/interrupt.h>
- 
- #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
--#define show_softirq_name(val)			\
--	__print_symbolic(val,			\
--			 softirq_name(HI),	\
--			 softirq_name(TIMER),	\
--			 softirq_name(NET_TX),	\
--			 softirq_name(NET_RX),	\
--			 softirq_name(BLOCK),	\
--			 softirq_name(TASKLET),	\
--			 softirq_name(SCHED),	\
--			 softirq_name(HRTIMER),	\
-+#define show_softirq_name(val)				\
-+	__print_symbolic(val,				\
-+			 softirq_name(HI),		\
-+			 softirq_name(TIMER),		\
-+			 softirq_name(NET_TX),		\
-+			 softirq_name(NET_RX),		\
-+			 softirq_name(BLOCK),		\
-+			 softirq_name(BLOCK_IOPOLL),	\
-+			 softirq_name(TASKLET),		\
-+			 softirq_name(SCHED),		\
-+			 softirq_name(HRTIMER),		\
- 			 softirq_name(RCU))
- 
- /**
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 7db2506..f8749e5 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -57,7 +57,7 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
- static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
- 
- char *softirq_to_name[NR_SOFTIRQS] = {
--	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK",
-+	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "BLOCK_IOPOLL",
- 	"TASKLET", "SCHED", "HRTIMER",	"RCU"
- };
- 
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index c8f3ed6..d320c18 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -794,7 +794,8 @@ static char *ip4_addr_string(char *buf, char *end, const u8 *addr,
+  *
+  * - 'F' For symbolic function descriptor pointers with offset
+  * - 'f' For simple symbolic function names without offset
+- * - 'S' For symbolic direct pointers
++ * - 'S' For symbolic direct pointers with offset
++ * - 's' For symbolic direct pointers without offset
+  * - 'R' For a struct resource pointer, it prints the range of
+  *       addresses (not the name nor the flags)
+  * - 'M' For a 6-byte MAC address, it prints the address in the
+@@ -1069,6 +1070,7 @@ qualifier:
+  * %pF output the name of a function pointer with its offset
+  * %pf output the name of a function pointer without its offset
+  * %pR output the address range in a struct resource
++ * %n is ignored
+  *
+  * The return value is the number of characters which would
+  * be generated for the given input, excluding the trailing
+@@ -1524,11 +1526,7 @@ EXPORT_SYMBOL_GPL(vbin_printf);
+  * a binary buffer that generated by vbin_printf.
+  *
+  * The format follows C99 vsnprintf, but has some extensions:
+- * %pS output the name of a text symbol
+- * %pF output the name of a function pointer with its offset
+- * %pf output the name of a function pointer without its offset
+- * %pR output the address range in a struct resource
+- * %n is ignored
++ *  see vsnprintf comment for details.
+  *
+  * The return value is the number of characters which would
+  * be generated for the given input, excluding the trailing
 -- 
 1.6.3.3
 
