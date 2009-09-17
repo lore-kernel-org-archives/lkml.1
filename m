@@ -1,86 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752152AbZIQKgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbZIQKrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752152AbZIQKgm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 06:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZIQKgm
+	id S1752438AbZIQKrp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 06:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbZIQKro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 06:36:42 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:15835 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750883AbZIQKgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 06:36:41 -0400
-X-Trace: 262678829/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.8.160/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.8.160
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAO+tsUpPRQig/2dsb2JhbACBU9xlhBgFgVg
-X-IronPort-AV: E=Sophos;i="4.44,403,1249254000"; 
-   d="scan'208";a="262678829"
-Date: Thu, 17 Sep 2009 11:35:54 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>
-Subject: Re: aim7 scalability issue on 4 socket machine
-In-Reply-To: <1253180411.8497.1.camel@twins>
-Message-ID: <Pine.LNX.4.64.0909171122180.25864@sister.anvils>
-References: <1253179879.2606.37.camel@ymzhang> <1253180411.8497.1.camel@twins>
+	Thu, 17 Sep 2009 06:47:44 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60804 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752179AbZIQKro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 06:47:44 -0400
+Date: Thu, 17 Sep 2009 12:47:47 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] softirq: Fix softirq_to_name
+Message-ID: <20090917104747.GG23126@kernel.dk>
+References: <4AB20398.8070209@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB20398.8070209@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Sep 2009, Peter Zijlstra wrote:
-> On Thu, 2009-09-17 at 17:31 +0800, Zhang, Yanmin wrote:
-> > Aim7 result is bad on my new Nehalem machines (4*8*2 logical cpu). Perf counter
-> > shows spinlock consumes 70% cpu time on the machine. Lock_stat shows
-> > anon_vma->lock causes most of the spinlock contention. Function tracer shows
-> > below call chain creates the spinlock.
-> > 
-> > do_brk => vma_merge =>vma_adjust
-> > 
-> > Aim7 consists of lots of subtests. One test is to fork lots of processes and
-> > every process calls sbrk for 1000 times to grow/shrink the heap. All the vma of
-> > the heap of all sub-processes point to the same anon_vma and use the same
-> > anon_vma->lock. When sbrk is called, kernel calls do_brk => vma_merge =>vma_adjust
-> > and lock anon_vma->lock to create spinlock contentions.
-> > 
-> > There is a comment section in front of spin_lock(&anon_vma->lock. It says
-> > anon_vma lock can be optimized when just changing vma->vm_end. As a matter
-> > of fact, anon_vma->lock is used to protect anon_vma->list when an entry is
-> > deleted/inserted or the list is accessed. There is no such deletion/insertion
-> > if only vma->end is changed in function vma_adjust.
-> > 
-> > Below patch fixes it.
-> > 
-> > Test results with kernel 2.6.31-rc8. The improvement on the machine is about 150%.
+On Thu, Sep 17 2009, Li Zefan wrote:
+> With BLOCK_IOPOLL_SOFTIRQ added, softirq_to_name[] and
+> show_softirq_name() needs to be updated.
+
+Indeed, thanks!
+
 > 
-> Did you see Lee's patch?:
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
 > 
->  http://lkml.org/lkml/2009/9/9/290
+> We can automatically generate softirq_to_name[] and
+> show_softirq_name(), but since it's rare to add new softirq,
+> I decide to just add the missing one.
 > 
-> Added Lee and Hugh to CC, retained the below patch for them.
+> ---
+>  include/trace/events/irq.h |   21 +++++++++++----------
+>  kernel/softirq.c           |    2 +-
+>  2 files changed, 12 insertions(+), 11 deletions(-)
+> 
+> diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
+> index 1cb0c3a..b89f9db 100644
+> --- a/include/trace/events/irq.h
+> +++ b/include/trace/events/irq.h
+> @@ -8,16 +8,17 @@
+>  #include <linux/interrupt.h>
+>  
+>  #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
+> -#define show_softirq_name(val)			\
+> -	__print_symbolic(val,			\
+> -			 softirq_name(HI),	\
+> -			 softirq_name(TIMER),	\
+> -			 softirq_name(NET_TX),	\
+> -			 softirq_name(NET_RX),	\
+> -			 softirq_name(BLOCK),	\
+> -			 softirq_name(TASKLET),	\
+> -			 softirq_name(SCHED),	\
+> -			 softirq_name(HRTIMER),	\
+> +#define show_softirq_name(val)				\
+> +	__print_symbolic(val,				\
+> +			 softirq_name(HI),		\
+> +			 softirq_name(TIMER),		\
+> +			 softirq_name(NET_TX),		\
+> +			 softirq_name(NET_RX),		\
+> +			 softirq_name(BLOCK),		\
+> +			 softirq_name(BLOCK_IOPOLL),	\
+> +			 softirq_name(TASKLET),		\
+> +			 softirq_name(SCHED),		\
+> +			 softirq_name(HRTIMER),		\
+>  			 softirq_name(RCU))
+>  
+>  /**
+> diff --git a/kernel/softirq.c b/kernel/softirq.c
+> index 7db2506..f8749e5 100644
+> --- a/kernel/softirq.c
+> +++ b/kernel/softirq.c
+> @@ -57,7 +57,7 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
+>  static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
+>  
+>  char *softirq_to_name[NR_SOFTIRQS] = {
+> -	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK",
+> +	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "BLOCK_IOPOLL",
+>  	"TASKLET", "SCHED", "HRTIMER",	"RCU"
+>  };
+>  
+> -- 
+> 1.6.3
+> 
 
-Thanks a lot for the CC, Peter.
-See my reply to that mail for the slightly corrected version.
+-- 
+Jens Axboe
 
-Yes, Yanmin and Lee appear to be fixing exactly the same issue.
-I haven't thought through Yanmin's version for correctness, but
-it lacks the vm_start check I added to Lee's, and I do prefer
-Lee's style - hey, nothing personal!
-
-So, Yanmin, please retest with http://lkml.org/lkml/2009/9/13/25
-and let us know if that works as well for you - thanks.
-
-Hugh
