@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759992AbZIQSIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbZIQSLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759992AbZIQSIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759091AbZIQSIR
+	id S1753472AbZIQSLc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbZIQSLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:08:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44936 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759438AbZIQSIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:08:12 -0400
-Date: Thu, 17 Sep 2009 18:07:48 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf record: Disable profiling before draining the buffer
-Message-ID: <tip-5abfd8bf28feeb633afdea2309fb0927d17606be@git.kernel.org>
-Git-Commit-ID: 5abfd8bf28feeb633afdea2309fb0927d17606be
-X-Mailer: tip-git-log-daemon
+	Thu, 17 Sep 2009 14:11:31 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:59445 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbZIQSLb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 14:11:31 -0400
+Date: Thu, 17 Sep 2009 19:11:33 +0100
+From: Andrew Price <andy@andrewprice.me.uk>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: rt2x00dev.c:405: error: =?utf-8?Q?too_?=
+	=?utf-8?Q?few_arguments_to_function_=E2=80=98rt2x00crypto=5Frx=5Finsert?=
+	=?utf-8?B?X2l24oCZ?=
+Message-ID: <20090917181133.GA5797@sucs.org>
+Mail-Followup-To: Andrew Price <andy@andrewprice.me.uk>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org
+References: <20090917154138.GA31844@sucs.org> <20090917172358.GC2577@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 18:07:49 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090917172358.GC2577@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5abfd8bf28feeb633afdea2309fb0927d17606be
-Gitweb:     http://git.kernel.org/tip/5abfd8bf28feeb633afdea2309fb0927d17606be
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 17 Sep 2009 19:59:05 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 17 Sep 2009 20:02:47 +0200
+On Thu, Sep 17, 2009 at 01:23:59PM -0400, John W. Linville wrote:
+> On Thu, Sep 17, 2009 at 04:41:39PM +0100, Andrew Price wrote:
+> > Hi Ivo,
+> > 
+> > Apologies if this has already been reported. Building today's mainline
+> > kernel (ab86e5) I'm seeing this error:
+> > 
+> > drivers/net/wireless/rt2x00/rt2x00dev.c: In function ‘rt2x00lib_rxdone’:
+> > drivers/net/wireless/rt2x00/rt2x00dev.c:405: warning: passing argument 3 of ‘rt2x00crypto_rx_insert_iv’ makes integer from pointer without a cast
+> > drivers/net/wireless/rt2x00/rt2x00dev.c:405: error: too few arguments to function ‘rt2x00crypto_rx_insert_iv’
+> 
+> Strange...I don't see this warning.  Are you sure you have a clean checkout?
 
-perf record: Disable profiling before draining the buffer
+I double-checked:
 
-I noticed that perf-record continues profiling itself after the
-child terminated and we're draining the buffer.
+- git status returned no changes
+- git clean -fqdx
+- ccache -C
+- Retried the build
 
-This can cause a _lot_ of overhead with --all recording - we keep
-and keep recording, which produces new and new events.
+and still got the same error. Is this something to do with the second
+definition of rt2x00crypto_rx_insert_iv still having an l2pad parameter...
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+This (untested) patch fixes the build for me:
 
+--
 
----
- tools/perf/builtin-record.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 5f3127e..2459e5a 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -524,6 +524,7 @@ static int __cmd_record(int argc, const char **argv)
- 	pid_t pid = 0;
- 	int flags;
- 	int ret;
-+	unsigned long waking = 0;
+diff --git a/drivers/net/wireless/rt2x00/rt2x00lib.h b/drivers/net/wireless/rt2x00/rt2x00lib.h
+index 5462cb5..567f029 100644
+--- a/drivers/net/wireless/rt2x00/rt2x00lib.h
++++ b/drivers/net/wireless/rt2x00/rt2x00lib.h
+@@ -380,7 +380,7 @@ static inline void rt2x00crypto_tx_insert_iv(struct sk_buff *skb,
+ {
+ }
  
- 	page_size = sysconf(_SC_PAGE_SIZE);
- 	nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
-@@ -634,10 +635,20 @@ static int __cmd_record(int argc, const char **argv)
- 		if (hits == samples) {
- 			if (done)
- 				break;
--			ret = poll(event_array, nr_poll, 100);
-+			ret = poll(event_array, nr_poll, -1);
-+			waking++;
-+		}
-+
-+		if (done) {
-+			for (i = 0; i < nr_cpu; i++) {
-+				for (counter = 0; counter < nr_counters; counter++)
-+					ioctl(fd[i][counter], PERF_COUNTER_IOC_DISABLE);
-+			}
- 		}
- 	}
- 
-+	fprintf(stderr, "[ perf record: Woken up %ld times to write data ]\n", waking);
-+
- 	/*
- 	 * Approximate RIP event size: 24 bytes.
- 	 */
+-static inline void rt2x00crypto_rx_insert_iv(struct sk_buff *skb, bool l2pad,
++static inline void rt2x00crypto_rx_insert_iv(struct sk_buff *skb,
+ 					     unsigned int header_length,
+ 					     struct rxdone_entry_desc *rxdesc)
+ {
