@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbZIQUgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZIQUji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbZIQUgu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZIQUgt
+	id S1754204AbZIQUji (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZIQUjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:36:49 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:25499 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194AbZIQUgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:36:48 -0400
-Subject: Re: kernel panic - not syncing: out of memory and no killable
- processes
-From: Eric Paris <eparis@redhat.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl
-In-Reply-To: <alpine.DEB.1.00.0909171326340.31112@chino.kir.corp.google.com>
-References: <1253158603.5213.204.camel@dhcp231-106.rdu.redhat.com>
-	 <1253191435.5213.209.camel@dhcp231-106.rdu.redhat.com>
-	 <alpine.DEB.1.00.0909171326340.31112@chino.kir.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Sep 2009 16:35:56 -0400
-Message-Id: <1253219756.5213.348.camel@dhcp231-106.rdu.redhat.com>
+	Thu, 17 Sep 2009 16:39:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39732 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752750AbZIQUjg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 16:39:36 -0400
+Date: Thu, 17 Sep 2009 13:38:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, menage@google.com,
+       bblum@google.com, ebiederm@xmission.com, lizf@cn.fujitsu.com,
+       matthltc@us.ibm.com
+Subject: Re: cgrooups && 2.6.32 -mm merge plans
+Message-Id: <20090917133846.a00daece.akpm@linux-foundation.org>
+In-Reply-To: <20090917201516.GA29346@redhat.com>
+References: <20090915161535.db0a6904.akpm@linux-foundation.org>
+	<20090917201516.GA29346@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-17 at 13:29 -0700, David Rientjes wrote:
-> On Thu, 17 Sep 2009, Eric Paris wrote:
+On Thu, 17 Sep 2009 22:15:16 +0200
+Oleg Nesterov <oleg@redhat.com> wrote:
+
+> On 09/15, Andrew Morton wrote:
+> >
+> > #cgroups-add-functionality-to-read-write-lock-clone_thread-forking-per-threadgroup.patch: Oleg conniptions
+> > cgroups-add-functionality-to-read-write-lock-clone_thread-forking-per-threadgroup.patch
+> > cgroups-add-functionality-to-read-write-lock-clone_thread-forking-per-threadgroup-fix.patch
+> > cgroups-add-ability-to-move-all-threads-in-a-process-to-a-new-cgroup-atomically.patch
+> >
+> >   Merge after checking with Oleg.
 > 
-> > the next-20090916 tree still panic's the same way.  As does Linus'
-> > latest git tree ab86e5765
-> > 
-> > I'll try bisecting between v2.6.31 and master if it would give better
-> > data than trying to bisect between two -next trees, but I'm sorta stuck
-> > with a machine that won't boot and doesn't tell me much about why.
-> > 
+> Well. I think these patches are buggy :/
 > 
 
-> Try merging the following patch to get more information such as the 
-> allocation order and gfp_mask.  It will also show the VM size of all 
-> kthreads and the state of your system memory to deterine whether there's a 
-> page allocator issue, lowmem_reserve_ratio is too high, etc.
+Well that's never prevented us from merging stuff before.
 
-I'll throw it in.
-
-I did another bisect (mainly because the last one gave a commit that
-obviously seemed bogus and Ingo ask me to)
-
-3f2aa307c4d26b4ed6509d0a79e8254c9e07e921 is first bad commit
-commit 3f2aa307c4d26b4ed6509d0a79e8254c9e07e921
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Thu Sep 10 20:34:48 2009 +0200
-
-    sched: Disable NEW_FAIR_SLEEPERS for now
-
-I'm about to try a linus latest kernel with just this one patch
-reverted.
-
--Eric
-
+Thanks, I'll disable the patches for now.  Do we have a grip on what's
+wrong and what needs to be done to fix things?
