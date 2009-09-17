@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbZIQMyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZIQMxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758371AbZIQMyF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 08:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbZIQMyE
+	id S1757701AbZIQMxq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 08:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbZIQMxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 08:54:04 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:39138 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758186AbZIQMyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 08:54:03 -0400
-From: Ferenc Wagner <wferi@niif.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
+	Thu, 17 Sep 2009 08:53:45 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:11219 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbZIQMxo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 08:53:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=shvGJ5TRpHIW88q/KlZhFMWRTXBpG2jNvKZvqCIt30aa9OBStVxH3a8II9fldlhZqD
+         yRm/6EGiKDFdB3QAZk+177njFgAagFdXG70QXMrVGDjgQU9ndOlkqdSbHkqZBXyfGkmI
+         r69OlAhANOUv0VUX7iqOFWR7Q0ASi4VoigicY=
+Date: Thu, 17 Sep 2009 15:54:01 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Ingo Molnar <mingo@redhat.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make safe some helpers building on container_of
-References: <20090914082700.8550.94087.stgit@szonett.ki.iif.hu>
-	<20090916224157.cfa621c4.akpm@linux-foundation.org>
-Date: Thu, 17 Sep 2009 14:53:58 +0200
-In-Reply-To: <20090916224157.cfa621c4.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 16 Sep 2009 22:41:57 -0700")
-Message-ID: <87ab0tybo9.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Subject: [PATCH] x86 uaccess_32.h typo
+Message-ID: <20090917125401.GU3717@localdomain.by>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Trivial: correct "that the we don't" typo. 
 
-> On Mon, 14 Sep 2009 10:27:00 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
->
->> For example, drivers/base/core.c contains
->> 
->> #define to_root_device(dev) container_of(dev, struct root_device, dev)
->> 
->> which works fine as long as the 'to_root_device' macro is always
->> applied to a variable called 'dev', as it is the case in the current
->> kernel sources.  However, it breaks as soon as it gets applied to a
->> variable of any other name, as the name of the variable is also
->> substituted into the third argument of the 'container_of' macro, which
->> really should stay 'dev' in the above case.
->> 
->> This patch renames the real macro arguments in all 5 such constructs
->> found by git-grep -E '#define.*container_of *\( *([^ ,]+) *,.*, *\1 *\)',
->> which may have missed some similar dangerous constructs, of course.
->> So these changes probably cross all possible boundaries of responsibility,
->> and I do not know how to best handle it, suggestions welcome.
->> 
->> Btw. this dangerous idom is also popularised by the excellent Linux Device
->> Drivers book (3rd edition, chapter 14, bottom of page 383).
->> 
->> ...
->>
->> -#define EVT_TO_HPET_DEV(evt) container_of(evt, struct hpet_dev, evt)
->> +#define EVT_TO_HPET_DEV(evtdev) container_of(evtdev, struct hpet_dev, evt)
->
-> There is no reason whatsoever for implementing these things as macros
-> and for the life of me I don't understand why people do this.
->
-> If we're going to fix these things then how about we turn them into
-> C functions thereby making them even safer?
->
-> y:/usr/src/linux-2.6.31> grep -r 'define.*container_of' . | wc -l
-> 347
+Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+---
 
-Quite a bunch, but if deemed useful and acceptable, I'm willing to
-convert them into static (inline?) functions as a means of thanking
-the kernel developer community.  But that surely wouldn't fly as a
-single patch.
--- 
-Feri.
+diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
+index 5e06259..632fb44 100644
+--- a/arch/x86/include/asm/uaccess_32.h
++++ b/arch/x86/include/asm/uaccess_32.h
+@@ -33,7 +33,7 @@ unsigned long __must_check __copy_from_user_ll_nocache_nozero
+  * Copy data from kernel space to user space.  Caller must check
+  * the specified block with access_ok() before calling this function.
+  * The caller should also make sure he pins the user space address
+- * so that the we don't result in page fault and sleep.
++ * so that we don't result in page fault and sleep.
+  *
+  * Here we special-case 1, 2 and 4-byte copy_*_user invocations.  On a fault
+  * we return the initial request size (1, 2 or 4), as copy_*_user should do.
+
