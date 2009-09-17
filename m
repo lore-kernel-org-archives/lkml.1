@@ -1,108 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZIQGCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbZIQGEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbZIQGCh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 02:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZIQGCg
+	id S1753948AbZIQGEr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 02:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZIQGEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 02:02:36 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:49179 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592AbZIQGCf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 02:02:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=egyOhTrOlcTnG7zCtegApROKCPX9M5F/rwNZIP0j20f+3mpK1MaU4r/Fo6SgU99IzC
-         VQp3xUGeVAwfHlS5laaFwsKMJQ20EpzeLGnU1lY1JNsQYvLPaFgcmKn+WNzB5+3qSLfE
-         iq+OUCA3QUJBeqf+NUFvT0Zi7vYhQL6fpy24k=
+	Thu, 17 Sep 2009 02:04:46 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60681 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753234AbZIQGEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 02:04:45 -0400
+Message-ID: <4AB1D219.8060009@cn.fujitsu.com>
+Date: Thu, 17 Sep 2009 14:07:21 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-In-Reply-To: <20090917114404.d87b155d.kamezawa.hiroyu@jp.fujitsu.com>
-References: <2375c9f90909160235m1f052df0qb001f8243ed9291e@mail.gmail.com>
-	 <1bc66b163326564dafb5a7dd8959fd56.squirrel@webmail-b.css.fujitsu.com>
-	 <20090917114138.e14a1183.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090917114404.d87b155d.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 17 Sep 2009 14:02:39 +0800
-Message-ID: <2375c9f90909162302m1fb89414o4f72b6b36e7cbb06@mail.gmail.com>
-Subject: Re: [PATCH 2/3][mmotm] showing size of kcore
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] [PATCH 1/3] vsprintf: add %ps that is the same as
+ %pS but is like %pf
+References: <20090917042731.630008734@goodmis.org> <20090917042831.280497816@goodmis.org>
+In-Reply-To: <20090917042831.280497816@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 10:44 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> Now, size of /proc/kcore which can be read by 'ls -l' is 0.
-> But it's not correct value.
->
-> This is a patch for showing size of /proc/kcore as following.
->
-> On x86-64, ls -l shows
->  ... root root 140737486266368 2009-09-17 10:29 /proc/kcore
-> Then, 7FFFFFFE02000. This comes from vmalloc area's size.
-> (*) This shows "core" size, not  memory size.
->
-> This patch shows the size by updating "size" field in struct proc_dir_entry.
-> Later, lookup routine will create inode and fill inode->i_size based
-> on this value. Then, this has a problem.
->
->  - Once inode is cached, inode->i_size will never be updated.
->
-> Then, this patch is not memory-hotplug-aware.
->
-> To update inode->i_size, we have to know dentry or inode.
-> But there is no way to lookup them by inside kernel. Hmmm....
-> Next patch will try it.
->
-> Cc: WANG Cong <xiyou.wangcong@gmail.com>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Steven Rostedt wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> On PowerPC64 function pointers do not point directly at the functions,
+> but instead point to pointers to the functions. The output of %pF expects
+> to point to a pointer to the function, whereas %pS will show the function
+> itself.
+> 
+> mcount returns the direct pointer to the function and not the pointer to
+> the pointer. Thus %pS must be used to show this. The function tracer
+> requires printing of the functions without offsets and uses the %pf
+> instead.
+> 
+>  %pF produces run_local_timers+0x4/0x1f
+>  %pf produces just run_local_timers
+> 
+> For PowerPC64, we need to use the direct pointer, and we only have
+> %pS which will produce .run_local_timers+0x4/0x1f
+> 
+> This patch creates a %ps that matches the %pf as %pS matches %pF.
+> 
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Zhao Lei <zhaolei@cn.fujitsu.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 > ---
->  fs/proc/kcore.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
->
-> Index: mmotm-2.6.31-Sep14/fs/proc/kcore.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep14.orig/fs/proc/kcore.c
-> +++ mmotm-2.6.31-Sep14/fs/proc/kcore.c
-> @@ -107,6 +107,8 @@ static void free_kclist_ents(struct list
->  */
->  static void __kcore_update_ram(struct list_head *list)
->  {
-> +       int nphdr;
-> +       size_t size;
->        struct kcore_list *tmp, *pos;
->        LIST_HEAD(garbage);
->
-> @@ -124,6 +126,7 @@ static void __kcore_update_ram(struct li
->        write_unlock(&kclist_lock);
->
->        free_kclist_ents(&garbage);
-> +       proc_root_kcore->size = get_kcore_size(&nphdr, &size);
+>  lib/vsprintf.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+> index 756ccaf..c265e75 100644
+> --- a/lib/vsprintf.c
+> +++ b/lib/vsprintf.c
+> @@ -580,7 +580,7 @@ static char *symbol_string(char *buf, char *end, void *ptr,
+>  	unsigned long value = (unsigned long) ptr;
+>  #ifdef CONFIG_KALLSYMS
+>  	char sym[KSYM_SYMBOL_LEN];
+> -	if (ext != 'f')
+> +	if (ext != 'f' && ext != 's')
+>  		sprint_symbol(sym, value);
+>  	else
+>  		kallsyms_lookup(value, NULL, NULL, NULL, sym);
+> @@ -721,6 +721,7 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+>  	case 'F':
+>  	case 'f':
+>  		ptr = dereference_function_descriptor(ptr);
+> +	case 's':
+>  		/* Fallthrough */
+>  	case 'S':
+>  		return symbol_string(buf, end, ptr, spec, *fmt);
+> @@ -958,7 +959,8 @@ qualifier:
+>   * @args: Arguments for the format string
+>   *
+>   * This function follows C99 vsnprintf, but has some extensions:
+> - * %pS output the name of a text symbol
+> + * %pS output the name of a text symbol with offset
+> + * %ps output the name of a text symbol without offset
 
+Comments of bstr_printf() also need to be updated.
+or remove duplation and just say "refer to vsnprintf()" in bstr_printf()'s
+comment.
 
-This makes me to think if we will have some race condition here?
-Two processes can open kcore at the same time...
+Thanks
+Zhaolei
 
->  }
->
->
-> @@ -429,7 +432,8 @@ read_kcore(struct file *file, char __use
->        unsigned long start;
->
->        read_lock(&kclist_lock);
-> -       proc_root_kcore->size = size = get_kcore_size(&nphdr, &elf_buflen);
-> +       size = get_kcore_size(&nphdr, &elf_buflen);
-> +
->        if (buflen == 0 || *fpos >= size) {
->                read_unlock(&kclist_lock);
->                return 0;
->
->
