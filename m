@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309AbZIQFlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbZIQFmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752309AbZIQFlY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 01:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZIQFlX
+	id S1752181AbZIQFmL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 01:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZIQFmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 01:41:23 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58625 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbZIQFlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 01:41:23 -0400
-Subject: Re: [PATCH 1/3] [PATCH 1/3] vsprintf: add %ps that is the same as
- %pS but is like %pf
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhao Lei <zhaolei@cn.fujitsu.com>
-In-Reply-To: <20090917042831.280497816@goodmis.org>
-References: <20090917042731.630008734@goodmis.org>
-	 <20090917042831.280497816@goodmis.org>
-Content-Type: text/plain
-Date: Thu, 17 Sep 2009 15:40:57 +1000
-Message-Id: <1253166057.8375.343.camel@pasglop>
+	Thu, 17 Sep 2009 01:42:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39358 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751464AbZIQFmK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 01:42:10 -0400
+Date: Wed, 16 Sep 2009 22:41:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ferenc Wagner <wferi@niif.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make safe some helpers building on container_of
+Message-Id: <20090916224157.cfa621c4.akpm@linux-foundation.org>
+In-Reply-To: <20090914082700.8550.94087.stgit@szonett.ki.iif.hu>
+References: <20090914082700.8550.94087.stgit@szonett.ki.iif.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-17 at 00:27 -0400, Steven Rostedt wrote:
-> plain text document attachment
-> (0001-vsprintf-add-ps-that-is-the-same-as-pS-but-is-like-p.patch)
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> On PowerPC64 function pointers do not point directly at the functions,
-> but instead point to pointers to the functions. The output of %pF expects
-> to point to a pointer to the function, whereas %pS will show the function
-> itself.
-> 
-> mcount returns the direct pointer to the function and not the pointer to
-> the pointer. Thus %pS must be used to show this. The function tracer
-> requires printing of the functions without offsets and uses the %pf
-> instead.
-> 
->  %pF produces run_local_timers+0x4/0x1f
->  %pf produces just run_local_timers
-> 
-> For PowerPC64, we need to use the direct pointer, and we only have
-> %pS which will produce .run_local_timers+0x4/0x1f
-> 
-> This patch creates a %ps that matches the %pf as %pS matches %pF.
-> 
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Zhao Lei <zhaolei@cn.fujitsu.com>
+On Mon, 14 Sep 2009 10:27:00 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  lib/vsprintf.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
+> For example, drivers/base/core.c contains
 > 
-> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-> index 756ccaf..c265e75 100644
-> --- a/lib/vsprintf.c
-> +++ b/lib/vsprintf.c
-> @@ -580,7 +580,7 @@ static char *symbol_string(char *buf, char *end, void *ptr,
->  	unsigned long value = (unsigned long) ptr;
->  #ifdef CONFIG_KALLSYMS
->  	char sym[KSYM_SYMBOL_LEN];
-> -	if (ext != 'f')
-> +	if (ext != 'f' && ext != 's')
->  		sprint_symbol(sym, value);
->  	else
->  		kallsyms_lookup(value, NULL, NULL, NULL, sym);
-> @@ -721,6 +721,7 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
->  	case 'F':
->  	case 'f':
->  		ptr = dereference_function_descriptor(ptr);
-> +	case 's':
->  		/* Fallthrough */
->  	case 'S':
->  		return symbol_string(buf, end, ptr, spec, *fmt);
-> @@ -958,7 +959,8 @@ qualifier:
->   * @args: Arguments for the format string
->   *
->   * This function follows C99 vsnprintf, but has some extensions:
-> - * %pS output the name of a text symbol
-> + * %pS output the name of a text symbol with offset
-> + * %ps output the name of a text symbol without offset
->   * %pF output the name of a function pointer with its offset
->   * %pf output the name of a function pointer without its offset
->   * %pR output the address range in a struct resource
+> #define to_root_device(dev) container_of(dev, struct root_device, dev)
+> 
+> which works fine as long as the 'to_root_device' macro is always
+> applied to a variable called 'dev', as it is the case in the current
+> kernel sources.  However, it breaks as soon as it gets applied to a
+> variable of any other name, as the name of the variable is also
+> substituted into the third argument of the 'container_of' macro, which
+> really should stay 'dev' in the above case.
+> 
+> This patch renames the real macro arguments in all 5 such constructs
+> found by git-grep -E '#define.*container_of *\( *([^ ,]+) *,.*, *\1 *\)',
+> which may have missed some similar dangerous constructs, of course.
+> So these changes probably cross all possible boundaries of responsibility,
+> and I do not know how to best handle it, suggestions welcome.
+> 
+> Btw. this dangerous idom is also popularised by the excellent Linux Device
+> Drivers book (3rd edition, chapter 14, bottom of page 383).
+> 
+> ...
+>
+> -#define EVT_TO_HPET_DEV(evt) container_of(evt, struct hpet_dev, evt)
+> +#define EVT_TO_HPET_DEV(evtdev) container_of(evtdev, struct hpet_dev, evt)
 
+There is no reason whatsoever for implementing these things as macros
+and for the life of me I don't understand why people do this.
+
+If we're going to fix these things then how about we turn them into
+C functions thereby making them even safer?
+
+
+
+y:/usr/src/linux-2.6.31> grep -r 'define.*container_of' . | wc -l
+347
+
+Sigh.
