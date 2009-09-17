@@ -1,155 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbZIQC4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZIQDBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758323AbZIQC4B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 22:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757543AbZIQC4A
+	id S1759715AbZIQDBX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 23:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758068AbZIQDBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 22:56:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46373 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757206AbZIQCz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 22:55:59 -0400
-Date: Thu, 17 Sep 2009 12:55:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Jones <davej@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kurt Roeckx <kurt@roeckx.be>
-Subject: Re: linux-next: cpufreq-current tree build warning
-Message-Id: <20090917125556.1125d8ae.sfr@canb.auug.org.au>
-In-Reply-To: <20090917022726.GA30706@redhat.com>
-References: <20090917120651.f0cdf4c2.sfr@canb.auug.org.au>
-	<20090917022726.GA30706@redhat.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__17_Sep_2009_12_55_56_+1000_7rlPv5hpRuiWaIix"
+	Wed, 16 Sep 2009 23:01:22 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62731 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754503AbZIQDBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 23:01:22 -0400
+Message-ID: <4AB1A652.1010000@cn.fujitsu.com>
+Date: Thu, 17 Sep 2009 11:00:34 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + generic-ipi-fix-the-race-between-generic_smp_call_function_-and-hotplug_cfd.patch
+ added to -mm tree
+References: <200907310030.n6V0Uqgw001644@imap1.linux-foundation.org>	 <1252616988.7205.102.camel@laptop>  <4AAA0001.2060703@cn.fujitsu.com>	 <1252696132.3756.21.camel@sbs-t61.sc.intel.com>	 <4AADEF2F.5080504@cn.fujitsu.com>	 <1252973802.2899.88.camel@sbs-t61.sc.intel.com>	 <4AAEF5DC.4070308@cn.fujitsu.com> <1253067602.2667.13.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <1253067602.2667.13.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__17_Sep_2009_12_55_56_+1000_7rlPv5hpRuiWaIix
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Dave,
 
-On Wed, 16 Sep 2009 22:27:26 -0400 Dave Jones <davej@redhat.com> wrote:
->
-> On Thu, Sep 17, 2009 at 12:06:51PM +1000, Stephen Rothwell wrote:
->  >=20
->  > Today's linux-next build (x86_64 allmodconfig) produced this warning:
->  >=20
->  > arch/x86/kernel/cpu/cpufreq/powernow-k8.c: In function 'fill_powernow_=
-table_fidvid':
->  > arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1001: warning: passing argum=
-ent 1 of 'invalidate_entry' from incompatible pointer type
->  > arch/x86/kernel/cpu/cpufreq/powernow-k8.c:608: note: expected 'struct =
-cpufreq_frequency_table *' but argument is of type 'struct powernow_k8_data=
- *'
->  >=20
->  > Introduced by commit 7fc1b26613587ab4369615445b5485040c60fef1 ("[CPUFR=
-EQ]
->  > Fix NULL ptr regression in powernow-k8").
->=20
-> I'm very confused. I don't see this..
->=20
-> (22:22:25:davej:cpufreq)$ make arch/x86/kernel/cpu/cpufreq/powernow-k8.o
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-x86
->   CALL    scripts/checksyscalls.sh
->   CC [M]  arch/x86/kernel/cpu/cpufreq/powernow-k8.o
-> (22:22:30:davej:cpufreq)$=20
->=20
-> Also, line 1001 is ..
->=20
-> 	if (data->acpi_data.state_count)
+Suresh Siddha wrote:
+> On Mon, 2009-09-14 at 19:03 -0700, Xiao Guangrong wrote:
+>>> Your current fix is not clean and not complete in my opinion (as calling
+>>> interrupt handlers manually and not doing the callbacks etc might cause
+>>> other side affects). Thanks.
+>> It is not the last version and doing the callbacks in another patch,
+>> see below URL please:
+>> http://marc.info/?l=linux-mm-commits&m=124900028228350&w=2
+> 
+> I am referring to this latest patch only. We are calling the interrupt
+> handler manually and not doing the callbacks in that context. In future,
+> we might see other side affects if we miss some of these smp ipi's.
+> 
 
-That is line 1022 in my tree.
+um, maybe you are right.
 
->From line 986 (in fucntion fill_powernow_table_fidvid):
+> Clean solution is to ensure that there are no unhandled smp call
+> function handlers and then continue with the cpu offline.
+> 
 
-		/* verify only 1 entry from the lo frequency table */
-		if (fid < HI_FID_TABLE_BOTTOM) {
-			if (cntlofreq) {
-				/* if both entries are the same,
-				 * ignore this one ... */
-				if ((freq !=3D powernow_table[cntlofreq].frequency) ||
-				    (index !=3D powernow_table[cntlofreq].index)) {
-					printk(KERN_ERR PFX
-						"Too many lo freq table "
-						"entries\n");
-					return 1;
-				}
+Yeah, I agree it.
 
-				dprintk("double low frequency table entry, "
-						"ignoring it.\n");
-				invalidate_entry(data, i);
-				continue;
-			} else
-				cntlofreq =3D i;
-		}
+>> Another problem is that all CPU must call quiesce_smp_call_functions() here, but only
+>> dying CPU need do it.
+> 
+> In stop_machine() all cpu's will wait for each other to come to the
+> rendezvous point. so this is completely ok (infact this is what is
+> happening if some cpu is already handling some ipi's etc. I am just
+> making it more explicit).
 
-> So I'm not sure what your gcc is talking about.
+Waiting all cpu handle its IPI interruption in stop_machine() path will make 
+it slower, I'm not sure it's OK.
 
-This is gcc 4.4.0 if that is relevant.
+> 
+>>>  				local_irq_disable();
+>>>  				hard_irq_disable();
+>> It will cause another race, if CPU A send a IPI interruption after CPU B call
+>> quiesce_smp_call_functions() and disable IRQ, it will case the same problem.
+>> (in this time, CPU B is enter stop machine, but CPU A is not)
+> 
+> No. By the time we call quiesce_ipis(), all the cpu's are already in
+> stop machine FIFO threads and no one else can send IPI (i.e, all the
+> cpus have moved past the STOPMACHINE_PREPARE state). This is when we are
+> calling the quiesce_smp_call_functions().
+> 
 
-> Does next contain additional patches to this file from outside the cpufre=
-q.git tree?
+Sorry for let you misunderstand, It's not clear explanation here.
 
-$ git log origin/master.. arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-commit 7fc1b26613587ab4369615445b5485040c60fef1
-Author: Kurt Roeckx <kurt@roeckx.be>
-Date:   Wed Sep 16 11:09:32 2009 -0400
+The preempt is enabled when CPU enter STOPMACHINE_DISABLE_IRQ state, so
+other task will preempt it and send IPI interruption.
+But, Andrew point out my mistake that the stop machine workqueue thread
+is the highest priority and with "SCHED_FIFO" scheduler, so It not happen,
+please ignore this comment.
 
-    [CPUFREQ] Fix NULL ptr regression in powernow-k8
-   =20
-    Fixes bugzilla #13780
-   =20
-    From: Kurt Roeckx <kurt@roeckx.be>
-    Signed-off-by: Dave Jones <davej@redhat.com>
+How about manual check/handle pending IPI interruption in the CPU context?
+like this:
 
-so, no.
-(origin/master is Linus' tree of about 2 hours ago, commit
-ab86e5765d41a5eb4239a1c04d613db87bea5ed8 "Merge
-git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core-2.6")
+---
+ include/linux/smp.h |    3 +++
+ kernel/cpu.c        |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-Looking further, this is the cpureq-current tree I am complaining about,
-in the cpufreq tree, you also have:
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index 9e3d8af..a9ea518 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -95,6 +95,9 @@ void ipi_call_lock(void);
+ void ipi_call_unlock(void);
+ void ipi_call_lock_irq(void);
+ void ipi_call_unlock_irq(void);
++#else
++static inline void generic_smp_call_function_single_interrupt(void) { }
++static inline void generic_smp_call_function_interrupt(void) { }
+ #endif
+ 
+ /*
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 6ba0f1e..4ba7f92 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -173,6 +173,9 @@ static int __ref take_cpu_down(void *_param)
+ 	struct take_cpu_down_param *param = _param;
+ 	int err;
+ 
++	generic_smp_call_function_interrupt();
++	generic_smp_call_function_single_interrupt();
++
+ 	/* Ensure this CPU doesn't handle any more interrupts. */
+ 	err = __cpu_disable();
+ 	if (err < 0)
+-- 
+1.6.1.2
 
-commit db39d5529d347de5e2eec1a72d67fcfacae6c5a2
-Author: Mark Langsdorf <mark.langsdorf@amd.com>
-Date:   Fri Aug 21 19:15:28 2009 -0500
-
-    [CPUFREQ] Powernow-k8: Enable more than 2 low P-states
-   =20
-    Remove an obsolete check that used to prevent there being more
-    than 2 low P-states.  Now that low-to-low P-states changes are
-    enabled, it prevents otherwise workable configurations with
-    multiple low P-states.
-   =20
-    Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-    Tested-by: Krists Krilovs <pow@pow.za.net>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-Which removes the above code ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__17_Sep_2009_12_55_56_+1000_7rlPv5hpRuiWaIix
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqxpTwACgkQjjKRsyhoI8wgigCguyiYUElcGpO8rO5yx7oh3n1b
-EmcAoJD3HJydpivUK8rIxDsHiBWKHlJQ
-=vGML
------END PGP SIGNATURE-----
-
---Signature=_Thu__17_Sep_2009_12_55_56_+1000_7rlPv5hpRuiWaIix--
+Thanks,
+Xiao
