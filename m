@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbZIQSml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbZIQSk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759031AbZIQSml (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZIQSmk
+	id S1759177AbZIQSk5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759116AbZIQSk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:42:40 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:61764 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751698AbZIQSmj convert rfc822-to-8bit (ORCPT
+	Thu, 17 Sep 2009 14:40:57 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:49592 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759134AbZIQSk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:42:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=EQiSJYj4EXepE3cvlAMmXrUdQprS0TC3LZgZgC7OxT/Cp/mOveNlD8ooZmCxMfCjSw
-         NFOIA15rwB44hd32l8TIUMYxjN/xn5RGfkiTxeZeRqMhod90cxd/R/DmB1jytQd9VFYu
-         cHmXeM6miYIh67KulP4QjznhdfbLE5Xu+x4Y4=
+	Thu, 17 Sep 2009 14:40:56 -0400
+Date: Thu, 17 Sep 2009 14:38:08 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Nick Piggin <npiggin@suse.de>
+cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       heiko.carstens@de.ibm.com, mingo@elte.hu, sachinp@in.ibm.com
+Subject: Re: [RFC/PATCH] SLQB: Mark the allocator as broken PowerPC and
+ S390
+In-Reply-To: <20090917182842.GS18404@wotan.suse.de>
+Message-ID: <alpine.DEB.1.10.0909171437180.5220@V090114053VZO-1>
+References: <1253083059.5478.1.camel@penberg-laptop> <20090917100841.GF13002@csn.ul.ie> <1253183365.4975.20.camel@penberg-laptop> <20090917105707.GA7205@csn.ul.ie> <1253186019.4975.32.camel@penberg-laptop> <20090917111828.GB7205@csn.ul.ie>
+ <20090917114116.GL18404@wotan.suse.de> <20090917181831.GA714@csn.ul.ie> <20090917182842.GS18404@wotan.suse.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <20090917133401.GC24438@mit.edu>
-References: <194f62550909090403x16e61cc1g3a23593085de0b@mail.gmail.com>
-	 <194f62550909160532q248cb45coee639a2da10292a@mail.gmail.com>
-	 <20090916163822.GA15451@mit.edu>
-	 <194f62550909161141n5730049cra2643ce1654a7aaf@mail.gmail.com>
-	 <20090917133401.GC24438@mit.edu>
-Date: Thu, 17 Sep 2009 14:37:31 -0400
-Message-ID: <194f62550909171137t10c28c33t438d2e75a347f95@mail.gmail.com>
-Subject: Re: Howto switch off ext4's delayed allocation?
-From: Clemens Eisserer <linuxhippy@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thanks, but no need.  I did some investigating, and when I found that
-> kwrite was doing a truncate-and-rewrite, I did some more digging, and
-> found that we had a bug in our truncate hueristics.  I'll get this
-> fixed for 2.6.32, and it will be a candidate for the 2.6.31 stable
-> tree.
+On Thu, 17 Sep 2009, Nick Piggin wrote:
 
-Cool, thanks a lot :)
+> > This machine has two CPUs (0, 1) and two nodes with actual memory (2,3).
+> > After applying a patch to kmem_cache_create, I see in the console
+> >
+> > MEL::Creating cache pgd_cache CPU 0 Node 0
+> > MEL::Creating cache pmd_cache CPU 0 Node 0
+> > MEL::Creating cache pid_namespace CPU 0 Node 0
+> > MEL::Creating cache shmem_inode_cache CPU 0 Node 0
+> > MEL::Creating cache scsi_data_buffer CPU 1 Node 0
 
-- Clemens
+So we have two nodes 2,3 nothing on node 0 and we are creating caches on
+the node that does not exist? SLQB assumes node 0 is present?
+
