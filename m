@@ -1,64 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbZIQGc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbZIQGda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbZIQGc2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 02:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZIQGc1
+	id S1755230AbZIQGda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 02:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbZIQGd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 02:32:27 -0400
-Received: from smtp.eu.citrix.com ([62.200.22.115]:6432 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754699AbZIQGc0 (ORCPT
+	Thu, 17 Sep 2009 02:33:29 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50670 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754171AbZIQGd2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 02:32:26 -0400
-X-Greylist: delayed 582 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Sep 2009 02:32:26 EDT
-X-IronPort-AV: E=Sophos;i="4.44,402,1249257600"; 
-   d="scan'208";a="7119339"
-User-Agent: Microsoft-Entourage/12.20.0.090605
-Date: Thu, 17 Sep 2009 07:22:44 +0100
-Subject: Re: [Xen-devel] [RFC][PATCH 03/10] xen/hybrid: Xen Hybrid Extension
- initialization
-From: Keir Fraser <keir.fraser@eu.citrix.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, Sheng Yang <sheng@linux.intel.com>
-CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Eddie Dong <eddie.dong@intel.com>,
+	Thu, 17 Sep 2009 02:33:28 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 17 Sep 2009 15:31:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jun Nakajima <jun.nakajima@intel.com>
-Message-ID: <C6D79444.14F51%keir.fraser@eu.citrix.com>
-Thread-Topic: [Xen-devel] [RFC][PATCH 03/10] xen/hybrid: Xen Hybrid Extension
- initialization
-Thread-Index: Aco3C6mnFE8s5HAkQ0WALkQ4pbhd6QAU5qZB
-In-Reply-To: <4AB1496B.9070705@goop.org>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
-X-OriginalArrivalTime: 17 Sep 2009 06:22:47.0362 (UTC) FILETIME=[4641D220:01CA375F]
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "xiyou.wangcong@gmail.com" <xiyou.wangcong@gmail.com>
+Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling v3
+Message-Id: <20090917153119.8c3a8efe.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090917062124.GA6964@localhost>
+References: <20090914032901.GA16189@localhost>
+	<20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917145319.97f67737.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917150726.9acb0f40.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917062124.GA6964@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/09/2009 21:24, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
+On Thu, 17 Sep 2009 14:21:24 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
->> Guest would detect Hybrid capability using CPUID 0x40000002.edx, then call
->> HVMOP_enable_hybrid hypercall to enable hybrid support in hypervisor.
->>   
+> On Thu, Sep 17, 2009 at 02:07:26PM +0800, KAMEZAWA Hiroyuki wrote:
+> > Very sorry...reflesh miss.
+> > ==
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > Now, rw_verify_area() checsk f_pos is negative or not. And if
+> > negative, returns -EINVAL.
+> > 
+> > But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
+> > has negative offsets. And we can't do any access via read/write
+> > to the file(device).
+> > 
+> > This patch introduce a flag S_VERYBIG and allow negative file
+> > offsets.
+> > 
+> > Changelog:
+> >  - fixed bug in rw_verify_area (it cannot be compiled)
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> >  drivers/char/mem.c |   23 +++++++++++++----------
+> >  fs/proc/base.c     |    2 ++
+> >  fs/read_write.c    |   20 ++++++++++++++++++--
+> >  include/linux/fs.h |    2 ++
+> >  4 files changed, 35 insertions(+), 12 deletions(-)
+> > 
+> > Index: mmotm-2.6.31-Sep14/fs/read_write.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/fs/read_write.c
+> > +++ mmotm-2.6.31-Sep14/fs/read_write.c
+> > @@ -205,6 +205,16 @@ bad:
+> >  }
+> >  #endif
+> >  
+> > +static bool
+> > +__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
+> > +{
+> > +	if (pos + count < pos)
+> > +		return -EOVERFLOW;
+> > +	if (IS_VERYBIG(inode))
+> > +		return 0;
+> > +	return -EINVAL;
 > 
-> I think having an option to put PV guests into an HVM container is a
-> good one, but as I mentioned in the other mail, I don't think this is
-> the right approach.
+> This always return negative values for !IS_VERYBIG inodes,
+> looks weird at least.
 > 
-> It would be much better to make it so that an unmodified guest works in
-> such a mode; even with no specific optimisations the guest would get
-> benefit from faster kernel<->usermode switches.
+I need to refresh my eyes, too...
+Thanks, will fix.. return value is not bool, but int...
 
-By unmodified you mean ordinary PV guest? It's an interesting comparison --
-PVing an HVM guest, versus HVMing (to some extent) a PV guest.
 
- -- Keir
 
-> Then we can add specific optimisations to take advantage of, say,
-> running in ring 0 (=fast syscalls) and having access to HAP hardware
-> (=direct pagetable updates, no pinning).
 
+> > +}
+> > +
+> >  /*
+> >   * rw_verify_area doesn't like huge counts. We limit
+> >   * them to something that fits in "int" so that others
+> > @@ -222,8 +232,11 @@ int rw_verify_area(int read_write, struc
+> >  	if (unlikely((ssize_t) count < 0))
+> >  		return retval;
+> >  	pos = *ppos;
+> > -	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+> > -		return retval;
+> > +	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
+> > +		retval = __negative_fpos_check(inode, pos, count);
+> > +		if (retval)
+> > +			return retval;
+> > +	}
+> >  
+> >  	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+> >  		retval = locks_mandatory_area(
+> > Index: mmotm-2.6.31-Sep14/include/linux/fs.h
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/include/linux/fs.h
+> > +++ mmotm-2.6.31-Sep14/include/linux/fs.h
+> > @@ -231,6 +231,7 @@ struct inodes_stat_t {
+> >  #define S_NOCMTIME	128	/* Do not update file c/mtime */
+> >  #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+> >  #define S_PRIVATE	512	/* Inode is fs-internal */
+> > +#define S_VERYBIG	1024	/* Allow file's loff_t can be negative */
+> >  
+> >  /*
+> >   * Note that nosuid etc flags are inode-specific: setting some file-system
+> > @@ -265,6 +266,7 @@ struct inodes_stat_t {
+> >  #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
+> >  #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
+> >  #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
+> > +#define IS_VERYBIG(inode)	((inode)->i_flags & S_VERYBIG)
+> >  
+> >  /* the read-only stuff doesn't really belong here, but any other place is
+> >     probably as bad and I don't want to create yet another include file. */
+> > Index: mmotm-2.6.31-Sep14/drivers/char/mem.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/drivers/char/mem.c
+> > +++ mmotm-2.6.31-Sep14/drivers/char/mem.c
+> > @@ -825,22 +825,23 @@ static const struct memdev {
+> >  	const char *name;
+> >  	const struct file_operations *fops;
+> >  	struct backing_dev_info *dev_info;
+> > +	bool	verybig;
+> >  } devlist[] = {
+> > -	[ 1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi },
+> > +	[1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi, true },
+> >  #ifdef CONFIG_DEVKMEM
+> > -	[ 2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi },
+> > +	[2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi, true },
+> >  #endif
+> > -	[ 3] = {"null", &null_fops, NULL },
+> > +	[3] = {"null", &null_fops, NULL, false },
+> >  #ifdef CONFIG_DEVPORT
+> > -	[ 4] = { "port", &port_fops, NULL },
+> > +	[4] = { "port", &port_fops, NULL, false },
+> >  #endif
+> > -	[ 5] = { "zero", &zero_fops, &zero_bdi },
+> > -	[ 6] = { "full", &full_fops, NULL },
+> > -	[ 7] = { "random", &random_fops, NULL },
+> > -	[ 9] = { "urandom", &urandom_fops, NULL },
+> > -	[11] = { "kmsg", &kmsg_fops, NULL },
+> > +	[5] = { "zero", &zero_fops, &zero_bdi, false },
+> > +	[6] = { "full", &full_fops, NULL, false },
+> > +	[7] = { "random", &random_fops, NULL, false },
+> > +	[9] = { "urandom", &urandom_fops, NULL, false },
+> > +	[11] = { "kmsg", &kmsg_fops, NULL, false },
+> >  #ifdef CONFIG_CRASH_DUMP
+> > -	[12] = { "oldmem", &oldmem_fops, NULL },
+> > +	[12] = { "oldmem", &oldmem_fops, NULL, false },
+> >  #endif
+> 
+> How about make the fields aligned? That would look much nicer :)
+> 
+checkpatch.pl complains  agaisnt [ 5]...but ok, ajust "=" placement.
+
+Thanks,
+-kame
+
+
+> Thanks,
+> Fengguang
+> 
+> >  };
+> >  
+> > @@ -868,6 +869,8 @@ static int memory_open(struct inode *ino
+> >  		ret = dev->fops->open(inode, filp);
+> >  	else
+> >  		ret = 0;
+> > +	if (dev->verybig)
+> > +		inode->i_flags |= S_VERYBIG;
+> >  out:
+> >  	unlock_kernel();
+> >  	return ret;
+> > Index: mmotm-2.6.31-Sep14/fs/proc/base.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
+> > +++ mmotm-2.6.31-Sep14/fs/proc/base.c
+> > @@ -779,6 +779,8 @@ static const struct file_operations proc
+> >  static int mem_open(struct inode* inode, struct file* file)
+> >  {
+> >  	file->private_data = (void*)((long)current->self_exec_id);
+> > +	/* this file is read only and we can catch out-pf-range */
+> > +	inode->i_flags |= S_VERYBIG;
+> >  	return 0;
+> >  }
+> >  
+> 
 
