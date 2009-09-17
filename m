@@ -1,183 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZIQWVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZIQWSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787AbZIQWVV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 18:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbZIQWVU
+	id S1752704AbZIQWSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 18:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZIQWSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 18:21:20 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:40624 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbZIQWVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 18:21:19 -0400
-Date: Thu, 17 Sep 2009 15:21:23 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RCU callbacks and TREE_PREEMPT_RCU
-Message-ID: <20090917222123.GF6766@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1253110641.31751.92.camel@pc1117.cambridge.arm.com> <20090916152929.GA6737@linux.vnet.ibm.com> <1253115255.31751.96.camel@pc1117.cambridge.arm.com> <20090916154716.GC6737@linux.vnet.ibm.com> <20090916155719.GA10588@linux.vnet.ibm.com> <1253143186.9006.0.camel@queen> <20090916232609.GK6737@linux.vnet.ibm.com> <1253176142.3615.3.camel@queen>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253176142.3615.3.camel@queen>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 17 Sep 2009 18:18:44 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:60631 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbZIQWSo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 18:18:44 -0400
+Subject: Re: [PATCH v2] arm: remove unused code in delay.S
+From: Steve Chen <schen@mvista.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Felipe Contreras <felipe.contreras@gmail.com>,
+       linux-kernel@vger.kernel.org, Marek Vasut <marek.vasut@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org,
+       Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <20090917213723.GC10599@shareable.org>
+References: <1253017761.3273.117.camel@linux-1lbu>
+	 <200909151541.08852.marek.vasut@gmail.com>
+	 <1253032210.3273.128.camel@linux-1lbu>
+	 <94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com>
+	 <1253043875.3273.131.camel@linux-1lbu>
+	 <m3k4zzdimy.fsf@intrepid.localdomain>
+	 <20090916134721.GA11218@n2100.arm.linux.org.uk>
+	 <20090917193257.GA10599@shareable.org>
+	 <20090917194119.GA12510@n2100.arm.linux.org.uk>
+	 <1253222978.3273.236.camel@linux-1lbu>
+	 <20090917213723.GC10599@shareable.org>
+Content-Type: text/plain
+Date: Thu, 17 Sep 2009 17:25:04 -0500
+Message-Id: <1253226304.3273.249.camel@linux-1lbu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 10:29:02AM +0200, Eric Sesterhenn wrote:
-> On Wed, 2009-09-16 at 16:26 -0700, Paul E. McKenney wrote:
-> > On Thu, Sep 17, 2009 at 01:19:46AM +0200, Eric Sesterhenn wrote:
-> > > On Wed, 2009-09-16 at 08:57 -0700, Paul E. McKenney wrote:
-> > > > On Wed, Sep 16, 2009 at 08:47:16AM -0700, Paul E. McKenney wrote:
-> > > > > On Wed, Sep 16, 2009 at 04:34:15PM +0100, Catalin Marinas wrote:
-> > > > > > On Wed, 2009-09-16 at 08:29 -0700, Paul E. McKenney wrote:
-> > > > > > > On Wed, Sep 16, 2009 at 03:17:21PM +0100, Catalin Marinas wrote:
-> > > > > > > > When TREE_PREEMPT_RCU is enabled, the rcu list traversing above fails
-> > > > > > > > with access to 0x6b6b6b6b but it is fine with TREE_PREEMPT_RCU=n and
-> > > > > > > > TREE_RCU=y. During clean-up, kmemleak objects should no longer be freed
-> > > > > > > > by other means since kmemleak was disabled and all callbacks are
-> > > > > > > > ignored. The system is a 900Mhz P3, 256MB RAM, CONFIG_SMP=n.
-> > > > > > > > 
-> > > > > > > > Is there something I'm doing wrong in kmemleak or a bug with RCU
-> > > > > > > > preemption? The kernel oops looks like this:
-> > > > > > > 
-> > > > > > > From your description and the code above, I must suspect a bug with
-> > > > > > > RCU preemption.  A new one, as the only bugs I am currently chasing
-> > > > > > > involve NR_CPUS>32 (>64 on 64-bit systems).
-> > > > > > > 
-> > > > > > > CONFIG_SMP=n implies NR_CPUS==1 in your build, correct?
-> > > > > > 
-> > > > > > CONFIG_NR_CPUS=1.
-> > > > > 
-> > > > > I was afraid of that.  ;-)
-> > > > 
-> > > > PS to previous -- there -is- a bug in mainline for TREE_PREEMPT_RCU for
-> > > > single-CPU operation, but it is with synchronize_rcu() rather than
-> > > > call_rcu().  The fix is in tip/core/urgent, commit #366b04ca.  Or see
-> > > > the following patch.
-> > > > 
-> > > > So, could you please give the following patch a try?
-> > > 
-> > > Sadly this does not fix the issue, is there any further information I
-> > > can provide to you?
-> > 
-> > :-(
-> > 
-> > Would you be willing to give the attached diagnostic patch a go?
-> > 
-> > 							Thanx, Paul
+On Thu, 2009-09-17 at 22:37 +0100, Jamie Lokier wrote:
+> Steve Chen wrote:
+> > +	help
+> > +	  Enable this if observing longer than expected delays.  This code
+> > +	  improves delay accuracy for some CPUs.  However, it can also cause
+> > +	  delay duration to be too short for others which leads to stability
+> > +	  issues.
+> > +
+> > +	  In other words, do not enable unless you can guarantee that the
+> > +	  processor (or ALL of the processors if building a generic kernel)
+> > +	  delays for at least the time requested after enabling.
+> > +
+> >  endmenu
 > 
-> It does not apply cleanly against current -git
-> (rcu_preempt_check_blocked_tasks is missing in my rcutree_plugin.h for
-> example) I tried to apply it by hand as good as possible, and will test
-> it today.
+> It would be very helpful to mention which CPUs are affected.
+> Ok, we don't know exactly...
 > 
-> root@whiterabbit:/usr/src/linux# patch -p1 < ~/RCU_callbacks_and_TREE_PREEMPT_RCU-debug
-> patching file kernel/rcutree.c
-> Hunk #1 FAILED at 623.
-> Hunk #2 FAILED at 657.
-> Hunk #3 succeeded at 722 (offset 19 lines).
-> Hunk #4 succeeded at 740 (offset 19 lines).
-> Hunk #5 succeeded at 765 (offset 19 lines).
-> Hunk #6 succeeded at 877 (offset 19 lines).
-> Hunk #7 succeeded at 886 (offset 19 lines).
-> 2 out of 7 hunks FAILED -- saving rejects to file kernel/rcutree.c.rej
-> patching file kernel/rcutree_plugin.h
-> Hunk #1 FAILED at 206.
-> Hunk #2 succeeded at 206 (offset -10 lines).
-> Hunk #3 FAILED at 270.
-> Hunk #4 succeeded at 283 (offset -22 lines).
-> Hunk #5 succeeded at 296 (offset -22 lines).
-> Hunk #6 succeeded at 473 (offset -23 lines).
-> 2 out of 6 hunks FAILED -- saving rejects to file
-> kernel/rcutree_plugin.h.rej
+> But Russell has stated that ARM610 and ARM710 benefit from enabling
+> the code, and that it specifically must not be enabled for StrongARM.
+> 
+> Here's an additional paragraph to add on the end:
+> 
+> 	ARM610 and ARM710 are known to benefit from enabling this option.
+> 	It should not be enabled for StrongARMs, because it is known
+> 	to produce too short delays on those.
+> 
+Sure, I can add this paragraph in the next revision.
 
-Sigh!!!  I lost track of what was in mainline vs. -tip.  You certainly
-need the following patch from -tip as well.
+> Maybe you can adjust the config selectors and default to match?
 
-Please accept apologies for my confusion!!!
+I'm not sure about this one.  For one thing, in the last e-mail between
+you and Russel I saw
 
-							Thanx, Paul
+>> Btw, do you know where PT110 fits in?  Is it like StrongARM (SA110)?
+> No idea.
 
-------------------------------------------------------------------------
+Not to mention the difficulties to account for all the possible
+permutations for kernels that is built for multiple CPUs.  Perhaps we
+can start a list of the processors that should have this flag enabled
+and the list of processors should have the flag disabled (instead of the
+paragraph you suggested).  This way, people can just add to the list as
+they experiment with this flag on whatever CPU version that they worked
+on.
 
-Commit-ID:  de078d875cc7fc709f7818f26d38389c04369826
-Gitweb:     http://git.kernel.org/tip/de078d875cc7fc709f7818f26d38389c04369826
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Tue, 8 Sep 2009 15:54:36 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 18 Sep 2009 00:04:54 +0200
+Regards,
 
-rcu: Need to update rnp->gpnum if preemptable RCU is to be reliable
-
-Without this patch, tasks preempted in RCU read-side critical
-sections can fail to block the grace period, given that
-rnp->gpnum is used to determine which rnp->blocked_tasks[]
-element the preempted task is enqueued on.
-
-Before the patch, rnp->gpnum is always zero, so preempted tasks
-are always enqueued on rnp->blocked_tasks[0], which is correct
-only when the current CPU has not checked into the current
-grace period and the grace-period number is even, or,
-similarly, if the current CPU -has- checked into the current
-grace period and the grace-period number is odd.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: akpm@linux-foundation.org
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josht@linux.vnet.ibm.com
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-LKML-Reference: <12524504771622-git-send-email->
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/rcutree.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 6b11b07..c634a92 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -632,6 +632,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	/* Special-case the common single-level case. */
- 	if (NUM_RCU_NODES == 1) {
- 		rnp->qsmask = rnp->qsmaskinit;
-+		rnp->gpnum = rsp->gpnum;
- 		rsp->signaled = RCU_SIGNAL_INIT; /* force_quiescent_state OK. */
- 		spin_unlock_irqrestore(&rnp->lock, flags);
- 		return;
-@@ -657,8 +658,10 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	 */
-
- 	rnp_end = rsp->level[NUM_RCU_LVLS - 1];
--	for (rnp_cur = &rsp->node[0]; rnp_cur < rnp_end; rnp_cur++)
-+	for (rnp_cur = &rsp->node[0]; rnp_cur < rnp_end; rnp_cur++) {
- 		rnp_cur->qsmask = rnp_cur->qsmaskinit;
-+		rnp->gpnum = rsp->gpnum;
-+	}
-
- 	/*
- 	 * Now set up the leaf nodes.  Here we must be careful.  First,
-@@ -679,6 +682,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	for (; rnp_cur < rnp_end; rnp_cur++) {
- 		spin_lock(&rnp_cur->lock);	/* irqs already disabled. */
- 		rnp_cur->qsmask = rnp_cur->qsmaskinit;
-+		rnp->gpnum = rsp->gpnum;
- 		spin_unlock(&rnp_cur->lock);	/* irqs already disabled. */
- 	}
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Steve
 
