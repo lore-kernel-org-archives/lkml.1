@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752349AbZIQOQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZIQORP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752349AbZIQOQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 10:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZIQOQz
+	id S1753019AbZIQORP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 10:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZIQORO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 10:16:55 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:64570 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbZIQOQy convert rfc822-to-8bit (ORCPT
+	Thu, 17 Sep 2009 10:17:14 -0400
+Received: from mail.windriver.com ([147.11.1.11]:61754 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752797AbZIQORM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 10:16:54 -0400
+	Thu, 17 Sep 2009 10:17:12 -0400
+Message-ID: <4AB244E0.1060109@windriver.com>
+Date: Thu, 17 Sep 2009 09:17:04 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <4AB1A8FD.2010805@gmail.com>
-References: <cover.1251388414.git.mst@redhat.com> <4AAFF437.7060100@gmail.com>
-	 <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com>
-	 <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com>
-	 <4AB10B67.2050108@redhat.com> <4AB13B09.5040308@gmail.com>
-	 <4AB151D7.10402@redhat.com> <4AB1A8FD.2010805@gmail.com>
-Date: Thu, 17 Sep 2009 09:16:56 -0500
-Message-ID: <90eb1dc70909170716i5de0b909tf69c93e679f5fbc8@mail.gmail.com>
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-From: Javier Guerra <javier@guerrag.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Alan Stern <stern@rowland.harvard.edu>, gregkh@suse.de,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] usb console,usb-serial: pass initial console baud
+ on to first tty open
+References: <Pine.LNX.4.44L0.0909162344350.24376-100000@netrider.rowland.org><4AB1B860.4080105@windriver.com><20090917101441.478b3e9b@lxorguk.ukuu.org.uk><4AB22892.8000308@windriver.com><20090917140828.21341c05@lxorguk.ukuu.org.uk> <20090917141913.47f9451b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090917141913.47f9451b@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Sep 2009 14:17:04.0563 (UTC) FILETIME=[88121830:01CA37A1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 10:11 PM, Gregory Haskins
-<gregory.haskins@gmail.com> wrote:
-> It is certainly not a requirement to make said
-> chip somehow work with existing drivers/facilities on bare metal, per
-> se.  Why should virtual systems be different?
+Alan Cox wrote:
+> On Thu, 17 Sep 2009 14:08:28 +0100
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>
+>   
+>>> -			memset(&dummy, 0, sizeof(struct ktermios));
+>>> -			tty->termios = termios;
+>>> +			tty->termios = &usb_serial_tty_driver->init_termios;
+>>>       
+>> That will corrupt the master one which is a reference used for many ports.
+>>
+>>     
 
-i'd guess it's an issue of support resources.  a hardware developer
-creates a chip and immediately sells it, getting small but assured
-revenue, with it they write (or pays to write) drivers for a couple of
-releases, and stop to manufacture it as soon as it's not profitable.
+I agree. 
 
-software has a much longer lifetime, especially at the platform-level
-(and KVM is a platform for a lot of us). also, being GPL, it's cheaper
-to produce but has (much!) more limited resources.  creating a new
-support issue is a scary thought.
+>> You need the serial_install stuff or something similar resurrecting to do
+>> this properly.
+>>     
+>
+> Here's a suggestion on how to do it.
+>
+> Add a tty->ops->init_termios()
+>
+> Make tty_init_termios() read
+>
+>        if (tp == NULL) {
+>                 tp = kzalloc(sizeof(struct ktermios[2]), GFP_KERNEL);
+>                 if (tp == NULL)
+>                         return -ENOMEM;
+>                 memcpy(tp, &tty->driver->init_termios,
+>                                                 sizeof(struct ktermios));
+> 		if (tty->ops->init_termios)
+> 			tty->ops->init_termios(tty);
+>                 tty->driver->termios[idx] = tp;
+>         }
+>
+> Thats a good deal cleaner than the ->install override in the USB patches
+> Greg inherited and will be usable for cleaning up USB stuff too.
+>
+>   
+Sure we can add another layer of init_termios callbacks, but where is
+the right place to store the termios per console?
 
+Should the "struct console co*" get a new member for the baud, or should
+it get a termios?  The source of the problem is how to inherit the
+termios setting from the first user (the console code in this case).
 
--- 
-Javier
+Before making several more implementations it is probably worth
+discussing few more of the details.  In the current code the ->install
+override has the opportunity to apply the fixup by copying something
+from a "struct console co* termios" if one existed.
+
+Certainly you could do the same thing with the proposed call back you
+mentioned, but then the serial_install() needs to be removed from the
+usb code and the power management setup would need to find a new home...
+or a copy of the new call back would need to go into the
+serial_install() as well.
+
+Jason.
