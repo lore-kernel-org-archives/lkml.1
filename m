@@ -1,132 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZIQDBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbZIQDGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759715AbZIQDBX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 23:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758068AbZIQDBW
+	id S1758318AbZIQDGQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 23:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbZIQDGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 23:01:22 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62731 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754503AbZIQDBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 23:01:22 -0400
-Message-ID: <4AB1A652.1010000@cn.fujitsu.com>
-Date: Thu, 17 Sep 2009 11:00:34 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 16 Sep 2009 23:06:15 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:64373 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751333AbZIQDGO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 23:06:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=DanFoA5R5zRcEUalYkRohsFmmr51QK7Ph+DOt2RAVL5lnRF/vKVFdpM0k/CRJrCSlA
+         MQELk7smJ5kPolp1ZkpSX+0T/j3UMMowXi+1N6iWuBh6nVHyFyEnnT/g6+XvWLIoHcrK
+         OtBg3PYEwpQ3vonakgg7MLApGv2m30DuBa9mY=
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: + generic-ipi-fix-the-race-between-generic_smp_call_function_-and-hotplug_cfd.patch
- added to -mm tree
-References: <200907310030.n6V0Uqgw001644@imap1.linux-foundation.org>	 <1252616988.7205.102.camel@laptop>  <4AAA0001.2060703@cn.fujitsu.com>	 <1252696132.3756.21.camel@sbs-t61.sc.intel.com>	 <4AADEF2F.5080504@cn.fujitsu.com>	 <1252973802.2899.88.camel@sbs-t61.sc.intel.com>	 <4AAEF5DC.4070308@cn.fujitsu.com> <1253067602.2667.13.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1253067602.2667.13.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <84889d57a3943f47b3ee0df6d1ff25c2.squirrel@webmail-b.css.fujitsu.com>
+References: <20090914032901.GA16189@localhost>
+	 <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2375c9f90909160120u151b0449x2eac665080a3ae82@mail.gmail.com>
+	 <20090916174434.219ddd04.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2375c9f90909160213q7e011117hd4e4ea2f386ed42a@mail.gmail.com>
+	 <84889d57a3943f47b3ee0df6d1ff25c2.squirrel@webmail-b.css.fujitsu.com>
+Date: Thu, 17 Sep 2009 11:06:18 +0800
+Message-ID: <2375c9f90909162006x624496afy4979b4ce94196d2f@mail.gmail.com>
+Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling (Was 
+	Re: Question: how to handle too big f_pos
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       oleg@redhat.com
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/9/16 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+> Am�+1rico_Wang wrote:
+>> On Wed, Sep 16, 2009 at 4:44 PM, KAMEZAWA Hiroyuki
+>> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>> Ah, sorry. I should CC: you.
+>>
+>>
+>> No problem. :)
+>>
+>>>> > --- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
+>>>> > +++ mmotm-2.6.31-Sep14/fs/proc/base.c
+>>>> > @@ -903,18 +903,30 @@ out_no_task:
+>>>> >
+>>>> > ?loff_t mem_lseek(struct file *file, loff_t offset, int orig)
+>>>> > ?{
+>>>> > + ? ? ? struct task_struct *task =
+>>>> get_proc_task(file->f_path.dentry->d_inode);
+>>>> > + ? ? ? unsigned long long new_offset = -EINVAL;
+>>>>
+>>>>
+>>>> Why not make 'new_offset' as loff_t? This can make your code easier.
+>>>>
+>>> loff_t is "long long", I wanted "unsigned long long" for showing
+>>> f_pos here is treated as "unsigned".
+>>>
+>>
+>>
+>> Yeah, the same as for __verify_negative_pos_range(), right...
+>>
+>>
+>> <snip>
+>>
+>>>> > ? ? ? ?}
+>>>> > - ? ? ? force_successful_syscall_return();
+>>>> > - ? ? ? return file->f_pos;
+>>>> > + ? ? ? if (new_offset < (unsigned long long)TASK_SIZE_OF(task)) {
+>>>>
+>>>>
+>>>> Hmm, why this check?
+>>>>
+>>> 2 reasons.
+>>>
+>>> ?1. If this lseek has to check something, this is it.
+>>> ?2. On architecture where 32bit program can ran on 64bit,
+>>> ? ? moving f_pos above 4G is out-of-range, for example.
+>>>
+>>> But mem_read() will catch any bad f_pos, anyway. So, just making
+>>> allow all f_pos here is maybe a choice. Considering lseek,
+>>> providing this range check here is not so bad.
+>>
+>> Ok, I misunderstood the macro 'TASK_SIZE_OF', then no problem.
+>>
+>> Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+>>
+> Ah, very sorry. I noticed I didn't handle pread/pwrite, splice, etc...
+> I'll do retry.
 
+Yes? Not necessary...
 
-Suresh Siddha wrote:
-> On Mon, 2009-09-14 at 19:03 -0700, Xiao Guangrong wrote:
->>> Your current fix is not clean and not complete in my opinion (as calling
->>> interrupt handlers manually and not doing the callbacks etc might cause
->>> other side affects). Thanks.
->> It is not the last version and doing the callbacks in another patch,
->> see below URL please:
->> http://marc.info/?l=linux-mm-commits&m=124900028228350&w=2
-> 
-> I am referring to this latest patch only. We are calling the interrupt
-> handler manually and not doing the callbacks in that context. In future,
-> we might see other side affects if we miss some of these smp ipi's.
-> 
-
-um, maybe you are right.
-
-> Clean solution is to ensure that there are no unhandled smp call
-> function handlers and then continue with the cpu offline.
-> 
-
-Yeah, I agree it.
-
->> Another problem is that all CPU must call quiesce_smp_call_functions() here, but only
->> dying CPU need do it.
-> 
-> In stop_machine() all cpu's will wait for each other to come to the
-> rendezvous point. so this is completely ok (infact this is what is
-> happening if some cpu is already handling some ipi's etc. I am just
-> making it more explicit).
-
-Waiting all cpu handle its IPI interruption in stop_machine() path will make 
-it slower, I'm not sure it's OK.
-
-> 
->>>  				local_irq_disable();
->>>  				hard_irq_disable();
->> It will cause another race, if CPU A send a IPI interruption after CPU B call
->> quiesce_smp_call_functions() and disable IRQ, it will case the same problem.
->> (in this time, CPU B is enter stop machine, but CPU A is not)
-> 
-> No. By the time we call quiesce_ipis(), all the cpu's are already in
-> stop machine FIFO threads and no one else can send IPI (i.e, all the
-> cpus have moved past the STOPMACHINE_PREPARE state). This is when we are
-> calling the quiesce_smp_call_functions().
-> 
-
-Sorry for let you misunderstand, It's not clear explanation here.
-
-The preempt is enabled when CPU enter STOPMACHINE_DISABLE_IRQ state, so
-other task will preempt it and send IPI interruption.
-But, Andrew point out my mistake that the stop machine workqueue thread
-is the highest priority and with "SCHED_FIFO" scheduler, so It not happen,
-please ignore this comment.
-
-How about manual check/handle pending IPI interruption in the CPU context?
-like this:
-
----
- include/linux/smp.h |    3 +++
- kernel/cpu.c        |    3 +++
- 2 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index 9e3d8af..a9ea518 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -95,6 +95,9 @@ void ipi_call_lock(void);
- void ipi_call_unlock(void);
- void ipi_call_lock_irq(void);
- void ipi_call_unlock_irq(void);
-+#else
-+static inline void generic_smp_call_function_single_interrupt(void) { }
-+static inline void generic_smp_call_function_interrupt(void) { }
- #endif
- 
- /*
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 6ba0f1e..4ba7f92 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -173,6 +173,9 @@ static int __ref take_cpu_down(void *_param)
- 	struct take_cpu_down_param *param = _param;
- 	int err;
- 
-+	generic_smp_call_function_interrupt();
-+	generic_smp_call_function_single_interrupt();
-+
- 	/* Ensure this CPU doesn't handle any more interrupts. */
- 	err = __cpu_disable();
- 	if (err < 0)
--- 
-1.6.1.2
-
-Thanks,
-Xiao
+In man page, it said /proc/<pid>/mem can be accessed via open(),
+read(), fseek(), no pread(), no splice()...
