@@ -1,157 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbZIQFGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZIQFGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbZIQFGl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 01:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZIQFGl
+	id S1753486AbZIQFGt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 01:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZIQFGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 01:06:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43448 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752716AbZIQFGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 01:06:40 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/nf74iqZ7np2l5jFREILphpcLCNzulZTIZVCmEpU
-	aCzVYHJKEsevyM
-Subject: Re: [patchlet] Re: Epic regression in throughput since v2.6.23
-From: Mike Galbraith <efault@gmx.de>
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1253163339.15767.62.camel@marge.simson.net>
-References: <20090906205952.GA6516@elte.hu>
-	 <87hbvdiogq.fsf@depni.sinp.msu.ru> <873a6xdqwq.fsf@depni.sinp.msu.ru>
-	 <20090909155223.GA12065@elte.hu> <87my53vo6d.fsf@depni.sinp.msu.ru>
-	 <20090910065306.GB3920@elte.hu> <87ljkm9yew.fsf@depni.sinp.msu.ru>
-	 <20090911061024.GA27833@elte.hu> <87iqfmx3tr.fsf@depni.sinp.msu.ru>
-	 <20090916194507.GA27456@elte.hu>  <87fxamiim4.fsf@depni.sinp.msu.ru>
-	 <1253163339.15767.62.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 17 Sep 2009 07:06:40 +0200
-Message-Id: <1253164000.15767.65.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
+	Thu, 17 Sep 2009 01:06:45 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:60229 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752735AbZIQFGm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 01:06:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=sJxayN4rYjGZY9aw1UXAgCNRuPM1uKl5ADgcOmSBVBtutuXWbBIiEQTpYU4Al/GbTn
+         0t1VvzzlpDtbHuRSyep2Y27wtAk46kWNRmLv8tDC33C7EZy8dvvdpMGhWq3SiBr+AfJX
+         cxXRPnXoLffCdaZwIXdLYFQrfg9MCiZqXyEac=
+Date: Thu, 17 Sep 2009 07:06:41 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       Jeff Mahoney <jeffm@suse.com>, Chris Mason <chris.mason@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>
+Subject: [PATCH] kill-the-bkl/reiserfs: Fix induced mm->mmap_sem to
+	sysfs_mutex dependency
+Message-ID: <20090917050639.GA5060@nowhere>
+References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com> <20090826201330.GA18761@orion> <20090914203749.GF6045@nowhere> <a4423d670909141433g18659aay6e177b1302e5b4a0@mail.gmail.com> <20090916203747.GB5068@nowhere> <a4423d670909161637r67c933a0n2c142898ea493f22@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a4423d670909161637r67c933a0n2c142898ea493f22@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aw poo, forgot to add Peter to CC list before poking xmit.
+On Thu, Sep 17, 2009 at 03:37:22AM +0400, Alexander Beregalov wrote:
+> 2009/9/17 Frederic Weisbecker <fweisbec@gmail.com>:
+> > On Tue, Sep 15, 2009 at 01:33:42AM +0400, Alexander Beregalov wrote:
+> >> > Hi Alexander,
+> >> >
+> >> > It should be fixed now, still in the following tree:
+> >>
+> >> Hi!
+> >> Another one, similar:
+> >> It is v2.6.31-3123-g99bc470 plus your 805031859(kill-the-bkl/reiserfs:
+> >> panic in case of lock imbalance), UP.
+> >
+> >
+> >
+> > Although I can't reproduce it, I think I see how that can happen.
+> >
+> > On mount time, we have the following dependency:
+> >
+> > reiserfs_lock -> bdev_mutex -> sysfs_mutex
+> >
+> > which happens while calling journal_init_dev() because
+> > we open the device there.
+> >
+> > But also in case of mmap on a reiserfs filesystem we
+> > may call reiserfs_readpages(), holding the reiserfs lock
+> > while already holding mm->mmap_sem
+> >
+> > The above dependency is then updated:
+> >
+> > mmap_sem
+> >     |
+> >     |
+> >     ------- reiserfs_lock -> bdev_mutex -> sysfs_mutex
+> >
+> > And later, while doing a readdir() on a sysfs directory,
+> > sysfs calls filldir, which might_fault, and then might grab
+> > mmap_sem. filldir is called there while holding sys_mutex,
+> > creating the new following dependency
+> >
+> > sysfs_mutex -> mmap_sem
+> >
+> > Hence the inversion.
+> > It seems the deadlock can't ever happen, I even don't see
+> > corner cases where it could happen.
+> >
+> > But still, this dependency should disappear.
+> >
+> > Could you please tell me if the following patch makes it shut down?
+> >
+> > Otherwise, I may need your config. I don't know why, but I suspect
+> > the lock_acquire(mmap_sem) in might_fault doesn't trigger needed the lockdep
+> > check, although I have the appropriate debug config, at least it seems.
+> > But anyway, it should also happen in my box but it doesn't...
+> >
+> > Thanks!
+> >
+> > The patch:
+> Yes, it is working!
 
-On Thu, 2009-09-17 at 06:55 +0200, Mike Galbraith wrote:
-> On Wed, 2009-09-16 at 23:18 +0000, Serge Belyshev wrote:
-> > Ingo Molnar <mingo@elte.hu> writes:
-> > 
-> > > Ok, i think we've got a handle on that finally - mind checking latest 
-> > > -tip?
-> > 
-> > Kernel build benchmark:
-> > http://img11.imageshack.us/img11/4544/makej20090916.png
-> > 
-> > I have also repeated video encode benchmarks described here:
-> > http://article.gmane.org/gmane.linux.kernel/889444
-> > 
-> > "x264 --preset ultrafast":
-> > http://img11.imageshack.us/img11/9020/ultrafast20090916.png
-> > 
-> > "x264 --preset medium":
-> > http://img11.imageshack.us/img11/7729/medium20090916.png
-> 
-> Pre-ramble..
-> Most of the performance differences I've examined in all these CFS vs
-> BFS threads boil down to fair scheduler vs unfair scheduler.  If you
-> favor hogs, naturally, hogs getting more bandwidth perform better than
-> hogs getting their fair share.  That's wonderful for hogs, somewhat less
-> than wonderful for their competition.  That fairness is not necessarily
-> the best thing for throughput is well known.  If you've got a single
-> dissimilar task load running alone, favoring hogs may perform better..
-> or not.  What about mixed loads though?  Is the throughput of frequent
-> switchers less important than hog throughput?
-> 
-> Moving right along..
-> 
-> That x264 thing uncovered an interesting issue within CFS.  That load is
-> a frequent clone() customer, and when it has to compete against a not so
-> fork/clone happy load, it suffers mightily.  Even when running solo, ie
-> only competing against it's own siblings, IFF sleeper fairness is
-> enabled, the pain of thread startup latency is quite visible.  With
-> concurrent loads, it is agonizingly painful.
-> 
-> concurrent load test
-> tbench 8 vs
-> x264 --preset ultrafast --no-scenecut --sync-lookahead 0 --qp 20 -o /dev/null --threads 8 soccer_4cif.y4m
-> 
-> (i can turn knobs and get whatever numbers i want, including
-> outperforming bfs, concurrent or solo.. not the point)
-> 
-> START_DEBIT
-> encoded 600 frames, 44.29 fps, 22096.60 kb/s
-> encoded 600 frames, 43.59 fps, 22096.60 kb/s
-> encoded 600 frames, 43.78 fps, 22096.60 kb/s
-> encoded 600 frames, 43.77 fps, 22096.60 kb/s
-> encoded 600 frames, 45.67 fps, 22096.60 kb/s
-> 
-> 8   1068214   672.35 MB/sec  execute  57 sec
-> 8   1083785   672.16 MB/sec  execute  58 sec
-> 8   1099188   672.18 MB/sec  execute  59 sec
-> 8   1114626   672.00 MB/sec  cleanup  60 sec
-> 8   1114626   671.96 MB/sec  cleanup  60 sec
-> 
-> NO_START_DEBIT
-> encoded 600 frames, 123.19 fps, 22096.60 kb/s
-> encoded 600 frames, 123.85 fps, 22096.60 kb/s
-> encoded 600 frames, 120.05 fps, 22096.60 kb/s
-> encoded 600 frames, 123.43 fps, 22096.60 kb/s
-> encoded 600 frames, 121.27 fps, 22096.60 kb/s
-> 
-> 8    848135   533.79 MB/sec  execute  57 sec
-> 8    860829   534.08 MB/sec  execute  58 sec
-> 8    872840   533.74 MB/sec  execute  59 sec
-> 8    885036   533.66 MB/sec  cleanup  60 sec
-> 8    885036   533.64 MB/sec  cleanup  60 sec
-> 
-> 2.6.31-bfs221-smp
-> encoded 600 frames, 169.00 fps, 22096.60 kb/s
-> encoded 600 frames, 163.85 fps, 22096.60 kb/s
-> encoded 600 frames, 161.00 fps, 22096.60 kb/s
-> encoded 600 frames, 155.57 fps, 22096.60 kb/s
-> encoded 600 frames, 162.01 fps, 22096.60 kb/s
-> 
-> 8    458328   287.67 MB/sec  execute  57 sec
-> 8    464442   288.68 MB/sec  execute  58 sec
-> 8    471129   288.71 MB/sec  execute  59 sec
-> 8    477643   288.61 MB/sec  cleanup  60 sec
-> 8    477643   288.60 MB/sec  cleanup  60 sec
-> 
-> patchlet:
-> 
-> sched: disable START_DEBIT.
-> 
-> START_DEBIT induces unfairness to loads which fork/clone frequently when they
-> must compete against loads which do not.
-> 
-> 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> LKML-Reference: <new-submission>
-> 
->  kernel/sched_features.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-> index d5059fd..2fc94a0 100644
-> --- a/kernel/sched_features.h
-> +++ b/kernel/sched_features.h
-> @@ -23,7 +23,7 @@ SCHED_FEAT(NORMALIZED_SLEEPER, 0)
->   * Place new tasks ahead so that they do not starve already running
->   * tasks
->   */
-> -SCHED_FEAT(START_DEBIT, 1)
-> +SCHED_FEAT(START_DEBIT, 0)
->  
->  /*
->   * Should wakeups try to preempt running tasks.
-> 
+
+Great, I've pushed the fix then, see the following patch.
+
+Thanks a lot Alexander!
+
+---
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Thu, 17 Sep 2009 05:31:37 +0200
+Subject: [PATCH] kill-the-bkl/reiserfs: Fix induced mm->mmap_sem to sysfs_mutex dependency
+
+Alexander Beregalov reported the following warning:
+
+	=======================================================
+	[ INFO: possible circular locking dependency detected ]
+	2.6.31-03149-gdcc030a #1
+	-------------------------------------------------------
+	udevadm/716 is trying to acquire lock:
+	 (&mm->mmap_sem){++++++}, at: [<c107249a>] might_fault+0x4a/0xa0
+
+	but task is already holding lock:
+	 (sysfs_mutex){+.+.+.}, at: [<c10cb9aa>] sysfs_readdir+0x5a/0x200
+
+	which lock already depends on the new lock.
+
+	the existing dependency chain (in reverse order) is:
+
+	-> #3 (sysfs_mutex){+.+.+.}:
+	       [...]
+
+	-> #2 (&bdev->bd_mutex){+.+.+.}:
+	       [...]
+
+	-> #1 (&REISERFS_SB(s)->lock){+.+.+.}:
+	       [...]
+
+	-> #0 (&mm->mmap_sem){++++++}:
+	       [...]
+
+On reiserfs mount path, we take the reiserfs lock and while
+initializing the journal, we open the device, taking the
+bdev->bd_mutex. Then rescan_partition() may signal the change
+to sysfs.
+
+We have then the following dependency:
+
+	reiserfs_lock -> bd_mutex -> sysfs_mutex
+
+Later, while entering reiserfs_readpage() after a pagefault in an
+mmaped reiserfs file, we are holding the mm->mmap_sem, and we are going
+to take the reiserfs lock too.
+We have then the following dependency:
+
+	mm->mmap_sem -> reiserfs_lock
+
+which, expanded with the previous dependency gives us:
+
+	mm->mmap_sem -> reiserfs_lock -> bd_mutex -> sysfs_mutex
+
+Now while entering the sysfs readdir path, we are holding the
+sysfs_mutex. And when we copy a directory entry to the user buffer, we
+might fault and then take the mm->mmap_sem lock. Which leads to the
+circular locking dependency reported.
+
+We can fix that by relaxing the reiserfs lock during the call to
+journal_init_dev(), which is the place where we open the mounted
+device.
+
+This is fine to relax the lock here because we are in the begining of
+the reiserfs mount path and there is nothing to protect at this time,
+the journal is not intialized.
+We just keep this lock around for paranoid reasons.
+
+Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
+Tested-by: Alexander Beregalov <a.beregalov@gmail.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jeff Mahoney <jeffm@suse.com>
+Cc: Chris Mason <chris.mason@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Laurent Riffard <laurent.riffard@free.fr>
+---
+ fs/reiserfs/journal.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
+
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index d23d6d7..04e3c42 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -2801,11 +2801,27 @@ int journal_init(struct super_block *sb, const char *j_dev_name,
+ 		goto free_and_return;
+ 	}
+ 
++	/*
++	 * We need to unlock here to avoid creating the following
++	 * dependency:
++	 * reiserfs_lock -> sysfs_mutex
++	 * Because the reiserfs mmap path creates the following dependency:
++	 * mm->mmap -> reiserfs_lock, hence we have
++	 * mm->mmap -> reiserfs_lock ->sysfs_mutex
++	 * This would ends up in a circular dependency with sysfs readdir path
++	 * which does sysfs_mutex -> mm->mmap_sem
++	 * This is fine because the reiserfs lock is useless in mount path,
++	 * at least until we call journal_begin. We keep it for paranoid
++	 * reasons.
++	 */
++	reiserfs_write_unlock(sb);
+ 	if (journal_init_dev(sb, journal, j_dev_name) != 0) {
++		reiserfs_write_lock(sb);
+ 		reiserfs_warning(sb, "sh-462",
+ 				 "unable to initialize jornal device");
+ 		goto free_and_return;
+ 	}
++	reiserfs_write_lock(sb);
+ 
+ 	rs = SB_DISK_SUPER_BLOCK(sb);
+ 
+-- 
+1.6.2.3
+
+
 
