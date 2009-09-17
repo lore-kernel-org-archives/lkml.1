@@ -1,23 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbZIQFmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbZIQFoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbZIQFmL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 01:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZIQFmK
+	id S1752970AbZIQFoE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 01:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZIQFoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 01:42:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39358 "EHLO
+	Thu, 17 Sep 2009 01:44:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41923 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751464AbZIQFmK (ORCPT
+	by vger.kernel.org with ESMTP id S1751691AbZIQFoC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 01:42:10 -0400
-Date: Wed, 16 Sep 2009 22:41:57 -0700
+	Thu, 17 Sep 2009 01:44:02 -0400
+Date: Wed, 16 Sep 2009 22:43:45 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make safe some helpers building on container_of
-Message-Id: <20090916224157.cfa621c4.akpm@linux-foundation.org>
-In-Reply-To: <20090914082700.8550.94087.stgit@szonett.ki.iif.hu>
-References: <20090914082700.8550.94087.stgit@szonett.ki.iif.hu>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, hpa@zytor.com, aarcange@redhat.com
+Subject: Re: [PATCHv2 1/2] mm: export use_mm/unuse_mm to modules
+Message-Id: <20090916224345.3b5212b4.akpm@linux-foundation.org>
+In-Reply-To: <20090917053817.GB6770@redhat.com>
+References: <cover.1249992497.git.mst@redhat.com>
+	<20090811212752.GB26309@redhat.com>
+	<20090811151010.c9c56955.akpm@linux-foundation.org>
+	<20090917053817.GB6770@redhat.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,42 +31,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009 10:27:00 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
+On Thu, 17 Sep 2009 08:38:18 +0300 "Michael S. Tsirkin" <mst@redhat.com> wrote:
 
-> For example, drivers/base/core.c contains
+> Hi Andrew,
+> On Tue, Aug 11, 2009 at 03:10:10PM -0700, Andrew Morton wrote:
+> > On Wed, 12 Aug 2009 00:27:52 +0300
+> > "Michael S. Tsirkin" <mst@redhat.com> wrote:
+> > 
+> > > vhost net module wants to do copy to/from user from a kernel thread,
+> > > which needs use_mm (like what fs/aio has).  Move that into mm/ and
+> > > export to modules.
+> > 
+> > OK by me.  Please include this change in the virtio patchset.  Which I
+> > shall cheerfully not be looking at :)
 > 
-> #define to_root_device(dev) container_of(dev, struct root_device, dev)
+> The virtio patches are somewhat delayed as we are ironing out the
+> kernel/user interface with Rusty. Can the patch moving use_mm to mm/ be
+> applied without exporting to modules for now? This will make it easier
+> for virtio which will only have to patch in the EXPORT line.
+
+That was 10,000 patches ago.
+
+> I also have a small patch optimizing atomic usage in use_mm (which I did for
+> virtio) and it's easier to apply it if the code is in the new place.
 > 
-> which works fine as long as the 'to_root_device' macro is always
-> applied to a variable called 'dev', as it is the case in the current
-> kernel sources.  However, it breaks as soon as it gets applied to a
-> variable of any other name, as the name of the variable is also
-> substituted into the third argument of the 'container_of' macro, which
-> really should stay 'dev' in the above case.
-> 
-> This patch renames the real macro arguments in all 5 such constructs
-> found by git-grep -E '#define.*container_of *\( *([^ ,]+) *,.*, *\1 *\)',
-> which may have missed some similar dangerous constructs, of course.
-> So these changes probably cross all possible boundaries of responsibility,
-> and I do not know how to best handle it, suggestions welcome.
-> 
-> Btw. this dangerous idom is also popularised by the excellent Linux Device
-> Drivers book (3rd edition, chapter 14, bottom of page 383).
-> 
-> ...
->
-> -#define EVT_TO_HPET_DEV(evt) container_of(evt, struct hpet_dev, evt)
-> +#define EVT_TO_HPET_DEV(evtdev) container_of(evtdev, struct hpet_dev, evt)
+> If ok, pls let me know and I'll post the patch without the EXPORT line.
 
-There is no reason whatsoever for implementing these things as macros
-and for the life of me I don't understand why people do this.
-
-If we're going to fix these things then how about we turn them into
-C functions thereby making them even safer?
-
-
-
-y:/usr/src/linux-2.6.31> grep -r 'define.*container_of' . | wc -l
-347
-
-Sigh.
+Please just send them all out.
