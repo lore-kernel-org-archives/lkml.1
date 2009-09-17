@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZIQUSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbZIQUuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687AbZIQUSN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZIQUSL
+	id S1754509AbZIQUuI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZIQUuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:18:11 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:33136 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752919AbZIQUSK (ORCPT
+	Thu, 17 Sep 2009 16:50:06 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:33902 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753361AbZIQUuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:18:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BXVl8q7VCnFQG+jyTo6sxU2kIC5Y3C7pFANZ5FUvgOwHxq3Bt9q1tOTYWPNe7I4/Fw
-         jAzt4rmAvkvWhuWeinrEQFDZusZkhllGXZIndxsTjaH564J727BSUTd3lXwm/6R/13/+
-         TIsnNoAEuVE2Y2NJa3I9DERPYBGDT/COEvbok=
-Date: Fri, 18 Sep 2009 00:18:13 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: test for "spurious" IRQ ignores possible IRQ_WAKE_THREAD value
-Message-ID: <20090917201813.GG8817@lenovo>
-References: <alpine.LFD.2.00.0909141627500.4124@localhost> <alpine.LFD.2.00.0909141632390.4329@localhost> <20090917193416.GE8817@lenovo> <alpine.LFD.2.00.0909171605320.5014@localhost>
+	Thu, 17 Sep 2009 16:50:05 -0400
+X-Greylist: delayed 1781 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Sep 2009 16:50:04 EDT
+Date: Thu, 17 Sep 2009 21:20:14 +0100
+From: Andrew Price <andy@andrewprice.me.uk>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: rt2x00dev.c:405: error: =?utf-8?Q?too_?=
+	=?utf-8?Q?few_arguments_to_function_=E2=80=98rt2x00crypto=5Frx=5Finsert?=
+	=?utf-8?B?X2l24oCZ?=
+Message-ID: <20090917202014.GA27082@plato.andrewprice.me.uk>
+Mail-Followup-To: "John W. Linville" <linville@tuxdriver.com>,
+	Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org
+References: <20090917154138.GA31844@sucs.org>
+ <20090917172358.GC2577@tuxdriver.com>
+ <20090917181133.GA5797@sucs.org>
+ <20090917195811.GC2562@tuxdriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0909171605320.5014@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090917195811.GC2562@tuxdriver.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Robert P. J. Day - Thu, Sep 17, 2009 at 04:08:32PM -0400]
-...
-| > Hi Robert,
-| >
-| > It could that IRQ_WAKE_THREAD is just missed here. I suppose it was
-| > brough there as thread irq merged. But I think only Thomas know for
-| > sure, I definitely miss something :) CC'ed
-| 
-|   actually, after a bit more reading, i found this in
-| kernel/irq/handle.c:
-|                 ...
-|                 switch (ret) {
-|                 case IRQ_WAKE_THREAD:
-|                         /*
-|                          * Set result to handled so the spurious check
-|                          * does not trigger.
-|                          */
-|                         ret = IRQ_HANDLED;
-|                         ...
-| 
-| so it looks like that value of IRQ_WAKE_THREAD is simply "mapped" to
-| IRQ_HANDLED, and perhaps that's done before __report_bad_irq is ever
-| called so that that latter routine never sees a value of
-| IRQ_WAKE_THREAD.  but that's just a guess.
-| 
-| rday
-| --
+On Thu, Sep 17, 2009 at 03:58:11PM -0400, John W. Linville wrote:
+> Oh, I see now -- thanks for the patch!  FWIW, it would seem to only
+> show-up when you have CONFIG_RT2500PCI but none of the other rt2x00
+> family drivers in your .config...
+> 
+> John
+> 
+> P.S.  Could you resubmit to linux-wireless@vger.kernel.org, following
+> the normal patch submission guidelines as discussed here?
+> 
+> 	http://linux.yyz.us/patch-format.html
 
-yeah, Thomas just pointed it too :) The note_interrupt is
-called after handle_IRQ_event (except a few drivers which
-don;t use threaded irq) so it doesnt reach bad irq state
-with IRQ_WAKE_THREAD, for now at least.
+Done. Just waiting for the greylist to let it through :-)
 
-	-- Cyrill
+Cheers,
+
+Andrew
