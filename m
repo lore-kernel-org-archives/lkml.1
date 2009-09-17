@@ -1,140 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZIQGKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZIQGMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbZIQGKP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 02:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbZIQGKO
+	id S1754119AbZIQGMW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 02:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbZIQGMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 02:10:14 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53841 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753499AbZIQGKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 02:10:13 -0400
-Message-ID: <4AB1D252.8060406@cn.fujitsu.com>
-Date: Thu, 17 Sep 2009 14:08:18 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH] io-controller: Fix task hanging when there are more	than
- one groups
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com> <20090915033739.GA4054@redhat.com> <4AB05442.6080004@cn.fujitsu.com> <20090916180915.GE5221@redhat.com>
-In-Reply-To: <20090916180915.GE5221@redhat.com>
+	Thu, 17 Sep 2009 02:12:22 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49827 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753338AbZIQGMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 02:12:21 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 17 Sep 2009 15:10:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH 2/3][mmotm] showing size of kcore v2
+Message-Id: <20090917151016.99f7c5ab.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <2375c9f90909162302m1fb89414o4f72b6b36e7cbb06@mail.gmail.com>
+References: <2375c9f90909160235m1f052df0qb001f8243ed9291e@mail.gmail.com>
+	<1bc66b163326564dafb5a7dd8959fd56.squirrel@webmail-b.css.fujitsu.com>
+	<20090917114138.e14a1183.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917114404.d87b155d.kamezawa.hiroyu@jp.fujitsu.com>
+	<2375c9f90909162302m1fb89414o4f72b6b36e7cbb06@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, Sep 16, 2009 at 10:58:10AM +0800, Gui Jianfeng wrote:
+On Thu, 17 Sep 2009 14:02:39 +0800
+Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> > @@ -124,6 +126,7 @@ static void __kcore_update_ram(struct li
+> >        write_unlock(&kclist_lock);
+> >
+> >        free_kclist_ents(&garbage);
+> > +       proc_root_kcore->size = get_kcore_size(&nphdr, &size);
 > 
-> [..]
->>> o Fixed the issue of not expiring the queue for single ioq schedulers. Reported
->>>   and fixed by Gui.
->>>
->>> o If an AS queue is not expired for a long time and suddenly somebody
->>>   decides to create a group and launch a job there, in that case old AS
->>>   queue will be expired with a very high value of slice used and will get
->>>   a very high disk time. Fix it by marking the queue as "charge_one_slice"
->>>   and charge the queue only for a single time slice and not for whole
->>>   of the duration when queue was running.
->>>
->>> o There are cases where in case of AS, excessive queue expiration will take
->>>   place by elevator fair queuing layer because of few reasons.
->>> 	- AS does not anticipate on a queue if there are no competing requests.
->>> 	  So if only a single reader is present in a group, anticipation does
->>> 	  not get turn on.
->>>
->>> 	- elevator layer does not know that As is anticipating hence initiates
->>> 	  expiry requests in select_ioq() thinking queue is empty.
->>>
->>> 	- elevaotr layer tries to aggressively expire last empty queue. This
->>> 	  can lead to lof of queue expiry
->>>
->>> o This patch now starts ANITC_WAIT_NEXT anticipation if last request in the
->>>   queue completed and associated io context is eligible to anticipate. Also
->>>   AS lets elevatory layer know that it is anticipating (elv_ioq_wait_request())
->>>   . This solves above mentioned issues.
->>>  
->>> o Moved some of the code in separate functions to improve readability.
->>>
->> ...
->>
->>>  /* A request got completed from io_queue. Do the accounting. */
->>>  void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
->>>  {
->>> @@ -3470,16 +3572,16 @@ void elv_ioq_completed_request(struct re
->>>  			elv_set_prio_slice(q->elevator->efqd, ioq);
->>>  			elv_clear_ioq_slice_new(ioq);
->>>  		}
->>> +
->>>  		/*
->>>  		 * If there is only root group present, don't expire the queue
->>>  		 * for single queue ioschedulers (noop, deadline, AS). It is
->>>  		 * unnecessary overhead.
->>>  		 */
->>>  
->>> -		if (is_only_root_group() &&
->>> -			elv_iosched_single_ioq(q->elevator)) {
->>> -			elv_log_ioq(efqd, ioq, "select: only root group,"
->>> -					" no expiry");
->>> +		if (single_ioq_no_timed_expiry(q)) {
->>   Hi Vivek,
->>
->>   So we make use of single_ioq_no_timed_expiry() to decide whether there is only
->>   root ioq to be busy, right? But single_ioq_no_timed_expiry() only checks if
->>   the root cgroup is the only group and if there is only one busy_ioq there. As
->>   I explained in previous mail, these two checks are not sufficient to say the
->>   current active ioq comes from root group. Because when the child cgroup is just
->>   removed, and the ioq which belongs to child group is still there(maybe some
->>   requests are in flight). In this case, only root cgroup and only one active ioq
->>   (child ioq) checks are satisfied. So IMHO, in single_ioq_no_timed_expiry() we 
->>   still need to check "efqd->root_group->ioq" is already created to ensure the only
->>   ioq comes from root group. Am i missing something?
->>
 > 
-> Hi Gui,
+> This makes me to think if we will have some race condition here?
+> Two processes can open kcore at the same time...
 > 
-> The only side effect of not checking for "efqd->root_group->ioq" seems to
-> be that this ioq hence io group of the child will not be freed immediately
-> and release will be delayed until a some other queue in the system gets
-> backlogged or ioscheduler exits. At that point of time, this child queue will
-> be expired and ioq and iog will be freed.
-> 
-> The advantage is that if there is IO happening only in child group in that
-> case we can avoid expiring that queue.
-> 
-> So may be keeping the queue around for sometime is not a very idea. 
-> 
-> Am I missing something?
+Finally,
+==
+static void __kcore_update_ram(struct list_head *list)
+{
+ write_lock(&kclist_lock);
+        if (kcore_need_update) {
+                list_for_each_entry_safe(pos, tmp, &kclist_head, list) {
+                        if (pos->type == KCORE_RAM
+                                || pos->type == KCORE_VMEMMAP)
+                                list_move(&pos->list, &garbage);
+                }
+                list_splice_tail(list, &kclist_head);
+        } else
+                list_splice(list, &garbage);
+        kcore_need_update = 0;
+        write_unlock(&kclist_lock);
+}
 
-  Hi Vivek,
+kclist itself is double checked under write_lock.
+And, once updated, get_kcore_size()'s return vaule is static.
+So, I think there are no race. But..Hmm...is this clearer ?
 
-  I think you're right.
-  A thought comes to my mind, whether can we extend optimization for not expiring
-  an ioq not only for root group, but for single ioq case? IOW, if there is only
-  one ioq in hierarchy, we don't exipre it until another ioq gets backlogged, and
-  we just charge only one time slice for that ioq when it schedule out. This might
-  help if IO only happens in child group.
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> 
-> Thanks
-> Vivek
-> 
-> 
-> 
+Now, size of /proc/kcore which can be read by 'ls -l' is 0.
+But it's not correct value.
 
--- 
-Regards
-Gui Jianfeng
+This is a patch for showing size of /proc/kcore as following.
+
+On x86-64, ls -l shows
+ ... root root 140737486266368 2009-09-17 10:29 /proc/kcore
+Then, 7FFFFFFE02000. This comes from vmalloc area's size.
+This shows "core" size, not  memory size.
+
+This patch shows the size by updating "size" field in struct proc_dir_entry.
+Later, lookup routine will create inode and fill inode->i_size based
+on this value. Then, this has a problem.
+
+ - Once inode is cached, inode->i_size will never be updated.
+
+Then, this patch is not memory-hotplug-aware.
+
+To update inode->i_size, we have to know dentry or inode.
+But there is no way to lookup them by inside kernel. Hmmm....
+Next patch will try it.
+
+Changelog:
+ -moved upadting ->size under lock.
+
+Cc: WANG Cong <xiyou.wangcong@gmail.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ fs/proc/kcore.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: mmotm-2.6.31-Sep14/fs/proc/kcore.c
+===================================================================
+--- mmotm-2.6.31-Sep14.orig/fs/proc/kcore.c
++++ mmotm-2.6.31-Sep14/fs/proc/kcore.c
+@@ -107,6 +107,8 @@ static void free_kclist_ents(struct list
+  */
+ static void __kcore_update_ram(struct list_head *list)
+ {
++	int nphdr;
++	size_t size;
+ 	struct kcore_list *tmp, *pos;
+ 	LIST_HEAD(garbage);
+ 
+@@ -121,6 +123,7 @@ static void __kcore_update_ram(struct li
+ 	} else
+ 		list_splice(list, &garbage);
+ 	kcore_need_update = 0;
++	proc_root_kcore->size = get_kcore_size(&nphdr, &size);
+ 	write_unlock(&kclist_lock);
+ 
+ 	free_kclist_ents(&garbage);
+@@ -429,7 +432,8 @@ read_kcore(struct file *file, char __use
+ 	unsigned long start;
+ 
+ 	read_lock(&kclist_lock);
+-	proc_root_kcore->size = size = get_kcore_size(&nphdr, &elf_buflen);
++	size = get_kcore_size(&nphdr, &elf_buflen);
++
+ 	if (buflen == 0 || *fpos >= size) {
+ 		read_unlock(&kclist_lock);
+ 		return 0;
+
+
+
+
+
+
 
