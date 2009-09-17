@@ -1,225 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZIQGcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbZIQGcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbZIQGcg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 02:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZIQGce
+	id S1754421AbZIQGcM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 02:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbZIQGcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 02:32:34 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:59235 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754169AbZIQGca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 02:32:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Vc0FyRzPRrRKDPP15iyrO1ZDCkJafeunRPLuy99/n+K0umiabcTcz5LYlRz0OtlCIu
-         salsjzXI3kmkjFPO6js9qgb3HgKu6JG7+AgpuH1nkwCJkoLkBI+/DKOSJVbdXopUgtq+
-         VHCSnSwedyE9bTPGonvPa48w7Pzp9ansxHEX4=
+	Thu, 17 Sep 2009 02:32:11 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56804 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753542AbZIQGcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 02:32:10 -0400
+Message-ID: <4AB1D887.90300@cn.fujitsu.com>
+Date: Thu, 17 Sep 2009 14:34:47 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-In-Reply-To: <1253139186.26521.449.camel@rc-desk>
-References: <8db1092f0909160236i5d2b1f31k3ec289fbd9ac0bfa@mail.gmail.com>
-	 <1253122055.26521.431.camel@rc-desk>
-	 <8db1092f0909161036t5bae781eqa6f0a0df308ec4cd@mail.gmail.com>
-	 <1253124149.26521.438.camel@rc-desk>
-	 <8db1092f0909161259i5e007282i42f426bc2d0fc0c4@mail.gmail.com>
-	 <1253139186.26521.449.camel@rc-desk>
-Date: Thu, 17 Sep 2009 08:32:33 +0200
-Message-ID: <8db1092f0909162332r4ffeef09jdb87f7fc69ff8e9e@mail.gmail.com>
-Subject: Re: WARNING: at net/mac80211/scan.c:267 ieee80211_scan_completed+0x299/0x2b0 
-	[mac80211]()
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       "ilw@linux.intel.com" <ilw@linux.intel.com>,
-       "Zhu, Yi" <yi.zhu@intel.com>
-Content-Type: text/plain; charset=UTF-8
+To: john stultz <johnstul@us.ibm.com>
+CC: rostedt@goodmis.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH 2/3] ftrace: add tracepoint for xtime
+References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com>	 <4A89213C.5090109@cn.fujitsu.com>	 <20090818215620.A63C.A69D9226@jp.fujitsu.com>	 <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com>	 <4A939CDF.2000407@cn.fujitsu.com> <4A939D4A.1020706@cn.fujitsu.com>	 <1f1b08da0909161256m376b1292ia4b2f3b2b4e82c34@mail.gmail.com>	 <1f1b08da0909161258g3e57a579iac2238c2f0916b07@mail.gmail.com>	 <1253133136.20020.245.camel@gandalf.stny.rr.com> <1253134155.3335.13.camel@work-vm>
+In-Reply-To: <1253134155.3335.13.camel@work-vm>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/17 reinette chatre <reinette.chatre@intel.com>:
-[...]
->
-> I think there is a potential race here. You start wpa_supplicant in
-> background and then immediately request an IP. It is not guaranteed at
-> this point that you are associated.
->
-> Could you perform the last three steps of your script manually?
->
-> Reinette
->
->
->
+john stultz wrote:
+> On Wed, 2009-09-16 at 16:32 -0400, Steven Rostedt wrote:
+>> On Wed, 2009-09-16 at 12:58 -0700, john stultz wrote:
+>>> On Wed, Sep 16, 2009 at 12:56 PM, john stultz <johnstul@us.ibm.com> wrote:
+>>>> On Tue, Aug 25, 2009 at 1:14 AM, Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+>>>>> From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+>>>>>  /* Structure holding internal timekeeping values. */
+>>>>>  struct timekeeper {
+>>>>>        /* Current clocksource used for timekeeping. */
+>>>>> @@ -338,6 +341,8 @@ int do_settimeofday(struct timespec *tv)
+>>>>>
+>>>>>        update_vsyscall(&xtime, timekeeper.clock);
+>>>>>
+>>>>> +       trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
+>>>>> +
+>>>> So the only thing to watch out on here is that xtime doesn't hold the
+>>>> current time, but the accumulated time. There is some unaccumulated
+>>>> time still kept in the clocksource structure.
+>>>>
+>>>> You probably want (assuming you only need tick granularity time) to
+>>>> use current_kernel_time().
+>>>>
+>>>> As an aside, is there a reason you have to have update callbacks and
+>>>> duplicate the time storage instead of using the existing interfaces?
+>>>> (ie: Is this due to locking or something else?)
+>>> Doh. Sorry, you're actually tracing the timekeeping code. Not using
+>>> this to assist tracing. Got this confused.
+>>>
+>>> So yea, I think this should be ok, plus or minus determining if you
+>>> really want xtime or xtime_cache.
+>> Well this may be a real concern. It's not about tracing timekeeping
+>> (although it adds that functionality). His second patch (I didn't Cc you
+>> on that one) hooks to these tracepoints to update time accordingly.
+>>
+>> What is being done is a way to have a "wall time" value being added to
+>> the ring buffer. But this needs to be very carefully done, because the
+>> all tracers use this, including the function tracer in NMI code. So the
+>> clock source can not take locks or do anything fancy.
+>>
+>> What the idea is, is to have a semi clock that is read with some kind of
+>> fast increment, and then at clock ticks, this clock is synced up.
+> 
+> Hmm.. Yea, if that's the case, then I'm not a big fan of this approach.
+> 
+> It sounds like what's really needed is a lock-free variant of
+> current_kernel_time() or something close to the CLOCK_MONOTONIC_COARSE
+> functionality currently queued.
 
-root@gumis:/home/maciek# INTERFACE=wlan0
-root@gumis:/home/maciek# WPA_FILE=/etc/wpa_supplicant/wpa_supplicant.conf
-root@gumis:/home/maciek# DRIVER=wext
-root@gumis:/home/maciek# ifconfig eth0 down
-root@gumis:/home/maciek# killall dhclient3
+Yes.
 
-Dmesg:
-[  130.925689] b44: eth0: powering down PHY
+And it will be better if I can get current walltime fast and
+with high resolution.
 
-root@gumis:/home/maciek# ifconfig $INTERFACE up
+I see your patch of __current_kernel_time() in Aug 19,
+and I think it can be used to get walltime in ftrace.
+But IMHO, use tracepoint to do it maybe better for its high resolution.
 
-Demsg:
-[  171.563937] iwl3945 0000:08:00.0: firmware: requesting iwlwifi-3945-2.ucode
-[  171.611178] iwl3945 0000:08:00.0: loaded firmware version 15.32.2.9
-[  171.688664] Registered led device: iwl-phy0::radio
-[  171.688759] Registered led device: iwl-phy0::assoc
-[  171.688802] Registered led device: iwl-phy0::RX
-[  171.688844] Registered led device: iwl-phy0::TX
+Thanks
+Zhaolei
 
-root@gumis:/home/maciek# killall wpa_supplicant &> /dev/null
-(wait 5 seconds)
-root@gumis:/home/maciek# wpa_supplicant -c $WPA_FILE -D $DRIVER -i $INTERFACE -B
-(and wait)
-
-Dmesg:
-[  249.340094] wlan0: direct probe to AP 00:1b:11:f6:0f:28 (try 1)
-[  249.345339] wlan0 direct probe responded
-[  249.345347] wlan0: authenticate with AP 00:1b:11:f6:0f:28 (try 1)
-[  249.347122] wlan0: authenticated
-[  249.347152] wlan0: associate with AP 00:1b:11:f6:0f:28 (try 1)
-[  249.349703] wlan0: RX AssocResp from 00:1b:11:f6:0f:28 (capab=0x431
-status=0 aid=1)
-[  249.349711] wlan0: associated
-[  253.411858] wlan0: deauthenticated from 00:1b:11:f6:0f:28 (Reason:
-6)
-[  256.116488] wlan0: direct probe to AP 00:1b:11:f6:0f:28 (try 1)
-[  256.118910] wlan0 direct probe responded
-[  256.118918] wlan0: authenticate with AP 00:1b:11:f6:0f:28 (try 1)
-[  256.120663] wlan0: authenticated
-[  256.120694] wlan0: associate with AP 00:1b:11:f6:0f:28 (try 1)
-[  256.122944] wlan0: RX ReassocResp from 00:1b:11:f6:0f:28
-(capab=0x431 status=0 aid=1)
-[  256.122951] wlan0: associated
-
-[...]
-
-[  353.353780] wlan0: deauthenticated from 00:1b:11:f6:0f:28 (Reason: 6)
-[  356.070680] wlan0: direct probe to AP 00:1b:11:f6:0f:28 (try 1)
-[  356.073112] wlan0 direct probe responded
-[  356.073121] wlan0: authenticate with AP 00:1b:11:f6:0f:28 (try 1)
-[  356.074849] wlan0: authenticated
-[  356.074879] wlan0: associate with AP 00:1b:11:f6:0f:28 (try 1)
-[  356.077160] wlan0: RX ReassocResp from 00:1b:11:f6:0f:28
-(capab=0x431 status=0 aid=1)
-[  356.077168] wlan0: associated
+> Doing it without locks might have some downsides, and I guess that's the
+> point of the callback method (updates happen at prescribed times and
+> likely under locks that the trace code understands so it avoids races
+> and deadlocks).
+> 
+> -john
+> 
 
 
-(Stop wainting)
-root@gumis:/home/maciek# dhclient $INTERFACE
-Internet Systems Consortium DHCP Client V3.1.2p1
-Copyright 2004-2009 Internet Systems Consortium.
-All rights reserved.
-For info, please visit http://www.isc.org/sw/dhcp/
-
-Listening on LPF/wlan0/00:13:02:c3:96:a8
-Sending on   LPF/wlan0/00:13:02:c3:96:a8
-Sending on   Socket/fallback
-DHCPREQUEST on wlan0 to 255.255.255.255 port 67
-DHCPREQUEST on wlan0 to 255.255.255.255 port 67
-DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 4
-DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 11
-DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 11
-DHCPOFFER from 192.168.0.1
-DHCPREQUEST on wlan0 to 255.255.255.255 port 67
-DHCPACK from 192.168.0.1
-Reloading /etc/samba/smb.conf: smbd only.
-bound to 192.168.0.102 -- renewal in 474672 seconds.
-
-Dmesg:
-[  390.228036] wlan0: deauthenticated from 00:1b:11:f6:0f:28 (Reason:
-6)
-[  392.969750] wlan0: direct probe to AP 00:1b:11:f6:0f:28 (try 1)
-[  392.972333] wlan0 direct probe responded
-[  392.972342] wlan0: authenticate with AP 00:1b:11:f6:0f:28 (try 1)
-[  392.974072] wlan0: authenticated
-
-[...]
-
-[  425.722523] wlan0: associate with AP 00:1b:11:f6:0f:28 (try 1)
-[  425.724773] wlan0: RX ReassocResp from 00:1b:11:f6:0f:28
-(capab=0x431 status=0 aid=1)
-[  425.724782] wlan0: associated
-[  429.231829] wlan0: deauthenticated from 00:1b:11:f6:0f:28 (Reason: 6)
-[  431.936205] wlan0: direct probe to AP 00:1b:11:f6:0f:28 (try 1)
-[  431.938624] wlan0 direct probe responded
-[  431.938631] wlan0: authenticate with AP 00:1b:11:f6:0f:28 (try 1)
-[  431.940470] wlan0: authenticated
-[  431.940502] wlan0: associate with AP 00:1b:11:f6:0f:28 (try 1)
-[  431.942754] wlan0: RX ReassocResp from 00:1b:11:f6:0f:28
-(capab=0x431 status=0 aid=1)
-[  431.942761] wlan0: associated
-
-root@gumis:/home/maciek# iwconfig $INTERFACE
-wlan0     IEEE 802.11abg  ESSID:"x"
-          Mode:Managed  Frequency:2.457 GHz  Access Point: 00:1B:11:F6:0F:28
-          Bit Rate=54 Mb/s   Tx-Power=15 dBm
-          Retry  long limit:7   RTS thr:off   Fragment thr:off
-          Encryption key:off
-          Power Management:on
-          Link Quality=53/70  Signal level=-57 dBm
-          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
-          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
-
-root@gumis:/home/maciek# ping onet.pl
-PING onet.pl (213.180.146.27) 56(84) bytes of data.
-64 bytes from s4.m1r2.onet.pl (213.180.146.27): icmp_seq=1 ttl=53 time=18.3 ms
-64 bytes from s4.m1r2.onet.pl (213.180.146.27): icmp_seq=2 ttl=53 time=21.0 ms
-^C
---- onet.pl ping statistics ---
-2 packets transmitted, 2 received, 0% packet loss, time 1001ms
-rtt min/avg/max/mdev = 18.395/19.702/21.009/1.307 ms
-
-===============================
-
-Compare to 2.6.31:
-root@gumis:/home/maciek# /home/maciek/bin/wifi/wifi_wpa.sh
-Internet Systems Consortium DHCP Client V3.1.2p1
-Copyright 2004-2009 Internet Systems Consortium.
-All rights reserved.
-For info, please visit http://www.isc.org/sw/dhcp/
-
-Listening on LPF/wlan0/00:13:02:c3:96:a8
-Sending on   LPF/wlan0/00:13:02:c3:96:a8
-Sending on   Socket/fallback
-DHCPREQUEST on wlan0 to 255.255.255.255 port 67
-DHCPACK from 192.168.0.1
-Reloading /etc/samba/smb.conf: smbd only.
-bound to 192.168.0.102 -- renewal in 596714 seconds.
-wlan0     IEEE 802.11abg  ESSID:"x"
-          Mode:Managed  Frequency:2.457 GHz  Access Point: 00:1B:11:F6:0F:28
-          Bit Rate=1 Mb/s   Tx-Power=15 dBm
-          Retry  long limit:7   RTS thr:off   Fragment thr:off
-          Encryption
-key:D99A-9047-D4B3-05CD-5AD4-041C-A1A1-577D-CF2C-7BC4-1F49-08F8-9802-2A2D-F5B3-0861
-[2]
-          Power Management:off
-          Link Quality=50/70  Signal level=-60 dBm  Noise level=-127 dBm
-          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
-          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
-
-Demsg:	
-[   92.188241] b44: eth0: powering down PHY
-[   92.191643] iwl3945 0000:08:00.0: firmware: requesting iwlwifi-3945-2.ucode
-[   92.305225] iwl3945 0000:08:00.0: loaded firmware version 15.32.2.9
-[   92.380738] Registered led device: iwl-phy0::radio
-[   92.381651] Registered led device: iwl-phy0::assoc
-[   92.381685] Registered led device: iwl-phy0::RX
-[   92.381708] Registered led device: iwl-phy0::TX
-[   98.353640] wlan0: authenticate with AP 00:1b:11:f6:0f:28
-[   98.355401] wlan0: authenticated
-[   98.355407] wlan0: associate with AP 00:1b:11:f6:0f:28
-[   98.357622] wlan0: RX AssocResp from 00:1b:11:f6:0f:28 (capab=0x431
-status=0 aid=1)
-[   98.357630] wlan0: associated
-
-
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
