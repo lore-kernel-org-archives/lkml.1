@@ -1,268 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZIQPZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbZIQQbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbZIQPZc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 11:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZIQPZb
+	id S1758562AbZIQQbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 12:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbZIQQbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 11:25:31 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:34967 "EHLO atmel-es2.atmel.fr"
+	Thu, 17 Sep 2009 12:31:35 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57654 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754382AbZIQPZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 11:25:29 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: linux-mmc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
-       kernel@avr32linux.org, Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH 2/2] mmc: atmel-mci: New MCI2 module support in atmel-mci driver
-Date: Thu, 17 Sep 2009 18:29:27 +0200
-Message-Id: <1253204967-30010-3-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1253204967-30010-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1253204967-30010-1-git-send-email-nicolas.ferre@atmel.com>
+	id S1758528AbZIQQbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 12:31:34 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Pull request blackfin.git (for-linus branch) [v2]
+Date: Thu, 17 Sep 2009 12:31:33 -0400
+Message-Id: <1253205093-14470-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This new revision of the IP adds some improvements to the MCI already present
-in several Atmel SOC.
-Some new registers are added and a particular way of handling DMA interaction
-lead to a new sequence in function call which is backward compatible: On MCI2,
-we must set the DMAEN bit to enable the DMA handshaking interface. This must
-happen before the data transfer command is sent.
+Sorry, noticed that previous pull request went only to Linus as my local
+script for sending these out messed up the CC.
 
-A new function is able to differentiate MCI2 code and is based on knowledge of
-processor id (cpu_is_xxx()).
+I've rebased my branch to account for some merge conflicts pointed out by
+Stephen via the next tree, and appended a new fix or two.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
----
- drivers/mmc/host/atmel-mci.c |   85 +++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 75 insertions(+), 10 deletions(-)
+The following changes since commit ab86e5765d41a5eb4239a1c04d613db87bea5ed8:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/driver-core-2.6
 
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index 1689396..d9a1a8e 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -92,6 +92,7 @@ struct atmel_mci_dma {
-  * @need_clock_update: Update the clock rate before the next request.
-  * @need_reset: Reset controller before next request.
-  * @mode_reg: Value of the MR register.
-+ * @cfg_reg: Value of the CFG register.
-  * @bus_hz: The rate of @mck in Hz. This forms the basis for MMC bus
-  *	rate and timeout calculations.
-  * @mapbase: Physical address of the MMIO registers.
-@@ -155,6 +156,7 @@ struct atmel_mci {
- 	bool			need_clock_update;
- 	bool			need_reset;
- 	u32			mode_reg;
-+	u32			cfg_reg;
- 	unsigned long		bus_hz;
- 	unsigned long		mapbase;
- 	struct clk		*mck;
-@@ -223,6 +225,19 @@ static bool mci_has_rwproof(void)
- }
- 
- /*
-+ * The new MCI2 module isn't 100% compatible with the old MCI module,
-+ * and it has a few nice features which we want to use...
-+ */
-+static inline bool atmci_is_mci2(void)
-+{
-+	if (cpu_is_at91sam9g45())
-+		return true;
-+
-+	return false;
-+}
-+
-+
-+/*
-  * The debugfs stuff below is mostly optimized away when
-  * CONFIG_DEBUG_FS is not set.
-  */
-@@ -357,12 +372,33 @@ static int atmci_regs_show(struct seq_file *s, void *v)
- 			buf[MCI_BLKR / 4],
- 			buf[MCI_BLKR / 4] & 0xffff,
- 			(buf[MCI_BLKR / 4] >> 16) & 0xffff);
-+	if (atmci_is_mci2())
-+		seq_printf(s, "CSTOR:\t0x%08x\n", buf[MCI_CSTOR / 4]);
- 
- 	/* Don't read RSPR and RDR; it will consume the data there */
- 
- 	atmci_show_status_reg(s, "SR", buf[MCI_SR / 4]);
- 	atmci_show_status_reg(s, "IMR", buf[MCI_IMR / 4]);
- 
-+	if (atmci_is_mci2()) {
-+		u32 val;
-+
-+		val = buf[MCI_DMA / 4];
-+		seq_printf(s, "DMA:\t0x%08x OFFSET=%u CHKSIZE=%u%s\n",
-+				val, val & 3,
-+				((val >> 4) & 3) ?
-+					1 << (((val >> 4) & 3) + 1) : 1,
-+				val & MCI_DMAEN ? " DMAEN" : "");
-+
-+		val = buf[MCI_CFG / 4];
-+		seq_printf(s, "CFG:\t0x%08x%s%s%s%s\n",
-+				val,
-+				val & MCI_CFG_FIFOMODE_1DATA ? " FIFOMODE_ONE_DATA" : "",
-+				val & MCI_CFG_FERRCTRL_COR ? " FERRCTRL_CLEAR_ON_READ" : "",
-+				val & MCI_CFG_HSMODE ? " HSMODE" : "",
-+				val & MCI_CFG_LSYNC ? " LSYNC" : "");
-+	}
-+
- 	kfree(buf);
- 
- 	return 0;
-@@ -557,6 +593,10 @@ static void atmci_dma_complete(void *arg)
- 
- 	dev_vdbg(&host->pdev->dev, "DMA complete\n");
- 
-+	if (atmci_is_mci2())
-+		/* Disable DMA hardware handshaking on MCI */
-+		mci_writel(host, DMA, mci_readl(host, DMA) & ~MCI_DMAEN);
-+
- 	atmci_dma_cleanup(host);
- 
- 	/*
-@@ -592,7 +632,7 @@ static void atmci_dma_complete(void *arg)
- }
- 
- static int
--atmci_submit_data_dma(struct atmel_mci *host, struct mmc_data *data)
-+atmci_prepare_data_dma(struct atmel_mci *host, struct mmc_data *data)
- {
- 	struct dma_chan			*chan;
- 	struct dma_async_tx_descriptor	*desc;
-@@ -623,6 +663,9 @@ atmci_submit_data_dma(struct atmel_mci *host, struct mmc_data *data)
- 	if (!chan)
- 		return -ENODEV;
- 
-+	if (atmci_is_mci2())
-+		mci_writel(host, DMA, MCI_DMA_CHKSIZE(3) | MCI_DMAEN);
-+
- 	if (data->flags & MMC_DATA_READ)
- 		direction = DMA_FROM_DEVICE;
- 	else
-@@ -637,21 +680,30 @@ atmci_submit_data_dma(struct atmel_mci *host, struct mmc_data *data)
- 	host->dma.data_desc = desc;
- 	desc->callback = atmci_dma_complete;
- 	desc->callback_param = host;
--	desc->tx_submit(desc);
--
--	/* Go! */
--	chan->device->device_issue_pending(chan);
- 
- 	return 0;
- }
- 
-+static void atmci_submit_data(struct atmel_mci *host)
-+{
-+	struct dma_chan			*chan = host->data_chan;
-+	struct dma_async_tx_descriptor	*desc = host->dma.data_desc;
-+
-+	if (chan) {
-+		desc->tx_submit(desc);
-+		chan->device->device_issue_pending(chan);
-+	}
-+}
-+
- #else /* CONFIG_MMC_ATMELMCI_DMA */
- 
--static int atmci_submit_data_dma(struct atmel_mci *host, struct mmc_data *data)
-+static int atmci_prepare_data_dma(struct atmel_mci *host, struct mmc_data *data)
- {
- 	return -ENOSYS;
- }
- 
-+static void atmci_submit_data(struct atmel_mci *host) {}
-+
- static void atmci_stop_dma(struct atmel_mci *host)
- {
- 	/* Data transfer was stopped by the interrupt handler */
-@@ -665,7 +717,7 @@ static void atmci_stop_dma(struct atmel_mci *host)
-  * Returns a mask of interrupt flags to be enabled after the whole
-  * request has been prepared.
-  */
--static u32 atmci_submit_data(struct atmel_mci *host, struct mmc_data *data)
-+static u32 atmci_prepare_data(struct atmel_mci *host, struct mmc_data *data)
- {
- 	u32 iflags;
- 
-@@ -676,7 +728,7 @@ static u32 atmci_submit_data(struct atmel_mci *host, struct mmc_data *data)
- 	host->data = data;
- 
- 	iflags = ATMCI_DATA_ERROR_FLAGS;
--	if (atmci_submit_data_dma(host, data)) {
-+	if (atmci_prepare_data_dma(host, data)) {
- 		host->data_chan = NULL;
- 
- 		/*
-@@ -722,6 +774,8 @@ static void atmci_start_request(struct atmel_mci *host,
- 		mci_writel(host, CR, MCI_CR_SWRST);
- 		mci_writel(host, CR, MCI_CR_MCIEN);
- 		mci_writel(host, MR, host->mode_reg);
-+		if (atmci_is_mci2())
-+			mci_writel(host, CFG, host->cfg_reg);
- 		host->need_reset = false;
- 	}
- 	mci_writel(host, SDCR, slot->sdc_reg);
-@@ -737,6 +791,7 @@ static void atmci_start_request(struct atmel_mci *host,
- 		while (!(mci_readl(host, SR) & MCI_CMDRDY))
- 			cpu_relax();
- 	}
-+	iflags = 0;
- 	data = mrq->data;
- 	if (data) {
- 		atmci_set_timeout(host, slot, data);
-@@ -746,15 +801,17 @@ static void atmci_start_request(struct atmel_mci *host,
- 				| MCI_BLKLEN(data->blksz));
- 		dev_vdbg(&slot->mmc->class_dev, "BLKR=0x%08x\n",
- 			MCI_BCNT(data->blocks) | MCI_BLKLEN(data->blksz));
-+
-+		iflags |= atmci_prepare_data(host, data);
- 	}
- 
--	iflags = MCI_CMDRDY;
-+	iflags |= MCI_CMDRDY;
- 	cmd = mrq->cmd;
- 	cmdflags = atmci_prepare_command(slot->mmc, cmd);
- 	atmci_start_command(host, cmd, cmdflags);
- 
- 	if (data)
--		iflags |= atmci_submit_data(host, data);
-+		atmci_submit_data(host);
- 
- 	if (mrq->stop) {
- 		host->stop_cmdr = atmci_prepare_command(slot->mmc, mrq->stop);
-@@ -850,6 +907,8 @@ static void atmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 			clk_enable(host->mck);
- 			mci_writel(host, CR, MCI_CR_SWRST);
- 			mci_writel(host, CR, MCI_CR_MCIEN);
-+			if (atmci_is_mci2())
-+				mci_writel(host, CFG, host->cfg_reg);
- 		}
- 
- 		/*
-@@ -1088,6 +1147,8 @@ static void atmci_detect_change(unsigned long data)
- 				mci_writel(host, CR, MCI_CR_SWRST);
- 				mci_writel(host, CR, MCI_CR_MCIEN);
- 				mci_writel(host, MR, host->mode_reg);
-+				if (atmci_is_mci2())
-+					mci_writel(host, CFG, host->cfg_reg);
- 
- 				host->data = NULL;
- 				host->cmd = NULL;
-@@ -1637,6 +1698,10 @@ static void atmci_configure_dma(struct atmel_mci *host)
- 	}
- 	if (!host->dma.chan)
- 		dev_notice(&host->pdev->dev, "DMA not available, using PIO\n");
-+	else
-+		dev_info(&host->pdev->dev,
-+					"Using %s for DMA transfers\n",
-+					dma_chan_name(host->dma.chan));
- }
- #else
- static void atmci_configure_dma(struct atmel_mci *host) {}
--- 
-1.5.6.5
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin.git for-linus
+
+Barry Song (9):
+      Blackfin: bf537-stamp: add resources for AD1938 audio card
+      Blackfin: bf538: add bfin_clear_PPI_STATUS() helper
+      Blackfin: bf537-stamp: update AD714x resources
+      Blackfin: bf537-stamp: drop ATA interrupt probe workaround
+      Blackfin: cm-bf527/bf537-stamp: fix dm9000 resources
+      Blackfin: bf538-ezkit: add resources for parallel flash
+      Blackfin: bf537-stamp: update ad1836 resources
+      Blackfin: delete '-spi' suffix in ad1836/ad1938 driver name
+      Blackfin: bf538-ezkit: add SPI IRQ resources
+
+Bernd Schmidt (1):
+      Blackfin: add ICPLB coverage for async banks
+
+Cliff Cai (1):
+      Blackfin: bf533-stamp: fix typo in SPI frequency for ad1836 codec
+
+Graf Yang (5):
+      Blackfin: fix MPU handling of invalid memory accesses
+      Blackfin: improve double fault debug handling
+      Blackfin: SMP port does not yet support cpu frequency scaling
+      Blackfin: handle the core timer interrupt with handle_percpu_irq on SMP
+      Blackfin: swap clocksource ratings for gptimer/cycles
+
+Harald Krapfenbauer (2):
+      Blackfin: cm-bf537u: split board from cm-bf537e
+      Blackfin: update cm board resources
+
+Ingo Molnar (1):
+      Blackfin: Fix link errors with binutils 2.19 and GCC 4.3
+
+Jean Delvare (1):
+      Blackfin: clean up duplicate I2C device type definitions
+
+Michael Hennerich (6):
+      Blackfin: bf537-stamp: update ADP5588 header name
+      Blackfin: rename PCF8574 driver config
+      Blackfin: convert boards to use platform data with smc91x
+      Blackfin: remove useless duplicated assignment in gpio code
+      Blackfin: fix spelling in a few comments
+      Blackfin: bf537-stamp: add adp5588 gpio resources
+
+Mike Frysinger (17):
+      Blackfin: cleanup traps decode_address() a bit
+      Blackfin: convert ptrace to new memory functions
+      Blackfin: cleanup printk() usage in module code
+      Blackfin: convert malloc()/memset() to zalloc() in module code
+      Blackfin: cleanup module section checking
+      Blackfin: fix module reloc handling for all memory regions
+      Blackfin: push SRAM locks down into related ifdefs
+      Blackfin: add support for common FDPIC ptrace requests
+      Blackfin: drop unused MMR defines that only cause bad code to be written
+      Blackfin: fix BF522/BF523 max VCO mixup
+      Blackfin: drop board resources for dead devices (pbx/ad9960)
+      Blackfin: punt dead cache locking code
+      Blackfin: optimize fixed code handling for the most common case
+      Blackfin: add some isram-driver self tests
+      Blackfin: update ftrace_push_return_trace() breakage
+      Blackfin: unify cache init functions
+      Blackfin: fix elf_fpregset_t definition
+
+Mingquan Pan (1):
+      Blackfin: use KERN_ALERT in all kgdb_test output
+
+Philippe Gerum (10):
+      Blackfin: checkpatch --file arch/blackfin/kernel/ipipe.c
+      Blackfin: fix misnomer of some I-pipe helpers
+      Blackfin: export show_stack() to modules
+      Blackfin: allow high priority domains to preempt schedule_tail()
+      Blackfin: use generic name for EVT14 handler
+      Blackfin: reuse evt_evt14 handler to perform irqtail epilogue
+      Blackfin: allow EVT5 to preempt irqtail prologue (CONFIG_DEBUG_HWERR)
+      Blackfin: document __ipipe_call_irqtail
+      Blackfin: sanitize manual control of IPEND[4]
+      Blackfin: inline I-pipe bypass code in ret_from_exception
+
+Robin Getz (7):
+      Blackfin: make EVT3->EVT5 lowering more robust wrt IPEND[4]
+      Blackfin: reject outdated/unused/wrong relocation types
+      Blackfin: clean up early memory setup code
+      Blackfin: add an early shadow console
+      Blackfin: catch hardware errors earlier during booting
+      Blackfin: workaround anomaly 05000283
+      Blackfin: fix typo in isram_write()
+
+Roel Kluin (1):
+      Blackfin: fix read buffer overflow
+
+Sonic Zhang (3):
+      Blackfin: unify duplicated SMP checks in L2 cache kconfig
+      Blackfin: do not try displaying the end of the stack
+      Blackfin: increase default async timings for parallel flashes
+
+Stefan Pledl (2):
+      Blackfin: fix BF548 UART0 DMA IRQ translation
+      Blackfin: bf548-ezkit: fix incorrect LCD size parameters
+
+Yi Li (8):
+      Blackfin: bf537-stamp: declare SPI IRQ resources
+      Blackfin: bf533-stamp: add resources for mmc_spi card
+      Blackfin: update anomaly lists
+      Blackfin: cleanup sync handling when enabling/disabling cplbs
+      Blackfin: do not trace the exception handler
+      Blackfin: use raw_smp_processor_id() in exception code
+      Blackfin: fix BF54x SPI CS resources
+      Blackfin: update ftrace for latest toolchain
+
+ arch/blackfin/Kconfig                              |   25 +-
+ arch/blackfin/Kconfig.debug                        |    6 +
+ arch/blackfin/configs/BF518F-EZBRD_defconfig       |    4 +-
+ arch/blackfin/configs/BF526-EZBRD_defconfig        |    4 +-
+ arch/blackfin/configs/BF527-EZKIT_defconfig        |    4 +-
+ arch/blackfin/configs/BF548-EZKIT_defconfig        |    2 +-
+ arch/blackfin/include/asm/bfin-global.h            |    6 -
+ arch/blackfin/include/asm/bfin5xx_spi.h            |    1 +
+ arch/blackfin/include/asm/cplb.h                   |   46 ++++-
+ arch/blackfin/include/asm/early_printk.h           |   24 ++
+ arch/blackfin/include/asm/elf.h                    |    2 +-
+ arch/blackfin/include/asm/entry.h                  |   30 ++-
+ arch/blackfin/include/asm/ftrace.h                 |    2 +-
+ arch/blackfin/include/asm/ipipe.h                  |    7 -
+ arch/blackfin/include/asm/irq_handler.h            |    1 +
+ arch/blackfin/include/asm/mmu_context.h            |    6 +-
+ arch/blackfin/include/asm/pda.h                    |    7 +
+ arch/blackfin/kernel/Makefile                      |    1 +
+ arch/blackfin/kernel/asm-offsets.c                 |    7 +
+ arch/blackfin/kernel/bfin_dma_5xx.c                |   14 +-
+ arch/blackfin/kernel/bfin_gpio.c                   |    1 -
+ arch/blackfin/kernel/cplb-mpu/Makefile             |    2 +-
+ arch/blackfin/kernel/cplb-mpu/cacheinit.c          |   69 -----
+ arch/blackfin/kernel/cplb-mpu/cplbmgr.c            |   63 +----
+ arch/blackfin/kernel/cplb-nompu/Makefile           |    2 +-
+ arch/blackfin/kernel/cplb-nompu/cacheinit.c        |   69 -----
+ arch/blackfin/kernel/cplb-nompu/cplbinit.c         |   11 +-
+ arch/blackfin/kernel/cplb-nompu/cplbmgr.c          |   35 +---
+ arch/blackfin/kernel/early_printk.c                |   74 +++++-
+ arch/blackfin/kernel/entry.S                       |   24 ++-
+ arch/blackfin/kernel/ftrace-entry.S                |   23 +-
+ arch/blackfin/kernel/ftrace.c                      |    2 +-
+ arch/blackfin/kernel/ipipe.c                       |   83 +++----
+ arch/blackfin/kernel/kgdb_test.c                   |    2 +-
+ arch/blackfin/kernel/module.c                      |  266 +++++++++-----------
+ arch/blackfin/kernel/process.c                     |   10 +-
+ arch/blackfin/kernel/ptrace.c                      |  155 +++++++-----
+ arch/blackfin/kernel/setup.c                       |  120 +++------
+ arch/blackfin/kernel/shadow_console.c              |  113 +++++++++
+ arch/blackfin/kernel/time-ts.c                     |    4 +-
+ arch/blackfin/kernel/traps.c                       |   88 ++++---
+ arch/blackfin/kernel/vmlinux.lds.S                 |    4 +-
+ arch/blackfin/lib/ins.S                            |    4 +-
+ arch/blackfin/mach-bf518/boards/ezbrd.c            |   29 +--
+ arch/blackfin/mach-bf518/include/mach/anomaly.h    |    1 +
+ arch/blackfin/mach-bf518/include/mach/blackfin.h   |   10 -
+ arch/blackfin/mach-bf527/boards/cm_bf527.c         |  164 ++++++-------
+ arch/blackfin/mach-bf527/boards/ezbrd.c            |   29 +--
+ arch/blackfin/mach-bf527/boards/ezkit.c            |   58 +----
+ arch/blackfin/mach-bf527/include/mach/anomaly.h    |   13 +-
+ arch/blackfin/mach-bf527/include/mach/blackfin.h   |   10 -
+ arch/blackfin/mach-bf533/boards/H8606.c            |   39 +--
+ arch/blackfin/mach-bf533/boards/blackstamp.c       |   11 +
+ arch/blackfin/mach-bf533/boards/cm_bf533.c         |  127 +++++++++-
+ arch/blackfin/mach-bf533/boards/ezkit.c            |   13 +-
+ arch/blackfin/mach-bf533/boards/stamp.c            |   83 ++++---
+ arch/blackfin/mach-bf533/dma.c                     |    8 +-
+ .../mach-bf533/include/mach/bfin_serial_5xx.h      |    8 +-
+ arch/blackfin/mach-bf533/include/mach/blackfin.h   |    7 -
+ arch/blackfin/mach-bf537/boards/Kconfig            |   12 +-
+ arch/blackfin/mach-bf537/boards/Makefile           |    3 +-
+ .../mach-bf537/boards/{cm_bf537.c => cm_bf537e.c}  |  157 +++++++++---
+ .../mach-bf537/boards/{cm_bf537.c => cm_bf537u.c}  |   47 ++--
+ arch/blackfin/mach-bf537/boards/pnav10.c           |   29 +--
+ arch/blackfin/mach-bf537/boards/stamp.c            |  249 +++++++++++++++----
+ arch/blackfin/mach-bf537/boards/tcm_bf537.c        |   43 ++--
+ arch/blackfin/mach-bf537/dma.c                     |    8 +-
+ arch/blackfin/mach-bf537/include/mach/anomaly.h    |    2 +-
+ arch/blackfin/mach-bf537/include/mach/blackfin.h   |   90 -------
+ arch/blackfin/mach-bf538/boards/ezkit.c            |   65 +++++
+ arch/blackfin/mach-bf538/include/mach/anomaly.h    |    2 +-
+ arch/blackfin/mach-bf538/include/mach/blackfin.h   |   10 -
+ arch/blackfin/mach-bf538/include/mach/cdefBF538.h  |    1 +
+ arch/blackfin/mach-bf548/boards/cm_bf548.c         |   19 ++-
+ arch/blackfin/mach-bf548/boards/ezkit.c            |   12 +-
+ arch/blackfin/mach-bf548/dma.c                     |    8 +-
+ arch/blackfin/mach-bf548/include/mach/anomaly.h    |   21 ++-
+ arch/blackfin/mach-bf548/include/mach/blackfin.h   |   89 -------
+ arch/blackfin/mach-bf561/boards/cm_bf561.c         |  141 +++++++++--
+ arch/blackfin/mach-bf561/boards/ezkit.c            |   13 +-
+ arch/blackfin/mach-bf561/include/mach/anomaly.h    |    2 +
+ arch/blackfin/mach-bf561/secondary.S               |   28 +--
+ arch/blackfin/mach-common/Makefile                 |    1 -
+ arch/blackfin/mach-common/cache-c.c                |   44 ++++-
+ arch/blackfin/mach-common/entry.S                  |  191 ++++++++-------
+ arch/blackfin/mach-common/head.S                   |   19 ++-
+ arch/blackfin/mach-common/interrupt.S              |   78 +++---
+ arch/blackfin/mach-common/ints-priority.c          |   19 +-
+ arch/blackfin/mach-common/lock.S                   |  223 ----------------
+ arch/blackfin/mach-common/pm.c                     |   64 +----
+ arch/blackfin/mm/init.c                            |    3 +
+ arch/blackfin/mm/isram-driver.c                    |  222 ++++++++++++++++-
+ arch/blackfin/mm/sram-alloc.c                      |   30 ++-
+ 93 files changed, 2168 insertions(+), 1810 deletions(-)
+ delete mode 100644 arch/blackfin/kernel/cplb-mpu/cacheinit.c
+ delete mode 100644 arch/blackfin/kernel/cplb-nompu/cacheinit.c
+ create mode 100644 arch/blackfin/kernel/shadow_console.c
+ copy arch/blackfin/mach-bf537/boards/{cm_bf537.c => cm_bf537e.c} (85%)
+ rename arch/blackfin/mach-bf537/boards/{cm_bf537.c => cm_bf537u.c} (94%)
+ delete mode 100644 arch/blackfin/mach-common/lock.S
