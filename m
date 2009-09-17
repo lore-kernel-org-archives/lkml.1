@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbZIQUbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZIQUhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753981AbZIQUbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbZIQUbW
+	id S1754039AbZIQUhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZIQUhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:31:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50947 "EHLO mx2.mail.elte.hu"
+	Thu, 17 Sep 2009 16:37:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:36835 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753348AbZIQUbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:31:21 -0400
-Date: Thu, 17 Sep 2009 22:31:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
-	(Was: Re: [PATCH] Remove broken by design and by implementation
-	devtmpfs maintenance disaster)
-Message-ID: <20090917203113.GA9530@elte.hu>
-References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <m1ab0tcwep.fsf@fess.ebiederm.org> <20090917185306.GA28635@elte.hu> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>
+	id S1750741AbZIQUhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 16:37:21 -0400
+Date: Thu, 17 Sep 2009 22:32:48 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Roland McGrath <roland@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: do_wait() changes && 2.6.32 -mm merge plans
+Message-ID: <20090917203248.GB29346@redhat.com>
+References: <20090915161535.db0a6904.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>
+In-Reply-To: <20090915161535.db0a6904.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/15, Andrew Morton wrote:
+>
+> ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
+> do_wait-wakeup-optimization-shift-security_task_wait-from-eligible_child-to-wait_consider_task.patch
+> #do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup.patch: busted (KAMEZAWA)
+> do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup.patch
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Hopefully the problem with this one is fixed, thanks again to Kamezawa.
 
-> On Thu, 17 Sep 2009, Kay Sievers wrote:
-> 
-> > On Thu, Sep 17, 2009 at 20:53, Ingo Molnar <mingo@elte.hu> wrote:
-> > > I've reproduced a bug with the following .config options:
-> > >
-> > > ??CONFIG_DEVTMPFS=y
-> > > ??CONFIG_DEVTMPFS_MOUNT=y
-> > >
-> > > /dev/null and /dev/zero are not read/writable to ordinary users, 
-> > > breaking normal bootup and login:
-> > 
-> > Udev should run long before some ordinary/non-root user can login, 
-> > and apply the permissions as it always does. It's known to work on 
-> > Fedora, SUSE, Ubuntu. What kind of system/environment/setup is that 
-> > where you see this?
-> 
-> I don't know if this is what Ingo does, but I have a few machines 
-> where I don't run the distro-supplied 'initrd' at all, because it's 
-> easier to boot without it. The Fedora initrd doesn't allow me to 
-> sanely set root filesystem parameters without totally rewriting the 
-> initrd image, which I'm not interested in, for example (they'll take 
-> effect for the root initrd, not the final root).
+> do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup-selinux_bprm_committed_creds-use-__wake_up_parent.patch
+> do_wait-wakeup-optimization-child_wait_callback-check-__wnothread-case.patch
+> do_wait-wakeup-optimization-fix-child_wait_callback-eligible_child-usage.patch
+> do_wait-wakeup-optimization-simplify-task_pid_type.patch
+> #do_wait-optimization-do-not-place-sub-threads-on-task_struct-children-list.patch: risky?
+> do_wait-optimization-do-not-place-sub-threads-on-task_struct-children-list.patch
 
-Correct: i'm booting raw bzImages, with /dev copied to the real /dev. To 
-this box udev is mostly an annoyance that slows down my bootup ;-)
+Yes, risky... God knows who can do list_for_each(->children) and expect to
+find the sub-threads. But this is obviously good optimization/simplification.
 
-Furthermore, this is a really old image, Fedora Core 6, where udev does 
-not get updated anymore. I still boot new kernels on it though, and it 
-worked fine up to now.
+It is just ugly to place sub-threads on ->children list, this buys nothing
+but slown downs do_wait(). (this was needed, afaics, to handle ptraced but
+not re-parented threads a long ago).
 
-	Ingo
+> wait_consider_task-kill-parent-argument.patch
+> do_wait-fix-sys_waitid-specific-behaviour.patch
+> wait_noreap_copyout-check-for-wo_info-=-null.patch
+>
+>   ptrace.  Mostly-merge.
+
+Only the first patch is "ptrace" ;)
+
+Oleg.
+
