@@ -1,39 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbZIQEyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZIQEzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbZIQEyy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 00:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZIQEyx
+	id S1753355AbZIQEzo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 00:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZIQEzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 00:54:53 -0400
-Received: from claw.goop.org ([74.207.240.146]:34939 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbZIQEyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 00:54:53 -0400
-Message-ID: <4AB1C120.1040205@goop.org>
-Date: Wed, 16 Sep 2009 21:54:56 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Miroslav Rezanina <mrezanin@redhat.com>
-CC: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
-       xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
-Subject: Re: [Xen-devel] Re: [PATCH][v2.6.29][XEN] Return unused memory to
- hypervisor
-References: <1534444399.205511253162638763.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <1534444399.205511253162638763.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
+	Thu, 17 Sep 2009 00:55:44 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58191 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752030AbZIQEzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 00:55:43 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX182RcFDJFI25ZQqebzdyl6rcYJ4y873G8P0NdIk8g
+	t8Ek04L4dN1SZg
+Subject: [patchlet] Re: Epic regression in throughput since v2.6.23
+From: Mike Galbraith <efault@gmx.de>
+To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <87fxamiim4.fsf@depni.sinp.msu.ru>
+References: <20090906205952.GA6516@elte.hu>
+	 <87hbvdiogq.fsf@depni.sinp.msu.ru> <873a6xdqwq.fsf@depni.sinp.msu.ru>
+	 <20090909155223.GA12065@elte.hu> <87my53vo6d.fsf@depni.sinp.msu.ru>
+	 <20090910065306.GB3920@elte.hu> <87ljkm9yew.fsf@depni.sinp.msu.ru>
+	 <20090911061024.GA27833@elte.hu> <87iqfmx3tr.fsf@depni.sinp.msu.ru>
+	 <20090916194507.GA27456@elte.hu>  <87fxamiim4.fsf@depni.sinp.msu.ru>
+Content-Type: text/plain
+Date: Thu, 17 Sep 2009 06:55:39 +0200
+Message-Id: <1253163339.15767.62.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/16/09 21:43, Miroslav Rezanina wrote:
-> Ups.....This should not be commented out. I will resent the patch with
-> correct (uncommented) line.
+On Wed, 2009-09-16 at 23:18 +0000, Serge Belyshev wrote:
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> > Ok, i think we've got a handle on that finally - mind checking latest 
+> > -tip?
+> 
+> Kernel build benchmark:
+> http://img11.imageshack.us/img11/4544/makej20090916.png
+> 
+> I have also repeated video encode benchmarks described here:
+> http://article.gmane.org/gmane.linux.kernel/889444
+> 
+> "x264 --preset ultrafast":
+> http://img11.imageshack.us/img11/9020/ultrafast20090916.png
+> 
+> "x264 --preset medium":
+> http://img11.imageshack.us/img11/7729/medium20090916.png
 
-I've already applied a variant of your patch.  Check the
-rebase/core-freemem branch in xen.git.
+Pre-ramble..
+Most of the performance differences I've examined in all these CFS vs
+BFS threads boil down to fair scheduler vs unfair scheduler.  If you
+favor hogs, naturally, hogs getting more bandwidth perform better than
+hogs getting their fair share.  That's wonderful for hogs, somewhat less
+than wonderful for their competition.  That fairness is not necessarily
+the best thing for throughput is well known.  If you've got a single
+dissimilar task load running alone, favoring hogs may perform better..
+or not.  What about mixed loads though?  Is the throughput of frequent
+switchers less important than hog throughput?
 
-    J
+Moving right along..
+
+That x264 thing uncovered an interesting issue within CFS.  That load is
+a frequent clone() customer, and when it has to compete against a not so
+fork/clone happy load, it suffers mightily.  Even when running solo, ie
+only competing against it's own siblings, IFF sleeper fairness is
+enabled, the pain of thread startup latency is quite visible.  With
+concurrent loads, it is agonizingly painful.
+
+concurrent load test
+tbench 8 vs
+x264 --preset ultrafast --no-scenecut --sync-lookahead 0 --qp 20 -o /dev/null --threads 8 soccer_4cif.y4m
+
+(i can turn knobs and get whatever numbers i want, including
+outperforming bfs, concurrent or solo.. not the point)
+
+START_DEBIT
+encoded 600 frames, 44.29 fps, 22096.60 kb/s
+encoded 600 frames, 43.59 fps, 22096.60 kb/s
+encoded 600 frames, 43.78 fps, 22096.60 kb/s
+encoded 600 frames, 43.77 fps, 22096.60 kb/s
+encoded 600 frames, 45.67 fps, 22096.60 kb/s
+
+8   1068214   672.35 MB/sec  execute  57 sec
+8   1083785   672.16 MB/sec  execute  58 sec
+8   1099188   672.18 MB/sec  execute  59 sec
+8   1114626   672.00 MB/sec  cleanup  60 sec
+8   1114626   671.96 MB/sec  cleanup  60 sec
+
+NO_START_DEBIT
+encoded 600 frames, 123.19 fps, 22096.60 kb/s
+encoded 600 frames, 123.85 fps, 22096.60 kb/s
+encoded 600 frames, 120.05 fps, 22096.60 kb/s
+encoded 600 frames, 123.43 fps, 22096.60 kb/s
+encoded 600 frames, 121.27 fps, 22096.60 kb/s
+
+8    848135   533.79 MB/sec  execute  57 sec
+8    860829   534.08 MB/sec  execute  58 sec
+8    872840   533.74 MB/sec  execute  59 sec
+8    885036   533.66 MB/sec  cleanup  60 sec
+8    885036   533.64 MB/sec  cleanup  60 sec
+
+2.6.31-bfs221-smp
+encoded 600 frames, 169.00 fps, 22096.60 kb/s
+encoded 600 frames, 163.85 fps, 22096.60 kb/s
+encoded 600 frames, 161.00 fps, 22096.60 kb/s
+encoded 600 frames, 155.57 fps, 22096.60 kb/s
+encoded 600 frames, 162.01 fps, 22096.60 kb/s
+
+8    458328   287.67 MB/sec  execute  57 sec
+8    464442   288.68 MB/sec  execute  58 sec
+8    471129   288.71 MB/sec  execute  59 sec
+8    477643   288.61 MB/sec  cleanup  60 sec
+8    477643   288.60 MB/sec  cleanup  60 sec
+
+patchlet:
+
+sched: disable START_DEBIT.
+
+START_DEBIT induces unfairness to loads which fork/clone frequently when they
+must compete against loads which do not.
+
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+
+ kernel/sched_features.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index d5059fd..2fc94a0 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -23,7 +23,7 @@ SCHED_FEAT(NORMALIZED_SLEEPER, 0)
+  * Place new tasks ahead so that they do not starve already running
+  * tasks
+  */
+-SCHED_FEAT(START_DEBIT, 1)
++SCHED_FEAT(START_DEBIT, 0)
+ 
+ /*
+  * Should wakeups try to preempt running tasks.
+
 
