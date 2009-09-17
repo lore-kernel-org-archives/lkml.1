@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZIQWSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZIQW01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752704AbZIQWSq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 18:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZIQWSo
+	id S1753132AbZIQW01 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 18:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZIQW00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 18:18:44 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:60631 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbZIQWSo (ORCPT
+	Thu, 17 Sep 2009 18:26:26 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:37112 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752496AbZIQW0Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 18:18:44 -0400
-Subject: Re: [PATCH v2] arm: remove unused code in delay.S
-From: Steve Chen <schen@mvista.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Felipe Contreras <felipe.contreras@gmail.com>,
-       linux-kernel@vger.kernel.org, Marek Vasut <marek.vasut@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org,
-       Krzysztof Halasa <khc@pm.waw.pl>
-In-Reply-To: <20090917213723.GC10599@shareable.org>
-References: <1253017761.3273.117.camel@linux-1lbu>
-	 <200909151541.08852.marek.vasut@gmail.com>
-	 <1253032210.3273.128.camel@linux-1lbu>
-	 <94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com>
-	 <1253043875.3273.131.camel@linux-1lbu>
-	 <m3k4zzdimy.fsf@intrepid.localdomain>
-	 <20090916134721.GA11218@n2100.arm.linux.org.uk>
-	 <20090917193257.GA10599@shareable.org>
-	 <20090917194119.GA12510@n2100.arm.linux.org.uk>
-	 <1253222978.3273.236.camel@linux-1lbu>
-	 <20090917213723.GC10599@shareable.org>
-Content-Type: text/plain
-Date: Thu, 17 Sep 2009 17:25:04 -0500
-Message-Id: <1253226304.3273.249.camel@linux-1lbu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Sep 2009 18:26:25 -0400
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> 
+	<m1ab0tcwep.fsf@fess.ebiederm.org> <20090917185306.GA28635@elte.hu> 
+	<ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> 
+	<alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 18 Sep 2009 00:26:14 +0200
+Message-ID: <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was: 
+	Re: [PATCH] Remove broken by design and by implementation devtmpfs 
+	maintenance disaster)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-17 at 22:37 +0100, Jamie Lokier wrote:
-> Steve Chen wrote:
-> > +	help
-> > +	  Enable this if observing longer than expected delays.  This code
-> > +	  improves delay accuracy for some CPUs.  However, it can also cause
-> > +	  delay duration to be too short for others which leads to stability
-> > +	  issues.
-> > +
-> > +	  In other words, do not enable unless you can guarantee that the
-> > +	  processor (or ALL of the processors if building a generic kernel)
-> > +	  delays for at least the time requested after enabling.
-> > +
-> >  endmenu
-> 
-> It would be very helpful to mention which CPUs are affected.
-> Ok, we don't know exactly...
-> 
-> But Russell has stated that ARM610 and ARM710 benefit from enabling
-> the code, and that it specifically must not be enabled for StrongARM.
-> 
-> Here's an additional paragraph to add on the end:
-> 
-> 	ARM610 and ARM710 are known to benefit from enabling this option.
-> 	It should not be enabled for StrongARMs, because it is known
-> 	to produce too short delays on those.
-> 
-Sure, I can add this paragraph in the next revision.
+On Thu, Sep 17, 2009 at 22:26, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Thu, 17 Sep 2009, Kay Sievers wrote:
 
-> Maybe you can adjust the config selectors and default to match?
+> That may be "not supported", but the point is, we want to make the kernel
+> be as self-sufficient as possible, and the whole _point_ of this devtmpfs
+> seemed to be to increase self-sufficiency rather than decrease it by
+> requiring 'udev' to have run very very early.
 
-I'm not sure about this one.  For one thing, in the last e-mail between
-you and Russel I saw
+Yes, that's the point. We could try to push the limit even higher and
+try to run without udev. A few embedded and linux-on-cell-phone people
+already asked for the same thing.
 
->> Btw, do you know where PT110 fits in?  Is it like StrongARM (SA110)?
-> No idea.
+> If you have udev running really early, then what's the point of devtmpfs?
+> You might as well just have udev and tmpfs.
 
-Not to mention the difficulties to account for all the possible
-permutations for kernels that is built for multiple CPUs.  Perhaps we
-can start a list of the processors that should have this flag enabled
-and the list of processors should have the flag disabled (instead of the
-paragraph you suggested).  This way, people can just add to the list as
-they experiment with this flag on whatever CPU version that they worked
-on.
+It still simplifies the bootstrapping of an empty mounted /dev tmpfs,
+and makes the node creation synchronous, unlike udev. It also makes
+rescue very easy and reliable. It solves a bunch of problems, at least
+for system-level privileged tasks, like module loading with immediate
+device access after modprobe returns.
 
-Regards,
+> So I suspect /dev/null and /dev/zero should be special - just make them
+> have 0666 permissions. Because they really _are_ special, and no other
+> permissions ever make sense for them.
 
-Steve
+That's true. I guess there are a few more devices that need special
+permissions. We could make that happen, so people could probably run a
+system without udev on top, at least in a controlled environment. For
+distros it's not that interesting, they will need all the hotplug
+handling, and all the stuff that plugs into udev's event mechanisms.
+We only thought about bootup and root users for now, but that could be
+changed, if it makes things easier.
 
+Kay
