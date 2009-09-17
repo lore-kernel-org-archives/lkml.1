@@ -1,110 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbZIQHQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZIQHRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758603AbZIQHQg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 03:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbZIQHQg
+	id S1758626AbZIQHRo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 03:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758567AbZIQHRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 03:16:36 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50549 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758526AbZIQHQf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 03:16:35 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 17 Sep 2009 16:14:32 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 3/3][mmotm] updateing size of kcore
-Message-Id: <20090917161432.97e06050.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <2375c9f90909162359m14ec7640m88ddd7ba54d6e793@mail.gmail.com>
-References: <2375c9f90909160235m1f052df0qb001f8243ed9291e@mail.gmail.com>
-	<1bc66b163326564dafb5a7dd8959fd56.squirrel@webmail-b.css.fujitsu.com>
-	<20090917114138.e14a1183.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090917114509.a9eb9f2c.kamezawa.hiroyu@jp.fujitsu.com>
-	<2375c9f90909162359m14ec7640m88ddd7ba54d6e793@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 17 Sep 2009 03:17:43 -0400
+Received: from mail.df.lth.se ([194.47.250.12]:49979 "EHLO df.lth.se"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758540AbZIQHRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 03:17:43 -0400
+From: Linus Walleij <linus.walleij@stericsson.com>
+To: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: [PATCH] Voltage count for AB3100 regulator
+Date: Thu, 17 Sep 2009 09:17:33 +0200
+Message-Id: <1253171853-27525-1-git-send-email-linus.walleij@stericsson.com>
+X-Mailer: git-send-email 1.6.2.rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Sep 2009 14:59:35 +0800
-Américo Wang <xiyou.wangcong@gmail.com> wrote:
+This sets the number of voltages for the AB3100 regulators so that
+they play well with the voltage listing functions and can be used
+properly with the MMC regulator integration glue for example.
 
-> On Thu, Sep 17, 2009 at 10:45 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> >
-> > After memory hotplug (or other events in future), kcore size
-> > can be modified.
-> >
-> > To update inode->i_size, we have to know inode/dentry but we
-> > can't get it from inside /proc directly.
-> > But considerinyg memory hotplug, kcore image is updated only when
-> > it's opened. Then, updating inode->i_size at open() is enough.
-> >
-> > Cc: WANG Cong <xiyou.wangcong@gmail.com>
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> 
-> This patch looks fine.
-> 
-> However, I am thinking if kcore is the only file under /proc whose size
-> is changed dynamically? If no, that probably means we need to change
-> generic proc code.
-> 
-I tried yesteray, and back to this ;)
+Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+---
+The MFD update containing the AB3100 regulator patch has not yet
+hit mainline so I guess we'll have to queue this up in Sam's tree
+too if it's not changing in the next few hours, OK Sam?
+---
+ drivers/regulator/ab3100.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-One thing which makes me confused is that there is no way to get
-inode or dentry from proc_dir_entry.
-
-I tried to rewrite proc_getattr() for cheating "ls". But it just works for
-"stat" and inode->i_size is used more widely. So, this implementation now.
-
-But considering practically, inode->i_size itself is not meaningful in /proc
-files even if it's correct. For example, /proc/vmstat or /proc/stat,
-/proc/<pid>/maps... etc...
-
-inode->i_size will be dynamically changed while reading. Now, most of users
-know regular files under /proc is not a "real" file and handle them in proper
-way. (programs can be used with pipe/stdin works well.)
-
-I wonder /proc/kcore is a special one, which gdb/objdump/readelf may access.
-Above 3 programs are for "usual" files and not considering pseudo files under
-/proc. So, I think adding generic i->i_size support is an overkill until
-there are users depends on that.
-
-Thanks,
--Kame
-
-
-> Thanks!
-> 
-> > ---
-> >  fs/proc/kcore.c |    5 +++++
-> >  1 file changed, 5 insertions(+)
-> >
-> > Index: mmotm-2.6.31-Sep14/fs/proc/kcore.c
-> > ===================================================================
-> > --- mmotm-2.6.31-Sep14.orig/fs/proc/kcore.c
-> > +++ mmotm-2.6.31-Sep14/fs/proc/kcore.c
-> > @@ -546,6 +546,11 @@ static int open_kcore(struct inode *inod
-> >                return -EPERM;
-> >        if (kcore_need_update)
-> >                kcore_update_ram();
-> > +       if (i_size_read(inode) != proc_root_kcore->size) {
-> > +               mutex_lock(&inode->i_mutex);
-> > +               i_size_write(inode, proc_root_kcore->size);
-> > +               mutex_unlock(&inode->i_mutex);
-> > +       }
-> >        return 0;
-> >  }
-> >
-> >
-> >
-> 
+diff --git a/drivers/regulator/ab3100.c b/drivers/regulator/ab3100.c
+index 156979d..49aeee8 100644
+--- a/drivers/regulator/ab3100.c
++++ b/drivers/regulator/ab3100.c
+@@ -521,30 +521,35 @@ ab3100_regulator_desc[AB3100_NUM_REGULATORS] = {
+ 		.name = "LDO_E",
+ 		.id   = AB3100_LDO_E,
+ 		.ops  = &regulator_ops_variable_sleepable,
++		.n_voltages = ARRAY_SIZE(ldo_e_buck_typ_voltages),
+ 		.type = REGULATOR_VOLTAGE,
+ 	},
+ 	{
+ 		.name = "LDO_F",
+ 		.id   = AB3100_LDO_F,
+ 		.ops  = &regulator_ops_variable,
++		.n_voltages = ARRAY_SIZE(ldo_f_typ_voltages),
+ 		.type = REGULATOR_VOLTAGE,
+ 	},
+ 	{
+ 		.name = "LDO_G",
+ 		.id   = AB3100_LDO_G,
+ 		.ops  = &regulator_ops_variable,
++		.n_voltages = ARRAY_SIZE(ldo_g_typ_voltages),
+ 		.type = REGULATOR_VOLTAGE,
+ 	},
+ 	{
+ 		.name = "LDO_H",
+ 		.id   = AB3100_LDO_H,
+ 		.ops  = &regulator_ops_variable,
++		.n_voltages = ARRAY_SIZE(ldo_h_typ_voltages),
+ 		.type = REGULATOR_VOLTAGE,
+ 	},
+ 	{
+ 		.name = "LDO_K",
+ 		.id   = AB3100_LDO_K,
+ 		.ops  = &regulator_ops_variable,
++		.n_voltages = ARRAY_SIZE(ldo_k_typ_voltages),
+ 		.type = REGULATOR_VOLTAGE,
+ 	},
+ 	{
+@@ -557,6 +562,7 @@ ab3100_regulator_desc[AB3100_NUM_REGULATORS] = {
+ 		.name = "BUCK",
+ 		.id   = AB3100_BUCK,
+ 		.ops  = &regulator_ops_variable_sleepable,
++		.n_voltages = ARRAY_SIZE(ldo_e_buck_typ_voltages),
+ 		.type = REGULATOR_VOLTAGE,
+ 	},
+ };
+-- 
+1.6.2.1
 
