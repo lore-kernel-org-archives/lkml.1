@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZIQUQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZIQUSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbZIQUQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZIQUQk
+	id S1753867AbZIQUSc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZIQUSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:16:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47782 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753232AbZIQUQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:16:39 -0400
-Date: Thu, 17 Sep 2009 20:16:20 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <4AB20398.8070209@cn.fujitsu.com>
-References: <4AB20398.8070209@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] softirq: add BLOCK_IOPOLL to softirq_to_name
-Message-ID: <tip-5dd4de587fd9c25cb32a7a0fe9feec3647509b6f@git.kernel.org>
-Git-Commit-ID: 5dd4de587fd9c25cb32a7a0fe9feec3647509b6f
-X-Mailer: tip-git-log-daemon
+	Thu, 17 Sep 2009 16:18:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38804 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751923AbZIQUSb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 16:18:31 -0400
+Date: Thu, 17 Sep 2009 13:17:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Roland Dreier <rdreier@cisco.com>
+cc: Joel Becker <Joel.Becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
+In-Reply-To: <adabpl9ct3y.fsf@cisco.com>
+Message-ID: <alpine.LFD.2.01.0909171316230.4950@localhost.localdomain>
+References: <20090914221434.GA4507@mail.oracle.com> <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain> <20090915000417.GC4507@mail.oracle.com> <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain> <20090915005417.GD4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain> <20090915040601.GE4507@mail.oracle.com> <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain> <20090915214530.GA11060@mail.oracle.com> <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
+ <20090916044047.GA30453@mail.oracle.com> <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain> <adabpl9ct3y.fsf@cisco.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 20:16:21 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5dd4de587fd9c25cb32a7a0fe9feec3647509b6f
-Gitweb:     http://git.kernel.org/tip/5dd4de587fd9c25cb32a7a0fe9feec3647509b6f
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Thu, 17 Sep 2009 17:38:32 +0800
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Thu, 17 Sep 2009 15:53:44 -0400
-
-softirq: add BLOCK_IOPOLL to softirq_to_name
-
-With BLOCK_IOPOLL_SOFTIRQ added, softirq_to_name[] and
-show_softirq_name() needs to be updated.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4AB20398.8070209@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 
----
- include/trace/events/irq.h |   21 +++++++++++----------
- kernel/softirq.c           |    2 +-
- 2 files changed, 12 insertions(+), 11 deletions(-)
+On Thu, 17 Sep 2009, Roland Dreier wrote:
+> 
+> I guess one bit of semantics to figure out is what happens if copyfile()
+> does the async case but then copyfile_ctrl() returns an error halfway
+> through... is the state of the dest file just undefined?
 
-diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-index 1cb0c3a..b89f9db 100644
---- a/include/trace/events/irq.h
-+++ b/include/trace/events/irq.h
-@@ -8,16 +8,17 @@
- #include <linux/interrupt.h>
- 
- #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
--#define show_softirq_name(val)			\
--	__print_symbolic(val,			\
--			 softirq_name(HI),	\
--			 softirq_name(TIMER),	\
--			 softirq_name(NET_TX),	\
--			 softirq_name(NET_RX),	\
--			 softirq_name(BLOCK),	\
--			 softirq_name(TASKLET),	\
--			 softirq_name(SCHED),	\
--			 softirq_name(HRTIMER),	\
-+#define show_softirq_name(val)				\
-+	__print_symbolic(val,				\
-+			 softirq_name(HI),		\
-+			 softirq_name(TIMER),		\
-+			 softirq_name(NET_TX),		\
-+			 softirq_name(NET_RX),		\
-+			 softirq_name(BLOCK),		\
-+			 softirq_name(BLOCK_IOPOLL),	\
-+			 softirq_name(TASKLET),		\
-+			 softirq_name(SCHED),		\
-+			 softirq_name(HRTIMER),		\
- 			 softirq_name(RCU))
- 
- /**
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 7db2506..f8749e5 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -57,7 +57,7 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
- static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
- 
- char *softirq_to_name[NR_SOFTIRQS] = {
--	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK",
-+	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "BLOCK_IOPOLL",
- 	"TASKLET", "SCHED", "HRTIMER",	"RCU"
- };
- 
+I think that's the one that most filesystems would prefer. Maybe the file 
+is there, it's just that it's only half copied because the filesystem 
+filled up. 
+
+Making filesystems give atomicity guarantees would be hard for the async 
+case. 
+
+Of course, if the filesystem can do the copy entirely atomically (ie by 
+just incrementing a refcount), then it can give atomicity guarantees, but 
+then you'd never see the async case either.
+
+		Linus
