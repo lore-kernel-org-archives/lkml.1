@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZIQNa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbZIQNco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbZIQNa7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 09:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZIQNa6
+	id S1756749AbZIQNco (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 09:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZIQNco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 09:30:58 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44214 "EHLO smtps.tip.net.au"
+	Thu, 17 Sep 2009 09:32:44 -0400
+Received: from rtr.ca ([76.10.145.34]:57334 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751757AbZIQNa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 09:30:57 -0400
-Date: Thu, 17 Sep 2009 23:30:53 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: linux-next: manual merge of the ext4 tree with Linus tree
-Message-Id: <20090917233053.6c0a7a41.sfr@canb.auug.org.au>
-In-Reply-To: <20090917132243.GB24438@mit.edu>
-References: <20090917115653.2e3b6b49.sfr@canb.auug.org.au>
-	<20090917132243.GB24438@mit.edu>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__17_Sep_2009_23_30_53_+1000_d+J8uH7yAIp1eI=1"
+	id S1753398AbZIQNcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 09:32:42 -0400
+Message-ID: <4AB23A7D.4050102@rtr.ca>
+Date: Thu, 17 Sep 2009 09:32:45 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Chris Webb <chris@arachsys.com>
+Cc: Tejun Heo <teheo@suse.de>, linux-scsi@vger.kernel.org,
+       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de> <4AAE3B9A.2060306@rtr.ca> <4AAE3F86.8090804@suse.de> <4AAE524C.2030401@rtr.ca> <20090916231921.GL1924@arachsys.com> <4AB239C8.2020203@rtr.ca>
+In-Reply-To: <4AB239C8.2020203@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__17_Sep_2009_23_30_53_+1000_d+J8uH7yAIp1eI=1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Ted,
-
-On Thu, 17 Sep 2009 09:22:43 -0400 Theodore Tso <tytso@mit.edu> wrote:
+Mark Lord wrote:
 >
-> Thanks, this is in a patch series which I'm preparing to push to
-> Linus, so I've fixed it up on my end.
+> Is this still happening from time to time now?
+> If so, disable the smartmontools daemon (smartd) and see if the problem 
+> goes away.
+> And especially disable hddtemp (which issues SMART commands) if that is 
+> also around.
+> 
+> It would be good to discover if those are the triggers for what's 
+> happening here.
+..
 
-OK, thanks.
+Ah.. I've just now read your other recent posting, so no need to answer again here.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__17_Sep_2009_23_30_53_+1000_d+J8uH7yAIp1eI=1
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> Tejun.. do we do a FLUSH CACHE before issuing a non-NCQ command ?
+> If not, then I think we may need to add code to do it.
 
-iEYEARECAAYFAkqyOg0ACgkQjjKRsyhoI8y5PwCgve5GDajqG0FHsmPYcHtsY3Oq
-7CYAoJlw3fwVZDHpl7e2btmfmgnMt+m/
-=iqIa
------END PGP SIGNATURE-----
-
---Signature=_Thu__17_Sep_2009_23_30_53_+1000_d+J8uH7yAIp1eI=1--
