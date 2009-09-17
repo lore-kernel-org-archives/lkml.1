@@ -1,120 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbZIQI4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZIQI42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbZIQI4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 04:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZIQI4T
+	id S1755281AbZIQI42 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 04:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbZIQI41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 04:56:19 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:37914 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbZIQI4S (ORCPT
+	Thu, 17 Sep 2009 04:56:27 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:48612 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755056AbZIQI4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 04:56:18 -0400
-Message-ID: <4AB1F9B0.10103@monstr.eu>
-Date: Thu, 17 Sep 2009 10:56:16 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Thu, 17 Sep 2009 04:56:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=G843WGDIcinQ043DQe+c4nUqRShmBV/BPC82JQmSLgsC6oUPMPcazbu0NrzjRzuI+l
+         jJTFJvYDk1Wxybn+uPi2xosdonp8u7pitcCQujMd4ddFby0pGZNA3tOzfbygP5P1gZZq
+         As7lNpwg9dIXj+COKjEQTKXhs4TzjIJq/wYGg=
+Date: Thu, 17 Sep 2009 10:56:24 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf trace: Sample timestamp and cpu when using record
+	flag
+Message-ID: <20090917085622.GA5184@nowhere>
+References: <4AB1F827.8040905@cn.fujitsu.com>
 MIME-Version: 1.0
-To: microblaze-uclinux@itee.uq.edu.au
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>
-Subject: Re: =?us-ascii?Q?=5Bmicroblaze=2Duclinux=5D=20Re=3A=20=5BPATCH=5D=20Actually=20show=20KiB=20rather=20than=20pages=20in=20=22Freeing=20initrd
-References: <20090915165037.GA23702@csclub.uwaterloo.ca> <4AB1E78D.3070007@snapgear.com>
-In-Reply-To: <4AB1E78D.3070007@snapgear.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB1F827.8040905@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Greg Ungerer wrote:
-> Hi Lennart,
+On Thu, Sep 17, 2009 at 04:49:43PM +0800, Li Zefan wrote:
+> Sample timestamp and cpu just like the -R option.
 > 
-> Lennart Sorensen wrote:
->> Fix "Freeing initrd memory:" message on h3800, m68knommu and microblaze
->> to show kilobytes as claimed rather than number of pages.
->>
->> Signed-off-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> Before:
+>             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
+>             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
+>             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=1 handler=i8042
+>             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=18 handler=eth0
+>             init-0     [-01] 1266874889.17179869184709551615: irq_handler_entry: irq=1 handler=i8042
 > 
-> Looks ok to me. I can take and push the m68knommu part separately.
-> Or if Andrew wants to take it all as one, here is an:
+> After:
+>             init-0     [001]  7364.568965353: irq_handler_entry: irq=18 handler=eth0
+>             init-0     [001]  7365.530226877: irq_handler_entry: irq=1 handler=i8042
+>             init-0     [001]  7365.542831563: irq_handler_entry: irq=18 handler=eth0
+>             init-0     [001]  7365.644156299: irq_handler_entry: irq=18 handler=eth0
+>             init-0     [001]  7365.694556201: irq_handler_entry: irq=18 handler=eth0
 > 
-> Acked-by: Greg Ungerer <gerg@uclinux.org>
-
-As Greg wrote. It will be the best to push it separately. IMHO it
-will be faster. It is up to you. If you want to add it to microblaze
-branch please send only patch for microblaze.
-
-If not.
-
-Acked-by: Michal Simek <monstr@monstr.eu>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
 
-Thanks,
-Michal
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
 
-
+> ---
+>  tools/perf/util/parse-events.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
 > 
-> 
-> Regards
-> Greg
-> 
-> 
->> diff --git a/arch/h8300/mm/init.c b/arch/h8300/mm/init.c
->> index 9942f24..3342f49 100644
->> --- a/arch/h8300/mm/init.c
->> +++ b/arch/h8300/mm/init.c
->> @@ -170,7 +170,7 @@ void free_initrd_mem(unsigned long start, unsigned
->> long end)
->>          totalram_pages++;
->>          pages++;
->>      }
->> -    printk ("Freeing initrd memory: %dk freed\n", pages);
->> +    printk ("Freeing initrd memory: %dk freed\n", pages * (PAGE_SIZE
->> / 1024));
->>  }
->>  #endif
->>  
->> diff --git a/arch/m68knommu/mm/init.c b/arch/m68knommu/mm/init.c
->> index b1703c6..f3236d0 100644
->> --- a/arch/m68knommu/mm/init.c
->> +++ b/arch/m68knommu/mm/init.c
->> @@ -162,7 +162,7 @@ void free_initrd_mem(unsigned long start, unsigned
->> long end)
->>          totalram_pages++;
->>          pages++;
->>      }
->> -    printk (KERN_NOTICE "Freeing initrd memory: %dk freed\n", pages);
->> +    printk (KERN_NOTICE "Freeing initrd memory: %dk freed\n", pages *
->> (PAGE_SIZE / 1024));
->>  }
->>  #endif
->>  
->> diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
->> index f207f1a..ed5f96b 100644
->> --- a/arch/microblaze/mm/init.c
->> +++ b/arch/microblaze/mm/init.c
->> @@ -180,7 +180,7 @@ void free_initrd_mem(unsigned long start, unsigned
->> long end)
->>          totalram_pages++;
->>          pages++;
->>      }
->> -    printk(KERN_NOTICE "Freeing initrd memory: %dk freed\n", pages);
->> +    printk(KERN_NOTICE "Freeing initrd memory: %dk freed\n", pages *
->> (PAGE_SIZE / 1024));
->>  }
->>  #endif
->>  
->>
+> diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+> index c9ef944..2156269 100644
+> --- a/tools/perf/util/parse-events.c
+> +++ b/tools/perf/util/parse-events.c
+> @@ -425,8 +425,11 @@ parse_single_tracepoint_event(char *sys_name,
+>  	int fd;
+>  
+>  	if (flags) {
+> -		if (!strncmp(flags, "record", strlen(flags)))
+> +		if (!strncmp(flags, "record", strlen(flags))) {
+>  			attr->sample_type |= PERF_SAMPLE_RAW;
+> +			attr->sample_type |= PERF_SAMPLE_TIME;
+> +			attr->sample_type |= PERF_SAMPLE_CPU;
+> +		}
+>  	}
+>  
+>  	snprintf(evt_path, MAXPATHLEN, "%s/%s/%s/id", debugfs_path,
+> -- 
+> 1.6.3
 > 
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
