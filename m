@@ -1,168 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZIQXtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbZIQXsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZIQXtm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 19:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbZIQXtj
+	id S1754677AbZIQXsQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 19:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbZIQXsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 19:49:39 -0400
-Received: from mga01.intel.com ([192.55.52.88]:52301 "EHLO mga01.intel.com"
+	Thu, 17 Sep 2009 19:48:07 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:59094 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754230AbZIQXti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 19:49:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,405,1249282800"; 
-   d="scan'208";a="727980401"
-From: Allen Kay <allen.m.kay@intel.com>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Cc: jbarnes@virtuousgeek.org, matthew@wil.cx,
-       Allen Kay <allen.m.kay@intel.com>
-Subject: [PATCH ACS v3 1/1]
-Date: Thu, 17 Sep 2009 16:46:33 -0700
-Message-Id: <1253231193-5753-1-git-send-email-allen.m.kay@intel.com>
-X-Mailer: git-send-email 1.6.0.6
+	id S1753681AbZIQXrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 19:47:52 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: spi-devel-general@lists.sourceforge.net,
+       David Brownell <dbrownell@users.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Daniel Mack <daniel@caiaq.de>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/5] Blackfin SPI: fix resources leakage
+Date: Thu, 17 Sep 2009 19:47:49 -0400
+Message-Id: <1253231273-16423-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables P2P upstream forwarding in ACS capable PCIe switches.
-This solves two potential problems in virtualization environment where
-a PCIe device is assigned to a guest domain using a HW iommu such as VT-d:
+From: Daniel Mack <daniel@caiaq.de>
 
-1) Unintentional failure caused by guest physical address programmed
-   into the device's DMA that happens to match the memory address range
-   of other downstream ports in the same PCIe switch.  This causes the PCI
-   transaction to go to the matching downstream port instead of go to the
-   root complex to get translated by VT-d as it should be.
+Re-order setup() a bit so we don't leak memory/dma/gpio resources upon
+errors.
 
-2) Malicious guest software intentionally attacks another downstream
-   PCIe device by programming the DMA address into the assigned device
-   that matches memory address range of the downstream PCIe port.
-
-We are in process of implementing device filtering software in KVM/XEN
-management software to allow device assignment of PCIe devices behind
-a PCIe switch only if it has ACS capability and with the P2P upstream
-forwarding bits enabled.  This patch is intended to work for both KVM
-and Xen environments.
-
-Changes from initial to v1:
-        - removed #define ACS_ENABLE and dev_info() call
-        - changed ctrl value setting without using if-condition
-        - fixed ACS #defines in pci_regs.h
-
-Changes from v2 to v3:
-        - change #define indention to 2 for PCI reg and 1 for bit
-          position
-
-Signed-off-by: Allen Kay <allen.m.kay@intel.com>
-Reviewed--by: Mathew Wilcox <willy@linux.intel.com>
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- drivers/pci/pci.c        |   35 +++++++++++++++++++++++++++++++++++
- drivers/pci/pci.h        |    1 +
- drivers/pci/probe.c      |    3 +++
- include/linux/pci_regs.h |   13 +++++++++++++
- 4 files changed, 52 insertions(+), 0 deletions(-)
+ drivers/spi/spi_bfin5xx.c |   99 +++++++++++++++++++++++++--------------------
+ 1 files changed, 55 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 6edecff..1171c6d 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1533,6 +1533,41 @@ void pci_enable_ari(struct pci_dev *dev)
- }
- 
- /**
-+ * pci_acs_enable - enable ACS if hardware support it
-+ * @dev: the PCI device
-+ */
-+void pci_acs_init(struct pci_dev *dev)
-+{
-+	int pos;
-+	u16 cap;
-+	u16 ctrl;
-+
-+	if (!dev->is_pcie)
-+		return;
-+
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ACS);
-+	if (!pos)
-+		return;
-+
-+	pci_read_config_word(dev, pos + PCI_ACS_CAP, &cap);
-+	pci_read_config_word(dev, pos + PCI_ACS_CTRL, &ctrl);
-+
-+	/* Source Validation */
-+	ctrl |= (cap & PCI_ACS_SV);
-+
-+	/* P2P Request Redirect */
-+	ctrl |= (cap & PCI_ACS_RR);
-+
-+	/* P2P Completion Redirect */
-+	ctrl |= (cap & PCI_ACS_CR);
-+
-+	/* Upstream Forwarding */
-+	ctrl |= (cap & PCI_ACS_UF);
-+
-+	pci_write_config_word(dev, pos + PCI_ACS_CTRL, ctrl);
-+}
-+
-+/**
-  * pci_swizzle_interrupt_pin - swizzle INTx for device behind bridge
-  * @dev: the PCI device
-  * @pin: the INTx pin (1=INTA, 2=INTB, 3=INTD, 4=INTD)
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index d92d195..ec8e2c1 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -202,6 +202,7 @@ static inline int pci_ari_enabled(struct pci_bus *bus)
+diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
+index 73e24ef..8ec4969 100644
+--- a/drivers/spi/spi_bfin5xx.c
++++ b/drivers/spi/spi_bfin5xx.c
+@@ -1005,18 +1005,19 @@ static u16 ssel[][MAX_SPI_SSEL] = {
+ /* first setup for new devices */
+ static int bfin_spi_setup(struct spi_device *spi)
  {
- 	return bus->self && bus->self->ari_enabled;
- }
-+extern void pci_acs_init(struct pci_dev *dev);
+-	struct bfin5xx_spi_chip *chip_info = NULL;
+-	struct chip_data *chip;
++	struct bfin5xx_spi_chip *chip_info;
++	struct chip_data *chip = NULL;
+ 	struct driver_data *drv_data = spi_master_get_devdata(spi->master);
+-	int ret;
++	int ret = -EINVAL;
  
- #ifdef CONFIG_PCI_QUIRKS
- extern int pci_is_reassigndev(struct pci_dev *dev);
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 8105e32..72b9822 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1014,6 +1014,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
+ 	if (spi->bits_per_word != 8 && spi->bits_per_word != 16)
+-		return -EINVAL;
++		goto error;
  
- 	/* Single Root I/O Virtualization */
- 	pci_iov_init(dev);
+ 	/* Only alloc (or use chip_info) on first setup */
++	chip_info = NULL;
+ 	chip = spi_get_ctldata(spi);
+ 	if (chip == NULL) {
+-		chip = kzalloc(sizeof(struct chip_data), GFP_KERNEL);
++		chip = kzalloc(sizeof(*chip), GFP_KERNEL);
+ 		if (!chip)
+ 			return -ENOMEM;
+ 
+@@ -1035,7 +1036,7 @@ static int bfin_spi_setup(struct spi_device *spi)
+ 		if (chip_info->ctl_reg & (SPE|MSTR|CPOL|CPHA|LSBF|SIZE)) {
+ 			dev_err(&spi->dev, "do not set bits in ctl_reg "
+ 				"that the SPI framework manages\n");
+-			return -EINVAL;
++			goto error;
+ 		}
+ 
+ 		chip->enable_dma = chip_info->enable_dma != 0
+@@ -1059,26 +1060,6 @@ static int bfin_spi_setup(struct spi_device *spi)
+ 	chip->ctl_reg |= MSTR;
+ 
+ 	/*
+-	 * if any one SPI chip is registered and wants DMA, request the
+-	 * DMA channel for it
+-	 */
+-	if (chip->enable_dma && !drv_data->dma_requested) {
+-		/* register dma irq handler */
+-		if (request_dma(drv_data->dma_channel, "BFIN_SPI_DMA") < 0) {
+-			dev_dbg(&spi->dev,
+-				"Unable to request BlackFin SPI DMA channel\n");
+-			return -ENODEV;
+-		}
+-		if (set_dma_callback(drv_data->dma_channel,
+-		    bfin_spi_dma_irq_handler, drv_data) < 0) {
+-			dev_dbg(&spi->dev, "Unable to set dma callback\n");
+-			return -EPERM;
+-		}
+-		dma_disable_irq(drv_data->dma_channel);
+-		drv_data->dma_requested = 1;
+-	}
+-
+-	/*
+ 	 * Notice: for blackfin, the speed_hz is the value of register
+ 	 * SPI_BAUD, not the real baudrate
+ 	 */
+@@ -1086,16 +1067,6 @@ static int bfin_spi_setup(struct spi_device *spi)
+ 	chip->flag = 1 << (spi->chip_select);
+ 	chip->chip_select_num = spi->chip_select;
+ 
+-	if (chip->chip_select_num == 0) {
+-		ret = gpio_request(chip->cs_gpio, spi->modalias);
+-		if (ret) {
+-			if (drv_data->dma_requested)
+-				free_dma(drv_data->dma_channel);
+-			return ret;
+-		}
+-		gpio_direction_output(chip->cs_gpio, 1);
+-	}
+-
+ 	switch (chip->bits_per_word) {
+ 	case 8:
+ 		chip->n_bytes = 1;
+@@ -1122,9 +1093,37 @@ static int bfin_spi_setup(struct spi_device *spi)
+ 	default:
+ 		dev_err(&spi->dev, "%d bits_per_word is not supported\n",
+ 				chip->bits_per_word);
+-		if (chip_info)
+-			kfree(chip);
+-		return -ENODEV;
++		goto error;
++	}
 +
-+	/* Access Control Service */
-+	pci_acs_init(dev);
++	/*
++	 * if any one SPI chip is registered and wants DMA, request the
++	 * DMA channel for it
++	 */
++	if (chip->enable_dma && !drv_data->dma_requested) {
++		/* register dma irq handler */
++		ret = request_dma(drv_data->dma_channel, "BFIN_SPI_DMA");
++		if (ret) {
++			dev_dbg(&spi->dev,
++				"Unable to request BlackFin SPI DMA channel\n");
++			goto error;
++		}
++		drv_data->dma_requested = 1;
++
++		ret = set_dma_callback(drv_data->dma_channel,
++			bfin_spi_dma_irq_handler, drv_data);
++		if (ret) {
++			dev_dbg(&spi->dev, "Unable to set dma callback\n");
++			goto error;
++		}
++		dma_disable_irq(drv_data->dma_channel);
++	}
++
++	if (chip->chip_select_num == 0) {
++		ret = gpio_request(chip->cs_gpio, spi->modalias);
++		if (ret)
++			goto error;
++		gpio_direction_output(chip->cs_gpio, 1);
+ 	}
+ 
+ 	dev_dbg(&spi->dev, "setup spi chip %s, width is %d, dma is %d\n",
+@@ -1135,14 +1134,26 @@ static int bfin_spi_setup(struct spi_device *spi)
+ 	spi_set_ctldata(spi, chip);
+ 
+ 	dev_dbg(&spi->dev, "chip select number is %d\n", chip->chip_select_num);
+-	if ((chip->chip_select_num > 0)
+-		&& (chip->chip_select_num <= spi->master->num_chipselect))
+-		peripheral_request(ssel[spi->master->bus_num]
+-			[chip->chip_select_num-1], spi->modalias);
++	if (chip->chip_select_num > 0 &&
++	    chip->chip_select_num <= spi->master->num_chipselect) {
++		ret = peripheral_request(ssel[spi->master->bus_num]
++		                         [chip->chip_select_num-1], spi->modalias);
++		if (ret)
++			goto error;
++	}
+ 
+ 	bfin_spi_cs_deactive(drv_data, chip);
++	ret = 0;
+ 
+-	return 0;
++ error:
++	if (ret) {
++		kfree(chip);
++		if (drv_data->dma_requested)
++			free_dma(drv_data->dma_channel);
++		drv_data->dma_requested = 0;
++	}
++
++	return ret;
  }
  
- void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index dd0bed4..d798770 100644
---- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -502,6 +502,7 @@
- #define PCI_EXT_CAP_ID_VC	2
- #define PCI_EXT_CAP_ID_DSN	3
- #define PCI_EXT_CAP_ID_PWR	4
-+#define PCI_EXT_CAP_ID_ACS	13
- #define PCI_EXT_CAP_ID_ARI	14
- #define PCI_EXT_CAP_ID_ATS	15
- #define PCI_EXT_CAP_ID_SRIOV	16
-@@ -662,4 +663,16 @@
- #define  PCI_SRIOV_VFM_MO	0x2	/* Active.MigrateOut */
- #define  PCI_SRIOV_VFM_AV	0x3	/* Active.Available */
- 
-+/* Access Control Service */
-+#define PCI_ACS_CAP		0x04	/* ACS Capability Register */
-+#define  PCI_ACS_SV		0x01	/* Source Validation */
-+#define  PCI_ACS_TB		0x02	/* Translation Blocking */
-+#define  PCI_ACS_RR		0x04	/* P2P Request Redirect */
-+#define  PCI_ACS_CR		0x08	/* P2P Completion Redirect */
-+#define  PCI_ACS_UF		0x10	/* Upstream Forwarding */
-+#define  PCI_ACS_EC		0x20	/* P2P Egress Control */
-+#define  PCI_ACS_DT		0x40	/* Direct Translated P2P */
-+#define PCI_ACS_CTRL		0x06	/* ACS Control Register */
-+#define PCI_ACS_EGRESS_CTL_V	0x08	/* ACS Egress Control Vector */
-+
- #endif /* LINUX_PCI_REGS_H */
+ /*
 -- 
-1.6.0.6
+1.6.5.rc1
 
