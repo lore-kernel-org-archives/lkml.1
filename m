@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZIQN3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZIQN3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbZIQN3T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 09:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbZIQN3S
+	id S1755474AbZIQN3a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 09:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZIQN33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 09:29:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46729 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941AbZIQN3S (ORCPT
+	Thu, 17 Sep 2009 09:29:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49493 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755112AbZIQN32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 09:29:18 -0400
-Date: Thu, 17 Sep 2009 06:26:09 -0700
+	Thu, 17 Sep 2009 09:29:28 -0400
+Date: Thu, 17 Sep 2009 06:29:09 -0700
 From: Greg KH <greg@kroah.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 44/45] PCI: Unhide the SMBus on the Compaq Evo
-	D510 USDT
-Message-ID: <20090917132609.GA4779@kroah.com>
-References: <20090916223613.597295240@mini.kroah.org> <20090916223719.861500408@mini.kroah.org> <20090917095823.12682531@hyperion.delvare> <20090917113853.GA3061@kroah.com> <20090917150917.3d7d28b8@hyperion.delvare>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+	maintenance disaster
+Message-ID: <20090917132909.GB4779@kroah.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <20090917140548.4e6ee596@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090917150917.3d7d28b8@hyperion.delvare>
+In-Reply-To: <20090917140548.4e6ee596@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 03:09:17PM +0200, Jean Delvare wrote:
-> On Thu, 17 Sep 2009 04:38:53 -0700, Greg KH wrote:
-> > On Thu, Sep 17, 2009 at 09:58:23AM +0200, Jean Delvare wrote:
-> > > Hi Greg,
-> > > 
-> > > On Wed, 16 Sep 2009 15:36:57 -0700, Greg KH wrote:
-> > > > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> > > > 
-> > > > ------------------
-> > > > From: Jean Delvare <khali@linux-fr.org>
-> > > > 
-> > > > commit 6b5096e4d4496e185cd1ada5d1b8e1d941c805ed upstream.
-> > > > 
-> > > > One more form factor for Compaq Evo D510, which needs the same quirk
-> > > > as the other form factors. Apparently there's no hardware monitoring
-> > > > chip on that one, but SPD EEPROMs, so it's still worth unhiding the
-> > > > SMBus.
-> > > 
-> > > FWIW, this one doesn't strike me as being needed in -stable. While it
-> > > should be safe (otherwise it wouldn't have gone upstream in the first
-> > > place), it hardly fulfills -stable's requirement that "it must fix a
-> > > real bug that bothers people". There's no hardware monitoring chip on
-> > > the SMBus on this machine, and people can easily live without detailed
-> > > memory module information.
-> > > 
-> > > So it's up to you, but I won't cry if you drop this patch from -stable.
-> > 
-> > Heh, you were the one that originally cc:ed the patch to
-> > stable@kernel.org, so I figured you wanted it in.
+On Thu, Sep 17, 2009 at 02:05:48PM +0100, Alan Cox wrote:
+> On Thu, 17 Sep 2009 05:57:59 -0700
+> Greg KH <greg@kroah.com> wrote:
 > 
-> That would be the other me then. Because the first me just double
-> checked that he hadn't Cc'd stable@kernel.org on this one patch ;)
+> > On Thu, Sep 17, 2009 at 01:23:39AM -0700, Eric W. Biederman wrote:
+> > > 
+> > > devtmpfs has numerous problems.  The once I see from a quick review.
+> > 
+> > <snip>
+> > 
+> > I'm confused, why did you not at least cc: Kay and I on this message, if
+> > I was a paranoid person, I would think that you were somehow trying to
+> > skirt around us for some unknown reason :(
+> > 
+> > I think Kay has raised the proper points already.
+> 
+> I've seen nacks from Christoph and from Eric and it seems Al Viro has yet
+> to review devtmpfs. I'd like to see Al's opinion personally.
 
-My appologies, you are correct, I had gotten this off of the linux-pci
-list and copied it to my stable queue as a potential patch for it.
+That's fine, but as it's just using the standard tmpfs interfaces that
+other in-kernel virtual filesystems use, it shouldn't need that much
+review.  The code is quite small as well, and I thought Al was still on
+an extended vacation.
 
-Anyway, it's easier for me if it stays :)
+This code has been reviewed and posted numerous times for over 6 months
+now, which should be plenty of time for us to be waiting for a review,
+don't you?
 
 thanks,
 
