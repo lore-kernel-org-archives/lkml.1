@@ -1,49 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbZIQFyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZIQFzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753159AbZIQFyb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 01:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbZIQFya
+	id S1753869AbZIQFzd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 01:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZIQFza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 01:54:30 -0400
-Received: from mail-px0-f202.google.com ([209.85.216.202]:35101 "EHLO
-	mail-px0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752228AbZIQFya (ORCPT
+	Thu, 17 Sep 2009 01:55:30 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49128 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752933AbZIQFzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 01:54:30 -0400
-X-Greylist: delayed 485 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Sep 2009 01:54:30 EDT
-MIME-Version: 1.0
-Date: Thu, 17 Sep 2009 15:46:26 +1000
-Message-ID: <1d3f23370909162246v308da10aga5c4c76d5584341b@mail.gmail.com>
-Subject: microblaze: commit 95521585 breakage
-From: John Williams <john.williams@petalogix.com>
-To: Michal Simek <michal.simek@petalogix.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Sep 2009 01:55:25 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 17 Sep 2009 14:53:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       oleg@redhat.com, xiyou.wangcong@gmail.com
+Subject: [RFC][PATCH][bugfix] more checks for negative f_pos handling v2
+Message-Id: <20090917145319.97f67737.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090914032901.GA16189@localhost>
+	<20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam, Michal,
-
-Your MicroBlaze arch makefile cleanup commit
-9552158573f847aa429334bb97995bb290bb4b0d had a rather unfortunate
-error in it:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=950b260ed21fdb6fa5f18485dabb0b03488431fa
-
-You intended to change CFLAGS_KERNEL to KBUILD_CFLAGS, but instead
-changed CFLAGS_KERNEL to KBUILD_KERNEL.
-
-The result?  No CPU feature optimisations across the entire MicroBlaze
-kernel build :(
-
-The fix is trivial - may I leave it to you to resolve and merge as
-soon as possible?  This is a pretty serious performance regression.
+Considering several approaches, I think this is the simplest..
+Any idea ?
 
 Thanks,
+-Kame
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-John
--- 
-John Williams, PhD, B.Eng, B.IT
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
+Now, rw_verify_area() checsk f_pos is negative or not. And if
+negative, returns -EINVAL.
+
+But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
+has negative offsets. And we can't do any access via read/write
+to the file(device).
+
+This patch introduce a flag S_VERYBIG and allow negative file
+offsets.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ drivers/char/mem.c |   23 +++++++++++++----------
+ fs/proc/base.c     |    2 ++
+ fs/read_write.c    |   20 ++++++++++++++++++--
+ include/linux/fs.h |    2 ++
+ 4 files changed, 35 insertions(+), 12 deletions(-)
+
+Index: mmotm-2.6.31-Sep14/fs/read_write.c
+===================================================================
+--- mmotm-2.6.31-Sep14.orig/fs/read_write.c
++++ mmotm-2.6.31-Sep14/fs/read_write.c
+@@ -205,6 +205,19 @@ bad:
+ }
+ #endif
+ 
++static bool
++__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
++{
++	struct inode *inode;
++	loff_t isize;
++
++	if (pos + count < pos)
++		return -EOVERFLOW;
++	if (IS_VERYBIG(inode))
++		return 0;
++	return -EINVAL;
++}
++
+ /*
+  * rw_verify_area doesn't like huge counts. We limit
+  * them to something that fits in "int" so that others
+@@ -222,8 +235,11 @@ int rw_verify_area(int read_write, struc
+ 	if (unlikely((ssize_t) count < 0))
+ 		return retval;
+ 	pos = *ppos;
+-	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+-		return retval;
++	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
++		retval = __negative_fpos_check(inode, pos, count))
++		if (retval)
++			return retval;
++	}
+ 
+ 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+ 		retval = locks_mandatory_area(
+Index: mmotm-2.6.31-Sep14/include/linux/fs.h
+===================================================================
+--- mmotm-2.6.31-Sep14.orig/include/linux/fs.h
++++ mmotm-2.6.31-Sep14/include/linux/fs.h
+@@ -231,6 +231,7 @@ struct inodes_stat_t {
+ #define S_NOCMTIME	128	/* Do not update file c/mtime */
+ #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+ #define S_PRIVATE	512	/* Inode is fs-internal */
++#define S_VERYBIG	1024	/* Allow file's loff_t can be negative */
+ 
+ /*
+  * Note that nosuid etc flags are inode-specific: setting some file-system
+@@ -265,6 +266,7 @@ struct inodes_stat_t {
+ #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
+ #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
+ #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
++#define IS_VERYBIG(inode)	((inode)->i_flags & S_VERYBIG)
+ 
+ /* the read-only stuff doesn't really belong here, but any other place is
+    probably as bad and I don't want to create yet another include file. */
+Index: mmotm-2.6.31-Sep14/drivers/char/mem.c
+===================================================================
+--- mmotm-2.6.31-Sep14.orig/drivers/char/mem.c
++++ mmotm-2.6.31-Sep14/drivers/char/mem.c
+@@ -825,22 +825,23 @@ static const struct memdev {
+ 	const char *name;
+ 	const struct file_operations *fops;
+ 	struct backing_dev_info *dev_info;
++	bool	verybig;
+ } devlist[] = {
+-	[ 1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi },
++	[1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi, true },
+ #ifdef CONFIG_DEVKMEM
+-	[ 2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi },
++	[2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi, true },
+ #endif
+-	[ 3] = {"null", &null_fops, NULL },
++	[3] = {"null", &null_fops, NULL, false },
+ #ifdef CONFIG_DEVPORT
+-	[ 4] = { "port", &port_fops, NULL },
++	[4] = { "port", &port_fops, NULL, false },
+ #endif
+-	[ 5] = { "zero", &zero_fops, &zero_bdi },
+-	[ 6] = { "full", &full_fops, NULL },
+-	[ 7] = { "random", &random_fops, NULL },
+-	[ 9] = { "urandom", &urandom_fops, NULL },
+-	[11] = { "kmsg", &kmsg_fops, NULL },
++	[5] = { "zero", &zero_fops, &zero_bdi, false },
++	[6] = { "full", &full_fops, NULL, false },
++	[7] = { "random", &random_fops, NULL, false },
++	[9] = { "urandom", &urandom_fops, NULL, false },
++	[11] = { "kmsg", &kmsg_fops, NULL, false },
+ #ifdef CONFIG_CRASH_DUMP
+-	[12] = { "oldmem", &oldmem_fops, NULL },
++	[12] = { "oldmem", &oldmem_fops, NULL, false },
+ #endif
+ };
+ 
+@@ -868,6 +869,8 @@ static int memory_open(struct inode *ino
+ 		ret = dev->fops->open(inode, filp);
+ 	else
+ 		ret = 0;
++	if (dev->verybig)
++		inode->i_flags |= S_VERYBIG;
+ out:
+ 	unlock_kernel();
+ 	return ret;
+Index: mmotm-2.6.31-Sep14/fs/proc/base.c
+===================================================================
+--- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
++++ mmotm-2.6.31-Sep14/fs/proc/base.c
+@@ -779,6 +779,8 @@ static const struct file_operations proc
+ static int mem_open(struct inode* inode, struct file* file)
+ {
+ 	file->private_data = (void*)((long)current->self_exec_id);
++	/* this file is read only and we can catch out-pf-range */
++	inode->i_flags |= S_VERYBIG;
+ 	return 0;
+ }
+ 
+
