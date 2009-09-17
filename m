@@ -1,135 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbZIQOp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752430AbZIQOtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752107AbZIQOp3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 10:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbZIQOp3
+	id S1752430AbZIQOtq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 10:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZIQOtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 10:45:29 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:42603 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751255AbZIQOp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 10:45:28 -0400
-Message-ID: <4AB24B84.8030503@austin.ibm.com>
-Date: Thu, 17 Sep 2009 09:45:24 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] dynamic logical partitioning infrastructure
-References: <4AAABC55.4070207@austin.ibm.com>	 <4AAABCE3.5090702@austin.ibm.com> <1253064816.5600.103.camel@concordia>
-In-Reply-To: <1253064816.5600.103.camel@concordia>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 Sep 2009 10:49:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35752 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164AbZIQOto (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 10:49:44 -0400
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+From: Peter Zijlstra <peterz@infradead.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       general@lists.openfabrics.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <adaab0tej5c.fsf@cisco.com>
+References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins>
+	 <adafxalejiq.fsf@cisco.com>  <adaab0tej5c.fsf@cisco.com>
+Content-Type: text/plain
+Date: Thu, 17 Sep 2009 16:49:36 +0200
+Message-Id: <1253198976.14935.27.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Ellerman wrote:
-> On Fri, 2009-09-11 at 16:10 -0500, Nathan Fontenot wrote:
->> This patch provides the kernel DLPAR infrastructure in a new filed named
->> dlpar.c.  The functionality provided is for acquiring and releasing a 
->> resource from firmware and the parsing of information returned from the
->> ibm,configure-connector rtas call.  Additionally this exports the 
->> pSeries reconfiguration notifier chain so that it can be invoked when
->> device tree updates are made.
->>
->> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
->> ---
->>
->> Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
->> ===================================================================
->> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
->> +++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-09-11 12:51:52.000000000 -0500
->> @@ -0,0 +1,416 @@
->> +/*
->> + * dlpar.c - support for dynamic reconfiguration (including PCI
->> + * Hotplug and Dynamic Logical Partitioning on RPA platforms).
->> + *
->> + * Copyright (C) 2009 Nathan Fontenot
->> + * Copyright (C) 2009 IBM Corporation
->> + *
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License version
->> + * 2 as published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/kref.h>
->> +#include <linux/notifier.h>
->> +#include <linux/proc_fs.h>
->> +#include <linux/spinlock.h>
->> +
->> +#include <asm/prom.h>
->> +#include <asm/machdep.h>
->> +#include <asm/uaccess.h>
->> +#include <asm/rtas.h>
->> +#include <asm/pSeries_reconfig.h>
->> +
->> +#define CFG_CONN_WORK_SIZE	4096
->> +static char workarea[CFG_CONN_WORK_SIZE];
->> +spinlock_t workarea_lock;
->> +
->> +static struct property *parse_cc_property(char *workarea)
->> +{
->> +	struct property *prop;
->> +	u32 *work_ints;
->> +	char *name;
->> +	char *value;
->> +
->> +	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
->> +	if (!prop)
->> +		return NULL;
->> +
->> +	work_ints = (u32 *)workarea;
->> +	name = workarea + work_ints[2];
->> +	prop->name = kzalloc(strlen(name) + 1, GFP_KERNEL);
->> +	if (!prop->name) {
->> +		kfree(prop);
->> +		return NULL;
->> +	}
->> +
->> +	strcpy(prop->name, name);
->> +
->> +	prop->length = work_ints[3];
->> +	value = workarea + work_ints[4];
->> +	prop->value = kzalloc(prop->length, GFP_KERNEL);
+On Thu, 2009-09-17 at 07:32 -0700, Roland Dreier wrote:
+> > So getting those events in the kernel is no problem -- we have the MMU
+>  > notifier hooks that tell us exactly what we need to know.  The issue is
+>  > purely the way userspace registers interest in address ranges, and how
+>  > to kernel returns the events.
+>  > 
+>  > For perf counters it seems that one would have to create a new counter
+>  > for each address range... is that correct?  And also I don't know if
+>  > perf counter has an analog for the fast path optimization that
+>  > ummunotify provides via a mmap'ed generation counter (a quick way for
+>  > userspace to see 'nothing happened since last time you checked').
 > 
+> Oh I forgot... ummunotify also preallocates everything etc. so that
+> there is no way for events to be lost.  Which saves userspace from
+> having to trash everything cached and start over, which it would have to
+> do if it misses an invalidate event.
 > 
-> The use of work_ints is a bit opaque, it might be clearer if you define
-> a struct, something like:
-> 
-> struct cc_prop {
-> 	u32 ?;
-> 	u32 ?;
-> 	u32 name_offset;
-> 	u32 length;
-> 	u32 value_offset;
-> };
-> 
-> cc = (struct cc_prop *)workarea;
-> 
-> name = workarea + cc->name_offset;
-> ..
-> prop->length = cc->length;
-> value = workarea + cc->value_offset;
-> 
+> And AFAIK, pref counters does have the possibility of overflowing a
+> buffer and losing an event, right?
 
-Good idea, and I agree that the use of the workarea/work_ints is a bit vague.
-The current way works because sometimes its easier to think of the workarea
-as a char buffer and sometimes as a int buffer.
+Well, you cannot pre-allocate everything, either you get back-logged
+evens in kernel space leading to a kernel DoS, or you loose events.
 
-I'll try to come up with something to make the parsing of the workarea buffer
-easier to understand.
+Perf counters have two modes, a RO mmap() and a RW mmap(). The RO mode
+will automagically overwrite its tail data without regard for userspace
+having observed it.
 
--Nathan Fontenot
- 
-> etc.
-> 
-> 
-> Also I don't see any checking of the offsets into workarea (for name &
-> value), vs the size of workarea.
-> 
-> cheers
-> 
+In the RW mode userspace has to advance the tail, the kernel will drop
+events when full and insert a PERF_EVENT_LOST event once there is room
+again.
+
+Hmm, or are you saying you can only get 1 event per registered range and
+allocate the thing on registration? That'd need some registration limit
+to avoid DoS scenarios.
+
