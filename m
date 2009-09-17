@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbZIQNMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbZIQNLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758653AbZIQNMO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 09:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbZIQNMN
+	id S1758599AbZIQNLc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 09:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757002AbZIQNLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 09:12:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51052 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752290AbZIQNMM (ORCPT
+	Thu, 17 Sep 2009 09:11:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51946 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754221AbZIQNLb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 09:12:12 -0400
-Date: Thu, 17 Sep 2009 09:12:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Andreas Schwab <schwab@redhat.com>
-Cc: Greg Ungerer <gerg@snapgear.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: m86k/m68knommu tree build failure
-Message-ID: <20090917131200.GA27366@infradead.org>
-References: <20090910151137.fb71c103.sfr@canb.auug.org.au> <4AA890B5.8000207@snapgear.com> <m363brb4yk.fsf@hase.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m363brb4yk.fsf@hase.home>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 17 Sep 2009 09:11:31 -0400
+Date: Thu, 17 Sep 2009 14:13:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+  maintenance disaster
+Message-ID: <20090917141303.428fe73c@lxorguk.ukuu.org.uk>
+In-Reply-To: <ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 10:04:51AM +0200, Andreas Schwab wrote:
-> > Ah, yes, thanks. I'll fix that. I don't regularly build for m68k,
-> > so I missed that in my test builds.
+> >  * A static dev is faster.
 > 
-> An m68k implementation is here
-> <http://permalink.gmane.org/gmane.linux.ports.m68k/721>.
+> A static /dev is unreliable and unpredictable, and can not be used in
+> any not very limited and controlled environment. It's pure theory for
 
-It would be great if the m68k maintainers could submit it for mainline.
+Moblin appears to be the fastest boot and doesn't use it. I fact Arjan
+seems pretty anti
+
+> Eric, ever wondered why all the people working in hotplug area,
+> maintaining todays systems, and even the ones who wrote udev, want
+> this? And only people who have never written any code in hotplug land
+
+"All". Thats a bit of a fiction.
+
+
+But this is the wrong argument anyway
+
+The question is
+- Is it technically correct
+- Does it properly interact with the rest of the kernel and upcoming stuff
+
+So I'd like to see the fs folks sign off on it - which they've noticably
+not done yet.
+
+Whether you want devfs2 (ie devtmpfs) or static dev or udev is a
+configuration and user dependant question no different to what fs do you
+prefer. Whether it actually works and doesn't screw stuff up is a rather
+more important technical question that needs proper review from the fs
+list, which is notably lacking right now, except in the negative.
