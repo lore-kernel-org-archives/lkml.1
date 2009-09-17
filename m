@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbZIQUIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753017AbZIQUJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbZIQUIh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 16:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZIQUIf
+	id S1753017AbZIQUJd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 16:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZIQUJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 16:08:35 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:51172 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769AbZIQUIf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 16:08:35 -0400
-Date: Thu, 17 Sep 2009 16:08:32 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: test for "spurious" IRQ ignores possible IRQ_WAKE_THREAD value
-In-Reply-To: <20090917193416.GE8817@lenovo>
-Message-ID: <alpine.LFD.2.00.0909171605320.5014@localhost>
-References: <alpine.LFD.2.00.0909141627500.4124@localhost> <alpine.LFD.2.00.0909141632390.4329@localhost> <20090917193416.GE8817@lenovo>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Sep 2009 16:09:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34803 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752051AbZIQUJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 16:09:31 -0400
+Date: Thu, 17 Sep 2009 22:09:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf sched: Determine the number of
+	CPUs automatically
+Message-ID: <20090917200914.GA26993@elte.hu>
+References: <tip-5349256ab12dcbc766495cd1cf3651f7203f8564@git.kernel.org> <20090917213409.39b8509c@infradead.org> <20090917194530.GA6773@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090917194530.GA6773@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Sep 2009, Cyrill Gorcunov wrote:
 
-> [Robert P. J. Day - Mon, Sep 14, 2009 at 04:34:48PM -0400]
-> | On Mon, 14 Sep 2009, Robert P. J. Day wrote:
-> |
-> | >   never ashamed to embarrass myself in public, i just noticed the
-> | > following.  from kernel/irq/spurious.c:
-> | >
-> | > ...
-> | > static void
-> | > __report_bad_irq(unsigned int irq, struct irq_desc *desc,
-> | >                  irqreturn_t action_ret)
-> | > {
-> | >         struct irqaction *action;
-> | >
-> | >         if (action_ret != IRQ_HANDLED && action_ret != IRQ_NONE) {
-> | >                 printk(KERN_ERR "irq event %d: bogus return value %x\n",
-> | >                                 irq, action_ret);
-> | >
-> | >   but from include/linux/irqreturn.h, we see *three* possible return
-> | > values:
-> | >
-> | > enum irqreturn {
-> | >         IRQ_NONE,
-> | >         IRQ_HANDLED,
-> | >         IRQ_WAKE_THREAD,
-> | > };
-> | >
-> | > typedef enum irqreturn irqreturn_t;
-> | > #define IRQ_RETVAL(x)   ((x) != IRQ_NONE)
-> | >
-> | >   is there an inconsistency here?
-> |
-> ...
->
-> Hi Robert,
->
-> It could that IRQ_WAKE_THREAD is just missed here. I suppose it was
-> brough there as thread irq merged. But I think only Thomas know for
-> sure, I definitely miss something :) CC'ed
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-  actually, after a bit more reading, i found this in
-kernel/irq/handle.c:
-                ...
-                switch (ret) {
-                case IRQ_WAKE_THREAD:
-                        /*
-                         * Set result to handled so the spurious check
-                         * does not trigger.
-                         */
-                        ret = IRQ_HANDLED;
-                        ...
+> 
+> * Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> > On Thu, 17 Sep 2009 18:07:09 GMT
+> > > 
+> > > perf sched: Determine the number of CPUs automatically
+> > > 
+> > > For 'perf sched map' output, determine max_cpu automatically,
+> > > instead of the static default of 15.
+> > >  
+> > >  static u32 curr_pid[MAX_CPUS] = { [0 ... MAX_CPUS-1] = -1 };
+> > >  
+> > > @@ -1818,6 +1818,9 @@ static struct trace_sched_handler map_ops  = {
+> > >  
+> > >  static void __cmd_map(void)
+> > >  {
+> > > +	max_cpu = system("exit `grep ^processor /proc/cpuinfo  | wc
+> > > -l`");
+> > 
+> > YUCK.
+> > 
+> > what is wrong with
+> >    max_cpu = sysconf(_SC_NPROCESSORS_CONF); 
+> > ??
+> 
+> That's nicer - mind sending a patch?
 
-so it looks like that value of IRQ_WAKE_THREAD is simply "mapped" to
-IRQ_HANDLED, and perhaps that's done before __report_bad_irq is ever
-called so that that latter routine never sees a value of
-IRQ_WAKE_THREAD.  but that's just a guess.
+fixed this up myself.
 
-rday
---
-
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+	Ingo
