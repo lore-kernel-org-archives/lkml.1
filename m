@@ -1,56 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbZIQJRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbZIQJSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758306AbZIQJRm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 05:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZIQJRm
+	id S1758472AbZIQJSO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 05:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZIQJSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 05:17:42 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:37574 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbZIQJRl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 05:17:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DH1dKxQCEifpZ4KCnOgMNcNBofO5WmPHm1l7oeauRzXQ6ys+0l7rnJhwQBjtVmGCoC
-         /nuZi1mwdqxiEEe9T6uMuLFxWwgtU++rBG31FwqMTJmxEa+8048gzoU15Ubxazf0h4+B
-         pCPuCZGxcmW37LNuBa2Mf/tp3t9Y3wEjMQyeg=
+	Thu, 17 Sep 2009 05:18:14 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:41687 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbZIQJSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 05:18:12 -0400
+Date: Thu, 17 Sep 2009 10:18:18 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Alexey Korolev <akorolex@gmail.com>
+Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Identification of huge pages mapping (Take 3)
+Message-ID: <20090917091818.GC13002@csn.ul.ie>
+References: <202cde0e0909132216l79aae251ya3a6685587c7692c@mail.gmail.com> <20090915121456.GB31840@csn.ul.ie> <202cde0e0909160511y6f4542d1p38f9a8818c2a454d@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <4AB1C907.1070503@gmail.com>
-References: <4AB1C907.1070503@gmail.com>
-Date: Thu, 17 Sep 2009 11:17:42 +0200
-Message-ID: <68676e00909170217y8819e3dv115fd6c987942495@mail.gmail.com>
-Subject: Re: asus_atk0110 not working on Asus P7P55D PRO
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <202cde0e0909160511y6f4542d1p38f9a8818c2a454d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 7:28 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
-> Just built a new system with an Asus P7P55D PRO motherboard. The ATK0110
-> driver doesn't seem to be able to retrieve any hardware monitoring
-> parameters successfully, sensors gives:
+On Thu, Sep 17, 2009 at 12:11:33AM +1200, Alexey Korolev wrote:
+> Mel,
+> 
+> > I suggest a subject change to
+> >
+> > "Identify huge page mappings from address_space->flags instead of file_operations comparison"
+> >
+> > for the purposes of having an easier-to-understand changelog.
+> >
 >
-> atk0110-acpi-0
-> Adapter: ACPI interface
-> ERROR: Can't get value of subfeature in0_input: I/O error
-> Vcore Voltage: Â  Â  Â +0.00 V Â (min = Â +0.80 V, max = Â +1.60 V)
-> ERROR: Can't get value of subfeature in1_input: I/O error
-> +3.3V Voltage: Â  Â  Â +0.00 V Â (min = Â +2.97 V, max = Â +3.63 V)
-> ERROR: Can't get value of subfeature in2_input: I/O error
-> +5V Voltage: Â  Â  Â  Â +0.00 V Â (min = Â +4.50 V, max = Â +5.50 V)
->
-> etc. and dmesg spits out a bunch of these:
->
-> ATK0110 ATK0110:00: atk_read_value_new: ACPI exception: AE_BUFFER_OVERFLOW
+> Yes. It is a bit longer but it is definitely clear. Will be corrected.
+> 
 
-Hum, they changed the output buffer size. I'm working on a fix.
+Thanks
 
-Luca
+> > On Mon, Sep 14, 2009 at 05:16:13PM +1200, Alexey Korolev wrote:
+> >> This patch changes a little bit the procedures of huge pages file
+> >> identification. We need this because we may have huge page mapping for
+> >> files which are not on hugetlbfs (the same case in ipc/shm.c).
+> >
+> > Is this strictly-speaking true as there is still a file on hugetlbfs for
+> > the driver? Maybe something like
+> >
+> > This patch identifies whether a mapping uses huge pages based on the
+> > address_space flags instead of the file operations. A later patch allows
+> > a driver to manage an underlying hugetlbfs file while exposing it via a
+> > different file_operations structure.
+> >
+> > I haven't read the rest of the series yet so take the suggestion with a
+> > grain of salt.
+> 
+> You understood properly. Thanks for the comments. I need to work on
+> the description more, it seems not to be completely clear.
+> 
+> >> Just file operations check will not work as drivers should have own
+> >> file operations. So if we need to identify if file has huge pages
+> >> mapping, we need to check the file mapping flags.
+> >> New identification procedure obsoletes existing workaround for hugetlb
+> >> file identification in ipc/shm.c
+> >> Also having huge page mapping for files which are not on hugetlbfs do
+> >> not allow us to get hstate based on file dentry, we need to be based
+> >> on file mapping instead.
+> >
+> > Can you clarify this a bit more? I think the reasoning is as follows but
+> > confirmation would be nice.
+> >
+> > "As part of this, the hstate for a given file as implemented by hstate_file()
+> > must be based on file mapping instead of dentry. Even if a driver is
+> > maintaining an underlying hugetlbfs file, the mmap() operation is still
+> > taking place on a device-specific file. That dentry is unlikely to be on
+> > a hugetlbfs file. A device driver must ensure that file->f_mapping->host
+> > resolves correctly."
+> >
+> > If this is accurate, a comment in hstate_file() wouldn't hurt in case
+> > someone later decides that dentry really was the way to go.
+> >
+>
+> Right. Getting hstate via mapping instead of dentry is important here, so it is
+> necessary to add a comment in order to prevent people breaking this.
+> A comment will be added.
+> 
+
+Thanks
+
+> >>
+> >>  static inline int is_file_hugepages(struct file *file)
+> >>  {
+> >> -     if (file->f_op == &hugetlbfs_file_operations)
+> >> -             return 1;
+> >> -     if (is_file_shm_hugepages(file))
+> >> -             return 1;
+> >> -
+> >> -     return 0;
+> >> -}
+> >> -
+> >> -static inline void set_file_hugepages(struct file *file)
+> >> -{
+> >> -     file->f_op = &hugetlbfs_file_operations;
+> >> +     return mapping_hugetlb(file->f_mapping);
+> >>  }
+> >>  #else /* !CONFIG_HUGETLBFS */
+> >>
+> >>  #define is_file_hugepages(file)                      0
+> >> -#define set_file_hugepages(file)             BUG()
+> >>  #define hugetlb_file_setup(name,size,acct,user,creat)        ERR_PTR(-ENOSYS)
+> >>
+> >
+> > Why do you remove this BUG()? It still seems to be a valid check.
+>
+> I removed this function - because it has not been called since 2.6.15 and
+> it is confusing the user a bit after applying new changes. I think it
+> was necessary to write about this little change in description, sorry
+> about that.
+
+If it's really confusing, it should be a separate patch. It doesn't need to
+be folded into this one.
+
+> >>
+> >> +static inline void mapping_set_hugetlb(struct address_space *mapping)
+> >> +{
+> >> +     set_bit(AS_HUGETLB, &mapping->flags);
+> >> +}
+> >> +
+> >> +static inline int mapping_hugetlb(struct address_space *mapping)
+> >> +{
+> >> +     if (likely(mapping))
+> >> +             return test_bit(AS_HUGETLB, &mapping->flags);
+> >> +     return 0;
+> >> +}
+> >
+> > Is mapping_hugetlb necessary? Why not just make that the implementation
+> > of is_file_hugepages()
+>
+> No. It is not necessary. The reason I wrote these functions is just
+> there are the
+> similar function for other mapping flags. I see no problem to have
+> only: is_file_hugepages and
+> set_file_huge_pages in hugetlb.h instead of mapping_set_hugetlb and
+> mapping_hugetlb.
+> 
+
+I'd also be ok with you converting is_file_hugepages and set_file_huge_pages()
+to mapping_set_hugetlb and mapping_hugetlb to bring hugetlb functions more
+in line with the core VM.
+
+> >> -     if (file->f_op == &shm_file_operations) {
+> >> -             struct shm_file_data *sfd;
+> >> -             sfd = shm_file_data(file);
+> >> -             ret = is_file_hugepages(sfd->file);
+> >> -     }
+> >> -     return ret;
+> >> -}
+> >
+> > What about the declarations and definitions in include/linux/shm.h?
+> 
+> Ahh. Thank you! Will be fixed.
+> 
+> Thanks,
+> Alexey
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
