@@ -1,65 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbZIQC1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbZIQCai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759258AbZIQC1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 22:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbZIQC1c
+	id S1759253AbZIQCai (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 22:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbZIQCai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 22:27:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:32374 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755501AbZIQC1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 22:27:31 -0400
-Date: Wed, 16 Sep 2009 22:27:26 -0400
-From: Dave Jones <davej@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kurt Roeckx <kurt@roeckx.be>
-Subject: Re: linux-next: cpufreq-current tree build warning
-Message-ID: <20090917022726.GA30706@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Kurt Roeckx <kurt@roeckx.be>
-References: <20090917120651.f0cdf4c2.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917120651.f0cdf4c2.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 16 Sep 2009 22:30:38 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:60801 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756588AbZIQCah (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 22:30:37 -0400
+Subject: Re: [GIT] HID patches for 2.6.32 merge window
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LNX.2.00.0909151630180.17028@wotan.suse.de>
+References: <alpine.LNX.2.00.0909132014310.17028@wotan.suse.de>
+	 <1252922794.3421.3.camel@localhost.localdomain>
+	 <alpine.LNX.2.00.0909141210590.17028@wotan.suse.de>
+	 <1252926408.3421.7.camel@localhost.localdomain>
+	 <alpine.LNX.2.00.0909151630180.17028@wotan.suse.de>
+Content-Type: text/plain
+Date: Wed, 16 Sep 2009 19:30:29 -0700
+Message-Id: <1253154629.28416.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 12:06:51PM +1000, Stephen Rothwell wrote:
- > Hi Dave,
- > 
- > Today's linux-next build (x86_64 allmodconfig) produced this warning:
- > 
- > arch/x86/kernel/cpu/cpufreq/powernow-k8.c: In function 'fill_powernow_table_fidvid':
- > arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1001: warning: passing argument 1 of 'invalidate_entry' from incompatible pointer type
- > arch/x86/kernel/cpu/cpufreq/powernow-k8.c:608: note: expected 'struct cpufreq_frequency_table *' but argument is of type 'struct powernow_k8_data *'
- > 
- > Introduced by commit 7fc1b26613587ab4369615445b5485040c60fef1 ("[CPUFREQ]
- > Fix NULL ptr regression in powernow-k8").
+Hi Jiri,
 
-Hi Stephen, 
+> > you need to redo it against the net-next-2.6 tree or wait until Linus 
+> > merged that one. Otherwise it will clash with a temporary solution that 
+> > I already pushed some time ago.
+> 
+> OK, I now have this in my tree (which applies on top of 364f63519d9, which 
+> I believe is the temporary solution you have been talking about). I'd 
+> appreciate your Acked-by: for the bluetooth part, so that I could push it 
+> during the next round.
+> Thanks!
+> 
+> 
+> 
+> From: Jiri Kosina <jkosina@suse.cz>
+> Subject: [PATCH] HID: consolidate connect and disconnect into core code
+> 
+> HID core registers input, hidraw and hiddev devices, but leaves
+> unregistering it up to the individual driver, which is not really nice.
+> Let's move all the logic to the core.
+> 
+> Reported-by: Marcel Holtmann <marcel@holtmann.org>
+> Reported-by: Brian Rogers <brian@xyzw.org>
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> ---
+>  drivers/hid/hid-core.c        |   11 +++++++++++
+>  drivers/hid/usbhid/hid-core.c |   16 +++++-----------
+>  include/linux/hid.h           |    3 +++
+>  net/bluetooth/hidp/core.c     |   11 +----------
+>  4 files changed, 20 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+> index ca9bb26..be34d32 100644
+> --- a/drivers/hid/hid-core.c
+> +++ b/drivers/hid/hid-core.c
+> @@ -1237,6 +1237,17 @@ int hid_connect(struct hid_device *hdev, unsigned int connect_mask)
+>  }
+>  EXPORT_SYMBOL_GPL(hid_connect);
+>  
+> +void hid_disconnect(struct hid_device *hdev)
+> +{
+> +	if (hdev->claimed & HID_CLAIMED_INPUT)
+> +		hidinput_disconnect(hdev);
+> +	if (hdev->claimed & HID_CLAIMED_HIDDEV)
+> +		hdev->hiddev_disconnect(hdev);
+> +	if (hdev->claimed & HID_CLAIMED_HIDRAW)
+> +		hidraw_disconnect(hdev);
+> +}
+> +EXPORT_SYMBOL_GPL(hid_disconnect);
+> +
+>  /* a list of devices for which there is a specialized driver on HID bus */
+>  static const struct hid_device_id hid_blacklist[] = {
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_A4TECH, USB_DEVICE_ID_A4TECH_WCP32PU) },
+> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+> index 1b0e07a..03bd703 100644
+> --- a/drivers/hid/usbhid/hid-core.c
+> +++ b/drivers/hid/usbhid/hid-core.c
+> @@ -1041,13 +1041,6 @@ static void usbhid_stop(struct hid_device *hid)
+>  
+>  	hid_cancel_delayed_stuff(usbhid);
+>  
+> -	if (hid->claimed & HID_CLAIMED_INPUT)
+> -		hidinput_disconnect(hid);
+> -	if (hid->claimed & HID_CLAIMED_HIDDEV)
+> -		hiddev_disconnect(hid);
+> -	if (hid->claimed & HID_CLAIMED_HIDRAW)
+> -		hidraw_disconnect(hid);
+> -
+>  	hid->claimed = 0;
+>  
+>  	usb_free_urb(usbhid->urbin);
+> @@ -1085,7 +1078,7 @@ static struct hid_ll_driver usb_hid_driver = {
+>  	.hidinput_input_event = usb_hidinput_input_event,
+>  };
+>  
+> -static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
+> +static int usbhid_probe(struct usb_interface *intf, const struct usb_device_id *id)
+>  {
+>  	struct usb_host_interface *interface = intf->cur_altsetting;
+>  	struct usb_device *dev = interface_to_usbdev(intf);
+> @@ -1117,6 +1110,7 @@ static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
+>  	hid->ff_init = hid_pidff_init;
+>  #ifdef CONFIG_USB_HIDDEV
+>  	hid->hiddev_connect = hiddev_connect;
+> +	hid->hiddev_disconnect = hiddev_disconnect;
+>  	hid->hiddev_hid_event = hiddev_hid_event;
+>  	hid->hiddev_report_event = hiddev_report_event;
+>  #endif
+> @@ -1177,7 +1171,7 @@ err:
+>  	return ret;
+>  }
+>  
+> -static void hid_disconnect(struct usb_interface *intf)
+> +static void usbhid_disconnect(struct usb_interface *intf)
+>  {
+>  	struct hid_device *hid = usb_get_intfdata(intf);
+>  	struct usbhid_device *usbhid;
+> @@ -1359,8 +1353,8 @@ MODULE_DEVICE_TABLE (usb, hid_usb_ids);
+>  
+>  static struct usb_driver hid_driver = {
+>  	.name =		"usbhid",
+> -	.probe =	hid_probe,
+> -	.disconnect =	hid_disconnect,
+> +	.probe =	usbhid_probe,
+> +	.disconnect =	usbhid_disconnect,
+>  #ifdef CONFIG_PM
+>  	.suspend =	hid_suspend,
+>  	.resume =	hid_resume,
+> diff --git a/include/linux/hid.h b/include/linux/hid.h
+> index a0ebdac..10f6284 100644
+> --- a/include/linux/hid.h
+> +++ b/include/linux/hid.h
+> @@ -494,6 +494,7 @@ struct hid_device {							/* device report descriptor */
+>  
+>  	/* hiddev event handler */
+>  	int (*hiddev_connect)(struct hid_device *, unsigned int);
+> +	void (*hiddev_disconnect)(struct hid_device *);
+>  	void (*hiddev_hid_event) (struct hid_device *, struct hid_field *field,
+>  				  struct hid_usage *, __s32);
+>  	void (*hiddev_report_event) (struct hid_device *, struct hid_report *);
+> @@ -691,6 +692,7 @@ struct hid_device *hid_allocate_device(void);
+>  int hid_parse_report(struct hid_device *hid, __u8 *start, unsigned size);
+>  int hid_check_keys_pressed(struct hid_device *hid);
+>  int hid_connect(struct hid_device *hid, unsigned int connect_mask);
+> +void hid_disconnect(struct hid_device *hid);
+>  
+>  /**
+>   * hid_map_usage - map usage input bits
+> @@ -800,6 +802,7 @@ static inline int __must_check hid_hw_start(struct hid_device *hdev,
+>   */
+>  static inline void hid_hw_stop(struct hid_device *hdev)
+>  {
+> +	hid_disconnect(hdev);
+>  	hdev->ll_driver->stop(hdev);
+>  }
+>  
+> diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
+> index 09bedeb..75df1e1 100644
+> --- a/net/bluetooth/hidp/core.c
+> +++ b/net/bluetooth/hidp/core.c
+> @@ -576,15 +576,8 @@ static int hidp_session(void *arg)
+>  		session->input = NULL;
+>  	}
+>  
+> -	if (session->hid) {
+> -		if (session->hid->claimed & HID_CLAIMED_INPUT)
+> -			hidinput_disconnect(session->hid);
+> -		if (session->hid->claimed & HID_CLAIMED_HIDRAW)
+> -			hidraw_disconnect(session->hid);
+> -
+> +	if (session->hid)
+>  		hid_destroy_device(session->hid);
+> -		session->hid = NULL;
+> -	}
 
-I'm very confused. I don't see this..
+can you please leave the session->hid = NULL part inside the code. It is
+important that it stays. Other than that
 
-(22:22:25:davej:cpufreq)$ make arch/x86/kernel/cpu/cpufreq/powernow-k8.o
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CALL    scripts/checksyscalls.sh
-  CC [M]  arch/x86/kernel/cpu/cpufreq/powernow-k8.o
-(22:22:30:davej:cpufreq)$ 
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
 
-Also, line 1001 is ..
+Regards
 
-	if (data->acpi_data.state_count)
+Marcel
 
-So I'm not sure what your gcc is talking about.
-
-Does next contain additional patches to this file from outside the cpufreq.git tree?
-
-	Dave
 
