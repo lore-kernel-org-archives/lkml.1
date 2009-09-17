@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZIQAzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbZIQA4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbZIQAzX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 20:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZIQAzX
+	id S1758248AbZIQA4g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 20:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbZIQA4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 20:55:23 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:51990 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbZIQAzW (ORCPT
+	Wed, 16 Sep 2009 20:56:35 -0400
+Received: from mail-ew0-f227.google.com ([209.85.219.227]:36599 "EHLO
+	mail-ew0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752208AbZIQA4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 20:55:22 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 16 Sep 2009 17:55:22 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Gilad Benjamini <gilad@altornetworks.com>
-cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: RE: epoll and closed file descriptors
-In-Reply-To: <024701ca372f$81412040$83c360c0$@com>
-Message-ID: <alpine.DEB.2.00.0909161747360.3124@makko.or.mcafeemobile.com>
-References: <023c01ca3724$9f90fcb0$deb2f610$@com> <alpine.DEB.2.00.0909161656150.3124@makko.or.mcafeemobile.com> <024601ca372d$09ad9fb0$1d08df10$@com> <alpine.DEB.2.00.0909161726090.3124@makko.or.mcafeemobile.com> <024701ca372f$81412040$83c360c0$@com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 16 Sep 2009 20:56:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=IPLqpecV+tvEURUeY5V6qec/ffm92aWKInch2diiuljIKeHRJSOM+XxQBa7uSNHkl2
+         XFw/gsMo1tgMwo71j9sREJD75YePIXxOQfp9u/GgZlWmyEYAyzquk+szFzucY0YmWCIO
+         FS2//F/uCZqJ9AUbfP8IQoT4hBbWTJf6uUKC0=
+Date: Thu, 17 Sep 2009 02:56:34 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org, hch@infradead.org,
+       reiserfs-devel@vger.kernel.org, jeffm@suse.com
+Subject: Re: [PATCH] reiserfs: Truncate blocks not used by a write (v2)
+Message-ID: <20090917005633.GC8098@nowhere>
+References: <1253121912-20718-1-git-send-email-jack@suse.cz> <20090916144815.e544b319.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090916144815.e544b319.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009, Gilad Benjamini wrote:
-
-> My bad. I meant to quote the line that you mentioned.
-> I agree that the right thing to do is to remove the fd from epoll before
-> closing it.
-> However, due to the way curl works, I cannot do that. Changing the curl code
-> doesn't seem trivial.
-
-You probably need to explain how you use libcurl together with epoll, even 
-though this is not a help-userspace mailing list.
-
-
-> Regardless, I still don't see how the kernel got into this situation, and if
-> this situation is valid, why it doesn't bail out of it.
-
-I think this was already explained.
+On Wed, Sep 16, 2009 at 02:48:15PM -0700, Andrew Morton wrote:
+> On Wed, 16 Sep 2009 19:25:12 +0200
+> Jan Kara <jack@suse.cz> wrote:
+> 
+> > It can happen that write does not use all the blocks allocated in write_begin
+> > either because of some filesystem error (like ENOSPC) or because page with
+> > data to write has been removed from memory. We truncate these blocks so that
+> > we don't have dangling blocks beyond i_size.
+> 
+> This clashes a bit with the kill-the-bkl/reiserfs stuff in linux-next.
 
 
-- Davide
+Note that the kill-the-bkl/reiserfs tree has suffered from too much
+lock inversion problems lately. Even though I just fixed the last one
+reported, I would feel more comfortable to schedule this tree for .33
+rather than .32
 
+So this tree can be removed from -next and reintegrated once -rc1 is
+released, without problem.
+
+So that if this patch is scheduled for .32, I can fix the conflict
+myself once -rc1 is released and not burden Stephen with this conflict
+which is useless to handle in -next for now.
+
+Thanks.
 
