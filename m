@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZIQAxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbZIQAyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbZIQAxN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 20:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZIQAxJ
+	id S1757351AbZIQAyq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 20:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZIQAyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 20:53:09 -0400
-Received: from smtp-gw51.mailanyone.net ([208.70.128.77]:57261 "EHLO
-	smtp-gw51.mailanyone.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754686AbZIQAxI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 20:53:08 -0400
-From: "Gilad Benjamini" <gilad@altornetworks.com>
-To: "'Bryan Donlan'" <bdonlan@gmail.com>
-Cc: "'Davide Libenzi'" <davidel@xmailserver.org>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-References: <023c01ca3724$9f90fcb0$deb2f610$@com> <alpine.DEB.2.00.0909161656150.3124@makko.or.mcafeemobile.com> 	<024601ca372d$09ad9fb0$1d08df10$@com> <alpine.DEB.2.00.0909161726090.3124@makko.or.mcafeemobile.com> 	<024701ca372f$81412040$83c360c0$@com> <3e8340490909161745h5c58c165j1726c3433df3baeb@mail.gmail.com>
-In-Reply-To: <3e8340490909161745h5c58c165j1726c3433df3baeb@mail.gmail.com>
-Subject: RE: epoll and closed file descriptors
-Date: Wed, 16 Sep 2009 17:53:05 -0700
-Message-ID: <024801ca3731$38833ad0$a989b070$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Aco3MC3PRsgeMR0jRiC+mmcpxP1V0wAAMAnA
-Content-Language: en-us
+	Wed, 16 Sep 2009 20:54:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56026 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752077AbZIQAyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 20:54:43 -0400
+Date: Thu, 17 Sep 2009 10:54:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Ken Kawasaki <ken_kawasaki@spring.nifty.jp>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: linux-next: manual merge of the tty.current tree with the
+ net-current tree
+Message-Id: <20090917105442.297b6ea1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject: Re: epoll and closed file descriptors
-> 
-> On Wed, Sep 16, 2009 at 8:40 PM, Gilad Benjamini
-> <gilad@altornetworks.com> wrote:
-> > Davide wrote:
-> >> On Wed, 16 Sep 2009, Gilad Benjamini wrote:
-> >>
-> >> > I would, but epoll is preventing me from doing so.
-> >> > Early in sys_epoll_ctl there are these lines
-> >> >
-> >> >   file = fget(epfd);
-> >> >   if (!file)
-> >> >     goto error_return;
-> >> >
-> >> > Leaving me in a kind of dead lock
-> >>
-> >> The 'epfd' in there, is the _epoll fd_, which, if fget() fails,
-> means
-> >> you
-> >> close it.
-> >> You see likely failing the 'tfile = fget(fd)' (of course, you closed
-> >> it),
-> >> so if someone else keeps the socket open and you have no chance in
-> >> telling
-> >> it to drop it (really?), you need to remove the socket from the set
-> >> before
-> >> closing it.
-> >>
-> >>
-> >>
-> >> - Davide
-> >
-> > My bad. I meant to quote the line that you mentioned.
-> > I agree that the right thing to do is to remove the fd from epoll
-> before
-> > closing it.
-> > However, due to the way curl works, I cannot do that. Changing the
-> curl code
-> > doesn't seem trivial.
-> >
-> > Regardless, I still don't see how the kernel got into this situation,
-> and if
-> > this situation is valid, why it doesn't bail out of it.
-> 
-> epoll references the underlying file object; the fd is used _only_ to
-> obtain this file object, and then never used again. Determining when
-> the fd goes away then requires iterating over all fds, and since epoll
-> was designed to avoid doing exactly that, it isn't an acceptable
-> solution.
+Hi Greg,
 
-Regarding bailing out of the situation, I see the logic in your answer.
-What about the first part ? Any ideas how the kernel actually got into that
-tight spot ?
-Looking into the code I can't find a path that can lead into this situation.
+Today's linux-next merge of the tty.current tree got a conflict in
+drivers/serial/serial_cs.c between commit
+531afd64d027e3d798c416b2b37b3cfb1de417d9 ("pcnet_cs: add cis of Linksys
+multifunction pcmcia card") from the net-current tree and commit
+5cea4a4e15a918f19d32fd3dc9a5056f333847c3 ("tty: serial/pcmcia: add ID for
+Advantech card") from the tty.current tree.
 
+Just context changes.  I fixed it up (see below) and can carry the fix
+for a while.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-
-
+diff --cc drivers/serial/serial_cs.c
+index ed4648b,6ecb51b..0000000
+--- a/drivers/serial/serial_cs.c
++++ b/drivers/serial/serial_cs.c
+@@@ -883,10 -883,11 +883,11 @@@ static struct pcmcia_device_id serial_i
+  	PCMCIA_DEVICE_CIS_MANF_CARD(0x0192, 0x0710, "SW_7xx_SER.cis"),	/* Sierra Wireless AC710/AC750 GPRS Network Adapter R1 */
+  	PCMCIA_DEVICE_CIS_MANF_CARD(0x0192, 0xa555, "SW_555_SER.cis"),  /* Sierra Aircard 555 CDMA 1xrtt Modem -- pre update */
+  	PCMCIA_DEVICE_CIS_MANF_CARD(0x013f, 0xa555, "SW_555_SER.cis"),  /* Sierra Aircard 555 CDMA 1xrtt Modem -- post update */
+ -	PCMCIA_DEVICE_CIS_PROD_ID12("MultiTech", "PCMCIA 56K DataFax", 0x842047ee, 0xc2efcf03, "MT5634ZLX.cis"),
+ +	PCMCIA_DEVICE_CIS_PROD_ID12("MultiTech", "PCMCIA 56K DataFax", 0x842047ee, 0xc2efcf03, "cis/MT5634ZLX.cis"),
++ 	PCMCIA_DEVICE_CIS_PROD_ID12("ADVANTECH", "COMpad-32/85B-2", 0x96913a85, 0x27ab5437, "COMpad2.cis"),
+  	PCMCIA_DEVICE_CIS_PROD_ID12("ADVANTECH", "COMpad-32/85B-4", 0x96913a85, 0xcec8f102, "COMpad4.cis"),
+  	PCMCIA_DEVICE_CIS_PROD_ID123("ADVANTECH", "COMpad-32/85", "1.0", 0x96913a85, 0x8fbe92ae, 0x0877b627, "COMpad2.cis"),
+ -	PCMCIA_DEVICE_CIS_PROD_ID2("RS-COM 2P", 0xad20b156, "RS-COM-2P.cis"),
+ +	PCMCIA_DEVICE_CIS_PROD_ID2("RS-COM 2P", 0xad20b156, "cis/RS-COM-2P.cis"),
+  	PCMCIA_DEVICE_CIS_MANF_CARD(0x0013, 0x0000, "GLOBETROTTER.cis"),
+  	PCMCIA_DEVICE_PROD_ID12("ELAN DIGITAL SYSTEMS LTD, c1997.","SERIAL CARD: SL100  1.00.",0x19ca78af,0xf964f42b),
+  	PCMCIA_DEVICE_PROD_ID12("ELAN DIGITAL SYSTEMS LTD, c1997.","SERIAL CARD: SL100",0x19ca78af,0x71d98e83),
