@@ -1,105 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbZIQWup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbZIQWyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbZIQWup (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 18:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZIQWuo
+	id S1753419AbZIQWyQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 18:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZIQWyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 18:50:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39732 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbZIQWum (ORCPT
+	Thu, 17 Sep 2009 18:54:15 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:53206 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752537AbZIQWyO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 18:50:42 -0400
-Date: Thu, 17 Sep 2009 15:50:21 -0700
-Message-Id: <200909172250.n8HMoL8m001182@terminus.zytor.com>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [GIT PULL] x86/mce for v2.6.32
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.2 (terminus.zytor.com [127.0.0.1]); Thu, 17 Sep 2009 15:50:36 -0700 (PDT)
+	Thu, 17 Sep 2009 18:54:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=d4pCveKKXTjTJISl4J5ZWQglXNepZoB2tErvGCIJHsuG4uSYrlioyT4RrwBqB5OWK3
+         Pb9WwJRG8LspvY+TswofkEN4W9Ten5SFyJy/jv8WCr/GYYXM0yPB33rvDvaxPexd4tVd
+         CZHWezakfrK2hUFcW/wKK8pVjwccxG8yO0DC8=
+MIME-Version: 1.0
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901D41E44@mi8nycmail19.Mi8.com>
+References: <1253224997-7422-1-git-send-email-vapier@gentoo.org> 
+	<BD79186B4FD85F4B8E60E381CAEE190901D41E44@mi8nycmail19.Mi8.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 17 Sep 2009 18:53:58 -0400
+Message-ID: <8bd0f97a0909171553s1b7ee725x728bbca2f49511a9@mail.gmail.com>
+Subject: Re: [spi-devel-general] [PATCH 1/2] spi: new SPI bus 
+	lock/unlockfunctions
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: spi-devel-general@lists.sourceforge.net,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Yi Li <yi.li@analog.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Sep 17, 2009 at 18:45, H Hartley Sweeten wrote:
+> On Thursday, September 17, 2009 3:03 PM, Mike Frysinger wrote:
+>> From: Yi Li <yi.li@analog.com>
+>>
+>> For some MMC cards over SPI bus, it needs to lock the SPI bus for its own
+>> use.  The SPI transfer must not be interrupted by other SPI devices that
+>> share the SPI bus with SPI MMC card.
+>>
+>> This patch introduces 2 APIs for SPI bus locking operation.
+>>
+>>  /**
+>> + * spi_lock_bus - lock SPI bus for exclusive access
+>> + * @spi: device which want to lock the bus
+>> + * Context: any
+>> + *
+>> + * Once the caller owns exclusive access to the SPI bus,
+>> + * only messages for this device will be transferred.
+>> + * Messages for other devices are queued but not transferred until
+>> + * the bus owner unlock the bus.
+>> + *
+>> + * The caller may call spi_lock_bus() before spi_sync() or spi_async().
+>> + * So this call may be used in irq and other contexts which can't sleep,
+>> + * as well as from task contexts which can sleep.
+>> + *
+>> + * It returns zero on success, else a negative error code.
+>> + */
+>> +int spi_lock_bus(struct spi_device *spi)
+>> +{
+>> +     if (spi->master->lock_bus)
+>> +             return spi->master->lock_bus(spi);
+>> +     else
+>> +             return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(spi_lock_bus);
+>> +
+>> +/**
+>> + * spi_unlock_bus - unlock SPI bus
+>> + * @spi: device which want to unlock the bus
+>> + * Context: any
+>> + *
+>> + * The caller has called spi_lock_bus() to lock the bus. It calls
+>> + * spi_unlock_bus() to release the bus so messages for other devices
+>> + * can be transferred.
+>> + *
+>> + * If the caller did not call spi_lock_bus() before, spi_unlock_bus()
+>> + * should have no effect.
+>> + *
+>> + * It returns zero on success, else a negative error code.
+>> + */
+>> +int spi_unlock_bus(struct spi_device *spi)
+>> +{
+>> +     if (spi->master->unlock_bus)
+>> +             return spi->master->unlock_bus(spi);
+>> +     else
+>> +             return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(spi_unlock_bus);
+>> +
+>> +/**
+>
+> I assume the spi master driver must supply the {lock/unlock}_bus methods
+> to properly support the locking.
 
-The following x86/mce commits are available in the git repository at:
+currently, yes.  a common solution would be nice.  ideas/patches welcome ;).
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-mce-for-linus
+> But, by returning 0 when the methods
+> are not supplied you are basically saying all the current master drivers
+> in mainline support bus locking.  I think this is really only "true" if
+> spi->master->num_chipselect == 1.
 
-This tree has two trivial conflicts with your top of tree; one in
-Documentation/feature-removals, and one in
-arch/x86/kernel/cpu/mcheck/mce.c.  The resolution to the latter should
-look like:
+right, but that is no different from what we have today.  there is no
+way for a client to guarantee exclusive access, so you cant write code
+assuming it in the first place.  the only consumer thus far (mmc_spi)
+actually errors out if such conditions exist.
 
-static int __cpuinit mce_cpu_quirks(struct cpuinfo_x86 *c)
+in other words, we arent breaking anything.
 
-for the first, and use your master version of the latter.
+> Also, do you have a master driver that does have the {lock/unlock}_bus
+> methods?  I would like to see how you handled it.
 
-Thanks,
-
-	-hpa
-
-Andi Kleen (9):
-      x86: mce: Make CONFIG_X86_ANCIENT_MCE dependent on CONFIG_X86_MCE
-      x86: mce: Update X86_MCE description in x86/Kconfig
-      x86: mce: Remove old i386 machine check code
-      x86: mce: Rename CONFIG_X86_NEW_MCE to CONFIG_X86_MCE
-      x86: mce: Move code in mce.c
-      x86: mce: Move per bank data in a single datastructure
-      x86: mce: macros to compute banks MSRs
-      x86: mce: Lower maximum number of banks to architecture limit
-      x86, mce: Fix compilation with !CONFIG_DEBUG_FS in mce-severity.c
-
-Bartlomiej Zolnierkiewicz (5):
-      x86, mce: don't log boot MCEs on Pentium M (model == 13) CPUs
-      x86, mce: fix "mce" boot option handling for CONFIG_X86_NEW_MCE
-      x86, mce: add missing __cpuinit tags
-      x86, mce: remove never executed code
-      x86, mce: fix reporting of Thermal Monitoring mechanism enabled
-
-Borislav Petkov (2):
-      x86, mce: fix typo in comment in asm/mce.h
-      x86, mce: use atomic_inc_return() instead of add by 1
-
-Hidetoshi Seto (1):
-      x86, mce: CE in last bank prevents panic by unknown MCE
-
-Huang Ying (4):
-      x86, mce: Support specifying context for software mce injection
-      x86, mce: Support specifying raise mode for software MCE injection
-      x86, mce: Move debugfs mce dir creating to mce.c
-      x86, mce: Fake panic support for MCE testing
-
- Documentation/feature-removal-schedule.txt |   10 -
- arch/x86/Kconfig                           |   62 +-----
- arch/x86/include/asm/entry_arch.h          |    2 +-
- arch/x86/include/asm/mce.h                 |   32 ++--
- arch/x86/include/asm/msr-index.h           |   11 +
- arch/x86/kernel/apic/nmi.c                 |    2 +-
- arch/x86/kernel/cpu/mcheck/Makefile        |    5 +-
- arch/x86/kernel/cpu/mcheck/k7.c            |  116 -----------
- arch/x86/kernel/cpu/mcheck/mce-inject.c    |  158 ++++++++++++---
- arch/x86/kernel/cpu/mcheck/mce-internal.h  |   15 ++
- arch/x86/kernel/cpu/mcheck/mce-severity.c  |    8 +-
- arch/x86/kernel/cpu/mcheck/mce.c           |  308 +++++++++++++++-------------
- arch/x86/kernel/cpu/mcheck/mce_intel.c     |   10 +-
- arch/x86/kernel/cpu/mcheck/non-fatal.c     |   94 ---------
- arch/x86/kernel/cpu/mcheck/p4.c            |  163 ---------------
- arch/x86/kernel/cpu/mcheck/p6.c            |  127 ------------
- arch/x86/kernel/cpu/mcheck/therm_throt.c   |   13 +-
- arch/x86/kernel/irq.c                      |    4 +-
- arch/x86/kernel/irqinit.c                  |    2 +-
- arch/x86/kernel/signal.c                   |    2 +-
- 20 files changed, 367 insertions(+), 777 deletions(-)
- delete mode 100644 arch/x86/kernel/cpu/mcheck/k7.c
- delete mode 100644 arch/x86/kernel/cpu/mcheck/non-fatal.c
- delete mode 100644 arch/x86/kernel/cpu/mcheck/p4.c
- delete mode 100644 arch/x86/kernel/cpu/mcheck/p6.c
+http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=commitdiff;h=cc54fa8ed63e11a000031bc650d41d57b441803d
+-mike
