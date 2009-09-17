@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbZIQPfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZIQPjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbZIQPfX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 11:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZIQPfW
+	id S1754434AbZIQPjO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 11:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZIQPjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 11:35:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51190 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753063AbZIQPfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 11:35:21 -0400
-Message-ID: <4AB25736.1060601@suse.de>
-Date: Fri, 18 Sep 2009 00:35:18 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Thu, 17 Sep 2009 11:39:13 -0400
+Received: from mail-qy0-f181.google.com ([209.85.221.181]:49293 "EHLO
+	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbZIQPjN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 11:39:13 -0400
+Message-ID: <4AB2581E.20902@monstr.eu>
+Date: Thu, 17 Sep 2009 17:39:10 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-Cc: Chris Webb <chris@arachsys.com>, linux-scsi@vger.kernel.org,
-       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de> <4AAE3B9A.2060306@rtr.ca> <4AAE3F86.8090804@suse.de> <4AAE524C.2030401@rtr.ca> <20090916231921.GL1924@arachsys.com> <4AB239C8.2020203@rtr.ca>
-In-Reply-To: <4AB239C8.2020203@rtr.ca>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: microblaze-uclinux@itee.uq.edu.au
+CC: Michal Simek <monstr@monstr.eu>, linux-kernel@vger.kernel.org,
+       Greg Ungerer <gerg@uclinux.org>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>
+Subject: Re: [microblaze-uclinux] Re: =?us-ascii?Q?=5Bmicroblaze=2Duclinux=5D=20Re=3A=20=5BPATCH=5D=20Actually=20show=20KiB=20rather=20than=20pages=20in=20=22Freeing=20initrd
+References: <20090915165037.GA23702@csclub.uwaterloo.ca> <4AB1E78D.3070007@snapgear.com> <4AB1F9B0.10103@monstr.eu> <20090917152107.GX23700@csclub.uwaterloo.ca>
+In-Reply-To: <20090917152107.GX23700@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Mark Lord wrote:
-> Tejun.. do we do a FLUSH CACHE before issuing a non-NCQ command ?
 
-Nope.
+lsorense@csclub.uwaterloo.ca wrote:
+> On Thu, Sep 17, 2009 at 10:56:16AM +0200, Michal Simek wrote:
+>> Greg Ungerer wrote:
+>>> Hi Lennart,
+>>>
+>>> Lennart Sorensen wrote:
+>>>> Fix "Freeing initrd memory:" message on h3800, m68knommu and microblaze
+>>>> to show kilobytes as claimed rather than number of pages.
+>>>>
+>>>> Signed-off-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+>>> Looks ok to me. I can take and push the m68knommu part separately.
+>>> Or if Andrew wants to take it all as one, here is an:
+>>>
+>>> Acked-by: Greg Ungerer <gerg@uclinux.org>
+>> As Greg wrote. It will be the best to push it separately. IMHO it
+>> will be faster. It is up to you. If you want to add it to microblaze
+>> branch please send only patch for microblaze.
+>>
+>> If not.
+>>
+>> Acked-by: Michal Simek <monstr@monstr.eu>
+> 
+> Oh right how silly of me.  3 seperate patches would have been nicer I
+> guess.  The original code is certainly copied from one place to the others
+> although I have no idea which architecture was the first to get it wrong.
+> 
+> Would everyone prefer I made 3 patches instead and resent them?
 
-> If not, then I think we may need to add code to do it.
+Just do it for microblaze
 
-Hmm... can you explain a bit more?  That seems rather extreme to me.
+Thanks,
+Michal
 
-Thanks.
+
+> 
 
 -- 
-tejun
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
