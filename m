@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759897AbZIQDSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933507AbZIQDZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759897AbZIQDSF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 23:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbZIQDSE
+	id S933507AbZIQDZj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 23:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758370AbZIQDZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 23:18:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9638 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758279AbZIQDSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 23:18:03 -0400
-Date: Wed, 16 Sep 2009 23:17:59 -0400
-From: Dave Jones <davej@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kurt Roeckx <kurt@roeckx.be>
-Subject: Re: linux-next: cpufreq-current tree build warning
-Message-ID: <20090917031759.GB30706@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Kurt Roeckx <kurt@roeckx.be>
-References: <20090917120651.f0cdf4c2.sfr@canb.auug.org.au> <20090917022726.GA30706@redhat.com> <20090917125556.1125d8ae.sfr@canb.auug.org.au>
+	Wed, 16 Sep 2009 23:25:38 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:57959 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758284AbZIQDZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 23:25:37 -0400
+Date: Wed, 16 Sep 2009 23:25:40 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Jason Wessel <jason.wessel@windriver.com>
+cc: gregkh@suse.de, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] usb console: fix mutex lock regression
+In-Reply-To: <1253156887-31597-2-git-send-email-jason.wessel@windriver.com>
+Message-ID: <Pine.LNX.4.44L0.0909162324460.24041-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917125556.1125d8ae.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 12:55:56PM +1000, Stephen Rothwell wrote:
- > so, no.
- > (origin/master is Linus' tree of about 2 hours ago, commit
- > ab86e5765d41a5eb4239a1c04d613db87bea5ed8 "Merge
- > git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core-2.6")
- > 
- > Looking further, this is the cpureq-current tree I am complaining about,
- > in the cpufreq tree, you also have:
+On Wed, 16 Sep 2009, Jason Wessel wrote:
 
-Oh, from the 'fixes' branch ?  Just drop that for now, and only pick up 'next'
-(though next pull request went to linus today, so the whole thing should be
- gone soon).
+> During the 2.6.32 development the use of serial->disc_mutex was
+> introduced.  In usb_console_setup() the call to
+> usb_serial_get_by_index() will obtain this mutex. The
+> usb_console_setup() must release the mutex before it completes else
+> later calls to the usb serial core will hang.
 
-	Dave
+Apparently you didn't see my patch:
+
+	http://marc.info/?l=linux-usb&m=125209260714221&w=2
+
+Did this not get into linus-next?  Greg?
+
+Alan Stern
+
