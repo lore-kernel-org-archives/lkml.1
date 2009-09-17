@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760242AbZIQSrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbZIQSrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760242AbZIQSrs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 14:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbZIQSro
+	id S1760151AbZIQSrg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 14:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZIQSrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 14:47:44 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:33346 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759215AbZIQSrj (ORCPT
+	Thu, 17 Sep 2009 14:47:32 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:46604 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408AbZIQSr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 14:47:39 -0400
+	Thu, 17 Sep 2009 14:47:26 -0400
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Subject: [PATCH 12/20] cciss: Fix excessive gendisk freeing bug on driver
-	unload.
+Subject: [PATCH 13/20] cciss: Silence noisy per-disk messages output by
+	cciss_read_capacity
 To: akpm@linux-foundation.org, axboe@kernel.dk
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        andrew.patterson@hp.com, mikem@beardog.cce.hp.com,
        scameron@beardog.cce.hp.com
-Date: Thu, 17 Sep 2009 13:47:50 -0500
-Message-ID: <20090917184750.15105.13447.stgit@beardog.cce.hp.com>
+Date: Thu, 17 Sep 2009 13:47:55 -0500
+Message-ID: <20090917184755.15105.46098.stgit@beardog.cce.hp.com>
 In-Reply-To: <20090917184310.15105.43508.stgit@beardog.cce.hp.com>
 References: <20090917184310.15105.43508.stgit@beardog.cce.hp.com>
 User-Agent: StGIT/0.14.3
@@ -29,43 +29,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix bug that free_hba was calling put_disk for all gendisk[]
-pointers -- all 1024 of them -- regardless of whether the were
-used or not (NULL).  This bug could cause rmmod to oops if logical
-drives had been deleted during the driver's lifetime.
+Silence noisy per-disk messages output by cciss_read_capacity
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
 
- drivers/block/cciss.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+ drivers/block/cciss.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 14d4cd6..a4cb041 100644
+index a4cb041..239c4f5 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -3892,15 +3892,16 @@ Enomem:
- 	return -1;
+@@ -2601,8 +2601,6 @@ static void cciss_geometry_inquiry(int ctlr, int logvol,
+ 	} else {		/* Get geometry failed */
+ 		printk(KERN_WARNING "cciss: reading geometry failed\n");
+ 	}
+-	printk(KERN_INFO "      heads=%d, sectors=%d, cylinders=%d\n\n",
+-	       drv->heads, drv->sectors, drv->cylinders);
  }
  
--static void free_hba(int i)
-+static void free_hba(int n)
- {
--	ctlr_info_t *p = hba[i];
--	int n;
-+	ctlr_info_t *h = hba[n];
-+	int i;
- 
--	hba[i] = NULL;
--	for (n = 0; n < CISS_MAX_LUN; n++)
--		put_disk(p->gendisk[n]);
--	kfree(p);
-+	hba[n] = NULL;
-+	for (i = 0; i < h->highest_lun + 1; i++)
-+		if (h->gendisk[i] != NULL)
-+			put_disk(h->gendisk[i]);
-+	kfree(h);
+ static void
+@@ -2636,9 +2634,6 @@ cciss_read_capacity(int ctlr, int logvol, int withirq, sector_t *total_size,
+ 		*total_size = 0;
+ 		*block_size = BLOCK_SIZE;
+ 	}
+-	if (*total_size != 0)
+-		printk(KERN_INFO "      blocks= %llu block_size= %d\n",
+-		(unsigned long long)*total_size+1, *block_size);
+ 	kfree(buf);
  }
  
- /* Send a message CDB to the firmware. */
 
