@@ -1,93 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZIQWug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZIQWot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbZIQWug (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 18:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZIQWuf
+	id S1753532AbZIQWot (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 18:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbZIQWor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 18:50:35 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:60705 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbZIQWuf (ORCPT
+	Thu, 17 Sep 2009 18:44:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52143 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753361AbZIQWol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 18:50:35 -0400
-From: Nitin Gupta <ngupta@vflare.org>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
-Subject: [PATCH 4/4] documentation
-Date: Fri, 18 Sep 2009 04:13:32 +0530
-Message-Id: <1253227412-24342-5-git-send-email-ngupta@vflare.org>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
+	Thu, 17 Sep 2009 18:44:41 -0400
+Date: Thu, 17 Sep 2009 15:44:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric B Munson <ebmunson@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
+       randy.dunlap@oracle.com, ebmunson@us.ibm.com,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 2/3] Add MAP_HUGETLB for mmaping pseudo-anonymous huge
+ page regions
+Message-Id: <20090917154404.e1d3694e.akpm@linux-foundation.org>
+In-Reply-To: <8504342f7be19e416ef769d1edd24b8549f8dc39.1251197514.git.ebmunson@us.ibm.com>
+References: <cover.1251197514.git.ebmunson@us.ibm.com>
+	<25614b0d0581e2d49e1024dc1671b282f193e139.1251197514.git.ebmunson@us.ibm.com>
+	<8504342f7be19e416ef769d1edd24b8549f8dc39.1251197514.git.ebmunson@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Short guide on how to setup and use ramzswap.
+On Tue, 25 Aug 2009 12:14:53 +0100
+Eric B Munson <ebmunson@us.ibm.com> wrote:
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+> This patch adds a flag for mmap that will be used to request a huge
+> page region that will look like anonymous memory to user space.  This
+> is accomplished by using a file on the internal vfsmount.  MAP_HUGETLB
+> is a modifier of MAP_ANONYMOUS and so must be specified with it.  The
+> region will behave the same as a MAP_ANONYMOUS region using small pages.
+> 
+> Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+> ---
+>  include/asm-generic/mman-common.h |    1 +
+>  include/linux/hugetlb.h           |    7 +++++++
+>  mm/mmap.c                         |   19 +++++++++++++++++++
 
+alpha fix:
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+mm/mmap.c: In function 'do_mmap_pgoff':
+mm/mmap.c:953: error: 'MAP_HUGETLB' undeclared (first use in this function)
+mm/mmap.c:953: error: (Each undeclared identifier is reported only once
+mm/mmap.c:953: error: for each function it appears in.)
+
+Cc: Adam Litke <agl@us.ibm.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Eric B Munson <ebmunson@us.ibm.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Richard Henderson <rth@twiddle.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/staging/ramzswap/ramzswap.txt |   51 +++++++++++++++++++++++++++++++++
- 1 files changed, 51 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/staging/ramzswap/ramzswap.txt b/drivers/staging/ramzswap/ramzswap.txt
-new file mode 100644
-index 0000000..e9f1619
---- /dev/null
-+++ b/drivers/staging/ramzswap/ramzswap.txt
-@@ -0,0 +1,51 @@
-+ramzswap: Compressed RAM based swap device
-+-------------------------------------------
-+
-+Project home: http://compcache.googlecode.com/
-+
-+* Introduction
-+
-+It creates RAM based block devices which can be used (only) as swap disks.
-+Pages swapped to these devices are compressed and stored in memory itself.
-+See project home for use cases, performance numbers and a lot more.
-+
-+Individual ramzswap devices are configured and initialized using rzscontrol
-+userspace utility as shown in examples below. See rzscontrol man page for more
-+details.
-+
-+* Usage
-+
-+Following shows a typical sequence of steps for using ramzswap.
-+
-+1) Load Modules:
-+	modprobe ramzswap num_devices=4
-+	This creates 4 (uninitialized) devices: /dev/ramzswap{0,1,2,3}
-+	(num_devices parameter is optional. Default: 1)
-+
-+2) Initialize:
-+	Use rzscontrol utility to configure and initialize individual
-+	ramzswap devices. Example:
-+	rzscontrol /dev/ramzswap2 --init # uses default value of disksize_kb
-+
-+	*See rzscontrol man page for more details and examples*
-+
-+3) Activate:
-+	swapon /dev/ramzswap2 # or any other initialized ramzswap device
-+
-+4) Stats:
-+	rzscontrol /dev/ramzswap2 --stats
-+
-+5) Deactivate:
-+	swapoff /dev/ramzswap2
-+
-+6) Reset:
-+	rzscontrol /dev/ramzswap2 --reset
-+	(This frees all the memory allocated for this device).
-+
-+
-+Please report any problems at:
-+ - Mailing list: linux-mm-cc at laptop dot org
-+ - Issue tracker: http://code.google.com/p/compcache/issues/list
-+
-+Nitin Gupta
-+ngupta@vflare.org
+ arch/alpha/include/asm/mman.h |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff -puN arch/alpha/include/asm/mman.h~hugetlb-add-map_hugetlb-for-mmaping-pseudo-anonymous-huge-page-regions-alpha-fix arch/alpha/include/asm/mman.h
+--- a/arch/alpha/include/asm/mman.h~hugetlb-add-map_hugetlb-for-mmaping-pseudo-anonymous-huge-page-regions-alpha-fix
++++ a/arch/alpha/include/asm/mman.h
+@@ -28,6 +28,7 @@
+ #define MAP_NORESERVE	0x10000		/* don't check for reservations */
+ #define MAP_POPULATE	0x20000		/* populate (prefault) pagetables */
+ #define MAP_NONBLOCK	0x40000		/* do not block on IO */
++#define MAP_HUGETLB	0x80000		/* create a huge page mapping */
+ 
+ #define MS_ASYNC	1		/* sync memory asynchronously */
+ #define MS_SYNC		2		/* synchronous memory sync */
+_
+
