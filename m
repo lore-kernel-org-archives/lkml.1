@@ -1,222 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbZIQHzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752208AbZIQH6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbZIQHzb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 03:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZIQHz3
+	id S1752208AbZIQH6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 03:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbZIQH6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 03:55:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53808 "EHLO hera.kernel.org"
+	Thu, 17 Sep 2009 03:58:22 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:57174 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752628AbZIQHzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 03:55:25 -0400
-Date: Thu, 17 Sep 2009 07:54:49 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Add new wakeup preemption mode: WAKEUP_RUNNING, disable FAIR_SLEEPERS
-Message-ID: <tip-b438d34496c3c9fddc46012359e3bb2cf4df901e@git.kernel.org>
-Git-Commit-ID: b438d34496c3c9fddc46012359e3bb2cf4df901e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 17 Sep 2009 07:54:50 +0000 (UTC)
+	id S1750730AbZIQH6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 03:58:21 -0400
+Date: Thu, 17 Sep 2009 09:58:23 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [patch 44/45] PCI: Unhide the SMBus on the Compaq Evo D510 USDT
+Message-ID: <20090917095823.12682531@hyperion.delvare>
+In-Reply-To: <20090916223719.861500408@mini.kroah.org>
+References: <20090916223613.597295240@mini.kroah.org>
+	<20090916223719.861500408@mini.kroah.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b438d34496c3c9fddc46012359e3bb2cf4df901e
-Gitweb:     http://git.kernel.org/tip/b438d34496c3c9fddc46012359e3bb2cf4df901e
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Wed, 16 Sep 2009 12:31:31 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 17 Sep 2009 09:51:48 +0200
+Hi Greg,
 
-sched: Add new wakeup preemption mode: WAKEUP_RUNNING, disable FAIR_SLEEPERS
+On Wed, 16 Sep 2009 15:36:57 -0700, Greg KH wrote:
+> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
+> 
+> ------------------
+> From: Jean Delvare <khali@linux-fr.org>
+> 
+> commit 6b5096e4d4496e185cd1ada5d1b8e1d941c805ed upstream.
+> 
+> One more form factor for Compaq Evo D510, which needs the same quirk
+> as the other form factors. Apparently there's no hardware monitoring
+> chip on that one, but SPD EEPROMs, so it's still worth unhiding the
+> SMBus.
 
-Create a new wakeup preemption mode, preempt towards tasks that run
-shorter on avg. It sets next buddy to be sure we actually run the task
-we preempted for.
+FWIW, this one doesn't strike me as being needed in -stable. While it
+should be safe (otherwise it wouldn't have gone upstream in the first
+place), it hardly fulfills -stable's requirement that "it must fix a
+real bug that bothers people". There's no hardware monitoring chip on
+the SMBus on this machine, and people can easily live without detailed
+memory module information.
 
-Also turn off FAIR_SLEEPERS - this new mechanism replaces it.
+So it's up to you, but I won't cry if you drop this patch from -stable.
 
-Test results:
-
- root@twins:~# while :; do :; done &
- [1] 6537
- root@twins:~# while :; do :; done &
- [2] 6538
- root@twins:~# while :; do :; done &
- [3] 6539
- root@twins:~# while :; do :; done &
- [4] 6540
-
- root@twins:/home/peter# ./latt -c4 sleep 4
- Entries: 48 (clients=4)
-
- Averages:
- ------------------------------
-        Max          4750 usec
-        Avg           497 usec
-        Stdev         737 usec
-
- root@twins:/home/peter# echo WAKEUP_RUNNING > /debug/sched_features
-
- root@twins:/home/peter# ./latt -c4 sleep 4
- Entries: 48 (clients=4)
-
- Averages:
- ------------------------------
-        Max            14 usec
-        Avg             5 usec
-        Stdev           3 usec
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-LKML-Reference: <new-submission>
+> 
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Tested-by: Nuzhna Pomoshch <nuzhna_pomoshch@yahoo.com>
+> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  drivers/pci/quirks.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -1201,6 +1201,7 @@ static void __init asus_hides_smbus_host
+>  			switch(dev->subsystem_device) {
+>  			case 0x00b8: /* Compaq Evo D510 CMT */
+>  			case 0x00b9: /* Compaq Evo D510 SFF */
+> +			case 0x00ba: /* Compaq Evo D510 USDT */
+>  				/* Motherboard doesn't have Host bridge
+>  				 * subvendor/subdevice IDs and on-board VGA
+>  				 * controller is disabled if an AGP card is
+> 
+> 
 
 
----
- include/linux/sched.h   |    2 ++
- kernel/sched.c          |   17 ++++++++++-------
- kernel/sched_debug.c    |    1 +
- kernel/sched_fair.c     |   14 +++++++++++---
- kernel/sched_features.h |    7 ++++++-
- 5 files changed, 30 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b4a39bb..8af3d24 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1113,6 +1113,8 @@ struct sched_entity {
- 	u64			start_runtime;
- 	u64			avg_wakeup;
- 
-+	u64			avg_running;
-+
- #ifdef CONFIG_SCHEDSTATS
- 	u64			wait_start;
- 	u64			wait_max;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 969dfae..3bb4ea2 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2458,6 +2458,7 @@ static void __sched_fork(struct task_struct *p)
- 	p->se.avg_overlap		= 0;
- 	p->se.start_runtime		= 0;
- 	p->se.avg_wakeup		= sysctl_sched_wakeup_granularity;
-+	p->se.avg_running		= 0;
- 
- #ifdef CONFIG_SCHEDSTATS
- 	p->se.wait_start			= 0;
-@@ -5310,14 +5311,13 @@ static inline void schedule_debug(struct task_struct *prev)
- #endif
- }
- 
--static void put_prev_task(struct rq *rq, struct task_struct *prev)
-+static void put_prev_task(struct rq *rq, struct task_struct *p)
- {
--	if (prev->state == TASK_RUNNING) {
--		u64 runtime = prev->se.sum_exec_runtime;
-+	u64 runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
- 
--		runtime -= prev->se.prev_sum_exec_runtime;
--		runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
-+	update_avg(&p->se.avg_running, runtime);
- 
-+	if (p->state == TASK_RUNNING) {
- 		/*
- 		 * In order to avoid avg_overlap growing stale when we are
- 		 * indeed overlapping and hence not getting put to sleep, grow
-@@ -5327,9 +5327,12 @@ static void put_prev_task(struct rq *rq, struct task_struct *prev)
- 		 * correlates to the amount of cache footprint a task can
- 		 * build up.
- 		 */
--		update_avg(&prev->se.avg_overlap, runtime);
-+		runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
-+		update_avg(&p->se.avg_overlap, runtime);
-+	} else {
-+		update_avg(&p->se.avg_running, 0);
- 	}
--	prev->sched_class->put_prev_task(rq, prev);
-+	p->sched_class->put_prev_task(rq, p);
- }
- 
- /*
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 5ddbd08..efb8440 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -395,6 +395,7 @@ void proc_sched_show_task(struct task_struct *p, struct seq_file *m)
- 	PN(se.sum_exec_runtime);
- 	PN(se.avg_overlap);
- 	PN(se.avg_wakeup);
-+	PN(se.avg_running);
- 
- 	nr_switches = p->nvcsw + p->nivcsw;
- 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index c741cd9..3e6f78c 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1605,9 +1605,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
- 		return;
- 	}
- 
--	if (!sched_feat(WAKEUP_PREEMPT))
--		return;
--
- 	if ((sched_feat(WAKEUP_SYNC) && sync) ||
- 	    (sched_feat(WAKEUP_OVERLAP) &&
- 	     (se->avg_overlap < sysctl_sched_migration_cost &&
-@@ -1616,6 +1613,17 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
- 		return;
- 	}
- 
-+	if (sched_feat(WAKEUP_RUNNING)) {
-+		if (pse->avg_running < se->avg_running) {
-+			set_next_buddy(pse);
-+			resched_task(curr);
-+			return;
-+		}
-+	}
-+
-+	if (!sched_feat(WAKEUP_PREEMPT))
-+		return;
-+
- 	find_matching_se(&se, &pse);
- 
- 	BUG_ON(!pse);
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index d5059fd..929308c 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -3,7 +3,7 @@
-  * considers the task to be running during that period. This gives it
-  * a service deficit on wakeup, allowing it to run sooner.
-  */
--SCHED_FEAT(FAIR_SLEEPERS, 1)
-+SCHED_FEAT(FAIR_SLEEPERS, 0)
- 
- /*
-  * Only give sleepers 50% of their service deficit. This allows
-@@ -54,6 +54,11 @@ SCHED_FEAT(WAKEUP_SYNC, 0)
- SCHED_FEAT(WAKEUP_OVERLAP, 0)
- 
- /*
-+ * Wakeup preemption towards tasks that run short
-+ */
-+SCHED_FEAT(WAKEUP_RUNNING, 1)
-+
-+/*
-  * Use the SYNC wakeup hint, pipes and the likes use this to indicate
-  * the remote end is likely to consume the data we just wrote, and
-  * therefore has cache benefit from being placed on the same cpu, see
+-- 
+Jean Delvare
