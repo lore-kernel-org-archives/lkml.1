@@ -1,178 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbZIQGJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZIQGKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754024AbZIQGJf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 02:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZIQGJe
+	id S1754058AbZIQGKP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 02:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbZIQGKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 02:09:34 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49712 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753276AbZIQGJe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 02:09:34 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 17 Sep 2009 15:07:26 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       oleg@redhat.com, xiyou.wangcong@gmail.com
-Subject: [RFC][PATCH][bugfix] more checks for negative f_pos handling v3
-Message-Id: <20090917150726.9acb0f40.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090917145319.97f67737.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090914032901.GA16189@localhost>
-	<20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090917145319.97f67737.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Sep 2009 02:10:14 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53841 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753499AbZIQGKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 02:10:13 -0400
+Message-ID: <4AB1D252.8060406@cn.fujitsu.com>
+Date: Thu, 17 Sep 2009 14:08:18 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: [PATCH] io-controller: Fix task hanging when there are more	than
+ one groups
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com> <20090915033739.GA4054@redhat.com> <4AB05442.6080004@cn.fujitsu.com> <20090916180915.GE5221@redhat.com>
+In-Reply-To: <20090916180915.GE5221@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Very sorry...reflesh miss.
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Vivek Goyal wrote:
+> On Wed, Sep 16, 2009 at 10:58:10AM +0800, Gui Jianfeng wrote:
+> 
+> [..]
+>>> o Fixed the issue of not expiring the queue for single ioq schedulers. Reported
+>>>   and fixed by Gui.
+>>>
+>>> o If an AS queue is not expired for a long time and suddenly somebody
+>>>   decides to create a group and launch a job there, in that case old AS
+>>>   queue will be expired with a very high value of slice used and will get
+>>>   a very high disk time. Fix it by marking the queue as "charge_one_slice"
+>>>   and charge the queue only for a single time slice and not for whole
+>>>   of the duration when queue was running.
+>>>
+>>> o There are cases where in case of AS, excessive queue expiration will take
+>>>   place by elevator fair queuing layer because of few reasons.
+>>> 	- AS does not anticipate on a queue if there are no competing requests.
+>>> 	  So if only a single reader is present in a group, anticipation does
+>>> 	  not get turn on.
+>>>
+>>> 	- elevator layer does not know that As is anticipating hence initiates
+>>> 	  expiry requests in select_ioq() thinking queue is empty.
+>>>
+>>> 	- elevaotr layer tries to aggressively expire last empty queue. This
+>>> 	  can lead to lof of queue expiry
+>>>
+>>> o This patch now starts ANITC_WAIT_NEXT anticipation if last request in the
+>>>   queue completed and associated io context is eligible to anticipate. Also
+>>>   AS lets elevatory layer know that it is anticipating (elv_ioq_wait_request())
+>>>   . This solves above mentioned issues.
+>>>  
+>>> o Moved some of the code in separate functions to improve readability.
+>>>
+>> ...
+>>
+>>>  /* A request got completed from io_queue. Do the accounting. */
+>>>  void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+>>>  {
+>>> @@ -3470,16 +3572,16 @@ void elv_ioq_completed_request(struct re
+>>>  			elv_set_prio_slice(q->elevator->efqd, ioq);
+>>>  			elv_clear_ioq_slice_new(ioq);
+>>>  		}
+>>> +
+>>>  		/*
+>>>  		 * If there is only root group present, don't expire the queue
+>>>  		 * for single queue ioschedulers (noop, deadline, AS). It is
+>>>  		 * unnecessary overhead.
+>>>  		 */
+>>>  
+>>> -		if (is_only_root_group() &&
+>>> -			elv_iosched_single_ioq(q->elevator)) {
+>>> -			elv_log_ioq(efqd, ioq, "select: only root group,"
+>>> -					" no expiry");
+>>> +		if (single_ioq_no_timed_expiry(q)) {
+>>   Hi Vivek,
+>>
+>>   So we make use of single_ioq_no_timed_expiry() to decide whether there is only
+>>   root ioq to be busy, right? But single_ioq_no_timed_expiry() only checks if
+>>   the root cgroup is the only group and if there is only one busy_ioq there. As
+>>   I explained in previous mail, these two checks are not sufficient to say the
+>>   current active ioq comes from root group. Because when the child cgroup is just
+>>   removed, and the ioq which belongs to child group is still there(maybe some
+>>   requests are in flight). In this case, only root cgroup and only one active ioq
+>>   (child ioq) checks are satisfied. So IMHO, in single_ioq_no_timed_expiry() we 
+>>   still need to check "efqd->root_group->ioq" is already created to ensure the only
+>>   ioq comes from root group. Am i missing something?
+>>
+> 
+> Hi Gui,
+> 
+> The only side effect of not checking for "efqd->root_group->ioq" seems to
+> be that this ioq hence io group of the child will not be freed immediately
+> and release will be delayed until a some other queue in the system gets
+> backlogged or ioscheduler exits. At that point of time, this child queue will
+> be expired and ioq and iog will be freed.
+> 
+> The advantage is that if there is IO happening only in child group in that
+> case we can avoid expiring that queue.
+> 
+> So may be keeping the queue around for sometime is not a very idea. 
+> 
+> Am I missing something?
 
-Now, rw_verify_area() checsk f_pos is negative or not. And if
-negative, returns -EINVAL.
+  Hi Vivek,
 
-But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
-has negative offsets. And we can't do any access via read/write
-to the file(device).
+  I think you're right.
+  A thought comes to my mind, whether can we extend optimization for not expiring
+  an ioq not only for root group, but for single ioq case? IOW, if there is only
+  one ioq in hierarchy, we don't exipre it until another ioq gets backlogged, and
+  we just charge only one time slice for that ioq when it schedule out. This might
+  help if IO only happens in child group.
 
-This patch introduce a flag S_VERYBIG and allow negative file
-offsets.
+> 
+> Thanks
+> Vivek
+> 
+> 
+> 
 
-Changelog:
- - fixed bug in rw_verify_area (it cannot be compiled)
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- drivers/char/mem.c |   23 +++++++++++++----------
- fs/proc/base.c     |    2 ++
- fs/read_write.c    |   20 ++++++++++++++++++--
- include/linux/fs.h |    2 ++
- 4 files changed, 35 insertions(+), 12 deletions(-)
-
-Index: mmotm-2.6.31-Sep14/fs/read_write.c
-===================================================================
---- mmotm-2.6.31-Sep14.orig/fs/read_write.c
-+++ mmotm-2.6.31-Sep14/fs/read_write.c
-@@ -205,6 +205,16 @@ bad:
- }
- #endif
- 
-+static bool
-+__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
-+{
-+	if (pos + count < pos)
-+		return -EOVERFLOW;
-+	if (IS_VERYBIG(inode))
-+		return 0;
-+	return -EINVAL;
-+}
-+
- /*
-  * rw_verify_area doesn't like huge counts. We limit
-  * them to something that fits in "int" so that others
-@@ -222,8 +232,11 @@ int rw_verify_area(int read_write, struc
- 	if (unlikely((ssize_t) count < 0))
- 		return retval;
- 	pos = *ppos;
--	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
--		return retval;
-+	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
-+		retval = __negative_fpos_check(inode, pos, count);
-+		if (retval)
-+			return retval;
-+	}
- 
- 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
- 		retval = locks_mandatory_area(
-Index: mmotm-2.6.31-Sep14/include/linux/fs.h
-===================================================================
---- mmotm-2.6.31-Sep14.orig/include/linux/fs.h
-+++ mmotm-2.6.31-Sep14/include/linux/fs.h
-@@ -231,6 +231,7 @@ struct inodes_stat_t {
- #define S_NOCMTIME	128	/* Do not update file c/mtime */
- #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
- #define S_PRIVATE	512	/* Inode is fs-internal */
-+#define S_VERYBIG	1024	/* Allow file's loff_t can be negative */
- 
- /*
-  * Note that nosuid etc flags are inode-specific: setting some file-system
-@@ -265,6 +266,7 @@ struct inodes_stat_t {
- #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
- #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
- #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
-+#define IS_VERYBIG(inode)	((inode)->i_flags & S_VERYBIG)
- 
- /* the read-only stuff doesn't really belong here, but any other place is
-    probably as bad and I don't want to create yet another include file. */
-Index: mmotm-2.6.31-Sep14/drivers/char/mem.c
-===================================================================
---- mmotm-2.6.31-Sep14.orig/drivers/char/mem.c
-+++ mmotm-2.6.31-Sep14/drivers/char/mem.c
-@@ -825,22 +825,23 @@ static const struct memdev {
- 	const char *name;
- 	const struct file_operations *fops;
- 	struct backing_dev_info *dev_info;
-+	bool	verybig;
- } devlist[] = {
--	[ 1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi },
-+	[1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi, true },
- #ifdef CONFIG_DEVKMEM
--	[ 2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi },
-+	[2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi, true },
- #endif
--	[ 3] = {"null", &null_fops, NULL },
-+	[3] = {"null", &null_fops, NULL, false },
- #ifdef CONFIG_DEVPORT
--	[ 4] = { "port", &port_fops, NULL },
-+	[4] = { "port", &port_fops, NULL, false },
- #endif
--	[ 5] = { "zero", &zero_fops, &zero_bdi },
--	[ 6] = { "full", &full_fops, NULL },
--	[ 7] = { "random", &random_fops, NULL },
--	[ 9] = { "urandom", &urandom_fops, NULL },
--	[11] = { "kmsg", &kmsg_fops, NULL },
-+	[5] = { "zero", &zero_fops, &zero_bdi, false },
-+	[6] = { "full", &full_fops, NULL, false },
-+	[7] = { "random", &random_fops, NULL, false },
-+	[9] = { "urandom", &urandom_fops, NULL, false },
-+	[11] = { "kmsg", &kmsg_fops, NULL, false },
- #ifdef CONFIG_CRASH_DUMP
--	[12] = { "oldmem", &oldmem_fops, NULL },
-+	[12] = { "oldmem", &oldmem_fops, NULL, false },
- #endif
- };
- 
-@@ -868,6 +869,8 @@ static int memory_open(struct inode *ino
- 		ret = dev->fops->open(inode, filp);
- 	else
- 		ret = 0;
-+	if (dev->verybig)
-+		inode->i_flags |= S_VERYBIG;
- out:
- 	unlock_kernel();
- 	return ret;
-Index: mmotm-2.6.31-Sep14/fs/proc/base.c
-===================================================================
---- mmotm-2.6.31-Sep14.orig/fs/proc/base.c
-+++ mmotm-2.6.31-Sep14/fs/proc/base.c
-@@ -779,6 +779,8 @@ static const struct file_operations proc
- static int mem_open(struct inode* inode, struct file* file)
- {
- 	file->private_data = (void*)((long)current->self_exec_id);
-+	/* this file is read only and we can catch out-pf-range */
-+	inode->i_flags |= S_VERYBIG;
- 	return 0;
- }
- 
+-- 
+Regards
+Gui Jianfeng
 
