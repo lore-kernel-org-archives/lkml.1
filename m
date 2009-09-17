@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZIQDkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZIQDq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbZIQDkd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 23:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759923AbZIQDkc
+	id S1760023AbZIQDq0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 23:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbZIQDq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 23:40:32 -0400
-Received: from smtp-out-153.synserver.de ([212.40.180.153]:1030 "HELO
-	smtp-out-153.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755039AbZIQDkc (ORCPT
+	Wed, 16 Sep 2009 23:46:26 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:53259 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758458AbZIQDqZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 23:40:32 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 5155
-Date: Thu, 17 Sep 2009 05:40:33 +0200
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: x86-PAT tree merge causes keyboard problems
-Message-ID: <20090917034033.GA1916@phenom2.trippelsdorf.de>
-References: <20090915205259.GA1910@phenom2.trippelsdorf.de>
- <4AB018C0.30203@zytor.com>
- <20090916052657.GA1897@phenom2.trippelsdorf.de>
- <4AB07F39.4080205@zytor.com>
- <1253136483.4119.12.camel@sbs-t61.sc.intel.com>
+	Wed, 16 Sep 2009 23:46:25 -0400
+Date: Wed, 16 Sep 2009 23:46:29 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Jason Wessel <jason.wessel@windriver.com>
+cc: gregkh@suse.de, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] usb console,usb-serial: pass initial console baud
+ on to first tty open
+In-Reply-To: <4AB1AF91.2080606@windriver.com>
+Message-ID: <Pine.LNX.4.44L0.0909162344350.24376-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253136483.4119.12.camel@sbs-t61.sc.intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 02:28:03PM -0700, Suresh Siddha wrote:
-> On Tue, 2009-09-15 at 23:01 -0700, H. Peter Anvin wrote:
-> > Okay, that explains the keyboard failure.  What you're really seeing is
-> > a systemic failure of the X server.  Suresh thought it might be mapping
-> > the frame buffer incorrectly.
+On Wed, 16 Sep 2009, Jason Wessel wrote:
+
+> Alan Stern wrote:
+> > On Wed, 16 Sep 2009, Jason Wessel wrote:
+> >
+> >   
+> >> The first open of the usb serial HW has the termios initialized to the
+> >> default of 9600 baud, and this will override what ever was setup via
+> >> the original console initialization.
+> >>     
+> >
+> > I don't understand.  The first open of the console hardware occurs in 
+> > console.c as part of usb_console_setup(), and it uses the baud rate 
+> > passed in via the console options.  Why does anything need to get 
+> > saved?
+> >   
 > 
-> Markus, Can you please check if the appended patch fixes the issue? It
-> seems to fix the issue for me.
+> The initialization in console.c is done with a dummy tty structure that
+> is thrown away.  It is thrown away because it was not connected to any
+> device handle.
+> 
+> Any new tty that is opened defaults to 9600 baud, for the mct_u232
+> driver as an example, if you boot the system with
+> console=ttyUSB0,115200, when mingetty starts it will inherit 9600 from
+> the first tty that is opened, vs reading the value from the HW.  Even if
+> you have a pl2303 and boot with the 115200 baud, you can run "stty -a <
+> /dev/ttyUSB0" and you will see it reports it is running at 9600.  The
+> pl2303 driver just happens to work because it handles the baud differently.
+> 
+> I elected to save the baud because:
+> 
+> 1) There was no uniform interface to read the current baud from the usb
+> hardware
+> 
+> 2) There was no documented API for getting tty to attach when you create
+> the initial console.
+> 
+> If there is a better way to fix this, it would be good to continue the
+> discussion.
 
-Yes, everything is fine again. Thanks Suresh.
+I guess a better approach would be not to throw away the "dummy" tty 
+structure, thereby keeping the termios structure as well.  But I don't 
+know if this is practical.
 
--- 
-Markus
+How do other serial console drivers handle this?
+
+Alan Stern
+
