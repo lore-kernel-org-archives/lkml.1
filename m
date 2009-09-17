@@ -1,64 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751402AbZIQV7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZIQWD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751402AbZIQV7K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 17:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZIQV7I
+	id S1752243AbZIQWD2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 18:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZIQWD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 17:59:08 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:43251 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZIQV7H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 17:59:07 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=guK5o9Iwtb49AAbQ3nPBLieWz7sqD1qbnuPz8QnQ9LW/AIS7bM9Z16UwRuv+vuAqG
-	tkx3LQVOLWYE69DU9kXvg==
-Date: Thu, 17 Sep 2009 14:59:02 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Eric Paris <eparis@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Greg KH <greg@kroah.com>,
-       linux-hotplug@vger.kernel.org
-Subject: Re: kernel panic - not syncing: out of memory and no killable
- processes
-In-Reply-To: <1253223119.5213.359.camel@dhcp231-106.rdu.redhat.com>
-Message-ID: <alpine.DEB.1.00.0909171446230.22063@chino.kir.corp.google.com>
-References: <1253158603.5213.204.camel@dhcp231-106.rdu.redhat.com> <1253191435.5213.209.camel@dhcp231-106.rdu.redhat.com> <alpine.DEB.1.00.0909171326340.31112@chino.kir.corp.google.com> <1253219756.5213.348.camel@dhcp231-106.rdu.redhat.com>
- <1253221309.5213.350.camel@dhcp231-106.rdu.redhat.com> <1253222149.5213.352.camel@dhcp231-106.rdu.redhat.com> <alpine.DEB.1.00.0909171417020.19006@chino.kir.corp.google.com> <1253223119.5213.359.camel@dhcp231-106.rdu.redhat.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 17 Sep 2009 18:03:26 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57655 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751698AbZIQWDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 18:03:17 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: spi-devel-general@lists.sourceforge.net,
+       David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Yi Li <yi.li@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/2] spi: new SPI bus lock/unlock functions
+Date: Thu, 17 Sep 2009 18:03:16 -0400
+Message-Id: <1253224997-7422-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Sep 2009, Eric Paris wrote:
+From: Yi Li <yi.li@analog.com>
 
-> Absolutely 100% udevd related.  It always pops right when udev starts.
-> Every time.  I don't know how to get that to come out on the serial
-> port, you only get to see the kernel messages (although there is nothing
-> on the screen other than "Starting udev"
-> 
-> Reverting 3f2aa307c4d26b4ed6509d0a79e8254c9e07e921 causes the problem to
-> go away.  I now am running a 79b520e87e kernel + your patch (adding
-> console_verbose()) + reverting 3f2aa307c4d2 and it seems to be working.
-> 
+For some MMC cards over SPI bus, it needs to lock the SPI bus for its own
+use.  The SPI transfer must not be interrupted by other SPI devices that
+share the SPI bus with SPI MMC card.
 
-Isolating udevd down to an interactivity scheduling change isn't _that_ 
-bizarre.  I think the setting of UDEVD_PRIORITY is already mostly 
-arbitrary anyway and it'll allow 192 children on your 512M machine by 
-default unless you changed UDEVD_MAX_CHILDS for uid 0.
+This patch introduces 2 APIs for SPI bus locking operation.
 
-The default timeout for idle workers is 3 seconds, which may just happen 
-to be long enough to panic your machine because of low memory.  If that's 
-the case, I don't believe that it's a scheduler issue but rather a root 
-abuse of setting all udevd threads to be OOM_DISABLE.
+Signed-off-by: Yi Li <yi.li@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+Andrew: we've posted these in the past with no response.  could you pick
+        them up please ?
 
-What is your udevd --version?  The latest is udev-146 released last month.
+ drivers/spi/spi.c       |   48 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/spi/spi.h |    7 ++++++
+ 2 files changed, 55 insertions(+), 0 deletions(-)
 
-Maybe linux-hotplug (added to cc) already knows about this issue?
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 70845cc..b82b8ad 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -653,6 +653,54 @@ static void spi_complete(void *arg)
+ }
+ 
+ /**
++ * spi_lock_bus - lock SPI bus for exclusive access
++ * @spi: device which want to lock the bus
++ * Context: any
++ *
++ * Once the caller owns exclusive access to the SPI bus,
++ * only messages for this device will be transferred.
++ * Messages for other devices are queued but not transferred until
++ * the bus owner unlock the bus.
++ *
++ * The caller may call spi_lock_bus() before spi_sync() or spi_async().
++ * So this call may be used in irq and other contexts which can't sleep,
++ * as well as from task contexts which can sleep.
++ *
++ * It returns zero on success, else a negative error code.
++ */
++int spi_lock_bus(struct spi_device *spi)
++{
++	if (spi->master->lock_bus)
++		return spi->master->lock_bus(spi);
++	else
++		return 0;
++}
++EXPORT_SYMBOL_GPL(spi_lock_bus);
++
++/**
++ * spi_unlock_bus - unlock SPI bus
++ * @spi: device which want to unlock the bus
++ * Context: any
++ *
++ * The caller has called spi_lock_bus() to lock the bus. It calls
++ * spi_unlock_bus() to release the bus so messages for other devices
++ * can be transferred.
++ *
++ * If the caller did not call spi_lock_bus() before, spi_unlock_bus()
++ * should have no effect.
++ *
++ * It returns zero on success, else a negative error code.
++ */
++int spi_unlock_bus(struct spi_device *spi)
++{
++	if (spi->master->unlock_bus)
++		return spi->master->unlock_bus(spi);
++	else
++		return 0;
++}
++EXPORT_SYMBOL_GPL(spi_unlock_bus);
++
++/**
+  * spi_sync - blocking/synchronous SPI data transfers
+  * @spi: device with which data will be exchanged
+  * @message: describes the data transfers
+diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
+index c47c4b4..c53292c 100644
+--- a/include/linux/spi/spi.h
++++ b/include/linux/spi/spi.h
+@@ -214,6 +214,8 @@ static inline void spi_unregister_driver(struct spi_driver *sdrv)
+  *	the device whose settings are being modified.
+  * @transfer: adds a message to the controller's transfer queue.
+  * @cleanup: frees controller-specific state
++ * @lock_bus: lock SPI bus for exclusive access
++ * @unlock_bus: unlock SPI bus so other devices can access
+  *
+  * Each SPI master controller can communicate with one or more @spi_device
+  * children.  These make a small bus, sharing MOSI, MISO and SCK signals
+@@ -286,6 +288,9 @@ struct spi_master {
+ 
+ 	/* called on release() to free memory provided by spi_master */
+ 	void			(*cleanup)(struct spi_device *spi);
++
++	int			(*lock_bus)(struct spi_device *spi);
++	int			(*unlock_bus)(struct spi_device *spi);
+ };
+ 
+ static inline void *spi_master_get_devdata(struct spi_master *master)
+@@ -578,6 +583,8 @@ spi_async(struct spi_device *spi, struct spi_message *message)
+  */
+ 
+ extern int spi_sync(struct spi_device *spi, struct spi_message *message);
++extern int spi_lock_bus(struct spi_device *spi);
++extern int spi_unlock_bus(struct spi_device *spi);
+ 
+ /**
+  * spi_write - SPI synchronous write
+-- 
+1.6.5.rc1
+
