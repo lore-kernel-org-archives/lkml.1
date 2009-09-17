@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbZIQDPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759897AbZIQDSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759858AbZIQDPv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 23:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759711AbZIQDPu
+	id S1759897AbZIQDSF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 23:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbZIQDSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 23:15:50 -0400
-Received: from mail-qy0-f200.google.com ([209.85.221.200]:37003 "EHLO
-	mail-qy0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758307AbZIQDPt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 23:15:49 -0400
-X-Greylist: delayed 395 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Sep 2009 23:15:49 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gXwLNStXT7JM/Sh91REA2vfICypS6FGKqLD9FH4vqVHlpsB1G6zjXb9PK1A/QY7VN2
-         1IUvqxQ80n5wOwqwSHLeZ17/q3yPRpRIeqTkeJbQ2d1NRZc9ddPI/y5gjjrMzSM1c58A
-         xRCUXjtV30nMqHr2h8DKWmruR4+teKihjhAD0=
+	Wed, 16 Sep 2009 23:18:04 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9638 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758279AbZIQDSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Sep 2009 23:18:03 -0400
+Date: Wed, 16 Sep 2009 23:17:59 -0400
+From: Dave Jones <davej@redhat.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kurt Roeckx <kurt@roeckx.be>
+Subject: Re: linux-next: cpufreq-current tree build warning
+Message-ID: <20090917031759.GB30706@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Kurt Roeckx <kurt@roeckx.be>
+References: <20090917120651.f0cdf4c2.sfr@canb.auug.org.au> <20090917022726.GA30706@redhat.com> <20090917125556.1125d8ae.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com>
-References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com>
-Date: Thu, 17 Sep 2009 11:15:53 +0800
-Message-ID: <2375c9f90909162015h39aeee14s99d3173d0a9baf7c@mail.gmail.com>
-Subject: Re: [patch] Makefile: can't build modules outside the kernel tree if 
-	it was built using O=
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Caveh Jalali <ecaveh@gmail.com>
-Cc: sam@ravnborg.org, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090917125556.1125d8ae.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n8H3G416011130
 
-On Thu, Sep 17, 2009 at 10:30 AM, Caveh Jalali <ecaveh@gmail.com> wrote:> in 2.6.31, it is no longer possible to build kernel modules for some platforms> (the ones that need include2) outside the kernel src tree if the> src tree was built using O= to specify an alternate directory for the> build output.>> i think this broke with the following commit:>> commit b8b572e1015f81b4e748417be2629dfe51ab99f9> Author: Stephen Rothwell <sfr@canb.auug.org.au>> Date:   Fri Aug 1 15:20:30 2008 +1000
+On Thu, Sep 17, 2009 at 12:55:56PM +1000, Stephen Rothwell wrote:
+ > so, no.
+ > (origin/master is Linus' tree of about 2 hours ago, commit
+ > ab86e5765d41a5eb4239a1c04d613db87bea5ed8 "Merge
+ > git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core-2.6")
+ > 
+ > Looking further, this is the cpureq-current tree I am complaining about,
+ > in the cpufreq tree, you also have:
 
-Only after 2.6.31? This commit was on 2008 Aug 1...
->>    powerpc: Move include files to arch/powerpc/include/asm>>> when the platform specific include directories were shuffled around> without updating the> top level Makefile.  however, i think this FAIL is generic, and not> limited to powerpc.> here's a patch to the top level Makefile to teach it about the shuffled files:>
+Oh, from the 'fixes' branch ?  Just drop that for now, and only pick up 'next'
+(though next pull request went to linus today, so the whole thing should be
+ gone soon).
 
-You forgot your SOB line.
-Anyway, it looks fine.
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
->> --- /local/caveh/linux/linux-2.6.31/Makefile    2009-09-09> 15:13:59.000000000 -0700> +++ Makefile    2009-09-16 12:23:05.000000000 -0700> @@ -958,9 +958,9 @@ ifneq ($(KBUILD_SRC),)>                 echo "  in the '$(srctree)' directory.";\>                 /bin/false; \>         fi;> -       $(Q)if [ ! -d include2 ]; then                                  \> -           mkdir -p include2;                                          \> -           ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;     \> +       $(Q)if [ ! -d include2 ]; then                                   \> +           mkdir -p include2;                                           \> +           ln -fsn $(srctree)/arch/$(SRCARCH)/include/asm include2/asm; \>         fi>  endif���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+	Dave
