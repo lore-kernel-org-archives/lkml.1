@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751636AbZIQAMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbZIQASQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751636AbZIQAMe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Sep 2009 20:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbZIQAMc
+	id S1752328AbZIQASQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Sep 2009 20:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZIQASO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Sep 2009 20:12:32 -0400
-Received: from mail-ew0-f227.google.com ([209.85.219.227]:41862 "EHLO
-	mail-ew0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbZIQAMc (ORCPT
+	Wed, 16 Sep 2009 20:18:14 -0400
+Received: from 30.mail-out.ovh.net ([213.186.62.213]:42209 "HELO
+	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751394AbZIQASN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Sep 2009 20:12:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=qdWBC+YUdC+7K2nkUgjWaPGe9rGpIQ9ehbld6tZEiCtJI9k8KQhYEkzLBPtjDvpPYn
-         At7Fe7lK7c30Qz4teBvpwJVbHeP5fST/42kwW2kOOnQcJfaStBzk9dX9Mt+IlI+vseHF
-         K7rb+n38z3DDLl3RPhlGypVj6w7pWion7w83s=
-MIME-Version: 1.0
-In-Reply-To: <200909161619.33461.elendil@planet.nl>
-References: <31cb94fa0909132225l6cb98739o59d105ef480d1cd2@mail.gmail.com>
-	 <200909142301.17936.elendil@planet.nl>
-	 <200909161619.33461.elendil@planet.nl>
-Date: Thu, 17 Sep 2009 08:12:34 +0800
-Message-ID: <31cb94fa0909161712m3343812cw349b4a7233bda126@mail.gmail.com>
-Subject: Re: PATCH: ARCH in builddeb
-From: Wei Chong Tan <weichong78@gmail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: sam@ravnborg.org, max@stro.at, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 Sep 2009 20:18:13 -0400
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] staging/rtl8192e: add missing vmalloc.h include
+Date: Thu, 17 Sep 2009 02:16:48 +0200
+Message-Id: <1253146608-5147-1-git-send-email-plagnioj@jcrosoft.com>
+X-Mailer: git-send-email 1.6.4
+X-Ovh-Tracer-Id: 9243919712210037528
+X-Ovh-Remote: 91.121.24.14 (ns24789.ovh.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|U 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, it is as I feared. Your patch results in an "arm" package when I do a
-> cross-build for "armel" (for which I must of course set ARCH to "arm" as
-> armel is not a valid Linux architecture).
-> A possible solution could be to check that CROSS_COMPILE is *not* set, but
-> I'm not sure if that would be the correct solution. Input from others on
-> this would be welcome.
+Signed-off-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/rtl8192e/r8192E_core.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Thanks Frans for the help,
-I will try to check CROSS_COMPILE and see in addition to other alternatives.
+diff --git a/drivers/staging/rtl8192e/r8192E_core.c b/drivers/staging/rtl8192e/r8192E_core.c
+index d4fa654..e9e05ec 100644
+--- a/drivers/staging/rtl8192e/r8192E_core.c
++++ b/drivers/staging/rtl8192e/r8192E_core.c
+@@ -47,6 +47,7 @@
+ 
+ //#define CONFIG_RTL8192_IO_MAP
+ #include <asm/uaccess.h>
++#include <linux/vmalloc.h>
+ #include "r8192E_hw.h"
+ #include "r8192E.h"
+ #include "r8190_rtl8256.h" /* RTL8225 Radio frontend */
+-- 
+1.6.4
 
-Regards,
-Wei Chong.
