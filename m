@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZIQJIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZIQJJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbZIQJIj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 05:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZIQJIi
+	id S1756738AbZIQJJP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 05:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbZIQJJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 05:08:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50886 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbZIQJIi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 05:08:38 -0400
-Subject: Re: [PATCH 2/2] perf tools: Increase MAX_EVENT_LENGTH
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090917090255.GC5184@nowhere>
-References: <4AB1F48F.4070807@cn.fujitsu.com>
-	 <4AB1F4AB.7050205@cn.fujitsu.com>  <20090917090255.GC5184@nowhere>
-Content-Type: text/plain
-Date: Thu, 17 Sep 2009 11:08:34 +0200
-Message-Id: <1253178514.14935.4.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Sep 2009 05:09:14 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48692 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755416AbZIQJJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 05:09:12 -0400
+Date: Thu, 17 Sep 2009 11:09:14 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH] fs: Fix busyloop in wb_writeback()
+Message-ID: <20090917090914.GA16381@duck.suse.cz>
+References: <1253121768-20673-1-git-send-email-jack@suse.cz> <20090916184106.GT23126@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090916184106.GT23126@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-17 at 11:02 +0200, Frederic Weisbecker wrote:
-> On Thu, Sep 17, 2009 at 04:34:51PM +0800, Li Zefan wrote:
-> > The name length of some trace events is longer than 30, like
-> > sys_enter_sched_get_priority_max and ext4_mb_discard_preallocations.
-> > 
-> > Passing those events to perf-record will fail, try:
-> > 
-> >   # ./perf record -f -e syscalls:sys_enter_sched_get_priority_max -F 1 -a
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > ---
-> >  tools/perf/util/parse-events.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-> > index 034245e..c9ef944 100644
-> > --- a/tools/perf/util/parse-events.c
-> > +++ b/tools/perf/util/parse-events.c
-> > @@ -145,7 +145,7 @@ static int tp_event_has_id(struct dirent *sys_dir, struct dirent *evt_dir)
-> >  	   (strcmp(evt_dirent.d_name, "..")) &&				       \
-> >  	   (!tp_event_has_id(&sys_dirent, &evt_dirent)))
-> >  
-> > -#define MAX_EVENT_LENGTH 30
-> > +#define MAX_EVENT_LENGTH 40
+On Wed 16-09-09 20:41:06, Jens Axboe wrote:
+> On Wed, Sep 16 2009, Jan Kara wrote:
+> > If all inodes are under writeback (e.g. in case when there's only one inode
+> > with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
+> > to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
+> > waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
+> > write anything.
+> 
+> Interesting, so this will happen if the dirtier and flush thread end up
+> "fighting" each other over the same inode. I'll throw this into the
+> testing mix.
+  Yes, exactly. When you do "dd if=/dev/zero of=/mnt/mydisk" you're quite
+likely to observe that.
 
-This is userspace, is there any reason to be cheap with memory like
-this?
+> How did you notice?
+  Well, UML linux doesn't seem to preempt when a process when it is in the
+kernel and thus such busyloop simply deadlocks it. BTW another similar
+deadlock happens in UML linux in balance_dirty_pages() (process cycles
+there waiting for nr_writeback to drop but that never seems to happen). But
+I'd blame that to a problem in UML scheduling...
 
-Why not stick in 1024 and be done for a while?
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
