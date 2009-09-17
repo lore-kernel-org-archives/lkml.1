@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZIQVxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbZIRB4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394AbZIQVxN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 17:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZIQVxM
+	id S1753158AbZIRB4G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 21:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZIRB4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 17:53:12 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:58524 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751205AbZIQVxK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 17:53:10 -0400
-Date: Thu, 17 Sep 2009 22:53:09 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: jack@suse.cz, tytso@mit.edu, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH RFC] Ext3 data=guarded
-Message-ID: <20090917215309.GD10599@shareable.org>
-References: <1252422595-4554-1-git-send-email-chris.mason@oracle.com>
+	Thu, 17 Sep 2009 21:56:02 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:64383 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751392AbZIRB4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 21:56:01 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252422595-4554-1-git-send-email-chris.mason@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/utrace
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, utrace-devel@redhat.com
+Subject: Re: tracehooks changes && 2.6.32 -mm merge plans
+In-Reply-To: Oleg Nesterov's message of  Thursday, 17 September 2009 22:46:56 +0200 <20090917204656.GC29346@redhat.com>
+References: <20090915161535.db0a6904.akpm@linux-foundation.org>
+	<20090917204656.GC29346@redhat.com>
+X-Zippy-Says: A KAISER ROLL?!  What good is a Kaiser Roll without a little COLE
+    SLAW on the SIDE?
+Message-Id: <20090917215635.73CE89A5@magilla.sf.frob.com>
+Date: Thu, 17 Sep 2009 14:56:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> The main difference from data=ordered is that data=guarded only updates
-> the on disk i_size after all of the data blocks are on disk.  This allows
-> us to avoid flushing all the data pages down to disk with every commit.
+> On 09/15, Andrew Morton wrote:
+> >
+> > #signals-tracehook_notify_jctl-change.patch: needs changelog folding too
+> > signals-tracehook_notify_jctl-change.patch
+> > signals-tracehook_notify_jctl-change-do_signal_stop-do-not-call-tracehook_notify_jctl-in-task_stopped-state.patch
+> > #signals-introduce-tracehook_finish_jctl-helper.patch: fold into signals-tracehook_notify_jctl-change.patch
+> > signals-introduce-tracehook_finish_jctl-helper.patch
+> 
+> I think these make sense anyway,
 
-I'm a bit confused, because I thought that was already guaranteed by
-ext3 data=ordered, due to the following mail:
+Agreed.
 
-  Date: Thu, 16 Mar 2006 13:09:04 -0500
-  Subject: Re: ext3_ordered_writepage() questions
-  From: Theodore Ts'o <tytso@mit.edu>
+> > utrace-core.patch
+> >
+> >   utrace.  What's happening with this?
+> 
+> (since Roland didn't reply yet)
+> 
+> I guess this patch should be updated.
 
-  > >Yup.  Ordered-mode JBD commit needs to write and wait upon all dirty
-  > >file-data buffers prior to journalling the metadata.  If we didn't run
-  > >journal_dirty_data_fn() against those buffers then they'd still be under
-  > >I/O after commit had completed.
-  > >
-  > In  non-block allocation case, what metadata are we journaling in
-  > writepage() ?
-  > block allocation happend in prepare_write() and commit_write()
-  > journaled the transaction. All the meta data updates should be done
-  > there.  What JBD commit are you refering to here ?
+We do have a newer version now with various fixes and clean-ups.
+But the current version does not play nice with ptrace (does not
+even exclude ptrace any more).  Without at least the ptrace
+exclusion, using both utrace modules and ptrace might lead to a
+confused kernel or BUG_ON hits.
+
+Past feedback tells us that we need some in-tree users of the
+utrace API to get merged too.  Frank was working on such a thing,
+and the IBM folks may have another such thing, but I don't know
+the present status of those modules.
+
+Oleg is working feverishly on revamping ptrace using utrace.
+Other past feedback has suggested this is what people want to see
+to justify utrace going in.  That ptrace work is still a bit away
+from being ready even for -mm submission.  We're pretty sure that
+we will do some more changes in the utrace core to make that work
+well, so utrace merged first would be sure to get more changes
+later (probably including some API differences).
 
 
-  Basically, this boils down to what is our definition of ordered-mode?
-
-  If the goal is to make sure we avoid the security exposure of
-  allocating a block and then crashing before we write the data block,
-  potentially exposing previously written data that might be belong to
-  another user, then what Badari is suggesting would avoid this
-  particular problem.
-
-  However, if what we are doing is overwriting our own data with more an
-  updated, more recent version of the data block, do we guarantee that
-  any ordering semantics apply?  For example, what if we write a data
-  block, and then follow it up with some kind of metadata update (say we
-  touch atime, or add an extended attribute).  Do we guarantee that if
-  the metadata update is committed, that the data block will have made
-  it to disk as well?  Today that is the way things work, but is that
-  guarantee part of the contract of ordered-mode?
-
-						  - Ted
-
--- Jamie
+Thanks,
+Roland
