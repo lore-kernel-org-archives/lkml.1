@@ -1,37 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbZIRJhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbZIRJiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756311AbZIRJhb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 05:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756131AbZIRJha
+	id S1756341AbZIRJiP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 05:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbZIRJiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 05:37:30 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:63477 "EHLO
+	Fri, 18 Sep 2009 05:38:14 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:1221 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756138AbZIRJh3 (ORCPT
+	with ESMTP id S1756119AbZIRJiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 05:37:29 -0400
+	Fri, 18 Sep 2009 05:38:12 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
 	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=lmI3qUKVMJ0nGiIW9N1DQMATL+XvkPdraO0EIodfBnjNbY+Cz4XC4TMAZmO1ldF17
-	9nDcKSoYame0xura5Aa1A==
-Date: Fri, 18 Sep 2009 02:37:26 -0700 (PDT)
+	b=ronRoSiwcDOH/1DZVBCWkl8nTDrOzSqatfbcZIsTIiOILHSMi8LYhfdAtJ9v6ykKD
+	Q2pVPMm86ZFqDqUd5Ns8A==
+Date: Fri, 18 Sep 2009 02:38:09 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yinghai@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Jayaram <sureshjayaram@gmail.com>
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
- at (null), last sysfs file:
- /sys/devices/pci0000:00/0000:00:01.0/local_cpus
-In-Reply-To: <20090918075952.GA29026@elte.hu>
-Message-ID: <alpine.DEB.1.00.0909180234510.22490@chino.kir.corp.google.com>
-References: <20090915132105.2fdd1d45@jbarnes-g45> <20090917173012.GA11155@elte.hu> <20090917103614.6ab1385f@jbarnes-g45> <20090917175944.GA17304@elte.hu> <20090917114614.35aeb6b8@jbarnes-g45> <20090918075952.GA29026@elte.hu>
+To: Suresh Jayaram <sureshjayaram@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Jin Dongming <jin.dongming@np.css.fujitsu.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: mmotm 2009-09-09-22-56 uploaded
+In-Reply-To: <alpine.DEB.1.00.0909151535150.17284@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.00.0909180237350.22490@chino.kir.corp.google.com>
+References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org> <38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com> <alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com> <38c3c4860909150320qc4a203eu7552294ef0aafd2c@mail.gmail.com>
+ <alpine.DEB.1.00.0909151535150.17284@chino.kir.corp.google.com>
 User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -40,46 +37,89 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009, Ingo Molnar wrote:
+On Tue, 15 Sep 2009, David Rientjes wrote:
 
-> FYI, -tip testing has triggered this new crash in dev_attr_show() et al:
+> > Sep 15 15:29:36 jay-t60p kernel: BUG: unable to handle kernel NULL
+> > pointer dereference at (null)
+> > Sep 15 15:29:36 jay-t60p kernel: IP: [<ffffffff81178954>]
+> > bitmap_scnprintf+0x5a/0xae
+> > Sep 15 15:29:36 jay-t60p kernel: PGD 0
+> > Sep 15 15:29:36 jay-t60p kernel: Oops: 0000 [#1] SMP
+> > Sep 15 15:29:36 jay-t60p kernel: last sysfs file:
+> > /sys/devices/pci0000:00/0000:00:01.0/local_cpus
+> > Sep 15 15:29:36 jay-t60p kernel: CPU 1
+> > Sep 15 15:29:36 jay-t60p kernel: Modules linked in: bnep sco nfsd
+> > exportfs rfcomm l2cap crc16 snd_pcm_oss snd_mixer_oss snd_seq
+> > binfmt_misc snd_seq_device nfs lockd nfs_acl auth_rpcgss sunrpc ipv6
+> > cpufreq_conservative cpufreq_userspace cpufreq_powersave acpi_cpufreq
+> > ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack
+> > nf_defrag_ipv4 ip_tables x_tables bridge stp tun fuse loop dm_mod
+> > snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_hwdep rtc_cmos
+> > pcmcia btusb snd_pcm snd_timer snd ppdev thinkpad_acpi rtc_core
+> > i2c_i801 yenta_socket iTCO_wdt nsc_ircc usbhid ide_cd_mod video
+> > rsrc_nonstatic pl2303 bluetooth hid soundcore parport_pc led_class
+> > output rtc_lib ac battery button intel_agp i2c_core pcmcia_core pcspkr
+> > usbserial iTCO_vendor_support irda e1000e cdrom snd_page_alloc parport
+> > sg rfkill joydev uinput crc_ccitt uhci_hcd ehci_hcd sd_mod crc_t10dif
+> > usbcore edd ext3 mbcache jbd fan ide_pci_generic ata_generic ata_piix
+> > pata_acpi ahci libata scsi_mod piix ide_core thermal processor
+> > thermal_sys hwmon
+> > Sep 15 15:29:36 jay-t60p kernel: Pid: 2478, comm: irqbalance Not
+> > tainted 2.6.31-rc9-mm1-0.1-default #7 20088JQ
+> > Sep 15 15:29:36 jay-t60p kernel: RIP: 0010:[<ffffffff81178954>]
+> > [<ffffffff81178954>] bitmap_scnprintf+0x5a/0xae
+> > Sep 15 15:29:36 jay-t60p kernel: RSP: 0018:ffff880037a81e38  EFLAGS: 00010246
+> > Sep 15 15:29:36 jay-t60p kernel: RAX: 0000000000000000 RBX:
+> > 0000000000000000 RCX: 0000000000000000
+> > Sep 15 15:29:36 jay-t60p kernel: RDX: 0000000000000002 RSI:
+> > 0000000000000ffe RDI: 0000000000000000
+> > Sep 15 15:29:36 jay-t60p kernel: RBP: ffff880037a81e68 R08:
+> > 0000000000000005 R09: 0000000000000001
+> > Sep 15 15:29:36 jay-t60p kernel: R10: ffffffff813c1cd3 R11:
+> > 0000000000000001 R12: 0000000000000000
+> > Sep 15 15:29:36 jay-t60p kernel: R13: 0000000000000000 R14:
+> > 0000000000000ffe R15: ffff88007bbe3000
+> > Sep 15 15:29:36 jay-t60p kernel: FS:  00007f605bee46f0(0000)
+> > GS:ffff880005f00000(0000) knlGS:0000000000000000
+> > Sep 15 15:29:36 jay-t60p kernel: CS:  0010 DS: 0000 ES: 0000 CR0:
+> > 000000008005003b
+> > Sep 15 15:29:36 jay-t60p kernel: CR2: 0000000000000000 CR3:
+> > 000000007acf8000 CR4: 00000000000006e0
+> > Sep 15 15:29:36 jay-t60p kernel: DR0: 0000000000000000 DR1:
+> > 0000000000000000 DR2: 0000000000000000
+> > Sep 15 15:29:36 jay-t60p kernel: DR3: 0000000000000000 DR6:
+> > 00000000ffff0ff0 DR7: 0000000000000400
+> > Sep 15 15:29:36 jay-t60p kernel: Process irqbalance (pid: 2478,
+> > threadinfo ffff880037a80000, task ffff8800376d8280)
+> > Sep 15 15:29:37 jay-t60p rpc.statd[2588]: statd running as root. chown
+> > /var/lib/nfs/sm to choose different user
+> > Sep 15 15:29:37 jay-t60p sm-notify[2596]: Already notifying clients; Exiting!
+> > Sep 15 15:29:36 jay-t60p modem-manager: Loaded plugin MBM
+> > Sep 15 15:29:36 jay-t60p kernel: Stack:
+> > Sep 15 15:29:37 jay-t60p kernel:  ffffffff8152b7d0 ffff88007bbe3000
+> > ffffffff8154a6a8 ffff88007c7aa2d8
+> > Sep 15 15:29:37 jay-t60p kernel: <0> ffffffff81556620 ffff880037a81f48
+> > ffff880037a81e88 ffffffff81186937
+> > Sep 15 15:29:37 jay-t60p kernel: <0> ffff88007c7aa2d8 fffffffffffffffb
+> > ffff880037a81ea8 ffffffff811fbff6
+> > Sep 15 15:29:37 jay-t60p kernel: Call Trace:
+> > Sep 15 15:29:37 jay-t60p kernel:  [<ffffffff81186937>] local_cpus_show+0x36/0x49
+> > Sep 15 15:29:37 jay-t60p kernel:  [<ffffffff811fbff6>] dev_attr_show+0x20/0x44
+> > Sep 15 15:29:37 jay-t60p kernel:  [<ffffffff81121741>]
+> > sysfs_read_file+0xb2/0x131
+> > Sep 15 15:29:37 jay-t60p kernel:  [<ffffffff810ce07c>] vfs_read+0xb1/0x187
+> > Sep 15 15:29:37 jay-t60p kernel:  [<ffffffff810ce216>] sys_read+0x47/0x70
+> > Sep 15 15:29:37 jay-t60p modem-manager: Loaded plugin Sierra
+> > Sep 15 15:29:37 jay-t60p kernel:  [<ffffffff8100b9eb>]
+> > system_call_fastpath+0x16/0x1b
 > 
-> [  158.058140] warning: `dbus-daemon' uses 32-bit capabilities (legacy support in use)
-> [  159.370562] BUG: unable to handle kernel NULL pointer dereference at (null)
-> [  159.372694] IP: [<ffffffff8143b722>] bitmap_scnprintf+0x72/0xd0
-> [  159.372694] PGD 71d3e067 PUD 7052e067 PMD 0 
-> [  159.372694] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
-> [  159.372694] last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/local_cpus
-> [  159.372694] CPU 0 
-> [  159.372694] Pid: 7364, comm: irqbalance Not tainted 2.6.31-tip #8043 System Product Name
-> [  159.372694] RIP: 0010:[<ffffffff8143b722>]  [<ffffffff8143b722>] bitmap_scnprintf+0x72/0xd0
-> [  159.372694] RSP: 0018:ffff8800712a1e38  EFLAGS: 00010246
-> [  159.372694] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
-> [  159.372694] RDX: 0000000000000000 RSI: 0000000000000004 RDI: ffff880077dc5000
-> [  159.372694] RBP: ffff8800712a1e68 R08: 0000000000000001 R09: 0000000000000001
-> [  159.372694] R10: ffffffff8215c47c R11: 0000000000000000 R12: 0000000000000000
-> [  159.372694] R13: 0000000000000000 R14: 0000000000000ffe R15: ffff880077dc5000
-> [  159.372694] FS:  00007f5f578f76f0(0000) GS:ffff880007000000(0000) knlGS:0000000000000000
-> [  159.372694] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> [  159.372694] CR2: 0000000000000000 CR3: 0000000071a77000 CR4: 00000000000006f0
-> [  159.372694] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [  159.372694] DR3: ffffffff835109dc DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [  159.372694] Process irqbalance (pid: 7364, threadinfo ffff8800712a0000, task ffff880070773000)
-> [  159.372694] Stack:
-> [  159.372694]  2222222222222222 ffff880077dc5000 fffffffffffffffb ffff88007d366b40
-> [  159.372694] <0> ffff8800712a1f48 ffff88007d3840a0 ffff8800712a1e88 ffffffff8146332b
-> [  159.372694] <0> fffffffffffffff4 ffffffff82450718 ffff8800712a1ea8 ffffffff815a9a1f
-> [  159.372694] Call Trace:
-> [  159.372694]  [<ffffffff8146332b>] local_cpus_show+0x3b/0x60
-> [  159.372694]  [<ffffffff815a9a1f>] dev_attr_show+0x2f/0x60
-> [  159.372694]  [<ffffffff8118ee6f>] sysfs_read_file+0xbf/0x1d0
-> [  159.372694]  [<ffffffff8112afe9>] vfs_read+0xc9/0x180
-> [  159.372694]  [<ffffffff8112c365>] sys_read+0x55/0x90
-> [  159.372694]  [<ffffffff810114f2>] system_call_fastpath+0x16/0x1b
+> Looks like a bootstrap issue since is appears as though `local_cpus' is 
+> being read by some initscript on your T60p and mine doesn't suffer from 
+> the same problem (it isn't read at all on mine).
+> 
+> CONFIG_DEBUG_PER_CPU_MAPS should be able to diagnose it when you get back 
+> from traveling.
+> 
 
-Suresh Jayaram reported this yesterday with mmotm on T60p laptop but 
-hasn't been able to look into it further.  My T60p doesn't crash with it 
-so I'm assuming it's some bootstrap issue with an initscript reading 
-`local_cpus' before the per-cpu nodemasks are allocated.
-
-CONFIG_DEBUG_PER_CPU_MAPS might be able to diagnose the issue.
+Ingo reported this on 2.6.31-tip, so it doesn't actually appear to be 
+related to mmotm.
