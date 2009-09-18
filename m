@@ -1,239 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbZIRRte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbZIRRub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbZIRRte (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 13:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbZIRRte
+	id S1757512AbZIRRub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 13:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757413AbZIRRu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 13:49:34 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:37116 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757351AbZIRRtd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 13:49:33 -0400
-Date: Fri, 18 Sep 2009 13:49:36 -0400
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dev@uclinux.org
-Subject: [PATCH] Add uboot commandline argument passing support to
-	m68knommu (Try #2)
-Message-ID: <20090918174936.GJ23702@csclub.uwaterloo.ca>
-References: <20090918162736.GY23700@csclub.uwaterloo.ca> <1253291944.7060.42.camel@desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253291944.7060.42.camel@desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Fri, 18 Sep 2009 13:50:29 -0400
+Received: from THUNK.ORG ([69.25.196.29]:51607 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757485AbZIRRu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 13:50:27 -0400
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 for v2.6.32
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1MohbG-0006qg-1y@closure.thunk.org>
+Date: Fri, 18 Sep 2009 13:50:26 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 09:39:04AM -0700, Daniel Walker wrote:
-> You have a couple of various checkpatch errors in this patch. We use
-> scripts/checkpatch.pl to check for code style issues. Could you run that
-> on your patch and fix any errors it finds? A couple are whitespace
-> related and you can use scripts/cleanpatch or scripts/cleanfile to
-> remove whitespace (so I hear. I've never run those scripts personally)
+Hi Linus, 
 
-Oh dear.  I guess the original patch was a bit messy then.  OK here we
-go again with a checkpatch approved patch.
+Please pull from:
 
----
+	git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-This patch adds m68knommu support for getting the kernel command line
-arguments from uboot, including the passing of an initrd image from uboot.
+to grab the following changes for v2.6.32.
 
-We use this on a 5270/5271 based board, and have used it on the 5271evb
-development board.  It is based on a patch found in the linux-2.6-denx
-git tree, although that tree seems to have had lots of other changes
-since which are not in the main Linus kernel.  I believe this will work
-on all coldfires, although other m68knommu might be missing the _init_sp
-stuff in head.S as far as I can tell.  I only have the coldfire to
-test on.
+Thanks!!
 
-Signed-off-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+							- Ted
 
-diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
-index e2201b9..064f591 100644
---- a/arch/m68knommu/Kconfig
-+++ b/arch/m68knommu/Kconfig
-@@ -533,6 +533,13 @@ config AVNET
- 	default y
- 	depends on (AVNET5282)
- 
-+config UBOOT
-+	bool "Support for U-Boot command line parameters"
-+	help
-+	  If you say Y here kernel will try to collect command
-+	  line parameters from the initial u-boot stack.
-+	default n
-+
- config 4KSTACKS
- 	bool "Use 4Kb for kernel stacks instead of 8Kb"
- 	default y
-diff --git a/arch/m68knommu/kernel/setup.c b/arch/m68knommu/kernel/setup.c
-index 5c2bb3e..ba92b90 100644
---- a/arch/m68knommu/kernel/setup.c
-+++ b/arch/m68knommu/kernel/setup.c
-@@ -29,6 +29,8 @@
- #include <linux/bootmem.h>
- #include <linux/seq_file.h>
- #include <linux/init.h>
-+#include <linux/initrd.h>
-+#include <linux/root_dev.h>
- 
- #include <asm/setup.h>
- #include <asm/irq.h>
-@@ -52,7 +54,6 @@ void (*mach_reset)(void);
- void (*mach_halt)(void);
- void (*mach_power_off)(void);
- 
--
- #ifdef CONFIG_M68000
- 	#define CPU "MC68000"
- #endif
-@@ -111,6 +112,69 @@ void (*mach_power_off)(void);
- extern int _stext, _etext, _sdata, _edata, _sbss, _ebss, _end;
- extern int _ramstart, _ramend;
- 
-+#if defined(CONFIG_UBOOT)
-+/*
-+ * parse_uboot_commandline
-+ *
-+ * Copies u-boot commandline arguments and store them in the proper linux
-+ * variables.
-+ *
-+ * Assumes:
-+ *	_init_sp global contains the address in the stack pointer when the
-+ *	kernel starts (see head.S::_start)
-+ *
-+ *	U-Boot calling convention:
-+ *	(*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
-+ *
-+ *	_init_sp can be parsed as such
-+ *
-+ *	_init_sp+00 = u-boot cmd after jsr into kernel (skip)
-+ *	_init_sp+04 = &kernel board_info (residual data)
-+ *	_init_sp+08 = &initrd_start
-+ *	_init_sp+12 = &initrd_end
-+ *	_init_sp+16 = &cmd_start
-+ *	_init_sp+20 = &cmd_end
-+ *
-+ *	This also assumes that the memory locations pointed to are still
-+ *	unmodified. U-boot places them near the end of external SDRAM.
-+ *
-+ * Argument(s):
-+ *	commandp = the linux commandline arg container to fill.
-+ *	size     = the sizeof commandp.
-+ *
-+ * Returns:
-+ */
-+void parse_uboot_commandline(char *commandp, int size)
-+{
-+	extern unsigned long _init_sp;
-+	unsigned long *sp;
-+	unsigned long uboot_kbd;
-+	unsigned long uboot_initrd_start, uboot_initrd_end;
-+	unsigned long uboot_cmd_start, uboot_cmd_end;
-+
-+
-+	sp = (unsigned long *)_init_sp;
-+	uboot_kbd = sp[1];
-+	uboot_initrd_start = sp[2];
-+	uboot_initrd_end = sp[3];
-+	uboot_cmd_start = sp[4];
-+	uboot_cmd_end = sp[5];
-+
-+	if (uboot_cmd_start && uboot_cmd_end)
-+		strncpy(commandp, (const char *)uboot_cmd_start, size);
-+#if defined(CONFIG_BLK_DEV_INITRD)
-+	if (uboot_initrd_start && uboot_initrd_end &&
-+		(uboot_initrd_end > uboot_initrd_start)) {
-+		initrd_start = uboot_initrd_start;
-+		initrd_end = uboot_initrd_end;
-+		ROOT_DEV = Root_RAM0;
-+		printk(KERN_INFO "initrd at 0x%lx:0x%lx\n",
-+			initrd_start, initrd_end);
-+	}
-+#endif /* if defined(CONFIG_BLK_DEV_INITRD) */
-+}
-+#endif /* #if defined(CONFIG_UBOOT) */
-+
- void __init setup_arch(char **cmdline_p)
- {
- 	int bootmap_size;
-@@ -128,7 +192,24 @@ void __init setup_arch(char **cmdline_p)
- #if defined(CONFIG_BOOTPARAM)
- 	strncpy(&command_line[0], CONFIG_BOOTPARAM_STRING, sizeof(command_line));
- 	command_line[sizeof(command_line) - 1] = 0;
--#endif
-+#endif /* CONFIG_BOOTPARAM */
-+
-+#if defined(CONFIG_UBOOT)
-+	/* CONFIG_UBOOT and CONFIG_BOOTPARAM defined, concatenate cmdline */
-+	#if defined(CONFIG_BOOTPARAM)
-+		/* Add the whitespace separator */
-+		command_line[strlen(CONFIG_BOOTPARAM_STRING)] = ' ';
-+		/* Parse uboot command line into the rest of the buffer */
-+		parse_uboot_commandline(
-+			&command_line[(strlen(CONFIG_BOOTPARAM_STRING)+1)],
-+			(sizeof(command_line) -
-+			(strlen(CONFIG_BOOTPARAM_STRING)+1)));
-+	/* Only CONFIG_UBOOT defined, create cmdline */
-+	#else
-+		parse_uboot_commandline(&command_line[0], sizeof(command_line));
-+	#endif /* CONFIG_BOOTPARAM */
-+	command_line[sizeof(command_line) - 1] = 0;
-+#endif /* CONFIG_UBOOT */
- 
- 	printk(KERN_INFO "\x0F\r\n\nuClinux/" CPU "\n");
- 
-@@ -204,6 +285,13 @@ void __init setup_arch(char **cmdline_p)
- 	free_bootmem(memory_start, memory_end - memory_start);
- 	reserve_bootmem(memory_start, bootmap_size, BOOTMEM_DEFAULT);
- 
-+#if defined(CONFIG_UBOOT) && defined(CONFIG_BLK_DEV_INITRD)
-+	if ((initrd_start > 0) && (initrd_start < initrd_end) &&
-+			(initrd_end < memory_end))
-+		reserve_bootmem(initrd_start, initrd_end - initrd_start,
-+				 BOOTMEM_DEFAULT);
-+#endif /* if defined(CONFIG_BLK_DEV_INITRD) */
-+
- 	/*
- 	 * Get kmalloc into gear.
- 	 */
-diff --git a/arch/m68knommu/platform/coldfire/head.S b/arch/m68knommu/platform/coldfire/head.S
-index 2b0d73c..4b91aa2 100644
---- a/arch/m68knommu/platform/coldfire/head.S
-+++ b/arch/m68knommu/platform/coldfire/head.S
-@@ -106,6 +106,9 @@
- .global _ramvec
- .global	_ramstart
- .global	_ramend
-+#if defined(CONFIG_UBOOT)
-+.global	_init_sp
-+#endif
- 
- /*****************************************************************************/
- 
-@@ -124,6 +127,10 @@ _ramstart:
- .long	0
- _ramend:
- .long	0
-+#if defined(CONFIG_UBOOT)
-+_init_sp:
-+.long	0
-+#endif
- 
- /*****************************************************************************/
- 
-@@ -137,6 +144,9 @@ __HEAD
- _start:
- 	nop					/* filler */
- 	movew	#0x2700, %sr			/* no interrupts */
-+#if defined(CONFIG_UBOOT)
-+	movel	%sp,_init_sp			/* save initial stack pointer */
-+#endif
- 
- 	/*
- 	 *	Do any platform or board specific setup now. Most boards
+Akira Fujita (9):
+      ext4: Fix compile warnings with MB_DEBUG
+      ext4: Fix wrong comparisons in mext_check_arguments()
+      ext4: Remove unneeded BUG_ON() in ext4_move_extents()
+      ext4: Return exchanged blocks count to user space in failure
+      ext4: Fix small typo for move_extent_per_page()
+      ext4: Replace get_ext_path macro with an inline funciton
+      ext4: Replace BUG_ON() with ext4_error() in move_extents.c
+      ext4: Add null extent check to ext_get_path
+      ext4: Fix different block exchange issue in EXT4_IOC_MOVE_EXT
+
+Andreas Dilger (1):
+      jbd2: round commit timer up to avoid uncommitted transaction
+
+Andreas Schlick (1):
+      ext4: Always set dx_node's fake_dirent explicitly.
+
+Aneesh Kumar K.V (7):
+      ext4: Fix memory leak fix when mounting an ext4 filesystem
+      ext4: Add missing unlock_new_inode() call in extent migration code
+      ext4: Allow rename to create more than EXT4_LINK_MAX subdirectories
+      ext4: Take page lock before looking at attached buffer_heads flags
+      ext4: move ext4_mb_init_group() function earlier in the mballoc.c
+      ext4: check for need init flag in ext4_mb_load_buddy
+      ext4: Clarify the locking details in mballoc
+
+Christoph Hellwig (1):
+      ext4: fix cache flush in ext4_sync_file
+
+Curt Wohlgemuth (1):
+      ext4: More buffer head reference leaks
+
+Eric Sandeen (8):
+      ext4: reject too-large filesystems on 32-bit kernels
+      ext4: open-code ext4_mb_update_group_info
+      simplify some logic in ext4_mb_normalize_request
+      ext4: Add feature set check helper for mount & remount paths
+      ext4: use variables not types in sizeofs() for allocations
+      ext4: use ext4_grpblk_t more extensively
+      ext4: limit block allocations for indirect-block files to < 2^32
+      ext4: replace MAX_DEFRAG_SIZE with EXT_MAX_BLOCK
+
+Frank Mayhar (1):
+      ext4: Make non-journal fsync work properly
+
+H Hartley Sweeten (1):
+      jbd2: bitfields should be unsigned
+
+Jan Kara (4):
+      jbd2: Fail to load a journal if it is too short
+      jbd2: Annotate transaction start also for jbd2_journal_restart()
+      ext4: Fix possible deadlock between ext4_truncate() and ext4_get_blocks()
+      ext4: Update documentation about quota mount options
+
+Joe Perches (1):
+      ext4: Remove unnecessary semicolons in mballoc.c
+
+Manish Katiyar (1):
+      ext4: Fix typo in ext4/Kconfig
+
+Mingming (2):
+      ext4: Compile warning fix when EXT_DEBUG enabled
+      ext4: Show unwritten extent flag in ext4_ext_show_leaf()
+
+Peng Tao (2):
+      ext4: fix build warning when EXT4FS_DEBUG is on
+      ext4: fix journal ref count in move_extent_par_page
+
+Roel Kluin (1):
+      ext4: remove redundant test on unsigned
+
+Theodore Ts'o (22):
+      ext4: Avoid null pointer dereference when decoding EROFS w/o a journal
+      ext4: Add configurable run-time mballoc debugging
+      ext4: Display the mballoc flags in mb_history in hex instead of decimal
+      ext4: Fix bugs in mballoc's stream allocation mode
+      ext4: Avoid group preallocation for closed files
+      ext4: fix extent sanity checking code with AGGRESSIVE_TEST
+      ext4: Limit number of links that can be created by ext4_link()
+      ext4: Fix spelling typo in the trace format for trace_ext4_da_writepages()
+      ext4: Restore wbc->range_start in ext4_da_writepages()
+      ext4: Add new tracepoint: trace_ext4_da_write_pages()
+      ext4: fix tracepoint format string warnings
+      ext4: Remove journal_checksum mount option and enable it by default
+      ext4: print more sysadmin-friendly message in check_block_validity()
+      ext4: Use bforget() in no journal mode for ext4_journal_{forget,revoke}()
+      ext4: Assure that metadata blocks are written during fsync in no journal mode
+      ext4: Don't update superblock write time when filesystem is read-only
+      ext4: Fix async commit mode to be safe by using a barrier
+      ext4: Fix initalization of s_flex_groups
+      ext4: Fix include/trace/events/ext4.h to work with Systemtap
+      ext4: store EXT4_EXT_MIGRATE in i_state instead of i_flags
+      ext4: Add a tracepoint for ext4_alloc_da_blocks()
+      ext4: Fix the alloc on close after a truncate hueristic
+
+Tobias Klauser (1):
+      ext4: Declare seq_operations and file_operations structures as const
+
+ Documentation/filesystems/ext4.txt |   24 +-
+ fs/ext4/Kconfig                    |   11 +-
+ fs/ext4/balloc.c                   |    2 +-
+ fs/ext4/ext4.h                     |   91 ++++++--
+ fs/ext4/ext4_extents.h             |    4 +-
+ fs/ext4/ext4_jbd2.c                |    9 +-
+ fs/ext4/extents.c                  |  112 ++++++----
+ fs/ext4/fsync.c                    |   13 +-
+ fs/ext4/ialloc.c                   |    2 +-
+ fs/ext4/inode.c                    |  150 +++++++++-----
+ fs/ext4/ioctl.c                    |    7 +-
+ fs/ext4/mballoc.c                  |  429 +++++++++++++++++++-----------------
+ fs/ext4/mballoc.h                  |   22 ++-
+ fs/ext4/migrate.c                  |   22 +-
+ fs/ext4/move_extent.c              |  334 +++++++++++++++++++---------
+ fs/ext4/namei.c                    |   22 ++-
+ fs/ext4/resize.c                   |    7 +-
+ fs/ext4/super.c                    |  155 ++++++++------
+ fs/ext4/xattr.c                    |   15 +-
+ fs/jbd2/commit.c                   |   11 +-
+ fs/jbd2/journal.c                  |    6 +
+ fs/jbd2/transaction.c              |    7 +-
+ include/linux/jbd2.h               |    2 +-
+ include/trace/events/ext4.h        |  142 +++++++++---
+ include/trace/events/jbd2.h        |    2 +-
+ 25 files changed, 1000 insertions(+), 601 deletions(-)
+
+
