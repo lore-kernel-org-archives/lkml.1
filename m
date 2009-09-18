@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbZIRUdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbZIRUeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758581AbZIRUdg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZIRUd1
+	id S1758234AbZIRUeQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbZIRUeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:33:27 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:53246 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758233AbZIRUdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:33:25 -0400
-Date: Fri, 18 Sep 2009 22:33:28 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Cc: Mike Snitzer <snitzer@redhat.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Alasdair G Kergon <agk@redhat.com>, David Strand <dpstrand@gmail.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] block: Add blk_queue_copy_limits()
-Message-ID: <20090918203328.GT23126@kernel.dk>
-References: <4AB3B43D.9000802@ce.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AB3B43D.9000802@ce.jp.nec.com>
+	Fri, 18 Sep 2009 16:34:07 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:62426 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752223AbZIRUeF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 16:34:05 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Chris Zankel <chris@zankel.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH v2] Linker script cleanup for xtensa
+Date: Fri, 18 Sep 2009 16:33:46 -0400
+Message-Id: <1253306027-7019-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 19 2009, Jun'ichi Nomura wrote:
-> This patch is a preparation for the last patch in this patchset
-> which changes blk_set_default_limits() to set 0 to max_sectors.
-> 
-> dm uses blk_stack_limits() to merge limits of underlying devices
-> and copy the end result to the queue.
-> But if there's no underlying device (like 'zero' target),
-> max_sectors/max_hw_sectors are left unchanged from the default 0
-> and just copying it to the queue causes problems.
-> 
-> Provide blk_queue_copy_limits() to get a safe copy with
-> invalid values fixed-up.
+This is an updated version of the patch I sent on September 6 cleaning
+up the xtensa architecture's linker scripts.  It differs from the
+previous version only in having been rebased on top of Linus' current
+master.
 
-Added for 2.6.32.
+This cross-architecture linker script cleanup project is in
+preparation for adding support for building the kernel with
+-ffunction-sections -fdata-sections, which is a prerequisite for
+Ksplice.
 
--- 
-Jens Axboe
+	-Tim Abbott
+
+Tim Abbott (1):
+  xtensa: Cleanup linker script using new linker script macros.
+
+ arch/xtensa/kernel/vmlinux.lds.S |   75 +++++++-------------------------------
+ 1 files changed, 14 insertions(+), 61 deletions(-)
 
