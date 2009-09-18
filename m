@@ -1,189 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbZIRNPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZIRNQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbZIRNPb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 09:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbZIRNPa
+	id S1756745AbZIRNQN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 09:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZIRNQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 09:15:30 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39361 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756123AbZIRNP2 (ORCPT
+	Fri, 18 Sep 2009 09:16:13 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:38040 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753394AbZIRNQM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 09:15:28 -0400
-X-Sasl-enc: aMaNFGcam416EcVglX9/rKYKwgicXG7To4vpcTWbR68L 1253279729
-Message-ID: <4AB387E3.6030709@imap.cc>
-Date: Fri, 18 Sep 2009 15:15:15 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 18 Sep 2009 09:16:12 -0400
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 18 Sep 2009 06:16:08 -0700
+In-Reply-To: <ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com> (Kay Sievers's message of "Thu\, 17 Sep 2009 14\:03\:09 +0200")
+Message-ID: <m163bgz947.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/48] 2.6.27.32-stable review
-References: <200909112223.n8BMMSHG002530@hera.kernel.org> <20090916210956.GB24567@kroah.com>
-In-Reply-To: <20090916210956.GB24567@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigAB653D9D33BF3F50FAD7AE60"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Kay Sievers <kay.sievers@vrfy.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs  maintenance disaster
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigAB653D9D33BF3F50FAD7AE60
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Kay Sievers <kay.sievers@vrfy.org> writes:
 
-Am 16.09.2009 23:09 schrieb Greg KH:
-> Can you send me what you need applied to the latest 2.6.27-stable tree
-> to fix this up so we can finally resolve this?
+> On Thu, Sep 17, 2009 at 10:23, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>>
+>> devtmpfs has numerous problems.  The once I see from a quick review.
+>> - devtmpfs steals i_private from tmpfs (a layering/maintenance horror)
+>
+> I can't see the horror.
 
-The patch that should have been applied is here:
+You can't you aren't a filesystem and you are playing with filesystem
+private internal bits.   If I got that close to a woman I would have
+to marry her.  In the device layer there have been a bunch of structures
+introduced  bus_type_private, driver_private, class_private, device_private
+to prevent people from abusing your private data.  Like you are abusing
+vfs data.
 
-http://patchwork.kernel.org/patch/13845/
+>> - devtmpfs is missing calls to mnt_want_write.
+>
+> If you think we miss something, we are glad to add it, if you point it out.
 
-I'm including it below for completeness.
+I just did.
 
-The patch that was applied to 2.6.27-stable instead is this:
+>> - device_add does not clean up it's devtmpfs node on error
+>
+> That's fixable, if the remove event is not already taking care of it.
 
-http://patchwork.kernel.org/patch/20855/
-(commit 221418f9a25cd96aff99d6aba41c177f6eb00853)
+Sure.  I never said the code was unfixable.
 
-The difference is in blob 5 which inserts the new code at the wrong place=
-=2E
-I have no idea who or what caused that change.
+>> - The filesystem does not live under fs/ where it can be found.
+>> - The Kconfig entry is not under Filesystems.
+>
+> It's a special-purpose superblock, not a filesystem. The filesystem is
+> still 100% tmpfs. Devtmpfs is just a companion to the driver core's
+> sysfs, hence the code is in the driver core. The code does not
+> implement any kind of filesystem, it just populates a tmpfs
+> superblock.
 
-So commit 221418f9a25cd96aff99d6aba41c177f6eb00853 should be reverted and=
+Yes that explains why you call register_filesystem and have fs
+at the end of the name.
 
-my original patch below applied instead. The patch by Stefan Bader is
-equivalent to that but additionally backports two pr_err() calls from
-mainline.
+>> - The fundamental justification for devtmpfs is bogus.
+>>  devtmpfs is not faster nor does it solve the hotplug problem.
+>
+> It's not about speed, as stated many many times. Please read the archives.
+>
+>>  * A static dev is faster.
+>
+> A static /dev is unreliable and unpredictable, and can not be used in
+> any not very limited and controlled environment. It's pure theory for
+> the systems out there, it just does not work with todays dynamic
+> major/minors. You will never know which actual kernel device you open
+> from your static /dev entries. Unless someone converts the many
+> subsytems across the entire kernel, this is just not an option to even
+> think about.
+>
+> Eric, ever wondered why all the people working in hotplug area,
+> maintaining todays systems, and even the ones who wrote udev, want
+> this? And only people who have never written any code in hotplug land
+> like to object to it? There seems a big disconnect here.
 
-Thanks,
-Tilman
+I am.  I just had to rewrite pciehp because it totally fails on the
+systems I care about.  I am now figuring out how to merge that back in.
+There are some pretty big problems in the device core right now.
 
+>>  * Dynamically creating dev entries (in userspace) is not slow.
+>
+> Again, it's not about speed, it's about simplicity, reliability and
+> synchronous vs. asynchronous behavior.
+>
+>>    Fundamentally it should be the same amount of time as it is the
+>>    same amount of work.
+>
+> It's the synchronous context of sysfs. It's not interesting to compare
+> the overall work. We create the device in /sys, there is no reason not
+> to provide the device node at the same time.
+>
+>>  * People actively write/depend on udev rules to the file names in /dev.
+>
+> No, the sysfs names give the the device names. And udev can overwrite
+> the kernel supplied names, which it doesn't. That all still works the
+> same way with devtmpfs. Udev runs just fine on top of it. It even
+> removes the kernel created device node if asked for.
 
-
--------- Original-Nachricht --------
-Betreff: [PATCH 2.6.27/28-stable] bas_gigaset: correctly allocate USB int=
-errupt transfer buffer
-Datum: Mon, 23 Mar 2009 22:47:06 +0100 (CET)
-Von: Tilman Schmidt <tilman@imap.cc>
-An: stable@kernel.org
-CC: Kolja Waschk <kawk@users.sourceforge.net>, Hansjoerg Lipp <hjlipp@web=
-=2Ede>, davem@davemloft.net, linux-kernel@vger.kernel.org,        netdev@=
-vger.kernel.org
-
-Greg,
-
-the following patch backports the Gigaset driver bugfix merged for
-2.6.29 as commit 170ebf85160dd128e1c4206cc197cce7d1424705 to both
-v2.6.27.x and v2.6.28.x. I would appreciate to see it included in
-your stable series.
-
-Thanks,
-Tilman
-
-bas_gigaset: correctly allocate USB interrupt transfer buffer
-
-commit 170ebf85160dd128e1c4206cc197cce7d1424705 upstream.
-
-Every USB transfer buffer has to be allocated individually by kmalloc.
-
-Impact: bugfix, no functional change
-
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
-Tested-by: Kolja Waschk <kawk@users.sourceforge.net>
----
- drivers/isdn/gigaset/bas-gigaset.c |   15 +++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
-
---- a/drivers/isdn/gigaset/bas-gigaset.c	2008-12-25 00:26:37.000000000 +0=
-100
-+++ b/drivers/isdn/gigaset/bas-gigaset.c	2009-03-17 23:38:30.000000000 +0=
-100
-@@ -46,6 +46,9 @@ MODULE_PARM_DESC(cidmode, "Call-ID mode"
- /* length limit according to Siemens 3070usb-protokoll.doc ch. 2.1 */
- #define IF_WRITEBUF 264
-=20
-+/* interrupt pipe message size according to ibid. ch. 2.2 */
-+#define IP_MSGSIZE 3
-+
- /* Values for the Gigaset 307x */
- #define USB_GIGA_VENDOR_ID      0x0681
- #define USB_3070_PRODUCT_ID     0x0001
-@@ -110,7 +113,7 @@ struct bas_cardstate {
- 	unsigned char		*rcvbuf;	/* AT reply receive buffer */
-=20
- 	struct urb		*urb_int_in;	/* URB for interrupt pipe */
--	unsigned char		int_in_buf[3];
-+	unsigned char		*int_in_buf;
-=20
- 	spinlock_t		lock;		/* locks all following */
- 	int			basstate;	/* bitmap (BS_*) */
-@@ -657,7 +660,7 @@ static void read_int_callback(struct urb
- 	}
-=20
- 	/* drop incomplete packets even if the missing bytes wouldn't matter */=
-
--	if (unlikely(urb->actual_length < 3)) {
-+	if (unlikely(urb->actual_length < IP_MSGSIZE)) {
- 		dev_warn(cs->dev, "incomplete interrupt packet (%d bytes)\n",
- 			 urb->actual_length);
- 		goto resubmit;
-@@ -2127,6 +2130,7 @@ static void gigaset_reinitbcshw(struct b
- static void gigaset_freecshw(struct cardstate *cs)
- {
- 	/* timers, URBs and rcvbuf are disposed of in disconnect */
-+	kfree(cs->hw.bas->int_in_buf);
- 	kfree(cs->hw.bas);
- 	cs->hw.bas =3D NULL;
- }
-@@ -2138,6 +2142,11 @@ static int gigaset_initcshw(struct cards
- 	cs->hw.bas =3D ucs =3D kmalloc(sizeof *ucs, GFP_KERNEL);
- 	if (!ucs)
- 		return 0;
-+	ucs->int_in_buf =3D kmalloc(IP_MSGSIZE, GFP_KERNEL);
-+	if (!ucs->int_in_buf) {
-+		kfree(ucs);
-+		return 0;
-+	}
-=20
- 	ucs->urb_cmd_in =3D NULL;
- 	ucs->urb_cmd_out =3D NULL;
-@@ -2290,7 +2299,7 @@ static int gigaset_probe(struct usb_inte
- 	usb_fill_int_urb(ucs->urb_int_in, udev,
- 			 usb_rcvintpipe(udev,
- 					(endpoint->bEndpointAddress) & 0x0f),
--			 ucs->int_in_buf, 3, read_int_callback, cs,
-+			 ucs->int_in_buf, IP_MSGSIZE, read_int_callback, cs,
- 			 endpoint->bInterval);
- 	if ((rc =3D usb_submit_urb(ucs->urb_int_in, GFP_KERNEL)) !=3D 0) {
- 		dev_err(cs->dev, "could not submit interrupt URB: %s\n",
+sysfs overrides the kernel supplied device names all of the time.
+In the general case those overrides are called symlinks.  But a rose
+by any other name...
 
 
+>>    Perhaps they are just for the creation of symlink to the filenames
+>>    specified in Documentation/devices.txt but regardless device names
+>>    not documented in Documentation/devices.txt are used in the real
+>>    world. (i.e. udev still handles naming).
+>
+> No, udev does not name devices, it's the kernel. There have been a few
+> trivial exceptions, but they are all in the kernel today. Please make
+> yourself familiar how things work.
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+I have.  You notice I have sent udev patches?
+
+>>  * If you are truly dealing with hotplug events in userspace
+>>    it is necessary to listen to uevents and react which
+>>    last I checked is role of udev.
+>
+> I don't understand. Udev applies the final policy including
+> permissions/ownership, just as before. There is no differrence. It's
+> just that you can bring up a box without complex userspace to
+> bootstrap /dev. And that's a big win on its own. And things like
+> "modprobe loop; losetup /dev/loop0" will just work, which it doesn't
+> with todays async udev. Again, please make yourself familiar how
+> things work, and what the problems are.
+
+The modprobe loop example is interesting, I have not seen that one before.
 
 
---------------enigAB653D9D33BF3F50FAD7AE60
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+>> - Once everyone starts using devtmpfs it will be a serious technical
+>>  problem for containers.
+>
+> This is not different from todays udev or sysfs. Also udev runs fine
+> with plain tmpfs.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+That has been no ability to discuss design alternatives in this process
+so it was completely impossible to have any discussion on this.
 
-iD8DBQFKs4ftQ3+did9BuFsRAtzeAJ9wV8MjEXS3P0HqYYJHWpVKKTyosACeNJbg
-IItjtNvS2EcfZ5tJ7TdM9m8=
-=88Zj
------END PGP SIGNATURE-----
+As for sysfs it is only the broken in tree version that problem.
 
---------------enigAB653D9D33BF3F50FAD7AE60--
+>> - Reportedly devtmpfs is mandatory in the latest version of Suse
+>>  so claiming it is experimental and if unsure say N seems like
+>>  the wrong advice, and a serious misnomer.
+>
+> openSUSE uses it, but it runs fine without devtmpfs.
+
+For how many days will that be true?
+
+
+>> Who places a filesystem in drivers/core/ and not even
+>> in the filesystem Kconfig menu?
+>
+> As stated, it's a special-purpose superblock, and not a filesystem at all.
+
+Bogus.
+
+>
+>> Additionally Greg KH and Kay Sievers have a bad track record of fixing
+>> filesystem bugs in sysfs, which I see no reason will not continue with
+>> devtmpfs.
+>
+> Oh, interesting. Any points to working fixes we missed?
+>
+> Your last series was way over the top, you did not even boot a box
+> with it and it broke things in obvious ways when I ran it. I thought
+> we applied all your working fixes, and asked you to rebase the rest,
+> and skip the stuff that caused the breakage. I think you never did.
+> Some of the things showed problems in other subsystem which needed to
+> be fixed, and some of these things got fixed. So please send out a
+> rebased _and_ tested series again.
+
+My problem is not with how my patches have been treated.  Rather my problem
+is the fact that when errors were pointed out I was the only one to step
+up to fixing them.  Why should I be the only one stepping up?
+
+My problem is that instead of fixing bugs you are off adding strange weird
+features and adding more bugs.
+
+Eric
