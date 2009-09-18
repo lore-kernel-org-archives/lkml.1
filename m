@@ -1,156 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZIRTxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZIRTzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbZIRTxK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 15:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZIRTxC
+	id S1754846AbZIRTzF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 15:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZIRTzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 15:53:02 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:41087 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752739AbZIRTw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 15:52:59 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       David Howells <dhowells@redhat.com>,
-       Geoffrey Thomas <geofft@ksplice.com>, Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH 3/3] sparc: Clean up linker script using new linker script macros.
-Date: Fri, 18 Sep 2009 15:52:09 -0400
-Message-Id: <1253303529-6342-4-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1253303529-6342-1-git-send-email-tabbott@ksplice.com>
-References: <1253303529-6342-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Fri, 18 Sep 2009 15:55:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48805 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753919AbZIRTy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 15:54:59 -0400
+Date: Fri, 18 Sep 2009 21:54:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mark Langsdorf <mark.langsdorf@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Prevent immediate process rescheduling
+Message-ID: <20090918195455.GC11726@elte.hu>
+References: <200909181449.12311.mark.langsdorf@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909181449.12311.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geoffrey Thomas <geofft@ksplice.com>
 
-Signed-off-by: Geoffrey Thomas <geofft@ksplice.com>
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Acked-by: David S. Miller <davem@davemloft.net>
----
- arch/sparc/kernel/vmlinux.lds.S |   75 ++++-----------------------------------
- 1 files changed, 7 insertions(+), 68 deletions(-)
+(fixed the Cc: lines)
 
-diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
-index 866390f..4e59925 100644
---- a/arch/sparc/kernel/vmlinux.lds.S
-+++ b/arch/sparc/kernel/vmlinux.lds.S
-@@ -51,70 +51,27 @@ SECTIONS
- 	_etext = .;
- 
- 	RO_DATA(PAGE_SIZE)
--	.data :	{
--		DATA_DATA
--		CONSTRUCTORS
--	}
- 	.data1 : {
- 		*(.data1)
- 	}
--	. = ALIGN(SMP_CACHE_BYTES);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
--	}
--	. = ALIGN(SMP_CACHE_BYTES);
--	.data.read_mostly : {
--		*(.data.read_mostly)
--	}
-+	RW_DATA_SECTION(SMP_CACHE_BYTES, 0, THREAD_SIZE)
-+
- 	/* End of data section */
- 	_edata = .;
- 
--	/* init_task */
--	. = ALIGN(THREAD_SIZE);
--	.data.init_task : {
--		*(.data.init_task)
--	}
- 	.fixup : {
- 		__start___fixup = .;
- 		*(.fixup)
- 		__stop___fixup = .;
- 	}
--	. = ALIGN(16);
--	__ex_table : {
--		__start___ex_table = .;
--		*(__ex_table)
--		__stop___ex_table = .;
--	}
-+	EXCEPTION_TABLE(16)
- 	NOTES
- 
- 	. = ALIGN(PAGE_SIZE);
--	.init.text : {
--		__init_begin = .;
--		_sinittext = .;
--		INIT_TEXT
--		_einittext = .;
--	}
-+	__init_begin = ALIGN(PAGE_SIZE);
-+	INIT_TEXT_SECTION(PAGE_SIZE)
- 	__init_text_end = .;
--	.init.data : {
--		INIT_DATA
--	}
--	. = ALIGN(16);
--	.init.setup : {
--		__setup_start = .;
--		*(.init.setup)
--		__setup_end = .;
--	}
--	.initcall.init : {
--		__initcall_start = .;
--		INITCALLS
--		__initcall_end = .;
--	}
--	.con_initcall.init : {
--		__con_initcall_start = .;
--		*(.con_initcall.init)
--		__con_initcall_end = .;
--	}
--	SECURITY_INIT
-+	INIT_DATA_SECTION(16)
- 
- 	. = ALIGN(4);
- 	.tsb_ldquad_phys_patch : {
-@@ -146,29 +103,11 @@ SECTIONS
- 		__sun4v_2insn_patch_end = .;
- 	}
- 
--#ifdef CONFIG_BLK_DEV_INITRD
--	. = ALIGN(PAGE_SIZE);
--	.init.ramfs : {
--		__initramfs_start = .;
--		*(.init.ramfs)
--		__initramfs_end = .;
--	}
--#endif
--
- 	PERCPU(PAGE_SIZE)
- 
- 	. = ALIGN(PAGE_SIZE);
- 	__init_end = .;
--	__bss_start = .;
--	.sbss : {
--		*(.sbss)
--		*(.scommon)
--	}
--	.bss : {
--		*(.dynbss)
--		*(.bss)
--		*(COMMON)
--	}
-+	BSS_SECTION(0, 0, 0)
- 	_end = . ;
- 
- 	STABS_DEBUG
--- 
-1.6.3.3
+* Mark Langsdorf <mark.langsdorf@amd.com> wrote:
 
+> Prevent the scheduler from immediately rescheduling a process
+> that just yielded if there is another process available.
+> 
+> Originally suggested by Mike Galbraith (efault@gmx.de).
+> 
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> ---
+>  kernel/sched_fair.c |   16 +++++++++++++++-
+>  1 files changed, 15 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 652e8bd..4fad08f 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -353,11 +353,25 @@ static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+>  static struct sched_entity *__pick_next_entity(struct cfs_rq *cfs_rq)
+>  {
+>  	struct rb_node *left = cfs_rq->rb_leftmost;
+> +	struct sched_entity *se, *curr;
+>  
+>  	if (!left)
+>  		return NULL;
+>  
+> -	return rb_entry(left, struct sched_entity, run_node);
+> +	se = rb_entry(left, struct sched_entity, run_node);
+> +	curr = &current->se;
+> +
+> +	/* 
+> +	 * Don't select the entity who just tried to schedule away
+> +	 * if there's another entity available.
+> +	 */
+> +	if (unlikely(se == curr && cfs_rq->nr_running > 1)) {
+> +		struct rb_node *next_node = rb_next(&curr->run_node);
+> +		if (next_node)
+> +			se = rb_entry(next_node, struct sched_entity, run_node);
+> +	}
+> +
+> +	return se;
+>  }
+
+I suspect some real workload is the motivation of this - what is that 
+workload?
+
+	Ingo
