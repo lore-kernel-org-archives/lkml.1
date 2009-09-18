@@ -1,77 +1,496 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbZIRO7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZIRO7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbZIRO7t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZIRO7k
+	id S1754039AbZIRO7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZIRO7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 18 Sep 2009 10:59:40 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51891 "EHLO mx1.redhat.com"
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:52953 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753456AbZIRO7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:59:39 -0400
-Subject: Re: kernel panic - not syncing: out of memory and no killable
- processes
-From: Eric Paris <eparis@redhat.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Greg KH <greg@kroah.com>,
-       linux-hotplug@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.00.0909171446230.22063@chino.kir.corp.google.com>
-References: <1253158603.5213.204.camel@dhcp231-106.rdu.redhat.com>
-	 <1253191435.5213.209.camel@dhcp231-106.rdu.redhat.com>
-	 <alpine.DEB.1.00.0909171326340.31112@chino.kir.corp.google.com>
-	 <1253219756.5213.348.camel@dhcp231-106.rdu.redhat.com>
-	 <1253221309.5213.350.camel@dhcp231-106.rdu.redhat.com>
-	 <1253222149.5213.352.camel@dhcp231-106.rdu.redhat.com>
-	 <alpine.DEB.1.00.0909171417020.19006@chino.kir.corp.google.com>
-	 <1253223119.5213.359.camel@dhcp231-106.rdu.redhat.com>
-	 <alpine.DEB.1.00.0909171446230.22063@chino.kir.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 18 Sep 2009 10:58:43 -0400
-Message-Id: <1253285923.30531.17.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+	id S1753336AbZIRO7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 10:59:38 -0400
+Message-ID: <4AB3A05A.6010204@austin.ibm.com>
+Date: Fri, 18 Sep 2009 09:59:38 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/5 v2] dynamic logical partitioning infrastructure
+References: <4AB39FB3.1020608@austin.ibm.com>
+In-Reply-To: <4AB39FB3.1020608@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-17 at 14:59 -0700, David Rientjes wrote:
-> On Thu, 17 Sep 2009, Eric Paris wrote:
-> 
-> > Absolutely 100% udevd related.  It always pops right when udev starts.
-> > Every time.  I don't know how to get that to come out on the serial
-> > port, you only get to see the kernel messages (although there is nothing
-> > on the screen other than "Starting udev"
-> > 
-> > Reverting 3f2aa307c4d26b4ed6509d0a79e8254c9e07e921 causes the problem to
-> > go away.  I now am running a 79b520e87e kernel + your patch (adding
-> > console_verbose()) + reverting 3f2aa307c4d2 and it seems to be working.
-> > 
-> 
-> Isolating udevd down to an interactivity scheduling change isn't _that_ 
-> bizarre.  I think the setting of UDEVD_PRIORITY is already mostly 
-> arbitrary anyway and it'll allow 192 children on your 512M machine by 
-> default unless you changed UDEVD_MAX_CHILDS for uid 0.
-> 
-> The default timeout for idle workers is 3 seconds, which may just happen 
-> to be long enough to panic your machine because of low memory.  If that's 
-> the case, I don't believe that it's a scheduler issue but rather a root 
-> abuse of setting all udevd threads to be OOM_DISABLE.
-> 
-> What is your udevd --version?  The latest is udev-146 released last month.
+This patch provides the kernel DLPAR infrastructure in a new filed named
+dlpar.c.  The functionality provided is for acquiring and releasing a 
+resource from firmware and the parsing of information returned from the
+ibm,configure-connector rtas call.  Additionally this exports the 
+pSeries reconfiguration notifier chain so that it can be invoked when
+device tree updates are made.
 
-145
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
 
-Let me try and clone the vm some I don't break my reproducer.  I'll see
-if adding more memory fixes it.  Doesn't look like Fedora has built a
--146 yet, I'll see if I can get one of those as well.
-
-udev bug, configuration issue, whatever, or not, it's a regression that
-I used to be able to boot and updating my kernel leaves me unable to
-boot.  I think we all agree when 512M of memory isn't enough to boot to
-runlevel 3 we've got a problem   :)
-
--Eric
-
-
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-09-17 11:32:22.000000000 -0500
+@@ -0,0 +1,416 @@
++/*
++ * dlpar.c - support for dynamic reconfiguration (including PCI
++ * Hotplug and Dynamic Logical Partitioning on RPA platforms).
++ *
++ * Copyright (C) 2009 Nathan Fontenot
++ * Copyright (C) 2009 IBM Corporation
++ *
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/kref.h>
++#include <linux/notifier.h>
++#include <linux/proc_fs.h>
++#include <linux/spinlock.h>
++
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/uaccess.h>
++#include <asm/rtas.h>
++#include <asm/pSeries_reconfig.h>
++
++#define CFG_CONN_WORK_SIZE	4096
++static char workarea[CFG_CONN_WORK_SIZE];
++static DEFINE_SPINLOCK(workarea_lock);
++
++struct cc_workarea {
++	u32	drc_index;
++	u32	zero;
++	u32	name_offset;
++	u32	prop_length;
++	u32	prop_offset;
++};
++
++static struct property *parse_cc_property(char *workarea)
++{
++	struct property *prop;
++	struct cc_workarea *ccwa;
++	char *name;
++	char *value;
++
++	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
++	if (!prop)
++		return NULL;
++
++	ccwa = (struct cc_workarea *)workarea;
++	name = workarea + ccwa->name_offset;
++	prop->name = kzalloc(strlen(name) + 1, GFP_KERNEL);
++	if (!prop->name) {
++		kfree(prop);
++		return NULL;
++	}
++
++	strcpy(prop->name, name);
++
++	prop->length = ccwa->prop_length;
++	value = workarea + ccwa->prop_offset;
++	prop->value = kzalloc(prop->length, GFP_KERNEL);
++	if (!prop->value) {
++		kfree(prop->name);
++		kfree(prop);
++		return NULL;
++	}
++
++	memcpy(prop->value, value, prop->length);
++	return prop;
++}
++
++static void free_property(struct property *prop)
++{
++	kfree(prop->name);
++	kfree(prop->value);
++	kfree(prop);
++}
++
++static struct device_node *parse_cc_node(char *work_area)
++{
++	struct device_node *dn;
++	struct cc_workarea *ccwa;
++	char *name;
++
++	dn = kzalloc(sizeof(*dn), GFP_KERNEL);
++	if (!dn)
++		return NULL;
++
++	ccwa = (struct cc_workarea *)work_area;
++	name = work_area + ccwa->name_offset;
++	dn->full_name = kzalloc(strlen(name) + 1, GFP_KERNEL);
++	if (!dn->full_name) {
++		kfree(dn);
++		return NULL;
++	}
++
++	strcpy(dn->full_name, name);
++	return dn;
++}
++
++static void free_one_cc_node(struct device_node *dn)
++{
++	struct property *prop;
++
++	while (dn->properties) {
++		prop = dn->properties;
++		dn->properties = prop->next;
++		free_property(prop);
++	}
++
++	kfree(dn->full_name);
++	kfree(dn);
++}
++
++static void free_cc_nodes(struct device_node *dn)
++{
++	if (dn->child)
++		free_cc_nodes(dn->child);
++
++	if (dn->sibling)
++		free_cc_nodes(dn->sibling);
++
++	free_one_cc_node(dn);
++}
++
++#define NEXT_SIBLING    1
++#define NEXT_CHILD      2
++#define NEXT_PROPERTY   3
++#define PREV_PARENT     4
++#define MORE_MEMORY     5
++#define CALL_AGAIN	-2
++#define ERR_CFG_USE     -9003
++
++struct device_node *configure_connector(u32 drc_index)
++{
++	struct device_node *dn;
++	struct device_node *first_dn = NULL;
++	struct device_node *last_dn = NULL;
++	struct property *property;
++	struct property *last_property = NULL;
++	struct cc_workarea *ccwa;
++	int cc_token;
++	int rc;
++
++	cc_token = rtas_token("ibm,configure-connector");
++	if (cc_token == RTAS_UNKNOWN_SERVICE)
++		return NULL;
++
++	spin_lock(&workarea_lock);
++
++	ccwa = (struct cc_workarea *)&workarea[0];
++	ccwa->drc_index = drc_index;
++	ccwa->zero = 0;
++
++	rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
++	while (rc) {
++		switch (rc) {
++		case NEXT_SIBLING:
++			dn = parse_cc_node(workarea);
++			if (!dn)
++				goto cc_error;
++
++			dn->parent = last_dn->parent;
++			last_dn->sibling = dn;
++			last_dn = dn;
++			break;
++
++		case NEXT_CHILD:
++			dn = parse_cc_node(workarea);
++			if (!dn)
++				goto cc_error;
++
++			if (!first_dn)
++				first_dn = dn;
++			else {
++				dn->parent = last_dn;
++				if (last_dn)
++					last_dn->child = dn;
++			}
++
++			last_dn = dn;
++			break;
++
++		case NEXT_PROPERTY:
++			property = parse_cc_property(workarea);
++			if (!property)
++				goto cc_error;
++
++			if (!last_dn->properties)
++				last_dn->properties = property;
++			else
++				last_property->next = property;
++
++			last_property = property;
++			break;
++
++		case PREV_PARENT:
++			last_dn = last_dn->parent;
++			break;
++
++		case CALL_AGAIN:
++			break;
++
++		case MORE_MEMORY:
++		case ERR_CFG_USE:
++		default:
++			printk(KERN_ERR "Unexpected Error (%d) "
++			       "returned from configure-connector\n", rc);
++			goto cc_error;
++		}
++
++		rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
++	}
++
++	spin_unlock(&workarea_lock);
++	return first_dn;
++
++cc_error:
++	spin_unlock(&workarea_lock);
++
++	if (first_dn)
++		free_cc_nodes(first_dn);
++
++	return NULL;
++}
++
++static struct device_node *derive_parent(const char *path)
++{
++	struct device_node *parent;
++	char parent_path[128];
++	int parent_path_len;
++
++	parent_path_len = strrchr(path, '/') - path + 1;
++	strlcpy(parent_path, path, parent_path_len);
++
++	parent = of_find_node_by_path(parent_path);
++
++	return parent;
++}
++
++static int add_one_node(struct device_node *dn)
++{
++	struct proc_dir_entry *ent;
++	int rc;
++
++	of_node_set_flag(dn, OF_DYNAMIC);
++	kref_init(&dn->kref);
++	dn->parent = derive_parent(dn->full_name);
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_RECONFIG_ADD, dn);
++	if (rc == NOTIFY_BAD) {
++		printk(KERN_ERR "Failed to add device node %s\n",
++		       dn->full_name);
++		return -ENOMEM; /* For now, safe to assume kmalloc failure */
++	}
++
++	of_attach_node(dn);
++
++#ifdef CONFIG_PROC_DEVICETREE
++	ent = proc_mkdir(strrchr(dn->full_name, '/') + 1, dn->parent->pde);
++	if (ent)
++		proc_device_tree_add_node(dn, ent);
++#endif
++
++	of_node_put(dn->parent);
++	return 0;
++}
++
++int add_device_tree_nodes(struct device_node *dn)
++{
++	struct device_node *child = dn->child;
++	struct device_node *sibling = dn->sibling;
++	int rc;
++
++	dn->child = NULL;
++	dn->sibling = NULL;
++	dn->parent = NULL;
++
++	rc = add_one_node(dn);
++	if (rc)
++		return rc;
++
++	if (child) {
++		rc = add_device_tree_nodes(child);
++		if (rc)
++			return rc;
++	}
++
++	if (sibling)
++		rc = add_device_tree_nodes(sibling);
++
++	return rc;
++}
++
++static int remove_one_node(struct device_node *dn)
++{
++	struct device_node *parent = dn->parent;
++	struct property *prop = dn->properties;
++
++#ifdef CONFIG_PROC_DEVICETREE
++	while (prop) {
++		remove_proc_entry(prop->name, dn->pde);
++		prop = prop->next;
++	}
++
++	if (dn->pde)
++		remove_proc_entry(dn->pde->name, parent->pde);
++#endif
++
++	blocking_notifier_call_chain(&pSeries_reconfig_chain,
++			    PSERIES_RECONFIG_REMOVE, dn);
++	of_detach_node(dn);
++
++	of_node_put(parent);
++	of_node_put(dn); /* Must decrement the refcount */
++
++	return 0;
++}
++
++static int _remove_device_tree_nodes(struct device_node *dn)
++{
++	int rc;
++
++	if (dn->child) {
++		rc = _remove_device_tree_nodes(dn->child);
++		if (rc)
++			return rc;
++	}
++
++	if (dn->sibling) {
++		rc = _remove_device_tree_nodes(dn->sibling);
++		if (rc)
++			return rc;
++	}
++
++	rc = remove_one_node(dn);
++	return rc;
++}
++
++int remove_device_tree_nodes(struct device_node *dn)
++{
++	int rc;
++
++	if (dn->child) {
++		rc = _remove_device_tree_nodes(dn->child);
++		if (rc)
++			return rc;
++	}
++
++	rc = remove_one_node(dn);
++	return rc;
++}
++
++#define DR_ENTITY_SENSE		9003
++#define DR_ENTITY_PRESENT	1
++#define DR_ENTITY_UNUSABLE	2
++#define ALLOCATION_STATE	9003
++#define ALLOC_UNUSABLE		0
++#define ALLOC_USABLE		1
++#define ISOLATION_STATE		9001
++#define ISOLATE			0
++#define UNISOLATE		1
++
++int acquire_drc(u32 drc_index)
++{
++	int dr_status, rc;
++
++	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
++		       DR_ENTITY_SENSE, drc_index);
++	if (rc || dr_status != DR_ENTITY_UNUSABLE)
++		return -1;
++
++	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_USABLE);
++	if (rc)
++		return rc;
++
++	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
++	if (rc) {
++		rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
++		return rc;
++	}
++
++	return 0;
++}
++
++int release_drc(u32 drc_index)
++{
++	int dr_status, rc;
++
++	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
++		       DR_ENTITY_SENSE, drc_index);
++	if (rc || dr_status != DR_ENTITY_PRESENT)
++		return -1;
++
++	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, ISOLATE);
++	if (rc)
++		return rc;
++
++	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
++	if (rc) {
++		rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
++		return rc;
++	}
++
++	return 0;
++}
++
++static int pseries_dlpar_init(void)
++{
++	if (!machine_is(pseries))
++		return 0;
++
++	return 0;
++}
++device_initcall(pseries_dlpar_init);
+Index: powerpc/arch/powerpc/platforms/pseries/Makefile
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/Makefile	2009-09-11 12:43:39.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/Makefile	2009-09-11 12:51:52.000000000 -0500
+@@ -8,7 +8,7 @@
+ 
+ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
+ 			   setup.o iommu.o ras.o rtasd.o \
+-			   firmware.o power.o
++			   firmware.o power.o dlpar.o
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_XICS)	+= xics.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
+Index: powerpc/arch/powerpc/include/asm/pSeries_reconfig.h
+===================================================================
+--- powerpc.orig/arch/powerpc/include/asm/pSeries_reconfig.h	2009-09-11 12:43:39.000000000 -0500
++++ powerpc/arch/powerpc/include/asm/pSeries_reconfig.h	2009-09-11 12:51:52.000000000 -0500
+@@ -17,6 +17,7 @@
+ #ifdef CONFIG_PPC_PSERIES
+ extern int pSeries_reconfig_notifier_register(struct notifier_block *);
+ extern void pSeries_reconfig_notifier_unregister(struct notifier_block *);
++extern struct blocking_notifier_head pSeries_reconfig_chain;
+ #else /* !CONFIG_PPC_PSERIES */
+ static inline int pSeries_reconfig_notifier_register(struct notifier_block *nb)
+ {
+Index: powerpc/arch/powerpc/platforms/pseries/reconfig.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/reconfig.c	2009-09-11 12:43:39.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/reconfig.c	2009-09-15 14:18:38.000000000 -0500
+@@ -95,7 +95,7 @@
+ 	return parent;
+ }
+ 
+-static BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
++BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
+ 
+ int pSeries_reconfig_notifier_register(struct notifier_block *nb)
+ {
