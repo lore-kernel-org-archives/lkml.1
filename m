@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbZIRNmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbZIRNhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649AbZIRNmp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 09:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbZIRNmp
+	id S1751879AbZIRNhF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 09:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZIRNhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 09:42:45 -0400
-Received: from mail1.slb.deg.dub.stisp.net ([84.203.253.98]:7350 "HELO
-	mail1.slb.deg.dub.stisp.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754239AbZIRNmo (ORCPT
+	Fri, 18 Sep 2009 09:37:04 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:34932 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbZIRNhD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 09:42:44 -0400
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Sep 2009 09:42:44 EDT
-Message-ID: <4AB38C5A.4070506@draigBrady.com>
-Date: Fri, 18 Sep 2009 14:34:18 +0100
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Fri, 18 Sep 2009 09:37:03 -0400
+X-SpamScore: -16
+X-BigFish: VPS-16(z1f98jz1432R98dN148cMzz1202hzzz32i203h6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KQ65SI-04-2JX-02
+X-M-MSG: 
+Date: Fri, 18 Sep 2009 15:36:22 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Jan Beulich <JBeulich@novell.com>
+CC: dougthompson@xmission.com, linux-kernel@vger.kernel.org
+Subject: Re: amd64_edac making improper assumptions?
+Message-ID: <20090918133622.GB25309@aftab>
+References: <4AB3A1040200007800015BD3@vpn.id2.novell.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Fasheh <mfasheh@suse.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [Ocfs2-devel] [GIT PULL] ocfs2 changes for 2.6.32
-References: <20090915000417.GC4507@mail.oracle.com> <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain> <20090915005417.GD4507@mail.oracle.com> <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain> <20090915040601.GE4507@mail.oracle.com> <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain> <20090915214530.GA11060@mail.oracle.com> <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain> <20090916044047.GA30453@mail.oracle.com> <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain> <20090918014333.GD15620@mail.oracle.com>
-In-Reply-To: <20090918014333.GD15620@mail.oracle.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <4AB3A1040200007800015BD3@vpn.id2.novell.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 18 Sep 2009 13:36:17.0562 (UTC) FILETIME=[FFF51FA0:01CA3864]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joel Becker wrote:
-> On Thu, Sep 17, 2009 at 09:29:14AM -0700, Linus Torvalds wrote:
->> Why would anybody want to hide it at all? Why even the libc hiding?
->>
->> Nobody is going to use this except for special apps. Let them see what 
->> they can do, in all its glory. 
+Hi Jan,
+
+On Fri, Sep 18, 2009 at 02:02:28PM +0100, Jan Beulich wrote:
+> Doug, Borislav,
 > 
-> 	I expect everyone will use this through cp(1), so that cp(1) can
-> try to get server-side copy on the network filesystms.
+> the sizing of pvt_lookup[] and mci_lookup[] is done based on a config
+> setting (CONFIG_NODES_SHIFT), and the indexing happens using the
+> raw value read from hardware without any bounds checking. Hence,
+> running a kernel with e.g. !CONFIG_NUMA on a multi-socket system
+> would happily access other than the first and only array element.
 
-For reference, cp(1) has a --reflink option as of
-coreutils-7.5 which currently just does:
+Good catch, will fix, thanks. See below for longer explanation.
 
-  ioctl (dest_fd, BTRFS_IOC_CLONE, src_fd);
+> Likewise, the use of rdmsr_on_cpu() doesn't seem to do what is
+> intended when !CONFIG_NUMA.
+> 
+> Also, assuming you can use cpumask_of_node() directly on the
+> node ID read from hardware seems bogus (even in general, but
+> namely again when MAX_NUMNODES is less than the actual number
+> of nodes).
 
-There is a specific option in cp to do this because
-a "reflink copy" was seen to have these disadvantages:
+originally, the driver was compiling in NUMA for facilities like
+cpumask_of_node() et al for all per-node stuff but Ingo raised a concern
+that the NUMA dependency shouldn't be needed. Therefore, we needed some
+alternative facilities which, for example, can give you all the cores
+on a node so that you can init a driver instance per node and thus per
+memory controller.
 
-  1. one copy of data blocks so more chances of data loss
-  2. disk head seeking deferred to modification process
-  3. possible fragmentation on write
-  4. possible ENOSPC on write
+Well, Andreas did prepare a bunch of generic cpu topology patches which
+handle also MCM processors (e.g. having more than one internal node) and
+currently the per-CPU cpu_llc_id var contains the node id of a cpu. They
+went upstream last week and I'm waiting for another patch in -tip to go
+in before I send my local queue here which removes the cpumask_of_node()
+usage and all the rest of NUMA stuff completely.
 
-Now 2. will go away with time, and 3 & 4 may be alleviated
-by the use of fallocate(), but 1. was deemed important
-enough to not enable by default.
+Hope that makes it more clear and thanks for letting us know, we're on
+it :).
 
-cheers,
-Pádraig.
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
