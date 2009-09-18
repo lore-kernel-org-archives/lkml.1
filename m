@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZIRViQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbZIRWBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbZIRViQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 17:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbZIRViJ
+	id S1758719AbZIRWBI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 18:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758704AbZIRWBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 17:38:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50133 "EHLO ogre.sisk.pl"
+	Fri, 18 Sep 2009 18:01:04 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40011 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751432AbZIRViI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 17:38:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
-Date: Fri, 18 Sep 2009 23:39:14 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Chris Ball <cjb@laptop.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@lst.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
-References: <20090903232317.GA6760@lst.de> <200909120036.41725.rjw@sisk.pl> <87fxaksdve.fsf@devron.myhome.or.jp>
-In-Reply-To: <87fxaksdve.fsf@devron.myhome.or.jp>
+	id S1758700AbZIRWBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 18:01:03 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs / Novell
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: fanotify as syscalls
+Date: Sat, 19 Sep 2009 00:00:43 +0200
+User-Agent: KMail/1.9.9
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+References: <20090912094110.GB24709@ioremap.net> <200909172207.01764.agruen@suse.de> <1253307128.2552.21.camel@dhcp231-106.rdu.redhat.com>
+In-Reply-To: <1253307128.2552.21.camel@dhcp231-106.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909182339.14374.rjw@sisk.pl>
+Content-Disposition: inline
+Message-Id: <200909190000.43556.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 September 2009, OGAWA Hirofumi wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Saturday 12 September 2009, Chris Ball wrote:
-> >> Hi,
-> >> 
-> >>    > Well system could check basic card ids if they match after resume
-> >> 
-> >> No.  That (arguably) guarantees that it's the same card, but not that
-> >> it wasn't modified in another machine during the suspend.
-> >
-> > Generally speaking, we'd also need to check superblocks for this to work.
-> >  
-> >>    > if some users wants to crash his card by randomly swapping it
-> >>    > during suspend/resume - I'd have no problem with that....
-> >> 
-> >> You should have a problem with it.  Taking a card from a suspended
-> >> machine and working on it with a different machine is not a bizarre
-> >> thing to want to do.
-> >
-> > Agreed.
-> 
-> Um...
-> 
-> What happen if we moved remove event to resume sequence?  I.e. The
-> resume generates remove and insert event (or such revalidate).  With
-> this, I hope the suspend is not bothered by complex one, and the resume
-> just ignores (if needed) previous state and notify it to userland by
-> remove/insert event.
-> 
-> And, userland process should unmount for removal devices before suspend
-> process (as part of userland preparation)?
-> 
-> If we assumed the removable device can be changed before resume, fs
-> would need to recover process, to make sure in-core and on-disk state
-> has consistent.
-> 
-> Um..., for now, I feel the umount before suspend is only safe way.
+On Friday, 18 September 2009 22:52:08 Eric Paris wrote:
+> On Thu, 2009-09-17 at 22:07 +0200, Andreas Gruenbacher wrote:
+> > From my point of view, "global" events make no sense, and fanotify
+> > listeners should register which directories they are interested in (e.g.,
+> > include "/", exclude "/proc"). This takes care of chroots and namespaces
+> > as well.
+>
+> While I completely agree that most users don't want global events, the
+> antimalware vendors who today, unprotect and hack the syscall table on
+> their unsuspecting customer's machines to intercept every read, write,
+> open, close, mmap, etc syscall want EXACTLY that.
 
-Yes, with the current design it's the only really safe way.
+I understand that "global" is what those guys get today for lack of a 
+reasonable mechanism, but it's not what anybody can ge given by fanotify: it 
+conflicts with filesystem namespaces.
+
+Consider running several "virtual machines" in separate namespaces on the same 
+kernel. With "global" you are forced to run the same global fanotify 
+listeners everywhere; with per-mount-point listeners, you can choose 
+between "global" and something more fine-grained by identifying which 
+vfsmounts you are interested in. (Filesystem namespaces correspond to 
+vfsmount hierarchies.)
+
+> [...] You still have to exclude /proc and /sys and everything else.
+
+Those are mount points, and so convenient to handle with a per-mount-point 
+mechanism. No additional kernel code needed.
+
+> [...] Still though, this sounds like an issue for the f_type and f_fsid
+> exclusion syscall I say I'm still not settled on.
+
+Those are also obsolete with a per-mount-point mechanism.
 
 Thanks,
-Rafael
+Andreas
