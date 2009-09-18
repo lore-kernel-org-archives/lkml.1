@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbZIRHMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbZIRHOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbZIRHMV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 03:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZIRHMT
+	id S1754508AbZIRHOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 03:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbZIRHOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 03:12:19 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52940 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbZIRHMT (ORCPT
+	Fri, 18 Sep 2009 03:14:21 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:43505 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751322AbZIRHOU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 03:12:19 -0400
-Date: Fri, 18 Sep 2009 09:12:17 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>
-Subject: Re: aim7 scalability issue on 4 socket machine
-Message-ID: <20090918071217.GB17634@basil.fritz.box>
-References: <1253179879.2606.37.camel@ymzhang> <1253180411.8497.1.camel@twins> <Pine.LNX.4.64.0909171122180.25864@sister.anvils> <1253239339.2606.40.camel@ymzhang> <20090917195909.3a00ef83.akpm@linux-foundation.org> <Pine.LNX.4.64.0909180742500.14561@sister.anvils>
+	Fri, 18 Sep 2009 03:14:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=exFKjsrYVSOVMJr4XcNnW9FJcLlsl+xbLSmL+wE2EFLsLa/OBODtM/SKMIIpkSdX+Z
+         fSbLBiddSYBBKmBuV4oV9ZEgsgIvz9aO/FQD2xa0UgRuxtMecqIjvfIqeGnStXbOWc/I
+         YpsAHxWyLt0flw0GFWIUvy54PAE9uEVy+iS/c=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0909180742500.14561@sister.anvils>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <a32f33a40909180000m72d3f8cep3b97205e5ef1e26d@mail.gmail.com>
+References: <20090915174233.7db381cd@varda> <200909151813.32223.IvDoorn@gmail.com> 
+	<646765f40909172337g74b419fegd2935cb28aedb220@mail.gmail.com> 
+	<a32f33a40909180000m72d3f8cep3b97205e5ef1e26d@mail.gmail.com>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Fri, 18 Sep 2009 17:14:03 +1000
+Message-ID: <646765f40909180014l1aafe786kd5bb2ed2ec3c1bce@mail.gmail.com>
+Subject: Re: [rt2x00] rt2500pci is spamming syslogd since upgrade to 2.6.31
+To: Ivo Van Doorn <ivdoorn@gmail.com>
+Cc: =?ISO-8859-1?Q?Alejandro_Riveira_Fern=E1ndez?= <ariveira@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 07:53:58AM +0100, Hugh Dickins wrote:
-> On Thu, 17 Sep 2009, Andrew Morton wrote:
-> > On Fri, 18 Sep 2009 10:02:19 +0800 "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
-> > > > 
-> > > > So, Yanmin, please retest with http://lkml.org/lkml/2009/9/13/25
-> > > > and let us know if that works as well for you - thanks.
-> > > I tested Lee's patch and it does fix the issue.
-> 
-> Thanks for checking and reporting back, Yanmin.
-> 
-> > 
-> > Do we think we should cook up something for -stable?
-> 
-> Gosh, I laughed at Lee (sorry!) for suggesting it for -stable:
-> is stable really for getting a better number out of a benchmark?
+On Fri, Sep 18, 2009 at 17:00, Ivo Van Doorn <ivdoorn@gmail.com> wrote:
+> On Fri, Sep 18, 2009 at 8:37 AM, Julian Calaby <julian.calaby@gmail.com> wrote:
+>> 2009/9/16 Ivo van Doorn <ivdoorn@gmail.com>:
+>>> Hi,
+>>>
+>>>>  Hi; my syslog has many entries like this since the upgrade to 2.6.31
+>>>>
+>>>>  phy0 -> rt2500pci_set_device_state: Error - Device failed to enter state 1 (-16).
+>>>>
+>>>>  Sometimes the driver just start spamming like crazy sometimes is at less rate
+>>>>  sometimes it does not appear.
+>>>>
+>>>>  I'm running 2.6.31 with a revert [1] config follows. If more info is needed
+>>>>  just ask
+>>>>
+>>>>  [1] http://bugzilla.kernel.org/show_bug.cgi?id=13362
+>>>
+>>> Try disabling powersaving,
+>>>
+>>>        iwconfig wlan0 power off
+>>
+>> I have an identical problem, which is fixed by this command.
+>>
+>> It is possible to detect that the chip doesn't, for whatever reason,
+>> support powersaving and disable it in the driver?
+>
+> Well I simply have to:
+> a) fix the driver to handle powersaving better
+> b) disable powersaving support for the driver
+>
+> It will probably be (b) first followed by (a) much later if I ever
+> get the time to look into the issue.
 
-When your system is large enough scalability problems (e.g.
-lock contention) can be a serious bug. i.e. when your workload
-is 150% slower than expected that can well be a show stopper.
+Fair enough.
 
-Admittedly the workload in this case was a benchmark, but it's
-not that far fetched to expect the same problem in a real application.
+I'll take a look if I get an opportunity.
 
-We had a similar problem with the accounting lock some time 
-ago, I think that patch also went in.
-
-So yes I think simple non intrusive fixes for serious scalability
-problems should be stable candidates.
-
-> > Either this is a regression or the workload is particularly obscure. 
-> 
-> I've not cross-checked descriptions, but assume Lee was actually
-> testing on exactly the same kind of upcoming Nehalem as Yanmin, and
-> that machine happens to have characteristics which show up badly here.
-
-AFAIK Lee usually tests on large IA64 boxes.
-
-> > aim7 is sufficiently non-obscure to make me wonder what's happened here?
-> 
-> Not a regression, just the onward march of new hardware, I think.
-> Could easily be other such things in other places with other tests.
-
-Yes, it's just a much larger machine, so old hidden scalability sins now
-appear.
-
--Andi
+Thanks,
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+.Plan: http://sites.google.com/site/juliancalaby/
