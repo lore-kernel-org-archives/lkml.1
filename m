@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZIRPJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZIRPJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbZIRPJJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 11:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbZIRPJI
+	id S1754808AbZIRPJQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 11:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZIRPJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 11:09:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38468 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754508AbZIRPJH (ORCPT
+	Fri, 18 Sep 2009 11:09:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42862 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754509AbZIRPJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 11:09:07 -0400
-Date: Fri, 18 Sep 2009 08:05:06 -0700
+	Fri, 18 Sep 2009 11:09:11 -0400
+Date: Fri, 18 Sep 2009 08:05:41 -0700
 From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
-	maintenance disaster
-Message-ID: <20090918150506.GA9307@kroah.com>
-References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <20090917140548.4e6ee596@lxorguk.ukuu.org.uk> <20090917132909.GB4779@kroah.com> <20090917164325.38994b47@lxorguk.ukuu.org.uk> <20090918060320.GD7104@kroah.com> <20090918102540.0a683607@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
+	(Was: Re: [PATCH] Remove broken by design and by implementation
+	devtmpfs maintenance disaster)
+Message-ID: <20090918150541.GB9307@kroah.com>
+References: <20090917125759.GA4045@kroah.com> <m1ab0tcwep.fsf@fess.ebiederm.org> <20090917185306.GA28635@elte.hu> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain> <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com> <alpine.LFD.2.01.0909171709410.4950@localhost.localdomain> <1253238637.4071.10.camel@yio.site> <20090918060210.GC7104@kroah.com> <alpine.LFD.2.01.0909180717380.4950@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090918102540.0a683607@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0909180717380.4950@localhost.localdomain>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 10:25:40AM +0100, Alan Cox wrote:
-> > > Christoph has already nacked the code and indicated some problems (albeit
-> > > in his inimitably friendly fashion) so you had at least one review, you
-> > > just apparently didn't like the answer.
+On Fri, Sep 18, 2009 at 07:18:54AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 17 Sep 2009, Greg KH wrote:
 > > 
-> > No, he did not point out any technical problem with the code that I can
-> > find.  I asked for details, but he's probably on a plane at the moment.
+> > I think the udev version in older Fedora releases can't handle this
+> > kernel option, which is fine, just don't enable it.  Newer versions can
+> > handle it, right?
 > 
-> I quote:
-> 
-> "this touches init code to mount stuff inside the namespace fro ma
-> filesystem driver which is a big no-go"
+> .. conversely, if you can't be bothered to set up /dev/null and /dev/zero 
+> correctly, I would suggest that you not set them up AT ALL in devtmpfs.
 
-{sigh}
+Fair enough.
 
-And I responded with a specific question about this, asking what he ment
-by it, and referred to a line in the patch, as he had not pointed out
-specifically what he was referring to, and asking for a clarification.
+> The thing is, 0600 for those nodes is just _wrong_. Don't do it.
 
-This was also the first time I had heard that complaint from what I
-recall, so it was new to me.
+Ok, Kay, care to just treat these as "special"?
 
 thanks,
 
