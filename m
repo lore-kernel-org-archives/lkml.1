@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZIRLuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756973AbZIRLyG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbZIRLuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 07:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZIRLuW
+	id S1756973AbZIRLyG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 07:54:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbZIRLyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 07:50:22 -0400
-Received: from h155.mvista.com ([63.81.120.155]:32958 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753899AbZIRLuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 07:50:21 -0400
-Message-ID: <4AB37492.90407@ru.mvista.com>
-Date: Fri, 18 Sep 2009 15:52:50 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 18 Sep 2009 07:54:05 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:45685 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756031AbZIRLyE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 07:54:04 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Kusanagi Kouichi <slash@ma.neweb.ne.jp>
+Subject: Re: tun: Return -EINVAL if neither IFF_TUN nor IFF_TAP is set.
+Date: Fri, 18 Sep 2009 07:54:05 -0400
+User-Agent: KMail/1.12.1 (Linux/2.6.30-gentoo-r7; KDE/4.3.1; i686; ; )
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090917073614.15217260031@msa105lp.auone-net.jp>
+In-Reply-To: <20090917073614.15217260031@msa105lp.auone-net.jp>
 MIME-Version: 1.0
-To: "Jung-Ik (John) Lee" <jilee@google.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] libata:ide: Fix udma timings of pdc202xx_old controllers
-References: <8b5805ff0909171602v3dc10db9i5920be3a2abf2e04@mail.gmail.com> 	<20090918002322.54099f94@lxorguk.ukuu.org.uk> <8b5805ff0909171654i515c832bm570db9bd5936b11a@mail.gmail.com>
-In-Reply-To: <8b5805ff0909171654i515c832bm570db9bd5936b11a@mail.gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909180754.05817.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thursday 17 September 2009 03:36:13 am Kusanagi Kouichi wrote:
+> After commit 2b980dbd77d229eb60588802162c9659726b11f4
+> ("lsm: Add hooks to the TUN driver") tun_set_iff doesn't
+> return -EINVAL though neither IFF_TUN nor IFF_TAP is set.
+> 
+> Signed-off-by: Kusanagi Kouichi <slash@ma.neweb.ne.jp>
 
-Jung-Ik (John) Lee wrote:
+Sorry about that, my mistake, thanks for finding and fixing this.
 
->>>From: John(Jung-Ik) Lee <jilee@google.com>
+Reviewed-by: Paul Moore <paul.moore@hp.com>
 
->>>Fix udma timings of pdc202xx_old controllers.
->>>MB=1, MC=1 (0x20, 0x01) for all UDMA modes of pdc2026{57}.
+> ---
+>  drivers/net/tun.c |    4 +---
+>  1 files changed, 1 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/tun.c b/drivers/net/tun.c
+> index 3f5d288..e091756 100644
+> --- a/drivers/net/tun.c
+> +++ b/drivers/net/tun.c
+> @@ -946,8 +946,6 @@ static int tun_set_iff(struct net *net, struct file
+>  *file, struct ifreq *ifr) char *name;
+>  		unsigned long flags = 0;
+> 
+> -		err = -EINVAL;
+> -
+>  		if (!capable(CAP_NET_ADMIN))
+>  			return -EPERM;
+>  		err = security_tun_dev_create();
+> @@ -964,7 +962,7 @@ static int tun_set_iff(struct net *net, struct file
+>  *file, struct ifreq *ifr) flags |= TUN_TAP_DEV;
+>  			name = "tap%d";
+>  		} else
+> -			goto failed;
+> +			return -EINVAL;
+> 
+>  		if (*ifr->ifr_name)
+>  			name = ifr->ifr_name;
+> 
 
-    The patch should be broken in two as it's for 2 different subsystems.
-
->>On what documentation is this based ?
-
-> I have two documents, 20265, and 20267, and both need to set to the
-> same single value for all UDMA modes.
-
-> Doc 1:
->   PDC20265 Bus Mastering Ultra DMA PCI –ATA/ATAPI Controller
-> Specification Rev 2.0
->   #7.17.2, Ultra DMA Data Transfer Speed list
->     For all Ultra DMA mode, MB, MC = 01h, 01h
-
-> Doc 2:
->   PDC20267 Bus Mastering Ultra DMA PCI –ATA/ATAPI Controller
-> Specification Rev 2.0
->   #7.17.2, Ultra DMA Data Transfer Speed list
->     For all Ultra DMA mode, MB, MC = 01h, 01h
-
-> Are there other pdc202xx old controllers that are different?
-
-    There are PDC20262 and PDC20246. We should ask Bart -- he probably has 
-the documatation for them...
-
-> -John
-
->>Alan
-
-WBR, Sergei
-
+-- 
+paul moore
+linux @ hp
