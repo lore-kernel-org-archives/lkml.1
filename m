@@ -1,60 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbZIRQjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZIRQon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757AbZIRQjf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 12:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZIRQje
+	id S1755507AbZIRQon (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 12:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbZIRQom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 12:39:34 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:35956 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbZIRQjd (ORCPT
+	Fri, 18 Sep 2009 12:44:42 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:17019 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbZIRQom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 12:39:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=C3DfUnsIIs3m9q2MJD1VQ3IaB0qzR3G49mE2ZwgYW2PbzTnqK8xAEDmV7K58xRvtw4
-         sm8DyivTfUgEZaTG5eR8DWQvaAxTaFoU4Q8l24BkuyBgVbuJlLvrrPxrTrAmvjQNHAOf
-         NSdoPlwMbMaOBTMtkIl5nFw+MlSn6EgF1WVY0=
-Date: Fri, 18 Sep 2009 09:39:27 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Joonyoung Shim <jy0922.shim@samsung.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
-       "'Trilok Soni'" <soni.trilok@gmail.com>,
-       "'Kim Kyuwon'" <q1.kim@samsung.com>,
-       "'Kim Kyuwon'" <chammoru@gmail.com>,
-       "'LKML'" <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       "'Kyungmin Park'" <kyungmin.park@samsung.com>
-Subject: Re: [PATCH] Input: add MAX7359 key switch controller driver, v2
-Message-ID: <20090918163927.GA365@core.coreip.homeip.net>
-References: <4A5BF6F0.6020403@samsung.com> <001801ca044c$428839d0$c798ad70$%szyprowski@samsung.com> <20090714082452.GH2822@dtor-d630.eng.vmware.com> <002a01ca0462$8b750a90$a25f1fb0$%szyprowski@samsung.com> <5d5443650907140211i4c6e4a49q9c055dc1e91071da@mail.gmail.com> <002b01ca046c$7f9fd240$7edf76c0$%szyprowski@samsung.com> <5d5443650907140323l6cc06151nbec94d5d8646c60a@mail.gmail.com> <003f01ca051c$0e8d12b0$2ba73810$%szyprowski@samsung.com> <20090916085749.GL2756@core.coreip.homeip.net> <4AB3416F.6010004@samsung.com>
+	Fri, 18 Sep 2009 12:44:42 -0400
+Message-ID: <4AB3B8BF.1060302@vflare.org>
+Date: Fri, 18 Sep 2009 22:13:43 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AB3416F.6010004@samsung.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Greg KH <greg@kroah.com>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
+Subject: [PATCH] ramzswap prefix for swap free callback
+References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
+In-Reply-To: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joonyoung,
+Swap free callback is used to inform the underlying block
+device that a swap page has been freed. Currently, ramzswap
+is the only user of this callback. So, rename swap notify
+interface to reflect this.
 
-On Fri, Sep 18, 2009 at 05:14:39PM +0900, Joonyoung Shim wrote:
-> 
-> Hi, Dmitry.
-> 
-> I tested your patch with threaded IRQ. Because the interrupt of the 
-> MAX7359 device is the low level detecting, i should add the IRQF_ONESHOT 
-> flag on request_threaded_irq(). If it is added IRQF_ONESHOT flag, the it
-> operates well.
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
 
-Thank you for testing.
+---
+ drivers/staging/ramzswap/ramzswap_drv.c |    4 ++--
+ include/linux/swap.h                    |    7 ++++---
+ mm/swapfile.c                           |   14 +++++++-------
+ 3 files changed, 13 insertions(+), 12 deletions(-)
 
-> Do you want i send the patch?
+diff --git a/drivers/staging/ramzswap/ramzswap_drv.c b/drivers/staging/ramzswap/ramzswap_drv.c
+index 46c387a..1a7167f 100644
+--- a/drivers/staging/ramzswap/ramzswap_drv.c
++++ b/drivers/staging/ramzswap/ramzswap_drv.c
+@@ -761,7 +761,7 @@ static int ramzswap_read(struct ramzswap *rzs, struct bio *bio)
+ 	index = bio->bi_sector >> SECTORS_PER_PAGE_SHIFT;
 
-No, I fixed it locally. I took the liberty of marking the patch as
-"Tested-by" you, I hope you don't mind.
+ 	if (unlikely(!rzs->init_notify_callback) && PageSwapCache(page)) {
+-		set_swap_free_notify(bio->bi_bdev, ramzswap_free_notify);
++		set_ramzswap_free_notify(bio->bi_bdev, ramzswap_free_notify);
+ 		rzs->init_notify_callback = 1;
+ 	}
 
--- 
-Dmitry
+@@ -1323,7 +1323,7 @@ static int ramzswap_ioctl(struct block_device *bdev, fmode_t mode,
+ 		 * can happen if another swapon is done before this reset.
+ 		 * TODO: A callback from swapoff() will solve this problem.
+ 		 */
+-		set_swap_free_notify(bdev, NULL);
++		set_ramzswap_free_notify(bdev, NULL);
+ 		rzs->init_notify_callback = 0;
+ 		break;
+
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 64796fc..ace7900 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -21,7 +21,7 @@ struct bio;
+ #define SWAP_FLAG_PRIO_MASK	0x7fff
+ #define SWAP_FLAG_PRIO_SHIFT	0
+
+-typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
++typedef void (ramzswap_free_notify_fn) (struct block_device *, unsigned long);
+
+ static inline int current_is_kswapd(void)
+ {
+@@ -158,7 +158,7 @@ struct swap_info_struct {
+ 	unsigned int max;
+ 	unsigned int inuse_pages;
+ 	unsigned int old_block_size;
+-	swap_free_notify_fn *swap_free_notify_fn;
++	ramzswap_free_notify_fn *ramzswap_free_notify_fn;
+ };
+
+ struct swap_list_t {
+@@ -299,7 +299,8 @@ extern sector_t swapdev_block(int, pgoff_t);
+ extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int reuse_swap_page(struct page *);
+ extern int try_to_free_swap(struct page *);
+-extern void set_swap_free_notify(struct block_device *, swap_free_notify_fn *);
++extern void set_ramzswap_free_notify(struct block_device *,
++				ramzswap_free_notify_fn *);
+ struct backing_dev_info;
+
+ /* linux/mm/thrash.c */
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index b165db0..0cc9c9c 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -558,8 +558,8 @@ out:
+  * Sets callback for event when swap_map[offset] == 0
+  * i.e. page at this swap offset is no longer used.
+  */
+-void set_swap_free_notify(struct block_device *bdev,
+-			swap_free_notify_fn *notify_fn)
++void set_ramzswap_free_notify(struct block_device *bdev,
++			ramzswap_free_notify_fn *notify_fn)
+ {
+ 	unsigned int i;
+ 	struct swap_info_struct *sis;
+@@ -579,12 +579,12 @@ void set_swap_free_notify(struct block_device *bdev,
+ 		return;
+ 	}
+
+-	BUG_ON(!sis || sis->swap_free_notify_fn);
+-	sis->swap_free_notify_fn = notify_fn;
++	BUG_ON(!sis || sis->ramzswap_free_notify_fn);
++	sis->ramzswap_free_notify_fn = notify_fn;
+ 	spin_unlock(&swap_lock);
+ 	return;
+ }
+-EXPORT_SYMBOL_GPL(set_swap_free_notify);
++EXPORT_SYMBOL_GPL(set_ramzswap_free_notify);
+
+ static int swap_entry_free(struct swap_info_struct *p,
+ 			   swp_entry_t ent, int cache)
+@@ -617,8 +617,8 @@ static int swap_entry_free(struct swap_info_struct *p,
+ 			swap_list.next = p - swap_info;
+ 		nr_swap_pages++;
+ 		p->inuse_pages--;
+-		if (p->swap_free_notify_fn)
+-			p->swap_free_notify_fn(p->bdev, offset);
++		if (p->ramzswap_free_notify_fn)
++			p->ramzswap_free_notify_fn(p->bdev, offset);
+ 	}
+ 	if (!swap_count(count))
+ 		mem_cgroup_uncharge_swap(ent);
+
