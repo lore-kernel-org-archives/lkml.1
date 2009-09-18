@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbZIRLWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbZIRLZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756475AbZIRLWm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 07:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbZIRLWl
+	id S1756444AbZIRLZD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 07:25:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZIRLZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 07:22:41 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:54718 "EHLO smtp.gentoo.org"
+	Fri, 18 Sep 2009 07:25:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56023 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756055AbZIRLWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 07:22:41 -0400
-Subject: Re: 2.6.31 regression: system hang after pptp connection
- established
-From: Peter Volkov <pva@gentoo.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: gregkh@suse.de, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.01.0909171359210.4950@localhost.localdomain>
-References: <1253217553.3271.77.camel@tablet>
-	 <alpine.LFD.2.01.0909171327230.4950@localhost.localdomain>
-	 <alpine.LFD.2.01.0909171359210.4950@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 18 Sep 2009 15:20:18 +0400
-Message-Id: <1253272818.3327.161.camel@tablet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 8bit
+	id S1751529AbZIRLZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 07:25:01 -0400
+Date: Fri, 18 Sep 2009 13:24:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Felix Fietkau <nbd@openwrt.org>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090918112454.GE9930@elte.hu>
+References: <20090906205952.GA6516@elte.hu> <20090907182629.GA3484@elte.hu> <20090908074825.GA11413@elte.hu> <200909081645.18505.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909081645.18505.mb@bu3sch.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0466]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch fixes the problem here. Thank you very much.
 
---
-Peter.
+* Michael Buesch <mb@bu3sch.de> wrote:
 
-В Чтв, 17/09/2009 в 14:12 -0700, Linus Torvalds пишет:
+> On Tuesday 08 September 2009 09:48:25 Ingo Molnar wrote:
+> > Mind poking on this one to figure out whether it's all repeatable 
+> > and why that slowdown happens?
 > 
-> On Thu, 17 Sep 2009, Linus Torvalds wrote:
-> > 
-> > What's interesting about it is that it shows a problem, but the problem it 
-> > shows would seem to have nothing at all to do with ppp or networking or 
-> > pty's. The problem seems to be processes stuck in disk-wait:
-> 
-> Ahh. I think I see what may be going on.
-> 
-> Somebody got a filesystem mutex, and then went to sleep due to IO. Then 
-> pptp comes in, and seems to be stuck in a loop in kernel space, and 
-> it seems to be stuck with preemption off.
-> 
-> So one CPU is stuck, and the thing that we want to run is on the same 
-> run-queue, and not preempting. An looking at your CPU#1 trace, it's likely 
-> looping in ppp_async_push().
-> 
-> And that whole loop is insane (and very prone to infinite loops), but it 
-> also depends on that tty wakeup() thing.
-> 
-> Does this patch make a difference? Make sure to _not_ try to do the whole 
-> wakeup thing if we couldn't actually insert anything into the tty buffers.
-> 
-> 		Linus
-> ---
->  drivers/char/pty.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/char/pty.c b/drivers/char/pty.c
-> index b33d668..53761ce 100644
-> --- a/drivers/char/pty.c
-> +++ b/drivers/char/pty.c
-> @@ -120,8 +120,10 @@ static int pty_write(struct tty_struct *tty, const unsigned char *buf, int c)
->  		/* Stuff the data into the input queue of the other end */
->  		c = tty_insert_flip_string(to, buf, c);
->  		/* And shovel */
-> -		tty_flip_buffer_push(to);
-> -		tty_wakeup(tty);
-> +		if (c) {
-> +			tty_flip_buffer_push(to);
-> +			tty_wakeup(tty);
-> +		}
->  	}
->  	return c;
->  }
+> I repeated the test several times, because I couldn't really believe 
+> that there's such a big difference for me, but the results were the 
+> same. I don't really know what's going on nor how to find out what's 
+> going on.
 
+Well that's a really memory constrained MIPS device with like 16 MB of 
+RAM or so? So having effects from small things like changing details in 
+a kernel image is entirely plausible.
+
+	Ingo
