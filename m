@@ -1,42 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933316AbZIRSs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbZIRTA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933316AbZIRSs0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 14:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757816AbZIRSsV
+	id S1757944AbZIRTA0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 15:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZIRTAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 14:48:21 -0400
-Received: from gate.lvk.cs.msu.su ([158.250.17.1]:41587 "EHLO lvk.cs.msu.su"
+	Fri, 18 Sep 2009 15:00:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:55303 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757516AbZIRSsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 14:48:20 -0400
-From: "Nikita V. Youshchenko" <yoush@cs.msu.su>
-To: Ben Greear <greearb@candelatech.com>
-Subject: Re: Problems booting 2.6.31 on Fedora 8
-Date: Fri, 18 Sep 2009 22:48:20 +0400
-User-Agent: KMail/1.9.9
-References: <4AB3C9A8.4060700@candelatech.com>
-In-Reply-To: <4AB3C9A8.4060700@candelatech.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
+	id S1752217AbZIRTAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 15:00:22 -0400
+Date: Fri, 18 Sep 2009 20:54:25 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Wu Fei <at.wufei@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       arjan@infradead.org, jeremy@goop.org, mschmidt@redhat.com,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tj@kernel.org, tglx@linutronix.de,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-tip-commits@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 0/1] kthreads: simplify !kthreadd_task logic, kill
+	kthreadd_task_init_done
+Message-ID: <20090918185425.GA16620@redhat.com>
+References: <20090901130436.GA22514@redhat.com> <20090901131440.GA29783@elte.hu> <20090901133709.GA24041@redhat.com> <20090901135925.GA9083@elte.hu> <20090901145526.GA31317@redhat.com> <20090901165235.GA9105@redhat.com> <m13a76xnbw.fsf@fess.ebiederm.org> <20090902091340.GA5173@redhat.com> <20090904073749.GB20598@elte.hu> <20090918163241.GA8556@desktop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909182248.21032@blacky.localdomain>
+In-Reply-To: <20090918163241.GA8556@desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm having troubles booting 2.6.31 on Fedora 8.  The same kernel
-> boots fine on F11, but on F8, it cannot find the root logical volume.
+On 09/19, Wu Fei wrote:
 >
-> One thing I notice is that F11 uses root=/dev/mapper... and F8 uses
-> root=/dev/VolGroup00/LogVol00 in grub.  It's not clear to me what
-> the value of mapper should be...is there some way to figure this
-> out from an older kernel (2.6.29) that boots fine?
+> On Fri, Sep 04, 2009 at 09:37:49AM +0200, Ingo Molnar wrote:
+> >
+> > Lets delay this until i can debug it more fully.
+> >
+> CONFIG_PREEMPT_VOLUNTARY looks like the key of this problem,
+> might_resched becomes _cond_resched, and since d86ee480 changes
+> it not to check SYSTEM_RUNNING,
 
-I've recently faced a very similar problem, trying to boot some "modern" 
-kernel on debian etch system.
+... and should_resched() is true under preempt_disable()
 
-It was solved by putting more recent lvm2 binary into initrd.
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -452,10 +452,10 @@ static noinline void __init_refok rest_init(void)
+>  	int pid;
+>
+>  	rcu_scheduler_starting();
+> -	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
+> -	numa_default_policy();
+>  	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+>  	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
+> +	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
+
+We can't do this. kernel_init() should run with ->pid == 1, we are
+going to exec /sbin/init.
+
+Oleg.
 
