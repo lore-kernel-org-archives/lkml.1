@@ -1,104 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbZIRUrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbZIRUsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758565AbZIRUrA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbZIRUq4
+	id S1758634AbZIRUsy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758231AbZIRUsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:46:56 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:35633 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758127AbZIRUqz (ORCPT
+	Fri, 18 Sep 2009 16:48:50 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:25210 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758223AbZIRUst (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:46:55 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>
-Subject: [PATCH] h8300: Cleanup linker script using new linker script macros.
-Date: Fri, 18 Sep 2009 16:46:19 -0400
-Message-Id: <1253306779-7517-1-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Fri, 18 Sep 2009 16:48:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=kmbM/TnPHErwmNTVDj3GS9OirEFmxzSvnstrv5LIpz/th7NZUa6fUmen7DgQQ8g9Ce
+         OspT6/D40E3qHRI8G8SwDDtWqWCaOQW61a0EbeJdaGg9eVZEV+mLgw82A3Lx93EG94bj
+         xD6Trmo3XrYf1bE/CmvXoyWXdHnwF3WWxBGek=
+Message-ID: <4AB3F227.3030602@gmail.com>
+Date: Fri, 18 Sep 2009 22:48:39 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Nitin Gupta <ngupta@vflare.org>
+CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
+Subject: Re: [PATCH 3/4] virtual block device driver (ramzswap)
+References: <1253227412-24342-1-git-send-email-ngupta@vflare.org> <1253227412-24342-4-git-send-email-ngupta@vflare.org>
+In-Reply-To: <1253227412-24342-4-git-send-email-ngupta@vflare.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This cross-architecture linker script cleanup project is in
-preparation for adding support for building the kernel with
--ffunction-sections -fdata-sections, which is a prerequisite for
-Ksplice.
+Nitin Gupta wrote:
+> (...)
+> +
+> +static int page_zero_filled(void *ptr)
+> +{
+> +	u32 pos;
+> +	u64 *page;
+> +
+> +	page = (u64 *)ptr;
+> +
+> +	for (pos = 0; pos != PAGE_SIZE / sizeof(*page); pos++) {
+> +		if (page[pos])
+> +			return 0;
+> +	}
+> +
+> +	return 1;
+> +}
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
----
- arch/h8300/kernel/vmlinux.lds.S |   25 +++++++------------------
- 1 files changed, 7 insertions(+), 18 deletions(-)
+Wouldn't unsigned long *page be better for both 32-bit and 64-bit machines?
 
-diff --git a/arch/h8300/kernel/vmlinux.lds.S b/arch/h8300/kernel/vmlinux.lds.S
-index 662b02e..b9e2490 100644
---- a/arch/h8300/kernel/vmlinux.lds.S
-+++ b/arch/h8300/kernel/vmlinux.lds.S
-@@ -1,5 +1,6 @@
- #define VMLINUX_SYMBOL(_sym_) _##_sym_
- #include <asm-generic/vmlinux.lds.h>
-+#include <asm/page.h>
- 
- /* target memory map */
- #ifdef CONFIG_H8300H_GENERIC
-@@ -79,11 +80,8 @@ SECTIONS
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	__etext = . ;
--	. = ALIGN(16);          /* Exception table              */
--	___start___ex_table = .;
--		*(__ex_table)
--	___stop___ex_table = .;
- 	}
-+	EXCEPTION_TABLE(16)
- 
- 	RODATA
- #if defined(CONFIG_ROMKERNEL)
-@@ -100,8 +98,7 @@ SECTIONS
- 	__sdata = . ;
- 	___data_start = . ;
- 
--	. = ALIGN(0x2000) ;
--		*(.data.init_task)
-+	INIT_TASK_DATA(0x2000)
- 	. = ALIGN(0x4) ;
- 		DATA_DATA
- 	. = ALIGN(0x4) ;
-@@ -114,24 +111,16 @@ SECTIONS
- 	__einittext = .; 
- 		INIT_DATA
- 	. = ALIGN(0x4) ;
-+	INIT_SETUP(0x4)
- 	___setup_start = .;
- 		*(.init.setup)
- 	. = ALIGN(0x4) ;
- 	___setup_end = .;
--	___initcall_start = .;
--		INITCALLS
--	___initcall_end = .;
--	___con_initcall_start = .;
--		*(.con_initcall.init)
--	___con_initcall_end = .;
-+	INIT_CALLS
-+	CON_INITCALL
- 		EXIT_TEXT
- 		EXIT_DATA
--#if defined(CONFIG_BLK_DEV_INITRD)
--		. = ALIGN(4);
--	___initramfs_start = .;
--  		*(.init.ramfs)
--  	___initramfs_end = .;
--#endif
-+	INIT_RAM_FS
- 	. = ALIGN(0x4) ;
- 	___init_end = .;
- 	__edata = . ;
--- 
-1.6.3.3
+(This function could return bool)
+
+> (...)
+> +static void create_device(struct ramzswap *rzs, int device_id)
+> +{
+> +	mutex_init(&rzs->lock);
+> +	INIT_LIST_HEAD(&rzs->backing_swap_extent_list);
+> +
+> +	rzs->queue = blk_alloc_queue(GFP_KERNEL);
+> +	if (!rzs->queue) {
+> +		pr_err("Error allocating disk queue for device %d\n",
+> +			device_id);
+> +		return;
+> +	}
+> +
+> +	blk_queue_make_request(rzs->queue, ramzswap_make_request);
+> +	rzs->queue->queuedata = rzs;
+> +
+> +	 /* gendisk structure */
+> +	rzs->disk = alloc_disk(1);
+> +	if (!rzs->disk) {
+> +		blk_cleanup_queue(rzs->queue);
+> +		pr_warning("Error allocating disk structure for device %d\n",
+> +			device_id);
+> +		return;
+> +	}
+> +
+> +	rzs->disk->major = ramzswap_major;
+> +	rzs->disk->first_minor = device_id;
+> +	rzs->disk->fops = &ramzswap_devops;
+> +	rzs->disk->queue = rzs->queue;
+> +	rzs->disk->private_data = rzs;
+> +	snprintf(rzs->disk->disk_name, 16, "ramzswap%d", device_id);
+> +
+> +	/*
+> +	 * Actual capacity set using RZSIO_SET_DISKSIZE_KB ioctl
+> +	 * or set equal to backing swap device (if provided)
+> +	 */
+> +	set_capacity(rzs->disk, 0);
+> +	add_disk(rzs->disk);
+> +
+> +	rzs->init_done = 0;
+> +
+> +	return;
+> +}
+
+needless return
+
+Marcin
 
