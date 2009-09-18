@@ -1,91 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbZIROmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbZIROmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752757AbZIROmO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZIROmO
+	id S1753224AbZIROmd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZIROmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:42:14 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:40598 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbZIROmN (ORCPT
+	Fri, 18 Sep 2009 10:42:32 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:27681 "EHLO
+	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195AbZIROmb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:42:13 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
-References: <m1y6oef08k.fsf@fess.ebiederm.org>
-	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
-	<m1d45oxsrk.fsf@fess.ebiederm.org>
-	<20090918160944.58e5c1f5@infradead.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 18 Sep 2009 07:42:08 -0700
-In-Reply-To: <20090918160944.58e5c1f5@infradead.org> (Arjan van de Ven's message of "Fri\, 18 Sep 2009 16\:09\:44 +0200")
-Message-ID: <m14or0xqkf.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 18 Sep 2009 10:42:31 -0400
+X-SpamScore: -20
+X-BigFish: VPS-20(zz1432R1453M98dN936eMa4a4kzz1202hzzz32i203h6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KQ68UN-04-06J-02
+X-M-MSG: 
+Date: Fri, 18 Sep 2009 16:42:26 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Keith Mannthey <kmannth@us.ibm.com>
+CC: lkml <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
+Subject: Re: [Patch] AMD64_EDAC: Fix amd64_map_to_dcs_mask
+Message-ID: <20090918144226.GD25309@aftab>
+References: <1253239781.7263.113.camel@keith-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Arjan van de Ven <arjan@infradead.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs maintenance disaster
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <1253239781.7263.113.camel@keith-laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 18 Sep 2009 14:42:21.0346 (UTC) FILETIME=[3A8E9020:01CA386E]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
+On Thu, Sep 17, 2009 at 07:09:41PM -0700, Keith Mannthey wrote:
+> I tested 2.6.31 and the mainline amd64_edac driver.  Once errors were
+> getting reported I noticed that a good amount of valid looking system
+> addressed were not being correctly decoded to the csrow level.  I was
+> only able to correctly decode errors on channel 0 of a given csrow.
+> Errors on channel 1 were unable to be mapped. 
+> 
+> After some digging I realized that the there was an issue with handling
+> of Dram Chip Select Masks.  Specifically that amd64_map_to_dcs_mask was
+> returning incorrect values on my Rev F based system.  See AMD #32559,
+> 4.5.4, starting on pg 90 for a Rev F explanation of the correct mapping
+> of DRAM CS Base and DRAM CS Mask regs.  This lead to the code below.  I
+> can provide further explanation if needed. 
+> 
+> 
+> I have tested this code on Rev F based system with ecc debug dimms and
+> fully expect it to work on earlier and later cpus.  I am now able to
+> correctly decode and map errors to csrows rows on this system. 
+> 
+> 
+> Submitted-by:  Keith Mannthey<kmannth@us.ibm.com>
+> ---
 
-> On Fri, 18 Sep 2009 06:54:39 -0700
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->> 
->> > I don't understand. Udev applies the final policy including
->> > permissions/ownership, just as before. There is no differrence. It's
->> > just that you can bring up a box without complex userspace to
->> > bootstrap /dev. And that's a big win on its own.
->> 
->> udev is too complex to use?  That sounds like a userspace bug.
->> 
->> This I guess is where I am baffled.   The argument for devtmpfs
->> always seem to boil down to: udev sucks let's write some kernel
->> code instead.
->> 
->> I have been trying to ask for a long time why we can't just fix
->> udev to not suck. 
->> 
->> >  And things like
->> > "modprobe loop; losetup /dev/loop0" will just work, which it doesn't
->> > with todays async udev. Again, please make yourself familiar how
->> > things work, and what the problems are.
->> 
->> I guess I don't understand why 
->> modprobe loop; losetup /dev/loop0 is an interesting case.
->> When you can just as easily do:
->> modprobe loop; udevadm settle; losetup /dev/loop0.
->
-> frankly, modprobe should call the settle.
-> And not just this one, but we can use this to settle other things as
-> well... and then it can get an --async command line option for the
-> cases where you know you don't want to synchronize.
+This whole DSC[BM] handling is rather long-winded and overengineered. It
+is on my to-be-rewritten-and-simplified list.
 
-I think this would be a bit of a pain when I modprobe a network
-driver and the udev scripts trigger a blocking dhcp on the device.
+> 
+> diff -urN linux-2.6.31/drivers/edac/amd64_edac.c linux-2.6.31-fixed/drivers/edac/amd64_edac.c
+> --- linux-2.6.31/drivers/edac/amd64_edac.c	2009-09-09 15:13:59.000000000 -0700
+> +++ linux-2.6.31-fixed/drivers/edac/amd64_edac.c	2009-09-17 22:32:09.000000000 -0700
+> @@ -1,6 +1,8 @@
+> -#include "amd64_edac.h"
+> +#include <linux/log2.h>
+>  #include <asm/k8.h>
+>  
+> +#include "amd64_edac.h"
+> +
+>  static struct edac_pci_ctl_info *amd64_ctl_pci;
+>  
+>  static int report_gart_errors;
+> @@ -132,7 +134,7 @@
+>  /* Map from a CSROW entry to the mask entry that operates on it */
+>  static inline u32 amd64_map_to_dcs_mask(struct amd64_pvt *pvt, int csrow)
+>  {
+> -	return csrow >> (pvt->num_dcsm >> 3);
+> +	return csrow >> (8 >> (ilog2(pvt->num_dcsm)+1));
 
-If this is a major pain point in initscripts I can see how it would
-make sense.
+Almost. You have 8 DCSMs on RevE, 4 on RevF and F10h and 2 on F11h and
+this way you get wrong DCSM offsets for F11h. A dirty fix would be:
 
-Eric
+if (boot_cpu_data.x86 == 0xf && pvt->ext_model < OPTERON_CPU_REV_E) {
+	return csrow;
+else
+	return csrow >> 1;
+
+The problem is, the csrow thing still goes over 0..7 which is obviously
+wrong on F11h but I'll fix that later. Care to redo your patch according
+to these and the comments from my previous mail and resend?
+
+By the way, your patches made me look harder at that code region and
+I've found some more problems with it which I've fixed. Would you like
+to test the whole bunch of fixes on your setup?
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
