@@ -1,85 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751592AbZIROK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751298AbZIROLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751592AbZIROK4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbZIROKz
+	id S1751298AbZIROLa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbZIROLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:10:55 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:52046 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbZIROKz convert rfc822-to-8bit (ORCPT
+	Fri, 18 Sep 2009 10:11:30 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:57214 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbZIROL3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:10:55 -0400
-X-SpamScore: -24
-X-BigFish: VPS-24(zz1432R1453M98dN936eM4015La4a4kzz1202hzzz32i203h6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KQ67DR-04-3LH-02
-X-M-MSG: 
-Date: Fri, 18 Sep 2009 16:10:43 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Keith Mannthey <kmannth@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
-Subject: Re: [Patch] AMD64_EDAC:  simple fix to allow better report on ECE
- CE errors
-Message-ID: <20090918141043.GC25309@aftab>
-References: <1253239779.7263.111.camel@keith-laptop>
+	Fri, 18 Sep 2009 10:11:29 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1253239779.7263.111.camel@keith-laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 18 Sep 2009 14:10:38.0175 (UTC) FILETIME=[CC2DB6F0:01CA3869]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090918160944.58e5c1f5@infradead.org>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com> 
+	<m1d45oxsrk.fsf@fess.ebiederm.org> <20090918160944.58e5c1f5@infradead.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 18 Sep 2009 16:11:16 +0200
+Message-ID: <ac3eb2510909180711k223aeb6ena2de3645317d03bd@mail.gmail.com>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs 
+	maintenance disaster
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Keith,
+On Fri, Sep 18, 2009 at 16:09, Arjan van de Ven <arjan@infradead.org> wrote:
 
-On Thu, Sep 17, 2009 at 07:09:39PM -0700, Keith Mannthey wrote:
-> I tested 2.6.31 and the mainline amd64_edac driver. This is was the
-> first simple fix.  
-> 
-> This allows the errors to be further decoded and mapped to csrows. 
-> Tested with ECC debug dimms and an Rev F cpu based system. 
-> 
-> Submitted-by:  Keith Mannthey<kmannth@us.ibm.com>
+> frankly, modprobe should call the settle.
 
-Thanks, applied. By the way, the tagging is not 'Submitted-by' but
-'Signed-off-by' - I've corrected it accordingly. Please consult
-<Documentation/SubmittingPatches> for more details on how to prepare
-your patches.
+We call modprobe from udev, and will have fun with such a solution.
 
-> --- 
-> 
-> diff -urN linux-2.6.31/drivers/edac/amd64_edac.c linux-2.6.31-fixed/drivers/edac/amd64_edac.c
-
-Add the -p option when creating the diffs so that it is visible which
-function you're editing.
-
-> --- linux-2.6.31/drivers/edac/amd64_edac.c	2009-09-09 15:13:59.000000000 -0700
-> +++ linux-2.6.31-fixed/drivers/edac/amd64_edac.c	2009-09-17 22:32:09.000000000 -0700
-> @@ -1136,7 +1138,7 @@
->  	 * different from the node that detected the error.
->  	 */
->  	src_mci = find_mc_by_sys_addr(mci, SystemAddress);
-> -	if (src_mci) {
-> +	if (!src_mci) {
->  		amd64_mc_printk(mci, KERN_ERR,
->  			     "failed to map error address 0x%lx to a node\n",
->  			     (unsigned long)SystemAddress);
-> 
-> 
-> 
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+Kay
