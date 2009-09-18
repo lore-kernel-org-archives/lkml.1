@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbZIRRxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbZIRRw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbZIRRxD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 13:53:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbZIRRxB
+	id S1757477AbZIRRw4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 13:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369AbZIRRwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 13:53:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52048 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757369AbZIRRw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 13:52:59 -0400
-Date: Fri, 18 Sep 2009 10:52:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, jens.axboe@oracle.com,
-       Paul Mackerras <paulus@samba.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 1/2]: mm: Make vmalloc_user() align base kernel virtual
- address to SHMLBA.
-Message-Id: <20090918105240.13d74dab.akpm@linux-foundation.org>
-In-Reply-To: <20090918121709.GB19165@elte.hu>
-References: <20090908.051046.141535022.davem@davemloft.net>
-	<20090918121709.GB19165@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Sep 2009 13:52:55 -0400
+Received: from THUNK.ORG ([69.25.196.29]:33115 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757297AbZIRRwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 13:52:54 -0400
+Date: Fri, 18 Sep 2009 13:52:52 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
+Message-ID: <20090918175252.GF26991@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Wu Fengguang <fengguang.wu@intel.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+	"chris.mason@oracle.com" <chris.mason@oracle.com>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	"jack@suse.cz" <jack@suse.cz>
+References: <1252654450-25721-1-git-send-email-jens.axboe@oracle.com> <20090911134241.GB19707@mit.edu> <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090911143929.GA25499@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009 14:17:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, Sep 11, 2009 at 10:39:29PM +0800, Wu Fengguang wrote:
+> 
+> That would be good. Sorry for the late work. I'll allocate some time
+> in mid next week to help review and benchmark recent writeback works,
+> and hope to get things done in this merge window.
 
-> ( Andrew, this patch has mm/* effects - any objections? Would still like
->   to get this into v2.6.32. )
+Did you have some chance to get more work done on the your writeback
+patches?
 
-I queued this a week ago, along with
-perf-allocate-mmap-buffer-using-vmalloc_user.patch.
+Thanks,
 
-If the latter gets quitably acked I can merge it, otherwise I'll spray
-it at you guys.
-
-Merging
-mm-make-vmalloc_user-align-base-kernel-virtual-address-to-shmlba.patch
-via another tree will cause a teeny reject at my end, not a problem.
+					- Ted
