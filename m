@@ -1,107 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZIRAkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZIRAkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbZIRAkY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 20:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZIRAkU
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 20:40:20 -0400
-Received: from sous-sol.org ([216.99.217.87]:35237 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754892AbZIRAkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754848AbZIRAkL (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 17 Sep 2009 20:40:11 -0400
-Date: Thu, 17 Sep 2009 17:34:12 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, virtualization@lists.osdl.org
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-Message-ID: <20090918003412.GI26034@sequoia.sous-sol.org>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253233028.19731.63.camel@ank32.eng.vmware.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZIRAkJ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 17 Sep 2009 20:40:09 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:29837 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbZIRAkI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 20:40:08 -0400
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_NPhyFSWPjSt0KWkHUaE7Ig)"
+Date: Thu, 17 Sep 2009 20:40:10 -0400 (EDT)
+From: Nicolas Pitre <nico@fluxnic.net>
+X-X-Sender: nico@xanadu.home
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_RISS?= <frederic.riss@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] arm: Make kprobes unregistration SMP safe
+In-reply-to: <1253078476.5021.65.camel@funkybook>
+Message-id: <alpine.LFD.2.00.0909172039070.24133@xanadu.home>
+References: <1253078476.5021.65.camel@funkybook>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alok Kataria (akataria@vmware.com) wrote:
-> We ran a few experiments to compare performance of VMware's
-> paravirtualization technique (VMI) and hardware MMU technologies (HWMMU)
-> on VMware's hypervisor.
-> 
-> To give some background, VMI is VMware's paravirtualization
-> specification which tries to optimize CPU and MMU operations of the
-> guest operating system. For more information take a look at this
-> http://www.vmware.com/interfaces/paravirtualization.html
-> 
-> In most of the benchmarks, EPT/NPT (hwmmu) technologies are at par or
-> provide better performance compared to VMI.
-> The experiments included comparing performance across various micro and
-> real world like benchmarks.
-> 
-> Host configuration used for testing.
-> * Dell PowerEdge 2970
-> * 2 x quad-core AMD Opteron 2384 2.7GHz (Shanghai C2), RVI capable.
-> * 8 GB (4 x 2GB) memory, NUMA enabled
-> * 2 x 300GB RAID 0 storage
-> * 2 x embedded 1Gb NICs (Braodcom NetXtreme II BCM5708 1000Base-T)
-> * Running developement build of ESX.
-> 
-> The guest VM was a SLES 10 SP2 based VM for both the VMI and non-VMI
-> case. kernel version: 2.6.16.60-0.37_f594963d-vmipae.
-> 
-> Below is a short summary of performance results between HWMMU and VMI.
-> These results are averaged over 9 runs. The memory was sized at 512MB
-> per VCPU in all experiments.
-> For the ratio results comparing hwmmu technologies to vmi, higher than 1
-> means hwmmu is better than vmi.
-> 
-> compile workloads - 4-way : 1.02, i.e. about 2% better.
-> compile workloads - 8-way : 1.14, i,e. 14% better.
-> oracle swingbench - 4-way (small pages) : 1.34, i.e. 34% better.
-> oracle swingbench - 4-way (large pages) : 1.03, i.e. 3% better.
-> specjbb (large pages)   : 0.99, i.e. 1% degradation.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Not entirely surprising.  Curious if you ran specjbb w/ small pages too?
+--Boundary_(ID_NPhyFSWPjSt0KWkHUaE7Ig)
+Content-type: TEXT/PLAIN; charset=ISO-8859-1
+Content-transfer-encoding: 8BIT
 
-> Please note that specjbb is the worst case benchmark for hwmmu, due to
-> the higher TLB miss latency, so it's a good result that the worst case
-> benchmark has a degradation of only 1%.
-> 
-> VMware expects that these hardware virtualization features will be
-> ubiquitous by 2011.
-> 
-> Apart from the performance benefit, VMI was important for Linux on
-> VMware's platform, from timekeeping point of view, but with the tickless
-> kernels and TSC improvements that were done for the mainline tree, we
-> think VMI has outlived those requirements too.
-> 
-> In light of these results and availability of such hardware, we have
-> decided to stop supporting VMI in our future products.
-> 
-> Given this new development, I wanted to discuss how should we go about
-> retiring the VMI code from mainline Linux, i.e. the vmi_32.c and
-> vmiclock_32.c bits.
-> 
-> One of the options that I am contemplating is to drop the code from the
-> tip tree in this release cycle, and given that this should be a low risk
-> change we can remove it from Linus's tree later in the merge cycle.
-> 
-> Let me know your views on this or if you think we should do this some
-> other way.
+On Wed, 16 Sep 2009, Frédéric RISS wrote:
 
-Typically we give time measured in multiple release cycles
-before deprecating a feature.  This means placing an entry in
-Documentation/feature-removal-schedule.txt, and potentially
-adding some noise to warn users they are using a deprecated
-feature.
+> ARM kprobes use an illegal instruction to trigger kprobes. In the
+> current implementation, there's a race between the unregistration of a
+> kprobe and the illegal instruction exception handler if they run at the
+> same time on different cores. 
+> 
+> When reading the value of the undefined instruction, the exception
+> handler might get the original legal instruction as just patched
+> concurrently by arch_disarm_kprobe(). When this happen the kprobe
+> handler won't run, and thus the exception handler will oops because it
+> believe it just hit an undefined instruction in kernel space.
+> 
+> The following patch synchronizes the code patching in the kprobes
+> unregistration using stop_machine and thus avoids the above race.
+> 
+> Signed-off-by: Frederic RISS <frederic.riss@gmail.com>
 
-thanks,
--chris
+Acked-by: Nicolas Pitre <nico@fluxnic.net>
+
+> ---
+> 
+> diff --git a/arch/arm/kernel/kprobes.c b/arch/arm/kernel/kprobes.c
+> index d28513f..6ada87d 100644
+> --- a/arch/arm/kernel/kprobes.c
+> +++ b/arch/arm/kernel/kprobes.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/kprobes.h>
+>  #include <linux/module.h>
+> +#include <linux/stop_machine.h>
+>  #include <linux/stringify.h>
+>  #include <asm/traps.h>
+>  #include <asm/cacheflush.h>
+> @@ -83,10 +84,24 @@ void __kprobes arch_arm_kprobe(struct kprobe *p)
+>  	flush_insns(p->addr, 1);
+>  }
+>  
+> +/*
+> + * The actual disarming is done here on each CPU and synchronized using
+> + * stop_machine. This synchronization is necessary on SMP to avoid removing
+> + * a probe between the moment the 'Undefined Instruction' exception is raised
+> + * and the moment the exception handler reads the faulting instruction from
+> + * memory.
+> + */
+> +int __kprobes __arch_disarm_kprobe(void *p)
+> +{
+> +	struct kprobe *kp = p;
+> +	*kp->addr = kp->opcode;
+> +	flush_insns(kp->addr, 1);
+> +	return 0;
+> +}
+> +
+>  void __kprobes arch_disarm_kprobe(struct kprobe *p)
+>  {
+> -	*p->addr = p->opcode;
+> -	flush_insns(p->addr, 1);
+> +	stop_machine(__arch_disarm_kprobe, p, &cpu_online_map);
+>  }
+>  
+>  void __kprobes arch_remove_kprobe(struct kprobe *p)
+> 
+> 
+
+--Boundary_(ID_NPhyFSWPjSt0KWkHUaE7Ig)--
