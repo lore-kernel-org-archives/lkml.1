@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932137AbZIRWRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbZIRWkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932137AbZIRWRG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 18:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932079AbZIRWRA
+	id S1758706AbZIRWkW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 18:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZIRWkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 18:17:00 -0400
-Received: from THUNK.ORG ([69.25.196.29]:56425 "EHLO thunker.thunk.org"
+	Fri, 18 Sep 2009 18:40:16 -0400
+Received: from www.tglx.de ([62.245.132.106]:48374 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932112AbZIRWQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 18:16:59 -0400
-Date: Fri, 18 Sep 2009 18:16:58 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jim Meyering <jim@meyering.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: efficient access to "rotational";  new fcntl?
-Message-ID: <20090918221658.GB28781@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jim Meyering <jim@meyering.net>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <87vdjgqcbd.fsf@meyering.net>
+	id S1751432AbZIRWkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 18:40:14 -0400
+Date: Sat, 19 Sep 2009 00:39:18 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: [ANNOUNCE] 2.6.31-rt11
+In-Reply-To: <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
+ <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
+ <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+ <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87vdjgqcbd.fsf@meyering.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 09:31:50PM +0200, Jim Meyering wrote:
->     chgrp, chmod, chown, chcon, du, rm: now all display linear performance,
->     even when operating on million-entry directories on ext3 and ext4 file
->     systems.  Before, they would exhibit O(N^2) performance, due to linear
->     per-entry seek time cost when operating on entries in readdir order.
->     Rm was improved directly, while the others inherit the improvement
->     from the newer version of fts in gnulib.
+We are pleased to announce the next update to our new preempt-rt
+series.
+ 
+   - latencytop fix
+ 
+   - disable SPARSE_IRQ, DMAR, IRQ_REMAP for -rt
 
-Excellent!  I didn't know that (since my userspace is still Ubuntu
-9.04, which is still using coreutils 6.10).
+Known issues:
+   - ARM highmem
+   - scheduler load balancing oddities. Peter is working on it.
+   - timer_interrupt hang check (still working on somthing useful)
 
-> However, with e.g., an ext4 partition on non-rotational hardware like
-> an SSD, that preprocessing is unnecessary and in fact wasted effort.
-> I'd like to avoid the waste by querying the equivalent of
-> /sys/.../rotational, via a syscall like fcntl or statvfs,
-> given a file descriptor.
+The planned "add back MIPS support" is postponed to rt12.
 
-Have you benchmarked it both ways?  The preprocessing will cost some
-extra CPU time, sure, but for a sufficiently large directory, or if
-the user is deleting a very large directory hierarchy, such that "rm
--rf" spans multiple journal transactions, deleting the files in inode
-order will still avoid some filesystem metadata blocks getting written
-multiple times (which for SSD's, especially the crappier ones with
-nasty write amplification factors) could show a performance impact.
+Download locations:
+ 
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
 
-> Is there an efficient way to get that single bit?
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
+  
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
 
-Not today; if it's really useful, we could add it, of course.  But how
-much overhead are you trying to avoid by avoiding the pre-processing
-before unlinking the files?
+Gitweb:
+    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
+ 
+Information on the RT patch can be found at:
 
-Regards,
+    http://rt.wiki.kernel.org/index.php/Main_Page
 
-						- Ted
+to build the 2.6.31-rt11 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rt11.bz2
+
+Enjoy !
+
+      tglx
+
