@@ -1,111 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbZIROmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbZIROoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753224AbZIROmd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZIROmc
+	id S1753158AbZIROoE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbZIROoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:42:32 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:27681 "EHLO
-	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbZIROmb convert rfc822-to-8bit (ORCPT
+	Fri, 18 Sep 2009 10:44:03 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33988 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbZIROoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:42:31 -0400
-X-SpamScore: -20
-X-BigFish: VPS-20(zz1432R1453M98dN936eMa4a4kzz1202hzzz32i203h6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KQ68UN-04-06J-02
-X-M-MSG: 
-Date: Fri, 18 Sep 2009 16:42:26 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Keith Mannthey <kmannth@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
-Subject: Re: [Patch] AMD64_EDAC: Fix amd64_map_to_dcs_mask
-Message-ID: <20090918144226.GD25309@aftab>
-References: <1253239781.7263.113.camel@keith-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1253239781.7263.113.camel@keith-laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 18 Sep 2009 14:42:21.0346 (UTC) FILETIME=[3A8E9020:01CA386E]
-Content-Transfer-Encoding: 8BIT
+	Fri, 18 Sep 2009 10:44:01 -0400
+Date: Fri, 18 Sep 2009 16:43:31 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+  maintenance disaster
+Message-ID: <20090918164331.24403a5d@infradead.org>
+In-Reply-To: <ac3eb2510909180732s6efc97b0o7b25d8da222088ca@mail.gmail.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+	<m1d45oxsrk.fsf@fess.ebiederm.org>
+	<20090918160944.58e5c1f5@infradead.org>
+	<ac3eb2510909180711k223aeb6ena2de3645317d03bd@mail.gmail.com>
+	<20090918162503.6735cc1b@infradead.org>
+	<ac3eb2510909180732s6efc97b0o7b25d8da222088ca@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 07:09:41PM -0700, Keith Mannthey wrote:
-> I tested 2.6.31 and the mainline amd64_edac driver.  Once errors were
-> getting reported I noticed that a good amount of valid looking system
-> addressed were not being correctly decoded to the csrow level.  I was
-> only able to correctly decode errors on channel 0 of a given csrow.
-> Errors on channel 1 were unable to be mapped. 
+On Fri, 18 Sep 2009 16:32:18 +0200
+Kay Sievers <kay.sievers@vrfy.org> wrote:
+
+> On Fri, Sep 18, 2009 at 16:25, Arjan van de Ven <arjan@infradead.org>
+> wrote:
+> > On Fri, 18 Sep 2009 16:11:16 +0200
+> > Kay Sievers <kay.sievers@vrfy.org> wrote:
+> >
+> >> On Fri, Sep 18, 2009 at 16:09, Arjan van de Ven
+> >> <arjan@infradead.org> wrote:
+> >>
+> >> > frankly, modprobe should call the settle.
+> >>
+> >> We call modprobe from udev, and will have fun with such a solution.
+> >>
+> >
+> > too bad you cut my next sentence which said that there needed to be
+> > a way to opt out of that.
 > 
-> After some digging I realized that the there was an issue with handling
-> of Dram Chip Select Masks.  Specifically that amd64_map_to_dcs_mask was
-> returning incorrect values on my Rev F based system.  See AMD #32559,
-> 4.5.4, starting on pg 90 for a Rev F explanation of the correct mapping
-> of DRAM CS Base and DRAM CS Mask regs.  This lead to the code below.  I
-> can provide further explanation if needed. 
-> 
-> 
-> I have tested this code on Rev F based system with ecc debug dimms and
-> fully expect it to work on earlier and later cpus.  I am now able to
-> correctly decode and map errors to csrows rows on this system. 
-> 
-> 
-> Submitted-by:  Keith Mannthey<kmannth@us.ibm.com>
-> ---
+> Too bad, bad we don't have control over all the udev rules out there
+> doing that, which will dead-lock then. And too bad that when udev
+> calls modprobe we still don't solve the races. Too bad that calling
+> "settle" waits for all events and you can never know when loading a
+> module what to wait for and what not. It's just not a close to a
+> solution that is doing any good. What's the point of all these weird
+> workarounds you are proposing? I think it's properly solved already.
 
-This whole DSC[BM] handling is rather long-winded and overengineered. It
-is on my to-be-rewritten-and-simplified list.
+please chill out. your attitude is exactly why several folks are giving
+an allergic reaction. every other sentence for you is either extreme
+defensive or attacking, rather than constructive discussion.
 
-> 
-> diff -urN linux-2.6.31/drivers/edac/amd64_edac.c linux-2.6.31-fixed/drivers/edac/amd64_edac.c
-> --- linux-2.6.31/drivers/edac/amd64_edac.c	2009-09-09 15:13:59.000000000 -0700
-> +++ linux-2.6.31-fixed/drivers/edac/amd64_edac.c	2009-09-17 22:32:09.000000000 -0700
-> @@ -1,6 +1,8 @@
-> -#include "amd64_edac.h"
-> +#include <linux/log2.h>
->  #include <asm/k8.h>
->  
-> +#include "amd64_edac.h"
-> +
->  static struct edac_pci_ctl_info *amd64_ctl_pci;
->  
->  static int report_gart_errors;
-> @@ -132,7 +134,7 @@
->  /* Map from a CSROW entry to the mask entry that operates on it */
->  static inline u32 amd64_map_to_dcs_mask(struct amd64_pvt *pvt, int csrow)
->  {
-> -	return csrow >> (pvt->num_dcsm >> 3);
-> +	return csrow >> (8 >> (ilog2(pvt->num_dcsm)+1));
+Lets be clear:
+1) modprobe already does some serialization (right now on the kernel
+   side, but ideally we move that to modprobe binary so that we can skip
+   that when we can)
+2) udev today has a small design issue that is relatively easy to fix.
+Right now, the rules call modprobe manually, each and every one of
+them. What is needed is a MODPROBE += directive for these instead of
+the RUN += that is done today. This is not (just) for this issue here,
+but is essential to reduce the cost of udev. A big chunk of udev cost
+is in doing dozens and dozens of useless modprobe execs; the only way
+to solve this is by having a MODPROBE +=.
+(useless because the thing they modprobe doesn't exist)
+3) if we move synchronization for other things to modprobe, it might
+make sense to move the device node synchronization to it as well.
+Exactly for the scenario you described, to get a good, generic
+solution, that also makes sure that the permissions/ownership/etc of
+the device node is also the right one. 
 
-Almost. You have 8 DCSMs on RevE, 4 on RevF and F10h and 2 on F11h and
-this way you get wrong DCSM offsets for F11h. A dirty fix would be:
+(to answer your "we are perfect" dream:
+you solved the "modprobe loop; losetup" example.
+you did not solve the "modprobe i915 ; startx" example.
+)
 
-if (boot_cpu_data.x86 == 0xf && pvt->ext_model < OPTERON_CPU_REV_E) {
-	return csrow;
-else
-	return csrow >> 1;
-
-The problem is, the csrow thing still goes over 0..7 which is obviously
-wrong on F11h but I'll fix that later. Care to redo your patch according
-to these and the comments from my previous mail and resend?
-
-By the way, your patches made me look harder at that code region and
-I've found some more problems with it which I've fixed. Would you like
-to test the whole bunch of fixes on your setup?
-
-Thanks.
 
 -- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
