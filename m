@@ -1,63 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbZIRRWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbZIRRXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbZIRRWx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 13:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbZIRRWx
+	id S1757199AbZIRRXx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 13:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbZIRRXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 13:22:53 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:50313 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756745AbZIRRWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 13:22:52 -0400
-Date: Fri, 18 Sep 2009 10:22:51 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH tip/core/rcu 2/3] Apply results of code inspection of
-	kernel/rcutree_plugin.h
-Message-ID: <20090918172251.GC6767@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090918164955.GA22272@linux.vnet.ibm.com> <1253293100.7060.46.camel@desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253293100.7060.46.camel@desktop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 18 Sep 2009 13:23:52 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:58509 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756755AbZIRRXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 13:23:51 -0400
+Subject: Re: [Ocfs2-devel] [GIT PULL] ocfs2 changes for 2.6.32
+From: "Peter W. Morreale" <pmorreale@novell.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mark Fasheh <mfasheh@suse.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+In-Reply-To: <20090918014333.GD15620@mail.oracle.com>
+References: <20090915000417.GC4507@mail.oracle.com>
+	 <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
+	 <20090915005417.GD4507@mail.oracle.com>
+	 <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
+	 <20090915040601.GE4507@mail.oracle.com>
+	 <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
+	 <20090915214530.GA11060@mail.oracle.com>
+	 <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
+	 <20090916044047.GA30453@mail.oracle.com>
+	 <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain>
+	 <20090918014333.GD15620@mail.oracle.com>
+Content-Type: text/plain
+Organization: Linux Solutions Group
+Date: Fri, 18 Sep 2009 11:23:33 -0600
+Message-Id: <1253294613.31359.136.camel@hermosa>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 09:58:20AM -0700, Daniel Walker wrote:
-> On Fri, 2009-09-18 at 09:50 -0700, Paul E. McKenney wrote:
+On Thu, 2009-09-17 at 18:43 -0700, Joel Becker wrote:
+> On Thu, Sep 17, 2009 at 09:29:14AM -0700, Linus Torvalds wrote:
+> > Why would anybody want to hide it at all? Why even the libc hiding?
+> > 
+> > Nobody is going to use this except for special apps. Let them see what 
+> > they can do, in all its glory. 
 > 
-> > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> > index 2b996c3..a2d586c 100644
-> > --- a/kernel/rcutree_plugin.h
-> > +++ b/kernel/rcutree_plugin.h
-> > @@ -117,9 +117,9 @@ static void rcu_preempt_note_context_switch(int cpu)
-> >  		 * on line!
-> >  		 */
-> >  	    	WARN_ON_ONCE((rdp->grpmask & rnp->qsmaskinit) == 0);
-> > -		phase = !(rnp->qsmask & rdp->grpmask) ^ (rnp->gpnum & 0x1);
-> > +	    	WARN_ON_ONCE(!list_empty(&t->rcu_node_entry));
-> > +		phase = (rnp->gpnum + !(rnp->qsmask & rdp->grpmask)) & 0x1;
-> >  		list_add(&t->rcu_node_entry, &rnp->blocked_tasks[phase]);
-> > -		smp_mb();  /* Ensure later ctxt swtch seen after above. */
-> >  		spin_unlock_irqrestore(&rnp->lock, flags);
-> >  	}
+> 	I expect everyone will use this through cp(1), so that cp(1) can
+> try to get server-side copy on the network filesystms.
+> 	Speaking of "all its glory", what we have now is:
 > 
-> ERROR: code indent should use tabs where possible
-> #149: FILE: kernel/rcutree_plugin.h:120:
-> +^I    ^IWARN_ON_ONCE(!list_empty(&t->rcu_node_entry));$
-> 
-> One funny indent in the line above.. If your intending for Ingo to take
-> this he might just fix it on apply ..
+> int sys_copyfileat(int oldfd, const char *oldname, int newfd,
+>                    const char *newname, int flags, int atflags)
 
-I will be submitting a patch shortly to clean up the whitespace errors
-in the include/linux/rcu* and kernel/rcu* files.
 
-							Thanx, Paul
+Would it be worthwhile to consider adding an offset and length?  
+
+Then we get dd as well. (potentially) 
+
+
+Best,
+-PWM
+
+> 
+> > So I'd suggest something like having two system calls: one to start the 
+> > operation, and one to control it. And for a filesystem that does atomic 
+> > copies, the 'start' one obviously would also finish it, so the 'control' 
+> > it would be a no-op, because there would never be any outstanding ones.
+> > 
+> > See what I'm saying? It wouldn't complicate _your_ life, but it would 
+> > allow for filesystems that can't do it atomically (or even quickly).
+> > 
+> > So the first one would be something like
+> > 
+> > 	int copyfile(const char *src, const char *dest, unsigned long flags);
+> > 
+> > which would return:
+> > 
+> >  - zero on success
+> >  - negative (with errno) on error
+> >  - positive cookie on "I started it, here's my cookie". For extra bonus 
+> >    points, maybe the cookie would actually be a file descriptor (for 
+> >    poll/select users), but it would _not_ be a file descriptor to the 
+> >    resulting _file_, it would literally be a "cookie" to the actual 
+> >    copyfile event.
+> 
+> 	Actually, if the cookie is a magic file descriptor, you don't
+> need ctl.  You can play tricks like polling for completoin,
+> read(magic_fd, &remain, sizeof(loff_t)) for status, and close(magic_fd)
+> for cancel.  Might be a bit overloaded, though.
+> 
+> > and then for ocfs2 you'd never return positive cookies. You'd never have 
+> > to worry about it.
+> 
+> 	I suspect we'll later take advantage of copyfile's other
+> modes.  I did reflink as reflink only for the simple fact of doing one
+> thing and well, not because I think copyfile isn't good.
+> 
+> > Then the second interface would be something like
+> > 
+> > 	int copyfile_ctrl(long cookie, unsigned long cmd);
+> > 
+> > where you'd just have some way to wait for completion and ask how much has 
+> > been copied. The 'cmd' would be some set of 'cancel', 'status' or 
+> > 'uninterruptible wait' or whatever, and the return value would again be
+> > 
+> >  - negative (with errno) for errors (copy failed) - cookie released
+> >  - zero for 'done' - cookie released
+> >  - positive for 'percent remaining' or whatever - cookie still valid
+> > 
+> > and this would be another callback into the filesystem code, but you'd 
+> > never have to worry about it, since you'd never see it (just leave it 
+> > NULL).
+> 
+> 	I was going to ask about how to fit both calls into one inode
+> operation, but I see you're giving this as an additional inode
+> operation.
+> 	This leaves us with a simliar-to-reflink inode copyfile op and a
+> control op:
+> 
+>     ->copyfile(old_dentry, dir_inode, new_dentry, flags)
+>     ->copyfile_ctl(int cookie, unsigned int cmd)
+> 
+> 	I have to change the flags a little, as my original proposal
+> didn't handle backoff correctly.
+> 
+> #define COPYFILE_WAIT		0x0001	/* Block until complete */
+> #define COPYFILE_ATOMIC		0x0002	/* Things copied must be
+> 					   point-in-time and it must
+> 					   fail or succeed completely. */
+> #define COPYFILE_ALLOW_COW	0x0004	/* The filesystem may share data
+> 					   extents between the source
+> 					   and target in a Copy-on-Write
+> 					   fashion.  If neither
+> 					   COPYFILE_ALLOW_COW nor
+> 					   COPYFILE_REQUIRE_COW are
+> 					   specified, data extents must
+> 					   NOT be shared.  When neither
+> 					   COW flag is provided, most
+> 					   filesystems should return
+> 					   -ENOTSUPP, as userspace can
+> 					   do read-write looping
+> 					   itself */
+> #define COPYFILE_REQUIRE_COW	0x0008	/* Data extents MUST be shared
+> 					   between the source and target
+> 					   in a Copy-on-Write fashion */
+> #define COPYFILE_UNPRIV_ATTRS	0x0010	/* Unprivileged attributes
+> 					   should be copied from the
+> 					   source to the target */
+> #define COPYFILE_PRIV_ATTRS	0x0020	/* Privileged attributes should
+> 					   be copied from the source to
+> 					   the target if the caller has
+> 					   the necessary privileges */
+> #define COPYFILE_REQUIRE_ATTRS	0x0040	/* Combined with the other
+> 					   attribute flags, the call
+> 					   MUST fail if the caller lacks
+> 					   the necessary privileges to
+> 					   copy ever attribute
+> 					   requested */
+> 
+> #define COPYFILE_SNAPSHOT_ASYNC	(COPYFILE_REQUIRE_COW |
+> 				 COPYFILE_UNPRIV_ATTRS |
+> 				 COPYFILE_PRIV_ATTRS |
+> 				 COPYFILE_ATOMIC)
+> #define COPYFILE_SNAPSHOT_STRICT_ASYNC	(COPYFILE_SNAPSHOT_ASYNC |
+> 					 COPYFILE_REQUIRE_ATTRS)
+> #define COPYFILE_SNAPSHOT	(COPYFILE_SNAPSHOT_ASYNC |
+> 				 COPYFILE_WAIT)
+> #define COPYFILE_SNAPSHOT_STRICT	(COPYFILE_SNAPSHOT_STRICT_ASYNC |
+> 					 COPYFILE_WAIT)
+> 
+> > I dunno. The above seems like a fairly simple and powerful interface, and 
+> > I _think_ it would be ok for NFS and CIFS. And in fact, if that whole 
+> > "background copy" ends up being used a lot, maybe even a local filesystem 
+> > would implement it just to get easy overlapping IO - even if it would just 
+> > be a trivial common wrapper function that says "start a thread to do a 
+> > trivial manual copy".
+> 
+> 	NFS and CIFS folks, please speak up.
+> 
+> Joel
+> 
+
