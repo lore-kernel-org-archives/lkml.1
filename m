@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZIRA0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbZIRAaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbZIRA0j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 20:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbZIRA0g
+	id S1755158AbZIRAaP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 20:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbZIRAaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 20:26:36 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46290 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbZIRA0f (ORCPT
+	Thu, 17 Sep 2009 20:30:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46978 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754871AbZIRAaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 20:26:35 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch] oom: dump stack and VM state when oom killer panics
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.00.0909171354570.17483@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0909171354570.17483@chino.kir.corp.google.com>
-Message-Id: <20090918092427.8E48.A69D9226@jp.fujitsu.com>
+	Thu, 17 Sep 2009 20:30:12 -0400
+Date: Thu, 17 Sep 2009 17:29:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: Roland Dreier <rdreier@cisco.com>, Mark Fasheh <mfasheh@suse.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
+In-Reply-To: <20090917203453.GA15620@mail.oracle.com>
+Message-ID: <alpine.LFD.2.01.0909171723440.4950@localhost.localdomain>
+References: <20090915005417.GD4507@mail.oracle.com> <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain> <20090915040601.GE4507@mail.oracle.com> <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain> <20090915214530.GA11060@mail.oracle.com>
+ <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain> <20090916044047.GA30453@mail.oracle.com> <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain> <adabpl9ct3y.fsf@cisco.com> <alpine.LFD.2.01.0909171316230.4950@localhost.localdomain>
+ <20090917203453.GA15620@mail.oracle.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 18 Sep 2009 09:26:37 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
 
-> The oom killer header, including information such as the allocation order
-> and gfp mask, current's cpuset and memory controller, call trace, and VM
-> state information is currently only shown when the oom killer has
-> selected a task to kill.
+
+On Thu, 17 Sep 2009, Joel Becker wrote:
+>
+> 	I have to say, adding 'undefined behavior' things isn't fun in a
+> call that is already potentially confusing.  We have a bunch of flags
+> and behaviors we're covering.
+
+I don't think it's "undefined". It's just not complete.
+
+>From a user standpoint, there is no difference between such a system call 
+and doing the thing as a library routine (which has to be the fallback 
+anyway for something like 'cp').
+
+> 	Note that "cleaning up after an error" and "atomic" are not the
+> same.  Atomicity implies that not only do you see all or none, but that
+> the contents are a point-in-time of the source file.  A non-atomic
+> implementation may be affected by writes that happen during the copy
+> (like any read-write-loop copy would be).
+
+Sure. There are middle grounds that may not need the cleanup. I was more 
+looking at the two extreme ends.
+
+> > Of course, if the filesystem can do the copy entirely atomically (ie by 
+> > just incrementing a refcount), then it can give atomicity guarantees, but 
+> > then you'd never see the async case either.
 > 
-> This information is omitted, however, when the oom killer panics either
-> because of panic_on_oom sysctl settings or when no killable task was
-> found.  It is still relevant to know crucial pieces of information such
-> as the allocation order and VM state when diagnosing such issues,
-> especially at boot.
-> 
-> This patch displays the oom killer header whenever it panics so that bug
-> reports can include pertinent information to debug the issue, if
-> possible.
-> 
-> Signed-off-by: David Rientjes <rientjes@google.com>
+> 	Even the atomic copy might take a little time (say, to bump up
+> and write out the metadata structures).  Do you want to define that as
+> not being async?  I was figuring COPYFILE_ATOMIC and COPYFILE_WAIT to be
+> separate flags.
 
-Good patch :)
+I don't think that's wrong, and yeah, you could decide that you actually 
+want to be able to support the "ten outstanding 'copy' commands from user 
+space" model too. So yeah, separate COPYFILE_ATOMIC (only succeed if you 
+can do it as an atomic op in the filesystem) and COPYFILE_WAIT (only 
+return when fully done) bits sounds conceptually fine to me.
 
-I have one request. In panic case, I don't hope to call printk_ratelimit().
-the infomation should be displayed always.
+Whether it's worth it for a filesystem that effectively only needs a 
+couple of writes (that can be buffered too), I dunno. But it's certainly 
+not something I'd object to on an interface level.
 
-Thanks.
-
-
-
-
+		Linus
