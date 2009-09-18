@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZIRCZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbZIRCZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbZIRCZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 22:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZIRCZT
+	id S1755450AbZIRCZj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 22:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbZIRCZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 22:25:19 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:55862 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753494AbZIRCZP (ORCPT
+	Thu, 17 Sep 2009 22:25:37 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:23990 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755378AbZIRCZe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 22:25:15 -0400
-Message-ID: <4AB2EFBC.90500@oracle.com>
-Date: Thu, 17 Sep 2009 19:26:04 -0700
+	Thu, 17 Sep 2009 22:25:34 -0400
+Message-ID: <4AB2EFD2.3080001@oracle.com>
+Date: Thu, 17 Sep 2009 19:26:26 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
 To: lkml <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-CC: Roel Kluin <roel.kluin@gmail.com>
-Subject: [PATCH 1/3] docs: kref: double kref_put() in my_data_handler()
+CC: Jianjun Kong <jianjun@zeuux.org>
+Subject: [PATCH 2/3] mm: Fix problem of parameter in note
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Source-IP: abhmt014.oracle.com [141.146.116.23]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4AB2EF81.0087:SCFSTAT5015188,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090202.4AB2EF96.00E4:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <roel.kluin@gmail.com>
-Subject: kref: double kref_put() in my_data_handler()
+From: Jianjun Kong <jianjun@zeuux.org>
+Subject: mm: Fix problem of parameter in note
 
-The kref_put() already occurs after the out label
+'current' is a pointer, so the right form is  'down_write(&current->mm->mmap_sem)'.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- Documentation/kref.txt |    1 -
- 1 file changed, 1 deletion(-)
+ mm/mmap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- lnx-2631-rc7.orig/Documentation/kref.txt
-+++ lnx-2631-rc7/Documentation/kref.txt
-@@ -84,7 +84,6 @@ int my_data_handler(void)
- 	task = kthread_run(more_data_handling, data, "more_data_handling");
- 	if (task == ERR_PTR(-ENOMEM)) {
- 		rv = -ENOMEM;
--	        kref_put(&data->refcount, data_release);
- 		goto out;
- 	}
+--- lnx-2631-rc7.orig/mm/mmap.c
++++ lnx-2631-rc7/mm/mmap.c
+@@ -905,7 +905,7 @@ void vm_stat_account(struct mm_struct *m
+ #endif /* CONFIG_PROC_FS */
  
+ /*
+- * The caller must hold down_write(current->mm->mmap_sem).
++ * The caller must hold down_write(&current->mm->mmap_sem).
+  */
+ 
+ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
