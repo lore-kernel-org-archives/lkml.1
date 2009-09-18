@@ -1,77 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbZIRJxC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbZIRJ7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756347AbZIRJxC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 05:53:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZIRJxB
+	id S1756349AbZIRJ7A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 05:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbZIRJ66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 05:53:01 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:56719 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbZIRJxA (ORCPT
+	Fri, 18 Sep 2009 05:58:58 -0400
+Received: from mail-pz0-f179.google.com ([209.85.222.179]:56549 "EHLO
+	mail-pz0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbZIRJ66 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 05:53:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=MbSxWM6n9c9EjJJCpxQTjKVYDOHglBlVyJEm7r7R4M+g9ZDO12HeEypLIbT4rOE7L
-	/537MnnBN11f/qpwi/vGg==
-Date: Fri, 18 Sep 2009 02:52:55 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Suresh Jayaram <sureshjayaram@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Subject: Re: mmotm 2009-09-09-22-56 uploaded
-In-Reply-To: <38c3c4860909180238x7c9f305dsbce1492e2018c5a5@mail.gmail.com>
-Message-ID: <alpine.DEB.1.00.0909180245030.24690@chino.kir.corp.google.com>
-References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org> <38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com> <alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com> <38c3c4860909150320qc4a203eu7552294ef0aafd2c@mail.gmail.com>
- <alpine.DEB.1.00.0909151535150.17284@chino.kir.corp.google.com> <38c3c4860909180238x7c9f305dsbce1492e2018c5a5@mail.gmail.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 18 Sep 2009 05:58:58 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <Pine.LNX.4.64.0909180809290.2882@sister.anvils>
+References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
+	 <1253227412-24342-3-git-send-email-ngupta@vflare.org>
+	 <1253256805.4959.8.camel@penberg-laptop>
+	 <Pine.LNX.4.64.0909180809290.2882@sister.anvils>
+Date: Fri, 18 Sep 2009 15:29:01 +0530
+Message-ID: <d760cf2d0909180259s34c15062led687940ff7e0c42@mail.gmail.com>
+Subject: Re: [PATCH 2/4] send callback when swap slot is freed
+From: Nitin Gupta <ngupta@vflare.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>,
+       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009, Suresh Jayaram wrote:
+On Fri, Sep 18, 2009 at 12:47 PM, Hugh Dickins
+<hugh.dickins@tiscali.co.uk> wrote:
+> On Fri, 18 Sep 2009, Pekka Enberg wrote:
+>> On Fri, 2009-09-18 at 04:13 +0530, Nitin Gupta wrote:
+>> > +EXPORT_SYMBOL_GPL(set_swap_free_notify);
+>> > +
+>> >  static int swap_entry_free(struct swap_info_struct *p,
+>> >                        swp_entry_t ent, int cache)
+>> >  {
+>> > @@ -585,6 +617,8 @@ static int swap_entry_free(struct swap_info_struct *p,
+>> >                     swap_list.next = p - swap_info;
+>> >             nr_swap_pages++;
+>> >             p->inuse_pages--;
+>> > +           if (p->swap_free_notify_fn)
+>> > +                   p->swap_free_notify_fn(p->bdev, offset);
+>> >     }
+>> >     if (!swap_count(count))
+>> >             mem_cgroup_uncharge_swap(ent);
+>>
+>> OK, this hits core kernel code so we need to CC some more mm/swapfile.c
+>> people. The set_swap_free_notify() API looks strange to me. Hugh, I
+>> think you mentioned that you're okay with an explicit hook. Any
+>> suggestions how to do this cleanly?
+>
+> No, no better suggestion.  I quite see Nitin's point that ramzswap
+> would benefit significantly from a callback here, though it's not a
+> place (holding swap_lock) where we'd like to offer a callback at all.
+>
+> I think I would prefer the naming to make it absolutely clear that
+> it's a special for ramzswap or compcache, rather than dressing it
+> up in the grand generality of a swap_free_notify_fn: giving our
+> hacks fancy names doesn't really make them better.
+>
 
-> I enabled the CONFIG_DEBUG_PER_CPU_MAPS and rebuilt the kernel, but
-> now I don't see the oops anymore.
+Yes, makes sense... Since we cannot afford to have a chain of callbacks
+within a spin lock, we have to keep it ramzswap specific (and rename
+functions/variables to reflect this).
 
-CONFIG_DEBUG_PER_CPU_MAPS will debug it and also silently mask the error 
-by returning cpu_online_mask instead of a NULL pointer to a non-existant 
-node_to_cpumask_map.
+set_ramzswap_free_notify_fn() -> set_ramzswap_free_notify_fn()
+and
+swap_free_notify_fn -> ramzswap_free_notify_fn
 
-> But what I see in dmesg output is:
-> 
-> Sep 16 09:22:57 jay-t60p kernel: cpumask_of_node(-1): no node_to_cpumask_map!
-> 
-> followed by a call trace for irqbalance (attached).
-> 
+Now, this renaming exposes ugliness of this hack in its true sense. Currently,
+I don't have a cleaner solution but few points to consider:
 
-Sep 16 09:22:57 jay-t60p kernel: cpumask_of_node(-1): no node_to_cpumask_map!
-Sep 16 09:22:57 jay-t60p kernel: Pid: 2400, comm: irqbalance Not tainted 2.6.31-rc9-mm1-0.1-default #8
-Sep 16 09:22:57 jay-t60p kernel: Call Trace:
-Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff8102fcf3>] cpumask_of_node+0x4f/0x58
-Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff811890f3>] local_cpus_show+0x1f/0x48
-Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff811fe7ba>] dev_attr_show+0x20/0x44
-Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff81123a19>] sysfs_read_file+0xb2/0x131
-Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff810cfe34>] vfs_read+0xb1/0x187
-Sep 16 09:22:58 jay-t60p kernel:  [<ffffffff810cffce>] sys_read+0x47/0x70
-Sep 16 09:22:58 jay-t60p kernel:  [<ffffffff8100b9eb>] system_call_fastpath+0x16/0x1b
+ - If we really have to do this within the lock then there cannot be
+multiple callbacks.
+It has to then remain ramzswap specific. In that case, current patch
+looks looks like
+the simplest solution.
 
-This seems to be related to 2547089 "x86/PCI: initialize PCI bus node 
-numbers early" since cpumask_of_pcibus() on x86 doesn't check for -1 
-pcibus_to_node() like most other architectures.  It'll simply index into 
-cpumask_of_node for whatever the pci_sysdata's node is, and in this case 
-that's -1.
+ - Do we really have to have a callback within a spin lock? Things become
+very complex in ramzswap driver if we try to do this outside the lock
+(I attempted
+this but couldn't get it working). Still, we should think about it.
 
-I'm assuming mp_bus_to_node is pointing to a non-online node or simply the 
-busnum is greater than 256.
+ - If it can be done outside lock, we can afford to be chain of
+callbacks attached
+to this event. A nice generic solution. But if this means delaying
+callback for too long,
+then it may be unacceptable for ramzswap (we come back to problem with discard
+approach).
 
- [ arch/x86/pci/common.c should _really_ be using NUMA_NO_NODE instead of
-   hardcoding -1 everywhere, btw. ]
+
+> (Does the bdev matching work out if there are any regular swapfiles
+> around? I've not checked, might or might not need refinement there.)
+>
+
+Yes.
+
+Thanks,
+Nitin
