@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140AbZIRHT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZIRHZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755140AbZIRHT2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 03:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbZIRHTZ
+	id S1754651AbZIRHZK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 03:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZIRHZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 03:19:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57800 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754527AbZIRHTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 03:19:24 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/Ks/J79czKs12Z6PLCVsxWs0DvW/S03lIuRC9VQP
-	ALzLf9FpFfb13C
-Subject: [patch] sched: cleanup - remove unneeded indentation in
- sched_fair.c::place_entity()
-From: Mike Galbraith <efault@gmx.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain
-Date: Fri, 18 Sep 2009 09:19:25 +0200
-Message-Id: <1253258365.22787.33.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47
+	Fri, 18 Sep 2009 03:25:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41266 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751288AbZIRHZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 03:25:02 -0400
+Date: Fri, 18 Sep 2009 07:24:36 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1253258365.22787.33.camel@marge.simson.net>
+References: <1253258365.22787.33.camel@marge.simson.net>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Remove unneeded indentation in sched_fair.c::place_entity()
+Message-ID: <tip-a2e7a7eb2fea109891ffff90f947e8306080a2a3@git.kernel.org>
+Git-Commit-ID: a2e7a7eb2fea109891ffff90f947e8306080a2a3
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 18 Sep 2009 07:24:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  a2e7a7eb2fea109891ffff90f947e8306080a2a3
+Gitweb:     http://git.kernel.org/tip/a2e7a7eb2fea109891ffff90f947e8306080a2a3
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Fri, 18 Sep 2009 09:19:25 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 18 Sep 2009 09:22:39 +0200
 
-sched: cleanup - remove unneeded indentation in sched_fair.c::place_entity()
+sched: Remove unneeded indentation in sched_fair.c::place_entity()
 
 Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
+LKML-Reference: <1253258365.22787.33.camel@marge.simson.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
+
+---
  kernel/sched_fair.c |   41 +++++++++++++++++++----------------------
  1 files changed, 19 insertions(+), 22 deletions(-)
 
 diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 990b188..1918b18 100644
+index 10d218a..29b35a7 100644
 --- a/kernel/sched_fair.c
 +++ b/kernel/sched_fair.c
-@@ -710,31 +710,28 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+@@ -709,31 +709,28 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
  	if (initial && sched_feat(START_DEBIT))
  		vruntime += sched_vslice(cfs_rq, se);
  
@@ -95,5 +106,3 @@ index 990b188..1918b18 100644
  	}
  
  	/* ensure we never gain time by being placed backwards. */
-
-
