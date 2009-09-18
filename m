@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZIRCVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZIRCX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbZIRCVr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 22:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbZIRCVp
+	id S1755344AbZIRCX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 22:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbZIRCX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 22:21:45 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56501 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbZIRCVo (ORCPT
+	Thu, 17 Sep 2009 22:23:27 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:49978 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753319AbZIRCX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 22:21:44 -0400
-Date: Thu, 17 Sep 2009 22:21:45 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linuxppc-dev@lists.ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix ppc64 build failure on fedora
-Message-ID: <20090918022145.GF11961@bombadil.infradead.org>
-References: <20090917174144.GA11961@bombadil.infradead.org> <1253238606.4932.23.camel@pasglop>
+	Thu, 17 Sep 2009 22:23:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=T0XxwS8PQQmmuLtLFMyauHCeA5hl0SOZV9/VrVhbRinGBuZrMn/qDxoxLCVw++3XJ6
+         ExsWqbjgleCgrQxjaMKQjEbsKaMgf4O8jUHAoEmD+y/4c4aNn8jjn8ZRqEtA7fY3i017
+         DRfPBc97JO5Mvq3JWBCF5PKxJ7osNYJ7sWzyY=
+Date: Fri, 18 Sep 2009 04:23:27 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 2/2] tracing: Allocate the ftrace event profile buffer
+	dynamically
+Message-ID: <20090918022325.GA5310@nowhere>
+References: <1253237613-5589-1-git-send-email-fweisbec@gmail.com> <1253237613-5589-3-git-send-email-fweisbec@gmail.com> <1253240103.20020.253.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253238606.4932.23.camel@pasglop>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1253240103.20020.253.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 11:50:06AM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-09-17 at 13:41 -0400, Kyle McMartin wrote:
-> > From: Kyle McMartin <kyle@redhat.com>
-> > 
-> > For some reason or another (newer gcc?) on Fedora 12 koji builders we're
-> > seeing _restgpr0_$n symbols instead of _restgpr_$n as handled in the
-> > prom_init_check.sh file:
-> > Checking prom_init.o symbol '_restgpr0_14'
-> > Error: External symbol '_restgpr0_14' referenced from prom_init.c
-> > Checking prom_init.o symbol '_restgpr0_17'
-> > 
-> > Add cases to handle this to the filter portion of the script.
+On Thu, Sep 17, 2009 at 10:15:03PM -0400, Steven Rostedt wrote:
 > 
-> My concern tho is if one of thse is actually called ... we implement
-> them in arch/powerpc/lib/crtsaveres.S but with the "other" names..
+> Is this allocating a buffer for every event? Why not just have one? All
+> events can share the same buffer. It's only a temp buffer, and can only
+> be used by one event at a time per cpu.
+> 
+> -- Steve
 > 
 
-Sorry, this appears to be a GCC "feature" introduced in gcc4.5 which is
-generating out of line save/restore on ppc64 at -Os. Thanks to Jakub's
-suggestion I ended up working around this by building ppc with -O2 for
-now (CC_OPTIMIZE_FOR_SIZE)
 
-In any case, according to the gcc "docs" for this, these functions are
-supposed to be provided by the linker in the ppc64 case, so it wasn't
-correct to try and add them.
+Oh you're right. That was so obvious though...
 
-I believe Alan Modra said he'd look at the ld issue with regards to
-this.
+The v2 is coming soon.
 
-cheers, Kyle
+Thanks.
+
