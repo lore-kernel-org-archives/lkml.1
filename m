@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbZIRSkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbZIRSoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758461AbZIRSkV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 14:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbZIRSkT
+	id S1758505AbZIRSoz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 14:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbZIRSow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 14:40:19 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:50455 "EHLO mail-out2.uio.no"
+	Fri, 18 Sep 2009 14:44:52 -0400
+Received: from mga02.intel.com ([134.134.136.20]:5702 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757453AbZIRSkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 14:40:19 -0400
-Subject: Re: [PATCH] nfs: fix bdi_unregister() before sb kill
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-In-Reply-To: <20090918183203.GG23126@kernel.dk>
-References: <20090917124233.GJ23126@kernel.dk>
-	 <20090917194027.GS23126@kernel.dk>
-	 <1253229410.2783.16.camel@heimdal.trondhjem.org>
-	 <20090918064006.GU23126@kernel.dk> <20090918150248.GB23126@kernel.dk>
-	 <1253290790.3183.14.camel@heimdal.trondhjem.org>
-	 <20090918173608.GD23126@kernel.dk>  <20090918183203.GG23126@kernel.dk>
+	id S1757789AbZIRSov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 14:44:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,411,1249282800"; 
+   d="scan'208";a="449742692"
+Subject: Re: [Ilw] Re: WARNING: at net/mac80211/scan.c:267
+ ieee80211_scan_completed+0x299/0x2b0 [mac80211]()
+From: reinette chatre <reinette.chatre@intel.com>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: "ilw@linux.intel.com" <ilw@linux.intel.com>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <8db1092f0909162332r4ffeef09jdb87f7fc69ff8e9e@mail.gmail.com>
+References: <8db1092f0909160236i5d2b1f31k3ec289fbd9ac0bfa@mail.gmail.com>
+	 <1253122055.26521.431.camel@rc-desk>
+	 <8db1092f0909161036t5bae781eqa6f0a0df308ec4cd@mail.gmail.com>
+	 <1253124149.26521.438.camel@rc-desk>
+	 <8db1092f0909161259i5e007282i42f426bc2d0fc0c4@mail.gmail.com>
+	 <1253139186.26521.449.camel@rc-desk>
+	 <8db1092f0909162332r4ffeef09jdb87f7fc69ff8e9e@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 18 Sep 2009 14:40:18 -0400
-Message-Id: <1253299218.3183.84.camel@heimdal.trondhjem.org>
+Date: Fri, 18 Sep 2009 11:44:54 -0700
+Message-Id: <1253299494.26521.664.camel@rc-desk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 4 sum msgs/h 1 total rcpts 1482 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 61C92D07A7AE0E4C11F8A29197155D4C53155918
-X-UiO-SPAM-Test: remote_host: 198.95.226.230 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 25 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-18 at 20:32 +0200, Jens Axboe wrote:
-> How does this look? It compiles, but I cannot test before sunday. It
-> would be great if you (or someone else) could :-). Peter, if you have
-> the time, it would be nice if you could check whether this one works for
-> you too.
-> 
-> diffstat is tasty, too:
-> 
->  client.c |    4 ----
->  super.c  |   53 ++++++++++++++++++++++++++---------------------------
->  2 files changed, 26 insertions(+), 31 deletions(-)
+Hi Maciej,
 
-Yep! The patch looks good to me. I'll see if I can find the time to test
-it tomorrow.
+On Wed, 2009-09-16 at 23:32 -0700, Maciej Rutecki wrote:
 
-Cheers
-  Trond
+> [  249.340094] wlan0: direct probe to AP 00:1b:11:f6:0f:28 (try 1)
+> [  249.345339] wlan0 direct probe responded
+> [  249.345347] wlan0: authenticate with AP 00:1b:11:f6:0f:28 (try 1)
+> [  249.347122] wlan0: authenticated
+> [  249.347152] wlan0: associate with AP 00:1b:11:f6:0f:28 (try 1)
+> [  249.349703] wlan0: RX AssocResp from 00:1b:11:f6:0f:28 (capab=0x431
+> status=0 aid=1)
+> [  249.349711] wlan0: associated
+> [  253.411858] wlan0: deauthenticated from 00:1b:11:f6:0f:28 (Reason:
+> 6)
+
+This still appears to be the main issue here, that AP deauthenticates.
+Could you run wpa_supplicant with debugging (-dddt) ? When you have
+these logs, could you please open a bug report at
+http://bugzilla.intellinuxwireless.org/ to enable us to track it?
+
+Thank you
+
+Reinette
+
 
