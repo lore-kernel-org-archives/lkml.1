@@ -1,57 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZIRUpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbZIRUrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758674AbZIRUpn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758646AbZIRUph
+	id S1758565AbZIRUrA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbZIRUq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:45:37 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44615 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753979AbZIRUpM (ORCPT
+	Fri, 18 Sep 2009 16:46:56 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:35633 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758127AbZIRUqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:45:12 -0400
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Wolfram Sang <w.sang@pengutronix.de>
-Date: Fri, 18 Sep 2009 22:44:46 +0200
-Message-Id: <1253306686-20616-5-git-send-email-w.sang@pengutronix.de>
+	Fri, 18 Sep 2009 16:46:55 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>
+Subject: [PATCH] h8300: Cleanup linker script using new linker script macros.
+Date: Fri, 18 Sep 2009 16:46:19 -0400
+Message-Id: <1253306779-7517-1-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1253306686-20616-1-git-send-email-w.sang@pengutronix.de>
-References: <1253306686-20616-1-git-send-email-w.sang@pengutronix.de>
-X-SA-Exim-Connect-IP: 92.198.50.58
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-Subject: [PATCH 4/4] regulator/driver: be more specific in nanodoc for is_enabled
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document the possibility that is_enabled may also return with negative
-errorcodes.
+This cross-architecture linker script cleanup project is in
+preparation for adding support for building the kernel with
+-ffunction-sections -fdata-sections, which is a prerequisite for
+Ksplice.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
 ---
- include/linux/regulator/driver.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/h8300/kernel/vmlinux.lds.S |   25 +++++++------------------
+ 1 files changed, 7 insertions(+), 18 deletions(-)
 
-diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
-index 225f733..2b69b47 100644
---- a/include/linux/regulator/driver.h
-+++ b/include/linux/regulator/driver.h
-@@ -37,7 +37,8 @@ enum regulator_status {
-  *
-  * @enable: Configure the regulator as enabled.
-  * @disable: Configure the regulator as disabled.
-- * @is_enabled: Return 1 if the regulator is enabled, 0 otherwise.
-+ * @is_enabled: Return 1 if the regulator is enabled, 0 if not.
-+ *		May also return negative errno.
-  *
-  * @set_voltage: Set the voltage for the regulator within the range specified.
-  *               The driver should select the voltage closest to min_uV.
+diff --git a/arch/h8300/kernel/vmlinux.lds.S b/arch/h8300/kernel/vmlinux.lds.S
+index 662b02e..b9e2490 100644
+--- a/arch/h8300/kernel/vmlinux.lds.S
++++ b/arch/h8300/kernel/vmlinux.lds.S
+@@ -1,5 +1,6 @@
+ #define VMLINUX_SYMBOL(_sym_) _##_sym_
+ #include <asm-generic/vmlinux.lds.h>
++#include <asm/page.h>
+ 
+ /* target memory map */
+ #ifdef CONFIG_H8300H_GENERIC
+@@ -79,11 +80,8 @@ SECTIONS
+ 	SCHED_TEXT
+ 	LOCK_TEXT
+ 	__etext = . ;
+-	. = ALIGN(16);          /* Exception table              */
+-	___start___ex_table = .;
+-		*(__ex_table)
+-	___stop___ex_table = .;
+ 	}
++	EXCEPTION_TABLE(16)
+ 
+ 	RODATA
+ #if defined(CONFIG_ROMKERNEL)
+@@ -100,8 +98,7 @@ SECTIONS
+ 	__sdata = . ;
+ 	___data_start = . ;
+ 
+-	. = ALIGN(0x2000) ;
+-		*(.data.init_task)
++	INIT_TASK_DATA(0x2000)
+ 	. = ALIGN(0x4) ;
+ 		DATA_DATA
+ 	. = ALIGN(0x4) ;
+@@ -114,24 +111,16 @@ SECTIONS
+ 	__einittext = .; 
+ 		INIT_DATA
+ 	. = ALIGN(0x4) ;
++	INIT_SETUP(0x4)
+ 	___setup_start = .;
+ 		*(.init.setup)
+ 	. = ALIGN(0x4) ;
+ 	___setup_end = .;
+-	___initcall_start = .;
+-		INITCALLS
+-	___initcall_end = .;
+-	___con_initcall_start = .;
+-		*(.con_initcall.init)
+-	___con_initcall_end = .;
++	INIT_CALLS
++	CON_INITCALL
+ 		EXIT_TEXT
+ 		EXIT_DATA
+-#if defined(CONFIG_BLK_DEV_INITRD)
+-		. = ALIGN(4);
+-	___initramfs_start = .;
+-  		*(.init.ramfs)
+-  	___initramfs_end = .;
+-#endif
++	INIT_RAM_FS
+ 	. = ALIGN(0x4) ;
+ 	___init_end = .;
+ 	__edata = . ;
 -- 
 1.6.3.3
 
