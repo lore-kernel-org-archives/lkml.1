@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbZIRX64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZIRX7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbZIRX64 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 19:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZIRX6d
+	id S1755556AbZIRX7D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 19:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZIRX6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 19:58:33 -0400
-Received: from gimli.pxnet.com ([195.227.45.7]:35047 "EHLO mail.pxnet.com"
+	Fri, 18 Sep 2009 19:58:41 -0400
+Received: from mail.pxnet.com ([195.227.45.7]:35057 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752436AbZIRX6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 19:58:21 -0400
+	id S1752757AbZIRX6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 19:58:23 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 00/12] Gigaset driver patches for 2.6.32 (v2)
+Subject: [PATCH 08/12] gigaset: correct debugging output selection
 To: Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>
 CC: Hansjoerg Lipp <hjlipp@web.de>, davem@davemloft.net,
        i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Message-ID: <20090919-patch-gigaset-00.tilman@imap.cc>
+Message-ID: <20090919-patch-gigaset-08.tilman@imap.cc>
+In-Reply-To: <20090919-patch-gigaset-00.tilman@imap.cc>
+References: <20090919-patch-gigaset-00.tilman@imap.cc>
 Date: Sat, 19 Sep 2009 01:57:43 +0200 (CEST)
 X-Spam-Score: -2.212 () BAYES_00,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karsten,
+Dump payload data consistently only when DEBUG_STREAM_DUMP debug bit
+is set.
 
-following is the second release of the series of patches I submitted on
-2009-09-19 for the Gigaset drivers. I have changed the code formatting
-in patches 6, 7, 10, and 12 to elliminate checkpatch warnings. Apart
-from that, they are unchanged. According to Dave Miller's response to
-my first submission, these should go to you, not him, for merging.
-Would you please see to it that they are merged for kernel release
-2.6.32?
+Impact: debugging aid
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+---
+ drivers/isdn/gigaset/isocdata.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-Patches 01 to 09 provide various small bugfixes, error handling and
-documentation improvements for the driver. Their merging for 2.6.32
-shouldn't pose any problems.
-
-Patch 10 provides a substantial code reorganization in preparation for
-the new CAPI interface, without changing anything in the driver's
-functionality. It would obviously make my ongoing work on the driver
-much easier if that one would make it into 2.6.32, too.
-
-Patch 11 introduces the Kconfig framework for uncoupling the driver
-from isdn4linux. It is rather lightweight and, I hope, uncontroversial.
-
-Patch 12 finally adds the new CAPI interface to the driver. This is
-the culmination point of the series and undoubtedly the one that might
-benefit the most from your review.
-
-Thanks,
-Tilman
+diff --git a/drivers/isdn/gigaset/isocdata.c b/drivers/isdn/gigaset/isocdata.c
+index bed38fc..7fd32f0 100644
+--- a/drivers/isdn/gigaset/isocdata.c
++++ b/drivers/isdn/gigaset/isocdata.c
+@@ -429,7 +429,7 @@ static inline int hdlc_buildframe(struct isowbuf_t *iwb,
+ 		return -EAGAIN;
+ 	}
+ 
+-	dump_bytes(DEBUG_STREAM, "snd data", in, count);
++	dump_bytes(DEBUG_STREAM_DUMP, "snd data", in, count);
+ 
+ 	/* bitstuff and checksum input data */
+ 	fcs = PPP_INITFCS;
+@@ -448,7 +448,6 @@ static inline int hdlc_buildframe(struct isowbuf_t *iwb,
+ 	/* put closing flag and repeat byte for flag idle */
+ 	isowbuf_putflag(iwb);
+ 	end = isowbuf_donewrite(iwb);
+-	dump_bytes(DEBUG_STREAM_DUMP, "isowbuf", iwb->data, end + 1);
+ 	return end;
+ }
+ 
+@@ -482,6 +481,8 @@ static inline int trans_buildframe(struct isowbuf_t *iwb,
+ 	}
+ 
+ 	gig_dbg(DEBUG_STREAM, "put %d bytes", count);
++	dump_bytes(DEBUG_STREAM_DUMP, "snd data", in, count);
++
+ 	write = iwb->write;
+ 	do {
+ 		c = bitrev8(*in++);
+@@ -583,7 +584,7 @@ static inline void hdlc_done(struct bc_state *bcs)
+ 		procskb->tail -= 2;
+ 		gig_dbg(DEBUG_ISO, "%s: good frame (%d octets)",
+ 			__func__, procskb->len);
+-		dump_bytes(DEBUG_STREAM,
++		dump_bytes(DEBUG_STREAM_DUMP,
+ 			   "rcv data", procskb->data, procskb->len);
+ 		bcs->hw.bas->goodbytes += procskb->len;
+ 		gigaset_rcv_skb(procskb, bcs->cs, bcs);
+@@ -878,6 +879,8 @@ static inline void trans_receive(unsigned char *src, unsigned count,
+ 			dobytes--;
+ 		}
+ 		if (dobytes == 0) {
++			dump_bytes(DEBUG_STREAM_DUMP,
++				   "rcv data", skb->data, skb->len);
+ 			gigaset_rcv_skb(skb, bcs->cs, bcs);
+ 			bcs->skb = skb = dev_alloc_skb(SBUFSIZE + HW_HDR_LEN);
+ 			if (!skb) {
+-- 
+1.6.2.1.214.ge986c
 
