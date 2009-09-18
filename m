@@ -1,130 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbZIRXCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbZIRW4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbZIRXCs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 19:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbZIRXCo
+	id S932158AbZIRW4m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 18:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbZIRW4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 19:02:44 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:61959 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757383AbZIRXCn convert rfc822-to-8bit (ORCPT
+	Fri, 18 Sep 2009 18:56:40 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:46932 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753607AbZIRW4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 19:02:43 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=BBaIjgMQfGQA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=nxlI2F2nAAAA:8
- a=9U4K_m0_zqUixJCqjpgA:9 a=FkidOE1a-jlZAnyswAYA:7
- a=WxcTPRa0vyjYYbk-Tp-ky-JkaxIA:4
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-scsi" <linux-scsi@vger.kernel.org>
-Subject: Re: mdraid causing mvsas to lockup? (was: Re: recommended 4port SATA controller ?)
-Date: Fri, 18 Sep 2009 17:02:46 -0600
-User-Agent: KMail/1.12.1 (Linux/2.6.31-git4; KDE/4.3.1; x86_64; ; )
-References: <4AB22135.7030405@kaneda.iguw.tuwien.ac.at> <200909171759.49606.tfjellstrom@shaw.ca> <200909180458.22305.tfjellstrom@shaw.ca>
-In-Reply-To: <200909180458.22305.tfjellstrom@shaw.ca>
+	Fri, 18 Sep 2009 18:56:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=loBSrN6Oj8U3kNpLoWt0FJT+G+MNpibrpkl2pqd1GlOc2ZJIzBtUSlTmjXaXm1NwsV
+         dQNoQcTFsra2p5XRjZjeL8/vjRchA6V0HuZFCSCc/sUZYB7bWvr+ez+kyb6foB7u+kVe
+         lkfinfxX8hFzr2wsMYQ7Z65i8oPgAhazD3/Ww=
+Message-ID: <4AB411D9.6070702@gmail.com>
+Date: Sat, 19 Sep 2009 01:03:53 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200909181702.46109.tfjellstrom@shaw.ca>
+To: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] random: kmalloc failure ignored in init_std_data()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri September 18 2009, Thomas Fjellstrom wrote:
-> On Thu September 17 2009, Thomas Fjellstrom wrote:
-> > On Thu September 17 2009, Kristleifur Daðason wrote:
-> > > On Thu, Sep 17, 2009 at 11:02 PM, Thomas Fjellstrom
-> > > <tfjellstrom@shaw.ca>
-> >
-> > wrote:
-> > > > On Thu September 17 2009, John Bridges wrote:
-> > > >> I'm a fan of the SuperMicro AOC-SAT2-MV8, great card.
-> > > >> http://www.supermicro.com/products/accessories/addon/AOC-SAT2-MV8.cf
-> > > >>m
-> > > >>
-> > > >> It's an 8 port PCI-X card, works in both PCI and PCI-X slots.
-> > > >>
-> > > >> SATA2
-> > > >>
-> > > >> Drivers for Linux are stable, built in.
-> > > >
-> > > > Have you had any experience with the AOC-SASLP-MV8? I've got one and
-> > > > have been having no end of issues with it under linux.
-> > > >
-> > > > --
-> > > > Thomas Fjellstrom
-> > > > tfjellstrom@shaw.ca
-> > > > --
-> > >
-> > > I have,
-> > >
-> > > or rather, I've tried to get an AOC-SASLP-MV8 card going. I think I
-> > > can safely say that at least Linux kernel 2.6.31 is a requirement. The
-> > > card was basically useless with everything up to 2.6.30, then I tried
-> > > 2.6.31-rc5 on a whim and it kicked in. Built-in driver support, that
-> > > is. However it wasn't stable, it dropped disks when syncing a large
-> > > array. I've been meaning to test on 2.6.31 final, and am pretty
-> > > optimistic.
-> >
-> > Yeah, the driver didn't appear till .30. I have 2.6.31-git4 installed
-> > right now, and no matter what I do, the controller starts spewing errors:
-> >
-> > [ 1455.698186] drivers/scsi/mvsas/mv_sas.c 1669:mvs_abort_task:rc= 5
-> > [ 1455.698196] drivers/scsi/mvsas/mv_sas.c 1608:mvs_query_task:rc= 5
-> > ...
-> > [ 1424.708085] end_request: I/O error, dev sdh, sector 3072
-> > [ 1424.708106] sd 0:0:3:0: [sdh] Unhandled error code
-> > [ 1424.708111] sd 0:0:3:0: [sdh] Result: hostbyte=DID_OK
-> > driverbyte=DRIVER_TIMEOUT
-> > [ 1424.708118] sd 0:0:3:0: [sdh] CDB: Read(10): 28 00 00 00 08 00 00 04
-> > 00 00
-> >
-> > And thats with perfectly good disks, and with smartd/hddtemp disabled
-> > (they were causing one of my disks to barf).
-> >
-> > All I have to do is start a read from any disk, and after a few minutes,
-> >  the card starts erroring out, and then dies.
-> >
-> > It actually seems like it got more unstable from .30 to .31.
-> >
-> > I've been trying to get some help with it on the lkml/ide/scsi lists for
-> > a while now, one person has tried to help, but thats about it.
-> 
-> Very strange. I've found that reading from all 4 drives currently connected
->  to the controller at once, works. I have 4 dd commands, one reading off
->  each drive, and so far no errors, the dd commands aren't locking up, and
->  they are going full speed (120MB/s per drive).
-> 
-> If however I attempt to bring up the md raid0 array ontop of these disks,
->  the controller locks up, and all of the disks become inaccessible.
-> 
-> Maybe it has something to do with it, but just as the system is booting, I
->  get the following, maybe related, maybe not:
-> 
-> ata_id[5183]: HDIO_GET_IDENTITY failed for '/dev/block/8:96'
-> ata_id[5188]: HDIO_GET_IDENTITY failed for '/dev/block/8:112'
-> ata_id[5184]: HDIO_GET_IDENTITY failed for '/dev/block/8:80'
-> 
-> (those map to sdg, sdh, and sdf in that order, no report for sde, the first
-> disk in the controller)
-> 
+Clean up and error out if kmalloc() fails.
 
-So I've let the controller and disks sit all day after finishing a full read 
-test (dd if=/dev/sd[efgh] of=/dev/null bs=8M) with all four 1TB drives going 
-at the same time, and I've had no errors at all. All four dd commands finished 
-without error, and went at full speed.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Found with sed: http://kernelnewbies.org/roelkluin
 
-If I attempt to activate an md raid0 array ontop of any disks on this 
-controller the controller starts having a fit, and all disks are inaccessible 
-till a hard reset (the machine won't fully reboot, or turn off, as the 
-"flushing scsi cache" or "shutting down LVM" steps will hang waiting on drives 
-on the wedged controller.
+Build tested. Please review
 
-I would really like to get this fixed, if there's anything more I can do to 
-help narrow down the problem further, I'll do my best.
-
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index d8a9255..8a68be8 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -939,7 +939,7 @@ EXPORT_SYMBOL(get_random_bytes);
+  * data into the pool to prepare it for use. The pool is not cleared
+  * as that can only decrease the entropy in the pool.
+  */
+-static void init_std_data(struct entropy_store *r)
++static int init_std_data(struct entropy_store *r)
+ {
+ 	ktime_t now;
+ 	unsigned long flags;
+@@ -952,16 +952,35 @@ static void init_std_data(struct entropy_store *r)
+ 	mix_pool_bytes(r, &now, sizeof(now));
+ 	mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
+ 	/* Enable continuous test in fips mode */
+-	if (fips_enabled)
++	if (fips_enabled) {
+ 		r->last_data = kmalloc(EXTRACT_SIZE, GFP_KERNEL);
++		if (r->last_data == NULL)
++			return -ENOMEM;
++	}
++	return 0;
+ }
+ 
+ static int rand_initialize(void)
+ {
+-	init_std_data(&input_pool);
+-	init_std_data(&blocking_pool);
+-	init_std_data(&nonblocking_pool);
++	int ret;
++	ret = init_std_data(&input_pool);
++	if (ret != 0)
++		return ret;
++
++	ret = init_std_data(&blocking_pool);
++	if (ret != 0)
++		goto free_ip_ld;
++
++	ret = init_std_data(&nonblocking_pool);
++	if (ret != 0)
++		goto free_bp_ld;
++
+ 	return 0;
++free_bp_ld:
++	kfree(blocking_pool.last_data);
++free_ip_ld:
++	kfree(input_pool.last_data);
++	return ret;
+ }
+ module_init(rand_initialize);
+ 
+@@ -1160,8 +1179,8 @@ static long random_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
+ 		/* Clear the entropy pool counters. */
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+-		rand_initialize();
+-		return 0;
++		retval = rand_initialize();
++		return retval;
+ 	default:
+ 		return -EINVAL;
+ 	}
