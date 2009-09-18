@@ -1,70 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZIRO7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753017AbZIROfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753721AbZIRO7N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbZIRO7M
+	id S1753017AbZIROfy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZIROfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:59:12 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:56788 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753083AbZIRO7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:59:11 -0400
-Message-ID: <4AB39A88.3040106@ce.jp.nec.com>
-Date: Fri, 18 Sep 2009 23:34:48 +0900
-From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 18 Sep 2009 10:35:53 -0400
+Received: from trinity.fluff.org ([89.16.178.74]:55948 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752403AbZIROfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 10:35:52 -0400
+Date: Fri, 18 Sep 2009 15:35:54 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Jon Ringle <jon@ringle.org>,
+       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] i2c: Move i2c request_irq so that it occurs after iop3xx_i2c_enable
+Message-ID: <20090918143554.GR24720@trinity.fluff.org>
+References: <1253281871-28243-1-git-send-email-jon@ringle.org> <alpine.LNX.2.00.0909181631260.17028@wotan.suse.de>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: linux-kernel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>
-Subject: Re: [PATCH] Add a tracepoint for block request remapping
-References: <4AB2E57B.2090101@ce.jp.nec.com> <4AB32148.3010004@cn.fujitsu.com>
-In-Reply-To: <4AB32148.3010004@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0909181631260.17028@wotan.suse.de>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Jun'ichi Nomura wrote:
->> Since 2.6.31 now has request-based device-mapper, it's useful to have
->> a tracepoint for request-remapping as well as bio-remapping.
->>
->> This patch adds a tracepoint for request-remapping, trace_block_rq_remap().
+On Fri, Sep 18, 2009 at 04:32:04PM +0200, Jiri Kosina wrote:
+> On Fri, 18 Sep 2009, Jon Ringle wrote:
 > 
->> Existing trace_block_remap() is left unchanged but it might be better to
->> rename it to trace_block_bio_remap().
+> > If there is a pending i2c interrupt present before i2c-iop3xx initialization
+> > then it must be cleared first before registering irq handler. Otherwise,
+> > a hung system due to an unhandled interrupt loop may occur.
 > 
-> Why not. ;)
-
-OK, I'll add a renaming patch.
-
->> +static void blk_add_trace_rq_remap(struct request_queue *q,
->> +				   struct request *rq, dev_t dev,
->> +				   sector_t from)
->> +{
->> +	struct blk_trace *bt = q->blk_trace;
->> +	struct blk_io_trace_remap r;
->> +
->> +	if (likely(!bt))
->> +		return;
->> +
->> +	r.device_from = cpu_to_be32(dev);
->> +	r.device_to   = disk_devt(rq->rq_disk);
+> Hi Jon,
 > 
-> cpu_to_be32(dis_devt(...))
+> this doesn't really qualify for trivial tree. I am adding Jean Delvare to 
+> CC.
 
-Thank you! I'll fix that.
-
->> +	r.sector_from = cpu_to_be64(from);
->> +
->> +	__blk_add_trace(bt, blk_rq_pos(rq), blk_rq_bytes(rq),
->> +			rq_data_dir(rq), BLK_TA_REMAP, !!rq->errors,
->> +			sizeof(r), &r);
->> +}
+I'm the correct one to add, will probably be doing a push over the weekend
+so will add it to my i2c next tree.
+ 
+> > Signed-off-by: Jon Ringle <jon@ringle.org>
+> > 
+> > ---
+> >  drivers/i2c/busses/i2c-iop3xx.c |   16 ++++++++--------
+> >  1 files changed, 8 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/i2c/busses/i2c-iop3xx.c b/drivers/i2c/busses/i2c-iop3xx.c
+> > index a75c75e..e6dc46d 100644
+> > --- a/drivers/i2c/busses/i2c-iop3xx.c
+> > +++ b/drivers/i2c/busses/i2c-iop3xx.c
+> > @@ -471,14 +471,6 @@ iop3xx_i2c_probe(struct platform_device *pdev)
+> >  		ret = -ENXIO;
+> >  		goto unmap;
+> >  	}
+> > -	ret = request_irq(irq, iop3xx_i2c_irq_handler, 0,
+> > -				pdev->name, adapter_data);
+> > -
+> > -	if (ret) {
+> > -		ret = -EIO;
+> > -		goto unmap;
+> > -	}
+> > -
+> >  	memcpy(new_adapter->name, pdev->name, strlen(pdev->name));
+> >  	new_adapter->owner = THIS_MODULE;
+> >  	new_adapter->class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
+> > @@ -497,6 +489,14 @@ iop3xx_i2c_probe(struct platform_device *pdev)
+> >  	iop3xx_i2c_reset(adapter_data);
+> >  	iop3xx_i2c_enable(adapter_data);
+> >  
+> > +	ret = request_irq(irq, iop3xx_i2c_irq_handler, 0,
+> > +				pdev->name, adapter_data);
+> > +
+> > +	if (ret) {
+> > +		ret = -EIO;
+> > +		goto unmap;
+> > +	}
+> > +
+> >  	platform_set_drvdata(pdev, new_adapter);
+> >  	new_adapter->algo_data = adapter_data;
+> >  
+> > -- 
+> > tg: (74fca6a..) t/isc-31/i2c-request_irq-iop3xx_i2c_enable-reorder (depends on: b2.6.31.y)
+> > 
+> 
+> -- 
+> Jiri Kosina
+> SUSE Labs, Novell Inc.
 
 -- 
-Jun'ichi Nomura, NEC Corporation
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
