@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbZIRTfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbZIRThe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758120AbZIRTfv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 15:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbZIRTfq
+	id S1758520AbZIRThe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 15:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbZIRTh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 15:35:46 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:3493 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757539AbZIRTfp convert rfc822-to-8bit (ORCPT
+	Fri, 18 Sep 2009 15:37:28 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:2668 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758047AbZIRTh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 15:35:45 -0400
+	Fri, 18 Sep 2009 15:37:27 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=oCcq3e9QmM/8p55feKbSaJzpe4f+WeY5r15F0KPvbGUtRHY2HWfLWwzehTNkBtbwr
+	vlKyHF4eRsgw02+vGoPpg==
+Date: Fri, 18 Sep 2009 12:37:23 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
+       randy.dunlap@oracle.com, rth@twiddle.net, ink@jurassic.park.msu.ru
+Subject: Re: [PATCH] remove duplicate asm/mman.h files
+In-Reply-To: <200909181848.42192.arnd@arndb.de>
+Message-ID: <alpine.DEB.1.00.0909181236190.27556@chino.kir.corp.google.com>
+References: <cover.1251197514.git.ebmunson@us.ibm.com> <20090917174616.f64123fb.akpm@linux-foundation.org> <200909181719.47240.arnd@arndb.de> <200909181848.42192.arnd@arndb.de>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com>
-References: <20090917125759.GA4045@kroah.com> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> 
-	<alpine.LFD.2.01.0909171322210.4950@localhost.localdomain> 
-	<ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com> 
-	<alpine.LFD.2.01.0909171709410.4950@localhost.localdomain> 
-	<1253238637.4071.10.camel@yio.site> <20090918060210.GC7104@kroah.com> 
-	<alpine.LFD.2.01.0909180717380.4950@localhost.localdomain> 
-	<20090918150541.GB9307@kroah.com> <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 18 Sep 2009 21:35:34 +0200
-Message-ID: <ac3eb2510909181235m33846928sa8c790758c66233@mail.gmail.com>
-Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was: 
-	Re: [PATCH] Remove broken by design and by implementation devtmpfs 
-	maintenance disaster)
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 17:37, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Fri, Sep 18, 2009 at 17:05, Greg KH <greg@kroah.com> wrote:
->> On Fri, Sep 18, 2009 at 07:18:54AM -0700, Linus Torvalds wrote:
->>>
->>> On Thu, 17 Sep 2009, Greg KH wrote:
->>> >
->>> > I think the udev version in older Fedora releases can't handle this
->>> > kernel option, which is fine, just don't enable it.  Newer versions can
->>> > handle it, right?
->>>
->>> .. conversely, if you can't be bothered to set up /dev/null and /dev/zero
->>> correctly, I would suggest that you not set them up AT ALL in devtmpfs.
->>
->> Fair enough.
->>
->>> The thing is, 0600 for those nodes is just _wrong_. Don't do it.
->>
->> Ok, Kay, care to just treat these as "special"?
->
-> Sure, the patch I sent yesterday does that. We might want to drop the
-> USB device node permissions (same as the proc nodes), but they are
-> probably not needed?
->
-> Ingo, do you possibly have a chance to test if your setup comes up
-> with that? That would be great to know.
+On Fri, 18 Sep 2009, Arnd Bergmann wrote:
 
-With that patch, I can login as a normal user without any udev ever
-started, and no static content copied to /dev.
+> diff --git a/arch/ia64/include/asm/mman.h b/arch/ia64/include/asm/mman.h
+> index cf55884..4459028 100644
+> --- a/arch/ia64/include/asm/mman.h
+> +++ b/arch/ia64/include/asm/mman.h
+> @@ -8,21 +8,9 @@
+>   *	David Mosberger-Tang <davidm@hpl.hp.com>, Hewlett-Packard Co
+>   */
+>  
+> -#include <asm-generic/mman-common.h>
+> +#include <asm-generic/mman.h>
+>  
+> -#define MAP_GROWSDOWN	0x00100		/* stack-like segment */
+> -#define MAP_GROWSUP	0x00200		/* register stack-like segment */
+> -#define MAP_DENYWRITE	0x00800		/* ETXTBSY */
+> -#define MAP_EXECUTABLE	0x01000		/* mark it as an executable */
+> -#define MAP_LOCKED	0x02000		/* pages are locked */
+> -#define MAP_NORESERVE	0x04000		/* don't check for reservations */
+> -#define MAP_POPULATE	0x08000		/* populate (prefault) pagetables */
+> -#define MAP_NONBLOCK	0x10000		/* do not block on IO */
+> -#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+> -#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
+> -
+> -#define MCL_CURRENT	1		/* lock all current mappings */
+> -#define MCL_FUTURE	2		/* lock all future mappings */
+> +#define MAP_GROWSUP	0x0200		/* register stack-like segment */
+>  
+>  #ifdef __KERNEL__
+>  #ifndef __ASSEMBLY__
 
-System boot scripts just complained about ptx stuff because the
-creation of the /dev/pts directory, and the missing /dev/shm, which is
-both part of udev's bootstrap code here, and which I had removed.
-
-Kay
+ia64 doesn't use MAP_GROWSUP, so it's probably not necessary to carry it 
+along with your cleanup.
