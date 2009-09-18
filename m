@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbZIRPw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZIRPxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbZIRPw0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 11:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbZIRPwZ
+	id S1753056AbZIRPxp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 11:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbZIRPxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 11:52:25 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:65108 "EHLO mx1.redhat.com"
+	Fri, 18 Sep 2009 11:53:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33626 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751585AbZIRPwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 11:52:25 -0400
-Date: Fri, 18 Sep 2009 11:52:17 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       David Strand <dpstrand@gmail.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] dm: Set safe default max_sectors for targets with
-	no underlying device
-Message-ID: <20090918155217.GA28926@redhat.com>
-References: <4AB3A4CC.4010708@ce.jp.nec.com>
+	id S1750822AbZIRPxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 11:53:44 -0400
+Date: Fri, 18 Sep 2009 17:52:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Tejun Heo <tj@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] first round of PCI updates for 2.6.32
+Message-ID: <20090918155247.GA20347@elte.hu>
+References: <20090915132105.2fdd1d45@jbarnes-g45> <20090917173012.GA11155@elte.hu> <20090917103614.6ab1385f@jbarnes-g45> <20090917175944.GA17304@elte.hu> <20090918082715.6272a262@jbarnes-g45>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AB3A4CC.4010708@ce.jp.nec.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090918082715.6272a262@jbarnes-g45>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18 2009 at 11:18am -0400,
-Jun'ichi Nomura <j-nomura@ce.jp.nec.com> wrote:
 
-> This is a preparation for the next patch, which changes
-> blk_set_default_limits() to set 0 for max_sectors/max_hw_sectors.
-> With the next patch, for dm targets like 'zero', where there's no
-> underlying device, those values remain 0 and the dm device becomes
-> unusable.
-> 
-> So check the max_sectors and set to SAFE_MAX_SECTORS if 0.
-> 
-> Check this thread for further background:
-> https://www.redhat.com/archives/dm-devel/2009-September/msg00176.html
-> 
-> 
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> Cc: David Strand <dpstrand@gmail.com>
-> Cc: Mike Snitzer <snitzer@redhat.com>
-> Cc: Alasdair G Kergon <agk@redhat.com>
-> Cc: Martin K. Petersen <martin.petersen@oracle.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  drivers/md/dm-table.c |   11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> Index: linux-2.6.31.work/drivers/md/dm-table.c
-> ===================================================================
-> --- linux-2.6.31.work.orig/drivers/md/dm-table.c
-> +++ linux-2.6.31.work/drivers/md/dm-table.c
-> @@ -707,6 +707,17 @@ static int validate_hardware_logical_blo
->  		    device_logical_block_size_sects - next_target_start : 0;
->  	}
-> 
-> +	/*
-> +	 * blk_set_default_limits() sets max_sectors/max_hw_sectors to 0.
-> +	 * When all targets have no underlying device, they are
-> +	 * left unchanged from the default values and cause problems.
-> +	 * Use SAFE_MAX_SECTORS for such cases.
-> +	 */
-> +	if (limits->max_hw_sectors == 0)
-> +		limits->max_hw_sectors = SAFE_MAX_SECTORS;
-> +	if (limits->max_sectors == 0)
-> +		limits->max_sectors = SAFE_MAX_SECTORS;
-> +
->  	if (remaining) {
->  		DMWARN("%s: table line %u (start sect %llu len %llu) "
->  		       "not aligned to h/w logical block size %u",
+* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-The blk_set_default_limits() that matters, as referenced in your comment
-block, is actually in dm_calculate_queue_limits().
+> On Thu, 17 Sep 2009 19:59:44 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > 
+> > > On Thu, 17 Sep 2009 19:30:12 +0200
+> > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > 
+> > > > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> 
+> > > > Config and full bootlog attached.
+> > > > 
+> > > > Note:
+> > > > 
+> > > >  CONFIG_DEBUG_PER_CPU_MAPS=y
+> > > >  CONFIG_CPUMASK_OFFSTACK=y
+> > > 
+> > > Does this patch fix it?  I sent it to you earlier but I never heard 
+> > > back...
+> > 
+> > Ah ... you probably sent it in the merge window communication
+> > blackout ;-)
+> > 
+> > Will try, thanks.
+> 
+> Did you get a chance to try this patch yet Ingo?
 
-It would be better to put these checks in dm_calculate_queue_limits()
-just before the call to validate_hardware_logical_block_alignment().
+Yeah, it does - thanks.
 
-Either way works because the checks are effectively at the end of
-dm_calculate_queue_limits() -- which is where they need to be.
-
-But I think you're polluting validate_hardware_logical_block_alignment()
-with unrelated checks.
-
-Thanks,
-Mike
+	Ingo
