@@ -1,78 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZIRQ2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbZIRQ1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbZIRQ2l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 12:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbZIRQ2l
+	id S1755145AbZIRQ1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 12:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZIRQ1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 12:28:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33643 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755265AbZIRQ2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 12:28:39 -0400
-Message-ID: <4AB3B4F5.6080809@kernel.org>
-Date: Fri, 18 Sep 2009 09:27:33 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 18 Sep 2009 12:27:34 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:55193 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752359AbZIRQ1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 12:27:33 -0400
+Date: Fri, 18 Sep 2009 12:27:36 -0400
+To: linux-kernel@vger.kernel.org
+Cc: Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
+       Len Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: [PATCH] Add uboot commandline argument passing support to m68knommu
+Message-ID: <20090918162736.GY23700@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Suresh Jayaram <sureshjayaram@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Subject: Re: mmotm 2009-09-09-22-56 uploaded
-References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org> <38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com> <alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com> <38c3c4860909150320qc4a203eu7552294ef0aafd2c@mail.gmail.com> <alpine.DEB.1.00.0909151535150.17284@chino.kir.corp.google.com> <38c3c4860909180238x7c9f305dsbce1492e2018c5a5@mail.gmail.com> <alpine.DEB.1.00.0909180245030.24690@chino.kir.corp.google.com> <alpine.DEB.1.00.0909180339200.6267@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.00.0909180339200.6267@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Fri, 18 Sep 2009, David Rientjes wrote:
-> 
->> This seems to be related to 2547089 "x86/PCI: initialize PCI bus node 
->> numbers early" since cpumask_of_pcibus() on x86 doesn't check for -1 
->> pcibus_to_node() like most other architectures.  It'll simply index into 
->> cpumask_of_node for whatever the pci_sysdata's node is, and in this case 
->> that's -1.
->>
-> 
-> Suresh, could you give this patch a try?  It turns out that the 
-> mp_bus_to_node map simply leaves all busses that don't have memory 
-> affinity to -1, so cpu_online_mask is actually the appropriate cpumask to 
-> return and x86 doesn't catch this.
-> 
-> 
-> x86: default pcibus cpumask to all cpus if it lacks affinity
-> 
-> The early initialization of the pci bus to node mapping leaves all busses
-> with a node id of -1 if it lacks memory affinity.  Thus, cpumask_of_pcibus
-> must return all online cpus for such busses.
-> 
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  arch/x86/include/asm/pci.h |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-> --- a/arch/x86/include/asm/pci.h
-> +++ b/arch/x86/include/asm/pci.h
-> @@ -143,7 +143,11 @@ static inline int __pcibus_to_node(const struct pci_bus *bus)
->  static inline const struct cpumask *
->  cpumask_of_pcibus(const struct pci_bus *bus)
->  {
-> -	return cpumask_of_node(__pcibus_to_node(bus));
-> +	int node;
-> +
-> +	node = __pcibus_to_node(bus);
-> +	return (node == -1) ? cpu_online_mask :
-> +			      cpumask_of_node(node);
->  }
->  #endif
->  
+This patch adds m68knommu support for getting the kernel command line
+arguments from uboot, including the passing of an initrd image from uboot.
 
-looks right, but we should use nearby_node or local cpu node instead of cpu_online_mask...
+We use this on a 5270/5271 based board, and have used it on the 5271evb
+development board.  It is based on a patch found in the linux-2.6-denx
+git tree, although that tree seems to have had lots of other changes
+since which are not in the main Linus kernel.  I believe this will work
+on all coldfires, although other m68knommu might be missing the _init_sp
+stuff in head.S as far as I can tell.  I only have the coldfire to
+test on.
 
-YH
+Signed-off-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+
+diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
+index e2201b9..064f591 100644
+--- a/arch/m68knommu/Kconfig
++++ b/arch/m68knommu/Kconfig
+@@ -533,6 +533,13 @@ config AVNET
+ 	default y
+ 	depends on (AVNET5282)
+ 
++config UBOOT
++	bool "Support for U-Boot command line parameters"
++	help
++	  If you say Y here kernel will try to collect command
++	  line parameters from the initial u-boot stack.
++	default n
++
+ config 4KSTACKS
+ 	bool "Use 4Kb for kernel stacks instead of 8Kb"
+ 	default y
+diff --git a/arch/m68knommu/kernel/setup.c b/arch/m68knommu/kernel/setup.c
+index 5c2bb3e..0e2114e 100644
+--- a/arch/m68knommu/kernel/setup.c
++++ b/arch/m68knommu/kernel/setup.c
+@@ -29,6 +29,8 @@
+ #include <linux/bootmem.h>
+ #include <linux/seq_file.h>
+ #include <linux/init.h>
++#include <linux/initrd.h>
++#include <linux/root_dev.h>
+ 
+ #include <asm/setup.h>
+ #include <asm/irq.h>
+@@ -52,6 +54,9 @@ void (*mach_reset)(void);
+ void (*mach_halt)(void);
+ void (*mach_power_off)(void);
+ 
++#if defined(CONFIG_UBOOT)
++void parse_uboot_commandline(char *commandp, int size);
++#endif
+ 
+ #ifdef CONFIG_M68000
+ 	#define CPU "MC68000"
+@@ -128,7 +133,23 @@ void __init setup_arch(char **cmdline_p)
+ #if defined(CONFIG_BOOTPARAM)
+ 	strncpy(&command_line[0], CONFIG_BOOTPARAM_STRING, sizeof(command_line));
+ 	command_line[sizeof(command_line) - 1] = 0;
+-#endif
++#endif /* CONFIG_BOOTPARAM */
++
++#if defined(CONFIG_UBOOT)
++	/* CONFIG_UBOOT and CONFIG_BOOTPARAM defined, concatenate cmdline */
++	#if defined(CONFIG_BOOTPARAM)
++		/* Add the whitespace separator */
++		command_line[strlen(CONFIG_BOOTPARAM_STRING)] = ' ';
++		/* Parse uboot command line into the rest of the buffer */
++		parse_uboot_commandline(
++			&command_line[(strlen(CONFIG_BOOTPARAM_STRING)+1)],
++			(sizeof(command_line) - (strlen(CONFIG_BOOTPARAM_STRING)+1)));
++	/* Only CONFIG_UBOOT defined, create cmdline */
++	#else
++		parse_uboot_commandline(&command_line[0], sizeof(command_line));
++	#endif /* CONFIG_BOOTPARAM */
++	command_line[sizeof(command_line) - 1] = 0;
++#endif /* CONFIG_UBOOT */
+ 
+ 	printk(KERN_INFO "\x0F\r\n\nuClinux/" CPU "\n");
+ 
+@@ -204,12 +225,82 @@ void __init setup_arch(char **cmdline_p)
+ 	free_bootmem(memory_start, memory_end - memory_start);
+ 	reserve_bootmem(memory_start, bootmap_size, BOOTMEM_DEFAULT);
+ 
++#if defined(CONFIG_UBOOT) && defined(CONFIG_BLK_DEV_INITRD)
++	if((initrd_start > 0) && (initrd_start < initrd_end) && (initrd_end < memory_end)) {
++		reserve_bootmem(initrd_start, initrd_end - initrd_start, BOOTMEM_DEFAULT);
++	}
++#endif /* if defined(CONFIG_BLK_DEV_INITRD) */
++
+ 	/*
+ 	 * Get kmalloc into gear.
+ 	 */
+ 	paging_init();
+ }
+ 
++#if defined(CONFIG_UBOOT)
++/*
++ * parse_uboot_commandline
++ *
++ * Copies u-boot commandline arguments and store them in the proper linux
++ * variables.
++ *
++ * Assumes:
++ *	_init_sp global contains the address in the stack pointer when the
++ *	kernel starts (see head.S::_start)
++ *
++ *	U-Boot calling convention:
++ *	(*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
++ *
++ *	_init_sp can be parsed as such
++ *
++ *	_init_sp+00 = u-boot cmd after jsr into kernel (skip)
++ *	_init_sp+04 = &kernel board_info (residual data)
++ *	_init_sp+08 = &initrd_start
++ *	_init_sp+12 = &initrd_end
++ *	_init_sp+16 = &cmd_start
++ *	_init_sp+20 = &cmd_end
++ *
++ *	This also assumes that the memory locations pointed to are still
++ *	unmodified. U-boot places them near the end of external SDRAM.
++ *
++ * Argument(s):
++ *	commandp = the linux commandline arg container to fill.
++ *	size     = the sizeof commandp.
++ *
++ * Returns:
++ */
++void parse_uboot_commandline(char *commandp, int size)
++{
++	extern unsigned long _init_sp;
++	unsigned long *sp;
++	unsigned long uboot_kbd;
++	unsigned long uboot_initrd_start, uboot_initrd_end;
++	unsigned long uboot_cmd_start, uboot_cmd_end;
++
++
++	sp = (unsigned long *)_init_sp;
++	uboot_kbd = sp[1];
++	uboot_initrd_start = sp[2];
++	uboot_initrd_end = sp[3];
++	uboot_cmd_start = sp[4];
++	uboot_cmd_end = sp[5];
++
++	if (uboot_cmd_start && uboot_cmd_end) {
++		strncpy(commandp, (const char *)uboot_cmd_start, size);
++	}
++#if defined(CONFIG_BLK_DEV_INITRD)
++	if (uboot_initrd_start && uboot_initrd_end && 
++		(uboot_initrd_end > uboot_initrd_start)) {		
++		initrd_start = uboot_initrd_start;
++		initrd_end = uboot_initrd_end;
++		ROOT_DEV = Root_RAM0;
++		printk("initrd at 0x%lx:0x%lx\n", 
++			initrd_start, initrd_end);
++	}
++#endif /* if defined(CONFIG_BLK_DEV_INITRD) */
++}
++#endif /* #if defined(CONFIG_UBOOT) */
++
+ /*
+  *	Get CPU information for use by the procfs.
+  */
+diff --git a/arch/m68knommu/platform/coldfire/head.S b/arch/m68knommu/platform/coldfire/head.S
+index 2b0d73c..4b91aa2 100644
+--- a/arch/m68knommu/platform/coldfire/head.S
++++ b/arch/m68knommu/platform/coldfire/head.S
+@@ -106,6 +106,9 @@
+ .global _ramvec
+ .global	_ramstart
+ .global	_ramend
++#if defined(CONFIG_UBOOT)
++.global	_init_sp
++#endif
+ 
+ /*****************************************************************************/
+ 
+@@ -124,6 +127,10 @@ _ramstart:
+ .long	0
+ _ramend:
+ .long	0
++#if defined(CONFIG_UBOOT)
++_init_sp:
++.long	0
++#endif
+ 
+ /*****************************************************************************/
+ 
+@@ -137,6 +144,9 @@ __HEAD
+ _start:
+ 	nop					/* filler */
+ 	movew	#0x2700, %sr			/* no interrupts */
++#if defined(CONFIG_UBOOT)
++	movel	%sp,_init_sp			/* save initial stack pointer */
++#endif
+ 
+ 	/*
+ 	 *	Do any platform or board specific setup now. Most boards
+
+
+-- 
+Len Sorensen
