@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbZIRUB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZIRUDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757722AbZIRUB7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZIRUBz
+	id S1758136AbZIRUDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZIRUD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:01:55 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:46011 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752291AbZIRUBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:01:54 -0400
-Date: Fri, 18 Sep 2009 22:01:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH] nfs: fix bdi_unregister() before sb kill
-Message-ID: <20090918200157.GK23126@kernel.dk>
-References: <20090917124233.GJ23126@kernel.dk> <20090917194027.GS23126@kernel.dk> <1253229410.2783.16.camel@heimdal.trondhjem.org> <20090918064006.GU23126@kernel.dk> <20090918150248.GB23126@kernel.dk> <1253290790.3183.14.camel@heimdal.trondhjem.org> <20090918173608.GD23126@kernel.dk> <20090918183203.GG23126@kernel.dk> <1253299218.3183.84.camel@heimdal.trondhjem.org> <20090918184602.GJ23126@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090918184602.GJ23126@kernel.dk>
+	Fri, 18 Sep 2009 16:03:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33845 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753975AbZIRUDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 16:03:25 -0400
+Subject: Re: [PATCH] Prevent immediate process rescheduling
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090918195455.GC11726@elte.hu>
+References: <200909181449.12311.mark.langsdorf@amd.com>
+	 <20090918195455.GC11726@elte.hu>
+Content-Type: text/plain
+Date: Fri, 18 Sep 2009 22:03:23 +0200
+Message-Id: <1253304203.10538.64.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18 2009, Jens Axboe wrote:
-> On Fri, Sep 18 2009, Trond Myklebust wrote:
-> > On Fri, 2009-09-18 at 20:32 +0200, Jens Axboe wrote:
-> > > How does this look? It compiles, but I cannot test before sunday. It
-> > > would be great if you (or someone else) could :-). Peter, if you have
-> > > the time, it would be nice if you could check whether this one works for
-> > > you too.
-> > > 
-> > > diffstat is tasty, too:
-> > > 
-> > >  client.c |    4 ----
-> > >  super.c  |   53 ++++++++++++++++++++++++++---------------------------
-> > >  2 files changed, 26 insertions(+), 31 deletions(-)
-> > 
-> > Yep! The patch looks good to me. I'll see if I can find the time to test
-> > it tomorrow.
-> 
-> Thanks a lot! I'll try nfs over wifi on the laptop now, since the test
-> boxes are off.
+On Fri, 2009-09-18 at 21:54 +0200, Ingo Molnar wrote:
 
-Took a little longer than it should have, since latest -git breaks my
-iwl3945. Anyway, it works fine for me. The patch is tentatively
-committed as:
+> > diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> > index 652e8bd..4fad08f 100644
+> > --- a/kernel/sched_fair.c
+> > +++ b/kernel/sched_fair.c
+> > @@ -353,11 +353,25 @@ static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+> >  static struct sched_entity *__pick_next_entity(struct cfs_rq *cfs_rq)
+> >  {
+> >  	struct rb_node *left = cfs_rq->rb_leftmost;
+> > +	struct sched_entity *se, *curr;
+> >  
+> >  	if (!left)
+> >  		return NULL;
+> >  
+> > -	return rb_entry(left, struct sched_entity, run_node);
+> > +	se = rb_entry(left, struct sched_entity, run_node);
+> > +	curr = &current->se;
+> > +
+> > +	/* 
+> > +	 * Don't select the entity who just tried to schedule away
+> > +	 * if there's another entity available.
+> > +	 */
+> > +	if (unlikely(se == curr && cfs_rq->nr_running > 1)) {
+> > +		struct rb_node *next_node = rb_next(&curr->run_node);
+> > +		if (next_node)
+> > +			se = rb_entry(next_node, struct sched_entity, run_node);
+> > +	}
+> > +
+> > +	return se;
+> >  }
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0841ff4261ae91b01c923be97843753c56a6613a
+Really hate this change though,. doesn't seem right to not pick the same
+task again if its runnable. Bad for cache footprint.
 
--- 
-Jens Axboe
+The scenario is quite common for stuff like:
+
+CPU0                                      CPU1
+
+set_task_state(TASK_INTERRUPTIBLE)
+
+if (cond)
+  goto out;
+                                     <--- ttwu()
+schedule();
+
+
 
