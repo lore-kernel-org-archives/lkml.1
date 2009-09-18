@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbZIRSqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933316AbZIRSs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758509AbZIRSqB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 14:46:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbZIRSp7
+	id S933316AbZIRSs0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 14:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757816AbZIRSsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 14:45:59 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45406 "EHLO kernel.dk"
+	Fri, 18 Sep 2009 14:48:21 -0400
+Received: from gate.lvk.cs.msu.su ([158.250.17.1]:41587 "EHLO lvk.cs.msu.su"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757539AbZIRSp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 14:45:59 -0400
-Date: Fri, 18 Sep 2009 20:46:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH] nfs: fix bdi_unregister() before sb kill
-Message-ID: <20090918184602.GJ23126@kernel.dk>
-References: <20090917124233.GJ23126@kernel.dk> <20090917194027.GS23126@kernel.dk> <1253229410.2783.16.camel@heimdal.trondhjem.org> <20090918064006.GU23126@kernel.dk> <20090918150248.GB23126@kernel.dk> <1253290790.3183.14.camel@heimdal.trondhjem.org> <20090918173608.GD23126@kernel.dk> <20090918183203.GG23126@kernel.dk> <1253299218.3183.84.camel@heimdal.trondhjem.org>
+	id S1757516AbZIRSsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 14:48:20 -0400
+From: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+To: Ben Greear <greearb@candelatech.com>
+Subject: Re: Problems booting 2.6.31 on Fedora 8
+Date: Fri, 18 Sep 2009 22:48:20 +0400
+User-Agent: KMail/1.9.9
+References: <4AB3C9A8.4060700@candelatech.com>
+In-Reply-To: <4AB3C9A8.4060700@candelatech.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1253299218.3183.84.camel@heimdal.trondhjem.org>
+Message-Id: <200909182248.21032@blacky.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18 2009, Trond Myklebust wrote:
-> On Fri, 2009-09-18 at 20:32 +0200, Jens Axboe wrote:
-> > How does this look? It compiles, but I cannot test before sunday. It
-> > would be great if you (or someone else) could :-). Peter, if you have
-> > the time, it would be nice if you could check whether this one works for
-> > you too.
-> > 
-> > diffstat is tasty, too:
-> > 
-> >  client.c |    4 ----
-> >  super.c  |   53 ++++++++++++++++++++++++++---------------------------
-> >  2 files changed, 26 insertions(+), 31 deletions(-)
-> 
-> Yep! The patch looks good to me. I'll see if I can find the time to test
-> it tomorrow.
+> I'm having troubles booting 2.6.31 on Fedora 8.  The same kernel
+> boots fine on F11, but on F8, it cannot find the root logical volume.
+>
+> One thing I notice is that F11 uses root=/dev/mapper... and F8 uses
+> root=/dev/VolGroup00/LogVol00 in grub.  It's not clear to me what
+> the value of mapper should be...is there some way to figure this
+> out from an older kernel (2.6.29) that boots fine?
 
-Thanks a lot! I'll try nfs over wifi on the laptop now, since the test
-boxes are off.
+I've recently faced a very similar problem, trying to boot some "modern" 
+kernel on debian etch system.
 
--- 
-Jens Axboe
+It was solved by putting more recent lvm2 binary into initrd.
 
