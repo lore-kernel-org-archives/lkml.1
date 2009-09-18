@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZIRTme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752244AbZIRToT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbZIRTme (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 15:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbZIRTm2
+	id S1752244AbZIRToT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 15:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZIRToP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 15:42:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38863 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757516AbZIRTm1 (ORCPT
+	Fri, 18 Sep 2009 15:44:15 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52363 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbZIRToO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 15:42:27 -0400
-Date: Fri, 18 Sep 2009 12:41:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was:
-  Re: [PATCH] Remove broken by design and by implementation devtmpfs 
- maintenance disaster)
-In-Reply-To: <ac3eb2510909181235m33846928sa8c790758c66233@mail.gmail.com>
-Message-ID: <alpine.LFD.2.01.0909181239120.4950@localhost.localdomain>
-References: <20090917125759.GA4045@kroah.com> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com>  <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>  <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com> 
- <alpine.LFD.2.01.0909171709410.4950@localhost.localdomain>  <1253238637.4071.10.camel@yio.site> <20090918060210.GC7104@kroah.com>  <alpine.LFD.2.01.0909180717380.4950@localhost.localdomain>  <20090918150541.GB9307@kroah.com>
- <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com> <ac3eb2510909181235m33846928sa8c790758c66233@mail.gmail.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 18 Sep 2009 15:44:14 -0400
+Date: Fri, 18 Sep 2009 20:44:03 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= RISS <frederic.riss@gmail.com>
+Cc: Nicolas Pitre <nico@fluxnic.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] arm: Make kprobes unregistration SMP safe
+Message-ID: <20090918194403.GC6601@n2100.arm.linux.org.uk>
+References: <1253078476.5021.65.camel@funkybook> <alpine.LFD.2.00.0909172039070.24133@xanadu.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0909172039070.24133@xanadu.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 18 Sep 2009, Kay Sievers wrote:
+On Thu, Sep 17, 2009 at 08:40:10PM -0400, Nicolas Pitre wrote:
+> On Wed, 16 Sep 2009, Frédéric RISS wrote:
 > 
-> With that patch, I can login as a normal user without any udev ever
-> started, and no static content copied to /dev.
+> > ARM kprobes use an illegal instruction to trigger kprobes. In the
+> > current implementation, there's a race between the unregistration of a
+> > kprobe and the illegal instruction exception handler if they run at the
+> > same time on different cores. 
+> > 
+> > When reading the value of the undefined instruction, the exception
+> > handler might get the original legal instruction as just patched
+> > concurrently by arch_disarm_kprobe(). When this happen the kprobe
+> > handler won't run, and thus the exception handler will oops because it
+> > believe it just hit an undefined instruction in kernel space.
+> > 
+> > The following patch synchronizes the code patching in the kprobes
+> > unregistration using stop_machine and thus avoids the above race.
+> > 
+> > Signed-off-by: Frederic RISS <frederic.riss@gmail.com>
+> 
+> Acked-by: Nicolas Pitre <nico@fluxnic.net>
 
-I think this is something to aim for as a goal. 
-
-No, it may not be a /dev you'd want to use normally, but from a robustness 
-and stability angle, having a policy that says "we should aim to _work_ 
-even without udev running at all, even if you don't get the frills". So at 
-that point devtmpfs actually offers users something.
-
-			Linus
+Frédéric, please submit to the patch system, thanks.
