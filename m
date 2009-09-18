@@ -1,88 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZIRQUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbZIRQXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZIRQUD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 12:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZIRQUC
+	id S1754582AbZIRQXd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 12:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZIRQXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 12:20:02 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:54245 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752637AbZIRQUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 12:20:01 -0400
-Subject: Re: [PATCH] nfs: fix bdi_unregister() before sb kill
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-In-Reply-To: <20090918150248.GB23126@kernel.dk>
-References: <20090917124233.GJ23126@kernel.dk>
-	 <20090917194027.GS23126@kernel.dk>
-	 <1253229410.2783.16.camel@heimdal.trondhjem.org>
-	 <20090918064006.GU23126@kernel.dk>  <20090918150248.GB23126@kernel.dk>
-Content-Type: text/plain
-Date: Fri, 18 Sep 2009 12:19:36 -0400
-Message-Id: <1253290790.3183.14.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 5 sum msgs/h 2 total rcpts 1476 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: F9C05B9DA9113B207C3AFEF7081E1E1B86E20C0C
-X-UiO-SPAM-Test: remote_host: 198.95.226.230 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 23 max/h 3 blacklist 0 greylist 0 ratelimit 0
+	Fri, 18 Sep 2009 12:23:32 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:43862 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753820AbZIRQXb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 12:23:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xNESe2ijQcQSOJ5Gmy3UaNzX6vFgJRPC2/Wu9P6/vEdvqXfQqtxMGCxecH+LMdbf33
+         yqZMHkJry/FmbZj0lri5Swu76m2wktV5r+q6Le60hhipRodzPKc2zdI9eZsLzd86ZdDm
+         c5yK/Nsjva+taXh7LzOeBADsrXBwJ68p5Bxfk=
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.1.00.0909180339200.6267@chino.kir.corp.google.com>
+References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org>
+	 <38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com>
+	 <alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com>
+	 <38c3c4860909150320qc4a203eu7552294ef0aafd2c@mail.gmail.com>
+	 <alpine.DEB.1.00.0909151535150.17284@chino.kir.corp.google.com>
+	 <38c3c4860909180238x7c9f305dsbce1492e2018c5a5@mail.gmail.com>
+	 <alpine.DEB.1.00.0909180245030.24690@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0909180339200.6267@chino.kir.corp.google.com>
+Date: Fri, 18 Sep 2009 21:53:32 +0530
+Message-ID: <38c3c4860909180923j2d65e1c8o95c2c93f2e169b4b@mail.gmail.com>
+Subject: Re: mmotm 2009-09-09-22-56 uploaded
+From: Suresh Jayaram <sureshjayaram@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-18 at 17:02 +0200, Jens Axboe wrote:
-> On Fri, Sep 18 2009, Jens Axboe wrote:
-> > On Thu, Sep 17 2009, Trond Myklebust wrote:
-> > > On Thu, 2009-09-17 at 21:40 +0200, Jens Axboe wrote:
-> > > > On Thu, Sep 17 2009, Jens Axboe wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > This can cause a hang on NFS umount, since the bdi gets pruned before we
-> > > > > flush any pending dirty IO. Peter, can you check whether it fixes your
-> > > > > issue?
-> > > > 
-> > > > There's another problem with NFS && backing devices. NFS may call
-> > > > bdi_destroy() on a bdi without ever called bdi_init(). This was always a
-> > > > bad idea, now it's an issue.
-> > > > 
-> > > > So, Trond, can I safely add a server->flags private flag to indicate
-> > > > that we have called bdi_init()? Then nfs_free_server() knows when to
-> > > > call bdi_destroy(). Seems like the safest fix, since error handling is
-> > > > currently 'just call nfs_free_server()'.
-> > > 
-> > > Urgh... Is there any reason why we can't just move the call to
-> > > bdi_init() into nfs_bdi_register()? It seems bizarre to have to
-> > > initialise the backing_dev_info twice like this...
-> > 
-> > No reason at all, I don't know why it was implemented that way
-> > originally.
-> > 
-> > > If we do that, then we can just look at the BDI_registered state flag in
-> > > order to figure out if we need to call bdi_unregister()
-> > 
-> > That's not exactly pretty either, diving into internal bdi details to
-> > find out if we did an init/register of the device. BDI_registered is
-> > just a debug flag, it may even go away again shortly.
-> 
-> Trond, we need to make some sort of decision on this very shortly. It
-> definitely needs to be fixed for -rc1, it's causing NFS oopses. So lets
-> make some sort of call on this and get it added, then you/we/I can
-> always pretty it up later.
-> 
+On Fri, Sep 18, 2009 at 4:11 PM, David Rientjes <rientjes@google.com> wrote:
+> On Fri, 18 Sep 2009, David Rientjes wrote:
+>
+>> This seems to be related to 2547089 "x86/PCI: initialize PCI bus node
+>> numbers early" since cpumask_of_pcibus() on x86 doesn't check for -1
+>> pcibus_to_node() like most other architectures.  It'll simply index into
+>> cpumask_of_node for whatever the pci_sysdata's node is, and in this case
+>> that's -1.
+>>
+>
+> Suresh, could you give this patch a try?  It turns out that the
+> mp_bus_to_node map simply leaves all busses that don't have memory
+> affinity to -1, so cpu_online_mask is actually the appropriate cpumask to
+> return and x86 doesn't catch this.
+>
 
-OK... I think the solution is to move the call to bdi_init() into
-nfs_bdi_register(), then move the calls to nfs_bdi_register() into
-nfs_set_super() (with an appropriate call to bdi_destroy() if
-set_anon_super() fails).
+Yeah, I applied this patch and verified, it works fine. No oopses, no traces..
+Feel free to add my
 
-Then we can put bdi_destroy() in place of the call to bdi_unregister()
-in nfs_kill_super().
+Tested-by: Suresh Jayaraman <sjayaraman@suse.de>
 
-I'm not going to attempt a patch, since I don't have a copy of your
-current tree to base it on, but does the above make sense to you?
 
-Cheers
-  Trond
+Thanks,
 
+> x86: default pcibus cpumask to all cpus if it lacks affinity
+>
+> The early initialization of the pci bus to node mapping leaves all busses
+> with a node id of -1 if it lacks memory affinity.  Thus, cpumask_of_pcibus
+> must return all online cpus for such busses.
+>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  arch/x86/include/asm/pci.h |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+> --- a/arch/x86/include/asm/pci.h
+> +++ b/arch/x86/include/asm/pci.h
+> @@ -143,7 +143,11 @@ static inline int __pcibus_to_node(const struct pci_bus *bus)
+>  static inline const struct cpumask *
+>  cpumask_of_pcibus(const struct pci_bus *bus)
+>  {
+> -       return cpumask_of_node(__pcibus_to_node(bus));
+> +       int node;
+> +
+> +       node = __pcibus_to_node(bus);
+> +       return (node == -1) ? cpu_online_mask :
+> +                             cpumask_of_node(node);
+>  }
+>  #endif
+>
+>
