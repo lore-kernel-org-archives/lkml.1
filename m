@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbZIRBty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZIRBu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987AbZIRBty (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 21:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZIRBtv
+	id S1754808AbZIRBu0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 21:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZIRBuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 21:49:51 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:60978 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbZIRBtv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 21:49:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=rSjAdt8zLQmOUNTSd7tPim1K2VHm9WZc4+7nfDtHS0nVGv8f3/7Q+3ybe0nLdIQ13H
-         2zYz4VjtT4KnpWOOdBCHAtoLyYuw2SABzKGG1+DRRLKp3y23vsKHBsPXXVPGmpF0mBGk
-         i2MXlX4j8iFExQGSiUHA9iSEMupQqp+BYQe8o=
-MIME-Version: 1.0
-In-Reply-To: <200909171345.30988.arnd@arndb.de>
-References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com>
-	 <200909171345.30988.arnd@arndb.de>
-Date: Fri, 18 Sep 2009 09:49:53 +0800
-Message-ID: <2375c9f90909171849n429bc474heabdc4d4fd064226@mail.gmail.com>
-Subject: Re: [patch] Makefile: can't build modules outside the kernel tree if 
-	it was built using O=
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Caveh Jalali <ecaveh@gmail.com>, sam@ravnborg.org,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Thu, 17 Sep 2009 21:50:25 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40031 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750979AbZIRBuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 21:50:25 -0400
+Subject: Re: [PATCH] fix ppc64 build failure on fedora
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090917174144.GA11961@bombadil.infradead.org>
+References: <20090917174144.GA11961@bombadil.infradead.org>
+Content-Type: text/plain
+Date: Fri, 18 Sep 2009 11:50:06 +1000
+Message-Id: <1253238606.4932.23.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n8I1o516026428
 
-On Thu, Sep 17, 2009 at 7:45 PM, Arnd Bergmann <arnd@arndb.de> wrote:> On Thursday 17 September 2009, Caveh Jalali wrote:>>> when the platform specific include directories were shuffled around>> without updating the>> top level Makefile. Â however, i think this FAIL is generic, and not>> limited to powerpc.>> here's a patch to the top level Makefile to teach it about the shuffled files:>>>>>> --- /local/caveh/linux/linux-2.6.31/Makefile Â  Â 2009-09-09>> 15:13:59.000000000 -0700>> +++ Makefile Â  Â 2009-09-16 12:23:05.000000000 -0700>> @@ -958,9 +958,9 @@ ifneq ($(KBUILD_SRC),)>> Â  Â  Â  Â  Â  Â  Â  Â  echo " Â in the '$(srctree)' directory.";\>> Â  Â  Â  Â  Â  Â  Â  Â  /bin/false; \>> Â  Â  Â  Â  fi;>> - Â  Â  Â  $(Q)if [ ! -d include2 ]; then Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â \>> - Â  Â  Â  Â  Â  mkdir -p include2; Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â \>> - Â  Â  Â  Â  Â  ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm; Â  Â  \>> + Â  Â  Â  $(Q)if [ ! -d include2 ]; then Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  \>> + Â  Â  Â  Â  Â  mkdir -p include2; Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  \>> + Â  Â  Â  Â  Â  ln -fsn $(srctree)/arch/$(SRCARCH)/include/asm include2/asm; \>> Â  Â  Â  Â  fi>> Â endif>> I think we should no longer have the include2 directory at all with new kernels.>> LINUXINCLUDE already contains the right path in theory:>> LINUXINCLUDE Â  Â := -Iinclude \> Â  Â  Â  Â  Â  Â  Â  Â  Â  $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \> Â  Â  Â  Â  Â  Â  Â  Â  Â  -I$(srctree)/arch/$(hdr-arch)/include Â  Â  Â  Â  Â  Â  Â  \> Â  Â  Â  Â  Â  Â  Â  Â  Â  -include include/linux/autoconf.h
-Hmm, at least in mmotm, we still have include2...
-Maybe Sam is queueing the patches to remove include2?ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Thu, 2009-09-17 at 13:41 -0400, Kyle McMartin wrote:
+> From: Kyle McMartin <kyle@redhat.com>
+> 
+> For some reason or another (newer gcc?) on Fedora 12 koji builders we're
+> seeing _restgpr0_$n symbols instead of _restgpr_$n as handled in the
+> prom_init_check.sh file:
+> Checking prom_init.o symbol '_restgpr0_14'
+> Error: External symbol '_restgpr0_14' referenced from prom_init.c
+> Checking prom_init.o symbol '_restgpr0_17'
+> 
+> Add cases to handle this to the filter portion of the script.
+
+My concern tho is if one of thse is actually called ... we implement
+them in arch/powerpc/lib/crtsaveres.S but with the "other" names..
+
+Ben.
+
+> Signed-off-by: Kyle McMartin <kyle@redhat.com>
+> ---
+> 
+> diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+> index 1ac136b..9f82f49 100644
+> --- a/arch/powerpc/kernel/prom_init_check.sh
+> +++ b/arch/powerpc/kernel/prom_init_check.sh
+> @@ -52,12 +52,18 @@ do
+>  	if [ "${UNDEF:0:9}" = "_restgpr_" ]; then
+>  		OK=1
+>  	fi
+> +	if [ "${UNDEF:0:10}" = "_restgpr0_" ]; then
+> +		OK=1
+> +	fi
+>  	if [ "${UNDEF:0:11}" = "_rest32gpr_" ]; then
+>  		OK=1
+>  	fi
+>  	if [ "${UNDEF:0:9}" = "_savegpr_" ]; then
+>  		OK=1
+>  	fi
+> +	if [ "${UNDEF:0:10}" = "_savegpr0_" ]; then
+> +		OK=1
+> +	fi
+>  	if [ "${UNDEF:0:11}" = "_save32gpr_" ]; then
+>  		OK=1
+>  	fi
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
