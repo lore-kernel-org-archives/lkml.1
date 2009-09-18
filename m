@@ -1,119 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbZIRAwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbZIRAxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604AbZIRAwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 20:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZIRAwO
+	id S1753997AbZIRAxd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 20:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZIRAxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 20:52:14 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:56409 "EHLO smtp.gentoo.org"
+	Thu, 17 Sep 2009 20:53:31 -0400
+Received: from claw.goop.org ([74.207.240.146]:38400 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbZIRAwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 20:52:13 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: spi-devel-general@lists.sourceforge.net,
-       David Brownell <dbrownell@users.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Yi Li <yi.li@analog.com>
-Subject: [PATCH 2/2 v2] mmc_spi: lock the SPI bus when accessing the card
-Date: Thu, 17 Sep 2009 20:52:14 -0400
-Message-Id: <1253235134-25571-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.rc1
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901D41E4C@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901D41E4C@mi8nycmail19.Mi8.com>
+	id S1752220AbZIRAxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Sep 2009 20:53:30 -0400
+Message-ID: <4AB2DA0D.8020606@goop.org>
+Date: Thu, 17 Sep 2009 17:53:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Alok Kataria <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, virtualization@lists.osdl.org
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090918003412.GI26034@sequoia.sous-sol.org>
+In-Reply-To: <20090918003412.GI26034@sequoia.sous-sol.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yi Li <yi.li@analog.com>
+On 09/17/09 17:34, Chris Wright wrote:
+>> One of the options that I am contemplating is to drop the code from the
+>> tip tree in this release cycle, and given that this should be a low risk
+>> change we can remove it from Linus's tree later in the merge cycle.
+>>
+>> Let me know your views on this or if you think we should do this some
+>> other way.
+>>     
+> Typically we give time measured in multiple release cycles
+> before deprecating a feature.  This means placing an entry in
+> Documentation/feature-removal-schedule.txt, and potentially
+> adding some noise to warn users they are using a deprecated
+> feature.
+>   
 
-The MMC/SPI spec does not play well with typical SPI design -- it often
-needs to send out a command in one message, read a response, then do some
-other arbitrary step.  Since we can't let another SPI client use the bus
-during this time, use the new SPI lock/unlock functions to provide the
-required exclusivity.
+That's true if the feature has some functional effect on users.  But at
+first sight, VMI is really just an optimisation, and a non-VMI-equipped
+kernel would be completely functionally equivalent, right?
 
-Signed-off-by: Yi Li <yi.li@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-v2
-	- drop now unused maybe_count_child as pointed out by H Hartley Sweeten
+On the other hand, there could well be a performance regression which
+could affect users.  However they're taking the explicit step of
+withdrawing support for VMI, so I guess they can just take that in their
+stride.
 
- drivers/mmc/host/mmc_spi.c |   41 ++---------------------------------------
- 1 files changed, 2 insertions(+), 39 deletions(-)
-
-diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
-index a461017..c3563a7 100644
---- a/drivers/mmc/host/mmc_spi.c
-+++ b/drivers/mmc/host/mmc_spi.c
-@@ -1084,6 +1084,7 @@ static void mmc_spi_request(struct mmc_host *mmc, struct mmc_request *mrq)
- #endif
- 
- 	/* issue command; then optionally data and stop */
-+	spi_lock_bus(host->spi);
- 	status = mmc_spi_command_send(host, mrq, mrq->cmd, mrq->data != NULL);
- 	if (status == 0 && mrq->data) {
- 		mmc_spi_data_do(host, mrq->cmd, mrq->data, mrq->data->blksz);
-@@ -1092,7 +1093,7 @@ static void mmc_spi_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 		else
- 			mmc_cs_off(host);
- 	}
--
-+	spi_unlock_bus(host->spi);
- 	mmc_request_done(host->mmc, mrq);
- }
- 
-@@ -1294,18 +1295,6 @@ struct count_children {
- 	struct bus_type	*bus;
- };
- 
--static int maybe_count_child(struct device *dev, void *c)
--{
--	struct count_children *ccp = c;
--
--	if (dev->bus == ccp->bus) {
--		if (ccp->n)
--			return -EBUSY;
--		ccp->n++;
--	}
--	return 0;
--}
--
- static int mmc_spi_probe(struct spi_device *spi)
- {
- 	void			*ones;
-@@ -1337,32 +1326,6 @@ static int mmc_spi_probe(struct spi_device *spi)
- 		return status;
- 	}
- 
--	/* We can use the bus safely iff nobody else will interfere with us.
--	 * Most commands consist of one SPI message to issue a command, then
--	 * several more to collect its response, then possibly more for data
--	 * transfer.  Clocking access to other devices during that period will
--	 * corrupt the command execution.
--	 *
--	 * Until we have software primitives which guarantee non-interference,
--	 * we'll aim for a hardware-level guarantee.
--	 *
--	 * REVISIT we can't guarantee another device won't be added later...
--	 */
--	if (spi->master->num_chipselect > 1) {
--		struct count_children cc;
--
--		cc.n = 0;
--		cc.bus = spi->dev.bus;
--		status = device_for_each_child(spi->dev.parent, &cc,
--				maybe_count_child);
--		if (status < 0) {
--			dev_err(&spi->dev, "can't share SPI bus\n");
--			return status;
--		}
--
--		dev_warn(&spi->dev, "ASSUMING SPI bus stays unshared!\n");
--	}
--
- 	/* We need a supply of ones to transmit.  This is the only time
- 	 * the CPU touches these, so cache coherency isn't a concern.
- 	 *
--- 
-1.6.5.rc1
-
+    J
