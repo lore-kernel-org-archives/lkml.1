@@ -1,163 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbZIRGxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZIRGy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753749AbZIRGxZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 02:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZIRGxY
+	id S1756302AbZIRGy5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 02:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZIRGyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 02:53:24 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57884 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbZIRGxX (ORCPT
+	Fri, 18 Sep 2009 02:54:47 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:57038 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753056AbZIRGyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 02:53:23 -0400
-Subject: Re: [PATCH 2/4] send callback when swap slot is freed
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nitin Gupta <ngupta@vflare.org>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Ed Tomlinson <edt@aei.ca>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>,
-       hugh.dickins@tiscali.co.uk, kamezawa.hiroyu@jp.fujitsu.com,
-       nishimura@mxp.nes.nec.co.jp
-In-Reply-To: <1253227412-24342-3-git-send-email-ngupta@vflare.org>
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
-	 <1253227412-24342-3-git-send-email-ngupta@vflare.org>
-Date: Fri, 18 Sep 2009 09:53:25 +0300
-Message-Id: <1253256805.4959.8.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Fri, 18 Sep 2009 02:54:46 -0400
+X-Trace: 259489334/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.73.110/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.73.110
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEABvMskpPRUlu/2dsb2JhbACBUtJmhBwFgVg
+X-IronPort-AV: E=Sophos;i="4.44,408,1249254000"; 
+   d="scan'208";a="259489334"
+Date: Fri, 18 Sep 2009 07:53:58 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>
+Subject: Re: aim7 scalability issue on 4 socket machine
+In-Reply-To: <20090917195909.3a00ef83.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0909180742500.14561@sister.anvils>
+References: <1253179879.2606.37.camel@ymzhang> <1253180411.8497.1.camel@twins>
+ <Pine.LNX.4.64.0909171122180.25864@sister.anvils> <1253239339.2606.40.camel@ymzhang>
+ <20090917195909.3a00ef83.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-18 at 04:13 +0530, Nitin Gupta wrote:
-> Currently, we have "swap discard" mechanism which sends a discard bio request
-> when we find a free cluster during scan_swap_map(). This callback can come a
-> long time after swap slots are actually freed.
-> 
-> This delay in callback is a great problem when (compressed) RAM [1] is used
-> as a swap device. So, this change adds a callback which is called as
-> soon as a swap slot becomes free. For above mentioned case of swapping
-> over compressed RAM device, this is very useful since we can immediately
-> free memory allocated for this swap page.
-> 
-> This callback does not replace swap discard support. It is called with
-> swap_lock held, so it is meant to trigger action that finishes quickly.
-> However, swap discard is an I/O request and can be used for taking longer
-> actions.
-> 
-> It is preferred to use this callback for ramzswap case even if discard
-> mechanism could be improved such that it can be called as often as required.
-> This is because, allocation of 'bio'(s) is undesirable since ramzswap always
-> operates under low memory conditions (its a swap device). Also, batching of
-> discard bio requests is not optimal since stale data can accumulate very
-> quickly in ramzswap devices, pushing system further into low memory state.
-> 
-> Links:
-> [1] http://compcache.googlecode.com/
-> 
-> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
-> 
-> ---
->  include/linux/swap.h |    5 +++++
->  mm/swapfile.c        |   34 ++++++++++++++++++++++++++++++++++
->  2 files changed, 39 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 7c15334..64796fc 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -8,6 +8,7 @@
->  #include <linux/memcontrol.h>
->  #include <linux/sched.h>
->  #include <linux/node.h>
-> +#include <linux/blkdev.h>
-> 
->  #include <asm/atomic.h>
->  #include <asm/page.h>
-> @@ -20,6 +21,8 @@ struct bio;
->  #define SWAP_FLAG_PRIO_MASK	0x7fff
->  #define SWAP_FLAG_PRIO_SHIFT	0
-> 
-> +typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
-> +
->  static inline int current_is_kswapd(void)
->  {
->  	return current->flags & PF_KSWAPD;
-> @@ -155,6 +158,7 @@ struct swap_info_struct {
->  	unsigned int max;
->  	unsigned int inuse_pages;
->  	unsigned int old_block_size;
-> +	swap_free_notify_fn *swap_free_notify_fn;
->  };
-> 
->  struct swap_list_t {
-> @@ -295,6 +299,7 @@ extern sector_t swapdev_block(int, pgoff_t);
->  extern struct swap_info_struct *get_swap_info_struct(unsigned);
->  extern int reuse_swap_page(struct page *);
->  extern int try_to_free_swap(struct page *);
-> +extern void set_swap_free_notify(struct block_device *, swap_free_notify_fn *);
->  struct backing_dev_info;
-> 
->  /* linux/mm/thrash.c */
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index 74f1102..b165db0 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -554,6 +554,38 @@ out:
->  	return NULL;
->  }
-> 
-> +/*
-> + * Sets callback for event when swap_map[offset] == 0
-> + * i.e. page at this swap offset is no longer used.
-> + */
-> +void set_swap_free_notify(struct block_device *bdev,
-> +			swap_free_notify_fn *notify_fn)
-> +{
-> +	unsigned int i;
-> +	struct swap_info_struct *sis;
-> +
-> +	spin_lock(&swap_lock);
-> +	for (i = 0; i <= nr_swapfiles; i++) {
-> +		sis = &swap_info[i];
-> +		if (!(sis->flags & SWP_USED))
-> +			continue;
-> +		if (sis->bdev == bdev)
-> +			break;
-> +	}
-> +
-> +	/* swap device not found */
-> +	if (i > nr_swapfiles) {
-> +		spin_unlock(&swap_lock);
-> +		return;
-> +	}
-> +
-> +	BUG_ON(!sis || sis->swap_free_notify_fn);
-> +	sis->swap_free_notify_fn = notify_fn;
-> +	spin_unlock(&swap_lock);
-> +	return;
-> +}
-> +EXPORT_SYMBOL_GPL(set_swap_free_notify);
-> +
->  static int swap_entry_free(struct swap_info_struct *p,
->  			   swp_entry_t ent, int cache)
->  {
-> @@ -585,6 +617,8 @@ static int swap_entry_free(struct swap_info_struct *p,
->  			swap_list.next = p - swap_info;
->  		nr_swap_pages++;
->  		p->inuse_pages--;
-> +		if (p->swap_free_notify_fn)
-> +			p->swap_free_notify_fn(p->bdev, offset);
->  	}
->  	if (!swap_count(count))
->  		mem_cgroup_uncharge_swap(ent);
+On Thu, 17 Sep 2009, Andrew Morton wrote:
+> On Fri, 18 Sep 2009 10:02:19 +0800 "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
+> > > 
+> > > So, Yanmin, please retest with http://lkml.org/lkml/2009/9/13/25
+> > > and let us know if that works as well for you - thanks.
+> > I tested Lee's patch and it does fix the issue.
 
-OK, this hits core kernel code so we need to CC some more mm/swapfile.c
-people. The set_swap_free_notify() API looks strange to me. Hugh, I
-think you mentioned that you're okay with an explicit hook. Any
-suggestions how to do this cleanly?
+Thanks for checking and reporting back, Yanmin.
 
-			Pekka
+> 
+> Do we think we should cook up something for -stable?
 
+Gosh, I laughed at Lee (sorry!) for suggesting it for -stable:
+is stable really for getting a better number out of a benchmark?
+
+I'd have thought the next release is the right place for that; but
+I've no problem if you guys and the stable guys agree it's appropriate.
+
+> 
+> Either this is a regression or the workload is particularly obscure. 
+
+I've not cross-checked descriptions, but assume Lee was actually
+testing on exactly the same kind of upcoming Nehalem as Yanmin, and
+that machine happens to have characteristics which show up badly here.
+
+> 
+> aim7 is sufficiently non-obscure to make me wonder what's happened here?
+
+Not a regression, just the onward march of new hardware, I think.
+Could easily be other such things in other places with other tests.
+
+Hugh
