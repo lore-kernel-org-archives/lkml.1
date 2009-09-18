@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbZIRPCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZIRPCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753981AbZIRPCn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 11:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbZIRPCn
+	id S1754285AbZIRPCt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 11:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbZIRPCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 11:02:43 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:39646 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370AbZIRPCm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 11:02:42 -0400
-Message-ID: <4AB3A102.90406@austin.ibm.com>
-Date: Fri, 18 Sep 2009 10:02:26 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 18 Sep 2009 11:02:48 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54617 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753612AbZIRPCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 11:02:45 -0400
+Date: Fri, 18 Sep 2009 17:02:48 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
+Subject: Re: [PATCH] nfs: fix bdi_unregister() before sb kill
+Message-ID: <20090918150248.GB23126@kernel.dk>
+References: <20090917124233.GJ23126@kernel.dk> <20090917194027.GS23126@kernel.dk> <1253229410.2783.16.camel@heimdal.trondhjem.org> <20090918064006.GU23126@kernel.dk>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5 v2] Export memory_sysdev_class
-References: <4AB39FB3.1020608@austin.ibm.com>
-In-Reply-To: <4AB39FB3.1020608@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090918064006.GU23126@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export the memory_sysdev_class structure.  This is needed so we can create
-a 'release' file in sysfs in addition to the existing 'probe' file in
-order to support DLPAR removal of memory on the powerpc/pseries platform.
-The new 'release' file will be powerpc/pseries only.
+On Fri, Sep 18 2009, Jens Axboe wrote:
+> On Thu, Sep 17 2009, Trond Myklebust wrote:
+> > On Thu, 2009-09-17 at 21:40 +0200, Jens Axboe wrote:
+> > > On Thu, Sep 17 2009, Jens Axboe wrote:
+> > > > Hi,
+> > > > 
+> > > > This can cause a hang on NFS umount, since the bdi gets pruned before we
+> > > > flush any pending dirty IO. Peter, can you check whether it fixes your
+> > > > issue?
+> > > 
+> > > There's another problem with NFS && backing devices. NFS may call
+> > > bdi_destroy() on a bdi without ever called bdi_init(). This was always a
+> > > bad idea, now it's an issue.
+> > > 
+> > > So, Trond, can I safely add a server->flags private flag to indicate
+> > > that we have called bdi_init()? Then nfs_free_server() knows when to
+> > > call bdi_destroy(). Seems like the safest fix, since error handling is
+> > > currently 'just call nfs_free_server()'.
+> > 
+> > Urgh... Is there any reason why we can't just move the call to
+> > bdi_init() into nfs_bdi_register()? It seems bizarre to have to
+> > initialise the backing_dev_info twice like this...
+> 
+> No reason at all, I don't know why it was implemented that way
+> originally.
+> 
+> > If we do that, then we can just look at the BDI_registered state flag in
+> > order to figure out if we need to call bdi_unregister()
+> 
+> That's not exactly pretty either, diving into internal bdi details to
+> find out if we did an init/register of the device. BDI_registered is
+> just a debug flag, it may even go away again shortly.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
+Trond, we need to make some sort of decision on this very shortly. It
+definitely needs to be fixed for -rc1, it's causing NFS oopses. So lets
+make some sort of call on this and get it added, then you/we/I can
+always pretty it up later.
 
-Index: powerpc/drivers/base/memory.c
-===================================================================
---- powerpc.orig/drivers/base/memory.c	2009-09-15 14:52:12.000000000 -0500
-+++ powerpc/drivers/base/memory.c	2009-09-15 14:53:32.000000000 -0500
-@@ -28,9 +28,10 @@
- 
- #define MEMORY_CLASS_NAME	"memory"
- 
--static struct sysdev_class memory_sysdev_class = {
-+struct sysdev_class memory_sysdev_class = {
- 	.name = MEMORY_CLASS_NAME,
- };
-+EXPORT_SYMBOL(memory_sysdev_class);
- 
- static const char *memory_uevent_name(struct kset *kset, struct kobject *kobj)
- {
-Index: powerpc/include/linux/memory_hotplug.h
-===================================================================
---- powerpc.orig/include/linux/memory_hotplug.h	2009-09-15 14:52:12.000000000 -0500
-+++ powerpc/include/linux/memory_hotplug.h	2009-09-15 14:53:32.000000000 -0500
-@@ -12,6 +12,8 @@
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- 
-+extern struct sysdev_class memory_sysdev_class;
-+
- /*
-  * Types for free bootmem.
-  * The normal smallest mapcount is -1. Here is smaller value than it.
+-- 
+Jens Axboe
+
