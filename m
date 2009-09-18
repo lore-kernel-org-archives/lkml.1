@@ -1,303 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbZIRVK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZIRVKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757599AbZIRVK3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 17:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZIRVKZ
+	id S1757297AbZIRVKM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 17:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZIRVKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 17:10:25 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:48968 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755344AbZIRVKX (ORCPT
+	Fri, 18 Sep 2009 17:10:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48149 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754992AbZIRVKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 17:10:23 -0400
-X-Greylist: delayed 306 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Sep 2009 17:10:23 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=R6kZBpPnsuDikFfS4g4smrz+sCwamccZIM8FDv5zK5WY1FPyIp19LvtnbuktFw0hRd
-         jxZwsEx0/HES6Qu0LEeyMgn6hmZbDtWRa+77azcGtFaNNiVn8dOoluKjObNvjgtLPjji
-         404oyl3xN4I39FMYrnwFk4gmbx3x5xBlP2sm0=
-Message-ID: <4AB3F60D.2030808@gmail.com>
-Date: Fri, 18 Sep 2009 23:05:17 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Fri, 18 Sep 2009 17:10:05 -0400
+Date: Fri, 18 Sep 2009 14:09:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Kay Sievers <kay.sievers@vrfy.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
+In-Reply-To: <m14or0vul4.fsf@fess.ebiederm.org>
+Message-ID: <alpine.LFD.2.01.0909181407370.4950@localhost.localdomain>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <m1ab0tcwep.fsf@fess.ebiederm.org> <20090917185306.GA28635@elte.hu> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>
+ <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com> <alpine.LFD.2.01.0909171709410.4950@localhost.localdomain> <1253238637.4071.10.camel@yio.site> <m14or0vul4.fsf@fess.ebiederm.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Nitin Gupta <ngupta@vflare.org>
-CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
-Subject: Re: [PATCH 1/4] xvmalloc memory allocator
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org> <1253227412-24342-2-git-send-email-ngupta@vflare.org>
-In-Reply-To: <1253227412-24342-2-git-send-email-ngupta@vflare.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nitin Gupta wrote:
-> (...)
-> +
-> +/*
-> + * Allocate a memory page. Called when a pool needs to grow.
-> + */
-> +static struct page *xv_alloc_page(gfp_t flags)
-> +{
-> +	struct page *page;
-> +
-> +	page = alloc_page(flags);
-> +	if (unlikely(!page))
-> +		return 0;
-> +
-> +	return page;
-> +}
-
-When alloc_page returns 0 it returns 0, when not - it returns page.
-Why not call alloc_page directly?
-
-> (...)
-> +/*
-> + * Remove block from freelist. Index 'slindex' identifies the freelist.
-> + */
-> +static void remove_block(struct xv_pool *pool, struct page *page, u32 offset,
-> +			struct block_header *block, u32 slindex)
-> +{
-> +	u32 flindex;
-> +	struct block_header *tmpblock;
-> +
-> +	if (pool->freelist[slindex].page == page
-> +	   && pool->freelist[slindex].offset == offset) {
-> +		remove_block_head(pool, block, slindex);
-> +		return;
-> +	}
-> +
-> +	flindex = slindex / BITS_PER_LONG;
-> +
-> +	if (block->link.prev_page) {
-> +		tmpblock = get_ptr_atomic(block->link.prev_page,
-> +				block->link.prev_offset, KM_USER1);
-> +		tmpblock->link.next_page = block->link.next_page;
-> +		tmpblock->link.next_offset = block->link.next_offset;
-> +		put_ptr_atomic(tmpblock, KM_USER1);
-> +	}
-> +
-> +	if (block->link.next_page) {
-> +		tmpblock = get_ptr_atomic(block->link.next_page,
-> +				block->link.next_offset, KM_USER1);
-> +		tmpblock->link.prev_page = block->link.prev_page;
-> +		tmpblock->link.prev_offset = block->link.prev_offset;
-> +		put_ptr_atomic(tmpblock, KM_USER1);
-> +	}
-> +
-> +	return;
-> +}
-
-needless return
-
-> +
-> +/*
-> + * Allocate a page and add it freelist of given pool.
-> + */
-> +static int grow_pool(struct xv_pool *pool, gfp_t flags)
-> +{
-> +	struct page *page;
-> +	struct block_header *block;
-> +
-> +	page = xv_alloc_page(flags);
-> +	if (unlikely(!page))
-> +		return -ENOMEM;
-> +
-> +	stat_inc(&pool->total_pages);
-> +
-> +	spin_lock(&pool->lock);
-> +	block = get_ptr_atomic(page, 0, KM_USER0);
-> +
-> +	block->size = PAGE_SIZE - XV_ALIGN;
-> +	set_flag(block, BLOCK_FREE);
-> +	clear_flag(block, PREV_FREE);
-> +	set_blockprev(block, 0);
-> +
-> +	insert_block(pool, page, 0, block);
-> +
-> +	put_ptr_atomic(block, KM_USER0);
-> +	spin_unlock(&pool->lock);
-> +
-> +	return 0;
-> +}
-> +
-> (...)
-> +/**
-> + * xv_malloc - Allocate block of given size from pool.
-> + * @pool: pool to allocate from
-> + * @size: size of block to allocate
-> + * @page: page no. that holds the object
-> + * @offset: location of object within page
-> + *
-> + * On success, <page, offset> identifies block allocated
-> + * and 0 is returned. On failure, <page, offset> is set to
-> + * 0 and -ENOMEM is returned.
-> + *
-> + * Allocation requests with size > XV_MAX_ALLOC_SIZE will fail.
-> + */
-> +int xv_malloc(struct xv_pool *pool, u32 size, struct page **page,
-> +		u32 *offset, gfp_t flags)
-> +{
-> +	int error;
-> +	u32 index, tmpsize, origsize, tmpoffset;
-> +	struct block_header *block, *tmpblock;
-> +
-> +	*page = NULL;
-> +	*offset = 0;
-> +	origsize = size;
-> +
-> +	if (unlikely(!size || size > XV_MAX_ALLOC_SIZE))
-> +		return -ENOMEM;
-> +
-> +	size = ALIGN(size, XV_ALIGN);
-> +
-> +	spin_lock(&pool->lock);
-> +
-> +	index = find_block(pool, size, page, offset);
-> +
-> +	if (!*page) {
-> +		spin_unlock(&pool->lock);
-> +		if (flags & GFP_NOWAIT)
-> +			return -ENOMEM;
-> +		error = grow_pool(pool, flags);
-> +		if (unlikely(error))
-> +			return -ENOMEM;
-
-shouldn't it return error? (grow_pool returns 0 or -ENOMEM for now but...)
-
-> +
-> +		spin_lock(&pool->lock);
-> +		index = find_block(pool, size, page, offset);
-> +	}
-> +
-> +	if (!*page) {
-> +		spin_unlock(&pool->lock);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	block = get_ptr_atomic(*page, *offset, KM_USER0);
-> +
-> +	remove_block_head(pool, block, index);
-> +
-> +	/* Split the block if required */
-> +	tmpoffset = *offset + size + XV_ALIGN;
-> +	tmpsize = block->size - size;
-> +	tmpblock = (struct block_header *)((char *)block + size + XV_ALIGN);
-> +	if (tmpsize) {
-> +		tmpblock->size = tmpsize - XV_ALIGN;
-> +		set_flag(tmpblock, BLOCK_FREE);
-> +		clear_flag(tmpblock, PREV_FREE);
-> +
-> +		set_blockprev(tmpblock, *offset);
-> +		if (tmpblock->size >= XV_MIN_ALLOC_SIZE)
-> +			insert_block(pool, *page, tmpoffset, tmpblock);
-> +
-> +		if (tmpoffset + XV_ALIGN + tmpblock->size != PAGE_SIZE) {
-> +			tmpblock = BLOCK_NEXT(tmpblock);
-> +			set_blockprev(tmpblock, tmpoffset);
-> +		}
-> +	} else {
-> +		/* This block is exact fit */
-> +		if (tmpoffset != PAGE_SIZE)
-> +			clear_flag(tmpblock, PREV_FREE);
-> +	}
-> +
-> +	block->size = origsize;
-> +	clear_flag(block, BLOCK_FREE);
-> +
-> +	put_ptr_atomic(block, KM_USER0);
-> +	spin_unlock(&pool->lock);
-> +
-> +	*offset += XV_ALIGN;
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Free block identified with <page, offset>
-> + */
-> +void xv_free(struct xv_pool *pool, struct page *page, u32 offset)
-> +{
-> +	void *page_start;
-> +	struct block_header *block, *tmpblock;
-> +
-> +	offset -= XV_ALIGN;
-> +
-> +	spin_lock(&pool->lock);
-> +
-> +	page_start = get_ptr_atomic(page, 0, KM_USER0);
-> +	block = (struct block_header *)((char *)page_start + offset);
-> +
-> +	/* Catch double free bugs */
-> +	BUG_ON(test_flag(block, BLOCK_FREE));
-> +
-> +	block->size = ALIGN(block->size, XV_ALIGN);
-> +
-> +	tmpblock = BLOCK_NEXT(block);
-> +	if (offset + block->size + XV_ALIGN == PAGE_SIZE)
-> +		tmpblock = NULL;
-> +
-> +	/* Merge next block if its free */
-> +	if (tmpblock && test_flag(tmpblock, BLOCK_FREE)) {
-> +		/*
-> +		 * Blocks smaller than XV_MIN_ALLOC_SIZE
-> +		 * are not inserted in any free list.
-> +		 */
-> +		if (tmpblock->size >= XV_MIN_ALLOC_SIZE) {
-> +			remove_block(pool, page,
-> +				    offset + block->size + XV_ALIGN, tmpblock,
-> +				    get_index_for_insert(tmpblock->size));
-> +		}
-> +		block->size += tmpblock->size + XV_ALIGN;
-> +	}
-> +
-> +	/* Merge previous block if its free */
-> +	if (test_flag(block, PREV_FREE)) {
-> +		tmpblock = (struct block_header *)((char *)(page_start) +
-> +						get_blockprev(block));
-> +		offset = offset - tmpblock->size - XV_ALIGN;
-> +
-> +		if (tmpblock->size >= XV_MIN_ALLOC_SIZE)
-> +			remove_block(pool, page, offset, tmpblock,
-> +				    get_index_for_insert(tmpblock->size));
-> +
-> +		tmpblock->size += block->size + XV_ALIGN;
-> +		block = tmpblock;
-> +	}
-> +
-> +	/* No used objects in this page. Free it. */
-> +	if (block->size == PAGE_SIZE - XV_ALIGN) {
-> +		put_ptr_atomic(page_start, KM_USER0);
-> +		spin_unlock(&pool->lock);
-> +
-> +		xv_free_page(page);
-> +		stat_dec(&pool->total_pages);
-> +		return;
-> +	}
-> +
-> +	set_flag(block, BLOCK_FREE);
-> +	if (block->size >= XV_MIN_ALLOC_SIZE)
-> +		insert_block(pool, page, offset, block);
-> +
-> +	if (offset + block->size + XV_ALIGN != PAGE_SIZE) {
-> +		tmpblock = BLOCK_NEXT(block);
-> +		set_flag(tmpblock, PREV_FREE);
-> +		set_blockprev(tmpblock, offset);
-> +	}
-> +
-> +	put_ptr_atomic(page_start, KM_USER0);
-> +	spin_unlock(&pool->lock);
-> +
-> +	return;
-> +}
-
-needless return
 
 
-Marcin
+On Fri, 18 Sep 2009, Eric W. Biederman wrote:
+> 
+> As a special case you can implement this much
+> more simply in devtmpfs_mount just do:
+> 
+> int devtmpfs_mount(const char *mountpoint)
+> {
+>         sys_mount("none", "dev", "devtmpfs", MS_SILENT, NULL);
+> 	sys_chmod("dev/console", 0666);
+> 	sys_chmod("dev/tty", 0666);
+> 	sys_chmod("dev/null", 0666);
+> 	sys_chmod("dev/zero", 0666);
+> }
+
+Yeah, I think that's the way to go.
+
+But add some error checking for sys_mount(), so that the code in question 
+would _never_ try to do a chmod() on some unrelated /dev/ entries. 
+
+(Ok, so the mount isn't supposed to fail, but still - conceptually that's 
+a really important error to check for)
+
+		Linus
