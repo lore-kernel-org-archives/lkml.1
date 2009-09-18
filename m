@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZIRIiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZIRIlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbZIRIiU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 04:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZIRIiS
+	id S1755474AbZIRIlc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 04:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbZIRIla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 04:38:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47773 "EHLO hera.kernel.org"
+	Fri, 18 Sep 2009 04:41:30 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:41551 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751518AbZIRIiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 04:38:17 -0400
-Message-ID: <4AB34722.7050105@kernel.org>
-Date: Fri, 18 Sep 2009 17:38:58 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1750741AbZIRIl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 04:41:29 -0400
+Message-ID: <4AB34795.2080907@atmel.com>
+Date: Fri, 18 Sep 2009 10:40:53 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: sparc64 pcpu failures...
-References: <20090917.221807.208354411.davem@davemloft.net> <20090917.223723.07032792.davem@davemloft.net>
-In-Reply-To: <20090917.223723.07032792.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+CC: linux-usb@vger.kernel.org, patrice.vilchez@atmel.com,
+       linux-kernel@vger.kernel.org, david-b@pacbell.net, avictor.za@gmail.com,
+       haavard.skinnemoen@atmel.com, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] at91: use gpiolib calls for USB vbus pin on at91sam9g45
+References: <4AB10F7D.9060706@atmel.com> <1253122169-14806-1-git-send-email-nicolas.ferre@atmel.com> <20090916215328.GG4172@game.jcrosoft.org> <4AB1EFC5.2060707@atmel.com> <20090917090038.GD29905@game.jcrosoft.org>
+In-Reply-To: <20090917090038.GD29905@game.jcrosoft.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 18 Sep 2009 08:38:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, David.
+Jean-Christophe PLAGNIOL-VILLARD :
+> On 10:13 Thu 17 Sep     , Nicolas Ferre wrote:
+>> Jean-Christophe PLAGNIOL-VILLARD :
+>>> On 19:29 Wed 16 Sep     , Nicolas Ferre wrote:
+>>>> Change pin configuration for USB vbus on at91sam9g45: use the generic gpiolib
+>>>> call instead of the at91 specific one.
+>>>> Use gpio_request() function with same identifier for OHCI and EHCI hosts as
+>>>> they are sharing the same pin.
+>>>>
+>>>> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>>>> ---
+>>>> This patch is on top of at91sam9g45 USB integration one:
+>>>> "[PATCH 2/2] at91/USB: at91sam9g45 series USB host integration"
+>>>> http://lkml.org/lkml/2009/6/9/221
+>>>>
+>>>>  arch/arm/mach-at91/at91sam9g45_devices.c |   12 ++++++++----
+>>>>  1 files changed, 8 insertions(+), 4 deletions(-)
+>>>>
+>>>> diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
+>>>> index 5be8cf2..7d939c0 100644
+>>>> --- a/arch/arm/mach-at91/at91sam9g45_devices.c
+>>>> +++ b/arch/arm/mach-at91/at91sam9g45_devices.c
+>>>> @@ -118,8 +118,10 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data)
+>>>>  
+>>>>  	/* Enable VBus control for UHP ports */
+>>>>  	for (i = 0; i < data->ports; i++) {
+>>>> -		if (data->vbus_pin[i])
+>>>> -			at91_set_gpio_output(data->vbus_pin[i], 0);
+>>>> +		if (data->vbus_pin[i]) {
+>>>> +			gpio_request(data->vbus_pin[i], "usb host vbus");
+>>>> +			gpio_direction_output(data->vbus_pin[i], 0);
+>>>> +		}
+>>>>  	}
+>>>>  
+>>>>  	usbh_ohci_data = *data;
+>>>> @@ -173,8 +175,10 @@ void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data)
+>>>>  
+>>>>  	/* Enable VBus control for UHP ports */
+>>>>  	for (i = 0; i < data->ports; i++) {
+>>>> -		if (data->vbus_pin[i])
+>>>> -			at91_set_gpio_output(data->vbus_pin[i], 0);
+>>>> +		if (data->vbus_pin[i]) {
+>>>> +			gpio_request(data->vbus_pin[i], "usb host vbus");
+>>>> +			gpio_direction_output(data->vbus_pin[i], 0);
+>>>> +		}
+>>>>  	}
+>>> as you do the same think for ehci & ohci why not factorize it?
+>> Just because you may choose only one or the other controller.
+>> For instance, if you only want ohci, you can disable ehci selection and
+>> always have its configuration done.
+> I agree but both configuration function share some code which could be
+> factorize, is it not?
 
-David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Thu, 17 Sep 2009 22:18:07 -0700 (PDT)
-> 
->> Tejun, I just started seeing the following on sparc64:
->>
->> [   56.422005] WARNING: at mm/vmalloc.c:1991 pcpu_get_vm_areas+0x1b4/0x5fc()
->  ...
->> Might this be a result of:
->>
->> commit bcb2107fdbecef3de55d597d23453747af81ba88
->> Author: Tejun Heo <tj@kernel.org>
->> Date:   Fri Aug 14 15:00:53 2009 +0900
->>
->>     sparc64: use embedding percpu first chunk allocator
->>     
->>     sparc64 currently allocates a large page for each cpu and partially
->>     remap them into vmalloc area much like what lpage first chunk
->>     allocator did.  As a 4M page is used for each cpu, this results in
->>     very large unit size and also adds TLB pressure due to the double
->>     mapping of pages in the first chunk.
->>     
->>     This patch converts sparc64 to use the embedding percpu first chunk
->>     allocator which now knows how to handle NUMA configurations.  This
->>     simplifies the code a lot, doesn't incur any extra TLB pressure and
->>     results in better utilization of address space.
->>     
->>     Signed-off-by: Tejun Heo <tj@kernel.org>
->>     Acked-by: David S. Miller <davem@davemloft.net>
->>
->> Do you think?
-> 
-> I've verified that reverting this makes the problem go away.
+Well it is true that it is duplication *but* we are talking about only a
+very few lines with very linear configuration instructions.
+I do not think it is even worth doing.
 
-Yes, this would be the result of the new congruent sparse allocator.
-Heh... I didn't really expect that WARN_ON() to actually trigger.
-What it means is that the farthest percpu units were too far to fit
-into vmalloc area so percpu chunks couldn't be allocated in the
-vmalloc area.  Checking... vmalloc area on sparc64 is only 4G so yeap
-that is entirely possible.
-
-Hmmm... the congruent sparse allocator assumes vmalloc area to be
-larger with some margin than the farthest physical memory nodes.  On
-x86, powerpc and ia64, this holds with sufficient margin.  Would it be
-possible to modify sparc64 memory layout so that the assumption can be
-satisfied?  If that's not possible, going back to lpage is an option
-but in many ways congruent sparse allocator is better.
-
-Thanks.
-
+Bye,
 -- 
-tejun
+Nicolas Ferre
+
