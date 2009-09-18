@@ -1,125 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbZIRV3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZIRVT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbZIRV3c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 17:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZIRV31
+	id S1753312AbZIRVT3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 17:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZIRVT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 17:29:27 -0400
-Received: from flusers.ccur.com ([12.192.68.2]:34057 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752532AbZIRV30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 17:29:26 -0400
-X-Greylist: delayed 792 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Sep 2009 17:29:26 EDT
-Date: Fri, 18 Sep 2009 17:15:50 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: Al Viro <viro@zeniv.linux.org.uk>, Steve French <sfrench@us.ibm.com>,
-       Jeff Layton <sfrench@us.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: circular locking dependency detected panic in filldir when CONFIG_PROVE_LOCKING=y
-Message-ID: <20090918211550.GA8258@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Fri, 18 Sep 2009 17:19:27 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:21424 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372AbZIRVT0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 17:19:26 -0400
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.01.0909181407370.4950@localhost.localdomain>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <m1ab0tcwep.fsf@fess.ebiederm.org> 
+	<20090917185306.GA28635@elte.hu> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> 
+	<alpine.LFD.2.01.0909171322210.4950@localhost.localdomain> 
+	<ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com> 
+	<alpine.LFD.2.01.0909171709410.4950@localhost.localdomain> 
+	<1253238637.4071.10.camel@yio.site> <m14or0vul4.fsf@fess.ebiederm.org> 
+	<alpine.LFD.2.01.0909181407370.4950@localhost.localdomain>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 18 Sep 2009 23:19:15 +0200
+Message-ID: <ac3eb2510909181419p4a9fa382pc93c81aaa871e80c@mail.gmail.com>
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I experienced a might_fault panic from NFS's use of filldir
-in a 2.6.31 kernel compiled with CONFIG_PROVE_LOCKING=y.
+On Fri, Sep 18, 2009 at 23:09, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Fri, 18 Sep 2009, Eric W. Biederman wrote:
+>>
+>> As a special case you can implement this much
+>> more simply in devtmpfs_mount just do:
+>>
+>> int devtmpfs_mount(const char *mountpoint)
+>> {
+>>         sys_mount("none", "dev", "devtmpfs", MS_SILENT, NULL);
+>>       sys_chmod("dev/console", 0666);
+>>       sys_chmod("dev/tty", 0666);
+>>       sys_chmod("dev/null", 0666);
+>>       sys_chmod("dev/zero", 0666);
+>> }
+>
+> Yeah, I think that's the way to go.
 
-Looking at filldir, I see it is accessing user space with
-__put_dir's (which are inatomic) and with one copy_to_user
-(which is not inatomic).  It is the single copy_to_user
-which is causing the might_fault panic.
+Are we sure about console? It's not what udev does today, it stays as 0600.
 
-It doesn't make any sense to be mixing use of inatomic
-and non-inatomic services in filldir.  Either all should be
-the inatomic version, or none should be.
-
-The might_fault condition being reported by the panic looks
-real to me, so I suspect the wrong answer is converting
-everything to the inatomic version, since that just
-suppresses the circular dependency check while leaving
-the circular dependency in place.
-
-Regards,
-Joe
-
-      =======================================================
-      [ INFO: possible circular locking dependency detected ]
-      2.6.31-debug #1
-      -------------------------------------------------------
-      passwd/28023 is trying to acquire lock:
-       (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<c11487b9>] nfs_invalidate_mapping+0x24/0x55
-
-      but task is already holding lock:
-       (&mm->mmap_sem){++++++}, at: [<c10061b3>] sys_mmap2+0x74/0xa7
-
-      which lock already depends on the new lock.
-
-      the existing dependency chain (in reverse order) is:
-
-      -> #1 (&mm->mmap_sem){++++++}:
-             [<c105a9f0>] check_prev_add+0x2dc/0x46e
-             [<c105abe4>] check_prevs_add+0x62/0xba
-             [<c105af79>] validate_chain+0x33d/0x3eb
-             [<c105b52f>] __lock_acquire+0x508/0x57e
-             [<c105c54b>] lock_acquire+0xb2/0xcf
-             [<c10a15db>] might_fault+0x60/0x80
-             [<c1224a58>] copy_to_user+0x2d/0x41
-             [<c10c6003>] filldir+0x8d/0xcd
-             [<c1143b1d>] nfs_do_filldir+0xd2/0x1be
-             [<c1145db0>] nfs_readdir+0x6bf/0x74f
-             [<c10c609e>] vfs_readdir+0x5b/0x87
-             [<c10c6304>] sys_getdents+0x64/0xa4
-             [<c1002add>] sysenter_do_call+0x1b/0x48
-             [<ffffffff>] 0xffffffff
-
-      -> #0 (&sb->s_type->i_mutex_key#5){+.+.+.}:
-             [<c105a78c>] check_prev_add+0x78/0x46e
-             [<c105abe4>] check_prevs_add+0x62/0xba
-             [<c105af79>] validate_chain+0x33d/0x3eb
-             [<c105b52f>] __lock_acquire+0x508/0x57e
-             [<c105c54b>] lock_acquire+0xb2/0xcf
-             [<c16545dc>] mutex_lock_nested+0x53/0x2e4
-             [<c11487b9>] nfs_invalidate_mapping+0x24/0x55
-             [<c1148aa9>] nfs_revalidate_mapping+0x59/0x5e
-             [<c11464c9>] nfs_file_mmap+0x55/0x5d
-             [<c10a43f7>] mmap_region+0x1dc/0x373
-             [<c10a48c0>] do_mmap_pgoff+0x249/0x2ab
-             [<c10061c9>] sys_mmap2+0x8a/0xa7
-             [<c1002add>] sysenter_do_call+0x1b/0x48
-             [<ffffffff>] 0xffffffff
-
-      other info that might help us debug this:
-
-      1 lock held by passwd/28023:
-       #0:  (&mm->mmap_sem){++++++}, at: [<c10061b3>] sys_mmap2+0x74/0xa7
-
-      stack backtrace:
-      Pid: 28023, comm: passwd Not tainted 2.6.31-debug #1
-      Call Trace:
-       [<c105a626>] print_circular_bug_tail+0xa4/0xaf
-       [<c105a78c>] check_prev_add+0x78/0x46e
-       [<c105b52f>] ? __lock_acquire+0x508/0x57e
-       [<c105abe4>] check_prevs_add+0x62/0xba
-       [<c105af79>] validate_chain+0x33d/0x3eb
-       [<c105b52f>] __lock_acquire+0x508/0x57e
-       [<c10b27cc>] ? ____cache_alloc_node+0xf4/0x134
-       [<c105c54b>] lock_acquire+0xb2/0xcf
-       [<c11487b9>] ? nfs_invalidate_mapping+0x24/0x55
-       [<c16545dc>] mutex_lock_nested+0x53/0x2e4
-       [<c11487b9>] ? nfs_invalidate_mapping+0x24/0x55
-       [<c11487b9>] ? nfs_invalidate_mapping+0x24/0x55
-       [<c11487b9>] nfs_invalidate_mapping+0x24/0x55
-       [<c1148aa9>] nfs_revalidate_mapping+0x59/0x5e
-       [<c11464c9>] nfs_file_mmap+0x55/0x5d
-       [<c10a43f7>] mmap_region+0x1dc/0x373
-       [<c10a48c0>] do_mmap_pgoff+0x249/0x2ab
-       [<c10061c9>] sys_mmap2+0x8a/0xa7
-       [<c1002add>] sysenter_do_call+0x1b/0x48
-
+Kay
