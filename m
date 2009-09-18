@@ -1,70 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbZIRGxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbZIRGxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672AbZIRGxB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 02:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZIRGxA
+	id S1754318AbZIRGxt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 02:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZIRGxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 02:53:00 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:54141 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753560AbZIRGw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 02:52:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=YFtE/mEbqaAz6QQTTQ94jLr2WTlGoqRfghOH74StalBaZK2EtpgPGIs3JqDH/SOb2G
-         HdtYU51xvqUfL3RnMQLegoK8/sz++hijMcYEthxMeDKpwHSfJ7fIfqXXDnPVAX3Y4zwS
-         E/7SJU2DsOEbcs57sJerUlBNr5KczCPa5Cxcs=
+	Fri, 18 Sep 2009 02:53:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:4114 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752072AbZIRGxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 02:53:48 -0400
+Date: Fri, 18 Sep 2009 03:53:14 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 0/5] Another set of Nested SVM fixes and cleanups
+Message-ID: <20090918065314.GA383@amt.cnet>
+References: <1253107459-8967-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Date: Fri, 18 Sep 2009 08:53:03 +0200
-Message-ID: <dda529d0909172353u6ec2c59ele6467617078f726d@mail.gmail.com>
-Subject: suspend a thread with an another thread
-From: maxime louvel <m.louvel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253107459-8967-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HI all,
+On Wed, Sep 16, 2009 at 03:24:14PM +0200, Joerg Roedel wrote:
+> Hi,
+> 
+> this series of patches contain another set of cleanups and an important fix to
+> the Nested SVM code. These patches make the TSC handling code for SVM aware of
+> a nested guest. This fixes the TSC running backwards on guest and nested guest.
+> The backwards running TSC resulted in stalled guests when kvm-clock was
+> enabled. Please consider to apply.
 
-I'm doing a phd related to QoS and resources management within
-distributed systems.
-I would like to affect a CPU budget to my applications, one
-application being a thread.
+Applied, thanks (added Cc: stable to 3 and 4).
 
-As I would like to experiment quickly my ideas in order to test them,
-I wanted to use a little trick :
-instead of modifying the linux scheduler (which I guess will take me a
-lot of time because I'm not familiar with it) I tried to use a "super
-thread".
-
-My try was that this "super thread" with higher priority is suspending
-the other threads if they overcome their cpu budget.
-I thought of something like activate an application thread, make the
-super thread sleep for X time (cpu budget) and then wake up and
-suspend the application thread until next time.
-
-However I haven't been able to do that because I've read (and test
-myself :) ) that :
-- it is not possible to suspend a thread by an another thread (I don't
-think I can use the pthread_cond facilities)
-- as threads within a process share the signals and signal handlers I
-can't send a signal (like SIGUSR1 or SIGSTOP) to a specific thread.
-Correct me if I'm wrong
-
-Is there a way I can do what I want ?
-
-Or should I start by looking at how to modify the linux scheduler ?
-
-thanks a lot,
-
-Maxim
-
---
-Maxime Louvel
-+33 6 85 91 05 30
-3 rue charreton
-38000 Grenoble
-France
