@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbZIRLPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbZIRLPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435AbZIRLPX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 07:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbZIRLPW
+	id S1756467AbZIRLPj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 07:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbZIRLPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 07:15:22 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:36011 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756055AbZIRLPV (ORCPT
+	Fri, 18 Sep 2009 07:15:38 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:50821 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756055AbZIRLPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 07:15:21 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Chris Ball <cjb@laptop.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@lst.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
-References: <20090903232317.GA6760@lst.de>
-	<c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com>
-	<m3eiqdqfnm.fsf@pullcord.laptop.org> <200909120036.41725.rjw@sisk.pl>
-Date: Fri, 18 Sep 2009 20:15:17 +0900
-In-Reply-To: <200909120036.41725.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sat, 12 Sep 2009 00:36:41 +0200")
-Message-ID: <87fxaksdve.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Fri, 18 Sep 2009 07:15:37 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Caveh Jalali <ecaveh@gmail.com>
+Subject: Re: [patch] Makefile: can't build modules outside the kernel tree if it was built using O=
+Date: Fri, 18 Sep 2009 13:15:32 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-9-generic; KDE/4.3.1; x86_64; ; )
+Cc: sam@ravnborg.org, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com> <200909171345.30988.arnd@arndb.de> <830a8fa70909171449s597931a2t51f37be6378ddef7@mail.gmail.com>
+In-Reply-To: <830a8fa70909171449s597931a2t51f37be6378ddef7@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909181315.32976.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19vC4RuPmLBdyxRrUVT9zVitKMCuEMC0JfiSGq
+ mqLbb8+qEKVe04J97wqvON3Uh2elQJPTCRciI1GfAOxhcbbJUc
+ U4Q09Nq+NyXlXOcumfDBw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thursday 17 September 2009, Caveh Jalali wrote:
+> sadly, some 3rd party src packages don't quite do the right thing with
+> their kernel include paths and still depend on the include2/asm symlink
+> to find the platform header files.
+> 
+> i see your point about include2 being somewhat redundant/legacy, however,
+> as long as we are creating it, we should have it point to the intended
+> location instead of being a dead link!
 
-> On Saturday 12 September 2009, Chris Ball wrote:
->> Hi,
->> 
->>    > Well system could check basic card ids if they match after resume
->> 
->> No.  That (arguably) guarantees that it's the same card, but not that
->> it wasn't modified in another machine during the suspend.
->
-> Generally speaking, we'd also need to check superblocks for this to work.
->  
->>    > if some users wants to crash his card by randomly swapping it
->>    > during suspend/resume - I'd have no problem with that....
->> 
->> You should have a problem with it.  Taking a card from a suspended
->> machine and working on it with a different machine is not a bizarre
->> thing to want to do.
->
-> Agreed.
+I guess we could just as well put something in there to notify such
+programs of how to use the kernel Makefiles. External packages should
+not try to guess the layout of the kernel source tree, they can only
+get it wrong anyway.
 
-Um...
+There are apparently also user space packages trying to access 
+/lib/modules/${krel}/build/arch/${arch}/include/, which is even
+more wrong.
 
-What happen if we moved remove event to resume sequence?  I.e. The
-resume generates remove and insert event (or such revalidate).  With
-this, I hope the suspend is not bothered by complex one, and the resume
-just ignores (if needed) previous state and notify it to userland by
-remove/insert event.
+I'm thinking about adding something in <linux/kernel.h> to warn
+about this when using the kernel headers without either '-D__KERNEL__'
+or 'make headers_install'. Is there any valid case that this would
+break? It should probably give a warning that includes a http URL
+holding a description of what to do.
 
-And, userland process should unmount for removal devices before suspend
-process (as part of userland preparation)?
-
-If we assumed the removable device can be changed before resume, fs
-would need to recover process, to make sure in-core and on-disk state
-has consistent.
-
-Um..., for now, I feel the umount before suspend is only safe way.
-
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+	Arnd <><
