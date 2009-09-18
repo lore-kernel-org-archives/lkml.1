@@ -1,72 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZIRNym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZIRN4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbZIRNym (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 09:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZIRNyl
+	id S1756922AbZIRN4F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 09:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbZIRN4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 09:54:41 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:38714 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285AbZIRNyl (ORCPT
+	Fri, 18 Sep 2009 09:56:04 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53833 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751559AbZIRN4C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 09:54:41 -0400
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
-References: <m1y6oef08k.fsf@fess.ebiederm.org>
-	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 18 Sep 2009 06:54:39 -0700
-In-Reply-To: <ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com> (Kay Sievers's message of "Thu\, 17 Sep 2009 14\:03\:09 +0200")
-Message-ID: <m1d45oxsrk.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 18 Sep 2009 09:56:02 -0400
+X-Sasl-enc: YdMNCxQzVAPbnLIktdj7EaUpRfF4nZ7k5crdS+/c6ogr 1253282164
+Date: Fri, 18 Sep 2009 10:56:01 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>,
+       Trilok Soni <soni.trilok@gmail.com>,
+       Linux USB <linux-usb@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Subject: Re: Using EV_MSC or extending KEY_*
+Message-ID: <20090918135601.GA25109@khazad-dum.debian.net>
+References: <aac07123ee2b14a0ac25d1652dbe0780.squirrel@intranet.cs.nmsu.edu>
+ <5d5443650909151011k4b21a6d0n28ac6142c3d7161d@mail.gmail.com>
+ <20090915183406.GA5696@core.coreip.homeip.net>
+ <0debc76f26fe85e28adf642396233928.squirrel@intranet.cs.nmsu.edu>
+ <20090916034642.GC2756@core.coreip.homeip.net>
+ <2c0ac825ebe78da99328b896faae04a2.squirrel@intranet.cs.nmsu.edu>
+ <20090917175707.GB789@khazad-dum.debian.net>
+ <20090918064627.GG18668@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Kay Sievers <kay.sievers@vrfy.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs  maintenance disaster
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090918064627.GG18668@core.coreip.homeip.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 Sep 2009, Dmitry Torokhov wrote:
+> On Thu, Sep 17, 2009 at 02:57:07PM -0300, Henrique de Moraes Holschuh wrote:
+> > On Wed, 16 Sep 2009, Rick L. Vinyard, Jr. wrote:
+> > > The M* keys are intended to provide a quick way to switch between key
+> > > mappings, with each mode having their own user-defined mappings.
+> > 
+> > What I'd do in this case would be this:
+> > 
+> > 1. Initially have the M* level-shift keys assigned KEY_RESERVED
+> > 
+> > 2. Have a big enough keymap to map all keys in all M*-level shift states
+> > possible.
+> > 
+> > Eg:
+> >    START OF KEYMAP
+> >    M* keys
+> >    1st set of G* keys
+> >    2nd set of G* keys
+> >    3rd set of G* keys...
+> >    ...
+> >    last set of G* keys
+> >    END OF KEYMAP
+> > 
+> > 3. Have the driver special-process M* level-shift keys *as long as they are
+> > still set to KEY_RESERVED* to select which part of the keymap is used to
+> > translate the other keys.  Note that this likely means pressing a M* key
+> > would be transparent to userspace in this case, i.e. no events would be
+> > issued when a M* key is doing a level shift.
+> > 
+> > So, you'd be able to set all mappings you want in the driver, and the M*
+> > keys would do what they're expected to do without any userland help at all,
+> > but you'd still be able to program the M* keys to be normal keys if you
+> > want.
+> > 
+> > Of course, this assumes you don't do chording on multiple M* keys to end up
+> > with a huge number of keymaps :p
+> 
+> Actually I think that the device should just emit KEY_PROG1..KEY_PROG4
+> for the M keys and have userspace daemon load alternate keymaps on the
+> fly in resaponse to KEY_PROGx. The device is just a set of completely
+> generic buttons... User will have to tell the kernel what to map them
+> to.
 
-> I don't understand. Udev applies the final policy including
-> permissions/ownership, just as before. There is no differrence. It's
-> just that you can bring up a box without complex userspace to
-> bootstrap /dev. And that's a big win on its own.
+It would work, but it is a big trip through userspace.  If quickly pressing
+M#+G# is a common use pattern (and it will be, for gaming), i.e. you often
+want to access quickly a function on one level then another on a different
+level, asking userspace to upload a new keymap to switch levels at every M#
+press is going to be way too racy.
 
-udev is too complex to use?  That sounds like a userspace bug.
+If it is to be used like that, I'd advocate either doing the entire
+map-switching thing in kernel space, or doing the entire mapping in
+userspace.  In the later case, you don't issue KEY_* in the kernel driver,
+you just issue MSC_SCAN events, and the userspace driver should open the
+input device in exclusive mode, do its magic, and use uinput to generate
+translated events (KEY_*, and even BTN_*, etc).
 
-This I guess is where I am baffled.   The argument for devtmpfs
-always seem to boil down to: udev sucks let's write some kernel
-code instead.
+I understand the current version allows for an all-userspace enhanced driver
+if one sets the entire keymap to KEY_RESERVED, since it will issue MSC_SCAN
+events for all keys (if it doesn't, I suggest doing so).  That might indeed
+be the best option if one doesn't want a more complex kernel driver.  And
+one could still use the device in degraded mode by not loading the userspace
+driver, and uploading a regular keymap to it.
 
-I have been trying to ask for a long time why we can't just fix
-udev to not suck. 
-
->  And things like
-> "modprobe loop; losetup /dev/loop0" will just work, which it doesn't
-> with todays async udev. Again, please make yourself familiar how
-> things work, and what the problems are.
-
-I guess I don't understand why 
-modprobe loop; losetup /dev/loop0 is an interesting case.
-When you can just as easily do:
-modprobe loop; udevadm settle; losetup /dev/loop0.
-
-Eric
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
