@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbZIROFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751945AbZIROJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757063AbZIROFE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:05:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbZIROFD
+	id S1751945AbZIROJu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbZIROJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:05:03 -0400
-Received: from THUNK.ORG ([69.25.196.29]:37601 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbZIROFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:05:01 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH] EDAC, AMD: Fix build error by including <linux/smp.h>
-Date: Fri, 18 Sep 2009 10:04:59 -0400
-Message-Id: <1253282699-14611-1-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 18 Sep 2009 10:09:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35865 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbZIROJt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 10:09:49 -0400
+Date: Fri, 18 Sep 2009 16:09:44 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+  maintenance disaster
+Message-ID: <20090918160944.58e5c1f5@infradead.org>
+In-Reply-To: <m1d45oxsrk.fsf@fess.ebiederm.org>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+	<m1d45oxsrk.fsf@fess.ebiederm.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Accessing the per-cpu variable cpu_llc_id now requires that
-<linux/smp.h> header file be included.
+On Fri, 18 Sep 2009 06:54:39 -0700
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-Cc: Borislav Petkov <borislav.petkov@amd.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
+> 
+> > I don't understand. Udev applies the final policy including
+> > permissions/ownership, just as before. There is no differrence. It's
+> > just that you can bring up a box without complex userspace to
+> > bootstrap /dev. And that's a big win on its own.
+> 
+> udev is too complex to use?  That sounds like a userspace bug.
+> 
+> This I guess is where I am baffled.   The argument for devtmpfs
+> always seem to boil down to: udev sucks let's write some kernel
+> code instead.
+> 
+> I have been trying to ask for a long time why we can't just fix
+> udev to not suck. 
+> 
+> >  And things like
+> > "modprobe loop; losetup /dev/loop0" will just work, which it doesn't
+> > with todays async udev. Again, please make yourself familiar how
+> > things work, and what the problems are.
+> 
+> I guess I don't understand why 
+> modprobe loop; losetup /dev/loop0 is an interesting case.
+> When you can just as easily do:
+> modprobe loop; udevadm settle; losetup /dev/loop0.
 
-This fixes a compile error found in 2.6.31-git6
+frankly, modprobe should call the settle.
+And not just this one, but we can use this to settle other things as
+well... and then it can get an --async command line option for the
+cases where you know you don't want to synchronize.
 
- drivers/edac/edac_mce_amd.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/edac/edac_mce_amd.c b/drivers/edac/edac_mce_amd.c
-index c8ca713..6ae3b66 100644
---- a/drivers/edac/edac_mce_amd.c
-+++ b/drivers/edac/edac_mce_amd.c
-@@ -1,4 +1,5 @@
- #include <linux/module.h>
-+#include <linux/smp.h>
- #include "edac_mce_amd.h"
- 
- static bool report_gart_errors;
 -- 
-1.6.3.2.1.gb9f7d.dirty
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
