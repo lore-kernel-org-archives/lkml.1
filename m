@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbZIRJqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbZIRJxC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbZIRJqt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 05:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbZIRJqs
+	id S1756347AbZIRJxC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 05:53:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZIRJxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 05:46:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59469 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274AbZIRJqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 05:46:48 -0400
-Date: Fri, 18 Sep 2009 11:46:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Patch 1/2] ia32: use generic sys_pipe()
-Message-ID: <20090918094642.GA26833@elte.hu>
-References: <20090722091051.6621.15184.sendpatchset@localhost.localdomain> <20090804122432.GB4367@elte.hu> <20090912133014.GA5858@ZenIV.linux.org.uk>
+	Fri, 18 Sep 2009 05:53:01 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:56719 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbZIRJxA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 05:53:00 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=MbSxWM6n9c9EjJJCpxQTjKVYDOHglBlVyJEm7r7R4M+g9ZDO12HeEypLIbT4rOE7L
+	/537MnnBN11f/qpwi/vGg==
+Date: Fri, 18 Sep 2009 02:52:55 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Suresh Jayaram <sureshjayaram@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Subject: Re: mmotm 2009-09-09-22-56 uploaded
+In-Reply-To: <38c3c4860909180238x7c9f305dsbce1492e2018c5a5@mail.gmail.com>
+Message-ID: <alpine.DEB.1.00.0909180245030.24690@chino.kir.corp.google.com>
+References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org> <38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com> <alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com> <38c3c4860909150320qc4a203eu7552294ef0aafd2c@mail.gmail.com>
+ <alpine.DEB.1.00.0909151535150.17284@chino.kir.corp.google.com> <38c3c4860909180238x7c9f305dsbce1492e2018c5a5@mail.gmail.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090912133014.GA5858@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Sep 2009, Suresh Jayaram wrote:
 
-* Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> I enabled the CONFIG_DEBUG_PER_CPU_MAPS and rebuilt the kernel, but
+> now I don't see the oops anymore.
 
-> On Tue, Aug 04, 2009 at 02:24:32PM +0200, Ingo Molnar wrote:
+CONFIG_DEBUG_PER_CPU_MAPS will debug it and also silently mask the error 
+by returning cpu_online_mask instead of a NULL pointer to a non-existant 
+node_to_cpumask_map.
+
+> But what I see in dmesg output is:
 > 
-> > Please _ALWAYS_ mention the change in behavior in the changelog, 
-> > just in case someone ends up bisecting it. I only found out when i 
-> > reviewed the two syscalls out of caution.
-> > 
-> > The syscall you remove kept stale fd's around in case of -EFAULT 
-> > from copy_to_user(). The generic version does an explicit close of 
-> > those files:
-> > 
-> >                         sys_close(fd[0]);
-> >                         sys_close(fd[1]);
-> >                         error = -EFAULT;
+> Sep 16 09:22:57 jay-t60p kernel: cpumask_of_node(-1): no node_to_cpumask_map!
 > 
-> > The generic version looks like the better choice to me but this 
-> > difference should be mentioned in the changelog nevertheless, just 
-> > in case some buggy app runs into this issue.
+> followed by a call trace for irqbalance (attached).
 > 
-> It's not a matter of QOI, actually - sys32_pipe() is supposed to do 
-> what sys_pipe() would do on i386 host.  So any difference in handling 
-> of an error case is simply wrong.
-> 
-> Whether we want those sys_close() in sys_pipe() or not is a separate 
-> question, but we definitely want the same behaviour when 32bit process 
-> is run natively and when it's run on amd64.  So sys32_pipe() has no 
-> business existing at all.
 
-I generally agree except the notion that we 'must' do this change.
+Sep 16 09:22:57 jay-t60p kernel: cpumask_of_node(-1): no node_to_cpumask_map!
+Sep 16 09:22:57 jay-t60p kernel: Pid: 2400, comm: irqbalance Not tainted 2.6.31-rc9-mm1-0.1-default #8
+Sep 16 09:22:57 jay-t60p kernel: Call Trace:
+Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff8102fcf3>] cpumask_of_node+0x4f/0x58
+Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff811890f3>] local_cpus_show+0x1f/0x48
+Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff811fe7ba>] dev_attr_show+0x20/0x44
+Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff81123a19>] sysfs_read_file+0xb2/0x131
+Sep 16 09:22:57 jay-t60p kernel:  [<ffffffff810cfe34>] vfs_read+0xb1/0x187
+Sep 16 09:22:58 jay-t60p kernel:  [<ffffffff810cffce>] sys_read+0x47/0x70
+Sep 16 09:22:58 jay-t60p kernel:  [<ffffffff8100b9eb>] system_call_fastpath+0x16/0x1b
 
-This is a (small) past ABI sin of ours and we have to live with the 
-consequences without breaking apps. We didnt break any it appears so 
-it's all good.
+This seems to be related to 2547089 "x86/PCI: initialize PCI bus node 
+numbers early" since cpumask_of_pcibus() on x86 doesn't check for -1 
+pcibus_to_node() like most other architectures.  It'll simply index into 
+cpumask_of_node for whatever the pci_sysdata's node is, and in this case 
+that's -1.
 
-	Ingo
+I'm assuming mp_bus_to_node is pointing to a non-online node or simply the 
+busnum is greater than 256.
+
+ [ arch/x86/pci/common.c should _really_ be using NUMA_NO_NODE instead of
+   hardcoding -1 everywhere, btw. ]
