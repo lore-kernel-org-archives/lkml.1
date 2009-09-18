@@ -1,32 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbZIRWIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbZIRWHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758728AbZIRWIU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 18:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZIRWIO
+	id S1758729AbZIRWHU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 18:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZIRWHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 18:08:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36619 "EHLO
+	Fri, 18 Sep 2009 18:07:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34117 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752064AbZIRWIO (ORCPT
+	by vger.kernel.org with ESMTP id S1753658AbZIRWHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 18:08:14 -0400
-Date: Fri, 18 Sep 2009 15:06:02 -0700 (PDT)
+	Fri, 18 Sep 2009 18:07:16 -0400
+Date: Fri, 18 Sep 2009 15:06:39 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Wu Fei <at.wufei@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, arjan@infradead.org,
-       jeremy@goop.org, mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tj@kernel.org, tglx@linutronix.de,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-tip-commits@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/1] kthreads: simplify !kthreadd_task logic, kill
- kthreadd_task_init_done
-In-Reply-To: <20090918211218.GA19351@redhat.com>
-Message-ID: <alpine.LFD.2.01.0909181504400.4950@localhost.localdomain>
-References: <20090901133709.GA24041@redhat.com> <20090901135925.GA9083@elte.hu> <20090901145526.GA31317@redhat.com> <20090901165235.GA9105@redhat.com> <m13a76xnbw.fsf@fess.ebiederm.org> <20090902091340.GA5173@redhat.com> <20090904073749.GB20598@elte.hu>
- <20090918163241.GA8556@desktop> <20090918185425.GA16620@redhat.com> <alpine.LFD.2.01.0909181217270.4950@localhost.localdomain> <20090918211218.GA19351@redhat.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
+In-Reply-To: <ac3eb2510909181419p4a9fa382pc93c81aaa871e80c@mail.gmail.com>
+Message-ID: <alpine.LFD.2.01.0909181506150.4950@localhost.localdomain>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <m1ab0tcwep.fsf@fess.ebiederm.org>  <20090917185306.GA28635@elte.hu> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com>  <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain> 
+ <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>  <alpine.LFD.2.01.0909171709410.4950@localhost.localdomain>  <1253238637.4071.10.camel@yio.site> <m14or0vul4.fsf@fess.ebiederm.org>  <alpine.LFD.2.01.0909181407370.4950@localhost.localdomain>
+ <ac3eb2510909181419p4a9fa382pc93c81aaa871e80c@mail.gmail.com>
 User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -36,15 +31,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 18 Sep 2009, Oleg Nesterov wrote:
+On Fri, 18 Sep 2009, Kay Sievers wrote:
+>
+> > Yeah, I think that's the way to go.
 > 
-> Not sure I understand... We don't have CLONE_PID, and kthreadd()
-> shouldn't have pid == 0 anyway.
+> Are we sure about console? It's not what udev does today, it stays as 0600.
 
-Ahh, we got rid of CLONE_PID a long time ago, and renamed it to 
-CLONE_IDLETASK (which was what it was used for).
-
-As to why pid == 0 wouldn't work, I don't know, but I'll take your word 
-for it.
+You're right, I didn't notice /dev/console there. That's wrong. Very 
+different from /dev/tty.
 
 		Linus
