@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbZIRQvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZIRQt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbZIRQvQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 12:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbZIRQvP
+	id S1755997AbZIRQt4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 12:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbZIRQtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 12:51:15 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:38651 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755447AbZIRQvN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 12:51:13 -0400
-Date: Fri, 18 Sep 2009 09:49:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
+	Fri, 18 Sep 2009 12:49:55 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:53797 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752291AbZIRQty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 12:49:54 -0400
+Date: Fri, 18 Sep 2009 09:49:55 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>
-Subject: [PATCH -mmotm] cred: export creds_are_invalid
-Message-Id: <20090918094935.40e6fccf.randy.dunlap@oracle.com>
-In-Reply-To: <200909180122.n8I1Mr83020524@imap1.linux-foundation.org>
-References: <200909180122.n8I1Mr83020524@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt013.oracle.com [141.146.116.22]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4AB3BA22.00E3:SCFSTAT5015188,ss=1,fgs=0
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu
+Subject: [PATCH tip/core/rcu 0/3] Cleanups/bugfixes for large systems and
+	TREE_PREEMPT_RCU
+Message-ID: <20090918164955.GA22272@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+This set of patches does some cleanups and fixes a bug that prevents
+TREE_PREEMPT_RCU from running reliably on large systems (more than
+64 CPUs, or on 32-bit systems, more than 32 CPUs).  The patches are
+as follows:
 
-creds_are_invalid() needs to be exported for use by modules:
+1.	Add WARN_ON_ONCE() consistency checks to catch bugs.  These
+	are all on slowpaths, so are appropriate for production use.
 
-ERROR: "creds_are_invalid" [fs/cachefiles/cachefiles.ko] undefined!
+2.	Apply the results of a code walkthrough of rcutree_plugin.h.
+	This includes a fix for a theoretical race that could result in
+	excessively long RCU grace periods, or perhaps even hangs/OOMs.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: David Howells <dhowells@redhat.com>
----
- kernel/cred.c |    1 +
- 1 file changed, 1 insertion(+)
+3.	Fix a bug introduced in a bugfix commit #de078d875 that caused
+	large systems to only partially initialize the fields in the
+	rcu_node tree.  TREE_RCU doesn't care about any of these fields,
+	which explains why only TREE_PREEMPT_RCU was broken.
 
---- mmotm-2009-0917-1800.orig/kernel/cred.c
-+++ mmotm-2009-0917-1800/kernel/cred.c
-@@ -799,6 +799,7 @@ bool creds_are_invalid(const struct cred
- #endif
- 	return false;
- }
-+EXPORT_SYMBOL(creds_are_invalid);
- 
- /*
-  * dump invalid credentials
+With these fixes, large systems using TREE_PREEMPT_RCU pass moderate
+rcutorture runs (but with Josh Triplett's mods that force frequent
+preemption within RCU read-side critical sections).  I am sure that
+there are more bugs, but these fixes get things much closer.
 
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+ b/kernel/rcutree.c        |   13 +++++++++----
+ b/kernel/rcutree_plugin.h |   21 ++++++++++++++-------
+ kernel/rcutree.c          |   38 +++++++++-----------------------------
+ kernel/rcutree_plugin.h   |   16 +++++++++-------
+ 4 files changed, 41 insertions(+), 47 deletions(-)
