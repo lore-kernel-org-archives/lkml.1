@@ -1,112 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbZIRUzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbZIRU4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758685AbZIRUzy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758671AbZIRUzw
+	id S932085AbZIRU4I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbZIRU4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:55:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:9957 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758656AbZIRUzt (ORCPT
+	Fri, 18 Sep 2009 16:56:03 -0400
+Received: from mail.candelatech.com ([208.74.158.172]:40693 "EHLO
+	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758687AbZIRUz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:55:49 -0400
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: linux-arm-kernel@lists.infradead.org,
-       Russell King <linux@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
-       Koskinen Aaro <aaro.koskinen@nokia.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: [PATCH 2/2] ARM: Proper prefetch abort handling on ARMv7
-Date: Fri, 18 Sep 2009 23:55:43 +0300
-Message-Id: <80f6b6f6f84276b3ff301e55aa3a120744029f1d.1253307264.git.kirill@shutemov.name>
-X-Mailer: git-send-email 1.6.4.4
-In-Reply-To: <c9f73fa56a41bc1051cd347cc453081235e3d776.1253307263.git.kirill@shutemov.name>
-References: <c9f73fa56a41bc1051cd347cc453081235e3d776.1253307263.git.kirill@shutemov.name>
-In-Reply-To: <c9f73fa56a41bc1051cd347cc453081235e3d776.1253307263.git.kirill@shutemov.name>
-References: <c9f73fa56a41bc1051cd347cc453081235e3d776.1253307263.git.kirill@shutemov.name>
+	Fri, 18 Sep 2009 16:55:59 -0400
+Message-ID: <4AB3F3DB.5090600@candelatech.com>
+Date: Fri, 18 Sep 2009 13:55:55 -0700
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Problems booting 2.6.31 on Fedora 8
+References: <4AB3C9A8.4060700@candelatech.com> <200909182248.21032@blacky.localdomain>
+In-Reply-To: <200909182248.21032@blacky.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, on ARMv7, if an application tries to execute code
-(or garbage) on non-executable page it hangs. It caused by incorrect
-prefetch abort handling. Now every prefetch abort processes as
-a translation fault.
+On 09/18/2009 11:48 AM, Nikita V. Youshchenko wrote:
+>> I'm having troubles booting 2.6.31 on Fedora 8.  The same kernel
+>> boots fine on F11, but on F8, it cannot find the root logical volume.
+>>
+>> One thing I notice is that F11 uses root=/dev/mapper... and F8 uses
+>> root=/dev/VolGroup00/LogVol00 in grub.  It's not clear to me what
+>> the value of mapper should be...is there some way to figure this
+>> out from an older kernel (2.6.29) that boots fine?
+>
+> I've recently faced a very similar problem, trying to boot some "modern"
+> kernel on debian etch system.
+>
+> It was solved by putting more recent lvm2 binary into initrd.
 
-To fix this we have to analize instruction fault status register
-to figure out reason why we've got the abort and process it
-accordingly.
+The LVM2 mailing list gave me another answer:
 
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
----
- arch/arm/mm/fault.c |   51 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 50 insertions(+), 1 deletions(-)
+Compile with
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_SYSFS_DEPRECATED_V2=y
 
-diff --git a/arch/arm/mm/fault.c b/arch/arm/mm/fault.c
-index 5e27462..5abb9a5 100644
---- a/arch/arm/mm/fault.c
-+++ b/arch/arm/mm/fault.c
-@@ -505,9 +505,58 @@ do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
- 	arm_notify_die("", regs, &info, fsr, 0);
- }
- 
-+
-+static struct fsr_info ifsr_info[] = {
-+	{ do_bad,		SIGBUS,  0,		"unknown 0"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 1"			   },
-+	{ do_bad,		SIGBUS,  0,		"debug event"			   },
-+	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"section access flag fault"	   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 4"			   },
-+	{ do_translation_fault,	SIGSEGV, SEGV_MAPERR,	"section translation fault"	   },
-+	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"page access flag fault"	   },
-+	{ do_page_fault,	SIGSEGV, SEGV_MAPERR,	"page translation fault"	   },
-+	{ do_bad,		SIGBUS,	 0,		"external abort on non-linefetch"  },
-+	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"section domain fault"		   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 10"			   },
-+	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"page domain fault"		   },
-+	{ do_bad,		SIGBUS,	 0,		"external abort on translation"	   },
-+	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"section permission fault"	   },
-+	{ do_bad,		SIGBUS,	 0,		"external abort on translation"	   },
-+	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"page permission fault"		   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 16"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 17"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 18"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 19"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 20"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 21"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 22"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 23"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 24"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 25"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 26"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 27"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 28"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 29"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 30"			   },
-+	{ do_bad,		SIGBUS,  0,		"unknown 31"			   },
-+};
-+
- asmlinkage void __exception
- do_PrefetchAbort(unsigned long addr, int ifsr, struct pt_regs *regs)
- {
--	do_translation_fault(addr, 0, regs);
-+	const struct fsr_info *inf = ifsr_info + (ifsr & 15) + ((ifsr & (1 << 10)) >> 6);
-+	struct siginfo info;
-+
-+	if (!inf->fn(addr, ifsr, regs))
-+		return;
-+
-+	printk(KERN_ALERT "Unhandled prefetch abort: %s (0x%03x) at 0x%08lx\n",
-+		inf->name, ifsr, addr);
-+
-+	info.si_signo = inf->sig;
-+	info.si_errno = 0;
-+	info.si_code  = inf->code;
-+	info.si_addr  = (void __user *)addr;
-+	arm_notify_die("", regs, &info, ifsr, 0);
- }
- 
+
+This will likely not work on later distributions, but seems to work
+fine for Fedora 8, at least.
+
+Thanks,
+Ben
+
 -- 
-1.6.4.4
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
 
