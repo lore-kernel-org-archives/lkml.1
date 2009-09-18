@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751556AbZIRFc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbZIRFgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751556AbZIRFc4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 01:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbZIRFc4
+	id S1751773AbZIRFgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 01:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZIRFgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 01:32:56 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46085 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbZIRFcz (ORCPT
+	Fri, 18 Sep 2009 01:36:19 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:52211 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbZIRFgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 01:32:55 -0400
-Message-ID: <4AB31B87.2040007@np.css.fujitsu.com>
-Date: Fri, 18 Sep 2009 14:32:55 +0900
-From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: LKLM <linux-kernel@vger.kernel.org>
-Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: [BUG? -next] login prompt of tty2~6 displayed slowly
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Sep 2009 01:36:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=qVZYDkwP69WKiN8ra3jRAv2SD6tlVBDe5dlbWEwvfSXvoKvUmQHp4Uph0A3K5p41W1
+         gt2/RXgaSVW5EtjxaIUbRI4xXAWEMwFm53W30BPBUT9hEXrH74fuS09I4zQTO+MlBEDT
+         Zg/tsUF1ZqwEIVsjFPfQIwSmQ1zpQjwsugmz0=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH 0/2 v3] tracing: Tracing event profiling updates
+Date: Fri, 18 Sep 2009 07:36:17 +0200
+Message-Id: <1253252178-5315-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1253247854-5496-1-git-send-email-fweisbec@gmail.com>
+References: <1253247854-5496-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all
 
-I have a trouble on tty of -next.
-After the system booted and login prompt of tty1 was displayed, I tried to
-change tty1 to tty2 or other console with Ctrl+Alt+FN(N:2~6). The changed screen
-was black and there was not login prompt. After a few(2~3) minutes the prompt
-was displayed. I checked the message of klog and there were some errors of tty
-listed as following:
+Ingo,
 
-Sep 15 10:02:44 iridium /sbin/mingetty[3062]: tty2: cannot open tty: Input/output error
-Sep 15 10:02:44 iridium /sbin/mingetty[3063]: tty3: cannot open tty: Input/output error
-Sep 15 10:02:44 iridium /sbin/mingetty[3060]: tty4: cannot open tty: Input/output error
-Sep 15 10:02:44 iridium /sbin/mingetty[3061]: tty5: cannot open tty: Input/output error
-Sep 15 10:02:44 iridium /sbin/mingetty[3066]: tty6: cannot open tty: Input/output error
-Sep 15 10:02:49 iridium init: tty2 main process (3062) terminated with status 1
-Sep 15 10:02:49 iridium init: tty2 main process ended, respawning
-Sep 15 10:02:49 iridium init: tty3 main process (3063) terminated with status 1
-Sep 15 10:02:49 iridium init: tty3 main process ended, respawning
-Sep 15 10:02:49 iridium /sbin/mingetty[3107]: tty3: cannot open tty: Input/output error
-Sep 15 10:02:49 iridium init: tty4 main process (3060) terminated with status 1
-Sep 15 10:02:49 iridium init: tty4 main process ended, respawning
-Sep 15 10:02:49 iridium /sbin/mingetty[3106]: tty2: cannot open tty: Input/output error
-Sep 15 10:02:49 iridium /sbin/mingetty[3108]: tty4: cannot open tty: Input/output error
-Sep 15 10:02:49 iridium init: tty5 main process (3061) terminated with status 1
-Sep 15 10:02:49 iridium init: tty5 main process ended, respawning
-Sep 15 10:02:49 iridium /sbin/mingetty[3109]: tty5: cannot open tty: Input/output error
-Sep 15 10:02:49 iridium init: tty6 main process (3066) terminated with status 1
-Sep 15 10:02:49 iridium init: tty6 main process ended, respawning
-Sep 15 10:02:49 iridium /sbin/mingetty[3110]: tty6: cannot open tty: Input/output error
+Hopefully this is my last attempt.
+This new iteration fixes the syscalls events to correctly handle
+the buffer. In the previous version, they did not care about interrupts.
 
+I only resend the second patch as only this one has changed since the v2.
 
-And I find out that the root cause of this problem is the following patch:
-    commit 236cce0066f9c6a4856bc0404e541d3db3b0255e
-    Titled "tty: make the kref destructor occur asynchronously"
+The new branch is in:
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/core-v3
 
-When the tty is closed, the content of tty is not released immediately. And the
-flag of tty is set with TTY_CLOSING. So when the tty is reopened, the tty may
-not be released yet. Because the TTY_CLOSING in flag of tty is still valid. The
-kernel returns "-EIO" error. And the message
-    "/sbin/mingetty[3062]: tty2: cannot open tty: Input/output error"
-is displayed at the user land.
+Thanks,
+	Frederic.
 
-Best Regards
-Jin Dongming
+Frederic Weisbecker (2):
+      tracing: Factorize the events profile accounting
+      tracing: Allocate the ftrace event profile buffer dynamically
+
+ include/linux/ftrace_event.h       |   10 +++-
+ include/linux/syscalls.h           |   24 +++-----
+ include/trace/ftrace.h             |  111 ++++++++++++++++++++---------------
+ kernel/trace/trace_event_profile.c |   79 +++++++++++++++++++++++++-
+ kernel/trace/trace_syscalls.c      |   97 +++++++++++++++++++++++++------
+ 5 files changed, 234 insertions(+), 87 deletions(-)
