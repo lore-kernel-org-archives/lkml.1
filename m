@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbZIRLvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZIRLuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbZIRLvM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 07:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbZIRLvL
+	id S1756897AbZIRLuX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 07:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZIRLuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 07:51:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49033 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756615AbZIRLvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 07:51:10 -0400
-Date: Fri, 18 Sep 2009 13:50:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-rdma@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
-Message-ID: <20090918115053.GK9930@elte.hu>
-References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins> <adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com> <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com> <adatyz1d17q.fsf@cisco.com>
+	Fri, 18 Sep 2009 07:50:22 -0400
+Received: from h155.mvista.com ([63.81.120.155]:32958 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753899AbZIRLuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 07:50:21 -0400
+Message-ID: <4AB37492.90407@ru.mvista.com>
+Date: Fri, 18 Sep 2009 15:52:50 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adatyz1d17q.fsf@cisco.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Jung-Ik (John) Lee" <jilee@google.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] libata:ide: Fix udma timings of pdc202xx_old controllers
+References: <8b5805ff0909171602v3dc10db9i5920be3a2abf2e04@mail.gmail.com> 	<20090918002322.54099f94@lxorguk.ukuu.org.uk> <8b5805ff0909171654i515c832bm570db9bd5936b11a@mail.gmail.com>
+In-Reply-To: <8b5805ff0909171654i515c832bm570db9bd5936b11a@mail.gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Roland Dreier <rdreier@cisco.com> wrote:
+Jung-Ik (John) Lee wrote:
 
->  > But yeah, I currently don't see a very nice match to perf counters.
-> 
-> OK.  It would be nice to tie into something more general, but I think 
-> I agree -- perf counters are missing the filtering and the "no lost 
-> events" that ummunotify does have.  And I'm not sure it's worth 
-> messing up the perf counters design just to jam one more not totally 
-> related thing in.
+>>>From: John(Jung-Ik) Lee <jilee@google.com>
 
-The filtering can be done and has been done - see Li Zefan's patchset 
-that uses filter expressions to do per event in-kernel filtering.
+>>>Fix udma timings of pdc202xx_old controllers.
+>>>MB=1, MC=1 (0x20, 0x01) for all UDMA modes of pdc2026{57}.
 
-The OOM DoS is a bug in your patches i think, which perfcounters solves 
-;-)
+    The patch should be broken in two as it's for 2 different subsystems.
 
-	Ingo
+>>On what documentation is this based ?
+
+> I have two documents, 20265, and 20267, and both need to set to the
+> same single value for all UDMA modes.
+
+> Doc 1:
+>   PDC20265 Bus Mastering Ultra DMA PCI –ATA/ATAPI Controller
+> Specification Rev 2.0
+>   #7.17.2, Ultra DMA Data Transfer Speed list
+>     For all Ultra DMA mode, MB, MC = 01h, 01h
+
+> Doc 2:
+>   PDC20267 Bus Mastering Ultra DMA PCI –ATA/ATAPI Controller
+> Specification Rev 2.0
+>   #7.17.2, Ultra DMA Data Transfer Speed list
+>     For all Ultra DMA mode, MB, MC = 01h, 01h
+
+> Are there other pdc202xx old controllers that are different?
+
+    There are PDC20262 and PDC20246. We should ask Bart -- he probably has 
+the documatation for them...
+
+> -John
+
+>>Alan
+
+WBR, Sergei
+
