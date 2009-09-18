@@ -1,69 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbZIRASo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbZIRAZC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755024AbZIRASo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 20:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZIRASm
+	id S1754966AbZIRAZC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 20:25:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbZIRAZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 20:18:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46549 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754661AbZIRASl (ORCPT
+	Thu, 17 Sep 2009 20:25:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46247 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753809AbZIRAY7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 20:18:41 -0400
-Date: Thu, 17 Sep 2009 17:18:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was:
-  Re: [PATCH] Remove broken by design and by implementation devtmpfs 
- maintenance disaster)
-In-Reply-To: <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
-Message-ID: <alpine.LFD.2.01.0909171709410.4950@localhost.localdomain>
-References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com>  <m1ab0tcwep.fsf@fess.ebiederm.org> <20090917185306.GA28635@elte.hu>  <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com>  <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain>
- <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Sep 2009 20:24:59 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 18 Sep 2009 09:22:58 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] oom: dump stack and VM state when oom killer panics
+Message-Id: <20090918092258.9249303a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.00.0909171354570.17483@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0909171354570.17483@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 Sep 2009 13:55:22 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-
-On Fri, 18 Sep 2009, Kay Sievers wrote:
+> The oom killer header, including information such as the allocation order
+> and gfp mask, current's cpuset and memory controller, call trace, and VM
+> state information is currently only shown when the oom killer has
+> selected a task to kill.
 > 
-> > So I suspect /dev/null and /dev/zero should be special - just make them
-> > have 0666 permissions. Because they really _are_ special, and no other
-> > permissions ever make sense for them.
+> This information is omitted, however, when the oom killer panics either
+> because of panic_on_oom sysctl settings or when no killable task was
+> found.  It is still relevant to know crucial pieces of information such
+> as the allocation order and VM state when diagnosing such issues,
+> especially at boot.
 > 
-> That's true. I guess there are a few more devices that need special
-> permissions.
+> This patch displays the oom killer header whenever it panics so that bug
+> reports can include pertinent information to debug the issue, if
+> possible.
+> 
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-/dev/tty is probably the only remaining one - I don't think there should 
-be any other devices that are so special that normal programs expect them 
-to be there, and expect to be able to open them.
+Seems nice.
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-/dev/null (and to a lesser degree /dev/zero) really are special, and they 
-are special not so much because they are special devices, but because they 
-are part of the unix environment in rather deep ways. For example, mmap() 
-on /dev/zero is deeply special, and really is about shm rather than any 
-devices, so it's a VM thing with an odd special case.
 
-And /dev/tty is special in that you'd expected to be able to open it even 
-if you can't open the device that it points to - you may have inherited a 
-tty from a program that _used_ to have permission to the underlying 
-/dev/ttyxyz thing, but even if you no longer can open that device, 
-/dev/tty still works.
+> ---
+>  mm/oom_kill.c |   45 +++++++++++++++++++++++++++------------------
+>  1 files changed, 27 insertions(+), 18 deletions(-)
+> 
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -310,6 +310,23 @@ static void dump_tasks(const struct mem_cgroup *mem)
+>  	} while_each_thread(g, p);
+>  }
+>  
+> +static void dump_header(gfp_t gfp_mask, int order, struct mem_cgroup *mem)
+> +{
+> +	if (printk_ratelimit()) {
+> +		printk(KERN_WARNING "%s invoked oom-killer: "
+> +			"gfp_mask=0x%x, order=%d, oomkilladj=%d\n",
+> +			current->comm, gfp_mask, order, current->oomkilladj);
+> +		task_lock(current);
+> +		cpuset_print_task_mems_allowed(current);
+> +		task_unlock(current);
+> +		dump_stack();
+> +		mem_cgroup_print_oom_info(mem, current);
+> +		show_mem();
+> +		if (sysctl_oom_dump_tasks)
+> +			dump_tasks(mem);
+> +	}
+> +}
+> +
+>  /*
+>   * Send SIGKILL to the selected  process irrespective of  CAP_SYS_RAW_IO
+>   * flag though it's unlikely that  we select a process with CAP_SYS_RAW_IO
+> @@ -392,20 +409,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+>  {
+>  	struct task_struct *c;
+>  
+> -	if (printk_ratelimit()) {
+> -		printk(KERN_WARNING "%s invoked oom-killer: "
+> -			"gfp_mask=0x%x, order=%d, oomkilladj=%d\n",
+> -			current->comm, gfp_mask, order, current->oomkilladj);
+> -		task_lock(current);
+> -		cpuset_print_task_mems_allowed(current);
+> -		task_unlock(current);
+> -		dump_stack();
+> -		mem_cgroup_print_oom_info(mem, current);
+> -		show_mem();
+> -		if (sysctl_oom_dump_tasks)
+> -			dump_tasks(mem);
+> -	}
+> -
+> +	dump_header(gfp_mask, order, mem);
+>  	/*
+>  	 * If the task is already exiting, don't alarm the sysadmin or kill
+>  	 * its children or threads, just set TIF_MEMDIE so it can die quickly
+> @@ -540,6 +544,7 @@ retry:
+>  	/* Found nothing?!?! Either we hang forever, or we panic. */
+>  	if (!p) {
+>  		read_unlock(&tasklist_lock);
+> +		dump_header(gfp_mask, order, NULL);
+>  		panic("Out of memory and no killable processes...\n");
+>  	}
+>  
+> @@ -605,8 +610,10 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
+>  		/* Got some memory back in the last second. */
+>  		return;
+>  
+> -	if (sysctl_panic_on_oom == 2)
+> -		panic("out of memory. Compulsory panic_on_oom is selected.\n");
+> +	if (sysctl_panic_on_oom == 2) {
+> +		dump_header(gfp_mask, order, NULL);
+> +		panic("Out of memory. Compulsory panic_on_oom is selected.\n");
+> +	}
+>  
+>  	/*
+>  	 * Check if there were limitations on the allocation (only relevant for
+> @@ -622,8 +629,10 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
+>  		break;
+>  
+>  	case CONSTRAINT_NONE:
+> -		if (sysctl_panic_on_oom)
+> -			panic("out of memory. panic_on_oom is selected\n");
+> +		if (sysctl_panic_on_oom) {
+> +			dump_header(gfp_mask, order, NULL);
+> +			panic("Out of memory. panic_on_oom is selected.\n");
+> +		}
+>  		/* Fall-through */
+>  	case CONSTRAINT_CPUSET:
+>  		__out_of_memory(gfp_mask, order);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-The rest of /dev really should be rather esoteric, or it should be about 
-real devices. So I do think that with just null, zero and tty having 0666 
-permissions, a "normal UNIX" program is supposed to work. That should be 
-the minimal set, but also the maximal set of devices that people should 
-_expect_ to work.
-
-(Yeah, there are things like /dev/stderr etc, but they are symlinks to 
-/proc/self/fd anyway, so permissions don't matter)
-
-			Linus
