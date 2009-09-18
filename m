@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZIRX7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757675AbZISABc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbZIRX7T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 19:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbZIRX65
+	id S1757675AbZISABc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 20:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbZISAB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 19:58:57 -0400
-Received: from gimli.pxnet.com ([195.227.45.7]:35093 "EHLO mail.pxnet.com"
+	Fri, 18 Sep 2009 20:01:27 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:35119 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754096AbZIRX6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 19:58:43 -0400
+	id S1752894AbZIRX6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 19:58:49 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 3/4] isdn: avoid races in capidrv (v2)
+Subject: [PATCH 1/4] Documentation: expand isdn/INTERFACE.CAPI document
 To: Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>
 CC: davem@davemloft.net, i4ldeveloper@listserv.isdn4linux.de,
        netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <20090919-patch-capi-3.tilman@imap.cc>
+Message-ID: <20090919-patch-capi-1.tilman@imap.cc>
 In-Reply-To: <20090919-patch-capi-0.tilman@imap.cc>
 References: <20090919-patch-capi-0.tilman@imap.cc>
 Date: Sat, 19 Sep 2009 01:57:42 +0200 (CEST)
@@ -23,139 +23,123 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In several places, capidrv sends a CAPI message to the ISDN
-device and then updates its internal state accordingly.
-If the response message from the device arrives before the
-state is updated, it may be rejected or processed incorrectly.
-Avoid these races by updating the state before emitting the
-message.
+Describe the storage of CAPI messages and payload data in SKBs,
+kernelcapi debugging output, and note that send_message() may
+in fact be called in interrupt context.
 
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- drivers/isdn/capi/capidrv.c |   25 +++++++++++++------------
- 1 files changed, 13 insertions(+), 12 deletions(-)
+ Documentation/isdn/INTERFACE.CAPI |   68 ++++++++++++++++++++++++++++++++-----
+ 1 files changed, 59 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/isdn/capi/capidrv.c b/drivers/isdn/capi/capidrv.c
-index 6501202..4921eae 100644
---- a/drivers/isdn/capi/capidrv.c
-+++ b/drivers/isdn/capi/capidrv.c
-@@ -671,8 +671,8 @@ static void n0(capidrv_contr * card, capidrv_ncci * ncci)
- 				 NULL,	/* Useruserdata */   /* $$$$ */
- 				 NULL	/* Facilitydataarray */
- 	);
--	send_message(card, &cmsg);
- 	plci_change_state(card, ncci->plcip, EV_PLCI_DISCONNECT_REQ);
-+	send_message(card, &cmsg);
+diff --git a/Documentation/isdn/INTERFACE.CAPI b/Documentation/isdn/INTERFACE.CAPI
+index 686e107..e6bb1a7 100644
+--- a/Documentation/isdn/INTERFACE.CAPI
++++ b/Documentation/isdn/INTERFACE.CAPI
+@@ -60,10 +60,9 @@ open() operation on regular files or character devices.
  
- 	cmd.command = ISDN_STAT_BHUP;
- 	cmd.driver = card->myid;
-@@ -924,8 +924,8 @@ static void handle_incoming_call(capidrv_contr * card, _cmsg * cmsg)
- 		 */
- 		capi_cmsg_answer(cmsg);
- 		cmsg->Reject = 1;	/* ignore */
--		send_message(card, cmsg);
- 		plci_change_state(card, plcip, EV_PLCI_CONNECT_REJECT);
-+		send_message(card, cmsg);
- 		printk(KERN_INFO "capidrv-%d: incoming call %s,%d,%d,%s ignored\n",
- 			card->contrnr,
- 			cmd.parm.setup.phone,
-@@ -974,8 +974,8 @@ static void handle_incoming_call(capidrv_contr * card, _cmsg * cmsg)
- 	case 2:		/* Call will be rejected. */
- 		capi_cmsg_answer(cmsg);
- 		cmsg->Reject = 2;	/* reject call, normal call clearing */
--		send_message(card, cmsg);
- 		plci_change_state(card, plcip, EV_PLCI_CONNECT_REJECT);
-+		send_message(card, cmsg);
- 		break;
+ After a successful return from register_appl(), CAPI messages from the
+ application may be passed to the driver for the device via calls to the
+-send_message() callback function. The CAPI message to send is stored in the
+-data portion of an skb. Conversely, the driver may call Kernel CAPI's
+-capi_ctr_handle_message() function to pass a received CAPI message to Kernel
+-CAPI for forwarding to an application, specifying its ApplID.
++send_message() callback function. Conversely, the driver may call Kernel
++CAPI's capi_ctr_handle_message() function to pass a received CAPI message to
++Kernel CAPI for forwarding to an application, specifying its ApplID.
  
- 	default:
-@@ -983,8 +983,8 @@ static void handle_incoming_call(capidrv_contr * card, _cmsg * cmsg)
- 		capi_cmsg_answer(cmsg);
- 		cmsg->Reject = 8;	/* reject call,
- 					   destination out of order */
--		send_message(card, cmsg);
- 		plci_change_state(card, plcip, EV_PLCI_CONNECT_REJECT);
-+		send_message(card, cmsg);
- 		break;
- 	}
- 	return;
-@@ -1020,8 +1020,8 @@ static void handle_plci(_cmsg * cmsg)
- 		card->bchans[plcip->chan].disconnecting = 1;
- 		plci_change_state(card, plcip, EV_PLCI_DISCONNECT_IND);
- 		capi_cmsg_answer(cmsg);
--		send_message(card, cmsg);
- 		plci_change_state(card, plcip, EV_PLCI_DISCONNECT_RESP);
-+		send_message(card, cmsg);
- 		break;
+ Deregistration requests (CAPI operation CAPI_RELEASE) from applications are
+ forwarded as calls to the release_appl() callback function, passing the same
+@@ -142,6 +141,7 @@ u16  (*send_message)(struct capi_ctr *ctrlr, struct sk_buff *skb)
+ 	to accepting or queueing the message. Errors occurring during the
+ 	actual processing of the message should be signaled with an
+ 	appropriate reply message.
++	May be called in process or interrupt context.
+ 	Calls to this function are not serialized by Kernel CAPI, ie. it must
+ 	be prepared to be re-entered.
  
- 	case CAPI_DISCONNECT_CONF:	/* plci */
-@@ -1078,8 +1078,8 @@ static void handle_plci(_cmsg * cmsg)
+@@ -154,7 +154,8 @@ read_proc_t *ctr_read_proc
+ 	system entry, /proc/capi/controllers/<n>; will be called with a
+ 	pointer to the device's capi_ctr structure as the last (data) argument
  
- 		if (card->bchans[plcip->chan].incoming) {
- 			capi_cmsg_answer(cmsg);
--			send_message(card, cmsg);
- 			plci_change_state(card, plcip, EV_PLCI_CONNECT_ACTIVE_IND);
-+			send_message(card, cmsg);
- 		} else {
- 			capidrv_ncci *nccip;
- 			capi_cmsg_answer(cmsg);
-@@ -1098,13 +1098,14 @@ static void handle_plci(_cmsg * cmsg)
- 						 NULL	/* NCPI */
- 			);
- 			nccip->msgid = cmsg->Messagenumber;
-+			plci_change_state(card, plcip,
-+					  EV_PLCI_CONNECT_ACTIVE_IND);
-+			ncci_change_state(card, nccip, EV_NCCI_CONNECT_B3_REQ);
- 			send_message(card, cmsg);
- 			cmd.command = ISDN_STAT_DCONN;
- 			cmd.driver = card->myid;
- 			cmd.arg = plcip->chan;
- 			card->interface.statcallb(&cmd);
--			plci_change_state(card, plcip, EV_PLCI_CONNECT_ACTIVE_IND);
--			ncci_change_state(card, nccip, EV_NCCI_CONNECT_B3_REQ);
- 		}
- 		break;
+-Note: Callback functions are never called in interrupt context.
++Note: Callback functions except send_message() are never called in interrupt
++context.
  
-@@ -1193,8 +1194,8 @@ static void handle_ncci(_cmsg * cmsg)
- 			goto notfound;
+ - to be filled in before calling capi_ctr_ready():
  
- 		capi_cmsg_answer(cmsg);
--		send_message(card, cmsg);
- 		ncci_change_state(card, nccip, EV_NCCI_CONNECT_B3_ACTIVE_IND);
-+		send_message(card, cmsg);
+@@ -171,14 +172,40 @@ u8 serial[CAPI_SERIAL_LEN]
+ 	value to return for CAPI_GET_SERIAL
  
- 		cmd.command = ISDN_STAT_BCONN;
- 		cmd.driver = card->myid;
-@@ -1222,8 +1223,8 @@ static void handle_ncci(_cmsg * cmsg)
- 							  0,	/* Reject */
- 							  NULL	/* NCPI */
- 				);
--				send_message(card, cmsg);
- 				ncci_change_state(card, nccip, EV_NCCI_CONNECT_B3_RESP);
-+				send_message(card, cmsg);
- 				break;
- 			}
- 			printk(KERN_ERR "capidrv-%d: no mem for ncci, sorry\n",							card->contrnr);
-@@ -1299,8 +1300,8 @@ static void handle_ncci(_cmsg * cmsg)
- 		card->bchans[nccip->chan].disconnecting = 1;
- 		ncci_change_state(card, nccip, EV_NCCI_DISCONNECT_B3_IND);
- 		capi_cmsg_answer(cmsg);
--		send_message(card, cmsg);
- 		ncci_change_state(card, nccip, EV_NCCI_DISCONNECT_B3_RESP);
-+		send_message(card, cmsg);
- 		break;
  
- 	case CAPI_DISCONNECT_B3_CONF:	/* ncci */
-@@ -2014,8 +2015,8 @@ static void send_listen(capidrv_contr *card)
- 			     card->cipmask,
- 			     card->cipmask2,
- 			     NULL, NULL);
--	send_message(card, &cmdcmsg);
- 	listen_change_state(card, EV_LISTEN_REQ);
-+	send_message(card, &cmdcmsg);
- }
+-4.3 The _cmsg Structure
++4.3 SKBs
++
++CAPI messages are passed between Kernel CAPI and the driver via send_message()
++and capi_ctr_handle_message(), stored in the data portion of a socket buffer
++(skb).  Each skb contains a single CAPI message coded according to the CAPI 2.0
++standard.
++
++For the data transfer messages, DATA_B3_REQ and DATA_B3_IND, the actual
++payload data immediately follows the CAPI message itself within the same skb.
++The Data and Data64 parameters are not used for processing. The Data64
++parameter may be omitted by setting the length field of the CAPI message to 22
++instead of 30.
++
++
++4.4 The _cmsg Structure
  
- static void listentimerfunc(unsigned long x)
+ (declared in <linux/isdn/capiutil.h>)
+ 
+ The _cmsg structure stores the contents of a CAPI 2.0 message in an easily
+-accessible form. It contains members for all possible CAPI 2.0 parameters, of
+-which only those appearing in the message type currently being processed are
+-actually used. Unused members should be set to zero.
++accessible form. It contains members for all possible CAPI 2.0 parameters,
++including subparameters of the Additional Info and B Protocol structured
++parameters, with the following exceptions:
++
++* second Calling party number (CONNECT_IND)
++
++* Data64 (DATA_B3_REQ and DATA_B3_IND)
++
++* Sending complete (subparameter of Additional Info, CONNECT_REQ and INFO_REQ)
++
++* Global Configuration (subparameter of B Protocol, CONNECT_REQ, CONNECT_RESP
++  and SELECT_B_PROTOCOL_REQ)
++
++Only those parameters appearing in the message type currently being processed
++are actually used. Unused members should be set to zero.
+ 
+ Members are named after the CAPI 2.0 standard names of the parameters they
+ represent. See <linux/isdn/capiutil.h> for the exact spelling. Member data
+@@ -297,3 +324,26 @@ char *capi_cmd2str(u8 Command, u8 Subcommand)
+ 	be NULL if the command/subcommand is not one of those defined in the
+ 	CAPI 2.0 standard.
+ 
++
++7. Debugging
++
++The module kernelcapi has a module parameter showcapimsgs controlling some
++debugging output produced by the module. It can only be set when the module is
++loaded, via a parameter "showcapimsgs=<n>" to the modprobe command, either on
++the command line or in the configuration file.
++
++If the lowest bit of showcapimsgs is set, kernelcapi logs controller and
++application up and down events.
++
++In addition, every registered CAPI controller has an associated traceflag
++parameter controlling how CAPI messages sent from and to tha controller are
++logged. The traceflag parameter is initialized with the value of the
++showcapimsgs parameter when the controller is registered, but can later be
++changed via the MANUFACTURER_REQ command KCAPI_CMD_TRACE.
++
++If the value of traceflag is non-zero, CAPI messages are logged.
++DATA_B3 messages are only logged if the value of traceflag is > 2.
++
++If the lowest bit of traceflag is set, only the command/subcommand and message
++length are logged. Otherwise, kernelcapi logs a readable representation of
++the entire message.
 -- 
 1.6.2.1.214.ge986c
 
