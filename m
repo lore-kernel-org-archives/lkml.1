@@ -1,196 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbZIRPFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZIRPEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754371AbZIRPFQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 11:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZIRPFP
+	id S1754222AbZIRPEW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 11:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbZIRPEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 11:05:15 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:23899 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753600AbZIRPFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 11:05:13 -0400
-Message-ID: <4AB3A16B.90009@vflare.org>
-Date: Fri, 18 Sep 2009 20:34:11 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Fri, 18 Sep 2009 11:04:21 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:39048 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753394AbZIRPEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 11:04:21 -0400
+Message-ID: <4AB3A172.4090601@austin.ibm.com>
+Date: Fri, 18 Sep 2009 10:04:18 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>,
-       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp
-Subject: Re: [PATCH 2/4] send callback when swap slot is freed
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>	 <1253227412-24342-3-git-send-email-ngupta@vflare.org>	 <1253256805.4959.8.camel@penberg-laptop>	 <Pine.LNX.4.64.0909180809290.2882@sister.anvils>	 <1253260528.4959.13.camel@penberg-laptop>	 <Pine.LNX.4.64.0909180857170.5404@sister.anvils> <1253266391.4959.15.camel@penberg-laptop>
-In-Reply-To: <1253266391.4959.15.camel@penberg-laptop>
+To: linuxppc-dev@ozlabs.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 5/5 v2] kernel handling of CPU DLPAR
+References: <4AB39FB3.1020608@austin.ibm.com>
+In-Reply-To: <4AB39FB3.1020608@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka,
+This adds the capability to DLPAR add and remove CPUs from the kernel. The
+creates two new files /sys/devices/system/cpu/probe and
+/sys/devices/system/cpu/release to handle the DLPAR addition and removal of
+CPUs respectively.
 
-On 09/18/2009 03:03 PM, Pekka Enberg wrote:
->
-> On Fri, 2009-09-18 at 08:59 +0100, Hugh Dickins wrote:
->> On Fri, 18 Sep 2009, Pekka Enberg wrote:
->>>
->>> The *hook* looks OK to me but set_swap_free_notify() looks like an ugly
->>> hack. I don't understand why we're setting up the hook lazily in
->>> ramzswap_read() nor do I understand why we need to look up struct
->>> swap_info_struct with a bdev. Surely there's a cleaner way to do all
->>> this? Probably somewhere in sys_swapon()?
->>
->> Sounds like you have something in mind, may well be better,
->> but please show us a patch...  (my mind is elsewhere!)
->
-> Hey, you tricked me into a world of pain! Here's a totally untested
-> patch that adds a "swapon" funciton to struct block_device_operations
-> that the ramzswap driver can implement to setup ->swap_free_notify_fn.
->
+CPU DLPAR add is accomplished by writing the drc-index of the CPU to the
+probe file, and removal is done by writing the device-tree path of the cpu
+to the release file.
 
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
 
-It is understood that this swap notify callback is bit of a hack. I think
-we will not gain much trying to beautify this hack. However, I agree with
-Hugh's suggestion to rename this notify callback related function/variables
-to make it explicit that its completely ramzswap related. I will send a path
-that affects these renames as reply to patch 0/4.
-
-A solution that is generic while satisfying ramzswap demands may be a bit more
-involved. It will be easier to incrementally develop these additions.
-
-Thanks,
-Nitin
-
-
->
->> From 41827c57196f7eae66701a6ae6565c226c0b7674 Mon Sep 17 00:00:00 2001
-> From: Nitin Gupta<ngupta@vflare.org>
-> Date: Fri, 18 Sep 2009 04:13:30 +0530
-> Subject: [PATCH] mm: swap slot free notifier
->
-> Currently, we have "swap discard" mechanism which sends a discard bio request
-> when we find a free cluster during scan_swap_map(). This callback can come a
-> long time after swap slots are actually freed.
->
-> This delay in callback is a great problem when (compressed) RAM [1] is used
-> as a swap device. So, this change adds a callback which is called as
-> soon as a swap slot becomes free. For above mentioned case of swapping
-> over compressed RAM device, this is very useful since we can immediately
-> free memory allocated for this swap page.
->
-> This callback does not replace swap discard support. It is called with
-> swap_lock held, so it is meant to trigger action that finishes quickly.
-> However, swap discard is an I/O request and can be used for taking longer
-> actions.
->
-> It is preferred to use this callback for ramzswap case even if discard
-> mechanism could be improved such that it can be called as often as required.
-> This is because, allocation of 'bio'(s) is undesirable since ramzswap always
-> operates under low memory conditions (its a swap device). Also, batching of
-> discard bio requests is not optimal since stale data can accumulate very
-> quickly in ramzswap devices, pushing system further into low memory state.
->
-> Signed-off-by: Nitin Gupta<ngupta@vflare.org>
-> Signed-off-by: Pekka Enberg<penberg@cs.helsinki.fi>
-> ---
->   include/linux/blkdev.h |    2 ++
->   include/linux/swap.h   |   16 ++++++++++++++++
->   mm/swapfile.c          |    5 +++++
->   3 files changed, 23 insertions(+), 0 deletions(-)
->
-> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> index e23a86c..688e024 100644
-> --- a/include/linux/blkdev.h
-> +++ b/include/linux/blkdev.h
-> @@ -27,6 +27,7 @@ struct scsi_ioctl_command;
->   struct request_queue;
->   struct elevator_queue;
->   struct request_pm_state;
-> +struct swap_info_struct;
->   struct blk_trace;
->   struct request;
->   struct sg_io_hdr;
-> @@ -1239,6 +1240,7 @@ struct block_device_operations {
->   						unsigned long long);
->   	int (*revalidate_disk) (struct gendisk *);
->   	int (*getgeo)(struct block_device *, struct hd_geometry *);
-> +	int (*swapon)(struct block_device *, struct swap_info_struct *);
->   	struct module *owner;
->   };
->
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 7c15334..6603009 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -8,6 +8,7 @@
->   #include<linux/memcontrol.h>
->   #include<linux/sched.h>
->   #include<linux/node.h>
-> +#include<linux/blkdev.h>
->
->   #include<asm/atomic.h>
->   #include<asm/page.h>
-> @@ -20,6 +21,8 @@ struct bio;
->   #define SWAP_FLAG_PRIO_MASK	0x7fff
->   #define SWAP_FLAG_PRIO_SHIFT	0
->
-> +typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
-> +
->   static inline int current_is_kswapd(void)
->   {
->   	return current->flags&  PF_KSWAPD;
-> @@ -155,6 +158,7 @@ struct swap_info_struct {
->   	unsigned int max;
->   	unsigned int inuse_pages;
->   	unsigned int old_block_size;
-> +	swap_free_notify_fn *swap_free_notify_fn;
->   };
->
->   struct swap_list_t {
-> @@ -297,6 +301,18 @@ extern int reuse_swap_page(struct page *);
->   extern int try_to_free_swap(struct page *);
->   struct backing_dev_info;
->
-> +static inline int
-> +blkdev_swapon(struct block_device *bdev, struct swap_info_struct *sis)
-> +{
-> +	struct gendisk *disk = bdev->bd_disk;
-> +	int err = 0;
-> +
-> +	if (disk->fops->swapon)
-> +		err = disk->fops->swapon(bdev, sis);
-> +
-> +	return err;
-> +}
-> +
->   /* linux/mm/thrash.c */
->   extern struct mm_struct *swap_token_mm;
->   extern void grab_swap_token(struct mm_struct *);
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index 74f1102..9d10f02 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -585,6 +585,8 @@ static int swap_entry_free(struct swap_info_struct *p,
->   			swap_list.next = p - swap_info;
->   		nr_swap_pages++;
->   		p->inuse_pages--;
-> +		if (p->swap_free_notify_fn)
-> +			p->swap_free_notify_fn(p->bdev, offset);
->   	}
->   	if (!swap_count(count))
->   		mem_cgroup_uncharge_swap(ent);
-> @@ -1845,6 +1847,9 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
->   		if (error<  0)
->   			goto bad_swap;
->   		p->bdev = bdev;
-> +		error = blkdev_swapon(bdev, p);
-> +		if (error<  0)
-> +			goto bad_swap;
->   	} else if (S_ISREG(inode->i_mode)) {
->   		p->bdev = inode->i_sb->s_bdev;
->   		mutex_lock(&inode->i_mutex);
-
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-09-17 11:33:00.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-09-17 11:33:06.000000000 -0500
+@@ -1,11 +1,11 @@
+ /*
+- * dlpar.c - support for dynamic reconfiguration (including PCI
+- * Hotplug and Dynamic Logical Partitioning on RPA platforms).
++ * dlpar.c - support for dynamic reconfiguration (including PCI,
++ * Memory, and CPU Hotplug and Dynamic Logical Partitioning on
++ * PAPR platforms).
+  *
+  * Copyright (C) 2009 Nathan Fontenot
+  * Copyright (C) 2009 IBM Corporation
+  *
+- *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License version
+  * 2 as published by the Free Software Foundation.
+@@ -19,6 +19,7 @@
+ #include <linux/memory_hotplug.h>
+ #include <linux/sysdev.h>
+ #include <linux/sysfs.h>
++#include <linux/cpu.h>
+ 
+ 
+ #include <asm/prom.h>
+@@ -551,8 +552,85 @@
+ 	return rc ? -1 : count;
+ }
+ 
++static ssize_t cpu_probe_store(struct class *class, const char *buf,
++			       size_t count)
++{
++	struct device_node *dn;
++	unsigned long drc_index;
++	char *cpu_name;
++	int rc;
++
++	rc = strict_strtoul(buf, 0, &drc_index);
++	if (rc)
++		return -EINVAL;
++
++	rc = acquire_drc(drc_index);
++	if (rc)
++		return rc;
++
++	dn = configure_connector(drc_index);
++	if (!dn) {
++		release_drc(drc_index);
++		return rc;
++	}
++
++	/* fixup dn name */
++	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
++			   GFP_KERNEL);
++	if (!cpu_name) {
++		free_cc_nodes(dn);
++		release_drc(drc_index);
++		return -ENOMEM;
++	}
++
++	sprintf(cpu_name, "/cpus/%s", dn->full_name);
++	kfree(dn->full_name);
++	dn->full_name = cpu_name;
++
++	rc = add_device_tree_nodes(dn);
++	if (rc)
++		release_drc(drc_index);
++
++	return rc ? rc : count;
++}
++
++static ssize_t cpu_release_store(struct class *class, const char *buf,
++				 size_t count)
++{
++	struct device_node *dn;
++	u32 *drc_index;
++	int rc;
++
++	dn = of_find_node_by_path(buf);
++	if (!dn)
++		return -EINVAL;
++
++	drc_index = (u32 *)of_get_property(dn, "ibm,my-drc-index", NULL);
++	if (!drc_index) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	rc = release_drc(*drc_index);
++	if (rc) {
++		of_node_put(dn);
++		return rc;
++	}
++
++	rc = remove_device_tree_nodes(dn);
++	if (rc)
++		acquire_drc(*drc_index);
++
++	of_node_put(dn);
++	return rc ? rc : count;
++}
++
+ static struct class_attribute class_attr_mem_release =
+ 			__ATTR(release, S_IWUSR, NULL, memory_release_store);
++static struct class_attribute class_attr_cpu_probe =
++			__ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
++static struct class_attribute class_attr_cpu_release =
++			__ATTR(release, S_IWUSR, NULL, cpu_release_store);
+ 
+ static int pseries_dlpar_init(void)
+ {
+@@ -567,6 +645,18 @@
+ 		printk(KERN_INFO "DLPAR: Could not create sysfs memory "
+ 		       "release file\n");
+ 
++	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
++			       &class_attr_cpu_probe.attr);
++	if (rc)
++		printk(KERN_INFO "DLPAR: Could not create sysfs cpu "
++		       "probe file\n");
++
++	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
++			       &class_attr_cpu_release.attr);
++	if (rc)
++		printk(KERN_INFO "DLPAR: Could not create sysfs cpu "
++		       "release file\n");
++
+ 	return 0;
+ }
+ device_initcall(pseries_dlpar_init);
