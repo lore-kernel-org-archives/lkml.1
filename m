@@ -1,44 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbZIRUeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbZIRUhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbZIRUeQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbZIRUeH
+	id S1758612AbZIRUhe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758252AbZIRUh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:34:07 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:62426 "EHLO
+	Fri, 18 Sep 2009 16:37:29 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64004 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752223AbZIRUeF (ORCPT
+	by vger.kernel.org with ESMTP id S1757619AbZIRUh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:34:05 -0400
+	Fri, 18 Sep 2009 16:37:29 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Chris Zankel <chris@zankel.net>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH v2] Linker script cleanup for xtensa
-Date: Fri, 18 Sep 2009 16:33:46 -0400
-Message-Id: <1253306027-7019-1-git-send-email-tabbott@ksplice.com>
+       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
+       Chris Zankel <chris@zankel.net>
+Subject: [PATCH v2] xtensa: Cleanup linker script using new linker script macros.
+Date: Fri, 18 Sep 2009 16:33:47 -0400
+Message-Id: <1253306027-7019-2-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1253306027-7019-1-git-send-email-tabbott@ksplice.com>
+References: <1253306027-7019-1-git-send-email-tabbott@ksplice.com>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an updated version of the patch I sent on September 6 cleaning
-up the xtensa architecture's linker scripts.  It differs from the
-previous version only in having been rebased on top of Linus' current
-master.
-
-This cross-architecture linker script cleanup project is in
-preparation for adding support for building the kernel with
--ffunction-sections -fdata-sections, which is a prerequisite for
-Ksplice.
-
-	-Tim Abbott
-
-Tim Abbott (1):
-  xtensa: Cleanup linker script using new linker script macros.
-
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Chris Zankel <chris@zankel.net>
+---
  arch/xtensa/kernel/vmlinux.lds.S |   75 +++++++-------------------------------
  1 files changed, 14 insertions(+), 61 deletions(-)
+
+diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
+index 921b6ff..9b52615 100644
+--- a/arch/xtensa/kernel/vmlinux.lds.S
++++ b/arch/xtensa/kernel/vmlinux.lds.S
+@@ -15,6 +15,8 @@
+  */
+ 
+ #include <asm-generic/vmlinux.lds.h>
++#include <asm/page.h>
++#include <asm/thread_info.h>
+ 
+ #include <variant/core.h>
+ #include <platform/hardware.h>
+@@ -107,41 +109,18 @@ SECTIONS
+ 
+   .fixup   : { *(.fixup) }
+ 
+-  . = ALIGN(16);
+-
+-  __ex_table : {
+-    __start___ex_table = .;
+-    *(__ex_table)
+-    __stop___ex_table = .;
+-  }
+-
++  EXCEPTION_TABLE(16)
+   /* Data section */
+ 
+-  . = ALIGN(XCHAL_ICACHE_LINESIZE);
+   _fdata = .;
+-  .data :
+-  {
+-    DATA_DATA
+-    CONSTRUCTORS
+-    . = ALIGN(XCHAL_ICACHE_LINESIZE);
+-    *(.data.cacheline_aligned)
+-  }
+-
++  RW_DATA_SECTION(XCHAL_ICACHE_LINESIZE, PAGE_SIZE, THREAD_SIZE)
+   _edata = .;
+ 
+-  /* The initial task */
+-  . = ALIGN(8192);
+-  .data.init_task : { *(.data.init_task) }
+-
+   /* Initialization code and data: */
+ 
+-  . = ALIGN(1 << 12);
++  . = ALIGN(PAGE_SIZE);
+   __init_begin = .;
+-  .init.text : {
+-  	_sinittext = .;
+-	INIT_TEXT
+-	_einittext = .;
+-  }
++  INIT_TEXT_SECTION(PAGE_SIZE)
+ 
+   .init.data :
+   {
+@@ -168,36 +147,15 @@ SECTIONS
+ 		   .DebugInterruptVector.text);
+   
+     __boot_reloc_table_end = ABSOLUTE(.) ;
+-  }
+ 
+-  . = ALIGN(XCHAL_ICACHE_LINESIZE);
+-
+-  __setup_start = .;
+-  .init.setup : { *(.init.setup) }
+-  __setup_end = .;
+-
+-  __initcall_start = .;
+-  .initcall.init : {
+-	INITCALLS
++    INIT_SETUP(XCHAL_ICACHE_LINESIZE)
++    INIT_CALLS
++    CON_INITCALL
++    SECURITY_INITCALL
++    INIT_RAM_FS
+   }
+-  __initcall_end = .;
+-
+-  __con_initcall_start = .;
+-  .con_initcall.init : { *(.con_initcall.init) }
+-  __con_initcall_end = .;
+-
+-  SECURITY_INIT
+-
+-
+-#ifdef CONFIG_BLK_DEV_INITRD
+-  . = ALIGN(4096);
+-  __initramfs_start =.;
+-  .init.ramfs : { *(.init.ramfs) }
+-  __initramfs_end = .;
+-#endif
+-
+-  PERCPU(4096)
+ 
++  PERCPU(PAGE_SIZE)
+ 
+   /* We need this dummy segment here */
+ 
+@@ -252,16 +210,11 @@ SECTIONS
+ 		  .DoubleExceptionVector.literal)
+ 
+   . = (LOADADDR( .DoubleExceptionVector.text ) + SIZEOF( .DoubleExceptionVector.text ) + 3) & ~ 3;
+-  . = ALIGN(1 << 12);
++  . = ALIGN(PAGE_SIZE);
+ 
+   __init_end = .;
+ 
+-  . = ALIGN(8192);
+-
+-  /* BSS section */
+-  _bss_start = .;
+-  .bss : { *(.bss.page_aligned) *(.bss) }
+-  _bss_end = .;
++  BSS_SECTION(0, 8192, 0)
+ 
+   _end = .;
+ 
+-- 
+1.6.3.3
 
