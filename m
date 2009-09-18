@@ -1,99 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZIRPk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZIRPo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754934AbZIRPk1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 11:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZIRPk0
+	id S1753208AbZIRPo0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 11:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZIRPoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 11:40:26 -0400
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:44397 "EHLO mail.cs.nmsu.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751484AbZIRPkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 11:40:24 -0400
-Message-ID: <4d6ae6e7ee9b38f99e38d357dc755d64.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <20090918064627.GG18668@core.coreip.homeip.net>
-References: <aac07123ee2b14a0ac25d1652dbe0780.squirrel@intranet.cs.nmsu.edu>
-    <5d5443650909151011k4b21a6d0n28ac6142c3d7161d@mail.gmail.com>
-    <20090915183406.GA5696@core.coreip.homeip.net>
-    <0debc76f26fe85e28adf642396233928.squirrel@intranet.cs.nmsu.edu>
-    <20090916034642.GC2756@core.coreip.homeip.net>
-    <2c0ac825ebe78da99328b896faae04a2.squirrel@intranet.cs.nmsu.edu>
-    <20090917175707.GB789@khazad-dum.debian.net>
-    <20090918064627.GG18668@core.coreip.homeip.net>
-Date: Fri, 18 Sep 2009 09:40:23 -0600
-Subject: Re: Using EV_MSC or extending KEY_*
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Trilok Soni" <soni.trilok@gmail.com>,
-       "Linux USB" <linux-usb@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-User-Agent: SquirrelMail/1.4.19
-MIME-Version: 1.0
+	Fri, 18 Sep 2009 11:44:25 -0400
+Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:44534 "HELO
+	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752217AbZIRPoY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 11:44:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=MSP+TOPFsWwzi0UteDWYgBQa4Dhc0Dsx83MQbhonQhQnmaF9YiY/FKwcAIUQ66ssWgw2j9t6v/HspaZVeLbEDKfMveP/B6JVcbrf4nohTx2npMll2IXQ+FzYBYiLOQr8;
+Date: Fri, 18 Sep 2009 08:44:18 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Tejun Heo <tj@kernel.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference
+ at (null), last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/local_cpus
+Message-ID: <20090918084418.7a49ae75@jbarnes-g45>
+In-Reply-To: <alpine.LFD.2.01.0909180755530.4950@localhost.localdomain>
+References: <20090915132105.2fdd1d45@jbarnes-g45>
+	<20090917173012.GA11155@elte.hu>
+	<20090917103614.6ab1385f@jbarnes-g45>
+	<20090917175944.GA17304@elte.hu>
+	<20090917114614.35aeb6b8@jbarnes-g45>
+	<20090918075952.GA29026@elte.hu>
+	<alpine.LFD.2.01.0909180755530.4950@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Thu, Sep 17, 2009 at 02:57:07PM -0300, Henrique de Moraes Holschuh
-> wrote:
->> On Wed, 16 Sep 2009, Rick L. Vinyard, Jr. wrote:
->> > The M* keys are intended to provide a quick way to switch between key
->> > mappings, with each mode having their own user-defined mappings.
->>
->> What I'd do in this case would be this:
->>
->> 1. Initially have the M* level-shift keys assigned KEY_RESERVED
->>
->> 2. Have a big enough keymap to map all keys in all M*-level shift states
->> possible.
->>
->> Eg:
->>    START OF KEYMAP
->>    M* keys
->>    1st set of G* keys
->>    2nd set of G* keys
->>    3rd set of G* keys...
->>    ...
->>    last set of G* keys
->>    END OF KEYMAP
->>
->> 3. Have the driver special-process M* level-shift keys *as long as they
->> are
->> still set to KEY_RESERVED* to select which part of the keymap is used to
->> translate the other keys.  Note that this likely means pressing a M* key
->> would be transparent to userspace in this case, i.e. no events would be
->> issued when a M* key is doing a level shift.
->>
->> So, you'd be able to set all mappings you want in the driver, and the M*
->> keys would do what they're expected to do without any userland help at
->> all,
->> but you'd still be able to program the M* keys to be normal keys if you
->> want.
->>
->> Of course, this assumes you don't do chording on multiple M* keys to end
->> up
->> with a huge number of keymaps :p
->>
->
-> Actually I think that the device should just emit KEY_PROG1..KEY_PROG4
-> for the M keys and have userspace daemon load alternate keymaps on the
-> fly in resaponse to KEY_PROGx. The device is just a set of completely
-> generic buttons... User will have to tell the kernel what to map them
-> to.
->
+On Fri, 18 Sep 2009 08:38:02 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Emitting a keycode certainly does simplify things, but that will preclude
-the user from programming the G-keys to KEY_PROG1..KEY_PROG4.
+> 
+> 
+> On Fri, 18 Sep 2009, Ingo Molnar wrote:
+> > 
+> > [  158.058140] warning: `dbus-daemon' uses 32-bit capabilities
+> > (legacy support in use) [  159.370562] BUG: unable to handle kernel
+> > NULL pointer dereference at (null) [  159.372694] IP:
+> > [<ffffffff8143b722>] bitmap_scnprintf+0x72/0xd0
+> 
+> Hmm. The code is
+> 
+>    a:	49 63 fc             	movslq %r12d,%rdi
+>    d:	0f 49 d3             	cmovns %ebx,%edx
+>   10:	c1 f8 1f             	sar    $0x1f,%eax
+>   13:	4c 01 ff             	add    %r15,%rdi
+>   16:	c1 e8 1a             	shr    $0x1a,%eax
+>   19:	c1 fa 06             	sar    $0x6,%edx
+>   1c:	41 c1 e8 02          	shr    $0x2,%r8d
+>   20:	8d 0c 03             	lea    (%rbx,%rax,1),%ecx
+>   23:	48 63 d2             	movslq %edx,%rdx
+>   26:	83 e1 3f             	and    $0x3f,%ecx
+>   29:	29 c1                	sub    %eax,%ecx
+>   2b:*	49 8b 44 d5 00       	mov
+> 0x0(%r13,%rdx,8),%rax     <-- trapping instruction 30:	48 c7
+> c2 8c 37 16 82 	mov    $0xffffffff8216378c,%rdx 37:	48
+> d3 e8             	shr    %cl,%rax 3a:	89
+> f1                	mov    %esi,%ecx 3c:	44 89
+> f6             	mov    %r14d,%esi
+> 
+> and the obvious reason seems to be that 'maskp' is NULL (that
+> faulting thing is the code for "val = (maskp[word] >> bit) &
+> chunkmask;" with the actual fault being the access of "maskp[word]".
+> 
+> Now, the caller does
+> 
+> 	mask = cpumask_of_pcibus(to_pci_dev(dev)->bus);
+> 
+> and then uses cpumask_scnprintf() that is just a wrapper that does
+> 
+> 	bitmap_scnprintf(buf, len, cpumask_bits(srcp),
+> nr_cpumask_bits);
+> 
+> So clearly we have "cpumask_of_pcibus()" being NULL (cpumask_bits()
+> would not change it).
+> 
+> I assume this is the NUMA case? The non-NUMA case has just
+> 
+> 	static inline const struct cpumask *cpumask_of_node(int node)
+> 	{
+> 	        return cpu_online_mask;
+> 	}
+> 
+> so I don't think you can ever get NULL (if we have a NULL
+> cpu_online_mask we have bigger problems). 
+> 
+> [ Side note: looking closer, I think our headers are buggy, and I
+> _know_ they are confusing. The above inline declaration of
+> cpumask_of_node() seems to be then later overridden in
+> <asm-generic/topology.h> by a #define! 
+> 
+>   And if I read that right, that will also override the debugging 
+>   versions that we declared if CONFIG_DEBUG_PER_CPU_MAPS is on. Ingo? 
+>   Rusty? Am I missing something?
+> 
+>   That said, those overrides should only happen for non-NUMA ]
+> 
+> The NUMA version of 'cpumask_of_node()' has all the debug code for
+> show it's not returning NULL, but only when CONFIG_DEBUG_PER_CPU_MAPS
+> is enabled. Otherwise it all seems to boil down to (through
+> cpumask_of_pcibus and __pcibus_to_node):
+> 
+> 	node_to_cpumask_map[bus->sysdata->node]
+> 
+> and it can fail either because "node" isn't initialized, or 
+> node_to_cpumask_map[] isn't.
+> 
+> Probably 'node' is still -1, and it gets the NULL by going off the
+> array into la-la-land.
 
-Are there any specific use cases where a user would want to program a
-G-key to KEY_PROG1..KEY_PROG4?
+Yeah David posted a fix for this
 
----
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -143,7 +143,11 @@ static inline int __pcibus_to_node(const struct
+pci_bus *bus) static inline const struct cpumask *
+ cpumask_of_pcibus(const struct pci_bus *bus)
+ {
+-	return cpumask_of_node(__pcibus_to_node(bus));
++	int node;
++
++	node = __pcibus_to_node(bus);
++	return (node == -1) ? cpu_online_mask :
++			      cpumask_of_node(node);
+ }
+ #endif
 
-Rick
 
+Looks like it should fix this issue.  He's also right that we should
+probably have a NUMA_NO_NODE define for this case...
 
+I'll pick it up and put it in my tree.
+
+Jesse
