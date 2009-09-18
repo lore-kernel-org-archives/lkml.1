@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZIRQRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZIRQVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753594AbZIRQRN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 12:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZIRQRM
+	id S1754330AbZIRQVh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 12:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZIRQVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 12:17:12 -0400
-Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:56394 "HELO
-	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752476AbZIRQRL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 12:17:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=W2sZcMsCY4kxE2uBg4/5Y/xVm2bcJ+0zSpyjtDGGoYP08OBPuEqyPvdoOCNduEJ2v1wCo3Ijh4rx2eEpATllSQN7Xd5yPkIKlu5kbf67rhMR2FoqdAevh3mfpxmQgpBJ;
-Date: Fri, 18 Sep 2009 09:17:05 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Tejun Heo <tj@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] first round of PCI updates for 2.6.32
-Message-ID: <20090918091705.65478530@jbarnes-g45>
-In-Reply-To: <20090918155247.GA20347@elte.hu>
-References: <20090915132105.2fdd1d45@jbarnes-g45>
-	<20090917173012.GA11155@elte.hu>
-	<20090917103614.6ab1385f@jbarnes-g45>
-	<20090917175944.GA17304@elte.hu>
-	<20090918082715.6272a262@jbarnes-g45>
-	<20090918155247.GA20347@elte.hu>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Fri, 18 Sep 2009 12:21:36 -0400
+Received: from kroah.org ([198.145.64.141]:51947 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752359AbZIRQVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 12:21:35 -0400
+Date: Fri, 18 Sep 2009 09:18:52 -0700
+From: Greg KH <greg@kroah.com>
+To: Bart Hartgers <bart.hartgers@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ondrej Zary <linux@rainbow-software.org>, ark3116_driver@auctionant.de
+Subject: Re: New ark3116 driver - how to get included into kernel?
+Message-ID: <20090918161852.GA23055@kroah.com>
+References: <7eb6a4d80909170549k7a19eb01s8975fe2c5f230cee@mail.gmail.com>
+ <7eb6a4d80909170552na322914x23b65d60bb56e20d@mail.gmail.com>
+ <20090918061529.GB7717@kroah.com>
+ <7eb6a4d80909180515k48ee2197q8f6e5ff8933c4647@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <7eb6a4d80909180515k48ee2197q8f6e5ff8933c4647@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009 17:52:47 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, Sep 18, 2009 at 02:15:57PM +0200, Bart Hartgers wrote:
+> Hi Greg,
+> 
+> Thanks for your reply.
+> 
+> 2009/9/18 Greg KH <greg@kroah.com>:
+> > On Thu, Sep 17, 2009 at 02:52:29PM +0200, Bart Hartgers wrote:
+> >> (Sorry for sending an HTML-ized version of this mail before)
+> >>
+> >> Hi All,
+> >>
+> >> I managed to write an improved ark3116 driver after I figured out that
+> >> it is just an 16450 UART with some USB glue logic.
+> >>
+> >> The attached files can be compiled outside the kernel tree, and work
+> >> for 2.6.31. However, I would like this driver to (eventually) end up
+> >> in the kernel tree. In order to get there, who should I sent patches
+> >> against what? I've contributed code to the kernel before, but not in
+> >> the last 5 or so years, so I am a bit out of touch.
+> >
+> > Take a look at the file, Documentation/SubmittingPatches, it should
+> > describe what you need to do.
+> >
+> Thanks. But the question I had was more that I didn't know where to
+> put a new driver. In drivers/usb/serial, or perhaps in
+> drivers/staging. Anyway, if we are going to replace the existing
+> driver, it is obvious what the patch should be against.
 
-> 
-> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> 
-> > On Thu, 17 Sep 2009 19:59:44 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > > 
-> > > > On Thu, 17 Sep 2009 19:30:12 +0200
-> > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > 
-> > > > > 
-> > > > > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > 
-> > > > > Config and full bootlog attached.
-> > > > > 
-> > > > > Note:
-> > > > > 
-> > > > >  CONFIG_DEBUG_PER_CPU_MAPS=y
-> > > > >  CONFIG_CPUMASK_OFFSTACK=y
-> > > > 
-> > > > Does this patch fix it?  I sent it to you earlier but I never
-> > > > heard back...
-> > > 
-> > > Ah ... you probably sent it in the merge window communication
-> > > blackout ;-)
-> > > 
-> > > Will try, thanks.
-> > 
-> > Did you get a chance to try this patch yet Ingo?
-> 
-> Yeah, it does - thanks.
-> 
+Yes, please work on fixing up the existing driver, that's the proper way
+to do it.
 
-Thanks for testing, just pushed out the fix to my tree.
+> >> Compared to the old ark3116 driver this one offers the following improvements:
+> >>  - cts/rts handshake support
+> >>  - break signalling
+> >>  - line error detection
+> >
+> > Why can't you just send patches adding support for these features to the
+> > existing driver?  It shouldn't be that much different between the two
+> > versions, right?
+> 
+> The difference is actually quite significant. The old driver is pretty
+> much a dumb parameterized replay of the windows usb-snoops. The new
+> driver actually "understands" the hardware. That's why I made a
+> completely new driver in the first place. A diff between the two is
+> ore or less the same as a complete replacing. I could try to minimize
+> the differences, but I would be surprised if more than 30% of the
+> lines will be shared, and most of those will be red tape, not actual
+> code. The patch will be hard to read anyhow.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Then work on converting the driver over incrementally, one step at a
+time, so that the patches are readable and understandable :)
+
+> > That's the preferred method, I'd like to not drop the existing one if at
+> > all possible.
+> >
+> 
+> Do you think it is worth the effort to minimize the diff, or should I
+> just replace ark3116.c by ark3116new.c?
+
+Well, I will not take such a patch, so I would work on the incremental
+change version instead.
+
+thanks,
+
+greg k-h
