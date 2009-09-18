@@ -1,46 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZIRQNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZIRQRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbZIRQNg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 12:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZIRQNf
+	id S1753594AbZIRQRN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 12:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZIRQRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 12:13:35 -0400
-Received: from fifo99.com ([67.223.236.141]:32808 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751840AbZIRQNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 12:13:35 -0400
-Subject: Re: [PATCH 2/3] block: Rename trace_block_remap to
- trace_block_bio_remap
-From: Daniel Walker <dwalker@fifo99.com>
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>
-In-Reply-To: <4AB3A393.5000709@ce.jp.nec.com>
-References: <4AB3A393.5000709@ce.jp.nec.com>
-Content-Type: text/plain
-Date: Fri, 18 Sep 2009 09:13:45 -0700
-Message-Id: <1253290425.7060.37.camel@desktop>
+	Fri, 18 Sep 2009 12:17:12 -0400
+Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:56394 "HELO
+	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752476AbZIRQRL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 12:17:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=W2sZcMsCY4kxE2uBg4/5Y/xVm2bcJ+0zSpyjtDGGoYP08OBPuEqyPvdoOCNduEJ2v1wCo3Ijh4rx2eEpATllSQN7Xd5yPkIKlu5kbf67rhMR2FoqdAevh3mfpxmQgpBJ;
+Date: Fri, 18 Sep 2009 09:17:05 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Tejun Heo <tj@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] first round of PCI updates for 2.6.32
+Message-ID: <20090918091705.65478530@jbarnes-g45>
+In-Reply-To: <20090918155247.GA20347@elte.hu>
+References: <20090915132105.2fdd1d45@jbarnes-g45>
+	<20090917173012.GA11155@elte.hu>
+	<20090917103614.6ab1385f@jbarnes-g45>
+	<20090917175944.GA17304@elte.hu>
+	<20090918082715.6272a262@jbarnes-g45>
+	<20090918155247.GA20347@elte.hu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-19 at 00:13 +0900, Jun'ichi Nomura wrote:
->   **/
-> -static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
-> -                                      dev_t dev, sector_t from)
-> +static void blk_add_trace_bio_remap(struct request_queue *q, struct bio
-> *bio,
-> +                                   dev_t dev, sector_t from)
->  {
+On Fri, 18 Sep 2009 17:52:47 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-You might need to resubmit this, you have some line wrapping in the
-above lines.. Your should be able to set the patch part of the email to
-"preformatted" , you don't want your mailer line wrapping .. (even
-better just use git-format-patch and git-send-email) ..
+> 
+> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> 
+> > On Thu, 17 Sep 2009 19:59:44 +0200
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > > 
+> > > > On Thu, 17 Sep 2009 19:30:12 +0200
+> > > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > > 
+> > > > > 
+> > > > > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > 
+> > > > > Config and full bootlog attached.
+> > > > > 
+> > > > > Note:
+> > > > > 
+> > > > >  CONFIG_DEBUG_PER_CPU_MAPS=y
+> > > > >  CONFIG_CPUMASK_OFFSTACK=y
+> > > > 
+> > > > Does this patch fix it?  I sent it to you earlier but I never
+> > > > heard back...
+> > > 
+> > > Ah ... you probably sent it in the merge window communication
+> > > blackout ;-)
+> > > 
+> > > Will try, thanks.
+> > 
+> > Did you get a chance to try this patch yet Ingo?
+> 
+> Yeah, it does - thanks.
+> 
 
-Daniel
+Thanks for testing, just pushed out the fix to my tree.
 
+-- 
+Jesse Barnes, Intel Open Source Technology Center
