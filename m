@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZIRVjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZIRViQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbZIRVjM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 17:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbZIRVjI
+	id S1757540AbZIRViQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 17:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbZIRViJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 17:39:08 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:53238 "EHLO mail-out2.uio.no"
+	Fri, 18 Sep 2009 17:38:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50133 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751199AbZIRVjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 17:39:07 -0400
-Subject: Re: circular locking dependency detected panic in filldir when
- CONFIG_PROVE_LOCKING=y
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Joe Korty <joe.korty@ccur.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Steve French <sfrench@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090918211550.GA8258@tsunami.ccur.com>
-References: <20090918211550.GA8258@tsunami.ccur.com>
-Content-Type: text/plain
-Date: Fri, 18 Sep 2009 17:39:01 -0400
-Message-Id: <1253309941.3183.104.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	id S1751432AbZIRViI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 17:38:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+Date: Fri, 18 Sep 2009 23:39:14 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Chris Ball <cjb@laptop.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@lst.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+References: <20090903232317.GA6760@lst.de> <200909120036.41725.rjw@sisk.pl> <87fxaksdve.fsf@devron.myhome.or.jp>
+In-Reply-To: <87fxaksdve.fsf@devron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 7 msgs/h 2 sum rcpts/h 9 sum msgs/h 3 total rcpts 1495 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 94A156ED91180DC47A156C8A47EEE71DB26A0F90
-X-UiO-SPAM-Test: remote_host: 198.95.226.230 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 2 total 30 max/h 3 blacklist 0 greylist 0 ratelimit 0
+Message-Id: <200909182339.14374.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-18 at 17:15 -0400, Joe Korty wrote:
-> I experienced a might_fault panic from NFS's use of filldir
-> in a 2.6.31 kernel compiled with CONFIG_PROVE_LOCKING=y.
+On Friday 18 September 2009, OGAWA Hirofumi wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Looking at filldir, I see it is accessing user space with
-> __put_dir's (which are inatomic) and with one copy_to_user
-> (which is not inatomic).  It is the single copy_to_user
-> which is causing the might_fault panic.
+> > On Saturday 12 September 2009, Chris Ball wrote:
+> >> Hi,
+> >> 
+> >>    > Well system could check basic card ids if they match after resume
+> >> 
+> >> No.  That (arguably) guarantees that it's the same card, but not that
+> >> it wasn't modified in another machine during the suspend.
+> >
+> > Generally speaking, we'd also need to check superblocks for this to work.
+> >  
+> >>    > if some users wants to crash his card by randomly swapping it
+> >>    > during suspend/resume - I'd have no problem with that....
+> >> 
+> >> You should have a problem with it.  Taking a card from a suspended
+> >> machine and working on it with a different machine is not a bizarre
+> >> thing to want to do.
+> >
+> > Agreed.
 > 
-> It doesn't make any sense to be mixing use of inatomic
-> and non-inatomic services in filldir.  Either all should be
-> the inatomic version, or none should be.
+> Um...
 > 
-> The might_fault condition being reported by the panic looks
-> real to me, so I suspect the wrong answer is converting
-> everything to the inatomic version, since that just
-> suppresses the circular dependency check while leaving
-> the circular dependency in place.
+> What happen if we moved remove event to resume sequence?  I.e. The
+> resume generates remove and insert event (or such revalidate).  With
+> this, I hope the suspend is not bothered by complex one, and the resume
+> just ignores (if needed) previous state and notify it to userland by
+> remove/insert event.
+> 
+> And, userland process should unmount for removal devices before suspend
+> process (as part of userland preparation)?
+> 
+> If we assumed the removable device can be changed before resume, fs
+> would need to recover process, to make sure in-core and on-disk state
+> has consistent.
+> 
+> Um..., for now, I feel the umount before suspend is only safe way.
 
-Yes. This is known... Please see 
-   http://thread.gmane.org/gmane.linux.nfs/28578
-and
-   http://thread.gmane.org/gmane.linux.nfs/27406
+Yes, with the current design it's the only really safe way.
 
-I'm still hoping the VM folks can see fit to merge Peter's fix at some
-point...
-
-Cheers
-  Trond
-
+Thanks,
+Rafael
