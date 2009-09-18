@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbZIRTeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbZIRTel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118AbZIRTeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 15:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbZIRTeO
+	id S1758538AbZIRTel (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 15:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758272AbZIRTeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 15:34:14 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38486 "EHLO gir.skynet.ie"
+	Fri, 18 Sep 2009 15:34:20 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38491 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758037AbZIRTeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758073AbZIRTeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Sep 2009 15:34:09 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
@@ -15,45 +15,81 @@ To: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
 Cc: heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Mel Gorman <mel@csn.ul.ie>
-Subject: [RFC PATCH 0/3] Hatchet job for SLQB on memoryless configurations
-Date: Fri, 18 Sep 2009 20:34:08 +0100
-Message-Id: <1253302451-27740-1-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 1/3] slqb: Do not use DEFINE_PER_CPU for per-node data
+Date: Fri, 18 Sep 2009 20:34:09 +0100
+Message-Id: <1253302451-27740-2-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1253302451-27740-1-git-send-email-mel@csn.ul.ie>
+References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently SLQB is not allowed to be configured on PPC and S390 machines as
-CPUs can belong to memoryless nodes. SLQB does not deal with this very well
-and crashes reliably.
+SLQB used a seemingly nice hack to allocate per-node data for the statically
+initialised caches. Unfortunately, due to some unknown per-cpu
+optimisation, these regions are being reused by something else as the
+per-node data is getting randomly scrambled. This patch fixes the
+problem but it's not fully understood *why* it fixes the problem at the
+moment.
 
-This patch partially fixes the problem on at least one machine and allows
-SLQB to boot although I'm not sure if it's actually stable. It's doubtful
-this is the solution even in the short-term. This is a hatchet job due to
-my lack of familiarity with SLQB. While SLQB is handy to get to grips with,
-someone more familiar may be able to identify a proper fix faster assuming
-this helps point the direction of the real problem.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/slqb.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-Patch 1 statically defines some per-node structures instead of using a fun
-	hack with DEFINE_PER_CPU. The problem was that the per-node structures
-	appeared to be getting corrupted (different values each boot on
-	struct fields, particularly the lock), possibly because the active
-	node IDs are higher than the highest CPU id. It's not known why
-	this is a problem at the moment and could do with further explanation.
-
-Patch 2 noticed that on memoryless nodes, slab objects always gets freed to
-	the remote list while the allocation side always looked at the per-cpu
-	lists. Lists grew in an unbounded fashion and the machine OOM'd. This
-	patch checks if the remote page is being freed to a memoryless node
-	and if so, the page is treated as if it's local. This needs further
-	thinking from someone familiar with SLQB.
-
-Patch 3 allows SLQB to be configured on PPC and S390 again.
-
-This patchset is not intended for merging. It's to help point out where the
-real problems might be so a proper fix can be hashed out.
-
- init/Kconfig |    1 -
- mm/slqb.c    |   23 +++++++++++++----------
- 2 files changed, 13 insertions(+), 11 deletions(-)
+diff --git a/mm/slqb.c b/mm/slqb.c
+index 4ca85e2..4d72be2 100644
+--- a/mm/slqb.c
++++ b/mm/slqb.c
+@@ -1944,16 +1944,16 @@ static void init_kmem_cache_node(struct kmem_cache *s,
+ static DEFINE_PER_CPU(struct kmem_cache_cpu, kmem_cache_cpus);
+ #endif
+ #ifdef CONFIG_NUMA
+-/* XXX: really need a DEFINE_PER_NODE for per-node data, but this is better than
+- * a static array */
+-static DEFINE_PER_CPU(struct kmem_cache_node, kmem_cache_nodes);
++/* XXX: really need a DEFINE_PER_NODE for per-node data because a static
++ *      array is wasteful */
++static struct kmem_cache_node kmem_cache_nodes[MAX_NUMNODES];
+ #endif
+ 
+ #ifdef CONFIG_SMP
+ static struct kmem_cache kmem_cpu_cache;
+ static DEFINE_PER_CPU(struct kmem_cache_cpu, kmem_cpu_cpus);
+ #ifdef CONFIG_NUMA
+-static DEFINE_PER_CPU(struct kmem_cache_node, kmem_cpu_nodes); /* XXX per-nid */
++static struct kmem_cache_node kmem_cpu_nodes[MAX_NUMNODES]; /* XXX per-nid */
+ #endif
+ #endif
+ 
+@@ -1962,7 +1962,7 @@ static struct kmem_cache kmem_node_cache;
+ #ifdef CONFIG_SMP
+ static DEFINE_PER_CPU(struct kmem_cache_cpu, kmem_node_cpus);
+ #endif
+-static DEFINE_PER_CPU(struct kmem_cache_node, kmem_node_nodes); /*XXX per-nid */
++static struct kmem_cache_node kmem_node_nodes[MAX_NUMNODES]; /*XXX per-nid */
+ #endif
+ 
+ #ifdef CONFIG_SMP
+@@ -2918,15 +2918,15 @@ void __init kmem_cache_init(void)
+ 	for_each_node_state(i, N_NORMAL_MEMORY) {
+ 		struct kmem_cache_node *n;
+ 
+-		n = &per_cpu(kmem_cache_nodes, i);
++		n = &kmem_cache_nodes[i];
+ 		init_kmem_cache_node(&kmem_cache_cache, n);
+ 		kmem_cache_cache.node_slab[i] = n;
+ #ifdef CONFIG_SMP
+-		n = &per_cpu(kmem_cpu_nodes, i);
++		n = &kmem_cpu_nodes[i];
+ 		init_kmem_cache_node(&kmem_cpu_cache, n);
+ 		kmem_cpu_cache.node_slab[i] = n;
+ #endif
+-		n = &per_cpu(kmem_node_nodes, i);
++		n = &kmem_node_nodes[i];
+ 		init_kmem_cache_node(&kmem_node_cache, n);
+ 		kmem_node_cache.node_slab[i] = n;
+ 	}
+-- 
+1.6.3.3
 
