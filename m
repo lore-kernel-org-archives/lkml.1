@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbZIROxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZIROxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbZIROxn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZIROxm
+	id S1753203AbZIROxK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZIROxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:53:42 -0400
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:43298 "EHLO
-	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751026AbZIROxm convert rfc822-to-8bit (ORCPT
+	Fri, 18 Sep 2009 10:53:09 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:20193 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbZIROxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:53:42 -0400
-X-SpamScore: -13
-X-BigFish: VPS-13(zz1432R98dNzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KQ69A0-03-076-02
-X-M-MSG: 
-Date: Fri, 18 Sep 2009 16:51:40 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: "Theodore Ts'o" <tytso@mit.edu>
-CC: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] EDAC, AMD: Fix build error by including <linux/smp.h>
-Message-ID: <20090918145140.GE25309@aftab>
-References: <1253282699-14611-1-git-send-email-tytso@mit.edu>
+	Fri, 18 Sep 2009 10:53:08 -0400
+Message-ID: <4AB39EC3.4050202@nokia.com>
+Date: Fri, 18 Sep 2009 17:52:51 +0300
+From: Aaro Koskinen <aaro.koskinen@nokia.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1253282699-14611-1-git-send-email-tytso@mit.edu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 18 Sep 2009 14:51:35.0741 (UTC) FILETIME=[850086D0:01CA386F]
-X-Reverse-DNS: unknown
-Content-Transfer-Encoding: 8BIT
+To: "ext Kirill A. Shutemov" <kirill@shutemov.name>
+CC: Aaro Koskinen <aakoskin@nokia.com>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>,
+       Russell King <linux@arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
+Subject: Re: [PATCH 1/2] ARM: Pass IFSR register to do_PrefetchAbort()
+References: <f00f1348d91d2403ea0f1c5f05b3ac713664fe7b.1253281256.git.kirill@shutemov.name>	 <alpine.DEB.1.00.0909181422370.11448@ak-desktop> <cc557aab0909180445o33b6792ewf62a4f5e7589547@mail.gmail.com>
+In-Reply-To: <cc557aab0909180445o33b6792ewf62a4f5e7589547@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Sep 2009 14:52:54.0662 (UTC) FILETIME=[B40AEA60:01CA386F]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Theodore,
+Hello,
 
-On Fri, Sep 18, 2009 at 10:04:59AM -0400, Theodore Ts'o wrote:
-> Accessing the per-cpu variable cpu_llc_id now requires that
-> <linux/smp.h> header file be included.
+Kirill A. Shutemov wrote:
+>>  #ifdef CONFIG_CPU_PABRT_NOIFAR
+>> -# ifdef CPU_PABORT_HANDLER
+>> +# ifdef CPU_PABORT_HANDLER_IFAR
+>>  #  define MULTI_PABORT 1
+>>  # else
+>> -#  define CPU_PABORT_HANDLER(reg, insn)        mov reg, insn
+>> +#  define CPU_PABORT_HANDLER_IFAR(reg, insn)   mov reg, insn
+>> +#  define CPU_PABORT_HANDLER_IFSR(reg)         mrc p15, 0, reg, cr5, cr0, 1
 > 
-> Cc: Borislav Petkov <borislav.petkov@amd.com>
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> ---
-> 
-> This fixes a compile error found in 2.6.31-git6
+> It's incorrect. We have IFSR only on ARMv7.
 
-This was properly fixed in the next snapshot, 2.6.31-git7.
+It seems my assumption on the availability of that register was wrong, 
+but I think it's available at least on ARMv6, and also that IFAR can be 
+optional...
 
-Thanks.
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+A.
