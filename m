@@ -1,39 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbZIRTfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbZIRTfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758036AbZIRTfG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 15:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbZIRTfE
+	id S1758120AbZIRTfv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 15:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbZIRTfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 15:35:04 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59664 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758045AbZIRTfC (ORCPT
+	Fri, 18 Sep 2009 15:35:46 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:3493 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757539AbZIRTfp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 15:35:02 -0400
-Date: Fri, 18 Sep 2009 20:34:22 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH] Fix "W" macro in arch/arm/include/asm/unified.h
-Message-ID: <20090918193422.GA6601@n2100.arm.linux.org.uk>
-References: <20090917091237.8258.29171.stgit@pc1117.cambridge.arm.com>
+	Fri, 18 Sep 2009 15:35:45 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917091237.8258.29171.stgit@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com>
+References: <20090917125759.GA4045@kroah.com> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> 
+	<alpine.LFD.2.01.0909171322210.4950@localhost.localdomain> 
+	<ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com> 
+	<alpine.LFD.2.01.0909171709410.4950@localhost.localdomain> 
+	<1253238637.4071.10.camel@yio.site> <20090918060210.GC7104@kroah.com> 
+	<alpine.LFD.2.01.0909180717380.4950@localhost.localdomain> 
+	<20090918150541.GB9307@kroah.com> <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 18 Sep 2009 21:35:34 +0200
+Message-ID: <ac3eb2510909181235m33846928sa8c790758c66233@mail.gmail.com>
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was: 
+	Re: [PATCH] Remove broken by design and by implementation devtmpfs 
+	maintenance disaster)
+To: Greg KH <greg@kroah.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 10:12:37AM +0100, Catalin Marinas wrote:
-> From: Alexey Dobriyan <adobriyan@gmail.com>
-> 
-> Please, fold into 0becb088501886f37ade38762c8eaaf4263572cc
-> aka "Thumb-2: Add macros for the unified assembler syntax"
+On Fri, Sep 18, 2009 at 17:37, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Fri, Sep 18, 2009 at 17:05, Greg KH <greg@kroah.com> wrote:
+>> On Fri, Sep 18, 2009 at 07:18:54AM -0700, Linus Torvalds wrote:
+>>>
+>>> On Thu, 17 Sep 2009, Greg KH wrote:
+>>> >
+>>> > I think the udev version in older Fedora releases can't handle this
+>>> > kernel option, which is fine, just don't enable it.  Newer versions can
+>>> > handle it, right?
+>>>
+>>> .. conversely, if you can't be bothered to set up /dev/null and /dev/zero
+>>> correctly, I would suggest that you not set them up AT ALL in devtmpfs.
+>>
+>> Fair enough.
+>>
+>>> The thing is, 0600 for those nodes is just _wrong_. Don't do it.
+>>
+>> Ok, Kay, care to just treat these as "special"?
+>
+> Sure, the patch I sent yesterday does that. We might want to drop the
+> USB device node permissions (same as the proc nodes), but they are
+> probably not needed?
+>
+> Ingo, do you possibly have a chance to test if your setup comes up
+> with that? That would be great to know.
 
-Folding it into that commit is not possible; as such a better patch
-description is desirable.
+With that patch, I can login as a normal user without any udev ever
+started, and no static content copied to /dev.
+
+System boot scripts just complained about ptx stuff because the
+creation of the /dev/pts directory, and the missing /dev/shm, which is
+both part of udev's bootstrap code here, and which I had removed.
+
+Kay
