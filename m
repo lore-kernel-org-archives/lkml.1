@@ -1,74 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbZIREw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbZIRFAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751442AbZIREw7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 00:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZIREw5
+	id S1752059AbZIRFAI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 01:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZIRFAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 00:52:57 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:36427 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbZIREw5 (ORCPT
+	Fri, 18 Sep 2009 01:00:07 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:46785 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbZIRFAF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 00:52:57 -0400
-Date: Fri, 18 Sep 2009 06:52:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Am?rico Wang <xiyou.wangcong@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Caveh Jalali <ecaveh@gmail.com>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] Makefile: can't build modules outside the kernel tree
-	if it was built using O=
-Message-ID: <20090918045259.GA23333@merkur.ravnborg.org>
-References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com> <200909171345.30988.arnd@arndb.de> <2375c9f90909171849n429bc474heabdc4d4fd064226@mail.gmail.com>
+	Fri, 18 Sep 2009 01:00:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Dnpq79fz5zWD9dkgcyEewLS8+YmNeY28sJvrbyGE7ciL1W4ec8MWB9KJKj22jAv07I
+         RnT2tJVokEOxlKiCe9cYYNr2LzUiIeyJ0Ty+db/lJO9WzUcKO0cS2BcaZQ0c4Gq6X7rp
+         bC25oJ3bffaotlRDkUIyGif4zbo3zLpkL6QmI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2375c9f90909171849n429bc474heabdc4d4fd064226@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <8bd0f97a0909161156x3cf83b51tb01f6c890abf8594@mail.gmail.com>
+References: <1253095348.25791.6.camel@eight.analog.com>
+	 <8bd0f97a0909161156x3cf83b51tb01f6c890abf8594@mail.gmail.com>
+Date: Fri, 18 Sep 2009 12:54:29 +0800
+Message-ID: <4e5ebad50909172154m3c6450f2u7512f20ee3f1951e@mail.gmail.com>
+Subject: Re: [PATCH][uart] fit blackfin uart over sport driver into common 
+	uart inftrastructure (v2)
+From: Sonic Zhang <sonic.adi@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Serial <linux-serial@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 09:49:53AM +0800, Am?rico Wang wrote:
-> On Thu, Sep 17, 2009 at 7:45 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Thursday 17 September 2009, Caveh Jalali wrote:
-> >
-> >> when the platform specific include directories were shuffled around
-> >> without updating the
-> >> top level Makefile.  however, i think this FAIL is generic, and not
-> >> limited to powerpc.
-> >> here's a patch to the top level Makefile to teach it about the shuffled files:
-> >>
-> >>
-> >> --- /local/caveh/linux/linux-2.6.31/Makefile    2009-09-09
-> >> 15:13:59.000000000 -0700
-> >> +++ Makefile    2009-09-16 12:23:05.000000000 -0700
-> >> @@ -958,9 +958,9 @@ ifneq ($(KBUILD_SRC),)
-> >>                 echo "  in the '$(srctree)' directory.";\
-> >>                 /bin/false; \
-> >>         fi;
-> >> -       $(Q)if [ ! -d include2 ]; then                                  \
-> >> -           mkdir -p include2;                                          \
-> >> -           ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;     \
-> >> +       $(Q)if [ ! -d include2 ]; then                                   \
-> >> +           mkdir -p include2;                                           \
-> >> +           ln -fsn $(srctree)/arch/$(SRCARCH)/include/asm include2/asm; \
-> >>         fi
-> >>  endif
-> >
-> > I think we should no longer have the include2 directory at all with new kernels.
-> >
-> > LINUXINCLUDE already contains the right path in theory:
-> >
-> > LINUXINCLUDE    := -Iinclude \
-> >                   $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
-> >                   -I$(srctree)/arch/$(hdr-arch)/include               \
-> >                   -include include/linux/autoconf.h
-> 
-> Hmm, at least in mmotm, we still have include2...
-> 
-> Maybe Sam is queueing the patches to remove include2?
-I have them queued - yes.
-But as they never hit -next they will wait another cycle.
+On Thu, Sep 17, 2009 at 2:56 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Wed, Sep 16, 2009 at 06:02, sonic zhang wrote:
+>> 3. Move most platform data into arch specific board files.
+>
+> might as well do it right now since you've done most of it already.
+> i.e. all of the peripheral logic should be in the boards, not the
+> driver.  so the bfin_uart_pin_req_sportx lists should get moved to the
+> platform resources as well as the SPORT base addresses.
 
-	Sam
+No. You can't. Because the console is registered and running much
+earlier than the platform data is initialized. You have to know the
+peripheral lists and base address before registering the console.
+
+
+>
+> then we get proper device bindings between ttySS# and SPORT# by using
+> the .id field.  ttySS0 should always be SPORT0, ttySS1 should always
+> be SPORT1, etc...
+
+You can't either. Because the index of tty devices is increased
+automatically when you successfully register a uart port.  If sport0
+is used for devices other than uart, uart over sport1 is always bond
+to ttySS0.
+
+
+>
+>> Signed-off-by: Michael Frysinger <michael.frysinger@analog.com>
+>
+> you shouldnt add s-o-b tags for people who didnt opt for them ... i
+> was sleeping when you wrote, committed, and e-mailed out these
+> changes.  i also handt posted these changes yet because i knew there
+> were still issues to be worked out.
+
+OK. I mean you also did some cleanup to this patch.
+
+>
+>> --- a/drivers/serial/bfin_sport_uart.c
+>> +++ b/drivers/serial/bfin_sport_uart.c
+>> +#define DRV_NAME "bfin-sport-uart"
+>> +#define DEVICE_NAME    "ttySS"
+>
+> should really use the dev_* functions for output rather than the pr_*
+> ones, but if you dont do that, you should add before the #include's:
+> #define pr_fmt(fmt) DRV_NAME ": " fmt
+>
+>>        tclkdiv = sclk/(2 * baud_rate) - 1;
+>> -       tfsdiv = 12;
+>> -       rclkdiv = sclk/(2 * baud_rate * 3) - 1;
+>> +       rclkdiv = sclk/(2 * baud_rate * 2) - 1;
+>
+> missing space around the "/"
+>
+
+OK.
+
+>> -static int sport_uart_suspend(struct platform_device *dev, pm_message_t state)
+>> +#ifdef CONFIG_PM
+>> +static int sport_uart_suspend(struct platform_device *pdev, pm_message_t state)
+>>  {
+>> -       struct sport_uart_port *sport = platform_get_drvdata(dev);
+>> +       struct sport_uart_port *sport = platform_get_drvdata(pdev);
+>>
+>> -       pr_debug("%s enter\n", __func__);
+>> +       dev_dbg(&pdev->dev, "%s enter\n", __func__);
+>>        if (sport)
+>>                uart_suspend_port(&sport_uart_reg, &sport->port);
+>>
+>>        return 0;
+>>  }
+>>
+>> -static int sport_uart_resume(struct platform_device *dev)
+>> +static int sport_uart_resume(struct platform_device *pdev)
+>>  {
+>> -       struct sport_uart_port *sport = platform_get_drvdata(dev);
+>> +       struct sport_uart_port *sport = platform_get_drvdata(pdev);
+>>
+>> -       pr_debug("%s enter\n", __func__);
+>> +       dev_dbg(&pdev->dev, "%s enter\n", __func__);
+>>        if (sport)
+>>                uart_resume_port(&sport_uart_reg, &sport->port);
+>>
+>>        return 0;
+>>  }
+>
+> these need updating to the new dev_pm_opts structure.  see the changes
+> i just did to the adp558-keys driver for a simple example.
+
+OK.
+
+>
+>> --- a/drivers/serial/bfin_sport_uart.h
+>> +++ b/drivers/serial/bfin_sport_uart.h
+>
+> while you're in here, you might as well add the proper #ifndef header protection
+> -mike
+>
+
+OK.
+
+Sonic Zhang
