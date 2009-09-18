@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752130AbZIRGiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbZIRGiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752130AbZIRGiB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 02:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbZIRGiA
+	id S1753353AbZIRGiQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 02:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZIRGiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 02:38:00 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:41725 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbZIRGh7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 02:37:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=ozjDvky9G24FlRY1DeuzhztAw1IrAyAkchzak2dt6jn0gX6B3TxCcNDN9briMzgKB6
-         435E/vI9+ZiEMkYlxiP/2bXvpq7mEFc8S5f4dcEa8tSNwzXz+MeItp29Qbzs0YqyuOGT
-         1mqiiFGV8fmE+Fdz2pdgE0/YHUuBZEUxikQak=
+	Fri, 18 Sep 2009 02:38:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42872 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752278AbZIRGiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 02:38:02 -0400
+Date: Fri, 18 Sep 2009 08:37:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [patchlet] perf_counter tools: add --input=file option to
+	builtin-sched.c
+Message-ID: <20090918063759.GA27091@elte.hu>
+References: <1253254944.20589.11.camel@marge.simson.net>
 MIME-Version: 1.0
-In-Reply-To: <200909151813.32223.IvDoorn@gmail.com>
-References: <20090915174233.7db381cd@varda> <200909151813.32223.IvDoorn@gmail.com>
-From: Julian Calaby <julian.calaby@gmail.com>
-Date: Fri, 18 Sep 2009 16:37:43 +1000
-Message-ID: <646765f40909172337g74b419fegd2935cb28aedb220@mail.gmail.com>
-Subject: Re: [rt2x00] rt2500pci is spamming syslogd since upgrade to 2.6.31
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: =?ISO-8859-1?Q?Alejandro_Riveira_Fern=E1ndez?= <ariveira@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253254944.20589.11.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/16 Ivo van Doorn <ivdoorn@gmail.com>:
-> Hi,
->
->>  Hi; my syslog has many entries like this since the upgrade to 2.6.31
->>
->>  phy0 -> rt2500pci_set_device_state: Error - Device failed to enter state 1 (-16).
->>
->>  Sometimes the driver just start spamming like crazy sometimes is at less rate
->>  sometimes it does not appear.
->>
->>  I'm running 2.6.31 with a revert [1] config follows. If more info is needed
->>  just ask
->>
->>  [1] http://bugzilla.kernel.org/show_bug.cgi?id=13362
->
-> Try disabling powersaving,
->
->        iwconfig wlan0 power off
 
-I have an identical problem, which is fixed by this command.
+* Mike Galbraith <efault@gmx.de> wrote:
 
-It is possible to detect that the chip doesn't, for whatever reason,
-support powersaving and disable it in the driver?
+> perf_counter tools: add --input=file option to builtin-sched.c.
+> 
+> perf sched record passes unparsed args on to perf record, so 
+> specifying an output file via perf sched record -o FILE (cmd) just 
+> works.  Ergo, provide an option to specify input file as well.
 
-Thanks,
+Indeed, that's very useful when one keeps older (or different) traces 
+around, renamed from perf.data to something else. It basically pushes 
+the file based 'perf session' concept to perf sched as well.
 
--- 
+> Also add the missing 'map' command to help.
 
-Julian Calaby
+Applied your fixes/enhancements to tip:perfcounters/core, thanks Mike!
 
-Email: julian.calaby@gmail.com
-.Plan: http://sites.google.com/site/juliancalaby/
+	Ingo
