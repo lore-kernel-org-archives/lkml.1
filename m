@@ -1,188 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbZIRCCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbZIRCFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbZIRCCx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 22:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZIRCCu
+	id S1755156AbZIRCFU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 22:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbZIRCFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 22:02:50 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35820 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbZIRCCt (ORCPT
+	Thu, 17 Sep 2009 22:05:18 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:63014 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbZIRCFQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 22:02:49 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: Re: [PATCH] Add a tracepoint for block request remapping
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-In-Reply-To: <4AB2E57B.2090101@ce.jp.nec.com>
-References: <4AB2E57B.2090101@ce.jp.nec.com>
-Message-Id: <20090918110026.2251.A69D9226@jp.fujitsu.com>
+	Thu, 17 Sep 2009 22:05:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pn+Or+jBq6GZof1YH297fLfTFnlrXh+gJE2H0ZKfqPxdNorBKiFc5lXePWqiy/hDSN
+         GVmbpIFhQXS+liZOjSdHR27tKXVMPRaNzOOxLpctrXbBYHi2vqAhSTvzJnKhU6N+4Tir
+         Mdtx6o8bo6RFtPVannxFmsO94/W96WBCCCY8M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 18 Sep 2009 11:02:50 +0900 (JST)
+In-Reply-To: <20090917161432.97e06050.kamezawa.hiroyu@jp.fujitsu.com>
+References: <2375c9f90909160235m1f052df0qb001f8243ed9291e@mail.gmail.com>
+	 <1bc66b163326564dafb5a7dd8959fd56.squirrel@webmail-b.css.fujitsu.com>
+	 <20090917114138.e14a1183.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090917114509.a9eb9f2c.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2375c9f90909162359m14ec7640m88ddd7ba54d6e793@mail.gmail.com>
+	 <20090917161432.97e06050.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 18 Sep 2009 10:05:20 +0800
+Message-ID: <2375c9f90909171905m66ff2005m16c5b3421aaf450@mail.gmail.com>
+Subject: Re: [PATCH 3/3][mmotm] updateing size of kcore
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC to Li
+On Thu, Sep 17, 2009 at 3:14 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 17 Sep 2009 14:59:35 +0800
+> Américo Wang <xiyou.wangcong@gmail.com> wrote:
+>
+>> On Thu, Sep 17, 2009 at 10:45 AM, KAMEZAWA Hiroyuki
+>> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> >
+>> > After memory hotplug (or other events in future), kcore size
+>> > can be modified.
+>> >
+>> > To update inode->i_size, we have to know inode/dentry but we
+>> > can't get it from inside /proc directly.
+>> > But considerinyg memory hotplug, kcore image is updated only when
+>> > it's opened. Then, updating inode->i_size at open() is enough.
+>> >
+>> > Cc: WANG Cong <xiyou.wangcong@gmail.com>
+>> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>>
+>> This patch looks fine.
+>>
+>> However, I am thinking if kcore is the only file under /proc whose size
+>> is changed dynamically? If no, that probably means we need to change
+>> generic proc code.
+>>
+> I tried yesteray, and back to this ;)
+>
+> One thing which makes me confused is that there is no way to get
+> inode or dentry from proc_dir_entry.
+>
+> I tried to rewrite proc_getattr() for cheating "ls". But it just works for
+> "stat" and inode->i_size is used more widely. So, this implementation now.
 
-Li, What do you think?
+Yeah, stat->size is from inode->i_size.
 
+>
+> But considering practically, inode->i_size itself is not meaningful in /proc
+> files even if it's correct. For example, /proc/vmstat or /proc/stat,
+> /proc/<pid>/maps... etc...
 
-> Since 2.6.31 now has request-based device-mapper, it's useful to have
-> a tracepoint for request-remapping as well as bio-remapping.
-> 
-> This patch adds a tracepoint for request-remapping, trace_block_rq_remap().
-> Existing trace_block_remap() is left unchanged but it might be better to
-> rename it to trace_block_bio_remap().
-> 
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Cc: Alasdair G Kergon <agk@redhat.com>
-> ---
->  block/blk-core.c             |   11 +++++-----
->  drivers/md/dm.c              |    6 +++--
->  include/trace/events/block.h |   35 +++++++++++++++++++++++++++++++++-
->  kernel/trace/blktrace.c      |   44 ++++++++++++++++++++++++++++++++++++++-----
->  4 files changed, 83 insertions(+), 13 deletions(-)
-> 
-> Index: linux-2.6.31/block/blk-core.c
-> ===================================================================
-> --- linux-2.6.31.orig/block/blk-core.c
-> +++ linux-2.6.31/block/blk-core.c
-> @@ -34,6 +34,7 @@
->  #include "blk.h"
->  
->  EXPORT_TRACEPOINT_SYMBOL_GPL(block_remap);
-> +EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);
->  EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_complete);
->  
->  static int __make_request(struct request_queue *q, struct bio *bio);
-> Index: linux-2.6.31/drivers/md/dm.c
-> ===================================================================
-> --- linux-2.6.31.orig/drivers/md/dm.c
-> +++ linux-2.6.31/drivers/md/dm.c
-> @@ -1503,6 +1503,8 @@ static void map_request(struct dm_target
->  		break;
->  	case DM_MAPIO_REMAPPED:
->  		/* The target has remapped the I/O so dispatch it */
-> +		trace_block_rq_remap(clone->q, clone, disk_devt(dm_disk(md)),
-> +				     blk_rq_pos(tio->orig));
->  		dm_dispatch_request(clone);
->  		break;
->  	case DM_MAPIO_REQUEUE:
-> Index: linux-2.6.31/include/trace/events/block.h
-> ===================================================================
-> --- linux-2.6.31.orig/include/trace/events/block.h
-> +++ linux-2.6.31/include/trace/events/block.h
-> @@ -486,6 +486,39 @@ TRACE_EVENT(block_remap,
->  		  (unsigned long long)__entry->old_sector)
->  );
->  
-> +TRACE_EVENT(block_rq_remap,
-> +
-> +	TP_PROTO(struct request_queue *q, struct request *rq, dev_t dev,
-> +		 sector_t from),
-> +
-> +	TP_ARGS(q, rq, dev, from),
-> +
-> +	TP_STRUCT__entry(
-> +		__field( dev_t,		dev		)
-> +		__field( sector_t,	sector		)
-> +		__field( unsigned int,	nr_sector	)
-> +		__field( dev_t,		old_dev		)
-> +		__field( sector_t,	old_sector	)
-> +		__array( char,		rwbs,	6	)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->dev		= disk_devt(rq->rq_disk);
-> +		__entry->sector		= blk_rq_pos(rq);
-> +		__entry->nr_sector	= blk_rq_sectors(rq);
-> +		__entry->old_dev	= dev;
-> +		__entry->old_sector	= from;
-> +		blk_fill_rwbs_rq(__entry->rwbs, rq);
-> +	),
-> +
-> +	TP_printk("%d,%d %s %llu + %u <- (%d,%d) %llu",
-> +		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
-> +		  (unsigned long long)__entry->sector,
-> +		  __entry->nr_sector,
-> +		  MAJOR(__entry->old_dev), MINOR(__entry->old_dev),
-> +		  (unsigned long long)__entry->old_sector)
-> +);
-> +
->  #endif /* _TRACE_BLOCK_H */
->  
->  /* This part must be outside protection */
-> Index: linux-2.6.31/kernel/trace/blktrace.c
-> ===================================================================
-> --- linux-2.6.31.orig/kernel/trace/blktrace.c
-> +++ linux-2.6.31/kernel/trace/blktrace.c
-> @@ -852,6 +852,37 @@ static void blk_add_trace_remap(struct r
->  }
->  
->  /**
-> + * blk_add_trace_rq_remap - Add a trace for a request-remap operation
-> + * @q:		queue the io is for
-> + * @rq:		the source request
-> + * @dev:	target device
-> + * @from:	source sector
-> + *
-> + * Description:
-> + *     Device mapper remaps request to other devices.
-> + *     Add a trace for that action.
-> + *
-> + **/
-> +static void blk_add_trace_rq_remap(struct request_queue *q,
-> +				   struct request *rq, dev_t dev,
-> +				   sector_t from)
-> +{
-> +	struct blk_trace *bt = q->blk_trace;
-> +	struct blk_io_trace_remap r;
-> +
-> +	if (likely(!bt))
-> +		return;
-> +
-> +	r.device_from = cpu_to_be32(dev);
-> +	r.device_to   = disk_devt(rq->rq_disk);
-> +	r.sector_from = cpu_to_be64(from);
-> +
-> +	__blk_add_trace(bt, blk_rq_pos(rq), blk_rq_bytes(rq),
-> +			rq_data_dir(rq), BLK_TA_REMAP, !!rq->errors,
-> +			sizeof(r), &r);
-> +}
-> +
-> +/**
->   * blk_add_driver_data - Add binary message with driver-specific data
->   * @q:		queue the io is for
->   * @rq:		io request
-> @@ -918,10 +949,13 @@ static void blk_register_tracepoints(voi
->  	WARN_ON(ret);
->  	ret = register_trace_block_remap(blk_add_trace_remap);
->  	WARN_ON(ret);
-> +	ret = register_trace_block_rq_remap(blk_add_trace_rq_remap);
-> +	WARN_ON(ret);
->  }
->  
->  static void blk_unregister_tracepoints(void)
->  {
-> +	unregister_trace_block_rq_remap(blk_add_trace_rq_remap);
->  	unregister_trace_block_remap(blk_add_trace_remap);
->  	unregister_trace_block_split(blk_add_trace_split);
->  	unregister_trace_block_unplug_io(blk_add_trace_unplug_io);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Yes.
 
+>
+> inode->i_size will be dynamically changed while reading. Now, most of users
+> know regular files under /proc is not a "real" file and handle them in proper
+> way. (programs can be used with pipe/stdin works well.)
+>
+> I wonder /proc/kcore is a special one, which gdb/objdump/readelf may access.
+> Above 3 programs are for "usual" files and not considering pseudo files under
+> /proc. So, I think adding generic i->i_size support is an overkill until
+> there are users depends on that.
 
+At least I can't think out another /proc file as special as kcore. :-/
 
+Thanks for your analysis, no problem with this patch.
