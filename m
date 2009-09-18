@@ -1,366 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbZIRQuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbZIRQvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756374AbZIRQuM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 12:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbZIRQuL
+	id S1756953AbZIRQvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 12:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbZIRQvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 12:50:11 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:61592 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756054AbZIRQuI (ORCPT
+	Fri, 18 Sep 2009 12:51:15 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:38651 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755447AbZIRQvN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 12:50:08 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] remove duplicate asm/mman.h files
-Date: Fri, 18 Sep 2009 18:48:42 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-10-generic; KDE/4.3.1; x86_64; ; )
-Cc: ebmunson@us.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
-       randy.dunlap@oracle.com, rth@twiddle.net, ink@jurassic.park.msu.ru
-References: <cover.1251197514.git.ebmunson@us.ibm.com> <20090917174616.f64123fb.akpm@linux-foundation.org> <200909181719.47240.arnd@arndb.de>
-In-Reply-To: <200909181719.47240.arnd@arndb.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Fri, 18 Sep 2009 12:51:13 -0400
+Date: Fri, 18 Sep 2009 09:49:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, James Morris <jmorris@namei.org>,
+       David Howells <dhowells@redhat.com>
+Subject: [PATCH -mmotm] cred: export creds_are_invalid
+Message-Id: <20090918094935.40e6fccf.randy.dunlap@oracle.com>
+In-Reply-To: <200909180122.n8I1Mr83020524@imap1.linux-foundation.org>
+References: <200909180122.n8I1Mr83020524@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909181848.42192.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19ljhM9rIECoilZlXNQo/r6YoLeiix9+Uo8wOX
- VCH21T8uSLwCX51cpNBBkmoaptqJXzr2RODqpITPaZmI4dXh6w
- xZQ57mw2lT7V1/VodO9sQ==
+X-Source-IP: abhmt013.oracle.com [141.146.116.22]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4AB3BA22.00E3:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A number of architectures have identical asm/mman.h files,
-x86 differs only in a single line, so they can all be merged
-by using the new generic file.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The remaining asm/mman.h files are substantially different
-from each other.
+creds_are_invalid() needs to be exported for use by modules:
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+ERROR: "creds_are_invalid" [fs/cachefiles/cachefiles.ko] undefined!
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: David Howells <dhowells@redhat.com>
 ---
-On Friday 18 September 2009, Arnd Bergmann wrote:
-> A logical next step would be to replace the mman.h files that are basically
-> copies of include/asm-generic/mman.h.
+ kernel/cred.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-We might as well do it now, since we're touching them anyway...
-Patch applies on top of the previous one.
+--- mmotm-2009-0917-1800.orig/kernel/cred.c
++++ mmotm-2009-0917-1800/kernel/cred.c
+@@ -799,6 +799,7 @@ bool creds_are_invalid(const struct cred
+ #endif
+ 	return false;
+ }
++EXPORT_SYMBOL(creds_are_invalid);
+ 
+ /*
+  * dump invalid credentials
 
- arch/arm/include/asm/mman.h     |   20 +-------------------
- arch/avr32/include/asm/mman.h   |   20 +-------------------
- arch/cris/include/asm/mman.h    |   22 +---------------------
- arch/frv/include/asm/mman.h     |   21 +--------------------
- arch/h8300/include/asm/mman.h   |   20 +-------------------
- arch/ia64/include/asm/mman.h    |   16 ++--------------
- arch/m32r/include/asm/mman.h    |   20 +-------------------
- arch/m68k/include/asm/mman.h    |   20 +-------------------
- arch/mn10300/include/asm/mman.h |   31 +------------------------------
- arch/s390/include/asm/mman.h    |   15 +--------------
- arch/x86/include/asm/mman.h     |   15 +--------------
- 11 files changed, 12 insertions(+), 208 deletions(-)
 
-diff --git a/arch/arm/include/asm/mman.h b/arch/arm/include/asm/mman.h
-index 6464d47..8eebf89 100644
---- a/arch/arm/include/asm/mman.h
-+++ b/arch/arm/include/asm/mman.h
-@@ -1,19 +1 @@
--#ifndef __ARM_MMAN_H__
--#define __ARM_MMAN_H__
--
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) page tables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
--#endif /* __ARM_MMAN_H__ */
-+#include <asm-generic/mman.h>
-diff --git a/arch/avr32/include/asm/mman.h b/arch/avr32/include/asm/mman.h
-index 38cea1b..8eebf89 100644
---- a/arch/avr32/include/asm/mman.h
-+++ b/arch/avr32/include/asm/mman.h
-@@ -1,19 +1 @@
--#ifndef __ASM_AVR32_MMAN_H__
--#define __ASM_AVR32_MMAN_H__
--
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) page tables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
--#endif /* __ASM_AVR32_MMAN_H__ */
-+#include <asm-generic/mman.h>
-diff --git a/arch/cris/include/asm/mman.h b/arch/cris/include/asm/mman.h
-index de6b903..8eebf89 100644
---- a/arch/cris/include/asm/mman.h
-+++ b/arch/cris/include/asm/mman.h
-@@ -1,21 +1 @@
--#ifndef __CRIS_MMAN_H__
--#define __CRIS_MMAN_H__
--
--/* verbatim copy of asm-i386/ version */
--
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
--#endif /* __CRIS_MMAN_H__ */
-+#include <asm-generic/mman.h>
-diff --git a/arch/frv/include/asm/mman.h b/arch/frv/include/asm/mman.h
-index 1939343..8eebf89 100644
---- a/arch/frv/include/asm/mman.h
-+++ b/arch/frv/include/asm/mman.h
-@@ -1,20 +1 @@
--#ifndef __ASM_MMAN_H__
--#define __ASM_MMAN_H__
--
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
--#endif /* __ASM_MMAN_H__ */
--
-+#include <asm-generic/mman.h>
-diff --git a/arch/h8300/include/asm/mman.h b/arch/h8300/include/asm/mman.h
-index eacacd0..8eebf89 100644
---- a/arch/h8300/include/asm/mman.h
-+++ b/arch/h8300/include/asm/mman.h
-@@ -1,19 +1 @@
--#ifndef __H8300_MMAN_H__
--#define __H8300_MMAN_H__
--
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
--#endif /* __H8300_MMAN_H__ */
-+#include <asm-generic/mman.h>
-diff --git a/arch/ia64/include/asm/mman.h b/arch/ia64/include/asm/mman.h
-index cf55884..4459028 100644
---- a/arch/ia64/include/asm/mman.h
-+++ b/arch/ia64/include/asm/mman.h
-@@ -8,21 +8,9 @@
-  *	David Mosberger-Tang <davidm@hpl.hp.com>, Hewlett-Packard Co
-  */
- 
--#include <asm-generic/mman-common.h>
-+#include <asm-generic/mman.h>
- 
--#define MAP_GROWSDOWN	0x00100		/* stack-like segment */
--#define MAP_GROWSUP	0x00200		/* register stack-like segment */
--#define MAP_DENYWRITE	0x00800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x01000		/* mark it as an executable */
--#define MAP_LOCKED	0x02000		/* pages are locked */
--#define MAP_NORESERVE	0x04000		/* don't check for reservations */
--#define MAP_POPULATE	0x08000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
-+#define MAP_GROWSUP	0x0200		/* register stack-like segment */
- 
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
-diff --git a/arch/m32r/include/asm/mman.h b/arch/m32r/include/asm/mman.h
-index d191089..8eebf89 100644
---- a/arch/m32r/include/asm/mman.h
-+++ b/arch/m32r/include/asm/mman.h
-@@ -1,19 +1 @@
--#ifndef __M32R_MMAN_H__
--#define __M32R_MMAN_H__
--
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
--#endif /* __M32R_MMAN_H__ */
-+#include <asm-generic/mman.h>
-diff --git a/arch/m68k/include/asm/mman.h b/arch/m68k/include/asm/mman.h
-index c421fef..8eebf89 100644
---- a/arch/m68k/include/asm/mman.h
-+++ b/arch/m68k/include/asm/mman.h
-@@ -1,19 +1 @@
--#ifndef __M68K_MMAN_H__
--#define __M68K_MMAN_H__
--
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
--#endif /* __M68K_MMAN_H__ */
-+#include <asm-generic/mman.h>
-diff --git a/arch/mn10300/include/asm/mman.h b/arch/mn10300/include/asm/mman.h
-index 94611c3..8eebf89 100644
---- a/arch/mn10300/include/asm/mman.h
-+++ b/arch/mn10300/include/asm/mman.h
-@@ -1,30 +1 @@
--/* MN10300 Constants for mmap and co.
-- *
-- * Copyright (C) 2007 Matsushita Electric Industrial Co., Ltd.
-- * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-- * - Derived from asm-x86/mman.h
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public Licence
-- * as published by the Free Software Foundation; either version
-- * 2 of the Licence, or (at your option) any later version.
-- */
--#ifndef _ASM_MMAN_H
--#define _ASM_MMAN_H
--
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
--#endif /* _ASM_MMAN_H */
-+#include <asm-generic/mman.h>
-diff --git a/arch/s390/include/asm/mman.h b/arch/s390/include/asm/mman.h
-index 22714ca..4e9c8ae 100644
---- a/arch/s390/include/asm/mman.h
-+++ b/arch/s390/include/asm/mman.h
-@@ -9,20 +9,7 @@
- #ifndef __S390_MMAN_H__
- #define __S390_MMAN_H__
- 
--#include <asm-generic/mman-common.h>
--
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
-+#include <asm-generic/mman.h>
- 
- #if defined(__KERNEL__) && !defined(__ASSEMBLY__) && defined(CONFIG_64BIT)
- int s390_mmap_check(unsigned long addr, unsigned long len);
-diff --git a/arch/x86/include/asm/mman.h b/arch/x86/include/asm/mman.h
-index c719f36..c582add 100644
---- a/arch/x86/include/asm/mman.h
-+++ b/arch/x86/include/asm/mman.h
-@@ -1,21 +1,8 @@
- #ifndef _ASM_X86_MMAN_H
- #define _ASM_X86_MMAN_H
- 
--#include <asm-generic/mman-common.h>
-+#include <asm-generic/mman.h>
- 
- #define MAP_32BIT	0x40		/* only give out 32bit addresses */
- 
--#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
--#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
--#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
--#define MAP_LOCKED	0x2000		/* pages are locked */
--#define MAP_NORESERVE	0x4000		/* don't check for reservations */
--#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
--#define MAP_NONBLOCK	0x10000		/* do not block on IO */
--#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
--#define MAP_HUGETLB	0x40000		/* create a huge page mapping */
--
--#define MCL_CURRENT	1		/* lock all current mappings */
--#define MCL_FUTURE	2		/* lock all future mappings */
--
- #endif /* _ASM_X86_MMAN_H */
--- 
-1.6.3.3
 
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
