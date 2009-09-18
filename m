@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbZIRWkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbZIRXAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758706AbZIRWkW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 18:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZIRWkQ
+	id S1758736AbZIRXAN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 19:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZIRXAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 18:40:16 -0400
-Received: from www.tglx.de ([62.245.132.106]:48374 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751432AbZIRWkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 18:40:14 -0400
-Date: Sat, 19 Sep 2009 00:39:18 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
-Subject: [ANNOUNCE] 2.6.31-rt11
-In-Reply-To: <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
- <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
- <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
- <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 18 Sep 2009 19:00:13 -0400
+Received: from exprod6og107.obsmtp.com ([64.18.1.208]:42867 "HELO
+	exprod6og107.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752532AbZIRXAM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 19:00:12 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [spi-devel-general] [PATCH 1/2] spi: new SPI bus lock/unlockfunctions
+Date: Fri, 18 Sep 2009 19:00:13 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901D41FB1@mi8nycmail19.Mi8.com>
+In-Reply-To: <8bd0f97a0909171553s1b7ee725x728bbca2f49511a9@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [spi-devel-general] [PATCH 1/2] spi: new SPI bus lock/unlockfunctions
+Thread-Index: Aco36cpILHXb96L0QReGppJK6/ZQ+wAxrbGg
+References: <1253224997-7422-1-git-send-email-vapier@gentoo.org> <BD79186B4FD85F4B8E60E381CAEE190901D41E44@mi8nycmail19.Mi8.com> <8bd0f97a0909171553s1b7ee725x728bbca2f49511a9@mail.gmail.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: <spi-devel-general@lists.sourceforge.net>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Yi Li" <yi.li@analog.com>, "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Sep 2009 23:00:14.0095 (UTC) FILETIME=[C81A51F0:01CA38B3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n8IN0T16007989
 
-We are pleased to announce the next update to our new preempt-rt
-series.
- 
-   - latencytop fix
- 
-   - disable SPARSE_IRQ, DMAR, IRQ_REMAP for -rt
+On Thursday, September 17, 2009 3:54 PM, Mike Frysinger wrote:
+>> I assume the spi master driver must supply the {lock/unlock}_bus methods
+>> to properly support the locking.
+>
+> currently, yes.  a common solution would be nice.  ideas/patches welcome ;).
+>
+>>Â But, by returning 0 when the methods
+>> are not supplied you are basically saying all the current master drivers
+>> in mainline support bus locking. Â I think this is really only "true" if
+>> spi->master->num_chipselect == 1.
+>
+> right, but that is no different from what we have today.  there is no
+> way for a client to guarantee exclusive access, so you cant write code
+> assuming it in the first place.  the only consumer thus far (mmc_spi)
+> actually errors out if such conditions exist.
+>
+> in other words, we arent breaking anything.
 
-Known issues:
-   - ARM highmem
-   - scheduler load balancing oddities. Peter is working on it.
-   - timer_interrupt hang check (still working on somthing useful)
+Actually you are breaking the mmc_spi driver.
 
-The planned "add back MIPS support" is postponed to rt12.
+By returning 0 when the methods are not supplied you are saying that the
+master driver supports and locked the bus.  At a minimum, I think spi_lock_bus()
+should return an error code if locking is not supported.
 
-Download locations:
- 
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
+Also, as Andrew Morton pointed out, calling spi_unlock_bus() without having
+a valid lock by calling spi_lock_bus() is a bug.
 
-Git release branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
-  
-Git development branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+In addition your patch to mmc_spi should check the return code from
+spi_lock_bus().  If the driver "requires" that the bus be locked it should
+trigger an error path if it cannot be locked.
 
-Gitweb:
-    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
- 
-Information on the RT patch can be found at:
+>> Also, do you have a master driver that does have the {lock/unlock}_bus
+>> methods? Â I would like to see how you handled it.
+>
+> http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=commitdiff;h=cc54fa8ed63e11a000031bc650d41d57b441803d
 
-    http://rt.wiki.kernel.org/index.php/Main_Page
+Oiy... The lock/unlock functions are simple enough but the change needed
+to bfin_spi_pump_messages() is a bit complicated.
 
-to build the 2.6.31-rt11 tree, the following patches should be
-applied:
+What happens to next_msg if it is for other devices on the bus?
 
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rt11.bz2
-
-Enjoy !
-
-      tglx
-
+Regards,
+Hartley
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
