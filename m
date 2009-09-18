@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbZIRQIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZIRQNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753609AbZIRQIm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 12:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZIRQIl
+	id S1753394AbZIRQNg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 12:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZIRQNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 12:08:41 -0400
-Received: from mga07.intel.com ([143.182.124.22]:39417 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751879AbZIRQIk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 12:08:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,410,1249282800"; 
-   d="scan'208";a="189187768"
-Date: Fri, 18 Sep 2009 17:03:43 +0100
-From: Alan Cox <alan@linux.intel.com>
-To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-Cc: LKLM <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [BUG? -next] login prompt of tty2~6 displayed slowly
-Message-ID: <20090918170343.6fd4e733@linux.intel.com>
-In-Reply-To: <4AB31B87.2040007@np.css.fujitsu.com>
-References: <4AB31B87.2040007@np.css.fujitsu.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+	Fri, 18 Sep 2009 12:13:35 -0400
+Received: from fifo99.com ([67.223.236.141]:32808 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751840AbZIRQNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 12:13:35 -0400
+Subject: Re: [PATCH 2/3] block: Rename trace_block_remap to
+ trace_block_bio_remap
+From: Daniel Walker <dwalker@fifo99.com>
+To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>
+In-Reply-To: <4AB3A393.5000709@ce.jp.nec.com>
+References: <4AB3A393.5000709@ce.jp.nec.com>
+Content-Type: text/plain
+Date: Fri, 18 Sep 2009 09:13:45 -0700
+Message-Id: <1253290425.7060.37.camel@desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And I find out that the root cause of this problem is the following
-> patch: commit 236cce0066f9c6a4856bc0404e541d3db3b0255e
->     Titled "tty: make the kref destructor occur asynchronously"
+On Sat, 2009-09-19 at 00:13 +0900, Jun'ichi Nomura wrote:
+>   **/
+> -static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+> -                                      dev_t dev, sector_t from)
+> +static void blk_add_trace_bio_remap(struct request_queue *q, struct bio
+> *bio,
+> +                                   dev_t dev, sector_t from)
+>  {
 
-Technically its a bug in mingetty but in practical terms its a
-regression and the new behaviour isn't nice at all.
+You might need to resubmit this, you have some line wrapping in the
+above lines.. Your should be able to set the patch part of the email to
+"preformatted" , you don't want your mailer line wrapping .. (even
+better just use git-format-patch and git-send-email) ..
 
-> When the tty is closed, the content of tty is not released
-> immediately. And the flag of tty is set with TTY_CLOSING. So when the
-> tty is reopened, the tty may not be released yet. Because the
-> TTY_CLOSING in flag of tty is still valid. The kernel returns "-EIO"
-> error. And the message "/sbin/mingetty[3062]: tty2: cannot open tty:
-> Input/output error" is displayed at the user land.
+Daniel
 
-See the previous discussions on how to fix this. I'm not sure if anyone
-has addressed them yet but basically the shutdown and async destructor
-need to be split apart so the device is deregistered synchronously and
-then destroyed asynchronously
