@@ -1,149 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbZIRP0D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbZIRPNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987AbZIRP0D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 11:26:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbZIRP0B
+	id S1754284AbZIRPNi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 11:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbZIRPNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 11:26:01 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:58293 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754659AbZIRPZ7 (ORCPT
+	Fri, 18 Sep 2009 11:13:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53306 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbZIRPNg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 11:25:59 -0400
-Message-ID: <4AB3A393.5000709@ce.jp.nec.com>
-Date: Sat, 19 Sep 2009 00:13:23 +0900
-From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-CC: linux-kernel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>, j-nomura@ce.jp.nec.com
-Subject: [PATCH 2/3] block: Rename trace_block_remap to trace_block_bio_remap
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Sep 2009 11:13:36 -0400
+Date: Fri, 18 Sep 2009 17:13:28 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+  maintenance disaster
+Message-ID: <20090918171328.7a102223@infradead.org>
+In-Reply-To: <ac3eb2510909180758u2131ae0eo9030a97cdde75bc6@mail.gmail.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+	<m1d45oxsrk.fsf@fess.ebiederm.org>
+	<20090918160944.58e5c1f5@infradead.org>
+	<ac3eb2510909180711k223aeb6ena2de3645317d03bd@mail.gmail.com>
+	<20090918162503.6735cc1b@infradead.org>
+	<ac3eb2510909180732s6efc97b0o7b25d8da222088ca@mail.gmail.com>
+	<20090918164331.24403a5d@infradead.org>
+	<ac3eb2510909180758u2131ae0eo9030a97cdde75bc6@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename "block_remap" tracepoint to "block_bio_remap" to clarify the event.
-No functional change.
+On Fri, 18 Sep 2009 16:58:28 +0200
+Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > Lets be clear:
+> > 1) modprobe already does some serialization (right now on the kernel
+> >   side, but ideally we move that to modprobe binary so that we can
+> > skip that when we can)
+> 
+> We only serialize symbol linking I guess, and that window got pretty
+> small in recent kernels.
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alasdair G Kergon <agk@redhat.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
----
- block/blk-core.c             |   10 +++++-----
- drivers/md/dm.c              |    4 ++--
- include/trace/events/block.h |    2 +-
- kernel/trace/blktrace.c      |   10 +++++-----
- 4 files changed, 13 insertions(+), 13 deletions(-)
+more than that; there's also an async_synchronize_full() function call.
+I'd love to be able to move that down into modprobe.
 
-Index: linux-2.6.31.work/include/trace/events/block.h
-===================================================================
---- linux-2.6.31.work.orig/include/trace/events/block.h
-+++ linux-2.6.31.work/include/trace/events/block.h
-@@ -453,7 +453,7 @@ TRACE_EVENT(block_split,
- 		  __entry->comm)
- );
+> 
+> > 2) udev today has a small design issue that is relatively easy to
+> > fix. Right now, the rules call modprobe manually, each and every
+> > one of them. What is needed is a MODPROBE += directive for these
+> > instead of the RUN += that is done today. This is not (just) for
+> > this issue here, but is essential to reduce the cost of udev. A big
+> > chunk of udev cost is in doing dozens and dozens of useless
+> > modprobe execs; the only way to solve this is by having a MODPROBE
+> > +=. (useless because the thing they modprobe doesn't exist)
+> 
+> That would help in which case? Which single event does do more than a
+> single modprobe call? What do you want to collect?
 
--TRACE_EVENT(block_remap,
-+TRACE_EVENT(block_bio_remap,
+DRIVER!="?*", ENV{MODALIAS}=="?*", RUN{ignore_error}+="/sbin/modprobe
+$env{MODALIAS}"
 
- 	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
- 		 sector_t from),
-Index: linux-2.6.31.work/block/blk-core.c
-===================================================================
---- linux-2.6.31.work.orig/block/blk-core.c
-+++ linux-2.6.31.work/block/blk-core.c
-@@ -33,7 +33,7 @@
+I don't want to "collect". What I want is to have udev check the module
+alias database directly for existence, rather than exec()ing modprobe
+100 times, which then reads in that same table, etc 100 times.
 
- #include "blk.h"
+if you measure things, these 100 aliases (of which maybe 5 cause a real
+module to load) causing 100 execs is a rather significant chunk of
+where the udev cost during boot goes.... from where I sit that makes it
+worth optimizing ;)
 
--EXPORT_TRACEPOINT_SYMBOL_GPL(block_remap);
-+EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_remap);
- EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);
- EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_complete);
+> 
+> > 3) if we move synchronization for other things to modprobe, it might
+> > make sense to move the device node synchronization to it as well.
+> > Exactly for the scenario you described, to get a good, generic
+> > solution, that also makes sure that the permissions/ownership/etc of
+> > the device node is also the right one.
+> 
+> How do you know what to sync against, what to wait for? I'm pretty
+> sure the sync creation is much simpler and solves most of the problems
+> in the right way.
 
-@@ -1285,9 +1285,9 @@ static inline void blk_partition_remap(s
- 		bio->bi_sector += p->start_sect;
- 		bio->bi_bdev = bdev->bd_contains;
+it's only sync creation if the device init/registration is also sync.
 
--		trace_block_remap(bdev_get_queue(bio->bi_bdev), bio,
--				    bdev->bd_dev,
--				    bio->bi_sector - p->start_sect);
-+		trace_block_bio_remap(bdev_get_queue(bio->bi_bdev), bio,
-+				      bdev->bd_dev,
-+				      bio->bi_sector - p->start_sect);
- 	}
- }
+for performance I suspect we need to end with an *option* to just load
+all modules based on the device in the system, without waiting, and
+then at the end of loading all, say, 60 modules, wait before udev
+continues.
 
-@@ -1455,7 +1455,7 @@ static inline void __generic_make_reques
- 			goto end_io;
+that is different than later on loading, say, the loop module by hand,
+where the user expects "full synchronization". The device node is a
+small part of that, and clearly a relevant part, but it all goes
+together. The moment modprobe synchronizes explicitly (albeit by
+default) for the device init, it can and likely could also sync the
+full device creation (so including owner/acl/selinux context etc),
+providing a solution to the problem you want, but including the
+owner/acl bits.
 
- 		if (old_sector != -1)
--			trace_block_remap(q, bio, old_dev, old_sector);
-+			trace_block_bio_remap(q, bio, old_dev, old_sector);
+I suspect you're now going "lalalala" ;-)
 
- 		trace_block_bio_queue(q, bio);
+but I'm not saying all of this to diss your devfs code. I'm saying that
+*regardless of* your code, modprobe likely needs to start doing
+these synchronization steps over time.
 
-Index: linux-2.6.31.work/kernel/trace/blktrace.c
-===================================================================
---- linux-2.6.31.work.orig/kernel/trace/blktrace.c
-+++ linux-2.6.31.work/kernel/trace/blktrace.c
-@@ -822,7 +822,7 @@ static void blk_add_trace_split(struct r
- }
 
- /**
-- * blk_add_trace_remap - Add a trace for a remap operation
-+ * blk_add_trace_bio_remap - Add a trace for a bio-remap operation
-  * @q:		queue the io is for
-  * @bio:	the source bio
-  * @dev:	target device
-@@ -833,8 +833,8 @@ static void blk_add_trace_split(struct r
-  *     it spans a stripe (or similar). Add a trace for that action.
-  *
-  **/
--static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
--				       dev_t dev, sector_t from)
-+static void blk_add_trace_bio_remap(struct request_queue *q, struct bio
-*bio,
-+				    dev_t dev, sector_t from)
- {
- 	struct blk_trace *bt = q->blk_trace;
- 	struct blk_io_trace_remap r;
-@@ -947,7 +947,7 @@ static void blk_register_tracepoints(voi
- 	WARN_ON(ret);
- 	ret = register_trace_block_split(blk_add_trace_split);
- 	WARN_ON(ret);
--	ret = register_trace_block_remap(blk_add_trace_remap);
-+	ret = register_trace_block_bio_remap(blk_add_trace_bio_remap);
- 	WARN_ON(ret);
- 	ret = register_trace_block_rq_remap(blk_add_trace_rq_remap);
- 	WARN_ON(ret);
-@@ -956,7 +956,7 @@ static void blk_register_tracepoints(voi
- static void blk_unregister_tracepoints(void)
- {
- 	unregister_trace_block_rq_remap(blk_add_trace_rq_remap);
--	unregister_trace_block_remap(blk_add_trace_remap);
-+	unregister_trace_block_bio_remap(blk_add_trace_bio_remap);
- 	unregister_trace_block_split(blk_add_trace_split);
- 	unregister_trace_block_unplug_io(blk_add_trace_unplug_io);
- 	unregister_trace_block_unplug_timer(blk_add_trace_unplug_timer);
-Index: linux-2.6.31.work/drivers/md/dm.c
-===================================================================
---- linux-2.6.31.work.orig/drivers/md/dm.c
-+++ linux-2.6.31.work/drivers/md/dm.c
-@@ -961,8 +961,8 @@ static void __map_bio(struct dm_target *
- 	if (r == DM_MAPIO_REMAPPED) {
- 		/* the bio has been remapped so dispatch it */
 
--		trace_block_remap(bdev_get_queue(clone->bi_bdev), clone,
--				    tio->io->bio->bi_bdev->bd_dev, sector);
-+		trace_block_bio_remap(bdev_get_queue(clone->bi_bdev), clone,
-+				      tio->io->bio->bi_bdev->bd_dev, sector);
-
- 		generic_make_request(clone);
- 	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
