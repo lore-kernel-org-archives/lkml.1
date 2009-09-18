@@ -1,450 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbZIRBdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbZIRBnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755275AbZIRBdn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 21:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZIRBdj
+	id S1755262AbZIRBnb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 21:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZIRBna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 21:33:39 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:17303 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755176AbZIRBdg (ORCPT
+	Thu, 17 Sep 2009 21:43:30 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:48446 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753600AbZIRBn3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 21:33:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=rNcsmmRkV8qhBnNRYC2yY/k5cDn+8Ov+oMgJkx0AcVyLYNVWqk6cVOtg6Lk/wPorqd
-         07q/lCQhhuR/I26YM9tYfQDpOJ2r4m8Fh6+INNsqD3szSApuL6Twm1EfDdFLpnrMnwZs
-         xVOVw1dsQx/8A6TkW2TEosyb4m0CieXRQHbZg=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 2/2] tracing: Allocate the ftrace event profile buffer dynamically
-Date: Fri, 18 Sep 2009 03:33:33 +0200
-Message-Id: <1253237613-5589-3-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1253237613-5589-1-git-send-email-fweisbec@gmail.com>
-References: <1253237613-5589-1-git-send-email-fweisbec@gmail.com>
+	Thu, 17 Sep 2009 21:43:29 -0400
+Message-ID: <4AB2E57B.2090101@ce.jp.nec.com>
+Date: Fri, 18 Sep 2009 10:42:19 +0900
+From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>
+Subject: [PATCH] Add a tracepoint for block request remapping
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the trace event profile buffer is allocated in the stack. But
-this may be too much for the stack, as the events can have large
-statically defined field size and can also grow with dynamic arrays.
+Since 2.6.31 now has request-based device-mapper, it's useful to have
+a tracepoint for request-remapping as well as bio-remapping.
 
-Allocate two per cpu buffer for each profiled events. The first cpu
-buffer is used to host every non-nmi context traces. It is protected
-by disabling the interrupts while writing and committing the trace.
+This patch adds a tracepoint for request-remapping, trace_block_rq_remap().
+Existing trace_block_remap() is left unchanged but it might be better to
+rename it to trace_block_bio_remap().
 
-The second buffer is reserved for nmi. So that there is no race between
-them and the first buffer.
-
-The whole write/commit section is rcu protected because we release
-these buffers while deactivating a trace event for profiling.
-
-Suggested-by: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alasdair G Kergon <agk@redhat.com>
 ---
- include/linux/ftrace_event.h       |    5 ++
- include/trace/ftrace.h             |   83 +++++++++++++++++++----------
- kernel/trace/trace_event_profile.c |   50 +++++++++++++++++-
- kernel/trace/trace_syscalls.c      |  103 +++++++++++++++++++++++++++++-------
- 4 files changed, 193 insertions(+), 48 deletions(-)
+ block/blk-core.c             |   11 +++++-----
+ drivers/md/dm.c              |    6 +++--
+ include/trace/events/block.h |   35 +++++++++++++++++++++++++++++++++-
+ kernel/trace/blktrace.c      |   44 ++++++++++++++++++++++++++++++++++++++-----
+ 4 files changed, 83 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index bc103d7..497eb37 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -4,6 +4,7 @@
- #include <linux/ring_buffer.h>
- #include <linux/trace_seq.h>
- #include <linux/percpu.h>
-+#include <linux/hardirq.h>
+Index: linux-2.6.31/block/blk-core.c
+===================================================================
+--- linux-2.6.31.orig/block/blk-core.c
++++ linux-2.6.31/block/blk-core.c
+@@ -34,6 +34,7 @@
+ #include "blk.h"
  
- struct trace_array;
- struct tracer;
-@@ -132,8 +133,12 @@ struct ftrace_event_call {
- 	atomic_t		profile_count;
- 	int			(*profile_enable)(void);
- 	void			(*profile_disable)(void);
-+	char			*profile_buf;
-+	char			*profile_buf_nmi;
- };
+ EXPORT_TRACEPOINT_SYMBOL_GPL(block_remap);
++EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_complete);
  
-+#define FTRACE_MAX_PROFILE_SIZE	2048
+ static int __make_request(struct request_queue *q, struct bio *bio);
+Index: linux-2.6.31/drivers/md/dm.c
+===================================================================
+--- linux-2.6.31.orig/drivers/md/dm.c
++++ linux-2.6.31/drivers/md/dm.c
+@@ -1503,6 +1503,8 @@ static void map_request(struct dm_target
+ 		break;
+ 	case DM_MAPIO_REMAPPED:
+ 		/* The target has remapped the I/O so dispatch it */
++		trace_block_rq_remap(clone->q, clone, disk_devt(dm_disk(md)),
++				     blk_rq_pos(tio->orig));
+ 		dm_dispatch_request(clone);
+ 		break;
+ 	case DM_MAPIO_REQUEUE:
+Index: linux-2.6.31/include/trace/events/block.h
+===================================================================
+--- linux-2.6.31.orig/include/trace/events/block.h
++++ linux-2.6.31/include/trace/events/block.h
+@@ -486,6 +486,39 @@ TRACE_EVENT(block_remap,
+ 		  (unsigned long long)__entry->old_sector)
+ );
+ 
++TRACE_EVENT(block_rq_remap,
 +
- #define MAX_FILTER_PRED		32
- #define MAX_FILTER_STR_VAL	256	/* Should handle KSYM_SYMBOL_LEN */
++	TP_PROTO(struct request_queue *q, struct request *rq, dev_t dev,
++		 sector_t from),
++
++	TP_ARGS(q, rq, dev, from),
++
++	TP_STRUCT__entry(
++		__field( dev_t,		dev		)
++		__field( sector_t,	sector		)
++		__field( unsigned int,	nr_sector	)
++		__field( dev_t,		old_dev		)
++		__field( sector_t,	old_sector	)
++		__array( char,		rwbs,	6	)
++	),
++
++	TP_fast_assign(
++		__entry->dev		= disk_devt(rq->rq_disk);
++		__entry->sector		= blk_rq_pos(rq);
++		__entry->nr_sector	= blk_rq_sectors(rq);
++		__entry->old_dev	= dev;
++		__entry->old_sector	= from;
++		blk_fill_rwbs_rq(__entry->rwbs, rq);
++	),
++
++	TP_printk("%d,%d %s %llu + %u <- (%d,%d) %llu",
++		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector,
++		  MAJOR(__entry->old_dev), MINOR(__entry->old_dev),
++		  (unsigned long long)__entry->old_sector)
++);
++
+ #endif /* _TRACE_BLOCK_H */
  
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index a822087..80864cf 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -648,11 +648,12 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
-  *	struct ftrace_raw_##call *entry;
-  *	u64 __addr = 0, __count = 1;
-  *	unsigned long irq_flags;
-+ *	struct trace_entry *ent;
-  *	int __entry_size;
-  *	int __data_size;
-+ *	int __cpu
-  *	int pc;
-  *
-- *	local_save_flags(irq_flags);
-  *	pc = preempt_count();
-  *
-  *	__data_size = ftrace_get_offsets_<call>(&__data_offsets, args);
-@@ -663,25 +664,34 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
-  *			     sizeof(u64));
-  *	__entry_size -= sizeof(u32);
-  *
-- *	do {
-- *		char raw_data[__entry_size]; <- allocate our sample in the stack
-- *		struct trace_entry *ent;
-+ *	// Protect the non nmi buffer
-+ *	// This also protects the rcu read side
-+ *	local_irq_save(irq_flags);
-+ *	__cpu = smp_processor_id();
+ /* This part must be outside protection */
+Index: linux-2.6.31/kernel/trace/blktrace.c
+===================================================================
+--- linux-2.6.31.orig/kernel/trace/blktrace.c
++++ linux-2.6.31/kernel/trace/blktrace.c
+@@ -852,6 +852,37 @@ static void blk_add_trace_remap(struct r
+ }
+ 
+ /**
++ * blk_add_trace_rq_remap - Add a trace for a request-remap operation
++ * @q:		queue the io is for
++ * @rq:		the source request
++ * @dev:	target device
++ * @from:	source sector
 + *
-+ *	if (in_nmi())
-+ *		raw_data = rcu_dereference(event_call->profile_buf_nmi);
-+ *	else
-+ *		raw_data = rcu_dereference(event_call->profile_buf);
++ * Description:
++ *     Device mapper remaps request to other devices.
++ *     Add a trace for that action.
 + *
-+ *	if (!raw_data)
-+ *		goto end;
-  *
-- *		zero dead bytes from alignment to avoid stack leak to userspace:
-+ *	raw_data = per_cpu_ptr(raw_data, __cpu);
-  *
-- *		*(u64 *)(&raw_data[__entry_size - sizeof(u64)]) = 0ULL;
-- *		entry = (struct ftrace_raw_<call> *)raw_data;
-- *		ent = &entry->ent;
-- *		tracing_generic_entry_update(ent, irq_flags, pc);
-- *		ent->type = event_call->id;
-+ *	//zero dead bytes from alignment to avoid stack leak to userspace:
-+ *	*(u64 *)(&raw_data[__entry_size - sizeof(u64)]) = 0ULL;
-+ *	entry = (struct ftrace_raw_<call> *)raw_data;
-+ *	ent = &entry->ent;
-+ *	tracing_generic_entry_update(ent, irq_flags, pc);
-+ *	ent->type = event_call->id;
-  *
-- *		<tstruct> <- do some jobs with dynamic arrays
-+ *	<tstruct> <- do some jobs with dynamic arrays
-  *
-- *		<assign>  <- affect our values
-+ *	<assign>  <- affect our values
-  *
-- *		perf_tpcounter_event(event_call->id, __addr, __count, entry,
-- *			     __entry_size);  <- submit them to perf counter
-- *	} while (0);
-+ *	perf_tpcounter_event(event_call->id, __addr, __count, entry,
-+ *		     __entry_size);  <- submit them to perf counter
-  *
-  * }
-  */
-@@ -704,11 +714,13 @@ static void ftrace_profile_##call(proto)				\
- 	struct ftrace_raw_##call *entry;				\
- 	u64 __addr = 0, __count = 1;					\
- 	unsigned long irq_flags;					\
-+	struct trace_entry *ent;					\
- 	int __entry_size;						\
- 	int __data_size;						\
-+	char *raw_data;							\
-+	int __cpu;							\
- 	int pc;								\
- 									\
--	local_save_flags(irq_flags);					\
- 	pc = preempt_count();						\
- 									\
- 	__data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
-@@ -716,23 +728,38 @@ static void ftrace_profile_##call(proto)				\
- 			     sizeof(u64));				\
- 	__entry_size -= sizeof(u32);					\
- 									\
--	do {								\
--		char raw_data[__entry_size];				\
--		struct trace_entry *ent;				\
-+	if (WARN_ONCE(__entry_size > FTRACE_MAX_PROFILE_SIZE,		\
-+		      "profile buffer not large enough"))		\
-+		return;							\
-+									\
-+	local_irq_save(irq_flags);					\
-+	__cpu = smp_processor_id();					\
- 									\
--		*(u64 *)(&raw_data[__entry_size - sizeof(u64)]) = 0ULL;	\
--		entry = (struct ftrace_raw_##call *)raw_data;		\
--		ent = &entry->ent;					\
--		tracing_generic_entry_update(ent, irq_flags, pc);	\
--		ent->type = event_call->id;				\
-+	if (in_nmi())							\
-+		raw_data = rcu_dereference(event_call->profile_buf_nmi);\
-+	else								\
-+		raw_data = rcu_dereference(event_call->profile_buf);	\
- 									\
--		tstruct							\
-+	if (!raw_data)							\
-+		goto end;						\
- 									\
--		{ assign; }						\
-+	raw_data = per_cpu_ptr(raw_data, __cpu);			\
- 									\
--		perf_tpcounter_event(event_call->id, __addr, __count, entry,\
-+	*(u64 *)(&raw_data[__entry_size - sizeof(u64)]) = 0ULL;		\
-+	entry = (struct ftrace_raw_##call *)raw_data;			\
-+	ent = &entry->ent;						\
-+	tracing_generic_entry_update(ent, irq_flags, pc);		\
-+	ent->type = event_call->id;					\
-+									\
-+	tstruct								\
-+									\
-+	{ assign; }							\
-+									\
-+	perf_tpcounter_event(event_call->id, __addr, __count, entry,	\
- 			     __entry_size);				\
--	} while (0);							\
-+									\
-+end:									\
-+	local_irq_restore(irq_flags);					\
- 									\
- }
- 
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index df4a74e..48d9aec 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -8,12 +8,43 @@
- #include <linux/module.h>
- #include "trace.h"
- 
-+/*
-+ * We can't use a size but a type in alloc_percpu()
-+ * So let's create a dummy type that matches the desired size
-+ */
-+typedef struct {char buf[FTRACE_MAX_PROFILE_SIZE];} profile_buf_t;
++ **/
++static void blk_add_trace_rq_remap(struct request_queue *q,
++				   struct request *rq, dev_t dev,
++				   sector_t from)
++{
++	struct blk_trace *bt = q->blk_trace;
++	struct blk_io_trace_remap r;
 +
- static int ftrace_profile_enable_event(struct ftrace_event_call *event)
- {
-+	char *buf;
-+	int ret;
-+
- 	if (atomic_inc_return(&event->profile_count))
- 		return 0;
- 
--	return event->profile_enable();
-+	buf = (char *)alloc_percpu(profile_buf_t);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	rcu_assign_pointer(event->profile_buf, buf);
-+
-+	buf = (char *)alloc_percpu(profile_buf_t);
-+	if (!buf) {
-+		ret = -ENOMEM;
-+		goto fail_nmi;
-+	}
-+
-+	rcu_assign_pointer(event->profile_buf_nmi, buf);
-+
-+	ret = event->profile_enable();
-+	if (!ret)
-+		return 0;
-+
-+	kfree(event->profile_buf_nmi);
-+fail_nmi:
-+	kfree(event->profile_buf);
-+
-+	return ret;
- }
- 
- int ftrace_profile_enable(int event_id)
-@@ -36,10 +67,27 @@ int ftrace_profile_enable(int event_id)
- 
- static void ftrace_profile_disable_event(struct ftrace_event_call *event)
- {
-+	char *buf, *nmi_buf;
-+
- 	if (!atomic_add_negative(-1, &event->profile_count))
- 		return;
- 
- 	event->profile_disable();
-+
-+	buf = event->profile_buf;
-+	rcu_assign_pointer(event->profile_buf, NULL);
-+
-+	nmi_buf = event->profile_buf_nmi;
-+	rcu_assign_pointer(event->profile_buf_nmi, NULL);
-+
-+	/*
-+	 * Ensure every events in profiling have finished before
-+	 * releasing the buffers
-+	 */
-+	synchronize_sched();
-+
-+	free_percpu(buf);
-+	free_percpu(nmi_buf);
- }
- 
- void ftrace_profile_disable(int event_id)
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index 8712ce3..a7ecc34 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -384,10 +384,13 @@ static int sys_prof_refcount_exit;
- 
- static void prof_syscall_enter(struct pt_regs *regs, long id)
- {
--	struct syscall_trace_enter *rec;
- 	struct syscall_metadata *sys_data;
-+	struct ftrace_event_call *event;
-+	struct syscall_trace_enter *rec;
-+	char *raw_data;
- 	int syscall_nr;
- 	int size;
-+	int cpu;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
- 	if (!test_bit(syscall_nr, enabled_prof_enter_syscalls))
-@@ -397,25 +400,46 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
- 	if (!sys_data)
- 		return;
- 
-+	event = sys_data->enter_event;
-+
- 	/* get the size after alignment with the u32 buffer size field */
- 	size = sizeof(unsigned long) * sys_data->nb_args + sizeof(*rec);
- 	size = ALIGN(size + sizeof(u32), sizeof(u64));
- 	size -= sizeof(u32);
- 
--	do {
--		char raw_data[size];
-+	if (WARN_ONCE(size > FTRACE_MAX_PROFILE_SIZE,
-+		      "profile buffer not large enough"))
-+		return;
- 
--		/* zero the dead bytes from align to not leak stack to user */
--		*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
-+	/*
-+	 * We are not in nmi. Also we can't be preempted by a sysenter event
-+	 * from interrupt, so we can safely take this buffer without
-+	 * masking interrupts. But we still need rcu_read_lock to protect
-+	 * against concurrent buffer release.
-+	 */
-+	rcu_read_lock();
-+
-+	cpu = smp_processor_id();
-+	raw_data = rcu_dereference(event->profile_buf);
-+
-+	if (!raw_data)
-+		goto end;
- 
--		rec = (struct syscall_trace_enter *) raw_data;
--		tracing_generic_entry_update(&rec->ent, 0, 0);
--		rec->ent.type = sys_data->enter_id;
--		rec->nr = syscall_nr;
--		syscall_get_arguments(current, regs, 0, sys_data->nb_args,
--				       (unsigned long *)&rec->args);
--		perf_tpcounter_event(sys_data->enter_id, 0, 1, rec, size);
--	} while(0);
-+	raw_data = per_cpu_ptr(raw_data, cpu);
-+
-+	/* zero the dead bytes from align to not leak stack to user */
-+	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
-+
-+	rec = (struct syscall_trace_enter *) raw_data;
-+	tracing_generic_entry_update(&rec->ent, 0, 0);
-+	rec->ent.type = sys_data->enter_id;
-+	rec->nr = syscall_nr;
-+	syscall_get_arguments(current, regs, 0, sys_data->nb_args,
-+			       (unsigned long *)&rec->args);
-+	perf_tpcounter_event(sys_data->enter_id, 0, 1, rec, size);
-+
-+end:
-+	rcu_read_unlock();
- }
- 
- int reg_prof_syscall_enter(char *name)
-@@ -460,8 +484,12 @@ void unreg_prof_syscall_enter(char *name)
- static void prof_syscall_exit(struct pt_regs *regs, long ret)
- {
- 	struct syscall_metadata *sys_data;
--	struct syscall_trace_exit rec;
-+	struct ftrace_event_call *event;
-+	struct syscall_trace_exit *rec;
- 	int syscall_nr;
-+	char *raw_data;
-+	int size;
-+	int cpu;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
- 	if (!test_bit(syscall_nr, enabled_prof_exit_syscalls))
-@@ -471,12 +499,49 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
- 	if (!sys_data)
- 		return;
- 
--	tracing_generic_entry_update(&rec.ent, 0, 0);
--	rec.ent.type = sys_data->exit_id;
--	rec.nr = syscall_nr;
--	rec.ret = syscall_get_return_value(current, regs);
-+	event = sys_data->exit_event;
-+
-+	/* We can probably do that at build time */
-+	size = ALIGN(sizeof(*rec) + sizeof(u32), sizeof(u64));
-+	size -= sizeof(u32);
-+
-+	/*
-+	 * Impossible, but be paranoid with the future
-+	 * How to put this check outside runtime?
-+	 */
-+	if (WARN_ONCE(size > FTRACE_MAX_PROFILE_SIZE,
-+		"exit event has grown above profile buffer size"))
++	if (likely(!bt))
 +		return;
 +
-+	/*
-+	 * This buffer is safe against interrupt.
-+	 * But we still need rcu_read_lock to protect
-+	 * against concurrent buffer release.
-+	 */
-+	rcu_read_lock();
++	r.device_from = cpu_to_be32(dev);
++	r.device_to   = disk_devt(rq->rq_disk);
++	r.sector_from = cpu_to_be64(from);
 +
-+	cpu = smp_processor_id();
-+	raw_data = rcu_dereference(event->profile_buf);
++	__blk_add_trace(bt, blk_rq_pos(rq), blk_rq_bytes(rq),
++			rq_data_dir(rq), BLK_TA_REMAP, !!rq->errors,
++			sizeof(r), &r);
++}
 +
-+	if (!raw_data)
-+		goto end;
- 
--	perf_tpcounter_event(sys_data->exit_id, 0, 1, &rec, sizeof(rec));
-+	raw_data = per_cpu_ptr(raw_data, cpu);
-+
-+	/* zero the dead bytes from align to not leak stack to user */
-+	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
-+
-+	rec = (struct syscall_trace_exit *)raw_data;
-+
-+	tracing_generic_entry_update(&rec->ent, 0, 0);
-+	rec->ent.type = sys_data->exit_id;
-+	rec->nr = syscall_nr;
-+	rec->ret = syscall_get_return_value(current, regs);
-+
-+	perf_tpcounter_event(sys_data->exit_id, 0, 1, rec, size);
-+
-+end:
-+	rcu_read_unlock();
++/**
+  * blk_add_driver_data - Add binary message with driver-specific data
+  * @q:		queue the io is for
+  * @rq:		io request
+@@ -918,10 +949,13 @@ static void blk_register_tracepoints(voi
+ 	WARN_ON(ret);
+ 	ret = register_trace_block_remap(blk_add_trace_remap);
+ 	WARN_ON(ret);
++	ret = register_trace_block_rq_remap(blk_add_trace_rq_remap);
++	WARN_ON(ret);
  }
  
- int reg_prof_syscall_exit(char *name)
--- 
-1.6.2.3
-
+ static void blk_unregister_tracepoints(void)
+ {
++	unregister_trace_block_rq_remap(blk_add_trace_rq_remap);
+ 	unregister_trace_block_remap(blk_add_trace_remap);
+ 	unregister_trace_block_split(blk_add_trace_split);
+ 	unregister_trace_block_unplug_io(blk_add_trace_unplug_io);
