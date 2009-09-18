@@ -1,193 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbZIRR2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZIRR24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757236AbZIRR2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 13:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbZIRR2S
+	id S1757273AbZIRR24 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 13:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbZIRR24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 13:28:18 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:39994 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756986AbZIRR2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 13:28:17 -0400
-Date: Fri, 18 Sep 2009 10:28:19 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu
-Subject: [PATCH tip/core/rcu] RCU whitespace fixes
-Message-ID: <20090918172819.GA24405@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 18 Sep 2009 13:28:56 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:58979 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757206AbZIRR2z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 13:28:55 -0400
+Subject: Re: [Patch] AMD64_EDAC: Fix amd64_map_to_dcs_mask
+From: Keith Mannthey <kmannth@us.ibm.com>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
+In-Reply-To: <20090918144226.GD25309@aftab>
+References: <1253239781.7263.113.camel@keith-laptop>
+	 <20090918144226.GD25309@aftab>
+Content-Type: text/plain
+Date: Fri, 18 Sep 2009 10:28:53 -0700
+Message-Id: <1253294933.7263.129.camel@keith-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a number of whitespace ^Ierrors in the include/linux/rcu* and the 
-kernel/rcu* files.
+On Fri, 2009-09-18 at 16:42 +0200, Borislav Petkov wrote:
+> On Thu, Sep 17, 2009 at 07:09:41PM -0700, Keith Mannthey wrote:
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+<snip>
 
- include/linux/rculist_nulls.h |    2 +-
- include/linux/rcupdate.h      |    6 +++---
- include/linux/rcutree.h       |    2 +-
- kernel/rcupdate.c             |    4 ++--
- kernel/rcutorture.c           |    4 ++--
- kernel/rcutree.c              |    2 +-
- kernel/rcutree.h              |    2 +-
- kernel/rcutree_plugin.h       |    4 ++--
- kernel/rcutree_trace.c        |    2 +-
- 9 files changed, 14 insertions(+), 14 deletions(-)
+> >  /* Map from a CSROW entry to the mask entry that operates on it */
+> >  static inline u32 amd64_map_to_dcs_mask(struct amd64_pvt *pvt, int csrow)
+> >  {
+> > -	return csrow >> (pvt->num_dcsm >> 3);
+> > +	return csrow >> (8 >> (ilog2(pvt->num_dcsm)+1));
+> 
+> Almost. You have 8 DCSMs on RevE, 4 on RevF and F10h and 2 on F11h and
+> this way you get wrong DCSM offsets for F11h. A dirty fix would be:
 
-diff --git a/include/linux/rculist_nulls.h b/include/linux/rculist_nulls.h
-index f9ddd03..589a409 100644
---- a/include/linux/rculist_nulls.h
-+++ b/include/linux/rculist_nulls.h
-@@ -102,7 +102,7 @@ static inline void hlist_nulls_add_head_rcu(struct hlist_nulls_node *n,
-  */
- #define hlist_nulls_for_each_entry_rcu(tpos, pos, head, member) \
- 	for (pos = rcu_dereference((head)->first);			 \
--		(!is_a_nulls(pos)) && 			\
-+		(!is_a_nulls(pos)) &&			\
- 		({ tpos = hlist_nulls_entry(pos, typeof(*tpos), member); 1; }); \
- 		pos = rcu_dereference(pos->next))
- 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 39dce83..6fe0363 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -1,5 +1,5 @@
- /*
-- * Read-Copy Update mechanism for mutual exclusion 
-+ * Read-Copy Update mechanism for mutual exclusion
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -18,7 +18,7 @@
-  * Copyright IBM Corporation, 2001
-  *
-  * Author: Dipankar Sarma <dipankar@in.ibm.com>
-- * 
-+ *
-  * Based on the original work by Paul McKenney <paulmck@us.ibm.com>
-  * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
-  * Papers:
-@@ -26,7 +26,7 @@
-  * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
-  *
-  * For detailed explanation of Read-Copy Update mechanism see -
-- * 		http://lse.sourceforge.net/locking/rcupdate.html
-+ *		http://lse.sourceforge.net/locking/rcupdate.html
-  *
-  */
- 
-diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
-index 00d08c0..3768277 100644
---- a/include/linux/rcutree.h
-+++ b/include/linux/rcutree.h
-@@ -24,7 +24,7 @@
-  * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
-  *
-  * For detailed explanation of Read-Copy Update mechanism see -
-- * 	Documentation/RCU
-+ *	Documentation/RCU
-  */
- 
- #ifndef __LINUX_RCUTREE_H
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index 28d2f24..37ac454 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -19,7 +19,7 @@
-  *
-  * Authors: Dipankar Sarma <dipankar@in.ibm.com>
-  *	    Manfred Spraul <manfred@colorfullife.com>
-- * 
-+ *
-  * Based on the original work by Paul McKenney <paulmck@us.ibm.com>
-  * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
-  * Papers:
-@@ -27,7 +27,7 @@
-  * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
-  *
-  * For detailed explanation of Read-Copy Update mechanism see -
-- * 		http://lse.sourceforge.net/locking/rcupdate.html
-+ *		http://lse.sourceforge.net/locking/rcupdate.html
-  *
-  */
- #include <linux/types.h>
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index 328a825..e4b9ce6 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -342,8 +342,8 @@ static struct rcu_torture_ops rcu_ops = {
- 	.sync		= synchronize_rcu,
- 	.cb_barrier	= rcu_barrier,
- 	.stats		= NULL,
--	.irq_capable 	= 1,
--	.name 		= "rcu"
-+	.irq_capable	= 1,
-+	.name		= "rcu"
- };
- 
- static void rcu_sync_torture_deferred_free(struct rcu_torture *p)
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index dd6e743..24f627e 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -25,7 +25,7 @@
-  * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
-  *
-  * For detailed explanation of Read-Copy Update mechanism see -
-- * 	Documentation/RCU
-+ *	Documentation/RCU
-  */
- #include <linux/types.h>
- #include <linux/kernel.h>
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index bf8a6f9..8e8287a 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -142,7 +142,7 @@ struct rcu_data {
- 	 */
- 	struct rcu_head *nxtlist;
- 	struct rcu_head **nxttail[RCU_NEXT_SIZE];
--	long		qlen; 	 	/* # of queued callbacks */
-+	long		qlen;		/* # of queued callbacks */
- 	long		blimit;		/* Upper limit on a processed batch */
- 
- #ifdef CONFIG_NO_HZ
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 55c6497..09b7325 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -116,8 +116,8 @@ static void rcu_preempt_note_context_switch(int cpu)
- 		 * But first, note that the current CPU must still be
- 		 * on line!
- 		 */
--	    	WARN_ON_ONCE((rdp->grpmask & rnp->qsmaskinit) == 0);
--	    	WARN_ON_ONCE(!list_empty(&t->rcu_node_entry));
-+		WARN_ON_ONCE((rdp->grpmask & rnp->qsmaskinit) == 0);
-+		WARN_ON_ONCE(!list_empty(&t->rcu_node_entry));
- 		phase = (rnp->gpnum + !(rnp->qsmask & rdp->grpmask)) & 0x1;
- 		list_add(&t->rcu_node_entry, &rnp->blocked_tasks[phase]);
- 		spin_unlock_irqrestore(&rnp->lock, flags);
-diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-index 0ea1bff..c89f5e9 100644
---- a/kernel/rcutree_trace.c
-+++ b/kernel/rcutree_trace.c
-@@ -20,7 +20,7 @@
-  * Papers:  http://www.rdrop.com/users/paulmck/RCU
-  *
-  * For detailed explanation of Read-Copy Update mechanism see -
-- * 		Documentation/RCU
-+ *		Documentation/RCU
-  *
-  */
- #include <linux/types.h>
+I think this will still be ok for F11. 
+
+
+ilog2(2) = 1 
+
+1 + 1 == 2 
+
+8 >> 2 == 2 
+
+csrow >> 2 
+
+This would be ok rev F11 assuming 8 total. 
+
+Am I missing something else? 
+
+> if (boot_cpu_data.x86 == 0xf && pvt->ext_model < OPTERON_CPU_REV_E) {
+> 	return csrow;
+> else
+> 	return csrow >> 1;
+
+Still busted for F11. 
+
+> The problem is, the csrow thing still goes over 0..7 which is obviously
+> wrong on F11h but I'll fix that later. Care to redo your patch according
+> to these and the comments from my previous mail and resend?
+
+Are there more than 8 csrows any any version (I don't currently have F11
+specs).  Maybe should just move to a map rather than a math trick to get
+to the right index? 
+
+
+> By the way, your patches made me look harder at that code region and
+> I've found some more problems with it which I've fixed. Would you like
+> to test the whole bunch of fixes on your setup?
+
+Yes please send any changes you have.  I have a decent test setup for
+live errors. 
+
+Thanks,
+  Keith 
+
