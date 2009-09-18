@@ -1,114 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZIROZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbZIROZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbZIROZW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZIROZT
+	id S1752038AbZIROZI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbZIROZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:25:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:21201 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752181AbZIROZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:25:15 -0400
-Date: Fri, 18 Sep 2009 10:24:18 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
-Message-ID: <20090918102418.5d84931e@tlielax.poochiereds.net>
-In-Reply-To: <alpine.DEB.1.10.0909161224420.21599@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1>
-	<alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1>
-	<20090909125352.1c7b57d2@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
-	<20090909132039.1ca47cd4@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091327370.32067@V090114053VZO-1>
-	<20090909140257.35ede0cc@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091724200.15746@V090114053VZO-1>
-	<20090909205548.4858b524@zanovar.poochiereds.net>
-	<alpine.DEB.1.10.0909101419310.29762@V090114053VZO-1>
-	<20090910153347.2f2616e8@barsoom.rdu.redhat.com>
-	<alpine.DEB.1.10.0909101541460.28418@V090114053VZO-1>
-	<20090910165757.43b77874@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909101721180.27669@V090114053VZO-1>
-	<20090910201932.5b8356e2@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909141600300.24371@V090114053VZO-1>
-	<20090915183405.2797b05e@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909161224420.21599@V090114053VZO-1>
+	Fri, 18 Sep 2009 10:25:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35000 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbZIROZG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 10:25:06 -0400
+Date: Fri, 18 Sep 2009 16:25:03 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+  maintenance disaster
+Message-ID: <20090918162503.6735cc1b@infradead.org>
+In-Reply-To: <ac3eb2510909180711k223aeb6ena2de3645317d03bd@mail.gmail.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+	<m1d45oxsrk.fsf@fess.ebiederm.org>
+	<20090918160944.58e5c1f5@infradead.org>
+	<ac3eb2510909180711k223aeb6ena2de3645317d03bd@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009 12:26:04 -0400 (EDT)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+On Fri, 18 Sep 2009 16:11:16 +0200
+Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-> On Tue, 15 Sep 2009, Jeff Layton wrote:
+> On Fri, Sep 18, 2009 at 16:09, Arjan van de Ven <arjan@infradead.org>
+> wrote:
 > 
-> > Yow, that version of mount.cifs is really old. I wonder if it may be
-> > passing bad mount options to the kernel? Might be interesting to strace
-> > that. Something like:
-> >
-> > # strace -f -s 256 -e mount mount -t cifs //chiprodfs2/company /mnt -ouser=clameter,domain=xxx
-> >
-> > ...it'll probably have a cleartext password in it so you might want to
-> > doctor the options a bit before sending along if you do.
-> >
-> > Alternately, you might just want to try a newer version of mount.cifs
-> > and see whether that fixes this.
+> > frankly, modprobe should call the settle.
 > 
-> Tried a newer version of mount.cifs without any change.
+> We call modprobe from udev, and will have fun with such a solution.
 > 
 
-Ok, good to rule that out then.
+too bad you cut my next sentence which said that there needed to be a
+way to opt out of that.
 
-> > > I cannot mount the clameter dir on the 32 bit box. Hangs. So I will mount
-> > > /company.
-> > >
-> >
-> > Actually, the trace of a hanging mount would probably be interesting.
-> >
-> > Does the 32-bit capture that you sent represent a mount attempt that
-> > hung? Or was it successful?
-> 
-> No it was successful.
-> 
 
-Hmm, ok. That isn't going to tell me as much as a mount that fails. For
-now, I suggest that we focus on determining why these mounts hang/fail.
-After that we can see whether the solution there has any bearing on why
-the server is so slow to respond to this particular client.
 
-> > What's the "devname" that you're giving to the mount command for the
-> > "clameter" dir? If there's more than 1 path component after the
-> > hostname, then the problem may be in the old version of mount.cifs.
-> > Some of them had broken handling for path prefixes.
-> 
-> its //machinename/company/clameter
-> 
-> So two components.
-> 
-
-Also good to know.
-
-What we should probably do at this point is track down why the 32-bit
-client has such a hard time mounting the clameter dir. Here's what
-would be most helpful:
-
-1) some debug log info of the mount attempt:
-
-# modprobe cifs
-# echo 7 > /proc/fs/cifs/cifsFYI
-
-...then attempt the mount. After it hangs for a few seconds, ^c the
-mount to kill it. Collect the output from dmesg and send it to me. That
-should give me some idea of what the client is doing during this phase.
-
-If you can simultaneously capture wire traffic during the same mount
-attempt that would also be helpful.
-
-Cheers,
 -- 
-Jeff Layton <jlayton@redhat.com>
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
