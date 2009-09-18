@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbZIRMNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbZIRMN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbZIRMNd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 08:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZIRMNb
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 08:13:31 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:44721 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756756AbZIRMN3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1756836AbZIRMN3 (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 18 Sep 2009 08:13:29 -0400
-MIME-Version: 1.0
-In-Reply-To: <9b2b86520909180506n667b161esca739811d8604d49@mail.gmail.com>
-References: <778490.95843.qm@web50204.mail.re2.yahoo.com> <9b2b86520909180506n667b161esca739811d8604d49@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 18 Sep 2009 14:13:18 +0200
-Message-ID: <ac3eb2510909180513i188bcb96t15b3b299fa97c2ba@mail.gmail.com>
-Subject: Re: Auto loading of kernel modules COLD/HOT BOOT
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: vprabu vprabu <prabu_online2005@yahoo.com>, linux-hotplug@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-usb@vger.kernel.org,
-       kernelnewbies@nl.linux.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbZIRMN2
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 18 Sep 2009 08:13:28 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:58795 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756623AbZIRMN2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 08:13:28 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtYEAN4Ts0pMROOX/2dsb2JhbACBUswehBwF
+Date: Fri, 18 Sep 2009 08:13:29 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@lst.de>, Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kill markers
+Message-ID: <20090918121329.GA1173@Krystal>
+References: <20090917173527.GA1699@lst.de> <20090918102334.GA24638@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090918102334.GA24638@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 08:12:28 up 30 days, 23:01,  2 users,  load average: 0.15, 0.20,
+	0.22
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 14:06, Alan Jenkins
-<sourcejedi.lkml@googlemail.com> wrote:
-> On 9/18/09, vprabu vprabu <prabu_online2005@yahoo.com> wrote:
->> I am new to kernel hacking ; i had been an application guy; now focusing
->> into the fundamentals of linux kernel. I really have little knowledge about
->> the kernel, modules and auto loading of modules.After a lot of googling ,i
->> am now much perplexed :-).
->>
->>  Most of the articles are contradictory to each
->> other and not very clear ( or not so simple at my level to comprehend)
->
-> Heh, I think that's a common reaction.  I don't know where there is a
-> good introduction.
+* Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Christoph Hellwig <hch@lst.de> wrote:
+> 
+> > Now that the last users of markers have migrated to the event tracer 
+> > we can kill off the support code.
+> 
+> Applied, thanks Christoph!
+> 
+> Btw., there's some more marker related bits in the kernel, such as 
+> scripts/mod/modpost.c - mostly the effects of:
+> 
+>   b2e3e65: Linux Kernel Markers: create modpost file
+> 
+> I think we want to keep those bits, for those who want to use new 
+> modpost with an older kernel - but mark them for deprecation.
+> 
 
-Here is a pretty old text from 2005, it explains some bits, if the old
-stuff before udev is known to the reader. Some things have changed in
-the meantime, like the event queue stuff which is no longer directly
-accessible, but the general picture is still pretty close to what we
-do today:
-  http://vrfy.org/log/recent-state-of-udev.html
+Just to confirm: this means having a printk-style infrastructure to
+prototype tracepoints is not considered useful ?
 
-Kay
+Mathieu
+
+
+> Thanks,
+> 
+> 	Ingo
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
