@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbZIRUKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbZIRUIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758574AbZIRUKG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbZIRUKF
+	id S1758549AbZIRUIB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbZIRUIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:10:05 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:12255 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758173AbZIRUKC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:10:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=SK+6RYKM6CWCyX7+34nyjHaVulT8j++2YFog35khPxfnXcLLQfFej3IFgcUJcserp
-	23CkfsBvDIZlVX3V72ygw==
-Date: Fri, 18 Sep 2009 13:06:59 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Eric B Munson <ebmunson@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, rdunlap@xenotime.net, michael@ellerman.id.au,
-       ralf@linux-mips.org, wli@holomorphy.com, mel@csn.ul.ie,
-       dhowells@redhat.com, arnd@arndb.de, fengguang.wu@intel.com,
-       shuber2@gmail.com, hugh.dickins@tiscali.co.uk, zohar@us.ibm.com,
-       hugh@veritas.com, mtk.manpages@gmail.com, chris@zankel.net,
-       linux-man@vger.kernel.org, linux-doc@vger.kernel.org,
-       linux-alpha@vger.kernel.org, linux-mips@linux-mips.org,
-       linux-parisc@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/7] hugetlbfs: Allow the creation of files suitable for
- MAP_PRIVATE on the vfs internal mount
-In-Reply-To: <0f28cb0d89a7b83f7edf92181c5d13422f5b009c.1253276847.git.ebmunson@us.ibm.com>
-Message-ID: <alpine.DEB.1.00.0909181306450.27556@chino.kir.corp.google.com>
-References: <653aa659fd7970f7428f4eb41fa10693064e4daf.1253272709.git.ebmunson@us.ibm.com> <0f28cb0d89a7b83f7edf92181c5d13422f5b009c.1253276847.git.ebmunson@us.ibm.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 18 Sep 2009 16:08:00 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52236 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755105AbZIRUIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 16:08:00 -0400
+Date: Fri, 18 Sep 2009 22:08:03 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       linux-kernel@vger.kernel.org, drbd-dev@lists.linbit.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Kyle Moffett <kyle@moffetthome.net>, Lars Marowsky-Bree <lmb@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [GIT PULL] DRBD for 2.6.32
+Message-ID: <20090918200803.GM23126@kernel.dk>
+References: <200909151645.14256.philipp.reisner@linbit.com> <20090915231931.GB7636@infradead.org> <20090917081251.GC8045@barkeeper1-xen.linbit> <1253203365.7845.14.camel@mulgrave.site> <20090917161108.GA3361@infradead.org> <19122.65335.126937.476968@notabene.brown>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19122.65335.126937.476968@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009, Eric B Munson wrote:
+On Fri, Sep 18 2009, Neil Brown wrote:
+> On Thursday September 17, hch@infradead.org wrote:
+> > On Thu, Sep 17, 2009 at 10:02:45AM -0600, James Bottomley wrote:
+> > > So I think Christoph's NAK is rooted in the fact that we have a
+> > > proliferation of in-kernel RAID implementations and he's trying to
+> > > reunify them all again.
+> > > 
+> > > As part of the review, reusing the kernel RAID (and actually logging)
+> > > logic did come up and you added it to your todo list.  Perhaps expanding
+> > > on the status of that would help, since what's being looked for is that
+> > > you're not adding more work to the RAID reunification effort and that
+> > > you do have a plan and preferably a time frame for coming into sync with
+> > > it.
+> > 
+> > Yes.  RDBD has spend tons of time out of tree, and if they want to put
+> > it in now I think requiring them to do their homework is a good idea.
+> 
+> What homework?
+> 
+> If there was a sensible unifying framework in the kernel that they
+> could plug in to, then requiring them do to that might make sense.  But
+> there isn't.  You/I/We haven't created a solution (i.e. there is no
+> equivalent of the VFS for virtual block devices) and saying that
+> because we haven't they cannot merge DRBD hardly seems fair.
+> 
+> Indeed, merging DRBD must be seen as a *good* thing as we then have
+> more examples of differing requirements against which a proposed
+> solution can be measured and tested.
+> 
+> I thought the current attitude was "merge then fix".  That is what the
+> drivers/staging tree seems to be all about.  Maybe you could argue
+> that DRBD should go in to 'staging' first (though I don't think that
+> is appropriate or require myself), but keeping it out just seems
+> wrong.
 
-> There are two means of creating mappings backed by huge pages:
-> 
->         1. mmap() a file created on hugetlbfs
->         2. Use shm which creates a file on an internal mount which essentially
->            maps it MAP_SHARED
-> 
-> The internal mount is only used for shared mappings but there is very
-> little that stops it being used for private mappings. This patch extends
-> hugetlbfs_file_setup() to deal with the creation of files that will be
-> mapped MAP_PRIVATE on the internal hugetlbfs mount. This extended API is
-> used in a subsequent patch to implement the MAP_HUGETLB mmap() flag.
-> 
-> Signed-off-by: Eric Munson <ebmunson@us.ibm.com>
+FWIW, I agree with Neil here. If drbd is merge clean, lets go ahead and
+merge it. While it would be nice to offload the raid unification onto
+drbd, it's not exactly fair.
 
-Acked-by: David Rientjes <rientjes@google.com>
+-- 
+Jens Axboe
+
