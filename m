@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZIRUGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbZIRUKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbZIRUGI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbZIRUGF
+	id S1758574AbZIRUKG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbZIRUKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:06:05 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:36812 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758163AbZIRUGE (ORCPT
+	Fri, 18 Sep 2009 16:10:05 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:12255 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758173AbZIRUKC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:06:04 -0400
-Date: Fri, 18 Sep 2009 22:06:06 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@ksplice.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 0/3] Linker script cleanup patches for sparc and frv
-Message-ID: <20090918200606.GA25180@merkur.ravnborg.org>
-References: <1253303529-6342-1-git-send-email-tabbott@ksplice.com>
+	Fri, 18 Sep 2009 16:10:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=SK+6RYKM6CWCyX7+34nyjHaVulT8j++2YFog35khPxfnXcLLQfFej3IFgcUJcserp
+	23CkfsBvDIZlVX3V72ygw==
+Date: Fri, 18 Sep 2009 13:06:59 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Eric B Munson <ebmunson@us.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, rdunlap@xenotime.net, michael@ellerman.id.au,
+       ralf@linux-mips.org, wli@holomorphy.com, mel@csn.ul.ie,
+       dhowells@redhat.com, arnd@arndb.de, fengguang.wu@intel.com,
+       shuber2@gmail.com, hugh.dickins@tiscali.co.uk, zohar@us.ibm.com,
+       hugh@veritas.com, mtk.manpages@gmail.com, chris@zankel.net,
+       linux-man@vger.kernel.org, linux-doc@vger.kernel.org,
+       linux-alpha@vger.kernel.org, linux-mips@linux-mips.org,
+       linux-parisc@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/7] hugetlbfs: Allow the creation of files suitable for
+ MAP_PRIVATE on the vfs internal mount
+In-Reply-To: <0f28cb0d89a7b83f7edf92181c5d13422f5b009c.1253276847.git.ebmunson@us.ibm.com>
+Message-ID: <alpine.DEB.1.00.0909181306450.27556@chino.kir.corp.google.com>
+References: <653aa659fd7970f7428f4eb41fa10693064e4daf.1253272709.git.ebmunson@us.ibm.com> <0f28cb0d89a7b83f7edf92181c5d13422f5b009c.1253276847.git.ebmunson@us.ibm.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253303529-6342-1-git-send-email-tabbott@ksplice.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 03:52:06PM -0400, Tim Abbott wrote:
-> Hi Linus,
-Hi Linus.
+On Fri, 18 Sep 2009, Eric B Munson wrote:
 
-All three patches are:
+> There are two means of creating mappings backed by huge pages:
+> 
+>         1. mmap() a file created on hugetlbfs
+>         2. Use shm which creates a file on an internal mount which essentially
+>            maps it MAP_SHARED
+> 
+> The internal mount is only used for shared mappings but there is very
+> little that stops it being used for private mappings. This patch extends
+> hugetlbfs_file_setup() to deal with the creation of files that will be
+> mapped MAP_PRIVATE on the internal hugetlbfs mount. This extended API is
+> used in a subsequent patch to implement the MAP_HUGETLB mmap() flag.
+> 
+> Signed-off-by: Eric Munson <ebmunson@us.ibm.com>
 
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-
-	Sam
+Acked-by: David Rientjes <rientjes@google.com>
