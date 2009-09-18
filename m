@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751827AbZIRFuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbZIRGHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751827AbZIRFuU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 01:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbZIRFuT
+	id S1751981AbZIRGHJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 02:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbZIRGHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 01:50:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:14112 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751518AbZIRFuS (ORCPT
+	Fri, 18 Sep 2009 02:07:07 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46998 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750997AbZIRGHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 01:50:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PBQ9Qyt8W3YegmOlaTJxkEC8STbL36i0lWwapjLht6uUm01+aS93w5grPqEAbGk/3f
-         1dPo329LbyduIc6838LKIP/ssPviqw9uVPYkKiCOW+y4vCzZ6gvYyZDQ4TVh4Fv3FKvU
-         8Uodq1KEmB5RMrDIgVg2P2O8bymBJvHQy3/dA=
-Date: Thu, 17 Sep 2009 22:42:39 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-input@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH v3] input/keyboard: add ADP5588 QWERTY I2C Keyboard
-	Input device driver
-Message-ID: <20090918054239.GB18668@core.coreip.homeip.net>
-References: <20090916050236.GF2756@core.coreip.homeip.net> <1253125231-17902-1-git-send-email-vapier@gentoo.org>
+	Fri, 18 Sep 2009 02:07:06 -0400
+Date: Thu, 17 Sep 2009 22:54:23 -0700
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
+	maintenance disaster
+Message-ID: <20090918055423.GA7104@kroah.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <m1ab0tcwep.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253125231-17902-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <m1ab0tcwep.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 02:20:31PM -0400, Mike Frysinger wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+On Thu, Sep 17, 2009 at 10:29:18AM -0700, Eric W. Biederman wrote:
+> Greg KH <greg@kroah.com> writes:
 > 
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> ---
-> v3
-> 	- cache delay workaround calculation
-> 	- rebase on latest mainline
+> > On Thu, Sep 17, 2009 at 01:23:39AM -0700, Eric W. Biederman wrote:
+> >> 
+> >> devtmpfs has numerous problems.  The once I see from a quick review.
+> >
+> > <snip>
+> >
+> > I'm confused, why did you not at least cc: Kay and I on this message, if
+> > I was a paranoid person, I would think that you were somehow trying to
+> > skirt around us for some unknown reason :(
 > 
+> You just aren't relevant to this discussion except where you
+> repeatedly demonstrate you aren't willing to listen to anyone who
+> hasn't drunk the devtmpfs coolaid.
 
-Applied, thanks Michael.
+Oh, we have official team drinks now?  Great, sign me up, can I pick a
+t-shirt logo as well? :)
 
--- 
-Dmitry
+> If you were interested in honest review and feedback you would have
+> copied me from the second review onward.  You didn't do that.  Why
+> should I extend you the courtesy.  This isn't your decision to make.
+
+I'm sorry I forgot to copy you, and the other people that provided
+feedback on the original few versions, that's my fault.  I kind of
+assumed that people found the first version on their own, the updates
+would be in the same place as well.  I had not kept track of the
+reviewers and commentors properly.
+
+My fault, and I'm sorry.
+
+But for you to think I was purposefully slighting you, or anyone else,
+and that slight would justify completly ignoring the original authors
+and submittors of the code, seems, well, a big streach.
+
+> Greg this code does not live up to the standards you have repeatedly
+> asserted are required for accepting core kernel code.  Neither you
+> nor Kay show any interest in fixing even the most trivial of bugs.
+> Must less discuss alternate solutions to the problem.
+
+I'm really sorry, but I know of no existing bugs in this code.
+Seriously, I thought we addressed everything that was pointed out.  A
+large number of people have tested this in quite different environments,
+and we got sign-off-bys by all of the boot logic infrastructure
+maintainers from the major distros, as proof of that testing.
+
+I don't know of any standards that we are not following here, what
+specifically are you referring to?
+
+thanks,
+
+greg k-h
