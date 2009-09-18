@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZIRABm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbZIRAEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbZIRABm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 20:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbZIRABl
+	id S1754328AbZIRAEM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 20:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZIRAEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 20:01:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46081
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750761AbZIRABk (ORCPT
+	Thu, 17 Sep 2009 20:04:11 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45250 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbZIRAEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 20:01:40 -0400
-Date: Thu, 17 Sep 2009 17:01:56 -0700 (PDT)
-Message-Id: <20090917.170156.152594715.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: JBeulich@novell.com, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: [PATCH] fix BUILD_BUG_ON() and a couple of bogus uses of it
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090917162437.b1a890de.akpm@linux-foundation.org>
-References: <4A8AEBFD0200007800010580@vpn.id2.novell.com>
-	<20090917162437.b1a890de.akpm@linux-foundation.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 17 Sep 2009 20:04:10 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 18 Sep 2009 09:02:00 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "xiyou.wangcong@gmail.com" <xiyou.wangcong@gmail.com>
+Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling v4
+Message-Id: <20090918090200.a1810a9b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090917124039.GB9462@localhost>
+References: <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090916142956.9998ba71.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917145319.97f67737.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917150726.9acb0f40.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917062124.GA6964@localhost>
+	<20090917155100.3cc2dfb6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917071428.GA9232@localhost>
+	<20090917162324.d60a7950.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090917094203.GA13885@localhost>
+	<b756a8e49c515a5ada93ac90d1076056.squirrel@webmail-b.css.fujitsu.com>
+	<20090917124039.GB9462@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 17 Sep 2009 16:24:37 -0700
+On Thu, 17 Sep 2009 20:40:39 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> sparc64:
+> > >         if (pos + count < pos)
+> > >                 return -EOVERFLOW;
+> > >         ...
+> > > }
+> > >
+> > have to avoid pos == LONGLONGMAX case.
 > 
-> In file included from arch/sparc/kernel/vio.c:17:
-> /usr/src/devel/arch/sparc/include/asm/vio.h: In function `vio_dring_avail':
-> /usr/src/devel/arch/sparc/include/asm/vio.h:261: error: bit-field `<anonymous>' width not an integer constant
+> Ah sorry, didn't know loff_t could be long long..
 > 
-> static inline u32 vio_dring_avail(struct vio_dring_state *dr,
-> 				  unsigned int ring_size)
-> {
-> 	BUILD_BUG_ON(!is_power_of_2(ring_size));
-> 
-> 	return (dr->pending -
-> 		((dr->prod - dr->cons) & (ring_size - 1)));
-> }
-> 
-> changing it to MAYBE_BUILD_BUG_ON seems to have fixed it.
+Thank you. I'll restart this after merge window.
+(And maybe I had to CC fsdevel...)
 
-That's completely bogus.
+Thanks,
+-Kame
 
-First of all, arch/sparc/kernel/vio.c never calls this function
-so it should never be evaluated.
-
-Second of all, all the places that do call this function only
-pass pure constants as the 'ring_size' parameter.
-
-drivers/block/sunvdc.c:
-
-static inline u32 vdc_tx_dring_avail(struct vio_dring_state *dr)
-{
-	return vio_dring_avail(dr, VDC_TX_RING_SIZE);
-}
-
-drivers/net/sunvnet.c:
-
-static inline u32 vnet_tx_dring_avail(struct vio_dring_state *dr)
-{
-	return vio_dring_avail(dr, VNET_TX_RING_SIZE);
-}
-
-Making this MAYBE_BUILD_BUG_ON shouldn't be necessary.
