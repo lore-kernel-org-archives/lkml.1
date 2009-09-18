@@ -1,76 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbZIRAaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbZIRA3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbZIRAaP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 20:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbZIRAaN
+	id S1754419AbZIRA3x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 20:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbZIRA3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 20:30:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46978 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754871AbZIRAaM (ORCPT
+	Thu, 17 Sep 2009 20:29:53 -0400
+Received: from exprod6og116.obsmtp.com ([64.18.1.37]:57358 "HELO
+	exprod6og116.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750741AbZIRA3w convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 20:30:12 -0400
-Date: Thu, 17 Sep 2009 17:29:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Roland Dreier <rdreier@cisco.com>, Mark Fasheh <mfasheh@suse.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
-In-Reply-To: <20090917203453.GA15620@mail.oracle.com>
-Message-ID: <alpine.LFD.2.01.0909171723440.4950@localhost.localdomain>
-References: <20090915005417.GD4507@mail.oracle.com> <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain> <20090915040601.GE4507@mail.oracle.com> <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain> <20090915214530.GA11060@mail.oracle.com>
- <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain> <20090916044047.GA30453@mail.oracle.com> <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain> <adabpl9ct3y.fsf@cisco.com> <alpine.LFD.2.01.0909171316230.4950@localhost.localdomain>
- <20090917203453.GA15620@mail.oracle.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 17 Sep 2009 20:29:52 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [spi-devel-general] [PATCH 2/2] mmc_spi: lock the SPI bus whenaccessing the card
+Date: Thu, 17 Sep 2009 20:29:54 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901D41E4C@mi8nycmail19.Mi8.com>
+In-Reply-To: <1253224997-7422-2-git-send-email-vapier@gentoo.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [spi-devel-general] [PATCH 2/2] mmc_spi: lock the SPI bus whenaccessing the card
+Thread-Index: Aco34snHE+k/AAfXQmK/lwdRodzxFQAE8zrg
+References: <1253224997-7422-1-git-send-email-vapier@gentoo.org> <1253224997-7422-2-git-send-email-vapier@gentoo.org>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Mike Frysinger" <vapier@gentoo.org>,
+       <spi-devel-general@lists.sourceforge.net>,
+       "David Brownell" <dbrownell@users.sourceforge.net>
+Cc: "Yi Li" <yi.li@analog.com>, "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Sep 2009 00:29:54.0908 (UTC) FILETIME=[24E779C0:01CA37F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 17 Sep 2009, Joel Becker wrote:
->
-> 	I have to say, adding 'undefined behavior' things isn't fun in a
-> call that is already potentially confusing.  We have a bunch of flags
-> and behaviors we're covering.
-
-I don't think it's "undefined". It's just not complete.
-
->From a user standpoint, there is no difference between such a system call 
-and doing the thing as a library routine (which has to be the fallback 
-anyway for something like 'cp').
-
-> 	Note that "cleaning up after an error" and "atomic" are not the
-> same.  Atomicity implies that not only do you see all or none, but that
-> the contents are a point-in-time of the source file.  A non-atomic
-> implementation may be affected by writes that happen during the copy
-> (like any read-write-loop copy would be).
-
-Sure. There are middle grounds that may not need the cleanup. I was more 
-looking at the two extreme ends.
-
-> > Of course, if the filesystem can do the copy entirely atomically (ie by 
-> > just incrementing a refcount), then it can give atomicity guarantees, but 
-> > then you'd never see the async case either.
+On Thursday, September 17, 2009 3:03 PM, Mike Frysinger wrote:
+> From: Yi Li <yi.li@analog.com>
 > 
-> 	Even the atomic copy might take a little time (say, to bump up
-> and write out the metadata structures).  Do you want to define that as
-> not being async?  I was figuring COPYFILE_ATOMIC and COPYFILE_WAIT to be
-> separate flags.
+> The MMC/SPI spec does not play well with typical SPI design -- it often
+> needs to send out a command in one message, read a response, then do some
+> other arbitrary step.  Since we can't let another SPI client use the bus
+> during this time, use the new SPI lock/unlock functions to provide the
+> required exclusivity.
+> 
+> Signed-off-by: Yi Li <yi.li@analog.com>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+>  drivers/mmc/host/mmc_spi.c |   29 ++---------------------------
+>  1 files changed, 2 insertions(+), 27 deletions(-)
+> 
+> diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
+> index a461017..a96e058 100644
+> --- a/drivers/mmc/host/mmc_spi.c
+> +++ b/drivers/mmc/host/mmc_spi.c
+> @@ -1084,6 +1084,7 @@ static void mmc_spi_request(struct mmc_host *mmc, struct mmc_request *mrq)
+>  #endif
+>  
+>  	/* issue command; then optionally data and stop */
+> +	spi_lock_bus(host->spi);
+>  	status = mmc_spi_command_send(host, mrq, mrq->cmd, mrq->data != NULL);
+>  	if (status == 0 && mrq->data) {
+>  		mmc_spi_data_do(host, mrq->cmd, mrq->data, mrq->data->blksz);
+> @@ -1092,7 +1093,7 @@ static void mmc_spi_request(struct mmc_host *mmc, struct mmc_request *mrq)
+>  		else
+>  			mmc_cs_off(host);
+>  	}
+> -
+> +	spi_unlock_bus(host->spi);
+>  	mmc_request_done(host->mmc, mrq);
+>  }
+>  
+> @@ -1337,32 +1338,6 @@ static int mmc_spi_probe(struct spi_device *spi)
+>  		return status;
+>  	}
+>  
+> -	/* We can use the bus safely iff nobody else will interfere with us.
+> -	 * Most commands consist of one SPI message to issue a command, then
+> -	 * several more to collect its response, then possibly more for data
+> -	 * transfer.  Clocking access to other devices during that period will
+> -	 * corrupt the command execution.
+> -	 *
+> -	 * Until we have software primitives which guarantee non-interference,
+> -	 * we'll aim for a hardware-level guarantee.
+> -	 *
+> -	 * REVISIT we can't guarantee another device won't be added later...
+> -	 */
+> -	if (spi->master->num_chipselect > 1) {
+> -		struct count_children cc;
+> -
+> -		cc.n = 0;
+> -		cc.bus = spi->dev.bus;
+> -		status = device_for_each_child(spi->dev.parent, &cc,
+> -				maybe_count_child);
+> -		if (status < 0) {
+> -			dev_err(&spi->dev, "can't share SPI bus\n");
+> -			return status;
+> -		}
+> -
+> -		dev_warn(&spi->dev, "ASSUMING SPI bus stays unshared!\n");
+> -	}
+> -
+>  	/* We need a supply of ones to transmit.  This is the only time
+>  	 * the CPU touches these, so cache coherency isn't a concern.
+>  	 *
 
-I don't think that's wrong, and yeah, you could decide that you actually 
-want to be able to support the "ten outstanding 'copy' commands from user 
-space" model too. So yeah, separate COPYFILE_ATOMIC (only succeed if you 
-can do it as an atomic op in the filesystem) and COPYFILE_WAIT (only 
-return when fully done) bits sounds conceptually fine to me.
+Removing the above block of code causes:
 
-Whether it's worth it for a filesystem that effectively only needs a 
-couple of writes (that can be buffered too), I dunno. But it's certainly 
-not something I'd object to on an interface level.
+drivers/mmc/host/mmc_spi.c:1299: warning: 'maybe_count_child' defined but not used
 
-		Linus
+That function should also be removed along with the "struct count_children"
+definition.
+
+Regards,
+Hartley
