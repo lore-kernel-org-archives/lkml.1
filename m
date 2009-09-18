@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbZIRSks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbZIRSkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbZIRSks (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 14:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZIRSkp
+	id S1758461AbZIRSkV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 14:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbZIRSkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 14:40:45 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:55250 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757508AbZIRSkp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 14:40:45 -0400
-Date: Fri, 18 Sep 2009 11:39:26 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: "Peter W. Morreale" <pmorreale@novell.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Fasheh <mfasheh@suse.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [Ocfs2-devel] [GIT PULL] ocfs2 changes for 2.6.32
-Message-ID: <20090918183926.GB8551@mail.oracle.com>
-Mail-Followup-To: "Peter W. Morreale" <pmorreale@novell.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Mark Fasheh <mfasheh@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	ocfs2-devel@oss.oracle.com
-References: <20090915005417.GD4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
- <20090915040601.GE4507@mail.oracle.com>
- <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
- <20090915214530.GA11060@mail.oracle.com>
- <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
- <20090916044047.GA30453@mail.oracle.com>
- <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain>
- <20090918014333.GD15620@mail.oracle.com>
- <1253294613.31359.136.camel@hermosa>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253294613.31359.136.camel@hermosa>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4AB3D404.00A6:SCFMA4539814,ss=1,fgs=0
+	Fri, 18 Sep 2009 14:40:19 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:50455 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757453AbZIRSkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 14:40:19 -0400
+Subject: Re: [PATCH] nfs: fix bdi_unregister() before sb kill
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
+In-Reply-To: <20090918183203.GG23126@kernel.dk>
+References: <20090917124233.GJ23126@kernel.dk>
+	 <20090917194027.GS23126@kernel.dk>
+	 <1253229410.2783.16.camel@heimdal.trondhjem.org>
+	 <20090918064006.GU23126@kernel.dk> <20090918150248.GB23126@kernel.dk>
+	 <1253290790.3183.14.camel@heimdal.trondhjem.org>
+	 <20090918173608.GD23126@kernel.dk>  <20090918183203.GG23126@kernel.dk>
+Content-Type: text/plain
+Date: Fri, 18 Sep 2009 14:40:18 -0400
+Message-Id: <1253299218.3183.84.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 4 sum msgs/h 1 total rcpts 1482 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 61C92D07A7AE0E4C11F8A29197155D4C53155918
+X-UiO-SPAM-Test: remote_host: 198.95.226.230 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 25 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 11:23:33AM -0600, Peter W. Morreale wrote:
-> On Thu, 2009-09-17 at 18:43 -0700, Joel Becker wrote:
-> > On Thu, Sep 17, 2009 at 09:29:14AM -0700, Linus Torvalds wrote:
-> > > Why would anybody want to hide it at all? Why even the libc hiding?
-> > > 
-> > > Nobody is going to use this except for special apps. Let them see what 
-> > > they can do, in all its glory. 
-> > 
-> > 	I expect everyone will use this through cp(1), so that cp(1) can
-> > try to get server-side copy on the network filesystms.
-> > 	Speaking of "all its glory", what we have now is:
-> > 
-> > int sys_copyfileat(int oldfd, const char *oldname, int newfd,
-> >                    const char *newname, int flags, int atflags)
+On Fri, 2009-09-18 at 20:32 +0200, Jens Axboe wrote:
+> How does this look? It compiles, but I cannot test before sunday. It
+> would be great if you (or someone else) could :-). Peter, if you have
+> the time, it would be nice if you could check whether this one works for
+> you too.
 > 
+> diffstat is tasty, too:
 > 
-> Would it be worthwhile to consider adding an offset and length?  
-> 
-> Then we get dd as well. (potentially) 
+>  client.c |    4 ----
+>  super.c  |   53 ++++++++++++++++++++++++++---------------------------
+>  2 files changed, 26 insertions(+), 31 deletions(-)
 
-	I'm with Linus that a range attribute really makes this
-complicated.  I also think it doesn't work well with a call that is
-supposed to create newname.
+Yep! The patch looks good to me. I'll see if I can find the time to test
+it tomorrow.
 
-Joel
+Cheers
+  Trond
 
--- 
-
-	Pitchers and catchers report.
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
