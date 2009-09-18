@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZIRHuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZIRHz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbZIRHuU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 03:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZIRHuR
+	id S1755379AbZIRHz2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 03:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZIRHz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 03:50:17 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37124 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbZIRHuQ (ORCPT
+	Fri, 18 Sep 2009 03:55:27 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52598 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751598AbZIRHz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 03:50:16 -0400
-Date: Fri, 18 Sep 2009 08:49:51 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alek Du <alek.du@intel.com>, "david-b@pacbell.net" <david-b@pacbell.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3] gpio: add Intel Moorestown Platform Langwell chip
-	gpio driver
-Message-ID: <20090918074951.GA4075@flint.arm.linux.org.uk>
-References: <20090703210706.41288a2a@dxy.sh.intel.com> <20090917163644.4783a337.akpm@linux-foundation.org> <20090918091844.6c8a8bd1@dxy.sh.intel.com> <20090917203826.e083746d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917203826.e083746d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 18 Sep 2009 03:55:26 -0400
+Subject: Re: [PATCH 2/4] send callback when swap slot is freed
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Nitin Gupta <ngupta@vflare.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>,
+       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp
+In-Reply-To: <Pine.LNX.4.64.0909180809290.2882@sister.anvils>
+References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
+	 <1253227412-24342-3-git-send-email-ngupta@vflare.org>
+	 <1253256805.4959.8.camel@penberg-laptop>
+	 <Pine.LNX.4.64.0909180809290.2882@sister.anvils>
+Date: Fri, 18 Sep 2009 10:55:28 +0300
+Message-Id: <1253260528.4959.13.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 08:38:26PM -0700, Andrew Morton wrote:
-> On Fri, 18 Sep 2009 09:18:44 +0800 Alek Du <alek.du@intel.com> wrote:
-> 
-> > Sorry for the inconvenience. I do not have SPARC64 build env., but I think this patch will fix the build issue, I should include <linux/irq.h> by explicit.
-> > 
-> > >From 5f0f166b37c4313c27de32f6f200bbd0656603b7 Mon Sep 17 00:00:00 2001
-> > From: Alek Du <alek.du@intel.com>
-> > Date: Fri, 18 Sep 2009 09:09:19 +0800
-> > Subject: [PATCH] gpio: Fix Langwell gpio driver build error
-> > 
-> > Need to include <linux/irq.h> directly ...
-> > 
-> > Signed-off-by: Alek Du <alek.du@intel.com>
-> > ---
-> >  drivers/gpio/langwell_gpio.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/gpio/langwell_gpio.c b/drivers/gpio/langwell_gpio.c
-> > index e100583..10a1172 100644
-> > --- a/drivers/gpio/langwell_gpio.c
-> > +++ b/drivers/gpio/langwell_gpio.c
-> > @@ -27,6 +27,7 @@
-> >  #include <linux/interrupt.h>
-> >  #include <linux/init.h>
-> >  #include <linux/io.h>
-> > +#include <linux/irq.h>
-> >  #include <linux/gpio.h>
-> >  
-> >  struct lnw_gpio_register {
-> 	
-> include/linux/irq.h says
-> 
-> /*
->  * Please do not include this file in generic code.  There is currently
->  * no requirement for any architecture to implement anything held
->  * within this file.
->  *
->  * Thanks. --rmk
->  */
-> 
-> but
-> 
-> y:/usr/src/linux-2.6.31> grep -rl 'linux/irq.h' drivers | wc -l
-> 101
-> 
-> Russell, is that rule no longer true?
+Hi Hugh,
 
-Ever since ARM was converted over to genirq, I've given up fighting it.
-It does still mean that any arch not using genirq is going to have
-problems with these drivers.
+On Fri, 2009-09-18 at 08:17 +0100, Hugh Dickins wrote:
+> On Fri, 18 Sep 2009, Pekka Enberg wrote:
+> > On Fri, 2009-09-18 at 04:13 +0530, Nitin Gupta wrote:
+> > > +EXPORT_SYMBOL_GPL(set_swap_free_notify);
+> > > +
+> > >  static int swap_entry_free(struct swap_info_struct *p,
+> > >  			   swp_entry_t ent, int cache)
+> > >  {
+> > > @@ -585,6 +617,8 @@ static int swap_entry_free(struct swap_info_struct *p,
+> > >  			swap_list.next = p - swap_info;
+> > >  		nr_swap_pages++;
+> > >  		p->inuse_pages--;
+> > > +		if (p->swap_free_notify_fn)
+> > > +			p->swap_free_notify_fn(p->bdev, offset);
+> > >  	}
+> > >  	if (!swap_count(count))
+> > >  		mem_cgroup_uncharge_swap(ent);
+> > 
+> > OK, this hits core kernel code so we need to CC some more mm/swapfile.c
+> > people. The set_swap_free_notify() API looks strange to me. Hugh, I
+> > think you mentioned that you're okay with an explicit hook. Any
+> > suggestions how to do this cleanly?
+> 
+> No, no better suggestion.  I quite see Nitin's point that ramzswap
+> would benefit significantly from a callback here, though it's not a
+> place (holding swap_lock) where we'd like to offer a callback at all.
+> 
+> I think I would prefer the naming to make it absolutely clear that
+> it's a special for ramzswap or compcache, rather than dressing it
+> up in the grand generality of a swap_free_notify_fn: giving our
+> hacks fancy names doesn't really make them better.
+> 
+> (Does the bdev matching work out if there are any regular swapfiles
+> around? I've not checked, might or might not need refinement there.)
 
-I suspect that it's still the case that many of these includes should
-be linux/interrupt.h and not linux/irq.h
+The *hook* looks OK to me but set_swap_free_notify() looks like an ugly
+hack. I don't understand why we're setting up the hook lazily in
+ramzswap_read() nor do I understand why we need to look up struct
+swap_info_struct with a bdev. Surely there's a cleaner way to do all
+this? Probably somewhere in sys_swapon()?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+			Pekka
+
