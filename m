@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZIRHz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbZIRICS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbZIRHz2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 03:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZIRHz1
+	id S1755700AbZIRICS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 04:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbZIRICQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 03:55:27 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52598 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751598AbZIRHz0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 03:55:26 -0400
-Subject: Re: [PATCH 2/4] send callback when swap slot is freed
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Nitin Gupta <ngupta@vflare.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>,
-       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp
-In-Reply-To: <Pine.LNX.4.64.0909180809290.2882@sister.anvils>
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
-	 <1253227412-24342-3-git-send-email-ngupta@vflare.org>
-	 <1253256805.4959.8.camel@penberg-laptop>
-	 <Pine.LNX.4.64.0909180809290.2882@sister.anvils>
-Date: Fri, 18 Sep 2009 10:55:28 +0300
-Message-Id: <1253260528.4959.13.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 18 Sep 2009 04:02:16 -0400
+Received: from mga02.intel.com ([134.134.136.20]:52589 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754530AbZIRICO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 04:02:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,408,1249282800"; 
+   d="scan'208";a="551681264"
+Date: Fri, 18 Sep 2009 15:59:01 +0800
+From: Alek Du <alek.du@intel.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "david-b@pacbell.net" <david-b@pacbell.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3] gpio: add Intel Moorestown Platform Langwell chip
+ gpio driver
+Message-ID: <20090918155901.29eb0871@dxy.sh.intel.com>
+In-Reply-To: <20090918074951.GA4075@flint.arm.linux.org.uk>
+References: <20090703210706.41288a2a@dxy.sh.intel.com>
+	<20090917163644.4783a337.akpm@linux-foundation.org>
+	<20090918091844.6c8a8bd1@dxy.sh.intel.com>
+	<20090917203826.e083746d.akpm@linux-foundation.org>
+	<20090918074951.GA4075@flint.arm.linux.org.uk>
+Organization: Intel Corp.
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; i486-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
+On Fri, 18 Sep 2009 15:49:51 +0800
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-On Fri, 2009-09-18 at 08:17 +0100, Hugh Dickins wrote:
-> On Fri, 18 Sep 2009, Pekka Enberg wrote:
-> > On Fri, 2009-09-18 at 04:13 +0530, Nitin Gupta wrote:
-> > > +EXPORT_SYMBOL_GPL(set_swap_free_notify);
-> > > +
-> > >  static int swap_entry_free(struct swap_info_struct *p,
-> > >  			   swp_entry_t ent, int cache)
-> > >  {
-> > > @@ -585,6 +617,8 @@ static int swap_entry_free(struct swap_info_struct *p,
-> > >  			swap_list.next = p - swap_info;
-> > >  		nr_swap_pages++;
-> > >  		p->inuse_pages--;
-> > > +		if (p->swap_free_notify_fn)
-> > > +			p->swap_free_notify_fn(p->bdev, offset);
-> > >  	}
-> > >  	if (!swap_count(count))
-> > >  		mem_cgroup_uncharge_swap(ent);
-> > 
-> > OK, this hits core kernel code so we need to CC some more mm/swapfile.c
-> > people. The set_swap_free_notify() API looks strange to me. Hugh, I
-> > think you mentioned that you're okay with an explicit hook. Any
-> > suggestions how to do this cleanly?
 > 
-> No, no better suggestion.  I quite see Nitin's point that ramzswap
-> would benefit significantly from a callback here, though it's not a
-> place (holding swap_lock) where we'd like to offer a callback at all.
+> Ever since ARM was converted over to genirq, I've given up fighting it.
+> It does still mean that any arch not using genirq is going to have
+> problems with these drivers.
 > 
-> I think I would prefer the naming to make it absolutely clear that
-> it's a special for ramzswap or compcache, rather than dressing it
-> up in the grand generality of a swap_free_notify_fn: giving our
-> hacks fancy names doesn't really make them better.
+> I suspect that it's still the case that many of these includes should
+> be linux/interrupt.h and not linux/irq.h
 > 
-> (Does the bdev matching work out if there are any regular swapfiles
-> around? I've not checked, might or might not need refinement there.)
 
-The *hook* looks OK to me but set_swap_free_notify() looks like an ugly
-hack. I don't understand why we're setting up the hook lazily in
-ramzswap_read() nor do I understand why we need to look up struct
-swap_info_struct with a bdev. Surely there's a cleaner way to do all
-this? Probably somewhere in sys_swapon()?
+I have included linux/interrupt.h, but it failed for sparc64 building. So I have to
+send the patch to add linux/irq.h.
 
-			Pekka
-
+Thanks,
+Alek
