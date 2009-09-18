@@ -1,68 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZIRH3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbZIRHdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbZIRH3O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 03:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbZIRH3N
+	id S1753567AbZIRHdm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 03:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZIRHdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 03:29:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42828 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbZIRH3M (ORCPT
+	Fri, 18 Sep 2009 03:33:40 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:50962 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZIRHdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 03:29:12 -0400
-Subject: Re: suspend a thread with an another thread
-From: Peter Zijlstra <peterz@infradead.org>
-To: maxime louvel <m.louvel@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <dda529d0909172353u6ec2c59ele6467617078f726d@mail.gmail.com>
-References: <dda529d0909172353u6ec2c59ele6467617078f726d@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 18 Sep 2009 09:29:27 +0200
-Message-Id: <1253258967.8439.10.camel@twins>
+	Fri, 18 Sep 2009 03:33:39 -0400
+Date: Fri, 18 Sep 2009 16:33:43 +0900 (JST)
+Message-Id: <20090918.163343.193694346.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com, jens.axboe@oracle.com,
+       agk@redhat.com, akpm@linux-foundation.org, nauman@google.com,
+       guijianfeng@cn.fujitsu.com, riel@redhat.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: ioband: Limited fairness and weak isolation between groups
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090916044501.GB3736@redhat.com>
+References: <20090904231129.GA3689@redhat.com>
+	<20090907.200222.193693062.ryov@valinux.co.jp>
+	<20090916044501.GB3736@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-18 at 08:53 +0200, maxime louvel wrote:
-> HI all,
-> 
-> I'm doing a phd related to QoS and resources management within
-> distributed systems.
-> I would like to affect a CPU budget to my applications, one
-> application being a thread.
-> 
-> As I would like to experiment quickly my ideas in order to test them,
-> I wanted to use a little trick :
-> instead of modifying the linux scheduler (which I guess will take me a
-> lot of time because I'm not familiar with it) I tried to use a "super
-> thread".
+Hi Vivek,
 
-Kernel thread or userspace? I read the below as if you're meaning
-user-space, since you talk about pthread stuff (at which point this
-mailing list is off-topic).
+Vivek Goyal <vgoyal@redhat.com> wrote:
+> I ran following test. Created two groups of weight 100 each and put a 
+> sequential dd reader in first group and put buffered writers in second
+> group and let it run for 20 seconds and observed at the end of 20 seconds
+> which group got how much work done. I ran this test multiple time, while
+> increasing the number of writers by one each time. Did test this with
+> dm-ioband and with io scheduler based io controller patches.
 
-> My try was that this "super thread" with higher priority is suspending
-> the other threads if they overcome their cpu budget.
-> I thought of something like activate an application thread, make the
-> super thread sleep for X time (cpu budget) and then wake up and
-> suspend the application thread until next time.
-> 
-> However I haven't been able to do that because I've read (and test
-> myself :) ) that :
-> - it is not possible to suspend a thread by an another thread (I don't
-> think I can use the pthread_cond facilities)
+I did the same test on my environment (2.6.31 + dm-ioband v1.13.0) and
+here are the results.
 
-No, pthread_cond() is for waiting for an event to occur.
+      The number of sectors transferred
+  writers   read    write   total
+     1     800696  588600  1389296
+     2     747704  430736  1178440
+     3     757136  455808  1212944
+     4     704888  562912  1267800
+     5     788760  387672  1176432
+     6     730664  495832  1226496
+     7     765864  427384  1193248
 
-> - as threads within a process share the signals and signal handlers I
-> can't send a signal (like SIGUSR1 or SIGSTOP) to a specific thread.
-> Correct me if I'm wrong
+I got the different results to yours, the total throughput did not
+decreased according to increasing the number of writers. I've attached
+the outputs of the test script. Please note that the format of
+"dmsetup status" have been changed like /sys/block/dev/stat file.
 
-try: man pthread_kill
+launched reader 3567
+launched 1 writers
+waiting for 20 seconds
+ioband2: 0 112455000 ioband share1 -1 85 0 680 0 100087 0 800696 0 384 0 0
+ioband1: 0 112455000 ioband share1 -1 4673 0 588600 0 0 0 0 0 0 0 0
 
-> Or should I start by looking at how to modify the linux scheduler ?
+launched reader 3575
+launched 2 writers
+waiting for 20 seconds
+ioband2: 0 112455000 ioband share1 -1 197 0 1576 0 93463 0 747704 0 384 0 0
+ioband1: 0 112455000 ioband share1 -1 3420 0 430736 0 0 0 0 0 0 0 0
 
-Depends on what you want to do... how hard can it be right ;-)
+launched reader 3584
+launched 3 writers
+waiting for 20 seconds
+ioband2: 0 112455000 ioband share1 -1 237 0 1896 0 94642 0 757136 0 384 0 0
+ioband1: 0 112455000 ioband share1 -1 3614 0 455808 0 0 0 0 0 0 0 0
+
+launched reader 3594
+launched 4 writers
+waiting for 20 seconds
+ioband2: 0 112455000 ioband share1 -1 207 0 1656 0 88111 0 704888 0 159 0 0
+ioband1: 0 112455000 ioband share1 -1 4462 0 562912 0 0 0 0 0 0 0 0
+
+launched reader 3605
+launched 5 writers
+waiting for 20 seconds
+ioband2: 0 112455000 ioband share1 -1 234 0 1872 0 98595 0 788760 0 384 0 0
+ioband1: 0 112455000 ioband share1 -1 3077 0 387672 0 0 0 0 0 0 0 0
+
+launched reader 3618
+launched 6 writers
+waiting for 20 seconds
+ioband2: 0 112455000 ioband share1 -1 215 0 1720 0 91333 0 730664 0 384 0 0
+ioband1: 0 112455000 ioband share1 -1 3937 0 495832 0 0 0 0 0 0 0 0
+
+launched reader 3631
+launched 7 writers
+waiting for 20 seconds
+ioband2: 0 112455000 ioband share1 -1 245 0 1960 0 95733 0 765864 0 384 0 0
+ioband1: 0 112455000 ioband share1 -1 3391 0 427384 0 0 0 0 0 0 0 0
+
+Thanks,
+Ryo Tsuruta
