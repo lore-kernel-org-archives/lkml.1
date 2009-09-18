@@ -1,104 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753017AbZIROfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbZIROmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753017AbZIROfy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZIROfx
+	id S1752757AbZIROmO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZIROmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:35:53 -0400
-Received: from trinity.fluff.org ([89.16.178.74]:55948 "EHLO trinity.fluff.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752403AbZIROfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:35:52 -0400
-Date: Fri, 18 Sep 2009 15:35:54 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jon Ringle <jon@ringle.org>,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] i2c: Move i2c request_irq so that it occurs after iop3xx_i2c_enable
-Message-ID: <20090918143554.GR24720@trinity.fluff.org>
-References: <1253281871-28243-1-git-send-email-jon@ringle.org> <alpine.LNX.2.00.0909181631260.17028@wotan.suse.de>
+	Fri, 18 Sep 2009 10:42:14 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:40598 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZIROmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 10:42:13 -0400
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com>
+	<m1d45oxsrk.fsf@fess.ebiederm.org>
+	<20090918160944.58e5c1f5@infradead.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 18 Sep 2009 07:42:08 -0700
+In-Reply-To: <20090918160944.58e5c1f5@infradead.org> (Arjan van de Ven's message of "Fri\, 18 Sep 2009 16\:09\:44 +0200")
+Message-ID: <m14or0xqkf.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0909181631260.17028@wotan.suse.de>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Arjan van de Ven <arjan@infradead.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs maintenance disaster
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 04:32:04PM +0200, Jiri Kosina wrote:
-> On Fri, 18 Sep 2009, Jon Ringle wrote:
-> 
-> > If there is a pending i2c interrupt present before i2c-iop3xx initialization
-> > then it must be cleared first before registering irq handler. Otherwise,
-> > a hung system due to an unhandled interrupt loop may occur.
-> 
-> Hi Jon,
-> 
-> this doesn't really qualify for trivial tree. I am adding Jean Delvare to 
-> CC.
+Arjan van de Ven <arjan@infradead.org> writes:
 
-I'm the correct one to add, will probably be doing a push over the weekend
-so will add it to my i2c next tree.
- 
-> > Signed-off-by: Jon Ringle <jon@ringle.org>
-> > 
-> > ---
-> >  drivers/i2c/busses/i2c-iop3xx.c |   16 ++++++++--------
-> >  1 files changed, 8 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/drivers/i2c/busses/i2c-iop3xx.c b/drivers/i2c/busses/i2c-iop3xx.c
-> > index a75c75e..e6dc46d 100644
-> > --- a/drivers/i2c/busses/i2c-iop3xx.c
-> > +++ b/drivers/i2c/busses/i2c-iop3xx.c
-> > @@ -471,14 +471,6 @@ iop3xx_i2c_probe(struct platform_device *pdev)
-> >  		ret = -ENXIO;
-> >  		goto unmap;
-> >  	}
-> > -	ret = request_irq(irq, iop3xx_i2c_irq_handler, 0,
-> > -				pdev->name, adapter_data);
-> > -
-> > -	if (ret) {
-> > -		ret = -EIO;
-> > -		goto unmap;
-> > -	}
-> > -
-> >  	memcpy(new_adapter->name, pdev->name, strlen(pdev->name));
-> >  	new_adapter->owner = THIS_MODULE;
-> >  	new_adapter->class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
-> > @@ -497,6 +489,14 @@ iop3xx_i2c_probe(struct platform_device *pdev)
-> >  	iop3xx_i2c_reset(adapter_data);
-> >  	iop3xx_i2c_enable(adapter_data);
-> >  
-> > +	ret = request_irq(irq, iop3xx_i2c_irq_handler, 0,
-> > +				pdev->name, adapter_data);
-> > +
-> > +	if (ret) {
-> > +		ret = -EIO;
-> > +		goto unmap;
-> > +	}
-> > +
-> >  	platform_set_drvdata(pdev, new_adapter);
-> >  	new_adapter->algo_data = adapter_data;
-> >  
-> > -- 
-> > tg: (74fca6a..) t/isc-31/i2c-request_irq-iop3xx_i2c_enable-reorder (depends on: b2.6.31.y)
-> > 
-> 
-> -- 
-> Jiri Kosina
-> SUSE Labs, Novell Inc.
+> On Fri, 18 Sep 2009 06:54:39 -0700
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>
+>> 
+>> > I don't understand. Udev applies the final policy including
+>> > permissions/ownership, just as before. There is no differrence. It's
+>> > just that you can bring up a box without complex userspace to
+>> > bootstrap /dev. And that's a big win on its own.
+>> 
+>> udev is too complex to use?  That sounds like a userspace bug.
+>> 
+>> This I guess is where I am baffled.   The argument for devtmpfs
+>> always seem to boil down to: udev sucks let's write some kernel
+>> code instead.
+>> 
+>> I have been trying to ask for a long time why we can't just fix
+>> udev to not suck. 
+>> 
+>> >  And things like
+>> > "modprobe loop; losetup /dev/loop0" will just work, which it doesn't
+>> > with todays async udev. Again, please make yourself familiar how
+>> > things work, and what the problems are.
+>> 
+>> I guess I don't understand why 
+>> modprobe loop; losetup /dev/loop0 is an interesting case.
+>> When you can just as easily do:
+>> modprobe loop; udevadm settle; losetup /dev/loop0.
+>
+> frankly, modprobe should call the settle.
+> And not just this one, but we can use this to settle other things as
+> well... and then it can get an --async command line option for the
+> cases where you know you don't want to synchronize.
 
--- 
--- 
-Ben
+I think this would be a bit of a pain when I modprobe a network
+driver and the udev scripts trigger a blocking dhcp on the device.
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+If this is a major pain point in initscripts I can see how it would
+make sense.
 
+Eric
