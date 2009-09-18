@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbZIROcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbZIROcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562AbZIROcE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZIROcD
+	id S1752894AbZIROcb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZIROca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:32:03 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58239 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbZIROcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:32:02 -0400
-Date: Fri, 18 Sep 2009 16:32:04 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Jon Ringle <jon@ringle.org>
-Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] i2c: Move i2c request_irq so that it occurs after
- iop3xx_i2c_enable
-In-Reply-To: <1253281871-28243-1-git-send-email-jon@ringle.org>
-Message-ID: <alpine.LNX.2.00.0909181631260.17028@wotan.suse.de>
-References: <1253281871-28243-1-git-send-email-jon@ringle.org>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 18 Sep 2009 10:32:30 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:51425 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752637AbZIROc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 10:32:29 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090918162503.6735cc1b@infradead.org>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <ac3eb2510909170503n1da43ea0u7c900f2f6f647fdc@mail.gmail.com> 
+	<m1d45oxsrk.fsf@fess.ebiederm.org> <20090918160944.58e5c1f5@infradead.org> 
+	<ac3eb2510909180711k223aeb6ena2de3645317d03bd@mail.gmail.com> 
+	<20090918162503.6735cc1b@infradead.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 18 Sep 2009 16:32:18 +0200
+Message-ID: <ac3eb2510909180732s6efc97b0o7b25d8da222088ca@mail.gmail.com>
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs 
+	maintenance disaster
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartmann <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009, Jon Ringle wrote:
+On Fri, Sep 18, 2009 at 16:25, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Fri, 18 Sep 2009 16:11:16 +0200
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
+>
+>> On Fri, Sep 18, 2009 at 16:09, Arjan van de Ven <arjan@infradead.org>
+>> wrote:
+>>
+>> > frankly, modprobe should call the settle.
+>>
+>> We call modprobe from udev, and will have fun with such a solution.
+>>
+>
+> too bad you cut my next sentence which said that there needed to be a
+> way to opt out of that.
 
-> If there is a pending i2c interrupt present before i2c-iop3xx initialization
-> then it must be cleared first before registering irq handler. Otherwise,
-> a hung system due to an unhandled interrupt loop may occur.
+Too bad, bad we don't have control over all the udev rules out there
+doing that, which will dead-lock then. And too bad that when udev
+calls modprobe we still don't solve the races. Too bad that calling
+"settle" waits for all events and you can never know when loading a
+module what to wait for and what not. It's just not a close to a
+solution that is doing any good. What's the point of all these weird
+workarounds you are proposing? I think it's properly solved already.
 
-Hi Jon,
-
-this doesn't really qualify for trivial tree. I am adding Jean Delvare to 
-CC.
-
-> Signed-off-by: Jon Ringle <jon@ringle.org>
-> 
-> ---
->  drivers/i2c/busses/i2c-iop3xx.c |   16 ++++++++--------
->  1 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-iop3xx.c b/drivers/i2c/busses/i2c-iop3xx.c
-> index a75c75e..e6dc46d 100644
-> --- a/drivers/i2c/busses/i2c-iop3xx.c
-> +++ b/drivers/i2c/busses/i2c-iop3xx.c
-> @@ -471,14 +471,6 @@ iop3xx_i2c_probe(struct platform_device *pdev)
->  		ret = -ENXIO;
->  		goto unmap;
->  	}
-> -	ret = request_irq(irq, iop3xx_i2c_irq_handler, 0,
-> -				pdev->name, adapter_data);
-> -
-> -	if (ret) {
-> -		ret = -EIO;
-> -		goto unmap;
-> -	}
-> -
->  	memcpy(new_adapter->name, pdev->name, strlen(pdev->name));
->  	new_adapter->owner = THIS_MODULE;
->  	new_adapter->class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
-> @@ -497,6 +489,14 @@ iop3xx_i2c_probe(struct platform_device *pdev)
->  	iop3xx_i2c_reset(adapter_data);
->  	iop3xx_i2c_enable(adapter_data);
->  
-> +	ret = request_irq(irq, iop3xx_i2c_irq_handler, 0,
-> +				pdev->name, adapter_data);
-> +
-> +	if (ret) {
-> +		ret = -EIO;
-> +		goto unmap;
-> +	}
-> +
->  	platform_set_drvdata(pdev, new_adapter);
->  	new_adapter->algo_data = adapter_data;
->  
-> -- 
-> tg: (74fca6a..) t/isc-31/i2c-request_irq-iop3xx_i2c_enable-reorder (depends on: b2.6.31.y)
-> 
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Thanks,
+Kay
