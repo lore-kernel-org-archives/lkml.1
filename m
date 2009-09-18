@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZIRGHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZIRGHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbZIRGHy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 02:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZIRGHp
+	id S1751993AbZIRGHr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 02:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbZIRGHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 02:07:45 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35144 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752221AbZIRGHj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 02:07:43 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:65370 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751529AbZIRGHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Sep 2009 02:07:39 -0400
-Date: Thu, 17 Sep 2009 23:03:20 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs
-	maintenance disaster
-Message-ID: <20090918060320.GD7104@kroah.com>
-References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <20090917140548.4e6ee596@lxorguk.ukuu.org.uk> <20090917132909.GB4779@kroah.com> <20090917164325.38994b47@lxorguk.ukuu.org.uk>
+Message-ID: <4AB32364.7020602@cn.fujitsu.com>
+Date: Fri, 18 Sep 2009 14:06:28 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917164325.38994b47@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3][RESEND] function-graph: use ftrace_graph_funcs directly
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 04:43:25PM +0100, Alan Cox wrote:
-> > > I've seen nacks from Christoph and from Eric and it seems Al Viro has yet
-> > > to review devtmpfs. I'd like to see Al's opinion personally.
-> > 
-> > That's fine, but as it's just using the standard tmpfs interfaces that
-> > other in-kernel virtual filesystems use, it shouldn't need that much
-> > review.  The code is quite small as well, and I thought Al was still on
-> > an extended vacation.
-> > 
-> > This code has been reviewed and posted numerous times for over 6 months
-> > now, which should be plenty of time for us to be waiting for a review,
-> > don't you?
-> 
-> Christoph has already nacked the code and indicated some problems (albeit
-> in his inimitably friendly fashion) so you had at least one review, you
-> just apparently didn't like the answer.
+No need to store ftrace_graph_funcs in file->private.
 
-No, he did not point out any technical problem with the code that I can
-find.  I asked for details, but he's probably on a plane at the moment.
-I'll see him in a few days, so we can discuss it there if needed.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
 
-thanks,
+The first 2 patches were sent 2 month ago..
 
-greg k-h
+---
+ kernel/trace/ftrace.c |   23 ++++-------------------
+ 1 files changed, 4 insertions(+), 19 deletions(-)
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index cc615f8..c71e91b 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2414,11 +2414,9 @@ unsigned long ftrace_graph_funcs[FTRACE_GRAPH_MAX_FUNCS] __read_mostly;
+ static void *
+ __g_next(struct seq_file *m, loff_t *pos)
+ {
+-	unsigned long *array = m->private;
+-
+ 	if (*pos >= ftrace_graph_count)
+ 		return NULL;
+-	return &array[*pos];
++	return &ftrace_graph_funcs[*pos];
+ }
+ 
+ static void *
+@@ -2482,16 +2480,10 @@ ftrace_graph_open(struct inode *inode, struct file *file)
+ 		ftrace_graph_count = 0;
+ 		memset(ftrace_graph_funcs, 0, sizeof(ftrace_graph_funcs));
+ 	}
++	mutex_unlock(&graph_lock);
+ 
+-	if (file->f_mode & FMODE_READ) {
++	if (file->f_mode & FMODE_READ)
+ 		ret = seq_open(file, &ftrace_graph_seq_ops);
+-		if (!ret) {
+-			struct seq_file *m = file->private_data;
+-			m->private = ftrace_graph_funcs;
+-		}
+-	} else
+-		file->private_data = ftrace_graph_funcs;
+-	mutex_unlock(&graph_lock);
+ 
+ 	return ret;
+ }
+@@ -2560,7 +2552,6 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
+ 		   size_t cnt, loff_t *ppos)
+ {
+ 	struct trace_parser parser;
+-	unsigned long *array;
+ 	size_t read = 0;
+ 	ssize_t ret;
+ 
+@@ -2574,12 +2565,6 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
+ 		goto out;
+ 	}
+ 
+-	if (file->f_mode & FMODE_READ) {
+-		struct seq_file *m = file->private_data;
+-		array = m->private;
+-	} else
+-		array = file->private_data;
+-
+ 	if (trace_parser_get_init(&parser, FTRACE_BUFF_MAX)) {
+ 		ret = -ENOMEM;
+ 		goto out;
+@@ -2591,7 +2576,7 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
+ 		parser.buffer[parser.idx] = 0;
+ 
+ 		/* we allow only one expression at a time */
+-		ret = ftrace_set_func(array, &ftrace_graph_count,
++		ret = ftrace_set_func(ftrace_graph_funcs, &ftrace_graph_count,
+ 					parser.buffer);
+ 		if (ret)
+ 			goto out;
+-- 
+1.6.3
+
