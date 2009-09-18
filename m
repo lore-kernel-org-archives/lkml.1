@@ -1,105 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbZIRW4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbZIRXMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932158AbZIRW4m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 18:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbZIRW4k
+	id S1758886AbZIRXMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 19:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758295AbZIRXMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 18:56:40 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:46932 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753607AbZIRW4j (ORCPT
+	Fri, 18 Sep 2009 19:12:15 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:33773 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757701AbZIRXMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 18:56:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=loBSrN6Oj8U3kNpLoWt0FJT+G+MNpibrpkl2pqd1GlOc2ZJIzBtUSlTmjXaXm1NwsV
-         dQNoQcTFsra2p5XRjZjeL8/vjRchA6V0HuZFCSCc/sUZYB7bWvr+ez+kyb6foB7u+kVe
-         lkfinfxX8hFzr2wsMYQ7Z65i8oPgAhazD3/Ww=
-Message-ID: <4AB411D9.6070702@gmail.com>
-Date: Sat, 19 Sep 2009 01:03:53 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Fri, 18 Sep 2009 19:12:14 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Wu Fei <at.wufei@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, arjan@infradead.org, jeremy@goop.org,
+       mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tj@kernel.org, tglx@linutronix.de,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-tip-commits@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+References: <20090901133709.GA24041@redhat.com>
+	<20090901135925.GA9083@elte.hu> <20090901145526.GA31317@redhat.com>
+	<20090901165235.GA9105@redhat.com> <m13a76xnbw.fsf@fess.ebiederm.org>
+	<20090902091340.GA5173@redhat.com> <20090904073749.GB20598@elte.hu>
+	<20090918163241.GA8556@desktop> <20090918185425.GA16620@redhat.com>
+	<alpine.LFD.2.01.0909181217270.4950@localhost.localdomain>
+	<20090918211218.GA19351@redhat.com>
+	<alpine.LFD.2.01.0909181504400.4950@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 18 Sep 2009 16:11:56 -0700
+In-Reply-To: <alpine.LFD.2.01.0909181504400.4950@localhost.localdomain> (Linus Torvalds's message of "Fri\, 18 Sep 2009 15\:06\:02 -0700 \(PDT\)")
+Message-ID: <m18wgbc0g3.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] random: kmalloc failure ignored in init_std_data()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Linus Torvalds <torvalds@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 T_TooManySym_03 6+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.0 T_TooManySym_02 5+ unique symbols in subject
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 0/1] kthreads: simplify !kthreadd_task logic, kill kthreadd_task_init_done
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up and error out if kmalloc() fails.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Found with sed: http://kernelnewbies.org/roelkluin
+> On Fri, 18 Sep 2009, Oleg Nesterov wrote:
+>> 
+>> Not sure I understand... We don't have CLONE_PID, and kthreadd()
+>> shouldn't have pid == 0 anyway.
+>
+> Ahh, we got rid of CLONE_PID a long time ago, and renamed it to 
+> CLONE_IDLETASK (which was what it was used for).
+>
+> As to why pid == 0 wouldn't work, I don't know, but I'll take your word 
+> for it.
 
-Build tested. Please review
+It probably would work but it would not be visible in proc  Making a kernel
+thread that actually does work seems undesirable.
 
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-index d8a9255..8a68be8 100644
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -939,7 +939,7 @@ EXPORT_SYMBOL(get_random_bytes);
-  * data into the pool to prepare it for use. The pool is not cleared
-  * as that can only decrease the entropy in the pool.
-  */
--static void init_std_data(struct entropy_store *r)
-+static int init_std_data(struct entropy_store *r)
- {
- 	ktime_t now;
- 	unsigned long flags;
-@@ -952,16 +952,35 @@ static void init_std_data(struct entropy_store *r)
- 	mix_pool_bytes(r, &now, sizeof(now));
- 	mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
- 	/* Enable continuous test in fips mode */
--	if (fips_enabled)
-+	if (fips_enabled) {
- 		r->last_data = kmalloc(EXTRACT_SIZE, GFP_KERNEL);
-+		if (r->last_data == NULL)
-+			return -ENOMEM;
-+	}
-+	return 0;
- }
- 
- static int rand_initialize(void)
- {
--	init_std_data(&input_pool);
--	init_std_data(&blocking_pool);
--	init_std_data(&nonblocking_pool);
-+	int ret;
-+	ret = init_std_data(&input_pool);
-+	if (ret != 0)
-+		return ret;
-+
-+	ret = init_std_data(&blocking_pool);
-+	if (ret != 0)
-+		goto free_ip_ld;
-+
-+	ret = init_std_data(&nonblocking_pool);
-+	if (ret != 0)
-+		goto free_bp_ld;
-+
- 	return 0;
-+free_bp_ld:
-+	kfree(blocking_pool.last_data);
-+free_ip_ld:
-+	kfree(input_pool.last_data);
-+	return ret;
- }
- module_init(rand_initialize);
- 
-@@ -1160,8 +1179,8 @@ static long random_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
- 		/* Clear the entropy pool counters. */
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EPERM;
--		rand_initialize();
--		return 0;
-+		retval = rand_initialize();
-+		return retval;
- 	default:
- 		return -EINVAL;
- 	}
+Eric
