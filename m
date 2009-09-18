@@ -1,67 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZIRPCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZIRPDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbZIRPCt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 11:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbZIRPCs
+	id S1754032AbZIRPDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 11:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZIRPD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 11:02:48 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54617 "EHLO kernel.dk"
+	Fri, 18 Sep 2009 11:03:29 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:46288 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753612AbZIRPCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 11:02:45 -0400
-Date: Fri, 18 Sep 2009 17:02:48 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH] nfs: fix bdi_unregister() before sb kill
-Message-ID: <20090918150248.GB23126@kernel.dk>
-References: <20090917124233.GJ23126@kernel.dk> <20090917194027.GS23126@kernel.dk> <1253229410.2783.16.camel@heimdal.trondhjem.org> <20090918064006.GU23126@kernel.dk>
+	id S1753099AbZIRPD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 11:03:28 -0400
+Message-ID: <4AB3A13D.1060405@austin.ibm.com>
+Date: Fri, 18 Sep 2009 10:03:25 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090918064006.GU23126@kernel.dk>
+To: linuxppc-dev@ozlabs.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 4/5 v2] kernel handling of memory DLPAR
+References: <4AB39FB3.1020608@austin.ibm.com>
+In-Reply-To: <4AB39FB3.1020608@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18 2009, Jens Axboe wrote:
-> On Thu, Sep 17 2009, Trond Myklebust wrote:
-> > On Thu, 2009-09-17 at 21:40 +0200, Jens Axboe wrote:
-> > > On Thu, Sep 17 2009, Jens Axboe wrote:
-> > > > Hi,
-> > > > 
-> > > > This can cause a hang on NFS umount, since the bdi gets pruned before we
-> > > > flush any pending dirty IO. Peter, can you check whether it fixes your
-> > > > issue?
-> > > 
-> > > There's another problem with NFS && backing devices. NFS may call
-> > > bdi_destroy() on a bdi without ever called bdi_init(). This was always a
-> > > bad idea, now it's an issue.
-> > > 
-> > > So, Trond, can I safely add a server->flags private flag to indicate
-> > > that we have called bdi_init()? Then nfs_free_server() knows when to
-> > > call bdi_destroy(). Seems like the safest fix, since error handling is
-> > > currently 'just call nfs_free_server()'.
-> > 
-> > Urgh... Is there any reason why we can't just move the call to
-> > bdi_init() into nfs_bdi_register()? It seems bizarre to have to
-> > initialise the backing_dev_info twice like this...
-> 
-> No reason at all, I don't know why it was implemented that way
-> originally.
-> 
-> > If we do that, then we can just look at the BDI_registered state flag in
-> > order to figure out if we need to call bdi_unregister()
-> 
-> That's not exactly pretty either, diving into internal bdi details to
-> find out if we did an init/register of the device. BDI_registered is
-> just a debug flag, it may even go away again shortly.
+This adds the capability to DLPAR add and remove memory from the kernel.  The
+patch extends the powerpc handling of memory_add_physaddr_to_nid(), which is
+called from the sysfs memory 'probe' file to first ensure that the memory
+has been added to the system.  This is done by creating a platform specific
+callout from the routine.  The pseries implementation of this handles the
+DLPAR work to add the memory to the system and update the device tree.
 
-Trond, we need to make some sort of decision on this very shortly. It
-definitely needs to be fixed for -rc1, it's causing NFS oopses. So lets
-make some sort of call on this and get it added, then you/we/I can
-always pretty it up later.
+The patch also creates a pseries only 'release' sys file,
+/sys/devices/system/memory/release.  This file handles the DLPAR release of
+memory back to firmware and updating of the device-tree.
 
--- 
-Jens Axboe
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
 
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-09-17 11:32:22.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-09-17 11:33:00.000000000 -0500
+@@ -16,6 +16,10 @@
+ #include <linux/notifier.h>
+ #include <linux/proc_fs.h>
+ #include <linux/spinlock.h>
++#include <linux/memory_hotplug.h>
++#include <linux/sysdev.h>
++#include <linux/sysfs.h>
++
+ 
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+@@ -406,11 +410,163 @@
+ 	return 0;
+ }
+ 
++static struct property *clone_property(struct property *old_prop)
++{
++	struct property *new_prop;
++
++	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
++	if (!new_prop)
++		return NULL;
++
++	new_prop->name = kzalloc(strlen(old_prop->name) + 1, GFP_KERNEL);
++	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
++	if (!new_prop->name || !new_prop->value) {
++		free_property(new_prop);
++		return NULL;
++	}
++
++	strcpy(new_prop->name, old_prop->name);
++	memcpy(new_prop->value, old_prop->value, old_prop->length);
++	new_prop->length = old_prop->length;
++
++	return new_prop;
++}
++
++int platform_probe_memory(u64 phys_addr)
++{
++	struct device_node *dn;
++	struct property *new_prop, *old_prop;
++	struct property *lmb_sz_prop;
++	struct of_drconf_cell *drmem;
++	u64 lmb_size;
++	int num_entries, i, rc;
++
++	if (!phys_addr)
++		return -EINVAL;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return -EINVAL;
++
++	lmb_sz_prop = of_find_property(dn, "ibm,lmb-size", NULL);
++	lmb_size = *(u64 *)lmb_sz_prop->value;
++
++	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++
++	num_entries = *(u32 *)old_prop->value;
++	drmem = (struct of_drconf_cell *)
++				((char *)old_prop->value + sizeof(u32));
++
++	for (i = 0; i < num_entries; i++) {
++		u64 lmb_end_addr = drmem[i].base_addr + lmb_size;
++		if (phys_addr >= drmem[i].base_addr
++		    && phys_addr < lmb_end_addr)
++			break;
++	}
++
++	if (i >= num_entries) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	if (drmem[i].flags & DRCONF_MEM_ASSIGNED) {
++		of_node_put(dn);
++		return 0;
++	}
++
++	rc = acquire_drc(drmem[i].drc_index);
++	if (rc) {
++		of_node_put(dn);
++		return -1;
++	}
++
++	new_prop = clone_property(old_prop);
++	drmem = (struct of_drconf_cell *)
++				((char *)new_prop->value + sizeof(u32));
++
++	drmem[i].flags |= DRCONF_MEM_ASSIGNED;
++	prom_update_property(dn, new_prop, old_prop);
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_DRCONF_MEM_ADD,
++					  &drmem[i].base_addr);
++	if (rc == NOTIFY_BAD) {
++		prom_update_property(dn, old_prop, new_prop);
++		release_drc(drmem[i].drc_index);
++	}
++
++	of_node_put(dn);
++	return rc == NOTIFY_BAD ? -1 : 0;
++}
++
++static ssize_t memory_release_store(struct class *class, const char *buf,
++				    size_t count)
++{
++	unsigned long drc_index;
++	struct device_node *dn;
++	struct property *new_prop, *old_prop;
++	struct of_drconf_cell *drmem;
++	int num_entries;
++	int i, rc;
++
++	rc = strict_strtoul(buf, 0, &drc_index);
++	if (rc)
++		return -EINVAL;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return 0;
++
++	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++	new_prop = clone_property(old_prop);
++
++	num_entries = *(u32 *)new_prop->value;
++	drmem = (struct of_drconf_cell *)
++				((char *)new_prop->value + sizeof(u32));
++
++	for (i = 0; i < num_entries; i++) {
++		if (drmem[i].drc_index == drc_index)
++			break;
++	}
++
++	if (i >= num_entries) {
++		free_property(new_prop);
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	drmem[i].flags &= ~DRCONF_MEM_ASSIGNED;
++	prom_update_property(dn, new_prop, old_prop);
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_DRCONF_MEM_REMOVE,
++					  &drmem[i].base_addr);
++	if (rc != NOTIFY_BAD)
++		rc = release_drc(drc_index);
++
++	if (rc)
++		prom_update_property(dn, old_prop, new_prop);
++
++	of_node_put(dn);
++	return rc ? -1 : count;
++}
++
++static struct class_attribute class_attr_mem_release =
++			__ATTR(release, S_IWUSR, NULL, memory_release_store);
++
+ static int pseries_dlpar_init(void)
+ {
++	int rc;
++
+ 	if (!machine_is(pseries))
+ 		return 0;
+ 
++	rc = sysfs_create_file(&memory_sysdev_class.kset.kobj,
++			       &class_attr_mem_release.attr);
++	if (rc)
++		printk(KERN_INFO "DLPAR: Could not create sysfs memory "
++		       "release file\n");
++
+ 	return 0;
+ }
+ device_initcall(pseries_dlpar_init);
+Index: powerpc/arch/powerpc/mm/mem.c
+===================================================================
+--- powerpc.orig/arch/powerpc/mm/mem.c	2009-09-17 11:17:57.000000000 -0500
++++ powerpc/arch/powerpc/mm/mem.c	2009-09-17 11:33:00.000000000 -0500
+@@ -111,8 +111,19 @@
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ 
+ #ifdef CONFIG_NUMA
++int __attribute ((weak)) platform_probe_memory(u64 start)
++{
++	return 0;
++}
++
+ int memory_add_physaddr_to_nid(u64 start)
+ {
++	int rc;
++
++	rc = platform_probe_memory(start);
++	if (rc)
++		return rc;
++
+ 	return hot_add_scn_to_nid(start);
+ }
+ #endif
