@@ -1,84 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbZIRBnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbZIRBpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752880AbZIRBnM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 21:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbZIRBnI
+	id S1755268AbZIRBpQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 21:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZIRBpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 21:43:08 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:46349 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751165AbZIRBnH (ORCPT
+	Thu, 17 Sep 2009 21:45:12 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:52243 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbZIRBpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 21:43:07 -0400
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>
-In-Reply-To: <20090918005808.GJ26034@sequoia.sous-sol.org>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
-	 <20090918003412.GI26034@sequoia.sous-sol.org> <4AB2DA0D.8020606@goop.org>
-	 <20090918005808.GJ26034@sequoia.sous-sol.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 17 Sep 2009 18:43:10 -0700
-Message-Id: <1253238190.19731.75.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Sep 2009 21:45:11 -0400
+Date: Thu, 17 Sep 2009 18:43:33 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [Ocfs2-devel] [GIT PULL] ocfs2 changes for 2.6.32
+Message-ID: <20090918014333.GD15620@mail.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	ocfs2-devel@oss.oracle.com
+References: <20090915000417.GC4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
+ <20090915005417.GD4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
+ <20090915040601.GE4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
+ <20090915214530.GA11060@mail.oracle.com>
+ <alpine.LFD.2.01.0909152116180.4950@localhost.localdomain>
+ <20090916044047.GA30453@mail.oracle.com>
+ <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0909170856050.4950@localhost.localdomain>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4AB2E61D.0088:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2009-09-17 at 17:58 -0700, Chris Wright wrote:
-> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> > On 09/17/09 17:34, Chris Wright wrote:
-> > >> One of the options that I am contemplating is to drop the code from the
-> > >> tip tree in this release cycle, and given that this should be a low risk
-> > >> change we can remove it from Linus's tree later in the merge cycle.
-> > >>
-> > >> Let me know your views on this or if you think we should do this some
-> > >> other way.
-> > >>     
-> > > Typically we give time measured in multiple release cycles
-> > > before deprecating a feature.  This means placing an entry in
-> > > Documentation/feature-removal-schedule.txt, and potentially
-> > > adding some noise to warn users they are using a deprecated
-> > > feature.
-> > 
-> > That's true if the feature has some functional effect on users.  But at
-> > first sight, VMI is really just an optimisation, and a non-VMI-equipped
-> > kernel would be completely functionally equivalent, right?
+On Thu, Sep 17, 2009 at 09:29:14AM -0700, Linus Torvalds wrote:
+> Why would anybody want to hide it at all? Why even the libc hiding?
 > 
-> True.  I'm all for removing code that's got no planned maintenance and
-> no place to run ;-)
+> Nobody is going to use this except for special apps. Let them see what 
+> they can do, in all its glory. 
 
-That's correct, Jeremy put it as well as I could, VMI was always a
-optimization, and we expect that new HW features bridge that performance
-gap too. So a generic kernel will run just as well on VMware's platform.
+	I expect everyone will use this through cp(1), so that cp(1) can
+try to get server-side copy on the network filesystms.
+	Speaking of "all its glory", what we have now is:
 
-Having said that, I would like to clarify that existing products which
-support VMI will still carry on supporting it for the current customer
-base. Its only the new products which will stop supporting this feature.
+int sys_copyfileat(int oldfd, const char *oldname, int newfd,
+                   const char *newname, int flags, int atflags)
 
+> So I'd suggest something like having two system calls: one to start the 
+> operation, and one to control it. And for a filesystem that does atomic 
+> copies, the 'start' one obviously would also finish it, so the 'control' 
+> it would be a no-op, because there would never be any outstanding ones.
 > 
-> > On the other hand, there could well be a performance regression which
-> > could affect users.  However they're taking the explicit step of
-> > withdrawing support for VMI, so I guess they can just take that in their
-> > stride.
+> See what I'm saying? It wouldn't complicate _your_ life, but it would 
+> allow for filesystems that can't do it atomically (or even quickly).
 > 
-> Yeah.  Different than normal deprecation since it's atop VMware's HV
-> which is all in their domain.
+> So the first one would be something like
+> 
+> 	int copyfile(const char *src, const char *dest, unsigned long flags);
+> 
+> which would return:
+> 
+>  - zero on success
+>  - negative (with errno) on error
+>  - positive cookie on "I started it, here's my cookie". For extra bonus 
+>    points, maybe the cookie would actually be a file descriptor (for 
+>    poll/select users), but it would _not_ be a file descriptor to the 
+>    resulting _file_, it would literally be a "cookie" to the actual 
+>    copyfile event.
 
-Yep that's true. 
+	Actually, if the cookie is a magic file descriptor, you don't
+need ctl.  You can play tricks like polling for completoin,
+read(magic_fd, &remain, sizeof(loff_t)) for status, and close(magic_fd)
+for cancel.  Might be a bit overloaded, though.
 
-Thanks,
-Alok
+> and then for ocfs2 you'd never return positive cookies. You'd never have 
+> to worry about it.
 
+	I suspect we'll later take advantage of copyfile's other
+modes.  I did reflink as reflink only for the simple fact of doing one
+thing and well, not because I think copyfile isn't good.
 
+> Then the second interface would be something like
+> 
+> 	int copyfile_ctrl(long cookie, unsigned long cmd);
+> 
+> where you'd just have some way to wait for completion and ask how much has 
+> been copied. The 'cmd' would be some set of 'cancel', 'status' or 
+> 'uninterruptible wait' or whatever, and the return value would again be
+> 
+>  - negative (with errno) for errors (copy failed) - cookie released
+>  - zero for 'done' - cookie released
+>  - positive for 'percent remaining' or whatever - cookie still valid
+> 
+> and this would be another callback into the filesystem code, but you'd 
+> never have to worry about it, since you'd never see it (just leave it 
+> NULL).
+
+	I was going to ask about how to fit both calls into one inode
+operation, but I see you're giving this as an additional inode
+operation.
+	This leaves us with a simliar-to-reflink inode copyfile op and a
+control op:
+
+    ->copyfile(old_dentry, dir_inode, new_dentry, flags)
+    ->copyfile_ctl(int cookie, unsigned int cmd)
+
+	I have to change the flags a little, as my original proposal
+didn't handle backoff correctly.
+
+#define COPYFILE_WAIT		0x0001	/* Block until complete */
+#define COPYFILE_ATOMIC		0x0002	/* Things copied must be
+					   point-in-time and it must
+					   fail or succeed completely. */
+#define COPYFILE_ALLOW_COW	0x0004	/* The filesystem may share data
+					   extents between the source
+					   and target in a Copy-on-Write
+					   fashion.  If neither
+					   COPYFILE_ALLOW_COW nor
+					   COPYFILE_REQUIRE_COW are
+					   specified, data extents must
+					   NOT be shared.  When neither
+					   COW flag is provided, most
+					   filesystems should return
+					   -ENOTSUPP, as userspace can
+					   do read-write looping
+					   itself */
+#define COPYFILE_REQUIRE_COW	0x0008	/* Data extents MUST be shared
+					   between the source and target
+					   in a Copy-on-Write fashion */
+#define COPYFILE_UNPRIV_ATTRS	0x0010	/* Unprivileged attributes
+					   should be copied from the
+					   source to the target */
+#define COPYFILE_PRIV_ATTRS	0x0020	/* Privileged attributes should
+					   be copied from the source to
+					   the target if the caller has
+					   the necessary privileges */
+#define COPYFILE_REQUIRE_ATTRS	0x0040	/* Combined with the other
+					   attribute flags, the call
+					   MUST fail if the caller lacks
+					   the necessary privileges to
+					   copy ever attribute
+					   requested */
+
+#define COPYFILE_SNAPSHOT_ASYNC	(COPYFILE_REQUIRE_COW |
+				 COPYFILE_UNPRIV_ATTRS |
+				 COPYFILE_PRIV_ATTRS |
+				 COPYFILE_ATOMIC)
+#define COPYFILE_SNAPSHOT_STRICT_ASYNC	(COPYFILE_SNAPSHOT_ASYNC |
+					 COPYFILE_REQUIRE_ATTRS)
+#define COPYFILE_SNAPSHOT	(COPYFILE_SNAPSHOT_ASYNC |
+				 COPYFILE_WAIT)
+#define COPYFILE_SNAPSHOT_STRICT	(COPYFILE_SNAPSHOT_STRICT_ASYNC |
+					 COPYFILE_WAIT)
+
+> I dunno. The above seems like a fairly simple and powerful interface, and 
+> I _think_ it would be ok for NFS and CIFS. And in fact, if that whole 
+> "background copy" ends up being used a lot, maybe even a local filesystem 
+> would implement it just to get easy overlapping IO - even if it would just 
+> be a trivial common wrapper function that says "start a thread to do a 
+> trivial manual copy".
+
+	NFS and CIFS folks, please speak up.
+
+Joel
+
+-- 
+
+"There is no more evil thing on earth than race prejudice, none at 
+ all.  I write deliberately -- it is the worst single thing in life 
+ now.  It justifies and holds together more baseness, cruelty and
+ abomination than any other sort of error in the world." 
+        - H. G. Wells
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
