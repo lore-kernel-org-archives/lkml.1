@@ -1,54 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbZIRUNC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZIRULi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbZIRUNC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 16:13:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZIRUM4
+	id S1756302AbZIRULi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 16:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZIRULd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 16:12:56 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:61952 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758001AbZIRUMy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 16:12:54 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=M5moPOQwk+gcOMMEZQv+1U+vlkgf2t48QGXUQbZfSG0CYyBMvo/fLnI+wa9DqGuwY
-	weCOo/azhiDHv98jvPSzg==
-Date: Fri, 18 Sep 2009 13:08:22 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Eric B Munson <ebmunson@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, rdunlap@xenotime.net, michael@ellerman.id.au,
-       ralf@linux-mips.org, wli@holomorphy.com, mel@csn.ul.ie,
-       dhowells@redhat.com, arnd@arndb.de, fengguang.wu@intel.com,
-       shuber2@gmail.com, hugh.dickins@tiscali.co.uk, zohar@us.ibm.com,
-       hugh@veritas.com, mtk.manpages@gmail.com, chris@zankel.net,
-       linux-man@vger.kernel.org, linux-doc@vger.kernel.org,
-       linux-alpha@vger.kernel.org, linux-mips@linux-mips.org,
-       linux-parisc@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 2/7] Add MAP_HUGETLB for mmaping pseudo-anonymous huge
- page regions
-In-Reply-To: <08251014d2eb30e9016bab16404133f5c13beacf.1253272709.git.ebmunson@us.ibm.com>
-Message-ID: <alpine.DEB.1.00.0909181308110.27556@chino.kir.corp.google.com>
-References: <cover.1253272709.git.ebmunson@us.ibm.com> <653aa659fd7970f7428f4eb41fa10693064e4daf.1253272709.git.ebmunson@us.ibm.com> <08251014d2eb30e9016bab16404133f5c13beacf.1253272709.git.ebmunson@us.ibm.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 18 Sep 2009 16:11:33 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:42003 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753979AbZIRULc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 16:11:32 -0400
+Message-ID: <4AB3E965.10300@redhat.com>
+Date: Fri, 18 Sep 2009 22:11:17 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Alan Cox <alan@linux.intel.com>, Amit Shah <amit.shah@redhat.com>,
+       rusty@rustcorp.com.au, virtualization@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for generic
+ guest and host communication
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com>	<1252678386-17404-2-git-send-email-amit.shah@redhat.com>	<20090911170010.34c80f2d@linux.intel.com>	<20090911163806.GB25535@amit-x200.redhat.com>	<4AAA8838.1080106@codemonkey.ws>	<20090911173307.GB27046@amit-x200.redhat.com>	<4AAA8A56.3040707@codemonkey.ws>	<20090916112332.6bf981a5@linux.intel.com>	<4AB164A0.8000402@codemonkey.ws> <20090918170048.53ba8cf6@linux.intel.com> <4AB3C988.2040303@codemonkey.ws>
+In-Reply-To: <4AB3C988.2040303@codemonkey.ws>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009, Eric B Munson wrote:
+On 09/18/09 19:55, Anthony Liguori wrote:
+>> So you need break, parity ... no be serious please
+>
+> Sure, why not?
+>
+> In QEMU, we have the ability to hook our devices directly to a physical
+> serial device and we pass through break, parity, and the other serial
+> device properties.
 
-> This patch adds a flag for mmap that will be used to request a huge
-> page region that will look like anonymous memory to user space.  This
-> is accomplished by using a file on the internal vfsmount.  MAP_HUGETLB
-> is a modifier of MAP_ANONYMOUS and so must be specified with it.  The
-> region will behave the same as a MAP_ANONYMOUS region using small pages.
-> 
-> Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+Yes for a emulated 16550.
+No for virtio-console.
 
-Acked-by: David Rientjes <rientjes@google.com>
+If you want the guest drive some silly piece of hardware which wants a 
+serial mode != 8N1 or needs breaks you can't use virtio-console.
+
+> Again, this is paravirtual serial device and I think it's entirely
+> reasonable for people to hook up these ports in the guest directly to
+> physical serial devices in the host.
+
+Except that the paravirtual device named 'virtio-console' simply doesn't 
+allow to set serial parameters such as parity, data bits and stop bits.
+
+It is *really* just a (single) byte stream piped over a virtio ring.
+
+The guest side happens to be connected to hvc, so you can use that as 
+console, thus the name 'virtio-console'.
+
+The plan is to extend that to multiple byte streams.  The streams can be 
+hooked up to hvc (and one stream allways will be for backward 
+compatibility reasons), giving you a text console.  Or they can be 
+linked to a character device with a name tag (aka sysfs attribute), 
+providing a named bidirectional byte stream for guest<->host communication.
+
+>  From my perspective, this is a paravirtual serial device and nothing
+> more.
+
+It simply isn't, see above.
+
+> All the discussion of things like guest copy/paste support is a
+> bit silly.
+
+Implementing transparent copy/paste support needs some communication 
+channel between guest and host.  The multiport virtio console driver 
+provides just that.
+
+> This is the wrong way to approach that sort of thing because
+> it's not something that belongs in the kernel at all.
+
+Who claimed the copy/paste bits should go into the kernel?
+They will not of course.
+
+> Furthermore, the
+> current proposal doesn't handle anything like save/restore which is
+> needed for live migration.
+
+That is something the host side (i.e. qemu) has to solve.
+The guest will not care about it at all ;)
+
+cheers,
+   Gerd
+
