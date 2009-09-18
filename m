@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbZIRF6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752143AbZIRGHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751769AbZIRF6o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 01:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbZIRF6m
+	id S1752143AbZIRGHW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 02:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZIRGHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 01:58:42 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50081 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbZIRF6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 01:58:42 -0400
-Message-ID: <4AB32148.3010004@cn.fujitsu.com>
-Date: Fri, 18 Sep 2009 13:57:28 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 18 Sep 2009 02:07:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35058 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbZIRGHS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 02:07:18 -0400
+Date: Thu, 17 Sep 2009 22:58:44 -0700
+From: Greg KH <greg@kroah.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
+	(Was: Re: [PATCH] Remove broken by design and by implementation
+	devtmpfs maintenance disaster)
+Message-ID: <20090918055843.GB7104@kroah.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <m1ab0tcwep.fsf@fess.ebiederm.org> <20090917185306.GA28635@elte.hu> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain> <20090917203113.GA9530@elte.hu>
 MIME-Version: 1.0
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-CC: linux-kernel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>
-Subject: Re: [PATCH] Add a tracepoint for block request remapping
-References: <4AB2E57B.2090101@ce.jp.nec.com>
-In-Reply-To: <4AB2E57B.2090101@ce.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090917203113.GA9530@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jun'ichi Nomura wrote:
-> Since 2.6.31 now has request-based device-mapper, it's useful to have
-> a tracepoint for request-remapping as well as bio-remapping.
+On Thu, Sep 17, 2009 at 10:31:13PM +0200, Ingo Molnar wrote:
 > 
-> This patch adds a tracepoint for request-remapping, trace_block_rq_remap().
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > On Thu, 17 Sep 2009, Kay Sievers wrote:
+> > 
+> > > On Thu, Sep 17, 2009 at 20:53, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > I've reproduced a bug with the following .config options:
+> > > >
+> > > > ??CONFIG_DEVTMPFS=y
+> > > > ??CONFIG_DEVTMPFS_MOUNT=y
+> > > >
+> > > > /dev/null and /dev/zero are not read/writable to ordinary users, 
+> > > > breaking normal bootup and login:
+> > > 
+> > > Udev should run long before some ordinary/non-root user can login, 
+> > > and apply the permissions as it always does. It's known to work on 
+> > > Fedora, SUSE, Ubuntu. What kind of system/environment/setup is that 
+> > > where you see this?
+> > 
+> > I don't know if this is what Ingo does, but I have a few machines 
+> > where I don't run the distro-supplied 'initrd' at all, because it's 
+> > easier to boot without it. The Fedora initrd doesn't allow me to 
+> > sanely set root filesystem parameters without totally rewriting the 
+> > initrd image, which I'm not interested in, for example (they'll take 
+> > effect for the root initrd, not the final root).
+> 
+> Correct: i'm booting raw bzImages, with /dev copied to the real /dev. To 
+> this box udev is mostly an annoyance that slows down my bootup ;-)
 
-> Existing trace_block_remap() is left unchanged but it might be better to
-> rename it to trace_block_bio_remap().
+I use non-initrd systems as well, and this option works for me on Gentoo
+and SUSE machines.
 
-Why not. ;)
+As you are using a very old udev, and the boot infrastructure for udev
+in older Fedora releases was a bit "odd" in places, I would recommend
+not using these options on that machine.  If we need to reword the
+Kconfig help option to make it a bit more clear, do you have a
+suggestion on what we should change?
 
-> +static void blk_add_trace_rq_remap(struct request_queue *q,
-> +				   struct request *rq, dev_t dev,
-> +				   sector_t from)
-> +{
-> +	struct blk_trace *bt = q->blk_trace;
-> +	struct blk_io_trace_remap r;
-> +
-> +	if (likely(!bt))
-> +		return;
-> +
-> +	r.device_from = cpu_to_be32(dev);
-> +	r.device_to   = disk_devt(rq->rq_disk);
+> Furthermore, this is a really old image, Fedora Core 6, where udev does 
+> not get updated anymore. I still boot new kernels on it though, and it 
+> worked fine up to now.
 
-cpu_to_be32(dis_devt(...))
+It should continue to work if you don't select this option, right?  The
+default is "N" :)
 
-> +	r.sector_from = cpu_to_be64(from);
-> +
-> +	__blk_add_trace(bt, blk_rq_pos(rq), blk_rq_bytes(rq),
-> +			rq_data_dir(rq), BLK_TA_REMAP, !!rq->errors,
-> +			sizeof(r), &r);
-> +}
+thanks,
+
+greg k-h
