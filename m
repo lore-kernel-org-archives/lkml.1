@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbZIRMN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbZIRMOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756836AbZIRMN3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 08:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbZIRMN2
+	id S1753886AbZIRMOK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 08:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZIRMOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 08:13:28 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:58795 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756623AbZIRMN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 08:13:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtYEAN4Ts0pMROOX/2dsb2JhbACBUswehBwF
-Date: Fri, 18 Sep 2009 08:13:29 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@lst.de>, Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kill markers
-Message-ID: <20090918121329.GA1173@Krystal>
-References: <20090917173527.GA1699@lst.de> <20090918102334.GA24638@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090918102334.GA24638@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 08:12:28 up 30 days, 23:01,  2 users,  load average: 0.15, 0.20,
-	0.22
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 18 Sep 2009 08:14:09 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48296 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751509AbZIRMOI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 08:14:08 -0400
+Message-Id: <1253276050.9376.1335476075@webmail.messagingengine.com>
+X-Sasl-Enc: +TwPG3XnCFwRLhnAIkUpDh97tF6sJ41ybDypdoJiqJo5 1253276050
+From: jorg@ml1.net
+To: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>,
+       "Jorg Schummer" <ext-jorg.2.schummer@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="ISO-8859-1"
+X-Mailer: MessagingEngine.com Webmail Interface
+In-Reply-To: <878wgcsd1p.fsf@devron.myhome.or.jp>
+References: <1252420131.5782.2.camel@jorg-desktop><1252420448-7282-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+ <878wgcsd1p.fsf@devron.myhome.or.jp>
+Subject: Re: [PATCH take 3][RFC] fat: Save FAT root directory timestamps to
+ volume label
+Date: Fri, 18 Sep 2009 15:14:10 +0300
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Christoph Hellwig <hch@lst.de> wrote:
-> 
-> > Now that the last users of markers have migrated to the event tracer 
-> > we can kill off the support code.
-> 
-> Applied, thanks Christoph!
-> 
-> Btw., there's some more marker related bits in the kernel, such as 
-> scripts/mod/modpost.c - mostly the effects of:
-> 
->   b2e3e65: Linux Kernel Markers: create modpost file
-> 
-> I think we want to keep those bits, for those who want to use new 
-> modpost with an older kernel - but mark them for deprecation.
-> 
+Hello and thanks for your comments!
 
-Just to confirm: this means having a printk-style infrastructure to
-prototype tracepoints is not considered useful ?
-
-Mathieu
-
-
-> Thanks,
+On Fri, 18 Sep 2009 20:33 +0900, "OGAWA Hirofumi"
+<hirofumi@mail.parknet.co.jp> wrote:
+> Jorg Schummer <ext-jorg.2.schummer@nokia.com> writes:
 > 
-> 	Ingo
+> > Standard FAT implementations cannot store any of the FAT root directory's
+> > timestamps. This commit adds the mount option 'rootts', which allows saving
+> > the FAT root directory timestamps as the timestamps of the FAT volume label
+> > directory entry. At least Mac OS X is known to support the same mechanism
+> > and interoperate with this commit.
+> >
+> > When mounting, the following values can be specified for the 'rootts' mount
+> > option:
+> >
+...
+> >
+> >   "rootts=save"     tries to load and save the root directory's timestamps.
+> >                     The mtime and atime are corrected based on root
+> >                     directory entries' ctime. If the root directory was
+> >                     accessed but no volume label entry exists, the label
+> >                     "NO NAME" is created.
+> 
+> Um..., I'm still not sure though. rootts=save may not be needed for
+> this, because it seems a bit complex, and it can do on userland...
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+It's true, that is quite of a hack after all. I just thought I'll try to
+add the non-plus-ultra-feature on top of what Mac OS can do already.
+
+But you're right, I'll get rid of the label creation. (And I think I
+should get rid of the time stamp correction as well. If there is no
+timestamp to be loaded, then 1970/1/1 should suffice. In case anyone
+thinks that the timestamp 'correction' is anyhow useful, let me know...)
+
+> 
+> And some quick review of implement..
+> 
+> > +	if (inode->i_ino == MSDOS_ROOT_INO) {
+> 
+> In this path, we don't have inode->i_mutex, so to look directry up is
+> wrong. I think adding label may move to userland.
+> 
+> I guess we should do all of preparation in fill_super().
+
+True. This code is only needed for the time stamp creation, so it'll go
+in any case.
+
+> 
+> > +			remove_inode_hash(inode);
+> > +			fat_attach(inode, i_pos);
+> > +			insert_inode_hash(inode);
+> > +			brelse(bh);
+> 
+> Root inode should never change the position, so this shouldn't be
+> needed.
+
+Like above, this will be removed.
+
+If 'preserve' (i.e. saving and loading the timestamp only IF a label is
+present) is the default, I'll remove the 'rootts=preserve' option.
+However, should there still be an option to switch this feature off
+completely ('rootts=ignore')?
+
+Thanks very much for your comments, the next version will come soon!
+
+Jörg
