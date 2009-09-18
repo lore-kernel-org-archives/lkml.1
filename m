@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbZIRX7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZISAAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012AbZIRX7Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 19:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbZIRX6u
+	id S1752541AbZISAAR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 20:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZIRX7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 19:58:50 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:35067 "EHLO mail.pxnet.com"
+	Fri, 18 Sep 2009 19:59:05 -0400
+Received: from mail.pxnet.com ([195.227.45.7]:35098 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753520AbZIRX6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 19:58:35 -0400
+	id S1754129AbZIRX6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 19:58:44 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 11/12] gigaset: allow building without I4L
+Subject: [PATCH 03/12] gigaset: linearize skb
 To: Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>
 CC: Hansjoerg Lipp <hjlipp@web.de>, davem@davemloft.net,
        i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Message-ID: <20090919-patch-gigaset-11.tilman@imap.cc>
+Message-ID: <20090919-patch-gigaset-03.tilman@imap.cc>
 In-Reply-To: <20090919-patch-gigaset-00.tilman@imap.cc>
 References: <20090919-patch-gigaset-00.tilman@imap.cc>
 Date: Sat, 19 Sep 2009 01:57:43 +0200 (CEST)
@@ -24,137 +24,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a dummy LL interface to the Gigaset driver so that it can be
-built and, in a limited way, used without the ISDN4Linux subsystem.
+The code of the Gigaset driver assumes that sk_buff-s coming
+from the ISDN4Linux subsystem are always linear. Explicitly
+calling skb_linearize() is cheap if they are, but much more
+robust in case they ever aren't.
 
-Impact: new configuration alternative
+Impact: robustness improvement
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- drivers/isdn/gigaset/Kconfig   |   13 +++++++-
- drivers/isdn/gigaset/Makefile  |    4 ++-
- drivers/isdn/gigaset/dummyll.c |   68 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 83 insertions(+), 2 deletions(-)
- create mode 100644 drivers/isdn/gigaset/dummyll.c
+ drivers/isdn/gigaset/i4l.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/isdn/gigaset/Kconfig b/drivers/isdn/gigaset/Kconfig
-index 18ab865..6fd2dc1 100644
---- a/drivers/isdn/gigaset/Kconfig
-+++ b/drivers/isdn/gigaset/Kconfig
-@@ -1,6 +1,5 @@
- menuconfig ISDN_DRV_GIGASET
- 	tristate "Siemens Gigaset support"
--	depends on ISDN_I4L
- 	select CRC_CCITT
- 	select BITREVERSE
- 	help
-@@ -11,9 +10,21 @@ menuconfig ISDN_DRV_GIGASET
- 	  If you have one of these devices, say M here and for at least
- 	  one of the connection specific parts that follow.
- 	  This will build a module called "gigaset".
-+	  Note: If you build the ISDN4Linux subsystem (ISDN_I4L)
-+	  as a module, you have to build this driver as a module too,
-+	  otherwise the Gigaset device won't show up as an ISDN device.
+diff --git a/drivers/isdn/gigaset/i4l.c b/drivers/isdn/gigaset/i4l.c
+index 9b22f9c..322f16e 100644
+--- a/drivers/isdn/gigaset/i4l.c
++++ b/drivers/isdn/gigaset/i4l.c
+@@ -51,6 +51,12 @@ static int writebuf_from_LL(int driverID, int channel, int ack,
+ 		return -ENODEV;
+ 	}
+ 	bcs = &cs->bcs[channel];
++
++	/* can only handle linear sk_buffs */
++	if (skb_linearize(skb) < 0) {
++		dev_err(cs->dev, "%s: skb_linearize failed\n", __func__);
++		return -ENOMEM;
++	}
+ 	len = skb->len;
  
- if ISDN_DRV_GIGASET
- 
-+config GIGASET_I4L
-+	bool
-+	depends on ISDN_I4L='y'||(ISDN_I4L='m'&&ISDN_DRV_GIGASET='m')
-+	default y
-+
-+config GIGASET_DUMMYLL
-+	bool
-+	default !GIGASET_I4L
-+
- config GIGASET_BASE
- 	tristate "Gigaset base station support"
- 	depends on USB
-diff --git a/drivers/isdn/gigaset/Makefile b/drivers/isdn/gigaset/Makefile
-index e9d3189..d429202 100644
---- a/drivers/isdn/gigaset/Makefile
-+++ b/drivers/isdn/gigaset/Makefile
-@@ -1,4 +1,6 @@
--gigaset-y := common.o interface.o proc.o ev-layer.o i4l.o asyncdata.o
-+gigaset-y := common.o interface.o proc.o ev-layer.o asyncdata.o
-+gigaset-$(CONFIG_GIGASET_I4L) += i4l.o
-+gigaset-$(CONFIG_GIGASET_DUMMYLL) += dummyll.o
- usb_gigaset-y := usb-gigaset.o
- ser_gigaset-y := ser-gigaset.o
- bas_gigaset-y := bas-gigaset.o isocdata.o
-diff --git a/drivers/isdn/gigaset/dummyll.c b/drivers/isdn/gigaset/dummyll.c
-new file mode 100644
-index 0000000..5b27c99
---- /dev/null
-+++ b/drivers/isdn/gigaset/dummyll.c
-@@ -0,0 +1,68 @@
-+/*
-+ * Dummy LL interface for the Gigaset driver
-+ *
-+ * Copyright (c) 2009 by Tilman Schmidt <tilman@imap.cc>.
-+ *
-+ * =====================================================================
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License as
-+ *	published by the Free Software Foundation; either version 2 of
-+ *	the License, or (at your option) any later version.
-+ * =====================================================================
-+ */
-+
-+#include "gigaset.h"
-+
-+void gigaset_skb_sent(struct bc_state *bcs, struct sk_buff *skb)
-+{
-+}
-+EXPORT_SYMBOL_GPL(gigaset_skb_sent);
-+
-+void gigaset_skb_rcvd(struct bc_state *bcs, struct sk_buff *skb)
-+{
-+}
-+EXPORT_SYMBOL_GPL(gigaset_skb_rcvd);
-+
-+void gigaset_isdn_rcv_err(struct bc_state *bcs)
-+{
-+}
-+EXPORT_SYMBOL_GPL(gigaset_isdn_rcv_err);
-+
-+int gigaset_isdn_icall(struct at_state_t *at_state)
-+{
-+	return ICALL_IGNORE;
-+}
-+
-+void gigaset_isdn_connD(struct bc_state *bcs)
-+{
-+}
-+
-+void gigaset_isdn_hupD(struct bc_state *bcs)
-+{
-+}
-+
-+void gigaset_isdn_connB(struct bc_state *bcs)
-+{
-+}
-+
-+void gigaset_isdn_hupB(struct bc_state *bcs)
-+{
-+}
-+
-+void gigaset_isdn_start(struct cardstate *cs)
-+{
-+}
-+
-+void gigaset_isdn_stop(struct cardstate *cs)
-+{
-+}
-+
-+int gigaset_isdn_register(struct cardstate *cs, const char *isdnid)
-+{
-+	pr_info("no ISDN subsystem interface\n");
-+	return 1;
-+}
-+
-+void gigaset_isdn_unregister(struct cardstate *cs)
-+{
-+}
+ 	gig_dbg(DEBUG_LLDATA,
 -- 
 1.6.2.1.214.ge986c
 
