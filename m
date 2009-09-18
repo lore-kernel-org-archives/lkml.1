@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZIRCZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZIRCZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbZIRCZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 22:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbZIRCZO
+	id S1755407AbZIRCZV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 22:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZIRCZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 22:25:14 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:36395 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbZIRCZM convert rfc822-to-8bit (ORCPT
+	Thu, 17 Sep 2009 22:25:19 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:55862 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753494AbZIRCZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 22:25:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ljsDylp2zqjVW9qCQGktv4hEBWhZ3WyRZa1/kmx8z04bx3zPHc5d4AXndlAVvzCdPG
-         +GpS78BQpCDNUsNjC1O6TASF9hxjsoCArtNgxG3QcoqmTULLTpT0m5mskxxN3XyahhRk
-         cukE9kcj3H3rmpPAvQT7i2jWr6hZWRNje/3uk=
+	Thu, 17 Sep 2009 22:25:15 -0400
+Message-ID: <4AB2EFBC.90500@oracle.com>
+Date: Thu, 17 Sep 2009 19:26:04 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090918090200.a1810a9b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090917150726.9acb0f40.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090917062124.GA6964@localhost>
-	 <20090917155100.3cc2dfb6.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090917071428.GA9232@localhost>
-	 <20090917162324.d60a7950.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090917094203.GA13885@localhost>
-	 <b756a8e49c515a5ada93ac90d1076056.squirrel@webmail-b.css.fujitsu.com>
-	 <20090917124039.GB9462@localhost>
-	 <20090918090200.a1810a9b.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 18 Sep 2009 10:25:16 +0800
-Message-ID: <2375c9f90909171925i5c148f39yfe9d54807f5645eb@mail.gmail.com>
-Subject: Re: [RFC][PATCH][bugfix] more checks for negative f_pos handling v4
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "oleg@redhat.com" <oleg@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: Roel Kluin <roel.kluin@gmail.com>
+Subject: [PATCH 1/3] docs: kref: double kref_put() in my_data_handler()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4AB2EF81.0087:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 8:02 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Thu, 17 Sep 2009 20:40:39 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
->
->> > >         if (pos + count < pos)
->> > >                 return -EOVERFLOW;
->> > >         ...
->> > > }
->> > >
->> > have to avoid pos == LONGLONGMAX case.
->>
->> Ah sorry, didn't know loff_t could be long long..
->>
-> Thank you. I'll restart this after merge window.
-> (And maybe I had to CC fsdevel...)
+From: Roel Kluin <roel.kluin@gmail.com>
+Subject: kref: double kref_put() in my_data_handler()
 
-Yes, please do so. I would like to hear from Al..
+The kref_put() already occurs after the out label
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/kref.txt |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- lnx-2631-rc7.orig/Documentation/kref.txt
++++ lnx-2631-rc7/Documentation/kref.txt
+@@ -84,7 +84,6 @@ int my_data_handler(void)
+ 	task = kthread_run(more_data_handling, data, "more_data_handling");
+ 	if (task == ERR_PTR(-ENOMEM)) {
+ 		rv = -ENOMEM;
+-	        kref_put(&data->refcount, data_release);
+ 		goto out;
+ 	}
+ 
