@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbZIQXye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZIRABm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbZIQXye (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Sep 2009 19:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZIQXyb
+	id S1754199AbZIRABm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Sep 2009 20:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbZIRABl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Sep 2009 19:54:31 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:29323 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbZIQXyb convert rfc822-to-8bit (ORCPT
+	Thu, 17 Sep 2009 20:01:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46081
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750761AbZIRABk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Sep 2009 19:54:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:from:date:message-id:
-	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=yskBC3mFQ8wV3c/yz86ZX7iasGGbXrWmyljUkHDpkxtqiklOqzbMhUUwUJuoEx2As
-	Dob1IsKQ2M/33L3Z/lMRw==
-MIME-Version: 1.0
-In-Reply-To: <20090918002322.54099f94@lxorguk.ukuu.org.uk>
-References: <8b5805ff0909171602v3dc10db9i5920be3a2abf2e04@mail.gmail.com> 
-	<20090918002322.54099f94@lxorguk.ukuu.org.uk>
-From: "Jung-Ik (John) Lee" <jilee@google.com>
-Date: Thu, 17 Sep 2009 16:54:09 -0700
-Message-ID: <8b5805ff0909171654i515c832bm570db9bd5936b11a@mail.gmail.com>
-Subject: Re: [PATCH] libata:ide: Fix udma timings of pdc202xx_old controllers
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: sshtylyov@ru.mvista.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Thu, 17 Sep 2009 20:01:40 -0400
+Date: Thu, 17 Sep 2009 17:01:56 -0700 (PDT)
+Message-Id: <20090917.170156.152594715.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: JBeulich@novell.com, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: [PATCH] fix BUILD_BUG_ON() and a couple of bogus uses of it
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090917162437.b1a890de.akpm@linux-foundation.org>
+References: <4A8AEBFD0200007800010580@vpn.id2.novell.com>
+	<20090917162437.b1a890de.akpm@linux-foundation.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 4:23 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Thu, 17 Sep 2009 16:02:31 -0700
-> "Jung-Ik (John) Lee" <jilee@google.com> wrote:
->
->> From: John(Jung-Ik) Lee <jilee@google.com>
->>
->> Fix udma timings of pdc202xx_old controllers.
->> MB=1, MC=1 (0x20, 0x01) for all UDMA modes of pdc2026{57}.
->
-> On what documentation is this based ?
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 17 Sep 2009 16:24:37 -0700
 
-I have two documents, 20265, and 20267, and both need to set to the
-same single value for all UDMA modes.
+> sparc64:
+> 
+> In file included from arch/sparc/kernel/vio.c:17:
+> /usr/src/devel/arch/sparc/include/asm/vio.h: In function `vio_dring_avail':
+> /usr/src/devel/arch/sparc/include/asm/vio.h:261: error: bit-field `<anonymous>' width not an integer constant
+> 
+> static inline u32 vio_dring_avail(struct vio_dring_state *dr,
+> 				  unsigned int ring_size)
+> {
+> 	BUILD_BUG_ON(!is_power_of_2(ring_size));
+> 
+> 	return (dr->pending -
+> 		((dr->prod - dr->cons) & (ring_size - 1)));
+> }
+> 
+> changing it to MAYBE_BUILD_BUG_ON seems to have fixed it.
 
-Doc 1:
-  PDC20265 Bus Mastering Ultra DMA PCI –ATA/ATAPI Controller
-Specification Rev 2.0
-  #7.17.2, Ultra DMA Data Transfer Speed list
-    For all Ultra DMA mode, MB, MC = 01h, 01h
+That's completely bogus.
 
-Doc 2:
-  PDC20267 Bus Mastering Ultra DMA PCI –ATA/ATAPI Controller
-Specification Rev 2.0
-  #7.17.2, Ultra DMA Data Transfer Speed list
-    For all Ultra DMA mode, MB, MC = 01h, 01h
+First of all, arch/sparc/kernel/vio.c never calls this function
+so it should never be evaluated.
 
-Are there other pdc202xx old controllers that are different?
+Second of all, all the places that do call this function only
+pass pure constants as the 'ring_size' parameter.
 
--John
+drivers/block/sunvdc.c:
 
->
-> Alan
->
+static inline u32 vdc_tx_dring_avail(struct vio_dring_state *dr)
+{
+	return vio_dring_avail(dr, VDC_TX_RING_SIZE);
+}
+
+drivers/net/sunvnet.c:
+
+static inline u32 vnet_tx_dring_avail(struct vio_dring_state *dr)
+{
+	return vio_dring_avail(dr, VNET_TX_RING_SIZE);
+}
+
+Making this MAYBE_BUILD_BUG_ON shouldn't be necessary.
