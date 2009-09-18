@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbZIRSMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758465AbZIRSO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758456AbZIRSMe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 14:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbZIRSMd
+	id S1758465AbZIRSO3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 14:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbZIRSO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 14:12:33 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38695 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757617AbZIRSMc (ORCPT
+	Fri, 18 Sep 2009 14:14:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48306 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757615AbZIRSOZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 14:12:32 -0400
-Subject: Re: [PATCH 1/2]: mm: Make vmalloc_user() align base kernel virtual
- address to SHMLBA.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       Paul Mackerras <paulus@samba.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20090918105240.13d74dab.akpm@linux-foundation.org>
-References: <20090908.051046.141535022.davem@davemloft.net>
-	 <20090918121709.GB19165@elte.hu>
-	 <20090918105240.13d74dab.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 18 Sep 2009 20:12:19 +0200
-Message-Id: <1253297539.10538.46.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 18 Sep 2009 14:14:25 -0400
+Message-ID: <4AB3CDEC.5050902@zytor.com>
+Date: Fri, 18 Sep 2009 11:14:04 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] core, x86: Add user return notifiers
+References: <1253105134-8862-1-git-send-email-avi@redhat.com> <1253105134-8862-2-git-send-email-avi@redhat.com>
+In-Reply-To: <1253105134-8862-2-git-send-email-avi@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-18 at 10:52 -0700, Andrew Morton wrote:
-> On Fri, 18 Sep 2009 14:17:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On 09/16/2009 05:45 AM, Avi Kivity wrote:
+> Add a general per-cpu notifier that is called whenever the kernel is
+> about to return to userspace.  The notifier uses a thread_info flag
+> and existing checks, so there is no impact on user return or context
+> switch fast paths.
 > 
-> > ( Andrew, this patch has mm/* effects - any objections? Would still like
-> >   to get this into v2.6.32. )
-> 
-> I queued this a week ago, along with
-> perf-allocate-mmap-buffer-using-vmalloc_user.patch.
-> 
-> If the latter gets quitably acked I can merge it, otherwise I'll spray
-> it at you guys.
+> Signed-off-by: Avi Kivity <avi@redhat.com>
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+The concept of this patch looks entirely sane, as does the code,
+*except* for:
 
++#include <linux/user-return-notifier.h>
 
+... missing header file, and ...
+
++obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
+
+... missing source file.
+
+Could you fix the patch, please?
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
