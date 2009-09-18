@@ -1,102 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbZIRMP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZIRMR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752041AbZIRMP4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 08:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbZIRMP4
+	id S1752661AbZIRMR3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 08:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZIRMR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 08:15:56 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:33727 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbZIRMPz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 08:15:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=rdn6M+TSlohDG5n/eyyss7TG/UA9wG5tjAn91wy7Ofx6f1qaaCjGOzbeKxzWQEMh4N
-         /bz2M70NO4CqD/0eip7u2NYmQO9uRUKTQix9tzY0HQDxbj2rtiYVf/FoxefSgMOhlTwd
-         n1frCBhtafgtqdgqoFK00SKm3NLaW3rQxIewY=
+	Fri, 18 Sep 2009 08:17:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39519 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751559AbZIRMR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 08:17:27 -0400
+Date: Fri, 18 Sep 2009 14:17:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       jens.axboe@oracle.com, Paul Mackerras <paulus@samba.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 1/2]: mm: Make vmalloc_user() align base kernel virtual
+	address to SHMLBA.
+Message-ID: <20090918121709.GB19165@elte.hu>
+References: <20090908.051046.141535022.davem@davemloft.net>
 MIME-Version: 1.0
-In-Reply-To: <20090918061529.GB7717@kroah.com>
-References: <7eb6a4d80909170549k7a19eb01s8975fe2c5f230cee@mail.gmail.com>
-	 <7eb6a4d80909170552na322914x23b65d60bb56e20d@mail.gmail.com>
-	 <20090918061529.GB7717@kroah.com>
-Date: Fri, 18 Sep 2009 14:15:57 +0200
-Message-ID: <7eb6a4d80909180515k48ee2197q8f6e5ff8933c4647@mail.gmail.com>
-Subject: Re: New ark3116 driver - how to get included into kernel?
-From: Bart Hartgers <bart.hartgers@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ondrej Zary <linux@rainbow-software.org>, ark3116_driver@auctionant.de
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090908.051046.141535022.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
 
-Thanks for your reply.
+( Andrew, this patch has mm/* effects - any objections? Would still like
+  to get this into v2.6.32. )
 
-2009/9/18 Greg KH <greg@kroah.com>:
-> On Thu, Sep 17, 2009 at 02:52:29PM +0200, Bart Hartgers wrote:
->> (Sorry for sending an HTML-ized version of this mail before)
->>
->> Hi All,
->>
->> I managed to write an improved ark3116 driver after I figured out that
->> it is just an 16450 UART with some USB glue logic.
->>
->> The attached files can be compiled outside the kernel tree, and work
->> for 2.6.31. However, I would like this driver to (eventually) end up
->> in the kernel tree. In order to get there, who should I sent patches
->> against what? I've contributed code to the kernel before, but not in
->> the last 5 or so years, so I am a bit out of touch.
->
-> Take a look at the file, Documentation/SubmittingPatches, it should
-> describe what you need to do.
->
-Thanks. But the question I had was more that I didn't know where to
-put a new driver. In drivers/usb/serial, or perhaps in
-drivers/staging. Anyway, if we are going to replace the existing
-driver, it is obvious what the patch should be against.
+* David Miller <davem@davemloft.net> wrote:
 
->> Compared to the old ark3116 driver this one offers the following improvements:
->>  - cts/rts handshake support
->>  - break signalling
->>  - line error detection
->
-> Why can't you just send patches adding support for these features to the
-> existing driver?  It shouldn't be that much different between the two
-> versions, right?
-
-The difference is actually quite significant. The old driver is pretty
-much a dumb parameterized replay of the windows usb-snoops. The new
-driver actually "understands" the hardware. That's why I made a
-completely new driver in the first place. A diff between the two is
-ore or less the same as a complete replacing. I could try to minimize
-the differences, but I would be surprised if more than 30% of the
-lines will be shared, and most of those will be red tape, not actual
-code. The patch will be hard to read anyhow.
-
->
-> That's the preferred method, I'd like to not drop the existing one if at
-> all possible.
->
-
-Do you think it is worth the effort to minimize the diff, or should I
-just replace ark3116.c by ark3116new.c?
-
-Groeten,
-Bart
-
-> thanks,
->
-> greg k-h
->
-
-
-
--- 
-Bart Hartgers - New e-mail: bart.hartgers@gmail.com
+> When a vmalloc'd area is mmap'd into userspace, some kind of 
+> co-ordination is necessary for this to work on platforms with cpu 
+> D-caches which can have aliases.
+> 
+> Otherwise kernel side writes won't be seen properly in userspace and
+> vice versa.
+> 
+> If the kernel side mapping and the user side one have the same
+> alignment, modulo SHMLBA, this can work as long as VM_SHARED is
+> shared of VMA and for all current users this is true.  VM_SHARED
+> will force SHMLBA alignment of the user side mmap on platforms
+> with D-cache aliasing matters.
+> 
+> The bulk of this patch is just making it so that a specific alignment
+> can be passed down into __get_vm_area_node().  All existing callers
+> pass in '1' which preserves existing behavior.  vmalloc_user() gives
+> SHMLBA for the alignment.
+> 
+> As a side effect this should get the video media drivers and other
+> vmalloc_user() users into more working shape on such systems.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> ---
+>  mm/vmalloc.c |   48 ++++++++++++++++++++++++++----------------------
+>  1 files changed, 26 insertions(+), 22 deletions(-)
+> 
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index f8189a4..be15e03 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -29,6 +29,7 @@
+>  #include <asm/atomic.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/tlbflush.h>
+> +#include <asm/shmparam.h>
+>  
+>  
+>  /*** Page table manipulation functions ***/
+> @@ -1123,13 +1124,12 @@ DEFINE_RWLOCK(vmlist_lock);
+>  struct vm_struct *vmlist;
+>  
+>  static struct vm_struct *__get_vm_area_node(unsigned long size,
+> -		unsigned long flags, unsigned long start, unsigned long end,
+> -		int node, gfp_t gfp_mask, void *caller)
+> +		unsigned long align, unsigned long flags, unsigned long start,
+> +		unsigned long end, int node, gfp_t gfp_mask, void *caller)
+>  {
+>  	static struct vmap_area *va;
+>  	struct vm_struct *area;
+>  	struct vm_struct *tmp, **p;
+> -	unsigned long align = 1;
+>  
+>  	BUG_ON(in_interrupt());
+>  	if (flags & VM_IOREMAP) {
+> @@ -1187,7 +1187,7 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
+>  struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
+>  				unsigned long start, unsigned long end)
+>  {
+> -	return __get_vm_area_node(size, flags, start, end, -1, GFP_KERNEL,
+> +	return __get_vm_area_node(size, 1, flags, start, end, -1, GFP_KERNEL,
+>  						__builtin_return_address(0));
+>  }
+>  EXPORT_SYMBOL_GPL(__get_vm_area);
+> @@ -1196,7 +1196,7 @@ struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
+>  				       unsigned long start, unsigned long end,
+>  				       void *caller)
+>  {
+> -	return __get_vm_area_node(size, flags, start, end, -1, GFP_KERNEL,
+> +	return __get_vm_area_node(size, 1, flags, start, end, -1, GFP_KERNEL,
+>  				  caller);
+>  }
+>  
+> @@ -1211,22 +1211,22 @@ struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
+>   */
+>  struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
+>  {
+> -	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END,
+> +	return __get_vm_area_node(size, 1, flags, VMALLOC_START, VMALLOC_END,
+>  				-1, GFP_KERNEL, __builtin_return_address(0));
+>  }
+>  
+>  struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
+>  				void *caller)
+>  {
+> -	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END,
+> +	return __get_vm_area_node(size, 1, flags, VMALLOC_START, VMALLOC_END,
+>  						-1, GFP_KERNEL, caller);
+>  }
+>  
+>  struct vm_struct *get_vm_area_node(unsigned long size, unsigned long flags,
+>  				   int node, gfp_t gfp_mask)
+>  {
+> -	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END, node,
+> -				  gfp_mask, __builtin_return_address(0));
+> +	return __get_vm_area_node(size, 1, flags, VMALLOC_START, VMALLOC_END,
+> +				  node, gfp_mask, __builtin_return_address(0));
+>  }
+>  
+>  static struct vm_struct *find_vm_area(const void *addr)
+> @@ -1385,7 +1385,8 @@ void *vmap(struct page **pages, unsigned int count,
+>  }
+>  EXPORT_SYMBOL(vmap);
+>  
+> -static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
+> +static void *__vmalloc_node(unsigned long size, unsigned long align,
+> +			    gfp_t gfp_mask, pgprot_t prot,
+>  			    int node, void *caller);
+>  static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
+>  				 pgprot_t prot, int node, void *caller)
+> @@ -1399,7 +1400,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
+>  	area->nr_pages = nr_pages;
+>  	/* Please note that the recursion is strictly bounded. */
+>  	if (array_size > PAGE_SIZE) {
+> -		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
+> +		pages = __vmalloc_node(array_size, 1, gfp_mask | __GFP_ZERO,
+>  				PAGE_KERNEL, node, caller);
+>  		area->flags |= VM_VPAGES;
+>  	} else {
+> @@ -1458,6 +1459,7 @@ void *__vmalloc_area(struct vm_struct *area, gfp_t gfp_mask, pgprot_t prot)
+>  /**
+>   *	__vmalloc_node  -  allocate virtually contiguous memory
+>   *	@size:		allocation size
+> + *	@align:		desired alignment
+>   *	@gfp_mask:	flags for the page level allocator
+>   *	@prot:		protection mask for the allocated pages
+>   *	@node:		node to use for allocation or -1
+> @@ -1467,8 +1469,9 @@ void *__vmalloc_area(struct vm_struct *area, gfp_t gfp_mask, pgprot_t prot)
+>   *	allocator with @gfp_mask flags.  Map them into contiguous
+>   *	kernel virtual space, using a pagetable protection of @prot.
+>   */
+> -static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
+> -						int node, void *caller)
+> +static void *__vmalloc_node(unsigned long size, unsigned long align,
+> +			    gfp_t gfp_mask, pgprot_t prot,
+> +			    int node, void *caller)
+>  {
+>  	struct vm_struct *area;
+>  	void *addr;
+> @@ -1478,8 +1481,8 @@ static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
+>  	if (!size || (size >> PAGE_SHIFT) > num_physpages)
+>  		return NULL;
+>  
+> -	area = __get_vm_area_node(size, VM_ALLOC, VMALLOC_START, VMALLOC_END,
+> -						node, gfp_mask, caller);
+> +	area = __get_vm_area_node(size, align, VM_ALLOC, VMALLOC_START,
+> +				  VMALLOC_END, node, gfp_mask, caller);
+>  
+>  	if (!area)
+>  		return NULL;
+> @@ -1498,7 +1501,7 @@ static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
+>  
+>  void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
+>  {
+> -	return __vmalloc_node(size, gfp_mask, prot, -1,
+> +	return __vmalloc_node(size, 1, gfp_mask, prot, -1,
+>  				__builtin_return_address(0));
+>  }
+>  EXPORT_SYMBOL(__vmalloc);
+> @@ -1514,7 +1517,7 @@ EXPORT_SYMBOL(__vmalloc);
+>   */
+>  void *vmalloc(unsigned long size)
+>  {
+> -	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
+> +	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
+>  					-1, __builtin_return_address(0));
+>  }
+>  EXPORT_SYMBOL(vmalloc);
+> @@ -1531,7 +1534,8 @@ void *vmalloc_user(unsigned long size)
+>  	struct vm_struct *area;
+>  	void *ret;
+>  
+> -	ret = __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO,
+> +	ret = __vmalloc_node(size, SHMLBA,
+> +			     GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO,
+>  			     PAGE_KERNEL, -1, __builtin_return_address(0));
+>  	if (ret) {
+>  		area = find_vm_area(ret);
+> @@ -1554,7 +1558,7 @@ EXPORT_SYMBOL(vmalloc_user);
+>   */
+>  void *vmalloc_node(unsigned long size, int node)
+>  {
+> -	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
+> +	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
+>  					node, __builtin_return_address(0));
+>  }
+>  EXPORT_SYMBOL(vmalloc_node);
+> @@ -1577,7 +1581,7 @@ EXPORT_SYMBOL(vmalloc_node);
+>  
+>  void *vmalloc_exec(unsigned long size)
+>  {
+> -	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL_EXEC,
+> +	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL_EXEC,
+>  			      -1, __builtin_return_address(0));
+>  }
+>  
+> @@ -1598,7 +1602,7 @@ void *vmalloc_exec(unsigned long size)
+>   */
+>  void *vmalloc_32(unsigned long size)
+>  {
+> -	return __vmalloc_node(size, GFP_VMALLOC32, PAGE_KERNEL,
+> +	return __vmalloc_node(size, 1, GFP_VMALLOC32, PAGE_KERNEL,
+>  			      -1, __builtin_return_address(0));
+>  }
+>  EXPORT_SYMBOL(vmalloc_32);
+> @@ -1615,7 +1619,7 @@ void *vmalloc_32_user(unsigned long size)
+>  	struct vm_struct *area;
+>  	void *ret;
+>  
+> -	ret = __vmalloc_node(size, GFP_VMALLOC32 | __GFP_ZERO, PAGE_KERNEL,
+> +	ret = __vmalloc_node(size, 1, GFP_VMALLOC32 | __GFP_ZERO, PAGE_KERNEL,
+>  			     -1, __builtin_return_address(0));
+>  	if (ret) {
+>  		area = find_vm_area(ret);
+> -- 
+> 1.6.4.2
