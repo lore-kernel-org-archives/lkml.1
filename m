@@ -1,260 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZIRMR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZIRMYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752661AbZIRMR3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 08:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZIRMR2
+	id S1753257AbZIRMYh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 08:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbZIRMYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 08:17:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39519 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbZIRMR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 08:17:27 -0400
-Date: Fri, 18 Sep 2009 14:17:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       jens.axboe@oracle.com, Paul Mackerras <paulus@samba.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 1/2]: mm: Make vmalloc_user() align base kernel virtual
-	address to SHMLBA.
-Message-ID: <20090918121709.GB19165@elte.hu>
-References: <20090908.051046.141535022.davem@davemloft.net>
+	Fri, 18 Sep 2009 08:24:36 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:33852 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbZIRMYf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 08:24:35 -0400
+To: Greg KH <greg@kroah.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+References: <m1y6oef08k.fsf@fess.ebiederm.org>
+	<20090917125759.GA4045@kroah.com> <m1ab0tcwep.fsf@fess.ebiederm.org>
+	<20090918055423.GA7104@kroah.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 18 Sep 2009 05:24:32 -0700
+In-Reply-To: <20090918055423.GA7104@kroah.com> (Greg KH's message of "Thu\, 17 Sep 2009 22\:54\:23 -0700")
+Message-ID: <m1k4zw4f0f.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090908.051046.141535022.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Greg KH <greg@kroah.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] Remove broken by design and by implementation devtmpfs maintenance disaster
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH <greg@kroah.com> writes:
 
-( Andrew, this patch has mm/* effects - any objections? Would still like
-  to get this into v2.6.32. )
+> I'm really sorry, but I know of no existing bugs in this code.
+> Seriously, I thought we addressed everything that was pointed out.
 
-* David Miller <davem@davemloft.net> wrote:
+Then please sober up and open your eyes.  Bugs are not hard to find.
+And I pointed out about 5 of them at the beginning of my message.
 
-> When a vmalloc'd area is mmap'd into userspace, some kind of 
-> co-ordination is necessary for this to work on platforms with cpu 
-> D-caches which can have aliases.
-> 
-> Otherwise kernel side writes won't be seen properly in userspace and
-> vice versa.
-> 
-> If the kernel side mapping and the user side one have the same
-> alignment, modulo SHMLBA, this can work as long as VM_SHARED is
-> shared of VMA and for all current users this is true.  VM_SHARED
-> will force SHMLBA alignment of the user side mmap on platforms
-> with D-cache aliasing matters.
-> 
-> The bulk of this patch is just making it so that a specific alignment
-> can be passed down into __get_vm_area_node().  All existing callers
-> pass in '1' which preserves existing behavior.  vmalloc_user() gives
-> SHMLBA for the alignment.
-> 
-> As a side effect this should get the video media drivers and other
-> vmalloc_user() users into more working shape on such systems.
-> 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> ---
->  mm/vmalloc.c |   48 ++++++++++++++++++++++++++----------------------
->  1 files changed, 26 insertions(+), 22 deletions(-)
-> 
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index f8189a4..be15e03 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -29,6 +29,7 @@
->  #include <asm/atomic.h>
->  #include <asm/uaccess.h>
->  #include <asm/tlbflush.h>
-> +#include <asm/shmparam.h>
->  
->  
->  /*** Page table manipulation functions ***/
-> @@ -1123,13 +1124,12 @@ DEFINE_RWLOCK(vmlist_lock);
->  struct vm_struct *vmlist;
->  
->  static struct vm_struct *__get_vm_area_node(unsigned long size,
-> -		unsigned long flags, unsigned long start, unsigned long end,
-> -		int node, gfp_t gfp_mask, void *caller)
-> +		unsigned long align, unsigned long flags, unsigned long start,
-> +		unsigned long end, int node, gfp_t gfp_mask, void *caller)
->  {
->  	static struct vmap_area *va;
->  	struct vm_struct *area;
->  	struct vm_struct *tmp, **p;
-> -	unsigned long align = 1;
->  
->  	BUG_ON(in_interrupt());
->  	if (flags & VM_IOREMAP) {
-> @@ -1187,7 +1187,7 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
->  struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
->  				unsigned long start, unsigned long end)
->  {
-> -	return __get_vm_area_node(size, flags, start, end, -1, GFP_KERNEL,
-> +	return __get_vm_area_node(size, 1, flags, start, end, -1, GFP_KERNEL,
->  						__builtin_return_address(0));
->  }
->  EXPORT_SYMBOL_GPL(__get_vm_area);
-> @@ -1196,7 +1196,7 @@ struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
->  				       unsigned long start, unsigned long end,
->  				       void *caller)
->  {
-> -	return __get_vm_area_node(size, flags, start, end, -1, GFP_KERNEL,
-> +	return __get_vm_area_node(size, 1, flags, start, end, -1, GFP_KERNEL,
->  				  caller);
->  }
->  
-> @@ -1211,22 +1211,22 @@ struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
->   */
->  struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
->  {
-> -	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END,
-> +	return __get_vm_area_node(size, 1, flags, VMALLOC_START, VMALLOC_END,
->  				-1, GFP_KERNEL, __builtin_return_address(0));
->  }
->  
->  struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
->  				void *caller)
->  {
-> -	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END,
-> +	return __get_vm_area_node(size, 1, flags, VMALLOC_START, VMALLOC_END,
->  						-1, GFP_KERNEL, caller);
->  }
->  
->  struct vm_struct *get_vm_area_node(unsigned long size, unsigned long flags,
->  				   int node, gfp_t gfp_mask)
->  {
-> -	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END, node,
-> -				  gfp_mask, __builtin_return_address(0));
-> +	return __get_vm_area_node(size, 1, flags, VMALLOC_START, VMALLOC_END,
-> +				  node, gfp_mask, __builtin_return_address(0));
->  }
->  
->  static struct vm_struct *find_vm_area(const void *addr)
-> @@ -1385,7 +1385,8 @@ void *vmap(struct page **pages, unsigned int count,
->  }
->  EXPORT_SYMBOL(vmap);
->  
-> -static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
-> +static void *__vmalloc_node(unsigned long size, unsigned long align,
-> +			    gfp_t gfp_mask, pgprot_t prot,
->  			    int node, void *caller);
->  static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
->  				 pgprot_t prot, int node, void *caller)
-> @@ -1399,7 +1400,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
->  	area->nr_pages = nr_pages;
->  	/* Please note that the recursion is strictly bounded. */
->  	if (array_size > PAGE_SIZE) {
-> -		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
-> +		pages = __vmalloc_node(array_size, 1, gfp_mask | __GFP_ZERO,
->  				PAGE_KERNEL, node, caller);
->  		area->flags |= VM_VPAGES;
->  	} else {
-> @@ -1458,6 +1459,7 @@ void *__vmalloc_area(struct vm_struct *area, gfp_t gfp_mask, pgprot_t prot)
->  /**
->   *	__vmalloc_node  -  allocate virtually contiguous memory
->   *	@size:		allocation size
-> + *	@align:		desired alignment
->   *	@gfp_mask:	flags for the page level allocator
->   *	@prot:		protection mask for the allocated pages
->   *	@node:		node to use for allocation or -1
-> @@ -1467,8 +1469,9 @@ void *__vmalloc_area(struct vm_struct *area, gfp_t gfp_mask, pgprot_t prot)
->   *	allocator with @gfp_mask flags.  Map them into contiguous
->   *	kernel virtual space, using a pagetable protection of @prot.
->   */
-> -static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
-> -						int node, void *caller)
-> +static void *__vmalloc_node(unsigned long size, unsigned long align,
-> +			    gfp_t gfp_mask, pgprot_t prot,
-> +			    int node, void *caller)
->  {
->  	struct vm_struct *area;
->  	void *addr;
-> @@ -1478,8 +1481,8 @@ static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
->  	if (!size || (size >> PAGE_SHIFT) > num_physpages)
->  		return NULL;
->  
-> -	area = __get_vm_area_node(size, VM_ALLOC, VMALLOC_START, VMALLOC_END,
-> -						node, gfp_mask, caller);
-> +	area = __get_vm_area_node(size, align, VM_ALLOC, VMALLOC_START,
-> +				  VMALLOC_END, node, gfp_mask, caller);
->  
->  	if (!area)
->  		return NULL;
-> @@ -1498,7 +1501,7 @@ static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
->  
->  void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
->  {
-> -	return __vmalloc_node(size, gfp_mask, prot, -1,
-> +	return __vmalloc_node(size, 1, gfp_mask, prot, -1,
->  				__builtin_return_address(0));
->  }
->  EXPORT_SYMBOL(__vmalloc);
-> @@ -1514,7 +1517,7 @@ EXPORT_SYMBOL(__vmalloc);
->   */
->  void *vmalloc(unsigned long size)
->  {
-> -	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
-> +	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
->  					-1, __builtin_return_address(0));
->  }
->  EXPORT_SYMBOL(vmalloc);
-> @@ -1531,7 +1534,8 @@ void *vmalloc_user(unsigned long size)
->  	struct vm_struct *area;
->  	void *ret;
->  
-> -	ret = __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO,
-> +	ret = __vmalloc_node(size, SHMLBA,
-> +			     GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO,
->  			     PAGE_KERNEL, -1, __builtin_return_address(0));
->  	if (ret) {
->  		area = find_vm_area(ret);
-> @@ -1554,7 +1558,7 @@ EXPORT_SYMBOL(vmalloc_user);
->   */
->  void *vmalloc_node(unsigned long size, int node)
->  {
-> -	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
-> +	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
->  					node, __builtin_return_address(0));
->  }
->  EXPORT_SYMBOL(vmalloc_node);
-> @@ -1577,7 +1581,7 @@ EXPORT_SYMBOL(vmalloc_node);
->  
->  void *vmalloc_exec(unsigned long size)
->  {
-> -	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL_EXEC,
-> +	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL_EXEC,
->  			      -1, __builtin_return_address(0));
->  }
->  
-> @@ -1598,7 +1602,7 @@ void *vmalloc_exec(unsigned long size)
->   */
->  void *vmalloc_32(unsigned long size)
->  {
-> -	return __vmalloc_node(size, GFP_VMALLOC32, PAGE_KERNEL,
-> +	return __vmalloc_node(size, 1, GFP_VMALLOC32, PAGE_KERNEL,
->  			      -1, __builtin_return_address(0));
->  }
->  EXPORT_SYMBOL(vmalloc_32);
-> @@ -1615,7 +1619,7 @@ void *vmalloc_32_user(unsigned long size)
->  	struct vm_struct *area;
->  	void *ret;
->  
-> -	ret = __vmalloc_node(size, GFP_VMALLOC32 | __GFP_ZERO, PAGE_KERNEL,
-> +	ret = __vmalloc_node(size, 1, GFP_VMALLOC32 | __GFP_ZERO, PAGE_KERNEL,
->  			     -1, __builtin_return_address(0));
->  	if (ret) {
->  		area = find_vm_area(ret);
-> -- 
-> 1.6.4.2
+The simplest and most trivial of them is that the error handling
+path is device_add was not updated to remove the devtmpfs node
+if it was not created.
+
+I find it maximally offensive that when I try and give constructive
+criticism that I am either written off or told that my patches will
+be summarily dropped.
+
+The code I think is fixable.  You I have much less hope for.
+
+Eric
