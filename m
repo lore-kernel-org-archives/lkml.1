@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbZIRO0C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751653AbZIROaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752604AbZIRO0C (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 10:26:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZIRO0A
+	id S1751653AbZIROaS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 10:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZIROaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 10:26:00 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35011 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbZIROZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 10:25:59 -0400
-Date: Fri, 18 Sep 2009 16:25:54 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, Jan Kara <jack@suse.cz>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Is nobh code still useful?
-Message-ID: <20090918162554.13a72664@infradead.org>
-In-Reply-To: <20090918141226.GB26991@mit.edu>
-References: <20090917135627.GB13660@duck.suse.cz>
-	<4AB30AD1.7010400@us.ibm.com>
-	<20090918141226.GB26991@mit.edu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 18 Sep 2009 10:30:17 -0400
+Received: from mx1.riseup.net ([204.13.164.18]:33305 "EHLO mx1.riseup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751613AbZIROaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 10:30:16 -0400
+From: Francisco Jerez <currojerez@riseup.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Dave Airlie <airlied@gmail.com>, nouveau@lists.freedesktop.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCHv2] vgacon: Prevent vgacon_deinit from touching the hardware for inactive consoles.
+Date: Fri, 18 Sep 2009 16:30:01 +0200
+Message-Id: <1253284201-24866-1-git-send-email-currojerez@riseup.net>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1253046897-9981-1-git-send-email-currojerez@riseup.net>
+References: <1253046897-9981-1-git-send-email-currojerez@riseup.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009 10:12:26 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+fbcon makes the (reasonable) assumption that it only needs to program
+the hardware once, when fbcon_init() is called for the foreground
+console. This doesn't always play well with vgacon because
+vgacon_deinit() is only doing its job when the last console it owns is
+closed (when switching from vgacon to fbcon, that's usually *after*
+fbcon_init() has set the new mode). Depending on the hardware this can
+cause the wrong framebuffer location to be scanned out
+(e.g. reproduced on nv05 with the nouveau framebuffer driver).
 
-> On Thu, Sep 17, 2009 at 09:21:37PM -0700, Badari Pulavarty wrote:
-> >
-> > Originally it was supported on ext2. I added support nobh support
-> > for ext3. At that time, the main
-> > issue/complaint was that, these bufferheads consume memory from  
-> > ZONE_NORMAL causing
-> > memory pressure on 32-bit (i386) configurations.
-> 
-> Specifically, it matters on very large configuration systems (i.e.,
-> 32GB-64GB using PAE-36) that today we'd probably just say, "use
-> x86_64, you moron".  It would probably matter if someone were to want
-> to upgrade a non-64-bit capable machine to a newer kernel.  
-> 
-> Dropping nobh from ext3 at this point might prevent some of these
-> older systems from upgrading, I'm not sure how much we would care; on
-> the one hand, these machines tended to be pretty expensive, so people
-> would probably want to use them for a while.  On the other hand, it
-> has been over five years now since x86_64 machines have been
-> available, and many of these customers are highly unlikely to want to
-> upgrade anyway.
+Signed-off-by: Francisco Jerez <currojerez@riseup.net>
+---
+Some minor stylistic changes WRT v1.
 
-isn't the converse to just make nobh the default but not an option a
-better approach then?
-I forgot why this was a good idea to be an option again ;-)
+ drivers/video/console/vgacon.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-
-
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 59d7d5e..6bd75a9 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -590,12 +590,14 @@ static void vgacon_init(struct vc_data *c, int init)
+ 
+ static void vgacon_deinit(struct vc_data *c)
+ {
+-	/* When closing the last console, reset video origin */
+-	if (!--vgacon_uni_pagedir[1]) {
++	/* When closing the active console, reset video origin */
++	if (CON_IS_VISIBLE(c)) {
+ 		c->vc_visible_origin = vga_vram_base;
+ 		vga_set_mem_top(c);
+-		con_free_unimap(c);
+ 	}
++
++	if (!--vgacon_uni_pagedir[1])
++		con_free_unimap(c);
+ 	c->vc_uni_pagedir_loc = &c->vc_uni_pagedir;
+ 	con_set_default_unimap(c);
+ }
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.6.3.3
+
