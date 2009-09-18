@@ -1,74 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZIRVST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZISGzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbZIRVST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 17:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZIRVSP
+	id S1755147AbZISGzf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 02:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZISGze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 17:18:15 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56874 "EHLO mx1.redhat.com"
+	Sat, 19 Sep 2009 02:55:34 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:58854 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbZIRVSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 17:18:14 -0400
-Date: Fri, 18 Sep 2009 23:12:18 +0200
-From: Oleg Nesterov <oleg@redhat.com>
+	id S1754750AbZISGzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 02:55:33 -0400
+Date: Fri, 18 Sep 2009 23:13:12 +0200
+From: Jean Delvare <khali@linux-fr.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wu Fei <at.wufei@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, arjan@infradead.org,
-       jeremy@goop.org, mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tj@kernel.org, tglx@linutronix.de,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-tip-commits@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/1] kthreads: simplify !kthreadd_task logic, kill
-	kthreadd_task_init_done
-Message-ID: <20090918211218.GA19351@redhat.com>
-References: <20090901133709.GA24041@redhat.com> <20090901135925.GA9083@elte.hu> <20090901145526.GA31317@redhat.com> <20090901165235.GA9105@redhat.com> <m13a76xnbw.fsf@fess.ebiederm.org> <20090902091340.GA5173@redhat.com> <20090904073749.GB20598@elte.hu> <20090918163241.GA8556@desktop> <20090918185425.GA16620@redhat.com> <alpine.LFD.2.01.0909181217270.4950@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909181217270.4950@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: Linux I2C <linux-i2c@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] i2c updates for 2.6.32
+Message-ID: <20090918231312.133b833c@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/18, Linus Torvalds wrote:
->
-> On Fri, 18 Sep 2009, Oleg Nesterov wrote:
-> > >  	rcu_scheduler_starting();
-> > > -	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
-> > > -	numa_default_policy();
-> > >  	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
-> > >  	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
-> > > +	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
-> >
-> > We can't do this. kernel_init() should run with ->pid == 1, we are
-> > going to exec /sbin/init.
->
-> Umm - why not just add CLONE_PID to the 'kthreadd' creation, then?
+Hi Linus,
 
-Not sure I understand... We don't have CLONE_PID, and kthreadd()
-shouldn't have pid == 0 anyway.
+Please pull i2c subsystem updates for Linux 2.6.32 from:
 
-But this is not needed. We can do alloc_pid() before 'kthreadd' creation,
-then free_pid() before kernel_thread(kernel_init).
+git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git i2c-for-linus
 
-However, I am not sure we should do something like this. The patch
-I sent is very simple, in essence it is one-liner which only does
+There is support for the AMD SB900 south bridge SMBus, a new driver for
+standard ACPI SMBus implementations (SMBus CMI), 3 deprecated GPIO
+drivers removed, a significant i2c-core change (i2c adapters changed
+from class devices to bus devices), and a few other random fixes.
 
-	-       wake_up_process(kthreadd_task);
-	+	if (kthreadd_task)
-	+		wake_up_process(kthreadd_task);
+ Documentation/i2c/busses/i2c-piix4 |    2 +
+ Documentation/i2c/chips/pca9539    |   58 -----
+ Documentation/i2c/chips/pcf8574    |   65 ------
+ Documentation/i2c/chips/pcf8575    |   69 ------
+ MAINTAINERS                        |   16 ++
+ drivers/gpio/pcf857x.c             |    1 +
+ drivers/i2c/Kconfig                |    8 +
+ drivers/i2c/busses/Kconfig         |   19 ++-
+ drivers/i2c/busses/Makefile        |    3 +
+ drivers/i2c/busses/i2c-piix4.c     |    9 +-
+ drivers/i2c/busses/i2c-pnx.c       |    7 +-
+ drivers/i2c/busses/i2c-scmi.c      |  430 ++++++++++++++++++++++++++++++++++++
+ drivers/i2c/busses/i2c-taos-evm.c  |   45 ++--
+ drivers/i2c/busses/scx200_acb.c    |    6 +-
+ drivers/i2c/chips/Kconfig          |   48 ----
+ drivers/i2c/chips/Makefile         |    3 -
+ drivers/i2c/chips/pca9539.c        |  152 -------------
+ drivers/i2c/chips/pcf8574.c        |  215 ------------------
+ drivers/i2c/chips/pcf8575.c        |  198 -----------------
+ drivers/i2c/chips/tsl2550.c        |   42 +---
+ drivers/i2c/i2c-core.c             |  165 ++++++++++-----
+ include/linux/i2c-id.h             |   11 -
+ include/linux/i2c.h                |    2 -
+ include/linux/pci_ids.h            |    1 +
+ 24 files changed, 641 insertions(+), 934 deletions(-)
+ delete mode 100644 Documentation/i2c/chips/pca9539
+ delete mode 100644 Documentation/i2c/chips/pcf8574
+ delete mode 100644 Documentation/i2c/chips/pcf8575
+ create mode 100644 drivers/i2c/busses/i2c-scmi.c
+ delete mode 100644 drivers/i2c/chips/pca9539.c
+ delete mode 100644 drivers/i2c/chips/pcf8574.c
+ delete mode 100644 drivers/i2c/chips/pcf8575.c
 
-this way we should not worry about the ordering, kthread_create()
-can be called at any time, even before kthreadd creation (not that
-I think this is really useful though).
+---------------
 
+Crane Cai (2):
+      i2c-piix4: Add AMD SB900 SMBus device ID
+      i2c: Add driver for SMBus Control Method Interface
 
-But personally I still can't understand what happens. If we were
-preempted somewhere before "kthreadd_task = find_task_by_pid_ns()"
-initialization, then schedule_debug() should complain? rest_init()
-runs under preempt_disable().
+Jean Delvare (7):
+      i2c: Drop unused i2c_driver.id field
+      i2c-taos-evm: Switch echo off to improve performance
+      i2c/tsl2550: Use combined SMBus transactions
+      i2c: Convert i2c clients to a device type
+      i2c: Convert i2c adapters to bus devices
+      i2c: Provide compatibility links for i2c adapters
+      i2c: Clearly mark ACPI drivers as such
 
-Oleg.
+Julia Lawall (1):
+      i2c-pnx: Correct use of request_region/request_mem_region
 
+Willy Tarreau (1):
+      i2c/scx200_acb: Provide more information on bus errors
+
+Wolfram Sang (5):
+      gpio/pcf857x: Copy i2c_device_id from old pcf8574 driver
+      i2c/chips: Remove deprecated pcf8575 driver
+      i2c/chips: Remove deprecated pca9539 driver
+      i2c/chips: Remove deprecated pcf8574 driver
+      MAINTAINERS: Add maintainer for AT24 and PCA9564/PCA9665
+
+-- 
+Jean Delvare
