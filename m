@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbZISTI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752237AbZISTMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752116AbZISTI4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 15:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZISTI4
+	id S1752237AbZISTMQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 15:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZISTMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 15:08:56 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:64693 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbZISTIz (ORCPT
+	Sat, 19 Sep 2009 15:12:16 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:42211 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751455AbZISTMP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 15:08:55 -0400
+	Sat, 19 Sep 2009 15:12:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=UZJ5Ty3sd4IB8UtJJpEjcS/fbErVb5IJDVKlrpUbRAcoz5dgEY+ulMhD5aPmhUuL4u
-         c/LpF94yF85pjxra/rqZV4i1QAfbVSwmWcsokyBaluLWiH49jjEeipmYkOmWZPedbo2i
-         O43pDaZaeXrJqabXlCQLGRJ0Iq58aHod4KK3I=
+         :cc:content-type:content-transfer-encoding;
+        b=AH34dS7G0NsnMfgwyUn8BHceSUfINPl54VIMuJOAZx1tk2dOrDHgNWH5QUj/Oru6cq
+         WqoH7XfDWYGUkr1m/yzMeoQCKESBINNscu+L1TC+WjZdCstfy5M79+MsuHQBIOmdRTQv
+         rsYD1R2JRERPDwZSEhj6hdeMWteglsBg8y+9w=
 MIME-Version: 1.0
-In-Reply-To: <200906232314.18261.arnd@arndb.de>
-References: <1244980878-2124-1-git-send-email-vapier@gentoo.org> 
-	<200906191433.34608.arnd@arndb.de> <8bd0f97a0906190612n687cdbbt1e752997acb68e49@mail.gmail.com> 
-	<200906232314.18261.arnd@arndb.de>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901D41FB1@mi8nycmail19.Mi8.com>
+References: <1253224997-7422-1-git-send-email-vapier@gentoo.org> 
+	<BD79186B4FD85F4B8E60E381CAEE190901D41E44@mi8nycmail19.Mi8.com> 
+	<8bd0f97a0909171553s1b7ee725x728bbca2f49511a9@mail.gmail.com> 
+	<BD79186B4FD85F4B8E60E381CAEE190901D41FB1@mi8nycmail19.Mi8.com>
 From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Sat, 19 Sep 2009 15:08:39 -0400
-Message-ID: <8bd0f97a0909191208j42c49a72j67dd27287eba50fa@mail.gmail.com>
-Subject: Re: [PATCH 05/17] Blackfin: convert to generic checksum code
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Michal Simek <monstr@monstr.eu>, Paul Mundt <lethal@linux-sh.org>
+Date: Sat, 19 Sep 2009 15:11:59 -0400
+Message-ID: <8bd0f97a0909191211q4170febfj316d1c0cae31ef5d@mail.gmail.com>
+Subject: Re: [spi-devel-general] [PATCH 1/2] spi: new SPI bus 
+	lock/unlockfunctions
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: spi-devel-general@lists.sourceforge.net,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Yi Li <yi.li@analog.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 17:14, Arnd Bergmann wrote:
-> On Friday 19 June 2009, Mike Frysinger wrote:
->> >
->> > sounds like a good idea.
+On Fri, Sep 18, 2009 at 19:00, H Hartley Sweeten wrote:
+> On Thursday, September 17, 2009 3:54 PM, Mike Frysinger wrote:
+>>> I assume the spi master driver must supply the {lock/unlock}_bus methods
+>>> to properly support the locking.
 >>
->> how about the attached
->
-> Mostly good, but needs some improvements. At least it helped me
-> track down the last problem.
->
->> > lib/checksum.c: Fix another endianess bug
+>> currently, yes.  a common solution would be nice.  ideas/patches welcome ;).
 >>
->> hrm, still not quite :/
+>>> But, by returning 0 when the methods
+>>> are not supplied you are basically saying all the current master drivers
+>>> in mainline support bus locking.  I think this is really only "true" if
+>>> spi->master->num_chipselect == 1.
 >>
->> the attached test code shows failures in every case
+>> right, but that is no different from what we have today.  there is no
+>> way for a client to guarantee exclusive access, so you cant write code
+>> assuming it in the first place.  the only consumer thus far (mmc_spi)
+>> actually errors out if such conditions exist.
+>>
+>> in other words, we arent breaking anything.
 >
-> When I tried running it on x86-64, it only showed failures for
-> numbers 1, 2 and 4. I fixed them with this patch:
-> ---
-> lib/checksum: fix one more thinko
->
-> When do_csum gets unaligned data, we really need to treat
-> the first byte as an even byte, not an odd byte, because
-> we swap the two halves later.
->
-> Found by Mike's checksum-selftest module.
->
-> Reported-by: Mike Frysinger <vapier.adi@gmail.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Actually you are breaking the mmc_spi driver.
 
-shouldnt this fix have been in 2.6.31 ?  doesnt seem to be even in
-latest git ...
+no we arent.  the current code does some sloppy checking for possible
+concurrent access and then aborts.  the new code drops that sloppy
+checking in place of the bus master doing it right.  any setup that is
+working today will continue to work fine.  and setup *that is already
+broken* will continue to be broken.
+
+> By returning 0 when the methods are not supplied you are saying that the
+> master driver supports and locked the bus.  At a minimum, I think spi_lock_bus()
+> should return an error code if locking is not supported.
+>
+> Also, as Andrew Morton pointed out, calling spi_unlock_bus() without having
+> a valid lock by calling spi_lock_bus() is a bug.
+>
+> In addition your patch to mmc_spi should check the return code from
+> spi_lock_bus().  If the driver "requires" that the bus be locked it should
+> trigger an error path if it cannot be locked.
+>
+>>> Also, do you have a master driver that does have the {lock/unlock}_bus
+>>> methods?  I would like to see how you handled it.
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=commitdiff;h=cc54fa8ed63e11a000031bc650d41d57b441803d
+>
+> Oiy... The lock/unlock functions are simple enough but the change needed
+> to bfin_spi_pump_messages() is a bit complicated.
+>
+> What happens to next_msg if it is for other devices on the bus?
+
+Yi can take a stab at addressing these issues since he is the guy who
+has been putting together in the first place.
 -mike
