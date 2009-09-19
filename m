@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbZISVkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbZISVkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbZISVkD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbZISVjz
+	id S1753727AbZISVkH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbZISVkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:39:55 -0400
-Received: from kroah.org ([198.145.64.141]:50963 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:40:05 -0400
+Received: from kroah.org ([198.145.64.141]:50969 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752976AbZISVjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:39:54 -0400
+	id S1753647AbZISVkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:40:01 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 22/79] kfifo: Use "const" definitions
-Date: Sat, 19 Sep 2009 14:36:27 -0700
-Message-Id: <1253396244-7885-22-git-send-email-gregkh@suse.de>
+Cc: Kees Schoenmakers <k.schoenmakers@sigmae.nl>,
+       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 23/79] MOS7720 has no tiocmget method
+Date: Sat, 19 Sep 2009 14:36:28 -0700
+Message-Id: <1253396244-7885-23-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -22,54 +23,171 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@linux.intel.com>
+From: Kees Schoenmakers <k.schoenmakers@sigmae.nl>
 
-Currently kfifo cannot be used by parts of the kernel that use "const"
-properly as kfifo itself does not use const for passed data blocks which
-are indeed const.
+Fix the tiocmget/mset handling on the mos7720 USB serial port.
 
+[Minor space reformatting for coding style - Alan]
+
+Signed-off-by: Kees Schoenmakers <k.schoenmakers@sigmae.nl>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/kfifo.h |    4 ++--
- kernel/kfifo.c        |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/usb/serial/mos7720.c |  101 ++++++++++++++++++++++++++---------------
+ 1 files changed, 64 insertions(+), 37 deletions(-)
 
-diff --git a/include/linux/kfifo.h b/include/linux/kfifo.h
-index 29f62e1..ad6bdf5 100644
---- a/include/linux/kfifo.h
-+++ b/include/linux/kfifo.h
-@@ -38,7 +38,7 @@ extern struct kfifo *kfifo_alloc(unsigned int size, gfp_t gfp_mask,
- 				 spinlock_t *lock);
- extern void kfifo_free(struct kfifo *fifo);
- extern unsigned int __kfifo_put(struct kfifo *fifo,
--				unsigned char *buffer, unsigned int len);
-+				const unsigned char *buffer, unsigned int len);
- extern unsigned int __kfifo_get(struct kfifo *fifo,
- 				unsigned char *buffer, unsigned int len);
+diff --git a/drivers/usb/serial/mos7720.c b/drivers/usb/serial/mos7720.c
+index ccd4dd3..759cdd5 100644
+--- a/drivers/usb/serial/mos7720.c
++++ b/drivers/usb/serial/mos7720.c
+@@ -85,7 +85,7 @@ static int debug;
+ #define MOSCHIP_DEVICE_ID_7720		0x7720
+ #define MOSCHIP_DEVICE_ID_7715		0x7715
  
-@@ -77,7 +77,7 @@ static inline void kfifo_reset(struct kfifo *fifo)
-  * bytes copied.
-  */
- static inline unsigned int kfifo_put(struct kfifo *fifo,
--				     unsigned char *buffer, unsigned int len)
-+				const unsigned char *buffer, unsigned int len)
- {
- 	unsigned long flags;
- 	unsigned int ret;
-diff --git a/kernel/kfifo.c b/kernel/kfifo.c
-index 26539e3..3765ff3 100644
---- a/kernel/kfifo.c
-+++ b/kernel/kfifo.c
-@@ -117,7 +117,7 @@ EXPORT_SYMBOL(kfifo_free);
-  * writer, you don't need extra locking to use these functions.
-  */
- unsigned int __kfifo_put(struct kfifo *fifo,
--			 unsigned char *buffer, unsigned int len)
-+			const unsigned char *buffer, unsigned int len)
- {
- 	unsigned int l;
+-static struct usb_device_id moschip_port_id_table [] = {
++static struct usb_device_id moschip_port_id_table[] = {
+ 	{ USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7720) },
+ 	{ } /* terminating entry */
+ };
+@@ -1264,6 +1264,67 @@ static int get_lsr_info(struct tty_struct *tty,
+ 	return 0;
+ }
  
++static int mos7720_tiocmget(struct tty_struct *tty, struct file *file)
++{
++	struct usb_serial_port *port = tty->driver_data;
++	struct moschip_port *mos7720_port = usb_get_serial_port_data(port);
++	unsigned int result = 0;
++	unsigned int mcr ;
++	unsigned int msr ;
++
++	dbg("%s - port %d", __func__, port->number);
++
++	mcr = mos7720_port->shadowMCR;
++	msr = mos7720_port->shadowMSR;
++
++	result = ((mcr & UART_MCR_DTR)  ? TIOCM_DTR : 0)   /* 0x002 */
++	  | ((mcr & UART_MCR_RTS)   ? TIOCM_RTS : 0)   /* 0x004 */
++	  | ((msr & UART_MSR_CTS)   ? TIOCM_CTS : 0)   /* 0x020 */
++	  | ((msr & UART_MSR_DCD)   ? TIOCM_CAR : 0)   /* 0x040 */
++	  | ((msr & UART_MSR_RI)    ? TIOCM_RI :  0)   /* 0x080 */
++	  | ((msr & UART_MSR_DSR)   ? TIOCM_DSR : 0);  /* 0x100 */
++
++	dbg("%s -- %x", __func__, result);
++
++	return result;
++}
++
++static int mos7720_tiocmset(struct tty_struct *tty, struct file *file,
++					unsigned int set, unsigned int clear)
++{
++	struct usb_serial_port *port = tty->driver_data;
++	struct moschip_port *mos7720_port = usb_get_serial_port_data(port);
++	unsigned int mcr ;
++	unsigned char lmcr;
++
++	dbg("%s - port %d", __func__, port->number);
++	dbg("he was at tiocmget");
++
++	mcr = mos7720_port->shadowMCR;
++
++	if (set & TIOCM_RTS)
++		mcr |= UART_MCR_RTS;
++	if (set & TIOCM_DTR)
++		mcr |= UART_MCR_DTR;
++	if (set & TIOCM_LOOP)
++		mcr |= UART_MCR_LOOP;
++
++	if (clear & TIOCM_RTS)
++		mcr &= ~UART_MCR_RTS;
++	if (clear & TIOCM_DTR)
++		mcr &= ~UART_MCR_DTR;
++	if (clear & TIOCM_LOOP)
++		mcr &= ~UART_MCR_LOOP;
++
++	mos7720_port->shadowMCR = mcr;
++	lmcr = mos7720_port->shadowMCR;
++
++	send_mos_cmd(port->serial, MOS_WRITE,
++		port->number - port->serial->minor, UART_MCR, &lmcr);
++
++	return 0;
++}
++
+ static int set_modem_info(struct moschip_port *mos7720_port, unsigned int cmd,
+ 			  unsigned int __user *value)
+ {
+@@ -1301,14 +1362,6 @@ static int set_modem_info(struct moschip_port *mos7720_port, unsigned int cmd,
+ 			mcr &= ~UART_MCR_LOOP;
+ 		break;
+ 
+-	case TIOCMSET:
+-		/* turn off the RTS and DTR and LOOPBACK
+-		 * and then only turn on what was asked to */
+-		mcr &=  ~(UART_MCR_RTS | UART_MCR_DTR | UART_MCR_LOOP);
+-		mcr |= ((arg & TIOCM_RTS) ? UART_MCR_RTS : 0);
+-		mcr |= ((arg & TIOCM_DTR) ? UART_MCR_DTR : 0);
+-		mcr |= ((arg & TIOCM_LOOP) ? UART_MCR_LOOP : 0);
+-		break;
+ 	}
+ 
+ 	mos7720_port->shadowMCR = mcr;
+@@ -1320,28 +1373,6 @@ static int set_modem_info(struct moschip_port *mos7720_port, unsigned int cmd,
+ 	return 0;
+ }
+ 
+-static int get_modem_info(struct moschip_port *mos7720_port,
+-			  unsigned int __user *value)
+-{
+-	unsigned int result = 0;
+-	unsigned int msr = mos7720_port->shadowMSR;
+-	unsigned int mcr = mos7720_port->shadowMCR;
+-
+-	result = ((mcr & UART_MCR_DTR)	? TIOCM_DTR: 0)	  /* 0x002 */
+-		  | ((mcr & UART_MCR_RTS)	? TIOCM_RTS: 0)   /* 0x004 */
+-		  | ((msr & UART_MSR_CTS)	? TIOCM_CTS: 0)   /* 0x020 */
+-		  | ((msr & UART_MSR_DCD)	? TIOCM_CAR: 0)   /* 0x040 */
+-		  | ((msr & UART_MSR_RI)	? TIOCM_RI:  0)   /* 0x080 */
+-		  | ((msr & UART_MSR_DSR)	? TIOCM_DSR: 0);  /* 0x100 */
+-
+-
+-	dbg("%s -- %x", __func__, result);
+-
+-	if (copy_to_user(value, &result, sizeof(int)))
+-		return -EFAULT;
+-	return 0;
+-}
+-
+ static int get_serial_info(struct moschip_port *mos7720_port,
+ 			   struct serial_struct __user *retinfo)
+ {
+@@ -1392,17 +1423,11 @@ static int mos7720_ioctl(struct tty_struct *tty, struct file *file,
+ 	/* FIXME: These should be using the mode methods */
+ 	case TIOCMBIS:
+ 	case TIOCMBIC:
+-	case TIOCMSET:
+ 		dbg("%s (%d) TIOCMSET/TIOCMBIC/TIOCMSET",
+ 					__func__, port->number);
+ 		return set_modem_info(mos7720_port, cmd,
+ 				      (unsigned int __user *)arg);
+ 
+-	case TIOCMGET:
+-		dbg("%s (%d) TIOCMGET", __func__,  port->number);
+-		return get_modem_info(mos7720_port,
+-				      (unsigned int __user *)arg);
+-
+ 	case TIOCGSERIAL:
+ 		dbg("%s (%d) TIOCGSERIAL", __func__,  port->number);
+ 		return get_serial_info(mos7720_port,
+@@ -1557,6 +1582,8 @@ static struct usb_serial_driver moschip7720_2port_driver = {
+ 	.attach			= mos7720_startup,
+ 	.release		= mos7720_release,
+ 	.ioctl			= mos7720_ioctl,
++	.tiocmget		= mos7720_tiocmget,
++	.tiocmset		= mos7720_tiocmset,
+ 	.set_termios		= mos7720_set_termios,
+ 	.write			= mos7720_write,
+ 	.write_room		= mos7720_write_room,
 -- 
 1.6.4.2
 
