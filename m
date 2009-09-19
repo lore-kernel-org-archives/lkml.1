@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbZISVlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbZISVlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbZISVlQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbZISVlO
+	id S1754135AbZISVlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbZISVlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:41:14 -0400
-Received: from kroah.org ([198.145.64.141]:40453 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:41:17 -0400
+Received: from kroah.org ([198.145.64.141]:40456 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753799AbZISVlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:41:11 -0400
+	id S1753945AbZISVlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:41:13 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 34/79] cyclades: use the full port_close function
-Date: Sat, 19 Sep 2009 14:36:39 -0700
-Message-Id: <1253396244-7885-34-git-send-email-gregkh@suse.de>
+Subject: [PATCH 35/79] tty: make the kref destructor occur asynchronously
+Date: Sat, 19 Sep 2009 14:36:40 -0700
+Message-Id: <1253396244-7885-35-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -24,95 +24,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-Convert cyclades to use the full tty_port_close helper
+We want to be able to sleep in the destructor for USB at least. It isn't a
+hot path so just pushing it to a work queue doesn't really cause any
+difficulty.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/cyclades.c |   36 +++++++++++++++++-------------------
- 1 files changed, 17 insertions(+), 19 deletions(-)
+ drivers/char/tty_io.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index f518e0b..70bd61b 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -1750,24 +1750,15 @@ static void cy_flush_buffer(struct tty_struct *tty)
- }				/* cy_flush_buffer */
- 
- 
--/*
-- * This routine is called when a particular tty device is closed.
-- */
--static void cy_close(struct tty_struct *tty, struct file *filp)
-+static void cy_do_close(struct tty_port *port)
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 9384480..385cca7 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1386,10 +1386,14 @@ EXPORT_SYMBOL(tty_shutdown);
+  *		tty_mutex - sometimes only
+  *		takes the file list lock internally when working on the list
+  *	of ttys that the driver keeps.
++ *
++ *	This method gets called from a work queue so that the driver private
++ *	shutdown ops can sleep (needed for USB at least)
+  */
+-static void release_one_tty(struct kref *kref)
++static void release_one_tty(struct work_struct *work)
  {
--	struct cyclades_port *info = tty->driver_data;
-+	struct cyclades_port *info = container_of(port, struct cyclades_port,
-+								port);
- 	struct cyclades_card *card;
- 	unsigned long flags;
- 	int channel;
+-	struct tty_struct *tty = container_of(kref, struct tty_struct, kref);
++	struct tty_struct *tty =
++		container_of(work, struct tty_struct, hangup_work);
+ 	struct tty_driver *driver = tty->driver;
  
--	if (!info || serial_paranoia_check(info, tty->name, "cy_close"))
--		return;
--
- 	card = info->card;
--
--	if (!tty_port_close_start(&info->port, tty, filp))
--		return;
--
- 	channel = info->line - card->first_line;
- 	spin_lock_irqsave(&card->card_lock, flags);
+ 	if (tty->ops->shutdown)
+@@ -1407,6 +1411,15 @@ static void release_one_tty(struct kref *kref)
+ 	free_tty_struct(tty);
+ }
  
-@@ -1779,7 +1770,7 @@ static void cy_close(struct tty_struct *tty, struct file *filp)
- 			/* Waiting for on-board buffers to be empty before
- 			   closing the port */
- 			spin_unlock_irqrestore(&card->card_lock, flags);
--			cy_wait_until_sent(tty, info->timeout);
-+			cy_wait_until_sent(port->tty, info->timeout);
- 			spin_lock_irqsave(&card->card_lock, flags);
- 		}
- 	} else {
-@@ -1801,14 +1792,19 @@ static void cy_close(struct tty_struct *tty, struct file *filp)
- 		}
- #endif
- 	}
--
- 	spin_unlock_irqrestore(&card->card_lock, flags);
--	cy_shutdown(info, tty);
--	cy_flush_buffer(tty);
--
--	tty_port_tty_set(&info->port, NULL);
-+	cy_shutdown(info, port->tty);
-+}
- 
--	tty_port_close_end(&info->port, tty);
-+/*
-+ * This routine is called when a particular tty device is closed.
-+ */
-+static void cy_close(struct tty_struct *tty, struct file *filp)
++static void queue_release_one_tty(struct kref *kref)
 +{
-+	struct cyclades_port *info = tty->driver_data;
-+	if (!info || serial_paranoia_check(info, tty->name, "cy_close"))
-+		return;
-+	tty_port_close(&info->port, tty, filp);
- }				/* cy_close */
++	struct tty_struct *tty = container_of(kref, struct tty_struct, kref);
++	/* The hangup queue is now free so we can reuse it rather than
++	   waste a chunk of memory for each port */
++	INIT_WORK(&tty->hangup_work, release_one_tty);
++	schedule_work(&tty->hangup_work);
++}
++
+ /**
+  *	tty_kref_put		-	release a tty kref
+  *	@tty: tty device
+@@ -1418,7 +1431,7 @@ static void release_one_tty(struct kref *kref)
+ void tty_kref_put(struct tty_struct *tty)
+ {
+ 	if (tty)
+-		kref_put(&tty->kref, release_one_tty);
++		kref_put(&tty->kref, queue_release_one_tty);
+ }
+ EXPORT_SYMBOL(tty_kref_put);
  
- /* This routine gets called when tty_write has put something into
-@@ -3113,11 +3109,13 @@ static void cyz_dtr_rts(struct tty_port *port, int raise)
- static const struct tty_port_operations cyy_port_ops = {
- 	.carrier_raised = cyy_carrier_raised,
- 	.dtr_rts = cyy_dtr_rts,
-+	.shutdown = cy_do_close,
- };
- 
- static const struct tty_port_operations cyz_port_ops = {
- 	.carrier_raised = cyz_carrier_raised,
- 	.dtr_rts = cyz_dtr_rts,
-+	.shutdown = cy_do_close,
- };
- 
- /*
 -- 
 1.6.4.2
 
