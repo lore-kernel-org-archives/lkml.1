@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbZISJHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbZISJJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbZISJHb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 05:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756720AbZISJH2
+	id S1756722AbZISJJB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 05:09:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbZISJI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 05:07:28 -0400
-Received: from smtp3-g21.free.fr ([212.27.42.3]:40283 "EHLO smtp3-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756184AbZISJH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 05:07:26 -0400
-From: Jim Meyering <jim@meyering.net>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: efficient access to "rotational";  new fcntl?
-In-Reply-To: <20090919103149.54258081@infradead.org> (Arjan van de Ven's
-	message of "Sat, 19 Sep 2009 10:31:49 +0200")
-References: <87vdjgqcbd.fsf@meyering.net> <20090918221658.GB28781@mit.edu>
-	<87pr9npdlc.fsf@meyering.net> <20090919103149.54258081@infradead.org>
-Date: Sat, 19 Sep 2009 11:07:21 +0200
-Message-ID: <87k4zvpak6.fsf@meyering.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 19 Sep 2009 05:08:59 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:54606 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbZISJI7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 05:08:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=UB3oqele4JqjkODOpIxNJz8W1w0so81pPrSGv1THqKOTWb38iwd7LPQjWrSFDq9UCm
+         IDlqL720qt7TCuyOYbfwJm+jvuK8nHg04o2IDXC0pvxAr7gTYAudW7Ia+1dQXqALFwsj
+         sH1cE1UES07B/rCo0hxRrLCKTZzsYOpGU1Gho=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: [GIT PULL v2] tracing/syscalls: Arch code shrinks, easier arch integration
+Date: Sat, 19 Sep 2009 11:08:56 +0200
+Message-Id: <1253351338-5301-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1253338757-5918-1-git-send-email-fweisbec@gmail.com>
+References: <1253338757-5918-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Sat, 19 Sep 2009 10:01:51 +0200
-> Jim Meyering <jim@meyering.net> wrote:
->> Yeah, I mentioned I should do exactly that on IRC yesterday.
->> I've just run some tests, and see that at least with one SSD (OCZ
->> Summit 120GB), the 0.5s cost of sorting pays off handsomely with a
->> 12-x speed-up, saving 5.5 minutes, when removing a
->> 1-million-empty-file directory.
->>
->
-> likely because you actually reduce the amount of IO; inodes share
-> disk blocks; repeated unlinks in random order likely write the same
-> block multiple times....
+Ingo, Heiko,
 
-That makes sense.
-Maybe cache effects, too?
+I've updated the patches following your reviews.
+Please tell me if you see another troubles.
 
-> btw have you given thought about using threads as part of rm -r[f] ?
-> (would make the unlinks of unrelated directories/files asynchronous)
+The new tree can be pulled from:
 
-While it is certainly a nicely parallelizable process,
-rm usually runs so quickly that I doubt it'd be worthwhile.
-If you know in advance that parallelizing a particular recursive
-removal would give a significant benefit, it's probably best to do it
-via e.g., xargs --max-procs=N.
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/syscalls-v2
 
-However, sort *would* benefit, and some UCLA students implemented that
-for a term project.  Unfortunately, the project is stalled because the
-implementation was not efficient enough, and no one has found the
-time to improve it since.
+Thanks,
+	Frederic.
+
+Frederic Weisbecker (2):
+      tracing: Move syscalls metadata handling from arch to core
+      tracing: Document HAVE_SYSCALL_TRACEPOINTS needs
+
+ Documentation/trace/ftrace-design.txt |   13 ++++-
+ arch/s390/kernel/ftrace.c             |   67 +-------------------------
+ arch/x86/kernel/ftrace.c              |   76 +----------------------------
+ include/trace/syscall.h               |    2 +-
+ kernel/trace/trace_syscalls.c         |   86 +++++++++++++++++++++++++++++++++
+ 5 files changed, 102 insertions(+), 142 deletions(-)
