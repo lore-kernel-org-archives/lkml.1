@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756623AbZISJDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbZISJGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756623AbZISJDh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 05:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZISJDg
+	id S1756707AbZISJGR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 05:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbZISJGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 05:03:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47252 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752805AbZISJDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 05:03:35 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19Suh5WHERS9iGgwsrT9nvLTY6gURhMnT50FJO6GB
-	3KAyM5vMgJFPHO
-Subject: Re: [PATCH] Prevent immediate process rescheduling
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Mark Langsdorf <mark.langsdorf@amd.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1253326605.7133.55.camel@marge.simson.net>
-References: <200909181449.12311.mark.langsdorf@amd.com>
-	 <20090918195455.GC11726@elte.hu>  <1253304203.10538.64.camel@laptop>
-	 <1253326605.7133.55.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Sat, 19 Sep 2009 11:03:36 +0200
-Message-Id: <1253351016.7282.3.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.73
+	Sat, 19 Sep 2009 05:06:16 -0400
+Received: from [195.41.46.236] ([195.41.46.236]:37143 "EHLO pfepb.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755211AbZISJGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 05:06:16 -0400
+Date: Sat, 19 Sep 2009 11:06:14 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Caveh Jalali <ecaveh@gmail.com>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] Makefile: can't build modules outside the kernel tree
+	if it was built using O=
+Message-ID: <20090919090614.GC25877@merkur.ravnborg.org>
+References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-19 at 04:16 +0200, Mike Galbraith wrote:
+On Wed, Sep 16, 2009 at 07:30:43PM -0700, Caveh Jalali wrote:
+> in 2.6.31, it is no longer possible to build kernel modules for some platforms
+> (the ones that need include2) outside the kernel src tree if the
+> src tree was built using O= to specify an alternate directory for the
+> build output.
+> 
+> i think this broke with the following commit:
+> 
+> commit b8b572e1015f81b4e748417be2629dfe51ab99f9
+> Author: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date:   Fri Aug 1 15:20:30 2008 +1000
+> 
+>    powerpc: Move include files to arch/powerpc/include/asm
+> 
+> 
+> when the platform specific include directories were shuffled around
+> without updating the
+> top level Makefile.  however, i think this FAIL is generic, and not
+> limited to powerpc.
+> here's a patch to the top level Makefile to teach it about the shuffled files:
 
-> Sounds like Mark's case really needs a gentle_yield() that moves the
-> task behind next, and slightly beyond if they are too close, but which
-> also ignores the request entirely if the gap is too large.
+This is no good. Nothing outside the kernel should in any way rely
+on include2. And it will soon be gone anyway.
 
-Did that, it sucks. (not surprising really, yield _always_ sucked;)
+So we will not try to workaround something that is broken.
 
-	-Mike
-
+	Sam
