@@ -1,54 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbZISIiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZISIjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbZISIiT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 04:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZISIiR
+	id S1756689AbZISIjo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 04:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZISIjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 04:38:17 -0400
-Received: from [195.41.46.236] ([195.41.46.236]:43798 "EHLO pfepb.post.tele.dk"
+	Sat, 19 Sep 2009 04:39:43 -0400
+Received: from [195.41.46.236] ([195.41.46.236]:51789 "EHLO pfepb.post.tele.dk"
 	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753700AbZISIiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 04:38:16 -0400
-Date: Sat, 19 Sep 2009 10:38:15 +0200
+	id S1753542AbZISIjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 04:39:43 -0400
+Date: Sat, 19 Sep 2009 10:39:41 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Tim Abbott <tabbott@ksplice.com>
-Cc: linux-parisc@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Helge Deller <deller@gmx.de>,
+Cc: user-mode-linux-devel@lists.sourceforge.net, Jeff Dike <jdike@addtoit.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 0/2] Linker script cleanup patches for parisc
-Message-ID: <20090919083815.GC25840@merkur.ravnborg.org>
-References: <1253306078-7066-1-git-send-email-tabbott@ksplice.com>
+Subject: Re: [PATCH v2] um: Clean up linker script using standard macros.
+Message-ID: <20090919083941.GD25840@merkur.ravnborg.org>
+References: <1253306132-7117-1-git-send-email-tabbott@ksplice.com> <1253306132-7117-2-git-send-email-tabbott@ksplice.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253306078-7066-1-git-send-email-tabbott@ksplice.com>
+In-Reply-To: <1253306132-7117-2-git-send-email-tabbott@ksplice.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 04:34:36PM -0400, Tim Abbott wrote:
-> This is an updated version of the patch series I sent on September 6
-> cleaning up the parisc architecture's linker scripts.  It differs from
-> the previous version only in having been rebased on top of Linus'
-> current master (and is a complete rewrite of the version that got some
-> review back in May:
-> <http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-05/msg00095.html>).
-> 
-> This cross-architecture linker script cleanup project is in
-> preparation for adding support for building the kernel with
-> -ffunction-sections -fdata-sections, which is a prerequisite for
-> Ksplice.
-> 
-> 	-Tim Abbott
-> 
-> Tim Abbott (2):
->   parisc: Clean up linker script using new linker script macros.
->   parisc: Remove useless altinstructions code copied from x86.
-
-Looks good.
-
-Both have my:
+On Fri, Sep 18, 2009 at 04:35:32PM -0400, Tim Abbott wrote:
+> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> Cc: Jeff Dike <jdike@addtoit.com>
+> Cc: user-mode-linux-devel@lists.sourceforge.net
+> Cc: Sam Ravnborg <sam@ravnborg.org>
 
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
