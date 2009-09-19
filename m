@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbZISVmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbZISVun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754319AbZISVmI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbZISVmE
+	id S1754506AbZISVun (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZISVmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:42:04 -0400
-Received: from kroah.org ([198.145.64.141]:40477 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:42:07 -0400
+Received: from kroah.org ([198.145.64.141]:40481 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752999AbZISVlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:41:50 -0400
+	id S1753481AbZISVmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:42:03 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 41/79] vt: remove power stuff from kernel/power
-Date: Sat, 19 Sep 2009 14:36:46 -0700
-Message-Id: <1253396244-7885-41-git-send-email-gregkh@suse.de>
+Subject: [PATCH 42/79] vt: move kernel stuff out of vt.h
+Date: Sat, 19 Sep 2009 14:36:47 -0700
+Message-Id: <1253396244-7885-42-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -24,185 +24,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-In the past someone gratuitiously borrowed chunks of kernel internal vt
-code and dumped them in kernel/power. They have all sorts of deep relations
-with the vt code so put them in the vt tree instead
+We have vt_kern.h for this
+
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/vt_ioctl.c |   56 +++++++++++++++++++++++++++++++++++++++++
- include/linux/vt_kern.h |    1 +
- kernel/power/console.c  |   63 +++-------------------------------------------
- 3 files changed, 62 insertions(+), 58 deletions(-)
+ include/linux/vt.h      |   11 -----------
+ include/linux/vt_kern.h |   12 ++++++++++++
+ 2 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index 35ad94e..d29fbd4 100644
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -16,6 +16,7 @@
- #include <linux/tty.h>
- #include <linux/timer.h>
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/kd.h>
- #include <linux/vt.h>
- #include <linux/string.h>
-@@ -1483,3 +1484,58 @@ void change_console(struct vc_data *new_vc)
+diff --git a/include/linux/vt.h b/include/linux/vt.h
+index 89c03a1..831daf6 100644
+--- a/include/linux/vt.h
++++ b/include/linux/vt.h
+@@ -1,17 +1,6 @@
+ #ifndef _LINUX_VT_H
+ #define _LINUX_VT_H
  
- 	complete_change_console(new_vc);
- }
-+
-+/* Perform a kernel triggered VT switch for suspend/resume */
-+
-+static int disable_vt_switch;
-+
-+int vt_move_to_console(unsigned int vt, int alloc)
-+{
-+	int prev;
-+
-+	acquire_console_sem();
-+	/* Graphics mode - up to X */
-+	if (disable_vt_switch) {
-+		release_console_sem();
-+		return 0;
-+	}
-+	prev = fg_console;
-+
-+	if (alloc && vc_allocate(vt)) {
-+		/* we can't have a free VC for now. Too bad,
-+		 * we don't want to mess the screen for now. */
-+		release_console_sem();
-+		return -ENOSPC;
-+	}
-+
-+	if (set_console(vt)) {
-+		/*
-+		 * We're unable to switch to the SUSPEND_CONSOLE.
-+		 * Let the calling function know so it can decide
-+		 * what to do.
-+		 */
-+		release_console_sem();
-+		return -EIO;
-+	}
-+	release_console_sem();
-+	if (vt_waitactive(vt)) {
-+		pr_debug("Suspend: Can't switch VCs.");
-+		return -EINTR;
-+	}
-+	return prev;
-+}
-+
-+/*
-+ * Normally during a suspend, we allocate a new console and switch to it.
-+ * When we resume, we switch back to the original console.  This switch
-+ * can be slow, so on systems where the framebuffer can handle restoration
-+ * of video registers anyways, there's little point in doing the console
-+ * switch.  This function allows you to disable it by passing it '0'.
-+ */
-+void pm_set_vt_switch(int do_switch)
-+{
-+	acquire_console_sem();
-+	disable_vt_switch = !do_switch;
-+	release_console_sem();
-+}
-+EXPORT_SYMBOL(pm_set_vt_switch);
+-#ifdef __KERNEL__
+-struct notifier_block;
+-
+-struct vt_notifier_param {
+-	struct vc_data *vc;	/* VC on which the update happened */
+-	unsigned int c;		/* Printed char */
+-};
+-
+-extern int register_vt_notifier(struct notifier_block *nb);
+-extern int unregister_vt_notifier(struct notifier_block *nb);
+-#endif
+ 
+ /*
+  * These constants are also useful for user-level apps (e.g., VC
 diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
-index f8c797d..5b53efe 100644
+index 5b53efe..c0c4e11 100644
 --- a/include/linux/vt_kern.h
 +++ b/include/linux/vt_kern.h
-@@ -117,4 +117,5 @@ struct vt_spawn_console {
- };
+@@ -13,6 +13,7 @@
+ #include <linux/console_struct.h>
+ #include <linux/mm.h>
+ #include <linux/consolemap.h>
++#include <linux/notifier.h>
+ 
+ /*
+  * Presently, a lot of graphics programs do not restore the contents of
+@@ -118,4 +119,15 @@ struct vt_spawn_console {
  extern struct vt_spawn_console vt_spawn_con;
  
-+extern int vt_move_to_console(unsigned int vt, int alloc);
+ extern int vt_move_to_console(unsigned int vt, int alloc);
++
++/* Interfaces for VC notification of character events (for accessibility etc) */
++
++struct vt_notifier_param {
++	struct vc_data *vc;	/* VC on which the update happened */
++	unsigned int c;		/* Printed char */
++};
++
++extern int register_vt_notifier(struct notifier_block *nb);
++extern int unregister_vt_notifier(struct notifier_block *nb);
++
  #endif /* _VT_KERN_H */
-diff --git a/kernel/power/console.c b/kernel/power/console.c
-index a3961b2..5187136 100644
---- a/kernel/power/console.c
-+++ b/kernel/power/console.c
-@@ -14,56 +14,13 @@
- #define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
- 
- static int orig_fgconsole, orig_kmsg;
--static int disable_vt_switch;
--
--/*
-- * Normally during a suspend, we allocate a new console and switch to it.
-- * When we resume, we switch back to the original console.  This switch
-- * can be slow, so on systems where the framebuffer can handle restoration
-- * of video registers anyways, there's little point in doing the console
-- * switch.  This function allows you to disable it by passing it '0'.
-- */
--void pm_set_vt_switch(int do_switch)
--{
--	acquire_console_sem();
--	disable_vt_switch = !do_switch;
--	release_console_sem();
--}
--EXPORT_SYMBOL(pm_set_vt_switch);
- 
- int pm_prepare_console(void)
- {
--	acquire_console_sem();
--
--	if (disable_vt_switch) {
--		release_console_sem();
--		return 0;
--	}
--
--	orig_fgconsole = fg_console;
--
--	if (vc_allocate(SUSPEND_CONSOLE)) {
--	  /* we can't have a free VC for now. Too bad,
--	   * we don't want to mess the screen for now. */
--		release_console_sem();
-+	orig_fgconsole = vt_move_to_console(SUSPEND_CONSOLE, 1);
-+	if (orig_fgconsole < 0)
- 		return 1;
--	}
- 
--	if (set_console(SUSPEND_CONSOLE)) {
--		/*
--		 * We're unable to switch to the SUSPEND_CONSOLE.
--		 * Let the calling function know so it can decide
--		 * what to do.
--		 */
--		release_console_sem();
--		return 1;
--	}
--	release_console_sem();
--
--	if (vt_waitactive(SUSPEND_CONSOLE)) {
--		pr_debug("Suspend: Can't switch VCs.");
--		return 1;
--	}
- 	orig_kmsg = kmsg_redirect;
- 	kmsg_redirect = SUSPEND_CONSOLE;
- 	return 0;
-@@ -71,19 +28,9 @@ int pm_prepare_console(void)
- 
- void pm_restore_console(void)
- {
--	acquire_console_sem();
--	if (disable_vt_switch) {
--		release_console_sem();
--		return;
--	}
--	set_console(orig_fgconsole);
--	release_console_sem();
--
--	if (vt_waitactive(orig_fgconsole)) {
--		pr_debug("Resume: Can't switch VCs.");
--		return;
-+	if (orig_fgconsole >= 0) {
-+		vt_move_to_console(orig_fgconsole, 0);
-+		kmsg_redirect = orig_kmsg;
- 	}
--
--	kmsg_redirect = orig_kmsg;
- }
- #endif
 -- 
 1.6.4.2
 
