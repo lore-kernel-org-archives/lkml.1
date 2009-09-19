@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZISVwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZISVk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZISVwE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZISVkQ
+	id S1753665AbZISVk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZISVkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:40:16 -0400
-Received: from kroah.org ([198.145.64.141]:40420 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:40:25 -0400
+Received: from kroah.org ([198.145.64.141]:40430 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753481AbZISVkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:40:12 -0400
+	id S1753583AbZISVkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:40:20 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 26/79] mos7840: remove old dead modem logic
-Date: Sat, 19 Sep 2009 14:36:31 -0700
-Message-Id: <1253396244-7885-26-git-send-email-gregkh@suse.de>
+Cc: Vikram Pandita <vikram.pandita@ti.com>, Alan Cox <alan@linux.intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 27/79] serial: 8250: add IRQ trigger support
+Date: Sat, 19 Sep 2009 14:36:32 -0700
+Message-Id: <1253396244-7885-27-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -22,157 +23,148 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@linux.intel.com>
+From: Vikram Pandita <vikram.pandita@ti.com>
 
-The modem ioctls are not routed via the ioctl method so kill the old dead
-code. The correct code is also already present and hooked in.
+There is currently no provision for passing IRQ trigger flags for
+serial IRQs with triggering requirements (such as GPIO IRQs)
 
+This patch adds irqflags to plat_serial8250_port that can be passed
+from board file to reqest_irq() of 8250 driver
+
+Changes are backward compatible with boards passing UPF_SHARE_IRQ flag
+
+Tested on Zoom2 board that has IRQF_TRIGGER_RISING requirement for 8250 irq
+
+[Moved new flag to end to fix bugs in the original with the old_serial array
+	-- Alan]
+
+Signed-off-by: Vikram Pandita <vikram.pandita@ti.com>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/serial/mos7840.c |  115 ------------------------------------------
- 1 files changed, 0 insertions(+), 115 deletions(-)
+ drivers/serial/8250.c       |   14 +++++++++-----
+ drivers/serial/8250.h       |    1 +
+ include/linux/serial_8250.h |    1 +
+ include/linux/serial_core.h |    1 +
+ 4 files changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/usb/serial/mos7840.c b/drivers/usb/serial/mos7840.c
-index 270009a..b93f0f9 100644
---- a/drivers/usb/serial/mos7840.c
-+++ b/drivers/usb/serial/mos7840.c
-@@ -2134,106 +2134,6 @@ static int mos7840_get_lsr_info(struct tty_struct *tty,
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index fb867a9..83168a6 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1677,7 +1677,7 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
+ 		INIT_LIST_HEAD(&up->list);
+ 		i->head = &up->list;
+ 		spin_unlock_irq(&i->lock);
+-
++		irq_flags |= up->port.irqflags;
+ 		ret = request_irq(up->port.irq, serial8250_interrupt,
+ 				  irq_flags, "serial", i);
+ 		if (ret < 0)
+@@ -2026,7 +2026,7 @@ static int serial8250_startup(struct uart_port *port)
+ 		 * allow register changes to become visible.
+ 		 */
+ 		spin_lock_irqsave(&up->port.lock, flags);
+-		if (up->port.flags & UPF_SHARE_IRQ)
++		if (up->port.irqflags & IRQF_SHARED)
+ 			disable_irq_nosync(up->port.irq);
+ 
+ 		wait_for_xmitr(up, UART_LSR_THRE);
+@@ -2039,7 +2039,7 @@ static int serial8250_startup(struct uart_port *port)
+ 		iir = serial_in(up, UART_IIR);
+ 		serial_out(up, UART_IER, 0);
+ 
+-		if (up->port.flags & UPF_SHARE_IRQ)
++		if (up->port.irqflags & IRQF_SHARED)
+ 			enable_irq(up->port.irq);
+ 		spin_unlock_irqrestore(&up->port.lock, flags);
+ 
+@@ -2671,6 +2671,7 @@ static void __init serial8250_isa_init_ports(void)
+ 	     i++, up++) {
+ 		up->port.iobase   = old_serial_port[i].port;
+ 		up->port.irq      = irq_canonicalize(old_serial_port[i].irq);
++		up->port.irqflags = old_serial_port[i].irqflags;
+ 		up->port.uartclk  = old_serial_port[i].baud_base * 16;
+ 		up->port.flags    = old_serial_port[i].flags;
+ 		up->port.hub6     = old_serial_port[i].hub6;
+@@ -2679,7 +2680,7 @@ static void __init serial8250_isa_init_ports(void)
+ 		up->port.regshift = old_serial_port[i].iomem_reg_shift;
+ 		set_io_from_upio(&up->port);
+ 		if (share_irqs)
+-			up->port.flags |= UPF_SHARE_IRQ;
++			up->port.irqflags |= IRQF_SHARED;
+ 	}
  }
  
- /*****************************************************************************
-- * mos7840_set_modem_info
-- *      function to set modem info
-- *****************************************************************************/
--
--/* FIXME: Should be using the model control hooks */
--
--static int mos7840_set_modem_info(struct moschip_port *mos7840_port,
--				  unsigned int cmd, unsigned int __user *value)
--{
--	unsigned int mcr;
--	unsigned int arg;
--	__u16 Data;
--	int status;
--	struct usb_serial_port *port;
--
--	if (mos7840_port == NULL)
--		return -1;
--
--	port = (struct usb_serial_port *)mos7840_port->port;
--	if (mos7840_port_paranoia_check(port, __func__)) {
--		dbg("%s", "Invalid port");
--		return -1;
--	}
--
--	mcr = mos7840_port->shadowMCR;
--
--	if (copy_from_user(&arg, value, sizeof(int)))
--		return -EFAULT;
--
--	switch (cmd) {
--	case TIOCMBIS:
--		if (arg & TIOCM_RTS)
--			mcr |= MCR_RTS;
--		if (arg & TIOCM_DTR)
--			mcr |= MCR_RTS;
--		if (arg & TIOCM_LOOP)
--			mcr |= MCR_LOOPBACK;
--		break;
--
--	case TIOCMBIC:
--		if (arg & TIOCM_RTS)
--			mcr &= ~MCR_RTS;
--		if (arg & TIOCM_DTR)
--			mcr &= ~MCR_RTS;
--		if (arg & TIOCM_LOOP)
--			mcr &= ~MCR_LOOPBACK;
--		break;
--
--	case TIOCMSET:
--		/* turn off the RTS and DTR and LOOPBACK
--		 * and then only turn on what was asked to */
--		mcr &= ~(MCR_RTS | MCR_DTR | MCR_LOOPBACK);
--		mcr |= ((arg & TIOCM_RTS) ? MCR_RTS : 0);
--		mcr |= ((arg & TIOCM_DTR) ? MCR_DTR : 0);
--		mcr |= ((arg & TIOCM_LOOP) ? MCR_LOOPBACK : 0);
--		break;
--	}
--
--	lock_kernel();
--	mos7840_port->shadowMCR = mcr;
--
--	Data = mos7840_port->shadowMCR;
--	status = mos7840_set_uart_reg(port, MODEM_CONTROL_REGISTER, Data);
--	unlock_kernel();
--	if (status < 0) {
--		dbg("setting MODEM_CONTROL_REGISTER Failed");
--		return -1;
--	}
--
--	return 0;
--}
--
--/*****************************************************************************
-- * mos7840_get_modem_info
-- *      function to get modem info
-- *****************************************************************************/
--
--static int mos7840_get_modem_info(struct moschip_port *mos7840_port,
--				  unsigned int __user *value)
--{
--	unsigned int result = 0;
--	__u16 msr;
--	unsigned int mcr = mos7840_port->shadowMCR;
--        mos7840_get_uart_reg(mos7840_port->port,
--						MODEM_STATUS_REGISTER, &msr);
--	result = ((mcr & MCR_DTR) ? TIOCM_DTR : 0)	/* 0x002 */
--	    |((mcr & MCR_RTS) ? TIOCM_RTS : 0)	/* 0x004 */
--	    |((msr & MOS7840_MSR_CTS) ? TIOCM_CTS : 0)	/* 0x020 */
--	    |((msr & MOS7840_MSR_CD) ? TIOCM_CAR : 0)	/* 0x040 */
--	    |((msr & MOS7840_MSR_RI) ? TIOCM_RI : 0)	/* 0x080 */
--	    |((msr & MOS7840_MSR_DSR) ? TIOCM_DSR : 0);	/* 0x100 */
--
--	dbg("%s -- %x", __func__, result);
--
--	if (copy_to_user(value, &result, sizeof(int)))
--		return -EFAULT;
--	return 0;
--}
--
--/*****************************************************************************
-  * mos7840_get_serial_info
-  *      function to get information about serial port
-  *****************************************************************************/
-@@ -2281,7 +2181,6 @@ static int mos7840_ioctl(struct tty_struct *tty, struct file *file,
- 	struct async_icount cnow;
- 	struct async_icount cprev;
- 	struct serial_icounter_struct icount;
--	int mosret = 0;
+@@ -2869,6 +2870,7 @@ int __init early_serial_setup(struct uart_port *port)
+ 	p->iobase       = port->iobase;
+ 	p->membase      = port->membase;
+ 	p->irq          = port->irq;
++	p->irqflags     = port->irqflags;
+ 	p->uartclk      = port->uartclk;
+ 	p->fifosize     = port->fifosize;
+ 	p->regshift     = port->regshift;
+@@ -2942,6 +2944,7 @@ static int __devinit serial8250_probe(struct platform_device *dev)
+ 		port.iobase		= p->iobase;
+ 		port.membase		= p->membase;
+ 		port.irq		= p->irq;
++		port.irqflags		= p->irqflags;
+ 		port.uartclk		= p->uartclk;
+ 		port.regshift		= p->regshift;
+ 		port.iotype		= p->iotype;
+@@ -2954,7 +2957,7 @@ static int __devinit serial8250_probe(struct platform_device *dev)
+ 		port.serial_out		= p->serial_out;
+ 		port.dev		= &dev->dev;
+ 		if (share_irqs)
+-			port.flags |= UPF_SHARE_IRQ;
++			port.irqflags |= IRQF_SHARED;
+ 		ret = serial8250_register_port(&port);
+ 		if (ret < 0) {
+ 			dev_err(&dev->dev, "unable to register port at index %d "
+@@ -3096,6 +3099,7 @@ int serial8250_register_port(struct uart_port *port)
+ 		uart->port.iobase       = port->iobase;
+ 		uart->port.membase      = port->membase;
+ 		uart->port.irq          = port->irq;
++		uart->port.irqflags     = port->irqflags;
+ 		uart->port.uartclk      = port->uartclk;
+ 		uart->port.fifosize     = port->fifosize;
+ 		uart->port.regshift     = port->regshift;
+diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
+index 5202603..6e19ea3 100644
+--- a/drivers/serial/8250.h
++++ b/drivers/serial/8250.h
+@@ -25,6 +25,7 @@ struct old_serial_port {
+ 	unsigned char io_type;
+ 	unsigned char *iomem_base;
+ 	unsigned short iomem_reg_shift;
++	unsigned long irqflags;
+ };
  
- 	if (mos7840_port_paranoia_check(port, __func__)) {
- 		dbg("%s", "Invalid port");
-@@ -2303,20 +2202,6 @@ static int mos7840_ioctl(struct tty_struct *tty, struct file *file,
- 		return mos7840_get_lsr_info(tty, argp);
- 		return 0;
- 
--	/* FIXME: use the modem hooks and remove this */
--	case TIOCMBIS:
--	case TIOCMBIC:
--	case TIOCMSET:
--		dbg("%s (%d) TIOCMSET/TIOCMBIC/TIOCMSET", __func__,
--		    port->number);
--		mosret =
--		    mos7840_set_modem_info(mos7840_port, cmd, argp);
--		return mosret;
--
--	case TIOCMGET:
--		dbg("%s (%d) TIOCMGET", __func__, port->number);
--		return mos7840_get_modem_info(mos7840_port, argp);
--
- 	case TIOCGSERIAL:
- 		dbg("%s (%d) TIOCGSERIAL", __func__, port->number);
- 		return mos7840_get_serial_info(mos7840_port, argp);
+ /*
+diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+index d4d2a78..fb46aba 100644
+--- a/include/linux/serial_8250.h
++++ b/include/linux/serial_8250.h
+@@ -22,6 +22,7 @@ struct plat_serial8250_port {
+ 	void __iomem	*membase;	/* ioremap cookie or NULL */
+ 	resource_size_t	mapbase;	/* resource base */
+ 	unsigned int	irq;		/* interrupt number */
++	unsigned long	irqflags;	/* request_irq flags */
+ 	unsigned int	uartclk;	/* UART clock rate */
+ 	void            *private_data;
+ 	unsigned char	regshift;	/* register shift */
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 23d2fb0..3cd255f 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -265,6 +265,7 @@ struct uart_port {
+ 	unsigned int		(*serial_in)(struct uart_port *, int);
+ 	void			(*serial_out)(struct uart_port *, int, int);
+ 	unsigned int		irq;			/* irq number */
++	unsigned long		irqflags;		/* irq flags  */
+ 	unsigned int		uartclk;		/* base uart clock */
+ 	unsigned int		fifosize;		/* tx fifo size */
+ 	unsigned char		x_char;			/* xon/xoff char */
 -- 
 1.6.4.2
 
