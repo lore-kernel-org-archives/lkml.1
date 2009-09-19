@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZISOqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbZISOrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbZISOqx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 10:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZISOqw
+	id S932085AbZISOrX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 10:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZISOrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 10:46:52 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:36079 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbZISOqv (ORCPT
+	Sat, 19 Sep 2009 10:47:22 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:39996 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755012AbZISOrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 10:46:51 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: jorg@ml1.net
-Cc: "Jorg Schummer" <ext-jorg.2.schummer@nokia.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH take 3][RFC] fat: Save FAT root directory timestamps to volume label
-References: <1252420131.5782.2.camel@jorg-desktop>
-	<1252420448-7282-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	<878wgcsd1p.fsf@devron.myhome.or.jp>
-	<1253276050.9376.1335476075@webmail.messagingengine.com>
-Date: Sat, 19 Sep 2009 23:46:50 +0900
-In-Reply-To: <1253276050.9376.1335476075@webmail.messagingengine.com>
-	(jorg@ml1.net's message of "Fri, 18 Sep 2009 15:14:10 +0300")
-Message-ID: <87ws3v2dr9.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Sat, 19 Sep 2009 10:47:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=iLCFTzzK+VBmuBG9ohdtKhh8+Ye+WkWJmw+vvyTeQtHJzL4osPesgsnAwwFRY2h5ei
+         elOFi3o60qSaWWF/hBOrcXKT5Un/GVzX/YS+f+WwX4QygrG2uL3mkzX465bZG45nCT1j
+         CpFTQz4XHNomTaR318UcMqzkwWn0tnsLy52eU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Sat, 19 Sep 2009 15:47:24 +0100
+Message-ID: <6278d2220909190747n62f7036dj2e5231fcdc4730fb@mail.gmail.com>
+Subject: tickless and HZ=1000 throughput advantage?
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jorg@ml1.net writes:
+On tickless kernels, is the general consensus that for non-embedded
+systems, selecting HZ=1000 gives slightly more throughput in
+particular situations than HZ=100 or 250, due to finer timer
+intervals/granularity?
 
-> If 'preserve' (i.e. saving and loading the timestamp only IF a label is
-> present) is the default, I'll remove the 'rootts=preserve' option.
-> However, should there still be an option to switch this feature off
-> completely ('rootts=ignore')?
+(low HZ used to cause problems with low-rate QoS packet queues when
+timer scheduling was selected)
 
-I think it should be boolean (I.e. "rootts" as "rootts=preserve", and no
-option as "rootts=ignore").
-
-Thanks.
+Thanks,
+  Daniel
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Daniel J Blueman
