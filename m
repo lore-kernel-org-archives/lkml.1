@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932177AbZISPRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbZISPRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932177AbZISPRR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 11:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbZISPRQ
+	id S932203AbZISPRb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 11:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbZISPRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 11:17:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35418 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757407AbZISPRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 11:17:15 -0400
-Date: Sat, 19 Sep 2009 15:16:45 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Re-add lost cpu_allowed check to sched_fair.c::select_task_rq_fair()
-Message-ID: <tip-3f04e8cd5b24727a2500f8ab8f3de730ba47b02c@git.kernel.org>
-Git-Commit-ID: 3f04e8cd5b24727a2500f8ab8f3de730ba47b02c
-X-Mailer: tip-git-log-daemon
+	Sat, 19 Sep 2009 11:17:30 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52455 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932135AbZISPRa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 11:17:30 -0400
+X-Sasl-enc: oXyZLY0T9FtyikqyBTmUmQJjMIa3+gIyWS7q7DzuKK/m 1253373453
+Message-ID: <4AB4F602.20004@imap.cc>
+Date: Sat, 19 Sep 2009 17:17:22 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 19 Sep 2009 15:16:48 +0000 (UTC)
+To: Daniel Walker <dwalker@fifo99.com>
+CC: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/20] mem_class: use minor as index instead of searching
+  the array
+References: <20090915181247.GA32167@kroah.com>	 <1253041976-1111-6-git-send-email-gregkh@suse.de>	 <1253043763.11643.358.camel@desktop>	 <ac3eb2510909151246r59decb10pfb68fd5c0cb9a63a@mail.gmail.com>	 <1253045229.11643.398.camel@desktop> <20090915202445.GC3411@suse.de>	 <1253049491.11643.490.camel@desktop>  <20090915212019.GA6744@suse.de> <1253050006.11643.492.camel@desktop>
+In-Reply-To: <1253050006.11643.492.camel@desktop>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBFAE33FAF6CCDC33434F614A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3f04e8cd5b24727a2500f8ab8f3de730ba47b02c
-Gitweb:     http://git.kernel.org/tip/3f04e8cd5b24727a2500f8ab8f3de730ba47b02c
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Sat, 19 Sep 2009 16:52:35 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 19 Sep 2009 17:11:31 +0200
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBFAE33FAF6CCDC33434F614A
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-sched: Re-add lost cpu_allowed check to sched_fair.c::select_task_rq_fair()
+Am 15.09.2009 23:26 schrieb Daniel Walker:
+> On Tue, 2009-09-15 at 14:20 -0700, Greg KH wrote:
+>=20
+>> I'll gladly do that, it's trival for me to do so.
+>>
+>=20
+> What about the other side ? The people who are sending the clean ups,
+> there time is valuable too..
 
-While doing some testing, I pinned mplayer, only to find it
-following X around like a puppy. Looking at commit c88d591, I found
-a cpu_allowed check that went AWOL.  I plugged it back in where it
-looks like it needs to go, and now when I say "sit, stay!", mplayer
-obeys again.
+Do such people really exist? Nobody ever sent a cleanup patch for any
+of the numerous checkpatch errors in drivers/isdn/gigaset. I only get
+complaints about them when I submit a patch that touches one of the
+affected lines.
 
-'c88d591 sched: Merge select_task_rq_fair() and
-sched_balance_self()' accidentally dropped the check, causing
-wake_affine() to pull pinned tasks - put it back.
+SCNR
+T.
 
-[ v2: use a cheaper version from Peter ]
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
----
- kernel/sched_fair.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+--------------enigBFAE33FAF6CCDC33434F614A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 29b35a7..566e3bb 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1339,7 +1339,8 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 	int sync = wake_flags & WF_SYNC;
- 
- 	if (sd_flag & SD_BALANCE_WAKE) {
--		if (sched_feat(AFFINE_WAKEUPS))
-+		if (sched_feat(AFFINE_WAKEUPS) &&
-+		    cpumask_test_cpu(cpu, &p->cpus_allowed))
- 			want_affine = 1;
- 		new_cpu = prev_cpu;
- 	}
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFKtPYKQ3+did9BuFsRAtj9AJ90SOSRTNdOIC3KN2K28oE/fMdnpwCghvCI
+cOCJDQ5beWFSi6d6HNJf668=
+=iL2V
+-----END PGP SIGNATURE-----
+
+--------------enigBFAE33FAF6CCDC33434F614A--
