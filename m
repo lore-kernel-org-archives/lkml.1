@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZISN0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZISNiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbZISN0u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 09:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZISN0r
+	id S1754971AbZISNiN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 09:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbZISNiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 09:26:47 -0400
-Received: from fifo99.com ([67.223.236.141]:38449 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753231AbZISN0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 09:26:46 -0400
-Subject: Re: [PATCH] wistron_btns.c: Add DMI entry for Medion WIM2030 laptop
-From: Daniel Walker <dwalker@fifo99.com>
-To: Sebastian Frei <dr.nop@gmx.net>
-Cc: mitr@volny.cz, linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
-       linux-input@vger.kernel.org
-In-Reply-To: <200909191243.09243.dr.nop@gmx.net>
-References: <200909191243.09243.dr.nop@gmx.net>
+	Sat, 19 Sep 2009 09:38:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45423 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754039AbZISNiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 09:38:10 -0400
+Subject: Re: [ANNOUNCE] 2.6.31-rt11
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+In-Reply-To: <1253334889.3309.5.camel@ht.satnam>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
+	 <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
+	 <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
+	 <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
+	 <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
+	 <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
+	 <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
+	 <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+	 <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+	 <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+	 <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+	 <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+	 <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+	 <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
+	 <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
+	 <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
+	 <1253334889.3309.5.camel@ht.satnam>
 Content-Type: text/plain
-Date: Sat, 19 Sep 2009 06:26:50 -0700
-Message-Id: <1253366810.6699.56.camel@desktop>
+Organization: Kihon Technologies Inc.
+Date: Sat, 19 Sep 2009 09:38:10 -0400
+Message-Id: <1253367490.20020.336.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-19 at 12:43 +0200, Sebastian Frei wrote:
-> This patch adds a DMI entry for the Medion WIM2030 laptop.
-> 
-> Signed-off-by: Sebastian Frei <dr.nop@gmx.net>
-> 
-> --- linux-2.6.31.orig/drivers/input/misc/wistron_btns.c
-> +++ linux-2.6.31/drivers/input/misc/wistron_btns.c
-> @@ -669,6 +669,15 @@
->         },
->         {
->                 .callback = dmi_matched,
-> +               .ident = "Medion MD 42200",
-> +               .matches = {
-> +                       DMI_MATCH(DMI_SYS_VENDOR, "Medion"),
-> +                       DMI_MATCH(DMI_PRODUCT_NAME, "WIM 2030"),
-> +               },
-> +               .driver_data = keymap_fs_amilo_pro_v2000
-> +       },
-> +       {
-> +               .callback = dmi_matched,
->                 .ident = "Fujitsu N3510",
->                 .matches = {
->                         DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU"),
+On Sat, 2009-09-19 at 10:04 +0530, Jaswinder Singh Rajput wrote:
+> On Sat, 2009-09-19 at 00:39 +0200, Thomas Gleixner wrote:
 
-Form email below (your the second person to do this today),
+> Great work Tom. I am very glad to see -rt branch in -tip tree. When -rt
 
-Your patch is whitespace damaged .. All the tabs have been removed from
-your code, and the context code in the patch. That usually means the
-patch can't be applied .. It can happen when you X copy&paste the patch
-into an email. If your using quilt you can use "quilt mail" , or have
-your mailer "insert text file" instead of copy&paste.
+Note, Thomas is German, not American. German's do not shorten their
+names like they do in America. Thus, his name is Thomas and not Tom.
 
-Daniel
+> will hit linus tree, .33 or .34 ?
+
+We're working on it. But don't expect it that early. Our estimate is the
+same as we've said for the last 5 years. "It will be in next year".
+
+-- Steve
 
 
