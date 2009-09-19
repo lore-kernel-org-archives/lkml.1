@@ -1,105 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZISI3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756484AbZISIbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbZISI3e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 04:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZISI3d
+	id S1756484AbZISIbz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 04:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZISIby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 04:29:33 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55372 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751313AbZISI3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 04:29:32 -0400
-Date: Sat, 19 Sep 2009 10:29:34 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, fweisbec@gmail.com, lizf@cn.fujitsu.com,
-       peterz@infradead.org
-Subject: [git pull] timechart
-Message-ID: <20090919102934.5fbf65eb@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 19 Sep 2009 04:31:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10398 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754982AbZISIbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 04:31:50 -0400
+Message-ID: <4AB496ED.7010800@redhat.com>
+Date: Sat, 19 Sep 2009 11:31:41 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>, Mark Langsdorf <mark.langsdorf@amd.com>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Prevent immediate process rescheduling
+References: <200909181449.12311.mark.langsdorf@amd.com>	 <20090918195455.GC11726@elte.hu> <1253304203.10538.64.camel@laptop>
+In-Reply-To: <1253304203.10538.64.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/18/2009 11:03 PM, Peter Zijlstra wrote:
+> On Fri, 2009-09-18 at 21:54 +0200, Ingo Molnar wrote:
+>
+>    
+>>> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+>>> index 652e8bd..4fad08f 100644
+>>> --- a/kernel/sched_fair.c
+>>> +++ b/kernel/sched_fair.c
+>>> @@ -353,11 +353,25 @@ static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+>>>   static struct sched_entity *__pick_next_entity(struct cfs_rq *cfs_rq)
+>>>   {
+>>>   	struct rb_node *left = cfs_rq->rb_leftmost;
+>>> +	struct sched_entity *se, *curr;
+>>>
+>>>   	if (!left)
+>>>   		return NULL;
+>>>
+>>> -	return rb_entry(left, struct sched_entity, run_node);
+>>> +	se = rb_entry(left, struct sched_entity, run_node);
+>>> +	curr =&current->se;
+>>> +
+>>> +	/*
+>>> +	 * Don't select the entity who just tried to schedule away
+>>> +	 * if there's another entity available.
+>>> +	 */
+>>> +	if (unlikely(se == curr&&  cfs_rq->nr_running>  1)) {
+>>> +		struct rb_node *next_node = rb_next(&curr->run_node);
+>>> +		if (next_node)
+>>> +			se = rb_entry(next_node, struct sched_entity, run_node);
+>>> +	}
+>>> +
+>>> +	return se;
+>>>   }
+>>>        
+> Really hate this change though,. doesn't seem right to not pick the same
+> task again if its runnable. Bad for cache footprint.
+>
+> The scenario is quite common for stuff like:
+>
+> CPU0                                      CPU1
+>
+> set_task_state(TASK_INTERRUPTIBLE)
+>
+> if (cond)
+>    goto out;
+>                                       <--- ttwu()
+> schedule();
+>
+>    
 
-The following changes since commit 4a1eaf7626e795a1ee529486a4f038eee2aa0353:
-  Ingo Molnar (1):
-        Merge branch 'x86/urgent'
+I agree, yielding should be explicitly requested.
 
-are available in the git repository at:
+Also, on a heavily overcommitted box an undirected yield might take 
+quite a long time to find the thread that's holding the lock.  I think a 
+yield_to() will be a lot better:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-timechart master
-
-Arjan van de Ven (8):
-      perf: Add a timestamp to fork events
-      perf: Store trace event name/id pairs in perf.data
-      perf: Allow perf utilities to have "callback" options without arguments
-      perf: Add a sample_event type to the event_union
-      trace: Convert the power tracer into an event tracer
-      perf: Add a SVG helper library file
-      perf: Add a perf record --timechart option
-      perf: Add the timechart tool
-
- Documentation/trace/power.txt              |   17 -
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    7 +-
- arch/x86/kernel/process.c                  |   28 +-
- include/linux/perf_counter.h               |    2 +
- include/trace/events/power.h               |   81 ++
- kernel/perf_counter.c                      |   11 +-
- kernel/trace/Makefile                      |    2 +-
- kernel/trace/power-traces.c                |   20 +
- kernel/trace/trace.h                       |    3 -
- kernel/trace/trace_entries.h               |   17 -
- kernel/trace/trace_power.c                 |  218 ------
- scripts/tracing/power.pl                   |  108 ---
- tools/perf/Makefile                        |    8 +
- tools/perf/builtin-record.c                |   28 +
- tools/perf/builtin-timechart.c             | 1120 ++++++++++++++++++++++++++++
- tools/perf/builtin.h                       |    1 +
- tools/perf/perf.c                          |    1 +
- tools/perf/util/event.h                    |    8 +
- tools/perf/util/header.c                   |   59 ++
- tools/perf/util/header.h                   |    6 +
- tools/perf/util/parse-events.c             |   25 +
- tools/perf/util/parse-options.h            |    2 +
- tools/perf/util/svghelper.c                |  382 ++++++++++
- tools/perf/util/svghelper.h                |   25 +
- 24 files changed, 1789 insertions(+), 390 deletions(-)
- delete mode 100644 Documentation/trace/power.txt
- create mode 100644 include/trace/events/power.h
- create mode 100644 kernel/trace/power-traces.c
- delete mode 100644 kernel/trace/trace_power.c
- delete mode 100644 scripts/tracing/power.pl
- create mode 100644 tools/perf/builtin-timechart.c
- create mode 100644 tools/perf/util/svghelper.c
- create mode 100644 tools/perf/util/svghelper.h
-
-
-Change since last post:
-
-diff -u b/kernel/perf_counter.c b/kernel/perf_counter.c
---- b/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -3107,7 +3107,7 @@
- 	task_event->event.tid = perf_counter_tid(counter, task);
- 	task_event->event.ptid = perf_counter_tid(counter, current);
- 
--	task_event->event.time = sched_clock();
-+	task_event->event.time = perf_clock();
- 
- 	perf_output_put(&handle, task_event->event);
- 
-
+- we can pick one of the vcpus belonging to the same guest to improve 
+the probability that the lock actually get released
+- we avoid an issue when the other vcpus are on different runqueues (in 
+which case the current patch does nothing)
+- we can fix the accounting by donating vruntime from current to the 
+yielded-to vcpu
 
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
