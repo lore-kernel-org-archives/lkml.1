@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZISPEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932177AbZISPRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757297AbZISPEW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 11:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbZISPEV
+	id S932177AbZISPRR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 11:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbZISPRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 11:04:21 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:51705 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756088AbZISPEU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 11:04:20 -0400
-Date: Sat, 19 Sep 2009 17:04:20 +0200
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Matthias Welwarsky <matze@welwarsky.de>
-Subject: Re: Linux not shutting down all devices? Battery drain in after
-	shutdown
-Message-ID: <20090919150420.GG20239@gamma.logic.tuwien.ac.at>
-References: <20090917122451.GA13717@gandalf.dynalias.org> <20090919103709.GA4466@elf.ucw.cz> <20090919144911.GD28777@khazad-dum.debian.net>
+	Sat, 19 Sep 2009 11:17:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35418 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757407AbZISPRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 11:17:15 -0400
+Date: Sat, 19 Sep 2009 15:16:45 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Re-add lost cpu_allowed check to sched_fair.c::select_task_rq_fair()
+Message-ID: <tip-3f04e8cd5b24727a2500f8ab8f3de730ba47b02c@git.kernel.org>
+Git-Commit-ID: 3f04e8cd5b24727a2500f8ab8f3de730ba47b02c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090919144911.GD28777@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Norbert Preining <preining@logic.at>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 19 Sep 2009 15:16:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sa, 19 Sep 2009, Henrique de Moraes Holschuh wrote:
-> I have seen this sort of problem on ThinkPads as well.  Lenovo decided to
+Commit-ID:  3f04e8cd5b24727a2500f8ab8f3de730ba47b02c
+Gitweb:     http://git.kernel.org/tip/3f04e8cd5b24727a2500f8ab8f3de730ba47b02c
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Sat, 19 Sep 2009 16:52:35 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 19 Sep 2009 17:11:31 +0200
 
-Yes, Thinkpads are mentioned also in the thread I have cited. 
+sched: Re-add lost cpu_allowed check to sched_fair.c::select_task_rq_fair()
 
-> fix it in firmware and shut down the stuff entirely in firmware.
+While doing some testing, I pinned mplayer, only to find it
+following X around like a puppy. Looking at commit c88d591, I found
+a cpu_allowed check that went AWOL.  I plugged it back in where it
+looks like it needs to go, and now when I say "sit, stay!", mplayer
+obeys again.
 
-Bad for us that Sony is not capable to do that.
+'c88d591 sched: Merge select_task_rq_fair() and
+sched_balance_self()' accidentally dropped the check, causing
+wake_affine() to pull pinned tasks - put it back.
 
-> Interestingly enough, in the ThinkPad case, Windows was not affected.
+[ v2: use a cheaper version from Peter ]
 
-It actually seems to depend on some settings/driver issues, that is the
-reason why (I guess) Vista, XP, and linux all have these problems,
-but not in all cases.
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-It is a bit frustrating though ...
 
-Best wishes
+---
+ kernel/sched_fair.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-BABWORTH
-Something which justifies having a really good cry.
-			--- Douglas Adams, The Meaning of Liff
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 29b35a7..566e3bb 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1339,7 +1339,8 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
+ 	int sync = wake_flags & WF_SYNC;
+ 
+ 	if (sd_flag & SD_BALANCE_WAKE) {
+-		if (sched_feat(AFFINE_WAKEUPS))
++		if (sched_feat(AFFINE_WAKEUPS) &&
++		    cpumask_test_cpu(cpu, &p->cpus_allowed))
+ 			want_affine = 1;
+ 		new_cpu = prev_cpu;
+ 	}
