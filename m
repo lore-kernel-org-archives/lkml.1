@@ -1,97 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZISIX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZISIDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753721AbZISIX4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 04:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZISIXz
+	id S1754305AbZISIDZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 04:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbZISIDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 04:23:55 -0400
-Received: from smtp3-g21.free.fr ([212.27.42.3]:42128 "EHLO smtp3-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbZISIXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 04:23:53 -0400
-X-Greylist: delayed 46317 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Sep 2009 04:23:52 EDT
-From: Jim Meyering <jim@meyering.net>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: efficient access to "rotational";  new fcntl?
-In-Reply-To: <20090918221658.GB28781@mit.edu> (Theodore Tso's message of "Fri,
-	18 Sep 2009 18:16:58 -0400")
-References: <87vdjgqcbd.fsf@meyering.net> <20090918221658.GB28781@mit.edu>
-Date: Sat, 19 Sep 2009 10:01:51 +0200
-Message-ID: <87pr9npdlc.fsf@meyering.net>
+	Sat, 19 Sep 2009 04:03:23 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:18312 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbZISIDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 04:03:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=A008nO98k0U1KZSnZkC5QcmlHzy3D0qCIpLTiqBKDgV8q3IRf4xyD3wYANKAnHBrbt
+         utBLDT34MZjO0SN6slJZmRQ6i/WZUjE6s3gxgNdQ7S+8WbBMHmHl6K3CXQMLzrxoYxAL
+         QxH8py8UvB16UVEEMZyv5FoqZxGMRBURklnbc=
+Date: Sat, 19 Sep 2009 10:03:21 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 0/2 v3] tracing: Tracing event profiling updates
+Message-ID: <20090919080320.GC5226@nowhere>
+References: <1253247854-5496-1-git-send-email-fweisbec@gmail.com> <1253252178-5315-1-git-send-email-fweisbec@gmail.com> <20090919073400.GE15292@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090919073400.GE15292@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Fri, Sep 18, 2009 at 09:31:50PM +0200, Jim Meyering wrote:
->>     chgrp, chmod, chown, chcon, du, rm: now all display linear performance,
->>     even when operating on million-entry directories on ext3 and ext4 file
->>     systems.  Before, they would exhibit O(N^2) performance, due to linear
->>     per-entry seek time cost when operating on entries in readdir order.
->>     Rm was improved directly, while the others inherit the improvement
->>     from the newer version of fts in gnulib.
->
-> Excellent!  I didn't know that (since my userspace is still Ubuntu
-> 9.04, which is still using coreutils 6.10).
+On Sat, Sep 19, 2009 at 09:34:00AM +0200, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > 
+> > Ingo,
+> > 
+> > Hopefully this is my last attempt.
+> > This new iteration fixes the syscalls events to correctly handle
+> > the buffer. In the previous version, they did not care about interrupts.
+> > 
+> > I only resend the second patch as only this one has changed since the v2.
+> > 
+> > The new branch is in:
+> > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> > 	tracing/core-v3
+> > 
+> > Thanks,
+> > 	Frederic.
+> > 
+> > Frederic Weisbecker (2):
+> >       tracing: Factorize the events profile accounting
+> >       tracing: Allocate the ftrace event profile buffer dynamically
+> > 
+> >  include/linux/ftrace_event.h       |   10 +++-
+> >  include/linux/syscalls.h           |   24 +++-----
+> >  include/trace/ftrace.h             |  111 ++++++++++++++++++++---------------
+> >  kernel/trace/trace_event_profile.c |   79 +++++++++++++++++++++++++-
+> >  kernel/trace/trace_syscalls.c      |   97 +++++++++++++++++++++++++------
+> >  5 files changed, 234 insertions(+), 87 deletions(-)
+> 
+> Hm, the naming is quite confusing here i think:
+> 
+>   -132,8 +133,12 @@ struct ftrace_event_call {
+>          atomic_t                profile_count;
+>          int                     (*profile_enable)(void);
+>          void                    (*profile_disable)(void);
+>  +       char                    *profile_buf;
+>  +       char                    *profile_buf_nmi;
+> 
+> These are generic events, not just 'profiling' histograms.
+> 
+> Generic events can have _many_ output modi:
+> 
+>  - SVGs                   (perf timeline)
+>  - histograms             (perf report)
+>  - traces                 (perf trace)
+>  - summaries / maximums   (perf sched lat)
+>  - maps                   (perf sched map)
+>  - graphs                 (perf report --call-graph)
+> 
+> So it's quite a misnomer to talk just about profiling here. This is an 
+> event record buffer.
 
-Heh.  Time to upgrade.
-With the upcoming coreutils-7.7, I've removed a quadratic
-component in rm -r (without -f), and rewrote it to give
-rm -rf an additional 4-5x speed-up in some nasty cases.
 
->> However, with e.g., an ext4 partition on non-rotational hardware like
->> an SSD, that preprocessing is unnecessary and in fact wasted effort.
->> I'd like to avoid the waste by querying the equivalent of
->> /sys/.../rotational, via a syscall like fcntl or statvfs,
->> given a file descriptor.
->
-> Have you benchmarked it both ways?  The preprocessing will cost some
-> extra CPU time, sure, but for a sufficiently large directory, or if
-> the user is deleting a very large directory hierarchy, such that "rm
-> -rf" spans multiple journal transactions, deleting the files in inode
-> order will still avoid some filesystem metadata blocks getting written
-> multiple times (which for SSD's, especially the crappier ones with
-> nasty write amplification factors) could show a performance impact.
 
-Yeah, I mentioned I should do exactly that on IRC yesterday.
-I've just run some tests, and see that at least with one SSD (OCZ Summit
-120GB), the 0.5s cost of sorting pays off handsomely with a 12-x speed-up,
-saving 5.5 minutes, when removing a 1-million-empty-file directory.
+Agreed, I guess we can call the perf_event_buf/perf_event_nmi.
+Also may be the profile_enable/profile_disable should follow the
+renaming logic.
 
-----------------------------------------
-Timing rm -rf million-file-dir vs. ext4 on a 120GB OCZ Summit on Fedora 11
-This is using the very latest rm/remove.c from coreutils.git.
-The one rewritten to use fts.
 
-Creation took about 63 seconds:
-    mkdir d;(cd d && seq 1000000|xargs touch)
 
-Removal with inode-sort preprocessing (the 0.543s is sort duration):
-  $ env time ./rm -rf d
-  0.543050295
-  1.62user 20.13system 0:28.25elapsed 77%CPU (0avgtext+0avgdata 0maxresident)k
-  9968inputs+8outputs (0major+74445minor)pagefaults 0swaps
+> Also, what is the currently maximum possible size of ->profile_buf? The 
+> max size of an event record? The new codepath looks a bit heavy with 
+> rcu-lock/unlock and other bits put inbetween - and this is now in the 
+> event sending critical path. Cannot we do a permanent buffer that needs 
+> no extra locking/reference protection?
+> 
+> Is the whole thing even justified? I mean, we keep the size of records 
+> low anyway. It's a _lot_ easier to handle on-stack records, they are the 
+> ideal (and very fast) dynamic allocator which is NMI and IRQ safe, etc.
+> 
+> 	Ingo
 
-2nd trial: (create million-file dir)
-  $ mkdir d;(cd d && seq 1000000|env time xargs touch)
-  0.63user 62.14system 1:06.49elapsed 94%CPU (0avgtext+0avgdata 0maxresident)k
-  40inputs+16outputs (1major+19701minor)pagefaults 0swaps
 
-Remove it:
-  $ env time ./rm -rf d
-  0.570515343
-  1.72user 18.49system 0:26.45elapsed 76%CPU (0avgtext+0avgdata 0maxresident)k
-  0inputs+8outputs (0major+74445minor)pagefaults 0swaps
----------------------------------------------
+The max size of an event is undefined once it uses either
+a __dynamic_array() or __string() field. (The latter is a subset
+of the former anyway).
 
-Repeating, but with fts' sort-on-inode disabled:
-  ouch. It would have taken about 6 minutes.
-  I killed it after ~3, when it had removed half of the entries.
+Those are very special fields that can handle dynamic size arrays.
+That makes such events having an unpredictable size each time they
+are triggered.
 
-Conclusion:
-  Even on an SSD, this sort-on-inode preprocessing gives more
-  than a 10-x speed-up when removing a 1-million-empty-file directory.
-  Hence, fts does not need access to the "rotational" bit, after all.
+That said, we are currently using a stack based buffer. That coupled
+with the unpredicatble event size must really be fixed. I mean, we don't
+want to run out of the stack boundaries once an event get a long string,
+once a new large event is added, or once an event is randomly triggered
+in a path where the stack is already deeply dug.
+
+I've done this easy stack based as a first shot to support ftrace raw
+events by perf, but now this becomes something that needs to be fixed
+IMO.
+
+I've made this rcu based thing to avoid wasting the buffer in memory
+(for each cpu) while we are not profiling the raw events.
+
+I could drop that and keep these buffers static, but this seems
+wasteful wrt memory footprint while profiling/tracing is inactive.
+
