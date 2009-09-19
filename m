@@ -1,51 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZISCqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZISDFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449AbZISCqv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 22:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZISCqt
+	id S1754598AbZISDFZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 23:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZISDFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 22:46:49 -0400
-Received: from [65.98.92.6] ([65.98.92.6]:1702 "EHLO b32.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751129AbZISCqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 22:46:49 -0400
-From: Kevin Cernekee <cernekee@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: <linux-kernel@vger.kernel.org>, <linux-mtd@lists.infradead.org>
-Date: Fri, 18 Sep 2009 19:36:42 -0700
-Subject: [PATCH] m25p80: Add Spansion S25FL129P serial flashes
-Message-Id: <d26cea5fc295b4eed9273bafeb09c1ae@localhost>
-User-Agent: vim 7.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	Fri, 18 Sep 2009 23:05:23 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10799 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbZISDFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 23:05:22 -0400
+Subject: Re: fanotify as syscalls
+From: Eric Paris <eparis@redhat.com>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+In-Reply-To: <200909190000.43556.agruen@suse.de>
+References: <20090912094110.GB24709@ioremap.net>
+	 <200909172207.01764.agruen@suse.de>
+	 <1253307128.2552.21.camel@dhcp231-106.rdu.redhat.com>
+	 <200909190000.43556.agruen@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 18 Sep 2009 23:04:31 -0400
+Message-Id: <1253329471.2630.30.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tested 64KB block size only.
+On Sat, 2009-09-19 at 00:00 +0200, Andreas Gruenbacher wrote:
+> On Friday, 18 September 2009 22:52:08 Eric Paris wrote:
+> > On Thu, 2009-09-17 at 22:07 +0200, Andreas Gruenbacher wrote:
+> > > From my point of view, "global" events make no sense, and fanotify
+> > > listeners should register which directories they are interested in (e.g.,
+> > > include "/", exclude "/proc"). This takes care of chroots and namespaces
+> > > as well.
+> >
+> > While I completely agree that most users don't want global events, the
+> > antimalware vendors who today, unprotect and hack the syscall table on
+> > their unsuspecting customer's machines to intercept every read, write,
+> > open, close, mmap, etc syscall want EXACTLY that.
+> 
+> I understand that "global" is what those guys get today for lack of a 
+> reasonable mechanism, but it's not what anybody can ge given by fanotify: it 
+> conflicts with filesystem namespaces.
+> 
+> Consider running several "virtual machines" in separate namespaces on the same 
+> kernel. With "global" you are forced to run the same global fanotify 
+> listeners everywhere; with per-mount-point listeners, you can choose 
+> between "global" and something more fine-grained by identifying which 
+> vfsmounts you are interested in. (Filesystem namespaces correspond to 
+> vfsmount hierarchies.)
 
-Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
----
- drivers/mtd/devices/m25p80.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Let me start by saying I am agreeing I should pursue subtree
+notification.  It's what I think everyone really wants.  It's a great
+idea, and I think you might have a simple way to get close.  Clearly
+these are avenues I'm willing and hoping to pursue.  Also I say it
+again, I believe the interface as proposed (except maybe some of my
+exclusion stuff) is flexible enough to implement any of these ideas.
+Does anyone disagree?
 
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 6d8d265..50c5198 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -514,8 +514,10 @@ static struct flash_info __devinitdata m25p_data [] = {
- 	{ "s25sl016a", 0x010214, 0, 64 * 1024, 32, },
- 	{ "s25sl032a", 0x010215, 0, 64 * 1024, 64, },
- 	{ "s25sl064a", 0x010216, 0, 64 * 1024, 128, },
--        { "s25sl12800", 0x012018, 0x0300, 256 * 1024, 64, },
-+	{ "s25sl12800", 0x012018, 0x0300, 256 * 1024, 64, },
- 	{ "s25sl12801", 0x012018, 0x0301, 64 * 1024, 256, },
-+	{ "s25fl129p0", 0x012018, 0x4d00, 256 * 1024, 64, },
-+	{ "s25fl129p1", 0x012018, 0x4d01, 64 * 1024, 256, },
- 
- 	/* SST -- large erase sizes are "overlays", "sectors" are 4K */
- 	{ "sst25vf040b", 0xbf258d, 0, 64 * 1024, 8, SECT_4K, },
--- 
-1.6.3.1
+BUT to solve one of the main problems fanotify is intending to solve it
+needs a way to be the 'fscking all notifier.'  It needs to be the whole
+damn system.  I totally agree that what I have in my tree today (yet
+unposted) restricting global notification (CAP_SYS_ADMIN) is highly
+inadequate.  If any root task in any namespace could easily hop on out
+of it's namespace using fanotify, that's a problem.  No arguments with
+me.
+
+But there must be a way for fanotify to globally get everything.  That's
+one of the main points of fanotify.  It needs to be a fscking all
+notifier, even of things in a completely detached namespace.  AV vendors
+are going to get it.  Their customers our users are going to load kernel
+modules that do horrible things.  These are the realities of the world
+in which we live.  Do we really throw 10's or 100's of thousands of our
+users under the bus because we don't like the software they are using on
+philosophical grounds?
+
+I'm sure namespace people are calling me an idiot and tell me to stay in
+my namespace.  I want to stay in my namespace for 'most' root users, but
+I need a way to get a global scanner.  I want to know what is the sanest
+way?  And for people who feel it's insane, just don't compile it in.
+I'll make global listeners a build option.  But global listeners is an
+absolute requirement.  I was considering saying you needed cap_sys_admin
+and you needed current->ns_proxy->mnt_ns == the original init task's
+mnt_ns.  Maybe this isn't a great way to determine if a task should be
+allowed to use global listeners.  Is there a better way to restrict it?
+
+Think about your web hosting company.  They sell 'cheap' vm's to
+customers in a private name.  The web hosting company want to run an AV
+scanner that scans every file on the computer, their files, their
+customer's files, everything.  Certainly we don't want the customer to
+break out of their namespace.  So, what is the sanest, even if you hate
+the idea so much you compile it out, way to let the hosting company get
+information about files in their customer's detached namespace which not
+letting their customers get information about each other?
+
+-Eric
 
