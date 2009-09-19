@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbZISCRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbZISCQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbZISCRV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 22:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbZISCRS
+	id S1757228AbZISCQv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 22:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbZISCQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 22:17:18 -0400
-Received: from mga01.intel.com ([192.55.52.88]:45981 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754571AbZISCRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 22:17:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,412,1249282800"; 
-   d="scan'208";a="728297828"
-Subject: Re: +
- generic-ipi-fix-the-race-between-generic_smp_call_function_-and-hotplug_cfd.patch
- added to -mm tree
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AB1A652.1010000@cn.fujitsu.com>
-References: <200907310030.n6V0Uqgw001644@imap1.linux-foundation.org>
-	 <1252616988.7205.102.camel@laptop>  <4AAA0001.2060703@cn.fujitsu.com>
-	 <1252696132.3756.21.camel@sbs-t61.sc.intel.com>
-	 <4AADEF2F.5080504@cn.fujitsu.com>
-	 <1252973802.2899.88.camel@sbs-t61.sc.intel.com>
-	 <4AAEF5DC.4070308@cn.fujitsu.com>
-	 <1253067602.2667.13.camel@sbs-t61.sc.intel.com>
-	 <4AB1A652.1010000@cn.fujitsu.com>
+	Fri, 18 Sep 2009 22:16:46 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51838 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754598AbZISCQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 22:16:45 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18W2fxoesEWIULk6d6ItRrdoIJhGiEEuqCgExj8ov
+	DN5dEtUGTeuDQH
+Subject: Re: [PATCH] Prevent immediate process rescheduling
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Mark Langsdorf <mark.langsdorf@amd.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1253304203.10538.64.camel@laptop>
+References: <200909181449.12311.mark.langsdorf@amd.com>
+	 <20090918195455.GC11726@elte.hu>  <1253304203.10538.64.camel@laptop>
 Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 18 Sep 2009 19:16:39 -0700
-Message-Id: <1253326599.3948.732.camel@sbs-t61.sc.intel.com>
+Date: Sat, 19 Sep 2009 04:16:45 +0200
+Message-Id: <1253326605.7133.55.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-16 at 20:00 -0700, Xiao Guangrong wrote: 
-> How about manual check/handle pending IPI interruption in the CPU context?
-> like this:
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -173,6 +173,9 @@ static int __ref take_cpu_down(void *_param)
->  	struct take_cpu_down_param *param = _param;
->  	int err;
->  
-> +	generic_smp_call_function_interrupt();
-> +	generic_smp_call_function_single_interrupt();
-> +
+On Fri, 2009-09-18 at 22:03 +0200, Peter Zijlstra wrote:
 
-At this place, how will you ensure that the smp_call_function initiated
-by this dying cpu has reached and got serviced at its destination?
+> Really hate this change though,. doesn't seem right to not pick the same
+> task again if its runnable. Bad for cache footprint.
+> 
+> The scenario is quite common for stuff like:
+> 
+> CPU0                                      CPU1
+> 
+> set_task_state(TASK_INTERRUPTIBLE)
+> 
+> if (cond)
+>   goto out;
+>                                      <--- ttwu()
+> schedule();
 
-All the other cpu's have disabled interrupts in the stop machine state
-by the time we come here and we can't wait.
+It also resists the scheduler's built in need to close spread, too much
+of which can seriously damage latency for others later when the friendly
+task later decides it wants to run hard.  OTOH, when it is a voluntary
+schedule, not selecting another task is resisting the programmer.
+
+Conundrum.
+
+Another problem with that change is that it doesn't do diddly spit if
+the top two are trying to yield, they'll just spin together.
+
+Sounds like Mark's case really needs a gentle_yield() that moves the
+task behind next, and slightly beyond if they are too close, but which
+also ignores the request entirely if the gap is too large.
+
+	-Mike
 
