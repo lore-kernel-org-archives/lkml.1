@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbZISWym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbZISXJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753360AbZISWym (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 18:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZISWym
+	id S1753407AbZISXJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 19:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbZISXJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 18:54:42 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:36032 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbZISWyl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 18:54:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=Kj1RTB3KbesH2sI/TtD0MNGJm1blSsAUzdN0ereeI8Zr2HG7l7nE6Tut6NNY/CA0Nx
-         GB102EkyM1xbTAyFzInnAi60NyYXg88yO8GXu1vWtQ0BzEYffqUVFKHBU5u2rM9+Snt3
-         Uyj8lPraHu2/2HKANktUASPEa2n+4xXdWw+Mk=
-MIME-Version: 1.0
-In-Reply-To: <a769871e0909191112t3adb852cn93d72dc5fd94b9fd@mail.gmail.com>
-References: <a769871e0909191112t3adb852cn93d72dc5fd94b9fd@mail.gmail.com>
-Date: Sun, 20 Sep 2009 00:54:43 +0200
-Message-ID: <a769871e0909191554hf15150fiae155d71b47a3313@mail.gmail.com>
-Subject: Re: EXT4 RAID read performance
-From: wbrana@gmail.com
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 19 Sep 2009 19:09:57 -0400
+Received: from mga03.intel.com ([143.182.124.21]:23439 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752088AbZISXJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 19:09:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,416,1249282800"; 
+   d="scan'208";a="189516030"
+Subject: Re: [PATCH] move sh_flctl's probe function to .devinit.text
+From: David Woodhouse <david.woodhouse@intel.com>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: Greg KH <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1247345591-22643-11-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <20090711170548.GC5205@suse.de>
+	 <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-3-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-4-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-5-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-6-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-7-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-8-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-9-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-10-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1247345591-22643-11-git-send-email-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Intel Corporation. Pipers Way, Swindon, Wiltshire, SN3 1RJ,
+ UK.
+Date: Sat, 19 Sep 2009 16:09:54 -0700
+Message-Id: <1253401794.6317.50.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-creating tar of compiled kernel takes much longer with ext4
+On Sat, 2009-07-11 at 13:52 -0700, Uwe Kleine-König wrote:
+> A pointer to flctl_probe is passed to the core via
+> platform_driver_register and so the function must not disappear when the
+> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> unbinding and binding a device to the driver via sysfs will result in an
+> oops as does a device being registered late.
+> 
+> An alternative to this patch is using platform_driver_probe instead of
+> platform_driver_register plus removing the pointer to the probe function
+> from the struct platform_driver.
 
-time tar c linux-2.6.31 | cat >/dev/null
+... which is what you did for orion_nand, so let's do that for sh_flctl
+too.
 
-reiser3:
-real    0m11.425s
-user    0m0.229s
-sys     0m1.586s
+http://git.infradead.org/mtd-2.6.git/commitdiff/894572a3635
 
-ext4:
-real    0m23.942s
-user    0m0.183s
-sys     0m1.440s
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-partition was remounted before test
-
->
-> RAID details:
->
-> md8 : active raid10 sda7[0] sdd7[3] sdc7[2] sdb7[1]
->      62925824 blocks 256K chunks 2 far-copies [4/4] [UUUU]
->
-> Ext4:
-> mkfs.ext4 -E stride=64,stripe-width=128 /dev/md8
-> mount -t ext4 -o noatime,auto_da_alloc,commit=600 /dev/md8 /mnt/md8
->
-> Reiser3:
-> mkfs.reiserfs /dev/md8
-> mount -t reiserfs -o noatime,notail /dev/md8 /mnt/md8
->
