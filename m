@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbZISSoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbZISTI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbZISSoH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 14:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZISSoG
+	id S1752116AbZISTI4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 15:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZISTI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 14:44:06 -0400
-Received: from nbd.name ([88.198.39.176]:45375 "EHLO ds10.mine.nu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751318AbZISSoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 14:44:05 -0400
-Message-ID: <4AB52667.6020608@openwrt.org>
-Date: Sat, 19 Sep 2009 20:43:51 +0200
-From: Felix Fietkau <nbd@openwrt.org>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Sat, 19 Sep 2009 15:08:56 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:64693 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751584AbZISTIz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 15:08:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=UZJ5Ty3sd4IB8UtJJpEjcS/fbErVb5IJDVKlrpUbRAcoz5dgEY+ulMhD5aPmhUuL4u
+         c/LpF94yF85pjxra/rqZV4i1QAfbVSwmWcsokyBaluLWiH49jjEeipmYkOmWZPedbo2i
+         O43pDaZaeXrJqabXlCQLGRJ0Iq58aHod4KK3I=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Michael Buesch <mb@bu3sch.de>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <20090906205952.GA6516@elte.hu> <20090907182629.GA3484@elte.hu> <20090908074825.GA11413@elte.hu> <200909081645.18505.mb@bu3sch.de> <20090918112454.GE9930@elte.hu> <4AB39D3A.3000204@openwrt.org> <20090919180124.GK5366@elte.hu>
-In-Reply-To: <20090919180124.GK5366@elte.hu>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200906232314.18261.arnd@arndb.de>
+References: <1244980878-2124-1-git-send-email-vapier@gentoo.org> 
+	<200906191433.34608.arnd@arndb.de> <8bd0f97a0906190612n687cdbbt1e752997acb68e49@mail.gmail.com> 
+	<200906232314.18261.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sat, 19 Sep 2009 15:08:39 -0400
+Message-ID: <8bd0f97a0909191208j42c49a72j67dd27287eba50fa@mail.gmail.com>
+Subject: Re: [PATCH 05/17] Blackfin: convert to generic checksum code
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michal Simek <monstr@monstr.eu>, Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Felix Fietkau <nbd@openwrt.org> wrote:
-> 
->> Ingo Molnar wrote:
->> > Well that's a really memory constrained MIPS device with like 16 MB of 
->> > RAM or so? So having effects from small things like changing details in 
->> > a kernel image is entirely plausible.
+On Tue, Jun 23, 2009 at 17:14, Arnd Bergmann wrote:
+> On Friday 19 June 2009, Mike Frysinger wrote:
+>> >
+>> > sounds like a good idea.
 >>
->> Normally changing small details doesn't have much of an effect. While 
->> 16 MB is indeed not that much, we do usually have around 8 MB free 
->> with a full user space running. Changes to other subsystems normally 
->> produce consistent and repeatable differences that seem entirely 
->> unrelated to memory use, so any measurable difference related to 
->> scheduler changes is unlikely to be related to the low amount of RAM. 
->> By the way, we do frequently also test the same software with devices 
->> that have more RAM, e.g. 32 or 64 MB and it usually behaves in a very 
->> similar way.
-> 
-> Well, Michael Buesch posted vmstat results, and they show what i have 
-> found with my x86 simulated reproducer as well (these are Michael's 
-> numbers):
-> 
-> procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
->  1  0	   0  15892   1684   5868    0    0     0     0  268    6 31 69  0  0
->  1  0	   0  15892   1684   5868    0    0     0     0  266    2 34 66  0  0
->  1  0	   0  15892   1684   5868    0    0     0     0  266    6 33 67  0  0
->  1  0	   0  15892   1684   5868    0    0     0     0  267    4 37 63  0  0
->  1  0	   0  15892   1684   5868    0    0     0     0  267    6 34 66  0  0
-> 
-> on average 4 context switches _per second_. The scheduler is not a 
-> factor on this box.
-> 
-> Furthermore:
-> 
->  | I'm currently unable to test BFS, because the device throws strange 
->  | flash errors. Maybe the flash is broken :(
-> 
-> So maybe those flash errors somehow impacted the measurements as well?
-I did some tests with BFS v230 vs CFS on Linux 2.6.30 on a different
-MIPS device (Atheros AR2317) with 180 MHz and 16 MB RAM. When running
-iperf tests, I consistently get the following results when running the
-transfer from the device to my laptop:
+>> how about the attached
+>
+> Mostly good, but needs some improvements. At least it helped me
+> track down the last problem.
+>
+>> > lib/checksum.c: Fix another endianess bug
+>>
+>> hrm, still not quite :/
+>>
+>> the attached test code shows failures in every case
+>
+> When I tried running it on x86-64, it only showed failures for
+> numbers 1, 2 and 4. I fixed them with this patch:
+> ---
+> lib/checksum: fix one more thinko
+>
+> When do_csum gets unaligned data, we really need to treat
+> the first byte as an even byte, not an odd byte, because
+> we swap the two halves later.
+>
+> Found by Mike's checksum-selftest module.
+>
+> Reported-by: Mike Frysinger <vapier.adi@gmail.com>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-CFS: [  5]  0.0-60.0 sec    107 MBytes  15.0 Mbits/sec
-BFS: [  5]  0.0-60.0 sec    119 MBytes  16.6 Mbits/sec
-
-The transfer speed from my laptop to the device are the same with BFS
-and CFS. I repeated the tests a few times just to be sure, and I will
-check vmstat later.
-The difference here cannot be flash related, as I ran a kernel image
-with the whole userland contained in initramfs. No on-flash filesystem
-was mounted or accessed.
-
-- Felix
+shouldnt this fix have been in 2.6.31 ?  doesnt seem to be even in
+latest git ...
+-mike
