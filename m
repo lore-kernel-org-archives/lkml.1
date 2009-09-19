@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbZISS2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbZISSck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752246AbZISS2n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 14:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZISS2m
+	id S1752288AbZISSck (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 14:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZISSck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 14:28:42 -0400
-Received: from mail-yw0-f141.google.com ([209.85.211.141]:46535 "EHLO
-	mail-yw0-f141.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751913AbZISS2m convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 14:28:42 -0400
+	Sat, 19 Sep 2009 14:32:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48093 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750791AbZISScj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 14:32:39 -0400
+Date: Sat, 19 Sep 2009 20:32:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: reservetop fix disables mem=
+Message-ID: <20090919183224.GA3038@elte.hu>
+References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils> <4A92D029.8090807@kernel.org> <20090824182713.GB9785@elte.hu> <Pine.LNX.4.64.0909160117260.6814@sister.anvils> <20090919175504.GJ5366@elte.hu> <4AB51CA2.9010608@kernel.org> <4AB51DFD.2000904@kernel.org>
 MIME-Version: 1.0
-Date: Sat, 19 Sep 2009 11:15:53 -0700 (PDT)
-In-Reply-To: <dlohM-3zc-19@gated-at.bofh.it>
-X-IP: 82.0.91.38
-References: <dlohM-3zc-19@gated-at.bofh.it>
-User-Agent: G2/1.0
-X-HTTP-Via: 1.1 home (squid/3.0.STABLE8)
-X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3) 
-	Gecko/20090915 Ubuntu/9.10 (karmic) Firefox/3.5.3,gzip(gfe),gzip(gfe)
-Message-ID: <a89c6653-c807-490b-9ecc-bac41c3d8ab5@k26g2000vbp.googlegroups.com>
-Subject: Re: Linux not shutting down all devices? Battery drain in after 
-	shutdown
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Norbert Preining <preining@logic.at>
-Cc: Pavel Machek <pavel@ucw.cz>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB51DFD.2000904@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 17, 1:30 pm, Norbert Preining <preining@logic.at> wrote:
-> Dear all,
->
-> I have a very strange problem with my Sony VAIO Z11 laptop. When I turn
-> it off in Linux it still drains battery, and quite a lot indeed, several
-> percent per hour.
 
-As there is potential for broken BIOS/firmware to be mis/reprogramming
-hardware at shutdown time, can you check with booting the kernel with
-'reboot=pci' before shutting down?
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-This has the excellent effect on my Thinkpad T400 of avoiding a 9
-second hang when powering off or rebooting [1], making it faster than
-bootup (as it should be), though I haven't done any battery draining
-measurements yet...
+> Yinghai Lu wrote:
+> > Ingo Molnar wrote:
+> >> I thoroughly zapped it. Do you know about any commit ID where it snuck 
+> >> in?
+> > 
+> > after close looking, it will break
+> > 1. some cpu feature  in early stage too, like cpu_has_x2apic
+> > 2. will break built-in-command line
+> > 3. will break other memmap= and mem=
+> > 4. early_dbgp and early_console that will use early_ioremap to access mmio (?)
 
-If code is being executed by the BIOS to reprogram devices, that 9
-second hang may be due to timeouts when hardware isn't in the expected
-state even.
+thanks Yinghai - i have queued up your revert. Thanks Hugh for noticing 
+it!
 
-I wonder if windows quiesces all devices and uses the pci poweroff/
-reboot method or the keyboard controller method.
+> after revet it, it seem mem=32g etc still broken, maybe some other 
+> commit about x86 platform support from Thomas broke it.
 
-Daniel
+Thomas?
 
---- [1]
-
-http://groups.google.com/group/linux.kernel/browse_thread/thread/90f916ad67d5e7d3/f81bfd6af01fafb6?lnk=gst&q=blueman#f81bfd6af01fafb6
---
-Daniel J Blueman
+	Ingo
