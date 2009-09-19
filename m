@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbZISVik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZISVir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbZISVik (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZISVii
+	id S1753386AbZISVir (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbZISVip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:38:38 -0400
-Received: from kroah.org ([198.145.64.141]:50918 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:38:45 -0400
+Received: from kroah.org ([198.145.64.141]:50923 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbZISVih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:38:37 -0400
+	id S1753318AbZISVin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:38:43 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@linux.intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 11/79] cyclades: switch to tty_port_hangup
-Date: Sat, 19 Sep 2009 14:36:16 -0700
-Message-Id: <1253396244-7885-11-git-send-email-gregkh@suse.de>
+Subject: [PATCH 12/79] cyclades: close cleanup
+Date: Sat, 19 Sep 2009 14:36:17 -0700
+Message-Id: <1253396244-7885-12-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -25,71 +25,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jiri Slaby <jirislaby@gmail.com>
 
-Do not duplicate common tty_port_hangup code. Use it instead.
+Use new tty helpers for close, which allows much code removal.
 
-Also do not unset ASYNC_NORMAL_ACTIVE and wake up from the
-tty_hangup() caller. It makes no sense since we don't check that
-flag in sleepers. tty_port_hangup() performed later will do the
-right job.
+The only real change is locking. card_lock for protecting was
+used inappropriately (just to have a critical section, no matter
+which lock is used), so the change to port->lock is fine.
+
+Remove also useless debug printks while being there.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/cyclades.c |   23 ++++++-----------------
- 1 files changed, 6 insertions(+), 17 deletions(-)
+ drivers/char/cyclades.c |   70 +---------------------------------------------
+ 1 files changed, 2 insertions(+), 68 deletions(-)
 
 diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index 7a7092a..226175d 100644
+index 226175d..87a40bc 100644
 --- a/drivers/char/cyclades.c
 +++ b/drivers/char/cyclades.c
-@@ -1290,11 +1290,10 @@ static void cyy_chip_modem(struct cyclades_card *cinfo, int chip,
- 	}
+@@ -2361,61 +2361,13 @@ static void cy_close(struct tty_struct *tty, struct file *filp)
+ 	struct cyclades_card *card;
+ 	unsigned long flags;
  
- 	if ((mdm_change & CyDCD) && (info->port.flags & ASYNC_CHECK_CD)) {
--		if (!(mdm_status & CyDCD)) {
-+		if (mdm_status & CyDCD)
-+			wake_up_interruptible(&info->port.open_wait);
-+		else
- 			tty_hangup(tty);
--			info->port.flags &= ~ASYNC_NORMAL_ACTIVE;
+-#ifdef CY_DEBUG_OTHER
+-	printk(KERN_DEBUG "cyc:cy_close ttyC%d\n", info->line);
+-#endif
+-
+ 	if (!info || serial_paranoia_check(info, tty->name, "cy_close"))
+ 		return;
+ 
+ 	card = info->card;
+ 
+-	spin_lock_irqsave(&card->card_lock, flags);
+-	/* If the TTY is being hung up, nothing to do */
+-	if (tty_hung_up_p(filp)) {
+-		spin_unlock_irqrestore(&card->card_lock, flags);
++	if (!tty_port_close_start(&info->port, tty, filp))
+ 		return;
+-	}
+-#ifdef CY_DEBUG_OPEN
+-	printk(KERN_DEBUG "cyc:cy_close ttyC%d, count = %d\n", info->line,
+-		info->port.count);
+-#endif
+-	if ((tty->count == 1) && (info->port.count != 1)) {
+-		/*
+-		 * Uh, oh.  tty->count is 1, which means that the tty
+-		 * structure will be freed.  Info->count should always
+-		 * be one in these conditions.  If it's greater than
+-		 * one, we've got real problems, since it means the
+-		 * serial port won't be shutdown.
+-		 */
+-		printk(KERN_ERR "cyc:cy_close: bad serial port count; "
+-			"tty->count is 1, info->port.count is %d\n", info->port.count);
+-		info->port.count = 1;
+-	}
+-#ifdef CY_DEBUG_COUNT
+-	printk(KERN_DEBUG  "cyc:cy_close at (%d): decrementing count to %d\n",
+-		current->pid, info->port.count - 1);
+-#endif
+-	if (--info->port.count < 0) {
+-#ifdef CY_DEBUG_COUNT
+-		printk(KERN_DEBUG "cyc:cyc_close setting count to 0\n");
+-#endif
+-		info->port.count = 0;
+-	}
+-	if (info->port.count) {
+-		spin_unlock_irqrestore(&card->card_lock, flags);
+-		return;
+-	}
+-	info->port.flags |= ASYNC_CLOSING;
+-
+-	/*
+-	 * Now we wait for the transmit buffer to clear; and we notify
+-	 * the line discipline to only process XON/XOFF characters.
+-	 */
+-	tty->closing = 1;
+-	spin_unlock_irqrestore(&card->card_lock, flags);
+-	if (info->port.closing_wait != CY_CLOSING_WAIT_NONE)
+-		tty_wait_until_sent(tty, info->port.closing_wait);
+ 
+ 	spin_lock_irqsave(&card->card_lock, flags);
+ 
+@@ -2460,28 +2412,10 @@ static void cy_close(struct tty_struct *tty, struct file *filp)
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
+ 	cy_shutdown(info, tty);
+ 	cy_flush_buffer(tty);
+-	tty_ldisc_flush(tty);
+-	spin_lock_irqsave(&card->card_lock, flags);
+ 
+-	tty->closing = 0;
+ 	tty_port_tty_set(&info->port, NULL);
+-	if (info->port.blocked_open) {
+-		spin_unlock_irqrestore(&card->card_lock, flags);
+-		if (info->port.close_delay) {
+-			msleep_interruptible(jiffies_to_msecs
+-						(info->port.close_delay));
 -		}
 -		wake_up_interruptible(&info->port.open_wait);
- 	}
- 	if ((mdm_change & CyCTS) && (info->port.flags & ASYNC_CTS_FLOW)) {
- 		if (tty->hw_stopped) {
-@@ -1655,13 +1654,10 @@ static void cyz_handle_cmd(struct cyclades_card *cinfo)
- 			if (info->port.flags & ASYNC_CHECK_CD) {
- 				u32 dcd = fw_ver > 241 ? param :
- 					readl(&info->u.cyz.ch_ctrl->rs_status);
--				if (dcd & C_RS_DCD) {
-+				if (dcd & C_RS_DCD)
- 					wake_up_interruptible(&info->port.open_wait);
--				} else {
-+				else
- 					tty_hangup(tty);
--					wake_up_interruptible(&info->port.open_wait);
--					info->port.flags &= ~ASYNC_NORMAL_ACTIVE;
--				}
- 			}
- 			break;
- 		case C_CM_MCTS:
-@@ -4009,14 +4005,7 @@ static void cy_hangup(struct tty_struct *tty)
+-		spin_lock_irqsave(&card->card_lock, flags);
+-	}
+-	info->port.flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_CLOSING);
+-	wake_up_interruptible(&info->port.close_wait);
  
- 	cy_flush_buffer(tty);
- 	cy_shutdown(info, tty);
--	info->port.count = 0;
--#ifdef CY_DEBUG_COUNT
--	printk(KERN_DEBUG "cyc:cy_hangup (%d): setting count to 0\n",
--		current->pid);
+-#ifdef CY_DEBUG_OTHER
+-	printk(KERN_DEBUG "cyc:cy_close done\n");
 -#endif
--	tty_port_tty_set(&info->port, NULL);
--	info->port.flags &= ~ASYNC_NORMAL_ACTIVE;
--	wake_up_interruptible(&info->port.open_wait);
-+	tty_port_hangup(&info->port);
- }				/* cy_hangup */
+-
+-	spin_unlock_irqrestore(&card->card_lock, flags);
++	tty_port_close_end(&info->port, tty);
+ }				/* cy_close */
  
- static int cyy_carrier_raised(struct tty_port *port)
+ /* This routine gets called when tty_write has put something into
 -- 
 1.6.4.2
 
