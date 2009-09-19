@@ -1,107 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbZISLgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbZISLhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757745AbZISLgn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 07:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbZISLgh
+	id S1753062AbZISLhZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 07:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZISLhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 07:36:37 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50800 "EHLO
+	Sat, 19 Sep 2009 07:37:21 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50805 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757604AbZISLgc convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757619AbZISLgd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 07:36:32 -0400
-Date: Sat, 19 Sep 2009 13:36:04 +0200
+	Sat, 19 Sep 2009 07:36:33 -0400
+Date: Sat, 19 Sep 2009 13:36:30 +0200
 From: Arjan van de Ven <arjan@infradead.org>
 To: mingo@elte.hu
 Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
        fweisbec@gmail.com, peterz@infradead.org,
        Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] perf: Add timechart help text and add timechart to "perf
- help"
-Message-ID: <20090919133604.3767fa35@infradead.org>
+Subject: [PATCH] perf: Use a define for the maximum length of a trace event
+Message-ID: <20090919133630.10533d3e@infradead.org>
 In-Reply-To: <20090919133410.7b23e270@infradead.org>
 References: <20090919133410.7b23e270@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->From 880307a7ee6136aca34ca0fc71bab544723829c9 Mon Sep 17 00:00:00 2001
+ From e5f5037ae4423c188aa68ee6ba239708bb720722 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 19 Sep 2009 13:17:57 +0200
-Subject: [PATCH] perf: Add timechart help text and add timechart to "perf help"
+Date: Sat, 19 Sep 2009 13:21:20 +0200
+Subject: [PATCH] perf: Use a define for the maximum length of a trace event
 
-As suggested by Ingo, add a timechart man page help text, as well
-as add it to the "perf help" overview.
+As per Ingo's review: use a #define rather than an open coded constant
+for the maximum length of a trace event for storing in the perf.data file.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- tools/perf/Documentation/perf-timechart.txt |   35 +++++++++++++++++++++++++++
- tools/perf/command-list.txt                 |    1 +
- 2 files changed, 36 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/Documentation/perf-timechart.txt
+ tools/perf/util/header.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/tools/perf/Documentation/perf-timechart.txt b/tools/perf/Documentation/perf-timechart.txt
-new file mode 100644
-index 0000000..61e0104
---- /dev/null
-+++ b/tools/perf/Documentation/perf-timechart.txt
-@@ -0,0 +1,35 @@
-+perf-timechart(1)
-+=================
-+
-+NAME
-+----
-+perf-timechart - Tool to visualize total system behavior during a workload
-+
-+SYNOPSIS
-+--------
-+[verse]
-+'perf timechart' {record}
-+
-+DESCRIPTION
-+-----------
-+There are two variants of perf timechart:
-+
-+  'perf timechart record <command>' to record the system level events
-+  of an arbitrary workload.
-+
-+  'perf timechart' to turn a trace into a Scalable Vector Graphics file,
-+  that can be viewed with popular SVG viewers such as 'Inkscape'.
-+
-+OPTIONS
-+-------
-+-o::
-+--output=::
-+        Select the output file (default: output.svg)
-+-i::
-+--input=::
-+        Select the input file (default: perf.data)
-+
-+
-+SEE ALSO
-+--------
-+linkperf:perf-record[1]
-diff --git a/tools/perf/command-list.txt b/tools/perf/command-list.txt
-index 3133c74..00326e2 100644
---- a/tools/perf/command-list.txt
-+++ b/tools/perf/command-list.txt
-@@ -8,5 +8,6 @@ perf-sched			mainporcelain common
- perf-record			mainporcelain common
- perf-report			mainporcelain common
- perf-stat			mainporcelain common
-+perf-timechart			mainporcelain common
- perf-top			mainporcelain common
- perf-trace			mainporcelain common
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index ef91145..ed6b553 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -86,9 +86,10 @@ void perf_header__add_attr(struct perf_header *self,
+ 	self->attr[pos] = attr;
+ }
+ 
++#define MAX_EVENT_NAME 64
+ struct perf_trace_event_type {
+ 	u64	event_id;
+-	char	name[64];
++	char	name[MAX_EVENT_NAME];
+ };
+ 
+ static int event_count;
+@@ -96,7 +97,7 @@ static struct perf_trace_event_type *events;
+ 
+ void perf_header__push_event(u64 id, const char *name)
+ {
+-	if (strlen(name) > 64)
++	if (strlen(name) > MAX_EVENT_NAME)
+ 		printf("Event %s will be truncated\n", name);
+ 
+ 	if (!events) {
+@@ -110,7 +111,7 @@ void perf_header__push_event(u64 id, const char *name)
+ 	}
+ 	memset(&events[event_count], 0, sizeof(struct perf_trace_event_type));
+ 	events[event_count].event_id = id;
+-	strncpy(events[event_count].name, name, 63);
++	strncpy(events[event_count].name, name, MAX_EVENT_NAME - 1);
+ 	event_count++;
+ }
+ 
 -- 
 1.6.0.6
+
+
 
 
 -- 
