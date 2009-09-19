@@ -1,77 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZISF4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZISGAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbZISF4v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 01:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZISF4s
+	id S1754672AbZISGAa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 02:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZISGA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 01:56:48 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:40916 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753749AbZISF4s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 01:56:48 -0400
-Subject: Re: alloc skb based on a given data buffer
-From: Johannes Berg <johannes@sipsolutions.net>
-To: David Miller <davem@davemloft.net>
-Cc: yi.zhu@intel.com, mel@csn.ul.ie, reinette.chatre@intel.com,
-       elendil@planet.nl, Larry.Finger@lwfinger.net, linville@tuxdriver.com,
-       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       assaf.krauss@intel.com, mohamed.abbas@intel.com, netdev@vger.kernel.org
-In-Reply-To: <20090915.141606.134994761.davem@davemloft.net>
-References: <20090915.020903.93643290.davem@davemloft.net>
-	 <1253006111.7549.61.camel@debian>
-	 <1253028631.23427.55.camel@johannes.local>
-	 <20090915.141606.134994761.davem@davemloft.net>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-q77ki/2eoXOCiZi7ADji"
-Date: Fri, 18 Sep 2009 22:56:06 -0700
-Message-Id: <1253339766.16125.1.camel@johannes.local>
+	Sat, 19 Sep 2009 02:00:29 -0400
+Received: from smtp.wp.pl ([212.77.101.1]:55653 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751848AbZISGA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 02:00:28 -0400
+Date: Sat, 19 Sep 2009 08:15:49 +0200
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+To: linux-input@vger.kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: hid-core: fix lockdep in hid_input_report()
+Message-Id: <20090919081549.669b6773.krzysztof.h1@wp.pl>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.27.92 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000 [sdM0]                               
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
---=-q77ki/2eoXOCiZi7ADji
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+There is a lockdep warning in the hid_input_report() due to dynamic allocation
+of a temporary buffer.
+Change the buffer to a local variable. The buffer size is 512 chars.
 
-On Tue, 2009-09-15 at 14:16 -0700, David Miller wrote:
-> From: Johannes Berg <johannes@sipsolutions.net>
-> Date: Tue, 15 Sep 2009 08:30:31 -0700
->=20
-> > Hold, mac80211 can't cope with that at this point for sw crypto and
-> > possibly other things.
->=20
-> Then it should skb_linearize() at input, or similar.
+The lockdep trace is:
 
-Not all that much won then since that again means an order-2 allocation.
-Fewer, certainly, as most packets are actually much smaller than that.
+WARNING: at kernel/lockdep.c:2457 lockdep_trace_alloc+0xca/0xd0()
+Hardware name: Product Name
+Modules linked in: usbhid(+) hid uhci_hcd ne2k_pci via_agp 8390 i2c_via
+Pid: 0, comm: swapper Not tainted 2.6.31 #74
+Call Trace:
+ [<c0243b8a>] ? lockdep_trace_alloc+0xca/0xd0
+ [<c0221d1c>] warn_slowpath_common+0x7c/0xa0
+ [<c0243b8a>] ? lockdep_trace_alloc+0xca/0xd0
+ [<c0221d55>] warn_slowpath_null+0x15/0x20
+ [<c0243b8a>] lockdep_trace_alloc+0xca/0xd0
+ [<c027d2c8>] kmem_cache_alloc+0x28/0x100
+ [<cc9359ef>] ? hid_input_report+0x6f/0x220 [hid]
+ [<cc9359ef>] hid_input_report+0x6f/0x220 [hid]
+ [<cc94cabf>] hid_ctrl+0x7f/0x180 [usbhid]
+ [<c03b28b1>] usb_hcd_giveback_urb+0x41/0xa0
+ [<cc91a3fc>] uhci_giveback_urb+0x8c/0x280 [uhci_hcd]
+ [<c0279853>] ? dma_pool_free+0xd3/0x120
+ [<cc919848>] ? uhci_free_td+0x58/0xa0 [uhci_hcd]
+ [<cc91ac01>] uhci_scan_schedule+0x301/0x910 [uhci_hcd]
+ [<cc91cac4>] uhci_irq+0x94/0x940 [uhci_hcd]
+ [<c0245c43>] ? __lock_acquire+0x433/0xab0
+ [<c0206246>] ? mask_and_ack_8259A+0x66/0x100
+ [<c03b494b>] usb_hcd_irq+0x6b/0x90
+ [<c0255e7d>] handle_IRQ_event+0x2d/0xc0
+ [<c0257e85>] handle_level_irq+0x65/0xe0
+ [<c0204c74>] handle_irq+0x34/0x60
+ [<c0204bc9>] do_IRQ+0x39/0xb0
+ [<c024365c>] ? trace_hardirqs_on_caller+0x12c/0x180
+ [<c020328e>] common_interrupt+0x2e/0x40
+ [<c0208d48>] ? default_idle+0x38/0x50
+ [<c02108df>] apm_cpu_idle+0x10f/0x290
+ [<c0201b11>] cpu_idle+0x21/0x40
+ [<c045892d>] rest_init+0x4d/0x60
+ [<c0575815>] start_kernel+0x235/0x280
+ [<c05751f0>] ? unknown_bootoption+0x0/0x210
+ [<c057503f>] __init_begin+0x3f/0x50
 
-johannes
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+This lockdep is in the current git tree.
 
---=-q77ki/2eoXOCiZi7ADji
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKtHJyAAoJEODzc/N7+QmaK64QAJxYVAiY0mWYsHhi3iGib2Ma
-1VqZdVHNCZ4AbUp90sOkrTfUaS/nL0w5EPQ8hhM1zMQoqcyX7O05dPig2ahnRLJ1
-MZXZkPhV3Nb1TAHwYj4PDaRur7X5d9xCBhPDZEt9feLZs3Gw8NqhmJxDoNi3OyA8
-VmGVBhifpZMZetST5votEXXJWOx3aN8UAf6xv+jbOAFcfNke3xUWSKFVtK82B6UV
-8klkTFAOo/Tq9RlV2Eb83QaFnHYjZLMfj0puh8Tc8E/i6BARrI+qgjT1DJNBFTsL
-Bbe3yGq+OWMQ//tWbRvZTN954vKdtvA6PfU6lF3gVdSlJAZKSZUIt6EBHf/ZSz0J
-O7eTPweVKNKEHFROglN+w+IWV8ZNZIcms+1sCK3zH3bLxKpR89LyWtiRaIX8tuci
-BwvXfLgVTnDJjf89X3uaNmH8XCv3zyX6TBhuMrfB1fjWwc8xPp5Rupo83jC9KPAp
-Vzc5NY/VXdD/U27VBNRvS2KQUiKXNU/NyLoZ2o+WW51mkHStwmv/6/HXyBDT9v1U
-sc0yBjg3/yJo50RTzaQRvUVmEqWZcLtEujgOlgad3YuCpZMUjdaOHybQWkvGJMxb
-jhDfsfCvlLfLSE+8E4/2+9BIlBVSa8qovt2WCkiXMrY+j3YFGNI/E+GPXcTmCxCU
-r+CgNqI9zDZusMru3zcU
-=AziV
------END PGP SIGNATURE-----
-
---=-q77ki/2eoXOCiZi7ADji--
-
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 342b7d3..eb7968d 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1075,7 +1075,7 @@ int hid_input_report(struct hid_device *hid, int type, u8 *data, int size, int i
+ 	struct hid_report_enum *report_enum;
+ 	struct hid_driver *hdrv;
+ 	struct hid_report *report;
+-	char *buf;
++	char buf[HID_DEBUG_BUFSIZE];
+ 	unsigned int i;
+ 	int ret;
+ 
+@@ -1089,21 +1089,12 @@ int hid_input_report(struct hid_device *hid, int type, u8 *data, int size, int i
+ 		return -1;
+ 	}
+ 
+-	buf = kmalloc(sizeof(char) * HID_DEBUG_BUFSIZE,
+-			interrupt ? GFP_ATOMIC : GFP_KERNEL);
+-
+-	if (!buf) {
+-		report = hid_get_report(report_enum, data);
+-		goto nomem;
+-	}
+-
+ 	snprintf(buf, HID_DEBUG_BUFSIZE - 1,
+ 			"\nreport (size %u) (%snumbered)\n", size, report_enum->numbered ? "" : "un");
+ 	hid_debug_event(hid, buf);
+ 
+ 	report = hid_get_report(report_enum, data);
+ 	if (!report) {
+-		kfree(buf);
+ 		return -1;
+ 	}
+ 
+@@ -1118,9 +1109,6 @@ int hid_input_report(struct hid_device *hid, int type, u8 *data, int size, int i
+ 	}
+ 	hid_debug_event(hid, "\n");
+ 
+-	kfree(buf);
+-
+-nomem:
+ 	if (hdrv && hdrv->raw_event && hid_match_report(hid, report)) {
+ 		ret = hdrv->raw_event(hid, report, data, size);
+ 		if (ret != 0)
