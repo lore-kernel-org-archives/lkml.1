@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbZISAKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbZISAHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757730AbZISAKV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 20:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZISAKR
+	id S1757458AbZISAHN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 20:07:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbZISAHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 20:10:17 -0400
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:43483 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754381AbZISAKQ convert rfc822-to-8bit (ORCPT
+	Fri, 18 Sep 2009 20:07:10 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:41013 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753158AbZISAHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 20:10:16 -0400
+	Fri, 18 Sep 2009 20:07:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XE+ksIZF9R2i0RRTPJ4/h3Kh5hcMON/qocBSz9AiVfIw54mt28NDv3iicAR5x0fJdT
-         G0c7Tqr/+aIGp2zAARpKO0BmhlCN6qQbmImkrMEs46eygCu7adz+dvhqQnVGZpj0vBFe
-         SnyF/wqtSq41y8BINsWV/ZWkgvZubpKYrpCk0=
+         :cc:content-type;
+        b=Mf6ewABjuCsz1ODpZVns+s/3/Mmn7CfzhTA9eRWbKKGCIB37tOqmpEO5UscByvzKIo
+         vX54uoOiXCjK7LJPX4C/ATfDoiBND9vz6W4U8wRlRYg5QGMH++l0xusAi/Dt8dgsMg/t
+         EIAtuY0gWl3Io5rN5fCuTAgaKCl7kIl+6hSng=
 MIME-Version: 1.0
-In-Reply-To: <1249529480.16688.13.camel@ben-desktop>
-References: <200907311027.06370.hartleys@visionengravers.com>
-	 <200908041414.26112.david-b@pacbell.net>
-	 <BD79186B4FD85F4B8E60E381CAEE190901B7783E@mi8nycmail19.Mi8.com>
-	 <1249529480.16688.13.camel@ben-desktop>
-Date: Sat, 19 Sep 2009 08:03:28 +0800
-Message-ID: <45a44e480909181703l7b1ef8a1lf00fdd53aebfb523@mail.gmail.com>
-Subject: Re: [PATCH] gpiolib: introduce for_each_gpio_in_chip macro
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
-       David Brownell <david-b@pacbell.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090918163927.GA365@core.coreip.homeip.net>
+References: <4A5BF6F0.6020403@samsung.com>
+	 <20090714082452.GH2822@dtor-d630.eng.vmware.com>
+	 <002a01ca0462$8b750a90$a25f1fb0$%szyprowski@samsung.com>
+	 <5d5443650907140211i4c6e4a49q9c055dc1e91071da@mail.gmail.com>
+	 <002b01ca046c$7f9fd240$7edf76c0$%szyprowski@samsung.com>
+	 <5d5443650907140323l6cc06151nbec94d5d8646c60a@mail.gmail.com>
+	 <003f01ca051c$0e8d12b0$2ba73810$%szyprowski@samsung.com>
+	 <20090916085749.GL2756@core.coreip.homeip.net>
+	 <4AB3416F.6010004@samsung.com>
+	 <20090918163927.GA365@core.coreip.homeip.net>
+Date: Sat, 19 Sep 2009 09:07:11 +0900
+Message-ID: <4e1455be0909181707w113015ddk90e4b74cfb0c462f@mail.gmail.com>
+Subject: Re: [PATCH] Input: add MAX7359 key switch controller driver, v2
+From: Joonyoung Shim <dofmind@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Joonyoung Shim <jy0922.shim@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Kim Kyuwon <q1.kim@samsung.com>,
+       Kim Kyuwon <chammoru@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 6, 2009 at 11:31 AM, Ben Nizette <bn@niasdigital.com> wrote:
-> On Tue, 2009-08-04 at 20:48 -0400, H Hartley Sweeten wrote:
+2009/9/19 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> Hi Joonyoung,
 >
->> For the record. The reason I sent this is I'm trying to work out an
->> extension to gpiolib that adds gpio_port_* access to the API.  Most
->> of the gpiolib drivers already the necessary logic since the raw I/O
->> is performed on the entire 'chip'.  The API just needs the extensions
->> added to request/free the port, set the direction and get/set the value.
+> On Fri, Sep 18, 2009 at 05:14:39PM +0900, Joonyoung Shim wrote:
 >>
->> Is this a worthwhile addition?
+>> Hi, Dmitry.
+>>
+>> I tested your patch with threaded IRQ. Because the interrupt of the
+>> MAX7359 device is the low level detecting, i should add the IRQF_ONESHOT
+>> flag on request_threaded_irq(). If it is added IRQF_ONESHOT flag, the it
+>> operates well.
 >
-> Plenty of people seem to think so.  Personally I haven't seen a great
-> use case except "'coz I can", but if you've got one I'd love to hear.
-
-Yes, you're right that there has been no major demand for it. There
-are (luckily?) only a moderate number of devices that are using gpio
-as their parallel bus interface. I've been supporting the batch-gpio
-patchset below out-of-the-tree because it has come in handy with a few
-e-paper display controllers and LCD 8080-IO that I've been developing
-with.
-
+> Thank you for testing.
 >
-> Have you seen http://lkml.org/lkml/2009/1/25/10 ?  Donno what ended up
-> happening to that patchset..
+>> Do you want i send the patch?
+>
+> No, I fixed it locally. I took the liberty of marking the patch as
+> "Tested-by" you, I hope you don't mind.
 >
 
-I didn't pursue it further and have maintained it out-of-tree. I felt
-that David had concerns about the API I implemented so it was unlikely
-to get merged and I didn't have the motivation to implement another.
-:-)
+OK. Thanks.
 
-Thanks,
-jaya
-
-ps: I'm in Portland for the festival of linux conferences this week
-and would be happy to work on this/discuss alternate APIs if it is of
-interest.
+-- 
+- Joonyoung Shim
