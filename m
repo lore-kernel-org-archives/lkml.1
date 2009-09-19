@@ -1,41 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbZISOrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbZISOtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932085AbZISOrX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 10:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZISOrW
+	id S1755526AbZISOtL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 10:49:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbZISOtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 10:47:22 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:39996 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755012AbZISOrV (ORCPT
+	Sat, 19 Sep 2009 10:49:11 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57880 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753231AbZISOtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 10:47:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=iLCFTzzK+VBmuBG9ohdtKhh8+Ye+WkWJmw+vvyTeQtHJzL4osPesgsnAwwFRY2h5ei
-         elOFi3o60qSaWWF/hBOrcXKT5Un/GVzX/YS+f+WwX4QygrG2uL3mkzX465bZG45nCT1j
-         CpFTQz4XHNomTaR318UcMqzkwWn0tnsLy52eU=
+	Sat, 19 Sep 2009 10:49:09 -0400
+X-Sasl-enc: IU+H2sdVto50QWYyJ4+OSFxwzgUQ3Vd9u5X4iVAlxTc9 1253371753
+Date: Sat, 19 Sep 2009 11:49:11 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Norbert Preining <preining@logic.at>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Matthias Welwarsky <matze@welwarsky.de>
+Subject: Re: Linux not shutting down all devices? Battery drain in after
+ shutdown
+Message-ID: <20090919144911.GD28777@khazad-dum.debian.net>
+References: <20090917122451.GA13717@gandalf.dynalias.org>
+ <20090919103709.GA4466@elf.ucw.cz>
 MIME-Version: 1.0
-Date: Sat, 19 Sep 2009 15:47:24 +0100
-Message-ID: <6278d2220909190747n62f7036dj2e5231fcdc4730fb@mail.gmail.com>
-Subject: tickless and HZ=1000 throughput advantage?
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090919103709.GA4466@elf.ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On tickless kernels, is the general consensus that for non-embedded
-systems, selecting HZ=1000 gives slightly more throughput in
-particular situations than HZ=100 or 250, due to finer timer
-intervals/granularity?
+On Sat, 19 Sep 2009, Pavel Machek wrote:
+> On Thu 2009-09-17 14:24:51, Norbert Preining wrote:
+> > I have a very strange problem with my Sony VAIO Z11 laptop. When I turn
+> > it off in Linux it still drains battery, and quite a lot indeed, several
+> > percent per hour.
+> > 
+> > Interestingly, when shutting down from Windows XP the same doesn't happen,
+> > after 10 hours of off time starting from 100% charge after rebooting I have
+> > still 98.8%, so that is fine (counting that booting costs some energy).
+> > 
+> > This is in fact also a problem for many other users using Windows, too,
+> > see [1]. I have checked that on Windows all devices are set up so that
+> > at shutdown and hibernation (S4 and S5) they are going to off state (D3).
+> > 
+> > The only thing I can imagine is that one of the devices not completely
+> > of not at all supported by the kernel is not properly shut down.
+> > AFAIS the only device which I have not running here is the fingerprint
+> > scanner.
+> > 
+> > My questions are:
+> > - is there a way and if how to check that all devices will get properly
+> >   shut down on halt?
+> > - is there any other reason the battery drain might happen?
+> > 
+> > Some details about the laptop:
+> > - it has a dual graphic card (Intel and nVidia), the sony-laptop module
+> >   (extended for the zseries, see [2], with adaption to 2.6.31 by me [3]), 
+> >   or the stock kernel sony-laptop plus the nvidia-control module 
+> >   (by Matthew Garret [4]) can be used to turn the nvidia card of on a
+> >   running system so that it does not draw any energy
+> > - lspci -vvv output is attached as lspci.txt
+> > - software running is Debian/sid with kernel 2.6.31
+> 
+> On PC, keyboard driver is expected to shut down the machine; I'd try
+> complaining to Sony, perhaps they have newer bios.
 
-(low HZ used to cause problems with low-rate QoS packet queues when
-timer scheduling was selected)
+I have seen this sort of problem on ThinkPads as well.  Lenovo decided to
+fix it in firmware and shut down the stuff entirely in firmware.
+Interestingly enough, in the ThinkPad case, Windows was not affected.
 
-Thanks,
-  Daniel
 -- 
-Daniel J Blueman
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
