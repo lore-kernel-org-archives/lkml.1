@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZISHnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbZISHWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbZISHnD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 03:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZISHnA
+	id S932088AbZISHWw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 03:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZISHWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 03:43:00 -0400
-Received: from nickg.me.uk ([78.47.77.182]:56254 "EHLO nickg.me.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754806AbZISHnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 03:43:00 -0400
-X-Greylist: delayed 1640 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Sep 2009 03:42:59 EDT
-Message-ID: <4AB48658.2080709@nickg.me.uk>
-Date: Sat, 19 Sep 2009 08:20:56 +0100
-From: Nick Gasson <nick@nickg.me.uk>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	Sat, 19 Sep 2009 03:22:51 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:64585 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753239AbZISHWu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 03:22:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MAiOooOkODMI21xOOelb4m+wGjGZ5xDbL6fdM/LA2+Ypg3ob63zjm4AhqjnDJaylW0
+         PUPH1hwsIG/JqUTavIp0+8XEZ3BeZLD2xuN9IN9DsG4xLxmDHwtOqHzfTDAWdGc2iNqN
+         GRt6C9IkVbmTAURbZ2ntAQCbRXSBFRA8qzKt4=
+Date: Sat, 19 Sep 2009 09:22:50 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 2/2] tracing: Document HAVE_FTRACE_SYSCALLS needs
+Message-ID: <20090919072249.GA5226@nowhere>
+References: <1253338757-5918-1-git-send-email-fweisbec@gmail.com> <1253338757-5918-3-git-send-email-fweisbec@gmail.com> <20090919071712.GB15292@elte.hu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: dmitry.torokhov@gmail.com
-X-SA-Exim-Connect-IP: 78.143.208.249
-X-SA-Exim-Mail-From: nick@nickg.me.uk
-Subject: [PATCH] Fix fn-key release events for Samsung Q320 laptop
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on nickg.me.uk)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090919071712.GB15292@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a workaround for the missing fn-key release
-events on Samsung Q320 and similar laptops.
+On Sat, Sep 19, 2009 at 09:17:12AM +0200, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > Document the arch needed requirements to get the support for syscalls
+> > tracing.
+> > 
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > Cc: Li Zefan <lizf@cn.fujitsu.com>
+> > Cc: Masami Hiramatsu <mhiramat@redhat.com>
+> > Cc: Jason Baron <jbaron@redhat.com>
+> > Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > Cc: Paul Mundt <lethal@linux-sh.org>
+> > ---
+> >  Documentation/trace/ftrace-design.txt |   11 ++++++++++-
+> >  1 files changed, 10 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
+> > index 7003e10..04ab61c 100644
+> > --- a/Documentation/trace/ftrace-design.txt
+> > +++ b/Documentation/trace/ftrace-design.txt
+> > @@ -216,7 +216,16 @@ If you can't trace NMI functions, then skip this option.
+> >  HAVE_FTRACE_SYSCALLS
+> >  ---------------------
+> >  
+> > -<details to be filled>
+> > +You need very few things to get the syscalls tracing in an arch.
+> > +
+> > +- Have a NR_syscalls variable in <asm/unistd.h> that provides the number
+> > +  of syscalls supported by the arch.
+> > +- Implement arch_syscall_addr() that resolves a syscall address from a
+> > +  syscall number.
+> > +- Support the TIF_SYSCALL_TRACEPOINT thread flags
+> > +- Put the trace_sys_enter() and trace_sys_exit() tracepoints calls from ptrace
+> > +  in the ptrace syscalls tracing path.
+> > +- Tag this arch as HAVE_FTRACE_SYSCALLS.
+> 
+> HAVE_FTRACE_SYSCALLS is not actually used anywhere.
+> 
+> 	Ingo
 
-Tested extensively on my own laptop.
 
-Signed-off-by: Nick Gasson <nick@nickg.me.uk>
----
-  drivers/input/keyboard/atkbd.c |    9 +++++++++
-  1 files changed, 9 insertions(+), 0 deletions(-)
+Ah, that has been renamed HAVE_SYSCALL_TRACEPOINTS recently.
+What do you prefer? A delta patch or a rebase?
 
-diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
-index c9523e4..56a6ffa 100644
---- a/drivers/input/keyboard/atkbd.c
-+++ b/drivers/input/keyboard/atkbd.c
-@@ -1630,6 +1630,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
-                 .driver_data = atkbd_samsung_forced_release_keys,
-         },
-         {
-+               .ident = "Samsung Q320/P320",
-+               .matches = {
-+                       DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+                       DMI_MATCH(DMI_PRODUCT_NAME, "Q320/P320"),
-+               },
-+               .callback = atkbd_setup_forced_release,
-+               .driver_data = atkbd_samsung_forced_release_keys,
-+       },
-+       {
-                 .ident = "Samsung SQ45S70S",
-                 .matches = {
-                         DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
--- 
-1.6.4.1
+Thanks.
 
