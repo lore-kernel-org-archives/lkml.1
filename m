@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZISVry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZISVsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbZISVry (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZISVnl
+	id S1754880AbZISVsd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbZISVsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:43:41 -0400
-Received: from kroah.org ([198.145.64.141]:40533 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:48:31 -0400
+Received: from kroah.org ([198.145.64.141]:40536 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754518AbZISVng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:43:36 -0400
+	id S1754548AbZISVnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:43:40 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Joe Peterson <joe@skyrush.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 60/79] n_tty: move echoctl check and clean up logic
-Date: Sat, 19 Sep 2009 14:37:05 -0700
-Message-Id: <1253396244-7885-60-git-send-email-gregkh@suse.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 61/79] tty: handle VT specific compat ioctls in vt driver
+Date: Sat, 19 Sep 2009 14:37:06 -0700
+Message-Id: <1253396244-7885-61-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -24,96 +22,269 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Peterson <joe@skyrush.com>
+From: Arnd Bergmann <arnd@arndb.de>
 
-Check L_ECHOCTL before insertting a character in the echo buffer
-(rather than as the buffer is processed), to be more consistent with
-when all other L_ flags are checked.  Also cleaned up the related logic.
+The VT specific compat_ioctl handlers are the only ones
+in common code that require the BKL. Moving them into
+the vt driver lets us remove the BKL from the other handlers
+and cleans up the code.
 
-Note that this and the previous patch ("n_tty: honor opost flag for echoes")
-were verified together by the reporters of the bug that patch addresses
-(http://bugs.linuxbase.org/show_bug.cgi?id=2692), and the test now passes.
-
-Signed-off-by: Joe Peterson <joe@skyrush.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/n_tty.c |   46 ++++++++++++++++++----------------------------
- 1 files changed, 18 insertions(+), 28 deletions(-)
+ drivers/char/vt.c       |    3 +
+ drivers/char/vt_ioctl.c |  203 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/tty.h     |    3 +
+ 3 files changed, 209 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
-index e6eeeb2..2e50f4d 100644
---- a/drivers/char/n_tty.c
-+++ b/drivers/char/n_tty.c
-@@ -576,33 +576,23 @@ static void process_echoes(struct tty_struct *tty)
- 				break;
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 33214d9..5dfbfa7 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -2910,6 +2910,9 @@ static const struct tty_operations con_ops = {
+ 	.flush_chars = con_flush_chars,
+ 	.chars_in_buffer = con_chars_in_buffer,
+ 	.ioctl = vt_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl = vt_compat_ioctl,
++#endif
+ 	.stop = con_stop,
+ 	.start = con_start,
+ 	.throttle = con_throttle,
+diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
+index 0fceb8f..30b5d12 100644
+--- a/drivers/char/vt_ioctl.c
++++ b/drivers/char/vt_ioctl.c
+@@ -16,6 +16,7 @@
+ #include <linux/tty.h>
+ #include <linux/timer.h>
+ #include <linux/kernel.h>
++#include <linux/compat.h>
+ #include <linux/module.h>
+ #include <linux/kd.h>
+ #include <linux/vt.h>
+@@ -1376,6 +1377,208 @@ void vc_SAK(struct work_struct *work)
+ 	release_console_sem();
+ }
  
- 			default:
--				if (iscntrl(op)) {
--					if (L_ECHOCTL(tty)) {
--						/*
--						 * Ensure there is enough space
--						 * for the whole ctrl pair.
--						 */
--						if (space < 2) {
--							no_space_left = 1;
--							break;
--						}
--						tty_put_char(tty, '^');
--						tty_put_char(tty, op ^ 0100);
--						tty->column += 2;
--						space -= 2;
--					} else {
--						if (!space) {
--							no_space_left = 1;
--							break;
--						}
--						tty_put_char(tty, op);
--						space--;
--					}
--				}
- 				/*
--				 * If above falls through, this was an
--				 * undefined op.
-+				 * If the op is not a special byte code,
-+				 * it is a ctrl char tagged to be echoed
-+				 * as "^X" (where X is the letter
-+				 * representing the control char).
-+				 * Note that we must ensure there is
-+				 * enough space for the whole ctrl pair.
-+				 *
- 				 */
-+				if (space < 2) {
-+					no_space_left = 1;
-+					break;
-+				}
-+				tty_put_char(tty, '^');
-+				tty_put_char(tty, op ^ 0100);
-+				tty->column += 2;
-+				space -= 2;
- 				cp += 2;
- 				nr -= 2;
- 			}
-@@ -809,8 +799,8 @@ static void echo_char_raw(unsigned char c, struct tty_struct *tty)
-  *	Echo user input back onto the screen. This must be called only when
-  *	L_ECHO(tty) is true. Called from the driver receive_buf path.
-  *
-- *	This variant tags control characters to be possibly echoed as
-- *	as "^X" (where X is the letter representing the control char).
-+ *	This variant tags control characters to be echoed as "^X"
-+ *	(where X is the letter representing the control char).
-  *
-  *	Locking: echo_lock to protect the echo buffer
-  */
-@@ -823,7 +813,7 @@ static void echo_char(unsigned char c, struct tty_struct *tty)
- 		add_echo_byte(ECHO_OP_START, tty);
- 		add_echo_byte(ECHO_OP_START, tty);
- 	} else {
--		if (iscntrl(c) && c != '\t')
-+		if (L_ECHOCTL(tty) && iscntrl(c) && c != '\t')
- 			add_echo_byte(ECHO_OP_START, tty);
- 		add_echo_byte(c, tty);
- 	}
++#ifdef CONFIG_COMPAT
++
++struct compat_consolefontdesc {
++	unsigned short charcount;       /* characters in font (256 or 512) */
++	unsigned short charheight;      /* scan lines per character (1-32) */
++	compat_caddr_t chardata;	/* font data in expanded form */
++};
++
++static inline int
++compat_fontx_ioctl(int cmd, struct compat_consolefontdesc __user *user_cfd,
++			 int perm, struct console_font_op *op)
++{
++	struct compat_consolefontdesc cfdarg;
++	int i;
++
++	if (copy_from_user(&cfdarg, user_cfd, sizeof(struct compat_consolefontdesc)))
++		return -EFAULT;
++
++	switch (cmd) {
++	case PIO_FONTX:
++		if (!perm)
++			return -EPERM;
++		op->op = KD_FONT_OP_SET;
++		op->flags = KD_FONT_FLAG_OLD;
++		op->width = 8;
++		op->height = cfdarg.charheight;
++		op->charcount = cfdarg.charcount;
++		op->data = compat_ptr(cfdarg.chardata);
++		return con_font_op(vc_cons[fg_console].d, op);
++	case GIO_FONTX:
++		op->op = KD_FONT_OP_GET;
++		op->flags = KD_FONT_FLAG_OLD;
++		op->width = 8;
++		op->height = cfdarg.charheight;
++		op->charcount = cfdarg.charcount;
++		op->data = compat_ptr(cfdarg.chardata);
++		i = con_font_op(vc_cons[fg_console].d, op);
++		if (i)
++			return i;
++		cfdarg.charheight = op->height;
++		cfdarg.charcount = op->charcount;
++		if (copy_to_user(user_cfd, &cfdarg, sizeof(struct compat_consolefontdesc)))
++			return -EFAULT;
++		return 0;
++	}
++	return -EINVAL;
++}
++
++struct compat_console_font_op {
++	compat_uint_t op;        /* operation code KD_FONT_OP_* */
++	compat_uint_t flags;     /* KD_FONT_FLAG_* */
++	compat_uint_t width, height;     /* font size */
++	compat_uint_t charcount;
++	compat_caddr_t data;    /* font data with height fixed to 32 */
++};
++
++static inline int
++compat_kdfontop_ioctl(struct compat_console_font_op __user *fontop,
++			 int perm, struct console_font_op *op, struct vc_data *vc)
++{
++	int i;
++
++	if (copy_from_user(op, fontop, sizeof(struct compat_console_font_op)))
++		return -EFAULT;
++	if (!perm && op->op != KD_FONT_OP_GET)
++		return -EPERM;
++	op->data = compat_ptr(((struct compat_console_font_op *)op)->data);
++	op->flags |= KD_FONT_FLAG_OLD;
++	i = con_font_op(vc, op);
++	if (i)
++		return i;
++	((struct compat_console_font_op *)op)->data = (unsigned long)op->data;
++	if (copy_to_user(fontop, op, sizeof(struct compat_console_font_op)))
++		return -EFAULT;
++	return 0;
++}
++
++struct compat_unimapdesc {
++	unsigned short entry_ct;
++	compat_caddr_t entries;
++};
++
++static inline int
++compat_unimap_ioctl(unsigned int cmd, struct compat_unimapdesc __user *user_ud,
++			 int perm, struct vc_data *vc)
++{
++	struct compat_unimapdesc tmp;
++	struct unipair __user *tmp_entries;
++
++	if (copy_from_user(&tmp, user_ud, sizeof tmp))
++		return -EFAULT;
++	tmp_entries = compat_ptr(tmp.entries);
++	if (tmp_entries)
++		if (!access_ok(VERIFY_WRITE, tmp_entries,
++				tmp.entry_ct*sizeof(struct unipair)))
++			return -EFAULT;
++	switch (cmd) {
++	case PIO_UNIMAP:
++		if (!perm)
++			return -EPERM;
++		return con_set_unimap(vc, tmp.entry_ct, tmp_entries);
++	case GIO_UNIMAP:
++		if (!perm && fg_console != vc->vc_num)
++			return -EPERM;
++		return con_get_unimap(vc, tmp.entry_ct, &(user_ud->entry_ct), tmp_entries);
++	}
++	return 0;
++}
++
++long vt_compat_ioctl(struct tty_struct *tty, struct file * file,
++	     unsigned int cmd, unsigned long arg)
++{
++	struct vc_data *vc = tty->driver_data;
++	struct console_font_op op;	/* used in multiple places here */
++	struct kbd_struct *kbd;
++	unsigned int console;
++	void __user *up = (void __user *)arg;
++	int perm;
++	int ret = 0;
++
++	console = vc->vc_num;
++
++	lock_kernel();
++
++	if (!vc_cons_allocated(console)) { 	/* impossible? */
++		ret = -ENOIOCTLCMD;
++		goto out;
++	}
++
++	/*
++	 * To have permissions to do most of the vt ioctls, we either have
++	 * to be the owner of the tty, or have CAP_SYS_TTY_CONFIG.
++	 */
++	perm = 0;
++	if (current->signal->tty == tty || capable(CAP_SYS_TTY_CONFIG))
++		perm = 1;
++
++	kbd = kbd_table + console;
++	switch (cmd) {
++	/*
++	 * these need special handlers for incompatible data structures
++	 */
++	case PIO_FONTX:
++	case GIO_FONTX:
++		ret = compat_fontx_ioctl(cmd, up, perm, &op);
++		break;
++
++	case KDFONTOP:
++		ret = compat_kdfontop_ioctl(up, perm, &op, vc);
++		break;
++
++	case PIO_UNIMAP:
++	case GIO_UNIMAP:
++		ret = do_unimap_ioctl(cmd, up, perm, vc);
++		break;
++
++	/*
++	 * all these treat 'arg' as an integer
++	 */
++	case KIOCSOUND:
++	case KDMKTONE:
++#ifdef CONFIG_X86
++	case KDADDIO:
++	case KDDELIO:
++#endif
++	case KDSETMODE:
++	case KDMAPDISP:
++	case KDUNMAPDISP:
++	case KDSKBMODE:
++	case KDSKBMETA:
++	case KDSKBLED:
++	case KDSETLED:
++	case KDSIGACCEPT:
++	case VT_ACTIVATE:
++	case VT_WAITACTIVE:
++	case VT_RELDISP:
++	case VT_DISALLOCATE:
++	case VT_RESIZE:
++	case VT_RESIZEX:
++		goto fallback;
++
++	/*
++	 * the rest has a compatible data structure behind arg,
++	 * but we have to convert it to a proper 64 bit pointer.
++	 */
++	default:
++		arg = (unsigned long)compat_ptr(arg);
++		goto fallback;
++	}
++out:
++	unlock_kernel();
++	return ret;
++
++fallback:
++	unlock_kernel();
++	return vt_ioctl(tty, file, cmd, arg);
++}
++
++
++#endif /* CONFIG_COMPAT */
++
++
+ /*
+  * Performs the back end of a vt switch. Called under the console
+  * semaphore.
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index a0e0330..f0f43d0 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -536,5 +536,8 @@ extern int pcxe_open(struct tty_struct *tty, struct file *filp);
+ extern int vt_ioctl(struct tty_struct *tty, struct file *file,
+ 		    unsigned int cmd, unsigned long arg);
+ 
++extern long vt_compat_ioctl(struct tty_struct *tty, struct file * file,
++		     unsigned int cmd, unsigned long arg);
++
+ #endif /* __KERNEL__ */
+ #endif
 -- 
 1.6.4.2
 
