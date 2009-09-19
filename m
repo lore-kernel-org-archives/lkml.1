@@ -1,95 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751080AbZISTkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751790AbZISTsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751080AbZISTkG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 15:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbZISTkF
+	id S1751790AbZISTsS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 15:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbZISTsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 15:40:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49518 "EHLO mx2.mail.elte.hu"
+	Sat, 19 Sep 2009 15:48:17 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:41320 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbZISTkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 15:40:04 -0400
-Date: Sat, 19 Sep 2009 21:39:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Felix Fietkau <nbd@openwrt.org>
-Cc: Michael Buesch <mb@bu3sch.de>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090919193956.GA21719@elte.hu>
-References: <20090906205952.GA6516@elte.hu> <20090907182629.GA3484@elte.hu> <20090908074825.GA11413@elte.hu> <200909081645.18505.mb@bu3sch.de> <20090918112454.GE9930@elte.hu> <4AB39D3A.3000204@openwrt.org> <20090919180124.GK5366@elte.hu> <4AB52667.6020608@openwrt.org>
+	id S1750747AbZISTsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 15:48:16 -0400
+Date: Sat, 19 Sep 2009 21:48:17 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: mchehab@infradead.org, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] drivers/media/video: remove duplicate structure field
+ initialization
+Message-ID: <Pine.LNX.4.64.0909192147490.27171@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AB52667.6020608@openwrt.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Julia Lawall <julia@diku.dk>
 
-* Felix Fietkau <nbd@openwrt.org> wrote:
+The definition of tvaudio_tuner_ops initializes the s_tuner field twice.
+It appears that the second case should initialize the g_tuner field.
 
-> Ingo Molnar wrote:
-> > * Felix Fietkau <nbd@openwrt.org> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >> > Well that's a really memory constrained MIPS device with like 16 MB of 
-> >> > RAM or so? So having effects from small things like changing details in 
-> >> > a kernel image is entirely plausible.
-> >>
-> >> Normally changing small details doesn't have much of an effect. While 
-> >> 16 MB is indeed not that much, we do usually have around 8 MB free 
-> >> with a full user space running. Changes to other subsystems normally 
-> >> produce consistent and repeatable differences that seem entirely 
-> >> unrelated to memory use, so any measurable difference related to 
-> >> scheduler changes is unlikely to be related to the low amount of RAM. 
-> >> By the way, we do frequently also test the same software with devices 
-> >> that have more RAM, e.g. 32 or 64 MB and it usually behaves in a very 
-> >> similar way.
-> > 
-> > Well, Michael Buesch posted vmstat results, and they show what i have 
-> > found with my x86 simulated reproducer as well (these are Michael's 
-> > numbers):
-> > 
-> > procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
-> >  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
-> >  1  0	   0  15892   1684   5868    0    0     0     0  268    6 31 69  0  0
-> >  1  0	   0  15892   1684   5868    0    0     0     0  266    2 34 66  0  0
-> >  1  0	   0  15892   1684   5868    0    0     0     0  266    6 33 67  0  0
-> >  1  0	   0  15892   1684   5868    0    0     0     0  267    4 37 63  0  0
-> >  1  0	   0  15892   1684   5868    0    0     0     0  267    6 34 66  0  0
-> > 
-> > on average 4 context switches _per second_. The scheduler is not a 
-> > factor on this box.
-> > 
-> > Furthermore:
-> > 
-> >  | I'm currently unable to test BFS, because the device throws strange 
-> >  | flash errors. Maybe the flash is broken :(
-> > 
-> > So maybe those flash errors somehow impacted the measurements as well?
-> I did some tests with BFS v230 vs CFS on Linux 2.6.30 on a different
-> MIPS device (Atheros AR2317) with 180 MHz and 16 MB RAM. When running
-> iperf tests, I consistently get the following results when running the
-> transfer from the device to my laptop:
-> 
-> CFS: [  5]  0.0-60.0 sec    107 MBytes  15.0 Mbits/sec
-> BFS: [  5]  0.0-60.0 sec    119 MBytes  16.6 Mbits/sec
-> 
-> The transfer speed from my laptop to the device are the same with BFS
-> and CFS. I repeated the tests a few times just to be sure, and I will
-> check vmstat later.
+The semantic match that finds this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
-Which exact mainline kernel have you tried? For anything performance 
-related running latest upstream -git (currently at 202c467) would be 
-recommended.
+// <smpl>
+@r@
+identifier I, s, fld;
+position p0,p;
+expression E;
+@@
 
-	Ingo
+struct I s =@p0 { ... .fld@p = E, ...};
+
+@s@
+identifier I, s, r.fld;
+position r.p0,p;
+expression E;
+@@
+
+struct I s =@p0 { ... .fld@p = E, ...};
+
+@script:python@
+p0 << r.p0;
+fld << r.fld;
+ps << s.p;
+pr << r.p;
+@@
+
+if int(ps[0].line)!=int(pr[0].line) or int(ps[0].column)!=int(pr[0].column):
+  cocci.print_main(fld,p0)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/media/video/tvaudio.c       |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/media/video/tvaudio.c b/drivers/media/video/tvaudio.c
+index 0869baf..800fc1b 100644
+--- a/drivers/media/video/tvaudio.c
++++ b/drivers/media/video/tvaudio.c
+@@ -1919,7 +1919,7 @@ static const struct v4l2_subdev_tuner_ops tvaudio_tuner_ops = {
+ 	.s_radio = tvaudio_s_radio,
+ 	.s_frequency = tvaudio_s_frequency,
+ 	.s_tuner = tvaudio_s_tuner,
+-	.s_tuner = tvaudio_g_tuner,
++	.g_tuner = tvaudio_g_tuner,
+ };
+ 
+ static const struct v4l2_subdev_audio_ops tvaudio_audio_ops = {
