@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZISVk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZISVkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbZISVk1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZISVkZ
+	id S1753730AbZISVkh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbZISVk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:40:25 -0400
-Received: from kroah.org ([198.145.64.141]:40430 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:40:27 -0400
+Received: from kroah.org ([198.145.64.141]:40435 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753583AbZISVkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:40:20 -0400
+	id S1753665AbZISVkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:40:23 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Vikram Pandita <vikram.pandita@ti.com>, Alan Cox <alan@linux.intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 27/79] serial: 8250: add IRQ trigger support
-Date: Sat, 19 Sep 2009 14:36:32 -0700
-Message-Id: <1253396244-7885-27-git-send-email-gregkh@suse.de>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 28/79] 8250: Now honours baud rate lower bounds
+Date: Sat, 19 Sep 2009 14:36:33 -0700
+Message-Id: <1253396244-7885-28-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -23,148 +23,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vikram Pandita <vikram.pandita@ti.com>
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-There is currently no provision for passing IRQ trigger flags for
-serial IRQs with triggering requirements (such as GPIO IRQs)
+A platform clock drives 8250 ports in most SOC systems, the clock
+might run at high frequencies, and so it's not always possible to
+downscale uart clock to a desired value.
 
-This patch adds irqflags to plat_serial8250_port that can be passed
-from board file to reqest_irq() of 8250 driver
+Currently the 8250 uart driver accepts not supported baud rates, and
+what is worse, it is doing this silently, and then passes not accepted
+values to a new termios, so userspace has no chance to catch this kind
+of errors (userspace verifies that settings were accepted by reading
+back and comparing the settings).
 
-Changes are backward compatible with boards passing UPF_SHARE_IRQ flag
+This patch fixes the issue by passing minimum baud rate to the
+uart_get_baud_rate() call, the call should take care of all bounds,
+so userspace should now report:
 
-Tested on Zoom2 board that has IRQF_TRIGGER_RISING requirement for 8250 irq
+  # stty -F /dev/ttyS0 speed 300
+  115200
+  stty: /dev/ttyS0: unable to perform all requested operations
 
-[Moved new flag to end to fix bugs in the original with the old_serial array
-	-- Alan]
+p.s. uart_get_baud_rate() falls back to 9600, which still might be too
+     low for some 10 GHz platforms, but that's a separate issue, and
+     we can wait with fixing this till we find such a platform.
 
-Signed-off-by: Vikram Pandita <vikram.pandita@ti.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/serial/8250.c       |   14 +++++++++-----
- drivers/serial/8250.h       |    1 +
- include/linux/serial_8250.h |    1 +
- include/linux/serial_core.h |    1 +
- 4 files changed, 12 insertions(+), 5 deletions(-)
+ drivers/serial/8250.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index fb867a9..83168a6 100644
+index 83168a6..1fd4894 100644
 --- a/drivers/serial/8250.c
 +++ b/drivers/serial/8250.c
-@@ -1677,7 +1677,7 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
- 		INIT_LIST_HEAD(&up->list);
- 		i->head = &up->list;
- 		spin_unlock_irq(&i->lock);
--
-+		irq_flags |= up->port.irqflags;
- 		ret = request_irq(up->port.irq, serial8250_interrupt,
- 				  irq_flags, "serial", i);
- 		if (ret < 0)
-@@ -2026,7 +2026,7 @@ static int serial8250_startup(struct uart_port *port)
- 		 * allow register changes to become visible.
- 		 */
- 		spin_lock_irqsave(&up->port.lock, flags);
--		if (up->port.flags & UPF_SHARE_IRQ)
-+		if (up->port.irqflags & IRQF_SHARED)
- 			disable_irq_nosync(up->port.irq);
+@@ -2272,7 +2272,9 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
+ 	/*
+ 	 * Ask the core to calculate the divisor for us.
+ 	 */
+-	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16);
++	baud = uart_get_baud_rate(port, termios, old,
++				  port->uartclk / 16 / 0xffff,
++				  port->uartclk / 16);
+ 	quot = serial8250_get_divisor(port, baud);
  
- 		wait_for_xmitr(up, UART_LSR_THRE);
-@@ -2039,7 +2039,7 @@ static int serial8250_startup(struct uart_port *port)
- 		iir = serial_in(up, UART_IIR);
- 		serial_out(up, UART_IER, 0);
- 
--		if (up->port.flags & UPF_SHARE_IRQ)
-+		if (up->port.irqflags & IRQF_SHARED)
- 			enable_irq(up->port.irq);
- 		spin_unlock_irqrestore(&up->port.lock, flags);
- 
-@@ -2671,6 +2671,7 @@ static void __init serial8250_isa_init_ports(void)
- 	     i++, up++) {
- 		up->port.iobase   = old_serial_port[i].port;
- 		up->port.irq      = irq_canonicalize(old_serial_port[i].irq);
-+		up->port.irqflags = old_serial_port[i].irqflags;
- 		up->port.uartclk  = old_serial_port[i].baud_base * 16;
- 		up->port.flags    = old_serial_port[i].flags;
- 		up->port.hub6     = old_serial_port[i].hub6;
-@@ -2679,7 +2680,7 @@ static void __init serial8250_isa_init_ports(void)
- 		up->port.regshift = old_serial_port[i].iomem_reg_shift;
- 		set_io_from_upio(&up->port);
- 		if (share_irqs)
--			up->port.flags |= UPF_SHARE_IRQ;
-+			up->port.irqflags |= IRQF_SHARED;
- 	}
- }
- 
-@@ -2869,6 +2870,7 @@ int __init early_serial_setup(struct uart_port *port)
- 	p->iobase       = port->iobase;
- 	p->membase      = port->membase;
- 	p->irq          = port->irq;
-+	p->irqflags     = port->irqflags;
- 	p->uartclk      = port->uartclk;
- 	p->fifosize     = port->fifosize;
- 	p->regshift     = port->regshift;
-@@ -2942,6 +2944,7 @@ static int __devinit serial8250_probe(struct platform_device *dev)
- 		port.iobase		= p->iobase;
- 		port.membase		= p->membase;
- 		port.irq		= p->irq;
-+		port.irqflags		= p->irqflags;
- 		port.uartclk		= p->uartclk;
- 		port.regshift		= p->regshift;
- 		port.iotype		= p->iotype;
-@@ -2954,7 +2957,7 @@ static int __devinit serial8250_probe(struct platform_device *dev)
- 		port.serial_out		= p->serial_out;
- 		port.dev		= &dev->dev;
- 		if (share_irqs)
--			port.flags |= UPF_SHARE_IRQ;
-+			port.irqflags |= IRQF_SHARED;
- 		ret = serial8250_register_port(&port);
- 		if (ret < 0) {
- 			dev_err(&dev->dev, "unable to register port at index %d "
-@@ -3096,6 +3099,7 @@ int serial8250_register_port(struct uart_port *port)
- 		uart->port.iobase       = port->iobase;
- 		uart->port.membase      = port->membase;
- 		uart->port.irq          = port->irq;
-+		uart->port.irqflags     = port->irqflags;
- 		uart->port.uartclk      = port->uartclk;
- 		uart->port.fifosize     = port->fifosize;
- 		uart->port.regshift     = port->regshift;
-diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
-index 5202603..6e19ea3 100644
---- a/drivers/serial/8250.h
-+++ b/drivers/serial/8250.h
-@@ -25,6 +25,7 @@ struct old_serial_port {
- 	unsigned char io_type;
- 	unsigned char *iomem_base;
- 	unsigned short iomem_reg_shift;
-+	unsigned long irqflags;
- };
- 
- /*
-diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
-index d4d2a78..fb46aba 100644
---- a/include/linux/serial_8250.h
-+++ b/include/linux/serial_8250.h
-@@ -22,6 +22,7 @@ struct plat_serial8250_port {
- 	void __iomem	*membase;	/* ioremap cookie or NULL */
- 	resource_size_t	mapbase;	/* resource base */
- 	unsigned int	irq;		/* interrupt number */
-+	unsigned long	irqflags;	/* request_irq flags */
- 	unsigned int	uartclk;	/* UART clock rate */
- 	void            *private_data;
- 	unsigned char	regshift;	/* register shift */
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 23d2fb0..3cd255f 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -265,6 +265,7 @@ struct uart_port {
- 	unsigned int		(*serial_in)(struct uart_port *, int);
- 	void			(*serial_out)(struct uart_port *, int, int);
- 	unsigned int		irq;			/* irq number */
-+	unsigned long		irqflags;		/* irq flags  */
- 	unsigned int		uartclk;		/* base uart clock */
- 	unsigned int		fifosize;		/* tx fifo size */
- 	unsigned char		x_char;			/* xon/xoff char */
+ 	/*
 -- 
 1.6.4.2
 
