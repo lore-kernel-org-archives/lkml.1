@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbZISBfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbZISBjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757096AbZISBfi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 21:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZISBfd
+	id S1755286AbZISBjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 21:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbZISBjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 21:35:33 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38047
+	Fri, 18 Sep 2009 21:39:17 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59902
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751065AbZISBfd (ORCPT
+	with ESMTP id S1751394AbZISBjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 21:35:33 -0400
+	Fri, 18 Sep 2009 21:39:17 -0400
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
 To: kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] Convert kernel/cpu/mkcapflags.pl to kernel/cpu/mkcapflags.sh
-Date: Fri, 18 Sep 2009 20:35:33 -0500
+Subject: [PATCH 3/3] Convert kernel/cpu/mkcapflags.pl to kernel/cpu/mkcapflags.sh
+Date: Fri, 18 Sep 2009 20:39:17 -0500
 User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
 References: <200909182025.29063.rob@landley.net>
 In-Reply-To: <200909182025.29063.rob@landley.net>
@@ -23,7 +23,7 @@ Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200909182035.33710.rob@landley.net>
+Message-Id: <200909182039.18185.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -131,6 +131,3 @@ diff -ruN linux-2.6.30.old/arch/x86/kernel/cpu/mkcapflags.sh linux-2.6.30/arch/x
 +	echo "};"
 +) > $OUT
 
-
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
