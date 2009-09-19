@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbZISLUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbZISLZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757477AbZISLUL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 07:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZISLUH
+	id S1757527AbZISLZa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 07:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757393AbZISLZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 07:20:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38748 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbZISLUF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 07:20:05 -0400
-Subject: Re: circular locking dependency detected panic in filldir when
- CONFIG_PROVE_LOCKING=y
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Korty <joe.korty@ccur.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Steve French <sfrench@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090919072349.GC15292@elte.hu>
-References: <20090918211550.GA8258@tsunami.ccur.com>
-	 <1253309941.3183.104.camel@heimdal.trondhjem.org>
-	 <20090919072349.GC15292@elte.hu>
-Content-Type: text/plain
-Date: Sat, 19 Sep 2009 13:19:48 +0200
-Message-Id: <1253359188.7085.0.camel@laptop>
+	Sat, 19 Sep 2009 07:25:29 -0400
+Received: from 1wt.eu ([62.212.114.60]:49124 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757166AbZISLZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 07:25:28 -0400
+Date: Sat, 19 Sep 2009 13:25:23 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jim Meyering <jim@meyering.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: efficient access to "rotational";  new fcntl?
+Message-ID: <20090919112523.GB28315@1wt.eu>
+References: <87vdjgqcbd.fsf@meyering.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87vdjgqcbd.fsf@meyering.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-19 at 09:23 +0200, Ingo Molnar wrote:
-> * Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+On Fri, Sep 18, 2009 at 09:31:50PM +0200, Jim Meyering wrote:
+> About a year ago, I fixed GNU rm to avoid quadratic readdir/stat seek
+> penalties on ext3 and ext4 that became overwhelming on directories with
+> many entries (1M entries started to look like infloop or DoS).
 > 
-> > On Fri, 2009-09-18 at 17:15 -0400, Joe Korty wrote:
-> > > I experienced a might_fault panic from NFS's use of filldir
-> > > in a 2.6.31 kernel compiled with CONFIG_PROVE_LOCKING=y.
-> > > 
-> > > Looking at filldir, I see it is accessing user space with
-> > > __put_dir's (which are inatomic) and with one copy_to_user
-> > > (which is not inatomic).  It is the single copy_to_user
-> > > which is causing the might_fault panic.
-> > > 
-> > > It doesn't make any sense to be mixing use of inatomic
-> > > and non-inatomic services in filldir.  Either all should be
-> > > the inatomic version, or none should be.
-> > > 
-> > > The might_fault condition being reported by the panic looks
-> > > real to me, so I suspect the wrong answer is converting
-> > > everything to the inatomic version, since that just
-> > > suppresses the circular dependency check while leaving
-> > > the circular dependency in place.
-> > 
-> > Yes. This is known... Please see 
-> >    http://thread.gmane.org/gmane.linux.nfs/28578
-> > and
-> >    http://thread.gmane.org/gmane.linux.nfs/27406
-> > 
-> > I'm still hoping the VM folks can see fit to merge Peter's fix at some
-> > point...
+>   From coreutils-7.0 NEWS:
 > 
-> Ouch, those patches at:
+>     chgrp, chmod, chown, chcon, du, rm: now all display linear performance,
+>     even when operating on million-entry directories on ext3 and ext4 file
+>     systems.  Before, they would exhibit O(N^2) performance, due to linear
+>     per-entry seek time cost when operating on entries in readdir order.
+>     Rm was improved directly, while the others inherit the improvement
+>     from the newer version of fts in gnulib.
 > 
->   http://programming.kicks-ass.net/kernel-patches/mmap-vs-nfs/
-> 
-> .... are 2 years old. Higher intensity prodding needed to get this 
-> moving?
+> To do that efficiently, I changed the core readdir loop (mainly via
+> gnulib's fts.c) to preprocess entries, when needed, by sorting them
+> on inode, and *then* processing them.  This optimization is enabled
+> only when the affected file system is of a type likely to benefit,
+> and when the number of directory entries is large enough to matter.
 
-No I just need to find a way to clone() myself :-)
+This is excellent. I've been used to play with variations of
+'find -printf "%i %p\n"|sort -n|cut -f2|xargs <cmd>' to sort file
+operations by inode to speed them up, especially when rm'ing a
+kernel tree or when doing a prefetch to build from hot cache.
+
+I think you might notice excellent results on CDs where seeks cost a
+lot. That's where I first use the find|sort method above. I'm really
+happy to see that such mechanisms are now implemented inside my
+everyday tools, and I can't wait to upgrade!
+
+Regards,
+Willy
 
