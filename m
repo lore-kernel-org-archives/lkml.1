@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbZISVmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZISVnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbZISVmx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbZISVmu
+	id S1754665AbZISVnI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZISVnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:42:50 -0400
-Received: from kroah.org ([198.145.64.141]:40508 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:43:04 -0400
+Received: from kroah.org ([198.145.64.141]:40511 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754591AbZISVmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:42:46 -0400
+	id S1754575AbZISVm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:42:59 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 52/79] serial: replace the state mutex with the tty port mutex
-Date: Sat, 19 Sep 2009 14:36:57 -0700
-Message-Id: <1253396244-7885-52-git-send-email-gregkh@suse.de>
+Cc: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH 53/79] serial: move delta_msr_wait into the tty_port
+Date: Sat, 19 Sep 2009 14:36:58 -0700
+Message-Id: <1253396244-7885-53-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -24,664 +24,692 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-They cover essentially the same stuff and we can therefore fold it into the
-tty_port one.
+This is used by various drivers not just serial and can be extracted
+as commonality
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/serial/pmac_zilog.c  |    8 +-
- drivers/serial/serial_core.c |  227 ++++++++++++++++++++++--------------------
- include/linux/serial_core.h  |    2 -
- 3 files changed, 123 insertions(+), 114 deletions(-)
+ drivers/char/cyclades.c         |    9 ++++-----
+ drivers/char/esp.c              |    7 +++----
+ drivers/char/mxser.c            |    8 +++-----
+ drivers/char/tty_port.c         |    2 ++
+ drivers/serial/8250.c           |    2 +-
+ drivers/serial/amba-pl010.c     |    2 +-
+ drivers/serial/amba-pl011.c     |    2 +-
+ drivers/serial/atmel_serial.c   |    2 +-
+ drivers/serial/icom.c           |    2 +-
+ drivers/serial/imx.c            |    4 ++--
+ drivers/serial/ioc3_serial.c    |    8 ++++----
+ drivers/serial/ioc4_serial.c    |    8 ++++----
+ drivers/serial/ip22zilog.c      |    2 +-
+ drivers/serial/msm_serial.c     |    2 +-
+ drivers/serial/pmac_zilog.c     |    2 +-
+ drivers/serial/pnx8xxx_uart.c   |    2 +-
+ drivers/serial/pxa.c            |    2 +-
+ drivers/serial/sa1100.c         |    2 +-
+ drivers/serial/sb1250-duart.c   |    2 +-
+ drivers/serial/serial_core.c    |   18 +++++++++++-------
+ drivers/serial/serial_ks8695.c  |    2 +-
+ drivers/serial/serial_lh7a40x.c |    2 +-
+ drivers/serial/sunsab.c         |    2 +-
+ drivers/serial/sunsu.c          |    2 +-
+ drivers/serial/sunzilog.c       |    2 +-
+ drivers/serial/timbuart.c       |    2 +-
+ drivers/serial/vr41xx_siu.c     |    2 +-
+ drivers/serial/zs.c             |    2 +-
+ include/linux/cyclades.h        |    1 -
+ include/linux/hayesesp.h        |    1 -
+ include/linux/serial_core.h     |    1 -
+ include/linux/tty.h             |    1 +
+ 32 files changed, 54 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
-index ab4c85b..0dc7868 100644
---- a/drivers/serial/pmac_zilog.c
-+++ b/drivers/serial/pmac_zilog.c
-@@ -1645,7 +1645,7 @@ static int pmz_suspend(struct macio_dev *mdev, pm_message_t pm_state)
- 	state = pmz_uart_reg.state + uap->port.line;
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index 70bd61b..df5038b 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -729,7 +729,7 @@ static void cyy_chip_modem(struct cyclades_card *cinfo, int chip,
+ 		if (mdm_change & CyRI)
+ 			info->icount.rng++;
  
- 	mutex_lock(&pmz_irq_mutex);
--	mutex_lock(&state->mutex);
-+	mutex_lock(&state->port.mutex);
- 
- 	spin_lock_irqsave(&uap->port.lock, flags);
- 
-@@ -1676,7 +1676,7 @@ static int pmz_suspend(struct macio_dev *mdev, pm_message_t pm_state)
- 	/* Shut the chip down */
- 	pmz_set_scc_power(uap, 0);
- 
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&state->port.mutex);
- 	mutex_unlock(&pmz_irq_mutex);
- 
- 	pmz_debug("suspend, switching complete\n");
-@@ -1705,7 +1705,7 @@ static int pmz_resume(struct macio_dev *mdev)
- 	state = pmz_uart_reg.state + uap->port.line;
- 
- 	mutex_lock(&pmz_irq_mutex);
--	mutex_lock(&state->mutex);
-+	mutex_lock(&state->port.mutex);
- 
- 	spin_lock_irqsave(&uap->port.lock, flags);
- 	if (!ZS_IS_OPEN(uap) && !ZS_IS_CONS(uap)) {
-@@ -1737,7 +1737,7 @@ static int pmz_resume(struct macio_dev *mdev)
+-		wake_up_interruptible(&info->delta_msr_wait);
++		wake_up_interruptible(&info->port.delta_msr_wait);
  	}
  
-  bail:
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&state->port.mutex);
- 	mutex_unlock(&pmz_irq_mutex);
+ 	if ((mdm_change & CyDCD) && (info->port.flags & ASYNC_CHECK_CD)) {
+@@ -1197,7 +1197,7 @@ static void cyz_handle_cmd(struct cyclades_card *cinfo)
+ 			break;
+ 		}
+ 		if (delta_count)
+-			wake_up_interruptible(&info->delta_msr_wait);
++			wake_up_interruptible(&info->port.delta_msr_wait);
+ 		if (special_count)
+ 			tty_schedule_flip(tty);
+ 		tty_kref_put(tty);
+@@ -1464,7 +1464,7 @@ static void cy_shutdown(struct cyclades_port *info, struct tty_struct *tty)
+ 		spin_lock_irqsave(&card->card_lock, flags);
  
- 	/* Right now, we deal with delay by blocking here, I'll be
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 744dec9..9d42e57 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -633,35 +633,36 @@ static void uart_unthrottle(struct tty_struct *tty)
- static int uart_get_info(struct uart_state *state,
- 			 struct serial_struct __user *retinfo)
- {
--	struct uart_port *port = state->uart_port;
-+	struct uart_port *uport = state->uart_port;
-+	struct tty_port *port = &state->port;
- 	struct serial_struct tmp;
+ 		/* Clear delta_msr_wait queue to avoid mem leaks. */
+-		wake_up_interruptible(&info->delta_msr_wait);
++		wake_up_interruptible(&info->port.delta_msr_wait);
  
- 	memset(&tmp, 0, sizeof(tmp));
+ 		if (info->port.xmit_buf) {
+ 			unsigned char *temp;
+@@ -2788,7 +2788,7 @@ cy_ioctl(struct tty_struct *tty, struct file *file,
+ 		/* note the counters on entry */
+ 		cnow = info->icount;
+ 		spin_unlock_irqrestore(&info->card->card_lock, flags);
+-		ret_val = wait_event_interruptible(info->delta_msr_wait,
++		ret_val = wait_event_interruptible(info->port.delta_msr_wait,
+ 				cy_cflags_changed(info, arg, &cnow));
+ 		break;
  
- 	/* Ensure the state we copy is consistent and no hardware changes
- 	   occur as we go */
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
+@@ -3153,7 +3153,6 @@ static int __devinit cy_init_card(struct cyclades_card *cinfo)
+ 		info->port.close_delay = 5 * HZ / 10;
+ 		info->port.flags = STD_COM_FLAGS;
+ 		init_completion(&info->shutdown_wait);
+-		init_waitqueue_head(&info->delta_msr_wait);
  
--	tmp.type	    = port->type;
--	tmp.line	    = port->line;
--	tmp.port	    = port->iobase;
-+	tmp.type	    = uport->type;
-+	tmp.line	    = uport->line;
-+	tmp.port	    = uport->iobase;
- 	if (HIGH_BITS_OFFSET)
--		tmp.port_high = (long) port->iobase >> HIGH_BITS_OFFSET;
--	tmp.irq		    = port->irq;
--	tmp.flags	    = port->flags;
--	tmp.xmit_fifo_size  = port->fifosize;
--	tmp.baud_base	    = port->uartclk / 16;
--	tmp.close_delay	    = state->port.close_delay / 10;
--	tmp.closing_wait    = state->port.closing_wait == USF_CLOSING_WAIT_NONE ?
-+		tmp.port_high = (long) uport->iobase >> HIGH_BITS_OFFSET;
-+	tmp.irq		    = uport->irq;
-+	tmp.flags	    = uport->flags;
-+	tmp.xmit_fifo_size  = uport->fifosize;
-+	tmp.baud_base	    = uport->uartclk / 16;
-+	tmp.close_delay	    = port->close_delay / 10;
-+	tmp.closing_wait    = port->closing_wait == USF_CLOSING_WAIT_NONE ?
- 				ASYNC_CLOSING_WAIT_NONE :
--				state->port.closing_wait / 10;
--	tmp.custom_divisor  = port->custom_divisor;
--	tmp.hub6	    = port->hub6;
--	tmp.io_type         = port->iotype;
--	tmp.iomem_reg_shift = port->regshift;
--	tmp.iomem_base      = (void *)(unsigned long)port->mapbase;
-+				port->closing_wait / 10;
-+	tmp.custom_divisor  = uport->custom_divisor;
-+	tmp.hub6	    = uport->hub6;
-+	tmp.io_type         = uport->iotype;
-+	tmp.iomem_reg_shift = uport->regshift;
-+	tmp.iomem_base      = (void *)(unsigned long)uport->mapbase;
+ 		if (cy_is_Z(cinfo)) {
+ 			struct FIRM_ID *firm_id = cinfo->base_addr + ID_ADDRESS;
+diff --git a/drivers/char/esp.c b/drivers/char/esp.c
+index a5c59fc..b19d43c 100644
+--- a/drivers/char/esp.c
++++ b/drivers/char/esp.c
+@@ -572,7 +572,7 @@ static void check_modem_status(struct esp_struct *info)
+ 			info->icount.dcd++;
+ 		if (status & UART_MSR_DCTS)
+ 			info->icount.cts++;
+-		wake_up_interruptible(&info->delta_msr_wait);
++		wake_up_interruptible(&info->port.delta_msr_wait);
+ 	}
  
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 
- 	if (copy_to_user(retinfo, &tmp, sizeof(*retinfo)))
- 		return -EFAULT;
-@@ -699,7 +700,7 @@ static int uart_set_info(struct uart_state *state,
- 	 * module insertion/removal doesn't change anything
- 	 * under us.
+ 	if ((info->port.flags & ASYNC_CHECK_CD) && (status & UART_MSR_DDCD)) {
+@@ -927,7 +927,7 @@ static void shutdown(struct esp_struct *info)
+ 	 * clear delta_msr_wait queue to avoid mem leaks: we may free the irq
+ 	 * here so the queue might never be waken up
  	 */
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
+-	wake_up_interruptible(&info->delta_msr_wait);
++	wake_up_interruptible(&info->port.delta_msr_wait);
+ 	wake_up_interruptible(&info->break_wait);
  
- 	change_irq  = !(uport->flags & UPF_FIXED_PORT)
- 		&& new_serial.irq != uport->irq;
-@@ -867,7 +868,7 @@ static int uart_set_info(struct uart_state *state,
- 	} else
- 		retval = uart_startup(state, 1);
-  exit:
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 	return retval;
- }
+ 	/* stop a DMA transfer on the port being closed */
+@@ -1800,7 +1800,7 @@ static int rs_ioctl(struct tty_struct *tty, struct file *file,
+ 		spin_unlock_irqrestore(&info->lock, flags);
+ 		while (1) {
+ 			/* FIXME: convert to new style wakeup */
+-			interruptible_sleep_on(&info->delta_msr_wait);
++			interruptible_sleep_on(&info->port.delta_msr_wait);
+ 			/* see if a signal did it */
+ 			if (signal_pending(current))
+ 				return -ERESTARTSYS;
+@@ -2452,7 +2452,6 @@ static int __init espserial_init(void)
+ 		info->config.flow_off = flow_off;
+ 		info->config.pio_threshold = pio_threshold;
+ 		info->next_port = ports;
+-		init_waitqueue_head(&info->delta_msr_wait);
+ 		init_waitqueue_head(&info->break_wait);
+ 		ports = info;
+ 		printk(KERN_INFO "ttyP%d at 0x%04x (irq = %d) is an ESP ",
+diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
+index 30544ca..37058ff 100644
+--- a/drivers/char/mxser.c
++++ b/drivers/char/mxser.c
+@@ -258,7 +258,6 @@ struct mxser_port {
+ 	struct mxser_mon mon_data;
  
-@@ -902,10 +903,11 @@ static int uart_get_lsr_info(struct uart_state *state,
- static int uart_tiocmget(struct tty_struct *tty, struct file *file)
- {
- 	struct uart_state *state = tty->driver_data;
-+	struct tty_port *port = &state->port;
- 	struct uart_port *uport = state->uart_port;
- 	int result = -EIO;
+ 	spinlock_t slock;
+-	wait_queue_head_t delta_msr_wait;
+ };
  
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 	if ((!file || !tty_hung_up_p(file)) &&
- 	    !(tty->flags & (1 << TTY_IO_ERROR))) {
- 		result = uport->mctrl;
-@@ -914,7 +916,7 @@ static int uart_tiocmget(struct tty_struct *tty, struct file *file)
- 		result |= uport->ops->get_mctrl(uport);
- 		spin_unlock_irq(&uport->lock);
- 	}
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
+ struct mxser_board {
+@@ -818,7 +817,7 @@ static void mxser_check_modem_status(struct tty_struct *tty,
+ 	if (status & UART_MSR_DCTS)
+ 		port->icount.cts++;
+ 	port->mon_data.modem_status = status;
+-	wake_up_interruptible(&port->delta_msr_wait);
++	wake_up_interruptible(&port->port.delta_msr_wait);
  
- 	return result;
- }
-@@ -925,35 +927,38 @@ uart_tiocmset(struct tty_struct *tty, struct file *file,
- {
- 	struct uart_state *state = tty->driver_data;
- 	struct uart_port *uport = state->uart_port;
-+	struct tty_port *port = &state->port;
- 	int ret = -EIO;
- 
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 	if ((!file || !tty_hung_up_p(file)) &&
- 	    !(tty->flags & (1 << TTY_IO_ERROR))) {
- 		uart_update_mctrl(uport, set, clear);
- 		ret = 0;
- 	}
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 	return ret;
- }
- 
- static int uart_break_ctl(struct tty_struct *tty, int break_state)
- {
- 	struct uart_state *state = tty->driver_data;
-+	struct tty_port *port = &state->port;
- 	struct uart_port *uport = state->uart_port;
- 
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 
- 	if (uport->type != PORT_UNKNOWN)
- 		uport->ops->break_ctl(uport, break_state);
- 
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 	return 0;
- }
- 
- static int uart_do_autoconfig(struct uart_state *state)
- {
- 	struct uart_port *uport = state->uart_port;
-+	struct tty_port *port = &state->port;
- 	int flags, ret;
- 
- 	if (!capable(CAP_SYS_ADMIN))
-@@ -964,7 +969,7 @@ static int uart_do_autoconfig(struct uart_state *state)
- 	 * changing, and hence any extra opens of the port while
- 	 * we're auto-configuring.
+ 	if ((port->port.flags & ASYNC_CHECK_CD) && (status & UART_MSR_DDCD)) {
+ 		if (status & UART_MSR_DCD)
+@@ -973,7 +972,7 @@ static void mxser_shutdown(struct tty_struct *tty)
+ 	 * clear delta_msr_wait queue to avoid mem leaks: we may free the irq
+ 	 * here so the queue might never be waken up
  	 */
--	if (mutex_lock_interruptible(&state->mutex))
-+	if (mutex_lock_interruptible(&port->mutex))
- 		return -ERESTARTSYS;
+-	wake_up_interruptible(&info->delta_msr_wait);
++	wake_up_interruptible(&info->port.delta_msr_wait);
  
- 	ret = -EBUSY;
-@@ -990,7 +995,7 @@ static int uart_do_autoconfig(struct uart_state *state)
+ 	/*
+ 	 * Free the IRQ, if necessary
+@@ -1762,7 +1761,7 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
+ 		cnow = info->icount;	/* note the counters on entry */
+ 		spin_unlock_irqrestore(&info->slock, flags);
  
- 		ret = uart_startup(state, 1);
- 	}
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 	return ret;
- }
- 
-@@ -1093,6 +1098,7 @@ uart_ioctl(struct tty_struct *tty, struct file *filp, unsigned int cmd,
- 	   unsigned long arg)
- {
- 	struct uart_state *state = tty->driver_data;
-+	struct tty_port *port = &state->port;
- 	void __user *uarg = (void __user *)arg;
- 	int ret = -ENOIOCTLCMD;
- 
-@@ -1143,7 +1149,7 @@ uart_ioctl(struct tty_struct *tty, struct file *filp, unsigned int cmd,
- 	if (ret != -ENOIOCTLCMD)
- 		goto out;
- 
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 
- 	if (tty_hung_up_p(filp)) {
- 		ret = -EIO;
-@@ -1167,7 +1173,7 @@ uart_ioctl(struct tty_struct *tty, struct file *filp, unsigned int cmd,
- 	}
- 	}
- out_up:
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- out:
- 	return ret;
- }
-@@ -1266,7 +1272,7 @@ static void uart_close(struct tty_struct *tty, struct file *filp)
- 
- 	pr_debug("uart_close(%d) called\n", uport->line);
- 
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 
- 	if (tty_hung_up_p(filp))
- 		goto done;
-@@ -1340,7 +1346,7 @@ static void uart_close(struct tty_struct *tty, struct file *filp)
+-		return wait_event_interruptible(info->delta_msr_wait,
++		return wait_event_interruptible(info->port.delta_msr_wait,
+ 				mxser_cflags_changed(info, arg, &cnow));
+ 	/*
+ 	 * Get counter of input serial line interrupts (DCD,RI,DSR,CTS)
+@@ -2414,7 +2413,6 @@ static int __devinit mxser_initbrd(struct mxser_board *brd,
+ 		info->port.close_delay = 5 * HZ / 10;
+ 		info->port.closing_wait = 30 * HZ;
+ 		info->normal_termios = mxvar_sdriver->init_termios;
+-		init_waitqueue_head(&info->delta_msr_wait);
+ 		memset(&info->mon_data, 0, sizeof(struct mxser_mon));
+ 		info->err_shadow = 0;
+ 		spin_lock_init(&info->slock);
+diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
+index 549bd0f..c767e30 100644
+--- a/drivers/char/tty_port.c
++++ b/drivers/char/tty_port.c
+@@ -23,6 +23,7 @@ void tty_port_init(struct tty_port *port)
+ 	memset(port, 0, sizeof(*port));
+ 	init_waitqueue_head(&port->open_wait);
+ 	init_waitqueue_head(&port->close_wait);
++	init_waitqueue_head(&port->delta_msr_wait);
+ 	mutex_init(&port->mutex);
+ 	spin_lock_init(&port->lock);
+ 	port->close_delay = (50 * HZ) / 100;
+@@ -124,6 +125,7 @@ void tty_port_hangup(struct tty_port *port)
+ 	port->tty = NULL;
+ 	spin_unlock_irqrestore(&port->lock, flags);
  	wake_up_interruptible(&port->open_wait);
++	wake_up_interruptible(&port->delta_msr_wait);
+ 	tty_port_shutdown(port);
+ }
+ EXPORT_SYMBOL(tty_port_hangup);
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index e415c5e..2209620 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1510,7 +1510,7 @@ static unsigned int check_modem_status(struct uart_8250_port *up)
+ 		if (status & UART_MSR_DCTS)
+ 			uart_handle_cts_change(&up->port, status & UART_MSR_CTS);
  
- done:
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
+-		wake_up_interruptible(&up->port.state->delta_msr_wait);
++		wake_up_interruptible(&up->port.state->port.delta_msr_wait);
+ 	}
+ 
+ 	return status;
+diff --git a/drivers/serial/amba-pl010.c b/drivers/serial/amba-pl010.c
+index 3903241..429a8ae 100644
+--- a/drivers/serial/amba-pl010.c
++++ b/drivers/serial/amba-pl010.c
+@@ -225,7 +225,7 @@ static void pl010_modem_status(struct uart_amba_port *uap)
+ 	if (delta & UART01x_FR_CTS)
+ 		uart_handle_cts_change(&uap->port, status & UART01x_FR_CTS);
+ 
+-	wake_up_interruptible(&uap->port.state->delta_msr_wait);
++	wake_up_interruptible(&uap->port.state->port.delta_msr_wait);
  }
  
- static void uart_wait_until_sent(struct tty_struct *tty, int timeout)
-@@ -1416,7 +1422,7 @@ static void uart_hangup(struct tty_struct *tty)
- 	BUG_ON(!kernel_locked());
- 	pr_debug("uart_hangup(%d)\n", state->uart_port->line);
+ static irqreturn_t pl010_int(int irq, void *dev_id)
+diff --git a/drivers/serial/amba-pl011.c b/drivers/serial/amba-pl011.c
+index ef82a34..ef7adc8 100644
+--- a/drivers/serial/amba-pl011.c
++++ b/drivers/serial/amba-pl011.c
+@@ -226,7 +226,7 @@ static void pl011_modem_status(struct uart_amba_port *uap)
+ 	if (delta & UART01x_FR_CTS)
+ 		uart_handle_cts_change(&uap->port, status & UART01x_FR_CTS);
  
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 	if (port->flags & ASYNC_NORMAL_ACTIVE) {
- 		uart_flush_buffer(tty);
- 		uart_shutdown(state);
-@@ -1426,7 +1432,7 @@ static void uart_hangup(struct tty_struct *tty)
- 		wake_up_interruptible(&port->open_wait);
- 		wake_up_interruptible(&state->delta_msr_wait);
+-	wake_up_interruptible(&uap->port.state->delta_msr_wait);
++	wake_up_interruptible(&uap->port.state->port.delta_msr_wait);
+ }
+ 
+ static irqreturn_t pl011_int(int irq, void *dev_id)
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index 963e3c1..3551c5c 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -776,7 +776,7 @@ static void atmel_tasklet_func(unsigned long data)
+ 		if (status_change & ATMEL_US_CTS)
+ 			uart_handle_cts_change(port, !(status & ATMEL_US_CTS));
+ 
+-		wake_up_interruptible(&port->state->delta_msr_wait);
++		wake_up_interruptible(&port->state->port.delta_msr_wait);
+ 
+ 		atmel_port->irq_status_prev = status;
  	}
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
+diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
+index f86c47e..2d7feec 100644
+--- a/drivers/serial/icom.c
++++ b/drivers/serial/icom.c
+@@ -695,7 +695,7 @@ static inline void check_modem_status(struct icom_port *icom_port)
+ 					       delta_status & ICOM_CTS);
+ 
+ 		wake_up_interruptible(&icom_port->uart_port.state->
+-				      delta_msr_wait);
++				      port.delta_msr_wait);
+ 		old_status = status;
+ 	}
+ 	spin_unlock(&icom_port->uart_port.lock);
+diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
+index 1febeaf..18130f1 100644
+--- a/drivers/serial/imx.c
++++ b/drivers/serial/imx.c
+@@ -224,7 +224,7 @@ static void imx_mctrl_check(struct imx_port *sport)
+ 	if (changed & TIOCM_CTS)
+ 		uart_handle_cts_change(&sport->port, status & TIOCM_CTS);
+ 
+-	wake_up_interruptible(&sport->port.state->delta_msr_wait);
++	wake_up_interruptible(&sport->port.state->port.delta_msr_wait);
  }
  
  /*
-@@ -1528,9 +1534,9 @@ uart_block_til_ready(struct file *filp, struct uart_state *state)
- 		if (mctrl & TIOCM_CAR)
- 			break;
+@@ -388,7 +388,7 @@ static irqreturn_t imx_rtsint(int irq, void *dev_id)
  
--		mutex_unlock(&state->mutex);
-+		mutex_unlock(&port->mutex);
- 		schedule();
--		mutex_lock(&state->mutex);
-+		mutex_lock(&port->mutex);
+ 	writel(USR1_RTSD, sport->port.membase + USR1);
+ 	uart_handle_cts_change(&sport->port, !!val);
+-	wake_up_interruptible(&sport->port.state->delta_msr_wait);
++	wake_up_interruptible(&sport->port.state->port.delta_msr_wait);
  
- 		if (signal_pending(current))
- 			break;
-@@ -1553,15 +1559,17 @@ uart_block_til_ready(struct file *filp, struct uart_state *state)
- static struct uart_state *uart_get(struct uart_driver *drv, int line)
+ 	spin_unlock_irqrestore(&sport->port.lock, flags);
+ 	return IRQ_HANDLED;
+diff --git a/drivers/serial/ioc3_serial.c b/drivers/serial/ioc3_serial.c
+index de4ab1b..d8983dd 100644
+--- a/drivers/serial/ioc3_serial.c
++++ b/drivers/serial/ioc3_serial.c
+@@ -1287,7 +1287,7 @@ static inline int do_read(struct uart_port *the_port, char *buf, int len)
+ 							(port->ip_port, 0);
+ 						wake_up_interruptible
+ 						    (&the_port->state->
+-						     delta_msr_wait);
++						     port.delta_msr_wait);
+ 					}
+ 
+ 					/* If we had any data to return, we
+@@ -1491,7 +1491,7 @@ ioc3uart_intr_one(struct ioc3_submodule *is,
+ 				uart_handle_dcd_change(the_port,
+ 						shadow & SHADOW_DCD);
+ 				wake_up_interruptible
+-				    (&the_port->state->delta_msr_wait);
++				    (&the_port->state->port.delta_msr_wait);
+ 			} else if ((port->ip_notify & N_DDCD)
+ 				   && !(shadow & SHADOW_DCD)) {
+ 				/* Flag delta DCD/no DCD */
+@@ -1511,7 +1511,7 @@ ioc3uart_intr_one(struct ioc3_submodule *is,
+ 				uart_handle_cts_change(the_port, shadow
+ 						& SHADOW_CTS);
+ 				wake_up_interruptible
+-				    (&the_port->state->delta_msr_wait);
++				    (&the_port->state->port.delta_msr_wait);
+ 			}
+ 		}
+ 
+@@ -1728,7 +1728,7 @@ static void ic3_shutdown(struct uart_port *the_port)
+ 		return;
+ 
+ 	state = the_port->state;
+-	wake_up_interruptible(&state->delta_msr_wait);
++	wake_up_interruptible(&state->port.delta_msr_wait);
+ 
+ 	spin_lock_irqsave(&the_port->lock, port_flags);
+ 	set_notification(port, N_ALL, 0);
+diff --git a/drivers/serial/ioc4_serial.c b/drivers/serial/ioc4_serial.c
+index 2055d32..2e02c30 100644
+--- a/drivers/serial/ioc4_serial.c
++++ b/drivers/serial/ioc4_serial.c
+@@ -1882,7 +1882,7 @@ static void handle_intr(void *arg, uint32_t sio_ir)
+ 				the_port = port->ip_port;
+ 				the_port->icount.dcd = 1;
+ 				wake_up_interruptible
+-					    (&the_port->state->delta_msr_wait);
++					    (&the_port->state->port.delta_msr_wait);
+ 			} else if ((port->ip_notify & N_DDCD)
+ 					&& !(shadow & IOC4_SHADOW_DCD)) {
+ 				/* Flag delta DCD/no DCD */
+@@ -1904,7 +1904,7 @@ static void handle_intr(void *arg, uint32_t sio_ir)
+ 				the_port->icount.cts =
+ 					(shadow & IOC4_SHADOW_CTS) ? 1 : 0;
+ 				wake_up_interruptible
+-					(&the_port->state->delta_msr_wait);
++					(&the_port->state->port.delta_msr_wait);
+ 			}
+ 		}
+ 
+@@ -2237,7 +2237,7 @@ static inline int do_read(struct uart_port *the_port, unsigned char *buf,
+ 						the_port->icount.dcd = 0;
+ 						wake_up_interruptible
+ 						    (&the_port->state->
+-							delta_msr_wait);
++							port.delta_msr_wait);
+ 					}
+ 
+ 					/* If we had any data to return, we
+@@ -2439,7 +2439,7 @@ static void ic4_shutdown(struct uart_port *the_port)
+ 	state = the_port->state;
+ 	port->ip_port = NULL;
+ 
+-	wake_up_interruptible(&state->delta_msr_wait);
++	wake_up_interruptible(&state->port.delta_msr_wait);
+ 
+ 	if (state->port.tty)
+ 		set_bit(TTY_IO_ERROR, &state->port.tty->flags);
+diff --git a/drivers/serial/ip22zilog.c b/drivers/serial/ip22zilog.c
+index 2e847de..ebff4a1 100644
+--- a/drivers/serial/ip22zilog.c
++++ b/drivers/serial/ip22zilog.c
+@@ -354,7 +354,7 @@ static void ip22zilog_status_handle(struct uart_ip22zilog_port *up,
+ 			uart_handle_cts_change(&up->port,
+ 					       (status & CTS));
+ 
+-		wake_up_interruptible(&up->port.state->delta_msr_wait);
++		wake_up_interruptible(&up->port.state->port.delta_msr_wait);
+ 	}
+ 
+ 	up->prev_status = status;
+diff --git a/drivers/serial/msm_serial.c b/drivers/serial/msm_serial.c
+index ff18d50..b05c5aa 100644
+--- a/drivers/serial/msm_serial.c
++++ b/drivers/serial/msm_serial.c
+@@ -169,7 +169,7 @@ static void handle_delta_cts(struct uart_port *port)
  {
- 	struct uart_state *state;
-+	struct tty_port *port;
- 	int ret = 0;
- 
- 	state = drv->state + line;
--	if (mutex_lock_interruptible(&state->mutex)) {
-+	port = &state->port;
-+	if (mutex_lock_interruptible(&port->mutex)) {
- 		ret = -ERESTARTSYS;
- 		goto err;
- 	}
- 
--	state->port.count++;
-+	port->count++;
- 	if (!state->uart_port || state->uart_port->flags & UPF_DEAD) {
- 		ret = -ENXIO;
- 		goto err_unlock;
-@@ -1569,8 +1577,8 @@ static struct uart_state *uart_get(struct uart_driver *drv, int line)
- 	return state;
- 
-  err_unlock:
--	state->port.count--;
--	mutex_unlock(&state->mutex);
-+	port->count--;
-+	mutex_unlock(&port->mutex);
-  err:
- 	return ERR_PTR(ret);
- }
-@@ -1636,7 +1644,7 @@ static int uart_open(struct tty_struct *tty, struct file *filp)
- 	if (tty_hung_up_p(filp)) {
- 		retval = -EAGAIN;
- 		port->count--;
--		mutex_unlock(&state->mutex);
-+		mutex_unlock(&port->mutex);
- 		goto fail;
- 	}
- 
-@@ -1656,7 +1664,7 @@ static int uart_open(struct tty_struct *tty, struct file *filp)
- 	 */
- 	if (retval == 0)
- 		retval = uart_block_til_ready(filp, state);
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 
- 	/*
- 	 * If this is the first open to succeed, adjust things to suit.
-@@ -1667,7 +1675,7 @@ static int uart_open(struct tty_struct *tty, struct file *filp)
- 		uart_update_termios(state);
- 	}
- 
-- fail:
-+fail:
- 	return retval;
+ 	msm_write(port, UART_CR_CMD_RESET_CTS, UART_CR);
+ 	port->icount.cts++;
+-	wake_up_interruptible(&port->state->delta_msr_wait);
++	wake_up_interruptible(&port->state->port.delta_msr_wait);
  }
  
-@@ -1689,57 +1697,58 @@ static const char *uart_type(struct uart_port *port)
- static void uart_line_info(struct seq_file *m, struct uart_driver *drv, int i)
+ static irqreturn_t msm_irq(int irq, void *dev_id)
+diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
+index 0dc7868..0700cd1 100644
+--- a/drivers/serial/pmac_zilog.c
++++ b/drivers/serial/pmac_zilog.c
+@@ -369,7 +369,7 @@ static void pmz_status_handle(struct uart_pmac_port *uap)
+ 			uart_handle_cts_change(&uap->port,
+ 					       !(status & CTS));
+ 
+-		wake_up_interruptible(&uap->port.state->delta_msr_wait);
++		wake_up_interruptible(&uap->port.state->port.delta_msr_wait);
+ 	}
+ 
+ 	if (status & BRK_ABRT)
+diff --git a/drivers/serial/pnx8xxx_uart.c b/drivers/serial/pnx8xxx_uart.c
+index 2da7476..0aa75a9 100644
+--- a/drivers/serial/pnx8xxx_uart.c
++++ b/drivers/serial/pnx8xxx_uart.c
+@@ -100,7 +100,7 @@ static void pnx8xxx_mctrl_check(struct pnx8xxx_port *sport)
+ 	if (changed & TIOCM_CTS)
+ 		uart_handle_cts_change(&sport->port, status & TIOCM_CTS);
+ 
+-	wake_up_interruptible(&sport->port.state->delta_msr_wait);
++	wake_up_interruptible(&sport->port.state->port.delta_msr_wait);
+ }
+ 
+ /*
+diff --git a/drivers/serial/pxa.c b/drivers/serial/pxa.c
+index ad48919..6443b7f 100644
+--- a/drivers/serial/pxa.c
++++ b/drivers/serial/pxa.c
+@@ -220,7 +220,7 @@ static inline void check_modem_status(struct uart_pxa_port *up)
+ 	if (status & UART_MSR_DCTS)
+ 		uart_handle_cts_change(&up->port, status & UART_MSR_CTS);
+ 
+-	wake_up_interruptible(&up->port.state->delta_msr_wait);
++	wake_up_interruptible(&up->port.state->port.delta_msr_wait);
+ }
+ 
+ /*
+diff --git a/drivers/serial/sa1100.c b/drivers/serial/sa1100.c
+index 61ef3ae..7f5e268 100644
+--- a/drivers/serial/sa1100.c
++++ b/drivers/serial/sa1100.c
+@@ -117,7 +117,7 @@ static void sa1100_mctrl_check(struct sa1100_port *sport)
+ 	if (changed & TIOCM_CTS)
+ 		uart_handle_cts_change(&sport->port, status & TIOCM_CTS);
+ 
+-	wake_up_interruptible(&sport->port.state->delta_msr_wait);
++	wake_up_interruptible(&sport->port.state->port.delta_msr_wait);
+ }
+ 
+ /*
+diff --git a/drivers/serial/sb1250-duart.c b/drivers/serial/sb1250-duart.c
+index fa5f303..a2f2b32 100644
+--- a/drivers/serial/sb1250-duart.c
++++ b/drivers/serial/sb1250-duart.c
+@@ -440,7 +440,7 @@ static void sbd_status_handle(struct sbd_port *sport)
+ 
+ 	if (delta & ((M_DUART_IN_PIN2_VAL | M_DUART_IN_PIN0_VAL) <<
+ 		     S_DUART_IN_PIN_CHNG))
+-		wake_up_interruptible(&uport->state->delta_msr_wait);
++		wake_up_interruptible(&uport->state->port.delta_msr_wait);
+ }
+ 
+ static irqreturn_t sbd_interrupt(int irq, void *dev_id)
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index 9d42e57..e16d153 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -215,7 +215,8 @@ static int uart_startup(struct uart_state *state, int init_hw)
+ static void uart_shutdown(struct uart_state *state)
  {
- 	struct uart_state *state = drv->state + i;
+ 	struct uart_port *uport = state->uart_port;
+-	struct tty_struct *tty = state->port.tty;
 +	struct tty_port *port = &state->port;
- 	int pm_state;
--	struct uart_port *port = state->uart_port;
-+	struct uart_port *uport = state->uart_port;
- 	char stat_buf[32];
- 	unsigned int status;
- 	int mmio;
++	struct tty_struct *tty = port->tty;
  
--	if (!port)
-+	if (!uport)
- 		return;
+ 	/*
+ 	 * Set the TTY IO error marker
+@@ -223,7 +224,7 @@ static void uart_shutdown(struct uart_state *state)
+ 	if (tty)
+ 		set_bit(TTY_IO_ERROR, &tty->flags);
  
--	mmio = port->iotype >= UPIO_MEM;
-+	mmio = uport->iotype >= UPIO_MEM;
- 	seq_printf(m, "%d: uart:%s %s%08llX irq:%d",
--			port->line, uart_type(port),
-+			uport->line, uart_type(uport),
- 			mmio ? "mmio:0x" : "port:",
--			mmio ? (unsigned long long)port->mapbase
--			     : (unsigned long long) port->iobase,
--			port->irq);
-+			mmio ? (unsigned long long)uport->mapbase
-+			     : (unsigned long long)uport->iobase,
-+			uport->irq);
+-	if (test_and_clear_bit(ASYNCB_INITIALIZED, &state->port.flags)) {
++	if (test_and_clear_bit(ASYNCB_INITIALIZED, &port->flags)) {
+ 		/*
+ 		 * Turn off DTR and RTS early.
+ 		 */
+@@ -237,7 +238,7 @@ static void uart_shutdown(struct uart_state *state)
+ 		 * any outstanding file descriptors should be pointing at
+ 		 * hung_up_tty_fops now.
+ 		 */
+-		wake_up_interruptible(&state->delta_msr_wait);
++		wake_up_interruptible(&port->delta_msr_wait);
  
--	if (port->type == PORT_UNKNOWN) {
-+	if (uport->type == PORT_UNKNOWN) {
- 		seq_putc(m, '\n');
- 		return;
- 	}
- 
- 	if (capable(CAP_SYS_ADMIN)) {
--		mutex_lock(&state->mutex);
-+		mutex_lock(&port->mutex);
- 		pm_state = state->pm_state;
- 		if (pm_state)
- 			uart_change_pm(state, 0);
--		spin_lock_irq(&port->lock);
--		status = port->ops->get_mctrl(port);
--		spin_unlock_irq(&port->lock);
-+		spin_lock_irq(&uport->lock);
-+		status = uport->ops->get_mctrl(uport);
-+		spin_unlock_irq(&uport->lock);
- 		if (pm_state)
- 			uart_change_pm(state, pm_state);
--		mutex_unlock(&state->mutex);
-+		mutex_unlock(&port->mutex);
- 
- 		seq_printf(m, " tx:%d rx:%d",
--				port->icount.tx, port->icount.rx);
--		if (port->icount.frame)
-+				uport->icount.tx, uport->icount.rx);
-+		if (uport->icount.frame)
- 			seq_printf(m, " fe:%d",
--				port->icount.frame);
--		if (port->icount.parity)
-+				uport->icount.frame);
-+		if (uport->icount.parity)
- 			seq_printf(m, " pe:%d",
--				port->icount.parity);
--		if (port->icount.brk)
-+				uport->icount.parity);
-+		if (uport->icount.brk)
- 			seq_printf(m, " brk:%d",
--				port->icount.brk);
--		if (port->icount.overrun)
-+				uport->icount.brk);
-+		if (uport->icount.overrun)
- 			seq_printf(m, " oe:%d",
--				port->icount.overrun);
-+				uport->icount.overrun);
- 
- #define INFOBIT(bit, str) \
--	if (port->mctrl & (bit)) \
-+	if (uport->mctrl & (bit)) \
- 		strncat(stat_buf, (str), sizeof(stat_buf) - \
- 			strlen(stat_buf) - 2)
- #define STATBIT(bit, str) \
-@@ -1991,11 +2000,11 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 	struct device *tty_dev;
- 	struct uart_match match = {uport, drv};
- 
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 
- 	if (!console_suspend_enabled && uart_console(uport)) {
- 		/* we're going to avoid suspending serial console */
--		mutex_unlock(&state->mutex);
-+		mutex_unlock(&port->mutex);
- 		return 0;
- 	}
- 
-@@ -2003,7 +2012,7 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 	if (device_may_wakeup(tty_dev)) {
- 		enable_irq_wake(uport->irq);
- 		put_device(tty_dev);
--		mutex_unlock(&state->mutex);
-+		mutex_unlock(&port->mutex);
- 		return 0;
- 	}
- 	uport->suspended = 1;
-@@ -2045,7 +2054,7 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 
- 	uart_change_pm(state, 3);
- 
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 
- 	return 0;
- }
-@@ -2057,18 +2066,18 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 	struct device *tty_dev;
- 	struct uart_match match = {uport, drv};
- 
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 
- 	if (!console_suspend_enabled && uart_console(uport)) {
- 		/* no need to resume serial console, it wasn't suspended */
--		mutex_unlock(&state->mutex);
-+		mutex_unlock(&port->mutex);
- 		return 0;
- 	}
- 
- 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
- 	if (!uport->suspended && device_may_wakeup(tty_dev)) {
- 		disable_irq_wake(uport->irq);
--		mutex_unlock(&state->mutex);
-+		mutex_unlock(&port->mutex);
- 		return 0;
- 	}
- 	uport->suspended = 0;
-@@ -2124,7 +2133,7 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 		clear_bit(ASYNCB_SUSPENDED, &port->flags);
- 	}
- 
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 
- 	return 0;
- }
-@@ -2364,12 +2373,11 @@ int uart_register_driver(struct uart_driver *drv)
- 	 */
- 	for (i = 0; i < drv->nr; i++) {
- 		struct uart_state *state = drv->state + i;
-+		struct tty_port *port = &state->port;
- 
--		mutex_init(&state->mutex);
--
--		tty_port_init(&state->port);
--		state->port.close_delay     = 500;	/* .5 seconds */
--		state->port.closing_wait    = 30000;	/* 30 seconds */
-+		tty_port_init(port);
-+		port->close_delay     = 500;	/* .5 seconds */
-+		port->closing_wait    = 30000;	/* 30 seconds */
- 		init_waitqueue_head(&state->delta_msr_wait);
- 		tasklet_init(&state->tlet, uart_tasklet_action,
- 			     (unsigned long)state);
-@@ -2419,62 +2427,64 @@ struct tty_driver *uart_console_device(struct console *co, int *index)
-  *	level uart drivers to expand uart_port, rather than having yet
-  *	more levels of structures.
+ 		/*
+ 		 * Free the IRQ and disable the port.
+@@ -1004,11 +1005,15 @@ static int uart_do_autoconfig(struct uart_state *state)
+  * - mask passed in arg for lines of interest
+  *   (use |'ed TIOCM_RNG/DSR/CD/CTS for masking)
+  * Caller should use TIOCGICOUNT to see which one it was
++ *
++ * FIXME: This wants extracting into a common all driver implementation
++ * of TIOCMWAIT using tty_port.
   */
--int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
-+int uart_add_one_port(struct uart_driver *drv, struct uart_port *uport)
+ static int
+ uart_wait_modem_status(struct uart_state *state, unsigned long arg)
  {
- 	struct uart_state *state;
-+	struct tty_port *port;
- 	int ret = 0;
- 	struct device *tty_dev;
+ 	struct uart_port *uport = state->uart_port;
++	struct tty_port *port = &state->port;
+ 	DECLARE_WAITQUEUE(wait, current);
+ 	struct uart_icount cprev, cnow;
+ 	int ret;
+@@ -1025,7 +1030,7 @@ uart_wait_modem_status(struct uart_state *state, unsigned long arg)
+ 	uport->ops->enable_ms(uport);
+ 	spin_unlock_irq(&uport->lock);
  
- 	BUG_ON(in_interrupt());
- 
--	if (port->line >= drv->nr)
-+	if (uport->line >= drv->nr)
- 		return -EINVAL;
- 
--	state = drv->state + port->line;
-+	state = drv->state + uport->line;
-+	port = &state->port;
- 
- 	mutex_lock(&port_mutex);
--	mutex_lock(&state->mutex);
-+	mutex_lock(&port->mutex);
- 	if (state->uart_port) {
- 		ret = -EINVAL;
- 		goto out;
+-	add_wait_queue(&state->delta_msr_wait, &wait);
++	add_wait_queue(&port->delta_msr_wait, &wait);
+ 	for (;;) {
+ 		spin_lock_irq(&uport->lock);
+ 		memcpy(&cnow, &uport->icount, sizeof(struct uart_icount));
+@@ -1053,7 +1058,7 @@ uart_wait_modem_status(struct uart_state *state, unsigned long arg)
  	}
  
--	state->uart_port = port;
-+	state->uart_port = uport;
- 	state->pm_state = -1;
- 
--	port->cons = drv->cons;
--	port->state = state;
-+	uport->cons = drv->cons;
-+	uport->state = state;
- 
- 	/*
- 	 * If this port is a console, then the spinlock is already
- 	 * initialised.
- 	 */
--	if (!(uart_console(port) && (port->cons->flags & CON_ENABLED))) {
--		spin_lock_init(&port->lock);
--		lockdep_set_class(&port->lock, &port_lock_key);
-+	if (!(uart_console(uport) && (uport->cons->flags & CON_ENABLED))) {
-+		spin_lock_init(&uport->lock);
-+		lockdep_set_class(&uport->lock, &port_lock_key);
- 	}
- 
--	uart_configure_port(drv, state, port);
-+	uart_configure_port(drv, state, uport);
- 
- 	/*
- 	 * Register the port whether it's detected or not.  This allows
- 	 * setserial to be used to alter this ports parameters.
- 	 */
--	tty_dev = tty_register_device(drv->tty_driver, port->line, port->dev);
-+	tty_dev = tty_register_device(drv->tty_driver, uport->line, uport->dev);
- 	if (likely(!IS_ERR(tty_dev))) {
- 		device_init_wakeup(tty_dev, 1);
- 		device_set_wakeup_enable(tty_dev, 0);
- 	} else
- 		printk(KERN_ERR "Cannot register tty device on line %d\n",
--		       port->line);
-+		       uport->line);
- 
- 	/*
- 	 * Ensure UPF_DEAD is not set.
- 	 */
--	port->flags &= ~UPF_DEAD;
-+	uport->flags &= ~UPF_DEAD;
- 
-  out:
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&port->mutex);
- 	mutex_unlock(&port_mutex);
+ 	current->state = TASK_RUNNING;
+-	remove_wait_queue(&state->delta_msr_wait, &wait);
++	remove_wait_queue(&port->delta_msr_wait, &wait);
  
  	return ret;
-@@ -2489,15 +2499,16 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
-  *	core driver.  No further calls will be made to the low-level code
-  *	for this port.
-  */
--int uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
-+int uart_remove_one_port(struct uart_driver *drv, struct uart_port *uport)
- {
--	struct uart_state *state = drv->state + port->line;
-+	struct uart_state *state = drv->state + uport->line;
-+	struct tty_port *port = &state->port;
+ }
+@@ -1430,7 +1435,7 @@ static void uart_hangup(struct tty_struct *tty)
+ 		clear_bit(ASYNCB_NORMAL_ACTIVE, &port->flags);
+ 		port->tty = NULL;
+ 		wake_up_interruptible(&port->open_wait);
+-		wake_up_interruptible(&state->delta_msr_wait);
++		wake_up_interruptible(&port->delta_msr_wait);
+ 	}
+ 	mutex_unlock(&port->mutex);
+ }
+@@ -2378,7 +2383,6 @@ int uart_register_driver(struct uart_driver *drv)
+ 		tty_port_init(port);
+ 		port->close_delay     = 500;	/* .5 seconds */
+ 		port->closing_wait    = 30000;	/* 30 seconds */
+-		init_waitqueue_head(&state->delta_msr_wait);
+ 		tasklet_init(&state->tlet, uart_tasklet_action,
+ 			     (unsigned long)state);
+ 	}
+diff --git a/drivers/serial/serial_ks8695.c b/drivers/serial/serial_ks8695.c
+index 4560b2e..2e71bbc 100644
+--- a/drivers/serial/serial_ks8695.c
++++ b/drivers/serial/serial_ks8695.c
+@@ -266,7 +266,7 @@ static irqreturn_t ks8695uart_modem_status(int irq, void *dev_id)
+ 	if (status & URMS_URTERI)
+ 		port->icount.rng++;
  
- 	BUG_ON(in_interrupt());
+-	wake_up_interruptible(&port->state->delta_msr_wait);
++	wake_up_interruptible(&port->state->port.delta_msr_wait);
  
--	if (state->uart_port != port)
-+	if (state->uart_port != uport)
- 		printk(KERN_ALERT "Removing wrong port: %p != %p\n",
--			state->uart_port, port);
-+			state->uart_port, uport);
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/serial/serial_lh7a40x.c b/drivers/serial/serial_lh7a40x.c
+index 057fc5e..ea74470 100644
+--- a/drivers/serial/serial_lh7a40x.c
++++ b/drivers/serial/serial_lh7a40x.c
+@@ -241,7 +241,7 @@ static void lh7a40xuart_modem_status (struct uart_port* port)
+ 	if (delta & CTS)
+ 		uart_handle_cts_change (port, status & CTS);
  
- 	mutex_lock(&port_mutex);
+-	wake_up_interruptible (&port->state->delta_msr_wait);
++	wake_up_interruptible (&port->state->port.delta_msr_wait);
+ }
  
-@@ -2505,28 +2516,28 @@ int uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
- 	 * Mark the port "dead" - this prevents any opens from
- 	 * succeeding while we shut down the port.
- 	 */
--	mutex_lock(&state->mutex);
--	port->flags |= UPF_DEAD;
--	mutex_unlock(&state->mutex);
-+	mutex_lock(&port->mutex);
-+	uport->flags |= UPF_DEAD;
-+	mutex_unlock(&port->mutex);
+ static irqreturn_t lh7a40xuart_int (int irq, void* dev_id)
+diff --git a/drivers/serial/sunsab.c b/drivers/serial/sunsab.c
+index 7c4f2fe..d1ad341 100644
+--- a/drivers/serial/sunsab.c
++++ b/drivers/serial/sunsab.c
+@@ -297,7 +297,7 @@ static void check_status(struct uart_sunsab_port *up,
+ 		up->port.icount.dsr++;
+ 	}
  
- 	/*
- 	 * Remove the devices from the tty layer
- 	 */
--	tty_unregister_device(drv->tty_driver, port->line);
-+	tty_unregister_device(drv->tty_driver, uport->line);
+-	wake_up_interruptible(&up->port.state->delta_msr_wait);
++	wake_up_interruptible(&up->port.state->port.delta_msr_wait);
+ }
  
--	if (state->port.tty)
--		tty_vhangup(state->port.tty);
-+	if (port->tty)
-+		tty_vhangup(port->tty);
+ static irqreturn_t sunsab_interrupt(int irq, void *dev_id)
+diff --git a/drivers/serial/sunsu.c b/drivers/serial/sunsu.c
+index 5a32365..68d262b 100644
+--- a/drivers/serial/sunsu.c
++++ b/drivers/serial/sunsu.c
+@@ -441,7 +441,7 @@ static void check_modem_status(struct uart_sunsu_port *up)
+ 	if (status & UART_MSR_DCTS)
+ 		uart_handle_cts_change(&up->port, status & UART_MSR_CTS);
  
- 	/*
- 	 * Free the port IO and memory resources, if any.
- 	 */
--	if (port->type != PORT_UNKNOWN)
--		port->ops->release_port(port);
-+	if (uport->type != PORT_UNKNOWN)
-+		uport->ops->release_port(uport);
+-	wake_up_interruptible(&up->port.state->delta_msr_wait);
++	wake_up_interruptible(&up->port.state->port.delta_msr_wait);
+ }
  
- 	/*
- 	 * Indicate that there isn't a port here anymore.
- 	 */
--	port->type = PORT_UNKNOWN;
-+	uport->type = PORT_UNKNOWN;
+ static irqreturn_t sunsu_serial_interrupt(int irq, void *dev_id)
+diff --git a/drivers/serial/sunzilog.c b/drivers/serial/sunzilog.c
+index 055034d..ef693ae 100644
+--- a/drivers/serial/sunzilog.c
++++ b/drivers/serial/sunzilog.c
+@@ -451,7 +451,7 @@ static void sunzilog_status_handle(struct uart_sunzilog_port *up,
+ 			uart_handle_cts_change(&up->port,
+ 					       (status & CTS));
  
- 	/*
- 	 * Kill the tasklet, and free resources.
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index f98dc78..27767ea 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -351,8 +351,6 @@ struct uart_state {
- 	struct tasklet_struct	tlet;
- 	wait_queue_head_t	delta_msr_wait;
- 	struct uart_port	*uart_port;
--
--	struct mutex		mutex;
+-		wake_up_interruptible(&up->port.state->delta_msr_wait);
++		wake_up_interruptible(&up->port.state->port.delta_msr_wait);
+ 	}
+ 
+ 	up->prev_status = status;
+diff --git a/drivers/serial/timbuart.c b/drivers/serial/timbuart.c
+index 3d40be6..34b31da 100644
+--- a/drivers/serial/timbuart.c
++++ b/drivers/serial/timbuart.c
+@@ -231,7 +231,7 @@ static void timbuart_mctrl_check(struct uart_port *port, u32 isr, u32 *ier)
+ 		iowrite32(CTS_DELTA, port->membase + TIMBUART_ISR);
+ 		cts = timbuart_get_mctrl(port);
+ 		uart_handle_cts_change(port, cts & TIOCM_CTS);
+-		wake_up_interruptible(&port->state->delta_msr_wait);
++		wake_up_interruptible(&port->state->port.delta_msr_wait);
+ 	}
+ 
+ 	*ier |= CTS_DELTA;
+diff --git a/drivers/serial/vr41xx_siu.c b/drivers/serial/vr41xx_siu.c
+index cf4410e..3beb6ab 100644
+--- a/drivers/serial/vr41xx_siu.c
++++ b/drivers/serial/vr41xx_siu.c
+@@ -386,7 +386,7 @@ static inline void check_modem_status(struct uart_port *port)
+ 	if (msr & UART_MSR_DCTS)
+ 		uart_handle_cts_change(port, msr & UART_MSR_CTS);
+ 
+-	wake_up_interruptible(&port->state->delta_msr_wait);
++	wake_up_interruptible(&port->state->port.delta_msr_wait);
+ }
+ 
+ static inline void transmit_chars(struct uart_port *port)
+diff --git a/drivers/serial/zs.c b/drivers/serial/zs.c
+index b9c9fb9..1a7fd3e 100644
+--- a/drivers/serial/zs.c
++++ b/drivers/serial/zs.c
+@@ -686,7 +686,7 @@ static void zs_status_handle(struct zs_port *zport, struct zs_port *zport_a)
+ 			uport->icount.rng++;
+ 
+ 		if (delta)
+-			wake_up_interruptible(&uport->state->delta_msr_wait);
++			wake_up_interruptible(&uport->state->port.delta_msr_wait);
+ 
+ 		spin_lock(&scc->zlock);
+ 	}
+diff --git a/include/linux/cyclades.h b/include/linux/cyclades.h
+index bbebef7..a5049ea 100644
+--- a/include/linux/cyclades.h
++++ b/include/linux/cyclades.h
+@@ -578,7 +578,6 @@ struct cyclades_port {
+ 	struct cyclades_idle_stats	idle_stats;
+ 	struct cyclades_icount	icount;
+ 	struct completion       shutdown_wait;
+-	wait_queue_head_t       delta_msr_wait;
+ 	int throttle;
  };
  
- #define UART_XMIT_SIZE	PAGE_SIZE
+diff --git a/include/linux/hayesesp.h b/include/linux/hayesesp.h
+index 940aeb5..92b08cf 100644
+--- a/include/linux/hayesesp.h
++++ b/include/linux/hayesesp.h
+@@ -96,7 +96,6 @@ struct esp_struct {
+ 	int			xmit_head;
+ 	int			xmit_tail;
+ 	int			xmit_cnt;
+-	wait_queue_head_t	delta_msr_wait;
+ 	wait_queue_head_t	break_wait;
+ 	struct async_icount	icount;	/* kernel counters for the 4 input interrupts */
+ 	struct hayes_esp_config config; /* port configuration */
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 27767ea..bcafecd 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -349,7 +349,6 @@ struct uart_state {
+ 	struct circ_buf		xmit;
+ 
+ 	struct tasklet_struct	tlet;
+-	wait_queue_head_t	delta_msr_wait;
+ 	struct uart_port	*uart_port;
+ };
+ 
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 9fdc3d8..0daa8a7 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -203,6 +203,7 @@ struct tty_port {
+ 	int			count;		/* Usage count */
+ 	wait_queue_head_t	open_wait;	/* Open waiters */
+ 	wait_queue_head_t	close_wait;	/* Close waiters */
++	wait_queue_head_t	delta_msr_wait;	/* Modem status change */
+ 	unsigned long		flags;		/* TTY flags ASY_*/
+ 	struct mutex		mutex;		/* Locking */
+ 	unsigned char		*xmit_buf;	/* Optional buffer */
 -- 
 1.6.4.2
 
