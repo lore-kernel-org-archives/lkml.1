@@ -1,125 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbZISSIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbZISSM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752015AbZISSIy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 14:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZISSIw
+	id S1752166AbZISSM3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 14:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZISSM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 14:08:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46214 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751668AbZISSIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 14:08:51 -0400
-Message-ID: <4AB51DFD.2000904@kernel.org>
-Date: Sat, 19 Sep 2009 11:07:57 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 19 Sep 2009 14:12:29 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:43584 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbZISSM2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 14:12:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=OWrPfaD3Wn0xuxjNZBLDUaPiYrwpOq2XxicpCfrhMJnAU3Cv320ypWc6209DEvLKzh
+         rjXeXU1CupFU9Ia7gxyk8SgOkmiyI47DCHn85p3g1E8UM9CqhhuIqYV28Oh23cILbU6V
+         guJt7ho0JORYVLzQl3BpehvTGMdGK5hIOurEc=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: reservetop fix disables mem=
-References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils> <4A92D029.8090807@kernel.org> <20090824182713.GB9785@elte.hu> <Pine.LNX.4.64.0909160117260.6814@sister.anvils> <20090919175504.GJ5366@elte.hu> <4AB51CA2.9010608@kernel.org>
-In-Reply-To: <4AB51CA2.9010608@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Sat, 19 Sep 2009 20:12:31 +0200
+Message-ID: <a769871e0909191112t3adb852cn93d72dc5fd94b9fd@mail.gmail.com>
+Subject: EXT4 RAID read performance
+From: wbrana@gmail.com
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Ingo Molnar wrote:
->> I thoroughly zapped it. Do you know about any commit ID where it snuck 
->> in?
-> 
-> after close looking, it will break
-> 1. some cpu feature  in early stage too, like cpu_has_x2apic
-> 2. will break built-in-command line
-> 3. will break other memmap= and mem=
-> 4. early_dbgp and early_console that will use early_ioremap to access mmio (?)
-> 
-> YH
-> 
-> commit 8126dec32738421afa362114337331337b4be17f
-> Author: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> Date:   Thu Aug 20 20:23:11 2009 +0800
-> 
->     x86: Fix system crash when loading with "reservetop" parameter
->     
->     The system will die if the kernel is booted with "reservetop"
->     parameter, in present code, parse "reservetop" parameter after
->     early_ioremap_init(), and some function still use
->     early_ioremap() after it.
->     
->     The problem is, "reservetop" parameter can modify
->     'FIXADDR_TOP', then the virtual address got by early_ioremap()
->     is base on old 'FIXADDR_TOP', but the page mapping is base on
->     new 'FIXADDR_TOP', it will occur page fault, and the IDT is not
->     prepare yet, so, the system is dead.
->     
->     So, put parse_early_param() in the front of
->     early_ioremap_init() in this patch.
->     
->     Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
->     Cc: yinghai@kernel.org
->     Cc: Andrew Morton <akpm@linux-foundation.org>
->     LKML-Reference: <4A8D402F.4080805@cn.fujitsu.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-after revet it, it seem mem=32g etc still broken, maybe some other commit about x86 platform support from Thomas broke it.
+Hello,
 
-YH
+I'm considering replacing Reiser3 filesystem with some newer one.
+I ran compilebench benchmark. Read performance is lower with ext4.
+Is it expected or is it possible to fix it?
 
----
- arch/x86/kernel/setup.c |   30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+Ext4:
+read tree total runs 11 avg 20.47 MB/s (user 0.53s sys 0.74s)
+read compiled tree total runs 4 avg 32.94 MB/s (user 0.61s sys 1.17s)
 
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -697,21 +697,6 @@ void __init setup_arch(char **cmdline_p)
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
- #endif
- 
--	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
--	*cmdline_p = command_line;
--
--#ifdef CONFIG_X86_64
--	/*
--	 * Must call this twice: Once just to detect whether hardware doesn't
--	 * support NX (so that the early EHCI debug console setup can safely
--	 * call set_fixmap(), and then again after parsing early parameters to
--	 * honor the respective command line option.
--	 */
--	check_efer();
--#endif
--
--	parse_early_param();
--
- 	/* VMI may relocate the fixmap; do this before touching ioremap area */
- 	vmi_init();
- 
-@@ -794,6 +779,21 @@ void __init setup_arch(char **cmdline_p)
- #endif
- #endif
- 
-+	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
-+	*cmdline_p = command_line;
-+
-+#ifdef CONFIG_X86_64
-+	/*
-+	 * Must call this twice: Once just to detect whether hardware doesn't
-+	 * support NX (so that the early EHCI debug console setup can safely
-+	 * call set_fixmap(), and then again after parsing early parameters to
-+	 * honor the respective command line option.
-+	 */
-+	check_efer();
-+#endif
-+
-+	parse_early_param();
-+
- #ifdef CONFIG_X86_64
- 	check_efer();
- #endif
+Reiser3:
+read tree total runs 11 avg 26.33 MB/s (user 0.54s sys 0.81s)
+read compiled tree total runs 4 avg 41.82 MB/s (user 0.62s sys 1.36s)
+
+RAID details:
+
+md8 : active raid10 sda7[0] sdd7[3] sdc7[2] sdb7[1]
+      62925824 blocks 256K chunks 2 far-copies [4/4] [UUUU]
+
+Ext4:
+mkfs.ext4 -E stride=64,stripe-width=128 /dev/md8
+mount -t ext4 -o noatime,auto_da_alloc,commit=600 /dev/md8 /mnt/md8
+
+Reiser3:
+mount -t reiserfs /dev/md8 /mnt/md8
+mount -t reiserfs -o noatime,notail /dev/md8 /dev/md8
+
+Ext4 results:
+intial create total runs 10 avg 172.76 MB/s (user 0.43s sys 0.60s)
+create total runs 14 avg 36.49 MB/s (user 0.42s sys 0.59s)
+patch total runs 15 avg 15.16 MB/s (user 0.24s sys 0.49s)
+compile total runs 14 avg 64.07 MB/s (user 0.10s sys 0.59s)
+clean total runs 10 avg 393.43 MB/s (user 0.02s sys 0.06s)
+read tree total runs 11 avg 20.47 MB/s (user 0.53s sys 0.74s)
+read compiled tree total runs 4 avg 32.94 MB/s (user 0.61s sys 1.17s)
+delete tree total runs 10 avg 2.51 seconds (user 0.24s sys 0.42s)
+delete compiled tree total runs 4 avg 2.63 seconds (user 0.28s sys 0.50s)
+stat tree total runs 11 avg 1.99 seconds (user 0.23s sys 0.18s)
+stat compiled tree total runs 7 avg 2.11 seconds (user 0.27s sys 0.21s)
+
+Reiser3 results:
+intial create total runs 10 avg 82.74 MB/s (user 0.45s sys 1.13s)
+create total runs 14 avg 28.54 MB/s (user 0.45s sys 1.19s)
+patch total runs 15 avg 10.91 MB/s (user 0.24s sys 0.86s)
+compile total runs 14 avg 47.49 MB/s (user 0.10s sys 1.27s)
+clean total runs 10 avg 270.21 MB/s (user 0.02s sys 0.15s)
+read tree total runs 11 avg 26.33 MB/s (user 0.54s sys 0.81s)
+read compiled tree total runs 4 avg 41.82 MB/s (user 0.62s sys 1.36s)
+delete tree total runs 10 avg 3.38 seconds (user 0.24s sys 0.72s)
+delete compiled tree total runs 4 avg 4.14 seconds (user 0.27s sys 0.88s)
+stat tree total runs 11 avg 2.09 seconds (user 0.22s sys 0.18s)
+stat compiled tree total runs 7 avg 2.27 seconds (user 0.25s sys 0.21s)
