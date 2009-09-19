@@ -1,65 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbZISP34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbZISPkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbZISP34 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 11:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbZISP3z
+	id S1753224AbZISPkd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 11:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZISPkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 11:29:55 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64838 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754942AbZISP3z (ORCPT
+	Sat, 19 Sep 2009 11:40:33 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:57504 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751798AbZISPkc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 11:29:55 -0400
-Subject: Re: [PATCH 3/3] tracing/events: use list_for_entry_continue
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090918150930.GB5200@nowhere>
-References: <4AB32364.7020602@cn.fujitsu.com>
-	 <4AB32389.1030005@cn.fujitsu.com>  <20090918150930.GB5200@nowhere>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Sat, 19 Sep 2009 11:29:56 -0400
-Message-Id: <1253374196.20020.341.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Sat, 19 Sep 2009 11:40:32 -0400
+Message-ID: <4AB4F908.60307@ce.jp.nec.com>
+Date: Sun, 20 Sep 2009 00:30:16 +0900
+From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+CC: linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>
+Subject: Re: [PATCH 2/3] block: Rename trace_block_remap to trace_block_bio_remap
+References: <4AB3A393.5000709@ce.jp.nec.com>
+In-Reply-To: <4AB3A393.5000709@ce.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-18 at 17:09 +0200, Frederic Weisbecker wrote:
-> On Fri, Sep 18, 2009 at 02:07:05PM +0800, Li Zefan wrote:
-> > Simplify s_next() and t_next().
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > ---
-> 
-> 
-> 
-> 
-> Nice.
-> I wonder if that can be even more simplified with
-> the following existing seq helpers:
-> 
-> extern struct list_head *seq_list_start(struct list_head *head,
-> 		loff_t pos);
-> extern struct list_head *seq_list_start_head(struct list_head *head,
-> 		loff_t pos);
-> extern struct list_head *seq_list_next(void *v, struct list_head *head,
-> 		loff_t *ppos);
+Sorry, the previous mail has line-wrapped.
+Re-sending the patch.
 
-This could be another patch someday.
+Rename "block_remap" tracepoint to "block_bio_remap" to clarify the event.
+No functional change.
 
-> 
-> 
-> That said, it's already a nice cleanup.
-> 
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alasdair G Kergon <agk@redhat.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+---
+ block/blk-core.c             |   10 +++++-----
+ drivers/md/dm.c              |    4 ++--
+ include/trace/events/block.h |    2 +-
+ kernel/trace/blktrace.c      |   10 +++++-----
+ 4 files changed, 13 insertions(+), 13 deletions(-)
 
-I'll take this as an Acked-by then?
+Index: linux-2.6.31.work/include/trace/events/block.h
+===================================================================
+--- linux-2.6.31.work.orig/include/trace/events/block.h
++++ linux-2.6.31.work/include/trace/events/block.h
+@@ -453,7 +453,7 @@ TRACE_EVENT(block_split,
+ 		  __entry->comm)
+ );
 
--- Steve
+-TRACE_EVENT(block_remap,
++TRACE_EVENT(block_bio_remap,
 
+ 	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
+ 		 sector_t from),
+Index: linux-2.6.31.work/block/blk-core.c
+===================================================================
+--- linux-2.6.31.work.orig/block/blk-core.c
++++ linux-2.6.31.work/block/blk-core.c
+@@ -33,7 +33,7 @@
+
+ #include "blk.h"
+
+-EXPORT_TRACEPOINT_SYMBOL_GPL(block_remap);
++EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_remap);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_complete);
+
+@@ -1285,9 +1285,9 @@ static inline void blk_partition_remap(s
+ 		bio->bi_sector += p->start_sect;
+ 		bio->bi_bdev = bdev->bd_contains;
+
+-		trace_block_remap(bdev_get_queue(bio->bi_bdev), bio,
+-				    bdev->bd_dev,
+-				    bio->bi_sector - p->start_sect);
++		trace_block_bio_remap(bdev_get_queue(bio->bi_bdev), bio,
++				      bdev->bd_dev,
++				      bio->bi_sector - p->start_sect);
+ 	}
+ }
+
+@@ -1455,7 +1455,7 @@ static inline void __generic_make_reques
+ 			goto end_io;
+
+ 		if (old_sector != -1)
+-			trace_block_remap(q, bio, old_dev, old_sector);
++			trace_block_bio_remap(q, bio, old_dev, old_sector);
+
+ 		trace_block_bio_queue(q, bio);
+
+Index: linux-2.6.31.work/kernel/trace/blktrace.c
+===================================================================
+--- linux-2.6.31.work.orig/kernel/trace/blktrace.c
++++ linux-2.6.31.work/kernel/trace/blktrace.c
+@@ -822,7 +822,7 @@ static void blk_add_trace_split(struct r
+ }
+
+ /**
+- * blk_add_trace_remap - Add a trace for a remap operation
++ * blk_add_trace_bio_remap - Add a trace for a bio-remap operation
+  * @q:		queue the io is for
+  * @bio:	the source bio
+  * @dev:	target device
+@@ -833,8 +833,8 @@ static void blk_add_trace_split(struct r
+  *     it spans a stripe (or similar). Add a trace for that action.
+  *
+  **/
+-static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+-				       dev_t dev, sector_t from)
++static void blk_add_trace_bio_remap(struct request_queue *q, struct bio *bio,
++				    dev_t dev, sector_t from)
+ {
+ 	struct blk_trace *bt = q->blk_trace;
+ 	struct blk_io_trace_remap r;
+@@ -947,7 +947,7 @@ static void blk_register_tracepoints(voi
+ 	WARN_ON(ret);
+ 	ret = register_trace_block_split(blk_add_trace_split);
+ 	WARN_ON(ret);
+-	ret = register_trace_block_remap(blk_add_trace_remap);
++	ret = register_trace_block_bio_remap(blk_add_trace_bio_remap);
+ 	WARN_ON(ret);
+ 	ret = register_trace_block_rq_remap(blk_add_trace_rq_remap);
+ 	WARN_ON(ret);
+@@ -956,7 +956,7 @@ static void blk_register_tracepoints(voi
+ static void blk_unregister_tracepoints(void)
+ {
+ 	unregister_trace_block_rq_remap(blk_add_trace_rq_remap);
+-	unregister_trace_block_remap(blk_add_trace_remap);
++	unregister_trace_block_bio_remap(blk_add_trace_bio_remap);
+ 	unregister_trace_block_split(blk_add_trace_split);
+ 	unregister_trace_block_unplug_io(blk_add_trace_unplug_io);
+ 	unregister_trace_block_unplug_timer(blk_add_trace_unplug_timer);
+Index: linux-2.6.31.work/drivers/md/dm.c
+===================================================================
+--- linux-2.6.31.work.orig/drivers/md/dm.c
++++ linux-2.6.31.work/drivers/md/dm.c
+@@ -961,8 +961,8 @@ static void __map_bio(struct dm_target *
+ 	if (r == DM_MAPIO_REMAPPED) {
+ 		/* the bio has been remapped so dispatch it */
+
+-		trace_block_remap(bdev_get_queue(clone->bi_bdev), clone,
+-				    tio->io->bio->bi_bdev->bd_dev, sector);
++		trace_block_bio_remap(bdev_get_queue(clone->bi_bdev), clone,
++				      tio->io->bio->bi_bdev->bd_dev, sector);
+
+ 		generic_make_request(clone);
+ 	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
 
