@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbZISUeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbZISUhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbZISUeD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 16:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZISUeC
+	id S1752716AbZISUhy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 16:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZISUhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 16:34:02 -0400
-Received: from nbd.name ([88.198.39.176]:36221 "EHLO ds10.mine.nu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbZISUeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 16:34:01 -0400
-Message-ID: <4AB54033.7010901@openwrt.org>
-Date: Sat, 19 Sep 2009 22:33:55 +0200
-From: Felix Fietkau <nbd@openwrt.org>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Michael Buesch <mb@bu3sch.de>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <20090906205952.GA6516@elte.hu> <20090907182629.GA3484@elte.hu> <20090908074825.GA11413@elte.hu> <200909081645.18505.mb@bu3sch.de> <20090918112454.GE9930@elte.hu> <4AB39D3A.3000204@openwrt.org> <20090919180124.GK5366@elte.hu> <4AB52667.6020608@openwrt.org> <20090919193956.GA21719@elte.hu> <4AB53BCC.503@openwrt.org> <20090919202222.GA26621@elte.hu>
-In-Reply-To: <20090919202222.GA26621@elte.hu>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 19 Sep 2009 16:37:53 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:54852 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbZISUhw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 16:37:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:message-id:from:to:in-reply-to:content-type
+         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
+        b=v0iIQgPWUq2/XiSXhUzj9VQqb3mTMNNxKAS/5Khm7Ucfq7bwiyPls2M1mcg8u3/NDK
+         Tym5al/1J8QHgShS98mtVwbtIu2cmN517bZoF4KI1KCZb3LlKKERsC4IS4Wuu7NhbI+y
+         iZfbaLCDuJj6n7U2z9ashwD4ENHkaHEnvCH+k=
+References: <4AB48658.2080709@nickg.me.uk>
+Message-Id: <E90F5632-5476-4D73-A848-B3A4762FEA86@gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Nick Gasson <nick@nickg.me.uk>
+In-Reply-To: <4AB48658.2080709@nickg.me.uk>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
 Content-Transfer-Encoding: 7bit
+X-Mailer: iPhone Mail (7C144)
+Mime-Version: 1.0 (iPhone Mail 7C144)
+Subject: Re: [PATCH] Fix fn-key release events for Samsung Q320 laptop
+Date: Sat, 19 Sep 2009 13:37:42 -0700
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Felix Fietkau <nbd@openwrt.org> wrote:
-> 
->> Ingo Molnar wrote:
->> > * Felix Fietkau <nbd@openwrt.org> wrote:
->> >> I did some tests with BFS v230 vs CFS on Linux 2.6.30 on a different
->> >> MIPS device (Atheros AR2317) with 180 MHz and 16 MB RAM. When running
->> >> iperf tests, I consistently get the following results when running the
->> >> transfer from the device to my laptop:
->> >> 
->> >> CFS: [  5]  0.0-60.0 sec    107 MBytes  15.0 Mbits/sec
->> >> BFS: [  5]  0.0-60.0 sec    119 MBytes  16.6 Mbits/sec
->> >> 
->> >> The transfer speed from my laptop to the device are the same with BFS
->> >> and CFS. I repeated the tests a few times just to be sure, and I will
->> >> check vmstat later.
->> > 
->> > Which exact mainline kernel have you tried? For anything performance 
->> > related running latest upstream -git (currently at 202c467) would be 
->> > recommended.
->>
->> I used the OpenWrt-patched 2.6.30. Support for the hardware that I 
->> tested with hasn't been merged upstream yet. Do you think that the 
->> scheduler related changes after 2.6.30 are relevant for non-SMP 
->> performance as well? If so, I'll work on a test with latest upstream 
->> -git with the necessary patches when I have time for it.
-> 
-> Dont know - it's hard to tell what happens without basic analysis tools. 
-> Is there _any_ way to profile what happens on that system? (Do hrtimers 
-> work on it that could be used to profile it?)
-oprofile doesn't have any support for it (mips r4k, no generic
-perfcounters), the only usable clock source is a simple cpu cycle
-counter (which is also used for the timer interrupt).
+Hi Nick,
 
-- Felix
+On Sep 19, 2009, at 12:20 AM, Nick Gasson <nick@nickg.me.uk> wrote:
+
+> This adds a workaround for the missing fn-key release
+> events on Samsung Q320 and similar laptops.
+>
+> Tested extensively on my own laptop.
+>
+> Signed-off-by: Nick Gasson <nick@nickg.me.uk>
+
+Thank you very much for your patch, hovewer I will not be accepting  
+any more patches for the force release quirk in the kernel. 2.6.32  
+will have 'force_release' sysfs attribute allowing to apply the quirk  
+from userspace.
+
+-- 
+Dmitry
+
