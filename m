@@ -1,121 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbZISCGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757684AbZISCHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbZISCGx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 22:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZISCGs
+	id S1757684AbZISCHP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 22:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbZISCHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 22:06:48 -0400
-Received: from mga14.intel.com ([143.182.124.37]:1038 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754161AbZISCGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 22:06:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,412,1249282800"; 
-   d="scan'208";a="189356781"
-Subject: [patch] x86, apic: use logical flat on intel with <= 8 logical cpus
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: tglx@linutronix.de, hpa@zytor.com, mingo@elte.hu
-Cc: yinghai@kernel.org, linux-kernel@vger.kernel.org
+	Fri, 18 Sep 2009 22:07:09 -0400
+Received: from n23a.bullet.mail.mud.yahoo.com ([68.142.207.189]:43844 "HELO
+	n23a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754651AbZISCHH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 22:07:07 -0400
+X-Yahoo-Newman-Id: 928013.17147.bm@omp404.mail.mud.yahoo.com
+X-Yahoo-SMTP: fzDSGlOswBCWnIOrNw7KwwK1j9PqyNbe5PtLKiS4dDU.UNl_t6bdEZu9tTLW
+X-YMail-OSG: hdAYKN0VM1nIxN5TymwwXWmMJ2n7r20r_wPy.3pQObvRuNIGWmWFZLKBGcPBDoDvvlhmLxW4j54qdELvUJz6kEeWmqfD1hAmMp3AuoNBWotPnG_xiIzI0bAlnV9VLh9xrf7ogUzmXjtWDlRmPx0Lf2Z0_ZIo9.WZpChAyh_Ev.aFGisK5I5Krtxbypk72Mj0Vh4KwLmQWqLa2Qz2ru9NFN1J299qPGEeYlVBq1X1ACU04KoVvD8JB74_YsyjkaL5TnPLs7V.qmGOEvoz4poylRlLLg7XrSmr3lOQA_55NZPkn4_nHrt5OM7WpEVxetRoMc9tkWz7jHyH8wSG5.zOJzZPMqQWdjqCgPO.TA--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [RFC v2 PATCH 0/19] A kernel-level configfs enabled generic
+	target engine for Linux v2.6.32
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Joel Becker <joel.becker@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Florian Haas <florian.haas@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+In-Reply-To: <1253322925.6699.8.camel@desktop>
+References: <1253311656.4498.143.camel@haakon2.linux-iscsi.org>
+	 <1253322925.6699.8.camel@desktop>
 Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 18 Sep 2009 19:05:36 -0700
-Message-Id: <1253325936.3948.720.camel@sbs-t61.sc.intel.com>
+Date: Fri, 18 Sep 2009 19:07:08 -0700
+Message-Id: <1253326028.4498.194.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Intel platforms, we can use logical flat mode if there are <= 8
-logical cpu's (irrespective of physical apic id values). This will
-enable simplified and efficient IPI and device interrupt routing on
-such platforms.
+On Fri, 2009-09-18 at 18:15 -0700, Daniel Walker wrote:
+> On Fri, 2009-09-18 at 15:07 -0700, Nicholas A. Bellinger wrote:
+> > Greetings all,
+> > 
+> > This is the second round of request for comments for TCM/ConfigFS v3.2
+> > from lio-core-2.6.git.
+> > Thanks to the folks who made comments, and I again invite people to
+> > take a look and make
+> > recommendations on how the code can be futher improved to use the best
+> > available upstream
+> > interfaces.
+> 
+> There are still a couple of minor checkpatch errors in the series, but
+> it's nothing you would need to resubmit because of ..
+> 
+> In patch 2 the following are fixable,
+> 
+> ERROR: return is not a function, parentheses are not required
+> #3401: FILE: include/target/configfs_macros.h:104:
+> +       return((ci) ? container_of(to_config_group(ci), struct _item,   \
+> 
+> ERROR: trailing whitespace
+> #3438: FILE: include/target/configfs_macros.h:141:
+> +CONFIGFS_EATTR_OPS_STORE(_name, _item);^I$
+> 
+> 
+> and in Patch 18, and 19 there are a couple more whitespace related
+> errors you could fix..
+> 
 
-Fix the relevant comments while we are at it.
+Ok, commited these checkpatch fixes:
 
-We can clean up default_setup_apic_routing() by using apic->probe()
-but that is a different item.
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=65808529e0ed76308842c87faccf4526fa8bb13d
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+Also, it looks like configfs_macros.h is triggering the same checkpatch
+false-positive as target_core_configfs.c:
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index a34601f..0bde0a5 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -62,7 +62,7 @@ unsigned int boot_cpu_physical_apicid = -1U;
- /*
-  * The highest APIC ID seen during enumeration.
-  *
-- * This determines the messaging protocol we can use: if all APIC IDs
-+ * On AMD, this determines the messaging protocol we can use: if all APIC IDs
-  * are in the 0 ... 7 range, then we can use logical addressing which
-  * has some performance advantages (better broadcasting).
-  *
-@@ -1917,24 +1917,14 @@ void __cpuinit generic_processor_info(int apicid, int version)
- 		max_physical_apicid = apicid;
- 
- #ifdef CONFIG_X86_32
--	/*
--	 * Would be preferable to switch to bigsmp when CONFIG_HOTPLUG_CPU=y
--	 * but we need to work other dependencies like SMP_SUSPEND etc
--	 * before this can be done without some confusion.
--	 * if (CPU_HOTPLUG_ENABLED || num_processors > 8)
--	 *       - Ashok Raj <ashok.raj@intel.com>
--	 */
--	if (max_physical_apicid >= 8) {
--		switch (boot_cpu_data.x86_vendor) {
-+	switch (boot_cpu_data.x86_vendor) {
- 		case X86_VENDOR_INTEL:
--			if (!APIC_XAPIC(version)) {
--				def_to_bigsmp = 0;
--				break;
--			}
--			/* If P4 and above fall through */
-+			if (num_processors > 8)
-+				def_to_bigsmp = 1;
-+			break;
- 		case X86_VENDOR_AMD:
--			def_to_bigsmp = 1;
--		}
-+			if (max_physical_apicid >= 8)
-+				def_to_bigsmp = 1;
- 	}
- #endif
- 
-diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
-index 65edc18..2e562a3 100644
---- a/arch/x86/kernel/apic/probe_64.c
-+++ b/arch/x86/kernel/apic/probe_64.c
-@@ -64,16 +64,23 @@ void __init default_setup_apic_routing(void)
- 			apic = &apic_x2apic_phys;
- 		else
- 			apic = &apic_x2apic_cluster;
--		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
- 	}
- #endif
- 
- 	if (apic == &apic_flat) {
--		if (max_physical_apicid >= 8)
--			apic = &apic_physflat;
--		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
-+		switch (boot_cpu_data.x86_vendor) {
-+			case X86_VENDOR_INTEL:
-+				if (num_processors > 8)
-+					apic = &apic_physflat;
-+				break;
-+			case X86_VENDOR_AMD:
-+		 		if (max_physical_apicid >= 8)
-+					apic = &apic_physflat;
-+		}
- 	}
- 
-+	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
-+
- 	if (is_vsmp_box()) {
- 		/* need to update phys_pkg_id */
- 		apic->phys_pkg_id = apicid_phys_pkg_id;
+configfs_macros.h:138: ERROR: Macros with multiple statements should be enclosed in a do - while loop
+configfs_macros.h:143: ERROR: Macros with multiple statements should be enclosed in a do - while loop
+
+This is the case where macros with multiple statements exist containing
+function defintions, which obviously cannot be included in a do {} while
+loop.
+
+Thanks Daniel,
+
+--nab
+
+
+> Daniel
+> 
 
 
