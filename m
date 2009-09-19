@@ -1,100 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbZISH3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbZISHeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbZISH3L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 03:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbZISH3K
+	id S932122AbZISHeN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 03:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754806AbZISHeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 03:29:10 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:50340 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754851AbZISH3J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 03:29:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AKN+yIU1XQtmUOZ489gB0gnPXpso9rJN6EhhfziZ195V2yvZIHb8N7ax9R81VnSaIF
-         8+el/TZMs4D5xJtxiaqhgRp2v3s6t+1FwDD3stPejKpZzvBtOhho/Vg3NciLz3tnUZZX
-         R5N0rf7VdGI1BJydV71DldqwSPYfLSbA61cMQ=
-Date: Sat, 19 Sep 2009 09:29:09 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
+	Sat, 19 Sep 2009 03:34:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36033 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753700AbZISHeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 03:34:11 -0400
+Date: Sat, 19 Sep 2009 09:34:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 2/2] tracing: Document HAVE_FTRACE_SYSCALLS needs
-Message-ID: <20090919072908.GB5226@nowhere>
-References: <1253338757-5918-1-git-send-email-fweisbec@gmail.com> <1253338757-5918-3-git-send-email-fweisbec@gmail.com> <20090919071712.GB15292@elte.hu> <20090919072249.GA5226@nowhere> <20090919072827.GD15292@elte.hu>
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 0/2 v3] tracing: Tracing event profiling updates
+Message-ID: <20090919073400.GE15292@elte.hu>
+References: <1253247854-5496-1-git-send-email-fweisbec@gmail.com> <1253252178-5315-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090919072827.GD15292@elte.hu>
+In-Reply-To: <1253252178-5315-1-git-send-email-fweisbec@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 19, 2009 at 09:28:27AM +0200, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > On Sat, Sep 19, 2009 at 09:17:12AM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > 
-> > > > Document the arch needed requirements to get the support for syscalls
-> > > > tracing.
-> > > > 
-> > > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > > > Cc: Ingo Molnar <mingo@elte.hu>
-> > > > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > > > Cc: Li Zefan <lizf@cn.fujitsu.com>
-> > > > Cc: Masami Hiramatsu <mhiramat@redhat.com>
-> > > > Cc: Jason Baron <jbaron@redhat.com>
-> > > > Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > > > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > > > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > > > Cc: Paul Mundt <lethal@linux-sh.org>
-> > > > ---
-> > > >  Documentation/trace/ftrace-design.txt |   11 ++++++++++-
-> > > >  1 files changed, 10 insertions(+), 1 deletions(-)
-> > > > 
-> > > > diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
-> > > > index 7003e10..04ab61c 100644
-> > > > --- a/Documentation/trace/ftrace-design.txt
-> > > > +++ b/Documentation/trace/ftrace-design.txt
-> > > > @@ -216,7 +216,16 @@ If you can't trace NMI functions, then skip this option.
-> > > >  HAVE_FTRACE_SYSCALLS
-> > > >  ---------------------
-> > > >  
-> > > > -<details to be filled>
-> > > > +You need very few things to get the syscalls tracing in an arch.
-> > > > +
-> > > > +- Have a NR_syscalls variable in <asm/unistd.h> that provides the number
-> > > > +  of syscalls supported by the arch.
-> > > > +- Implement arch_syscall_addr() that resolves a syscall address from a
-> > > > +  syscall number.
-> > > > +- Support the TIF_SYSCALL_TRACEPOINT thread flags
-> > > > +- Put the trace_sys_enter() and trace_sys_exit() tracepoints calls from ptrace
-> > > > +  in the ptrace syscalls tracing path.
-> > > > +- Tag this arch as HAVE_FTRACE_SYSCALLS.
-> > > 
-> > > HAVE_FTRACE_SYSCALLS is not actually used anywhere.
-> > > 
-> > > 	Ingo
-> > 
-> > Ah, that has been renamed HAVE_SYSCALL_TRACEPOINTS recently. What do 
-> > you prefer? A delta patch or a rebase?
-> 
-> We need the acks from Martin/Heiko so lets wait for that and do a new 
-> tree then?
-> 
-> 	Ingo
 
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Ok.
+> 
+> Ingo,
+> 
+> Hopefully this is my last attempt.
+> This new iteration fixes the syscalls events to correctly handle
+> the buffer. In the previous version, they did not care about interrupts.
+> 
+> I only resend the second patch as only this one has changed since the v2.
+> 
+> The new branch is in:
+> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> 	tracing/core-v3
+> 
+> Thanks,
+> 	Frederic.
+> 
+> Frederic Weisbecker (2):
+>       tracing: Factorize the events profile accounting
+>       tracing: Allocate the ftrace event profile buffer dynamically
+> 
+>  include/linux/ftrace_event.h       |   10 +++-
+>  include/linux/syscalls.h           |   24 +++-----
+>  include/trace/ftrace.h             |  111 ++++++++++++++++++++---------------
+>  kernel/trace/trace_event_profile.c |   79 +++++++++++++++++++++++++-
+>  kernel/trace/trace_syscalls.c      |   97 +++++++++++++++++++++++++------
+>  5 files changed, 234 insertions(+), 87 deletions(-)
 
+Hm, the naming is quite confusing here i think:
+
+  -132,8 +133,12 @@ struct ftrace_event_call {
+         atomic_t                profile_count;
+         int                     (*profile_enable)(void);
+         void                    (*profile_disable)(void);
+ +       char                    *profile_buf;
+ +       char                    *profile_buf_nmi;
+
+These are generic events, not just 'profiling' histograms.
+
+Generic events can have _many_ output modi:
+
+ - SVGs                   (perf timeline)
+ - histograms             (perf report)
+ - traces                 (perf trace)
+ - summaries / maximums   (perf sched lat)
+ - maps                   (perf sched map)
+ - graphs                 (perf report --call-graph)
+
+So it's quite a misnomer to talk just about profiling here. This is an 
+event record buffer.
+
+Also, what is the currently maximum possible size of ->profile_buf? The 
+max size of an event record? The new codepath looks a bit heavy with 
+rcu-lock/unlock and other bits put inbetween - and this is now in the 
+event sending critical path. Cannot we do a permanent buffer that needs 
+no extra locking/reference protection?
+
+Is the whole thing even justified? I mean, we keep the size of records 
+low anyway. It's a _lot_ easier to handle on-stack records, they are the 
+ideal (and very fast) dynamic allocator which is NMI and IRQ safe, etc.
+
+	Ingo
