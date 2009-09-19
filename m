@@ -1,70 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbZISAHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZISALJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbZISAHN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Sep 2009 20:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbZISAHK
+	id S1756797AbZISALJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Sep 2009 20:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZISALG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Sep 2009 20:07:10 -0400
-Received: from mail-px0-f189.google.com ([209.85.216.189]:41013 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753158AbZISAHI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Sep 2009 20:07:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Mf6ewABjuCsz1ODpZVns+s/3/Mmn7CfzhTA9eRWbKKGCIB37tOqmpEO5UscByvzKIo
-         vX54uoOiXCjK7LJPX4C/ATfDoiBND9vz6W4U8wRlRYg5QGMH++l0xusAi/Dt8dgsMg/t
-         EIAtuY0gWl3Io5rN5fCuTAgaKCl7kIl+6hSng=
-MIME-Version: 1.0
-In-Reply-To: <20090918163927.GA365@core.coreip.homeip.net>
-References: <4A5BF6F0.6020403@samsung.com>
-	 <20090714082452.GH2822@dtor-d630.eng.vmware.com>
-	 <002a01ca0462$8b750a90$a25f1fb0$%szyprowski@samsung.com>
-	 <5d5443650907140211i4c6e4a49q9c055dc1e91071da@mail.gmail.com>
-	 <002b01ca046c$7f9fd240$7edf76c0$%szyprowski@samsung.com>
-	 <5d5443650907140323l6cc06151nbec94d5d8646c60a@mail.gmail.com>
-	 <003f01ca051c$0e8d12b0$2ba73810$%szyprowski@samsung.com>
-	 <20090916085749.GL2756@core.coreip.homeip.net>
-	 <4AB3416F.6010004@samsung.com>
-	 <20090918163927.GA365@core.coreip.homeip.net>
-Date: Sat, 19 Sep 2009 09:07:11 +0900
-Message-ID: <4e1455be0909181707w113015ddk90e4b74cfb0c462f@mail.gmail.com>
-Subject: Re: [PATCH] Input: add MAX7359 key switch controller driver, v2
-From: Joonyoung Shim <dofmind@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Joonyoung Shim <jy0922.shim@samsung.com>,
-       Marek Szyprowski <m.szyprowski@samsung.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Kim Kyuwon <q1.kim@samsung.com>,
-       Kim Kyuwon <chammoru@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 18 Sep 2009 20:11:06 -0400
+Received: from waste.org ([173.11.57.241]:37169 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751370AbZISALF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Sep 2009 20:11:05 -0400
+Subject: Re: [PATCH] random: kmalloc failure ignored in init_std_data()
+From: Matt Mackall <mpm@selenic.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AB411D9.6070702@gmail.com>
+References: <4AB411D9.6070702@gmail.com>
+Content-Type: text/plain
+Date: Fri, 18 Sep 2009 19:10:20 -0500
+Message-Id: <1253319020.3364.180.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/19 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> Hi Joonyoung,
->
-> On Fri, Sep 18, 2009 at 05:14:39PM +0900, Joonyoung Shim wrote:
->>
->> Hi, Dmitry.
->>
->> I tested your patch with threaded IRQ. Because the interrupt of the
->> MAX7359 device is the low level detecting, i should add the IRQF_ONESHOT
->> flag on request_threaded_irq(). If it is added IRQF_ONESHOT flag, the it
->> operates well.
->
-> Thank you for testing.
->
->> Do you want i send the patch?
->
-> No, I fixed it locally. I took the liberty of marking the patch as
-> "Tested-by" you, I hope you don't mind.
->
+On Sat, 2009-09-19 at 01:03 +0200, Roel Kluin wrote:
+> Clean up and error out if kmalloc() fails.
 
-OK. Thanks.
+No thanks. Let's instead make it so it can't fail by building the array
+into the statically allocated pool structures.
+
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Found with sed: http://kernelnewbies.org/roelkluin
+> 
+> Build tested. Please review
+> 
+> diff --git a/drivers/char/random.c b/drivers/char/random.c
+> index d8a9255..8a68be8 100644
+> --- a/drivers/char/random.c
+> +++ b/drivers/char/random.c
+> @@ -939,7 +939,7 @@ EXPORT_SYMBOL(get_random_bytes);
+>   * data into the pool to prepare it for use. The pool is not cleared
+>   * as that can only decrease the entropy in the pool.
+>   */
+> -static void init_std_data(struct entropy_store *r)
+> +static int init_std_data(struct entropy_store *r)
+>  {
+>  	ktime_t now;
+>  	unsigned long flags;
+> @@ -952,16 +952,35 @@ static void init_std_data(struct entropy_store *r)
+>  	mix_pool_bytes(r, &now, sizeof(now));
+>  	mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
+>  	/* Enable continuous test in fips mode */
+> -	if (fips_enabled)
+> +	if (fips_enabled) {
+>  		r->last_data = kmalloc(EXTRACT_SIZE, GFP_KERNEL);
+> +		if (r->last_data == NULL)
+> +			return -ENOMEM;
+> +	}
+> +	return 0;
+>  }
+>  
+>  static int rand_initialize(void)
+>  {
+> -	init_std_data(&input_pool);
+> -	init_std_data(&blocking_pool);
+> -	init_std_data(&nonblocking_pool);
+> +	int ret;
+> +	ret = init_std_data(&input_pool);
+> +	if (ret != 0)
+> +		return ret;
+> +
+> +	ret = init_std_data(&blocking_pool);
+> +	if (ret != 0)
+> +		goto free_ip_ld;
+> +
+> +	ret = init_std_data(&nonblocking_pool);
+> +	if (ret != 0)
+> +		goto free_bp_ld;
+> +
+>  	return 0;
+> +free_bp_ld:
+> +	kfree(blocking_pool.last_data);
+> +free_ip_ld:
+> +	kfree(input_pool.last_data);
+> +	return ret;
+>  }
+>  module_init(rand_initialize);
+>  
+> @@ -1160,8 +1179,8 @@ static long random_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
+>  		/* Clear the entropy pool counters. */
+>  		if (!capable(CAP_SYS_ADMIN))
+>  			return -EPERM;
+> -		rand_initialize();
+> -		return 0;
+> +		retval = rand_initialize();
+> +		return retval;
+>  	default:
+>  		return -EINVAL;
+>  	}
 
 -- 
-- Joonyoung Shim
+http://selenic.com : development and support for Mercurial and Linux
+
+
