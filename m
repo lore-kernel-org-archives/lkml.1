@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbZISLLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbZISLUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbZISLLu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 07:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZISLLs
+	id S1757477AbZISLUL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 07:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZISLUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 07:11:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:32125 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbZISLLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 07:11:47 -0400
-Message-ID: <4AB4BC6A.3020104@redhat.com>
-Date: Sat, 19 Sep 2009 14:11:38 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Jim Meyering <jim@meyering.net>, Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: efficient access to "rotational";  new fcntl?
-References: <87vdjgqcbd.fsf@meyering.net>	<20090918221658.GB28781@mit.edu>	<87pr9npdlc.fsf@meyering.net>	<20090919103149.54258081@infradead.org>	<87k4zvpak6.fsf@meyering.net> <20090919111912.34a35f95@infradead.org>
-In-Reply-To: <20090919111912.34a35f95@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 19 Sep 2009 07:20:07 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38748 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbZISLUF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 07:20:05 -0400
+Subject: Re: circular locking dependency detected panic in filldir when
+ CONFIG_PROVE_LOCKING=y
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joe Korty <joe.korty@ccur.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Steve French <sfrench@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090919072349.GC15292@elte.hu>
+References: <20090918211550.GA8258@tsunami.ccur.com>
+	 <1253309941.3183.104.camel@heimdal.trondhjem.org>
+	 <20090919072349.GC15292@elte.hu>
+Content-Type: text/plain
+Date: Sat, 19 Sep 2009 13:19:48 +0200
+Message-Id: <1253359188.7085.0.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/19/2009 12:19 PM, Arjan van de Ven wrote:
->> However, sort *would* benefit, and some UCLA students implemented that
->> for a term project.  Unfortunately, the project is stalled because the
->> implementation was not efficient enough, and no one has found the
->> time to improve it since.
->>      
-> parallel sort... call me skeptical. My gut feeling is that you'll get
-> killed by communication overhead.
-> (sort seems to be more communication than raw cpu use)
->
->    
+On Sat, 2009-09-19 at 09:23 +0200, Ingo Molnar wrote:
+> * Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> 
+> > On Fri, 2009-09-18 at 17:15 -0400, Joe Korty wrote:
+> > > I experienced a might_fault panic from NFS's use of filldir
+> > > in a 2.6.31 kernel compiled with CONFIG_PROVE_LOCKING=y.
+> > > 
+> > > Looking at filldir, I see it is accessing user space with
+> > > __put_dir's (which are inatomic) and with one copy_to_user
+> > > (which is not inatomic).  It is the single copy_to_user
+> > > which is causing the might_fault panic.
+> > > 
+> > > It doesn't make any sense to be mixing use of inatomic
+> > > and non-inatomic services in filldir.  Either all should be
+> > > the inatomic version, or none should be.
+> > > 
+> > > The might_fault condition being reported by the panic looks
+> > > real to me, so I suspect the wrong answer is converting
+> > > everything to the inatomic version, since that just
+> > > suppresses the circular dependency check while leaving
+> > > the circular dependency in place.
+> > 
+> > Yes. This is known... Please see 
+> >    http://thread.gmane.org/gmane.linux.nfs/28578
+> > and
+> >    http://thread.gmane.org/gmane.linux.nfs/27406
+> > 
+> > I'm still hoping the VM folks can see fit to merge Peter's fix at some
+> > point...
+> 
+> Ouch, those patches at:
+> 
+>   http://programming.kicks-ass.net/kernel-patches/mmap-vs-nfs/
+> 
+> .... are 2 years old. Higher intensity prodding needed to get this 
+> moving?
 
-Why?  a sort that fits in memory is purely cpu and memory access.
-
-Instead of O(N log N) you'd get K * O(N/K log N/K) followed by an O(N) 
-merge.  For large N and small K, you get a speedup of roughly K (since 
-the O(N) merge is dominated by the preceding sort.
-
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+No I just need to find a way to clone() myself :-)
 
