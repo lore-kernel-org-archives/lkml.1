@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932146AbZISLgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbZISLgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932146AbZISLgm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 07:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757697AbZISLgg
+	id S1757745AbZISLgn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 07:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbZISLgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 07:36:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50795 "EHLO
+	Sat, 19 Sep 2009 07:36:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50800 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757578AbZISLga convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757604AbZISLgc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 07:36:30 -0400
-Date: Sat, 19 Sep 2009 13:35:33 +0200
+	Sat, 19 Sep 2009 07:36:32 -0400
+Date: Sat, 19 Sep 2009 13:36:04 +0200
 From: Arjan van de Ven <arjan@infradead.org>
 To: mingo@elte.hu
 Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
        fweisbec@gmail.com, peterz@infradead.org,
        Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] trace: Move the end point of a C state in the power tracer
-Message-ID: <20090919133533.139c2a46@infradead.org>
+Subject: [PATCH] perf: Add timechart help text and add timechart to "perf
+ help"
+Message-ID: <20090919133604.3767fa35@infradead.org>
 In-Reply-To: <20090919133410.7b23e270@infradead.org>
 References: <20090919133410.7b23e270@infradead.org>
 Organization: Intel
@@ -31,77 +32,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From c1ffb79a8e87501ccaf269517566f438220f1c49 Mon Sep 17 00:00:00 2001
+
+>From 880307a7ee6136aca34ca0fc71bab544723829c9 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 19 Sep 2009 13:09:16 +0200
-Subject: [PATCH] trace: Move the end point of a C state in the power tracer
+Date: Sat, 19 Sep 2009 13:17:57 +0200
+Subject: [PATCH] perf: Add timechart help text and add timechart to "perf help"
 
-The "end of a C state" trace point currently happens before
-the code runs that corrects the TSC for having stopped during idle.
-The result of this is that the timestamp of the end-of-C-state event
-is garbage on cpus where the TSC stops during idle.
-
-This patch moves the end point of the C state to after the timekeeping
-engine of the kernel has been corrected.
+As suggested by Ingo, add a timechart man page help text, as well
+as add it to the "perf help" overview.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/x86/kernel/process.c |    3 ---
- drivers/cpuidle/cpuidle.c |    2 ++
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ tools/perf/Documentation/perf-timechart.txt |   35 +++++++++++++++++++++++++++
+ tools/perf/command-list.txt                 |    1 +
+ 2 files changed, 36 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/Documentation/perf-timechart.txt
 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 98e9cac..230d054 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -299,7 +299,6 @@ void default_idle(void)
- 		else
- 			local_irq_enable();
- 		current_thread_info()->status |= TS_POLLING;
--		trace_power_end(0);
- 	} else {
- 		local_irq_enable();
- 		/* loop is done by the caller */
-@@ -367,7 +366,6 @@ void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
- 		if (!need_resched())
- 			__mwait(ax, cx);
- 	}
--	trace_power_end(0);
- }
- 
- /* Default MONITOR/MWAIT with no hints, used for default C1 state */
-@@ -384,7 +382,6 @@ static void mwait_idle(void)
- 			__sti_mwait(0, 0);
- 		else
- 			local_irq_enable();
--		trace_power_end(0);
- 	} else
- 		local_irq_enable();
- }
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 8504a21..ad41f19 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -17,6 +17,7 @@
- #include <linux/cpuidle.h>
- #include <linux/ktime.h>
- #include <linux/hrtimer.h>
-+#include <trace/events/power.h>
- 
- #include "cpuidle.h"
- 
-@@ -91,6 +92,7 @@ static void cpuidle_idle_call(void)
- 	/* give the governor an opportunity to reflect on the outcome */
- 	if (cpuidle_curr_governor->reflect)
- 		cpuidle_curr_governor->reflect(dev);
-+	trace_power_end(0);
- }
- 
- /**
+diff --git a/tools/perf/Documentation/perf-timechart.txt b/tools/perf/Documentation/perf-timechart.txt
+new file mode 100644
+index 0000000..61e0104
+--- /dev/null
++++ b/tools/perf/Documentation/perf-timechart.txt
+@@ -0,0 +1,35 @@
++perf-timechart(1)
++=================
++
++NAME
++----
++perf-timechart - Tool to visualize total system behavior during a workload
++
++SYNOPSIS
++--------
++[verse]
++'perf timechart' {record}
++
++DESCRIPTION
++-----------
++There are two variants of perf timechart:
++
++  'perf timechart record <command>' to record the system level events
++  of an arbitrary workload.
++
++  'perf timechart' to turn a trace into a Scalable Vector Graphics file,
++  that can be viewed with popular SVG viewers such as 'Inkscape'.
++
++OPTIONS
++-------
++-o::
++--output=::
++        Select the output file (default: output.svg)
++-i::
++--input=::
++        Select the input file (default: perf.data)
++
++
++SEE ALSO
++--------
++linkperf:perf-record[1]
+diff --git a/tools/perf/command-list.txt b/tools/perf/command-list.txt
+index 3133c74..00326e2 100644
+--- a/tools/perf/command-list.txt
++++ b/tools/perf/command-list.txt
+@@ -8,5 +8,6 @@ perf-sched			mainporcelain common
+ perf-record			mainporcelain common
+ perf-report			mainporcelain common
+ perf-stat			mainporcelain common
++perf-timechart			mainporcelain common
+ perf-top			mainporcelain common
+ perf-trace			mainporcelain common
 -- 
 1.6.0.6
-
- 
 
 
 -- 
