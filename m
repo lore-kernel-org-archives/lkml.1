@@ -1,24 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZISTtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZISTtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752543AbZISTtZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 15:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbZISTtY
+	id S1752570AbZISTtr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 15:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbZISTtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 15:49:24 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:42338 "EHLO mgw2.diku.dk"
+	Sat, 19 Sep 2009 15:49:46 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:38802 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbZISTtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 15:49:23 -0400
-Date: Sat, 19 Sep 2009 21:49:24 +0200 (CEST)
+	id S1751946AbZISTtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 15:49:45 -0400
+Date: Sat, 19 Sep 2009 21:49:47 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: hal.rosenstock@gmail.com, Sean Hefty <sean.hefty@intel.com>,
-       Roland Dreier <rolandd@cisco.com>,
-       Chien Tung <chien.tin.tung@intel.com>,
-       Faisal Latif <faisal.latif@intel.com>, linux-rdma@vger.kernel.org,
+To: jdike@addtoit.com, user-mode-linux-user@lists.sourceforge.net,
+       user-mode-linux-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/5] drivers/infiniband: remove duplicate structure field
- initialization
-Message-ID: <Pine.LNX.4.64.0909192149040.27171@ask.diku.dk>
+Subject: [PATCH 5/5] arch/um: remove duplicate structure field initialization
+Message-ID: <Pine.LNX.4.64.0909192149250.27171@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,7 +24,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The definition of nes_netdev_ops has initializations of a local function
+The definition of uml_netdev_ops has initializations of a local function
 and eth_mac_addr for its ndo_set_mac_address field.  This change uses only
 the local function.
 
@@ -65,18 +62,18 @@ if int(ps[0].line)!=int(pr[0].line) or int(ps[0].column)!=int(pr[0].column):
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/infiniband/hw/nes/nes_nic.c |    1 -
+ arch/um/drivers/net_kern.c          |    1 -
  1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/infiniband/hw/nes/nes_nic.c b/drivers/infiniband/hw/nes/nes_nic.c
-index 538e409..e593af3 100644
---- a/drivers/infiniband/hw/nes/nes_nic.c
-+++ b/drivers/infiniband/hw/nes/nes_nic.c
-@@ -1566,7 +1566,6 @@ static const struct net_device_ops nes_netdev_ops = {
- 	.ndo_set_mac_address	= nes_netdev_set_mac_address,
- 	.ndo_set_multicast_list = nes_netdev_set_multicast_list,
- 	.ndo_change_mtu		= nes_netdev_change_mtu,
+diff --git a/arch/um/drivers/net_kern.c b/arch/um/drivers/net_kern.c
+index a74245a..d17a623 100644
+--- a/arch/um/drivers/net_kern.c
++++ b/arch/um/drivers/net_kern.c
+@@ -379,7 +379,6 @@ static const struct net_device_ops uml_netdev_ops = {
+ 	.ndo_tx_timeout 	= uml_net_tx_timeout,
+ 	.ndo_set_mac_address	= uml_net_set_mac,
+ 	.ndo_change_mtu 	= uml_net_change_mtu,
 -	.ndo_set_mac_address 	= eth_mac_addr,
  	.ndo_validate_addr	= eth_validate_addr,
- 	.ndo_vlan_rx_register 	= nes_netdev_vlan_rx_register,
  };
+ 
