@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZISVoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZISVol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754996AbZISVoX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbZISVoU
+	id S1754491AbZISVol (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZISVoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:44:20 -0400
-Received: from kroah.org ([198.145.64.141]:40561 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:44:23 -0400
+Received: from kroah.org ([198.145.64.141]:40564 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754950AbZISVoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:44:18 -0400
+	id S1754816AbZISVoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:44:20 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 68/79] uartlite: support shared interrupt lines
-Date: Sat, 19 Sep 2009 14:37:13 -0700
-Message-Id: <1253396244-7885-68-git-send-email-gregkh@suse.de>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 69/79] tty: Char: mxser, add support for CP112UL
+Date: Sat, 19 Sep 2009 14:37:14 -0700
+Message-Id: <1253396244-7885-69-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -22,56 +22,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Korsgaard <jacmet@sunsite.dk>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-Adapt isr to work with shared interrupt lines.
+Add support for MOXA:0x1120 pci device. It's a 2-port device and differs
+in no way from the others. So this turns out to be a trivial
+pci_device_id change.
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+Increase also the version number.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/serial/uartlite.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
+ drivers/char/mxser.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index 5d3a573..377f271 100644
---- a/drivers/serial/uartlite.c
-+++ b/drivers/serial/uartlite.c
-@@ -154,17 +154,22 @@ static int ulite_transmit(struct uart_port *port, int stat)
- static irqreturn_t ulite_isr(int irq, void *dev_id)
- {
- 	struct uart_port *port = dev_id;
--	int busy;
-+	int busy, n = 0;
+diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
+index 37058ff..e218ae2 100644
+--- a/drivers/char/mxser.c
++++ b/drivers/char/mxser.c
+@@ -48,7 +48,7 @@
  
- 	do {
- 		int stat = readb(port->membase + ULITE_STATUS);
- 		busy  = ulite_receive(port, stat);
- 		busy |= ulite_transmit(port, stat);
-+		n++;
- 	} while (busy);
+ #include "mxser.h"
  
--	tty_flip_buffer_push(port->state->port.tty);
--
--	return IRQ_HANDLED;
-+	/* work done? */
-+	if (n > 1) {
-+		tty_flip_buffer_push(port->state->port.tty);
-+		return IRQ_HANDLED;
-+	} else {
-+		return IRQ_NONE;
-+	}
- }
+-#define	MXSER_VERSION	"2.0.4"		/* 1.12 */
++#define	MXSER_VERSION	"2.0.5"		/* 1.14 */
+ #define	MXSERMAJOR	 174
  
- static unsigned int ulite_tx_empty(struct uart_port *port)
-@@ -221,7 +226,7 @@ static int ulite_startup(struct uart_port *port)
- 	int ret;
+ #define MXSER_BOARDS		4	/* Max. boards */
+@@ -69,6 +69,7 @@
+ #define PCI_DEVICE_ID_POS104UL	0x1044
+ #define PCI_DEVICE_ID_CB108	0x1080
+ #define PCI_DEVICE_ID_CP102UF	0x1023
++#define PCI_DEVICE_ID_CP112UL	0x1120
+ #define PCI_DEVICE_ID_CB114	0x1142
+ #define PCI_DEVICE_ID_CP114UL	0x1143
+ #define PCI_DEVICE_ID_CB134I	0x1341
+@@ -139,7 +140,8 @@ static const struct mxser_cardinfo mxser_cards[] = {
+ 	{ "CP-138U series",	8, },
+ 	{ "POS-104UL series",	4, },
+ 	{ "CP-114UL series",	4, },
+-/*30*/	{ "CP-102UF series",	2, }
++/*30*/	{ "CP-102UF series",	2, },
++	{ "CP-112UL series",	2, },
+ };
  
- 	ret = request_irq(port->irq, ulite_isr,
--			  IRQF_DISABLED | IRQF_SAMPLE_RANDOM, "uartlite", port);
-+			  IRQF_SHARED | IRQF_SAMPLE_RANDOM, "uartlite", port);
- 	if (ret)
- 		return ret;
- 
+ /* driver_data correspond to the lines in the structure above
+@@ -170,6 +172,7 @@ static struct pci_device_id mxser_pcibrds[] = {
+ 	{ PCI_VDEVICE(MOXA, PCI_DEVICE_ID_POS104UL),	.driver_data = 28 },
+ 	{ PCI_VDEVICE(MOXA, PCI_DEVICE_ID_CP114UL),	.driver_data = 29 },
+ 	{ PCI_VDEVICE(MOXA, PCI_DEVICE_ID_CP102UF),	.driver_data = 30 },
++	{ PCI_VDEVICE(MOXA, PCI_DEVICE_ID_CP112UL),	.driver_data = 31 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(pci, mxser_pcibrds);
 -- 
 1.6.4.2
 
