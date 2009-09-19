@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751336AbZISRkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475AbZISR40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751336AbZISRkA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 13:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbZISRj7
+	id S1751475AbZISR40 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 13:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZISR40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 13:39:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53679 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751177AbZISRj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 13:39:59 -0400
-Date: Sat, 19 Sep 2009 19:39:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Korty <joe.korty@ccur.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Steve French <sfrench@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: circular locking dependency detected panic in filldir when
-	CONFIG_PROVE_LOCKING=y
-Message-ID: <20090919173948.GE5366@elte.hu>
-References: <20090918211550.GA8258@tsunami.ccur.com> <1253309941.3183.104.camel@heimdal.trondhjem.org> <20090919072349.GC15292@elte.hu> <1253359188.7085.0.camel@laptop>
+	Sat, 19 Sep 2009 13:56:26 -0400
+Received: from mail-ew0-f217.google.com ([209.85.219.217]:62319 "EHLO
+	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751306AbZISR4Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 13:56:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=MHPsDb8ip1k7hjlDF8wzPDhLHyX3LrYFcsScgsgMzrxd+bHLGiBNB8ksZvzyP1wpEj
+         10kl5jMNcSrm7nXekj1G84QJfUBZSNlUf0+6gFEYkI6/qULsZb6ItTlcOXwE8u7g+wQG
+         A/R2EJ0jgMtPXj9R0wIwm6LHHdxEViHyXORAo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253359188.7085.0.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090919165501.65d77294@infradead.org>
+References: <6278d2220909190747n62f7036dj2e5231fcdc4730fb@mail.gmail.com>
+	 <20090919165501.65d77294@infradead.org>
+Date: Sat, 19 Sep 2009 18:50:13 +0100
+Message-ID: <6278d2220909191050l19f2a446r5ccf1907fd963096@mail.gmail.com>
+Subject: Re: tickless and HZ=1000 throughput advantage?
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Sep 19, 2009 at 3:55 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Sat, 19 Sep 2009 15:47:24 +0100
+> Daniel J Blueman <daniel.blueman@gmail.com> wrote:
+>
+>> On tickless kernels, is the general consensus that for non-embedded
+>> systems, selecting HZ=1000 gives slightly more throughput in
+>> particular situations than HZ=100 or 250, due to finer timer
+>> intervals/granularity?
+>
+> it's not about throughput. It's about latency for some things....
+> although now that select/poll and co use hrtimers it's not as critical
+> anymore.
+>
+> the HZ timers aren't used much for anything time-critical nowadays.
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+Agreed. Do you think there is still a small case for moving to HZ=1000
+(given it's effectively free) in situations like:
 
-> On Sat, 2009-09-19 at 09:23 +0200, Ingo Molnar wrote:
-> > * Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > 
-> > > On Fri, 2009-09-18 at 17:15 -0400, Joe Korty wrote:
-> > > > I experienced a might_fault panic from NFS's use of filldir
-> > > > in a 2.6.31 kernel compiled with CONFIG_PROVE_LOCKING=y.
-> > > > 
-> > > > Looking at filldir, I see it is accessing user space with
-> > > > __put_dir's (which are inatomic) and with one copy_to_user
-> > > > (which is not inatomic).  It is the single copy_to_user
-> > > > which is causing the might_fault panic.
-> > > > 
-> > > > It doesn't make any sense to be mixing use of inatomic
-> > > > and non-inatomic services in filldir.  Either all should be
-> > > > the inatomic version, or none should be.
-> > > > 
-> > > > The might_fault condition being reported by the panic looks
-> > > > real to me, so I suspect the wrong answer is converting
-> > > > everything to the inatomic version, since that just
-> > > > suppresses the circular dependency check while leaving
-> > > > the circular dependency in place.
-> > > 
-> > > Yes. This is known... Please see 
-> > >    http://thread.gmane.org/gmane.linux.nfs/28578
-> > > and
-> > >    http://thread.gmane.org/gmane.linux.nfs/27406
-> > > 
-> > > I'm still hoping the VM folks can see fit to merge Peter's fix at some
-> > > point...
-> > 
-> > Ouch, those patches at:
-> > 
-> >   http://programming.kicks-ass.net/kernel-patches/mmap-vs-nfs/
-> > 
-> > .... are 2 years old. Higher intensity prodding needed to get this 
-> > moving?
-> 
-> No I just need to find a way to clone() myself :-)
+jiffies_to_transmit = port->baud?(1 + charsleft * 10 * HZ / port->baud):0;
 
-I did not mean to prod you :-)
+<applying plausible figures>
+(gdb) p (1 + 10 * 10 * 1000 / 38400) * 1
+$3 = 3
+(gdb) p (1 + 10 * 10 * 250 / 38400) * 4
+$5 = 4
 
-	Ingo
+-> HZ=250 causes a 33% longer sleep than expected
+
+perhaps?
+-- 
+Daniel J Blueman
