@@ -1,143 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932120AbZISPxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZISQBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932120AbZISPxJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 11:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZISPxG
+	id S1754971AbZISQBN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 12:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZISQBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 11:53:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54030 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753518AbZISPwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 11:52:45 -0400
-Message-Id: <20090919155248.378508620@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Sat, 19 Sep 2009 11:52:06 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 3/3] [PATCH 3/3] tracing/events: use list_for_entry_continue
-References: <20090919155203.005861436@goodmis.org>
-Content-Disposition: inline; filename=0003-tracing-events-use-list_for_entry_continue.patch
+	Sat, 19 Sep 2009 12:01:13 -0400
+Received: from fifo99.com ([67.223.236.141]:47537 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750975AbZISQBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 12:01:12 -0400
+Subject: Re: [PATCH 06/20] mem_class: use minor as index instead of
+ searching the array
+From: Daniel Walker <dwalker@fifo99.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4AB4F602.20004@imap.cc>
+References: <20090915181247.GA32167@kroah.com>
+	 <1253041976-1111-6-git-send-email-gregkh@suse.de>
+	 <1253043763.11643.358.camel@desktop>
+	 <ac3eb2510909151246r59decb10pfb68fd5c0cb9a63a@mail.gmail.com>
+	 <1253045229.11643.398.camel@desktop> <20090915202445.GC3411@suse.de>
+	 <1253049491.11643.490.camel@desktop>  <20090915212019.GA6744@suse.de>
+	 <1253050006.11643.492.camel@desktop>  <4AB4F602.20004@imap.cc>
+Content-Type: text/plain
+Date: Sat, 19 Sep 2009 09:01:12 -0700
+Message-Id: <1253376072.6699.57.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+On Sat, 2009-09-19 at 17:17 +0200, Tilman Schmidt wrote:
+> Am 15.09.2009 23:26 schrieb Daniel Walker:
+> > On Tue, 2009-09-15 at 14:20 -0700, Greg KH wrote:
+> > 
+> >> I'll gladly do that, it's trival for me to do so.
+> >>
+> > 
+> > What about the other side ? The people who are sending the clean ups,
+> > there time is valuable too..
+> 
+> Do such people really exist? Nobody ever sent a cleanup patch for any
+> of the numerous checkpatch errors in drivers/isdn/gigaset. I only get
+> complaints about them when I submit a patch that touches one of the
+> affected lines.
 
-Simplify s_next() and t_next().
+Yeah, they do exist .. I've sent numerous checkpatch clean ups.
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4AB32389.1030005@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_events.c |   49 +++++++++++++-----------------------------
- 1 files changed, 15 insertions(+), 34 deletions(-)
-
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 56c260b..6f03c8a 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -271,42 +271,32 @@ ftrace_event_write(struct file *file, const char __user *ubuf,
- static void *
- t_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct list_head *list = m->private;
--	struct ftrace_event_call *call;
-+	struct ftrace_event_call *call = v;
- 
- 	(*pos)++;
- 
--	for (;;) {
--		if (list == &ftrace_events)
--			return NULL;
--
--		call = list_entry(list, struct ftrace_event_call, list);
--
-+	list_for_each_entry_continue(call, &ftrace_events, list) {
- 		/*
- 		 * The ftrace subsystem is for showing formats only.
- 		 * They can not be enabled or disabled via the event files.
- 		 */
- 		if (call->regfunc)
--			break;
--
--		list = list->next;
-+			return call;
- 	}
- 
--	m->private = list->next;
--
--	return call;
-+	return NULL;
- }
- 
- static void *t_start(struct seq_file *m, loff_t *pos)
- {
--	struct ftrace_event_call *call = NULL;
-+	struct ftrace_event_call *call;
- 	loff_t l;
- 
- 	mutex_lock(&event_mutex);
- 
--	m->private = ftrace_events.next;
-+	call = list_entry(&ftrace_events, struct ftrace_event_call, list);
- 	for (l = 0; l <= *pos; ) {
--		call = t_next(m, NULL, &l);
-+		call = t_next(m, call, &l);
- 		if (!call)
- 			break;
- 	}
-@@ -316,37 +306,28 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- static void *
- s_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct list_head *list = m->private;
--	struct ftrace_event_call *call;
-+	struct ftrace_event_call *call = v;
- 
- 	(*pos)++;
- 
-- retry:
--	if (list == &ftrace_events)
--		return NULL;
--
--	call = list_entry(list, struct ftrace_event_call, list);
--
--	if (!call->enabled) {
--		list = list->next;
--		goto retry;
-+	list_for_each_entry_continue(call, &ftrace_events, list) {
-+		if (call->enabled)
-+			return call;
- 	}
- 
--	m->private = list->next;
--
--	return call;
-+	return NULL;
- }
- 
- static void *s_start(struct seq_file *m, loff_t *pos)
- {
--	struct ftrace_event_call *call = NULL;
-+	struct ftrace_event_call *call;
- 	loff_t l;
- 
- 	mutex_lock(&event_mutex);
- 
--	m->private = ftrace_events.next;
-+	call = list_entry(&ftrace_events, struct ftrace_event_call, list);
- 	for (l = 0; l <= *pos; ) {
--		call = s_next(m, NULL, &l);
-+		call = s_next(m, call, &l);
- 		if (!call)
- 			break;
- 	}
--- 
-1.6.3.3
-
+Daniel
 
