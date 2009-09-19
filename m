@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbZISFjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZISFkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754310AbZISFjb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 01:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZISFj3
+	id S1754091AbZISFkB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 01:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZISFkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 01:39:29 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:53950 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753585AbZISFjV (ORCPT
+	Sat, 19 Sep 2009 01:40:00 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:36487 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752719AbZISFj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 01:39:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=c5gInV4He4uHfcRiqL8imQulgesHmgJAwdHX+9ONcUlQTnmA+M6Ppr9YWIBbAzeqsP
-         cL17LoMUWLzEXENziZnXlV0j6Y3F+vVk2JUKJTom1OdC7HBDMbHRhitXePCwp1gON35H
-         MBlfeSEoD0vptrBox9Tb4cQXBWgDJkSjhkG/0=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: [PATCH 2/2] tracing: Document HAVE_FTRACE_SYSCALLS needs
-Date: Sat, 19 Sep 2009 07:39:17 +0200
-Message-Id: <1253338757-5918-3-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1253338757-5918-1-git-send-email-fweisbec@gmail.com>
-References: <1253338757-5918-1-git-send-email-fweisbec@gmail.com>
+	Sat, 19 Sep 2009 01:39:59 -0400
+Date: Sat, 19 Sep 2009 07:40:01 +0200 (CEST)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: david@lang.hm
+cc: linux-kernel@vger.kernel.org
+Subject: Re: announce: fsopbench - filesystem operations benchmark
+In-Reply-To: <alpine.DEB.2.00.0909181055130.24556@asgard.lang.hm>
+Message-ID: <alpine.DEB.2.00.0909190736220.4635@sebohet.brgvxre.pu>
+References: <alpine.DEB.2.00.0909180901550.6162@sebohet.brgvxre.pu> <alpine.DEB.2.00.0909181015090.24556@asgard.lang.hm> <alpine.DEB.2.00.0909181932540.6162@sebohet.brgvxre.pu> <alpine.DEB.2.00.0909181055130.24556@asgard.lang.hm>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document the arch needed requirements to get the support for syscalls
-tracing.
+Yesterday david@lang.hm wrote:
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
----
- Documentation/trace/ftrace-design.txt |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+> On Fri, 18 Sep 2009, Tobi Oetiker wrote:
+>
+> > Hi David,
+> >
+> > Today david@lang.hm wrote:
+> >
+> > > On Fri, 18 Sep 2009, Tobias Oetiker wrote:
+> > >
+> > > >
+> > > >   http://oss.oetiker.ch/optools/wiki/fsopbench
+> > > >
+> > > > It shows similar results on all configurations I have tested.
+> > > > In the example below you see:
+> > > >
+> > > > * lstat: 10 times slower
+> > > > * reading the first byte of a file: 80 times slower
+> > > > * reading a directory entry: 16 times slower
+> > > > * read rate: 40 times lower
+> > >
+> > > lower and slower than what?
+> >
+> > reading on an idle system vs reading on a system where writer
+> > processees are active ...
+>
+> as a user I would expect that a disk that is busy being written to will be
+> slower to read from.
+>
+> what would you expect to happen in this situation?
 
-diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
-index 7003e10..04ab61c 100644
---- a/Documentation/trace/ftrace-design.txt
-+++ b/Documentation/trace/ftrace-design.txt
-@@ -216,7 +216,16 @@ If you can't trace NMI functions, then skip this option.
- HAVE_FTRACE_SYSCALLS
- ---------------------
- 
--<details to be filled>
-+You need very few things to get the syscalls tracing in an arch.
-+
-+- Have a NR_syscalls variable in <asm/unistd.h> that provides the number
-+  of syscalls supported by the arch.
-+- Implement arch_syscall_addr() that resolves a syscall address from a
-+  syscall number.
-+- Support the TIF_SYSCALL_TRACEPOINT thread flags
-+- Put the trace_sys_enter() and trace_sys_exit() tracepoints calls from ptrace
-+  in the ptrace syscalls tracing path.
-+- Tag this arch as HAVE_FTRACE_SYSCALLS.
- 
- 
- HAVE_FTRACE_MCOUNT_RECORD
+sure, the question is how much slower ... 40 times slower speed and
+80 times slower response time is a bit much I would say ...
+
+half the speed and half the response time would be what I would
+expect ... but then thats just me ...
+
+cheers
+tobi
 -- 
-1.6.2.3
-
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
