@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbZISVr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZISVoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755125AbZISVr1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 17:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbZISVoN
+	id S1754996AbZISVoX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 17:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbZISVoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 17:44:13 -0400
-Received: from kroah.org ([198.145.64.141]:40558 "EHLO coco.kroah.org"
+	Sat, 19 Sep 2009 17:44:20 -0400
+Received: from kroah.org ([198.145.64.141]:40561 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754736AbZISVoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 17:44:11 -0400
+	id S1754950AbZISVoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 17:44:18 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Jiri Slaby <jirislaby@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 67/79] tty: USB: serial/mct_u232, fix tty refcnt
-Date: Sat, 19 Sep 2009 14:37:12 -0700
-Message-Id: <1253396244-7885-67-git-send-email-gregkh@suse.de>
+Cc: Peter Korsgaard <jacmet@sunsite.dk>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 68/79] uartlite: support shared interrupt lines
+Date: Sat, 19 Sep 2009 14:37:13 -0700
+Message-Id: <1253396244-7885-68-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <20090919213345.GB7668@kroah.com>
 References: <20090919213345.GB7668@kroah.com>
@@ -22,44 +22,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
 
-Stanse found a tty refcnt leak in read_int_callback. In fact
-it's handled wrong altogether. tty_port_tty_get can return NULL
-and it's not checked in that manner.
+Adapt isr to work with shared interrupt lines.
 
-Fix that by checking the tty_port_tty_get retval and put tty kref
-properly.
-
-http://stanse.fi.muni.cz/
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/serial/mct_u232.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+ drivers/serial/uartlite.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/usb/serial/mct_u232.c b/drivers/usb/serial/mct_u232.c
-index d501aef..ad4998b 100644
---- a/drivers/usb/serial/mct_u232.c
-+++ b/drivers/usb/serial/mct_u232.c
-@@ -566,10 +566,13 @@ static void mct_u232_read_int_callback(struct urb *urb)
- 	 * Work-a-round: handle the 'usual' bulk-in pipe here
- 	 */
- 	if (urb->transfer_buffer_length > 2) {
--		tty = tty_port_tty_get(&port->port);
- 		if (urb->actual_length) {
--			tty_insert_flip_string(tty, data, urb->actual_length);
--			tty_flip_buffer_push(tty);
-+			tty = tty_port_tty_get(&port->port);
-+			if (tty) {
-+				tty_insert_flip_string(tty, data,
-+						urb->actual_length);
-+				tty_flip_buffer_push(tty);
-+			}
- 			tty_kref_put(tty);
- 		}
- 		goto exit;
+diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
+index 5d3a573..377f271 100644
+--- a/drivers/serial/uartlite.c
++++ b/drivers/serial/uartlite.c
+@@ -154,17 +154,22 @@ static int ulite_transmit(struct uart_port *port, int stat)
+ static irqreturn_t ulite_isr(int irq, void *dev_id)
+ {
+ 	struct uart_port *port = dev_id;
+-	int busy;
++	int busy, n = 0;
+ 
+ 	do {
+ 		int stat = readb(port->membase + ULITE_STATUS);
+ 		busy  = ulite_receive(port, stat);
+ 		busy |= ulite_transmit(port, stat);
++		n++;
+ 	} while (busy);
+ 
+-	tty_flip_buffer_push(port->state->port.tty);
+-
+-	return IRQ_HANDLED;
++	/* work done? */
++	if (n > 1) {
++		tty_flip_buffer_push(port->state->port.tty);
++		return IRQ_HANDLED;
++	} else {
++		return IRQ_NONE;
++	}
+ }
+ 
+ static unsigned int ulite_tx_empty(struct uart_port *port)
+@@ -221,7 +226,7 @@ static int ulite_startup(struct uart_port *port)
+ 	int ret;
+ 
+ 	ret = request_irq(port->irq, ulite_isr,
+-			  IRQF_DISABLED | IRQF_SAMPLE_RANDOM, "uartlite", port);
++			  IRQF_SHARED | IRQF_SAMPLE_RANDOM, "uartlite", port);
+ 	if (ret)
+ 		return ret;
+ 
 -- 
 1.6.4.2
 
