@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZISLqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbZISMaD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZISLqT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 07:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZISLqQ
+	id S1752285AbZISMaD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 08:30:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZISM37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 07:46:16 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44217 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752592AbZISLqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 07:46:16 -0400
-Date: Sat, 19 Sep 2009 12:46:21 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/3] slqb: Treat pages freed on a memoryless node as
-	local node
-Message-ID: <20090919114621.GC1225@csn.ul.ie>
-References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie> <1253302451-27740-3-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0909181657280.9490@V090114053VZO-1>
+	Sat, 19 Sep 2009 08:29:59 -0400
+Received: from brigitte.telenet-ops.be ([195.130.137.66]:60957 "EHLO
+	brigitte.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbZISM37 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 08:29:59 -0400
+Message-ID: <4AB4CEC8.4060101@telenet.be>
+Date: Sat, 19 Sep 2009 14:30:00 +0200
+From: Ian Schram <ischram@telenet.be>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090913)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0909181657280.9490@V090114053VZO-1>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xiaoguangrong@cn.fujitsu.com, Paul Mackerras <paulus@samba.org>
+Subject: Re: perf_copy_attr pointer arithmetic weirdness
+References: <4AB3DEE2.3030600@telenet.be> <1253303868.10538.60.camel@laptop> <20090919080609.GA10748@elte.hu>
+In-Reply-To: <20090919080609.GA10748@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 05:01:14PM -0400, Christoph Lameter wrote:
-> On Fri, 18 Sep 2009, Mel Gorman wrote:
+
+
+Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> > --- a/mm/slqb.c
-> > +++ b/mm/slqb.c
-> > @@ -1726,6 +1726,7 @@ static __always_inline void __slab_free(struct kmem_cache *s,
-> >  	struct kmem_cache_cpu *c;
-> >  	struct kmem_cache_list *l;
-> >  	int thiscpu = smp_processor_id();
-> > +	int thisnode = numa_node_id();
+>> On Fri, 2009-09-18 at 21:26 +0200, Ian Schram wrote:
+>>> There is some -to me at least- weird code in per_copy_attr. Which supposedly
+>>> checks that all bytes trailing a struct are zero.
+>>>
+>>> It doesn't seem to get pointer arithmetic right. Since it increments
+>>> an iterating pointer by sizeof(unsigned long) rather than 1.
+>>>
+>>> I believe this has an impact on the exploitability of the recent buffer overflow
+>>> in the perf_copy_attr function. I'm pretty sure I'm not the only one who noticed
+>>> this, but i couldn't find it being mentioned. For some reason people prefer
+>>> mmaping something at zero these days?
+>>>
+>>> I have appended a patch locating the issue. The PTR_ALIGN stuff right above it
+>>> doesn't seem to take any boundary conditions into account which is probably not
+>>> a good thing either.
+>> sizeof(struct perf_counter_attr) should always be a multiple of u64, and
+I don't think this matters since the starting address is not 'forced' to be
+aligned. In which case some bytes in the middle would be unchecked. All in
+all seems like an undesirable situation. I'll verify this and try my hand
+at fixing it properly. Unless somebody who actually understands the purpose
+of these checks wants to have a go..
+
+>> we can indeed read beyond the tail boundary, but that should be ok,
+>> worst that can happen is that we fail the read..
+>>
+>> Ugh on the ptr arith, one wonders how many stupid bugs one can make in
+>> such a piece of code... :/
+>>
+>>> signed-of-by Ian Schram <ischram@telenet.be>
+>> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > 
-> thisnode must be the first reachable node with usable RAM. Not the current
-> node. cpu 0 may be on node 0 but there is no memory on 0. Instead
-> allocations fall back to node 2 (depends on policy effective as well. The
-> round robin meory policy default on bootup may result in allocations from
-> different nodes as well).
+> Ian, you meant Signed-off-by, not signed-of-by, right?
 > 
 
-Agreed. Note that this is the free path and the point was to illustrate
-that SLQB is always trying to allocate full pages locally and always
-freeing them remotely. It always going to the allocator instead of going
-to the remote lists first. On a memoryless system, this acts as a leak.
+exactly right, *shame*, apologies for the extra work for this one line
+drive-by patch.
 
-A more appropriate fix may be for the kmem_cache_cpu to remember what it
-considers a local node. Ordinarily it'll be numa_node_id() but on memoryless
-node it would be the closest reachable node. How would that sound?
-
-> >  	c = get_cpu_slab(s, thiscpu);
-> >  	l = &c->list;
-> > @@ -1733,12 +1734,14 @@ static __always_inline void __slab_free(struct kmem_cache *s,
-> >  	slqb_stat_inc(l, FREE);
-> >
-> >  	if (!NUMA_BUILD || !slab_numa(s) ||
-> > -			likely(slqb_page_to_nid(page) == numa_node_id())) {
-> > +			likely(slqb_page_to_nid(page) == numa_node_id() ||
-> > +			!node_state(thisnode, N_HIGH_MEMORY))) {
+> 	Ingo
 > 
-> Same here.
 > 
-> Note that page_to_nid can yield surprising results if you are trying to
-> allocate from a node that has no memory and you get some fallback node.
-> 
-> SLAB for some time had a bug that caused list corruption because of this.
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
