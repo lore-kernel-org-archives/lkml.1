@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbZISPRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752739AbZISPjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbZISPRb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 11:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbZISPRa
+	id S1752739AbZISPjx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 11:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZISPjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 11:17:30 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52455 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932135AbZISPRa (ORCPT
+	Sat, 19 Sep 2009 11:39:52 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:57475 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbZISPjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 11:17:30 -0400
-X-Sasl-enc: oXyZLY0T9FtyikqyBTmUmQJjMIa3+gIyWS7q7DzuKK/m 1253373453
-Message-ID: <4AB4F602.20004@imap.cc>
-Date: Sat, 19 Sep 2009 17:17:22 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 19 Sep 2009 11:39:52 -0400
+Message-ID: <4AB4F74E.7000908@ce.jp.nec.com>
+Date: Sun, 20 Sep 2009 00:22:54 +0900
+From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/20] mem_class: use minor as index instead of searching
-  the array
-References: <20090915181247.GA32167@kroah.com>	 <1253041976-1111-6-git-send-email-gregkh@suse.de>	 <1253043763.11643.358.camel@desktop>	 <ac3eb2510909151246r59decb10pfb68fd5c0cb9a63a@mail.gmail.com>	 <1253045229.11643.398.camel@desktop> <20090915202445.GC3411@suse.de>	 <1253049491.11643.490.camel@desktop>  <20090915212019.GA6744@suse.de> <1253050006.11643.492.camel@desktop>
-In-Reply-To: <1253050006.11643.492.camel@desktop>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBFAE33FAF6CCDC33434F614A"
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
+       Mike Snitzer <snitzer@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [dm-devel] [PATCH 1/3] block: Add blk_queue_copy_limits()
+References: <4AB3B43D.9000802@ce.jp.nec.com> <yq1eiq46ohz.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq1eiq46ohz.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBFAE33FAF6CCDC33434F614A
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Martin K. Petersen wrote:
+>>>>>> "Jun'ichi" == Jun'ichi Nomura <j-nomura@ce.jp.nec.com> writes:
+> 
+> +	if (q->limits.max_sectors == 0 || q->limits.max_hw_sectors == 0)
+> +		blk_queue_max_sectors(q, SAFE_MAX_SECTORS);
+> 
+> I'm really not keen on perpetuating SAFE_MAX_SECTORS for something that
+> was written in this millennium.
+> 
+> I'd much rather we just do this, then:
+> 
+> block: Set max_sectors correctly for stacking devices
+> 
+> The topology changes unintentionally caused SAFE_MAX_SECTORS to be set
+> for stacking devices.  Set the default limit to BLK_DEF_MAX_SECTORS and
+> provide SAFE_MAX_SECTORS in blk_queue_make_request() for legacy hw
+> drivers that depend on the old behavior.
+> 
+> Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+> 
+> ---
+> 
+> diff --git a/block/blk-settings.c b/block/blk-settings.c
+> index 83413ff..cd9b730 100644
+> --- a/block/blk-settings.c
+> +++ b/block/blk-settings.c
+> @@ -111,7 +111,7 @@ void blk_set_default_limits(struct queue_limits *lim)
+>  	lim->max_hw_segments = MAX_HW_SEGMENTS;
+>  	lim->seg_boundary_mask = BLK_SEG_BOUNDARY_MASK;
+>  	lim->max_segment_size = MAX_SEGMENT_SIZE;
+> -	lim->max_sectors = lim->max_hw_sectors = SAFE_MAX_SECTORS;
+> +	lim->max_sectors = lim->max_hw_sectors = BLK_DEF_MAX_SECTORS;
 
-Am 15.09.2009 23:26 schrieb Daniel Walker:
-> On Tue, 2009-09-15 at 14:20 -0700, Greg KH wrote:
->=20
->> I'll gladly do that, it's trival for me to do so.
->>
->=20
-> What about the other side ? The people who are sending the clean ups,
-> there time is valuable too..
+Umm, with this, BLK_DEF_MAX_SECTORS becomes upper bound of max_hw_sectors
+and the values of underlying devices are not propagated to the stacking
+devices.
+Is it intended?
 
-Do such people really exist? Nobody ever sent a cleanup patch for any
-of the numerous checkpatch errors in drivers/isdn/gigaset. I only get
-complaints about them when I submit a patch that touches one of the
-affected lines.
+>  	lim->logical_block_size = lim->physical_block_size = lim->io_min = 512;
+>  	lim->bounce_pfn = (unsigned long)(BLK_BOUNCE_ANY >> PAGE_SHIFT);
+>  	lim->alignment_offset = 0;
+> @@ -164,6 +164,7 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
+>  	q->unplug_timer.data = (unsigned long)q;
+>  
+>  	blk_set_default_limits(&q->limits);
+> +	blk_queue_max_sectors(q, SAFE_MAX_SECTORS);
+>  
+>  	/*
+>  	 * If the caller didn't supply a lock, fall back to our embedded
 
-SCNR
-T.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigBFAE33FAF6CCDC33434F614A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFKtPYKQ3+did9BuFsRAtj9AJ90SOSRTNdOIC3KN2K28oE/fMdnpwCghvCI
-cOCJDQ5beWFSi6d6HNJf668=
-=iL2V
------END PGP SIGNATURE-----
-
---------------enigBFAE33FAF6CCDC33434F614A--
+Thanks,
+-- 
+Jun'ichi Nomura, NEC Corporation
