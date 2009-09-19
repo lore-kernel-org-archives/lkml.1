@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbZISSEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751818AbZISSEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751971AbZISSEL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 14:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZISSEJ
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1751818AbZISSEJ (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 19 Sep 2009 14:04:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60638 "EHLO hera.kernel.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZISSEI
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sat, 19 Sep 2009 14:04:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60637 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751455AbZISSEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751441AbZISSEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 19 Sep 2009 14:04:05 -0400
-Date: Sat, 19 Sep 2009 18:03:37 GMT
+Date: Sat, 19 Sep 2009 18:03:51 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
@@ -17,105 +17,186 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        fweisbec@gmail.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
        tglx@linutronix.de
-In-Reply-To: <4AB32364.7020602@cn.fujitsu.com>
-References: <4AB32364.7020602@cn.fujitsu.com>
+In-Reply-To: <4AB32377.9020601@cn.fujitsu.com>
+References: <4AB32377.9020601@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] function-graph: use ftrace_graph_funcs directly
-Message-ID: <tip-a4ec5e0c2681b8cf99ddabf118705847f7460f19@git.kernel.org>
-Git-Commit-ID: a4ec5e0c2681b8cf99ddabf118705847f7460f19
+Subject: [tip:tracing/urgent] tracing: remove max_tracer_type_len
+Message-ID: <tip-ee6c2c1bd15e60a442d1861b66285f112ce4f25c@git.kernel.org>
+Git-Commit-ID: ee6c2c1bd15e60a442d1861b66285f112ce4f25c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 19 Sep 2009 18:03:51 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 19 Sep 2009 18:03:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a4ec5e0c2681b8cf99ddabf118705847f7460f19
-Gitweb:     http://git.kernel.org/tip/a4ec5e0c2681b8cf99ddabf118705847f7460f19
+Commit-ID:  ee6c2c1bd15e60a442d1861b66285f112ce4f25c
+Gitweb:     http://git.kernel.org/tip/ee6c2c1bd15e60a442d1861b66285f112ce4f25c
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 18 Sep 2009 14:06:28 +0800
+AuthorDate: Fri, 18 Sep 2009 14:06:47 +0800
 Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Sat, 19 Sep 2009 11:26:54 -0400
+CommitDate: Sat, 19 Sep 2009 11:28:19 -0400
 
-function-graph: use ftrace_graph_funcs directly
+tracing: remove max_tracer_type_len
 
-No need to store ftrace_graph_funcs in file->private.
+Limit the length of a tracer's name within 100 chars, and then we
+don't have to play with max_tracer_type_len.
 
 Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4AB32364.7020602@cn.fujitsu.com>
+LKML-Reference: <4AB32377.9020601@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 
 ---
- kernel/trace/ftrace.c |   23 ++++-------------------
- 1 files changed, 4 insertions(+), 19 deletions(-)
+ kernel/trace/trace.c |   49 ++++++++++++++++---------------------------------
+ 1 files changed, 16 insertions(+), 33 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index cc615f8..c71e91b 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2414,11 +2414,9 @@ unsigned long ftrace_graph_funcs[FTRACE_GRAPH_MAX_FUNCS] __read_mostly;
- static void *
- __g_next(struct seq_file *m, loff_t *pos)
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index fd52a19..8613080 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -125,13 +125,13 @@ int ftrace_dump_on_oops;
+ 
+ static int tracing_set_tracer(const char *buf);
+ 
+-#define BOOTUP_TRACER_SIZE		100
+-static char bootup_tracer_buf[BOOTUP_TRACER_SIZE] __initdata;
++#define MAX_TRACER_SIZE		100
++static char bootup_tracer_buf[MAX_TRACER_SIZE] __initdata;
+ static char *default_bootup_tracer;
+ 
+ static int __init set_ftrace(char *str)
  {
--	unsigned long *array = m->private;
+-	strncpy(bootup_tracer_buf, str, BOOTUP_TRACER_SIZE);
++	strncpy(bootup_tracer_buf, str, MAX_TRACER_SIZE);
+ 	default_bootup_tracer = bootup_tracer_buf;
+ 	/* We are using ftrace early, expand it */
+ 	ring_buffer_expanded = 1;
+@@ -242,13 +242,6 @@ static struct tracer		*trace_types __read_mostly;
+ static struct tracer		*current_trace __read_mostly;
+ 
+ /*
+- * max_tracer_type_len is used to simplify the allocating of
+- * buffers to read userspace tracer names. We keep track of
+- * the longest tracer name registered.
+- */
+-static int			max_tracer_type_len;
 -
- 	if (*pos >= ftrace_graph_count)
- 		return NULL;
--	return &array[*pos];
-+	return &ftrace_graph_funcs[*pos];
- }
- 
- static void *
-@@ -2482,16 +2480,10 @@ ftrace_graph_open(struct inode *inode, struct file *file)
- 		ftrace_graph_count = 0;
- 		memset(ftrace_graph_funcs, 0, sizeof(ftrace_graph_funcs));
- 	}
-+	mutex_unlock(&graph_lock);
- 
--	if (file->f_mode & FMODE_READ) {
-+	if (file->f_mode & FMODE_READ)
- 		ret = seq_open(file, &ftrace_graph_seq_ops);
--		if (!ret) {
--			struct seq_file *m = file->private_data;
--			m->private = ftrace_graph_funcs;
--		}
--	} else
--		file->private_data = ftrace_graph_funcs;
--	mutex_unlock(&graph_lock);
- 
- 	return ret;
- }
-@@ -2560,7 +2552,6 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
- 		   size_t cnt, loff_t *ppos)
+-/*
+  * trace_types_lock is used to protect the trace_types list.
+  * This lock is also used to keep user access serialized.
+  * Accesses from userspace will grab this lock while userspace
+@@ -619,7 +612,6 @@ __releases(kernel_lock)
+ __acquires(kernel_lock)
  {
- 	struct trace_parser parser;
--	unsigned long *array;
- 	size_t read = 0;
- 	ssize_t ret;
+ 	struct tracer *t;
+-	int len;
+ 	int ret = 0;
  
-@@ -2574,12 +2565,6 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
- 		goto out;
+ 	if (!type->name) {
+@@ -627,6 +619,11 @@ __acquires(kernel_lock)
+ 		return -1;
  	}
  
--	if (file->f_mode & FMODE_READ) {
--		struct seq_file *m = file->private_data;
--		array = m->private;
--	} else
--		array = file->private_data;
--
- 	if (trace_parser_get_init(&parser, FTRACE_BUFF_MAX)) {
- 		ret = -ENOMEM;
- 		goto out;
-@@ -2591,7 +2576,7 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
- 		parser.buffer[parser.idx] = 0;
- 
- 		/* we allow only one expression at a time */
--		ret = ftrace_set_func(array, &ftrace_graph_count,
-+		ret = ftrace_set_func(ftrace_graph_funcs, &ftrace_graph_count,
- 					parser.buffer);
- 		if (ret)
++	if (strlen(type->name) > MAX_TRACER_SIZE) {
++		pr_info("Tracer has a name longer than %d\n", MAX_TRACER_SIZE);
++		return -1;
++	}
++
+ 	/*
+ 	 * When this gets called we hold the BKL which means that
+ 	 * preemption is disabled. Various trace selftests however
+@@ -641,7 +638,7 @@ __acquires(kernel_lock)
+ 	for (t = trace_types; t; t = t->next) {
+ 		if (strcmp(type->name, t->name) == 0) {
+ 			/* already found */
+-			pr_info("Trace %s already registered\n",
++			pr_info("Tracer %s already registered\n",
+ 				type->name);
+ 			ret = -1;
  			goto out;
+@@ -692,9 +689,6 @@ __acquires(kernel_lock)
+ 
+ 	type->next = trace_types;
+ 	trace_types = type;
+-	len = strlen(type->name);
+-	if (len > max_tracer_type_len)
+-		max_tracer_type_len = len;
+ 
+  out:
+ 	tracing_selftest_running = false;
+@@ -703,7 +697,7 @@ __acquires(kernel_lock)
+ 	if (ret || !default_bootup_tracer)
+ 		goto out_unlock;
+ 
+-	if (strncmp(default_bootup_tracer, type->name, BOOTUP_TRACER_SIZE))
++	if (strncmp(default_bootup_tracer, type->name, MAX_TRACER_SIZE))
+ 		goto out_unlock;
+ 
+ 	printk(KERN_INFO "Starting tracer '%s'\n", type->name);
+@@ -725,14 +719,13 @@ __acquires(kernel_lock)
+ void unregister_tracer(struct tracer *type)
+ {
+ 	struct tracer **t;
+-	int len;
+ 
+ 	mutex_lock(&trace_types_lock);
+ 	for (t = &trace_types; *t; t = &(*t)->next) {
+ 		if (*t == type)
+ 			goto found;
+ 	}
+-	pr_info("Trace %s not registered\n", type->name);
++	pr_info("Tracer %s not registered\n", type->name);
+ 	goto out;
+ 
+  found:
+@@ -745,17 +738,7 @@ void unregister_tracer(struct tracer *type)
+ 			current_trace->stop(&global_trace);
+ 		current_trace = &nop_trace;
+ 	}
+-
+-	if (strlen(type->name) != max_tracer_type_len)
+-		goto out;
+-
+-	max_tracer_type_len = 0;
+-	for (t = &trace_types; *t; t = &(*t)->next) {
+-		len = strlen((*t)->name);
+-		if (len > max_tracer_type_len)
+-			max_tracer_type_len = len;
+-	}
+- out:
++out:
+ 	mutex_unlock(&trace_types_lock);
+ }
+ 
+@@ -2604,7 +2587,7 @@ static ssize_t
+ tracing_set_trace_read(struct file *filp, char __user *ubuf,
+ 		       size_t cnt, loff_t *ppos)
+ {
+-	char buf[max_tracer_type_len+2];
++	char buf[MAX_TRACER_SIZE+2];
+ 	int r;
+ 
+ 	mutex_lock(&trace_types_lock);
+@@ -2754,15 +2737,15 @@ static ssize_t
+ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
+ 			size_t cnt, loff_t *ppos)
+ {
+-	char buf[max_tracer_type_len+1];
++	char buf[MAX_TRACER_SIZE+1];
+ 	int i;
+ 	size_t ret;
+ 	int err;
+ 
+ 	ret = cnt;
+ 
+-	if (cnt > max_tracer_type_len)
+-		cnt = max_tracer_type_len;
++	if (cnt > MAX_TRACER_SIZE)
++		cnt = MAX_TRACER_SIZE;
+ 
+ 	if (copy_from_user(&buf, ubuf, cnt))
+ 		return -EFAULT;
