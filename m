@@ -1,65 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475AbZISR40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbZISRzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751475AbZISR40 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 13:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZISR40
+	id S1751380AbZISRzo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 13:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZISRzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 13:56:26 -0400
-Received: from mail-ew0-f217.google.com ([209.85.219.217]:62319 "EHLO
-	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751306AbZISR4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 13:56:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=MHPsDb8ip1k7hjlDF8wzPDhLHyX3LrYFcsScgsgMzrxd+bHLGiBNB8ksZvzyP1wpEj
-         10kl5jMNcSrm7nXekj1G84QJfUBZSNlUf0+6gFEYkI6/qULsZb6ItTlcOXwE8u7g+wQG
-         A/R2EJ0jgMtPXj9R0wIwm6LHHdxEViHyXORAo=
+	Sat, 19 Sep 2009 13:55:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46591 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbZISRzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 13:55:43 -0400
+Date: Sat, 19 Sep 2009 19:55:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Xiao Guangrong <xiaooguangrong@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: reservetop fix disables mem=
+Message-ID: <20090919175504.GJ5366@elte.hu>
+References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils> <4A92D029.8090807@kernel.org> <20090824182713.GB9785@elte.hu> <Pine.LNX.4.64.0909160117260.6814@sister.anvils>
 MIME-Version: 1.0
-In-Reply-To: <20090919165501.65d77294@infradead.org>
-References: <6278d2220909190747n62f7036dj2e5231fcdc4730fb@mail.gmail.com>
-	 <20090919165501.65d77294@infradead.org>
-Date: Sat, 19 Sep 2009 18:50:13 +0100
-Message-ID: <6278d2220909191050l19f2a446r5ccf1907fd963096@mail.gmail.com>
-Subject: Re: tickless and HZ=1000 throughput advantage?
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0909160117260.6814@sister.anvils>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 19, 2009 at 3:55 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sat, 19 Sep 2009 15:47:24 +0100
-> Daniel J Blueman <daniel.blueman@gmail.com> wrote:
->
->> On tickless kernels, is the general consensus that for non-embedded
->> systems, selecting HZ=1000 gives slightly more throughput in
->> particular situations than HZ=100 or 250, due to finer timer
->> intervals/granularity?
->
-> it's not about throughput. It's about latency for some things....
-> although now that select/poll and co use hrtimers it's not as critical
-> anymore.
->
-> the HZ timers aren't used much for anything time-critical nowadays.
 
-Agreed. Do you think there is still a small case for moving to HZ=1000
-(given it's effectively free) in situations like:
+* Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
 
-jiffies_to_transmit = port->baud?(1 + charsleft * 10 * HZ / port->baud):0;
+> On Mon, 24 Aug 2009, Ingo Molnar wrote:
+> > * Yinghai Lu <yinghai@kernel.org> wrote:
+> > > Hugh Dickins wrote:
+> > > > I find the "mem=" boot parameter disabled in today's linux-next:
+> > > > reverting the tip commit below fixes that.
+> > > > 
+> > > > Hugh
+> > > > 
+> > > > From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> > > > Date: Thu, 20 Aug 2009 12:23:11 +0000 (+0800)
+> > > > Subject: x86: Fix system crash when loading with "reservetop" parameter
+> > > > X-Git-Url: http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fmingo%2Flinux-2.6-x86.git;a=commitdiff_plain;h=8126dec32738421afa362114337331337b4be17f
+> > > > 
+> > > > x86: Fix system crash when loading with "reservetop" parameter
+> > > > 
+> > > > The system will die if the kernel is booted with "reservetop"
+> > > > parameter, in present code, parse "reservetop" parameter after
+> > > > early_ioremap_init(), and some function still use
+> > > > early_ioremap() after it.
+> > > > 
+> > > > The problem is, "reservetop" parameter can modify
+> > > > 'FIXADDR_TOP', then the virtual address got by early_ioremap()
+> > > > is base on old 'FIXADDR_TOP', but the page mapping is base on
+> > > > new 'FIXADDR_TOP', it will occur page fault, and the IDT is not
+> > > > prepare yet, so, the system is dead.
+> > > > 
+> > > > So, put parse_early_param() in the front of
+> > > > early_ioremap_init() in this patch.
+> > > > 
+> > > > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> > > > Cc: yinghai@kernel.org
+> > > > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > > > LKML-Reference: <4A8D402F.4080805@cn.fujitsu.com>
+> > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > > ---
+> > > > 
+> > > > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> > > > index 63f32d2..02643cc 100644
+> > > > --- a/arch/x86/kernel/setup.c
+> > > > +++ b/arch/x86/kernel/setup.c
+> > > > @@ -711,6 +711,11 @@ void __init setup_arch(char **cmdline_p)
+> > > >  	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+> > > >  #endif
+> > > >  
+> > > > +	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
+> > > > +	*cmdline_p = command_line;
+> > > > +
+> > > > +	parse_early_param();
+> > > > +
+> > > >  	/* VMI may relocate the fixmap; do this before touching ioremap area */
+> > > >  	vmi_init();
+> > > >  
+> > > > @@ -793,11 +798,6 @@ void __init setup_arch(char **cmdline_p)
+> > > >  #endif
+> > > >  #endif
+> > > >  
+> > > > -	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
+> > > > -	*cmdline_p = command_line;
+> > > > -
+> > > > -	parse_early_param();
+> > > > -
+> > > >  #ifdef CONFIG_X86_64
+> > > >  	check_efer();
+> > > >  #endif
+> > > 
+> > > yes, that patch will break other built-in command too.
+> > > 
+> > > need drop that patch.
+> > 
+> > done. Was nervous about the patch already:
+> 
+> Somehow it seems to have undropped itself, so mem= stopped working 
+> again in recent mmotm/linux-next; and it looks like today the 
+> undropped patch has made its way to Linus - I've not built current git 
+> to check, but I think you'll find mem= is now broken there.
 
-<applying plausible figures>
-(gdb) p (1 + 10 * 10 * 1000 / 38400) * 1
-$3 = 3
-(gdb) p (1 + 10 * 10 * 250 / 38400) * 4
-$5 = 4
+I thoroughly zapped it. Do you know about any commit ID where it snuck 
+in?
 
--> HZ=250 causes a 33% longer sleep than expected
-
-perhaps?
--- 
-Daniel J Blueman
+	Ingo
