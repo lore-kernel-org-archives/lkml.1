@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZISHQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbZISHRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZISHQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 03:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZISHQY
+	id S1754921AbZISHRT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 03:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZISHRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 03:16:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38978 "EHLO mx3.mail.elte.hu"
+	Sat, 19 Sep 2009 03:17:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39095 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751094AbZISHQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 03:16:23 -0400
-Date: Sat, 19 Sep 2009 09:16:16 +0200
+	id S1750901AbZISHRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 03:17:17 -0400
+Date: Sat, 19 Sep 2009 09:17:12 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
        Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
        Jason Baron <jbaron@redhat.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
        Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 1/2] tracing: Move syscalls metadata handling from arch
-	to core
-Message-ID: <20090919071616.GA15292@elte.hu>
-References: <1253338757-5918-1-git-send-email-fweisbec@gmail.com> <1253338757-5918-2-git-send-email-fweisbec@gmail.com>
+Subject: Re: [PATCH 2/2] tracing: Document HAVE_FTRACE_SYSCALLS needs
+Message-ID: <20090919071712.GB15292@elte.hu>
+References: <1253338757-5918-1-git-send-email-fweisbec@gmail.com> <1253338757-5918-3-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253338757-5918-2-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1253338757-5918-3-git-send-email-fweisbec@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -41,11 +40,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Most of the syscalls metadata processing is done from arch. But these 
-> operations are mostly generic accross archs. Especially now that we 
-> have a common variable name that expresses the number of syscalls 
-> supported by an arch: NR_syscalls, the only remaining bits that need 
-> to reside in arch is the syscall nr to addr translation.
+> Document the arch needed requirements to get the support for syscalls
+> tracing.
 > 
 > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 > Cc: Ingo Molnar <mingo@elte.hu>
@@ -58,12 +54,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > Cc: Paul Mundt <lethal@linux-sh.org>
 > ---
->  arch/s390/kernel/ftrace.c     |   67 +---------------------------------
->  arch/x86/kernel/ftrace.c      |   76 +-------------------------------------
->  include/trace/syscall.h       |    2 +-
->  kernel/trace/trace_syscalls.c |   80 +++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 85 insertions(+), 140 deletions(-)
+>  Documentation/trace/ftrace-design.txt |   11 ++++++++++-
+>  1 files changed, 10 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
+> index 7003e10..04ab61c 100644
+> --- a/Documentation/trace/ftrace-design.txt
+> +++ b/Documentation/trace/ftrace-design.txt
+> @@ -216,7 +216,16 @@ If you can't trace NMI functions, then skip this option.
+>  HAVE_FTRACE_SYSCALLS
+>  ---------------------
+>  
+> -<details to be filled>
+> +You need very few things to get the syscalls tracing in an arch.
+> +
+> +- Have a NR_syscalls variable in <asm/unistd.h> that provides the number
+> +  of syscalls supported by the arch.
+> +- Implement arch_syscall_addr() that resolves a syscall address from a
+> +  syscall number.
+> +- Support the TIF_SYSCALL_TRACEPOINT thread flags
+> +- Put the trace_sys_enter() and trace_sys_exit() tracepoints calls from ptrace
+> +  in the ptrace syscalls tracing path.
+> +- Tag this arch as HAVE_FTRACE_SYSCALLS.
 
-Martin, Heiko, would this cleanup be fine with you?
+HAVE_FTRACE_SYSCALLS is not actually used anywhere.
 
 	Ingo
