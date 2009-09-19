@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZISLg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757675AbZISLgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbZISLg2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 07:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbZISLg1
+	id S1757675AbZISLgf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 07:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757587AbZISLga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 07:36:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50785 "EHLO
+	Sat, 19 Sep 2009 07:36:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50789 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757008AbZISLg0 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757409AbZISLg2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 07:36:26 -0400
-Date: Sat, 19 Sep 2009 13:34:42 +0200
+	Sat, 19 Sep 2009 07:36:28 -0400
+Date: Sat, 19 Sep 2009 13:35:07 +0200
 From: Arjan van de Ven <arjan@infradead.org>
-To: mingo@elte.hu
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, peterz@infradead.org,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] perf: Add "perf timechart record"
-Message-ID: <20090919133442.0dc2c7f5@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       peterz@infradead.org, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] perf: Be consistent about minimum text size in the
+ svghelper
+Message-ID: <20090919133507.7374ef8b@infradead.org>
 In-Reply-To: <20090919133410.7b23e270@infradead.org>
 References: <20090919133410.7b23e270@infradead.org>
 Organization: Intel
@@ -31,90 +31,113 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->From f11a27881ef0fcdf459e6f52dd57885c7af93426 Mon Sep 17 00:00:00 2001
+>From 18efabd499da9225cf7a83f54a91a6d5521c26a1 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 19 Sep 2009 12:59:47 +0200
-Subject: [PATCH] perf: Add "perf timechart record"
+Date: Sat, 19 Sep 2009 13:07:08 +0200
+Subject: [PATCH] perf: Be consistent about minimum text size in the svghelper
 
-Add a command line option to record a trace, similar to "perf sched record".
+Be more consistent in the svghelper about the minimum text size
+by having a global #define for this.
+
+There needs to be a minimum text size in order to keep the size
+of the SVG file within the reach of what current SVG viewers can
+cope with.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- tools/perf/builtin-timechart.c |   47 +++++++++++++++++++++++++++++++++------
- 1 files changed, 39 insertions(+), 8 deletions(-)
+ tools/perf/util/svghelper.c |   24 +++++++++++++-----------
+ 1 files changed, 13 insertions(+), 11 deletions(-)
 
-diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
-index 00fac1b..58d737e 100644
---- a/tools/perf/builtin-timechart.c
-+++ b/tools/perf/builtin-timechart.c
-@@ -1086,11 +1086,42 @@ done:
- 	return rc;
+diff --git a/tools/perf/util/svghelper.c b/tools/perf/util/svghelper.c
+index c7a29af..b0fcecd 100644
+--- a/tools/perf/util/svghelper.c
++++ b/tools/perf/util/svghelper.c
+@@ -27,6 +27,8 @@ static u64 turbo_frequency, max_freq;
+ #define SLOT_HEIGHT 25.0
+ #define WIDTH 1000.0
+ 
++#define MIN_TEXT_SIZE 0.001
++
+ static u64 total_height;
+ static FILE *svgfile;
+ 
+@@ -104,8 +106,8 @@ void svg_sample(int Yslot, int cpu, u64 start, u64 end, const char *type)
+ 		text_size = text_size/2;
+ 	if (text_size > 1.25)
+ 		text_size = 1.25;
+-	if (text_size > 0.0001)
+-		fprintf(svgfile, "<text transform=\"translate(%1.6f,%1.6f)\" font-size=\"%1.6fpt\">%i</text>\n",
++	if (text_size > MIN_TEXT_SIZE)
++		fprintf(svgfile, "<text transform=\"translate(%1.8f,%1.8f)\" font-size=\"%1.6fpt\">%i</text>\n",
+ 			time2pixels(start), Yslot *  SLOT_MULT + SLOT_HEIGHT - 1, text_size,  cpu + 1);
+ 
+ }
+@@ -146,10 +148,10 @@ void svg_cpu_box(int cpu, u64 __max_freq, u64 __turbo_freq)
+ 		cpu2y(cpu), SLOT_MULT+SLOT_HEIGHT);
+ 
+ 	sprintf(cpu_string, "CPU %i", (int)cpu+1);
+-	fprintf(svgfile, "<text transform=\"translate(%4.1f,%4.1f)\">%s</text>\n",
++	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\">%s</text>\n",
+ 		10+time2pixels(first_time), cpu2y(cpu) + SLOT_HEIGHT/2, cpu_string);
+ 
+-	fprintf(svgfile, "<text transform=\"translate(%4.1f,%4.1f)\" font-size=\"1.25pt\">%s</text>\n",
++	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\" font-size=\"1.25pt\">%s</text>\n",
+ 		10+time2pixels(first_time), cpu2y(cpu) + SLOT_MULT + SLOT_HEIGHT - 4, cpu_model());
  }
  
--static const char * const report_usage[] = {
--	"perf report [<options>] <command>",
-+static const char * const timechart_usage[] = {
-+	"perf timechart [<options>] {record}",
- 	NULL
- };
+@@ -166,8 +168,8 @@ void svg_process(int cpu, u64 start, u64 end, const char *type, const char *name
+ 	if (width > 6)
+ 		width = 6;
  
-+static const char *record_args[] = {
-+	"record",
-+	"-a",
-+	"-R",
-+	"-M",
-+	"-f",
-+	"-c", "1",
-+	"-e", "power:power_start",
-+	"-e", "power:power_end",
-+	"-e", "power:power_frequency",
-+	"-e", "sched:sched_wakeup",
-+	"-e", "sched:sched_switch",
-+};
-+
-+static int __cmd_record(int argc, const char **argv)
-+{
-+	unsigned int rec_argc, i, j;
-+	const char **rec_argv;
-+
-+	rec_argc = ARRAY_SIZE(record_args) + argc - 1;
-+	rec_argv = calloc(rec_argc + 1, sizeof(char *));
-+
-+	for (i = 0; i < ARRAY_SIZE(record_args); i++)
-+		rec_argv[i] = strdup(record_args[i]);
-+
-+	for (j = 1; j < (unsigned int)argc; j++, i++)
-+		rec_argv[i] = argv[j];
-+
-+	return cmd_record(i, rec_argv, NULL);
-+}
-+
- static const struct option options[] = {
- 	OPT_STRING('i', "input", &input_name, "file",
- 		    "input file name"),
-@@ -1106,13 +1137,13 @@ int cmd_timechart(int argc, const char **argv, const char *prefix __used)
+-	if (width > 0.001)
+-		fprintf(svgfile, "<text  transform=\"translate(%4.5f,%4.5f) rotate(90)\" font-size=\"%3.4fpt\">%s</text>\n",
++	if (width > MIN_TEXT_SIZE)
++		fprintf(svgfile, "<text  transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"%3.4fpt\">%s</text>\n",
+ 			time2pixels(start), cpu2y(cpu), width, name);
+ }
  
- 	page_size = getpagesize();
+@@ -193,8 +195,8 @@ void svg_cstate(int cpu, u64 start, u64 end, int type)
+ 	if (width > 6)
+ 		width = 6;
  
--	argc = parse_options(argc, argv, options, report_usage, 0);
-+	argc = parse_options(argc, argv, options, timechart_usage,
-+			PARSE_OPT_STOP_AT_NON_OPTION);
+-	if (width > 0.05)
+-		fprintf(svgfile, "<text  transform=\"translate(%4.5f,%4.5f) rotate(90)\" font-size=\"%3.4fpt\">C%i</text>\n",
++	if (width > MIN_TEXT_SIZE)
++		fprintf(svgfile, "<text  transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"%3.4fpt\">C%i</text>\n",
+ 			time2pixels(start), cpu2y(cpu), width, type);
+ }
  
--	/*
--	 * Any (unrecognized) arguments left?
--	 */
--	if (argc)
--		usage_with_options(report_usage, options);
-+	if (argc && !strncmp(argv[0], "rec", 3))
-+		return __cmd_record(argc, argv);
-+	else if (argc)
-+		usage_with_options(timechart_usage, options);
+@@ -234,7 +236,7 @@ void svg_pstate(int cpu, u64 start, u64 end, u64 freq)
+ 	height = 1 + cpu2y(cpu) + SLOT_MULT + SLOT_HEIGHT - height;
+ 	fprintf(svgfile, "<line x1=\"%4.8f\" x2=\"%4.8f\" y1=\"%4.1f\" y2=\"%4.1f\" class=\"pstate\"/>\n",
+ 		time2pixels(start), time2pixels(end), height, height);
+-	fprintf(svgfile, "<text transform=\"translate(%4.1f,%4.1f)\" font-size=\"0.25pt\">%s</text>\n",
++	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\" font-size=\"0.25pt\">%s</text>\n",
+ 		time2pixels(start), height+0.9, HzToHuman(freq));
  
- 	setup_pager();
+ }
+@@ -311,7 +313,7 @@ void svg_text(int Yslot, u64 start, const char *text)
+ 	if (!svgfile)
+ 		return;
+ 
+-	fprintf(svgfile, "<text transform=\"translate(%4.1f,%4.1f)\">%s</text>\n",
++	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\">%s</text>\n",
+ 		time2pixels(start), Yslot * SLOT_MULT+SLOT_HEIGHT/2, text);
+ }
+ 
+@@ -322,7 +324,7 @@ static void svg_legenda_box(int X, const char *text, const char *style)
+ 
+ 	fprintf(svgfile, "<rect x=\"%i\" width=\"%4.8f\" y=\"0\" height=\"%4.1f\" class=\"%s\"/>\n",
+ 		X, boxsize, boxsize, style);
+-	fprintf(svgfile, "<text transform=\"translate(%4.1f, %4.1f)\" font-size=\"%4.4fpt\">%s</text>\n",
++	fprintf(svgfile, "<text transform=\"translate(%4.8f, %4.8f)\" font-size=\"%4.4fpt\">%s</text>\n",
+ 		X + boxsize + 5, boxsize, 0.8 * boxsize, text);
+ }
  
 -- 
 1.6.0.6
+
+
 
 
 -- 
