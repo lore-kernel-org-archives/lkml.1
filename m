@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbZISKiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932171AbZISKnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757117AbZISKiO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 06:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZISKiM
+	id S932171AbZISKnb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 06:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbZISKnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 06:38:12 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46936 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751903AbZISKiL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 06:38:11 -0400
-Date: Sat, 19 Sep 2009 12:37:09 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Norbert Preining <preining@logic.at>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mattia Dongili <malattia@linux.it>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Matthias Welwarsky <matze@welwarsky.de>
-Subject: Re: Linux not shutting down all devices? Battery drain in after
-	shutdown
-Message-ID: <20090919103709.GA4466@elf.ucw.cz>
-References: <20090917122451.GA13717@gandalf.dynalias.org>
+	Sat, 19 Sep 2009 06:43:31 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50969 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757008AbZISKna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 06:43:30 -0400
+X-Authenticated: #1593455
+X-Provags-ID: V01U2FsdGVkX1/UEgZFw2bU9n62gn7dc4DCImcoc3eg6y+KHYN0oY
+	mwAdnizGGPJtYW
+From: Sebastian Frei <dr.nop@gmx.net>
+To: mitr@volny.cz
+Subject: [PATCH] wistron_btns.c: Add DMI entry for Medion WIM2030 laptop
+Date: Sat, 19 Sep 2009 12:43:09 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31; KDE/4.3.1; i686; svn-1016677; 2009-08-27)
+Cc: linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
+       linux-input@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917122451.GA13717@gandalf.dynalias.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909191243.09243.dr.nop@gmx.net>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-09-17 14:24:51, Norbert Preining wrote:
-> Dear all,
-> 
-> I have a very strange problem with my Sony VAIO Z11 laptop. When I turn
-> it off in Linux it still drains battery, and quite a lot indeed, several
-> percent per hour.
-> 
-> Interestingly, when shutting down from Windows XP the same doesn't happen,
-> after 10 hours of off time starting from 100% charge after rebooting I have
-> still 98.8%, so that is fine (counting that booting costs some energy).
-> 
-> This is in fact also a problem for many other users using Windows, too,
-> see [1]. I have checked that on Windows all devices are set up so that
-> at shutdown and hibernation (S4 and S5) they are going to off state (D3).
-> 
-> The only thing I can imagine is that one of the devices not completely
-> of not at all supported by the kernel is not properly shut down.
-> AFAIS the only device which I have not running here is the fingerprint
-> scanner.
-> 
-> My questions are:
-> - is there a way and if how to check that all devices will get properly
->   shut down on halt?
-> - is there any other reason the battery drain might happen?
-> 
-> Some details about the laptop:
-> - it has a dual graphic card (Intel and nVidia), the sony-laptop module
->   (extended for the zseries, see [2], with adaption to 2.6.31 by me [3]), 
->   or the stock kernel sony-laptop plus the nvidia-control module 
->   (by Matthew Garret [4]) can be used to turn the nvidia card of on a
->   running system so that it does not draw any energy
-> - lspci -vvv output is attached as lspci.txt
-> - software running is Debian/sid with kernel 2.6.31
+This patch adds a DMI entry for the Medion WIM2030 laptop.
 
-On PC, keyboard driver is expected to shut down the machine; I'd try
-complaining to Sony, perhaps they have newer bios.
+Signed-off-by: Sebastian Frei <dr.nop@gmx.net>
 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--- linux-2.6.31.orig/drivers/input/misc/wistron_btns.c
++++ linux-2.6.31/drivers/input/misc/wistron_btns.c
+@@ -669,6 +669,15 @@
+        },
+        {
+                .callback = dmi_matched,
++               .ident = "Medion MD 42200",
++               .matches = {
++                       DMI_MATCH(DMI_SYS_VENDOR, "Medion"),
++                       DMI_MATCH(DMI_PRODUCT_NAME, "WIM 2030"),
++               },
++               .driver_data = keymap_fs_amilo_pro_v2000
++       },
++       {
++               .callback = dmi_matched,
+                .ident = "Fujitsu N3510",
+                .matches = {
+                        DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU"),
