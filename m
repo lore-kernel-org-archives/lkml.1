@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbZITMdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbZIUAmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752240AbZITMdP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 08:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZITMdO
+	id S1753455AbZIUAmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 20:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZIUAmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 08:33:14 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:52409 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750898AbZITMdO (ORCPT
+	Sun, 20 Sep 2009 20:42:19 -0400
+Received: from p3plsmtpa01-07.prod.phx3.secureserver.net ([72.167.82.87]:34980
+	"HELO p3plsmtpa01-07.prod.phx3.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751534AbZIUAmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 08:33:14 -0400
-Date: Sun, 20 Sep 2009 08:30:15 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Max Laier <max@love2party.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: page_migration question
-In-Reply-To: <200909200501.59164.max@love2party.net>
-Message-ID: <alpine.DEB.1.10.0909200826540.21574@V090114053VZO-1>
-References: <200909200501.59164.max@love2party.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 20 Sep 2009 20:42:19 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Sep 2009 20:42:19 EDT
+Date: Mon, 21 Sep 2009 00:35:02 +1200
+From: Kelly Bowa <kbpm@tuxedu.org>
+To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Eric Paris <eparis@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: BUG: scheduling while atomic: ..
+Message-ID: <20090920123502.GA4566@tuxedu.home>
+Mail-Followup-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Eric Paris <eparis@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Jens Axboe <jens.axboe@oracle.com>
+References: <20090920115423.GA28749@tuxedu.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090920115423.GA28749@tuxedu.home>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009, Max Laier wrote:
+* Kelly Bowa (kbpm@tuxedu.org) wrote:
+> hi,
+> found following bug in 2.6.31-rc8. CPU model is Intel(R) Atom(TM) CPU N270. 
+> This is produced at boot time. I havent had time to look into this yet but 
+> looks like an ACPI bug to me..
+> 
+also in dmesg i find:
+kmemleak: 9 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
 
-> I read Documentation/vm/page_migration but couldn't find the information I'm
-> looking for.  Specifically, what locks am I supposed to hold/not hold while
-> calling migrate_prep() and migrate_pages()?  Currently migrate_prep() seems to
-> deadlock for reasons beyond me.  Any help appreciated.
-
-No locks need to be held while calling migrate prep. The pages to be
-migrated must have been isolated from the LRU and a refcount be taken for
-migrate_pages to work. Look at the implementation of sys_migratepages and
-sys_mbind and sys_movepages.
-
+kbpm
