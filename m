@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZITSN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZITSQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbZITSN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZITSNZ
+	id S1755371AbZITSQD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZITSQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:13:25 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:40615 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754633AbZITSNY (ORCPT
+	Sun, 20 Sep 2009 14:16:01 -0400
+Received: from mail-fx0-f216.google.com ([209.85.220.216]:39022 "EHLO
+	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754722AbZITSQB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:13:24 -0400
+	Sun, 20 Sep 2009 14:16:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xt9xG3WHIt+L+bP/wcyDAJxxU4+D9pAlKhB5z/qNhBnyX7NN12V0wiLEYsLMgsc5b5
-         J1tr3X4OY3t/UcqhW4Jtxrpou9PfmrqdNMJc87AgrzYkeK+5t20XBwI2Szznqp2CyCkA
-         TIaO6AvKTOB1cnAqsHOtA71e67L6U6ZqGdNGU=
-Date: Sun, 20 Sep 2009 22:13:26 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sheng Yang <sheng@linux.intel.com>, Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Don't ack_APIC_irq() if lapic is disabled in
-	GENERIC_INTERRUPT_VECTOR handler
-Message-ID: <20090920181326.GB32176@lenovo>
-References: <1252403546-12544-1-git-send-email-sheng@linux.intel.com> <20090920180632.GB8498@elte.hu>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LE7qQq1chYIha8fpXVh2z0eoqWu8zL0wQeKKjpqUFyn+1LGajc1mc+ikHrTuuXZSi0
+         tIlSXv3bKTdt7sufKpc1emT6D+htnQds8J2aTdSccKX5thJEWkZtC9A2DDZ11uY6lsxU
+         L3Vcyk4VPSmKuCsIcjOPf7otScaLePk8PYjXg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090920180632.GB8498@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090920110527.39fd7af5@s6510>
+References: <c5bd819b0909180641n7c353b80tc15b9c9fe02d5c95@mail.gmail.com>
+	 <20090919233536.f5fb700c.akpm@linux-foundation.org>
+	 <20090920110527.39fd7af5@s6510>
+Date: Sun, 20 Sep 2009 20:16:02 +0200
+Message-ID: <c5bd819b0909201116u5a84c426tdd0f298d7019505d@mail.gmail.com>
+Subject: Re: sky2 rx length errors
+From: Grozdan <neutrino8@gmail.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Sun, Sep 20, 2009 at 08:06:32PM +0200]
-| 
-| * Sheng Yang <sheng@linux.intel.com> wrote:
-| 
-| > Otherwise would cause trouble...
-| > 
-| > Cc: Dimitri Sivanich <sivanich@sgi.com>
-| > Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-| > ---
-| >  arch/x86/kernel/irq.c |    3 ++-
-| >  1 files changed, 2 insertions(+), 1 deletions(-)
-| > 
-| > diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-| > index b0cdde6..78b23d0 100644
-| > --- a/arch/x86/kernel/irq.c
-| > +++ b/arch/x86/kernel/irq.c
-| > @@ -257,7 +257,8 @@ void smp_generic_interrupt(struct pt_regs *regs)
-| >  {
-| >  	struct pt_regs *old_regs = set_irq_regs(regs);
-| >  
-| > -	ack_APIC_irq();
-| > +	if (!disable_apic)
-| > +		ack_APIC_irq();
-| 
-| Wont in that case the apic->ack method be a NOP?
-| 
-| 	Ingo
-| 
+2009/9/20 Stephen Hemminger <shemminger@vyatta.com>:
 
-iirc it was Xen related patch. So it's not that simple.
+>
+> This error status occurs if the length reported by the PHY does not
+> match the len reported by the DMA engine.  The error status is:
+>   0x4420100 = length 1090 + broadcast packet...
+>
+> No idea what is on your network, but perhaps there is some MTU confusion?
+> Since martian destination seems related, knowing more about that packet
+> might help.
+>
 
-I've pointed out Sheng about disable_apic. I'm not Xen
-specialist but Xen team seem to use specific apic setup
-so our "dummy" operations are not involved (case they
-set disable_apic=1 without "turn off" apic ops in real).
-Something like that.
+Hi,
 
-	-- Cyrill
+Thanks for the reply. There's nothing on my home network here. It is
+just a direct connection from my PC to my cable modem and there's
+nothing in between. I've googled a bit and it seems others also
+encounter this problem. I've read a few posts on the Ubuntu bugzilla
+where people change the MTU from 1500 to 1492 and this fixes the
+problem. However, even with this, some report that the problem is
+still there. I did the same and it didn't change anything for me. So I
+disabled my onboard NIC and added a 3Com one which has been working
+perfectly so far and I think I'll just keep using it instead of the
+Marvell one.
