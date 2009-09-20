@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbZITSPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZITSN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbZITSPT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZITSPT
+	id S1755070AbZITSN0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZITSNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:15:19 -0400
-Received: from kroah.org ([198.145.64.141]:58317 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754723AbZITSPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:15:18 -0400
-Date: Sun, 20 Sep 2009 11:11:33 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-usb@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone
- VPA-II" ?
-Message-ID: <20090920181133.GA14366@kroah.com>
-References: <20090920150549.GC11621@kroah.com>
- <Pine.LNX.4.44L0.0909201308550.8307-100000@netrider.rowland.org>
+	Sun, 20 Sep 2009 14:13:25 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:40615 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754633AbZITSNY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:13:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xt9xG3WHIt+L+bP/wcyDAJxxU4+D9pAlKhB5z/qNhBnyX7NN12V0wiLEYsLMgsc5b5
+         J1tr3X4OY3t/UcqhW4Jtxrpou9PfmrqdNMJc87AgrzYkeK+5t20XBwI2Szznqp2CyCkA
+         TIaO6AvKTOB1cnAqsHOtA71e67L6U6ZqGdNGU=
+Date: Sun, 20 Sep 2009 22:13:26 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sheng Yang <sheng@linux.intel.com>, Yinghai Lu <yinghai@kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: Don't ack_APIC_irq() if lapic is disabled in
+	GENERIC_INTERRUPT_VECTOR handler
+Message-ID: <20090920181326.GB32176@lenovo>
+References: <1252403546-12544-1-git-send-email-sheng@linux.intel.com> <20090920180632.GB8498@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0909201308550.8307-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090920180632.GB8498@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 20, 2009 at 01:12:29PM -0400, Alan Stern wrote:
-> On Sun, 20 Sep 2009, Greg KH wrote:
-> 
-> > On Sun, Sep 20, 2009 at 03:39:57PM +0200, Tilman Schmidt wrote:
-> > > When I connect my "T-Mobile MDA compact III" to my PC, running
-> > > kernel 2.6.31 with openSUSE 10.3 userspace, I get exactly the
-> > > symptoms described in:
-> > > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=8094
-> > > 
-> > > But that bug is marked as "CLOSED CODE_FIX", though reading through
-> > > the comments I found no clear indication what was actually fixed,
-> > > and from reading through the source files drivers/usb/serial/ipaq.c
-> > > and drivers/usb/serial/usb-serial.c I get the impression that the
-> > > problem of ipaq_open() oopsing because it gets called with
-> > > port->read_urb==NULL is still present.
-> 
-> Interestingly, the fix from that bug report _was_ merged as commit
-> 063a2da8f01806906f7d7b1a1424b9afddebc443 (written by me).  But then it
-> was removed later on(!) in commits
-> 07c3b1a1001614442c665570942a3107a722c314 and
-> 9aebfd6bda789891e6d296bb49b5fb32d1057f18 (written by Greg).
-> 
-> Apparently the check should have been moved from the core into the 
-> lower-level driver (i.e., ipaq.c) but it wasn't.  I don't know why; 
-> maybe Greg does.
+[Ingo Molnar - Sun, Sep 20, 2009 at 08:06:32PM +0200]
+| 
+| * Sheng Yang <sheng@linux.intel.com> wrote:
+| 
+| > Otherwise would cause trouble...
+| > 
+| > Cc: Dimitri Sivanich <sivanich@sgi.com>
+| > Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+| > ---
+| >  arch/x86/kernel/irq.c |    3 ++-
+| >  1 files changed, 2 insertions(+), 1 deletions(-)
+| > 
+| > diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+| > index b0cdde6..78b23d0 100644
+| > --- a/arch/x86/kernel/irq.c
+| > +++ b/arch/x86/kernel/irq.c
+| > @@ -257,7 +257,8 @@ void smp_generic_interrupt(struct pt_regs *regs)
+| >  {
+| >  	struct pt_regs *old_regs = set_irq_regs(regs);
+| >  
+| > -	ack_APIC_irq();
+| > +	if (!disable_apic)
+| > +		ack_APIC_irq();
+| 
+| Wont in that case the apic->ack method be a NOP?
+| 
+| 	Ingo
+| 
 
-Yes, I missed the fact that the ipaq driver needed to pay attention to
-this, my mistake :(
+iirc it was Xen related patch. So it's not that simple.
 
-I'm pretty much not able to write any new patches until the end of next
-week, due to conferences I'm currently attending, so if someone wants to
-knock up a patch to fix this before then, it would be most appreciated.
+I've pointed out Sheng about disable_apic. I'm not Xen
+specialist but Xen team seem to use specific apic setup
+so our "dummy" operations are not involved (case they
+set disable_apic=1 without "turn off" apic ops in real).
+Something like that.
 
-thanks,
-
-greg k-h
+	-- Cyrill
