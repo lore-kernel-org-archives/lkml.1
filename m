@@ -1,229 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbZITMY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbZITMdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752166AbZITMY0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 08:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZITMYZ
+	id S1752240AbZITMdP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 08:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZITMdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 08:24:25 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57039 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751534AbZITMYY (ORCPT
+	Sun, 20 Sep 2009 08:33:14 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:52409 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750898AbZITMdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 08:24:24 -0400
-Date: Sun, 20 Sep 2009 13:24:11 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Koskinen Aaro <aaro.koskinen@nokia.com>
-Subject: Re: [PATCH 1/2] ARM: Pass IFSR register to do_PrefetchAbort()
-Message-ID: <20090920122411.GA5413@n2100.arm.linux.org.uk>
-References: <c9f73fa56a41bc1051cd347cc453081235e3d776.1253307263.git.kirill@shutemov.name> <20090919110316.GA23452@n2100.arm.linux.org.uk> <20090920081550.GA830@n2100.arm.linux.org.uk> <cc557aab0909200235sbb4c1f5tdc84434732222988@mail.gmail.com>
+	Sun, 20 Sep 2009 08:33:14 -0400
+Date: Sun, 20 Sep 2009 08:30:15 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Max Laier <max@love2party.net>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: page_migration question
+In-Reply-To: <200909200501.59164.max@love2party.net>
+Message-ID: <alpine.DEB.1.10.0909200826540.21574@V090114053VZO-1>
+References: <200909200501.59164.max@love2party.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cc557aab0909200235sbb4c1f5tdc84434732222988@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 20, 2009 at 12:35:19PM +0300, Kirill A. Shutemov wrote:
-> Ok, so __do_page_fault() should know where we are: in data abort or in
-> prefetch abort. What is right way to do it? Should we create one more
-> argument or use one of reserved bits IFSR?
+On Sun, 20 Sep 2009, Max Laier wrote:
 
-Well, this is my solution to the problem - could you test it please?
-This patch is actually the result of several patches merged together,
-so I won't supply a proper description etc.
+> I read Documentation/vm/page_migration but couldn't find the information I'm
+> looking for.  Specifically, what locks am I supposed to hold/not hold while
+> calling migrate_prep() and migrate_pages()?  Currently migrate_prep() seems to
+> deadlock for reasons beyond me.  Any help appreciated.
 
-diff --git a/arch/arm/mm/fault.c b/arch/arm/mm/fault.c
-index cc8829d..8fbb22d 100644
---- a/arch/arm/mm/fault.c
-+++ b/arch/arm/mm/fault.c
-@@ -25,6 +25,19 @@
- 
- #include "fault.h"
- 
-+/*
-+ * Fault status register encodings.  We steal bit 31 for our own purposes.
-+ */
-+#define FSR_LNX_PF		(1 << 31)
-+#define FSR_WRITE		(1 << 11)
-+#define FSR_FS4			(1 << 10)
-+#define FSR_FS3_0		(15)
-+
-+static inline int fsr_fs(unsigned int fsr)
-+{
-+	return (fsr & FSR_FS3_0) | (fsr & FSR_FS4) >> 6;
-+}
-+
- #ifdef CONFIG_MMU
- 
- #ifdef CONFIG_KPROBES
-@@ -182,18 +195,35 @@ void do_bad_area(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
- #define VM_FAULT_BADMAP		0x010000
- #define VM_FAULT_BADACCESS	0x020000
- 
--static int
-+/*
-+ * Check that the permissions on the VMA allow for the fault which occurred.
-+ * If we encountered a write fault, we must have write permission, otherwise
-+ * we allow any permission.
-+ */
-+static inline bool access_error(unsigned int fsr, struct vm_area_struct *vma)
-+{
-+	unsigned int mask = VM_READ | VM_WRITE | VM_EXEC;
-+
-+	if (fsr & FSR_WRITE)
-+		mask = VM_WRITE;
-+	if (fsr & FSR_LNX_PF)
-+		mask = VM_EXEC;
-+
-+	return vma->vm_flags & mask ? false : true;
-+}
-+
-+static noinline int __kprobes
- __do_page_fault(struct mm_struct *mm, unsigned long addr, unsigned int fsr,
- 		struct task_struct *tsk)
- {
- 	struct vm_area_struct *vma;
--	int fault, mask;
-+	int fault;
- 
- 	vma = find_vma(mm, addr);
- 	fault = VM_FAULT_BADMAP;
--	if (!vma)
-+	if (unlikely(!vma))
- 		goto out;
--	if (vma->vm_start > addr)
-+	if (unlikely(vma->vm_start > addr))
- 		goto check_stack;
- 
- 	/*
-@@ -201,47 +231,24 @@ __do_page_fault(struct mm_struct *mm, unsigned long addr, unsigned int fsr,
- 	 * memory access, so we can handle it.
- 	 */
- good_area:
--	if (fsr & (1 << 11)) /* write? */
--		mask = VM_WRITE;
--	else
--		mask = VM_READ|VM_EXEC|VM_WRITE;
--
--	fault = VM_FAULT_BADACCESS;
--	if (!(vma->vm_flags & mask))
-+	if (access_error(fsr, vma)) {
-+		fault = VM_FAULT_BADACCESS;
- 		goto out;
-+	}
- 
- 	/*
--	 * If for any reason at all we couldn't handle
--	 * the fault, make sure we exit gracefully rather
--	 * than endlessly redo the fault.
-+	 * If for any reason at all we couldn't handle the fault, make
-+	 * sure we exit gracefully rather than endlessly redo the fault.
- 	 */
--survive:
--	fault = handle_mm_fault(mm, vma, addr & PAGE_MASK, (fsr & (1 << 11)) ? FAULT_FLAG_WRITE : 0);
--	if (unlikely(fault & VM_FAULT_ERROR)) {
--		if (fault & VM_FAULT_OOM)
--			goto out_of_memory;
--		else if (fault & VM_FAULT_SIGBUS)
--			return fault;
--		BUG();
--	}
-+	fault = handle_mm_fault(mm, vma, addr & PAGE_MASK, (fsr & FSR_WRITE) ? FAULT_FLAG_WRITE : 0);
-+	if (unlikely(fault & VM_FAULT_ERROR))
-+		return fault;
- 	if (fault & VM_FAULT_MAJOR)
- 		tsk->maj_flt++;
- 	else
- 		tsk->min_flt++;
- 	return fault;
- 
--out_of_memory:
--	if (!is_global_init(tsk))
--		goto out;
--
--	/*
--	 * If we are out of memory for pid1, sleep for a while and retry
--	 */
--	up_read(&mm->mmap_sem);
--	yield();
--	down_read(&mm->mmap_sem);
--	goto survive;
--
- check_stack:
- 	if (vma->vm_flags & VM_GROWSDOWN && !expand_stack(vma, addr))
- 		goto good_area;
-@@ -278,6 +285,13 @@ do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
- 		if (!user_mode(regs) && !search_exception_tables(regs->ARM_pc))
- 			goto no_context;
- 		down_read(&mm->mmap_sem);
-+	} else {
-+		/*
-+		 * The above down_read_trylock() might have succeeded in
-+		 * which case, we'll have missed the might_sleep() from
-+		 * down_read()
-+		 */
-+		might_sleep();
- 	}
- 
- 	fault = __do_page_fault(mm, addr, fsr, tsk);
-@@ -289,6 +303,16 @@ do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
- 	if (likely(!(fault & (VM_FAULT_ERROR | VM_FAULT_BADMAP | VM_FAULT_BADACCESS))))
- 		return 0;
- 
-+	if (fault & VM_FAULT_OOM) {
-+		/*
-+		 * We ran out of memory, call the OOM killer, and return to
-+		 * userspace (which will retry the fault, or kill us if we
-+		 * got oom-killed)
-+		 */
-+		pagefault_out_of_memory();
-+		return 0;
-+	}
-+
- 	/*
- 	 * If we are in kernel mode at this point, we
- 	 * have no context to handle this fault with.
-@@ -296,16 +320,6 @@ do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
- 	if (!user_mode(regs))
- 		goto no_context;
- 
--	if (fault & VM_FAULT_OOM) {
--		/*
--		 * We ran out of memory, or some other thing
--		 * happened to us that made us unable to handle
--		 * the page fault gracefully.
--		 */
--		printk("VM: killing process %s\n", tsk->comm);
--		do_group_exit(SIGKILL);
--		return 0;
--	}
- 	if (fault & VM_FAULT_SIGBUS) {
- 		/*
- 		 * We had some memory, but were unable to
-@@ -489,10 +503,10 @@ hook_fault_code(int nr, int (*fn)(unsigned long, unsigned int, struct pt_regs *)
- asmlinkage void __exception
- do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
- {
--	const struct fsr_info *inf = fsr_info + (fsr & 15) + ((fsr & (1 << 10)) >> 6);
-+	const struct fsr_info *inf = fsr_info + fsr_fs(fsr);
- 	struct siginfo info;
- 
--	if (!inf->fn(addr, fsr, regs))
-+	if (!inf->fn(addr, fsr & ~FSR_LNX_PF, regs))
- 		return;
- 
- 	printk(KERN_ALERT "Unhandled fault: %s (0x%03x) at 0x%08lx\n",
-@@ -508,6 +522,6 @@ do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
- asmlinkage void __exception
- do_PrefetchAbort(unsigned long addr, struct pt_regs *regs)
- {
--	do_translation_fault(addr, 0, regs);
-+	do_translation_fault(addr, FSR_LNX_PF, regs);
- }
- 
+No locks need to be held while calling migrate prep. The pages to be
+migrated must have been isolated from the LRU and a refcount be taken for
+migrate_pages to work. Look at the implementation of sys_migratepages and
+sys_mbind and sys_movepages.
 
