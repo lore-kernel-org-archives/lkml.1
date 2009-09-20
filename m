@@ -1,94 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbZITSgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZITSlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbZITSgl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZITSgk
+	id S1755459AbZITSlH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZITSlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:36:40 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:63037 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755256AbZITSgj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:36:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=jUy+rB74QGWKkfsH8TcbuBMP/8AU3m9Afv6CSw3Lbl20m0TCWlgadI5IYataHGTBqz
-         2dxjM4uohHMV0vzTVlsSqyCuDyoQXZkNYy/HNbEZU3qaCi12lLz4YHvsmfKe5Nmp91Ba
-         5K77E3FvVojAcFRFTQo4nasYZV+5qYUf7vGyY=
-Message-ID: <4AB67637.9060906@gmail.com>
-Date: Sun, 20 Sep 2009 12:36:39 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sun, 20 Sep 2009 14:41:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50585 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753464AbZITSlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:41:02 -0400
+Date: Sun, 20 Sep 2009 20:40:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, hugh.dickins@tiscali.co.uk
+Subject: Re: shmem_fill_super(): WARNING: kmemcheck: Caught 32-bit read
+	from uninitialized memory
+Message-ID: <20090920184059.GA21154@elte.hu>
+References: <20090915080953.GA24958@elte.hu> <20090920072210.GA23787@elte.hu> <19f34abd0909201035t3157948amee532a3a5e96dbab@mail.gmail.com> <alpine.DEB.2.00.0909202046460.7394@melkki.cs.helsinki.fi> <20090920175803.GB23736@elte.hu> <84144f020909201101g2f1dbc22wd2497e8309800d7e@mail.gmail.com>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Tejun Heo <teheo@suse.de>, Chris Webb <chris@arachsys.com>,
-       linux-scsi@vger.kernel.org, Ric Wheeler <rwheeler@redhat.com>,
-       Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de> <4AAE3B9A.2060306@rtr.ca> <4AAE3F86.8090804@suse.de> <4AAE524C.2030401@rtr.ca> <20090916231921.GL1924@arachsys.com> <4AB239C8.2020203@rtr.ca> <4AB25736.1060601@suse.de> <4AB260CA.8040308@rtr.ca>
-In-Reply-To: <4AB260CA.8040308@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020909201101g2f1dbc22wd2497e8309800d7e@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/17/2009 10:16 AM, Mark Lord wrote:
-> Tejun Heo wrote:
->> Hello,
->>
->> Mark Lord wrote:
->>> Tejun.. do we do a FLUSH CACHE before issuing a non-NCQ command ?
->>
->> Nope.
->>
->>> If not, then I think we may need to add code to do it.
->>
->> Hmm... can you explain a bit more? That seems rather extreme to me.
-> ..
->
-> You may recall that I first raised this issue about a year ago,
-> when my own RAID0 array (MythTV box) started showing errors very
-> similar to what Chris is reporting.
->
-> These were easily triggered by running hddtemp once every few seconds
-> to log drive temperatures during Myth recording sessions.
->
-> hddtemp uses SMART commands.
->
-> The actual errors in the logs were command timeouts,
-> but at this point I no longer remember which opcode was
-> actually timing out. Disabling the onboard write cache
-> immediately "cured" the problem, at the expense of MUCH
-> slower I/O times.
->
-> My theory at the time, was that some non-NCQ commands might be triggering
-> an internal FLUSH CACHE within the (Hitachi) drive firmware, which then
-> caused the original command to timeout in libata (due to the large amounts
-> of data present in the onboard write-caches).
->
-> Now that more people are playing the game, we're seeing more and more
-> reports of strange interactions with smartd running in the background.
 
-Well, unless the SMART commands are using a non-standard timeout, it'll 
-be the same as the timeout for the flush cache, so the flush cache would 
-have timed out too..
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
->
-> I suspect more and more now that this is an (avoidable) interaction
-> between the write-cache and the SMART opcode, and it could perhaps be
-> avoided by doing a FLUSH CACHE before any SMART (or non-data command)
-> opcode.
->
-> Cheers
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
->
+> Hi Ingo,
+> 
+> On Sun, Sep 20, 2009 at 8:58 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> >> Date: Sun, 20 Sep 2009 20:43:35 +0300
+> >> Subject: [PATCH] shmem: initialize struct shmem_sb_info to zero
+> >>
+> >> Fixes the following kmemcheck false positive:
+> >>
+> >> [ ? ?0.337000] Total of 1 processors activated (3088.38 BogoMIPS).
+> >> [ ? ?0.352000] CPU0 attaching NULL sched-domain.
+> >> [ ? ?0.360000] WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (9f8020fc)
+> >> [ ? ?0.361000] a44240820000000041f6998100000000000000000000000000000000ff030000
+> >> [ ? ?0.368000] ?i i i i i i i i i i i i i i i i u u u u i i i i i i i i i i u u
+> >> [ ? ?0.375000] ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?^
+> >> [ ? ?0.376000]
+> >> [ ? ?0.377000] Pid: 9, comm: khelper Not tainted (2.6.31-tip #206) P4DC6
+> >> [ ? ?0.378000] EIP: 0060:[<810a3a95>] EFLAGS: 00010246 CPU: 0
+> >> [ ? ?0.379000] EIP is at shmem_fill_super+0xb5/0x120
+> >> [ ? ?0.380000] EAX: 00000000 EBX: 9f845400 ECX: 824042a4 EDX: 8199f641
+> >> [ ? ?0.381000] ESI: 9f8020c0 EDI: 9f845400 EBP: 9f81af68 ESP: 81cd6eec
+> >> [ ? ?0.382000] ?DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> >> [ ? ?0.383000] CR0: 8005003b CR2: 9f806200 CR3: 01ccd000 CR4: 000006d0
+> >> [ ? ?0.384000] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> >> [ ? ?0.385000] DR6: ffff4ff0 DR7: 00000400
+> >> [ ? ?0.386000] ?[<810c25fc>] get_sb_nodev+0x3c/0x80
+> >> [ ? ?0.388000] ?[<810a3514>] shmem_get_sb+0x14/0x20
+> >> [ ? ?0.390000] ?[<810c207f>] vfs_kern_mount+0x4f/0x120
+> >> [ ? ?0.392000] ?[<81b2849e>] init_tmpfs+0x7e/0xb0
+> >> [ ? ?0.394000] ?[<81b11597>] do_basic_setup+0x17/0x30
+> >> [ ? ?0.396000] ?[<81b11907>] kernel_init+0x57/0xa0
+> >> [ ? ?0.398000] ?[<810039b7>] kernel_thread_helper+0x7/0x10
+> >> [ ? ?0.400000] ?[<ffffffff>] 0xffffffff
+> >> [ ? ?0.402000] khelper used greatest stack depth: 2820 bytes left
+> >> [ ? ?0.407000] calling ?init_mmap_min_addr+0x0/0x10 @ 1
+> >> [ ? ?0.408000] initcall init_mmap_min_addr+0x0/0x10 returned 0 after 0 usecs
+> >>
+> >> Reported-by: Ingo Molnar <mingo@elte.hu>
+> >> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> >> ---
+> >> ?mm/shmem.c | ? ?5 +----
+> >> ?1 files changed, 1 insertions(+), 4 deletions(-)
+> >>
+> >> diff --git a/mm/shmem.c b/mm/shmem.c
+> >> index d713239..a8f54f3 100644
+> >> --- a/mm/shmem.c
+> >> +++ b/mm/shmem.c
+> >> @@ -2307,17 +2307,14 @@ static int shmem_fill_super(struct super_block *sb,
+> >> ? ? ? int err = -ENOMEM;
+> >>
+> >> ? ? ? /* Round up to L1_CACHE_BYTES to resist false sharing */
+> >> - ? ? sbinfo = kmalloc(max((int)sizeof(struct shmem_sb_info),
+> >> + ? ? sbinfo = kzalloc(max((int)sizeof(struct shmem_sb_info),
+> >> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? L1_CACHE_BYTES), GFP_KERNEL);
+> >> ? ? ? if (!sbinfo)
+> >> ? ? ? ? ? ? ? return -ENOMEM;
+> >>
+> >> - ? ? sbinfo->max_blocks = 0;
+> >> - ? ? sbinfo->max_inodes = 0;
+> >> ? ? ? sbinfo->mode = S_IRWXUGO | S_ISVTX;
+> >> ? ? ? sbinfo->uid = current_fsuid();
+> >> ? ? ? sbinfo->gid = current_fsgid();
+> >> - ? ? sbinfo->mpol = NULL;
+> >> ? ? ? sb->s_fs_info = sbinfo;
+> >
+> > That looks like a step forward even without kmemcheck considered, right?
+> 
+> Oh, sure. It usually less error prone to use kzalloc() for infrequent 
+> allocations such as this.
 
+So in that sense kmemcheck was useful here: it made kernel code a bit 
+better.
+
+	Ingo
