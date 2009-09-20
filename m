@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbZITJCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZITJuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155AbZITJCM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 05:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbZITJCM
+	id S1754451AbZITJuE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 05:50:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZITJuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 05:02:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:3016 "EHLO mx1.redhat.com"
+	Sun, 20 Sep 2009 05:50:03 -0400
+Received: from lo.gmane.org ([80.91.229.12]:58183 "EHLO lo.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753925AbZITJCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 05:02:11 -0400
-Message-ID: <4AB5EF25.9070502@redhat.com>
-Date: Sun, 20 Sep 2009 12:00:21 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Alok Kataria <akataria@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	<20090919224430.GB9567@kroah.com>	<1253419185.3253.21.camel@ank32.eng.vmware.com>	<20090920074247.GA5733@elte.hu> <20090920095239.456ad6f2@infradead.org>
-In-Reply-To: <20090920095239.456ad6f2@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754353AbZITJuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 05:50:01 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Holger Hoffstaette" <holger.hoffstaette@googlemail.com>
+Subject: Re: it87 sensors need an ACPI driver (2.6.31)
+Date: Sun, 20 Sep 2009 11:10:22 +0200
+Organization: The Fists of the White Lotus
+Message-ID: <pan.2009.09.20.09.10.22.472125@googlemail.com>
+References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: port-87-234-135-12.dynamic.qsc.de
+User-Agent: Pan/0.13.91 (Before we let euphoria convince us we are free)
+Cc: lm-sensors@lm-sensors.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/20/2009 10:52 AM, Arjan van de Ven wrote:
-> On Sun, 20 Sep 2009 09:42:47 +0200
-> Ingo Molnar<mingo@elte.hu>  wrote:
->
->    
->> If we were able to rip out all (or most) of paravirt from arch/x86 it
->> would be tempting for other technical reasons - but the patch above
->> is well localized.
->>      
-> interesting question is if this would allow us to remove a few of the
-> paravirt hooks....
->    
+On Sun, 20 Sep 2009 10:20:57 +0200, wixor wrote:
 
-kvm will be removing the pvmmu support soon; and Xen is talking about 
-running paravirtualized guests in a vmx/svm container where they don't 
-need most of the hooks.
+> Hello,
+> with recent upgrade to 2.6.31 I get
+> 
+> it87: Found IT8712F chip at 0x290, revision 7
+> it87: in3 is VCC (+5V)
+> it87: in7 is VCCH (+5V Stand-By)
+> ACPI: I/O resource it87 [0x295-0x296] conflicts with ACPI region IP__
+> [0x295-0x296]
+> ACPI: Device needs an ACPI driver
+> FATAL: Error inserting it87
+> (/lib/modules/2.6.31/kernel/drivers/hwmon/it87.ko): Device or resource
+> busy
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Not a bug, see http://bugzilla.kernel.org/show_bug.cgi?id=13967
+Add acpi_enforce_resources=lax to your kernel boot options.
+
+-h
+
 
