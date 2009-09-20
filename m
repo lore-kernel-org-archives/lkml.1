@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZITHrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZITHz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbZITHrp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 03:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZITHro
+	id S1753977AbZITHz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 03:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZITHz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 03:47:44 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:34972 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753180AbZITHrn (ORCPT
+	Sun, 20 Sep 2009 03:55:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55501 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751646AbZITHz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 03:47:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=H7UsFF1dnMy5ui7BzSvGo9MTeeR9Qewneio/yjzpAD7EYMlG/GlZH0cItKxImZyyQa
-         pJsNFDQRi0b/uim7GlEwvMXwmUcHzxHjdX0Q0KqTOwUHo1gBPQ+xgDvX6WusE6ci7Z+U
-         +dEKA4JLf9ywFRabUn15c95Ln47WfPgOdoLr8=
-Message-ID: <4AB5DE1F.1020004@gmail.com>
-Date: Sun, 20 Sep 2009 01:47:43 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-CC: r.marek@assembler.cz
-Subject: coretemp support for Core i5 CPU
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 20 Sep 2009 03:55:27 -0400
+Date: Sun, 20 Sep 2009 09:52:39 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alok Kataria <akataria@vmware.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+Message-ID: <20090920095239.456ad6f2@infradead.org>
+In-Reply-To: <20090920074247.GA5733@elte.hu>
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
+	<20090919224430.GB9567@kroah.com>
+	<1253419185.3253.21.camel@ank32.eng.vmware.com>
+	<20090920074247.GA5733@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to load the coretemp driver for CPU temperature monitoring on a 
-Core i5 750 CPU gives:
+On Sun, 20 Sep 2009 09:42:47 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-coretemp: Unknown CPU model 1e
-coretemp: Unknown CPU model 1e
-coretemp: Unknown CPU model 1e
-coretemp: Unknown CPU model 1e
+> If we were able to rip out all (or most) of paravirt from arch/x86 it 
+> would be tempting for other technical reasons - but the patch above
+> is well localized.
 
-Looks like this model needs to be added to the list in 
-drivers/hwmon/coretemp.c. Though this doesn't really seem like a very 
-good approach as we'll keep having to update this driver whenever a new 
-CPU model gets released. Intel has a CPUID field that indicates if the 
-thermal sensor is supported: "The processor supports a digital thermal 
-sensor if CPUID.06H.EAX[0] = 1." We should likely be using this instead 
-of hard-coded CPU model checks..
+interesting question is if this would allow us to remove a few of the
+paravirt hooks....
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
