@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbZITRM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZITRRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbZITRM3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 13:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbZITRM1
+	id S1754868AbZITRRh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 13:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbZITRRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 13:12:27 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:59949 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754682AbZITRM0 (ORCPT
+	Sun, 20 Sep 2009 13:17:37 -0400
+Received: from mail-in-17.arcor-online.net ([151.189.21.57]:49666 "EHLO
+	mail-in-17.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754693AbZITRRg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 13:12:26 -0400
-Date: Sun, 20 Sep 2009 13:12:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Tilman Schmidt <tilman@imap.cc>, <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone VPA-II"
- ?
-In-Reply-To: <20090920150549.GC11621@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0909201308550.8307-100000@netrider.rowland.org>
+	Sun, 20 Sep 2009 13:17:36 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-17.arcor-online.net 642273B2B84
+Message-ID: <4AB663B0.9070600@arcor.de>
+Date: Sun, 20 Sep 2009 20:17:36 +0300
+From: Nikos Chantziaras <realnc@arcor.de>
+Organization: Lucas Barks
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Poor desktop responsiveness with background I/O-operations
+References: <4AB59CBB.8090907@datenparkplatz.de> <20090920080728.73bfe2a1@infradead.org> <4AB5ECD0.7010903@datenparkplatz.de>
+In-Reply-To: <4AB5ECD0.7010903@datenparkplatz.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009, Greg KH wrote:
+(Please don't strip the CC list when you reply.  Use the "Reply to all" 
+functionality of your mail client and keep all CCs.)
 
-> On Sun, Sep 20, 2009 at 03:39:57PM +0200, Tilman Schmidt wrote:
-> > When I connect my "T-Mobile MDA compact III" to my PC, running
-> > kernel 2.6.31 with openSUSE 10.3 userspace, I get exactly the
-> > symptoms described in:
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8094
-> > 
-> > But that bug is marked as "CLOSED CODE_FIX", though reading through
-> > the comments I found no clear indication what was actually fixed,
-> > and from reading through the source files drivers/usb/serial/ipaq.c
-> > and drivers/usb/serial/usb-serial.c I get the impression that the
-> > problem of ipaq_open() oopsing because it gets called with
-> > port->read_urb==NULL is still present.
+On 09/20/2009 11:50 AM, Ulrich Lukas wrote:
+> Arjan van de Ven wrote:
+>> can you try the following two things?
+>>
+>> echo 4096>  /sys/block/sda/queue/nr_requests
+>> for i in `pidof kjournald` ; do ionice -c1 -p $i ; done
+>
+> I tried this just now, but it doesn't change things much. I can do a
+> more testing later today.
+>
+>
+>> I assume you're using CFQ.
+>
+> Yes, it's CFQ. (see .config of my previous posting)
+>
+> Filesystem is EXT4.
 
-Interestingly, the fix from that bug report _was_ merged as commit
-063a2da8f01806906f7d7b1a1424b9afddebc443 (written by me).  But then it
-was removed later on(!) in commits
-07c3b1a1001614442c665570942a3107a722c314 and
-9aebfd6bda789891e6d296bb49b5fb32d1057f18 (written by Greg).
-
-Apparently the check should have been moved from the core into the 
-lower-level driver (i.e., ipaq.c) but it wasn't.  I don't know why; 
-maybe Greg does.
-
-Alan Stern
-
+I can also confirm total lock-up when copying a big file (Intel Core 2 
+Duo, Intel X38 chipset).  Everything locks-up for several seconds during 
+the copying.  I'm also on ext4.  I've been told on various mailing lists 
+that this is normal, expected and unavoidable so I pretty much think the 
+only solution is to avoid heavy I/O :P
