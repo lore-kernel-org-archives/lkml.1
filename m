@@ -1,34 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbZITHnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbZITHrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbZITHnc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 03:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZITHnc
+	id S1753896AbZITHrQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 03:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZITHrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 03:43:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59195 "EHLO mx3.mail.elte.hu"
+	Sun, 20 Sep 2009 03:47:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46394 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751619AbZITHnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 03:43:31 -0400
-Date: Sun, 20 Sep 2009 09:42:47 +0200
+	id S1753153AbZITHrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 03:47:15 -0400
+Date: Sun, 20 Sep 2009 09:47:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-Message-ID: <20090920074247.GA5733@elte.hu>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090919224430.GB9567@kroah.com> <1253419185.3253.21.camel@ank32.eng.vmware.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT pull] timers/timekeeping for 2.6.32
+Message-ID: <20090920074706.GA32245@elte.hu>
+References: <alpine.LFD.2.00.0909161555360.8957@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253419185.3253.21.camel@ank32.eng.vmware.com>
+In-Reply-To: <alpine.LFD.2.00.0909161555360.8957@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -42,43 +35,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alok Kataria <akataria@vmware.com> wrote:
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> Here is the patch which actually removes the vmi code.
+> Linus,
 > 
-> Signed-off-by: Alok N Kataria <akataria@vmware.com>
-> ---
+> Please pull the latest timers-for-linus git tree from:
 > 
->  Documentation/kernel-parameters.txt |    2 
->  arch/x86/Kconfig                    |   10 
->  arch/x86/include/asm/vmi.h          |  269 ----------
->  arch/x86/include/asm/vmi_time.h     |   98 ----
->  arch/x86/kernel/Makefile            |    1 
->  arch/x86/kernel/setup.c             |    7 
->  arch/x86/kernel/smpboot.c           |    9 
->  arch/x86/kernel/vmi_32.c            |  913 -----------------------------------
->  arch/x86/kernel/vmiclock_32.c       |  321 ------------
->  9 files changed, 1 insertions(+), 1629 deletions(-)
->  delete mode 100644 arch/x86/include/asm/vmi.h
->  delete mode 100644 arch/x86/include/asm/vmi_time.h
->  delete mode 100644 arch/x86/kernel/vmi_32.c
->  delete mode 100644 arch/x86/kernel/vmiclock_32.c
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-for-linus
+> 
+> The changes in arch/arm, m68knommu, mips, powerpc, s390, sh, x86 and
+> xtensa are fixups due to API changes in the core code.
 
-The thing is, the overwhelming majority of vmware users dont benefit 
-from hardware features like nested page tables yet. So this needs to be 
-done _way_ more carefully, with a proper sunset period of a couple of 
-kernel cycles.
+Linus,
 
-This is as if Intel had sent a patch to desupport say Core2 
-optimizations, now that Nehalem is out.
+When pulling this you did a merge resolution to 
+arch/mips/loongson/common/time.c in commit a03fdb761, but it looks 
+suspicious:
 
-'Virtual hardware' is no different in this respect: until users benefit 
-from something we want to keep it, even if the vendor would like to sell 
-new hardware and would like the new hardware to have an edge over the 
-installed base.
+ void read_persistent_clock(struct timespec *ts)
+ {
+         ts->tv_sec = return mc146818_get_cmos_time();
+         ts->tv_nsec = 0;
+ }
 
-If we were able to rip out all (or most) of paravirt from arch/x86 it 
-would be tempting for other technical reasons - but the patch above is 
-well localized.
+that 'return' looks stray, so shouldnt we do the fix below?
 
 	Ingo
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/arch/mips/loongson/common/time.c b/arch/mips/loongson/common/time.c
+index 0edbef3..6e08c82 100644
+--- a/arch/mips/loongson/common/time.c
++++ b/arch/mips/loongson/common/time.c
+@@ -23,6 +23,6 @@ void __init plat_time_init(void)
+ 
+ void read_persistent_clock(struct timespec *ts)
+ {
+-	ts->tv_sec = return mc146818_get_cmos_time();
++	ts->tv_sec = mc146818_get_cmos_time();
+ 	ts->tv_nsec = 0;
+ }
