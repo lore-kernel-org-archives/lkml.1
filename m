@@ -1,115 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZITS2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbZITS3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbZITS2W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbZITS2V
+	id S1755440AbZITS3T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZITS3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:28:21 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60487 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752782AbZITS2U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:28:20 -0400
-Date: Sun, 20 Sep 2009 14:28:03 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: David Howells <dhowells@redhat.com>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
-Subject: [PATCH] mn10300 linker script cleanup
-Message-ID: <alpine.DEB.1.10.0909201414380.3101@dr-wily.mit.edu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 20 Sep 2009 14:29:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56224 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755279AbZITS3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:29:16 -0400
+Date: Sun, 20 Sep 2009 18:28:42 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, gorcunov@openvz.org, macro@linux-mips.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, yinghai@kernel.org, macro@linux-mips.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090915071230.GA10604@lenovo>
+References: <20090915071230.GA10604@lenovo>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, apic: Fix missed handling of discrete apics
+Message-ID: <tip-8312136fa8b0a3ec7323bbb1a46be8c0c26e994e@git.kernel.org>
+Git-Commit-ID: 8312136fa8b0a3ec7323bbb1a46be8c0c26e994e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 20 Sep 2009 18:28:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+Commit-ID:  8312136fa8b0a3ec7323bbb1a46be8c0c26e994e
+Gitweb:     http://git.kernel.org/tip/8312136fa8b0a3ec7323bbb1a46be8c0c26e994e
+Author:     Cyrill Gorcunov <gorcunov@openvz.org>
+AuthorDate: Tue, 15 Sep 2009 11:12:30 +0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 20 Sep 2009 20:18:07 +0200
 
-I noticed that you already converted to mn10300 architecture to use some 
-of the new macros in vmlinux.lds.h.  It seems to me that one could clean 
-things up further by using some of the higher-level macros 
-(RW_DATA_SECTION, INIT_TEXT_SECTION, INIT_DATA_SECTION).  Patch below.
+x86, apic: Fix missed handling of discrete apics
 
-	Best regards,
-	-Tim Abbott
+In case of discrete (pretty old) apics we may have cpu_has_apic bit
+not set but have to check if smp_found_config (MP spec) is there
+and apic was not disabled.
 
-mn10300: Clean up linker script using higher-level macros.
+Also don't forget to print apic/io-apic for such case as well.
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <20090915071230.GA10604@lenovo>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- arch/mn10300/kernel/vmlinux.lds.S |   40 +++---------------------------------
- 1 files changed, 4 insertions(+), 36 deletions(-)
+ arch/x86/include/asm/apic.h    |   13 +++++++++++++
+ arch/x86/kernel/apic/apic.c    |    2 +-
+ arch/x86/kernel/apic/io_apic.c |    4 ++--
+ 3 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
-index 76f41bd..10549dc 100644
---- a/arch/mn10300/kernel/vmlinux.lds.S
-+++ b/arch/mn10300/kernel/vmlinux.lds.S
-@@ -44,24 +44,8 @@ SECTIONS
-   RO_DATA(PAGE_SIZE)
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 586b7ad..9a86fb4 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -66,6 +66,19 @@ static inline void default_inquire_remote_apic(int apicid)
+ }
  
-   /* writeable */
--  .data : {			/* Data */
--	DATA_DATA
--	CONSTRUCTORS
--	}
--
--  .data_nosave : { NOSAVE_DATA; }
--
--  .data.page_aligned : { PAGE_ALIGNED_DATA(PAGE_SIZE); }
--  .data.cacheline_aligned : { CACHELINE_ALIGNED_DATA(32); }
--
--  /* rarely changed data like cpu maps */
--  . = ALIGN(32);
--  .data.read_mostly : AT(ADDR(.data.read_mostly)) {
--	READ_MOSTLY_DATA(32);
--	_edata = .;		/* End of data section */
--  }
--
--  .data.init_task : { INIT_TASK_DATA(THREAD_SIZE); }
-+  RW_DATA_SECTION(32, PAGE_SIZE, THREAD_SIZE)
-+  _edata = .;
+ /*
++ * With 82489DX we can't rely on apic feature bit
++ * retrieved via cpuid but still have to deal with
++ * such an apic chip so we assume that SMP configuration
++ * is found from MP table (64bit case uses ACPI mostly
++ * which set smp presence flag as well so we are safe
++ * to use this helper too).
++ */
++static inline bool apic_from_smp_config(void)
++{
++	return smp_found_config && !disable_apic;
++}
++
++/*
+  * Basic functions accessing APICs.
+  */
+ #ifdef CONFIG_PARAVIRT
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 072aea6..2d59dfa 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -978,7 +978,7 @@ void lapic_shutdown(void)
+ {
+ 	unsigned long flags;
  
-   /* might get freed after init */
-   . = ALIGN(PAGE_SIZE);
-@@ -74,22 +58,8 @@ SECTIONS
-   /* will be freed after init */
-   . = ALIGN(PAGE_SIZE);		/* Init code and data */
-   __init_begin = .;
--  .init.text : {
--	_sinittext = .;
--	INIT_TEXT;
--	_einittext = .;
--  }
--  .init.data : { INIT_DATA; }
--  .setup.init : { INIT_SETUP(16); }
--
--  __initcall_start = .;
--  .initcall.init : {
--	INITCALLS
--  }
--  __initcall_end = .;
--  .con_initcall.init : { CON_INITCALL; }
--
--  SECURITY_INIT
-+  INIT_TEXT_SECTION(PAGE_SIZE)
-+  INIT_DATA_SECTION(16)
-   . = ALIGN(4);
-   __alt_instructions = .;
-   .altinstructions : { *(.altinstructions) }
-@@ -100,8 +70,6 @@ SECTIONS
- 	.exit.text : { EXIT_TEXT; }
- 	.exit.data : { EXIT_DATA; }
+-	if (!cpu_has_apic)
++	if (!cpu_has_apic && !apic_from_smp_config())
+ 		return;
  
--  .init.ramfs : { INIT_RAM_FS; }
--
-   PERCPU(32)
-   . = ALIGN(PAGE_SIZE);
-   __init_end = .;
--- 
-1.6.3.3
-
+ 	local_irq_save(flags);
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 3c8f9e7..593c4f8 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -1863,7 +1863,7 @@ __apicdebuginit(int) print_all_ICs(void)
+ 	print_PIC();
+ 
+ 	/* don't print out if apic is not there */
+-	if (!cpu_has_apic || disable_apic)
++	if (!cpu_has_apic && !apic_from_smp_config())
+ 		return 0;
+ 
+ 	print_all_local_APICs();
+@@ -1981,7 +1981,7 @@ void disable_IO_APIC(void)
+ 	/*
+ 	 * Use virtual wire A mode when interrupt remapping is enabled.
+ 	 */
+-	if (cpu_has_apic)
++	if (cpu_has_apic || apic_from_smp_config())
+ 		disconnect_bsp_APIC(!intr_remapping_enabled &&
+ 				ioapic_i8259.pin != -1);
+ }
