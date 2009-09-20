@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbZITVNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751953AbZITVQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751988AbZITVNn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 17:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbZITVNk
+	id S1751953AbZITVQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 17:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbZITVQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 17:13:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:60487 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbZITVNj (ORCPT
+	Sun, 20 Sep 2009 17:16:25 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:52275 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbZITVQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 17:13:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=eRytb9jEz8uFVq0A3xULvd63OkCkveNGmdlWz5YaIpBODcd1jCojVUwdcM7Iq2/qjp
-         DASjKq1mSuTLjLQBcN1F+cgA7kLPC5WsN/WxI31HkCJ+GEzmF9bTAngx8adPfcJ3J66Z
-         DcZybxzp/y4mQvrSMTPry+QH2wO+joArLR7no=
-Message-ID: <4AB69AFF.1070902@gmail.com>
-Date: Sun, 20 Sep 2009 23:13:35 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Sun, 20 Sep 2009 17:16:25 -0400
+Date: Sun, 20 Sep 2009 23:16:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 1/4] kbuild: Don't define ALIGN and ENTRY when
+	preprocessing linker scripts.
+Message-ID: <20090920211627.GB27042@merkur.ravnborg.org>
+References: <1253472193-21106-1-git-send-email-tabbott@ksplice.com> <1253472193-21106-2-git-send-email-tabbott@ksplice.com>
 MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone VPA-II"
- ?
-References: <4AB630AD.90207@imap.cc> <20090920150549.GC11621@kroah.com> <4AB65FD9.3020004@imap.cc>
-In-Reply-To: <4AB65FD9.3020004@imap.cc>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253472193-21106-2-git-send-email-tabbott@ksplice.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote:
-> Btw, I just found another bugzilla entry describing essentially
-> the same problem:
+On Sun, Sep 20, 2009 at 02:43:10PM -0400, Tim Abbott wrote:
+> Adding a reference to <linux/linkage.h> to x86's <asm/cache.h> causes
+> the x86 linker script to have syntax errors, because the ALIGN and
+> ENTRY keywords get redefined to the assembly implementations of those.
+> One could fix this by adjusting the include structure, but I think any
+> solution based on that approach would be fragile.
 > 
-> Bug 10868 -  Oops on loading ipaq module since 2.6.26, prevents use of device
-> http://bugzilla.kernel.org/show_bug.cgi?id=10868
-> 
-> Its status is - you'll never guess - "CLOSED CODE_FIX"!
-> 
-> Quite a persistent little fella, it seems.
-> 
+> Currently, it is impossible when writing a header to do something
+> different for assembly files and linker scripts, even though there are
+> clearly cases where one wants them to define macros differently for
+> the two (ENTRY being an excellent example).  So I think the right
+> solution here is to introduce a new preprocessor definition,
+> tentatively called __LINKER_SCRIPT__ that is set along with
+> __ASSEMBLY__ for linker scripts, and to use that to not define ALIGN
+> and ENTRY in linker scripts.  I suspect we'll find other uses for this
+> mechanism in the future.
 
-FYI, there are hundreds of kerneloops reports for ipaq_open...
-(from 2.6.25 to 2.6.31)
-http://kerneloops.org/guilty.php?guilty=ipaq_open&version=2.6.31-release&start=2064384&end=2097151&class=oops
+We will need this - agreed.
 
-Marcin
+The reason for __XXX___ for ASSEMBLY and KERNEL is the fact
+that these are used in user space headers.
+
+I would suggest to use: LINKER_SCRIPT
+
+> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+> index 5c4b7a4..e51e213 100644
+> --- a/scripts/Makefile.build
+> +++ b/scripts/Makefile.build
+> @@ -269,7 +269,8 @@ targets += $(extra-y) $(MAKECMDGOALS) $(always)
+>  # Linker scripts preprocessor (.lds.S -> .lds)
+>  # ---------------------------------------------------------------------------
+>  quiet_cmd_cpp_lds_S = LDS     $@
+> -      cmd_cpp_lds_S = $(CPP) $(cpp_flags) -D__ASSEMBLY__ -o $@ $<
+> +      cmd_cpp_lds_S = $(CPP) $(cpp_flags) -D__ASSEMBLY__ -D__LINKER_SCRIPT__ \
+> +		      -o $@ $<
+
+This will conflict (in a trivial way) with stuff I have
+pending for this merge window.
+
+	Sam
