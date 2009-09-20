@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZITSmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZITSra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZITSmE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZITSmC
+	id S1755565AbZITSra (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZITSr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:42:02 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:52879 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753566AbZITSmA (ORCPT
+	Sun, 20 Sep 2009 14:47:29 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:63222 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755081AbZITSr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:42:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dbx4qy71rdVsHPOdP3ApIlJbbgR2GDfE6F64XMzCK1m66BDFEiobGMI7lX25Y9xHjT
-         WM3lAzGJnQ1G9a+WKvhal8/XMOGo14dY7Lasb3J8aYRhQVSmAXQiK44vSwK/qXHB7H6q
-         dk3AylDx566ukAkeurNcS/9xUpR8PEQotxpRI=
-Date: Sun, 20 Sep 2009 22:42:03 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Sheng Yang <sheng@linux.intel.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Don't ack_APIC_irq() if lapic is disabled in
-	GENERIC_INTERRUPT_VECTOR handler
-Message-ID: <20090920184203.GD32176@lenovo>
-References: <1252403546-12544-1-git-send-email-sheng@linux.intel.com> <20090920180632.GB8498@elte.hu> <20090920181326.GB32176@lenovo> <20090920182124.GD8498@elte.hu> <20090920183011.GC32176@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090920183011.GC32176@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 20 Sep 2009 14:47:28 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH v3 0/4] Use macros rather than hardcoding section names
+Date: Sun, 20 Sep 2009 14:43:09 -0400
+Message-Id: <1253472193-21106-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sun, Sep 20, 2009 at 10:30:11PM +0400]
-...
-| | > 
-| | > iirc it was Xen related patch. So it's not that simple.
-| | > 
-| | > I've pointed out Sheng about disable_apic. I'm not Xen
-| | > specialist but Xen team seem to use specific apic setup
-| | > so our "dummy" operations are not involved (case they
-| | > set disable_apic=1 without "turn off" apic ops in real).
-| | > Something like that.
-| | 
-| | They should then set a NOP function in that case. We really dont want to 
-| | slow down hotpath functions like smp_generic_interrupt() with flaggery.
-| | 
-| | 	Ingo
-| | 
-| 
-| Well, I suppose we should wait for Sheng's comments.
-| I wish I would answer you but I simply don't know Xen
-| code :)
-| 
-| 	-- Cyrill
+This patch series cleans up the kernel's explicit references to
+.data.page_aligned, .bss.page_aligned, and .data.init_task in C and
+assembly code to instead use the standard macros for that purpose.
 
-Wait a bit Ingo, please. It seems I'm having different
-patch series in mind. Need to restore mail thread.
-Will back soon :)
+Version 3 differs from version 2 in two ways:
+- The .data.init_task patch also updates the score architecture
+- The powerpc __page_aligned_data patch was removed (since Benjamin
+Herrenschmidt said he was taking it).
 
-	-- Cyrill
+Version 2 differed from version 1 in that it added the kbuild patch,
+fixing breakage in the x86 linker script caused indirectly by
+including linux/linkage.h in x86's asm/cache.h.
+
+This cleanup is in preparation for being able to change the names of
+the .data.page_aligned and .bss.page_aligned sections to be
+compatible with -ffunction-sections -fdata-sections (a prerequisite
+for Ksplice).
+
+Joe Perches (1):
+  Use new __init_task_data macro in arch init_task.c files.
+
+Tim Abbott (3):
+  kbuild: Don't define ALIGN and ENTRY when preprocessing linker
+    scripts.
+  Use macros for .bss.page_aligned section.
+  Use macros for .data.page_aligned section.
+
+ arch/arm/kernel/init_task.c                 |    5 ++---
+ arch/avr32/kernel/init_task.c               |    5 ++---
+ arch/avr32/mm/init.c                        |    4 +---
+ arch/cris/kernel/process.c                  |    5 ++---
+ arch/frv/kernel/init_task.c                 |    5 ++---
+ arch/h8300/kernel/init_task.c               |    5 ++---
+ arch/ia64/kernel/init_task.c                |    3 ++-
+ arch/m32r/kernel/init_task.c                |    5 ++---
+ arch/m68k/kernel/process.c                  |    6 +++---
+ arch/m68knommu/kernel/init_task.c           |    5 ++---
+ arch/microblaze/kernel/init_task.c          |    5 ++---
+ arch/mips/kernel/init_task.c                |    5 ++---
+ arch/mn10300/kernel/init_task.c             |    5 ++---
+ arch/parisc/kernel/init_task.c              |    4 ++--
+ arch/powerpc/kernel/init_task.c             |    5 ++---
+ arch/powerpc/kernel/machine_kexec_64.c      |    5 +++--
+ arch/powerpc/kernel/vdso.c                  |    3 ++-
+ arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
+ arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
+ arch/s390/kernel/init_task.c                |    5 ++---
+ arch/s390/kernel/vdso.c                     |    2 +-
+ arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 ++-
+ arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 ++-
+ arch/score/kernel/init_task.c               |    5 ++---
+ arch/sh/kernel/init_task.c                  |    5 ++---
+ arch/sh/kernel/irq.c                        |    6 ++----
+ arch/sparc/kernel/init_task.c               |    5 ++---
+ arch/um/kernel/init_task.c                  |    5 ++---
+ arch/x86/include/asm/cache.h                |    4 +++-
+ arch/x86/kernel/head_32.S                   |    4 ++--
+ arch/x86/kernel/head_64.S                   |    2 +-
+ arch/x86/kernel/init_task.c                 |    5 ++---
+ arch/xtensa/kernel/head.S                   |    2 +-
+ arch/xtensa/kernel/init_task.c              |    5 ++---
+ include/linux/linkage.h                     |    2 ++
+ scripts/Makefile.build                      |    3 ++-
+ 36 files changed, 71 insertions(+), 81 deletions(-)
+
