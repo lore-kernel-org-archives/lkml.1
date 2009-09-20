@@ -1,38 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZITRkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbZITRkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbZITRkB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 13:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbZITRkA
+	id S1755238AbZITRkx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 13:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbZITRku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 13:40:00 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:36227 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754910AbZITRkA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 13:40:00 -0400
-Date: Sun, 20 Sep 2009 19:40:03 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Chen Liqin <liqin.chen@sunplusct.com>, Lennox Wu <lennox.wu@sunplusct.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Make THREAD_SIZE available to assembly files.
-Message-ID: <20090920174003.GB26923@merkur.ravnborg.org>
-References: <1253467979-14110-1-git-send-email-tabbott@ksplice.com> <1253467979-14110-3-git-send-email-tabbott@ksplice.com>
+	Sun, 20 Sep 2009 13:40:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49511 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755231AbZITRkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 13:40:47 -0400
+Date: Sun, 20 Sep 2009 17:40:15 GMT
+From: tip-bot for Arjan van de Ven <arjan@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, arjan@linux.intel.com,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, arjan@linux.intel.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090920181328.68baa978@linux.intel.com>
+References: <20090920181328.68baa978@linux.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/urgent] perf timechart: Show the name of the waker/wakee in timechart
+Message-ID: <tip-4f1202c8e61478984ed2d0df616149faf84c2a7f@git.kernel.org>
+Git-Commit-ID: 4f1202c8e61478984ed2d0df616149faf84c2a7f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1253467979-14110-3-git-send-email-tabbott@ksplice.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 20 Sep 2009 17:40:18 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 20, 2009 at 01:32:58PM -0400, Tim Abbott wrote:
-> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Commit-ID:  4f1202c8e61478984ed2d0df616149faf84c2a7f
+Gitweb:     http://git.kernel.org/tip/4f1202c8e61478984ed2d0df616149faf84c2a7f
+Author:     Arjan van de Ven <arjan@linux.intel.com>
+AuthorDate: Sun, 20 Sep 2009 18:13:28 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 20 Sep 2009 19:37:34 +0200
 
-subject miss "score:" prefix.
-Other than that:
+perf timechart: Show the name of the waker/wakee in timechart
 
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Timechart currently shows thin green lines for sending or receiving
+wakeups. This patch also prints (in a very small font) the name of
+the process that is being woken/wakes up this process.
 
-	Sam
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20090920181328.68baa978@linux.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/builtin-timechart.c |   11 ++++++++---
+ tools/perf/util/svghelper.c    |   28 +++++++++++++++++++++-------
+ tools/perf/util/svghelper.h    |    2 +-
+ 3 files changed, 30 insertions(+), 11 deletions(-)
+
+diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
+index 58d737e..3f45b8b 100644
+--- a/tools/perf/builtin-timechart.c
++++ b/tools/perf/builtin-timechart.c
+@@ -752,6 +752,7 @@ static void draw_wakeups(void)
+ 	we = wake_events;
+ 	while (we) {
+ 		int from = 0, to = 0;
++		char *task_from = NULL, *task_to = NULL;
+ 
+ 		/* locate the column of the waker and wakee */
+ 		p = all_data;
+@@ -760,10 +761,14 @@ static void draw_wakeups(void)
+ 				c = p->all;
+ 				while (c) {
+ 					if (c->Y && c->start_time <= we->time && c->end_time >= we->time) {
+-						if (p->pid == we->waker)
++						if (p->pid == we->waker) {
+ 							from = c->Y;
+-						if (p->pid == we->wakee)
++							task_from = c->comm;
++						}
++						if (p->pid == we->wakee) {
+ 							to = c->Y;
++							task_to = c->comm;
++						}
+ 					}
+ 					c = c->next;
+ 				}
+@@ -776,7 +781,7 @@ static void draw_wakeups(void)
+ 		else if (from && to && abs(from - to) == 1)
+ 			svg_wakeline(we->time, from, to);
+ 		else
+-			svg_partial_wakeline(we->time, from, to);
++			svg_partial_wakeline(we->time, from, task_from, to, task_to);
+ 		we = we->next;
+ 	}
+ }
+diff --git a/tools/perf/util/svghelper.c b/tools/perf/util/svghelper.c
+index b0fcecd..9f70fa8 100644
+--- a/tools/perf/util/svghelper.c
++++ b/tools/perf/util/svghelper.c
+@@ -242,7 +242,7 @@ void svg_pstate(int cpu, u64 start, u64 end, u64 freq)
+ }
+ 
+ 
+-void svg_partial_wakeline(u64 start, int row1, int row2)
++void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc2)
+ {
+ 	double height;
+ 
+@@ -251,21 +251,35 @@ void svg_partial_wakeline(u64 start, int row1, int row2)
+ 
+ 
+ 	if (row1 < row2) {
+-		if (row1)
++		if (row1) {
+ 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
+ 				time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT,  time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/32);
+-
+-		if (row2)
++			if (desc2)
++				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &gt;</text>\n",
++					time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT + SLOT_HEIGHT/48, desc2);
++		}
++		if (row2) {
+ 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
+ 				time2pixels(start), row2 * SLOT_MULT - SLOT_MULT/32,  time2pixels(start), row2 * SLOT_MULT);
++			if (desc1)
++				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &gt;</text>\n",
++					time2pixels(start), row2 * SLOT_MULT - SLOT_MULT/32, desc1);
++		}
+ 	} else {
+-		if (row2)
++		if (row2) {
+ 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
+ 				time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT,  time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/32);
+-
+-		if (row1)
++			if (desc1)
++				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &lt;</text>\n",
++					time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/48, desc1);
++		}
++		if (row1) {
+ 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
+ 				time2pixels(start), row1 * SLOT_MULT - SLOT_MULT/32,  time2pixels(start), row1 * SLOT_MULT);
++			if (desc2)
++				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &lt;</text>\n",
++					time2pixels(start), row1 * SLOT_MULT - SLOT_HEIGHT/32, desc2);
++		}
+ 	}
+ 	height = row1 * SLOT_MULT;
+ 	if (row2 > row1)
+diff --git a/tools/perf/util/svghelper.h b/tools/perf/util/svghelper.h
+index ad79b5d..8260a7e 100644
+--- a/tools/perf/util/svghelper.h
++++ b/tools/perf/util/svghelper.h
+@@ -17,7 +17,7 @@ extern void svg_pstate(int cpu, u64 start, u64 end, u64 freq);
+ extern void svg_time_grid(u64 start, u64 end);
+ extern void svg_legenda(void);
+ extern void svg_wakeline(u64 start, int row1, int row2);
+-extern void svg_partial_wakeline(u64 start, int row1, int row2);
++extern void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc2);
+ extern void svg_interrupt(u64 start, int row);
+ extern void svg_text(int Yslot, u64 start, const char *text);
+ extern void svg_close(void);
