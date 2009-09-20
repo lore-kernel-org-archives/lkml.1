@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbZITQOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZITQOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbZITQOg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 12:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZITQOf
+	id S1754660AbZITQOu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 12:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZITQOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 12:14:35 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50845 "EHLO
+	Sun, 20 Sep 2009 12:14:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50848 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752782AbZITQOf convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753464AbZITQOf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 20 Sep 2009 12:14:35 -0400
-Date: Sun, 20 Sep 2009 18:14:16 +0200
+Date: Sun, 20 Sep 2009 18:14:38 +0200
 From: Arjan van de Ven <arjan@linux.intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, paulus@samba.org, ahpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Subject: [PATCH] perf util: Make the timechart SVG width dynamic
-Message-ID: <20090920181416.69570c5d@linux.intel.com>
+Subject: [PATCH] perf util: SVG performance improvements
+Message-ID: <20090920181438.3a49cb93@linux.intel.com>
 In-Reply-To: <20090920181248.464c9193@infradead.org>
 References: <20090920181248.464c9193@infradead.org>
 Organization: Intel
@@ -28,167 +28,211 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 356f4322f4c6cfee7c708a172fcd22848ad31a1e Mon Sep 17 00:00:00 2001
+>From dc31cd02966e59f1db4266e2c25a8bbf6f6e4f5f Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 20 Sep 2009 09:54:58 +0200
-Subject: [PATCH] perf util: Make the timechart SVG width dynamic
+Date: Sun, 20 Sep 2009 11:35:53 +0200
+Subject: [PATCH] perf util: SVG performance improvements
 
-This patch adds a command line option for timechart that allows the user
-to specify the width of the SVG file.
+Tweak the output SVG to increase performance in SVG viewers
+by limiting the different types of font sizes and by
+smarter transformations on the text.
 
-This patch also makes sure that each second of recording has at least 200
-units (pixels at 96 DPI) of width.  This impacts recordings longer than 5
-seconds; recordings shorter than 5 second will scale up to have a width of
-1000 units for the whole recording (as before).
+At least with Inkscape this gives a notable performance improvement
+during zoom and scrolling.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- tools/perf/Documentation/perf-timechart.txt |    3 ++
- tools/perf/builtin-timechart.c              |    6 +++-
- tools/perf/util/svghelper.c                 |   30 ++++++++++++++++++---------
- tools/perf/util/svghelper.h                 |    6 +++-
- 4 files changed, 31 insertions(+), 14 deletions(-)
+ tools/perf/util/svghelper.c |   78 ++++++++++++++++++++++++++++++-------------
+ 1 files changed, 55 insertions(+), 23 deletions(-)
 
-diff --git a/tools/perf/Documentation/perf-timechart.txt b/tools/perf/Documentation/perf-timechart.txt
-index 61e0104..1c2ed30 100644
---- a/tools/perf/Documentation/perf-timechart.txt
-+++ b/tools/perf/Documentation/perf-timechart.txt
-@@ -28,6 +28,9 @@ OPTIONS
- -i::
- --input=::
-         Select the input file (default: perf.data)
-+-w::
-+--width=::
-+        Select the width of the SVG file (default: 1000)
- 
- 
- SEE ALSO
-diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
-index 23b3f09..6004063 100644
---- a/tools/perf/builtin-timechart.c
-+++ b/tools/perf/builtin-timechart.c
-@@ -915,9 +915,9 @@ static void write_svg_file(const char *filename)
- 	if (count < 15)
- 		count = determine_display_tasks(TIME_THRESH / 10);
- 
--	open_svg(filename, numcpus, count);
-+	open_svg(filename, numcpus, count, first_time, last_time);
- 
--	svg_time_grid(first_time, last_time);
-+	svg_time_grid();
- 	svg_legenda();
- 
- 	for (i = 0; i < numcpus; i++)
-@@ -1132,6 +1132,8 @@ static const struct option options[] = {
- 		    "input file name"),
- 	OPT_STRING('o', "output", &output_name, "file",
- 		    "output file name"),
-+	OPT_INTEGER('w', "width", &svg_page_width,
-+		    "page width"),
- 	OPT_END()
- };
- 
 diff --git a/tools/perf/util/svghelper.c b/tools/perf/util/svghelper.c
-index 52f628f..be1555e 100644
+index be1555e..a778fd0 100644
 --- a/tools/perf/util/svghelper.c
 +++ b/tools/perf/util/svghelper.c
-@@ -25,7 +25,8 @@ static u64 turbo_frequency, max_freq;
- 
- #define SLOT_MULT 30.0
- #define SLOT_HEIGHT 25.0
--#define WIDTH 1000.0
-+
-+int svg_page_width = 1000;
- 
- #define MIN_TEXT_SIZE 0.001
- 
-@@ -46,21 +47,35 @@ static double time2pixels(u64 time)
- {
- 	double X;
- 
--	X = WIDTH * (time - first_time) / (last_time - first_time);
-+	X = 1.0 * svg_page_width * (time - first_time) / (last_time - first_time);
+@@ -51,6 +51,25 @@ static double time2pixels(u64 time)
  	return X;
  }
  
--void open_svg(const char *filename, int cpus, int rows)
-+void open_svg(const char *filename, int cpus, int rows, u64 start, u64 end)
++/*
++ * Round text sizes so that the svg viewer only needs a discrete
++ * number of renderings of the font
++ */
++static double round_text_size(double size)
++{
++	int loop = 100;
++	double target = 10.0;
++
++	if (size >= 10.0)
++		return size;
++	while (loop--) {
++		if (size >= target)
++			return target;
++		target = target / 2.0;
++	}
++	return size;
++}
++
+ void open_svg(const char *filename, int cpus, int rows, u64 start, u64 end)
  {
-+	int new_width;
- 
- 	svgfile = fopen(filename, "w");
- 	if (!svgfile) {
- 		fprintf(stderr, "Cannot open %s for output\n", filename);
- 		return;
- 	}
-+	first_time = start;
-+	first_time = first_time / 100000000 * 100000000;
-+	last_time = end;
+ 	int new_width;
+@@ -122,8 +141,10 @@ void svg_sample(int Yslot, int cpu, u64 start, u64 end)
+ 		text_size = text_size/2;
+ 	if (text_size > 1.25)
+ 		text_size = 1.25;
++	text_size = round_text_size(text_size);
 +
-+	/*
-+	 * if the recording is short, we default to a width of 1000, but
-+	 * for longer recordings we want at least 200 units of width per second
-+	 */
-+	new_width = (last_time - first_time) / 5000000;
-+
-+	if (new_width > svg_page_width)
-+		svg_page_width = new_width;
-+
- 	total_height = (1 + rows + cpu2slot(cpus)) * SLOT_MULT;
- 	fprintf(svgfile, "<?xml version=\"1.0\" standalone=\"no\"?> \n");
--	fprintf(svgfile, "<svg width=\"%4.1f\" height=\"%llu\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n", WIDTH, total_height);
-+	fprintf(svgfile, "<svg width=\"%i\" height=\"%llu\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n", svg_page_width, total_height);
+ 	if (text_size > MIN_TEXT_SIZE)
+-		fprintf(svgfile, "<text transform=\"translate(%1.8f,%1.8f)\" font-size=\"%1.6fpt\">%i</text>\n",
++		fprintf(svgfile, "<text x=\"%1.8f\" y=\"%1.8f\" font-size=\"%1.8fpt\">%i</text>\n",
+ 			time2pixels(start), Yslot *  SLOT_MULT + SLOT_HEIGHT - 1, text_size,  cpu + 1);
  
- 	fprintf(svgfile, "<defs>\n  <style type=\"text/css\">\n    <![CDATA[\n");
+ }
+@@ -162,17 +183,20 @@ void svg_waiting(int Yslot, u64 start, u64 end)
  
-@@ -404,15 +419,10 @@ void svg_legenda(void)
- 	svg_legenda_box(800,	"Blocked on IO", "blocked");
+ 	text = time_to_string(end-start);
+ 
+-	font_size = 1.0 * (time2pixels(end)-time2pixels(start)) / strlen(text);
++	font_size = 1.0 * (time2pixels(end)-time2pixels(start));
+ 
+-	if (font_size > 0.2)
+-		font_size = 0.2;
++	if (font_size > 3)
++		font_size = 3;
+ 
++	font_size = round_text_size(font_size);
+ 
+-	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"%s\"/>\n",
+-		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT, style);
++	fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\">\n", time2pixels(start), Yslot * SLOT_MULT);
++	fprintf(svgfile, "<rect x=\"0\" width=\"%4.8f\" y=\"0\" height=\"%4.1f\" class=\"%s\"/>\n",
++		time2pixels(end)-time2pixels(start), SLOT_HEIGHT, style);
+ 	if (font_size > MIN_TEXT_SIZE)
+-		fprintf(svgfile, "<text transform=\"translate(%1.8f,%1.8f)\" font-size=\"%1.6fpt\">%s</text>\n",
+-			time2pixels(start), Yslot * SLOT_MULT + 2, font_size, text);
++		fprintf(svgfile, "<text transform=\"rotate(90)\" font-size=\"%1.8fpt\"> %s</text>\n",
++			font_size, text);
++	fprintf(svgfile, "</g>\n");
  }
  
--void svg_time_grid(u64 start, u64 end)
-+void svg_time_grid(void)
- {
- 	u64 i;
+ static char *cpu_model(void)
+@@ -211,7 +235,7 @@ void svg_cpu_box(int cpu, u64 __max_freq, u64 __turbo_freq)
+ 		cpu2y(cpu), SLOT_MULT+SLOT_HEIGHT);
  
--	first_time = start;
--	last_time = end;
--
--	first_time = first_time / 100000000 * 100000000;
--
+ 	sprintf(cpu_string, "CPU %i", (int)cpu+1);
+-	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\">%s</text>\n",
++	fprintf(svgfile, "<text x=\"%4.8f\" y=\"%4.8f\">%s</text>\n",
+ 		10+time2pixels(first_time), cpu2y(cpu) + SLOT_HEIGHT/2, cpu_string);
+ 
+ 	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\" font-size=\"1.25pt\">%s</text>\n",
+@@ -225,15 +249,21 @@ void svg_process(int cpu, u64 start, u64 end, const char *type, const char *name
  	if (!svgfile)
  		return;
  
-diff --git a/tools/perf/util/svghelper.h b/tools/perf/util/svghelper.h
-index ed4ebcf..cd93195 100644
---- a/tools/perf/util/svghelper.h
-+++ b/tools/perf/util/svghelper.h
-@@ -3,7 +3,7 @@
- 
- #include "types.h"
- 
--extern void open_svg(const char *filename, int cpus, int rows);
-+extern void open_svg(const char *filename, int cpus, int rows, u64 start, u64 end);
- extern void svg_box(int Yslot, u64 start, u64 end, const char *type);
- extern void svg_sample(int Yslot, int cpu, u64 start, u64 end);
- extern void svg_waiting(int Yslot, u64 start, u64 end);
-@@ -15,7 +15,7 @@ extern void svg_cstate(int cpu, u64 start, u64 end, int type);
- extern void svg_pstate(int cpu, u64 start, u64 end, u64 freq);
- 
- 
--extern void svg_time_grid(u64 start, u64 end);
-+extern void svg_time_grid(void);
- extern void svg_legenda(void);
- extern void svg_wakeline(u64 start, int row1, int row2);
- extern void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc2);
-@@ -23,4 +23,6 @@ extern void svg_interrupt(u64 start, int row);
- extern void svg_text(int Yslot, u64 start, const char *text);
- extern void svg_close(void);
- 
-+extern int svg_page_width;
+-	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"%s\"/>\n",
+-		time2pixels(start), time2pixels(end)-time2pixels(start), cpu2y(cpu), SLOT_MULT+SLOT_HEIGHT, type);
 +
- #endif
++	fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\">\n", time2pixels(start), cpu2y(cpu));
++	fprintf(svgfile, "<rect x=\"0\" width=\"%4.8f\" y=\"0\" height=\"%4.1f\" class=\"%s\"/>\n",
++		time2pixels(end)-time2pixels(start), SLOT_MULT+SLOT_HEIGHT, type);
+ 	width = time2pixels(end)-time2pixels(start);
+ 	if (width > 6)
+ 		width = 6;
+ 
++	width = round_text_size(width);
++
+ 	if (width > MIN_TEXT_SIZE)
+-		fprintf(svgfile, "<text  transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"%3.4fpt\">%s</text>\n",
+-			time2pixels(start), cpu2y(cpu), width, name);
++		fprintf(svgfile, "<text transform=\"rotate(90)\" font-size=\"%3.8fpt\">%s</text>\n",
++			width, name);
++
++	fprintf(svgfile, "</g>\n");
+ }
+ 
+ void svg_cstate(int cpu, u64 start, u64 end, int type)
+@@ -254,13 +284,15 @@ void svg_cstate(int cpu, u64 start, u64 end, int type)
+ 		time2pixels(start), time2pixels(end)-time2pixels(start),
+ 		cpu2y(cpu), SLOT_MULT+SLOT_HEIGHT);
+ 
+-	width = time2pixels(end)-time2pixels(start);
++	width = (time2pixels(end)-time2pixels(start))/2.0;
+ 	if (width > 6)
+ 		width = 6;
+ 
++	width = round_text_size(width);
++
+ 	if (width > MIN_TEXT_SIZE)
+-		fprintf(svgfile, "<text  transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"%3.4fpt\">C%i</text>\n",
+-			time2pixels(start), cpu2y(cpu), width, type);
++		fprintf(svgfile, "<text x=\"%4.8f\" y=\"%4.8f\" font-size=\"%3.8fpt\">C%i</text>\n",
++			time2pixels(start), cpu2y(cpu)+width, width, type);
+ }
+ 
+ static char *HzToHuman(unsigned long hz)
+@@ -299,7 +331,7 @@ void svg_pstate(int cpu, u64 start, u64 end, u64 freq)
+ 	height = 1 + cpu2y(cpu) + SLOT_MULT + SLOT_HEIGHT - height;
+ 	fprintf(svgfile, "<line x1=\"%4.8f\" x2=\"%4.8f\" y1=\"%4.1f\" y2=\"%4.1f\" class=\"pstate\"/>\n",
+ 		time2pixels(start), time2pixels(end), height, height);
+-	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\" font-size=\"0.25pt\">%s</text>\n",
++	fprintf(svgfile, "<text x=\"%4.8f\" y=\"%4.8f\" font-size=\"0.25pt\">%s</text>\n",
+ 		time2pixels(start), height+0.9, HzToHuman(freq));
+ 
+ }
+@@ -318,14 +350,14 @@ void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc
+ 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
+ 				time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT,  time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/32);
+ 			if (desc2)
+-				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &gt;</text>\n",
++				fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\"><text transform=\"rotate(90)\" font-size=\"0.02pt\">%s &gt;</text></g>\n",
+ 					time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT + SLOT_HEIGHT/48, desc2);
+ 		}
+ 		if (row2) {
+ 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
+ 				time2pixels(start), row2 * SLOT_MULT - SLOT_MULT/32,  time2pixels(start), row2 * SLOT_MULT);
+ 			if (desc1)
+-				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &gt;</text>\n",
++				fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\"><text transform=\"rotate(90)\" font-size=\"0.02pt\">%s &gt;</text></g>\n",
+ 					time2pixels(start), row2 * SLOT_MULT - SLOT_MULT/32, desc1);
+ 		}
+ 	} else {
+@@ -333,14 +365,14 @@ void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc
+ 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
+ 				time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT,  time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/32);
+ 			if (desc1)
+-				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &lt;</text>\n",
++				fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\"><text transform=\"rotate(90)\" font-size=\"0.02pt\">%s &lt;</text></g>\n",
+ 					time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/48, desc1);
+ 		}
+ 		if (row1) {
+ 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
+ 				time2pixels(start), row1 * SLOT_MULT - SLOT_MULT/32,  time2pixels(start), row1 * SLOT_MULT);
+ 			if (desc2)
+-				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &lt;</text>\n",
++				fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\"><text transform=\"rotate(90)\" font-size=\"0.02pt\">%s &lt;</text></g>\n",
+ 					time2pixels(start), row1 * SLOT_MULT - SLOT_HEIGHT/32, desc2);
+ 		}
+ 	}
+@@ -390,7 +422,7 @@ void svg_text(int Yslot, u64 start, const char *text)
+ 	if (!svgfile)
+ 		return;
+ 
+-	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\">%s</text>\n",
++	fprintf(svgfile, "<text x=\"%4.8f\" y=\"%4.8f\">%s</text>\n",
+ 		time2pixels(start), Yslot * SLOT_MULT+SLOT_HEIGHT/2, text);
+ }
+ 
+@@ -401,7 +433,7 @@ static void svg_legenda_box(int X, const char *text, const char *style)
+ 
+ 	fprintf(svgfile, "<rect x=\"%i\" width=\"%4.8f\" y=\"0\" height=\"%4.1f\" class=\"%s\"/>\n",
+ 		X, boxsize, boxsize, style);
+-	fprintf(svgfile, "<text transform=\"translate(%4.8f, %4.8f)\" font-size=\"%4.4fpt\">%s</text>\n",
++	fprintf(svgfile, "<text transform=\"translate(%4.8f, %4.8f)\" font-size=\"%4.8fpt\">%s</text>\n",
+ 		X + boxsize + 5, boxsize, 0.8 * boxsize, text);
+ }
+ 
 -- 
 1.6.0.6
+
 
 
 
