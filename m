@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZITRRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbZITRcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbZITRRh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 13:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbZITRRh
+	id S1754953AbZITRcm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 13:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbZITRcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 13:17:37 -0400
-Received: from mail-in-17.arcor-online.net ([151.189.21.57]:49666 "EHLO
-	mail-in-17.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754693AbZITRRg (ORCPT
+	Sun, 20 Sep 2009 13:32:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49609 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912AbZITRck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 13:17:36 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-17.arcor-online.net 642273B2B84
-Message-ID: <4AB663B0.9070600@arcor.de>
-Date: Sun, 20 Sep 2009 20:17:36 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Poor desktop responsiveness with background I/O-operations
-References: <4AB59CBB.8090907@datenparkplatz.de> <20090920080728.73bfe2a1@infradead.org> <4AB5ECD0.7010903@datenparkplatz.de>
-In-Reply-To: <4AB5ECD0.7010903@datenparkplatz.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 20 Sep 2009 13:32:40 -0400
+Date: Sun, 20 Sep 2009 19:32:47 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone VPA-II"
+ ?
+Message-ID: <20090920193247.1d0e49cd@infradead.org>
+In-Reply-To: <4AB65D83.1080506@imap.cc>
+References: <4AB630AD.90207@imap.cc>
+	<20090920150549.GC11621@kroah.com>
+	<4AB6581F.5040908@imap.cc>
+	<20090920183744.395fc407@infradead.org>
+	<4AB65D83.1080506@imap.cc>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Please don't strip the CC list when you reply.  Use the "Reply to all" 
-functionality of your mail client and keep all CCs.)
+On Sun, 20 Sep 2009 18:51:15 +0200
+Tilman Schmidt <tilman@imap.cc> wrote:
 
-On 09/20/2009 11:50 AM, Ulrich Lukas wrote:
-> Arjan van de Ven wrote:
->> can you try the following two things?
->>
->> echo 4096>  /sys/block/sda/queue/nr_requests
->> for i in `pidof kjournald` ; do ionice -c1 -p $i ; done
->
-> I tried this just now, but it doesn't change things much. I can do a
-> more testing later today.
->
->
->> I assume you're using CFQ.
->
-> Yes, it's CFQ. (see .config of my previous posting)
->
-> Filesystem is EXT4.
+> > btw this is what scripts/markup_oops.pl is for... it gives a very
+> > nice diagnostic
+> 
+> Unfortunately that script doesn't work on my machine:
+> 
+> ts@xenon:~/kernel/linux-2.6.31-work> ./scripts/markup_oops.pl
+> < /tmp/mdabug.txt No vmlinux specified,
+> assuming /lib/modules/2.6.31-vanilla/build/vmlinux Can't locate
+> object method "from_hex" via package "Math::BigInt"
+> at ./scripts/markup_oops.pl line 176, <STDIN> line 98.
+> 
+> And as it's openSUSE based I can't simply update my Perl packages
+> from CPAN. But I can live with the gdb method.
 
-I can also confirm total lock-up when copying a big file (Intel Core 2 
-Duo, Intel X38 chipset).  Everything locks-up for several seconds during 
-the copying.  I'm also on ext4.  I've been told on various mailing lists 
-that this is normal, expected and unavoidable so I pretty much think the 
-only solution is to avoid heavy I/O :P
+hmm Matthew added that....
+should we undo that change??
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
