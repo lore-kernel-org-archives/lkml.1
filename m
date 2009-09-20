@@ -1,96 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZITStH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZITSzC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZITStH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbZITStG
+	id S1755664AbZITSzC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:55:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZITSy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:49:06 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:11055 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754975AbZITStE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:49:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TjlvtHMqij5oLY08qqhjH5aZOhTbW5CRBE3wUed/wYplGYxb0stYPui26i/znCqDsb
-         qT3xpLmeXVOF+jW5wbbDZ1boK6OeIuqSDlga+Mrrb41sZO0+yERUeutDKM6pw7irQbW3
-         MlMxdUbJp1FszxAWH3EiWy9Dh40pNb2L5kNms=
-Date: Sun, 20 Sep 2009 22:49:06 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Sheng Yang <sheng@linux.intel.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Don't ack_APIC_irq() if lapic is disabled in
-	GENERIC_INTERRUPT_VECTOR handler
-Message-ID: <20090920184906.GE32176@lenovo>
-References: <1252403546-12544-1-git-send-email-sheng@linux.intel.com> <20090920180632.GB8498@elte.hu> <20090920181326.GB32176@lenovo> <20090920182124.GD8498@elte.hu> <20090920183011.GC32176@lenovo> <20090920184203.GD32176@lenovo>
+	Sun, 20 Sep 2009 14:54:59 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49473 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755650AbZITSy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:54:59 -0400
+Date: Sun, 20 Sep 2009 20:50:38 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: lkml@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Russell King <linux@arm.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       linux-arm@vger.kernel.org, linux-arm@lists.infradead.org
+Subject: Re: [PATCH] [TRIVIAL] Changes to IRQs.
+In-Reply-To: <alpine.LNX.2.00.0909202042300.17028@wotan.suse.de>
+Message-ID: <alpine.LNX.2.00.0909202045080.17028@wotan.suse.de>
+References: <m34oqx4s0e.fsf@intrepid.localdomain> <alpine.LNX.2.00.0909202042300.17028@wotan.suse.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090920184203.GD32176@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sun, Sep 20, 2009 at 10:42:03PM +0400]
-| [Cyrill Gorcunov - Sun, Sep 20, 2009 at 10:30:11PM +0400]
-| ...
-| | | > 
-| | | > iirc it was Xen related patch. So it's not that simple.
-| | | > 
-| | | > I've pointed out Sheng about disable_apic. I'm not Xen
-| | | > specialist but Xen team seem to use specific apic setup
-| | | > so our "dummy" operations are not involved (case they
-| | | > set disable_apic=1 without "turn off" apic ops in real).
-| | | > Something like that.
-| | | 
-| | | They should then set a NOP function in that case. We really dont want to 
-| | | slow down hotpath functions like smp_generic_interrupt() with flaggery.
-| | | 
-| | | 	Ingo
-| | | 
-| | 
-| | Well, I suppose we should wait for Sheng's comments.
-| | I wish I would answer you but I simply don't know Xen
-| | code :)
-| | 
-| | 	-- Cyrill
-| 
-| Wait a bit Ingo, please. It seems I'm having different
-| patch series in mind. Need to restore mail thread.
-| Will back soon :)
-| 
-| 	-- Cyrill
+On Sun, 20 Sep 2009, Jiri Kosina wrote:
 
-yeah, it comes from Xen RFC series. Here is a quote from
-conversation.
+> This doesn't really qualify for trivial queue, adding ARM addressess to CC 
+> (I hope I got them right after the latest flame :P)
 
-> Sheng Yan
->
-> | | is there was some problem with it? I'm asking you
-> | | because if disable_apic=1 then any apic write/read
-> | | operations become NOPs. So I don't see how it may
-> | | hurt. But I could be missing something.
-> | |
-> | |   -- Cyrill
-> |
-> | Ah, I see -- it's due to your other patch...
-> | Hmm this makes all "disable apic" idea less
-> | general. And safety of ack_APIC_irq is now
-> | under suspicious.
->
-> Um, probably. I've seen a ack_APIC_irq() in do_IRQ when handle_irq() fail.
-> Seems the assumption that ack_APIC_irq() always safe is there. I will check if
-> I can make it more elegant - maybe disable the warning in the Xen code...
->
+Hmm, apparently I did not.
 
-Personally, I think "out-of-xen-thread" this patch is not needed.
-And if this apic-ack operation causes any kind of problems --
-this problem should be fixed without disable_apic involved.
 
-	-- Cyrill
+	<linux-arm-kernel@lists.arm.linux.org.uk>: host
+	    lists.arm.linux.org.uk[78.32.30.220] said: 550 Please direct your 
+	    message to the new mailing lists on lists.infradead.org (in reply to 
+	    RCPT TO command)
+
+
+Could someone please update MAINTAINERS to reflect reality? I am 
+apparently not smart enough to keep track of the current situation with 
+the ARM mailinglists. I thought that final decision was 
+linux-arm@vger.kernel.org. MAINTAINERS lists 
+linux-arm-kernel@lists.arm.linux.org.uk, but the bounce suggests to use 
+lists.infradead.org ... 
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
+
