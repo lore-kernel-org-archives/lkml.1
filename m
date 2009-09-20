@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZITPKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZITPKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbZITPKB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 11:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZITPKA
+	id S1754479AbZITPKV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 11:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZITPKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 11:10:00 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59547 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754069AbZITPKA (ORCPT
+	Sun, 20 Sep 2009 11:10:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52738 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912AbZITPKQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 11:10:00 -0400
-Date: Sun, 20 Sep 2009 08:05:49 -0700
+	Sun, 20 Sep 2009 11:10:16 -0400
+Date: Sun, 20 Sep 2009 08:08:42 -0700
 From: Greg KH <greg@kroah.com>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone
-	VPA-II" ?
-Message-ID: <20090920150549.GC11621@kroah.com>
-References: <4AB630AD.90207@imap.cc>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Kay Sievers <kay.sievers@vrfy.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
+	(Was: Re: [PATCH] Remove broken by design and by implementation
+	devtmpfs maintenance disaster)
+Message-ID: <20090920150842.GF11621@kroah.com>
+References: <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com> <alpine.LFD.2.01.0909171709410.4950@localhost.localdomain> <1253238637.4071.10.camel@yio.site> <20090918060210.GC7104@kroah.com> <alpine.LFD.2.01.0909180717380.4950@localhost.localdomain> <20090918150541.GB9307@kroah.com> <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com> <ac3eb2510909181235m33846928sa8c790758c66233@mail.gmail.com> <20090918195005.GA11726@elte.hu> <21d7e9970909191843l6fbb835bme509c18cedfd728c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AB630AD.90207@imap.cc>
+In-Reply-To: <21d7e9970909191843l6fbb835bme509c18cedfd728c@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 20, 2009 at 03:39:57PM +0200, Tilman Schmidt wrote:
-> When I connect my "T-Mobile MDA compact III" to my PC, running
-> kernel 2.6.31 with openSUSE 10.3 userspace, I get exactly the
-> symptoms described in:
+On Sun, Sep 20, 2009 at 11:43:33AM +1000, Dave Airlie wrote:
+> >
+> > Self-contained /dev is great, udev is a total PITA on older distros (on
+> > this box it sometimes takes 3 minutes for udev to boot ...) so turning
+> > on devtmpfs and getting something functional in exchange is a big
+> > selling point IMO.
 > 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8094
-> 
-> But that bug is marked as "CLOSED CODE_FIX", though reading through
-> the comments I found no clear indication what was actually fixed,
-> and from reading through the source files drivers/usb/serial/ipaq.c
-> and drivers/usb/serial/usb-serial.c I get the impression that the
-> problem of ipaq_open() oopsing because it gets called with
-> port->read_urb==NULL is still present.
-> 
-> So can someone tell me what is the status of this bug?
+> udev taking 3 minutes usually means you have a kernel driver bug,
+> udev doesn't have a sleep for 3 minutes, it loads drivers and usually
+> waits for them to finish. Since someone decided to merge a stupid
+> floppy PNP match I've seen a lot of floppyless machines hit a 30sec
+> udev delay. so many that we disabled the pnp floppy on Fedora.
 
-"Closed"  :)
-
-Can you provide a log message that shows the problem you are having with
-the 2.6.31 kernel?
+Woah, I've run into this problem as well.  Where is this PNP floppy
+match so I can disable it?
 
 thanks,
 
