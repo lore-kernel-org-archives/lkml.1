@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbZITSRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZITST6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbZITSRY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZITSRX
+	id S1755399AbZITST6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZITSTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:17:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56199 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753616AbZITSRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:17:22 -0400
-Date: Sun, 20 Sep 2009 20:17:20 +0200
-From: Jan Kara <jack@suse.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Theodore Tso <tytso@mit.edu>, Badari Pulavarty <pbadari@us.ibm.com>,
-       Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Is nobh code still useful?
-Message-ID: <20090920181720.GC16919@duck.suse.cz>
-References: <20090917135627.GB13660@duck.suse.cz> <4AB30AD1.7010400@us.ibm.com> <20090918141226.GB26991@mit.edu> <20090918162554.13a72664@infradead.org>
+	Sun, 20 Sep 2009 14:19:55 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:56912 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754737AbZITSTy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:19:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Pyr1ZRcjPxrwutH4gZSqmZ87xj4obdzn7KzNNxw/IgGEU/W1Ih5bqE27qn5ZbEJeBW
+         /+5CkSGGLW7NQ2Gt7CoEdLYFp91JKDjOyAfaHvGEnKT10FpSFSb7Zj3O4n94AK4CD9iU
+         0jCWAwXhI8rIPWoJX1ATHv1Cp2y55Y01BeNS4=
+Message-ID: <4AB6724A.1060702@gmail.com>
+Date: Sun, 20 Sep 2009 12:19:54 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090918162554.13a72664@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+CC: r.marek@assembler.cz
+Subject: [PATCH] coretemp: add support for Core i5 CPU
+References: <4AB5DE1F.1020004@gmail.com>
+In-Reply-To: <4AB5DE1F.1020004@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 18-09-09 16:25:54, Arjan van de Ven wrote:
-> On Fri, 18 Sep 2009 10:12:26 -0400
-> Theodore Tso <tytso@mit.edu> wrote:
-> > On Thu, Sep 17, 2009 at 09:21:37PM -0700, Badari Pulavarty wrote:
-> > >
-> > > Originally it was supported on ext2. I added support nobh support
-> > > for ext3. At that time, the main
-> > > issue/complaint was that, these bufferheads consume memory from  
-> > > ZONE_NORMAL causing
-> > > memory pressure on 32-bit (i386) configurations.
-> > 
-> > Specifically, it matters on very large configuration systems (i.e.,
-> > 32GB-64GB using PAE-36) that today we'd probably just say, "use
-> > x86_64, you moron".  It would probably matter if someone were to want
-> > to upgrade a non-64-bit capable machine to a newer kernel.  
-> > 
-> > Dropping nobh from ext3 at this point might prevent some of these
-> > older systems from upgrading, I'm not sure how much we would care; on
-> > the one hand, these machines tended to be pretty expensive, so people
-> > would probably want to use them for a while.  On the other hand, it
-> > has been over five years now since x86_64 machines have been
-> > available, and many of these customers are highly unlikely to want to
-> > upgrade anyway.
-> 
-> isn't the converse to just make nobh the default but not an option a
-> better approach then?
-> I forgot why this was a good idea to be an option again ;-)
-  Buffer heads cache useful information so without them, IO may become more
-more CPU intensive (allocating and freeing temporary buffer heads, setting
-up block mapping etc.).
-  Also some features like delayed allocation need buffer head bits - that
-is why e.g. ext4 doesn't really support nobh mount option.
+Add coretemp support for Core i5 (Lynnfield) CPUs with model 0x1E.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+
+---
+
+This minimal patch works to add support for these CPUs, though we should likely
+still look into using the CPUID flags instead of the model check.
+
+diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+index 93c1722..a9a21dc 100644
+--- a/drivers/hwmon/coretemp.c
++++ b/drivers/hwmon/coretemp.c
+@@ -413,11 +413,11 @@ static int __init coretemp_init(void)
+ 	for_each_online_cpu(i) {
+ 		struct cpuinfo_x86 *c = &cpu_data(i);
+ 
+-		/* check if family 6, models 0xe, 0xf, 0x16, 0x17, 0x1A */
++		/* check if family 6, models 0xe, 0xf, 0x16, 0x17, 0x1A, 0x1E */
+ 		if ((c->cpuid_level < 0) || (c->x86 != 0x6) ||
+ 		    !((c->x86_model == 0xe) || (c->x86_model == 0xf) ||
+ 			(c->x86_model == 0x16) || (c->x86_model == 0x17) ||
+-			(c->x86_model == 0x1A))) {
++			(c->x86_model == 0x1A) || (c->x86_model == 0x1E))) {
+ 
+ 			/* supported CPU not found, but report the unknown
+ 			   family 6 CPU */
