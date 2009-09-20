@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbZITRlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbZITRlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbZITRlA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 13:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbZITRk7
+	id S1755306AbZITRlI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 13:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbZITRlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 13:40:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49522 "EHLO hera.kernel.org"
+	Sun, 20 Sep 2009 13:41:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49534 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755279AbZITRky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 13:40:54 -0400
-Date: Sun, 20 Sep 2009 17:40:28 GMT
+	id S1755299AbZITRlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 13:41:02 -0400
+Date: Sun, 20 Sep 2009 17:40:42 GMT
 From: tip-bot for Arjan van de Ven <arjan@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
        mingo@redhat.com, a.p.zijlstra@chello.nl, arjan@linux.intel.com,
@@ -17,170 +17,189 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, fweisbec@gmail.com, arjan@linux.intel.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090920181353.796f4509@linux.intel.com>
-References: <20090920181353.796f4509@linux.intel.com>
+In-Reply-To: <20090920181416.69570c5d@linux.intel.com>
+References: <20090920181416.69570c5d@linux.intel.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/urgent] perf timechart: Show the duration of scheduler delays in the SVG
-Message-ID: <tip-a92fe7b3063db2caa578872fce975ff53aa56214@git.kernel.org>
-Git-Commit-ID: a92fe7b3063db2caa578872fce975ff53aa56214
+Subject: [tip:perfcounters/urgent] perf util: Make the timechart SVG width dynamic
+Message-ID: <tip-5094b655452dd48367fb28af74ffc76019b93dc2@git.kernel.org>
+Git-Commit-ID: 5094b655452dd48367fb28af74ffc76019b93dc2
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 20 Sep 2009 17:40:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 20 Sep 2009 17:40:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a92fe7b3063db2caa578872fce975ff53aa56214
-Gitweb:     http://git.kernel.org/tip/a92fe7b3063db2caa578872fce975ff53aa56214
+Commit-ID:  5094b655452dd48367fb28af74ffc76019b93dc2
+Gitweb:     http://git.kernel.org/tip/5094b655452dd48367fb28af74ffc76019b93dc2
 Author:     Arjan van de Ven <arjan@linux.intel.com>
-AuthorDate: Sun, 20 Sep 2009 18:13:53 +0200
+AuthorDate: Sun, 20 Sep 2009 18:14:16 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Sun, 20 Sep 2009 19:37:35 +0200
 
-perf timechart: Show the duration of scheduler delays in the SVG
+perf util: Make the timechart SVG width dynamic
 
-Given that scheduler latencies are the hot thing nowadays, show the
-duration of said latencies in the SVG in text form.
+This patch adds a command line option for timechart that allows the
+user to specify the width of the SVG file.
 
-In addition, if the latency is more than 10 msec, pick a brighter
-yellow color as a way to point these long delays out.
+This patch also makes sure that each second of recording has at
+least 200 units (pixels at 96 DPI) of width.  This impacts
+recordings longer than 5 seconds; recordings shorter than 5 second
+will scale up to have a width of 1000 units for the whole recording
+(as before).
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <20090920181353.796f4509@linux.intel.com>
+LKML-Reference: <20090920181416.69570c5d@linux.intel.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-timechart.c |    6 ++--
- tools/perf/util/svghelper.c    |   56 +++++++++++++++++++++++++++++++++++++---
- tools/perf/util/svghelper.h    |    3 +-
- 3 files changed, 57 insertions(+), 8 deletions(-)
+ tools/perf/Documentation/perf-timechart.txt |    3 ++
+ tools/perf/builtin-timechart.c              |    6 +++-
+ tools/perf/util/svghelper.c                 |   30 ++++++++++++++++++---------
+ tools/perf/util/svghelper.h                 |    6 +++-
+ 4 files changed, 31 insertions(+), 14 deletions(-)
 
+diff --git a/tools/perf/Documentation/perf-timechart.txt b/tools/perf/Documentation/perf-timechart.txt
+index 61e0104..1c2ed30 100644
+--- a/tools/perf/Documentation/perf-timechart.txt
++++ b/tools/perf/Documentation/perf-timechart.txt
+@@ -28,6 +28,9 @@ OPTIONS
+ -i::
+ --input=::
+         Select the input file (default: perf.data)
++-w::
++--width=::
++        Select the width of the SVG file (default: 1000)
+ 
+ 
+ SEE ALSO
 diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
-index 3f45b8b..23b3f09 100644
+index 23b3f09..6004063 100644
 --- a/tools/perf/builtin-timechart.c
 +++ b/tools/perf/builtin-timechart.c
-@@ -827,15 +827,15 @@ static void draw_process_bars(void)
- 				continue;
- 			}
+@@ -915,9 +915,9 @@ static void write_svg_file(const char *filename)
+ 	if (count < 15)
+ 		count = determine_display_tasks(TIME_THRESH / 10);
  
--			svg_box(Y, p->start_time, p->end_time, "process");
-+			svg_box(Y, c->start_time, c->end_time, "process");
- 			sample = c->samples;
- 			while (sample) {
- 				if (sample->type == TYPE_RUNNING)
--					svg_sample(Y, sample->cpu, sample->start_time, sample->end_time, "sample");
-+					svg_sample(Y, sample->cpu, sample->start_time, sample->end_time);
- 				if (sample->type == TYPE_BLOCKED)
- 					svg_box(Y, sample->start_time, sample->end_time, "blocked");
- 				if (sample->type == TYPE_WAITING)
--					svg_box(Y, sample->start_time, sample->end_time, "waiting");
-+					svg_waiting(Y, sample->start_time, sample->end_time);
- 				sample = sample->next;
- 			}
+-	open_svg(filename, numcpus, count);
++	open_svg(filename, numcpus, count, first_time, last_time);
+ 
+-	svg_time_grid(first_time, last_time);
++	svg_time_grid();
+ 	svg_legenda();
+ 
+ 	for (i = 0; i < numcpus; i++)
+@@ -1132,6 +1132,8 @@ static const struct option options[] = {
+ 		    "input file name"),
+ 	OPT_STRING('o', "output", &output_name, "file",
+ 		    "output file name"),
++	OPT_INTEGER('w', "width", &svg_page_width,
++		    "page width"),
+ 	OPT_END()
+ };
  
 diff --git a/tools/perf/util/svghelper.c b/tools/perf/util/svghelper.c
-index 9f70fa8..52f628f 100644
+index 52f628f..be1555e 100644
 --- a/tools/perf/util/svghelper.c
 +++ b/tools/perf/util/svghelper.c
-@@ -69,7 +69,8 @@ void open_svg(const char *filename, int cpus, int rows)
- 	fprintf(svgfile, "      rect.process2 { fill:rgb(180,180,180); fill-opacity:0.9; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
- 	fprintf(svgfile, "      rect.sample   { fill:rgb(  0,  0,255); fill-opacity:0.8; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
- 	fprintf(svgfile, "      rect.blocked  { fill:rgb(255,  0,  0); fill-opacity:0.5; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
--	fprintf(svgfile, "      rect.waiting  { fill:rgb(255,255,  0); fill-opacity:0.3; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
-+	fprintf(svgfile, "      rect.waiting  { fill:rgb(214,214,  0); fill-opacity:0.3; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
-+	fprintf(svgfile, "      rect.WAITING  { fill:rgb(255,214, 48); fill-opacity:0.6; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
- 	fprintf(svgfile, "      rect.cpu      { fill:rgb(192,192,192); fill-opacity:0.2; stroke-width:0.5; stroke:rgb(128,128,128); } \n");
- 	fprintf(svgfile, "      rect.pstate   { fill:rgb(128,128,128); fill-opacity:0.8; stroke-width:0; } \n");
- 	fprintf(svgfile, "      rect.c1       { fill:rgb(255,214,214); fill-opacity:0.5; stroke-width:0; } \n");
-@@ -92,14 +93,14 @@ void svg_box(int Yslot, u64 start, u64 end, const char *type)
- 		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT, type);
+@@ -25,7 +25,8 @@ static u64 turbo_frequency, max_freq;
+ 
+ #define SLOT_MULT 30.0
+ #define SLOT_HEIGHT 25.0
+-#define WIDTH 1000.0
++
++int svg_page_width = 1000;
+ 
+ #define MIN_TEXT_SIZE 0.001
+ 
+@@ -46,21 +47,35 @@ static double time2pixels(u64 time)
+ {
+ 	double X;
+ 
+-	X = WIDTH * (time - first_time) / (last_time - first_time);
++	X = 1.0 * svg_page_width * (time - first_time) / (last_time - first_time);
+ 	return X;
  }
  
--void svg_sample(int Yslot, int cpu, u64 start, u64 end, const char *type)
-+void svg_sample(int Yslot, int cpu, u64 start, u64 end)
+-void open_svg(const char *filename, int cpus, int rows)
++void open_svg(const char *filename, int cpus, int rows, u64 start, u64 end)
  {
- 	double text_size;
++	int new_width;
+ 
+ 	svgfile = fopen(filename, "w");
+ 	if (!svgfile) {
+ 		fprintf(stderr, "Cannot open %s for output\n", filename);
+ 		return;
+ 	}
++	first_time = start;
++	first_time = first_time / 100000000 * 100000000;
++	last_time = end;
++
++	/*
++	 * if the recording is short, we default to a width of 1000, but
++	 * for longer recordings we want at least 200 units of width per second
++	 */
++	new_width = (last_time - first_time) / 5000000;
++
++	if (new_width > svg_page_width)
++		svg_page_width = new_width;
++
+ 	total_height = (1 + rows + cpu2slot(cpus)) * SLOT_MULT;
+ 	fprintf(svgfile, "<?xml version=\"1.0\" standalone=\"no\"?> \n");
+-	fprintf(svgfile, "<svg width=\"%4.1f\" height=\"%llu\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n", WIDTH, total_height);
++	fprintf(svgfile, "<svg width=\"%i\" height=\"%llu\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n", svg_page_width, total_height);
+ 
+ 	fprintf(svgfile, "<defs>\n  <style type=\"text/css\">\n    <![CDATA[\n");
+ 
+@@ -404,15 +419,10 @@ void svg_legenda(void)
+ 	svg_legenda_box(800,	"Blocked on IO", "blocked");
+ }
+ 
+-void svg_time_grid(u64 start, u64 end)
++void svg_time_grid(void)
+ {
+ 	u64 i;
+ 
+-	first_time = start;
+-	last_time = end;
+-
+-	first_time = first_time / 100000000 * 100000000;
+-
  	if (!svgfile)
  		return;
  
--	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"%s\"/>\n",
--		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT, type);
-+	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"sample\"/>\n",
-+		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT);
- 
- 	text_size = (time2pixels(end)-time2pixels(start));
- 	if (cpu > 9)
-@@ -112,6 +113,53 @@ void svg_sample(int Yslot, int cpu, u64 start, u64 end, const char *type)
- 
- }
- 
-+static char *time_to_string(u64 duration)
-+{
-+	static char text[80];
-+
-+	text[0] = 0;
-+
-+	if (duration < 1000) /* less than 1 usec */
-+		return text;
-+
-+	if (duration < 1000 * 1000) { /* less than 1 msec */
-+		sprintf(text, "%4.1f us", duration / 1000.0);
-+		return text;
-+	}
-+	sprintf(text, "%4.1f ms", duration / 1000.0 / 1000);
-+
-+	return text;
-+}
-+
-+void svg_waiting(int Yslot, u64 start, u64 end)
-+{
-+	char *text;
-+	const char *style;
-+	double font_size;
-+
-+	if (!svgfile)
-+		return;
-+
-+	style = "waiting";
-+
-+	if (end-start > 10 * 1000000) /* 10 msec */
-+		style = "WAITING";
-+
-+	text = time_to_string(end-start);
-+
-+	font_size = 1.0 * (time2pixels(end)-time2pixels(start)) / strlen(text);
-+
-+	if (font_size > 0.2)
-+		font_size = 0.2;
-+
-+
-+	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"%s\"/>\n",
-+		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT, style);
-+	if (font_size > MIN_TEXT_SIZE)
-+		fprintf(svgfile, "<text transform=\"translate(%1.8f,%1.8f)\" font-size=\"%1.6fpt\">%s</text>\n",
-+			time2pixels(start), Yslot * SLOT_MULT + 2, font_size, text);
-+}
-+
- static char *cpu_model(void)
- {
- 	static char cpu_m[255];
 diff --git a/tools/perf/util/svghelper.h b/tools/perf/util/svghelper.h
-index 8260a7e..ed4ebcf 100644
+index ed4ebcf..cd93195 100644
 --- a/tools/perf/util/svghelper.h
 +++ b/tools/perf/util/svghelper.h
-@@ -5,7 +5,8 @@
+@@ -3,7 +3,7 @@
  
- extern void open_svg(const char *filename, int cpus, int rows);
+ #include "types.h"
+ 
+-extern void open_svg(const char *filename, int cpus, int rows);
++extern void open_svg(const char *filename, int cpus, int rows, u64 start, u64 end);
  extern void svg_box(int Yslot, u64 start, u64 end, const char *type);
--extern void svg_sample(int Yslot, int cpu, u64 start, u64 end, const char *type);
-+extern void svg_sample(int Yslot, int cpu, u64 start, u64 end);
-+extern void svg_waiting(int Yslot, u64 start, u64 end);
- extern void svg_cpu_box(int cpu, u64 max_frequency, u64 turbo_frequency);
+ extern void svg_sample(int Yslot, int cpu, u64 start, u64 end);
+ extern void svg_waiting(int Yslot, u64 start, u64 end);
+@@ -15,7 +15,7 @@ extern void svg_cstate(int cpu, u64 start, u64 end, int type);
+ extern void svg_pstate(int cpu, u64 start, u64 end, u64 freq);
  
  
+-extern void svg_time_grid(u64 start, u64 end);
++extern void svg_time_grid(void);
+ extern void svg_legenda(void);
+ extern void svg_wakeline(u64 start, int row1, int row2);
+ extern void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc2);
+@@ -23,4 +23,6 @@ extern void svg_interrupt(u64 start, int row);
+ extern void svg_text(int Yslot, u64 start, const char *text);
+ extern void svg_close(void);
+ 
++extern int svg_page_width;
++
+ #endif
