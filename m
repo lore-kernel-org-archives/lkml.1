@@ -1,53 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbZITFJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbZITFwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752033AbZITFJP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 01:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZITFJO
+	id S1751837AbZITFwY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 01:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZITFwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 01:09:14 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60920 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbZITFJO (ORCPT
+	Sun, 20 Sep 2009 01:52:23 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:34781 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbZITFwX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 01:09:14 -0400
-Subject: Re: Current git fails to boot with VT-D enabled due to flood of 
- DMAR errors
-From: David Woodhouse <dwmw2@infradead.org>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AB5B395.80400@gmail.com>
-References: <4AB5B07B.5090506@gmail.com>
-	 <1253421668.6317.83.camel@macbook.infradead.org> <4AB5B395.80400@gmail.com>
-Content-Type: text/plain
-Date: Sat, 19 Sep 2009 22:09:13 -0700
-Message-Id: <1253423353.6317.85.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 20 Sep 2009 01:52:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=Ei59YRfmhSvH2mL9jqwL1AXNNHGFP8XnND3j+k+JCoJfbbBKJORsn4e+mcDuC7T8SQ
+         uw6uYvj8pumvvhtvzrAuEbAlqyZHLicvfT+caJV5z7ozc1f2UPUE+HBK+60wyLx71dkO
+         mevsHseKbWEp4kFooCTimNpay3sU/6xtfEYqM=
+MIME-Version: 1.0
+Date: Sun, 20 Sep 2009 09:52:25 +0400
+Message-ID: <c18d6aa20909192252j4b895ed5t278070ab47b0114@mail.gmail.com>
+Subject: [PATCH] raid-1/10: fix RW bits manipulation
+From: Dmitry Monakhov <rjevskiy@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=0016e6d7df763f6f810473fbf850
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-19 at 22:46 -0600, Robert Hancock wrote:
-> 
-> Yeah, I just came across that patch. Is that going to get pushed for 
-> 2.6.32? It seems like something caused us to start tripping over this
-> by default when we didn't before. (Passing intel_iommu=on with
-> 2.6.30.5 does cause the same problem.)
+--0016e6d7df763f6f810473fbf850
+Content-Type: text/plain; charset=UTF-8
 
-Yes, I'll push it in the next day or so. Just waiting for another
-last-minute fix to be tested by someone other than me, and then I'll ask
-Linus to pull.
+Recently Jens has changed bio_rw_flagged() logic by following
+commit 1f98a13f623e0ef666690a18c1250335fc6d7ef1. Now it returns
+bool instead of int. This broke raid1/raid10 RW bits manipulation logic.
+One of visible result is BUG_ON triggering due to empty barrier
+here scsi_lib.c:1108 scsi_setup_fs_cmnd()
 
-> I'll try and report the problem to Asus, obviously something's borked 
-> with VT-d in their BIOS currently..
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+---
+ drivers/md/raid1.c  |   10 ++++++----
+ drivers/md/raid10.c |    6 +++---
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
-Good luck with that. Their normal response is to say "it boots Windows
-so it must be perfect". Despite the fact that Windows doesn't actually
-use VT-d. Idiots.
+--0016e6d7df763f6f810473fbf850
+Content-Type: text/x-patch; charset=US-ASCII; 
+	name="0001-raid-1-10-fix-RW-bit-manipulation.patch"
+Content-Disposition: attachment; 
+	filename="0001-raid-1-10-fix-RW-bit-manipulation.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fztde9uu0
 
--- 
-dwmw2
-
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWQvcmFpZDEuYyBiL2RyaXZlcnMvbWQvcmFpZDEuYwppbmRl
+eCBmZjdlZDMzLi41ZGU0OGU1IDEwMDY0NAotLS0gYS9kcml2ZXJzL21kL3JhaWQxLmMKKysrIGIv
+ZHJpdmVycy9tZC9yYWlkMS5jCkBAIC04NTEsNyArODUxLDcgQEAgc3RhdGljIGludCBtYWtlX3Jl
+cXVlc3Qoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEsIHN0cnVjdCBiaW8gKiBiaW8pCiAJCXJlYWRf
+YmlvLT5iaV9zZWN0b3IgPSByMV9iaW8tPnNlY3RvciArIG1pcnJvci0+cmRldi0+ZGF0YV9vZmZz
+ZXQ7CiAJCXJlYWRfYmlvLT5iaV9iZGV2ID0gbWlycm9yLT5yZGV2LT5iZGV2OwogCQlyZWFkX2Jp
+by0+YmlfZW5kX2lvID0gcmFpZDFfZW5kX3JlYWRfcmVxdWVzdDsKLQkJcmVhZF9iaW8tPmJpX3J3
+ID0gUkVBRCB8IGRvX3N5bmM7CisJCXJlYWRfYmlvLT5iaV9ydyA9IFJFQUQgfCAoZG9fc3luYyA8
+PCBCSU9fUldfU1lOQ0lPKTsKIAkJcmVhZF9iaW8tPmJpX3ByaXZhdGUgPSByMV9iaW87CiAKIAkJ
+Z2VuZXJpY19tYWtlX3JlcXVlc3QocmVhZF9iaW8pOwpAQCAtOTQzLDcgKzk0Myw4IEBAIHN0YXRp
+YyBpbnQgbWFrZV9yZXF1ZXN0KHN0cnVjdCByZXF1ZXN0X3F1ZXVlICpxLCBzdHJ1Y3QgYmlvICog
+YmlvKQogCQltYmlvLT5iaV9zZWN0b3IJPSByMV9iaW8tPnNlY3RvciArIGNvbmYtPm1pcnJvcnNb
+aV0ucmRldi0+ZGF0YV9vZmZzZXQ7CiAJCW1iaW8tPmJpX2JkZXYgPSBjb25mLT5taXJyb3JzW2ld
+LnJkZXYtPmJkZXY7CiAJCW1iaW8tPmJpX2VuZF9pbwk9IHJhaWQxX2VuZF93cml0ZV9yZXF1ZXN0
+OwotCQltYmlvLT5iaV9ydyA9IFdSSVRFIHwgZG9fYmFycmllcnMgfCBkb19zeW5jOworCQltYmlv
+LT5iaV9ydyA9IFdSSVRFIHwgKGRvX2JhcnJpZXJzIDw8IEJJT19SV19CQVJSSUVSKSB8CisJCQko
+ZG9fc3luYyA8PCBCSU9fUldfU1lOQ0lPKTsKIAkJbWJpby0+YmlfcHJpdmF0ZSA9IHIxX2JpbzsK
+IAogCQlpZiAoYmVoaW5kX3BhZ2VzKSB7CkBAIC0xNjIzLDcgKzE2MjQsOCBAQCBzdGF0aWMgdm9p
+ZCByYWlkMWQobWRkZXZfdCAqbWRkZXYpCiAJCQkJCQljb25mLT5taXJyb3JzW2ldLnJkZXYtPmRh
+dGFfb2Zmc2V0OwogCQkJCQliaW8tPmJpX2JkZXYgPSBjb25mLT5taXJyb3JzW2ldLnJkZXYtPmJk
+ZXY7CiAJCQkJCWJpby0+YmlfZW5kX2lvID0gcmFpZDFfZW5kX3dyaXRlX3JlcXVlc3Q7Ci0JCQkJ
+CWJpby0+YmlfcncgPSBXUklURSB8IGRvX3N5bmM7CisJCQkJCWJpby0+YmlfcncgPSBXUklURSB8
+CisJCQkJCQkoZG9fc3luYyA8PCBCSU9fUldfU1lOQ0lPKTsKIAkJCQkJYmlvLT5iaV9wcml2YXRl
+ID0gcjFfYmlvOwogCQkJCQlyMV9iaW8tPmJpb3NbaV0gPSBiaW87CiAJCQkJCWdlbmVyaWNfbWFr
+ZV9yZXF1ZXN0KGJpbyk7CkBAIC0xNjcyLDcgKzE2NzQsNyBAQCBzdGF0aWMgdm9pZCByYWlkMWQo
+bWRkZXZfdCAqbWRkZXYpCiAJCQkJYmlvLT5iaV9zZWN0b3IgPSByMV9iaW8tPnNlY3RvciArIHJk
+ZXYtPmRhdGFfb2Zmc2V0OwogCQkJCWJpby0+YmlfYmRldiA9IHJkZXYtPmJkZXY7CiAJCQkJYmlv
+LT5iaV9lbmRfaW8gPSByYWlkMV9lbmRfcmVhZF9yZXF1ZXN0OwotCQkJCWJpby0+YmlfcncgPSBS
+RUFEIHwgZG9fc3luYzsKKwkJCQliaW8tPmJpX3J3ID0gUkVBRCB8IChkb19zeW5jIDw8IEJJT19S
+V19TWU5DSU8pOwogCQkJCWJpby0+YmlfcHJpdmF0ZSA9IHIxX2JpbzsKIAkJCQl1bnBsdWcgPSAx
+OwogCQkJCWdlbmVyaWNfbWFrZV9yZXF1ZXN0KGJpbyk7CmRpZmYgLS1naXQgYS9kcml2ZXJzL21k
+L3JhaWQxMC5jIGIvZHJpdmVycy9tZC9yYWlkMTAuYwppbmRleCBkMGEyMTUyLi5mMmM4OTFmIDEw
+MDY0NAotLS0gYS9kcml2ZXJzL21kL3JhaWQxMC5jCisrKyBiL2RyaXZlcnMvbWQvcmFpZDEwLmMK
+QEAgLTg4Miw3ICs4ODIsNyBAQCBzdGF0aWMgaW50IG1ha2VfcmVxdWVzdChzdHJ1Y3QgcmVxdWVz
+dF9xdWV1ZSAqcSwgc3RydWN0IGJpbyAqIGJpbykKIAkJCW1pcnJvci0+cmRldi0+ZGF0YV9vZmZz
+ZXQ7CiAJCXJlYWRfYmlvLT5iaV9iZGV2ID0gbWlycm9yLT5yZGV2LT5iZGV2OwogCQlyZWFkX2Jp
+by0+YmlfZW5kX2lvID0gcmFpZDEwX2VuZF9yZWFkX3JlcXVlc3Q7Ci0JCXJlYWRfYmlvLT5iaV9y
+dyA9IFJFQUQgfCBkb19zeW5jOworCQlyZWFkX2Jpby0+YmlfcncgPSBSRUFEIHwgKGRvX3N5bmMg
+PDwgQklPX1JXX1NZTkNJTyk7CiAJCXJlYWRfYmlvLT5iaV9wcml2YXRlID0gcjEwX2JpbzsKIAog
+CQlnZW5lcmljX21ha2VfcmVxdWVzdChyZWFkX2Jpbyk7CkBAIC05NTAsNyArOTUwLDcgQEAgc3Rh
+dGljIGludCBtYWtlX3JlcXVlc3Qoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEsIHN0cnVjdCBiaW8g
+KiBiaW8pCiAJCQljb25mLT5taXJyb3JzW2RdLnJkZXYtPmRhdGFfb2Zmc2V0OwogCQltYmlvLT5i
+aV9iZGV2ID0gY29uZi0+bWlycm9yc1tkXS5yZGV2LT5iZGV2OwogCQltYmlvLT5iaV9lbmRfaW8J
+PSByYWlkMTBfZW5kX3dyaXRlX3JlcXVlc3Q7Ci0JCW1iaW8tPmJpX3J3ID0gV1JJVEUgfCBkb19z
+eW5jOworCQltYmlvLT5iaV9ydyA9IFdSSVRFIHwgKGRvX3N5bmMgPDwgQklPX1JXX1NZTkNJTyk7
+CiAJCW1iaW8tPmJpX3ByaXZhdGUgPSByMTBfYmlvOwogCiAJCWF0b21pY19pbmMoJnIxMF9iaW8t
+PnJlbWFpbmluZyk7CkBAIC0xNjIzLDcgKzE2MjMsNyBAQCBzdGF0aWMgdm9pZCByYWlkMTBkKG1k
+ZGV2X3QgKm1kZGV2KQogCQkJCWJpby0+Ymlfc2VjdG9yID0gcjEwX2Jpby0+ZGV2c1tyMTBfYmlv
+LT5yZWFkX3Nsb3RdLmFkZHIKIAkJCQkJKyByZGV2LT5kYXRhX29mZnNldDsKIAkJCQliaW8tPmJp
+X2JkZXYgPSByZGV2LT5iZGV2OwotCQkJCWJpby0+YmlfcncgPSBSRUFEIHwgZG9fc3luYzsKKwkJ
+CQliaW8tPmJpX3J3ID0gUkVBRCB8IChkb19zeW5jIDw8IEJJT19SV19TWU5DSU8pOwogCQkJCWJp
+by0+YmlfcHJpdmF0ZSA9IHIxMF9iaW87CiAJCQkJYmlvLT5iaV9lbmRfaW8gPSByYWlkMTBfZW5k
+X3JlYWRfcmVxdWVzdDsKIAkJCQl1bnBsdWcgPSAxOwotLSAKMS42LjIuMi40NDYuZ2ZiZGMwCgo=
+--0016e6d7df763f6f810473fbf850--
