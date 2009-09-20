@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZITQOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZITQOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbZITQOj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 12:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZITQOh
+	id S1754689AbZITQOw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 12:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZITQOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 12:14:37 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50844 "EHLO
+	Sun, 20 Sep 2009 12:14:51 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50858 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752991AbZITQOf convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752991AbZITQOh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 12:14:35 -0400
-Date: Sun, 20 Sep 2009 18:13:28 +0200
+	Sun, 20 Sep 2009 12:14:37 -0400
+Date: Sun, 20 Sep 2009 18:13:53 +0200
 From: Arjan van de Ven <arjan@linux.intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, paulus@samba.org, ahpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Subject: [PATCH] perf timechart: Show the name of the waker/wakee in
- timechart
-Message-ID: <20090920181328.68baa978@linux.intel.com>
+Subject: [PATCH] perf timechart: Show the duration of scheduler delays in
+ the SVG
+Message-ID: <20090920181353.796f4509@linux.intel.com>
 In-Reply-To: <20090920181248.464c9193@infradead.org>
 References: <20090920181248.464c9193@infradead.org>
 Organization: Intel
@@ -29,130 +29,150 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 2d1556e254839707ef701edf21ec8e8116137019 Mon Sep 17 00:00:00 2001
+>From 04d386297c5ffb97a7fcea79cb3300359e4f5dcc Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 19 Sep 2009 19:31:12 +0200
-Subject: [PATCH] perf timechart: Show the name of the waker/wakee in timechart
+Date: Sat, 19 Sep 2009 20:06:24 +0200
+Subject: [PATCH] perf timechart: Show the duration of scheduler delays in the SVG
 
-Timechart currently shows thin green lines for sending or receiving wakeups.
-This patch also prints (in a very small font) the name of the process that
-is being woken/wakes up this process.
+Given that scheduler latencies are the hot thing nowadays, show the
+duration of said latencies in the SVG in text form.
+
+In addition, if the latency is more than 10 msec, pick a brighter
+yellow color as a way to point these long delays out.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- tools/perf/builtin-timechart.c |   11 ++++++++---
- tools/perf/util/svghelper.c    |   28 +++++++++++++++++++++-------
- tools/perf/util/svghelper.h    |    2 +-
- 3 files changed, 30 insertions(+), 11 deletions(-)
+ tools/perf/builtin-timechart.c |    6 ++--
+ tools/perf/util/svghelper.c    |   56 +++++++++++++++++++++++++++++++++++++---
+ tools/perf/util/svghelper.h    |    3 +-
+ 3 files changed, 57 insertions(+), 8 deletions(-)
 
 diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
-index 58d737e..3f45b8b 100644
+index 3f45b8b..23b3f09 100644
 --- a/tools/perf/builtin-timechart.c
 +++ b/tools/perf/builtin-timechart.c
-@@ -752,6 +752,7 @@ static void draw_wakeups(void)
- 	we = wake_events;
- 	while (we) {
- 		int from = 0, to = 0;
-+		char *task_from = NULL, *task_to = NULL;
+@@ -827,15 +827,15 @@ static void draw_process_bars(void)
+ 				continue;
+ 			}
  
- 		/* locate the column of the waker and wakee */
- 		p = all_data;
-@@ -760,10 +761,14 @@ static void draw_wakeups(void)
- 				c = p->all;
- 				while (c) {
- 					if (c->Y && c->start_time <= we->time && c->end_time >= we->time) {
--						if (p->pid == we->waker)
-+						if (p->pid == we->waker) {
- 							from = c->Y;
--						if (p->pid == we->wakee)
-+							task_from = c->comm;
-+						}
-+						if (p->pid == we->wakee) {
- 							to = c->Y;
-+							task_to = c->comm;
-+						}
- 					}
- 					c = c->next;
- 				}
-@@ -776,7 +781,7 @@ static void draw_wakeups(void)
- 		else if (from && to && abs(from - to) == 1)
- 			svg_wakeline(we->time, from, to);
- 		else
--			svg_partial_wakeline(we->time, from, to);
-+			svg_partial_wakeline(we->time, from, task_from, to, task_to);
- 		we = we->next;
- 	}
- }
+-			svg_box(Y, p->start_time, p->end_time, "process");
++			svg_box(Y, c->start_time, c->end_time, "process");
+ 			sample = c->samples;
+ 			while (sample) {
+ 				if (sample->type == TYPE_RUNNING)
+-					svg_sample(Y, sample->cpu, sample->start_time, sample->end_time, "sample");
++					svg_sample(Y, sample->cpu, sample->start_time, sample->end_time);
+ 				if (sample->type == TYPE_BLOCKED)
+ 					svg_box(Y, sample->start_time, sample->end_time, "blocked");
+ 				if (sample->type == TYPE_WAITING)
+-					svg_box(Y, sample->start_time, sample->end_time, "waiting");
++					svg_waiting(Y, sample->start_time, sample->end_time);
+ 				sample = sample->next;
+ 			}
+ 
 diff --git a/tools/perf/util/svghelper.c b/tools/perf/util/svghelper.c
-index b0fcecd..9f70fa8 100644
+index 9f70fa8..52f628f 100644
 --- a/tools/perf/util/svghelper.c
 +++ b/tools/perf/util/svghelper.c
-@@ -242,7 +242,7 @@ void svg_pstate(int cpu, u64 start, u64 end, u64 freq)
+@@ -69,7 +69,8 @@ void open_svg(const char *filename, int cpus, int rows)
+ 	fprintf(svgfile, "      rect.process2 { fill:rgb(180,180,180); fill-opacity:0.9; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+ 	fprintf(svgfile, "      rect.sample   { fill:rgb(  0,  0,255); fill-opacity:0.8; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+ 	fprintf(svgfile, "      rect.blocked  { fill:rgb(255,  0,  0); fill-opacity:0.5; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+-	fprintf(svgfile, "      rect.waiting  { fill:rgb(255,255,  0); fill-opacity:0.3; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
++	fprintf(svgfile, "      rect.waiting  { fill:rgb(214,214,  0); fill-opacity:0.3; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
++	fprintf(svgfile, "      rect.WAITING  { fill:rgb(255,214, 48); fill-opacity:0.6; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+ 	fprintf(svgfile, "      rect.cpu      { fill:rgb(192,192,192); fill-opacity:0.2; stroke-width:0.5; stroke:rgb(128,128,128); } \n");
+ 	fprintf(svgfile, "      rect.pstate   { fill:rgb(128,128,128); fill-opacity:0.8; stroke-width:0; } \n");
+ 	fprintf(svgfile, "      rect.c1       { fill:rgb(255,214,214); fill-opacity:0.5; stroke-width:0; } \n");
+@@ -92,14 +93,14 @@ void svg_box(int Yslot, u64 start, u64 end, const char *type)
+ 		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT, type);
  }
  
- 
--void svg_partial_wakeline(u64 start, int row1, int row2)
-+void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc2)
+-void svg_sample(int Yslot, int cpu, u64 start, u64 end, const char *type)
++void svg_sample(int Yslot, int cpu, u64 start, u64 end)
  {
- 	double height;
+ 	double text_size;
+ 	if (!svgfile)
+ 		return;
  
-@@ -251,21 +251,35 @@ void svg_partial_wakeline(u64 start, int row1, int row2)
+-	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"%s\"/>\n",
+-		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT, type);
++	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"sample\"/>\n",
++		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT);
  
+ 	text_size = (time2pixels(end)-time2pixels(start));
+ 	if (cpu > 9)
+@@ -112,6 +113,53 @@ void svg_sample(int Yslot, int cpu, u64 start, u64 end, const char *type)
  
- 	if (row1 < row2) {
--		if (row1)
-+		if (row1) {
- 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
- 				time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT,  time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/32);
--
--		if (row2)
-+			if (desc2)
-+				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &gt;</text>\n",
-+					time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT + SLOT_HEIGHT/48, desc2);
-+		}
-+		if (row2) {
- 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
- 				time2pixels(start), row2 * SLOT_MULT - SLOT_MULT/32,  time2pixels(start), row2 * SLOT_MULT);
-+			if (desc1)
-+				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &gt;</text>\n",
-+					time2pixels(start), row2 * SLOT_MULT - SLOT_MULT/32, desc1);
-+		}
- 	} else {
--		if (row2)
-+		if (row2) {
- 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
- 				time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT,  time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/32);
--
--		if (row1)
-+			if (desc1)
-+				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &lt;</text>\n",
-+					time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/48, desc1);
-+		}
-+		if (row1) {
- 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
- 				time2pixels(start), row1 * SLOT_MULT - SLOT_MULT/32,  time2pixels(start), row1 * SLOT_MULT);
-+			if (desc2)
-+				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &lt;</text>\n",
-+					time2pixels(start), row1 * SLOT_MULT - SLOT_HEIGHT/32, desc2);
-+		}
- 	}
- 	height = row1 * SLOT_MULT;
- 	if (row2 > row1)
+ }
+ 
++static char *time_to_string(u64 duration)
++{
++	static char text[80];
++
++	text[0] = 0;
++
++	if (duration < 1000) /* less than 1 usec */
++		return text;
++
++	if (duration < 1000 * 1000) { /* less than 1 msec */
++		sprintf(text, "%4.1f us", duration / 1000.0);
++		return text;
++	}
++	sprintf(text, "%4.1f ms", duration / 1000.0 / 1000);
++
++	return text;
++}
++
++void svg_waiting(int Yslot, u64 start, u64 end)
++{
++	char *text;
++	const char *style;
++	double font_size;
++
++	if (!svgfile)
++		return;
++
++	style = "waiting";
++
++	if (end-start > 10 * 1000000) /* 10 msec */
++		style = "WAITING";
++
++	text = time_to_string(end-start);
++
++	font_size = 1.0 * (time2pixels(end)-time2pixels(start)) / strlen(text);
++
++	if (font_size > 0.2)
++		font_size = 0.2;
++
++
++	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"%s\"/>\n",
++		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT, style);
++	if (font_size > MIN_TEXT_SIZE)
++		fprintf(svgfile, "<text transform=\"translate(%1.8f,%1.8f)\" font-size=\"%1.6fpt\">%s</text>\n",
++			time2pixels(start), Yslot * SLOT_MULT + 2, font_size, text);
++}
++
+ static char *cpu_model(void)
+ {
+ 	static char cpu_m[255];
 diff --git a/tools/perf/util/svghelper.h b/tools/perf/util/svghelper.h
-index ad79b5d..8260a7e 100644
+index 8260a7e..ed4ebcf 100644
 --- a/tools/perf/util/svghelper.h
 +++ b/tools/perf/util/svghelper.h
-@@ -17,7 +17,7 @@ extern void svg_pstate(int cpu, u64 start, u64 end, u64 freq);
- extern void svg_time_grid(u64 start, u64 end);
- extern void svg_legenda(void);
- extern void svg_wakeline(u64 start, int row1, int row2);
--extern void svg_partial_wakeline(u64 start, int row1, int row2);
-+extern void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc2);
- extern void svg_interrupt(u64 start, int row);
- extern void svg_text(int Yslot, u64 start, const char *text);
- extern void svg_close(void);
+@@ -5,7 +5,8 @@
+ 
+ extern void open_svg(const char *filename, int cpus, int rows);
+ extern void svg_box(int Yslot, u64 start, u64 end, const char *type);
+-extern void svg_sample(int Yslot, int cpu, u64 start, u64 end, const char *type);
++extern void svg_sample(int Yslot, int cpu, u64 start, u64 end);
++extern void svg_waiting(int Yslot, u64 start, u64 end);
+ extern void svg_cpu_box(int cpu, u64 max_frequency, u64 turbo_frequency);
+ 
+ 
 -- 
 1.6.0.6
+
 
 
 
