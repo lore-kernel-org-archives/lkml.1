@@ -1,86 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZITS2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZITS2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbZITS2B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZITS2B
+	id S1755424AbZITS2W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbZITS2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:28:01 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56151 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755087AbZITS2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:28:00 -0400
-Date: Sun, 20 Sep 2009 18:27:35 GMT
-From: tip-bot for Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       joe@perches.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       joe@perches.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1252945687.3937.14.camel@Joe-Laptop.home>
-References: <1252945687.3937.14.camel@Joe-Laptop.home>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, mtrr: Convert loop to a while based construct, avoid naked semicolon
-Message-ID: <tip-9ff6d8e06fbd9249804d43574167c2acc52886be@git.kernel.org>
-Git-Commit-ID: 9ff6d8e06fbd9249804d43574167c2acc52886be
-X-Mailer: tip-git-log-daemon
+	Sun, 20 Sep 2009 14:28:21 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60487 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752782AbZITS2U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:28:20 -0400
+Date: Sun, 20 Sep 2009 14:28:03 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: David Howells <dhowells@redhat.com>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Subject: [PATCH] mn10300 linker script cleanup
+Message-ID: <alpine.DEB.1.10.0909201414380.3101@dr-wily.mit.edu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 20 Sep 2009 18:27:36 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9ff6d8e06fbd9249804d43574167c2acc52886be
-Gitweb:     http://git.kernel.org/tip/9ff6d8e06fbd9249804d43574167c2acc52886be
-Author:     Joe Perches <joe@perches.com>
-AuthorDate: Mon, 14 Sep 2009 09:28:07 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 20 Sep 2009 20:12:21 +0200
+David,
 
-x86, mtrr: Convert loop to a while based construct, avoid naked semicolon
+I noticed that you already converted to mn10300 architecture to use some 
+of the new macros in vmlinux.lds.h.  It seems to me that one could clean 
+things up further by using some of the higher-level macros 
+(RW_DATA_SECTION, INIT_TEXT_SECTION, INIT_DATA_SECTION).  Patch below.
 
-Perhaps this is a more readable/standard form.
+	Best regards,
+	-Tim Abbott
 
-Signed-off-by: Joe Perches <joe@perches.com>
-LKML-Reference: <1252945687.3937.14.camel@Joe-Laptop.home>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+mn10300: Clean up linker script using higher-level macros.
 
-
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
 ---
- arch/x86/kernel/cpu/mtrr/if.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/mn10300/kernel/vmlinux.lds.S |   40 +++---------------------------------
+ 1 files changed, 4 insertions(+), 36 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
-index 08b6ea4..f04e725 100644
---- a/arch/x86/kernel/cpu/mtrr/if.c
-+++ b/arch/x86/kernel/cpu/mtrr/if.c
-@@ -126,8 +126,8 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
- 		return -EINVAL;
+diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
+index 76f41bd..10549dc 100644
+--- a/arch/mn10300/kernel/vmlinux.lds.S
++++ b/arch/mn10300/kernel/vmlinux.lds.S
+@@ -44,24 +44,8 @@ SECTIONS
+   RO_DATA(PAGE_SIZE)
  
- 	base = simple_strtoull(line + 5, &ptr, 0);
--	for (; isspace(*ptr); ++ptr)
--		;
-+	while (isspace(*ptr))
-+		ptr++;
+   /* writeable */
+-  .data : {			/* Data */
+-	DATA_DATA
+-	CONSTRUCTORS
+-	}
+-
+-  .data_nosave : { NOSAVE_DATA; }
+-
+-  .data.page_aligned : { PAGE_ALIGNED_DATA(PAGE_SIZE); }
+-  .data.cacheline_aligned : { CACHELINE_ALIGNED_DATA(32); }
+-
+-  /* rarely changed data like cpu maps */
+-  . = ALIGN(32);
+-  .data.read_mostly : AT(ADDR(.data.read_mostly)) {
+-	READ_MOSTLY_DATA(32);
+-	_edata = .;		/* End of data section */
+-  }
+-
+-  .data.init_task : { INIT_TASK_DATA(THREAD_SIZE); }
++  RW_DATA_SECTION(32, PAGE_SIZE, THREAD_SIZE)
++  _edata = .;
  
- 	if (strncmp(ptr, "size=", 5))
- 		return -EINVAL;
-@@ -135,14 +135,14 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
- 	size = simple_strtoull(ptr + 5, &ptr, 0);
- 	if ((base & 0xfff) || (size & 0xfff))
- 		return -EINVAL;
--	for (; isspace(*ptr); ++ptr)
--		;
-+	while (isspace(*ptr))
-+		ptr++;
+   /* might get freed after init */
+   . = ALIGN(PAGE_SIZE);
+@@ -74,22 +58,8 @@ SECTIONS
+   /* will be freed after init */
+   . = ALIGN(PAGE_SIZE);		/* Init code and data */
+   __init_begin = .;
+-  .init.text : {
+-	_sinittext = .;
+-	INIT_TEXT;
+-	_einittext = .;
+-  }
+-  .init.data : { INIT_DATA; }
+-  .setup.init : { INIT_SETUP(16); }
+-
+-  __initcall_start = .;
+-  .initcall.init : {
+-	INITCALLS
+-  }
+-  __initcall_end = .;
+-  .con_initcall.init : { CON_INITCALL; }
+-
+-  SECURITY_INIT
++  INIT_TEXT_SECTION(PAGE_SIZE)
++  INIT_DATA_SECTION(16)
+   . = ALIGN(4);
+   __alt_instructions = .;
+   .altinstructions : { *(.altinstructions) }
+@@ -100,8 +70,6 @@ SECTIONS
+ 	.exit.text : { EXIT_TEXT; }
+ 	.exit.data : { EXIT_DATA; }
  
- 	if (strncmp(ptr, "type=", 5))
- 		return -EINVAL;
- 	ptr += 5;
--	for (; isspace(*ptr); ++ptr)
--		;
-+	while (isspace(*ptr))
-+		ptr++;
- 
- 	for (i = 0; i < MTRR_NUM_TYPES; ++i) {
- 		if (strcmp(ptr, mtrr_strings[i]))
+-  .init.ramfs : { INIT_RAM_FS; }
+-
+   PERCPU(32)
+   . = ALIGN(PAGE_SIZE);
+   __init_end = .;
+-- 
+1.6.3.3
+
