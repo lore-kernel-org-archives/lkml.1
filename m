@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbZITSKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbZITSPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbZITSKq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZITSKn
+	id S1755363AbZITSPT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZITSPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:10:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56875 "EHLO mx3.mail.elte.hu"
+	Sun, 20 Sep 2009 14:15:19 -0400
+Received: from kroah.org ([198.145.64.141]:58317 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754722AbZITSKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:10:43 -0400
-Date: Sun, 20 Sep 2009 20:10:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Felix Fietkau <nbd@openwrt.org>
-Cc: Michael Buesch <mb@bu3sch.de>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090920181041.GC8498@elte.hu>
-References: <20090908074825.GA11413@elte.hu> <200909081645.18505.mb@bu3sch.de> <20090918112454.GE9930@elte.hu> <4AB39D3A.3000204@openwrt.org> <20090919180124.GK5366@elte.hu> <4AB52667.6020608@openwrt.org> <20090919193956.GA21719@elte.hu> <4AB53BCC.503@openwrt.org> <20090919202222.GA26621@elte.hu> <4AB54033.7010901@openwrt.org>
+	id S1754723AbZITSPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:15:18 -0400
+Date: Sun, 20 Sep 2009 11:11:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tilman Schmidt <tilman@imap.cc>, linux-usb@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone
+ VPA-II" ?
+Message-ID: <20090920181133.GA14366@kroah.com>
+References: <20090920150549.GC11621@kroah.com>
+ <Pine.LNX.4.44L0.0909201308550.8307-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AB54033.7010901@openwrt.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.44L0.0909201308550.8307-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Sep 20, 2009 at 01:12:29PM -0400, Alan Stern wrote:
+> On Sun, 20 Sep 2009, Greg KH wrote:
+> 
+> > On Sun, Sep 20, 2009 at 03:39:57PM +0200, Tilman Schmidt wrote:
+> > > When I connect my "T-Mobile MDA compact III" to my PC, running
+> > > kernel 2.6.31 with openSUSE 10.3 userspace, I get exactly the
+> > > symptoms described in:
+> > > 
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=8094
+> > > 
+> > > But that bug is marked as "CLOSED CODE_FIX", though reading through
+> > > the comments I found no clear indication what was actually fixed,
+> > > and from reading through the source files drivers/usb/serial/ipaq.c
+> > > and drivers/usb/serial/usb-serial.c I get the impression that the
+> > > problem of ipaq_open() oopsing because it gets called with
+> > > port->read_urb==NULL is still present.
+> 
+> Interestingly, the fix from that bug report _was_ merged as commit
+> 063a2da8f01806906f7d7b1a1424b9afddebc443 (written by me).  But then it
+> was removed later on(!) in commits
+> 07c3b1a1001614442c665570942a3107a722c314 and
+> 9aebfd6bda789891e6d296bb49b5fb32d1057f18 (written by Greg).
+> 
+> Apparently the check should have been moved from the core into the 
+> lower-level driver (i.e., ipaq.c) but it wasn't.  I don't know why; 
+> maybe Greg does.
 
-* Felix Fietkau <nbd@openwrt.org> wrote:
+Yes, I missed the fact that the ipaq driver needed to pay attention to
+this, my mistake :(
 
-> Ingo Molnar wrote:
-> > * Felix Fietkau <nbd@openwrt.org> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >> > * Felix Fietkau <nbd@openwrt.org> wrote:
-> >> >> I did some tests with BFS v230 vs CFS on Linux 2.6.30 on a different
-> >> >> MIPS device (Atheros AR2317) with 180 MHz and 16 MB RAM. When running
-> >> >> iperf tests, I consistently get the following results when running the
-> >> >> transfer from the device to my laptop:
-> >> >> 
-> >> >> CFS: [  5]  0.0-60.0 sec    107 MBytes  15.0 Mbits/sec
-> >> >> BFS: [  5]  0.0-60.0 sec    119 MBytes  16.6 Mbits/sec
-> >> >> 
-> >> >> The transfer speed from my laptop to the device are the same with BFS
-> >> >> and CFS. I repeated the tests a few times just to be sure, and I will
-> >> >> check vmstat later.
-> >> > 
-> >> > Which exact mainline kernel have you tried? For anything performance 
-> >> > related running latest upstream -git (currently at 202c467) would be 
-> >> > recommended.
-> >>
-> >> I used the OpenWrt-patched 2.6.30. Support for the hardware that I 
-> >> tested with hasn't been merged upstream yet. Do you think that the 
-> >> scheduler related changes after 2.6.30 are relevant for non-SMP 
-> >> performance as well? If so, I'll work on a test with latest upstream 
-> >> -git with the necessary patches when I have time for it.
-> > 
-> > Dont know - it's hard to tell what happens without basic analysis tools. 
-> > Is there _any_ way to profile what happens on that system? (Do hrtimers 
-> > work on it that could be used to profile it?)
->
-> oprofile doesn't have any support for it (mips r4k, no generic 
-> perfcounters), the only usable clock source is a simple cpu cycle 
-> counter (which is also used for the timer interrupt).
+I'm pretty much not able to write any new patches until the end of next
+week, due to conferences I'm currently attending, so if someone wants to
+knock up a patch to fix this before then, it would be most appreciated.
 
-A simple cpu cycle counter ought to be enough to get pretty good 
-perfcounters support going on that box.
+thanks,
 
-It takes a surprisingly small amount of code to do that, and a large 
-portion of the perf tooling should then work out of box. Here's a few 
-example commits of minimal perfcounters support, on other architectures:
-
- 310d6b6: [S390] wire up sys_perf_counter_open
- 2d4618d: parisc: perf: wire up sys_perf_counter_open
- 19470e1: sh: Wire up sys_perf_counter_open.
-
-Takes about 15 well placed lines of code, if there are no other 
-complications on MIPS ;-)
-
-	Ingo
+greg k-h
