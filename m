@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbZITVGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751928AbZITVMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752264AbZITVGt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 17:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbZITVGo
+	id S1751928AbZITVMf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 17:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbZITVMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 17:06:44 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:43216 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbZITVGg (ORCPT
+	Sun, 20 Sep 2009 17:12:33 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:35488 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbZITVMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 17:06:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:message-id
-         :content-type:content-transfer-encoding;
-        b=bgSE7HXT+yaA+XbblULWHkuFgCq9/dj6GD5GnG6KeeAMibQRPKCTElk/hiag0KeG3O
-         f2wpYwqIB2w7rCCk5aGsAhE7H4t2RWH3ow9Ebc+Xo3vDVLrxiacTIWOPsgpmJmxTR4T8
-         mGprCxw7FPsOhsionfPElYwRK7Ljl/Ok6CKV8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: John Lee (Jung-Ik) <jilee@google.com>
-Subject: [PATCH] pata_atp867x: add Power Management support
-Date: Sun, 20 Sep 2009 23:05:10 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-04082-g1824090-dirty; KDE/4.3.1; i686; ; )
-Cc: Grant Grundler <grundler@google.com>, Gwendal Gringo <gwendal@google.com>,
-       Jeff Garzik <jgarzik@redhat.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Sun, 20 Sep 2009 17:12:32 -0400
+Date: Sun, 20 Sep 2009 23:12:34 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: David Howells <dhowells@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Subject: Re: [PATCH] mn10300 linker script cleanup
+Message-ID: <20090920211234.GA27042@merkur.ravnborg.org>
+References: <alpine.DEB.1.10.0909201414380.3101@dr-wily.mit.edu>
 MIME-Version: 1.0
-Message-Id: <200909202305.10118.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0909201414380.3101@dr-wily.mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_atp867x: add Power Management support
+On Sun, Sep 20, 2009 at 02:28:03PM -0400, Tim Abbott wrote:
+> David,
+> 
+> I noticed that you already converted to mn10300 architecture to use some 
+> of the new macros in vmlinux.lds.h.  It seems to me that one could clean 
+> things up further by using some of the higher-level macros 
+> (RW_DATA_SECTION, INIT_TEXT_SECTION, INIT_DATA_SECTION).  Patch below.
+> 
+> 	Best regards,
+> 	-Tim Abbott
+> 
+> mn10300: Clean up linker script using higher-level macros.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-needs testing with the real hardware
+Or maybe David used an older version as his base.
+Patch looks good.
 
- drivers/ata/pata_atp867x.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-Index: b/drivers/ata/pata_atp867x.c
-===================================================================
---- a/drivers/ata/pata_atp867x.c
-+++ b/drivers/ata/pata_atp867x.c
-@@ -507,6 +507,23 @@ err_out:
- 	return rc;
- }
- 
-+#ifdef CONFIG_PM
-+static int atp867x_reinit_one(struct pci_dev *pdev)
-+{
-+	struct ata_host *host = dev_get_drvdata(&pdev->dev);
-+	int rc;
-+
-+	rc = ata_pci_device_do_resume(pdev);
-+	if (rc)
-+		return rc;
-+
-+	atp867x_fixup(host);
-+
-+	ata_host_resume(host);
-+	return 0;
-+}
-+#endif
-+
- static struct pci_device_id atp867x_pci_tbl[] = {
- 	{ PCI_VDEVICE(ARTOP, PCI_DEVICE_ID_ARTOP_ATP867A),	0 },
- 	{ PCI_VDEVICE(ARTOP, PCI_DEVICE_ID_ARTOP_ATP867B),	0 },
-@@ -518,6 +535,10 @@ static struct pci_driver atp867x_driver 
- 	.id_table 	= atp867x_pci_tbl,
- 	.probe 		= atp867x_init_one,
- 	.remove		= ata_pci_remove_one,
-+#ifdef CONFIG_PM
-+	.suspend	= ata_pci_device_suspend,
-+	.resume		= atp867x_reinit_one,
-+#endif
- };
- 
- static int __init atp867x_init(void)
+	Sam
