@@ -1,106 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbZITFwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752124AbZITGDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751837AbZITFwY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 01:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZITFwX
+	id S1752124AbZITGDP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 02:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZITGDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 01:52:23 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:34781 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbZITFwX (ORCPT
+	Sun, 20 Sep 2009 02:03:14 -0400
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:42205 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751264AbZITGDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 01:52:23 -0400
+	Sun, 20 Sep 2009 02:03:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=Ei59YRfmhSvH2mL9jqwL1AXNNHGFP8XnND3j+k+JCoJfbbBKJORsn4e+mcDuC7T8SQ
-         uw6uYvj8pumvvhtvzrAuEbAlqyZHLicvfT+caJV5z7ozc1f2UPUE+HBK+60wyLx71dkO
-         mevsHseKbWEp4kFooCTimNpay3sU/6xtfEYqM=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=kWbyV6LvW4y6J/i/RNQBz7BTGnfAc+/G1X6IPJQJeTfpBdawvACr4Cd+taFolLElSa
+         6acOk82FjWxOleKRbbme6lBagHXDhV3nCUsuVd8QM+hQVnEJF1kyghVOwobqjl3kPVpV
+         KBNTBf7LNyQqGBeSlaxogTOUBZINn+yyFFkUo=
 MIME-Version: 1.0
-Date: Sun, 20 Sep 2009 09:52:25 +0400
-Message-ID: <c18d6aa20909192252j4b895ed5t278070ab47b0114@mail.gmail.com>
-Subject: [PATCH] raid-1/10: fix RW bits manipulation
-From: Dmitry Monakhov <rjevskiy@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=0016e6d7df763f6f810473fbf850
+In-Reply-To: <200909192211.12226.volkerarmin@googlemail.com>
+References: <200908211814.56800.volkerarmin@googlemail.com>
+	 <200908270313.32528.volkerarmin@googlemail.com>
+	 <86802c440908270013k4b8c75b1h6bac33a623ded5e7@mail.gmail.com>
+	 <200909192211.12226.volkerarmin@googlemail.com>
+Date: Sat, 19 Sep 2009 23:03:13 -0700
+Message-ID: <86802c440909192303j643d83b5te710926a99ddb2e5@mail.gmail.com>
+Subject: Re: amd64 + mtrr: only 3.1gb of 8gb are covered, kernel 2.6.30 and 
+	earlier.
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Volker Armin Hemmann <volkerarmin@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e6d7df763f6f810473fbf850
-Content-Type: text/plain; charset=UTF-8
+your looks ok, because you got new CPU, and HW will set WB for [4G, TOM2)
 
-Recently Jens has changed bio_rw_flagged() logic by following
-commit 1f98a13f623e0ef666690a18c1250335fc6d7ef1. Now it returns
-bool instead of int. This broke raid1/raid10 RW bits manipulation logic.
-One of visible result is BUG_ON triggering due to empty barrier
-here scsi_lib.c:1108 scsi_setup_fs_cmnd()
-
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
----
- drivers/md/raid1.c  |   10 ++++++----
- drivers/md/raid10.c |    6 +++---
- 2 files changed, 9 insertions(+), 7 deletions(-)
-
---0016e6d7df763f6f810473fbf850
-Content-Type: text/x-patch; charset=US-ASCII; 
-	name="0001-raid-1-10-fix-RW-bit-manipulation.patch"
-Content-Disposition: attachment; 
-	filename="0001-raid-1-10-fix-RW-bit-manipulation.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fztde9uu0
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWQvcmFpZDEuYyBiL2RyaXZlcnMvbWQvcmFpZDEuYwppbmRl
-eCBmZjdlZDMzLi41ZGU0OGU1IDEwMDY0NAotLS0gYS9kcml2ZXJzL21kL3JhaWQxLmMKKysrIGIv
-ZHJpdmVycy9tZC9yYWlkMS5jCkBAIC04NTEsNyArODUxLDcgQEAgc3RhdGljIGludCBtYWtlX3Jl
-cXVlc3Qoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEsIHN0cnVjdCBiaW8gKiBiaW8pCiAJCXJlYWRf
-YmlvLT5iaV9zZWN0b3IgPSByMV9iaW8tPnNlY3RvciArIG1pcnJvci0+cmRldi0+ZGF0YV9vZmZz
-ZXQ7CiAJCXJlYWRfYmlvLT5iaV9iZGV2ID0gbWlycm9yLT5yZGV2LT5iZGV2OwogCQlyZWFkX2Jp
-by0+YmlfZW5kX2lvID0gcmFpZDFfZW5kX3JlYWRfcmVxdWVzdDsKLQkJcmVhZF9iaW8tPmJpX3J3
-ID0gUkVBRCB8IGRvX3N5bmM7CisJCXJlYWRfYmlvLT5iaV9ydyA9IFJFQUQgfCAoZG9fc3luYyA8
-PCBCSU9fUldfU1lOQ0lPKTsKIAkJcmVhZF9iaW8tPmJpX3ByaXZhdGUgPSByMV9iaW87CiAKIAkJ
-Z2VuZXJpY19tYWtlX3JlcXVlc3QocmVhZF9iaW8pOwpAQCAtOTQzLDcgKzk0Myw4IEBAIHN0YXRp
-YyBpbnQgbWFrZV9yZXF1ZXN0KHN0cnVjdCByZXF1ZXN0X3F1ZXVlICpxLCBzdHJ1Y3QgYmlvICog
-YmlvKQogCQltYmlvLT5iaV9zZWN0b3IJPSByMV9iaW8tPnNlY3RvciArIGNvbmYtPm1pcnJvcnNb
-aV0ucmRldi0+ZGF0YV9vZmZzZXQ7CiAJCW1iaW8tPmJpX2JkZXYgPSBjb25mLT5taXJyb3JzW2ld
-LnJkZXYtPmJkZXY7CiAJCW1iaW8tPmJpX2VuZF9pbwk9IHJhaWQxX2VuZF93cml0ZV9yZXF1ZXN0
-OwotCQltYmlvLT5iaV9ydyA9IFdSSVRFIHwgZG9fYmFycmllcnMgfCBkb19zeW5jOworCQltYmlv
-LT5iaV9ydyA9IFdSSVRFIHwgKGRvX2JhcnJpZXJzIDw8IEJJT19SV19CQVJSSUVSKSB8CisJCQko
-ZG9fc3luYyA8PCBCSU9fUldfU1lOQ0lPKTsKIAkJbWJpby0+YmlfcHJpdmF0ZSA9IHIxX2JpbzsK
-IAogCQlpZiAoYmVoaW5kX3BhZ2VzKSB7CkBAIC0xNjIzLDcgKzE2MjQsOCBAQCBzdGF0aWMgdm9p
-ZCByYWlkMWQobWRkZXZfdCAqbWRkZXYpCiAJCQkJCQljb25mLT5taXJyb3JzW2ldLnJkZXYtPmRh
-dGFfb2Zmc2V0OwogCQkJCQliaW8tPmJpX2JkZXYgPSBjb25mLT5taXJyb3JzW2ldLnJkZXYtPmJk
-ZXY7CiAJCQkJCWJpby0+YmlfZW5kX2lvID0gcmFpZDFfZW5kX3dyaXRlX3JlcXVlc3Q7Ci0JCQkJ
-CWJpby0+YmlfcncgPSBXUklURSB8IGRvX3N5bmM7CisJCQkJCWJpby0+YmlfcncgPSBXUklURSB8
-CisJCQkJCQkoZG9fc3luYyA8PCBCSU9fUldfU1lOQ0lPKTsKIAkJCQkJYmlvLT5iaV9wcml2YXRl
-ID0gcjFfYmlvOwogCQkJCQlyMV9iaW8tPmJpb3NbaV0gPSBiaW87CiAJCQkJCWdlbmVyaWNfbWFr
-ZV9yZXF1ZXN0KGJpbyk7CkBAIC0xNjcyLDcgKzE2NzQsNyBAQCBzdGF0aWMgdm9pZCByYWlkMWQo
-bWRkZXZfdCAqbWRkZXYpCiAJCQkJYmlvLT5iaV9zZWN0b3IgPSByMV9iaW8tPnNlY3RvciArIHJk
-ZXYtPmRhdGFfb2Zmc2V0OwogCQkJCWJpby0+YmlfYmRldiA9IHJkZXYtPmJkZXY7CiAJCQkJYmlv
-LT5iaV9lbmRfaW8gPSByYWlkMV9lbmRfcmVhZF9yZXF1ZXN0OwotCQkJCWJpby0+YmlfcncgPSBS
-RUFEIHwgZG9fc3luYzsKKwkJCQliaW8tPmJpX3J3ID0gUkVBRCB8IChkb19zeW5jIDw8IEJJT19S
-V19TWU5DSU8pOwogCQkJCWJpby0+YmlfcHJpdmF0ZSA9IHIxX2JpbzsKIAkJCQl1bnBsdWcgPSAx
-OwogCQkJCWdlbmVyaWNfbWFrZV9yZXF1ZXN0KGJpbyk7CmRpZmYgLS1naXQgYS9kcml2ZXJzL21k
-L3JhaWQxMC5jIGIvZHJpdmVycy9tZC9yYWlkMTAuYwppbmRleCBkMGEyMTUyLi5mMmM4OTFmIDEw
-MDY0NAotLS0gYS9kcml2ZXJzL21kL3JhaWQxMC5jCisrKyBiL2RyaXZlcnMvbWQvcmFpZDEwLmMK
-QEAgLTg4Miw3ICs4ODIsNyBAQCBzdGF0aWMgaW50IG1ha2VfcmVxdWVzdChzdHJ1Y3QgcmVxdWVz
-dF9xdWV1ZSAqcSwgc3RydWN0IGJpbyAqIGJpbykKIAkJCW1pcnJvci0+cmRldi0+ZGF0YV9vZmZz
-ZXQ7CiAJCXJlYWRfYmlvLT5iaV9iZGV2ID0gbWlycm9yLT5yZGV2LT5iZGV2OwogCQlyZWFkX2Jp
-by0+YmlfZW5kX2lvID0gcmFpZDEwX2VuZF9yZWFkX3JlcXVlc3Q7Ci0JCXJlYWRfYmlvLT5iaV9y
-dyA9IFJFQUQgfCBkb19zeW5jOworCQlyZWFkX2Jpby0+YmlfcncgPSBSRUFEIHwgKGRvX3N5bmMg
-PDwgQklPX1JXX1NZTkNJTyk7CiAJCXJlYWRfYmlvLT5iaV9wcml2YXRlID0gcjEwX2JpbzsKIAog
-CQlnZW5lcmljX21ha2VfcmVxdWVzdChyZWFkX2Jpbyk7CkBAIC05NTAsNyArOTUwLDcgQEAgc3Rh
-dGljIGludCBtYWtlX3JlcXVlc3Qoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEsIHN0cnVjdCBiaW8g
-KiBiaW8pCiAJCQljb25mLT5taXJyb3JzW2RdLnJkZXYtPmRhdGFfb2Zmc2V0OwogCQltYmlvLT5i
-aV9iZGV2ID0gY29uZi0+bWlycm9yc1tkXS5yZGV2LT5iZGV2OwogCQltYmlvLT5iaV9lbmRfaW8J
-PSByYWlkMTBfZW5kX3dyaXRlX3JlcXVlc3Q7Ci0JCW1iaW8tPmJpX3J3ID0gV1JJVEUgfCBkb19z
-eW5jOworCQltYmlvLT5iaV9ydyA9IFdSSVRFIHwgKGRvX3N5bmMgPDwgQklPX1JXX1NZTkNJTyk7
-CiAJCW1iaW8tPmJpX3ByaXZhdGUgPSByMTBfYmlvOwogCiAJCWF0b21pY19pbmMoJnIxMF9iaW8t
-PnJlbWFpbmluZyk7CkBAIC0xNjIzLDcgKzE2MjMsNyBAQCBzdGF0aWMgdm9pZCByYWlkMTBkKG1k
-ZGV2X3QgKm1kZGV2KQogCQkJCWJpby0+Ymlfc2VjdG9yID0gcjEwX2Jpby0+ZGV2c1tyMTBfYmlv
-LT5yZWFkX3Nsb3RdLmFkZHIKIAkJCQkJKyByZGV2LT5kYXRhX29mZnNldDsKIAkJCQliaW8tPmJp
-X2JkZXYgPSByZGV2LT5iZGV2OwotCQkJCWJpby0+YmlfcncgPSBSRUFEIHwgZG9fc3luYzsKKwkJ
-CQliaW8tPmJpX3J3ID0gUkVBRCB8IChkb19zeW5jIDw8IEJJT19SV19TWU5DSU8pOwogCQkJCWJp
-by0+YmlfcHJpdmF0ZSA9IHIxMF9iaW87CiAJCQkJYmlvLT5iaV9lbmRfaW8gPSByYWlkMTBfZW5k
-X3JlYWRfcmVxdWVzdDsKIAkJCQl1bnBsdWcgPSAxOwotLSAKMS42LjIuMi40NDYuZ2ZiZGMwCgo=
---0016e6d7df763f6f810473fbf850--
+YH
