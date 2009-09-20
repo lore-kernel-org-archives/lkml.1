@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbZITBnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZITCfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753627AbZITBnb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 21:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZITBna
+	id S1753790AbZITCfe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 22:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZITCfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 21:43:30 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:39583 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752972AbZITBna (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 21:43:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=xpyj5uN/GQ3rWNRM8NhUVBeZdlR1xBapX5bv2v3cYgJwXqNd2VtfRpWvjBrKUyzIOE
-         X/aqwn+2qANstn/2hsyuTlEKllMOh3+UTKaq5pdWSkGmT67gAoyTGLDCygPpTNRTqkzy
-         NfZpIEsmCpYCP3Q3nMvZCEYLmBJDN38D+C+FE=
+	Sat, 19 Sep 2009 22:35:34 -0400
+Received: from mga14.intel.com ([143.182.124.37]:21746 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753666AbZITCfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 22:35:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,417,1249282800"; 
+   d="scan'208";a="189539175"
+Date: Sun, 20 Sep 2009 10:35:28 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>
+Subject: Re: [PATCH] fs: Fix busyloop in wb_writeback()
+Message-ID: <20090920023528.GA13114@localhost>
+References: <1253121768-20673-1-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20090918195005.GA11726@elte.hu>
-References: <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com>
-	 <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
-	 <alpine.LFD.2.01.0909171709410.4950@localhost.localdomain>
-	 <1253238637.4071.10.camel@yio.site> <20090918060210.GC7104@kroah.com>
-	 <alpine.LFD.2.01.0909180717380.4950@localhost.localdomain>
-	 <20090918150541.GB9307@kroah.com>
-	 <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com>
-	 <ac3eb2510909181235m33846928sa8c790758c66233@mail.gmail.com>
-	 <20090918195005.GA11726@elte.hu>
-Date: Sun, 20 Sep 2009 11:43:33 +1000
-Message-ID: <21d7e9970909191843l6fbb835bme509c18cedfd728c@mail.gmail.com>
-Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was: 
-	Re: [PATCH] Remove broken by design and by implementation devtmpfs 
-	maintenance disaster)
-From: Dave Airlie <airlied@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253121768-20673-1-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> Self-contained /dev is great, udev is a total PITA on older distros (on
-> this box it sometimes takes 3 minutes for udev to boot ...) so turning
-> on devtmpfs and getting something functional in exchange is a big
-> selling point IMO.
+On Thu, Sep 17, 2009 at 01:22:48AM +0800, Jan Kara wrote:
+> If all inodes are under writeback (e.g. in case when there's only one inode
+> with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
+> to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
+> waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
+> write anything.
 
-udev taking 3 minutes usually means you have a kernel driver bug,
-udev doesn't have a sleep for 3 minutes, it loads drivers and usually
-waits for them to finish. Since someone decided to merge a stupid
-floppy PNP match I've seen a lot of floppyless machines hit a 30sec
-udev delay. so many that we disabled the pnp floppy on Fedora.
+Sorry, I realized that inode_wait_for_writeback() waits for I_SYNC.
+But inodes in b_more_io are not expected to have I_SYNC set. So your
+patch looks like a big no-op?
 
-Dave.
+The busy loop does exists, when bdi is congested.
+In this case, write_cache_pages() will refuse to write anything,
+we used to be calling congestion_wait() to take a breath, but now
+wb_writeback() purged that call and thus created a busy loop.
+
+So the solution (at least for this merge window)
+should be to restore the congestion_wait() call.
+
+Thanks,
+Fengguang
+
+> CC: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+>  fs/fs-writeback.c |   19 ++++++++++++++++++-
+>  1 files changed, 18 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 8e1e5e1..c59d673 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -706,6 +706,7 @@ static long wb_writeback(struct bdi_writeback *wb,
+>  	};
+>  	unsigned long oldest_jif;
+>  	long wrote = 0;
+> +	struct inode *inode;
+>  
+>  	if (wbc.for_kupdate) {
+>  		wbc.older_than_this = &oldest_jif;
+> @@ -747,8 +748,24 @@ static long wb_writeback(struct bdi_writeback *wb,
+>  		 * If we ran out of stuff to write, bail unless more_io got set
+>  		 */
+>  		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+> -			if (wbc.more_io && !wbc.for_kupdate)
+> +			if (wbc.more_io && !wbc.for_kupdate) {
+> +				if (wbc.nr_to_write < MAX_WRITEBACK_PAGES)
+> +					continue;
+> +				/*
+> +				 * Nothing written. Wait for some inode to
+> +				 * become available for writeback. Otherwise
+> +				 * we'll just busyloop.
+> +				 */
+> +				spin_lock(&inode_lock);
+> +				if (!list_empty(&wb->b_more_io))  {
+> +					inode = list_entry(
+> +							wb->b_more_io.prev,
+> +							struct inode, i_list);
+> +					inode_wait_for_writeback(inode);
+> +				}
+> +				spin_unlock(&inode_lock);
+>  				continue;
+> +			}
+>  			break;
+>  		}
+>  	}
+> -- 
+> 1.6.0.2
