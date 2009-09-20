@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751203AbZISRRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbZITBFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751203AbZISRRm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Sep 2009 13:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZISRRm
+	id S1753541AbZITBFA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Sep 2009 21:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbZITBFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Sep 2009 13:17:42 -0400
-Received: from mga07.intel.com ([143.182.124.22]:40669 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750828AbZISRRl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Sep 2009 13:17:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,416,1249282800"; 
-   d="scan'208";a="189477681"
-Date: Sat, 19 Sep 2009 20:55:45 -0400
-From: "Youquan,Song" <youquan.song@linux.intel.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "Youquan,Song" <youquan.song@linux.intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Song, Youquan" <youquan.song@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] IR: Disallow interrupt remapping if not all ioapic under interrupt remapping
-Message-ID: <20090920005545.GD21419@youquan-linux.bj.intel.com>
-References: <20090907145807.GA30942@youquan-linux.bj.intel.com> <1252532575.2767.32.camel@sbs-t61.sc.intel.com> <20090920003737.GB21419@youquan-linux.bj.intel.com> <1253380022.6317.16.camel@macbook.infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253380022.6317.16.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.9i
+	Sat, 19 Sep 2009 21:05:00 -0400
+Received: from claw.goop.org ([74.207.240.146]:45903 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753417AbZITBE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Sep 2009 21:04:59 -0400
+Message-ID: <4AB57FB9.2020705@goop.org>
+Date: Sat, 19 Sep 2009 18:04:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Alok Kataria <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, virtualization@lists.osdl.org
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090919224430.GB9567@kroah.com>
+In-Reply-To: <20090919224430.GB9567@kroah.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 19, 2009 at 10:07:01AM -0700, David Woodhouse wrote:
-> On Sat, 2009-09-19 at 20:37 -0400, Youquan,Song wrote:
-> > Change the patch title to short one.
-> > David, Couly you please also pick this up? Sorry, if you have done.
-> 
-> http://git.infradead.org/iommu-2.6.git?commit=e936d0773df
-> 
-> I changed the title when I committed it.
-> 
-  Fine, your title is better than mine. Thanks.
+On 09/19/09 15:44, Greg KH wrote:
+> That sounds good to me, how intrusive are the patches to do this?  Is it
+> going to be tricky to get everything merged properly in -tip for it?
+
+They should be very local - just a matter of removing a couple of files
+and dropping some config options.
+
+    J
