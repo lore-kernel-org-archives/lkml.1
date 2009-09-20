@@ -1,200 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbZITSrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbZITSyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbZITSrg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbZITSre
+	id S1755635AbZITSyv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbZITSyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:47:34 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:63222 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755568AbZITSra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:47:30 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [PATCH v3 4/4] Use macros for .data.page_aligned section.
-Date: Sun, 20 Sep 2009 14:43:13 -0400
-Message-Id: <1253472193-21106-5-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1253472193-21106-1-git-send-email-tabbott@ksplice.com>
-References: <1253472193-21106-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Sun, 20 Sep 2009 14:54:50 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49467 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755591AbZITSyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:54:49 -0400
+Date: Sun, 20 Sep 2009 20:43:50 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: lkml@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Russell King <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] [TRIVIAL] Changes to IRQs.
+In-Reply-To: <m34oqx4s0e.fsf@intrepid.localdomain>
+Message-ID: <alpine.LNX.2.00.0909202042300.17028@wotan.suse.de>
+References: <m34oqx4s0e.fsf@intrepid.localdomain>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1402753400-1253472231=:17028"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the remaining direct references to
-.data.page_aligned in C and assembly code to use the macros in
-include/linux/linkage.h.
+--168427776-1402753400-1253472231=:17028
+Content-Type: TEXT/PLAIN; charset=iso-8859-2
+Content-Transfer-Encoding: 8BIT
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
----
- arch/avr32/mm/init.c                        |    4 +---
- arch/powerpc/kernel/vdso.c                  |    3 ++-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
- arch/s390/kernel/vdso.c                     |    2 +-
- arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 ++-
- arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 ++-
- arch/x86/include/asm/cache.h                |    4 +++-
- arch/x86/kernel/head_32.S                   |    2 +-
- 9 files changed, 16 insertions(+), 11 deletions(-)
+On Sun, 20 Sep 2009, Krzysztof Halasa wrote:
 
-diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-index e819fa6..cc60d10 100644
---- a/arch/avr32/mm/init.c
-+++ b/arch/avr32/mm/init.c
-@@ -24,11 +24,9 @@
- #include <asm/setup.h>
- #include <asm/sections.h>
- 
--#define __page_aligned	__attribute__((section(".data.page_aligned")))
--
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
--pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned;
-+pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned_data;
- 
- struct page *empty_zero_page;
- EXPORT_SYMBOL(empty_zero_page);
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index a0abce2..3faaf29 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -1,3 +1,4 @@
-+
- /*
-  *    Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
-  *			 <benh@kernel.crashing.org>
-@@ -74,7 +75,7 @@ static int vdso_ready;
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __page_aligned_data;
- struct vdso_data *vdso_data = &vdso_data_store.data;
- 
- /* Format of the patch table */
-diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-index 556f0ca..6e8f507 100644
---- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-index 0529cb9..b8553d6 100644
---- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
-diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
-index 45e1708..45a3e9a 100644
---- a/arch/s390/kernel/vdso.c
-+++ b/arch/s390/kernel/vdso.c
-@@ -75,7 +75,7 @@ __setup("vdso=", vdso_setup);
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __page_aligned_data;
- struct vdso_data *vdso_data = &vdso_data_store.data;
- 
- /*
-diff --git a/arch/s390/kernel/vdso32/vdso32_wrapper.S b/arch/s390/kernel/vdso32/vdso32_wrapper.S
-index 61639a8..ae42f8c 100644
---- a/arch/s390/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/s390/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/s390/kernel/vdso64/vdso64_wrapper.S b/arch/s390/kernel/vdso64/vdso64_wrapper.S
-index d8e2ac1..c245842 100644
---- a/arch/s390/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/s390/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
-diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
-index 5d367ca..549860d 100644
---- a/arch/x86/include/asm/cache.h
-+++ b/arch/x86/include/asm/cache.h
-@@ -1,6 +1,8 @@
- #ifndef _ASM_X86_CACHE_H
- #define _ASM_X86_CACHE_H
- 
-+#include <linux/linkage.h>
-+
- /* L1 cache line size */
- #define L1_CACHE_SHIFT	(CONFIG_X86_L1_CACHE_SHIFT)
- #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
-@@ -13,7 +15,7 @@
- #ifdef CONFIG_SMP
- #define __cacheline_aligned_in_smp					\
- 	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))	\
--	__attribute__((__section__(".data.page_aligned")))
-+	__page_aligned_data
- #endif
- #endif
- 
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index 1dac239..218aad7 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -626,7 +626,7 @@ ENTRY(empty_zero_page)
-  * This starts the data section.
-  */
- #ifdef CONFIG_X86_PAE
--.section ".data.page_aligned","wa"
-+__PAGE_ALIGNED_DATA
- 	/* Page-aligned for the benefit of paravirt? */
- 	.align PAGE_SIZE_asm
- ENTRY(swapper_pg_dir)
+> Trivial changes to IRQs.
+> 
+> Signed-off-by: Krzysztof Ha³asa <khc@pm.waw.pl>
+> 
+> diff --git a/Documentation/DocBook/genericirq.tmpl b/Documentation/DocBook/genericirq.tmpl
+> index c671a01..1448b33 100644
+> --- a/Documentation/DocBook/genericirq.tmpl
+> +++ b/Documentation/DocBook/genericirq.tmpl
+> @@ -417,8 +417,8 @@ desc->chip->end();
+>        </para>
+>        <para>
+>  	To make use of the split implementation, replace the call to
+> -	__do_IRQ by a call to desc->chip->handle_irq() and associate
+> -        the appropriate handler function to desc->chip->handle_irq().
+> +	__do_IRQ by a call to desc->handle_irq() and associate
+> +        the appropriate handler function to desc->handle_irq().
+>  	In most cases the generic handler implementations should
+>  	be sufficient.
+>       </para>
+> diff --git a/arch/arm/include/asm/hw_irq.h b/arch/arm/include/asm/hw_irq.h
+> index 90831f6..5b4e642 100644
+> --- a/arch/arm/include/asm/hw_irq.h
+> +++ b/arch/arm/include/asm/hw_irq.h
+> @@ -10,14 +10,6 @@ static inline void ack_bad_irq(int irq)
+>  	irq_err_count++;
+>  }
+>  
+> -/*
+> - * Obsolete inline function for calling irq descriptor handlers.
+> - */
+> -static inline void desc_handle_irq(unsigned int irq, struct irq_desc *desc)
+> -{
+> -	desc->handle_irq(irq, desc);
+> -}
+> -
+>  void set_irq_flags(unsigned int irq, unsigned int flags);
+>  
+>  #define IRQF_VALID	(1 << 0)
+> diff --git a/arch/arm/plat-orion/gpio.c b/arch/arm/plat-orion/gpio.c
+> index e814803..85f305a 100644
+> --- a/arch/arm/plat-orion/gpio.c
+> +++ b/arch/arm/plat-orion/gpio.c
+> @@ -354,6 +354,6 @@ void orion_gpio_irq_handler(int pinoff)
+>  			polarity ^= 1 << (pin & 31);
+>  			writel(polarity, GPIO_IN_POL(pin));
+>  		}
+> -		desc_handle_irq(irq, desc);
+> +		desc->handle_irq(irq, desc);
+>  	}
+>  }
+> diff --git a/include/linux/irq.h b/include/linux/irq.h
+> index cb2e77a..b0424fe 100644
+> --- a/include/linux/irq.h
+> +++ b/include/linux/irq.h
+> @@ -281,7 +281,7 @@ extern irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action);
+>  
+>  /*
+>   * Built-in IRQ handlers for various IRQ types,
+> - * callable via desc->chip->handle_irq()
+> + * callable via desc->handle_irq()
+>   */
+>  extern void handle_level_irq(unsigned int irq, struct irq_desc *desc);
+>  extern void handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc);
+> 
+
+This doesn't really qualify for trivial queue, adding ARM addressess to CC 
+(I hope I got them right after the latest flame :P) at least for the ARM 
+bits.
+
 -- 
-1.6.3.3
+Jiri Kosina
+SUSE Labs, Novell Inc.
+--168427776-1402753400-1253472231=:17028--
 
