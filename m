@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZITPKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZITPtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbZITPKV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 11:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZITPKU
+	id S1754544AbZITPtQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 11:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZITPtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 11:10:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52738 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753912AbZITPKQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 11:10:16 -0400
-Date: Sun, 20 Sep 2009 08:08:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Kay Sievers <kay.sievers@vrfy.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
-	(Was: Re: [PATCH] Remove broken by design and by implementation
-	devtmpfs maintenance disaster)
-Message-ID: <20090920150842.GF11621@kroah.com>
-References: <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com> <alpine.LFD.2.01.0909171709410.4950@localhost.localdomain> <1253238637.4071.10.camel@yio.site> <20090918060210.GC7104@kroah.com> <alpine.LFD.2.01.0909180717380.4950@localhost.localdomain> <20090918150541.GB9307@kroah.com> <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com> <ac3eb2510909181235m33846928sa8c790758c66233@mail.gmail.com> <20090918195005.GA11726@elte.hu> <21d7e9970909191843l6fbb835bme509c18cedfd728c@mail.gmail.com>
+	Sun, 20 Sep 2009 11:49:15 -0400
+Received: from claw.goop.org ([74.207.240.146]:39347 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754367AbZITPtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 11:49:14 -0400
+Message-ID: <4AB64EFC.10707@goop.org>
+Date: Sun, 20 Sep 2009 08:49:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21d7e9970909191843l6fbb835bme509c18cedfd728c@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Avi Kivity <avi@redhat.com>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Alok Kataria <akataria@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	<20090919224430.GB9567@kroah.com>	<1253419185.3253.21.camel@ank32.eng.vmware.com>	<20090920074247.GA5733@elte.hu> <20090920095239.456ad6f2@infradead.org> <4AB5EF25.9070502@redhat.com>
+In-Reply-To: <4AB5EF25.9070502@redhat.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 20, 2009 at 11:43:33AM +1000, Dave Airlie wrote:
-> >
-> > Self-contained /dev is great, udev is a total PITA on older distros (on
-> > this box it sometimes takes 3 minutes for udev to boot ...) so turning
-> > on devtmpfs and getting something functional in exchange is a big
-> > selling point IMO.
-> 
-> udev taking 3 minutes usually means you have a kernel driver bug,
-> udev doesn't have a sleep for 3 minutes, it loads drivers and usually
-> waits for them to finish. Since someone decided to merge a stupid
-> floppy PNP match I've seen a lot of floppyless machines hit a 30sec
-> udev delay. so many that we disabled the pnp floppy on Fedora.
+On 09/20/09 02:00, Avi Kivity wrote:
+> On 09/20/2009 10:52 AM, Arjan van de Ven wrote:
+>> On Sun, 20 Sep 2009 09:42:47 +0200
+>> Ingo Molnar<mingo@elte.hu>  wrote:
+>>
+>>   
+>>> If we were able to rip out all (or most) of paravirt from arch/x86 it
+>>> would be tempting for other technical reasons - but the patch above
+>>> is well localized.
+>>>      
+>> interesting question is if this would allow us to remove a few of the
+>> paravirt hooks....
+>>    
+>
+> kvm will be removing the pvmmu support soon; and Xen is talking about
+> running paravirtualized guests in a vmx/svm container where they don't
+> need most of the hooks.
+>
 
-Woah, I've run into this problem as well.  Where is this PNP floppy
-match so I can disable it?
+We have no plans to drop support for non-vmx/svm capable processors, let
+alone require ept/npt.
 
-thanks,
-
-greg k-h
+    J
