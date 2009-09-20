@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZITSzC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbZITSwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbZITSzC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:55:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZITSy7
+	id S1755583AbZITSwF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:52:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZITSwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:54:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49473 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755650AbZITSy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:54:59 -0400
-Date: Sun, 20 Sep 2009 20:50:38 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: lkml@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King <linux@arm.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       linux-arm@vger.kernel.org, linux-arm@lists.infradead.org
-Subject: Re: [PATCH] [TRIVIAL] Changes to IRQs.
-In-Reply-To: <alpine.LNX.2.00.0909202042300.17028@wotan.suse.de>
-Message-ID: <alpine.LNX.2.00.0909202045080.17028@wotan.suse.de>
-References: <m34oqx4s0e.fsf@intrepid.localdomain> <alpine.LNX.2.00.0909202042300.17028@wotan.suse.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 20 Sep 2009 14:52:01 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:63902 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755319AbZITSwB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:52:01 -0400
+To: linux-kernel@vger.kernel.org
+CC: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Poor desktop responsiveness with background I/O-operations
+References: <dmlhK-6ws-5@gated-at.bofh.it> <dmnMy-8tg-7@gated-at.bofh.it>
+X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
+Date: Sun, 20 Sep 2009 14:51:47 -0400
+From: Sanjoy Mahajan <sanjoy@MIT.EDU>
+Message-Id: <E1MpRVj-0000OA-G9@approx.mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009, Jiri Kosina wrote:
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-> This doesn't really qualify for trivial queue, adding ARM addressess to CC 
-> (I hope I got them right after the latest flame :P)
+> can you try the following two things?
+>
+> echo 4096 > /sys/block/sda/queue/nr_requests
+> for i in `pidof kjournald` ; do ionice -c1 -p $i ; done
+>
+> to see if they help?
 
-Hmm, apparently I did not.
+That helped here.  The hardware is a Thinkpad T60 with 1.5GB RAM and
+this hard drive:
 
+  ata1.00: ATA-7: Hitachi HTE541616J9SA00, SB4OC7KP, max UDMA/100
+  ata1.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 31/32)
 
-	<linux-arm-kernel@lists.arm.linux.org.uk>: host
-	    lists.arm.linux.org.uk[78.32.30.220] said: 550 Please direct your 
-	    message to the new mailing lists on lists.infradead.org (in reply to 
-	    RCPT TO command)
+When the 'locate' daily cron job runs, or I run 'aptitude
+dist-upgrade' (after all packages are downloaded), or I back up /home
+to a USB hard drive using rsync, the desktop response badly degrades.
 
+I'm not using a fancy desktop---just twm.  An rxvt can take up to 10
+seconds to start up, and I often see emacs repainting its window when it
+comes to the foreground.  Using your settings, rxvt takes about 1 second
+to start up, which is a large improvement.
 
-Could someone please update MAINTAINERS to reflect reality? I am 
-apparently not smart enough to keep track of the current situation with 
-the ARM mailinglists. I thought that final decision was 
-linux-arm@vger.kernel.org. MAINTAINERS lists 
-linux-arm-kernel@lists.arm.linux.org.uk, but the bounce suggests to use 
-lists.infradead.org ... 
+(The kernel is 2.6.30 with debian patches)
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+-Sanjoy
