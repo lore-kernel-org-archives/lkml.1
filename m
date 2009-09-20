@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbZITIQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZITIVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbZITIQK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 04:16:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbZITIQH
+	id S1754019AbZITIVU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 04:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbZITIVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 04:16:07 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58585 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751764AbZITIQE (ORCPT
+	Sun, 20 Sep 2009 04:21:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:11531 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbZITIVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 04:16:04 -0400
-Date: Sun, 20 Sep 2009 09:15:50 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Koskinen Aaro <aaro.koskinen@nokia.com>
-Subject: Re: [PATCH 1/2] ARM: Pass IFSR register to do_PrefetchAbort()
-Message-ID: <20090920081550.GA830@n2100.arm.linux.org.uk>
-References: <c9f73fa56a41bc1051cd347cc453081235e3d776.1253307263.git.kirill@shutemov.name> <20090919110316.GA23452@n2100.arm.linux.org.uk>
+	Sun, 20 Sep 2009 04:21:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:content-type;
+        b=pfdFL4TSC+XGUydew9gWiSUPwuTkx4+o5U2fkPWIo1sLeNLv/HCg9feuI3Alhlbafa
+         /lO5YtwgNL6k6E6W+QAoJPsTtqRzTjOezZGgdHbHrtObT7Hm+ZzvuOl4HmRQEvuBGvP4
+         JOBWHMMg5ejA59vpUU3me84ifkbrsZOHCmNOw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090919110316.GA23452@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+From: wixor <wixorpeek@gmail.com>
+Date: Sun, 20 Sep 2009 10:20:57 +0200
+Message-ID: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>
+Subject: it87 sensors need an ACPI driver (2.6.31)
+To: lm-sensors@lm-sensors.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 19, 2009 at 12:03:16PM +0100, Russell King - ARM Linux wrote:
-> On Fri, Sep 18, 2009 at 11:55:42PM +0300, Kirill A. Shutemov wrote:
-> > It needed for proper prefetch abort handling on ARMv7.
-> 
-> I think the only thing which is missing is an explaination about why
-> this is desirable given that only later CPUs can give this additional
-> information.
+Hello,
+with recent upgrade to 2.6.31 I get
 
-So you've posted it to the patch system, without further discussion here.
+it87: Found IT8712F chip at 0x290, revision 7
+it87: in3 is VCC (+5V)
+it87: in7 is VCCH (+5V Stand-By)
+ACPI: I/O resource it87 [0x295-0x296] conflicts with ACPI region IP__
+[0x295-0x296]
+ACPI: Device needs an ACPI driver
+FATAL: Error inserting it87
+(/lib/modules/2.6.31/kernel/drivers/hwmon/it87.ko): Device or resource
+busy
 
-I think the solution is wrong - it makes instruction permission faults
-unnecessarily noisy, which is not what the decoding table is supposed
-to be doing.  The decoding table's bad entries are there to catch those
-_unexpected_ cases.
+when trying to load it87 module. On previous kernels the module worked
+fine. I tried grepping for IP__ in acpi dump and found this:
 
-Instead, I suggest that you have a look at this:
+OperationRegion (IP, SystemIO, 0x0295, 0x02)
+Field (IP, ByteAcc, NoLock, Preserve)
+{
+    INDX,   8,
+    DAT0,   8
+}
 
-        if (fsr & (1 << 11)) /* write? */
-                mask = VM_WRITE;
-        else
-                mask = VM_READ|VM_EXEC|VM_WRITE;
+I have also discovered that dsdt contains description of what is
+connected to each it87 input. Maybe it has also some code to access
+the chip? In /proc/acpi I can read only one temperature, while the
+chip measures three temperatures, fan speeds and voltages. This is
+desktop pc with ASUS A8N1-E maniboard, athlon64 and nforce4 chipset.
 
-        fault = VM_FAULT_BADACCESS;
-        if (!(vma->vm_flags & mask))
-                goto out;
-
-in __do_page_fault - if we are handling a prefetch abort, we really only
-want to check that the VMA has VM_EXEC permission, not that it can be
-read and written as well.
+Thanks for your time.
