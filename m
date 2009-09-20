@@ -1,91 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZITSe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZITSfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZITSe6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZITSe5
+	id S1755520AbZITSfP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZITSfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:34:57 -0400
-Received: from 1wt.eu ([62.212.114.60]:49150 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751971AbZITSe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:34:56 -0400
-Date: Sun, 20 Sep 2009 20:34:58 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Grozdan <neutrino8@gmail.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, linux-kernel@vger.kernel.org
-Subject: Re: sky2 rx length errors
-Message-ID: <20090920183458.GC28315@1wt.eu>
-References: <c5bd819b0909180641n7c353b80tc15b9c9fe02d5c95@mail.gmail.com> <20090919233536.f5fb700c.akpm@linux-foundation.org> <20090920110527.39fd7af5@s6510> <c5bd819b0909201116u5a84c426tdd0f298d7019505d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 20 Sep 2009 14:35:12 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:43074 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755470AbZITSfK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:35:10 -0400
+Date: Sun, 20 Sep 2009 20:35:13 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: akpm@linux-foundation.org, Michal Marek <mmarek@suse.cz>
+Cc: linux-kbuild@vger.kernel.org, JBeulich@novell.com,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Feedback on "kbuild: generate modules.builtin"
+Message-ID: <20090920183513.GB26958@merkur.ravnborg.org>
+References: <200909181949.n8IJnT4R019097@imap1.linux-foundation.org> <20090920132856.GA26845@merkur.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c5bd819b0909201116u5a84c426tdd0f298d7019505d@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20090920132856.GA26845@merkur.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
+> Got some time (finally) to look at this.
+> I understand the functionality and I have myself had the need
+> to see builtin modules.
 
-On Sun, Sep 20, 2009 at 08:16:02PM +0200, Grozdan wrote:
-> 2009/9/20 Stephen Hemminger <shemminger@vyatta.com>:
-> 
-> >
-> > This error status occurs if the length reported by the PHY does not
-> > match the len reported by the DMA engine.  The error status is:
-> >   0x4420100 = length 1090 + broadcast packet...
-> >
-> > No idea what is on your network, but perhaps there is some MTU confusion?
-> > Since martian destination seems related, knowing more about that packet
-> > might help.
-> >
-> 
-> Hi,
-> 
-> Thanks for the reply. There's nothing on my home network here. It is
-> just a direct connection from my PC to my cable modem and there's
-> nothing in between. I've googled a bit and it seems others also
-> encounter this problem.
+I just did a quick patch that address most of my comments.
+I'm heading out of the door in a few minutes
+so I decided to post it despite Makefile.modbuiltin is not
+updated.
 
-I've encountered similar issues on early 8053 chips too. Those were
-soldered on motherboard of network servers bought about 4 years ago.
-No matter what trick I could try, change drivers, enable/disable flow
-control, change negociation speed, etc... the PHY would occasionally
-and randomly get mad and start shifting received frames by a few bytes,
-thus causing loss of network connectivity. The logs would also display
-martians, depending on the bytes in the frame which appeared in the
-IP header once shifted.
+I went for a file named tristate.conf that includes
+all tristate symbols. Then we may use it for other
+purposes later.
+And I kept the "=Y" syntax. In the end this is rather elegant.
 
-Sometimes it would automatically get back after a chip reset, sometimes
-not. It seemed that disabling flow control helped a bit, but it was not
-fantastic. It would randomly hang every 1-30 days, which made the issue
-rather hard to debug.
+They basic idea is to do:
+-include include/config/auto.conf
+-include include/config/tristate.conf
 
-I don't precisely remember the rev. of the chip, but I remember that
-it was pretty old and that more recent machines had a much larger
-number that never exhibited the issue. Also, my desktop right here
-runs off a 88E8056 (~= two 8053s) and has never failed yet.
+Where the latter assing new values to all
+symbols that refer to builtin modules.
 
-So I really think that there was a horrible batch of chips in its
-early days.
+Notice how much simpler the changes to confdata are.
 
-> I've read a few posts on the Ubuntu bugzilla
-> where people change the MTU from 1500 to 1492 and this fixes the
-> problem. However, even with this, some report that the problem is
-> still there. I did the same and it didn't change anything for me.
+	Sam
 
-Did not help for me either.
-
-> So I
-> disabled my onboard NIC and added a 3Com one which has been working
-> perfectly so far and I think I'll just keep using it instead of the
-> Marvell one.
-
-That's the best you can do if you happen to have one of those buggy
-chips. We had to stuff intel NICs in the servers causing trouble at
-the customer's and it solved the issue too.
-
-Regards,
-Willy
-
+diff --git a/.gitignore b/.gitignore
+index b93fb7e..5835867 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -22,6 +22,7 @@
+ *.lst
+ *.symtypes
+ *.order
++modules.builtin
+ *.elf
+ *.bin
+ *.gz
+diff --git a/Makefile b/Makefile
+index f908acc..a14705e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -883,6 +883,9 @@ endef
+ 
+ # vmlinux image - including updated kernel symbols
+ vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o $(kallsyms.o) FORCE
++ifdef CONFIG_MODULES
++	$(Q)$(MAKE) $(modbuiltin)=$@
++endif
+ ifdef CONFIG_HEADERS_CHECK
+ 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
+ endif
+@@ -1168,6 +1171,7 @@ all: modules
+ PHONY += modules
+ modules: $(vmlinux-dirs) $(if $(KBUILD_BUILTIN),vmlinux)
+ 	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.order) > $(objtree)/modules.order
++	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.builtin) > $(objtree)/modules.builtin
+ 	@$(kecho) '  Building modules, stage 2.';
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modbuild
+@@ -1196,7 +1200,7 @@ _modinst_:
+ 		rm -f $(MODLIB)/build ; \
+ 		ln -s $(objtree) $(MODLIB)/build ; \
+ 	fi
+-	@cp -f $(objtree)/modules.order $(MODLIB)/
++	@cp -f $(objtree)/modules.{order,builtin} $(MODLIB)/
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
+ 
+ # This depmod is only for convenience to give the initial
+@@ -1259,8 +1263,9 @@ clean: archclean $(clean-dirs)
+ 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+ 		-o -name '*.symtypes' -o -name 'modules.order' \
+-		-o -name 'Module.markers' -o -name '.tmp_*.o.*' \
+-		-o -name '*.gcno' \) -type f -print | xargs rm -f
++		-o -name 'modules.builtin' -o -name 'Module.markers' \
++		-o -name '.tmp_*.o.*' -o -name '*.gcno' \) \
++		-type f -print | xargs rm -f
+ 
+ # mrproper - Delete all generated files, including .config
+ #
+@@ -1458,7 +1463,8 @@ $(clean-dirs):
+ clean:	rm-dirs := $(MODVERDIR)
+ clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers \
+                    $(KBUILD_EXTMOD)/Module.markers \
+-                   $(KBUILD_EXTMOD)/modules.order
++                   $(KBUILD_EXTMOD)/modules.order \
++                   $(KBUILD_EXTMOD)/modules.builtin
+ clean: $(clean-dirs)
+ 	$(call cmd,rmdirs)
+ 	$(call cmd,rmfiles)
+diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+index 4f9c190..dd641e1 100644
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -149,6 +149,12 @@ ld-option = $(call try-run,\
+ # $(Q)$(MAKE) $(build)=dir
+ build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
+ 
++###
++# Shorthand for $(Q)$(MAKE) -f scripts/Makefile.modbuiltin obj=
++# Usage:
++# $(Q)$(MAKE) $(modbuiltin)=dir
++modbuiltin := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.modbuiltin obj
++
+ # Prefix -I with $(srctree) if it is not an absolute path.
+ # skip if -I has no parameter
+ addtree = $(if $(patsubst -I%,%,$(1)), \
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index b55e72f..94721f2 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -677,7 +677,7 @@ int conf_write_autoconf(void)
+ 	struct symbol *sym;
+ 	const char *str;
+ 	const char *name;
+-	FILE *out, *out_h;
++	FILE *out, *tristate, *out_h;
+ 	time_t now;
+ 	int i, l;
+ 
+@@ -692,9 +692,16 @@ int conf_write_autoconf(void)
+ 	if (!out)
+ 		return 1;
+ 
++	tristate = fopen(".tmpconfig_tristate", "w");
++	if (!tristate) {
++		fclose(out);
++		return 1;
++	}
++
+ 	out_h = fopen(".tmpconfig.h", "w");
+ 	if (!out_h) {
+ 		fclose(out);
++		fclose(tristate);
+ 		return 1;
+ 	}
+ 
+@@ -707,6 +714,9 @@ int conf_write_autoconf(void)
+ 		     "# %s"
+ 		     "#\n",
+ 		     sym_get_string_value(sym), ctime(&now));
++	fprintf(tristate, "#\n"
++	                  "# Automatically generated - do not edit\n"
++	                  "\n");
+ 	fprintf(out_h, "/*\n"
+ 		       " * Automatically generated C config: don't edit\n"
+ 		       " * Linux kernel version: %s\n"
+@@ -727,10 +737,13 @@ int conf_write_autoconf(void)
+ 				break;
+ 			case mod:
+ 				fprintf(out, "CONFIG_%s=m\n", sym->name);
++				fprintf(tristate, "CONFIG_%s=M\n", sym->name);
+ 				fprintf(out_h, "#define CONFIG_%s_MODULE 1\n", sym->name);
+ 				break;
+ 			case yes:
+ 				fprintf(out, "CONFIG_%s=y\n", sym->name);
++				fprintf(tristate, "CONFIG_%s=%c\n", sym->name,
++					sym->type == S_BOOLEAN ? 'y' : 'Y');
+ 				fprintf(out_h, "#define CONFIG_%s 1\n", sym->name);
+ 				break;
+ 			}
+@@ -772,6 +785,7 @@ int conf_write_autoconf(void)
+ 		}
+ 	}
+ 	fclose(out);
++	fclose(tristate);
+ 	fclose(out_h);
+ 
+ 	name = getenv("KCONFIG_AUTOHEADER");
+@@ -779,6 +793,11 @@ int conf_write_autoconf(void)
+ 		name = "include/linux/autoconf.h";
+ 	if (rename(".tmpconfig.h", name))
+ 		return 1;
++	name = getenv("KCONFIG_TRISTATE");
++	if (!name)
++		name = "include/config/tristate.conf";
++	if (rename(".tmpconfig_tristate", name))
++		return 1;
+ 	name = conf_get_autoconfig_name();
+ 	/*
+ 	 * This must be the last step, kbuild has a dependency on auto.conf
