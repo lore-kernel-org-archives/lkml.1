@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbZITWvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbZITWxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753464AbZITWvJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 18:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbZITWvJ
+	id S1753672AbZITWxw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 18:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZITWxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 18:51:09 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:51044 "EHLO
+	Sun, 20 Sep 2009 18:53:51 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:49108 "EHLO
 	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbZITWvI convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753394AbZITWxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 18:51:08 -0400
+	Sun, 20 Sep 2009 18:53:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RTdwH4DwM1Fhybjp7emo8BK1WH5V/dNmNYNazoZlFxYgAuHqw3BmxrGSMXd7JCencZ
-         8yO8titzEBwB6ZXwzXOZWSAlH2C4pcMaMNxmqWGAwtz6Nd8oTcZvS7MIMEbG6c+EgkG0
-         pKSuk/2jNPMXGRm1x31E+mVv9oWha0K8ej7z4=
+         :cc:content-type;
+        b=q3AA6Ju5bhnxB7LdSuKmWK573ES8eEzHODvhQs2mLjmgvHUkktk/1YHs8ZHY9a/0FR
+         FGqHFcfXNB7IrKMWvjPBiLnZr2ruOQvIc9s2F14xjFcRRNQwd4i7SwGffLaIWnEH7Ksa
+         orOdNxccdT9KVlwcxeVEeetNGEdkGf74NGzgM=
 MIME-Version: 1.0
-In-Reply-To: <20090920185824.GA23206@dreamland.darkstar.lan>
-References: <4AB1C907.1070503@gmail.com>
-	 <20090920162306.GA18214@dreamland.darkstar.lan>
-	 <51f3faa70909201047x56313d99q7cdc49bcc4634b01@mail.gmail.com>
-	 <20090920185824.GA23206@dreamland.darkstar.lan>
-Date: Sun, 20 Sep 2009 16:51:10 -0600
-Message-ID: <51f3faa70909201551k70ace90x2b25351bfc04c555@mail.gmail.com>
-Subject: Re: asus_atk0110 not working on Asus P7P55D PRO
+In-Reply-To: <20090920211620.1c18d7fb@hyperion.delvare>
+References: <4AB5DE1F.1020004@gmail.com>
+	 <20090920211620.1c18d7fb@hyperion.delvare>
+Date: Sun, 20 Sep 2009 16:53:53 -0600
+Message-ID: <51f3faa70909201553y75cb9f8q8ab34e9659fe479b@mail.gmail.com>
+Subject: Re: [lm-sensors] coretemp support for Core i5 CPU
 From: Robert Hancock <hancockrwd@gmail.com>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 20, 2009 at 12:58 PM, Luca Tettamanti <kronos.it@gmail.com> wrote:
->> >> I'm guessing this board uses a different format than what the driver
->> >> is expecting. I'm attaching the gzipped decompiled DSDT from the
->> >> board, hopefully it's useful to somebody..
->> >
->> > Please try the following patch, it should detect the proper buffer size.
->> >
->>
->> Obviously something not quite right:
+On Sun, Sep 20, 2009 at 1:16 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi Robert,
 >
-> Ah yes, the pointer for the output buffer was pointing to the wrong
-> variable. Sorry for that ;)
+> On Sun, 20 Sep 2009 01:47:43 -0600, Robert Hancock wrote:
+>> Trying to load the coretemp driver for CPU temperature monitoring on a
+>> Core i5 750 CPU gives:
+>>
+>> coretemp: Unknown CPU model 1e
+>> coretemp: Unknown CPU model 1e
+>> coretemp: Unknown CPU model 1e
+>> coretemp: Unknown CPU model 1e
+>>
+>> Looks like this model needs to be added to the list in
+>> drivers/hwmon/coretemp.c. Though this doesn't really seem like a very
+>> good approach as we'll keep having to update this driver whenever a new
+>> CPU model gets released. Intel has a CPUID field that indicates if the
+>> thermal sensor is supported: "The processor supports a digital thermal
+>> sensor if CPUID.06H.EAX[0] = 1." We should likely be using this instead
+>> of hard-coded CPU model checks..
+>
+> Supporting the digital thermal sensor is one thing, but it is totally
+> insufficient. If you look at the coretemp driver, you'll see we need to
+> figure out a number of calibration values which are model-dependent. So
+> we will need to check this part before adding support for new CPU
+> models anyway.
 
-Cool, seems to be working. Though the high and critical temperatures
-seem a bit odd, but maybe that's what the BIOS actually reports:
+Well, I see there is the TCC activation temperature which the reading
+is relative to, which is detected on the mobile CPUs via an MSR read,
+so it would only be a problem if they changed this temperature on
+other CPUs..
 
-atk0110-acpi-0
-Adapter: ACPI interface
-Vcore Voltage:      +1.18 V  (min =  +0.80 V, max =  +1.60 V)
-+3.3V Voltage:      +3.44 V  (min =  +2.97 V, max =  +3.63 V)
-+5V Voltage:        +5.18 V  (min =  +4.50 V, max =  +5.50 V)
-+12V Voltage:      +12.21 V  (min = +10.20 V, max = +13.80 V)
-CPU Fan Speed:     1080 RPM  (min =  600 RPM)
-Chassis1 Fan Speed:   0 RPM  (min =  600 RPM)
-Chassis2 Fan Speed:1464 RPM  (min =  600 RPM)
-Power Fan Speed:      0 RPM  (min =    0 RPM)
-CPU Temperature:    +32.5°C  (high = +45.0°C, crit = +45.5°C)
-MB Temperature:     +31.0°C  (high = +45.0°C, crit = +46.0°C)
+It might make sense to warn "unknown CPU model, temperature reading
+may be suspect" or something, but I should think it should still load
+as the temperature reading is likely still correct.
