@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbZITV4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbZITWEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330AbZITV4S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 17:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZITV4R
+	id S1752556AbZITWEE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 18:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZITWED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 17:56:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11270 "EHLO mx1.redhat.com"
+	Sun, 20 Sep 2009 18:04:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53139 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984AbZITV4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 17:56:17 -0400
-Message-ID: <4AB6A4EE.3060904@redhat.com>
-Date: Mon, 21 Sep 2009 00:55:58 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1751277AbZITWED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 18:04:03 -0400
+Date: Mon, 21 Sep 2009 00:04:05 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Kara <jack@suse.cz>
+Subject: Re: Poor desktop responsiveness with background I/O-operations
+Message-ID: <20090920220405.GA395@duck.suse.cz>
+References: <4AB59CBB.8090907@datenparkplatz.de> <alpine.LRH.2.00.0909202221010.25928@twin.jikos.cz>
 MIME-Version: 1.0
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Prevent immediate process rescheduling
-References: <200909181449.12311.mark.langsdorf@amd.com>	 <20090918195455.GC11726@elte.hu> <1253304203.10538.64.camel@laptop> <4AB496ED.7010800@redhat.com> <DDE95BDD51FB774B804A9C029E735EE10379BEDA2F@sausexmbp02.amd.com>
-In-Reply-To: <DDE95BDD51FB774B804A9C029E735EE10379BEDA2F@sausexmbp02.amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0909202221010.25928@twin.jikos.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/21/2009 12:03 AM, Langsdorf, Mark wrote:
->> - we can pick one of the vcpus belonging to the same guest to improve
->> the probability that the lock actually get released
->>      
-> Is there a way to find the other vcpus belonging to the
-> same guest?  I poked around at that, but couldn't find
-> one.
->    
+On Sun 20-09-09 22:22:20, Jiri Kosina wrote:
+> On Sun, 20 Sep 2009, Ulrich Lukas wrote:
+> 
+> > Test case:
+> > - 64-bit dual-core PC, SATA harddrive, plenty of free RAM
+> > - vanilla Linux 2.6.31, Kubuntu 9.10 packages, all software 64-bit
+> > 
+> > 
+> > How to reproduce:
+> > - start KDE/GNOME-session
+> > - open a terminal window and do as a non-root user:
+> >   dd if=/dev/zero of=/home/john-doe/testfile
+> >   (or dd if=/home/john-doe/big-testfile of=/dev/null)
+> > 
+> > - a real use scenario would be a daily disk-backup or the
+> >   simple extraction of a tarball containing slightly bigger files
+> > 
+> > 
+> > Observation:
+> > - The system becomes _really_ slow as described above; unusable for
+> >   any multimedia tasks.
+> 
+> I guess that switching from CFQ to deadline I/O scheduler improves the 
+> situation, right?
+  For example on my desktop, switching to deadline slightly improves the
+situation but the machine is still mostly unusable while dd is running...
+I'll try to debug it some more to see whether it can be somehow helped.
 
-vcpu->kvm->vcpus[].  It doesn't give you the task_struct, but we can 
-easily save it in vcpu_load() and release it in vcpu_put().
-
-
+								Honza
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
