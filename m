@@ -1,242 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZITQOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZITQWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZITQOu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 12:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZITQOi
+	id S1754599AbZITQWp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 12:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZITQWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 12:14:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50848 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753464AbZITQOf convert rfc822-to-8bit (ORCPT
+	Sun, 20 Sep 2009 12:22:44 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:45620 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752991AbZITQWm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 12:14:35 -0400
-Date: Sun, 20 Sep 2009 18:14:38 +0200
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@infradead.org>, paulus@samba.org, ahpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Subject: [PATCH] perf util: SVG performance improvements
-Message-ID: <20090920181438.3a49cb93@linux.intel.com>
-In-Reply-To: <20090920181248.464c9193@infradead.org>
-References: <20090920181248.464c9193@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Sun, 20 Sep 2009 12:22:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=R0ycPn1btvaojMMy0H9O7onSvZ9TluX04rRLP6Y6FDm/qQ2CNnJ/HFLLtKmflEG5TI
+         z05TZs4U4TM1J1BNlfa/OX+GlaZ+ofBx4tds8G+rCNRTX7CrzqDljRaGQpZmgySfdJVk
+         8VTEO5zn5Js2vn2dU/+aE+SfetP9ARC6mwdYw=
+Date: Sun, 20 Sep 2009 18:23:06 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Subject: Re: asus_atk0110 not working on Asus P7P55D PRO
+Message-ID: <20090920162306.GA18214@dreamland.darkstar.lan>
+References: <4AB1C907.1070503@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB1C907.1070503@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From dc31cd02966e59f1db4266e2c25a8bbf6f6e4f5f Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 20 Sep 2009 11:35:53 +0200
-Subject: [PATCH] perf util: SVG performance improvements
+Il Wed, Sep 16, 2009 at 11:28:39PM -0600, Robert Hancock ha scritto: 
+> Just built a new system with an Asus P7P55D PRO motherboard. The
+> ATK0110 driver doesn't seem to be able to retrieve any hardware
+> monitoring parameters successfully, sensors gives:
+> 
+> atk0110-acpi-0
+> Adapter: ACPI interface
+> ERROR: Can't get value of subfeature in0_input: I/O error
+> Vcore Voltage:      +0.00 V  (min =  +0.80 V, max =  +1.60 V)
+> ERROR: Can't get value of subfeature in1_input: I/O error
+> +3.3V Voltage:      +0.00 V  (min =  +2.97 V, max =  +3.63 V)
+> ERROR: Can't get value of subfeature in2_input: I/O error
+> +5V Voltage:        +0.00 V  (min =  +4.50 V, max =  +5.50 V)
+> 
+> etc. and dmesg spits out a bunch of these:
+> 
+> ATK0110 ATK0110:00: atk_read_value_new: ACPI exception: AE_BUFFER_OVERFLOW
+> 
+> I'm guessing this board uses a different format than what the driver
+> is expecting. I'm attaching the gzipped decompiled DSDT from the
+> board, hopefully it's useful to somebody..
 
-Tweak the output SVG to increase performance in SVG viewers
-by limiting the different types of font sizes and by
-smarter transformations on the text.
+Please try the following patch, it should detect the proper buffer size.
 
-At least with Inkscape this gives a notable performance improvement
-during zoom and scrolling.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- tools/perf/util/svghelper.c |   78 ++++++++++++++++++++++++++++++-------------
- 1 files changed, 55 insertions(+), 23 deletions(-)
-
-diff --git a/tools/perf/util/svghelper.c b/tools/perf/util/svghelper.c
-index be1555e..a778fd0 100644
---- a/tools/perf/util/svghelper.c
-+++ b/tools/perf/util/svghelper.c
-@@ -51,6 +51,25 @@ static double time2pixels(u64 time)
- 	return X;
- }
+diff --git a/drivers/hwmon/asus_atk0110.c b/drivers/hwmon/asus_atk0110.c
+index fe4fa29..4f6f5ec 100644
+--- a/drivers/hwmon/asus_atk0110.c
++++ b/drivers/hwmon/asus_atk0110.c
+@@ -75,6 +75,13 @@ enum atk_pack_member {
+ #define _HWMON_OLD_PACK_ENABLE	4
  
-+/*
-+ * Round text sizes so that the svg viewer only needs a discrete
-+ * number of renderings of the font
-+ */
-+static double round_text_size(double size)
-+{
-+	int loop = 100;
-+	double target = 10.0;
+ 
++struct atk_acpi_out_buffer {
++	union acpi_object buf;
++	u32 flags;
++	u32 value;
++	u8 data[];
++};
 +
-+	if (size >= 10.0)
-+		return size;
-+	while (loop--) {
-+		if (size >= target)
-+			return target;
-+		target = target / 2.0;
-+	}
-+	return size;
-+}
+ struct atk_data {
+ 	struct device *hwmon_dev;
+ 	acpi_handle atk_handle;
+@@ -94,6 +101,10 @@ struct atk_data {
+ 	int temperature_count;
+ 	int fan_count;
+ 	struct list_head sensor_list;
++	
++	struct atk_acpi_out_buffer *buffer;
++	size_t buffer_size;
++	struct mutex buffer_lock;
+ };
+ 
+ 
+@@ -129,11 +140,6 @@ struct atk_sensor_data {
+ 	char const *acpi_name;
+ };
+ 
+-struct atk_acpi_buffer_u64 {
+-	union acpi_object buf;
+-	u64 value;
+-};
+-
+ static int atk_add(struct acpi_device *device);
+ static int atk_remove(struct acpi_device *device, int type);
+ static void atk_print_sensor(struct atk_data *data, union acpi_object *obj);
+@@ -446,8 +452,9 @@ static int atk_read_value_new(struct atk_sensor_data *sensor, u64 *value)
+ 	struct acpi_object_list params;
+ 	struct acpi_buffer ret;
+ 	union acpi_object id;
+-	struct atk_acpi_buffer_u64 tmp;
++	union acpi_object buf;
+ 	acpi_status status;
++	int err = 0;
+ 
+ 	id.type = ACPI_TYPE_INTEGER;
+ 	id.integer.value = sensor->id;
+@@ -455,36 +462,35 @@ static int atk_read_value_new(struct atk_sensor_data *sensor, u64 *value)
+ 	params.count = 1;
+ 	params.pointer = &id;
+ 
+-	tmp.buf.type = ACPI_TYPE_BUFFER;
+-	tmp.buf.buffer.pointer = (u8 *)&tmp.value;
+-	tmp.buf.buffer.length = sizeof(u64);
+-	ret.length = sizeof(tmp);
+-	ret.pointer = &tmp;
++	mutex_lock(&data->buffer_lock);
 +
- void open_svg(const char *filename, int cpus, int rows, u64 start, u64 end)
- {
- 	int new_width;
-@@ -122,8 +141,10 @@ void svg_sample(int Yslot, int cpu, u64 start, u64 end)
- 		text_size = text_size/2;
- 	if (text_size > 1.25)
- 		text_size = 1.25;
-+	text_size = round_text_size(text_size);
-+
- 	if (text_size > MIN_TEXT_SIZE)
--		fprintf(svgfile, "<text transform=\"translate(%1.8f,%1.8f)\" font-size=\"%1.6fpt\">%i</text>\n",
-+		fprintf(svgfile, "<text x=\"%1.8f\" y=\"%1.8f\" font-size=\"%1.8fpt\">%i</text>\n",
- 			time2pixels(start), Yslot *  SLOT_MULT + SLOT_HEIGHT - 1, text_size,  cpu + 1);
++	ret.length = data->buffer_size;
++	ret.pointer = &buf;
  
- }
-@@ -162,17 +183,20 @@ void svg_waiting(int Yslot, u64 start, u64 end)
- 
- 	text = time_to_string(end-start);
- 
--	font_size = 1.0 * (time2pixels(end)-time2pixels(start)) / strlen(text);
-+	font_size = 1.0 * (time2pixels(end)-time2pixels(start));
- 
--	if (font_size > 0.2)
--		font_size = 0.2;
-+	if (font_size > 3)
-+		font_size = 3;
- 
-+	font_size = round_text_size(font_size);
- 
--	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"%s\"/>\n",
--		time2pixels(start), time2pixels(end)-time2pixels(start), Yslot * SLOT_MULT, SLOT_HEIGHT, style);
-+	fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\">\n", time2pixels(start), Yslot * SLOT_MULT);
-+	fprintf(svgfile, "<rect x=\"0\" width=\"%4.8f\" y=\"0\" height=\"%4.1f\" class=\"%s\"/>\n",
-+		time2pixels(end)-time2pixels(start), SLOT_HEIGHT, style);
- 	if (font_size > MIN_TEXT_SIZE)
--		fprintf(svgfile, "<text transform=\"translate(%1.8f,%1.8f)\" font-size=\"%1.6fpt\">%s</text>\n",
--			time2pixels(start), Yslot * SLOT_MULT + 2, font_size, text);
-+		fprintf(svgfile, "<text transform=\"rotate(90)\" font-size=\"%1.8fpt\"> %s</text>\n",
-+			font_size, text);
-+	fprintf(svgfile, "</g>\n");
- }
- 
- static char *cpu_model(void)
-@@ -211,7 +235,7 @@ void svg_cpu_box(int cpu, u64 __max_freq, u64 __turbo_freq)
- 		cpu2y(cpu), SLOT_MULT+SLOT_HEIGHT);
- 
- 	sprintf(cpu_string, "CPU %i", (int)cpu+1);
--	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\">%s</text>\n",
-+	fprintf(svgfile, "<text x=\"%4.8f\" y=\"%4.8f\">%s</text>\n",
- 		10+time2pixels(first_time), cpu2y(cpu) + SLOT_HEIGHT/2, cpu_string);
- 
- 	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\" font-size=\"1.25pt\">%s</text>\n",
-@@ -225,15 +249,21 @@ void svg_process(int cpu, u64 start, u64 end, const char *type, const char *name
- 	if (!svgfile)
- 		return;
- 
--	fprintf(svgfile, "<rect x=\"%4.8f\" width=\"%4.8f\" y=\"%4.1f\" height=\"%4.1f\" class=\"%s\"/>\n",
--		time2pixels(start), time2pixels(end)-time2pixels(start), cpu2y(cpu), SLOT_MULT+SLOT_HEIGHT, type);
-+
-+	fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\">\n", time2pixels(start), cpu2y(cpu));
-+	fprintf(svgfile, "<rect x=\"0\" width=\"%4.8f\" y=\"0\" height=\"%4.1f\" class=\"%s\"/>\n",
-+		time2pixels(end)-time2pixels(start), SLOT_MULT+SLOT_HEIGHT, type);
- 	width = time2pixels(end)-time2pixels(start);
- 	if (width > 6)
- 		width = 6;
- 
-+	width = round_text_size(width);
-+
- 	if (width > MIN_TEXT_SIZE)
--		fprintf(svgfile, "<text  transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"%3.4fpt\">%s</text>\n",
--			time2pixels(start), cpu2y(cpu), width, name);
-+		fprintf(svgfile, "<text transform=\"rotate(90)\" font-size=\"%3.8fpt\">%s</text>\n",
-+			width, name);
-+
-+	fprintf(svgfile, "</g>\n");
- }
- 
- void svg_cstate(int cpu, u64 start, u64 end, int type)
-@@ -254,13 +284,15 @@ void svg_cstate(int cpu, u64 start, u64 end, int type)
- 		time2pixels(start), time2pixels(end)-time2pixels(start),
- 		cpu2y(cpu), SLOT_MULT+SLOT_HEIGHT);
- 
--	width = time2pixels(end)-time2pixels(start);
-+	width = (time2pixels(end)-time2pixels(start))/2.0;
- 	if (width > 6)
- 		width = 6;
- 
-+	width = round_text_size(width);
-+
- 	if (width > MIN_TEXT_SIZE)
--		fprintf(svgfile, "<text  transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"%3.4fpt\">C%i</text>\n",
--			time2pixels(start), cpu2y(cpu), width, type);
-+		fprintf(svgfile, "<text x=\"%4.8f\" y=\"%4.8f\" font-size=\"%3.8fpt\">C%i</text>\n",
-+			time2pixels(start), cpu2y(cpu)+width, width, type);
- }
- 
- static char *HzToHuman(unsigned long hz)
-@@ -299,7 +331,7 @@ void svg_pstate(int cpu, u64 start, u64 end, u64 freq)
- 	height = 1 + cpu2y(cpu) + SLOT_MULT + SLOT_HEIGHT - height;
- 	fprintf(svgfile, "<line x1=\"%4.8f\" x2=\"%4.8f\" y1=\"%4.1f\" y2=\"%4.1f\" class=\"pstate\"/>\n",
- 		time2pixels(start), time2pixels(end), height, height);
--	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\" font-size=\"0.25pt\">%s</text>\n",
-+	fprintf(svgfile, "<text x=\"%4.8f\" y=\"%4.8f\" font-size=\"0.25pt\">%s</text>\n",
- 		time2pixels(start), height+0.9, HzToHuman(freq));
- 
- }
-@@ -318,14 +350,14 @@ void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc
- 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
- 				time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT,  time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/32);
- 			if (desc2)
--				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &gt;</text>\n",
-+				fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\"><text transform=\"rotate(90)\" font-size=\"0.02pt\">%s &gt;</text></g>\n",
- 					time2pixels(start), row1 * SLOT_MULT + SLOT_HEIGHT + SLOT_HEIGHT/48, desc2);
- 		}
- 		if (row2) {
- 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
- 				time2pixels(start), row2 * SLOT_MULT - SLOT_MULT/32,  time2pixels(start), row2 * SLOT_MULT);
- 			if (desc1)
--				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &gt;</text>\n",
-+				fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\"><text transform=\"rotate(90)\" font-size=\"0.02pt\">%s &gt;</text></g>\n",
- 					time2pixels(start), row2 * SLOT_MULT - SLOT_MULT/32, desc1);
- 		}
- 	} else {
-@@ -333,14 +365,14 @@ void svg_partial_wakeline(u64 start, int row1, char *desc1, int row2, char *desc
- 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
- 				time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT,  time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/32);
- 			if (desc1)
--				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &lt;</text>\n",
-+				fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\"><text transform=\"rotate(90)\" font-size=\"0.02pt\">%s &lt;</text></g>\n",
- 					time2pixels(start), row2 * SLOT_MULT + SLOT_HEIGHT + SLOT_MULT/48, desc1);
- 		}
- 		if (row1) {
- 			fprintf(svgfile, "<line x1=\"%4.8f\" y1=\"%4.2f\" x2=\"%4.8f\" y2=\"%4.2f\" style=\"stroke:rgb(32,255,32);stroke-width:0.009\"/>\n",
- 				time2pixels(start), row1 * SLOT_MULT - SLOT_MULT/32,  time2pixels(start), row1 * SLOT_MULT);
- 			if (desc2)
--				fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f) rotate(90)\" font-size=\"0.02pt\">%s &lt;</text>\n",
-+				fprintf(svgfile, "<g transform=\"translate(%4.8f,%4.8f)\"><text transform=\"rotate(90)\" font-size=\"0.02pt\">%s &lt;</text></g>\n",
- 					time2pixels(start), row1 * SLOT_MULT - SLOT_HEIGHT/32, desc2);
- 		}
+ 	status = acpi_evaluate_object_typed(data->read_handle, NULL, &params,
+ 			&ret, ACPI_TYPE_BUFFER);
+ 	if (status != AE_OK) {
+ 		dev_warn(dev, "%s: ACPI exception: %s\n", __func__,
+ 				acpi_format_exception(status));
+-		return -EIO;
++		err = -EIO;
++		goto out;
  	}
-@@ -390,7 +422,7 @@ void svg_text(int Yslot, u64 start, const char *text)
- 	if (!svgfile)
- 		return;
  
--	fprintf(svgfile, "<text transform=\"translate(%4.8f,%4.8f)\">%s</text>\n",
-+	fprintf(svgfile, "<text x=\"%4.8f\" y=\"%4.8f\">%s</text>\n",
- 		time2pixels(start), Yslot * SLOT_MULT+SLOT_HEIGHT/2, text);
+-	/* Return buffer format:
+-	 * [0-3] "value" is valid flag
+-	 * [4-7] value
+-	 */
+-	if (!(tmp.value & 0xffffffff)) {
++	if (!data->buffer->flags) {
+ 		/* The reading is not valid, possible causes:
+ 		 * - sensor failure
+ 		 * - enumeration was FUBAR (and we didn't notice)
+ 		 */
+-		dev_info(dev, "Failure: %#llx\n", tmp.value);
+-		return -EIO;
++		dev_info(dev, "Failure: %#x\n", data->buffer->flags);
++	
++		err = -EIO;
++		goto out;
+ 	}
+ 
+-	*value = (tmp.value & 0xffffffff00000000ULL) >> 32;
+-
+-	return 0;
++	*value = data->buffer->value;
++out:
++	mutex_unlock(&data->buffer_lock);
++	return err;
  }
  
-@@ -401,7 +433,7 @@ static void svg_legenda_box(int X, const char *text, const char *style)
+ static int atk_read_value(struct atk_sensor_data *sensor, u64 *value)
+@@ -721,11 +727,40 @@ static int atk_enumerate_new_hwmon(struct atk_data *data)
+ 	struct acpi_object_list params;
+ 	union acpi_object id;
+ 	union acpi_object *pack;
++	union acpi_object *asbf;
+ 	int err;
+ 	int i;
  
- 	fprintf(svgfile, "<rect x=\"%i\" width=\"%4.8f\" y=\"0\" height=\"%4.1f\" class=\"%s\"/>\n",
- 		X, boxsize, boxsize, style);
--	fprintf(svgfile, "<text transform=\"translate(%4.8f, %4.8f)\" font-size=\"%4.4fpt\">%s</text>\n",
-+	fprintf(svgfile, "<text transform=\"translate(%4.8f, %4.8f)\" font-size=\"%4.8fpt\">%s</text>\n",
- 		X + boxsize + 5, boxsize, 0.8 * boxsize, text);
+ 	dev_dbg(dev, "Enumerating hwmon sensors\n");
+ 
++	/* Probe ASBF */
++	buf.length = ACPI_ALLOCATE_BUFFER;
++	ret = acpi_evaluate_object_typed(data->atk_handle, "ASBF", NULL, &buf,
++			ACPI_TYPE_BUFFER);
++	if (ret != AE_OK) {
++		dev_warn(dev, "Failed to evaluate ASBF: %s\n",
++				acpi_format_exception(ret));
++		return -ENODEV;
++	}
++	asbf = buf.pointer;
++	data->buffer_size = asbf->buffer.length;
++	ACPI_FREE(buf.pointer);
++	buf.pointer = NULL;
++	
++	dev_dbg(dev, "ASBF buffer size: %zu\n", data->buffer_size);
++	/* Sanity check */
++	if (data->buffer_size < 8 || data->buffer_size > 512) {
++		dev_warn(dev, "Invalid ASBF buffer size: %zu\n",
++				data->buffer_size);
++		return -EINVAL;
++	}
++	data->buffer_size += sizeof(union acpi_object);
++
++	data->buffer = kzalloc(data->buffer_size, GFP_KERNEL);
++	if (!data->buffer)
++		return -ENOMEM;
++	mutex_init(&data->buffer_lock);
++
+ 	id.type = ACPI_TYPE_INTEGER;
+ 	id.integer.value = ATK_MUX_HWMON;
+ 	params.count = 1;
+@@ -737,7 +772,8 @@ static int atk_enumerate_new_hwmon(struct atk_data *data)
+ 	if (ret != AE_OK) {
+ 		dev_warn(dev, METHOD_ENUMERATE ": ACPI exception: %s\n",
+ 				acpi_format_exception(ret));
+-		return -ENODEV;
++		err = -ENODEV;
++		goto out;
+ 	}
+ 
+ 	/* Result must be a package */
+@@ -759,6 +795,8 @@ static int atk_enumerate_new_hwmon(struct atk_data *data)
+ 	err = data->voltage_count + data->temperature_count + data->fan_count;
+ 
+ out:
++	if (err < 0)
++		kfree(data->buffer);
+ 	ACPI_FREE(buf.pointer);
+ 	return err;
  }
+@@ -988,6 +1026,7 @@ static int atk_remove(struct acpi_device *device, int type)
+ 	atk_free_sensors(data);
+ 	hwmon_device_unregister(data->hwmon_dev);
  
++	kfree(data->buffer);
+ 	kfree(data);
+ 
+ 	return 0;
+
+Luca
 -- 
-1.6.0.6
-
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+"La vita potrebbe non avere alcun significato. Oppure, ancora peggio,
+ potrebbe averne uno che disapprovo". -- Ashleigh Brilliant
