@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbZITRcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZITRg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953AbZITRcm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 13:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbZITRcl
+	id S1755170AbZITRg1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 13:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbZITRgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 13:32:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49609 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753912AbZITRck (ORCPT
+	Sun, 20 Sep 2009 13:36:25 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53007 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754996AbZITRgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 13:32:40 -0400
-Date: Sun, 20 Sep 2009 19:32:47 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
-Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone VPA-II"
- ?
-Message-ID: <20090920193247.1d0e49cd@infradead.org>
-In-Reply-To: <4AB65D83.1080506@imap.cc>
-References: <4AB630AD.90207@imap.cc>
-	<20090920150549.GC11621@kroah.com>
-	<4AB6581F.5040908@imap.cc>
-	<20090920183744.395fc407@infradead.org>
-	<4AB65D83.1080506@imap.cc>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 20 Sep 2009 13:36:24 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Chen Liqin <liqin.chen@sunplusct.com>, Lennox Wu <lennox.wu@sunplusct.com>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH 0/3] Linker script cleanup patches for score
+Date: Sun, 20 Sep 2009 13:32:56 -0400
+Message-Id: <1253467979-14110-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009 18:51:15 +0200
-Tilman Schmidt <tilman@imap.cc> wrote:
+This patch series cleans up the linker script for the score
+architecture to use the new linker script macros merged in 2.6.31.
+I'd love to see these included in 2.6.32 (Sorry that these are coming
+so late -- I had missed the score architecture being merged.)
 
-> > btw this is what scripts/markup_oops.pl is for... it gives a very
-> > nice diagnostic
-> 
-> Unfortunately that script doesn't work on my machine:
-> 
-> ts@xenon:~/kernel/linux-2.6.31-work> ./scripts/markup_oops.pl
-> < /tmp/mdabug.txt No vmlinux specified,
-> assuming /lib/modules/2.6.31-vanilla/build/vmlinux Can't locate
-> object method "from_hex" via package "Math::BigInt"
-> at ./scripts/markup_oops.pl line 176, <STDIN> line 98.
-> 
-> And as it's openSUSE based I can't simply update my Perl packages
-> from CPAN. But I can live with the gdb method.
+While the changes are pretty straightforward, note that these patches
+haven't been tested at all (I don't have an appropriate cross
+compiler).
 
-hmm Matthew added that....
-should we undo that change??
+This cross-architecture linker script cleanup project is in
+preparation for adding support for building the kernel with
+-ffunction-sections -fdata-sections, which is a prerequisite for
+Ksplice.
 
+	-Tim Abbott
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Tim Abbott (3):
+  score: Make PAGE_SIZE available to assembly.
+  Make THREAD_SIZE available to assembly files.
+  score: Cleanup linker script using new macros.
+
+ arch/score/include/asm/page.h        |    3 +-
+ arch/score/include/asm/thread_info.h |   15 ++++---
+ arch/score/kernel/vmlinux.lds.S      |   75 +++------------------------------
+ 3 files changed, 18 insertions(+), 75 deletions(-)
+
