@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbZITSE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZITSFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755137AbZITSE0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 14:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbZITSE0
+	id S1755301AbZITSFd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 14:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZITSFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 14:04:26 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:47896 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753464AbZITSEZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 14:04:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=crsKZEaweIa95GE+2nuu6A64oky4QzY6+gCOCf6siDEGYC4oSASgJ09lBKGhfzSdfr
-         uoQL5B4lhI1taV0ffaEnWOMJMLfzXOzKGBZ6RZ7Ms4ZI05k90euasRDn83I4sKwT0OeC
-         vs6ep6QUod+2tccIECkJjHiS/LZFTUUARGlg8=
-Date: Sun, 20 Sep 2009 22:04:27 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, hugh.dickins@tiscali.co.uk
-Subject: Re: shmem_fill_super(): WARNING: kmemcheck: Caught 32-bit read
-	from uninitialized memory
-Message-ID: <20090920180427.GA32176@lenovo>
-References: <20090915080953.GA24958@elte.hu> <20090920072210.GA23787@elte.hu> <19f34abd0909201035t3157948amee532a3a5e96dbab@mail.gmail.com> <alpine.DEB.2.00.0909202046460.7394@melkki.cs.helsinki.fi> <20090920175803.GB23736@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090920175803.GB23736@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 20 Sep 2009 14:05:31 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:33608 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754069AbZITSFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 14:05:30 -0400
+Date: Sun, 20 Sep 2009 11:05:27 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Grozdan <neutrino8@gmail.com>, linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org
+Subject: Re: sky2 rx length errors
+Message-ID: <20090920110527.39fd7af5@s6510>
+In-Reply-To: <20090919233536.f5fb700c.akpm@linux-foundation.org>
+References: <c5bd819b0909180641n7c353b80tc15b9c9fe02d5c95@mail.gmail.com>
+	<20090919233536.f5fb700c.akpm@linux-foundation.org>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Sun, Sep 20, 2009 at 07:58:03PM +0200]
-...
-| 
-| > [    0.408000] initcall init_mmap_min_addr+0x0/0x10 returned 0 after 0 usecs
-| >
-| > Reported-by: Ingo Molnar <mingo@elte.hu>
-| > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-| > ---
-| >  mm/shmem.c |    5 +----
-| >  1 files changed, 1 insertions(+), 4 deletions(-)
-| >
-| > diff --git a/mm/shmem.c b/mm/shmem.c
-| > index d713239..a8f54f3 100644
-| > --- a/mm/shmem.c
-| > +++ b/mm/shmem.c
-| > @@ -2307,17 +2307,14 @@ static int shmem_fill_super(struct super_block *sb,
-| >  	int err = -ENOMEM;
-| >
-| >  	/* Round up to L1_CACHE_BYTES to resist false sharing */
-| > -	sbinfo = kmalloc(max((int)sizeof(struct shmem_sb_info),
-| > +	sbinfo = kzalloc(max((int)sizeof(struct shmem_sb_info),
-| >  				L1_CACHE_BYTES), GFP_KERNEL);
-| >  	if (!sbinfo)
-| >  		return -ENOMEM;
-| >
-| > -	sbinfo->max_blocks = 0;
-| > -	sbinfo->max_inodes = 0;
-| >  	sbinfo->mode = S_IRWXUGO | S_ISVTX;
-| >  	sbinfo->uid = current_fsuid();
-| >  	sbinfo->gid = current_fsgid();
-| > -	sbinfo->mpol = NULL;
-| >  	sb->s_fs_info = sbinfo;
-| 
-| That looks like a step forward even without kmemcheck considered, right?
-| 
-| 	Ingo
+On Sat, 19 Sep 2009 23:35:36 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Yeah, and we save a few cpu cycles as well :)
+> (added cc's from the MAINTAINERS file)
+> 
+> On Fri, 18 Sep 2009 15:41:45 +0200 Grozdan <neutrino8@gmail.com> wrote:
+> 
+> > Hi,
+> > 
+> > I have a Marvell onboard NIC (88E8053) and I've been noticing for a
+> > while now a bit weird behavior with the sky2 driver. This mostly
+> > occurs with newer kernels (2.6.30, 2.6.31) and my older distro kernel
+> > (2.6.27.21) does not seem to have the same problem. Basically, the
+> > sky2 driver will randomly and unpredictably spew rx length error
+> > messages and reboot itself. I also noticed in dmesg that this mostly
+> > occurs after "martian destination" messages. After this message, sky2
+> > starts spewing messages as shown below and then reboots itself. It is
+> > not really a big problem for me, but since I'm virtually always logged
+> > in in IRC, the client always loses connection, waits for a few minutes
+> > to get a response from the server and then relogs me again. I do not
+> > think it's a HW problem as the Marvell NIC otherwise works perfectly
+> > and I've checked my cable modem too which operates without a problem.
+> > Any ideas?
+> > 
+> > PS: please cc me as I'm not subscribed to the mailing list
+> > 
+> > sky2 driver version 1.23
+> > sky2 0000:05:00.0: PCI INT A -> GSI 36 (level, low) -> IRQ 36
+> > sky2 0000:05:00.0: setting latency timer to 64
+> > sky2 0000:05:00.0: PCI: Disallowing DAC for device
+> > sky2 0000:05:00.0: Yukon-2 EC chip revision 2
+> > sky2 0000:05:00.0: irq 53 for MSI/MSI-X
+> > sky2 0000:05:00.0: No interrupt generated using MSI, switching to INTx mode.
+> > sky2 eth0: addr 00:11:d8:a1:5b:0e
+> > sky2 eth0: enabling interface
+> > sky2 eth0: Link is up at 100 Mbps, full duplex, flow control rx
+> > .....
+> > .....
+> > martian destination 0.0.0.0 from 172.23.204.1, dev eth0
+> > sky2 eth0: rx length error: status 0x4420100 length 598
+> > sky2 eth0: rx length error: status 0x5ea0100 length 598
 
-	-- Cyrill
+This error status occurs if the length reported by the PHY does not
+match the len reported by the DMA engine.  The error status is:
+   0x4420100 = length 1090 + broadcast packet...
+
+No idea what is on your network, but perhaps there is some MTU confusion?
+Since martian destination seems related, knowing more about that packet
+might help.
