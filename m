@@ -1,85 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZITTkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZITTkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbZITTkT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 15:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZITTkT
+	id S1755195AbZITTkq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 15:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbZITTkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 15:40:19 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:45980 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753616AbZITTkS (ORCPT
+	Sun, 20 Sep 2009 15:40:45 -0400
+Received: from mail-yx0-f165.google.com ([209.85.210.165]:62747 "EHLO
+	mail-yx0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754923AbZITTkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 15:40:18 -0400
-Date: Sun, 20 Sep 2009 21:40:12 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH v2] arm: export "W" macro just for assembly code
-Message-ID: <20090920194012.GA22062@Chamillionaire.breakpoint.cc>
-References: <20090917091237.8258.29171.stgit@pc1117.cambridge.arm.com>
- <20090918193422.GA6601@n2100.arm.linux.org.uk>
+	Sun, 20 Sep 2009 15:40:45 -0400
+X-Greylist: delayed 91494 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Sep 2009 15:40:44 EDT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090918193422.GA6601@n2100.arm.linux.org.uk>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Sun, 20 Sep 2009 12:40:48 -0700 (PDT)
+In-Reply-To: <dms9u-34x-1@gated-at.bofh.it>
+X-IP: 82.0.91.38
+References: <dms9u-34x-3@gated-at.bofh.it> <dms9u-34x-5@gated-at.bofh.it> 
+	<dms9u-34x-1@gated-at.bofh.it>
+User-Agent: G2/1.0
+X-HTTP-Via: 1.1 home (squid/3.0.STABLE8)
+X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3) 
+	Gecko/20090915 Ubuntu/9.10 (karmic) Firefox/3.5.3,gzip(gfe),gzip(gfe)
+Message-ID: <5d60108b-94f3-4bcb-a09c-20f9dd67e576@k26g2000vbp.googlegroups.com>
+Subject: Re: reiserfs3/ext4/btrfs RAID read performance
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: wbrana@gmail.com
+Cc: Linux BTRFS <linux-btrfs@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexey Dobriyan <adobriyan@gmail.com>
+On Sep 20, 11:50 am, wbrana@gmail.com wrote:
+> On Sun, Sep 20, 2009 at 3:47 AM, Daniel J Blueman
+>
+> <daniel.blueman@gmail.com> wrote:
+> > On Sep 19, 7:20 pm, wbr...@gmail.com wrote:
+>
+> >> RAID details:
+> >>
+> >> md8 : active raid10 sda7[0] sdd7[3] sdc7[2] sdb7[1]
+> >>       62925824 blocks 256K chunks 2 far-copies [4/4] [UUUU]
+> >>
+> >> Ext4:
+> >> mkfs.ext4 -E stride=64,stripe-width=128 /dev/md8
+> >> mount -t ext4 -o noatime,auto_da_alloc,commit=600 /dev/md8 /mnt/md8
 
-The W macro which got introduced in 0becb08 aka "Thumb-2: Add macros for
-the unified assembler syntax" clashes with the W function in
-crypto/cast6.c since commit 8b59278 aka "Thumb-2: Implement the unified
-arch/arm/lib functions" due to the following include path:
-|arch/arm/include/asm/unified.h <---
-|arch/arm/include/asm/uaccess.h:20
-|include/linux/uaccess.h:5
-|include/linux/crypto.h:26
-|crypto/cast6.c:23
+Here, stripe-width should be 4* stride, not that it'll make much
+difference.
 
-This patch allows the usage of the new W macro only in assembly files
-since it is the place where it is used.
+> >> Reiser3:
+> >> mount -t reiserfs /dev/md8 /mnt/md8
+> >> mount -t reiserfs -o noatime,notail /dev/md8 /dev/md8
+> >>
+> >> Ext4 results:
+> >> intial create total runs 10 avg 172.76 MB/s (user 0.43s sys 0.60s)
+> >> create total runs 14 avg 36.49 MB/s (user 0.42s sys 0.59s)
+> >> patch total runs 15 avg 15.16 MB/s (user 0.24s sys 0.49s)
+> >> compile total runs 14 avg 64.07 MB/s (user 0.10s sys 0.59s)
+> >> clean total runs 10 avg 393.43 MB/s (user 0.02s sys 0.06s)
+> >> read tree total runs 11 avg 20.47 MB/s (user 0.53s sys 0.74s)
+> >> read compiled tree total runs 4 avg 32.94 MB/s (user 0.61s sys 1.17s)
+> >> delete tree total runs 10 avg 2.51 seconds (user 0.24s sys 0.42s)
+> >> delete compiled tree total runs 4 avg 2.63 seconds (user 0.28s sys 0.50s)
+> >> stat tree total runs 11 avg 1.99 seconds (user 0.23s sys 0.18s)
+> >> stat compiled tree total runs 7 avg 2.11 seconds (user 0.27s sys 0.21s)
+> >>
+> >> Reiser3 results:
+> >> intial create total runs 10 avg 82.74 MB/s (user 0.45s sys 1.13s)
+> >> create total runs 14 avg 28.54 MB/s (user 0.45s sys 1.19s)
+> >> patch total runs 15 avg 10.91 MB/s (user 0.24s sys 0.86s)
+> >> compile total runs 14 avg 47.49 MB/s (user 0.10s sys 1.27s)
+> >> clean total runs 10 avg 270.21 MB/s (user 0.02s sys 0.15s)
+> >> read tree total runs 11 avg 26.33 MB/s (user 0.54s sys 0.81s)
+> >> read compiled tree total runs 4 avg 41.82 MB/s (user 0.62s sys 1.36s)
+> >> delete tree total runs 10 avg 3.38 seconds (user 0.24s sys 0.72s)
+> >> delete compiled tree total runs 4 avg 4.14 seconds (user 0.27s sys 0.88s)
+> >> stat tree total runs 11 avg 2.09 seconds (user 0.22s sys 0.18s)
+> >> stat compiled tree total runs 7 avg 2.27 seconds (user 0.25s sys 0.21s)
+> >>
+> > It would be interesting to also compare against BTRFS if on 2.6.30 or
+> > newer, if you can.
+>
+> BTRFS 2.6.31
+>
+> mkfs.btrfs -d raid10 -m raid10 /dev/sda7 /dev/sdb7 /dev/sdc7 /dev/sdd7
+> mount -t btrfs -o noatime /dev/sda7 /mnt/md8
+>
+> intial create total runs 10 avg 158.85 MB/s (user 0.45s sys 0.93s)
+> create total runs 14 avg 32.67 MB/s (user 0.44s sys 0.90s)
+> patch total runs 15 avg 8.91 MB/s (user 0.22s sys 0.84s)
+> compile total runs 14 avg 61.02 MB/s (user 0.09s sys 0.50s)
+> clean total runs 10 avg 245.12 MB/s (user 0.02s sys 0.18s)
+>
+> read tree total runs 11 avg 14.03 MB/s (user 0.48s sys 0.87s)
+> read compiled tree total runs 4 avg 29.14 MB/s (user 0.54s sys 1.37s)
+>
+> delete tree total runs 10 avg 9.77 seconds (user 0.28s sys 1.37s)
+> delete compiled tree total runs 4 avg 11.91 seconds (user 0.31s sys 1.60s)
+> stat tree total runs 11 avg 4.36 seconds (user 0.25s sys 0.33s)
+> stat compiled tree total runs 7 avg 5.29 seconds (user 0.29s sys 0.37s)
 
-[sebastian@breakpoint]: patch description
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
----
-Russel, I've added a new patch description for this patch since my
-rename edition was a little larger.
+Not ext4 specific, but I was finding 64KB chunk-size RAID 10 (layout
+f2 if using MD) and increasing readahead of /dev/mdX to drives*256 to
+give the best performance on a 4-drive SATA array. Consider using
+aligned partitions (ext4 has internal alignment, I don't think BTRFS
+does) and at the outside of identical disks if using non-SSDs.
 
- arch/arm/include/asm/unified.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/include/asm/unified.h b/arch/arm/include/asm/unified.h
-index 073e85b..bc63116 100644
---- a/arch/arm/include/asm/unified.h
-+++ b/arch/arm/include/asm/unified.h
-@@ -35,7 +35,9 @@
- 
- #define ARM(x...)
- #define THUMB(x...)	x
-+#ifdef __ASSEMBLY__
- #define W(instr)	instr.w
-+#endif
- #define BSYM(sym)	sym + 1
- 
- #else	/* !CONFIG_THUMB2_KERNEL */
-@@ -45,7 +47,9 @@
- 
- #define ARM(x...)	x
- #define THUMB(x...)
-+#ifdef __ASSEMBLY__
- #define W(instr)	instr
-+#endif
- #define BSYM(sym)	sym
- 
- #endif	/* CONFIG_THUMB2_KERNEL */
-
+Thanks,
+  Daniel
+--
+Daniel J Blueman
