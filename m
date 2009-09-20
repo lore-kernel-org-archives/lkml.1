@@ -1,71 +1,422 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487AbZITVDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751010AbZITVGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751487AbZITVDi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 17:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbZITVDf
+	id S1751010AbZITVGn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 17:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZITVGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 17:03:35 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:11921
-	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750868AbZITVDe convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 17:03:34 -0400
-X-SpamScore: -2
-X-BigFish: VPS-2(z5c5oz1432Rzz1202hzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KQAFTN-02-FS8-02
-X-M-MSG: 
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "'Avi Kivity'" <avi@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Sun, 20 Sep 2009 16:03:23 -0500
-Subject: RE: [PATCH] Prevent immediate process rescheduling
-Thread-Topic: [PATCH] Prevent immediate process rescheduling
-Thread-Index: Aco5A6enSyB16uYiSJmABVb0g72NugBMe/cg
-Message-ID: <DDE95BDD51FB774B804A9C029E735EE10379BEDA2F@sausexmbp02.amd.com>
-References: <200909181449.12311.mark.langsdorf@amd.com>
-	 <20090918195455.GC11726@elte.hu> <1253304203.10538.64.camel@laptop>
- <4AB496ED.7010800@redhat.com>
-In-Reply-To: <4AB496ED.7010800@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sun, 20 Sep 2009 17:06:41 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:51235 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbZITVGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 17:06:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=DcLw9+DGbLtBeH91rvFG7oWuQ3LGo4QVeYdvpOCfbi1Dh+vzmpkFTbAv0ULniiBjpY
+         CWtEG4sv4QAw+vDNFzqvuYYv280cuVWTR/oAv+RNbo1C1W8nLzZSkH2PTQtsKUkWg6Kg
+         QQa8ynKhQkLIYzqoxwpRYJF1zTpF/k7TIc59U=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [git patches] libata updates
+Date: Sun, 20 Sep 2009 23:05:06 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-04082-g1824090-dirty; KDE/4.3.1; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       John Lee (Jung-Ik) <jilee@google.com>,
+       Grant Grundler <grundler@google.com>,
+       Gwendal Gringo <gwendal@google.com>
+References: <20090917204935.GA7432@havoc.gtf.org>
+In-Reply-To: <20090917204935.GA7432@havoc.gtf.org>
 MIME-Version: 1.0
+Message-Id: <200909202305.06199.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Really hate this change though,. doesn't seem right to not 
-> pick the same
-> > task again if its runnable. Bad for cache footprint.
+On Thursday 17 September 2009 22:49:35 Jeff Garzik wrote:
 > 
-> I agree, yielding should be explicitly requested.
+> Bug fixes, and a new driver.
 > 
-> Also, on a heavily overcommitted box an undirected yield might take 
-> quite a long time to find the thread that's holding the lock. 
->  I think a 
-> yield_to() will be a lot better:
 > 
-> - we can pick one of the vcpus belonging to the same guest to improve 
-> the probability that the lock actually get released
+> 
+> Please pull from 'upstream-linus' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+> 
+> to receive the following updates:
+> 
+>  drivers/ata/Kconfig        |    9 +
+>  drivers/ata/Makefile       |    1 +
+>  drivers/ata/ahci.c         |    4 +-
+>  drivers/ata/libata-core.c  |    4 +-
+>  drivers/ata/pata_amd.c     |    3 +
+>  drivers/ata/pata_atp867x.c |  548 ++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/ata/sata_promise.c |  155 +++++++++++--
+>  include/linux/pci_ids.h    |    2 +
+>  8 files changed, 704 insertions(+), 22 deletions(-)
+>  create mode 100644 drivers/ata/pata_atp867x.c
+> 
+> John(Jung-Ik) Lee (1):
+>       libata: Add pata_atp867x driver for Artop/Acard ATP867X controllers
 
-Is there a way to find the other vcpus belonging to the
-same guest?  I poked around at that, but couldn't find
-one.
+That was really fast..  Not necessarily a bad thing but this driver would
+benefit from few polishing touches..
 
-> - we avoid an issue when the other vcpus are on different 
-> runqueues (in which case the current patch does nothing)
-> - we can fix the accounting by donating vruntime from current to the 
-> yielded-to vcpu
+> diff --git a/drivers/ata/pata_atp867x.c b/drivers/ata/pata_atp867x.c
+> new file mode 100644
+> index 0000000..7990de9
+> --- /dev/null
+> +++ b/drivers/ata/pata_atp867x.c
+> @@ -0,0 +1,548 @@
+> +/*
+> + * pata_atp867x.c - ARTOP 867X 64bit 4-channel UDMA133 ATA controller driver
+> + *
+> + *	(C) 2009 Google Inc. John(Jung-Ik) Lee <jilee@google.com>
+> + *
+> + * Per Atp867 data sheet rev 1.2, Acard.
+> + * Based in part on early ide code from
+> + *	2003-2004 by Eric Uhrhane, Google, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+> + *
+> + *
+> + * TODO:
+> + *   1. RAID features [comparison, XOR, striping, mirroring, etc.]
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/pci.h>
+> +#include <linux/init.h>
+> +#include <linux/blkdev.h>
+> +#include <linux/delay.h>
+> +#include <linux/device.h>
+> +#include <scsi/scsi_host.h>
+> +#include <linux/libata.h>
+> +
+> +#define	DRV_NAME	"pata_atp867x"
+> +#define	DRV_VERSION	"0.7.5"
+> +
+> +/*
+> + * IO Registers
+> + * Note that all runtime hot priv ports are cached in ap private_data
+> + */
+> +
+> +enum {
+> +	ATP867X_IO_CHANNEL_OFFSET	= 0x10,
+> +
+> +	/*
+> +	 * IO Register Bitfields
+> +	 */
+> +
+> +	ATP867X_IO_PIOSPD_ACTIVE_SHIFT	= 4,
+> +	ATP867X_IO_PIOSPD_RECOVER_SHIFT	= 0,
+> +
+> +	ATP867X_IO_DMAMODE_MSTR_SHIFT	= 0,
+> +	ATP867X_IO_DMAMODE_MSTR_MASK	= 0x07,
+> +	ATP867X_IO_DMAMODE_SLAVE_SHIFT	= 4,
+> +	ATP867X_IO_DMAMODE_SLAVE_MASK	= 0x70,
+> +
+> +	ATP867X_IO_DMAMODE_UDMA_6	= 0x07,
+> +	ATP867X_IO_DMAMODE_UDMA_5	= 0x06,
+> +	ATP867X_IO_DMAMODE_UDMA_4	= 0x05,
+> +	ATP867X_IO_DMAMODE_UDMA_3	= 0x04,
+> +	ATP867X_IO_DMAMODE_UDMA_2	= 0x03,
+> +	ATP867X_IO_DMAMODE_UDMA_1	= 0x02,
+> +	ATP867X_IO_DMAMODE_UDMA_0	= 0x01,
+> +	ATP867X_IO_DMAMODE_DISABLE	= 0x00,
+> +
+> +	ATP867X_IO_SYS_INFO_66MHZ	= 0x04,
+> +	ATP867X_IO_SYS_INFO_SLOW_UDMA5	= 0x02,
+> +	ATP867X_IO_SYS_MASK_RESERVED	= (~0xf1),
+> +
+> +	ATP867X_IO_PORTSPD_VAL		= 0x1143,
+> +	ATP867X_PREREAD_VAL		= 0x0200,
+> +
+> +	ATP867X_NUM_PORTS		= 4,
+> +	ATP867X_BAR_IOBASE		= 0,
+> +	ATP867X_BAR_ROMBASE		= 6,
+> +};
+> +
+> +#define ATP867X_IOBASE(ap)		((ap)->host->iomap[0])
+> +#define ATP867X_SYS_INFO(ap)		(0x3F + ATP867X_IOBASE(ap))
+> +
+> +#define ATP867X_IO_PORTBASE(ap, port)	(0x00 + ATP867X_IOBASE(ap) + \
+> +					(port) * ATP867X_IO_CHANNEL_OFFSET)
+> +#define ATP867X_IO_DMABASE(ap, port)	(0x40 + \
+> +					ATP867X_IO_PORTBASE((ap), (port)))
+> +
+> +#define ATP867X_IO_STATUS(ap, port)	(0x07 + \
+> +					ATP867X_IO_PORTBASE((ap), (port)))
+> +#define ATP867X_IO_ALTSTATUS(ap, port)	(0x0E + \
+> +					ATP867X_IO_PORTBASE((ap), (port)))
+> +
+> +/*
+> + * hot priv ports
+> + */
+> +#define ATP867X_IO_MSTRPIOSPD(ap, port)	(0x08 + \
+> +					ATP867X_IO_DMABASE((ap), (port)))
+> +#define ATP867X_IO_SLAVPIOSPD(ap, port)	(0x09 + \
+> +					ATP867X_IO_DMABASE((ap), (port)))
+> +#define ATP867X_IO_8BPIOSPD(ap, port)	(0x0A + \
+> +					ATP867X_IO_DMABASE((ap), (port)))
+> +#define ATP867X_IO_DMAMODE(ap, port)	(0x0B + \
+> +					ATP867X_IO_DMABASE((ap), (port)))
+> +
+> +#define ATP867X_IO_PORTSPD(ap, port)	(0x4A + \
+> +					ATP867X_IO_PORTBASE((ap), (port)))
+> +#define ATP867X_IO_PREREAD(ap, port)	(0x4C + \
+> +					ATP867X_IO_PORTBASE((ap), (port)))
+> +
+> +struct atp867x_priv {
+> +	void __iomem *dma_mode;
+> +	void __iomem *mstr_piospd;
+> +	void __iomem *slave_piospd;
+> +	void __iomem *eightb_piospd;
+> +	int		pci66mhz;
+> +};
+> +
+> +static inline u8 atp867x_speed_to_mode(u8 speed)
+> +{
+> +	return speed - XFER_UDMA_0 + 1;
+> +}
+> +
+> +static void atp867x_set_dmamode(struct ata_port *ap, struct ata_device *adev)
+> +{
+> +	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
+> +	struct atp867x_priv *dp = ap->private_data;
+> +	u8 speed = adev->dma_mode;
+> +	u8 b;
+> +	u8 mode;
+> +
+> +	mode = atp867x_speed_to_mode(speed);
 
-I may need someone to walk me through the vruntime donation
-but that's secondary to finding the other vcpus.
+The driver currently doesn't support MWDMA modes but claims otherwise
+(fixed in the attached patch).
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+> +	/*
+> +	 * Doc 6.6.9: decrease the udma mode value by 1 for safer UDMA speed
+> +	 * on 66MHz bus
+> +	 *   rev-A: UDMA_1~4 (5, 6 no change)
+> +	 *   rev-B: all UDMA modes
+> +	 *   UDMA_0 stays not to disable UDMA
+> +	 */
+> +	if (dp->pci66mhz && mode > ATP867X_IO_DMAMODE_UDMA_0  &&
+> +	   (pdev->device == PCI_DEVICE_ID_ARTOP_ATP867B ||
+> +	    mode < ATP867X_IO_DMAMODE_UDMA_5))
+> +		mode--;
+> +
+> +	b = ioread8(dp->dma_mode);
+> +	if (adev->devno & 1) {
+> +		b = (b & ~ATP867X_IO_DMAMODE_SLAVE_MASK) |
+> +			(mode << ATP867X_IO_DMAMODE_SLAVE_SHIFT);
+> +	} else {
+> +		b = (b & ~ATP867X_IO_DMAMODE_MSTR_MASK) |
+> +			(mode << ATP867X_IO_DMAMODE_MSTR_SHIFT);
+> +	}
+> +	iowrite8(b, dp->dma_mode);
+> +}
+> +
+> +static int atp867x_get_active_clocks_shifted(unsigned int clk)
+> +{
+> +	unsigned char clocks = clk;
+> +
+> +	switch (clocks) {
+> +	case 0:
+> +		clocks = 1;
+> +		break;
+> +	case 1 ... 7:
+> +		break;
+> +	case 8 ... 12:
+> +		clocks = 7;
+
+Shouldn't "clocks = 0" (the default case) be used here?
+
+Otherwise it seems to result in underclocked timings for dp->pci66mhz == 0.
+
+> +		break;
+> +	default:
+> +		printk(KERN_WARNING "ATP867X: active %dclk is invalid. "
+> +			"Using default 8clk.\n", clk);
+> +		clocks = 0;	/* 8 clk */
+> +		break;
+> +	}
+> +	return clocks << ATP867X_IO_PIOSPD_ACTIVE_SHIFT;
+> +}
+> +
+> +static int atp867x_get_recover_clocks_shifted(unsigned int clk)
+> +{
+> +	unsigned char clocks = clk;
+> +
+> +	switch (clocks) {
+> +	case 0:
+> +		clocks = 1;
+> +		break;
+> +	case 1 ... 11:
+> +		break;
+> +	case 12:
+> +		clocks = 0;
+> +		break;
+> +	case 13: case 14:
+> +		--clocks;
+> +		break;
+
+Is "clocks == 14" a reserved setting?
+
+If so a comment documenting it would be appreciated.
+
+> +	case 15:
+> +		break;
+> +	default:
+> +		printk(KERN_WARNING "ATP867X: recover %dclk is invalid. "
+> +			"Using default 15clk.\n", clk);
+> +		clocks = 0;	/* 12 clk */
+
+Shouldn't it use "clocks == 15" setting?
+
+> +		break;
+> +	}
+> +	return clocks << ATP867X_IO_PIOSPD_RECOVER_SHIFT;
+> +}
+> +
+> +static void atp867x_set_piomode(struct ata_port *ap, struct ata_device *adev)
+> +{
+> +	struct ata_device *peer = ata_dev_pair(adev);
+> +	struct atp867x_priv *dp = ap->private_data;
+> +	u8 speed = adev->pio_mode;
+> +	struct ata_timing t, p;
+> +	int T, UT;
+> +	u8 b;
+> +
+> +	T = 1000000000 / 33333;
+> +	UT = T / 4;
+> +
+> +	ata_timing_compute(adev, speed, &t, T, UT);
+> +	if (peer && peer->pio_mode) {
+> +		ata_timing_compute(peer, peer->pio_mode, &p, T, UT);
+> +		ata_timing_merge(&p, &t, &t, ATA_TIMING_8BIT);
+> +	}
+> +
+> +	b = ioread8(dp->dma_mode);
+> +	if (adev->devno & 1)
+> +		b = (b & ~ATP867X_IO_DMAMODE_SLAVE_MASK);
+> +	else
+> +		b = (b & ~ATP867X_IO_DMAMODE_MSTR_MASK);
+> +	iowrite8(b, dp->dma_mode);
+> +
+> +	b = atp867x_get_active_clocks_shifted(t.active) |
+> +		atp867x_get_recover_clocks_shifted(t.recover);
+> +	if (dp->pci66mhz)
+> +		b += 0x10;
+
+What is the purpose of the above hack?
+
+AFAICS (I don't have a datasheet) it may result in invalid active
+clocks being used for t.active > 12 and 0x80 bit being set incorrectly
+for t.active values 7..12 (unless it was the purpose of the hack).
+
+> +	if (adev->devno & 1)
+> +		iowrite8(b, dp->slave_piospd);
+> +	else
+> +		iowrite8(b, dp->mstr_piospd);
+> +
+> +	/*
+> +	 * use the same value for comand timing as for PIO timimg
+> +	 */
+> +	iowrite8(b, dp->eightb_piospd);
+
+This is incorrect if slave/master devices use different PIO modes
+or if PIO mode <= 2 is used by any device.
+
+Timing based on t.act8b and t.rec8b values should be used instead.
+
+On the somehow related note:
+
+* I don't see how PIO0-2 command timings can be met with only 3 bits
+  used for active clocks.  Could it be that dp->eight_piospd should be
+  programmed in a slightly different way than dp->{mstr,slave}_piospd?
+
+* The controller allows higher clocks values for recovery timings but
+  ata_timing_compute() tries to fairly increase both recovery and active
+  timings to meet the required cycle timing.
+
+> +}
+> +
+> +static int atp867x_cable_detect(struct ata_port *ap)
+> +{
+> +	return ATA_CBL_PATA40_SHORT;
+> +}
+
+As noticed by Robert and Alan already:
+
+This should use ATA_CBL_PATA_UNK and rely on the driver-side cable detection.
+
+
+One last thing: Power Management support is missing from this driver
+(I tried addressing this in the separately posted patch but it needs
+testing by somebody with the hardware).
+
+
+MWDMA fix:
+
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] pata_atp867x: fix it to not claim MWDMA support
+
+MWDMA modes are not supported by this driver currently.
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ata/pata_atp867x.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+Index: b/drivers/ata/pata_atp867x.c
+===================================================================
+--- a/drivers/ata/pata_atp867x.c
++++ b/drivers/ata/pata_atp867x.c
+@@ -118,20 +118,13 @@ struct atp867x_priv {
+ 	int		pci66mhz;
+ };
+ 
+-static inline u8 atp867x_speed_to_mode(u8 speed)
+-{
+-	return speed - XFER_UDMA_0 + 1;
+-}
+-
+ static void atp867x_set_dmamode(struct ata_port *ap, struct ata_device *adev)
+ {
+ 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
+ 	struct atp867x_priv *dp = ap->private_data;
+ 	u8 speed = adev->dma_mode;
+ 	u8 b;
+-	u8 mode;
+-
+-	mode = atp867x_speed_to_mode(speed);
++	u8 mode = speed - XFER_UDMA_0 + 1;
+ 
+ 	/*
+ 	 * Doc 6.6.9: decrease the udma mode value by 1 for safer UDMA speed
+@@ -471,7 +464,6 @@ static int atp867x_init_one(struct pci_d
+ 	static const struct ata_port_info info_867x = {
+ 		.flags		= ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask	= ATA_PIO4,
+-		.mwdma_mask	= ATA_MWDMA2,
+ 		.udma_mask 	= ATA_UDMA6,
+ 		.port_ops	= &atp867x_ops,
+ 	};
