@@ -1,124 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbZITOES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbZITOWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838AbZITOES (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 10:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZITOER
+	id S1753052AbZITOWu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 10:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZITOWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 10:04:17 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:46305 "EHLO gir.skynet.ie"
+	Sun, 20 Sep 2009 10:22:49 -0400
+Received: from khc.piap.pl ([195.187.100.11]:60969 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752602AbZITOER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 10:04:17 -0400
-Date: Sun, 20 Sep 2009 15:04:21 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Nick Piggin <npiggin@suse.de>, Christoph Lameter <cl@linux-foundation.org>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] slqb: Do not use DEFINE_PER_CPU for per-node data
-Message-ID: <20090920140421.GB18162@csn.ul.ie>
-References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie> <1253302451-27740-2-git-send-email-mel@csn.ul.ie> <84144f020909200145w74037ab9vb66dae65d3b8a048@mail.gmail.com>
+	id S1752237AbZITOWt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 10:22:49 -0400
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: <linux-kernel@vger.kernel.org>
+Cc: trivial@kernel.org
+Subject: [PATCH][TRIVIAL] Fix comment in drivers/ata/pata_hpt37x.c.
+Date: Sun, 20 Sep 2009 16:22:51 +0200
+Message-ID: <m3zl8p3dc4.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <84144f020909200145w74037ab9vb66dae65d3b8a048@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 20, 2009 at 11:45:54AM +0300, Pekka Enberg wrote:
-> On Fri, Sep 18, 2009 at 10:34 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> > SLQB used a seemingly nice hack to allocate per-node data for the statically
-> > initialised caches. Unfortunately, due to some unknown per-cpu
-> > optimisation, these regions are being reused by something else as the
-> > per-node data is getting randomly scrambled. This patch fixes the
-> > problem but it's not fully understood *why* it fixes the problem at the
-> > moment.
-> 
-> Ouch, that sounds bad. I guess it's architecture specific bug as x86
-> works ok? Lets CC Tejun.
-> 
-> Nick, are you okay with this patch being merged for now?
-> 
+A comment fix in drivers/ata/pata_hpt37x.c.
 
-I don't think it should be merged as-is. This patch might be treating
-symptons so needs further thought. The second patch is a hatchet job and
-as Christoph points out, it may be suffering a subtle list-corruption
-bug.
+Signed-off-by: Krzysztof Ha³asa <khc@pm.waw.pl>
 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  mm/slqb.c |   16 ++++++++--------
-> >  1 files changed, 8 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/mm/slqb.c b/mm/slqb.c
-> > index 4ca85e2..4d72be2 100644
-> > --- a/mm/slqb.c
-> > +++ b/mm/slqb.c
-> > @@ -1944,16 +1944,16 @@ static void init_kmem_cache_node(struct kmem_cache *s,
-> >  static DEFINE_PER_CPU(struct kmem_cache_cpu, kmem_cache_cpus);
-> >  #endif
-> >  #ifdef CONFIG_NUMA
-> > -/* XXX: really need a DEFINE_PER_NODE for per-node data, but this is better than
-> > - * a static array */
-> > -static DEFINE_PER_CPU(struct kmem_cache_node, kmem_cache_nodes);
-> > +/* XXX: really need a DEFINE_PER_NODE for per-node data because a static
-> > + *      array is wasteful */
-> > +static struct kmem_cache_node kmem_cache_nodes[MAX_NUMNODES];
-> >  #endif
-> >
-> >  #ifdef CONFIG_SMP
-> >  static struct kmem_cache kmem_cpu_cache;
-> >  static DEFINE_PER_CPU(struct kmem_cache_cpu, kmem_cpu_cpus);
-> >  #ifdef CONFIG_NUMA
-> > -static DEFINE_PER_CPU(struct kmem_cache_node, kmem_cpu_nodes); /* XXX per-nid */
-> > +static struct kmem_cache_node kmem_cpu_nodes[MAX_NUMNODES]; /* XXX per-nid */
-> >  #endif
-> >  #endif
-> >
-> > @@ -1962,7 +1962,7 @@ static struct kmem_cache kmem_node_cache;
-> >  #ifdef CONFIG_SMP
-> >  static DEFINE_PER_CPU(struct kmem_cache_cpu, kmem_node_cpus);
-> >  #endif
-> > -static DEFINE_PER_CPU(struct kmem_cache_node, kmem_node_nodes); /*XXX per-nid */
-> > +static struct kmem_cache_node kmem_node_nodes[MAX_NUMNODES]; /*XXX per-nid */
-> >  #endif
-> >
-> >  #ifdef CONFIG_SMP
-> > @@ -2918,15 +2918,15 @@ void __init kmem_cache_init(void)
-> >        for_each_node_state(i, N_NORMAL_MEMORY) {
-> >                struct kmem_cache_node *n;
-> >
-> > -               n = &per_cpu(kmem_cache_nodes, i);
-> > +               n = &kmem_cache_nodes[i];
-> >                init_kmem_cache_node(&kmem_cache_cache, n);
-> >                kmem_cache_cache.node_slab[i] = n;
-> >  #ifdef CONFIG_SMP
-> > -               n = &per_cpu(kmem_cpu_nodes, i);
-> > +               n = &kmem_cpu_nodes[i];
-> >                init_kmem_cache_node(&kmem_cpu_cache, n);
-> >                kmem_cpu_cache.node_slab[i] = n;
-> >  #endif
-> > -               n = &per_cpu(kmem_node_nodes, i);
-> > +               n = &kmem_node_nodes[i];
-> >                init_kmem_cache_node(&kmem_node_cache, n);
-> >                kmem_node_cache.node_slab[i] = n;
-> >        }
-> > --
-> > 1.6.3.3
-> >
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org.  For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> >
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff --git a/drivers/ata/pata_hpt37x.c b/drivers/ata/pata_hpt37x.c
+index 122c786..d0a7df2 100644
+--- a/drivers/ata/pata_hpt37x.c
++++ b/drivers/ata/pata_hpt37x.c
+@@ -624,7 +624,7 @@ static struct ata_port_operations hpt374_fn1_port_ops = {
+ };
+ 
+ /**
+- *	htp37x_clock_slot	-	Turn timing to PC clock entry
++ *	hpt37x_clock_slot	-	Turn timing to PC clock entry
+  *	@freq: Reported frequency timing
+  *	@base: Base timing
+  *
