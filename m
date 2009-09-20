@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZITPtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbZITUUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbZITPtQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 11:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZITPtP
+	id S1754126AbZITUUZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 16:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZITUUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 11:49:15 -0400
-Received: from claw.goop.org ([74.207.240.146]:39347 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754367AbZITPtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 11:49:14 -0400
-Message-ID: <4AB64EFC.10707@goop.org>
-Date: Sun, 20 Sep 2009 08:49:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Alok Kataria <akataria@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	<20090919224430.GB9567@kroah.com>	<1253419185.3253.21.camel@ank32.eng.vmware.com>	<20090920074247.GA5733@elte.hu> <20090920095239.456ad6f2@infradead.org> <4AB5EF25.9070502@redhat.com>
-In-Reply-To: <4AB5EF25.9070502@redhat.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
+	Sun, 20 Sep 2009 16:20:24 -0400
+Received: from c-71-63-93-204.hsd1.va.comcast.net ([71.63.93.204]:45437 "EHLO
+	c-71-63-93-204.hsd1.va.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750828AbZITUUY (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 16:20:24 -0400
+X-Greylist: delayed 3574 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Sep 2009 16:20:24 EDT
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Beth Kon <eak@us.ibm.com>, rostedt@goodmis.org, avi@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Wierdness - linux-next KVM patch breaks Dell Latitude D820, KVM not in kernel
+In-Reply-To: Your message of "Mon, 07 Sep 2009 10:07:07 EDT."
+             <3850.1252332427@turing-police.cc.vt.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <3850.1252332427@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1253461809_2954P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 20 Sep 2009 11:50:09 -0400
+Message-ID: <77690.1253461809@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/20/09 02:00, Avi Kivity wrote:
-> On 09/20/2009 10:52 AM, Arjan van de Ven wrote:
->> On Sun, 20 Sep 2009 09:42:47 +0200
->> Ingo Molnar<mingo@elte.hu>  wrote:
->>
->>   
->>> If we were able to rip out all (or most) of paravirt from arch/x86 it
->>> would be tempting for other technical reasons - but the patch above
->>> is well localized.
->>>      
->> interesting question is if this would allow us to remove a few of the
->> paravirt hooks....
->>    
->
-> kvm will be removing the pvmmu support soon; and Xen is talking about
-> running paravirtualized guests in a vmx/svm container where they don't
-> need most of the hooks.
->
+--==_Exmh_1253461809_2954P
+Content-Type: text/plain; charset=us-ascii
 
-We have no plans to drop support for non-vmx/svm capable processors, let
-alone require ept/npt.
+On Mon, 07 Sep 2009 10:07:07 EDT, Valdis.Kletnieks@vt.edu said:
 
-    J
+> Symptoms: Dell Latitude D820 either hangs at very early boot (before
+> any output, not even penguins), or (apparently) triple-faults into an
+> immediate reboot.  linux-2.6.31-rc7-mmotm0827 works fine, so whatever the
+> real issue is, it hit linux-next between then and when Andrew pulled for
+> -0902.  Since I was feeling lazy, I told 'git bisect' that 2.6.31-rc7 was
+> good and HEAD was bad.
+
+Whatever it was, I can no longer replicate it with 2.6.31-mmotm0917, so it
+looks like some maintainer merged the fix for whatever it was.  File
+this one under "things that go bump in the night", I guess...
+
+--==_Exmh_1253461809_2954P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKtk8xcC3lWbTT17ARAmBaAJ9dab0iVs5B9CaqXOmB3mnGCrsZKQCfXqEY
+Phr3ZkfXYx391CDgOb6gp38=
+=drci
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1253461809_2954P--
