@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbZITP5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZITQPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbZITP5J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 11:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbZITP5I
+	id S1754705AbZITQPR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 12:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZITQPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 11:57:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33547 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754363AbZITP5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 11:57:08 -0400
-Message-ID: <4AB6508C.4070602@kernel.org>
-Date: Mon, 21 Sep 2009 00:55:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       sachinp@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] slqb: Do not use DEFINE_PER_CPU for per-node data
-References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie>	 <1253302451-27740-2-git-send-email-mel@csn.ul.ie> <84144f020909200145w74037ab9vb66dae65d3b8a048@mail.gmail.com> <4AB5FD4D.3070005@kernel.org> <4AB5FFF8.7000602@cs.helsinki.fi>
-In-Reply-To: <4AB5FFF8.7000602@cs.helsinki.fi>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 20 Sep 2009 12:15:14 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50884 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753464AbZITQPK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 12:15:10 -0400
+Date: Sun, 20 Sep 2009 18:12:48 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: paulus@samba.org, ahpa@zytor.com, mingo@redhat.com, arjan@linux.intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+Subject: [git pull] 4 timechart feature patches
+Message-ID: <20090920181248.464c9193@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 20 Sep 2009 15:56:00 +0000 (UTC)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> Tejun Heo wrote:
->> Pekka Enberg wrote:
->>> On Fri, Sep 18, 2009 at 10:34 PM, Mel Gorman <mel@csn.ul.ie> wrote:
->>>> SLQB used a seemingly nice hack to allocate per-node data for the
->>>> statically
->>>> initialised caches. Unfortunately, due to some unknown per-cpu
->>>> optimisation, these regions are being reused by something else as the
->>>> per-node data is getting randomly scrambled. This patch fixes the
->>>> problem but it's not fully understood *why* it fixes the problem at the
->>>> moment.
->>> Ouch, that sounds bad. I guess it's architecture specific bug as x86
->>> works ok? Lets CC Tejun.
->>
->> Is the corruption being seen on ppc or s390?
-> 
-> On ppc.
+Small timechart updated; a few new features and an improvement in performance
+that makes inkscape not as slow as it was before.
 
-Can you please post full dmesg showing the corruption?  Also, if you
-apply the attached patch, does the added BUG_ON() trigger?
+patches will be posted as reply to this email
 
-Thanks.
+The following changes since commit f85b2af8c53ed0f5e0d1008dcea33888d6e22c45:
+  Ingo Molnar (1):
+        Merge branch 'out-of-tree'
 
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 878836c..fb690d2 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -127,7 +127,7 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
-  * dynamically allocated. Non-atomic access to the current CPU's
-  * version should probably be combined with get_cpu()/put_cpu().
-  */
--#define per_cpu_ptr(ptr, cpu)	SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
-+#define per_cpu_ptr(ptr, cpu)	({ BUG_ON(!(ptr)); SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu))); })
+are available in the git repository at:
 
- extern void *__alloc_reserved_percpu(size_t size, size_t align);
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-timechart master
+
+Arjan van de Ven (4):
+      perf timechart: Show the name of the waker/wakee in timechart
+      perf timechart: Show the duration of scheduler delays in the SVG
+      perf util: Make the timechart SVG width dynamic
+      perf util: SVG performance improvements
+
+ tools/perf/Documentation/perf-timechart.txt |    3 +
+ tools/perf/builtin-timechart.c              |   23 +++--
+ tools/perf/util/svghelper.c                 |  170 +++++++++++++++++++++-----
+ tools/perf/util/svghelper.h                 |   11 +-
+ 4 files changed, 162 insertions(+), 45 deletions(-)
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
