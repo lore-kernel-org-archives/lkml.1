@@ -1,97 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZIUQrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZIUQul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbZIUQrP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZIUQrN
+	id S1751954AbZIUQul (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZIUQul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:47:13 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44493 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbZIUQrM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:47:12 -0400
-Subject: Re: TRACE_EVENT_ABI ?
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       mingo@elte.hu
-In-Reply-To: <20090921152853.2f8c0597@infradead.org>
-References: <20090921093652.0722d745@infradead.org>
-	 <alpine.DEB.2.00.0909210926010.7647@gandalf.stny.rr.com>
-	 <20090921152853.2f8c0597@infradead.org>
-Content-Type: text/plain
-Date: Mon, 21 Sep 2009 12:46:07 -0400
-Message-Id: <1253551567.2630.26.camel@frodo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Sep 2009 12:50:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43364 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402AbZIUQuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 12:50:40 -0400
+Date: Mon, 21 Sep 2009 18:50:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Airlie <airlied@linux.ie>
+Cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] drm: Fix build failure in radeon and i915 drivers
+Message-ID: <20090921165039.GA29050@elte.hu>
+References: <alpine.DEB.2.00.0909210610200.26881@skynet.skynet.ie> <20090921161207.GA9741@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090921161207.GA9741@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-21 at 15:28 +0200, Arjan van de Ven wrote:
-> On Mon, 21 Sep 2009 09:26:41 -0400 (EDT)
-> Steven Rostedt <rostedt@goodmis.org> wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> there's a new build failure:
 > 
-> > 
-> > [ Resending due to wrong SMTP server ]
-> > 
-> > 
-> > On Mon, 21 Sep 2009, Arjan van de Ven wrote:
-> > 
-> > > Hi,
-> > > 
-> > > Ingo suggested to make a TRACE_EVENT_ABI, which is equivalent in
-> > > implementation to TRACE_EVENT, except that it signals a stable
-> > > interface.
-> > > 
-> > > In trying to implement this I'm running into a wall where
-> > > TRACE_EVENT keeps being defined in many different ways all over the
-> > > place, making this a really nasty hack to make it just an alias.
-> > > 
-> > > Do you have any clever ideas on how to make this an alias without
-> > > fouling up the whole tracing system?
-> > > 
-> > 
-> > I don't know what you've done so far, but can't you simply in
-> > tracepoint.h define:
-> > 
-> > #define TRACE_EVENT_API(a,b,c,d,e) TRACE_EVENT(a,b,c,d,e)
+> drivers/built-in.o: In function `drm_irq_uninstall':
+> (.text+0xb719e): undefined reference to `vga_client_register'
+> drivers/built-in.o: In function `drm_irq_install':
+> (.text+0xb7309): undefined reference to `vga_client_register'
+> drivers/built-in.o: In function `radeon_device_fini':
+> (.text+0xe400f): undefined reference to `vga_client_register'
+> drivers/built-in.o: In function `radeon_device_init':
+> (.text+0xe455b): undefined reference to `vga_client_register'
 > 
-> unfortunately, due to the preprocessor trickery around TRACE_EVENT this
-> completely barfs.
+> with the attached config, introduced with upstream merge 44040f1.
+> 
+> At first sight it appears to be due to CONFIG_DRM_RADEON relying on 
+> VGA_ARB facilities but this is not expressed in the Kconfig rules. The 
+> patch below solves this - but this is just a quick patch, i have not 
+> investigated any deeper.
+> 
+> Review of the code suggests that i915 has a similar dependency problem 
+> - i fixed that too.
 
-I forgot to tell you about PARAMS.
+i've looked some more and drm_irq.o depends on vga-arb too so the patch 
+below is the more complete fix IMHO.
 
-This patch compiled for me;
+	Ingo
 
-diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-index 63a3f7a..9a983d6 100644
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -280,6 +280,10 @@ static inline void tracepoint_synchronize_unregister(void)
-  * TRACE_EVENT_FN to perform any (un)registration work.
-  */
- 
-+#define TRACE_EVENT_API(name, proto, args, tstruct, assign, print)	\
-+	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
-+		    PARAMS(tstruct), PARAMS(assign), PARAMS(print))
-+
- #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
- 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
- #define TRACE_EVENT_FN(name, proto, args, struct,		\
-diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
-index b48f1ad..0ee1eb6 100644
---- a/include/trace/events/sched.h
-+++ b/include/trace/events/sched.h
-@@ -149,7 +149,7 @@ TRACE_EVENT(sched_wakeup_new,
-  * (NOTE: the 'rq' argument is not used by generic trace events,
-  *        but used by the latency tracer plugin. )
-  */
--TRACE_EVENT(sched_switch,
-+TRACE_EVENT_API(sched_switch,
- 
- 	TP_PROTO(struct rq *rq, struct task_struct *prev,
- 		 struct task_struct *next),
+------------------>
+>From 0186c202fefd70291ef3b29e34543083d24f026d Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 21 Sep 2009 18:12:07 +0200
+Subject: [PATCH] drm: Fix build failure in radeon and i915 drivers
 
+this build failure:
 
+drivers/built-in.o: In function `drm_irq_uninstall':
+(.text+0xb719e): undefined reference to `vga_client_register'
+drivers/built-in.o: In function `drm_irq_install':
+(.text+0xb7309): undefined reference to `vga_client_register'
+drivers/built-in.o: In function `radeon_device_fini':
+(.text+0xe400f): undefined reference to `vga_client_register'
+drivers/built-in.o: In function `radeon_device_init':
+(.text+0xe455b): undefined reference to `vga_client_register'
+
+got introduced with upstream merge 44040f1.
+
+At first sight it appears to be due to CONFIG_DRM_RADEON relying on
+VGA_ARB facilities but this is not expressed in the Kconfig rules.
+
+drm_irq.o relies on it too - so the whole DRM facilities relies
+on VGA_ARB. I've added a select to express this dependency.
+
+VGA_ARB is not a simple option, it depends on PCI, so in theory
+select is not safe - but this is a special case since DRM itself
+depends on PCI too.
+
+Cc: torvalds@linux-foundation.org
+Cc: dri-devel@lists.sf.net
+Cc: Dave Airlie <airlied@linux.ie>
+LKML-Reference: <20090921161207.GA9741@elte.hu>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/gpu/drm/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index e4d971c..6c54422 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -9,6 +9,7 @@ menuconfig DRM
+ 	depends on (AGP || AGP=n) && PCI && !EMULATED_CMPXCHG && MMU
+ 	select I2C
+ 	select I2C_ALGOBIT
++	select VGA_ARB
+ 	help
+ 	  Kernel-level support for the Direct Rendering Infrastructure (DRI)
+ 	  introduced in XFree86 4.0. If you say Y here, you need to select
