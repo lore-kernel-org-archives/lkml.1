@@ -1,92 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbZIUXJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbZIUXPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbZIUXJn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 19:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZIUXJm
+	id S1754426AbZIUXPH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZIUXPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 19:09:42 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47823 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754099AbZIUXJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 19:09:41 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs / Novell
-To: Jamie Lokier <jamie@shareable.org>
-Subject: Re: fanotify as syscalls
-Date: Tue, 22 Sep 2009 01:09:05 +0200
-User-Agent: KMail/1.9.9
-Cc: Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-References: <20090912094110.GB24709@ioremap.net> <200909212327.20978.agruen@suse.de> <20090921220002.GE14700@shareable.org>
-In-Reply-To: <20090921220002.GE14700@shareable.org>
+	Mon, 21 Sep 2009 19:15:06 -0400
+Received: from n3-vm0.bullet.mail.gq1.yahoo.com ([67.195.23.156]:33938 "HELO
+	n3-vm0.bullet.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754210AbZIUXPF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 19:15:05 -0400
+X-Greylist: delayed 314 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 19:15:05 EDT
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 939242.50510.bm@omp108.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=bellsouth.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
+  b=mXTRamDB1pwU9nw7BrvQ0hIB7wcG7rZc+rpI+RDELOYkLWFa0WGQ3YKs/u4Dre5pK59XdzqxpxzUEa1OlfQD5RjZzUynDGK4++aMg42YnQ6hpV8k0inyA+Jg3nnhoYw4JkQPlxsKgzhEabmRaDawJZWZaYBCn+AEk/wPNn+fnNw=;
+Message-ID: <637532.99590.qm@web180302.mail.gq1.yahoo.com>
+X-YMail-OSG: cwN8rWYVM1ntF_77b6232MmdHzQWznk62u0DjCVEpjUrdcPOA.o-
+X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.347.2
+Date: Mon, 21 Sep 2009 16:09:53 -0700 (PDT)
+From: LG Electronics Promo <carloenterprises@bellsouth.net>
+Reply-To: jerry.smith111@hotmail.com
+Subject: LUCKY...WINNER
+To: undisclosed recipients:;
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909220109.05995.agruen@suse.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 22 September 2009 0:00:02 Jamie Lokier wrote:
-> Andreas Gruenbacher wrote:
-> > On Monday, 21 September 2009 22:28:23 Jamie Lokier wrote:
-> > > It would be logical if fanotify could block and ack those [mount &
-> > > umount events] in the same way as it can block and ack other accesses
-> > > (with the usual filtering rules on which inodes trigger events, and
-> > > which don't or are cached).
-> >
-> > Hmm. To me, fanotify is about file contents first of all: this is what
-> > fanotify wants to be able to veto.
->
-> Surely you don't assume that what constitutes malicious content is
-> independent of it's location and/or name?
 
-If the antimalware vendors want to base their decisions on pathnames then 
-that's their decision, and they can check /proc/self/fd/N. We should be able 
-to treat directory events the same.
+950.000.00 Pounds has been awarded to your email ID in this Year LG Promo.send your
 
-> (See also "echo 'run_virus&' >>.bash_login).
->
-> Wait a minute.  You don't assume that, otherwise why the interest in
-> subtrees? :-)
->
-> > Directory events seem reasonable to add for inotify compatibility,
->
-> Did you see may point about userspace caches and how directory events
-> are fundamental to that - there's no way to build a cache without them?
+1.Name................
+2.Address.............
+3.Phone/Fax...........
+4.Present Country.....
 
-Yes, there were some doubts about this appoach. Waiting for your code to 
-demonstrate; an object based cache (e.g., st_dev + st_ino) rather than a 
-pathname based cache would seem more reasonable.
-
-> > but I see no need for access decisions on them.
->
-> Please excuse me; I'm a bit confused.  Is fanotify intended just for
-> use by access decision programs, or is the plan now for it to also be
-> a replacement for inotify?  I'm getting conflicting signals about
-> that.
-
-Inotify doesn't support access decisions. So where's the problem with 
-having "notify only" events for directory / mount / unmount events?
-
-> If it's just for access decision programs, and if those aren't going
-> to care about location, then there's no need to add directory events
-> to fanotify at all.  But then I'll be demanding subtree support in
-> inotify, please :-)
->
-> > Even less so for mounts and unmounts.
->
->    (as root) mkdir foo; mount dodgy foo -oloop; mount --bind foo/cat
-> /bin/cat
-
-... and then someone accesses /bin/cat, which triggers a fanotify access 
-decision.
-
-Thanks,
-Andreas
