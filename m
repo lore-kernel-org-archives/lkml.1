@@ -1,177 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZIUKIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbZIUKTC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbZIUKIN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 06:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZIUKIK
+	id S1755733AbZIUKTC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 06:19:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZIUKTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 06:08:10 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:52308 "EHLO gir.skynet.ie"
+	Mon, 21 Sep 2009 06:19:01 -0400
+Received: from mga03.intel.com ([143.182.124.21]:34498 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755888AbZIUKII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 06:08:08 -0400
-Date: Mon, 21 Sep 2009 11:08:13 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Tso Ted <tytso@mit.edu>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@skynet.ie>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       James Ketrenos <jketreno@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>
-Subject: Re: ipw2200: firmware DMA loading rework
-Message-ID: <20090921100813.GL12726@csn.ul.ie>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <200909191525.33297.bzolnier@gmail.com> <20090921085843.GF12726@csn.ul.ie> <200909211159.27344.bzolnier@gmail.com>
+	id S1753988AbZIUKTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 06:19:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,424,1249282800"; 
+   d="scan'208";a="189814681"
+Date: Mon, 21 Sep 2009 18:18:50 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
+Message-ID: <20090921101850.GA7045@localhost>
+References: <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090919150351.GA19880@localhost> <20090920190006.GD16919@duck.suse.cz> <20090921030402.GC6331@localhost> <20090921053546.GA16932@localhost> <20090921095326.GA32281@localhost> <20090921100242.GA1099@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200909211159.27344.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090921100242.GA1099@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 11:59:27AM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > > > > On Sunday 30 August 2009 14:37:42 Bartlomiej Zolnierkiewicz wrote:
-> > > > > >> On Friday 28 August 2009 05:42:31 Zhu Yi wrote:
-> > > > > >> > Bartlomiej Zolnierkiewicz reported an atomic order-6 allocation failure
-> > > > > >> > for ipw2200 firmware loading in kernel 2.6.30. High order allocation is
-> > > > > >>
-> > > > > >> s/2.6.30/2.6.31-rc6/
-> > > > > >>
-> > > > > >> The issue has always been there but it was some recent change that
-> > > > > >> explicitly triggered the allocation failures (after 2.6.31-rc1).
-> > > > > >
-> > > > > > ipw2200 fix works fine but yesterday I got the following error while mounting
-> > > > > > ext4 filesystem (mb_history is optional so the mount succeeded):
-> > > > > 
-> > > > > OK so the mount succeeded.
-> > > > > 
-> > > > > > EXT4-fs (dm-2): barriers enabled
-> > > > > > kjournald2 starting: pid 3137, dev dm-2:8, commit interval 5 seconds
-> > > > > > EXT4-fs (dm-2): internal journal on dm-2:8
-> > > > > > EXT4-fs (dm-2): delayed allocation enabled
-> > > > > > EXT4-fs: file extents enabled
-> > > > > > mount: page allocation failure. order:5, mode:0xc0d0
-> > > > > > Pid: 3136, comm: mount Not tainted 2.6.31-rc8-00015-gadda766-dirty #78
-> > > > > > Call Trace:
-> > > > > >  [<c0394de3>] ? printk+0xf/0x14
-> > > > > >  [<c016a693>] __alloc_pages_nodemask+0x400/0x442
-> > > > > >  [<c016a71b>] __get_free_pages+0xf/0x32
-> > > > > >  [<c01865cf>] __kmalloc+0x28/0xfa
-> > > > > >  [<c023d96f>] ? __spin_lock_init+0x28/0x4d
-> > > > > >  [<c01f529d>] ext4_mb_init+0x392/0x460
-> > > > > >  [<c01e99d2>] ext4_fill_super+0x1b96/0x2012
-> > > > > >  [<c0239bc8>] ? snprintf+0x15/0x17
-> > > > > >  [<c01c0b26>] ? disk_name+0x24/0x69
-> > > > > >  [<c018ba63>] get_sb_bdev+0xda/0x117
-> > > > > >  [<c01e6711>] ext4_get_sb+0x13/0x15
-> > > > > >  [<c01e7e3c>] ? ext4_fill_super+0x0/0x2012
-> > > > > >  [<c018ad2d>] vfs_kern_mount+0x3b/0x76
-> > > > > >  [<c018adad>] do_kern_mount+0x33/0xbd
-> > > > > >  [<c019d0af>] do_mount+0x660/0x6b8
-> > > > > >  [<c016a71b>] ? __get_free_pages+0xf/0x32
-> > > > > >  [<c019d168>] sys_mount+0x61/0x99
-> > > > > >  [<c0102908>] sysenter_do_call+0x12/0x36
-> > > > > > Mem-Info:
-> > > > > > DMA per-cpu:
-> > > > > > CPU    0: hi:    0, btch:   1 usd:   0
-> > > > > > Normal per-cpu:
-> > > > > > CPU    0: hi:  186, btch:  31 usd:   0
-> > > > > > Active_anon:25471 active_file:22802 inactive_anon:25812
-> > > > > >  inactive_file:33619 unevictable:2 dirty:2452 writeback:135 unstable:0
-> > > > > >  free:4346 slab:4308 mapped:26038 pagetables:912 bounce:0
-> > > > > > DMA free:2060kB min:84kB low:104kB high:124kB active_anon:1660kB inactive_anon:1848kB active_file:144kB inactive_file:868kB unevictable:0kB present:15788kB pages_scanned:0 all_unreclaimable? no
-> > > > > > lowmem_reserve[]: 0 489 489
-> > > > > > Normal free:15324kB min:2788kB low:3484kB high:4180kB active_anon:100224kB inactive_anon:101400kB active_file:91064kB inactive_file:133608kB unevictable:8kB present:501392kB pages_scanned:0 all_unreclaimable? no
-> > > > > > lowmem_reserve[]: 0 0 0
-> > > > > > DMA: 1*4kB 1*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB = 2060kB
-> > > > > > Normal: 1283*4kB 648*8kB 159*16kB 53*32kB 10*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 15324kB
-> > > > > > 57947 total pagecache pages
-> > > > > > 878 pages in swap cache
-> > > > > > Swap cache stats: add 920, delete 42, find 11/11
-> > > > > > Free swap  = 1016436kB
-> > > > > > Total swap = 1020116kB
-> > > > > > 131056 pages RAM
-> > > > > > 4233 pages reserved
-> > > > > > 90573 pages shared
-> > > > > > 77286 pages non-shared
-> > > > > > EXT4-fs: mballoc enabled
-> > > > > > EXT4-fs (dm-2): mounted filesystem with ordered data mode
-> > > > > >
-> > > > > > Thus it seems like the original bug is still there and any ideas how to
-> > > > > > debug the problem further are appreciated..
-> > > > > >
-> > > > > > The complete dmesg and kernel config are here:
-> > > > > >
-> > > > > > http://www.kernel.org/pub/linux/kernel/people/bart/ext4-paf.dmesg
-> > > > > > http://www.kernel.org/pub/linux/kernel/people/bart/ext4-paf.config
-> > > > > 
-> > > > > This looks very similar to the kmemleak ext4 reports upon a mount. If
-> > > > > it is the same issue, which from the trace it seems it is, then this
-> > > > > is due to an extra kmalloc() allocation and this apparently will not
-> > > > > get fixed on 2.6.31 due to the closeness of the merge window and the
-> > > > > non-criticalness this issue has been deemed.
-> > > > > 
-> > > > > A patch fix is part of the ext4-patchqueue
-> > > > > http://repo.or.cz/w/ext4-patch-queue.git
+On Mon, Sep 21, 2009 at 06:02:42PM +0800, Jan Kara wrote:
+> On Mon 21-09-09 17:53:26, Wu Fengguang wrote:
+> > On Mon, Sep 21, 2009 at 01:35:46PM +0800, Wu Fengguang wrote:
+> > > > >   Here is how I'd imaging the writeout logic should work:
+> > > > > We would have just two lists - b_dirty and b_more_io. Both would be
+> > > > > ordered by dirtied_when.
 > > > > 
-> > > > Thanks for the pointer but the page allocation failures that I hit seem
-> > > > to be caused by the memory management itself and the ext4 issue fixed by:
+> > > > Andrew has a very good description for the dirty/io/more_io queues:
 > > > > 
-> > > > http://repo.or.cz/w/ext4-patch-queue.git?a=blob;f=memory-leak-fix-ext4_group_info-allocation;h=c919fff34e70ec85f96d1833f9ce460c451000de;hb=HEAD
+> > > > http://lkml.org/lkml/2006/2/7/5
 > > > > 
-> > > > is a different problem (unrelated to this one).
+> > > > | So the protocol would be:
+> > > > |
+> > > > | s_io: contains expired and non-expired dirty inodes, with expired ones at
+> > > > | the head.  Unexpired ones (at least) are in time order.
+> > > > |
+> > > > | s_more_io: contains dirty expired inodes which haven't been fully written. 
+> > > > | Ordering doesn't matter (unless someone goes and changes
+> > > > | dirty_expire_centisecs - but as long as we don't do anything really bad in
+> > > > | response to this we'll be OK).
+> > > > |
+> > > > | s_dirty: contains expired and non-expired dirty inodes.  The non-expired
+> > > > | ones are in time-of-dirtying order.
+> > > > 
+> > > > Since then s_io was changed to hold only _expired_ dirty inodes at the
+> > > > beginning of a full scan. It serves as a bounded set of dirty inodes.
+> > > > So that when finished a full scan of it, the writeback can go on to
+> > > > the next superblock, and old dirty files' writeback won't be delayed
+> > > > infinitely by poring in newly dirty files.
+> > > > 
+> > > > It seems that the boundary could also be provided by some
+> > > > older_than_this timestamp. So removal of b_io is possible
+> > > > at least on this purpose.
 > > > 
-> > > Here is another data point.
-> > > 
-> > > This time it is an order-6 page allocation failure for rt2870sta
-> > > (w/ upcoming driver changes) and Linus' tree from few days ago..
-> > > 
+> > > Yeah, this is a scratch patch to remove b_io, I see no obvious
+> > > difficulties in doing so.
 > > 
-> > It's another high-order atomic allocation which is difficult to grant.
-> > I didn't look closely, but is this the same type of thing - large allocation
-> > failure during firmware loading? If so, is this during resume or is the
-> > device being reloaded for some other reason?
-> 
-> Just modprobing the driver on a system running for some time.
-> 
+> > However the removal of b_io is not that good for possible b_dirty
+> > optimizations. For example, we could use a tree for b_dirty for more
+> > flexible ordering. Or can introduce a b_dirty_atime to hold the inodes
+> > dirtied by atime and expire them much lazily:
+> > 
+> >                        expire > 30m
+> >         b_dirty_atime --------------+
+> >                                     |
+> >                                     +--- b_io ---> writeback
+> >                                     |
+> >         b_dirty --------------------+
+> >                        expire > 30s
+>   Well, you can still implement the above without a need for b_io list. The
+> kupdate-style writeback can for example check the first inode in both lists
+> and process the inode which is expired for a longer time.
 
-Was this a common situation before?
+OK. Given that rel_atime is default now, such optimization seems less
+useful anyway.
 
-> > I suspect that there are going to be a few of these bugs cropping up
-> > every so often where network devices are assuming large atomic
-> > allocations will succeed because the "only time they happen" is during
-> > boot but these days are happening at runtime for other reasons.
-> 
-> I wouldn't go so far as calling a normal order-6 (256kB) allocation on
-> 512MB machine with 1024MB swap a bug.  Moreover such failures just never
-> happened before 2.6.31-rc1.
-
-It's not that normal, it's an allocation that cannot sleep and cannot
-reclaim. Why is something like firmware loading allocating memory like
-that? Is this use of GFP_ATOMIC relatively recent or has it always been
-that way?
-
-> I don't know why people don't see it but for me it has a memory management
-> regression and reliability issue written all over it.
-> 
-
-Possibly but drivers that reload their firmware as a response to an
-error condition is relatively new and loading network drivers while the
-system is already up and running a long time does not strike me as
-typical system behaviour.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks,
+Fengguang
