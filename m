@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZIUNWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZIUN0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbZIUNWn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbZIUNWk
+	id S1756129AbZIUN0k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZIUN0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:22:40 -0400
-Received: from nschwmtas01p.mx.bigpond.com ([61.9.189.137]:62021 "EHLO
-	nschwmtas01p.mx.bigpond.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755977AbZIUNWk (ORCPT
+	Mon, 21 Sep 2009 09:26:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:43866 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755998AbZIUN0j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:22:40 -0400
-Message-ID: <4AB77E21.6020805@bigpond.net.au>
-Date: Mon, 21 Sep 2009 23:22:41 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 21 Sep 2009 09:26:39 -0400
+Date: Mon, 21 Sep 2009 09:26:41 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       mingo@elte.hu
+Subject: Re: TRACE_EVENT_ABI ?
+In-Reply-To: <20090921093652.0722d745@infradead.org>
+Message-ID: <alpine.DEB.2.00.0909210926010.7647@gandalf.stny.rr.com>
+References: <20090921093652.0722d745@infradead.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: sched: Am I missing something?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at nschwotgx02p.mx.bigpond.com from [124.185.86.236] using ID pwil3058@bigpond.net.au at Mon, 21 Sep 2009 13:22:41 +0000
-X-RPD-ScanID: Class unknown; VirusThreatLevel unknown, RefID str=0001.0A150201.4AB77E22.004A,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Or is the line:
 
-	p->prio = effective_prio(p);
+[ Resending due to wrong SMTP server ]
 
-in wake_up_new_task() an expensive no op.
 
-As far as I can tell from reading the code, it will always be the case 
-that EITHER rt_prio(p->prio) is true OR p->prio == p->normal_prio when 
-this call is made and, in either case, the value of p->prio will be 
-unchanged.  In addition, when this call is made p->normal_prio is 
-already equal to to normal_prio(p), so the side effects of the function 
-(setting p->normal_prio) are also unnecessary.
+On Mon, 21 Sep 2009, Arjan van de Ven wrote:
 
-Am I correct or have I missed something?
+> Hi,
+> 
+> Ingo suggested to make a TRACE_EVENT_ABI, which is equivalent in
+> implementation to TRACE_EVENT, except that it signals a stable
+> interface.
+> 
+> In trying to implement this I'm running into a wall where TRACE_EVENT
+> keeps being defined in many different ways all over the place, making
+> this a really nasty hack to make it just an alias.
+> 
+> Do you have any clever ideas on how to make this an alias without
+> fouling up the whole tracing system?
+> 
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+I don't know what you've done so far, but can't you simply in
+tracepoint.h define:
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+#define TRACE_EVENT_API(a,b,c,d,e) TRACE_EVENT(a,b,c,d,e)
+
+And every time TRACE_EVENT_API is used, it will simply do whatever
+TRACE_EVENT is at that time?
+
+I've done similar tricks with other code.
+
+-- Steve
+
+
+
