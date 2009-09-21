@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZIUJDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbZIUJEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755653AbZIUJDq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 05:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbZIUJDp
+	id S1755594AbZIUJEm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 05:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZIUJEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 05:03:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54569 "EHLO mx3.mail.elte.hu"
+	Mon, 21 Sep 2009 05:04:40 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57916 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755559AbZIUJDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 05:03:44 -0400
-Date: Mon, 21 Sep 2009 11:03:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] events process running on wrong cpu
-Message-ID: <20090921090324.GA7701@elte.hu>
-References: <20090921085155.GB4649@osiris.boeblingen.de.ibm.com> <1253523777.8439.155.camel@twins>
+	id S1755411AbZIUJEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 05:04:40 -0400
+Date: Mon, 21 Sep 2009 10:04:46 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Alexey Korolev <akorolex@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Munson <linux-mm@mgebm.net>,
+       Alexey Korolev <akorolev@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: HugeTLB: Driver example
+Message-ID: <20090921090445.GG12726@csn.ul.ie>
+References: <202cde0e0909132230y52b805a4i8792f2e287b01acb@mail.gmail.com> <20090914165435.GA21554@infradead.org> <202cde0e0909162342xb2a8daeia90b33a172fc714b@mail.gmail.com> <20090917091408.GB13002@csn.ul.ie> <202cde0e0909202216i36e3eca3rc56ddde345b12bf9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1253523777.8439.155.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0411]
+In-Reply-To: <202cde0e0909202216i36e3eca3rc56ddde345b12bf9@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Mon, 2009-09-21 at 10:51 +0200, Heiko Carstens wrote:
-> > Hi,
-> > 
-> > with todays git from time to time I get this (s390 defconfig):
+On Mon, Sep 21, 2009 at 05:16:26PM +1200, Alexey Korolev wrote:
+> Mel,
 > 
-> Yep, I messed up..
+> > I think Christoph's point is that there should be an in-kernel user of the
+> > altered interface to hugetlbfs before the patches are merged. This example
+> > driver could move to samples/ and then add another patch converting some
+> > existing driver to use the new interface. Looking at the example driver,
+> > I'm hoping that converting an existing driver of interest would not be a
+> > massive undertaking.
 > 
-> Does your kernel contain the below?
+> Converting an existing driver may be a very difficult task as this
+> assumes involving in development process of the particular driver i.e.
+> having enough details about h/w and drivers and  having ability to
+> test the results.
 
-FYI, that fix will go Linuswards later today.
+I had assumed that you had a driver in mind as you discussed test data.
+I assumed you had a prototype conversion of some driver and with
+performance gains like that, they would be willing to get it in a
+mergeable state.
 
-	Ingo
+> Also it is necessary to motivate maintainers to
+> accept this conversion. So I likely would not to be able change the
+> third party drivers for these reasons, but I'm open to help other
+> people to migrate if they want.
+> I heard that other people were asking you about driver interfaces for
+> huge pages, if this was about in-tree drivers then we could help each
+> other. Could you put me in touch with other developers you know of who
+> are interested in using htlb in drivers?
+
+I can't. The request was from 9-10 months ago for drivers about about 18
+months ago for Xen when they were looking at this area. The authors are no
+longer working in that area AFAIK as once it was discussed what would need
+to be done to use huge pages, they balked. It's far easier now as most of
+the difficulties have been addressed but the interested parties are not
+likely to be looking at this area for some time.
+
+The most recent expression of interest was from KVM developers within the
+company. On discussion, using huge pages was something they were going to
+push out as there are other concerns that should be addressed first. I'd
+say it'd be at least a year before they looked at huge pages for KVM.
+
+> It makes sense to get this
+> feature merged as it provides a quite efficient way for performance
+> increase. According to our test data, applying these little changes
+> gives about 7-10% gain.
+> 
+
+What is this test data based on?
+
+> > I tend to agree with him.
+> >
+> > As I'm having trouble envisioning what a real driver would look like,
+> > converting an in-kernel driver ensures that the interface was sane instead
+> > of exporting symbols that turn out to be unusable later. It'll also force
+> > any objectors out of the closet sooner rather than later.
+> >
+> > As it stands, I have no problems with the patches as such other than they
+> > need a bit more spit and polish. The basic principal seems ok.
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
