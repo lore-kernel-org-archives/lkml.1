@@ -1,132 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbZIULCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZIUIFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753741AbZIULCw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 07:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbZIULCu
+	id S1754880AbZIUIFj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 04:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZIUIFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 07:02:50 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:35598 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751997AbZIULCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 07:02:48 -0400
-Date: Mon, 21 Sep 2009 12:02:53 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Tso Ted <tytso@mit.edu>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@skynet.ie>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       James Ketrenos <jketreno@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>
-Subject: Re: ipw2200: firmware DMA loading rework
-Message-ID: <20090921110253.GM12726@csn.ul.ie>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <200909211159.27344.bzolnier@gmail.com> <20090921100813.GL12726@csn.ul.ie> <200909211246.34774.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200909211246.34774.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 21 Sep 2009 04:05:38 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:10776 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbZIUIFh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 04:05:37 -0400
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: linux-arm-kernel@lists.infradead.org,
+       Russell King <linux@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
+       Koskinen Aaro <aaro.koskinen@nokia.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>
+Subject: [PATCH v3 1/2] ARM: Pass IFSR register to do_PrefetchAbort()
+Date: Mon, 21 Sep 2009 14:05:23 +0300
+Message-Id: <2f6c0105e623b9134adbb2e849e8074722903fb9.1253530731.git.kirill@shutemov.name>
+X-Mailer: git-send-email 1.6.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 12:46:34PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > > > <SNIP>
-> > > > >
-> > > > > This time it is an order-6 page allocation failure for rt2870sta
-> > > > > (w/ upcoming driver changes) and Linus' tree from few days ago..
-> > > > > 
-> > > > 
-> > > > It's another high-order atomic allocation which is difficult to grant.
-> > > > I didn't look closely, but is this the same type of thing - large allocation
-> > > > failure during firmware loading? If so, is this during resume or is the
-> > > > device being reloaded for some other reason?
-> > > 
-> > > Just modprobing the driver on a system running for some time.
-> > > 
-> > 
-> > Was this a common situation before?
-> 
-> Yes, just like firmware restarts with ipw2200.
-> 
-> > > > I suspect that there are going to be a few of these bugs cropping up
-> > > > every so often where network devices are assuming large atomic
-> > > > allocations will succeed because the "only time they happen" is during
-> > > > boot but these days are happening at runtime for other reasons.
-> > > 
-> > > I wouldn't go so far as calling a normal order-6 (256kB) allocation on
-> > > 512MB machine with 1024MB swap a bug.  Moreover such failures just never
-> > > happened before 2.6.31-rc1.
-> > 
-> > It's not that normal, it's an allocation that cannot sleep and cannot
-> > reclaim. Why is something like firmware loading allocating memory like
-> 
-> OK.
-> 
-> > that? Is this use of GFP_ATOMIC relatively recent or has it always been
-> > that way?
-> 
-> It has always been like that.
-> 
+It needed for proper prefetch abort handling on ARMv7.
 
-Nuts, why is firmware loading depending on GFP_ATOMIC?
+Instruction fault status register (IFSR) was introduced on ARMv7.
+For older CPU we simulate IFSR with translation fault status. It
+allows to generalize code.
 
-> > > I don't know why people don't see it but for me it has a memory management
-> > > regression and reliability issue written all over it.
-> > > 
-> > 
-> > Possibly but drivers that reload their firmware as a response to an
-> > error condition is relatively new and loading network drivers while the
-> > system is already up and running a long time does not strike me as
-> > typical system behaviour.
-> 
-> Loading drivers after boot is a typical desktop/laptop behavior, please
-> think about hotplug (the hardware in question is an USB dongle).
-> 
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+---
+ arch/arm/include/asm/glue.h    |   10 ++++++++--
+ arch/arm/kernel/entry-armv.S   |   14 ++++----------
+ arch/arm/kernel/entry-common.S |    8 ++++++--
+ arch/arm/mm/fault.c            |    2 +-
+ 4 files changed, 19 insertions(+), 15 deletions(-)
 
-In that case, how reproducible is this problem so it can be
-bisected? Basically, there are no guarantees that GFP_ATOMIC allocations
-of this order will succeed although you can improve the odds by increasing
-min_free_kbytes. Network drivers should never have been depending on GFP_ATOMIC
-succeeding like this but the hole has been dug now.
-
-If it's happening more frequently now than it used to then either
-
-1. The allocations are occuring more frequently where as previously a
-   pool might have been reused or the memory not freed for the lifetime of
-   the system.
-
-2. Something has changed in the allocator. I'm not aware of recent
-   changes that could cause this though in such a recent time-frame.
-
-3. Something has changed recently with respect to reclaim. There have
-   been changes made recently to lumpy reclaim and that might be impacting
-   kswapd's efforts at keeping large contiguous regions free.
-
-4. Hotplug events that involve driver loads are more common now than they
-   were previously for some reason. You mention that this is a USB dongle for
-   example. Was it a case before that the driver loaded early and remained
-   resident but only active after a hotplug event? If that was the case,
-   the memory would be allocated once at boot. However, if an optimisation
-   made recently unloads those unused drivers and re-loads them later, there
-   would be more order-6 allocations than they were previously and manifest
-   as these bug reports. Is this a possibility?
-
-The ideal would be that network drivers not make allocations like this
-in the first place by, for example, DMAing the firmware across in
-page-size chunks instead of one contiguous lump :/
-
+diff --git a/arch/arm/include/asm/glue.h b/arch/arm/include/asm/glue.h
+index a0e39d5..5bfaf6f 100644
+--- a/arch/arm/include/asm/glue.h
++++ b/arch/arm/include/asm/glue.h
+@@ -130,7 +130,10 @@
+ # ifdef CPU_PABORT_HANDLER
+ #  define MULTI_PABORT 1
+ # else
+-#  define CPU_PABORT_HANDLER(reg, insn)	mrc p15, 0, reg, cr6, cr0, 2
++#  define CPU_PABORT_HANDLER(addr, ifsr, insn) \
++	mrc	p15, 0, addr, c6, c0, 2 ; \
++	mrc	p15, 0, ifsr, c5, c0, 1
++
+ # endif
+ #endif
+ 
+@@ -138,7 +141,10 @@
+ # ifdef CPU_PABORT_HANDLER
+ #  define MULTI_PABORT 1
+ # else
+-#  define CPU_PABORT_HANDLER(reg, insn)	mov reg, insn
++#define __hash_5 #5
++#  define CPU_PABORT_HANDLER(addr, ifsr, insn) \
++	mov	addr, insn ; \
++	mov	ifsr, __hash_5
+ # endif
+ #endif
+ 
+diff --git a/arch/arm/kernel/entry-armv.S b/arch/arm/kernel/entry-armv.S
+index 3d727a8..335ae58 100644
+--- a/arch/arm/kernel/entry-armv.S
++++ b/arch/arm/kernel/entry-armv.S
+@@ -303,22 +303,16 @@ __pabt_svc:
+ 	tst	r3, #PSR_I_BIT
+ 	biceq	r9, r9, #PSR_I_BIT
+ 
+-	@
+-	@ set args, then call main handler
+-	@
+-	@  r0 - address of faulting instruction
+-	@  r1 - pointer to registers on stack
+-	@
+ #ifdef MULTI_PABORT
+ 	mov	r0, r2			@ pass address of aborted instruction.
+ 	ldr	r4, .LCprocfns
+ 	mov	lr, pc
+ 	ldr	pc, [r4, #PROCESSOR_PABT_FUNC]
+ #else
+-	CPU_PABORT_HANDLER(r0, r2)
++	CPU_PABORT_HANDLER(r0, r1, r2)
+ #endif
+ 	msr	cpsr_c, r9			@ Maybe enable interrupts
+-	mov	r1, sp				@ regs
++	mov	r2, sp				@ regs
+ 	bl	do_PrefetchAbort		@ call abort handler
+ 
+ 	@
+@@ -697,10 +691,10 @@ __pabt_usr:
+ 	mov	lr, pc
+ 	ldr	pc, [r4, #PROCESSOR_PABT_FUNC]
+ #else
+-	CPU_PABORT_HANDLER(r0, r2)
++	CPU_PABORT_HANDLER(r0, r1, r2)
+ #endif
+ 	enable_irq				@ Enable interrupts
+-	mov	r1, sp				@ regs
++	mov	r2, sp				@ regs
+ 	bl	do_PrefetchAbort		@ call abort handler
+  UNWIND(.fnend		)
+ 	/* fall through */
+diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
+index 807cfeb..931ab9a 100644
+--- a/arch/arm/kernel/entry-common.S
++++ b/arch/arm/kernel/entry-common.S
+@@ -426,10 +426,14 @@ sys_mmap2:
+ ENDPROC(sys_mmap2)
+ 
+ ENTRY(pabort_ifar)
+-		mrc	p15, 0, r0, cr6, cr0, 2
+-ENTRY(pabort_noifar)
++		mrc	p15, 0, r0, c6, c0, 2		@ get IFAR
++		mrc	p15, 0, r1, c5, c0, 1		@ get IFSR
+ 		mov	pc, lr
+ ENDPROC(pabort_ifar)
++ENTRY(pabort_noifar)
++		/* simulate IFSR with section translation fault status */
++		mov	r1, #5
++		mov	pc, lr
+ ENDPROC(pabort_noifar)
+ 
+ #ifdef CONFIG_OABI_COMPAT
+diff --git a/arch/arm/mm/fault.c b/arch/arm/mm/fault.c
+index cc8829d..5e27462 100644
+--- a/arch/arm/mm/fault.c
++++ b/arch/arm/mm/fault.c
+@@ -506,7 +506,7 @@ do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
+ }
+ 
+ asmlinkage void __exception
+-do_PrefetchAbort(unsigned long addr, struct pt_regs *regs)
++do_PrefetchAbort(unsigned long addr, int ifsr, struct pt_regs *regs)
+ {
+ 	do_translation_fault(addr, 0, regs);
+ }
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.4.4
+
