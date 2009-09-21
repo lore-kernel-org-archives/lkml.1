@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751697AbZIUQmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751861AbZIUQpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751697AbZIUQmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZIUQmt
+	id S1751861AbZIUQpK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZIUQpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:42:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34613 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbZIUQms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:42:48 -0400
-Date: Mon, 21 Sep 2009 18:42:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jack@suse.cz,
-       fengguang.wu@intel.com
-Subject: Re: [GIT PULL] a few writeback fixes
-Message-ID: <20090921164236.GA4398@elte.hu>
-References: <20090921125620.GV23126@kernel.dk>
+	Mon, 21 Sep 2009 12:45:10 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:33739
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751369AbZIUQpI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 12:45:08 -0400
+X-SpamScore: -21
+X-BigFish: VPS-21(zz1432R98dN9371Pzz1202hzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KQBYIX-01-0QR-02
+X-M-MSG: 
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "'Rusty Russell'" <rusty@rustcorp.com.au>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>,
+       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Date: Mon, 21 Sep 2009 11:44:59 -0500
+Subject: RE: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
+Thread-Topic: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
+Thread-Index: AcnqPTsiJSrbeUZPTcanUENrgd2sixQnMCaA
+Message-ID: <DDE95BDD51FB774B804A9C029E735EE10379BEDA33@sausexmbp02.amd.com>
+References: <4A2835D8.6040903@kernel.org>
+ <200906101552.17397.rusty@rustcorp.com.au>
+ <6453C3CB8E2B3646B0D020C1126132730362099D@sausexmb4.amd.com>
+ <200906111204.48441.rusty@rustcorp.com.au>
+In-Reply-To: <200906111204.48441.rusty@rustcorp.com.au>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090921125620.GV23126@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> Hi Linus,
+> On Thu, 11 Jun 2009 05:12:16 am Langsdorf, Mark wrote:
+> > > powernow_k8_target is problematic: it grabs a mutex.  cpufreq
+> > > people, is this called often?
+> >
+> > Yes.  It's the function that makes a frequency change
+> > happen, so 5+ times per second per core isn't
+> > unreasonable.
 > 
-> This fixes a problem with NFS killing its bdi without being 
-> initialized, and also contains a fix for a busy loop (where we forgot 
-> to set the task state before sleeping). Since these are a bit critical 
-> for -rc1, I'm pushing them out before leaving for Portland.
-> 
-> Jan, since we're not really sure on the inode wait yet, I dropped that 
-> patch. It's definitely something to look into, as are the congestion 
-> bits.
-> 
-> I plan on adding some writeback tracing code while on the plane for 
-> further analysis when I get back.
-> 
->   git://git.kernel.dk/linux-2.6-block.git writeback
-> 
-> Jens Axboe (4):
->       nfs: nfs_kill_super() should call bdi_unregister() after killing super
->       writeback: don't use schedule_timeout() without setting runstate
->       writeback: make balance_dirty_pages() gradually back more off
->       nfs: initialize the backing_dev_info when creating the server
-> 
->  fs/nfs/client.c     |   10 ++++++----
->  fs/nfs/super.c      |    2 +-
->  mm/page-writeback.c |   11 ++++++++++-
->  3 files changed, 17 insertions(+), 6 deletions(-)
+> Right, so we need to revisit this.  I'll leave it for the 
+> moment and put it on my TODO list.
 
-just an update about the BDI slab corruption bugs i reported in this 
-thread on lkml:
+Rusty -
 
-   [origin tree SLAB corruption] BUG kmalloc-64: Poison overwritten,
-        INFO: Allocated in bdi_alloc_work+0x2b/0x100 age=175 cpu=1 pid=3514
+Did you ever get any ideas on a solution to this?  I'm
+getting reports that the set_cpus_allowed_ptr() in
+powernow_k8_target() is breaking with changeset
+ebc79c4f8da0f92efa968e0328f32334a2ce80cf .  I haven't
+changed the powernow_k8 code, so I suspect something
+happened to set_cpus_allowed_ptr().
 
-They have gone away entirely with your earlier BDI fixes/updates, on all 
--tip testsystems that triggered it. So that bug can be closed for good.
-
-Thanks,
-
-	Ingo
+-Mark Langsdorf
+Operating System Research Center
+AMD
