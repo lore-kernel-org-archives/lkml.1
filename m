@@ -1,201 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbZIUXr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbZIUXsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbZIUXr2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 19:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZIUXr1
+	id S1754557AbZIUXsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbZIUXsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 19:47:27 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39786 "EHLO gate.crashing.org"
+	Mon, 21 Sep 2009 19:48:17 -0400
+Received: from ozlabs.org ([203.10.76.45]:57678 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754479AbZIUXr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 19:47:27 -0400
-Subject: Re: [PATCH v4 4/4] Use macros for .data.page_aligned section.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <1253484855-8067-5-git-send-email-tabbott@ksplice.com>
-References: <1253484855-8067-1-git-send-email-tabbott@ksplice.com>
-	 <1253484855-8067-5-git-send-email-tabbott@ksplice.com>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 09:46:48 +1000
-Message-Id: <1253576808.7103.167.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1754361AbZIUXsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 19:48:16 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
+Date: Tue, 22 Sep 2009 09:48:08 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] perf_event, powerpc: Fix compilation after big perf_counter rename
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-20 at 18:14 -0400, Tim Abbott wrote:
-> This patch changes the remaining direct references to
-> .data.page_aligned in C and assembly code to use the macros in
-> include/linux/linkage.h.
-> 
-> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+This fixes two places in the powerpc perf_event (perf_counter) code
+where 'list_entry' needs to be changed to 'group_entry', but were
+missed in commit 65abc865 ("perf_counter: Rename list_entry ->
+group_entry, counter_list -> group_list").
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+This also changes 'event' back to 'counter' in a couple of contexts:
 
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  arch/avr32/mm/init.c                        |    4 +---
->  arch/powerpc/kernel/vdso.c                  |    3 ++-
->  arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
->  arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
->  arch/s390/kernel/vdso.c                     |    2 +-
->  arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 ++-
->  arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 ++-
->  arch/x86/include/asm/cache.h                |    4 +++-
->  arch/x86/kernel/head_32.S                   |    2 +-
->  9 files changed, 16 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-> index e819fa6..cc60d10 100644
-> --- a/arch/avr32/mm/init.c
-> +++ b/arch/avr32/mm/init.c
-> @@ -24,11 +24,9 @@
->  #include <asm/setup.h>
->  #include <asm/sections.h>
->  
-> -#define __page_aligned	__attribute__((section(".data.page_aligned")))
-> -
->  DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
->  
-> -pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned;
-> +pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned_data;
->  
->  struct page *empty_zero_page;
->  EXPORT_SYMBOL(empty_zero_page);
-> diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-> index a0abce2..3faaf29 100644
-> --- a/arch/powerpc/kernel/vdso.c
-> +++ b/arch/powerpc/kernel/vdso.c
-> @@ -1,3 +1,4 @@
-> +
->  /*
->   *    Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
->   *			 <benh@kernel.crashing.org>
-> @@ -74,7 +75,7 @@ static int vdso_ready;
->  static union {
->  	struct vdso_data	data;
->  	u8			page[PAGE_SIZE];
-> -} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-> +} vdso_data_store __page_aligned_data;
->  struct vdso_data *vdso_data = &vdso_data_store.data;
->  
->  /* Format of the patch table */
-> diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-> index 556f0ca..6e8f507 100644
-> --- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-> +++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-> @@ -1,7 +1,8 @@
->  #include <linux/init.h>
-> +#include <linux/linkage.h>
->  #include <asm/page.h>
->  
-> -	.section ".data.page_aligned"
-> +	__PAGE_ALIGNED_DATA
->  
->  	.globl vdso32_start, vdso32_end
->  	.balign PAGE_SIZE
-> diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-> index 0529cb9..b8553d6 100644
-> --- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-> +++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-> @@ -1,7 +1,8 @@
->  #include <linux/init.h>
-> +#include <linux/linkage.h>
->  #include <asm/page.h>
->  
-> -	.section ".data.page_aligned"
-> +	__PAGE_ALIGNED_DATA
->  
->  	.globl vdso64_start, vdso64_end
->  	.balign PAGE_SIZE
-> diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
-> index 45e1708..45a3e9a 100644
-> --- a/arch/s390/kernel/vdso.c
-> +++ b/arch/s390/kernel/vdso.c
-> @@ -75,7 +75,7 @@ __setup("vdso=", vdso_setup);
->  static union {
->  	struct vdso_data	data;
->  	u8			page[PAGE_SIZE];
-> -} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-> +} vdso_data_store __page_aligned_data;
->  struct vdso_data *vdso_data = &vdso_data_store.data;
->  
->  /*
-> diff --git a/arch/s390/kernel/vdso32/vdso32_wrapper.S b/arch/s390/kernel/vdso32/vdso32_wrapper.S
-> index 61639a8..ae42f8c 100644
-> --- a/arch/s390/kernel/vdso32/vdso32_wrapper.S
-> +++ b/arch/s390/kernel/vdso32/vdso32_wrapper.S
-> @@ -1,7 +1,8 @@
->  #include <linux/init.h>
-> +#include <linux/linkage.h>
->  #include <asm/page.h>
->  
-> -	.section ".data.page_aligned"
-> +	__PAGE_ALIGNED_DATA
->  
->  	.globl vdso32_start, vdso32_end
->  	.balign PAGE_SIZE
-> diff --git a/arch/s390/kernel/vdso64/vdso64_wrapper.S b/arch/s390/kernel/vdso64/vdso64_wrapper.S
-> index d8e2ac1..c245842 100644
-> --- a/arch/s390/kernel/vdso64/vdso64_wrapper.S
-> +++ b/arch/s390/kernel/vdso64/vdso64_wrapper.S
-> @@ -1,7 +1,8 @@
->  #include <linux/init.h>
-> +#include <linux/linkage.h>
->  #include <asm/page.h>
->  
-> -	.section ".data.page_aligned"
-> +	__PAGE_ALIGNED_DATA
->  
->  	.globl vdso64_start, vdso64_end
->  	.balign PAGE_SIZE
-> diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
-> index 5d367ca..549860d 100644
-> --- a/arch/x86/include/asm/cache.h
-> +++ b/arch/x86/include/asm/cache.h
-> @@ -1,6 +1,8 @@
->  #ifndef _ASM_X86_CACHE_H
->  #define _ASM_X86_CACHE_H
->  
-> +#include <linux/linkage.h>
-> +
->  /* L1 cache line size */
->  #define L1_CACHE_SHIFT	(CONFIG_X86_L1_CACHE_SHIFT)
->  #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
-> @@ -13,7 +15,7 @@
->  #ifdef CONFIG_SMP
->  #define __cacheline_aligned_in_smp					\
->  	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))	\
-> -	__attribute__((__section__(".data.page_aligned")))
-> +	__page_aligned_data
->  #endif
->  #endif
->  
-> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-> index 1dac239..218aad7 100644
-> --- a/arch/x86/kernel/head_32.S
-> +++ b/arch/x86/kernel/head_32.S
-> @@ -626,7 +626,7 @@ ENTRY(empty_zero_page)
->   * This starts the data section.
->   */
->  #ifdef CONFIG_X86_PAE
-> -.section ".data.page_aligned","wa"
-> +__PAGE_ALIGNED_DATA
->  	/* Page-aligned for the benefit of paravirt? */
->  	.align PAGE_SIZE_asm
->  ENTRY(swapper_pg_dir)
+* Field and function names that deal with the limited-function
+  counters: it's really the hardware counters whose function is
+  limited, not the events that they count.  Hence:
 
+  MAX_LIMITED_HWEVENTS -> MAX_LIMITED_HWCOUNTERS
+  limited_event -> limited_counter
+  freeze/thaw_limited_events -> freeze/thaw_limited_counters
+
+* The machine-specific PMU description struct (struct power_pmu): this
+  renames 'n_event' back to 'n_counter' since it really describes how
+  many hardware counters the machine has.  (Renaming this back avoids
+  a compile error in each of the machine-specific PMU back-ends where
+  they initialize their power_pmu struct.)
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/include/asm/perf_event.h |    4 +--
+ arch/powerpc/kernel/perf_event.c      |   38 +++++++++++++++++-----------------
+ 2 files changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/perf_event.h b/arch/powerpc/include/asm/perf_event.h
+index 2499aaa..3288ce3 100644
+--- a/arch/powerpc/include/asm/perf_event.h
++++ b/arch/powerpc/include/asm/perf_event.h
+@@ -14,7 +14,7 @@
+ 
+ #define MAX_HWEVENTS		8
+ #define MAX_EVENT_ALTERNATIVES	8
+-#define MAX_LIMITED_HWEVENTS	2
++#define MAX_LIMITED_HWCOUNTERS	2
+ 
+ /*
+  * This struct provides the constants and functions needed to
+@@ -22,7 +22,7 @@
+  */
+ struct power_pmu {
+ 	const char	*name;
+-	int		n_event;
++	int		n_counter;
+ 	int		max_alternatives;
+ 	unsigned long	add_fields;
+ 	unsigned long	test_adder;
+diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
+index 197b7d9..bbcbae1 100644
+--- a/arch/powerpc/kernel/perf_event.c
++++ b/arch/powerpc/kernel/perf_event.c
+@@ -30,8 +30,8 @@ struct cpu_hw_events {
+ 	u64 events[MAX_HWEVENTS];
+ 	unsigned int flags[MAX_HWEVENTS];
+ 	unsigned long mmcr[3];
+-	struct perf_event *limited_event[MAX_LIMITED_HWEVENTS];
+-	u8  limited_hwidx[MAX_LIMITED_HWEVENTS];
++	struct perf_event *limited_counter[MAX_LIMITED_HWCOUNTERS];
++	u8  limited_hwidx[MAX_LIMITED_HWCOUNTERS];
+ 	u64 alternatives[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
+ 	unsigned long amasks[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
+ 	unsigned long avalues[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
+@@ -253,7 +253,7 @@ static int power_check_constraints(struct cpu_hw_events *cpuhw,
+ 	unsigned long addf = ppmu->add_fields;
+ 	unsigned long tadd = ppmu->test_adder;
+ 
+-	if (n_ev > ppmu->n_event)
++	if (n_ev > ppmu->n_counter)
+ 		return -1;
+ 
+ 	/* First see if the events will go on as-is */
+@@ -426,7 +426,7 @@ static int is_limited_pmc(int pmcnum)
+ 		&& (pmcnum == 5 || pmcnum == 6);
+ }
+ 
+-static void freeze_limited_events(struct cpu_hw_events *cpuhw,
++static void freeze_limited_counters(struct cpu_hw_events *cpuhw,
+ 				    unsigned long pmc5, unsigned long pmc6)
+ {
+ 	struct perf_event *event;
+@@ -434,7 +434,7 @@ static void freeze_limited_events(struct cpu_hw_events *cpuhw,
+ 	int i;
+ 
+ 	for (i = 0; i < cpuhw->n_limited; ++i) {
+-		event = cpuhw->limited_event[i];
++		event = cpuhw->limited_counter[i];
+ 		if (!event->hw.idx)
+ 			continue;
+ 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
+@@ -445,7 +445,7 @@ static void freeze_limited_events(struct cpu_hw_events *cpuhw,
+ 	}
+ }
+ 
+-static void thaw_limited_events(struct cpu_hw_events *cpuhw,
++static void thaw_limited_counters(struct cpu_hw_events *cpuhw,
+ 				  unsigned long pmc5, unsigned long pmc6)
+ {
+ 	struct perf_event *event;
+@@ -453,7 +453,7 @@ static void thaw_limited_events(struct cpu_hw_events *cpuhw,
+ 	int i;
+ 
+ 	for (i = 0; i < cpuhw->n_limited; ++i) {
+-		event = cpuhw->limited_event[i];
++		event = cpuhw->limited_counter[i];
+ 		event->hw.idx = cpuhw->limited_hwidx[i];
+ 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
+ 		atomic64_set(&event->hw.prev_count, val);
+@@ -495,9 +495,9 @@ static void write_mmcr0(struct cpu_hw_events *cpuhw, unsigned long mmcr0)
+ 		       "i" (SPRN_PMC5), "i" (SPRN_PMC6));
+ 
+ 	if (mmcr0 & MMCR0_FC)
+-		freeze_limited_events(cpuhw, pmc5, pmc6);
++		freeze_limited_counters(cpuhw, pmc5, pmc6);
+ 	else
+-		thaw_limited_events(cpuhw, pmc5, pmc6);
++		thaw_limited_counters(cpuhw, pmc5, pmc6);
+ 
+ 	/*
+ 	 * Write the full MMCR0 including the event overflow interrupt
+@@ -653,7 +653,7 @@ void hw_perf_enable(void)
+ 			continue;
+ 		idx = hwc_index[i] + 1;
+ 		if (is_limited_pmc(idx)) {
+-			cpuhw->limited_event[n_lim] = event;
++			cpuhw->limited_counter[n_lim] = event;
+ 			cpuhw->limited_hwidx[n_lim] = idx;
+ 			++n_lim;
+ 			continue;
+@@ -702,7 +702,7 @@ static int collect_events(struct perf_event *group, int max_count,
+ 		flags[n] = group->hw.event_base;
+ 		events[n++] = group->hw.config;
+ 	}
+-	list_for_each_entry(event, &group->sibling_list, list_entry) {
++	list_for_each_entry(event, &group->sibling_list, group_entry) {
+ 		if (!is_software_event(event) &&
+ 		    event->state != PERF_EVENT_STATE_OFF) {
+ 			if (n >= max_count)
+@@ -742,7 +742,7 @@ int hw_perf_group_sched_in(struct perf_event *group_leader,
+ 		return 0;
+ 	cpuhw = &__get_cpu_var(cpu_hw_events);
+ 	n0 = cpuhw->n_events;
+-	n = collect_events(group_leader, ppmu->n_event - n0,
++	n = collect_events(group_leader, ppmu->n_counter - n0,
+ 			   &cpuhw->event[n0], &cpuhw->events[n0],
+ 			   &cpuhw->flags[n0]);
+ 	if (n < 0)
+@@ -764,7 +764,7 @@ int hw_perf_group_sched_in(struct perf_event *group_leader,
+ 	cpuctx->active_oncpu += n;
+ 	n = 1;
+ 	event_sched_in(group_leader, cpu);
+-	list_for_each_entry(sub, &group_leader->sibling_list, list_entry) {
++	list_for_each_entry(sub, &group_leader->sibling_list, group_entry) {
+ 		if (sub->state != PERF_EVENT_STATE_OFF) {
+ 			event_sched_in(sub, cpu);
+ 			++n;
+@@ -797,7 +797,7 @@ static int power_pmu_enable(struct perf_event *event)
+ 	 */
+ 	cpuhw = &__get_cpu_var(cpu_hw_events);
+ 	n0 = cpuhw->n_events;
+-	if (n0 >= ppmu->n_event)
++	if (n0 >= ppmu->n_counter)
+ 		goto out;
+ 	cpuhw->event[n0] = event;
+ 	cpuhw->events[n0] = event->hw.config;
+@@ -848,11 +848,11 @@ static void power_pmu_disable(struct perf_event *event)
+ 		}
+ 	}
+ 	for (i = 0; i < cpuhw->n_limited; ++i)
+-		if (event == cpuhw->limited_event[i])
++		if (event == cpuhw->limited_counter[i])
+ 			break;
+ 	if (i < cpuhw->n_limited) {
+ 		while (++i < cpuhw->n_limited) {
+-			cpuhw->limited_event[i-1] = cpuhw->limited_event[i];
++			cpuhw->limited_counter[i-1] = cpuhw->limited_counter[i];
+ 			cpuhw->limited_hwidx[i-1] = cpuhw->limited_hwidx[i];
+ 		}
+ 		--cpuhw->n_limited;
+@@ -1078,7 +1078,7 @@ const struct pmu *hw_perf_event_init(struct perf_event *event)
+ 	 */
+ 	n = 0;
+ 	if (event->group_leader != event) {
+-		n = collect_events(event->group_leader, ppmu->n_event - 1,
++		n = collect_events(event->group_leader, ppmu->n_counter - 1,
+ 				   ctrs, events, cflags);
+ 		if (n < 0)
+ 			return ERR_PTR(-EINVAL);
+@@ -1230,7 +1230,7 @@ static void perf_event_interrupt(struct pt_regs *regs)
+ 	int nmi;
+ 
+ 	if (cpuhw->n_limited)
+-		freeze_limited_events(cpuhw, mfspr(SPRN_PMC5),
++		freeze_limited_counters(cpuhw, mfspr(SPRN_PMC5),
+ 					mfspr(SPRN_PMC6));
+ 
+ 	perf_read_regs(regs);
+@@ -1260,7 +1260,7 @@ static void perf_event_interrupt(struct pt_regs *regs)
+ 	 * Any that we processed in the previous loop will not be negative.
+ 	 */
+ 	if (!found) {
+-		for (i = 0; i < ppmu->n_event; ++i) {
++		for (i = 0; i < ppmu->n_counter; ++i) {
+ 			if (is_limited_pmc(i + 1))
+ 				continue;
+ 			val = read_pmc(i + 1);
