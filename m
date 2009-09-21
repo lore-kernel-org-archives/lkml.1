@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZIUUJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbZIUUKC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZIUUJt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 16:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZIUUJr
+	id S1753891AbZIUUKC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 16:10:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbZIUUKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 16:09:47 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50033 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752050AbZIUUJr (ORCPT
+	Mon, 21 Sep 2009 16:10:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39172 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753851AbZIUUKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 16:09:47 -0400
-Date: Mon, 21 Sep 2009 21:09:23 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Eric Miao <eric.y.miao@gmail.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Robert Jarzmik <robert.jarzmik@free.fr>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: What's inside the pxa tree for this merge window
-Message-ID: <20090921200923.GF30821@n2100.arm.linux.org.uk>
-References: <f17812d70909100446h17a1903fy74941945dbfc6943@mail.gmail.com> <1253256227.4407.7.camel@pc-matejk> <20090918074551.GA26058@n2100.arm.linux.org.uk> <Pine.LNX.4.64.0909212111490.17328@axis700.grange>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0909212111490.17328@axis700.grange>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 21 Sep 2009 16:10:00 -0400
+Date: Mon, 21 Sep 2009 13:09:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kilroyd@googlemail.com, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] spinlocks: check spinlock_t/rwlock_t argument type
+ on non-SMP builds
+Message-Id: <20090921130941.e68c4bdb.akpm@linux-foundation.org>
+In-Reply-To: <20090921074352.GA22122@elte.hu>
+References: <200909181957.n8IJv94X001996@imap1.linux-foundation.org>
+	<20090921074352.GA22122@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 09:19:46PM +0200, Guennadi Liakhovetski wrote:
-> On Fri, 18 Sep 2009, Russell King - ARM Linux wrote:
+On Mon, 21 Sep 2009 09:43:52 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> > On Fri, Sep 18, 2009 at 08:43:47AM +0200, Matej Kenda wrote:
-> > > On Thu, 2009-09-10 at 19:46 +0800, Eric Miao wrote:
-> > > > Here's the preview of request-pull result, please let me know if there
-> > > > is anything missed, thanks.
-> > > > 
-> > > > URL: git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git
-> > > > 
-> > > > 
-> > > > Matej Kenda (2):
-> > > >       [ARM] pxa: add support for the IskraTel XCEP board
-> > > >       [ARM] pxa: add defconfig for IskraTel XCEP board
-> > > 
-> > > Eric, what is the current status of this request? Do I need to repost
-> > > the patches to included into 2.6.32?
-> > > 
-> > > Russell discarded them from his patch system, because they are on your
-> > > list.
+> * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+> 
+> > From: David Kilroy <kilroyd@googlemail.com>
 > > 
-> > I discarded them _because_ Eric handled them, which is what I said in the
-> > comments when I discarded them.
+> > When writing code for UP without CONFIG_DEBUG_SPINLOCK it's easy to get
+> > the first argument to the spinlock/rwlock functions wrong.  This is
+> > because the parameter is not actually used in this configuration.
+> > 
+> > Typically you will only find out it's wrong
+> >  * by rebuilding with CONFIG_SMP or CONFIG_DEBUG_SPINLOCK
+> >  * after you've submitted your beautiful patch series.
+> > 
+> > The first means a long wait, and the latter is a bit late.
+> > 
+> > Change the intermediate macros into inline functions.
+> > 
+> > Signed-off-by: David Kilroy <kilroyd@googlemail.com>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> > 
+> >  include/linux/spinlock.h        |    6 -
+> >  include/linux/spinlock_api_up.h |  118 ++++++++++++++++++++++--------
+> >  2 files changed, 92 insertions(+), 32 deletions(-)
+> > 
+> > diff -puN include/linux/spinlock.h~spinlocks-check-spinlock_t-rwlock_t-argument-type-on-non-smp-builds include/linux/spinlock.h
+> > --- a/include/linux/spinlock.h~spinlocks-check-spinlock_t-rwlock_t-argument-type-on-non-smp-builds
+> > +++ a/include/linux/spinlock.h
+> > @@ -240,17 +240,17 @@ static inline void smp_mb__after_lock(vo
+> >  #define spin_lock_irqsave(lock, flags)			\
+> >  	do {						\
+> >  		typecheck(unsigned long, flags);	\
+> > -		_spin_lock_irqsave(lock, flags);	\
+> > +		_spin_lock_irqsave(lock, &flags);	\
+> >  	} while (0)
+> >  #define read_lock_irqsave(lock, flags)			\
+> >  	do {						\
+> >  		typecheck(unsigned long, flags);	\
+> > -		_read_lock_irqsave(lock, flags);	\
+> > +		_read_lock_irqsave(lock, &flags);	\
+> >  	} while (0)
 > 
-> Ok, I did do my best to get patches in the right order in the mainline, 
-> but it all failed. AFAICS, v4l and sh are already in the mainline with a 
-> _wrongly_ resolved mefge conflict, which, most likely, breaks the 
-> sh_mobile_ceu_camera.c driver, and the three PXA platforms, patches for 
-> which should have been applied before both those trees and still haven't 
-> been applied are broken until the patches do get in and the later those 
-> patches get applied the longer the interval with the broken for them 
-> bisection is going to be.
+> these bits broke the Alpha build:
+> 
+> /home/mingo/tip/arch/alpha/include/asm/core_t2.h: In function 't2_readb':
+> /home/mingo/tip/arch/alpha/include/asm/core_t2.h:451: error: '_spin_lock_irqsave' is static but used in inline function 't2_readb' which is not static
 
-Meanwhile I have to consider that we have several bug fixes outstanding,
-and since I can't send Linus a pull request every day (max once a week)
-I have to be very careful about when I send stuff.
+hm.  What the heck does that mean?
 
-So I only get _two_ opportunities during a merge window to send a pull
-request.
+__EXTERN_INLINE u8 t2_readb(const volatile void __iomem *xaddr)
 
-I'm going to wait until tomorrow before sending my final pull for this
-window, which is the penultimate day before the window closes.
+Something to do with the extern-inline?
 
-Don't blame me for these delays - it's not my choice to impose such
-delays.  I'd really like to fix those broken platforms right now.  I
-just can't do so without causing additional delays for other issues.
-Blame Linus for imposing the "max one pull a week" rule on me.
+
+Do you have the .config?  My alpha builds went OK.
+
+
+
