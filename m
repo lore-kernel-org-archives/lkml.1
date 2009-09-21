@@ -1,67 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805AbZIUMBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbZIUMCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755805AbZIUMBD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 08:01:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZIUMBB
+	id S1755839AbZIUMCp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 08:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbZIUMCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 08:01:01 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:49346 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbZIUMBA convert rfc822-to-8bit (ORCPT
+	Mon, 21 Sep 2009 08:02:44 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:34995 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752838AbZIUMCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 08:01:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=u7dEIq9cinMwAxcUbdn/hIdtZIdR6jVteUIu69x6uwv/OCFnL9fdUu1GgCq9akD9P5
-         v14Ey2cn5Y4MsZA7Twyu9Yt07CtP4NQHy2j2EionIt3NeJDNgkLBW56Z7zLOtjq7USAO
-         zfHwcFCHeXymRSWbtNGce1/BpZsCjWGJOam+4=
+	Mon, 21 Sep 2009 08:02:43 -0400
+X-Trace: 261256486/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.63.13/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.63.13
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgUFAFUIt0pQKT8N/2dsb2JhbACBU852gjCBawU
+X-IronPort-AV: E=Sophos;i="4.44,424,1249254000"; 
+   d="scan'208";a="261256486"
+Date: Mon, 21 Sep 2009 13:02:44 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: David Rientjes <rientjes@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+       ebmunson@us.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
+       randy.dunlap@oracle.com, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       linux-ia64@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] remove duplicate asm/mman.h files
+In-Reply-To: <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0909211258570.7831@sister.anvils>
+References: <cover.1251197514.git.ebmunson@us.ibm.com> <200909181848.42192.arnd@arndb.de>
+ <alpine.DEB.1.00.0909181236190.27556@chino.kir.corp.google.com>
+ <200909211031.25369.arnd@arndb.de> <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0909211244510.6209@sister.anvils>
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
-	 <Pine.LNX.4.64.0909180809290.2882@sister.anvils>
-	 <1253260528.4959.13.camel@penberg-laptop>
-	 <Pine.LNX.4.64.0909180857170.5404@sister.anvils>
-	 <1253266391.4959.15.camel@penberg-laptop> <4AB3A16B.90009@vflare.org>
-	 <4AB487FD.5060207@cs.helsinki.fi>
-	 <Pine.LNX.4.64.0909211149360.32504@sister.anvils>
-	 <1253531550.5216.32.camel@penberg-laptop>
-	 <Pine.LNX.4.64.0909211244510.6209@sister.anvils>
-Date: Mon, 21 Sep 2009 15:01:02 +0300
-X-Google-Sender-Auth: ac10203845931b53
-Message-ID: <84144f020909210501l4a216205q85523a06f4589f2a@mail.gmail.com>
-Subject: Re: [PATCH 2/4] send callback when swap slot is freed
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: ngupta@vflare.org, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>,
-       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 2:55 PM, Hugh Dickins
-<hugh.dickins@tiscali.co.uk> wrote:
->> The callback setup from ->read() just looks gross. However, it's your
->> call Hugh so I'll just shut up now. ;-)
->
-> Ah, no, please don't!  So it's _that_ end of it that's upsetting you,
-> and rightly so, I hadn't grasped that.
+On Mon, 21 Sep 2009, David Rientjes wrote:
+> On Mon, 21 Sep 2009, Arnd Bergmann wrote:
+> 
+> > > > -#define MCL_CURRENT	1		/* lock all current mappings */
+> > > > -#define MCL_FUTURE	2		/* lock all future mappings */
+> > > > +#define MAP_GROWSUP	0x0200		/* register stack-like segment */
+> > > >  
+> > > >  #ifdef __KERNEL__
+> > > >  #ifndef __ASSEMBLY__
+> > > 
+> > > ia64 doesn't use MAP_GROWSUP, so it's probably not necessary to carry it 
+> > > along with your cleanup.
+> > 
+> > ia64 is the only architecture defining it, nobody uses it in the kernel.
+> > If the ia64 maintainers want to remove it in a separate patch, that
+> > would probably be a good idea.
+> > 
+> 
+> I'll do it then.
+> 
+> > I tried not to change the ABI in any way in my patch, and there is
+> > a theoretical possibility that some user space program on ia64 currently
+> > depends on that definition.
+> > 
+> 
+> I don't buy that as justification, if some userspace program uses it based 
+> on the false belief that it actually does what it says, it's probably 
+> better to break their build than perpetuating the lie that it's different 
+> than ~MAP_GROWSDOWN.
+> 
+> 
+> ia64: remove definition for MAP_GROWSUP
+> 
+> MAP_GROWSUP is unused.
 
-Heh, right. :-)
+Is it perhaps the case that some UNIX on ia64 does implement MAP_GROWSUP,
+and these numbers in the Linux ia64 mman.h have been chosen to match that
+reference implementation?  Tony will know.  But I wonder if you'd do
+better at least to leave a MAP_GROWSUP comment on that line, so that
+somebody doesn't go and reuse the empty slot later on.
 
-On Mon, Sep 21, 2009 at 2:55 PM, Hugh Dickins
-<hugh.dickins@tiscali.co.uk> wrote:
-> (Nitin, your patch division is quite wrong: you should present a patch
-> in which your driver works, albeit poorly, without the notifier; then
-> a patch in which the notifier is added at the swapfile.c end and your
-> driver end, so we can see how they fit together.)
+Hugh
 
-Yes, please. Such standalone driver could go into drivers/staging for
-2.6.32 probably.
+> 
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+> diff --git a/arch/ia64/include/asm/mman.h b/arch/ia64/include/asm/mman.h
+> --- a/arch/ia64/include/asm/mman.h
+> +++ b/arch/ia64/include/asm/mman.h
+> @@ -11,7 +11,6 @@
+>  #include <asm-generic/mman-common.h>
+>  
+>  #define MAP_GROWSDOWN	0x00100		/* stack-like segment */
+> -#define MAP_GROWSUP	0x00200		/* register stack-like segment */
+>  #define MAP_DENYWRITE	0x00800		/* ETXTBSY */
+>  #define MAP_EXECUTABLE	0x01000		/* mark it as an executable */
+>  #define MAP_LOCKED	0x02000		/* pages are locked */
