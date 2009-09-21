@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZIUIBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbZIUHyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbZIUIBJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 04:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZIUIBH
+	id S1754354AbZIUHyo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 03:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZIUHym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 04:01:07 -0400
-Received: from smtpbg78.qq.com ([119.147.10.237]:42802 "HELO smtpbg78.qq.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752380AbZIUIBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 04:01:06 -0400
-X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 04:01:05 EDT
-X-QQ-mid: esmtp3t1253519576t32t6436
-Subject: [PATCH] ARM:S3C24XX: Fix a wrong dependency in Kconfig which leads
- to a compile time error
-From: Shine Liu <shinel@foxmail.com>
-Reply-To: shinel@foxmail.com
-To: ben-linux@fluff.org
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       inux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 21 Sep 2009 15:52:12 +0800
-Message-Id: <1253519532.5804.30.camel@shinel>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Sep 2009 03:54:42 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50334 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbZIUHym (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 03:54:42 -0400
+Date: Mon, 21 Sep 2009 09:54:45 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
+	.init.text
+Message-ID: <20090921075445.GA15833@pengutronix.de>
+References: <20090616182310.GC13048@pengutronix.de> <1245418939-20758-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090619141128.GA11506@suse.de> <20090619144354.GA20985@pengutronix.de> <20090629075535.GA20155@pengutronix.de> <20090711033459.GC1344@suse.de> <20090711100014.GA9540@pengutronix.de> <20090711170548.GC5205@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090711170548.GC5205@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hello Greg,
 
-There's a small mistake in arch/arm/plat-s3c24xx/Kconfig leads to a
-compile time error when compiling kernel for S3C24XX mach:
+On Sat, Jul 11, 2009 at 10:05:48AM -0700, Greg KH wrote:
+> On Sat, Jul 11, 2009 at 12:00:14PM +0200, Uwe Kleine-König wrote:
+> > Hi Greg,
+> > 
+> > > > Are you conviced and took the patch or did you give up to convince me?
+> > > 
+> > > Heh, no, sorry, it got burried in my queue.
+I assume this is normal for you? :-)
 
-  LD      .tmp_vmlinux1
-arch/arm/mach-s3c2440/built-in.o: In function `mini2440_map_io':
-mach-mini2440.c:(.init.text+0x4a0): undefined reference to `s3c_device_nand'
-arch/arm/mach-s3c2440/built-in.o:(.init.data+0x78c): undefined reference to `s3c_device_nand'
-arch/arm/plat-s3c24xx/built-in.o: In function `s3c244x_map_io':
-common-smdk.c:(.init.text+0x8e4): undefined reference to `s3c_device_nand'
-arch/arm/plat-s3c24xx/built-in.o: In function `smdk_machine_init':
-common-smdk.c:(.init.text+0xe44): undefined reference to `s3c_device_nand'
-arch/arm/plat-s3c24xx/built-in.o:(.init.data+0x18c): undefined reference to `s3c_device_nand'
-make: *** [.tmp_vmlinux1] Error 1
+> > > > I still think the patch is correct and I'd like to have it applied.
+> > > 
+> > > Ok, let's test it out in the linux-next tree for a while to make sure it
+> > > works properly.  Care to send me an updated version?
+> > I updated to latest Linus' master.  It applies to linux-next from
+> > Fri Jul 10 14:44:30 2009 +1000 as is.
+> 
+> Thanks, I'll apply it later today to my trees.
+>
+> > Back some time I sent a series that fixes many of these bugs.  I will
+> > update it later today and resend.
+> 
+> Thanks, that would be good to have, to keep the noise down for devices
+> we already know about.
+As of today I don't see my patches in linux-next.  Are you still
+interested?  Can I ease taking the patches for you somehow?  E.g. by
+sending a tar containing a quilt series?
 
-The bug was introduced by the patch:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=db616eb67604242c11bfbb331bb143bfe4a2e386
+Do you think it would be more sensible to convert the drivers to use
+platform_driver_probe as this is what some commentors request.
+The downside is that these can result in regressions (i.e. no driver
+binding if the device is created after the driver is registered).
+So this would be merge-window material.
 
-Both kernel 2.6.31 and latest linux-next (next-20090918) has the defect.
-The following patch will fixed this bug.
+Best regards
+Uwe
 
-
-
-Signed-off-by: Shine Liu <shinel@foxmail.com>
-Signed-off-by: Shine Liu <liuxian@redflag-linux.com>
-----------------------------------------------------
-
---- a/arch/arm/plat-s3c24xx/Kconfig	2009-09-21 15:09:59.000000000 +0800
-+++ b/arch/arm/plat-s3c24xx/Kconfig	2009-09-21 15:10:09.000000000 +0800
-@@ -10,7 +10,7 @@
- 	default y
- 	select NO_IOPORT
- 	select ARCH_REQUIRE_GPIOLIB
--	select S3C_DEVICE_NAND
-+	select S3C_DEV_NAND
- 	help
- 	  Base platform code for any Samsung S3C24XX device
- 
-
-
-
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
