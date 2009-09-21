@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbZIUQxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZIURBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751934AbZIUQxU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZIUQxU
+	id S1753435AbZIURBo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 13:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZIURBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:53:20 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:34189 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbZIUQxT (ORCPT
+	Mon, 21 Sep 2009 13:01:42 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:47690 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753214AbZIURBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:53:19 -0400
-Date: Mon, 21 Sep 2009 18:53:21 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, lmb@suse.de,
-       jens.axboe@oracle.com, neilb@suse.de, hch@infradead.org,
-       James.Bottomley@suse.de, linux-kernel@vger.kernel.org,
-       drbd-dev@lists.linbit.com, akpm@linux-foundation.org,
-       bart.vanassche@gmail.com, davej@redhat.com, gregkh@suse.de,
-       kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
-       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
-       philipp.reisner@linbit.com, sam@ravnborg.org, Mauelshagen@redhat.com
-Subject: Re: [GIT PULL] DRBD for 2.6.32
-Message-ID: <20090921165321.GJ8072@barkeeper1-xen.linbit>
-Mail-Followup-To: Arjan van de Ven <arjan@infradead.org>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, lmb@suse.de,
-	jens.axboe@oracle.com, neilb@suse.de, hch@infradead.org,
-	James.Bottomley@suse.de, linux-kernel@vger.kernel.org,
-	drbd-dev@lists.linbit.com, akpm@linux-foundation.org,
-	bart.vanassche@gmail.com, davej@redhat.com, gregkh@suse.de,
-	kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
-	torvalds@linux-foundation.org, nab@linux-iscsi.org,
-	knikanth@suse.de, philipp.reisner@linbit.com, sam@ravnborg.org,
-	Mauelshagen@RedHat.com
-References: <20090918200803.GM23126@kernel.dk> <20090919141334N.fujita.tomonori@lab.ntt.co.jp> <20090919220232.GB31849@suse.de> <20090921223815U.fujita.tomonori@lab.ntt.co.jp> <20090921144308.GG8072@barkeeper1-xen.linbit> <20090921165252.04e335b1@infradead.org>
+	Mon, 21 Sep 2009 13:01:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=MM8rQx9qPCh780Vqrxi8pPd/0IHLgjtakmK/8t2zsm2rAzOZxO8mGKdLcwhiZ87ZkN
+         fEvhqr4YZZaKSQ6g3BXOt1U0pMxQKCo/1XBwYWx1XonLMmHLba1zjMXiCTRmnIkqkHdj
+         uUyXE3PO/KmBineZ+Fen94m4TE1nAMu3C6AaU=
+Date: Mon, 21 Sep 2009 09:55:18 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       linux-input@vger.kernel.org
+Subject: Re: [Uclinux-dist-devel] [PATCH v2] input/keyboard: add ADP5588
+	QWERTY I2C Keyboard Input device driver
+Message-ID: <20090921165517.GA5260@core.coreip.homeip.net>
+References: <20090915062050.GB10232@core.coreip.homeip.net> <1253062178-18196-1-git-send-email-vapier@gentoo.org> <20090916050236.GF2756@core.coreip.homeip.net> <8bd0f97a0909210945s5e3d9613pa7a72271ec6b47bc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090921165252.04e335b1@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0909210945s5e3d9613pa7a72271ec6b47bc@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 04:52:52PM +0200, Arjan van de Ven wrote:
-> On Mon, 21 Sep 2009 16:43:08 +0200
-> Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
-> > We can choose whatever user-kernel interface you like,
-> > and change it with every dot release --
-> > we'd just need to add additional compat code into
-> > the drbdsetup userland binary.
+On Mon, Sep 21, 2009 at 12:45:02PM -0400, Mike Frysinger wrote:
+> On Wed, Sep 16, 2009 at 01:02, Dmitry Torokhov wrote:
+> > On Tue, Sep 15, 2009 at 08:49:38PM -0400, Mike Frysinger wrote:
+> >> From: Michael Hennerich <michael.hennerich@analog.com>
+> >>
+> >> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> >> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> >> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> >> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> >> ---
+> >> v2
+> >>       - merge my and Dmitry's clean up fixes
+> >>
+> >
+> > Looks good, I'd also like to add this instead of recalcularing delay
+> > every time:
 > 
-> uh no.
-> 
-> the kernel<->userspace ABI is stable.
-> we don't go about randomly changing it
-> (extending it is fine obviously)
+> this should continue to work fine with cpu scaling right ?
 
-That's not what I meant, of course that is and needs to be stable.
-Sorry, I exagerated to make a point.
+Jiffy value depends only on HZ, not on current cpu frequency so should
+be OK I think.
 
-Point was:
-mdadm configured md.
-dmsetup configured dm.
-drbdsetup configure drbd.
-
-If and when "something" is done to "unify" things on the implementation
-level, it is likely to also unify the "kernel<->userspace" configuration
-interface.
-
-If it happens, once that happens, that _will_ be an ABI break.
-
-One way to go about it would be to just do that excellently designed and
-generic and extensible and whatnot new kernel<->userspace thing, and add
-the necessary compat cruft to the above mentioned configuration tools.
-
-Doing the drbdsetup part of it would be our part,
-which we would gladly accept.
-
-Not speaking that not yet designed all-new unified config interface
-is not a valid argument against DRBD inclusion.
-
-	Lars
+-- 
+Dmitry
