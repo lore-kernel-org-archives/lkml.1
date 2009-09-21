@@ -1,134 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZIUNyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbZIUN5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbZIUNyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755831AbZIUNyQ
+	id S1756209AbZIUN5b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZIUN52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:54:16 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:52914 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755824AbZIUNyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:54:15 -0400
-Date: Mon, 21 Sep 2009 09:53:21 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "jack@suse.cz" <jack@suse.cz>
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
-Message-ID: <20090921135321.GD6259@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Wu Fengguang <fengguang.wu@intel.com>, Theodore Tso <tytso@mit.edu>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"jack@suse.cz" <jack@suse.cz>
-References: <1252654450-25721-1-git-send-email-jens.axboe@oracle.com>
- <20090911134241.GB19707@mit.edu>
- <20090911141659.GA3508@infradead.org>
- <20090911142926.GI14984@kernel.dk>
- <20090911143929.GA25499@localhost>
- <20090918175252.GF26991@mit.edu>
- <20090919035835.GA9921@localhost>
- <20090919040051.GA10245@localhost>
- <20090919042607.GA19752@localhost>
+	Mon, 21 Sep 2009 09:57:28 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:52173 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755943AbZIUN51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:57:27 -0400
+Date: Mon, 21 Sep 2009 14:57:33 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Tejun Heo <tj@kernel.org>
+Cc: Sachin Sant <sachinp@in.ibm.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] slqb: Do not use DEFINE_PER_CPU for per-node data
+Message-ID: <20090921135733.GP12726@csn.ul.ie>
+References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie> <1253302451-27740-2-git-send-email-mel@csn.ul.ie> <84144f020909200145w74037ab9vb66dae65d3b8a048@mail.gmail.com> <4AB5FD4D.3070005@kernel.org> <4AB5FFF8.7000602@cs.helsinki.fi> <4AB6508C.4070602@kernel.org> <4AB739A6.5060807@in.ibm.com> <20090921084248.GC12726@csn.ul.ie> <20090921130440.GN12726@csn.ul.ie> <4AB78385.6020900@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090919042607.GA19752@localhost>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: abhmt009.oracle.com [141.146.116.18]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4AB7855F.0182:SCFSTAT5015188,ss=1,fgs=0
+In-Reply-To: <4AB78385.6020900@kernel.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 19, 2009 at 12:26:07PM +0800, Wu Fengguang wrote:
-> On Sat, Sep 19, 2009 at 12:00:51PM +0800, Wu Fengguang wrote:
-> > On Sat, Sep 19, 2009 at 11:58:35AM +0800, Wu Fengguang wrote:
-> > > On Sat, Sep 19, 2009 at 01:52:52AM +0800, Theodore Tso wrote:
-> > > > On Fri, Sep 11, 2009 at 10:39:29PM +0800, Wu Fengguang wrote:
-> > > > > 
-> > > > > That would be good. Sorry for the late work. I'll allocate some time
-> > > > > in mid next week to help review and benchmark recent writeback works,
-> > > > > and hope to get things done in this merge window.
-> > > > 
-> > > > Did you have some chance to get more work done on the your writeback
-> > > > patches?
-> > > 
-> > > Sorry for the delay, I'm now testing the patches with commands
-> > > 
-> > >  cp /dev/zero /mnt/test/zero0 &
-> > >  dd if=/dev/zero of=/mnt/test/zero1 &
-> > > 
-> > > and the attached debug patch.
-> > > 
-> > > One problem I found with ext3/4 is, redirty_tail() is called repeatedly
-> > > in the traces, which could slow down the inode writeback significantly.
-> > 
-> > FYI, it's this redirty_tail() called in writeback_single_inode():
-> > 
-> >                         /*
-> >                          * Someone redirtied the inode while were writing back
-> >                          * the pages.
-> >                          */
-> >                         redirty_tail(inode);
+On Mon, Sep 21, 2009 at 10:45:41PM +0900, Tejun Heo wrote:
+> Hello,
 > 
-> Hmm, this looks like an old fashioned problem get blew up by the
-> 128MB MAX_WRITEBACK_PAGES.
+> Mel Gorman wrote:
+> > This latter guess was close to the mark but not for the reasons I was
+> > guessing. There isn't magic per-cpu-area-freeing going on. Once I examined
+> > the implementation of per-cpu data, it was clear that the per-cpu areas for
+> > the node IDs were never being allocated in the first place on PowerPC. It's
+> > probable that this never worked but that it took a long time before SLQB
+> > was run on a memoryless configuration.
+> 
+> Ah... okay, so node id was being used to access percpu memory but the
+> id wasn't in cpu_possible_map.  Yeah, that will access weird places in
+> between proper percpu areas. 
 
-I'm starting to rethink the 128MB MAX_WRITEBACK_PAGES.  128MB is the
-right answer for the flusher thread on sequential IO, but definitely not
-on random IO.  We don't want the flusher to get bogged down on random
-writeback and start ignoring every other file.
+Indeed
 
-My btrfs performance branch has long had a change to bump the
-nr_to_write up based on the size of the delayed allocation that we're
-doing.  It helped, but not as much as I really expected it too, and a
-similar patch from Christoph for XFS was good but not great.
+> I never thought about that.  I'll add
+> debug version of percpu access macros which check that the offset and
+> cpu make sense so that things like this can be caught easier.
+> 
 
-It turns out the problem is in write_cache_pages.  It processes a whole
-pagevec at a time, something like this:
+It would not hurt. I consider the per-node usage model to be rare but
+it's possible there are issues with CPU hotplug and per-cpu data lurking
+around that such a debug patch might catch.
 
-while(!done) {
-	for each page in the pagegvec {
-		writepage()
-		if (wbc->nr_to_write <= 0)
-			done = 1;
-	}
-}
+> As Pekka suggested, using MAX_NUMNODES seems more appropriate tho
+> although it's suboptimal in that it would waste memory and more
+> importantly not use node-local memory. :-(
+> 
 
-If the filesystem decides to bump nr_to_write to cover a whole
-extent (or a max reasonable size), the new value of nr_to_write may
-be ignored if nr_to_write had already gone done to zero.
+If the per-cpu macros are to be used for per-node data, it would need to
+be generalised to encompass more IDs than what is in cpu_possible_map.
+It depends on how much demand there is for per-node data and how much it
+helps. I have no data on that.
 
-I fixed btrfs to recheck nr_to_write every time, and the results are
-much smoother.  This is what it looks like to write out all the .o files
-in the kernel.
+> Sachin, does the hang you're seeing also disappear with Mel's patches?
+> 
 
-http://oss.oracle.com/~mason/seekwatcher/btrfs-nr-to-write.png
+Sachin should be enjoying his holiday and I'm hogging his machine at the
+moment.  However, I can report that with this patch applied as well as the
+remote-free patch that the machine locks up after a random amount of time
+has passed and doesn't respond to sysrq. Setting
+CONFIG_RCU_CPU_STALL_DETECTOR=y didn't help throw up an error. Will
+enable a few other debug options related to stall detection and see does
+it pop out.
 
-In this graph, Btrfs is writing the full extent or 8192 pages, whichever
-is smaller.  The write_cache_pages change is here, but it is local to
-the btrfs copy of write_cache_pages:
-
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable.git;a=commit;h=f85d7d6c8f2ad4a86a1f4f4e3791f36dede2fa76
-
-I'd rather see a more formal use of hints from the FS about efficient IO
-than a blanket increase of the writeback max.  It's more work than
-bumping a single #define, but even with the #define at 1GB, we're going
-to end up splitting extents and seeking when nr_to_write does finally
-get down to zero.
-
-Btrfs currently only bumps the nr_to_write when it creates the extent, I
-need to change it to also bump it when it finds an existing extent.
-
--chris
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
