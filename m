@@ -1,68 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZIUCVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZIUC3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbZIUCVl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 22:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZIUCVj
+	id S1754365AbZIUC3c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 22:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZIUC3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 22:21:39 -0400
-Received: from na3sys009aog102.obsmtp.com ([74.125.149.69]:52839 "EHLO
-	na3sys009aog102.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753257AbZIUCVi convert rfc822-to-8bit
+	Sun, 20 Sep 2009 22:29:30 -0400
+Received: from na3sys009aog113.obsmtp.com ([74.125.149.209]:60586 "EHLO
+	na3sys009aog113.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751672AbZIUC33 convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 22:21:38 -0400
-X-Greylist: delayed 647 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Sep 2009 22:21:35 EDT
+	Sun, 20 Sep 2009 22:29:29 -0400
 From: "Yang, Bo" <Bo.Yang@lsi.com>
 To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "James.Bottomley@HansenPartnership.com" 
 	<James.Bottomley@HansenPartnership.com>,
        "James.Bottomley@suse.de" <James.Bottomley@suse.de>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Sun, 20 Sep 2009 20:21:19 -0600
-Subject: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
-Thread-Topic: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
-Thread-Index: Aco28IhK0BCwqEkwToSTDcG+BIA9kwDb1hagAACJvwA=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
+Date: Sun, 20 Sep 2009 20:29:17 -0600
+Subject: [PATCH 2/12] scsi: megaraid_sas - Add poll mechanism to megaraid
+ sas driver (part I)
+Thread-Topic: [PATCH 2/12] scsi: megaraid_sas - Add poll mechanism to
+ megaraid sas driver (part I)
+Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQDb2SjQ
+Message-ID: <4B6A08C587958942AA3002690DD4F8C35C5123FB@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C511953@cosmail02.lsi.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 acceptlanguage: en-US
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the Tape drive fix to the megaraid_sas driver: If the command is for the tape device, set the FW pthru timeout to the os layer timeout value.
+Add Poll_wait mechanism to SAS-2 MegaRAID SAS Linux driver. Driver will wakeup poll after the driver get event from MegaRAID SAS FW.
 
 Signed-off-by Bo Yang<bo.yang@lsi.com>
 
 ---
-drivers/scsi/megaraid/megaraid_sas.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+drivers/scsi/megaraid/megaraid_sas.c |   45 ++++++++++++++++++++++++++++++++++-
+ drivers/scsi/megaraid/megaraid_sas.h |    1
+ 2 files changed, 45 insertions(+), 1 deletion(-)
 
 diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-05-04 20:06:29.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-05-04 20:08:26.000000000 -0400
-@@ -687,6 +687,17 @@ megasas_build_dcdb(struct megasas_instan
-        memcpy(pthru->cdb, scp->cmnd, scp->cmd_len);
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-06-10 14:31:17.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-09-13 09:45:56.000000000 -0400
+@@ -40,6 +40,7 @@
+ #include <linux/compat.h>
+ #include <linux/blkdev.h>
+ #include <linux/mutex.h>
++#include <linux/poll.h>
 
-        /*
-+       * If the command is for the tape device, set the
-+       * pthru timeout to the os layer timeout value.
-+       */
-+       if (scp->device->type == TYPE_TAPE) {
-+               if ((scp->request->timeout / HZ) > 0xFFFF)
-+                       pthru->timeout = 0xFFFF;
-+               else
-+                       pthru->timeout = scp->request->timeout / HZ;
-+       }
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_cmnd.h>
+@@ -89,8 +90,14 @@ static struct megasas_mgmt_info megasas_
+ static struct fasync_struct *megasas_async_queue;
+ static DEFINE_MUTEX(megasas_async_queue_mutex);
+
++static int megasas_poll_wait_aen;
++static DECLARE_WAIT_QUEUE_HEAD(megasas_poll_wait);
 +
-+       /*
-         * Construct SGL
-         */
-        if (IS_DMA64) {
+ static u32 megasas_dbg_lvl;
 
++/* define lock for aen poll */
++spinlock_t poll_aen_lock;
++
+ static void
+ megasas_complete_cmd(struct megasas_instance *instance, struct megasas_cmd *cmd,
+                     u8 alt_status);
+@@ -1292,11 +1299,17 @@ megasas_bios_param(struct scsi_device *s
+ static void
+ megasas_service_aen(struct megasas_instance *instance, struct megasas_cmd *cmd)
+ {
++       unsigned long flags;
+        /*
+         * Don't signal app if it is just an aborted previously registered aen
+         */
+-       if (!cmd->abort_aen)
++       if ((!cmd->abort_aen) && (instance->unload == 0)) {
++               spin_lock_irqsave(&poll_aen_lock, flags);
++               megasas_poll_wait_aen = 1;
++               spin_unlock_irqrestore(&poll_aen_lock, flags);
++               wake_up(&megasas_poll_wait);
+                kill_fasync(&megasas_async_queue, SIGIO, POLL_IN);
++       }
+        else
+                cmd->abort_aen = 0;
+
+@@ -1381,6 +1394,7 @@ megasas_complete_cmd(struct megasas_inst
+ {
+        int exception = 0;
+        struct megasas_header *hdr = &cmd->frame->hdr;
++       unsigned long flags;
+
+        if (cmd->scmd)
+                cmd->scmd->SCp.ptr = NULL;
+@@ -1470,6 +1484,12 @@ megasas_complete_cmd(struct megasas_inst
+        case MFI_CMD_SMP:
+        case MFI_CMD_STP:
+        case MFI_CMD_DCMD:
++               if (cmd->frame->dcmd.opcode == MR_DCMD_CTRL_EVENT_GET_INFO ||
++                       cmd->frame->dcmd.opcode == MR_DCMD_CTRL_EVENT_GET) {
++                       spin_lock_irqsave(&poll_aen_lock, flags);
++                       megasas_poll_wait_aen = 0;
++                       spin_unlock_irqrestore(&poll_aen_lock, flags);
++               }
+
+                /*
+                 * See if got an event notification
+@@ -2583,6 +2603,7 @@ megasas_probe_one(struct pci_dev *pdev,
+
+        *instance->producer = 0;
+        *instance->consumer = 0;
++       megasas_poll_wait_aen = 0;
+
+        instance->evt_detail = pci_alloc_consistent(pdev,
+                                                    sizeof(struct
+@@ -2607,6 +2628,7 @@ megasas_probe_one(struct pci_dev *pdev,
+
+        spin_lock_init(&instance->cmd_pool_lock);
+        spin_lock_init(&instance->completion_lock);
++       spin_lock_init(&poll_aen_lock);
+
+        mutex_init(&instance->aen_mutex);
+        sema_init(&instance->ioctl_sem, MEGASAS_INT_CMDS);
+@@ -2621,6 +2643,7 @@ megasas_probe_one(struct pci_dev *pdev,
+
+        megasas_dbg_lvl = 0;
+        instance->flag = 0;
++       instance->unload = 0;
+        instance->last_time = 0;
+
+        /*
+@@ -2924,6 +2947,7 @@ static void __devexit megasas_detach_one
+        struct megasas_instance *instance;
+
+        instance = pci_get_drvdata(pdev);
++       instance->unload = 1;
+        host = instance->host;
+
+        if (poll_mode_io)
+@@ -3027,6 +3051,23 @@ static int megasas_mgmt_fasync(int fd, s
+ }
+
+ /**
++ * megasas_mgmt_poll -  char node "poll" entry point
++ * */
++static unsigned int megasas_mgmt_poll(struct file *file, poll_table *wait)
++{
++       unsigned int mask;
++       unsigned long flags;
++       poll_wait(file, &megasas_poll_wait, wait);
++       spin_lock_irqsave(&poll_aen_lock, flags);
++       if (megasas_poll_wait_aen)
++               mask =   (POLLIN | POLLRDNORM);
++       else
++               mask = 0;
++       spin_unlock_irqrestore(&poll_aen_lock, flags);
++       return mask;
++}
++
++/**
+  * megasas_mgmt_fw_ioctl -     Issues management ioctls to FW
+  * @instance:                  Adapter soft state
+  * @argp:                      User's ioctl packet
+@@ -3067,6 +3108,7 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+         */
+        memcpy(cmd->frame, ioc->frame.raw, 2 * MEGAMFI_FRAME_SIZE);
+        cmd->frame->hdr.context = cmd->index;
++       cmd->frame->hdr.pad_0 = 0;
+
+        /*
+         * The management interface between applications and the fw uses
+@@ -3348,6 +3390,7 @@ static const struct file_operations mega
+        .open = megasas_mgmt_open,
+        .fasync = megasas_mgmt_fasync,
+        .unlocked_ioctl = megasas_mgmt_ioctl,
++       .poll = megasas_mgmt_poll,
+ #ifdef CONFIG_COMPAT
+        .compat_ioctl = megasas_mgmt_compat_ioctl,
+ #endif
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-06-10 14:31:17.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-09-13 09:27:23.000000000 -0400
+@@ -1120,6 +1120,7 @@ struct megasas_instance {
+        struct tasklet_struct isr_tasklet;
+
+        u8 flag;
++       u8 unload;
+        unsigned long last_time;
+
+        struct timer_list io_completion_timer;
