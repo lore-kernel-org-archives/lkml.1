@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbZIUHuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZIUIBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbZIUHuI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 03:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZIUHuF
+	id S1754599AbZIUIBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 04:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZIUIBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 03:50:05 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:54005 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbZIUHuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 03:50:04 -0400
-Date: Mon, 21 Sep 2009 09:50:05 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] coretemp support for Core i5 CPU
-Message-ID: <20090921095005.1ec418b7@hyperion.delvare>
-In-Reply-To: <51f3faa70909201553y75cb9f8q8ab34e9659fe479b@mail.gmail.com>
-References: <4AB5DE1F.1020004@gmail.com>
-	<20090920211620.1c18d7fb@hyperion.delvare>
-	<51f3faa70909201553y75cb9f8q8ab34e9659fe479b@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	Mon, 21 Sep 2009 04:01:07 -0400
+Received: from smtpbg78.qq.com ([119.147.10.237]:42802 "HELO smtpbg78.qq.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752380AbZIUIBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 04:01:06 -0400
+X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 04:01:05 EDT
+X-QQ-mid: esmtp3t1253519576t32t6436
+Subject: [PATCH] ARM:S3C24XX: Fix a wrong dependency in Kconfig which leads
+ to a compile time error
+From: Shine Liu <shinel@foxmail.com>
+Reply-To: shinel@foxmail.com
+To: ben-linux@fluff.org
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       inux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 21 Sep 2009 15:52:12 +0800
+Message-Id: <1253519532.5804.30.camel@shinel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009 16:53:53 -0600, Robert Hancock wrote:
-> On Sun, Sep 20, 2009 at 1:16 PM, Jean Delvare <khali@linux-fr.org> wrote:
-> > Supporting the digital thermal sensor is one thing, but it is totally
-> > insufficient. If you look at the coretemp driver, you'll see we need to
-> > figure out a number of calibration values which are model-dependent. So
-> > we will need to check this part before adding support for new CPU
-> > models anyway.
-> 
-> Well, I see there is the TCC activation temperature which the reading
-> is relative to, which is detected on the mobile CPUs via an MSR read,
-> so it would only be a problem if they changed this temperature on
-> other CPUs..
+Hi all,
 
-They actually did change it on almost every CPU model so far. I fail to
-see why that would suddenly change (even though I'd really love it.)
+There's a small mistake in arch/arm/plat-s3c24xx/Kconfig leads to a
+compile time error when compiling kernel for S3C24XX mach:
 
-> It might make sense to warn "unknown CPU model, temperature reading
-> may be suspect" or something, but I should think it should still load
-> as the temperature reading is likely still correct.
+  LD      .tmp_vmlinux1
+arch/arm/mach-s3c2440/built-in.o: In function `mini2440_map_io':
+mach-mini2440.c:(.init.text+0x4a0): undefined reference to `s3c_device_nand'
+arch/arm/mach-s3c2440/built-in.o:(.init.data+0x78c): undefined reference to `s3c_device_nand'
+arch/arm/plat-s3c24xx/built-in.o: In function `s3c244x_map_io':
+common-smdk.c:(.init.text+0x8e4): undefined reference to `s3c_device_nand'
+arch/arm/plat-s3c24xx/built-in.o: In function `smdk_machine_init':
+common-smdk.c:(.init.text+0xe44): undefined reference to `s3c_device_nand'
+arch/arm/plat-s3c24xx/built-in.o:(.init.data+0x18c): undefined reference to `s3c_device_nand'
+make: *** [.tmp_vmlinux1] Error 1
 
-Our experience is the exact opposite. The temperature reading is likely
-not correct. And we prefer not telling the user anything than to tell
-him/her something incorrect. Most users won't notice warnings in their
-kernel logs, all they see is a CPU temperature value in their desktop
-tray area.
+The bug was introduced by the patch:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=db616eb67604242c11bfbb331bb143bfe4a2e386
 
-I hope Intel will finally take over the driver maintenance and deal
-with their own mess. It has been a pain for us to maintain since day 2.
+Both kernel 2.6.31 and latest linux-next (next-20090918) has the defect.
+The following patch will fixed this bug.
 
--- 
-Jean Delvare
+
+
+Signed-off-by: Shine Liu <shinel@foxmail.com>
+Signed-off-by: Shine Liu <liuxian@redflag-linux.com>
+----------------------------------------------------
+
+--- a/arch/arm/plat-s3c24xx/Kconfig	2009-09-21 15:09:59.000000000 +0800
++++ b/arch/arm/plat-s3c24xx/Kconfig	2009-09-21 15:10:09.000000000 +0800
+@@ -10,7 +10,7 @@
+ 	default y
+ 	select NO_IOPORT
+ 	select ARCH_REQUIRE_GPIOLIB
+-	select S3C_DEVICE_NAND
++	select S3C_DEV_NAND
+ 	help
+ 	  Base platform code for any Samsung S3C24XX device
+ 
+
+
+
