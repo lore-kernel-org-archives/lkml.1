@@ -1,207 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbZIUHH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbZIUHJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753896AbZIUHH3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 03:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbZIUHH1
+	id S1754003AbZIUHJK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 03:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbZIUHJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 03:07:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:47783 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753322AbZIUHH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 03:07:26 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
-Date: Mon, 21 Sep 2009 16:37:22 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Stephen Hemminger <shemminger@vyatta.com>,
-       "Xin, Xiaohui" <xiaohui.xin@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "mst@redhat.com" <mst@redhat.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hpa@zytor.com" <hpa@zytor.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-References: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB94861@PDSMSX501.ccr.corp.intel.com> <20090901090518.1193e412@nehalam>
-In-Reply-To: <20090901090518.1193e412@nehalam>
+	Mon, 21 Sep 2009 03:09:08 -0400
+Received: from mail-fx0-f216.google.com ([209.85.220.216]:59151 "EHLO
+	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178AbZIUHJH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 03:09:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=GFniYiwlNIvMfntO4VXsZg83V55zc2/SkHe/E3gdgtKXGlO/0UnesEEcn1TmwXOINS
+         qiUlrN982t3ToG5NZ9NYyEWClgreVJUy6cuv8M6+3Rcy/byijdJNJaN7sE9sf8UcqshI
+         NKnW3dSJVlubZ/I2An5ZsKh1FrGWnNoJlBzpA=
+Message-ID: <4AB72694.3040001@gmail.com>
+Date: Mon, 21 Sep 2009 09:09:08 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.6 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Heinz Diehl <htd@fancy-poultry.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.31: crash in tty_io.c
+References: <20090920113741.GA6057@fancy-poultry.org>
+In-Reply-To: <20090920113741.GA6057@fancy-poultry.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909211637.23299.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Sep 2009 01:35:18 am Stephen Hemminger wrote:
-> On Tue, 1 Sep 2009 14:58:19 +0800
-> "Xin, Xiaohui" <xiaohui.xin@intel.com> wrote:
+On 09/20/2009 01:37 PM, Heinz Diehl wrote:
+> Running the latest stable 2.6.31 kernel, I found this in my logs:
 > 
-> >               [RFC] Virtual Machine Device Queues (VMDq) support on KVM
-> > 
-> > Network adapter with VMDq technology presents multiple pairs of tx/rx queues,
-> > and renders network L2 sorting mechanism based on MAC addresses and VLAN tags
-> > for each tx/rx queue pair. Here we present a generic framework, in which network
-> > traffic to/from a tx/rx queue pair can be directed from/to a KVM guest without
-> > any software copy.
-> > 
-> > Actually this framework can apply to traditional network adapters which have
-> > just one tx/rx queue pair. And applications using the same user/kernel interface
-> > can utilize this framework to send/receive network traffic directly thru a tx/rx
-> > queue pair in a network adapter.
-> > 
-> > We use virtio-net architecture to illustrate the framework.
-> > 
-> > 
-> > |--------------------|     pop               add_buf    |----------------|
-> > |    Qemu process    |  <---------    TX   <----------  | Guest Kernel   |
-> > |                    |  --------->         ---------->  |                |
-> > |    Virtio-net      |     push              get_buf    |                |
-> > |  (Backend service) |  --------->    RX   ---------->  |  Virtio-net    |
-> > |                    |  <---------         <----------  |    driver      |
-> > |                    |     push              get_buf    |                |
-> > |--------------------|                                  |----------------|
-> >                    |
-> >                    |
-> >                    | AIO (read & write) combined with Direct I/O
-> >                    |   (which substitute synced file operations)
-> > |-----------------------------------------------------------------------|
-> > |     Host kernel  | read: copy-less with directly mapped user          |
-> > |                  |       space to kernel, payload directly DMAed      |
-> > |                  |       into user space                              |
-> > |                  | write: copy-less with directly mapped user         |
-> > |                  |       space to kernel, payload directly hooked     |
-> > |                  |       to a skb                                     |
-> > |                  |                                                    |
-> > |  (a likely       |                                                    |
-> > |   queue pair     |                                                    |
-> > |   instance)      |                                                    |
-> > |      |           |                                                    |
-> > | NIC driver <-->  TUN/TAP driver                                       |
-> > |-----------------------------------------------------------------------|
-> >        |
-> >        |
-> >    traditional adapter or a tx/rx queue pair
-> > 
-> > The basic idea is to utilize the kernel Asynchronous I/O combined with Direct
-> > I/O to implements copy-less TUN/TAP device. AIO and Direct I/O is not new to
-> > kernel, we still can see it in SCSI tape driver.
-> > 
-> > With traditional file operations, a copying of payload contents from/to the
-> > kernel DMA address to/from a user buffer is needed. That's what the copying we
-> > want to save.
-> > 
-> > The proposed framework is like this:
-> > A TUN/TAP device is bound to a traditional NIC adapter or a tx/rx queue pair in
-> > host side. KVM virto-net Backend service, the user space program submits
-> > asynchronous read/write I/O requests to the host kernel through TUN/TAP device.
-> > The requests are corresponding to the vqueue elements include both transmission
-> > & receive. They can be queued in one AIO request and later, the completion will
-> > be notified through the underlying packets tx/rx processing of the rx/tx queue
-> > pair.
-> > 
-> > Detailed path:
-> > 
-> > To guest Virtio-net driver, packets receive corresponding to asynchronous read
-> > I/O requests of Backend service.
-> > 
-> > 1) Guest Virtio-net driver provides header and payload address through the
-> > receive vqueue to Virtio-net backend service.
-> > 
-> > 2) Virtio-net backend service encapsulates multiple vqueue elements into
-> > multiple AIO control blocks and composes them into one AIO read request.
-> > 
-> > 3) Virtio-net backend service uses io_submit() syscall to pass the request to
-> > the TUN/TAP device.
-> > 
-> > 4) Virtio-net backend service uses io_getevents() syscall to check the
-> > completion of the request.
-> > 
-> > 5) The TUN/TAP driver receives packets from the queue pair of NIC, and prepares
-> > for Direct I/O.
-> >    A modified NIC driver may render a skb which header is allocated in host
-> > kernel, but the payload buffer is directly mapped from user space buffer which
-> > are rendered through the AIO request by the Backend service. get_user_pages()
-> > may do this. For one AIO read request, the TUN/TAP driver maintains a list for
-> > the directly mapped buffers, and a NIC driver tries to get the buffers as
-> > payload buffer to compose the new skbs. Of course, if getting the buffers
-> > fails, then kernel allocated buffers are used.
-> > 
-> > 6) Modern NIC cards now mostly have the header split feature. The NIC queue
-> > pair then may directly DMA the payload into the user spaces mapped payload
-> > buffers.
-> > Thus a zero-copy for payload is implemented in packet receiving.
-> > 
-> > 7) The TUN/TAP driver manually copy the host header to space user mapped.
-> > 
-> > 8) aio_complete() to notify the Virtio-net backend service for io_getevents().
-> > 
-> > 
-> > To guest Virtio-net driver, packets send corresponding to asynchronous write
-> > I/O requests of backend. The path is similar to packet receive.
-> > 
-> > 1) Guest Virtio-net driver provides header and payload address filled with
-> > contents through the transmit vqueue to Virtio-net backed service.
-> > 
-> > 2) Virtio-net backend service encapsulates the vqueue elements into multiple
-> > AIO control blocks and composes them into one AIO write request.
-> > 
-> > 3) Virtio-net backend service uses the io_submit() syscall to pass the
-> > requests to the TUN/TAP device.
-> > 
-> > 4) Virtio-net backend service uses io_getevents() syscall to check the request
-> > completion.
-> > 
-> > 5) The TUN/TAP driver gets the write requests and allocates skbs for it. The
-> > header contents are copied into the skb header. The directly mapped user space
-> > buffer is easily hooked into skb. Thus a zero copy for payload is implemented
-> > in packet sending.
-> > 
-> > 6) aio_complete() to notify the Virtio-net backend service for io_getevents().
-> > 
-> > The proposed framework is described as above.
-> > 
-> > Consider the modifications to the kernel and qemu:
-> > 
-> > To kernel:
-> > 1) The TUN/TAP driver may be modified a lot to implement AIO device operations
-> > and to implement directly user space mapping into kernel. Code to maintain the
-> > directly mapped user buffers should be in. It's just a modification for driver.
-> > 
-> > 2) The NIC driver may be modified to compose skb differently and slightly data
-> > structure change to add user directly mapped buffer pointer.
-> > Here, maybe it's better for a NIC driver to present an interface for an rx/tx
-> > queue pair instance which will also apply to traditional hardware, the kernel
-> > interface should not be changed to make the other components happy.
-> > The abstraction is useful, though it is not needed immediately here.
-> > 
-> > 3) The skb shared info structure may be modified a little to contain the user
-> > directly mapped info.
-> > 
-> > To Qemu:
-> > 1) The Virtio-net backend service may be modified to handle AIO read/write
-> > requests from the vqueues.
-> > 2) Maybe a separate pthread to handle the AIO request triggering is needed.
-> > 
-> > Any comments are appreciated here.
-> 
-> * Code is easier to review than bullet points.
-> 
-> * Direct I/O has to be safe when page is shared by multiple threads,
->   and has to be non-blocking since network I/O can take indeterminately
->   long (think big queue's, tunneling, ...)
-> 
-> * In the past attempts at Direct I/O on network have always had SMP
->   TLB issues. The page has to be flipped or marked as COW on all CPU's
->   and the cost of the Inter Processor Interrupt to steal the page has
->   been slower than copying
+> Sep 20 13:22:59 liesel kernel: ------------[ cut here ]------------
+> Sep 20 13:22:59 liesel kernel: WARNING: at drivers/char/tty_io.c:1267 tty_open+0x421/0x4e0()
 
-The Guest shouldn't touch the packet, until the virtio net protocol says
-it's finished with (just like a real NIC).  Even if it's being nasty, if we
-have hw csum it'll get the right csum on the wire, and if we don't we copy
-internally anyway.
+Please see http://lkml.org/lkml/2009/9/8/393
 
-So I think this isn't a problem...
-Rusty.
+> Sep 20 13:22:59 liesel kernel: Hardware name:  
+> Sep 20 13:22:59 liesel kernel: Modules linked in: uhci_hcd rt73usb
+> rt2x00usb snd_hda_codec_realtek rt2x00lib snd_hda_intel led_class
+> snd_hda_codec ohci1394 i2c_nforce2 input_polldev ieee1394 snd_pcm
+> usb_storage snd_timer k8temp mac80211 button snd firewire_ohci hwmon
+> i2c_core forcedeth pcspkr soundcore sr_mod sg cfg80211 cdrom
+> snd_page_alloc rfkill xts usbhid ohci_hcd sd_mod ehci_hcd rtc_cmos
+> rtc_core rtc_lib usbcore hmac dm_snapshot dm_crypt dm_mod gf128mul
+> twofish_x86_64 twofish_common aes_x86_64 aes_generic cbc tgr192 loop ecb
+> arc4 fuse edd ide_pci_generic amd74xx ide_core fan pata_amd sata_nv libata
+> scsi_mod thermal processor
+> Sep 20 13:22:59 liesel kernel: Pid: 1521, comm: blogd Not tainted 2.6.31 #1
+> Sep 20 13:22:59 liesel kernel: Call Trace:
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff812e90b1>] ? tty_open+0x421/0x4e0
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff812e90b1>] ? tty_open+0x421/0x4e0
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff81044f69>] ? warn_slowpath_common+0x79/0xd0
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff812e90b1>] ? tty_open+0x421/0x4e0
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff81281d52>] ? kobject_get+0x12/0x20
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff810d1fdd>] ? chrdev_open+0x13d/0x230
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff810d1ea0>] ? chrdev_open+0x0/0x230
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff810cd111>] ? __dentry_open+0x111/0x340
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff810dc474>] ? do_filp_open+0x764/0xb10
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff81049ade>] ? current_fs_time+0x1e/0x30
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff810dd6df>] ? vfs_ioctl+0x2f/0xa0
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff810e64d2>] ? alloc_fd+0x122/0x150
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff810ccf0f>] ? do_sys_open+0x8f/0x140
+> Sep 20 13:22:59 liesel kernel:  [<ffffffff8100bdab>] ? system_call_fastpath+0x16/0x1b
+> Sep 20 13:22:59 liesel kernel: ---[ end trace f0db7f8312cd8bff ]---
+> 
+> Please give me a hint if you need more information/logs/config.
