@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbZIUVji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbZIUX54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751934AbZIUVji (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 17:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZIUVji
+	id S1754611AbZIUX54 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZIUX5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 17:39:38 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:50814 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbZIUVjh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 17:39:37 -0400
-Date: Mon, 21 Sep 2009 22:39:34 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Ulrich Drepper <drepper@redhat.com>, James Youngman <jay@gnu.org>,
-       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org
-Subject: fchdir, EACCESS and when to check (was: [PATCH] VFS: document what MAY_ACCESS means)
-Message-ID: <20090921213934.GD14700@shareable.org>
-References: <20090921012933.2631.85495.stgit@paris.rdu.redhat.com> <20090921081047.GA20006@shareable.org> <1253536193.17222.21.camel@heimdal.trondhjem.org> <20090921185336.GA5633@shareable.org> <1253564285.17222.120.camel@heimdal.trondhjem.org>
+	Mon, 21 Sep 2009 19:57:55 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:6301 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754317AbZIUX5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 19:57:54 -0400
+Date: Mon, 21 Sep 2009 17:40:47 -0400
+From: Dave Jones <davej@redhat.com>
+To: Siarhei Liakh <sliakh.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-next@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v6] RO/NX protection for loadable kernel modules
+Message-ID: <20090921214046.GA17243@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-security-module@vger.kernel.org, linux-next@vger.kernel.org,
+	Arjan van de Ven <arjan@infradead.org>,
+	James Morris <jmorris@namei.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
+References: <817ecb6f0909101950v2fc6dc6u5cbc40cd9a9dde77@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253564285.17222.120.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <817ecb6f0909101950v2fc6dc6u5cbc40cd9a9dde77@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> > I suspect having fchdir() fail in this admittedly obscure case is more
-> > likely to cause problems than the RPC permission check, due to
-> > surprise and no obvious error recovery strategy in an application
-> > where fchdir is used in some subroutine to temporarily switch
-> > directory and then return to the caller, which doesn't expect the
-> > current directory might be changed by the call.  I suspect when that
-> > happens, most applications will either terminate abruptly or behave
-> > wrongly later.  It's just a guess though....
-> 
-> Oh, I see what you're getting at.
-> 
-> So, looking at the code for fchdir(), it would appear that the
-> permission check there is being made by the VFS, not NFS. I suspect that
-> is because it is mandated by POSIX.
-> Indeed, looking at the spec for fchdir(), it would appear that you _do_
-> need valid permissions. See
-> 
->    http://www.opengroup.org/onlinepubs/009695399/functions/fchdir.html
-> 
-> which states that the function returns EACCES if the process doesn't
-> have search permissions.
+On Thu, Sep 10, 2009 at 10:50:47PM -0400, Siarhei Liakh wrote:
+ > This patch is a logical extension of the protection provided by
+ > CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
+ > module_core and module_init into three logical parts each and setting
+ > appropriate page access permissions for each individual section:
+ > 
+ >  1. Code: RO+X
+ >  2. RO data: RO+NX
+ >  3. RW data: RW+NX
 
-Sadly I think you're right.  The check is performed locally, too.
-It's not an NFS quirk (unlike, say, read permissions), and local
-concurrency can trip it up.
+Hi Siarhei,
+ I tried out this patch on 2.6.31, and got the following trace during bootup..
 
-Well well well.
+------------[ cut here ]------------
+WARNING: at kernel/trace/ftrace.c:1003 ftrace_bug+0x198/0x27e() (Not tainted)
+Hardware name: VGN-Z540N
+Modules linked in: output(+)
+Pid: 115, comm: modprobe Not tainted 2.6.31-23.fc12.x86_64 #1
+Call Trace:
+ [<ffffffff81064244>] warn_slowpath_common+0x95/0xc3
+ [<ffffffffa0000193>] ? video_output_register+0x11/0x10a [output]
+ [<ffffffff81064299>] warn_slowpath_null+0x27/0x3d
+ [<ffffffff810d4a0e>] ftrace_bug+0x198/0x27e
+ [<ffffffffa0000193>] ? video_output_register+0x11/0x10a [output]
+ [<ffffffff810d5c66>] ftrace_convert_nops+0x201/0x2b9
+ [<ffffffffa0000193>] ? video_output_register+0x11/0x10a [output]
+ [<ffffffff810d5d6a>] ftrace_module_notify+0x4c/0x7f
+ [<ffffffff815099c5>] notifier_call_chain+0x72/0xba
+ [<ffffffff81086db1>] ? __blocking_notifier_call_chain+0x4c/0x8e
+ [<ffffffff81086dc8>] __blocking_notifier_call_chain+0x63/0x8e
+ [<ffffffff81086e1a>] blocking_notifier_call_chain+0x27/0x3d
+ [<ffffffff810a466a>] sys_init_module+0xb7/0x249
+ [<ffffffff81011f42>] system_call_fastpath+0x16/0x1b
+---[ end trace 95b33ebf87286ae6 ]---
+ftrace faulted on writing [<ffffffffa0000193>] video_output_register+0x11/0x10a [output]
 
-http://www.mail-archive.com/bug-gnulib@gnu.org/msg12513.html
 
-    "using only fchdir does have the advantage that we know that
-    restoring the current directory can't fail.  (It can fail IIRC on
-    SunOS, but I think we don't support the affected versions any
-    more)."
+I guess ftrace is trying to NOP out something in the modules which
+are marked read-only ?
 
-That doesn't look convincing any more.
+	Dave
 
-[Have added James Youngman who wrote that, to Cc]
-
-Let's look around:
-
-http://www.opengroup.org/onlinepubs/9699919799/functions/openat.html
-
-    "the file to be opened is determined relative to the directory
-    associated with the file descriptor fd instead of the current
-    working directory. If the file descriptor was opened without
-    O_SEARCH, the function shall check whether directory searches are
-    permitted using the current permissions of the directory
-    underlying the file descriptor. If the file descriptor was opened
-    with O_SEARCH, the function shall not perform the check."
-
-Also,
-http://www.opengroup.org/austin/docs/austin_383.txt
-
-That's not about fchdir(), but it's a general property of directories
-opened with O_SEARCH when used with *at() functions.
-
-fchdir() doesn't apply the "shall not perform the check" rule.  It's
-only used for *at() lookups.  Given the existence of any rule which
-allows search permission to be checked at open() time and not checked
-later, it looks like it might be quite useful for fchdir() to have the
-same property, so you'd know you can always return to a directory if you
-successfully opened it before.
-
-I've added Ulrich Drepper to the Cc list in case he cares to say
-something about fchdir(), since he seems to have introduced O_SEARCH
-to SUS.
-
-Ulrich, do you think fchdir should fail even if you successfully
-opened a directory with O_SEARCH (if that is eventually implemented in
-Linux ;-), when the permissions have been changed after the descriptor
-is opened, even though all the *at() functions can successfully search
-using the descriptor?
-
--- Jamie
