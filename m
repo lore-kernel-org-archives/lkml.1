@@ -1,91 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZIUNTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZIUNWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbZIUNTZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbZIUNTY
+	id S1756100AbZIUNWn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbZIUNWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:19:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48415 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755345AbZIUNTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:19:23 -0400
-Date: Mon, 21 Sep 2009 15:19:26 +0200
-From: Jan Kara <jack@suse.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>
-Subject: Re: [PATCH] fs: Fix busyloop in wb_writeback()
-Message-ID: <20090921131925.GF1099@duck.suse.cz>
-References: <1253121768-20673-1-git-send-email-jack@suse.cz> <20090916184106.GT23126@kernel.dk> <20090921130145.GA6266@localhost>
+	Mon, 21 Sep 2009 09:22:40 -0400
+Received: from nschwmtas01p.mx.bigpond.com ([61.9.189.137]:62021 "EHLO
+	nschwmtas01p.mx.bigpond.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755977AbZIUNWk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:22:40 -0400
+Message-ID: <4AB77E21.6020805@bigpond.net.au>
+Date: Mon, 21 Sep 2009 23:22:41 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090921130145.GA6266@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: sched: Am I missing something?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at nschwotgx02p.mx.bigpond.com from [124.185.86.236] using ID pwil3058@bigpond.net.au at Mon, 21 Sep 2009 13:22:41 +0000
+X-RPD-ScanID: Class unknown; VirusThreatLevel unknown, RefID str=0001.0A150201.4AB77E22.004A,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 21-09-09 21:01:45, Wu Fengguang wrote:
-> On Thu, Sep 17, 2009 at 02:41:06AM +0800, Jens Axboe wrote:
-> > On Wed, Sep 16 2009, Jan Kara wrote:
-> > > If all inodes are under writeback (e.g. in case when there's only one inode
-> > > with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
-> > > to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
-> > > waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
-> > > write anything.
-> > 
-> > Interesting, so this will happen if the dirtier and flush thread end up
-> > "fighting" each other over the same inode. I'll throw this into the
-> > testing mix.
-> > 
-> > How did you notice?
-> 
-> Jens, I found another busy loop. Not sure about the solution, but here
-> is the quick fact.
-> 
-> Tested git head is 1ef7d9aa32a8ee054c4d4fdcd2ea537c04d61b2f, which
-> seems to be the last writeback patch in the linux-next tree. I cannot
-> run the plain head of linux-next because it just refuses boot up.
-> 
-> On top of which Jan Kara's I_SYNC waiting patch and the attached
-> debugging patch is applied.
-> 
-> Test commands are:
-> 
->         # mount /mnt/test # ext4 fs
->         # echo 1 > /proc/sys/fs/dirty_debug
-> 
->         # cp /dev/zero /mnt/test/zero0
-> 
-> After that the box is locked up, the system is busy doing these:
-> 
-> [   54.740295] requeue_io() +457: inode=79232
-> [   54.740300] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> [   54.740303] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> [   54.740317] requeue_io() +457: inode=79232
-> [   54.740322] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> [   54.740325] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> [   54.740339] requeue_io() +457: inode=79232
-> [   54.740344] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> [   54.740347] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> ......
-> 
-> Basically the traces show that balance_dirty_pages() is busy looping.
-> It cannot write anything because the inode always be requeued by this line:
-> 
->         if (inode->i_state & I_SYNC) {
->                if (!wait) {
->                         requeue_io(inode);
->                         return 0;
->                 }
-> 
-> This seem to happen when the partition is FULL.
-  Hmm, are you sure my fix is applied? It should prevent exactly this busy
-loop when we just requeue one inode again and again... If it really is, I
-wonder why we didn't end up calling inode_wait_for_writeback I've added.
+Or is the line:
 
-									Honza
+	p->prio = effective_prio(p);
+
+in wake_up_new_task() an expensive no op.
+
+As far as I can tell from reading the code, it will always be the case 
+that EITHER rt_prio(p->prio) is true OR p->prio == p->normal_prio when 
+this call is made and, in either case, the value of p->prio will be 
+unchanged.  In addition, when this call is made p->normal_prio is 
+already equal to to normal_prio(p), so the side effects of the function 
+(setting p->normal_prio) are also unnecessary.
+
+Am I correct or have I missed something?
+
+Peter
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
