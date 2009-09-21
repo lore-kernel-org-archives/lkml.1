@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbZIUT5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbZIUTrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbZIUT5L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 15:57:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZIUT5I
+	id S1753614AbZIUTrv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 15:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZIUTru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 15:57:08 -0400
-Received: from eagle.jhcloos.com ([207.210.242.212]:2586 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbZIUT5H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 15:57:07 -0400
-X-Greylist: delayed 519 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 15:57:07 EDT
-From: James Cloos <cloos@jhcloos.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: Poor desktop responsiveness with background I/O-operations
-In-Reply-To: <1253520364.25640.57.camel@marge.simson.net> (Mike Galbraith's
-	message of "Mon, 21 Sep 2009 10:06:04 +0200")
-References: <4AB59CBB.8090907@datenparkplatz.de>
-	<20090920080728.73bfe2a1@infradead.org>
-	<4AB5ECD0.7010903@datenparkplatz.de>
-	<1253475521.9224.43.camel@marge.simson.net>
-	<4AB6C73C.1030004@gmail.com>
-	<1253507034.23414.90.camel@marge.simson.net>
-	<4AB72FDC.5090403@datenparkplatz.de>
-	<1253520364.25640.57.camel@marge.simson.net>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.50 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2009 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Mon, 21 Sep 2009 15:47:36 -0400
-Message-ID: <m3tyyw6pvz.fsf@lugabout.jhcloos.org>
+	Mon, 21 Sep 2009 15:47:50 -0400
+Received: from rtr.ca ([76.10.145.34]:52011 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753210AbZIUTru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 15:47:50 -0400
+Message-ID: <4AB7D867.4080508@rtr.ca>
+Date: Mon, 21 Sep 2009 15:47:51 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Chris Webb <chris@arachsys.com>
+Cc: Tejun Heo <teheo@suse.de>, linux-scsi@vger.kernel.org,
+       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <4AADF471.2020801@suse.de> <4AAE3B9A.2060306@rtr.ca> <4AAE3F86.8090804@suse.de> <4AAE524C.2030401@rtr.ca> <20090916231921.GL1924@arachsys.com> <4AB239C8.2020203@rtr.ca> <4AB25736.1060601@suse.de> <4AB260CA.8040308@rtr.ca> <4AB2610F.8010904@rtr.ca> <20090918170517.GI2141@arachsys.com> <20090921102654.GD8789@arachsys.com>
+In-Reply-To: <20090921102654.GD8789@arachsys.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FWIW, I did not notice any problems with the last kernel I had compiled
-in the -- IIRC -- 29-rc timeframe.  Or maybe it was the 30-rc timeframe.
+Chris Webb wrote:
+> Chris Webb <chris@arachsys.com> writes:
+> 
+>> Mark Lord <liml@rtr.ca> writes:
+>>
+>>> Speaking of which..
+>>>
+>>> Chris:  I wonder if the errors will also vanish in your situation
+>>> by disabling the onboard write-caches in the drives ?
+>>>
+>>> Eg.  hdparm -W0 /dev/sd?
+>> Hi Mark. I've got a test machine on its way at the moment, so I'll make sure
+>> I check this one out on it too.
+> 
+> Our test machine is still being built, but we had an opportunity to try this on
+> a couple of the live machines when their RAID arrays failed over the weekend.
+> We still got timeouts, but (predictably!) they're not on flushes any more:
+> 
+>   ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+>   ata2.00: cmd 35/00:08:98:c6:00/00:00:4e:00:00/e0 tag 0 dm
+...
+> all the way through the night.
+> 
+> I also have these in the log, but they are immediately after turning off the
+> write caching in all drives, so may be a red herring with data still being
+> written out.
+> 
+>   ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+>   ata2.00: cmd c8/00:08:00:20:80/00:00:00:00:00/e0 tag 0 dm
+...
+> On another machine, I saw this with write caching turned off:
+> 
+>   ata2.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
+> ata2.00: cmd 61/08:00:28:1f:80/00:00:00:00:00/40 tag 0 ncq 4096 out
+...
 
-I had that kernel up for soemthing like five weeks, on a busy, low-ram
-laptop, w/o and long pauses or other noticeable pain.  For at least two
-years before that the best this laptop could manage before latency
-became horrific was a fortnight, and weekly reboots were desirable.
+0x35 is a 48-bit DMA WRITE, 0xc8 is a 28-bit DMA READ,
+and 0x61 is an NCQ WRITE.
 
-Unfortunately, before I could send out a congratulatory note (I wanted
-to first confirm that the result remained) I pulled up and started see-
-ing even worse latency then ever.
+Looks like some kind of hardware trouble to me.
+And as Tejun suggested, it's difficult to guess at
+a cause other than the PSU.
 
-Turning ext4 barriers off helped avoid some of the new latency, and my
-current compile (master as of the 17th) is much better than .31 was.
-
-But long pauses still occur whenever paging and backgound i/o-bound
-tasks interact.
-
-There was a major regression in paging performance either .30 or .31
-(see above).  Interestingly, top(1) also shows less swap usage for
-the same usage patterns than with the older kernels.  I don't know
-which is cause or which is effect.
-
-A git pull on a clone of Linus' tree is a great way to trigger the
-problem.  As is using Gentoo's portage to install/upgrade anything.
-(Bad python; no alligator!¹)  (Yes, that is a burlesque of the no
-doughnut joke.)
-
-[1] Pythons which have invaded Florida have reportedly been
-    witnessed eating alligators, according to a recent wire
-    service article.
-
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+Cheers, and good luck.
