@@ -1,41 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbZIUXPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZIUXMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbZIUXPH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 19:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZIUXPG
+	id S1754404AbZIUXMq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZIUXMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 19:15:06 -0400
-Received: from n3-vm0.bullet.mail.gq1.yahoo.com ([67.195.23.156]:33938 "HELO
-	n3-vm0.bullet.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754210AbZIUXPF (ORCPT
+	Mon, 21 Sep 2009 19:12:46 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:54239 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754276AbZIUXMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 19:15:05 -0400
-X-Greylist: delayed 314 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 19:15:05 EDT
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 939242.50510.bm@omp108.mail.gq1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=bellsouth.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
-  b=mXTRamDB1pwU9nw7BrvQ0hIB7wcG7rZc+rpI+RDELOYkLWFa0WGQ3YKs/u4Dre5pK59XdzqxpxzUEa1OlfQD5RjZzUynDGK4++aMg42YnQ6hpV8k0inyA+Jg3nnhoYw4JkQPlxsKgzhEabmRaDawJZWZaYBCn+AEk/wPNn+fnNw=;
-Message-ID: <637532.99590.qm@web180302.mail.gq1.yahoo.com>
-X-YMail-OSG: cwN8rWYVM1ntF_77b6232MmdHzQWznk62u0DjCVEpjUrdcPOA.o-
-X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.347.2
-Date: Mon, 21 Sep 2009 16:09:53 -0700 (PDT)
-From: LG Electronics Promo <carloenterprises@bellsouth.net>
-Reply-To: jerry.smith111@hotmail.com
-Subject: LUCKY...WINNER
-To: undisclosed recipients:;
+	Mon, 21 Sep 2009 19:12:45 -0400
+Date: Tue, 22 Sep 2009 00:12:27 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andreas Gruenbacher <agruen@suse.de>, Eric Paris <eparis@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
+Subject: Re: fanotify as syscalls
+Message-ID: <20090921231227.GJ14700@shareable.org>
+References: <20090912094110.GB24709@ioremap.net> <200909190000.43556.agruen@suse.de> <1253329471.2630.30.camel@dhcp231-106.rdu.redhat.com> <200909212204.51077.agruen@suse.de> <20090921202823.GB14700@shareable.org> <alpine.DEB.2.00.0909211456180.1116@makko.or.mcafeemobile.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0909211456180.1116@makko.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Davide Libenzi wrote:
+> On Mon, 21 Sep 2009, Jamie Lokier wrote:
+> 
+> > I think so to, and that'd be a great all round solution.
+> 
+> If this is for anti-malware vendors
 
-950.000.00 Pounds has been awarded to your email ID in this Year LG Promo.send your
+Personally I'm not interested in anti-malware, and am simply
+interested in leveraging fsnotify improvements to accelerate userspace
+caches of information which depends on files (indexes, templates,
+compiler caches, stat caches etc.).  Basically make inotify better,
+and sufficiently correct for that purpose.
 
-1.Name................
-2.Address.............
-3.Phone/Fax...........
-4.Present Country.....
+My sticking my oar in lately is to ensure the fsnotify improvements
+are going in the (imho) right direction.  There's a lot of interesting
+apps waiting in the wings on this.  It doesn't have to be complicated,
+just... sensible.
+
+> to intercept userspace accesses 
+> they're currently doing it by hacking the syscall table, why don't we 
+> offer a way to monitor syscalls (kernel side) in a non racy way?
+> Modules can [un]register themselves for syscall intercaption, and receive 
+> the syscall number and parameters. They'd be able to change paramters, 
+> return error codes, and so on.
+> The cost of the check in the syscall path could even be under an 
+> alternative-like patching, if really neeeded.
+> The Pros of this would be:
+> 
+> - The kernel code to implement this would be trivially small, with no 
+>   I-need-this-feature-too growth potential
+
+(Fwiw, the {fa,fs,i}notify thing looks to me like it's getting simpler
+as we go.  Good design = decrease complexity + increase versatility.
+E.g. see epoll.)
+
+> - There won't be any externally visible API to maintain (and its kernel 
+>   counter part) and expand
+> 
+> - Any system call can be intercepted, allowing it to be flexible while 
+>   leaving the burden of the interception handling, and communication with 
+>   userspace policy enforcers, to the anti-malware (or whoever really) 
+>   companies modules
+> 
+> The anti-malware are already doing this (intercepting syscall), they 
+> already have code for it, and they always did (writing kernel 
+> modules/drivers, that is) for Windows.
+
+I don't mind at all if fanotify is replaced by a general purpose "take
+over the system call table" solution for anti-malware, and I still get
+to keep the fsnotify improvements :-)
+
+But I can't help noticing that we _already_ have quite well placed
+hooks for intercepting system calls, called security_this and
+security_that (SELinux etc), albeit they can't redirect things so much.
+
+However, being a little kinder, I suspect even the anti-malware
+vendors would rather not slow down everything with race-prone
+complicated tracking of everything every process does...  which is why
+fanotify allows it's "interest set" to be reduced from everything to a
+subset of files, and it's results to be cached, and let the races be
+handled in the normal way by VFS.
+
+Once you have an "interest set" and focus on files, it looks somewhat
+reasonable to use the fsnotify hooks.
+
+...That is, if you believe monitoring files is the best approach to
+anti-malware.  I can't help noticing that on (ahem) Windows, running
+just a "virus checker" which generically scans every file independent
+of it's location looking for signatures and keeping up with patches is
+no longer considered good enough.
+
+-- Jamie
 
