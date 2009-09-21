@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbZIUIEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZIUIKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbZIUIEe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 04:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZIUIEb
+	id S1754134AbZIUIKz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 04:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbZIUIKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 04:04:31 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:51275 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbZIUIEa (ORCPT
+	Mon, 21 Sep 2009 04:10:53 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:56142 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751563AbZIUIKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 04:04:30 -0400
-X-IronPort-AV: E=Sophos;i="4.44,423,1249272000"; 
-   d="scan'208";a="6612586"
-Subject: RE: [spi-devel-general] [PATCH 1/2] spi: new SPI bus
- lock/unlockfunctions
-From: Li Yi <yi.li@analog.com>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-CC: Mike Frysinger <vapier.adi@gmail.com>,
-       spi-devel-general@lists.sourceforge.net,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901D41FB1@mi8nycmail19.Mi8.com>
-References: <1253224997-7422-1-git-send-email-vapier@gentoo.org>
-	 <BD79186B4FD85F4B8E60E381CAEE190901D41E44@mi8nycmail19.Mi8.com>
-	 <8bd0f97a0909171553s1b7ee725x728bbca2f49511a9@mail.gmail.com>
-	 <BD79186B4FD85F4B8E60E381CAEE190901D41FB1@mi8nycmail19.Mi8.com>
-Content-Type: text/plain
-Date: Mon, 21 Sep 2009 16:08:36 +0800
-Message-ID: <1253520516.3925.143.camel@adam-desktop>
+	Mon, 21 Sep 2009 04:10:53 -0400
+Date: Mon, 21 Sep 2009 09:10:47 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, hch@infradead.org
+Subject: Re: [PATCH] VFS: document what MAY_ACCESS means
+Message-ID: <20090921081047.GA20006@shareable.org>
+References: <20090921012933.2631.85495.stgit@paris.rdu.redhat.com>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Sep 2009 08:04:31.0415 (UTC) FILETIME=[26356470:01CA3A92]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090921012933.2631.85495.stgit@paris.rdu.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-18 at 19:00 -0400, H Hartley Sweeten wrote:
-> On Thursday, September 17, 2009 3:54 PM, Mike Frysinger wrote:
-> >> I assume the spi master driver must supply the {lock/unlock}_bus methods
-> >> to properly support the locking.
-> >
-> > currently, yes.  a common solution would be nice.  ideas/patches welcome ;).
-> >
-> >> But, by returning 0 when the methods
-> >> are not supplied you are basically saying all the current master drivers
-> >> in mainline support bus locking.  I think this is really only "true" if
-> >> spi->master->num_chipselect == 1.
-> >
-> > right, but that is no different from what we have today.  there is no
-> > way for a client to guarantee exclusive access, so you cant write code
-> > assuming it in the first place.  the only consumer thus far (mmc_spi)
-> > actually errors out if such conditions exist.
-> >
-> > in other words, we arent breaking anything.
+Eric Paris wrote:
+> The vfs MAY_ACCESS flag really means that we might not use the object
+> immediately (consider chdir which might not actually use the new dir).
+> Thus permissions must be checked rather than relying on checkes during
+> later access of the object in question.  This patch just adds some
+> documentation so the meaning of the flag is clear.  I would rename the flag,
+> but it's already visable (although useless) to userspace.
+
+As it's intended to clarify the meaning, I must admit that I didn't
+find the comment clear at all!  I had to grep the code for MAY_ACCESS
+to understand what your comment meant.
+
+Especially what was meant by "chdir which might not actually use the
+new dir".
+
+Suggest: MAY_ACCESS means we are calling from access() or chdir() and
+won't do the actual read/write/exec/appene/open, so ->permission()
+must fully check the permission and not assume it can optimise away checks.
+
+(Btw, side issue: I was very surprised to find fchdir() to an open
+directory can fail on NFS due to change of permissions, so the pattern
+dir = open("."); chdir("foo"); fchdir(dir) can fail to restore the
+current directory).
+
+-- Jamie
+
+
 > 
-> Actually you are breaking the mmc_spi driver.
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> ---
 > 
-> By returning 0 when the methods are not supplied you are saying that the
-> master driver supports and locked the bus.  At a minimum, I think spi_lock_bus()
-> should return an error code if locking is not supported.
+>  include/linux/fs.h |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
 > 
-Thanks for the feedback.
-
-The original thought of returning '0' was trying not to break mmc_spi
-driver on system without spi_lock_bus() implementation.
-What do you think of a check in mmc_spi_probe() like this?
-
-if (spi->master->num_chipselect > 1 && !spi->master->lock_bus) {
-	struct count_children cc;
-
-	cc.n = 0;
-	cc.bus = spi->dev.bus;
-	status = device_for_each_child(spi->dev.parent, &cc,
-		maybe_count_child);
-	if (status < 0) {
-		dev_err(&spi->dev, "can't share SPI bus\n");
-		return status;
-	}
-
-	dev_warn(&spi->dev, "ASSUMING SPI bus stays unshared!\n");
-}
-
-And spi_lock_bus() still returns 0 if not implemented.
-
-> Also, as Andrew Morton pointed out, calling spi_unlock_bus() without having
-> a valid lock by calling spi_lock_bus() is a bug.
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 215b708..f683b29 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -51,6 +51,13 @@ struct inodes_stat_t {
+>  #define MAY_WRITE 2
+>  #define MAY_READ 4
+>  #define MAY_APPEND 8
+> +/*
+> + * The vfs MAY_ACCESS flag really means that we might not use the object
+> + * immediately (consider chdir which might not actually use the new dir).
+> + * Thus permissions must be checked mmediately rather than relying on later
+> + * checks during the actual user of the object in question.  This is an
+> + * internal flag and should not come from userspace.
+> + */
+>  #define MAY_ACCESS 16
+>  #define MAY_OPEN 32
+>  
 > 
-Will be fixed.
-
-> In addition your patch to mmc_spi should check the return code from
-> spi_lock_bus().  If the driver "requires" that the bus be locked it should
-> trigger an error path if it cannot be locked.
-> 
-Will add code to check the return code. 
-> >> Also, do you have a master driver that does have the {lock/unlock}_bus
-> >> methods?  I would like to see how you handled it.
-> >
-> > http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=commitdiff;h=cc54fa8ed63e11a000031bc650d41d57b441803d
-> 
-> Oiy... The lock/unlock functions are simple enough but the change needed
-> to bfin_spi_pump_messages() is a bit complicated.
-> 
-In spi_bf5xx.c, if a spi device (e.g, whose chip select number is "3")
-locks the bus, the global status "locked" is set to "3" - indicates the
-spi bus is locked.
-
-> What happens to next_msg if it is for other devices on the bus?
-> 
-This spi message will be left in the queue until the spi bus is
-unlocked. The messages for the spi device holding the lock will be
-selected and transferred firstly. 
-
-Regards,
--Yi
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
