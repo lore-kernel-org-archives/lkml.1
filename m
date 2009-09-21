@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbZIUQdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbZIUQlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751821AbZIUQdx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZIUQdu
+	id S1751848AbZIUQlQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZIUQlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:33:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50775 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbZIUQdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:33:49 -0400
-Date: Mon, 21 Sep 2009 18:33:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC] [GIT PULL] "Performance Counters" -> "Performance
-	Events" rename
-Message-ID: <20090921163332.GA11296@elte.hu>
-References: <20090921134111.GA25578@elte.hu> <alpine.LFD.2.01.0909210928570.4950@localhost.localdomain>
+	Mon, 21 Sep 2009 12:41:14 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:43164 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751605AbZIUQlN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 12:41:13 -0400
+Message-ID: <4AB7AAE2.8000404@ce.jp.nec.com>
+Date: Tue, 22 Sep 2009 01:33:38 +0900
+From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909210928570.4950@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jens Axboe <jens.axboe@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: device-mapper development <dm-devel@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] [PATCH 1/3] block: Add blk_queue_copy_limits()
+References: <4AB3B43D.9000802@ce.jp.nec.com>	<yq1eiq46ohz.fsf@sermon.lab.mkp.net> <4AB4F74E.7000908@ce.jp.nec.com> <yq1k4zt5o2f.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq1k4zt5o2f.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Mon, 21 Sep 2009, Ingo Molnar wrote:
-> > 
-> > Please consider pulling the following tree (which is relative to the 
-> > perfcounters-fixes-for-linus pull request i just sent) that renames 
-> > "performance counters" to "performance events":
+Martin K. Petersen wrote:
+>>>>>> "Jun'ichi" == Jun'ichi Nomura <j-nomura@ce.jp.nec.com> writes:
 > 
-> Fine, pulled. But it conflicted with the tracers tree. I fixed it up, 
-> but somebody more well-versed in the code should double-check.
+> Jun'ichi> Umm, with this, BLK_DEF_MAX_SECTORS becomes upper bound of
+> Jun'ichi> max_hw_sectors and the values of underlying devices are not
+> Jun'ichi> propagated to the stacking devices.  
+> 
+> Well, max_sectors is already bounded by this.  max_hw_sectors only
+> really matters for PC commands, so I'm not sure it's a big deal for
+> DM. But I guess we could set the default max_hw_sectors to -1.
+> 
+> I'm just trying to avoid these scattered if-0-set-it-to-something-else
+> cases.  I'd much rather have the defaults do the right thing.
 
-Will do, thanks!
+I agree with that.
+I had to do the if-0-set-it-to-something-else to avoid putting unnecessary
+cap on max_hw_sectors.
 
-	Ingo
+If we aren't sure, shouldn't we set its default to -1 or putting comments
+in blk_set_default_limits() at least to avoid possible confusion in future?
+
+Thanks,
+--
+Jun'ichi Nomura, NEC Corporation 
