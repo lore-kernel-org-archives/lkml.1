@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbZIUOzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZIUOzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbZIUOzI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 10:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbZIUOzG
+	id S1756524AbZIUOzR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 10:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbZIUOzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 10:55:06 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:44912
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750953AbZIUOzF convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 10:55:08 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:52132 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751716AbZIUOzF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Sep 2009 10:55:05 -0400
-X-SpamScore: -18
-X-BigFish: VPS-18(zz1432R1453M98dNzz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KQBTFJ-03-7SO-02
-X-M-MSG: 
-Date: Mon, 21 Sep 2009 16:55:02 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Keith Mannthey <kmannth@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
-Subject: Re: [Patch] AMD64_EDAC: Fix amd64_map_to_dcs_mask
-Message-ID: <20090921145502.GC23580@aftab>
-References: <1253239781.7263.113.camel@keith-laptop>
- <20090918144226.GD25309@aftab>
- <1253294933.7263.129.camel@keith-laptop>
+Date: Mon, 21 Sep 2009 16:55:08 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: bart.vanassche@gmail.com, kyle@moffetthome.net, sam@ravnborg.org,
+       neilb@suse.de, knikanth@suse.de, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, philipp.reisner@linbit.com,
+       hch@infradead.org, Mauelshagen@RedHat.com, James.Bottomley@suse.de,
+       lmb@suse.de, kosaki.motohiro@jp.fujitsu.com, jens.axboe@oracle.com,
+       davej@RedHat.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, drbd-dev@lists.linbit.com
+Subject: Re: [Drbd-dev] [GIT PULL] DRBD for 2.6.32
+Message-ID: <20090921145508.GH8072@barkeeper1-xen.linbit>
+Mail-Followup-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	bart.vanassche@gmail.com, kyle@moffetthome.net, sam@ravnborg.org,
+	neilb@suse.de, knikanth@suse.de, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, philipp.reisner@linbit.com,
+	hch@infradead.org, Mauelshagen@RedHat.com, James.Bottomley@suse.de,
+	lmb@suse.de, kosaki.motohiro@jp.fujitsu.com, jens.axboe@oracle.com,
+	davej@redhat.com, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org, drbd-dev@lists.linbit.com
+References: <20090918200803.GM23126@kernel.dk> <20090919141334N.fujita.tomonori@lab.ntt.co.jp> <20090919220232.GB31849@suse.de> <20090921223815U.fujita.tomonori@lab.ntt.co.jp> <20090921144308.GG8072@barkeeper1-xen.linbit>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253294933.7263.129.camel@keith-laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 21 Sep 2009 14:54:52.0599 (UTC) FILETIME=[7993EC70:01CA3ACB]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090921144308.GG8072@barkeeper1-xen.linbit>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Keith,
+On Mon, Sep 21, 2009 at 04:43:08PM +0200, Lars Ellenberg wrote:
+> > > > BTW, DM already has something like drbd? I thought that there is a
+> > > > talk about that new target at LinuxCon.
 
-On Fri, Sep 18, 2009 at 10:28:53AM -0700, Keith Mannthey wrote:
-> > By the way, your patches made me look harder at that code region and
-> > I've found some more problems with it which I've fixed. Would you like
-> > to test the whole bunch of fixes on your setup?
+...
+
+> If any of you happens to be at LinuxCon,
+> please discuss with Heinz (Maulshagen, dm-replicator)
+> and Phil (Reisner, DRBD), who both are present.
 > 
-> Yes please send any changes you have.  I have a decent test setup for
-> live errors. 
+> Heinz' talk about replicator is scheduled today, 10:30 am, 
 
-The patch queue is at
+And, Phil does a session about DRBD tomorrow,
+ Tue 22. Sep, 2:45 pm
 
-git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git
+So, two good opportunities,
+for anyone who happens to be at or near LinuxCon, Portland.
 
-the 'edac-fixes' branch.
-
-Please do test and let me know of any problems you might have.
-
-Thanks a lot.
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+	Lars
