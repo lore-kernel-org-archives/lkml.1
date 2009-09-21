@@ -1,91 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZIUU2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbZIUUam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbZIUU2i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 16:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZIUU2h
+	id S1753896AbZIUUam (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 16:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZIUUal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 16:28:37 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:57809 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbZIUU2g (ORCPT
+	Mon, 21 Sep 2009 16:30:41 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:49583 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbZIUUak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 16:28:36 -0400
-Date: Mon, 21 Sep 2009 21:28:23 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-Subject: Re: fanotify as syscalls
-Message-ID: <20090921202823.GB14700@shareable.org>
-References: <20090912094110.GB24709@ioremap.net> <200909190000.43556.agruen@suse.de> <1253329471.2630.30.camel@dhcp231-106.rdu.redhat.com> <200909212204.51077.agruen@suse.de>
+	Mon, 21 Sep 2009 16:30:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=O9VDIY3ITd953DPVTwkpSCUvwptrXc4/earf+iJr3GxXfggAjzKohpMVoj/aYDfMX7
+         hxJRuH6ShEIe1tDBRYXZR1Q2fLO0i2voAXBWqtUyTCJ3/6rEhcNZTsUVKK+iYLM4vyG8
+         iT0HSwkjvA7EuQinqRekrEy2qAwOMMcAuEhe0=
+Message-ID: <4AB7E26A.1040701@gmail.com>
+Date: Mon, 21 Sep 2009 21:30:34 +0100
+From: Dave <kilroyd@googlemail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090816)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909212204.51077.agruen@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] spinlocks: check spinlock_t/rwlock_t argument type
+ on non-SMP builds
+References: <200909181957.n8IJv94X001996@imap1.linux-foundation.org>	<20090921074352.GA22122@elte.hu> <20090921130941.e68c4bdb.akpm@linux-foundation.org>
+In-Reply-To: <20090921130941.e68c4bdb.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Gruenbacher wrote:
-> On Saturday, 19 September 2009 5:04:31 Eric Paris wrote:
-> > Let me start by saying I am agreeing I should pursue subtree
-> > notification.  It's what I think everyone really wants.  It's a great
-> > idea, and I think you might have a simple way to get close.  Clearly
-> > these are avenues I'm willing and hoping to pursue.  Also I say it
-> > again, I believe the interface as proposed (except maybe some of my
-> > exclusion stuff) is flexible enough to implement any of these ideas.
-> > Does anyone disagree?
+Andrew Morton wrote:
+> On Mon, 21 Sep 2009 09:43:52 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> It does seem flexible enough. However, the current interface assumes "global" 
-> listeners (the mask argument of fanotify_init):
+>> * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+>>
+>>> From: David Kilroy <kilroyd@googlemail.com>
+>>>
+>>> When writing code for UP without CONFIG_DEBUG_SPINLOCK it's easy to get
+>>> the first argument to the spinlock/rwlock functions wrong.  This is
+>>> because the parameter is not actually used in this configuration.
+>>>
+>>> Typically you will only find out it's wrong
+>>>  * by rebuilding with CONFIG_SMP or CONFIG_DEBUG_SPINLOCK
+>>>  * after you've submitted your beautiful patch series.
+>>>
+>>> The first means a long wait, and the latter is a bit late.
+>>>
+>>> Change the intermediate macros into inline functions.
+>>>
+>>> Signed-off-by: David Kilroy <kilroyd@googlemail.com>
+>>> Cc: Ingo Molnar <mingo@elte.hu>
+>>> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>> ---
+>>>
+>>>  include/linux/spinlock.h        |    6 -
+>>>  include/linux/spinlock_api_up.h |  118 ++++++++++++++++++++++--------
+>>>  2 files changed, 92 insertions(+), 32 deletions(-)
+>>>
+>>> diff -puN include/linux/spinlock.h~spinlocks-check-spinlock_t-rwlock_t-argument-type-on-non-smp-builds include/linux/spinlock.h
+>>> --- a/include/linux/spinlock.h~spinlocks-check-spinlock_t-rwlock_t-argument-type-on-non-smp-builds
+>>> +++ a/include/linux/spinlock.h
+>>> @@ -240,17 +240,17 @@ static inline void smp_mb__after_lock(vo
+>>>  #define spin_lock_irqsave(lock, flags)			\
+>>>  	do {						\
+>>>  		typecheck(unsigned long, flags);	\
+>>> -		_spin_lock_irqsave(lock, flags);	\
+>>> +		_spin_lock_irqsave(lock, &flags);	\
+>>>  	} while (0)
+>>>  #define read_lock_irqsave(lock, flags)			\
+>>>  	do {						\
+>>>  		typecheck(unsigned long, flags);	\
+>>> -		_read_lock_irqsave(lock, flags);	\
+>>> +		_read_lock_irqsave(lock, &flags);	\
+>>>  	} while (0)
+>> these bits broke the Alpha build:
+>>
+>> /home/mingo/tip/arch/alpha/include/asm/core_t2.h: In function 't2_readb':
+>> /home/mingo/tip/arch/alpha/include/asm/core_t2.h:451: error: '_spin_lock_irqsave' is static but used in inline function 't2_readb' which is not static
 > 
->   int fanotify_init(int flags, int f_flags, __u64 mask,
-> 		    unsigned int priority);
+> hm.  What the heck does that mean?
 > 
-> Once subtree support is added, this parameter becomes obsolete. That's pretty 
-> broken for a syscall yet to be introduced.
+> __EXTERN_INLINE u8 t2_readb(const volatile void __iomem *xaddr)
 > 
-> > BUT to solve one of the main problems fanotify is intending to solve it
-> > needs a way to be the 'fscking all notifier.'  It needs to be the whole
-> > damn system.
-> 
-> Think of a system after boot, with a single global namespace. Whatever you 
-> access by filename is reachable from the namespace root. At this point, 
-> nothing more global exists. A listener can watch the mount points of 
-> interest, and everything's fine.
-> 
-> What's a bit more tricky is to ensure that this listener will continue to 
-> receive all events from whatever else is mounted anywhere, irrespective of 
-> namespaces. I think we can get there.
+> Something to do with the extern-inline?
 
-I think so to, and that'd be a great all round solution.
+This came up the last time this went into Ingos tree. And yes, it's the
+extern inlines using the spinlock functions that causes the error.
 
-We _have_ to receive mount & umount events to do this.  But even
-inotify-style tracking needs those if it's to be accurate, so it's not
-an additional burden.
+> Do you have the .config?  My alpha builds went OK.
 
-It would be logical if fanotify could block and ack those in the same
-way as it can block and ack other accesses (with the usual filtering
-rules on which inodes trigger events, and which don't or are cached).
+Last I checked, you need to have:
+CONFIG_SMP=N
+CONFIG_DEBUG_SPINLOCK=N
 
-As in to prevent: mount --bind innocent .bash_login, but also to
-ensure it always knows what's mounted when another event occurs.
+The latter gets auto-selected, so I set:
+CONFIG_DEBUG_LOCK_ALLOC=N
+CONFIG_LOCK_STAT=N
+CONFIG_PROVE_LOCKING=N
+CONFIG_LOCK_STAT=N
 
-> By the way, Documentation/filesystems/sharedsubtree.txt describes how 
-> filesystem namespaces work.
 
-Fortunately, after making a new namespace you can read the mounts in
-the new namespace from /proc/self/mount* (I think) without having to
-know anything about the shared subtree rules.
+Regards,
 
-So to follow monitoring/checking across all namespaces, it would (I
-think) be enough to receive a fanotify "new namespace" event, and Ack
-that event to allow the CLONE_NS to proceed.  It's still tricky stuff
-though.
-
--- Jamie
+Dave.
