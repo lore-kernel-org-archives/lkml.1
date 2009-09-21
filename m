@@ -1,122 +1,1274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbZIUAVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbZIUAZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752530AbZIUAVz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 20:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZIUAVx
+	id S1752927AbZIUAZW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 20:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZIUAZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 20:21:53 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:48433 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbZIUAVw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 20:21:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mPyPrLWf5lfvxHcentwr4VyCvmMALrspOdo6L6QAPskUX9SqbncvDgPfHJ3nW8hE6M
-         JAJmG8khP6avvt5T9iF/ibs61MVE5JvGWPwgQohyeAE/4MPuQQVvt3Z6zwxWJWWs9Cx/
-         bni6ZvneHrSbjyDyjzu4FqaaL3dpVFV1H8Hio=
-Message-ID: <4AB6C73C.1030004@gmail.com>
-Date: Sun, 20 Sep 2009 17:22:20 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+	Sun, 20 Sep 2009 20:25:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55536 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751033AbZIUAZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 20:25:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFC][PATCH 3/4] PCI / ACPI PM: Platform support for PCI PME wake-up
+Date: Mon, 21 Sep 2009 02:26:10 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+References: <200909132320.05077.rjw@sisk.pl> <200909140053.05779.rjw@sisk.pl> <20090913225518.GA31787@srcf.ucam.org>
+In-Reply-To: <20090913225518.GA31787@srcf.ucam.org>
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Poor desktop responsiveness with background I/O-operations
-References: <4AB59CBB.8090907@datenparkplatz.de>	 <20090920080728.73bfe2a1@infradead.org>	 <4AB5ECD0.7010903@datenparkplatz.de> <1253475521.9224.43.camel@marge.simson.net>
-In-Reply-To: <1253475521.9224.43.camel@marge.simson.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909210226.10671.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Galbraith wrote:
-> On Sun, 2009-09-20 at 10:50 +0200, Ulrich Lukas wrote:
->    
->> Arjan van de Ven wrote:
->>      
->>> can you try the following two things?
->>>
->>> echo 4096>  /sys/block/sda/queue/nr_requests
->>> for i in `pidof kjournald` ; do ionice -c1 -p $i ; done
->>>        
->> I tried this just now, but it doesn't change things much. I can do a
->> more testing later today.
->>      
->
-> Try ionice -c3 for your dd.
->
->    
->>> I assume you're using CFQ.
->>>        
->> Yes, it's CFQ. (see .config of my previous posting)
->>
->> Filesystem is EXT4.
->>      
->
-> Mine is ext3.
->
-> I can easily reproduce pain.  The attached cheezy test script, when run
-> back to back with no args (stock IO), regularly produces beauties:
->
->   Performance counter stats for 'sh -c konsole -e exit':
->
->       257.670601  task-clock-msecs         #      0.004 CPUs
->             1036  context-switches         #      0.004 M/sec
->               30  CPU-migrations           #      0.000 M/sec
->             6317  page-faults              #      0.025 M/sec
->        471734719  cycles                   #   1830.767 M/sec
->        393365060  instructions             #      0.834 IPC
->          7849464  cache-references         #     30.463 M/sec
->          1038976  cache-misses             #      4.032 M/sec
->
->     65.766937233  seconds time elapsed
->
-> Yup, a full minute to get a binary loaded and fired up.  Seems it and
-> others get evicted by the VM.  Getting whatever back into ram is painful
-> to listen to (poor disk/me.. seek latency eating MUCH time).
->
-> Calling script back to back with args 1 (realtime foreground) 3 (idle
-> background) does best:
->
->   Performance counter stats for 'sh -c konsole -e exit':
->
->       169.915036  task-clock-msecs         #      0.077 CPUs
->              439  context-switches         #      0.003 M/sec
->                9  CPU-migrations           #      0.000 M/sec
->             6314  page-faults              #      0.037 M/sec
->        363128252  cycles                   #   2137.117 M/sec
->        367410945  instructions             #      1.012 IPC
->          5822302  cache-references         #     34.266 M/sec
->           437189  cache-misses             #      2.573 M/sec
->
->      2.213079979  seconds time elapsed
->
-> Args 2 (best effort foreground) and 3 (idle background);
->
->   Performance counter stats for 'sh -c konsole -e exit':
->
->       176.689856  task-clock-msecs         #      0.015 CPUs
->              357  context-switches         #      0.002 M/sec
->               15  CPU-migrations           #      0.000 M/sec
->             6314  page-faults              #      0.036 M/sec
->        374861947  cycles                   #   2121.582 M/sec
->        368929476  instructions             #      0.984 IPC
->          5806286  cache-references         #     32.861 M/sec
->           496651  cache-misses             #      2.811 M/sec
->
->     12.036165968  seconds time elapsed
->
-> 	-Mike
->    
-Wow, at first I did not notice anything
-from your *.sh script, but then a few moments
-later, the system became vary sluggish. firefox
-takes about 15 seconds to load. OS is mint linux
-with the latest HEAD on an imac9,1.
+On Monday 14 September 2009, Matthew Garrett wrote:
+> On Mon, Sep 14, 2009 at 12:53:05AM +0200, Rafael J. Wysocki wrote:
+> > On Monday 14 September 2009, Matthew Garrett wrote:
+> > > On Sun, Sep 13, 2009 at 11:24:03PM +0200, Rafael J. Wysocki wrote:
+> > > > +	} else if (!dev->wakeup.flags.run_wake) {
+> > > > +		acpi_set_gpe_type(dev->wakeup.gpe_device,
+> > > > +					dev->wakeup.gpe_number,
+> > > > +					ACPI_GPE_TYPE_WAKE);
+> > > 
+> > > Is this going to work for cases where we have multiple devices attached 
+> > > to the same GPE? The common one is EHCI, where both EHCI HCDs will be 
+> > > one a single GPE. If we wake one, that'll then disable the GPE for the 
+> > > other. Further wakeup events will then be lost.
+> > 
+> > You're right, I overlooked that.  Some kind of refcounting is needed here.
+> 
+> I've sent patches to implement this at the GPE level, which also change 
+> the API for requesting them. I'm waiting on feedback from Bob Moore.
 
-Justin P. Mattock
+In the meantime I realized there's one more thing we need to take care of.
+Namely, if a wake-up GPE is shared between multiple devices, it need not be
+necessary to install notify handlers for all of them.  For example, if one of
+these devices is the root bridge, we will walk all of the hierarchy under it
+looking for devices that have PME set, so we need not install notify handlers
+for any devices that share the wake-up GPE with the root bridge.  Similarly,
+there's no need to install a notify handler for a device that shares the
+wake-up GPE with a bridge (non-root) it is under.
+
+Taking that into account I have prepared another version of the @subject
+patch which is appended below.  It also takes the PM vs hotplug issue into
+account.  The idea is pretty straightforward, everything should be clear from
+the changelog and the comments within the patch.
+
+Thanks,
+Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI / ACPI PM: Platform support for PCI PME wake-up (rev. 2)
+
+Although the majority of PCI devices can generate PMEs that in
+principle may be used to wake up devices suspended at run time,
+platform support is generally necessary to convert PMEs into wake-up
+events that can be delivered to the kernel.  If ACPI is used for this
+purpose, a PME generated by a PCI device will trigger the ACPI GPE
+associated with the device to generate an ACPI wake-up event that we
+can set up a handler for, provided that everything is configured
+correctly.
+
+Unfortunately, the subset of PCI devices that have GPEs associated
+with them is quite limited and the other devices have to rely on
+the GPEs associated with their upstream bridges and, possibly, the
+root bridge to generate ACPI wake-up events in response to PMEs from
+them.  Moreover, ACPI devices tend to share wake-up GPEs, in which
+cases it makes sense to install an ACPI notify handler for only one
+of them and "bind" the other devices to it.  Furthermore, ACPI-based
+PCI hotplug also uses ACPI notify handlers that in general may
+conflict with the PM notify handlers, unless this issue is
+specifically taken care of.
+
+Add ACPI platform support for PCI PME wake-up:
+o Add a framework making is possible to use ACPI system notify
+  handlers for both PM and hotplug at the same time and to take
+  the wake-up GPE sharing into account.
+o Add function acpi_device_run_wake() allowing us to enable or
+  disable the GPE associated with given device to generate run-time
+  wake-up events.
+o Add a new PCI platform callback ->run_wake() to struct
+  pci_platform_pm_ops allowing us to enable the platform to generate
+  wake-up events for given device and implemet that callback for the
+  ACPI platform.
+o Define ACPI wake-up handlers for PCI devices and PCI buses and make
+  the PCI-ACPI binding code register wake-up notifiers for devices
+  associated with wake-up GPEs.
+o Add function pci_platform_run_wake() that can be used to enable (or
+  disable) the platform to generate wake-up events for given PCI
+  device using the ->run_wake() platform callback.
+
+Based on a patch from Matthew Garrett.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/pci_bind.c            |   19 
+ drivers/acpi/pci_root.c            |    5 
+ drivers/acpi/sleep.c               |    4 
+ drivers/acpi/wakeup.c              |   50 ++
+ drivers/pci/hotplug/acpiphp_glue.c |   23 -
+ drivers/pci/pci-acpi.c             |  706 +++++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.c                  |   32 +
+ drivers/pci/pci.h                  |   19 
+ include/acpi/acpi_bus.h            |   20 -
+ include/linux/pci-acpi.h           |   14 
+ kernel/power/Kconfig               |    5 
+ 11 files changed, 874 insertions(+), 23 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -30,10 +30,14 @@ int pci_probe_reset_function(struct pci_
+  *                platform; to be used during system-wide transitions from a
+  *                sleeping state to the working state and vice versa
+  *
+- * @can_wakeup: returns 'true' if given device is capable of waking up the
+- *              system from a sleeping state
++ * @can_wakeup: returns 'true' if the plaform can generate wake-up events for
++ *		given device.
+  *
+- * @sleep_wake: enables/disables the system wake up capability of given device
++ * @sleep_wake: enables/disables the wake-up capability of given device
++ *
++ * @run_wake: enables/disables the platform to generate run-time wake-up events
++ *		for given device (the device's wake-up capability has to be
++ *		enabled by @sleep_wake for this feature to work)
+  *
+  * If given platform is generally capable of power managing PCI devices, all of
+  * these callbacks are mandatory.
+@@ -44,16 +48,25 @@ struct pci_platform_pm_ops {
+ 	pci_power_t (*choose_state)(struct pci_dev *dev);
+ 	bool (*can_wakeup)(struct pci_dev *dev);
+ 	int (*sleep_wake)(struct pci_dev *dev, bool enable);
++	int (*run_wake)(struct pci_dev *dev, bool enable);
+ };
+ 
+ extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
++extern int pci_platform_run_wake(struct pci_dev *dev, bool enable);
+ extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ extern void pci_disable_enabled_device(struct pci_dev *dev);
+ extern bool pci_check_pme_status(struct pci_dev *dev);
++extern int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
++extern void pci_pme_wakeup_bus(struct pci_bus *bus);
+ extern void pci_pm_init(struct pci_dev *dev);
+ extern void platform_pci_wakeup_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+ 
++static inline void pci_pme_wakeup(struct pci_dev *dev)
++{
++	__pci_pme_wakeup(dev, NULL);
++}
++
+ static inline bool pci_is_bridge(struct pci_dev *pci_dev)
+ {
+ 	return !!(pci_dev->subordinate);
+Index: linux-2.6/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-acpi.c
++++ linux-2.6/drivers/pci/pci-acpi.c
+@@ -19,6 +19,682 @@
+ #include "pci.h"
+ 
+ /*
++ * ACPI-based PCI run-time power management uses ACPI system notify handlers,
++ * which are also used by ACPI-based PCI hotplug.  Unfortunately, however, there
++ * can be only one ACPI system notify handler installed for an ACPI device
++ * handle.  For this reason there has to be a way to use the same notify handler
++ * for both ACPI-based hotplug and ACPI-based run-time PM.
++ *
++ * Moreover, there may be many PCI devices, including bridges, that share one
++ * wake-up GPE and if a wake-up event is signaled for a bridge, we will check
++ * the PME status of all devices below it, so if a device below a bridge shares
++ * a wake-up GPE with the bridge, it only makes sense to install a notify
++ * handled for the bridge, because the device is going to be checked anyway in
++ * the process of handling the bridge notification.  In particular, if any
++ * devices share a wake-up GPE with the root bridge, there only need to be a
++ * notify handler for the root bridge, because the other devices will be checked
++ * in the process of handling the root bridge wake-up.
++ *
++ * Furthermore, if many devices share one wake-up GPE, we only need to install
++ * a notify handler for one of them as long as we know which devices to check
++ * in the process of handling the notification.  The purpose of the data
++ * structures and helper functions below is to arrange things in accordance with
++ * these observations.
++ *
++ * pci_acpi_runtime_notifiers is a list of struct pci_acpi_notifier_block
++ * objects that each represent ACPI devices that have ACPI system notify
++ * handlers installed.  For each of them, there is a ACPI-based hotplug notifier
++ * to execute for hotplug events, hp_cb, and a pointer to the data to pass to it
++ * hp_data, as well as a list of PCI buses and a list of PCI devices for which
++ * to execute PME handlers in the case of ACPI-based PM events.  Since every
++ * object may represent multiple PCI devices and/or buses to handle if power
++ * management event is signaled via the GPE associated with it, there are
++ * reference counters for tracking the usage of each object.
++ */
++
++static LIST_HEAD(pci_acpi_runtime_notifiers);
++static DEFINE_MUTEX(pci_acpi_notifier_mtx);
++
++struct pci_acpi_notifier_block
++{
++	struct list_head entry;
++	struct acpi_device *dev;
++	acpi_notify_handler hp_cb;
++	void *hp_data;
++	struct list_head pm_buses;
++	struct list_head pm_devices;
++	int pm_enable_count;
++};
++
++struct pci_bus_notifier_entry
++{
++	struct list_head entry;
++	struct pci_bus *bus;
++	int enable_count;
++};
++
++struct pci_dev_notifier_entry
++{
++	struct list_head entry;
++	struct pci_dev *dev;
++	bool enabled;
++};
++
++/**
++ * pci_acpi_event_fn - Universal system notification handler.
++ * @handle: ACPI handle of a device the notification is for.
++ * @event: Type of the signaled event.
++ * @data: Context data, should be a pointer to a notifier object.
++ *
++ * Take the address on a notifier object from @data and use it to extract the
++ * information needed for handling the event.  If this is a wake-up event,
++ * check if PM notification is enabled for this notifier object and, if so,
++ * execute the appropriate PME handler for each bus and for each devices that
++ * should be checked for the PME status.  If this is not a wake-up event,
++ * execute the hotplug notify handler for @handle.
++ */
++static void pci_acpi_event_fn(acpi_handle handle, u32 event, void *data)
++{
++	struct pci_acpi_notifier_block *nb = data;
++
++	if (!nb)
++		return;
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	if (event == ACPI_NOTIFY_DEVICE_WAKE && nb->pm_enable_count) {
++		if (!list_empty(&nb->pm_buses)) {
++			struct pci_bus_notifier_entry *bne;
++
++			list_for_each_entry(bne, &nb->pm_buses, entry)
++				if (bne->enable_count)
++					pci_pme_wakeup_bus(bne->bus);
++		}
++		if (!list_empty(&nb->pm_devices)) {
++			struct pci_dev_notifier_entry *dne;
++
++			list_for_each_entry(dne, &nb->pm_devices, entry)
++				if (dne->enabled)
++					pci_pme_wakeup(dne->dev);
++		}
++	} else if (nb->hp_cb) {
++		nb->hp_cb(handle, event, nb->hp_data);
++	}
++
++	mutex_unlock(&pci_acpi_notifier_mtx);
++}
++
++/**
++ * new_notifier - Create a new notifier object for given ACPI device.
++ * @dev: Device to create the notifier object for.
++ */
++static struct pci_acpi_notifier_block *new_notifier(struct acpi_device *dev)
++{
++	struct pci_acpi_notifier_block *nb;
++
++	nb = kzalloc(sizeof(*nb), GFP_KERNEL);
++	if (!nb)
++		return NULL;
++
++	nb->dev = dev;
++	INIT_LIST_HEAD(&nb->pm_buses);
++	INIT_LIST_HEAD(&nb->pm_devices);
++
++	return nb;
++}
++
++/**
++ * pci_acpi_add_hp_notifier - Register a hotplug notifier for given device.
++ * @handle: ACPI handle of the device to register the notifier for.
++ * @handler: Callback to execute for hotplug events related to @handle.
++ * @context: Pointer to the context data to pass to @handler.
++ *
++ * Use @handle to get an ACPI device object and check if there is a notifier
++ * object for it.  If this is the case, add @handler and @context to the
++ * existing notifier object, unless there already is a hotplug handler in this
++ * notifier object.  Otherwise, create a new notifier object for the ACPI device
++ * associated with @handle and add @handler and @context to it.
++ */
++acpi_status pci_acpi_add_hp_notifier(acpi_handle handle,
++				     acpi_notify_handler handler, void *context)
++{
++	struct pci_acpi_notifier_block *nb;
++	struct acpi_device *dev;
++	acpi_status status = AE_OK;
++
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev)))
++		return AE_NOT_FOUND;
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	list_for_each_entry(nb, &pci_acpi_runtime_notifiers, entry) {
++		if (nb->dev != dev)
++			continue;
++
++		if (!nb->hp_cb) {
++			nb->hp_cb = handler;
++			nb->hp_data = context;
++		} else {
++			status = AE_ALREADY_EXISTS;
++		}
++		goto out;
++	}
++
++	nb = new_notifier(dev);
++	if (!nb) {
++		status = AE_NO_MEMORY;
++		goto out;
++	}
++	nb->hp_cb = handler;
++	nb->hp_data = context;
++
++	list_add_tail(&nb->entry, &pci_acpi_runtime_notifiers);
++
++	status = acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++						pci_acpi_event_fn, nb);
++	if (ACPI_FAILURE(status)) {
++		list_del(&nb->entry);
++		kfree(nb);
++	}
++
++ out:
++	mutex_unlock(&pci_acpi_notifier_mtx);
++
++	return status;
++}
++EXPORT_SYMBOL_GPL(pci_acpi_add_hp_notifier);
++
++/**
++ * pci_acpi_remove_hp_notifier - Unregister a hotplug notifier for given device.
++ * @handle: ACPI handle of the device to unregister the notifier for.
++ * @handler: Callback executed for hotplug events related to @handle.
++ *
++ * Find the notifier object associated with @handle and remove the hotplug
++ * callback and the pointer to the hotplug context data from it.  If the
++ * notifier object is not necessary any more, remove it altogether.
++ */
++acpi_status pci_acpi_remove_hp_notifier(acpi_handle handle,
++					acpi_notify_handler handler)
++{
++	struct pci_acpi_notifier_block *nb;
++	struct acpi_device *dev;
++	acpi_status status = AE_OK;
++
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev)))
++		return AE_NOT_FOUND;
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	list_for_each_entry(nb, &pci_acpi_runtime_notifiers, entry)
++		if (nb->dev == dev)
++			goto found;
++
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return AE_NOT_FOUND;
++
++ found:
++	if (list_empty(&nb->pm_buses) && list_empty(&nb->pm_devices)) {
++		status = acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++							pci_acpi_event_fn);
++		list_del(&nb->entry);
++		kfree(nb);
++	} else {
++		nb->hp_data = NULL;
++		nb->hp_cb = NULL;
++	}
++
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return status;
++}
++EXPORT_SYMBOL_GPL(pci_acpi_remove_hp_notifier);
++
++/**
++ * bus_match - Check if one PCI bus is upstream from another.
++ * @target: PCI bus expected to be upstream from the other.
++ * @bus: PCI bus expected to be downstream from the other.
++ *
++ * Return 'ture' if @target is upstream with respect to @bus.
++ */
++static inline bool bus_match(struct pci_bus *target, struct pci_bus *bus)
++{
++	return pci_domain_nr(target) == pci_domain_nr(bus)
++		&& (pci_is_root_bus(target) || (bus->number >= target->number
++		    && bus->number <= target->subordinate));
++}
++
++/**
++ * new_dev_entry - Create a new device notifier entry.
++ * @dev: PCI device to create the entry for.
++ * @list: List to add the new entry to.
++ */
++static struct pci_dev_notifier_entry *new_dev_entry(struct pci_dev *dev,
++						    struct list_head *list)
++{
++	struct pci_dev_notifier_entry *dne;
++
++	dne = kzalloc(sizeof(*dne), GFP_KERNEL);
++	if (!dne)
++		return NULL;
++
++	dne->dev = dev;
++	list_add_tail(&dne->entry, list);
++
++	return dne;
++}
++
++/**
++ * pci_acpi_add_device_pm_notifier - Register PM notifier for given device.
++ * @dev: ACPI device to add the notifier for.
++ * @pci_dev: PCI device to check for the PME status if an event is signaled.
++ *
++ * Check if there is a notifier object for @dev and if that is the case, add
++ * @pci_dev to its list of devices whose PME status should be checked if a PM
++ * event is signaled for @dev, unless @pci_dev is covered by one of the buses
++ * in the notifier's bus list.  Otherwise, create a new notifier object for @dev
++ * and add @pci_dev to its list of devices whose PME status to check.
++ */
++acpi_status pci_acpi_add_device_pm_notifier(struct acpi_device *dev,
++					    struct pci_dev *pci_dev)
++{
++	struct pci_acpi_notifier_block *nb;
++	struct pci_dev_notifier_entry *dne;
++	struct pci_bus *bus = pci_dev->bus;
++	acpi_status status = AE_OK;
++
++	if (!dev->wakeup.flags.valid)
++		return AE_BAD_PARAMETER;
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	list_for_each_entry(nb, &pci_acpi_runtime_notifiers, entry) {
++		struct pci_bus_notifier_entry *bne;
++
++		if (!acpi_wakeup_gpe_shared(nb->dev, dev))
++			continue;
++
++		list_for_each_entry(bne, &nb->pm_buses, entry)
++			if (bus_match(bne->bus, bus))
++				goto out;
++
++		list_for_each_entry(dne, &nb->pm_devices, entry)
++			if (dne->dev == pci_dev)
++				goto out;
++
++		if (!new_dev_entry(pci_dev, &nb->pm_devices))
++			status = AE_NO_MEMORY;
++		goto out;
++	}
++
++	nb = new_notifier(dev);
++	if (!nb) {
++		status = AE_NO_MEMORY;
++		goto out;
++	}
++
++	dne = new_dev_entry(pci_dev, &nb->pm_devices);
++	if (!dne) {
++		kfree(nb);
++		status = AE_NO_MEMORY;
++		goto out;
++	}
++
++	list_add_tail(&nb->entry, &pci_acpi_runtime_notifiers);
++
++	status = acpi_install_notify_handler(dev->handle, ACPI_SYSTEM_NOTIFY,
++						pci_acpi_event_fn, nb);
++	if (ACPI_FAILURE(status)) {
++		list_del(&dne->entry);
++		kfree(dne);
++		list_del(&nb->entry);
++		kfree(nb);
++	}
++
++ out:
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return status;
++}
++
++/**
++ * pci_acpi_remove_device_pm_notifier - Unregister PM notifier for given device.
++ * @dev: ACPI device to remove the notifier from.
++ * @pci_dev: PCI device whose PME status is checked if an event is signaled.
++ *
++ * Find the notifier object for @dev and remove @pci_dev from its list of
++ * devices whose PME status to check when wake-up event is signaled.  If the
++ * notifier object is not necessary any more after that, remove it too.
++ */
++acpi_status pci_acpi_remove_device_pm_notifier(struct acpi_device *dev,
++					       struct pci_dev *pci_dev)
++{
++	struct pci_acpi_notifier_block *nb;
++	struct pci_dev_notifier_entry *dne = NULL;
++	acpi_status status = AE_OK;
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	list_for_each_entry(nb, &pci_acpi_runtime_notifiers, entry) {
++		if (!acpi_wakeup_gpe_shared(nb->dev, dev))
++			continue;
++
++		list_for_each_entry(dne, &nb->pm_devices, entry)
++			if (dne->dev == pci_dev)
++				goto found;
++	}
++
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return AE_NOT_FOUND;
++
++ found:
++	if (dne->enabled) {
++		if (!--nb->pm_enable_count)
++			acpi_device_run_wake(nb->dev, false);
++	}
++	list_del(&dne->entry);
++	kfree(dne);
++
++	if (list_empty(&nb->pm_devices) && list_empty(&nb->pm_buses)
++	    && !nb->hp_cb) {
++		status = acpi_remove_notify_handler(nb->dev->handle,
++							ACPI_SYSTEM_NOTIFY,
++							pci_acpi_event_fn);
++		list_del(&nb->entry);
++		kfree(nb);
++	}
++
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return status;
++}
++
++/**
++ * new_bus_entry - Create a new bus notifier entry.
++ * @bus: PCI bus to create the entry for.
++ * @list: List to add the new entry to.
++ */
++static struct pci_bus_notifier_entry *new_bus_entry(struct pci_bus *bus,
++						    struct list_head *list)
++{
++	struct pci_bus_notifier_entry *bne;
++
++	bne = kzalloc(sizeof(*bne), GFP_KERNEL);
++	if (!bne)
++		return NULL;
++
++	bne->bus = bus;
++	list_add_tail(&bne->entry, list);
++
++	return bne;
++}
++
++/**
++ * pci_acpi_add_bus_pm_notifier - Register PM notifier for given PCI bus.
++ * @dev: ACPI device to add the notifier for.
++ * @bus: PCI bus to walk if an event is signaled.
++ *
++ * Check if there is a notifier object for @dev and if that is the case, add
++ * @bus to its list of buses to walk, checking the PME status of all devices on
++ * them, if a PM event is signaled for @dev, unless @bus or a PCI bus upstream
++ * with respect to it is in the list already.  Otherwise, create a new notifier
++ * object for @dev and add @bus to its list of buses to walk if a PM event is
++ * signaled.
++ */
++acpi_status pci_acpi_add_bus_pm_notifier(struct acpi_device *dev,
++					 struct pci_bus *bus)
++{
++	struct pci_acpi_notifier_block *nb;
++	struct pci_bus_notifier_entry *bne;
++	acpi_status status = AE_OK;
++
++	if (!dev->wakeup.flags.valid)
++		return AE_BAD_PARAMETER;
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	list_for_each_entry(nb, &pci_acpi_runtime_notifiers, entry) {
++		if (!acpi_wakeup_gpe_shared(nb->dev, dev))
++			continue;
++
++		list_for_each_entry(bne, &nb->pm_buses, entry)
++			if (bus_match(bne->bus, bus))
++				goto out;
++
++		if (!new_bus_entry(bus, &nb->pm_buses))
++			status = AE_NO_MEMORY;
++		goto out;
++	}
++
++	nb = new_notifier(dev);
++	if (!nb) {
++		status = AE_NO_MEMORY;
++		goto out;
++	}
++
++	bne = new_bus_entry(bus, &nb->pm_buses);
++	if (!bne) {
++		kfree(nb);
++		status = AE_NO_MEMORY;
++		goto out;
++	}
++
++	list_add_tail(&nb->entry, &pci_acpi_runtime_notifiers);
++
++	status = acpi_install_notify_handler(dev->handle, ACPI_SYSTEM_NOTIFY,
++						pci_acpi_event_fn, nb);
++	if (ACPI_FAILURE(status)) {
++		list_del(&bne->entry);
++		kfree(bne);
++		list_del(&nb->entry);
++		kfree(nb);
++	}
++
++ out:
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return status;
++}
++
++/**
++ * pci_acpi_remove_bus_pm_notifier - Unregister PM notifier for given PCI bus.
++ * @dev: ACPI device to remove the notifier from.
++ * @bus: PCI bus that is walked if an event is signaled.
++ *
++ * Find the notifier object for @dev and remove @bus from its list of buses to
++ * walk when wake-up event is signaled.  If the notifier object is not necessary
++ * any more after that, remove it too.
++ */
++acpi_status pci_acpi_remove_bus_pm_notifier(struct acpi_device *dev,
++					    struct pci_bus *bus)
++{
++	struct pci_acpi_notifier_block *nb;
++	struct pci_bus_notifier_entry *bne = NULL;
++	acpi_status status = AE_OK;
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	list_for_each_entry(nb, &pci_acpi_runtime_notifiers, entry) {
++		if (!acpi_wakeup_gpe_shared(nb->dev, dev))
++			continue;
++
++		list_for_each_entry(bne, &nb->pm_buses, entry)
++			if (bne->bus == bus)
++				goto found;
++	}
++
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return AE_NOT_FOUND;
++
++ found:
++	if (bne->enable_count) {
++		nb->pm_enable_count -= bne->enable_count;
++		if (!nb->pm_enable_count)
++			acpi_device_run_wake(nb->dev, false);
++	}
++	list_del(&bne->entry);
++	kfree(bne);
++
++	if (list_empty(&nb->pm_devices) && list_empty(&nb->pm_buses)
++	    && !nb->hp_cb) {
++		status = acpi_remove_notify_handler(nb->dev->handle,
++							ACPI_SYSTEM_NOTIFY,
++							pci_acpi_event_fn);
++		list_del(&nb->entry);
++		kfree(nb);
++	}
++
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return status;
++}
++
++/**
++ * dev_run_wake - Enable/disable the GPE associated with given notifier.
++ * @nb: Notifier to enable/disable the GPE for.
++ * @dne: Device notifier entry for the device being enabled/disabled to wake-up.
++ * @enable: Whether to enable or disable the GPE.
++ */
++static int dev_run_wake(struct pci_acpi_notifier_block *nb,
++			struct pci_dev_notifier_entry *dne, bool enable)
++{
++	int error = 0;
++
++	if (enable) {
++		dne->enabled = true;
++		if (!nb->pm_enable_count++)
++			acpi_device_run_wake(nb->dev, true);
++	} else if (dne->enabled) {
++		dne->enabled = false;
++		if (!--nb->pm_enable_count)
++			acpi_device_run_wake(nb->dev, false);
++	} else {
++		error = -EALREADY;
++	}
++
++	return error;
++}
++
++/**
++ * bus_run_wake - Enable/disable the GPE associated with given notifier.
++ * @nb: Notifier to enable/disable the GPE for.
++ * @bne: Bus notifier entry for a bridge being enabled/disabled to wake-up.
++ * @enable: Whether to enable or disable the GPE.
++ */
++static int bus_run_wake(struct pci_acpi_notifier_block *nb,
++			struct pci_bus_notifier_entry *bne, bool enable)
++{
++	int error = 0;
++
++	if (enable) {
++		bne->enable_count++;
++		if (!nb->pm_enable_count++)
++			acpi_device_run_wake(nb->dev, true);
++	} else if (bne->enable_count) {
++		bne->enable_count--;
++		if (!--nb->pm_enable_count)
++			acpi_device_run_wake(nb->dev, false);
++	} else {
++		error = -EALREADY;
++	}
++
++	return error;
++}
++
++/**
++ * __acpi_dev_run_wake - Enable/disable wake-up for given PCI device.
++ * @pci_dev: Device to enable/disable the platform to wake-up the system for.
++ * @enable: Whether enable or disable the wake-up functionality.
++ *
++ * Find the notifier object corresponding to @pci_dev and try to enable/disable
++ * the GPE associated with it.
++ */
++static int __acpi_dev_run_wake(struct pci_dev *pci_dev, bool enable)
++{
++	struct pci_acpi_notifier_block *nb;
++	struct pci_bus *bus = pci_dev->bus;
++	struct acpi_device *dev;
++	acpi_handle handle;
++	int error = -ENODEV;
++
++	if (!device_can_wakeup(&pci_dev->dev))
++		return -EINVAL;
++
++	handle = DEVICE_ACPI_HANDLE(&pci_dev->dev);
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
++		dev_dbg(&pci_dev->dev, "ACPI handle has no context in %s!\n",
++			__func__);
++		return -ENODEV;
++	}
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	list_for_each_entry(nb, &pci_acpi_runtime_notifiers, entry) {
++		struct pci_bus_notifier_entry *bne;
++		struct pci_dev_notifier_entry *dne;
++
++		if (!acpi_wakeup_gpe_shared(nb->dev, dev))
++			continue;
++
++		list_for_each_entry(bne, &nb->pm_buses, entry)
++			if (bus_match(bne->bus, bus)) {
++				error = bus_run_wake(nb, bne, enable);
++				goto out;
++			}
++
++		list_for_each_entry(dne, &nb->pm_devices, entry)
++			if (dne->dev == pci_dev) {
++				error = dev_run_wake(nb, dne, enable);
++				goto out;
++			}
++	}
++
++ out:
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return error;
++}
++
++/**
++ * __acpi_bridge_run_wake - Enable/disable wake-up for given bridge.
++ * @bridge: Bridge to enable/disable the platform to wake-up the system for.
++ * @enable: Whether enable or disable the wake-up functionality.
++ *
++ * Find the notifier object corresponding to @bridge and try to enable/disable
++ * the GPE associated with it, under the assumption that @bridge may be a PCI
++ * root bridge.
++ */
++static int __acpi_bridge_run_wake(struct device *bridge, bool enable)
++{
++	struct pci_acpi_notifier_block *nb;
++	struct acpi_device *dev;
++	acpi_handle handle;
++	int error = -ENODEV;
++
++	if (!device_can_wakeup(bridge))
++		return -EINVAL;
++
++	handle = DEVICE_ACPI_HANDLE(bridge);
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
++		dev_dbg(bridge, "ACPI handle has no context in %s!\n",
++			__func__);
++		return -ENODEV;
++	}
++
++	mutex_lock(&pci_acpi_notifier_mtx);
++
++	list_for_each_entry(nb, &pci_acpi_runtime_notifiers, entry) {
++		struct pci_bus_notifier_entry *bne;
++
++		if (!acpi_wakeup_gpe_shared(nb->dev, dev))
++			continue;
++
++		list_for_each_entry(bne, &nb->pm_buses, entry)
++			if (bne->bus->bridge == bridge) {
++				error = bus_run_wake(nb, bne, enable);
++				goto out;
++			}
++	}
++
++ out:
++	mutex_unlock(&pci_acpi_notifier_mtx);
++	return error;
++}
++
++/*
+  * _SxD returns the D-state with the highest power
+  * (lowest D-state number) supported in the S-state "x".
+  *
+@@ -137,12 +813,42 @@ static int acpi_pci_sleep_wake(struct pc
+ 	return 0;
+ }
+ 
++static void acpi_pci_propagate_run_wake(struct pci_bus *bus, bool enable)
++{
++	while (bus->parent) {
++		struct pci_dev *bridge = bus->self;
++
++		if (pcie_pme_enabled(bridge))
++			return;
++		if (!__acpi_dev_run_wake(bridge, enable))
++			return;
++		bus = bus->parent;
++	}
++
++	/* We have reached the root bus. */
++	if (bus->bridge)
++		__acpi_bridge_run_wake(bus->bridge, enable);
++}
++
++static int acpi_pci_run_wake(struct pci_dev *dev, bool enable)
++{
++	if (pcie_pme_enabled(dev))
++		return 0;
++
++	if (acpi_pci_can_wakeup(dev))
++		return __acpi_dev_run_wake(dev, enable);
++
++	acpi_pci_propagate_run_wake(dev->bus, enable);
++	return 0;
++}
++
+ static struct pci_platform_pm_ops acpi_pci_platform_pm = {
+ 	.is_manageable = acpi_pci_power_manageable,
+ 	.set_state = acpi_pci_set_power_state,
+ 	.choose_state = acpi_pci_choose_state,
+ 	.can_wakeup = acpi_pci_can_wakeup,
+ 	.sleep_wake = acpi_pci_sleep_wake,
++	.run_wake = acpi_pci_run_wake,
+ };
+ 
+ /* ACPI bus type */
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -21,6 +21,7 @@
+ #include <linux/interrupt.h>
+ #include <asm/dma.h>	/* isa_dma_bridge_buggy */
+ #include <linux/device.h>
++#include <linux/pm_runtime.h>
+ #include <asm/setup.h>
+ #include "pci.h"
+ 
+@@ -434,6 +435,12 @@ static inline int platform_pci_sleep_wak
+ 			pci_platform_pm->sleep_wake(dev, enable) : -ENODEV;
+ }
+ 
++int pci_platform_run_wake(struct pci_dev *dev, bool enable)
++{
++	return pci_platform_pm ?
++			pci_platform_pm->run_wake(dev, enable) : -ENODEV;
++}
++
+ /**
+  * pci_raw_set_power_state - Use PCI PM registers to set the power state of
+  *                           given PCI device
+@@ -1202,6 +1209,31 @@ bool pci_check_pme_status(struct pci_dev
+ }
+ 
+ /**
++ * pci_pme_wakeup - Wake up a PCI device if its PME Status bit is set.
++ * @dev: Device to handle.
++ * @ign: Ignored.
++ *
++ * Check if @dev has generated PME and queue a resume request for it in that
++ * case.
++ */
++int __pci_pme_wakeup(struct pci_dev *dev, void *ign)
++{
++	if (pci_check_pme_status(dev))
++		pm_request_resume(&dev->dev);
++	return 0;
++}
++
++/**
++ * pci_pme_wakeup_bus - Walk given bus and wake up devices on it, if necessary.
++ * @bus: Top bus of the subtree to walk.
++ */
++void pci_pme_wakeup_bus(struct pci_bus *bus)
++{
++	if (bus)
++		pci_walk_bus(bus, __pci_pme_wakeup, NULL);
++}
++
++/**
+  * pci_pme_capable - check the capability of PCI device to generate PME#
+  * @dev: PCI device to handle.
+  * @state: PCI state from which device will issue PME#.
+Index: linux-2.6/drivers/acpi/wakeup.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/wakeup.c
++++ linux-2.6/drivers/acpi/wakeup.c
+@@ -124,6 +124,56 @@ void acpi_disable_wakeup_device(u8 sleep
+ 	}
+ }
+ 
++#ifdef CONFIG_PM_WAKEUP
++/**
++ * acpi_device_run_wake - Enable/disable ACPI BIOS to generate wake-up events.
++ * @dev: Device to generate the wake-up events for.
++ * @enable: Desired action.
++ *
++ * If @enable is set, set up the GPE associated with @phys_dev to generate
++ * wake-up events at run time.  If @enable is unset, disable the GPE associated
++ * with @phys_dev (unless it is marked as a run-wake device).
++ */
++int acpi_device_run_wake(struct acpi_device *dev, bool enable)
++{
++	if (!dev || !dev->wakeup.flags.valid)
++		return -EINVAL;
++
++	if (enable) {
++		if (!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
++			return -EINVAL;
++
++		acpi_set_gpe_type(dev->wakeup.gpe_device,
++					dev->wakeup.gpe_number,
++					ACPI_GPE_TYPE_WAKE_RUN);
++		acpi_enable_gpe(dev->wakeup.gpe_device,
++					dev->wakeup.gpe_number);
++	} else if (!dev->wakeup.flags.run_wake) {
++		acpi_set_gpe_type(dev->wakeup.gpe_device,
++					dev->wakeup.gpe_number,
++					ACPI_GPE_TYPE_WAKE);
++		acpi_disable_gpe(dev->wakeup.gpe_device,
++					dev->wakeup.gpe_number);
++		acpi_clear_gpe(dev->wakeup.gpe_device,
++					dev->wakeup.gpe_number, ACPI_NOT_ISR);
++	}
++
++	return 0;
++}
++
++/**
++ * acpi_wakeup_gpes_shared - Check if given ACPI devices share a wake-up GPE.
++ * @deva: First ACPI device to check.
++ * @devb: Second ACPI device to check.
++ */
++bool acpi_wakeup_gpe_shared(struct acpi_device *deva, struct acpi_device *devb)
++{
++	return deva->wakeup.flags.valid && devb->wakeup.flags.valid
++		&& deva->wakeup.gpe_device == devb->wakeup.gpe_device
++		&& deva->wakeup.gpe_number == devb->wakeup.gpe_number;
++}
++#endif /* CONFIG_PM_WAKEUP */
++
+ int __init acpi_wakeup_device_init(void)
+ {
+ 	struct list_head *node, *next;
+Index: linux-2.6/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.orig/include/acpi/acpi_bus.h
++++ linux-2.6/include/acpi/acpi_bus.h
+@@ -391,21 +391,35 @@ acpi_handle acpi_get_pci_rootbridge_hand
+ struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle);
+ #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+ 
+-#ifdef CONFIG_PM_SLEEP
++#ifdef CONFIG_PM_WAKEUP
+ int acpi_pm_device_sleep_state(struct device *, int *);
+ int acpi_pm_device_sleep_wake(struct device *, bool);
+-#else /* !CONFIG_PM_SLEEP */
++int acpi_device_run_wake(struct acpi_device *, bool);
++bool acpi_wakeup_gpe_shared(struct acpi_device *, struct acpi_device *);
++#else /* !CONFIG_PM_WAKEUP */
+ static inline int acpi_pm_device_sleep_state(struct device *d, int *p)
+ {
+ 	if (p)
+ 		*p = ACPI_STATE_D0;
+ 	return ACPI_STATE_D3;
+ }
++
+ static inline int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
+ {
+ 	return -ENODEV;
+ }
+-#endif /* !CONFIG_PM_SLEEP */
++
++static inline int acpi_device_run_wake(struct device *dev, bool enable)
++{
++	return -ENODEV;
++}
++
++static inline bool acpi_wakeup_gpe_shared(struct acpi_device *a,
++					   struct acpi_device *b)
++{
++	return false;
++}
++#endif /* !CONFIG_PM_WAKEUP */
+ 
+ #endif				/* CONFIG_ACPI */
+ 
+Index: linux-2.6/kernel/power/Kconfig
+===================================================================
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -236,3 +236,8 @@ config PM_RUNTIME
+ 	  and the bus type drivers of the buses the devices are on are
+ 	  responsible for the actual handling of the autosuspend requests and
+ 	  wake-up events.
++
++config PM_WAKEUP
++	bool
++	depends on SUSPEND || HIBERNATION || PM_RUNTIME
++	default y
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -594,7 +594,7 @@ int acpi_suspend(u32 acpi_state)
+ 	return -EINVAL;
+ }
+ 
+-#ifdef CONFIG_PM_SLEEP
++#ifdef CONFIG_PM_WAKEUP
+ /**
+  *	acpi_pm_device_sleep_state - return preferred power state of ACPI device
+  *		in the system sleep state given by %acpi_target_sleep_state
+@@ -709,7 +709,7 @@ int acpi_pm_device_sleep_wake(struct dev
+ 
+ 	return error;
+ }
+-#endif
++#endif /* CONFIG_PM_WAKEUP */
+ 
+ static void acpi_power_off_prepare(void)
+ {
+Index: linux-2.6/drivers/acpi/pci_root.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -563,6 +563,9 @@ static int __devinit acpi_pci_root_add(s
+ 	if (flags != base_flags)
+ 		acpi_pci_osc_support(root, flags);
+ 
++	if (device->wakeup.flags.valid)
++		pci_acpi_add_bus_pm_notifier(device, root->bus);
++
+ 	return 0;
+ 
+ end:
+@@ -584,6 +587,8 @@ static int acpi_pci_root_remove(struct a
+ {
+ 	struct acpi_pci_root *root = acpi_driver_data(device);
+ 
++	if (device->wakeup.flags.valid)
++		pci_acpi_remove_bus_pm_notifier(device, root->bus);
+ 	kfree(root);
+ 	return 0;
+ }
+Index: linux-2.6/include/linux/pci-acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci-acpi.h
++++ linux-2.6/include/linux/pci-acpi.h
+@@ -11,6 +11,20 @@
+ #include <linux/acpi.h>
+ 
+ #ifdef CONFIG_ACPI
++extern acpi_status pci_acpi_add_hp_notifier(acpi_handle handle,
++					     acpi_notify_handler handler,
++					     void *context);
++extern acpi_status pci_acpi_remove_hp_notifier(acpi_handle handle,
++					       acpi_notify_handler handler);
++extern acpi_status pci_acpi_add_device_pm_notifier(struct acpi_device *dev,
++						   struct pci_dev *pci_dev);
++extern acpi_status pci_acpi_remove_device_pm_notifier(struct acpi_device *dev,
++						      struct pci_dev *pci_dev);
++extern acpi_status pci_acpi_add_bus_pm_notifier(struct acpi_device *dev,
++						struct pci_bus *bus);
++extern acpi_status pci_acpi_remove_bus_pm_notifier(struct acpi_device *dev,
++						   struct pci_bus *bus);
++
+ static inline acpi_handle acpi_find_root_bridge_handle(struct pci_dev *pdev)
+ {
+ 	struct pci_bus *pbus = pdev->bus;
+Index: linux-2.6/drivers/acpi/pci_bind.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_bind.c
++++ linux-2.6/drivers/acpi/pci_bind.c
+@@ -26,6 +26,7 @@
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/pci.h>
++#include <linux/pci-acpi.h>
+ #include <linux/acpi.h>
+ #include <acpi/acpi_bus.h>
+ #include <acpi/acpi_drivers.h>
+@@ -38,7 +39,17 @@ static int acpi_pci_unbind(struct acpi_d
+ 	struct pci_dev *dev;
+ 
+ 	dev = acpi_get_pci_dev(device->handle);
+-	if (!dev || !dev->subordinate)
++	if (!dev)
++		goto out;
++
++	if (device->wakeup.flags.valid) {
++		if (dev->subordinate)
++			pci_acpi_remove_bus_pm_notifier(device,
++							dev->subordinate);
++		pci_acpi_remove_device_pm_notifier(device, dev);
++	}
++
++	if (!dev->subordinate)
+ 		goto out;
+ 
+ 	acpi_pci_irq_del_prt(dev->subordinate);
+@@ -94,6 +105,12 @@ static int acpi_pci_bind(struct acpi_dev
+ 
+ 	acpi_pci_irq_add_prt(device->handle, bus);
+ 
++	if (device->wakeup.flags.valid) {
++		pci_acpi_add_device_pm_notifier(device, dev);
++		if (dev->subordinate)
++			pci_acpi_add_bus_pm_notifier(device, dev->subordinate);
++	}
++
+ out:
+ 	pci_dev_put(dev);
+ 	return 0;
+Index: linux-2.6/drivers/pci/hotplug/acpiphp_glue.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/acpiphp_glue.c
++++ linux-2.6/drivers/pci/hotplug/acpiphp_glue.c
+@@ -238,8 +238,7 @@ register_slot(acpi_handle handle, u32 lv
+ 
+ 	/* install notify handler */
+ 	if (!(newfunc->flags & FUNC_HAS_DCK)) {
+-		status = acpi_install_notify_handler(handle,
+-					     ACPI_SYSTEM_NOTIFY,
++		status = pci_acpi_add_hp_notifier(handle,
+ 					     handle_hotplug_event_func,
+ 					     newfunc);
+ 
+@@ -290,14 +289,12 @@ static void init_bridge_misc(struct acpi
+ 	/* install notify handler */
+ 	if (bridge->type != BRIDGE_TYPE_HOST) {
+ 		if ((bridge->flags & BRIDGE_HAS_EJ0) && bridge->func) {
+-			status = acpi_remove_notify_handler(bridge->func->handle,
+-						ACPI_SYSTEM_NOTIFY,
++			status = pci_acpi_remove_hp_notifier(bridge->func->handle,
+ 						handle_hotplug_event_func);
+ 			if (ACPI_FAILURE(status))
+ 				err("failed to remove notify handler\n");
+ 		}
+-		status = acpi_install_notify_handler(bridge->handle,
+-					     ACPI_SYSTEM_NOTIFY,
++		status = pci_acpi_add_hp_notifier(bridge->handle,
+ 					     handle_hotplug_event_bridge,
+ 					     bridge);
+ 
+@@ -513,15 +510,14 @@ static void cleanup_bridge(struct acpiph
+ 	acpi_status status;
+ 	acpi_handle handle = bridge->handle;
+ 
+-	status = acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++	status = pci_acpi_remove_hp_notifier(handle,
+ 					    handle_hotplug_event_bridge);
+ 	if (ACPI_FAILURE(status))
+ 		err("failed to remove notify handler\n");
+ 
+ 	if ((bridge->type != BRIDGE_TYPE_HOST) &&
+ 	    ((bridge->flags & BRIDGE_HAS_EJ0) && bridge->func)) {
+-		status = acpi_install_notify_handler(bridge->func->handle,
+-						ACPI_SYSTEM_NOTIFY,
++		status = pci_acpi_add_hp_notifier(bridge->func->handle,
+ 						handle_hotplug_event_func,
+ 						bridge->func);
+ 		if (ACPI_FAILURE(status))
+@@ -539,8 +535,7 @@ static void cleanup_bridge(struct acpiph
+ 				unregister_dock_notifier(&func->nb);
+ 			}
+ 			if (!(func->flags & FUNC_HAS_DCK)) {
+-				status = acpi_remove_notify_handler(func->handle,
+-						ACPI_SYSTEM_NOTIFY,
++				status = pci_acpi_remove_hp_notifier(func->handle,
+ 						handle_hotplug_event_func);
+ 				if (ACPI_FAILURE(status))
+ 					err("failed to remove notify handler\n");
+@@ -602,7 +597,7 @@ static void remove_bridge(acpi_handle ha
+ 	if (bridge)
+ 		cleanup_bridge(bridge);
+ 	else
+-		acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++		pci_acpi_remove_hp_notifier(handle,
+ 					   handle_hotplug_event_bridge);
+ }
+ 
+@@ -1492,8 +1487,8 @@ find_root_bridges(acpi_handle handle, u3
+ 	int *count = (int *)context;
+ 
+ 	if (acpi_is_root_bridge(handle)) {
+-		acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
+-				handle_hotplug_event_bridge, NULL);
++		pci_acpi_add_hp_notifier(handle,
++					handle_hotplug_event_bridge, NULL);
+ 			(*count)++;
+ 	}
+ 	return AE_OK ;
