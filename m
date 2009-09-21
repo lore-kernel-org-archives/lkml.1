@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZIUUFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZIUUJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753759AbZIUUFZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 16:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbZIUUFY
+	id S1753838AbZIUUJt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 16:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZIUUJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 16:05:24 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51164 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753574AbZIUUFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 16:05:23 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs / Novell
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: fanotify as syscalls
-Date: Mon, 21 Sep 2009 22:04:50 +0200
-User-Agent: KMail/1.9.9
-Cc: Jamie Lokier <jamie@shareable.org>,
+	Mon, 21 Sep 2009 16:09:47 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50033 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752050AbZIUUJr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 16:09:47 -0400
+Date: Mon, 21 Sep 2009 21:09:23 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Eric Miao <eric.y.miao@gmail.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Robert Jarzmik <robert.jarzmik@free.fr>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-References: <20090912094110.GB24709@ioremap.net> <200909190000.43556.agruen@suse.de> <1253329471.2630.30.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1253329471.2630.30.camel@dhcp231-106.rdu.redhat.com>
+       Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: What's inside the pxa tree for this merge window
+Message-ID: <20090921200923.GF30821@n2100.arm.linux.org.uk>
+References: <f17812d70909100446h17a1903fy74941945dbfc6943@mail.gmail.com> <1253256227.4407.7.camel@pc-matejk> <20090918074551.GA26058@n2100.arm.linux.org.uk> <Pine.LNX.4.64.0909212111490.17328@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909212204.51077.agruen@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0909212111490.17328@axis700.grange>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 19 September 2009 5:04:31 Eric Paris wrote:
-> Let me start by saying I am agreeing I should pursue subtree
-> notification.  It's what I think everyone really wants.  It's a great
-> idea, and I think you might have a simple way to get close.  Clearly
-> these are avenues I'm willing and hoping to pursue.  Also I say it
-> again, I believe the interface as proposed (except maybe some of my
-> exclusion stuff) is flexible enough to implement any of these ideas.
-> Does anyone disagree?
+On Mon, Sep 21, 2009 at 09:19:46PM +0200, Guennadi Liakhovetski wrote:
+> On Fri, 18 Sep 2009, Russell King - ARM Linux wrote:
+> 
+> > On Fri, Sep 18, 2009 at 08:43:47AM +0200, Matej Kenda wrote:
+> > > On Thu, 2009-09-10 at 19:46 +0800, Eric Miao wrote:
+> > > > Here's the preview of request-pull result, please let me know if there
+> > > > is anything missed, thanks.
+> > > > 
+> > > > URL: git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git
+> > > > 
+> > > > 
+> > > > Matej Kenda (2):
+> > > >       [ARM] pxa: add support for the IskraTel XCEP board
+> > > >       [ARM] pxa: add defconfig for IskraTel XCEP board
+> > > 
+> > > Eric, what is the current status of this request? Do I need to repost
+> > > the patches to included into 2.6.32?
+> > > 
+> > > Russell discarded them from his patch system, because they are on your
+> > > list.
+> > 
+> > I discarded them _because_ Eric handled them, which is what I said in the
+> > comments when I discarded them.
+> 
+> Ok, I did do my best to get patches in the right order in the mainline, 
+> but it all failed. AFAICS, v4l and sh are already in the mainline with a 
+> _wrongly_ resolved mefge conflict, which, most likely, breaks the 
+> sh_mobile_ceu_camera.c driver, and the three PXA platforms, patches for 
+> which should have been applied before both those trees and still haven't 
+> been applied are broken until the patches do get in and the later those 
+> patches get applied the longer the interval with the broken for them 
+> bisection is going to be.
 
-It does seem flexible enough. However, the current interface assumes "global" 
-listeners (the mask argument of fanotify_init):
+Meanwhile I have to consider that we have several bug fixes outstanding,
+and since I can't send Linus a pull request every day (max once a week)
+I have to be very careful about when I send stuff.
 
-  int fanotify_init(int flags, int f_flags, __u64 mask,
-		    unsigned int priority);
+So I only get _two_ opportunities during a merge window to send a pull
+request.
 
-Once subtree support is added, this parameter becomes obsolete. That's pretty 
-broken for a syscall yet to be introduced.
+I'm going to wait until tomorrow before sending my final pull for this
+window, which is the penultimate day before the window closes.
 
-> BUT to solve one of the main problems fanotify is intending to solve it
-> needs a way to be the 'fscking all notifier.'  It needs to be the whole
-> damn system.
-
-Think of a system after boot, with a single global namespace. Whatever you 
-access by filename is reachable from the namespace root. At this point, 
-nothing more global exists. A listener can watch the mount points of 
-interest, and everything's fine.
-
-What's a bit more tricky is to ensure that this listener will continue to 
-receive all events from whatever else is mounted anywhere, irrespective of 
-namespaces. I think we can get there.
-
-By the way, Documentation/filesystems/sharedsubtree.txt describes how 
-filesystem namespaces work.
-
-Thanks,
-Andreas
+Don't blame me for these delays - it's not my choice to impose such
+delays.  I'd really like to fix those broken platforms right now.  I
+just can't do so without causing additional delays for other issues.
+Blame Linus for imposing the "max one pull a week" rule on me.
