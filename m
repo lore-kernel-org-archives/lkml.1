@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZIUSS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZIUSYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752610AbZIUSS0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 14:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZIUSSZ
+	id S1752956AbZIUSYJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 14:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZIUSYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 14:18:25 -0400
-Received: from khc.piap.pl ([195.187.100.11]:56073 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbZIUSSZ convert rfc822-to-8bit (ORCPT
+	Mon, 21 Sep 2009 14:24:06 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:45887 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752094AbZIUSX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 14:18:25 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org
-Subject: [PULL REQ] IXP4xx
-Date: Mon, 21 Sep 2009 20:18:26 +0200
-Message-ID: <m3eiq0duvh.fsf@intrepid.localdomain>
+	Mon, 21 Sep 2009 14:23:59 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 21 Sep 2009 20:23:36 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] FireWire updates post 2.6.31
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.96c67be01421d723@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Linus, please pull from the for-linus branch at
 
-Please pull from my IXP4xx tree. This is rather trivial, and based on
-your current HEAD to eliminate a conflict. Thanks.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-The following changes since commit 43c1266ce4dc06bfd236cec31e11e9ecd69c0bef:
-  Linus Torvalds (1):
-        Merge branch 'perfcounters-rename-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+to receive a few minor IEEE 1394/ FireWire subsystem fixes.
 
-are available in the git repository at:
+Michael Buesch (1):
+      ieee1394: raw1394: Do not leak memory on failed trylock.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/chris/linux-2.6.git ixp4xx
+Stefan Richter (7):
+      firewire: ohci: fix Self ID Count register mask (safeguard against buffer overflow)
+      firewire: core: header file cleanup
+      firewire: core: fix race with parallel PCI device probe
+      firewire: core: fix topology map response handler
+      firewire: sbp2: fix status reception
+      firewire: sbp2: remove a workaround for Momobay FX-3A
+      ieee1394: sbp2: remove a workaround for Momobay FX-3A
 
-Krzysztof Hałasa (1):
-      Add MAINTAINERS entry for ARM/INTEL IXP4xx arch support.
+ drivers/firewire/core-card.c        |   13 +++++--------
+ drivers/firewire/core-transaction.c |    2 +-
+ drivers/firewire/core.h             |   14 ++++++++++++++
+ drivers/firewire/ohci.c             |    4 ++--
+ drivers/firewire/sbp2.c             |   16 ++++++++--------
+ drivers/ieee1394/raw1394.c          |    4 +++-
+ drivers/ieee1394/sbp2.c             |    3 +--
+ include/linux/firewire.h            |   14 --------------
+ 8 files changed, 34 insertions(+), 36 deletions(-)
 
-Mikael Pettersson (2):
-      ixp4xx: timer and clocks cleanups
-      ixp4xx: arch_idle() documentation fixup
-
- MAINTAINERS                                |    7 +++++++
- arch/arm/mach-ixp4xx/common.c              |   16 +++++++---------
- arch/arm/mach-ixp4xx/include/mach/system.h |    6 ++++--
- 3 files changed, 18 insertions(+), 11 deletions(-)
-
+Thanks,
 -- 
-Krzysztof Halasa
+Stefan Richter
+-=====-==--= =--= =-=-=
+http://arcgraph.de/sr/
+
