@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbZIUTgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbZIUTeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbZIUTgY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 15:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZIUTgV
+	id S1753477AbZIUTeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 15:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZIUTeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 15:36:21 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:21539 "EHLO mx1.redhat.com"
+	Mon, 21 Sep 2009 15:34:19 -0400
+Received: from gold.linx.net ([195.66.232.40]:48693 "EHLO gold.linx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753152AbZIUTgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 15:36:20 -0400
-Date: Mon, 21 Sep 2009 21:35:47 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: mingo@elte.hu, Roland Dreier <rolandd@cisco.com>,
-       Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>
-cc: tglx@linutronix.de, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] ib-release-locks-in-the-proper-order
-Message-ID: <alpine.LFD.2.00.0909212127191.7919@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753303AbZIUTeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 15:34:19 -0400
+Subject: Re: 2.6.31-07068-g43c1266 Early boot exception
+From: Tony Vroon <tony@linx.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>
+In-Reply-To: <4AB7D349.4000802@zytor.com>
+References: <1253560490.2934.42.camel@localhost>
+	 <4AB7D349.4000802@zytor.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-91B3RnZIIjITUCrB5szs"
+Organization: London Internet Exchange (LINX; AS5459)
+Date: Mon, 21 Sep 2009 20:35:49 +0100
+Message-Id: <1253561749.2934.47.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please consider the following patch - originally from Steven Rostedt. 
-It solves a problem for rt which is very sensitive to the lock ordering. 
-It should have a no impact on non-rt.
 
-The patch applies to current tip/master - but it is fine with me if it 
-would be more appropriate for one of the infiniband people to take it.
+--=-91B3RnZIIjITUCrB5szs
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks
+On Mon, 2009-09-21 at 12:26 -0700, H. Peter Anvin wrote:
+> Could you please do a git bisect on this problem?
 
->From e533f2b9ee9b0bd95aaa4c3369e79b350c9895d3 Mon Sep 17 00:00:00 2001
-From: Steven Rostedt <srostedt@redhat.com>
-Date: Mon, 21 Sep 2009 21:23:46 +0200
-Subject: [PATCH] ib: release locks in the proper order
+Would love to, but how do I convert g99bc470 to a correct git revision
+number please?
 
-RT is very sensitive to the order locks are taken and released
-wrt read write locks. We must do
+chainsaw@prometheus /cvs/linux-2.6 $ git bisect start
+chainsaw@prometheus /cvs/linux-2.6 $ git bisect bad
+chainsaw@prometheus /cvs/linux-2.6 $ git bisect good g99bc470
+fatal: Needed a single revision
+Bad rev input: g99bc470
 
-  lock(a);
-  lock(b);
-  lock(c);
+> 	-hpa
 
-  [...]
+Regards,
+Tony V.
 
-  unlock(c);
-  unlock(b);
-  unlock(a);
+--=-91B3RnZIIjITUCrB5szs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-otherwise bad things can happen.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-Signed-off-by: Ken Cox <jkc@redhat.com>
-Signed-off-by: Clark Williams <williams@redhat.com>
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/infiniband/core/uverbs_cmd.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+iEYEABECAAYFAkq31ZUACgkQp5vW4rUFj5onpwCeJjn2zFtbVcxKe5GMwMQHhXn4
+fUIAni00wQphWZK76izYb+FGyK5C3FRn
+=FK4V
+-----END PGP SIGNATURE-----
 
-diff --git a/drivers/infiniband/core/uverbs_cmd.c b/drivers/infiniband/core/uverbs_cmd.c
-index 56feab6..5ea66e1 100644
---- a/drivers/infiniband/core/uverbs_cmd.c
-+++ b/drivers/infiniband/core/uverbs_cmd.c
-@@ -1116,12 +1116,12 @@ ssize_t ib_uverbs_create_qp(struct ib_uverbs_file *file,
- 		goto err_copy;
- 	}
- 
--	put_pd_read(pd);
--	put_cq_read(scq);
--	if (rcq != scq)
--		put_cq_read(rcq);
- 	if (srq)
- 		put_srq_read(srq);
-+	if (rcq != scq)
-+		put_cq_read(rcq);
-+	put_cq_read(scq);
-+	put_pd_read(pd);
- 
- 	mutex_lock(&file->mutex);
- 	list_add_tail(&obj->uevent.uobject.list, &file->ucontext->qp_list);
-@@ -1140,14 +1140,14 @@ err_destroy:
- 	ib_destroy_qp(qp);
- 
- err_put:
--	if (pd)
--		put_pd_read(pd);
--	if (scq)
--		put_cq_read(scq);
--	if (rcq && rcq != scq)
--		put_cq_read(rcq);
- 	if (srq)
- 		put_srq_read(srq);
-+	if (rcq && rcq != scq)
-+		put_cq_read(rcq);
-+	if (scq)
-+		put_cq_read(scq);
-+	if (pd)
-+		put_pd_read(pd);
- 
- 	put_uobj_write(&obj->uevent.uobject);
- 	return ret;
--- 
-1.6.0.6
+--=-91B3RnZIIjITUCrB5szs--
 
