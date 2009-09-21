@@ -1,75 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbZIUHJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbZIUHLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbZIUHJK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 03:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbZIUHJI
+	id S1754099AbZIUHLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 03:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbZIUHLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 03:09:08 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:59151 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753178AbZIUHJH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 03:09:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=GFniYiwlNIvMfntO4VXsZg83V55zc2/SkHe/E3gdgtKXGlO/0UnesEEcn1TmwXOINS
-         qiUlrN982t3ToG5NZ9NYyEWClgreVJUy6cuv8M6+3Rcy/byijdJNJaN7sE9sf8UcqshI
-         NKnW3dSJVlubZ/I2An5ZsKh1FrGWnNoJlBzpA=
-Message-ID: <4AB72694.3040001@gmail.com>
-Date: Mon, 21 Sep 2009 09:09:08 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.6 Thunderbird/3.0b3
+	Mon, 21 Sep 2009 03:11:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44452 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753179AbZIUHLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 03:11:40 -0400
+Date: Mon, 21 Sep 2009 09:11:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Sachin Sant <sachinp@in.ibm.com>,
+       Markus Metzger <markus.t.metzger@intel.com>, benh@kernel.crashing.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] perf_counter/powerpc: Fix compilation after
+	perf_counter_overflow change
+Message-ID: <20090921071127.GA24467@elte.hu>
+References: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Heinz Diehl <htd@fancy-poultry.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31: crash in tty_io.c
-References: <20090920113741.GA6057@fancy-poultry.org>
-In-Reply-To: <20090920113741.GA6057@fancy-poultry.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/20/2009 01:37 PM, Heinz Diehl wrote:
-> Running the latest stable 2.6.31 kernel, I found this in my logs:
-> 
-> Sep 20 13:22:59 liesel kernel: ------------[ cut here ]------------
-> Sep 20 13:22:59 liesel kernel: WARNING: at drivers/char/tty_io.c:1267 tty_open+0x421/0x4e0()
 
-Please see http://lkml.org/lkml/2009/9/8/393
+* Paul Mackerras <paulus@samba.org> wrote:
 
-> Sep 20 13:22:59 liesel kernel: Hardware name:  
-> Sep 20 13:22:59 liesel kernel: Modules linked in: uhci_hcd rt73usb
-> rt2x00usb snd_hda_codec_realtek rt2x00lib snd_hda_intel led_class
-> snd_hda_codec ohci1394 i2c_nforce2 input_polldev ieee1394 snd_pcm
-> usb_storage snd_timer k8temp mac80211 button snd firewire_ohci hwmon
-> i2c_core forcedeth pcspkr soundcore sr_mod sg cfg80211 cdrom
-> snd_page_alloc rfkill xts usbhid ohci_hcd sd_mod ehci_hcd rtc_cmos
-> rtc_core rtc_lib usbcore hmac dm_snapshot dm_crypt dm_mod gf128mul
-> twofish_x86_64 twofish_common aes_x86_64 aes_generic cbc tgr192 loop ecb
-> arc4 fuse edd ide_pci_generic amd74xx ide_core fan pata_amd sata_nv libata
-> scsi_mod thermal processor
-> Sep 20 13:22:59 liesel kernel: Pid: 1521, comm: blogd Not tainted 2.6.31 #1
-> Sep 20 13:22:59 liesel kernel: Call Trace:
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff812e90b1>] ? tty_open+0x421/0x4e0
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff812e90b1>] ? tty_open+0x421/0x4e0
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff81044f69>] ? warn_slowpath_common+0x79/0xd0
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff812e90b1>] ? tty_open+0x421/0x4e0
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff81281d52>] ? kobject_get+0x12/0x20
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff810d1fdd>] ? chrdev_open+0x13d/0x230
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff810d1ea0>] ? chrdev_open+0x0/0x230
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff810cd111>] ? __dentry_open+0x111/0x340
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff810dc474>] ? do_filp_open+0x764/0xb10
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff81049ade>] ? current_fs_time+0x1e/0x30
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff810dd6df>] ? vfs_ioctl+0x2f/0xa0
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff810e64d2>] ? alloc_fd+0x122/0x150
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff810ccf0f>] ? do_sys_open+0x8f/0x140
-> Sep 20 13:22:59 liesel kernel:  [<ffffffff8100bdab>] ? system_call_fastpath+0x16/0x1b
-> Sep 20 13:22:59 liesel kernel: ---[ end trace f0db7f8312cd8bff ]---
+> Commit 5622f295 ("x86, perf_counter, bts: Optimize BTS overflow
+> handling") removed the regs field from struct perf_sample_data and
+> added a regs parameter to perf_counter_overflow().  This breaks the
+> build on powerpc as reported by Sachin Sant:
 > 
-> Please give me a hint if you need more information/logs/config.
+> arch/powerpc/kernel/perf_counter.c: In function 'record_and_restart':
+> arch/powerpc/kernel/perf_counter.c:1165: error: unknown field 'regs' specified in initializer
+> cc1: warnings being treated as errors
+> arch/powerpc/kernel/perf_counter.c:1165: error: initialization makes integer from pointer without a cast
+> arch/powerpc/kernel/perf_counter.c:1173: error: too few arguments to function 'perf_counter_overflow'
+> make[1]: *** [arch/powerpc/kernel/perf_counter.o] Error 1
+> make: *** [arch/powerpc/kernel] Error 2
+> 
+> This adjusts arch/powerpc/kernel/perf_counter.c to correspond with the
+> new struct perf_sample_data and perf_counter_overflow().
+> 
+> Reported-by: Sachin Sant <sachinp@in.ibm.com>
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+Applied, thanks Paul.
+
+> ---
+>
+> I missed this problem when the "x86, perf_counter, bts: Optimize BTS 
+> overflow handling" patch was posted because the headline made it seem 
+> entirely x86-specific, and the changes to struct perf_sample_data and 
+> perf_counter_overflow() were not mentioned in the changelog.
+> 
+> Markus, please take care in future to mention it in the changelog if 
+> your patches touch definitions used by other architectures.  If you 
+> could go so far as to use grep a bit more and fix up other 
+> architectures' callsites for the things you're changing, that would be 
+> very much appreciated.  Thanks.
+
+Yes, that should be done in general - still, nothing beats actual 
+testing.
+
+Paul, you might also want to test the perfcounter bits of -tip on 
+PowerPC a bit more frequently - this patch was there for 5 days before i 
+sent it to Linus.
+
+Cross-builds didnt catch it as perfcounters isnt enabled by default in 
+any of the powerpc defconfigs:
+
+phoenix:~/linux/linux> grep -w CONFIG_PERF_COUNTERS arch/powerpc/configs/*
+arch/powerpc/configs/adder875_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/c2k_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/ep8248e_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/ep88xc_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/linkstation_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mgcoge_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mgsuvd_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc7448_hpc2_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc8272_ads_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc83xx_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc85xx_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc85xx_smp_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc866_ads_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc86xx_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc885_ads_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/pq2fads_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/prpmc2800_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/ps3_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/storcenter_defconfig:# CONFIG_PERF_COUNTERS is not set
+
+There's not that many PowerPC users so all extra testing help would be 
+much welcome. Also, enabling them in the powerpc defconfigs would be 
+helpful as well.
+
+Thanks,
+
+	Ingo
