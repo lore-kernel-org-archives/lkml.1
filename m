@@ -1,229 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751594AbZIUR4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751849AbZIUR67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751594AbZIUR4h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 13:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbZIUR4g
+	id S1751849AbZIUR67 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 13:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbZIUR64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 13:56:36 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:38364 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbZIUR4f (ORCPT
+	Mon, 21 Sep 2009 13:58:56 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:47485 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbZIUR6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 13:56:35 -0400
-Date: Mon, 21 Sep 2009 19:56:37 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [GIT] kbuild
-Message-ID: <20090921175637.GA28796@merkur.ravnborg.org>
+	Mon, 21 Sep 2009 13:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OY+gZ728jW/JN4YuNTY4nOrAM2qeJdFe72r0DnruUJTh4/KXhkOYdV1r2ce5v7/FNM
+         +vC6y4iL6HyvLeB6vuoKYu+RqBA7r8vjW/jOV7L8Tz/93B+EjHWfqDz+Pd8quk5qY1am
+         MBbwF9EB5C9cp34A65L8VLvsedwbH+cfw4t4U=
+Date: Mon, 21 Sep 2009 19:58:53 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: TRACE_EVENT_ABI ?
+Message-ID: <20090921175851.GA5018@nowhere>
+References: <20090921093652.0722d745@infradead.org> <alpine.DEB.2.00.0909210926010.7647@gandalf.stny.rr.com> <20090921152853.2f8c0597@infradead.org> <1253551567.2630.26.camel@frodo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1253551567.2630.26.camel@frodo>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
-
-First (delayed) batch of kbuild stuff.
-
-o kconfig refactoring
-o allyesconfig is now buildable with gold
-o support -fconserve-stack for newer gcc's
-  We do not gain much for now but it is nice to be prepared
-o more linker script/sections consolidation
-  Archs are starting to pick up the individual patches,
-  this is the stuff that is generic or touches a lot of architectures
-o save ARCH and CROSS_COMPILE settings in two files named:
-
-    include/generated/kernel.arch
-    include/generated/kernel.cross
-
- So we no longer need to set correct each time we do a build.
-o no longer respect $(CROSS_COMPILE) for installkernel script.
-  It was used by very few persons and did not play well when
-  we saved CROSS_COMPILE.
-
-Stuff planned for next batch:
-- move a lot of stuff to include/generated
-  I just need to test it a bit more
-
-- support listing builtin modules with modutils
-  I have been sitting on a patch for months and only gave feedback now.
-  There is some minor updates needed before it is ready
-
-And I guess a bit more if I find time to crawl through my mailbox.
-
-Most patches has been in -next but not all.
-Some patches has come in via akpm so thay have more airtime than their
-commit time says.
-
-
-	Sam
-
+On Mon, Sep 21, 2009 at 12:46:07PM -0400, Steven Rostedt wrote:
+> On Mon, 2009-09-21 at 15:28 +0200, Arjan van de Ven wrote:
+> > On Mon, 21 Sep 2009 09:26:41 -0400 (EDT)
+> > Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > 
+> > > [ Resending due to wrong SMTP server ]
+> > > 
+> > > 
+> > > On Mon, 21 Sep 2009, Arjan van de Ven wrote:
+> > > 
+> > > > Hi,
+> > > > 
+> > > > Ingo suggested to make a TRACE_EVENT_ABI, which is equivalent in
+> > > > implementation to TRACE_EVENT, except that it signals a stable
+> > > > interface.
+> > > > 
+> > > > In trying to implement this I'm running into a wall where
+> > > > TRACE_EVENT keeps being defined in many different ways all over the
+> > > > place, making this a really nasty hack to make it just an alias.
+> > > > 
+> > > > Do you have any clever ideas on how to make this an alias without
+> > > > fouling up the whole tracing system?
+> > > > 
+> > > 
+> > > I don't know what you've done so far, but can't you simply in
+> > > tracepoint.h define:
+> > > 
+> > > #define TRACE_EVENT_API(a,b,c,d,e) TRACE_EVENT(a,b,c,d,e)
+> > 
+> > unfortunately, due to the preprocessor trickery around TRACE_EVENT this
+> > completely barfs.
+> 
+> I forgot to tell you about PARAMS.
+> 
+> This patch compiled for me;
 
 
-The following changes since commit 78f28b7c555359c67c2a0d23f7436e915329421e:
-  Linus Torvalds (1):
-        Merge branch 'x86-platform-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
-are available in the git repository at:
+Oh! PARAMS!
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-next.git master
+I've needed something to "contain" cpp args by the past so that they
+are not substituted too early, which is needed while relaying cpp args
+from a macro to another. I needed this to fix TRACE_EVENT_FN: it barfed
+for the exact same reason.
 
-Andi Kleen (4):
-      kbuild: Check if linker supports the -X option
-      kbuild: echo the record_mcount command
-      kbuild: set -fconserve-stack option for gcc 4.5
-      kbuild: fail build if recordmcount.pl fails
+So I've created __cpparg(), which I'm just discovering, does the exact
+same thing than PARAM... :-/
 
-Cheng Renquan (6):
-      kconfig: add symbol value to help find the real depend
-      kconfig: add menu_get_ext_help function to display more information
-      kconfig: make use of menu_get_ext_help in menuconfig
-      kconfig: make use of menu_get_ext_help in qconfig
-      kconfig: make use of menu_get_ext_help in "make config"
-      kconfig: make use of menu_get_ext_help in gconfig
+I'm going to s/__cpparg/PARAM for the consistency.
 
-Diego Elio 'Flameeyes' Pettenò (1):
-      gconfig: disable "typeahead find" search in treeviews
 
-Jaswinder Singh Rajput (1):
-      gitignore usr/initramfs_data.cpio.bz2 and usr/initramfs_data.cpio.lzma
+ 
+> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> index 63a3f7a..9a983d6 100644
+> --- a/include/linux/tracepoint.h
+> +++ b/include/linux/tracepoint.h
+> @@ -280,6 +280,10 @@ static inline void tracepoint_synchronize_unregister(void)
+>   * TRACE_EVENT_FN to perform any (un)registration work.
+>   */
+>  
+> +#define TRACE_EVENT_API(name, proto, args, tstruct, assign, print)	\
+> +	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
+> +		    PARAMS(tstruct), PARAMS(assign), PARAMS(print))
+> +
+>  #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
+>  	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+>  #define TRACE_EVENT_FN(name, proto, args, struct,		\
+> diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
+> index b48f1ad..0ee1eb6 100644
+> --- a/include/trace/events/sched.h
+> +++ b/include/trace/events/sched.h
+> @@ -149,7 +149,7 @@ TRACE_EVENT(sched_wakeup_new,
+>   * (NOTE: the 'rq' argument is not used by generic trace events,
+>   *        but used by the latency tracer plugin. )
+>   */
+> -TRACE_EVENT(sched_switch,
+> +TRACE_EVENT_API(sched_switch,
+>  
+>  	TP_PROTO(struct rq *rq, struct task_struct *prev,
+>  		 struct task_struct *next),
+> 
+> 
 
-Joe Perches (1):
-      Use new __init_task_data macro in arch init_task.c files.
-
-Jory A. Pratt (1):
-      kbuild: fix cc1 options check to ensure we do not use -fPIC when compiling
-
-Luis R. Rodriguez (3):
-      checkincludes.pl: close file as soon as we're done with it
-      checkincludes.pl: provide usage helper
-      checkincludes.pl: add option to remove duplicates in place
-
-Ozan Çaglayan (1):
-      markup_oops: use modinfo to avoid confusion with underscored module names
-
-Randy Dunlap (1):
-      kernel hacking: move STRIP_ASM_SYMS from General
-
-Robert P. J. Day (1):
-      kbuild: correct initramfs compression comment
-
-Sam Ravnborg (5):
-      kbuild: use INSTALLKERNEL to select customized installkernel script
-      kbuild: save ARCH & CROSS_COMPILE when building a kernel
-      kbuild: rename ld-option to cc-ldoption
-      kbuild: introduce ld-option
-      arm, cris, mips, sparc, powerpc, um, xtensa: fix build with bash 4.0
-
-Stefani Seibold (1):
-      ctags: usability fix
-
-Tim Abbott (3):
-      kbuild: Don't define ALIGN and ENTRY when preprocessing linker scripts.
-      Use macros for .bss.page_aligned section.
-      Use macros for .data.page_aligned section.
-
-Trevor Keith (1):
-      kbuild: add static to prototypes
-
- Documentation/kbuild/kbuild.txt             |   16 +++++
- Documentation/kbuild/makefiles.txt          |   20 ++++++-
- Makefile                                    |   62 ++++++++++++++++---
- arch/arm/Makefile                           |    6 +-
- arch/arm/boot/install.sh                    |    4 +-
- arch/arm/kernel/Makefile                    |    3 +-
- arch/arm/kernel/init_task.c                 |    5 +-
- arch/avr32/kernel/init_task.c               |    5 +-
- arch/avr32/mm/init.c                        |    4 +-
- arch/blackfin/Makefile                      |    4 +-
- arch/blackfin/boot/install.sh               |    6 +-
- arch/cris/Makefile                          |    2 -
- arch/cris/kernel/Makefile                   |    1 +
- arch/cris/kernel/process.c                  |    5 +-
- arch/frv/kernel/init_task.c                 |    5 +-
- arch/h8300/kernel/init_task.c               |    5 +-
- arch/ia64/install.sh                        |    4 +-
- arch/ia64/kernel/Makefile.gate              |    2 +-
- arch/ia64/kernel/init_task.c                |    3 +-
- arch/m32r/boot/compressed/install.sh        |    4 +-
- arch/m32r/kernel/init_task.c                |    5 +-
- arch/m68k/install.sh                        |    4 +-
- arch/m68k/kernel/process.c                  |    6 +-
- arch/m68knommu/kernel/init_task.c           |    5 +-
- arch/microblaze/kernel/init_task.c          |    5 +-
- arch/mips/Makefile                          |   27 +--------
- arch/mips/kernel/init_task.c                |    5 +-
- arch/mips/kernel/vmlinux.lds.S              |   13 ++++-
- arch/mn10300/kernel/init_task.c             |    5 +-
- arch/parisc/Makefile                        |    4 +-
- arch/parisc/install.sh                      |    4 +-
- arch/parisc/kernel/init_task.c              |    4 +-
- arch/powerpc/Makefile                       |    6 +-
- arch/powerpc/boot/install.sh                |    4 +-
- arch/powerpc/kernel/init_task.c             |    5 +-
- arch/powerpc/kernel/machine_kexec_64.c      |    5 +-
- arch/powerpc/kernel/vdso.c                  |    3 +-
- arch/powerpc/kernel/vdso32/Makefile         |    2 +-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 +-
- arch/powerpc/kernel/vdso64/Makefile         |    2 +-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 +-
- arch/s390/boot/install.sh                   |    4 +-
- arch/s390/kernel/init_task.c                |    5 +-
- arch/s390/kernel/vdso.c                     |    2 +-
- arch/s390/kernel/vdso32/Makefile            |    2 +-
- arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 +-
- arch/s390/kernel/vdso64/Makefile            |    2 +-
- arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 +-
- arch/score/kernel/init_task.c               |    5 +-
- arch/sh/boot/compressed/install.sh          |    4 +-
- arch/sh/kernel/init_task.c                  |    5 +-
- arch/sh/kernel/irq.c                        |    6 +-
- arch/sh/kernel/vsyscall/Makefile            |    2 +-
- arch/sparc/Makefile                         |    4 -
- arch/sparc/kernel/Makefile                  |    6 ++-
- arch/sparc/kernel/init_task.c               |    5 +-
- arch/um/Makefile                            |    9 +--
- arch/um/kernel/Makefile                     |    3 +
- arch/um/kernel/init_task.c                  |    5 +-
- arch/um/kernel/vmlinux.lds.S                |    3 +
- arch/x86/Makefile                           |    4 +-
- arch/x86/boot/install.sh                    |    4 +-
- arch/x86/include/asm/cache.h                |    4 +-
- arch/x86/kernel/head_32.S                   |    4 +-
- arch/x86/kernel/head_64.S                   |    2 +-
- arch/x86/kernel/init_task.c                 |    5 +-
- arch/x86/vdso/Makefile                      |    2 +-
- arch/xtensa/kernel/Makefile                 |    3 +-
- arch/xtensa/kernel/head.S                   |    2 +-
- arch/xtensa/kernel/init_task.c              |    5 +-
- include/linux/linkage.h                     |    2 +
- init/Kconfig                                |    8 ---
- lib/Kconfig.debug                           |    8 +++
- scripts/Kbuild.include                      |   16 ++++--
- scripts/Makefile.build                      |    6 +-
- scripts/basic/docproc.c                     |   34 ++++++------
- scripts/basic/fixdep.c                      |   26 ++++----
- scripts/basic/hash.c                        |    4 +-
- scripts/checkincludes.pl                    |   71 +++++++++++++++++++++--
- scripts/kconfig/conf.c                      |   24 ++++----
- scripts/kconfig/confdata.c                  |    2 +-
- scripts/kconfig/expr.c                      |    6 +-
- scripts/kconfig/gconf.c                     |   21 +------
- scripts/kconfig/gconf.glade                 |    4 +-
- scripts/kconfig/kxgettext.c                 |    4 +-
- scripts/kconfig/lkc_proto.h                 |    2 +
- scripts/kconfig/mconf.c                     |   78 +------------------------
- scripts/kconfig/menu.c                      |   84 ++++++++++++++++++++++++++-
- scripts/kconfig/qconf.cc                    |   10 +--
- scripts/kconfig/symbol.c                    |    6 +-
- scripts/markup_oops.pl                      |    5 +-
- scripts/tags.sh                             |    3 +-
- usr/.gitignore                              |    2 +
- usr/Makefile                                |    2 +-
- 94 files changed, 473 insertions(+), 354 deletions(-)
