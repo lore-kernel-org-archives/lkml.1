@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZIUIql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZIUIvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbZIUIql (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 04:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbZIUIqj
+	id S1755451AbZIUIvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 04:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbZIUIvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 04:46:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59299 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755350AbZIUIqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 04:46:39 -0400
-Date: Mon, 21 Sep 2009 09:46:44 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Tejun Heo <tj@kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       sachinp@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] slqb: Do not use DEFINE_PER_CPU for per-node data
-Message-ID: <20090921084644.GD12726@csn.ul.ie>
-References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie> <1253302451-27740-2-git-send-email-mel@csn.ul.ie> <84144f020909200145w74037ab9vb66dae65d3b8a048@mail.gmail.com> <4AB5FD4D.3070005@kernel.org> <4AB5FFF8.7000602@cs.helsinki.fi> <4AB6508C.4070602@kernel.org> <1253514240.5216.3.camel@penberg-laptop>
+	Mon, 21 Sep 2009 04:51:54 -0400
+Received: from mtagate7.de.ibm.com ([195.212.17.167]:33137 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755356AbZIUIvx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 04:51:53 -0400
+Date: Mon, 21 Sep 2009 10:51:55 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: [BUG] events process running on wrong cpu
+Message-ID: <20090921085155.GB4649@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253514240.5216.3.camel@penberg-laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 09:24:00AM +0300, Pekka Enberg wrote:
-> Hi Tejun,
-> 
-> On Mon, 2009-09-21 at 00:55 +0900, Tejun Heo wrote:
-> > Pekka Enberg wrote:
-> > > Tejun Heo wrote:
-> > >> Pekka Enberg wrote:
-> > >>> On Fri, Sep 18, 2009 at 10:34 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> > >>>> SLQB used a seemingly nice hack to allocate per-node data for the
-> > >>>> statically
-> > >>>> initialised caches. Unfortunately, due to some unknown per-cpu
-> > >>>> optimisation, these regions are being reused by something else as the
-> > >>>> per-node data is getting randomly scrambled. This patch fixes the
-> > >>>> problem but it's not fully understood *why* it fixes the problem at the
-> > >>>> moment.
-> > >>> Ouch, that sounds bad. I guess it's architecture specific bug as x86
-> > >>> works ok? Lets CC Tejun.
-> > >>
-> > >> Is the corruption being seen on ppc or s390?
-> > > 
-> > > On ppc.
-> > 
-> > Can you please post full dmesg showing the corruption?  Also, if you
-> > apply the attached patch, does the added BUG_ON() trigger?
-> 
-> I don't have the affected machines, Sachin and Mel do.
-> 
+Hi,
 
-More accurately, Sachin does but he gave me access to the machine for
-this bug so I can use it when it's otherwise idle.
+with todays git from time to time I get this (s390 defconfig):
 
-> 			Pekka
-> 
-> > diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-> > index 878836c..fb690d2 100644
-> > --- a/include/linux/percpu.h
-> > +++ b/include/linux/percpu.h
-> > @@ -127,7 +127,7 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
-> >   * dynamically allocated. Non-atomic access to the current CPU's
-> >   * version should probably be combined with get_cpu()/put_cpu().
-> >   */
-> > -#define per_cpu_ptr(ptr, cpu)	SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
-> > +#define per_cpu_ptr(ptr, cpu)	({ BUG_ON(!(ptr)); SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu))); })
-> > 
-> >  extern void *__alloc_reserved_percpu(size_t size, size_t align);
-> 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+BUG: using smp_processor_id() in preemptible [00000000] code: events/1/16
+caller is vmstat_update+0x28/0x74
+CPU: 0 Not tainted 2.6.31-06618-gebc79c4-dirty #3
+Process events/1 (pid: 16, task: 000000003fcbea00, ksp: 000000003fcd7cd8)
+000000003fcd7da8 000000003fcd7d28 0000000000000002 0000000000000000 
+       000000003fcd7dc8 000000003fcd7d40 000000003fcd7d40 00000000003fe46a 
+       000000000001ffff 000000003fcd7e70 000000000192b128 ffffffffffffc000 
+       000000000000000d 000000000000000c 000000003fcd7d90 0000000000000000 
+       0000000000000000 0000000000016bda 000000003fcd7d28 000000003fcd7d68 
+Call Trace:
+([<0000000000016aea>] show_trace+0xe6/0x134)
+ [<0000000000202a5e>] debug_smp_processor_id+0x112/0x12c
+ [<00000000000b302c>] vmstat_update+0x28/0x74
+ [<000000000005fb9a>] worker_thread+0x19a/0x27c
+ [<0000000000065f80>] kthread+0xa0/0xa8
+ [<000000000001b786>] kernel_thread_starter+0x6/0xc
+ [<000000000001b780>] kernel_thread_starter+0x0/0xc
+
+Please note that events/1 is running in cpu 0 (!).
+
+But (with a patched procfs output):
+
+[root@h4245004 ~]# cat /proc/16/status 
+Name:   events/1
+State:  S (sleeping)
+Tgid:   16
+Pid:    16
+PPid:   2
+TracerPid:      0
+Uid:    0       0       0       0
+Gid:    0       0       0       0
+FDSize: 64
+Groups:
+Threads:        1
+SigQ:   0/4096
+SigPnd: 0000000000000000
+ShdPnd: 0000000000000000
+SigBlk: 0000000000000000
+SigIgn: ffffffffffffffff
+SigCgt: 0000000000000000
+CapInh: 0000000000000000
+CapPrm: ffffffffffffffff
+CapEff: fffffffffffffeff
+CapBnd: fffffffffffffeff
+Cpus_allowed:   00000002  <----------
+Cpus_allowed_list:      1 <----------
+task: 000000003fcbea00, ksp: 000000003fcd7cd8
+User PSW : 0704000180000000 000000000001b780
+User GPRS: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+           0000000000000000 0000000000000000 0000000000000000 0000000000000000
+           0000000000000000 0000000000065ee0 000000003fe73cf8 000000000004d414
+           0000000000000000 0000000000000000 0000000000000000 000000003fcd7eb8
+User ACRS: 00000000 00000000 00000000 00000000
+           00000000 00000000 00000000 00000000
+           00000000 00000000 00000000 00000000
+           00000000 00000000 00000000 00000000
+voluntary_ctxt_switches:        55
+nonvoluntary_ctxt_switches:     1
+
+So the cpus_allowed mask is correct (later on at least). Looks like the
+created kthread ran before its cpus_allowed mask was set.
+Looking at the code this shouldn't happen. But still...
