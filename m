@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZIUNLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZIUNLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbZIUNLL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbZIUNLH
+	id S1756164AbZIUNLj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbZIUNLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:11:07 -0400
-Received: from mga14.intel.com ([143.182.124.37]:36669 "EHLO mga14.intel.com"
+	Mon, 21 Sep 2009 09:11:37 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56399 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756060AbZIUNLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:11:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,424,1249282800"; 
-   d="scan'208";a="189862104"
-Date: Mon, 21 Sep 2009 21:10:57 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
+	id S1756070AbZIUNLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:11:36 -0400
+Date: Mon, 21 Sep 2009 15:11:38 +0200
+From: Jan Kara <jack@suse.cz>
 To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Theodore Tso <tytso@mit.edu>
-Subject: Re: [PATCH] fs: Fix busyloop in wb_writeback()
-Message-ID: <20090921131057.GA15703@localhost>
-References: <1253121768-20673-1-git-send-email-jack@suse.cz> <20090916184106.GT23126@kernel.dk> <20090921130145.GA6266@localhost> <20090921130634.GX23126@kernel.dk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jack@suse.cz,
+       fengguang.wu@intel.com
+Subject: Re: [GIT PULL] a few writeback fixes
+Message-ID: <20090921131138.GE1099@duck.suse.cz>
+References: <20090921125620.GV23126@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090921130634.GX23126@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090921125620.GV23126@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 09:06:34PM +0800, Jens Axboe wrote:
-> On Mon, Sep 21 2009, Wu Fengguang wrote:
-> > On Thu, Sep 17, 2009 at 02:41:06AM +0800, Jens Axboe wrote:
-> > > On Wed, Sep 16 2009, Jan Kara wrote:
-> > > > If all inodes are under writeback (e.g. in case when there's only one inode
-> > > > with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
-> > > > to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
-> > > > waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
-> > > > write anything.
-> > > 
-> > > Interesting, so this will happen if the dirtier and flush thread end up
-> > > "fighting" each other over the same inode. I'll throw this into the
-> > > testing mix.
-> > > 
-> > > How did you notice?
-> > 
-> > Jens, I found another busy loop. Not sure about the solution, but here
-> > is the quick fact.
-> > 
-> > Tested git head is 1ef7d9aa32a8ee054c4d4fdcd2ea537c04d61b2f, which
-> > seems to be the last writeback patch in the linux-next tree. I cannot
-> > run the plain head of linux-next because it just refuses boot up.
-> > 
-> > On top of which Jan Kara's I_SYNC waiting patch and the attached
-> > debugging patch is applied.
-> > 
-> > Test commands are:
-> > 
-> >         # mount /mnt/test # ext4 fs
-> >         # echo 1 > /proc/sys/fs/dirty_debug
-> > 
-> >         # cp /dev/zero /mnt/test/zero0
-> > 
-> > After that the box is locked up, the system is busy doing these:
-> > 
-> > [   54.740295] requeue_io() +457: inode=79232
-> > [   54.740300] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> > [   54.740303] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> > [   54.740317] requeue_io() +457: inode=79232
-> > [   54.740322] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> > [   54.740325] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> > [   54.740339] requeue_io() +457: inode=79232
-> > [   54.740344] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> > [   54.740347] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> > ......
-> > 
-> > Basically the traces show that balance_dirty_pages() is busy looping.
-> > It cannot write anything because the inode always be requeued by this line:
-> > 
-> >         if (inode->i_state & I_SYNC) {
-> >                if (!wait) {
-> >                         requeue_io(inode);
-> >                         return 0;
-> >                 }
-> > 
-> > This seem to happen when the partition is FULL.
-> 
-> OK, I'll have to look into these issues soonish. I'll be travelling next
-> week though, so I cannot do more about it right now. If you have time to
-> work on tested patches, then that would be MUCH appreciated it!
+On Mon 21-09-09 14:56:20, Jens Axboe wrote:
+  Hi Jens,
 
-Jens, your bug fix patches arrive just before I submit this bug report :)
+> Jan, since we're not really sure on the inode wait yet, I dropped that
+> patch. It's definitely something to look into, as are the congestion
+> bits.
+  OK.
 
-Thanks,
-Fengguang
+								Honza
+
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 1eea4fa..6bb510b 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -485,6 +485,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  	unsigned long bdi_thresh;
+>  	unsigned long pages_written = 0;
+>  	unsigned long write_chunk = sync_writeback_pages();
+> +	unsigned long pause = 1;
+>  
+>  	struct backing_dev_info *bdi = mapping->backing_dev_info;
+>  
+> @@ -561,7 +562,15 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  		if (pages_written >= write_chunk)
+>  			break;		/* We've done our duty */
+>  
+> -		schedule_timeout(1);
+> +		schedule_timeout_interruptible(pause);
+> +
+> +		/*
+> +		 * Increase the delay for each loop, up to our previous
+> +		 * default of taking a 100ms nap.
+> +		 */
+> +		pause <<= 1;
+> +		if (pause < HZ / 10)
+> +			pause = HZ / 10;
+  Isn't this check the other way around?
+
+>  	}
+>  
+>  	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
