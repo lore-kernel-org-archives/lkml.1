@@ -1,52 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZIUWzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbZIUXDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbZIUWzM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 18:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZIUWzL
+	id S1754339AbZIUXDr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZIUXDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 18:55:11 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:51964 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752481AbZIUWzJ (ORCPT
+	Mon, 21 Sep 2009 19:03:46 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52809 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754181AbZIUXDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 18:55:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=d8JIjPlKzueIaoi74n5Vtu+eSm+Oxe22EpZPNNQpYhlVW/jAheRV/DDHZelN2Hm+C
-	Q0Z1pIBvg0bZkvguHoPfg==
-Date: Mon, 21 Sep 2009 15:55:01 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
-       ebmunson@us.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
-       Randy Dunlap <randy.dunlap@oracle.com>, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, linux-ia64@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] remove duplicate asm/mman.h files
-In-Reply-To: <Pine.LNX.4.64.0909211258570.7831@sister.anvils>
-Message-ID: <alpine.DEB.1.00.0909211553000.30561@chino.kir.corp.google.com>
-References: <cover.1251197514.git.ebmunson@us.ibm.com> <200909181848.42192.arnd@arndb.de> <alpine.DEB.1.00.0909181236190.27556@chino.kir.corp.google.com> <200909211031.25369.arnd@arndb.de> <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0909211258570.7831@sister.anvils>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Mon, 21 Sep 2009 19:03:45 -0400
+X-Sasl-enc: ooOV5k5Pt9k/pmwa4E+qjnuCv4oSrwy8gW7CyQWxMrJX 1253574227
+Message-ID: <4AB80646.6020008@imap.cc>
+Date: Tue, 22 Sep 2009 01:03:34 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Matthias Geissert <matthias.geissert@web.de>, Greg KH <greg@kroah.com>,
+       USB list <linux-usb@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone VPA-II"
+ ?
+References: <Pine.LNX.4.44L0.0909202152420.15304-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0909202152420.15304-100000@netrider.rowland.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig93D456C34221B56F54BB677F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Sep 2009, Hugh Dickins wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig93D456C34221B56F54BB677F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Is it perhaps the case that some UNIX on ia64 does implement MAP_GROWSUP,
-> and these numbers in the Linux ia64 mman.h have been chosen to match that
-> reference implementation?  Tony will know.  But I wonder if you'd do
-> better at least to leave a MAP_GROWSUP comment on that line, so that
-> somebody doesn't go and reuse the empty slot later on.
-> 
+Am 21.09.2009 03:59 schrieb Alan Stern:
+> Here's a patch which ought to fix the oops.  I trust it won't cause=20
+> any existing devices to start misbehaving.  Tilman and Matthias, please=
+=20
+> verify that this works okay on your systems.
 
-Reserving the bit from future use by adding a comment may be helpful, but 
-then let's do it for MAP_GROWSDOWN too.
+It does fix the oops for me. The lines:
+
+ipaq 2-2:1.0: usb_probe_interface
+ipaq 2-2:1.0: usb_probe_interface - got id
+ipaq 2-2:1.0: PocketPC PDA converter detected
+
+are now followed by
+
+ipaq: probe of 2-2:1.0 failed with error -5
+
+and I end up with only a single
+
+usb 2-2: PocketPC PDA converter now attached to ttyUSB0
+
+instead of two (ttyUSB0 and ttyUSB1) previously.
+
+The device still doesn't work because now rndis_host (which without
+the patch didn't even get a chance to look at the interface) complains:
+
+rndis_host 2-2:1.0: usb_probe_interface
+rndis_host 2-2:1.0: usb_probe_interface - got id
+rndis_host: probe of 2-2:1.0 failed with error -16
+
+But that's a different story which I'll investigate a bit further
+on my own before (if necessary) starting a discussion here.
+
+So from my point of view the patch is fine.
+
+Thanks,
+Tilman
+
+> A better approach might be to test the bInterfaceClass value, but I=20
+> don't know if that would work; there might be some devices using a=20
+> strange value.
+>=20
+> Alan Stern
+>=20
+>=20
+>=20
+> Index: usb-2.6/drivers/usb/serial/ipaq.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- usb-2.6.orig/drivers/usb/serial/ipaq.c
+> +++ usb-2.6/drivers/usb/serial/ipaq.c
+> @@ -966,6 +966,15 @@ static int ipaq_calc_num_ports(struct us
+>  static int ipaq_startup(struct usb_serial *serial)
+>  {
+>  	dbg("%s", __func__);
+> +
+> +	/* Some of the devices in ipaq_id_table[] are composite, and we
+> +	 * shouldn't bind to all the interfaces.  This test will rule out
+> +	 * some obviously invalid possibilities.
+> +	 */
+> +	if (serial->num_bulk_in < serial->num_ports ||
+> +			serial->num_bulk_out < serial->num_ports)
+> +		return -ENODEV;
+> +
+>  	if (serial->dev->actconfig->desc.bConfigurationValue !=3D 1) {
+>  		/*
+>  		 * FIXME: HP iPaq rx3715, possibly others, have 1 config that
+>=20
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig93D456C34221B56F54BB677F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFKuAZQQ3+did9BuFsRAvK7AJ9t3elPQlg6/5+v8yzk4yJiGPMNRwCeNh8R
+hO2PiLXI/bz7s4TOyM4DFzo=
+=XqQi
+-----END PGP SIGNATURE-----
+
+--------------enig93D456C34221B56F54BB677F--
