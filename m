@@ -1,110 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbZIUSmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZIUSrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753096AbZIUSmY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 14:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZIUSmW
+	id S1753152AbZIUSrs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 14:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbZIUSrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 14:42:22 -0400
-Received: from mail-yw0-f194.google.com ([209.85.211.194]:36435 "EHLO
-	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbZIUSmV (ORCPT
+	Mon, 21 Sep 2009 14:47:48 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:53452 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbZIUSrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 14:42:21 -0400
-X-Greylist: delayed 351 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 14:42:21 EDT
+	Mon, 21 Sep 2009 14:47:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type;
-        b=ghC5cKI5+2aijqWSBeLstzjcB9wXsEu9mNvP3jtBL3knLvjoLe44gSmxt9m25MdoI2
-         Iodq8qnL2HVsv0eJc2Hey95IbR1pOn8qK5nedmR9sthbItozIwb1YQKg56/EaOkftzZb
-         xo9kS53iUNStQK1tJonsCgZTthJEZy4qKaKVc=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OUtPH/Xaj51hdKZrdTjON6qiMJJSBebKNI3XDAtLkG4H0lk9tKYcYKAPmLZPHXL9Ez
+         CkR+2qUb/Levr3Xfh4jXe9ZexBJp1Ujwe2lRTxIb2hLpfmGt/AlzHNhs8S4pHMP6TQEH
+         LbpgZ7f1DznIBWGXp58hhuSVAXlMWQvCbiuFs=
+Date: Mon, 21 Sep 2009 20:47:47 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/events: use list_for_entry_continue
+Message-ID: <20090921184745.GC5018@nowhere>
+References: <4AB32364.7020602@cn.fujitsu.com> <4AB32389.1030005@cn.fujitsu.com> <20090918150930.GB5200@nowhere> <4AB6E651.6050000@cn.fujitsu.com>
 MIME-Version: 1.0
-Date: Mon, 21 Sep 2009 20:36:34 +0200
-X-Google-Sender-Auth: 9a26d7a5ca0b51e8
-Message-ID: <3efb10970909211136g4e74c8b3vc339d548cdd0959f@mail.gmail.com>
-Subject: 2.6.31-rt11 freeze on userland start on ARM
-From: Remy Bohmer <linux@bohmer.net>
-To: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB6E651.6050000@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Mon, Sep 21, 2009 at 10:34:57AM +0800, Li Zefan wrote:
+> Frederic Weisbecker wrote:
+> > On Fri, Sep 18, 2009 at 02:07:05PM +0800, Li Zefan wrote:
+> >> Simplify s_next() and t_next().
+> >>
+> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> >> ---
+> > 
+> > Nice.
+> > I wonder if that can be even more simplified with
+> > the following existing seq helpers:
+> > 
+> 
+> Unfortunately they can't be used here, at least they can't
+> help make code simpler, because we need to skip some list
+> entries.
+> 
+> But we can add seq_list_start_at() and seq_list_next_at(),
+> which take a predicate and will return an entry which matches
+> the predicate. I thought about it, and I can try it out.
 
-I am integrating the 2.6.31-rt11 kernel on our ARM9 based (Atmel
-at91sam9261) board.
-Kernel boots fine but when userland starts the linuxrc process, and
-the first 'echo' from the /etc/init.d/rcS script is printed to the
-serial console (DBGU) the system locks up completely, from userland no
-character ever makes it to the terminal.
 
-I found the reason of the lockup and know a workaround, but I can use
-some good suggestions to solve it the correct way.
+Why not, if the pattern is already met by other subsystems.
+Otherwise I guess it's not needed.
 
-What happens is that the kernel continuously schedules a IRQ-thread;
-namely IRQ1-atmel_serial. And this IRQ thread keeps getting scheduled
-forever...
+Thanks.
 
-Looking more closely I noticed that it is new compared to 2.6.24/26-RT
-that a IRQ thread is started for this driver.
-Notice that the DBGU interrupt is called the system-interrupt and it
-is shared with the timer interrupt. The timer interrupt has IRQF_TIMER
-set which incorporates IRQF_NODELAY. This is different compared to
-2.6.24/26 where a sharing with a IRQF_NODELAY interrupt would make all
-shared handlers also run in IRQF_NODELAY context.
-As such we have here a interrupt handler running as NODELAY handler,
-that is shared with a interrupt handler that runs in thread context.
-
-So, as workaround/test I made this change:
-
-Index: linux-2.6.31/drivers/serial/atmel_serial.c
-===================================================================
---- linux-2.6.31.orig/drivers/serial/atmel_serial.c	2009-09-21
-19:44:48.000000000 +0200
-+++ linux-2.6.31/drivers/serial/atmel_serial.c	2009-09-21
-19:45:15.000000000 +0200
-@@ -808,7 +808,8 @@ static int atmel_startup(struct uart_por
- 	/*
- 	 * Allocate the IRQ
- 	 */
--	retval = request_irq(port->irq, atmel_interrupt, IRQF_SHARED,
-+	retval = request_irq(port->irq, atmel_interrupt,
-+			IRQF_SHARED | IRQF_NODELAY,
- 			tty ? tty->name : "atmel_serial", port);
- 	if (retval) {
- 		printk("atmel_serial: atmel_startup - Can't get irq\n");
----
-
-This change makes the atmel-serial driver interrupt handler run as
-IRQF_NODELAY handler again, just as on 2.6.24/26, and the board is
-booting properly again with 2.6.31.
-Anyone any ideas how to fix it properly? Or interested in more
-debugging information. (I have an ETM tracer hooked up...)
-
-Notice that this driver actually needs the NODELAY flag set on
-preempt-RT to prevent missing characters with its 1 byte FIFO-hardware
-without flow-control ;-)  (I will provide a clean patch later)
-For now, at least it shows a bug in the new irq-threading mechanisms...
-
-I also have a few related questions, besides investigating the
-root-cause of this bug:
-What is the rationale behind the per-driver irq-thread? What is the
-gain here for RT? My first impression is that this would increase the
-latencies in case of sharing interrupts with NODELAY interrupts. All
-handlers need to run, so the master interrupt cannot be enabled again
-until all IRQ-threads have run, so the NODELAY handler must wait until
-all IRQ-threads have run. So, giving different prios to the
-IRQ-threads that share the same source would increase the latencies
-even more.
-If different drivers share the same interrupt line, even additional
-schedule overhead can be added to the latencies...
-On first impression the former implementation seems more efficient. I
-guess it is changed for a good reason, so, I must be missing something
-here... I hope someone can explain...
-
-Kind regards,
-
-Remy
