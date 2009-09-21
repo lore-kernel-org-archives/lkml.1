@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbZIULM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbZIULPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbZIULM2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 07:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbZIULM1
+	id S1754929AbZIULPU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 07:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZIULPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 07:12:27 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51009 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbZIULM1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 07:12:27 -0400
-Subject: Re: [PATCH 2/4] send callback when swap slot is freed
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: ngupta@vflare.org, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>,
-       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp
-In-Reply-To: <Pine.LNX.4.64.0909211149360.32504@sister.anvils>
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
-	 <1253227412-24342-3-git-send-email-ngupta@vflare.org>
-	 <1253256805.4959.8.camel@penberg-laptop>
-	 <Pine.LNX.4.64.0909180809290.2882@sister.anvils>
-	 <1253260528.4959.13.camel@penberg-laptop>
-	 <Pine.LNX.4.64.0909180857170.5404@sister.anvils>
-	 <1253266391.4959.15.camel@penberg-laptop> <4AB3A16B.90009@vflare.org>
-	 <4AB487FD.5060207@cs.helsinki.fi>
-	 <Pine.LNX.4.64.0909211149360.32504@sister.anvils>
-Date: Mon, 21 Sep 2009 14:12:30 +0300
-Message-Id: <1253531550.5216.32.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Mon, 21 Sep 2009 07:15:17 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52877 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752231AbZIULPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 07:15:17 -0400
+Date: Mon, 21 Sep 2009 13:15:20 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] trivial: fix typos "enalbe" -> "enable"
+In-Reply-To: <20090921093019.GB26665@pengutronix.de>
+Message-ID: <alpine.LNX.2.00.0909211315010.17028@wotan.suse.de>
+References: <1253522362-22856-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LNX.2.00.0909211118340.17028@wotan.suse.de> <20090921093019.GB26665@pengutronix.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-37507419-1253531720=:17028"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Mon, 2009-09-21 at 12:07 +0100, Hugh Dickins wrote:
-> Is the main basis for your disgust at the way that Nitin installs the
-> callback, that loop down the swap_info_structs?  I should point out
-> that it was I who imposed that on Nitin: before that he was passing a
-> swap entry (or was it a swap type extracted from a swap entry?
-> I forget), which was the sole reference to a swp_entry_t in his
-> driver - I advised a bdev interface.
+--168427776-37507419-1253531720=:17028
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-The callback setup from ->read() just looks gross. However, it's your
-call Hugh so I'll just shut up now. ;-)
+On Mon, 21 Sep 2009, Uwe Kleine-König wrote:
 
-			Pekka
+> > This fix is not really correct -- the sentence doesn't have too much sense 
+> > even after the typo fix.
+> > Plus, it has been already fixed in a proper way, please see 
+> > http://git.kernel.org/?p=linux/kernel/git/jikos/trivial.git;a=commitdiff;h=d5dd245f15b243b313df044741c0ba8065b0bc91
+> ah, OK.
+> 
+> should I repost the remaining hunk or do you do that?
 
+I have applied the aic7xxx_core.c hunk. Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
+--168427776-37507419-1253531720=:17028--
