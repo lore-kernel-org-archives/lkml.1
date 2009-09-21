@@ -1,93 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbZIUKTC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbZIUKbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755733AbZIUKTC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 06:19:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZIUKTB
+	id S1753753AbZIUKbr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 06:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbZIUKbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 06:19:01 -0400
-Received: from mga03.intel.com ([143.182.124.21]:34498 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753988AbZIUKTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 06:19:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,424,1249282800"; 
-   d="scan'208";a="189814681"
-Date: Mon, 21 Sep 2009 18:18:50 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
-Message-ID: <20090921101850.GA7045@localhost>
-References: <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090919150351.GA19880@localhost> <20090920190006.GD16919@duck.suse.cz> <20090921030402.GC6331@localhost> <20090921053546.GA16932@localhost> <20090921095326.GA32281@localhost> <20090921100242.GA1099@duck.suse.cz>
+	Mon, 21 Sep 2009 06:31:44 -0400
+Received: from alpha.arachsys.com ([91.203.57.7]:59536 "EHLO
+	alpha.arachsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbZIUKbn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 06:31:43 -0400
+Date: Mon, 21 Sep 2009 11:26:54 +0100
+From: Chris Webb <chris@arachsys.com>
+To: Mark Lord <liml@rtr.ca>
+Cc: Tejun Heo <teheo@suse.de>, linux-scsi@vger.kernel.org,
+       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+Message-ID: <20090921102654.GD8789@arachsys.com>
+References: <4AADF471.2020801@suse.de>
+ <4AAE3B9A.2060306@rtr.ca>
+ <4AAE3F86.8090804@suse.de>
+ <4AAE524C.2030401@rtr.ca>
+ <20090916231921.GL1924@arachsys.com>
+ <4AB239C8.2020203@rtr.ca>
+ <4AB25736.1060601@suse.de>
+ <4AB260CA.8040308@rtr.ca>
+ <4AB2610F.8010904@rtr.ca>
+ <20090918170517.GI2141@arachsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090921100242.GA1099@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090918170517.GI2141@arachsys.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 06:02:42PM +0800, Jan Kara wrote:
-> On Mon 21-09-09 17:53:26, Wu Fengguang wrote:
-> > On Mon, Sep 21, 2009 at 01:35:46PM +0800, Wu Fengguang wrote:
-> > > > >   Here is how I'd imaging the writeout logic should work:
-> > > > > We would have just two lists - b_dirty and b_more_io. Both would be
-> > > > > ordered by dirtied_when.
-> > > > 
-> > > > Andrew has a very good description for the dirty/io/more_io queues:
-> > > > 
-> > > > http://lkml.org/lkml/2006/2/7/5
-> > > > 
-> > > > | So the protocol would be:
-> > > > |
-> > > > | s_io: contains expired and non-expired dirty inodes, with expired ones at
-> > > > | the head.  Unexpired ones (at least) are in time order.
-> > > > |
-> > > > | s_more_io: contains dirty expired inodes which haven't been fully written. 
-> > > > | Ordering doesn't matter (unless someone goes and changes
-> > > > | dirty_expire_centisecs - but as long as we don't do anything really bad in
-> > > > | response to this we'll be OK).
-> > > > |
-> > > > | s_dirty: contains expired and non-expired dirty inodes.  The non-expired
-> > > > | ones are in time-of-dirtying order.
-> > > > 
-> > > > Since then s_io was changed to hold only _expired_ dirty inodes at the
-> > > > beginning of a full scan. It serves as a bounded set of dirty inodes.
-> > > > So that when finished a full scan of it, the writeback can go on to
-> > > > the next superblock, and old dirty files' writeback won't be delayed
-> > > > infinitely by poring in newly dirty files.
-> > > > 
-> > > > It seems that the boundary could also be provided by some
-> > > > older_than_this timestamp. So removal of b_io is possible
-> > > > at least on this purpose.
-> > > 
-> > > Yeah, this is a scratch patch to remove b_io, I see no obvious
-> > > difficulties in doing so.
-> > 
-> > However the removal of b_io is not that good for possible b_dirty
-> > optimizations. For example, we could use a tree for b_dirty for more
-> > flexible ordering. Or can introduce a b_dirty_atime to hold the inodes
-> > dirtied by atime and expire them much lazily:
-> > 
-> >                        expire > 30m
-> >         b_dirty_atime --------------+
-> >                                     |
-> >                                     +--- b_io ---> writeback
-> >                                     |
-> >         b_dirty --------------------+
-> >                        expire > 30s
->   Well, you can still implement the above without a need for b_io list. The
-> kupdate-style writeback can for example check the first inode in both lists
-> and process the inode which is expired for a longer time.
+Chris Webb <chris@arachsys.com> writes:
 
-OK. Given that rel_atime is default now, such optimization seems less
-useful anyway.
+> Mark Lord <liml@rtr.ca> writes:
+> 
+> > Speaking of which..
+> > 
+> > Chris:  I wonder if the errors will also vanish in your situation
+> > by disabling the onboard write-caches in the drives ?
+> > 
+> > Eg.  hdparm -W0 /dev/sd?
+> 
+> Hi Mark. I've got a test machine on its way at the moment, so I'll make sure
+> I check this one out on it too.
 
-Thanks,
-Fengguang
+Our test machine is still being built, but we had an opportunity to try this on
+a couple of the live machines when their RAID arrays failed over the weekend.
+We still got timeouts, but (predictably!) they're not on flushes any more:
+
+  ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+  ata2.00: cmd 35/00:08:98:c6:00/00:00:4e:00:00/e0 tag 0 dm
+          res 40/00:00:00:00:00/00:00:00:00:00/40 Emask 0x4
+  ata2.00: status: { DRDY }
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+  ata2.00: configured for UDMA/33
+  ata2: EH complete
+  [...] 
+  ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+  ata2.00: cmd 35/00:08:18:94:68/00:00:3d:00:00/e0 tag 0 dm
+          res 40/00:00:00:00:00/00:00:00:00:00/40 Emask 0x4
+  ata2.00: status: { DRDY }
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+  ata2.00: configured for UDMA/33
+  ata2: EH complete
+  [...]
+
+all the way through the night.
+
+I also have these in the log, but they are immediately after turning off the
+write caching in all drives, so may be a red herring with data still being
+written out.
+
+  ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+  ata2.00: cmd c8/00:08:00:20:80/00:00:00:00:00/e0 tag 0 dm
+          res 40/00:00:00:00:00/00:00:00:00:00/40 Emask 0x4
+  ata2.00: status: { DRDY }
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+  ata2.00: configured for UDMA/133
+  ata2: EH complete
+  ata2.00: limiting speed to UDMA/100:PIO4
+  ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+  ata2.00: cmd 25/00:08:80:3e:2d/00:00:4e:00:00/e0 tag 0 dm
+          res 40/00:00:00:00:00/00:00:00:00:00/40 Emask 0x4
+  ata2.00: status: { DRDY }
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: link is slow to respond, please be patient (ready=0
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+  ata2.00: configured for UDMA/100
+  ata2: EH complete
+
+On another machine, I saw this with write caching turned off:
+
+  ata2.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
+  ata2.00: cmd 61/08:00:28:1f:80/00:00:00:00:00/40 tag 0 ncq 4096 out
+           res 40/00:00:40:1f:80/00:00:00:00:00/40 Emask 0x4 (timeout)
+  ata2.00: status: { DRDY }
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  ata2.00: configured for UDMA/133
+  ata2: EH complete
+  ata2.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
+  ata2.00: cmd 61/08:00:28:1f:80/00:00:00:00:00/40 tag 0 ncq 4096 out
+           res 40/00:00:20:1f:80/00:00:00:00:00/40 Emask 0x4 (timeout)
+  ata2.00: status: { DRDY }
+  ata2: hard resetting link
+  ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  ata2.00: qc timeout (cmd 0xef)
+  ata2.00: failed to set xfermode (err_mask=0x4)
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: link is slow to respond, please be patient (ready=0)
+  ata2: softreset failed (device not ready)
+  ata2: limiting SATA link speed to 1.5 Gbps
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: reset failed, giving up
+  ata2.00: disabled
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: link is slow to respond, please be patient (ready=0)
+  ata2: softreset failed (device not ready)
+  ata2: hard resetting link
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+  ata2: EH complete
+  sd 1:0:0:0: [sdb] Unhandled error code
+  sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+  end_request: I/O error, dev sdb, sector 8396584
+  end_request: I/O error, dev sdb, sector 8396584
+  md: super_written gets error=-5, uptodate=0
+  raid1: Disk failure on sdb1, disabling device.
+  raid1: Operation continuing on 5 devices.
+  sd 1:0:0:0: [sdb] Unhandled error code
+  sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+  end_request: I/O error, dev sdb, sector 8396632
+  end_request: I/O error, dev sdb, sector 8396632
+  md: super_written gets error=-5, uptodate=0
+  sd 1:0:0:0: [sdb] Unhandled error code
+  sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+  end_request: I/O error, dev sdb, sector 654934840
+  raid10: sdb3: rescheduling sector 1788594488
+  sd 1:0:0:0: [sdb] Unhandled error code
+  sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+  end_request: I/O error, dev sdb, sector 1311583568
+  raid10: Disk failure on sdb3, disabling device.
+  raid10: Operation continuing on 3 devices.
+  Buffer I/O error on device dm-51, logical block 31930
+  lost page write due to I/O error on dm-51
+  Buffer I/O error on device dm-51, logical block 31931
+  lost page write due to I/O error on dm-51
+  Buffer I/O error on device dm-51, logical block 31932
+  lost page write due to I/O error on dm-51
+  Buffer I/O error on device dm-51, logical block 31933
+  lost page write due to I/O error on dm-51
+  sd 1:0:0:0: [sdb] Unhandled error code
+  sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+  end_request: I/O error, dev sdb, sector 1465147272
+  end_request: I/O error, dev sdb, sector 1465147272
+  md: super_written gets error=-5, uptodate=0
+  sd 1:0:0:0: [sdb] Unhandled error code
+  sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+  end_request: I/O error, dev sdb, sector 8396584
+  end_request: I/O error, dev sdb, sector 8396584
+  md: super_written gets error=-5, uptodate=0
+  sd 1:0:0:0: [sdb] READ CAPACITY(16) failed
+  sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+  sd 1:0:0:0: [sdb] Sense not available.
+  sd 1:0:0:0: [sdb] READ CAPACITY failed
+  sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+  sd 1:0:0:0: [sdb] Sense not available.
+  sd 1:0:0:0: [sdb] Asking for cache data failed
+  sd 1:0:0:0: [sdb] Assuming drive cache: write through
+  sdb: detected capacity change from 750156374016 to 0
+  raid10: sdb: unrecoverable I/O read error for block 1788594488
+  Buffer I/O error on device dm-59, logical block 204023
+  Buffer I/O error on device dm-59, logical block 204023
+  Buffer I/O error on device dm-43, logical block 24845
+  lost page write due to I/O error on dm-43
+  Buffer I/O error on device dm-62, logical block 558722
+  lost page write due to I/O error on dm-62
+  Buffer I/O error on device dm-43, logical block 24846
+  lost page write due to I/O error on dm-43
+  RAID1 conf printout:
+   --- wd:5 rd:6
+   disk 0, wo:0, o:1, dev:sda1
+   disk 1, wo:1, o:0, dev:sdb1
+   disk 2, wo:0, o:1, dev:sdc1
+  RAID1 conf printout:
+   --- wd:5 rd:6
+   disk 0, wo:0, o:1, dev:sda1
+   disk 2, wo:0, o:1, dev:sdc1
+   disk 3, wo:0, o:1, dev:sdd1
+   disk 4, wo:0, o:1, dev:sde1
+   disk 5, wo:0, o:1, dev:sdf1
+  raid10: Disk failure on sdb2, disabling device.
+  raid10: Operation continuing on 3 devices.
+  raid10: sdb: unrecoverable I/O read error for block 0
+  RAID10 conf printout:
+   --- wd:3 rd:6
+   disk 1, wo:1, o:0, dev:sdb2
+   disk 2, wo:0, o:1, dev:sdc2
+   disk 3, wo:0, o:1, dev:sdd2
+   disk 5, wo:0, o:1, dev:sdf2
+  RAID10 conf printout:
+   --- wd:3 rd:6
+   disk 2, wo:0, o:1, dev:sdc2
+   disk 3, wo:0, o:1, dev:sdd2
+   disk 5, wo:0, o:1, dev:sdf2
+  md: md2: resync done.
+  RAID10 conf printout:
+   --- wd:3 rd:6
+   disk 1, wo:1, o:0, dev:sdb3
+   disk 2, wo:0, o:1, dev:sdc3
+   disk 3, wo:0, o:1, dev:sdd3
+   disk 5, wo:0, o:1, dev:sdf3
+  RAID10 conf printout:
+   --- wd:3 rd:6
+   disk 2, wo:0, o:1, dev:sdc3
+   disk 3, wo:0, o:1, dev:sdd3
+   disk 5, wo:0, o:1, dev:sdf3
+
+Cheers,
+
+Chris.
