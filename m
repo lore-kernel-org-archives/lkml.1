@@ -1,61 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZIUSYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZIUSYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752956AbZIUSYJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 14:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZIUSYG
+	id S1752722AbZIUSYA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 14:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZIUSX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 14:24:06 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45887 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752094AbZIUSX7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 14:23:59 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 21 Sep 2009 20:23:36 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] FireWire updates post 2.6.31
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.96c67be01421d723@s5r6.in-berlin.de>
+	Mon, 21 Sep 2009 14:23:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50247 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751671AbZIUSX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 14:23:57 -0400
+Date: Mon, 21 Sep 2009 20:23:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: [origin tree build failure] [PATCH] media: video: Fix build in
+	saa7164
+Message-ID: <20090921182345.GA25100@elte.hu>
+References: <20090919014930.7dd90f77@pedra.chehab.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090919014930.7dd90f77@pedra.chehab.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+* Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
 
-to receive a few minor IEEE 1394/ FireWire subsystem fixes.
+> This series also contains several new drivers:
+> 
+>    - new driver for NXP saa7164;
 
-Michael Buesch (1):
-      ieee1394: raw1394: Do not leak memory on failed trylock.
-
-Stefan Richter (7):
-      firewire: ohci: fix Self ID Count register mask (safeguard against buffer overflow)
-      firewire: core: header file cleanup
-      firewire: core: fix race with parallel PCI device probe
-      firewire: core: fix topology map response handler
-      firewire: sbp2: fix status reception
-      firewire: sbp2: remove a workaround for Momobay FX-3A
-      ieee1394: sbp2: remove a workaround for Momobay FX-3A
-
- drivers/firewire/core-card.c        |   13 +++++--------
- drivers/firewire/core-transaction.c |    2 +-
- drivers/firewire/core.h             |   14 ++++++++++++++
- drivers/firewire/ohci.c             |    4 ++--
- drivers/firewire/sbp2.c             |   16 ++++++++--------
- drivers/ieee1394/raw1394.c          |    4 +++-
- drivers/ieee1394/sbp2.c             |    3 +--
- include/linux/firewire.h            |   14 --------------
- 8 files changed, 34 insertions(+), 36 deletions(-)
+-tip testing found that an allyesconfig build buglet found its way into 
+this driver - find the fix below.
 
 Thanks,
--- 
-Stefan Richter
--=====-==--= =--= =-=-=
-http://arcgraph.de/sr/
 
+	Ingo
+
+--------------------->
+>From 67a0d8c7dfdf2de72ddec3d821ae87a80ecaed83 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 21 Sep 2009 20:14:47 +0200
+Subject: [PATCH] media: video: Fix build in saa7164
+
+-tip testing found that the x86 build (64-bit allyesconfig) fails due to:
+
+  LD      vmlinux.o
+  drivers/built-in.o:(.bss+0x4b648): multiple definition of `debug'
+  arch/x86/built-in.o:(.kprobes.text+0x88): first defined here
+  ld: Warning: size of symbol `debug' changed from 90 in arch/x86/built-in.o to 4 in drivers/built-in.o
+ make: *** [vmlinux.o] Error 1
+
+This is because recent saa7164 changes introduced a global symbol
+named 'debug'. The x86 platform code already defines a 'debug'
+symbol. (which is named in a too generic way as well - but it
+can be used nicely to weed out too generic symbols in drivers ;-)
+
+Rename it to saa_debug.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/media/video/saa7164/saa7164-api.c  |    8 ++++----
+ drivers/media/video/saa7164/saa7164-cmd.c  |    2 +-
+ drivers/media/video/saa7164/saa7164-core.c |    6 +++---
+ drivers/media/video/saa7164/saa7164.h      |    4 ++--
+ 4 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/media/video/saa7164/saa7164-api.c b/drivers/media/video/saa7164/saa7164-api.c
+index bb6df1b..6f094a9 100644
+--- a/drivers/media/video/saa7164/saa7164-api.c
++++ b/drivers/media/video/saa7164/saa7164-api.c
+@@ -415,7 +415,7 @@ int saa7164_api_enum_subdevs(struct saa7164_dev *dev)
+ 		goto out;
+ 	}
+ 
+-	if (debug & DBGLVL_API)
++	if (saa_debug & DBGLVL_API)
+ 		saa7164_dumphex16(dev, buf, (buflen/16)*16);
+ 
+ 	saa7164_api_dump_subdevs(dev, buf, buflen);
+@@ -480,7 +480,7 @@ int saa7164_api_i2c_read(struct saa7164_i2c *bus, u8 addr, u32 reglen, u8 *reg,
+ 
+ 	dprintk(DBGLVL_API, "%s() len = %d bytes\n", __func__, len);
+ 
+-	if (debug & DBGLVL_I2C)
++	if (saa_debug & DBGLVL_I2C)
+ 		saa7164_dumphex16(dev, buf, 2 * 16);
+ 
+ 	ret = saa7164_cmd_send(bus->dev, unitid, GET_CUR,
+@@ -488,7 +488,7 @@ int saa7164_api_i2c_read(struct saa7164_i2c *bus, u8 addr, u32 reglen, u8 *reg,
+ 	if (ret != SAA_OK)
+ 		printk(KERN_ERR "%s() error, ret(2) = 0x%x\n", __func__, ret);
+ 	else {
+-		if (debug & DBGLVL_I2C)
++		if (saa_debug & DBGLVL_I2C)
+ 			saa7164_dumphex16(dev, buf, sizeof(buf));
+ 		memcpy(data, (buf + 2 * sizeof(u32) + reglen), datalen);
+ 	}
+@@ -548,7 +548,7 @@ int saa7164_api_i2c_write(struct saa7164_i2c *bus, u8 addr, u32 datalen,
+ 	*((u32 *)(buf + 1 * sizeof(u32))) = datalen - reglen;
+ 	memcpy((buf + 2 * sizeof(u32)), data, datalen);
+ 
+-	if (debug & DBGLVL_I2C)
++	if (saa_debug & DBGLVL_I2C)
+ 		saa7164_dumphex16(dev, buf, sizeof(buf));
+ 
+ 	ret = saa7164_cmd_send(bus->dev, unitid, SET_CUR,
+diff --git a/drivers/media/video/saa7164/saa7164-cmd.c b/drivers/media/video/saa7164/saa7164-cmd.c
+index e097f1a..c45966e 100644
+--- a/drivers/media/video/saa7164/saa7164-cmd.c
++++ b/drivers/media/video/saa7164/saa7164-cmd.c
+@@ -250,7 +250,7 @@ int saa7164_cmd_wait(struct saa7164_dev *dev, u8 seqno)
+ 	unsigned long stamp;
+ 	int r;
+ 
+-	if (debug >= 4)
++	if (saa_debug >= 4)
+ 		saa7164_bus_dump(dev);
+ 
+ 	dprintk(DBGLVL_CMD, "%s(seqno=%d)\n", __func__, seqno);
+diff --git a/drivers/media/video/saa7164/saa7164-core.c b/drivers/media/video/saa7164/saa7164-core.c
+index f0dbead..60f3214 100644
+--- a/drivers/media/video/saa7164/saa7164-core.c
++++ b/drivers/media/video/saa7164/saa7164-core.c
+@@ -45,8 +45,8 @@ MODULE_LICENSE("GPL");
+  32 bus
+  */
+ 
+-unsigned int debug;
+-module_param(debug, int, 0644);
++unsigned int saa_debug;
++module_param(saa_debug, int, 0644);
+ MODULE_PARM_DESC(debug, "enable debug messages");
+ 
+ unsigned int waitsecs = 10;
+@@ -653,7 +653,7 @@ static int __devinit saa7164_initdev(struct pci_dev *pci_dev,
+ 		printk(KERN_ERR "%s() Unsupported board detected, "
+ 			"registering without firmware\n", __func__);
+ 
+-	dprintk(1, "%s() parameter debug = %d\n", __func__, debug);
++	dprintk(1, "%s() parameter debug = %d\n", __func__, saa_debug);
+ 	dprintk(1, "%s() parameter waitsecs = %d\n", __func__, waitsecs);
+ 
+ fail_fw:
+diff --git a/drivers/media/video/saa7164/saa7164.h b/drivers/media/video/saa7164/saa7164.h
+index 6753008..42660b5 100644
+--- a/drivers/media/video/saa7164/saa7164.h
++++ b/drivers/media/video/saa7164/saa7164.h
+@@ -375,9 +375,9 @@ extern int saa7164_buffer_dealloc(struct saa7164_tsport *port,
+ 
+ /* ----------------------------------------------------------- */
+ 
+-extern unsigned int debug;
++extern unsigned int saa_debug;
+ #define dprintk(level, fmt, arg...)\
+-	do { if (debug & level)\
++	do { if (saa_debug & level)\
+ 		printk(KERN_DEBUG "%s: " fmt, dev->name, ## arg);\
+ 	} while (0)
+ 
