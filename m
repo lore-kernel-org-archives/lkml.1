@@ -1,86 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZIUNkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZIUNkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbZIUNkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbZIUNkw
+	id S1755968AbZIUNkn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZIUNkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:40:52 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44694 "EHLO sh.osrg.net"
+	Mon, 21 Sep 2009 09:40:42 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37126 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756082AbZIUNkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:40:47 -0400
-Date: Mon, 21 Sep 2009 22:39:42 +0900
-To: lmb@suse.de
-Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com, neilb@suse.de,
-       hch@infradead.org, James.Bottomley@suse.de, lars.ellenberg@linbit.com,
-       linux-kernel@vger.kernel.org, drbd-dev@lists.linbit.com,
-       akpm@linux-foundation.org, bart.vanassche@gmail.com, davej@redhat.com,
-       gregkh@suse.de, kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
-       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
-       philipp.reisner@linbit.com, sam@ravnborg.org
-Subject: Re: [GIT PULL] DRBD for 2.6.32
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090919220232.GB31849@suse.de>
-References: <20090918200803.GM23126@kernel.dk>
-	<20090919141334N.fujita.tomonori@lab.ntt.co.jp>
-	<20090919220232.GB31849@suse.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090921223815U.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 21 Sep 2009 22:39:47 +0900 (JST)
+	id S1750898AbZIUNkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:40:39 -0400
+Date: Mon, 21 Sep 2009 15:40:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: [PATCH] fs: Fix busyloop in wb_writeback()
+Message-ID: <20090921134042.GY23126@kernel.dk>
+References: <1253121768-20673-1-git-send-email-jack@suse.cz> <20090916184106.GT23126@kernel.dk> <20090921130145.GA6266@localhost> <20090921130634.GX23126@kernel.dk> <20090921131057.GA15703@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090921131057.GA15703@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009 00:02:32 +0200
-Lars Marowsky-Bree <lmb@suse.de> wrote:
-
-> On 2009-09-19T14:14:30, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+On Mon, Sep 21 2009, Wu Fengguang wrote:
+> On Mon, Sep 21, 2009 at 09:06:34PM +0800, Jens Axboe wrote:
+> > On Mon, Sep 21 2009, Wu Fengguang wrote:
+> > > On Thu, Sep 17, 2009 at 02:41:06AM +0800, Jens Axboe wrote:
+> > > > On Wed, Sep 16 2009, Jan Kara wrote:
+> > > > > If all inodes are under writeback (e.g. in case when there's only one inode
+> > > > > with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
+> > > > > to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
+> > > > > waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
+> > > > > write anything.
+> > > > 
+> > > > Interesting, so this will happen if the dirtier and flush thread end up
+> > > > "fighting" each other over the same inode. I'll throw this into the
+> > > > testing mix.
+> > > > 
+> > > > How did you notice?
+> > > 
+> > > Jens, I found another busy loop. Not sure about the solution, but here
+> > > is the quick fact.
+> > > 
+> > > Tested git head is 1ef7d9aa32a8ee054c4d4fdcd2ea537c04d61b2f, which
+> > > seems to be the last writeback patch in the linux-next tree. I cannot
+> > > run the plain head of linux-next because it just refuses boot up.
+> > > 
+> > > On top of which Jan Kara's I_SYNC waiting patch and the attached
+> > > debugging patch is applied.
+> > > 
+> > > Test commands are:
+> > > 
+> > >         # mount /mnt/test # ext4 fs
+> > >         # echo 1 > /proc/sys/fs/dirty_debug
+> > > 
+> > >         # cp /dev/zero /mnt/test/zero0
+> > > 
+> > > After that the box is locked up, the system is busy doing these:
+> > > 
+> > > [   54.740295] requeue_io() +457: inode=79232
+> > > [   54.740300] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
+> > > [   54.740303] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
+> > > [   54.740317] requeue_io() +457: inode=79232
+> > > [   54.740322] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
+> > > [   54.740325] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
+> > > [   54.740339] requeue_io() +457: inode=79232
+> > > [   54.740344] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
+> > > [   54.740347] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
+> > > ......
+> > > 
+> > > Basically the traces show that balance_dirty_pages() is busy looping.
+> > > It cannot write anything because the inode always be requeued by this line:
+> > > 
+> > >         if (inode->i_state & I_SYNC) {
+> > >                if (!wait) {
+> > >                         requeue_io(inode);
+> > >                         return 0;
+> > >                 }
+> > > 
+> > > This seem to happen when the partition is FULL.
+> > 
+> > OK, I'll have to look into these issues soonish. I'll be travelling next
+> > week though, so I cannot do more about it right now. If you have time to
+> > work on tested patches, then that would be MUCH appreciated it!
 > 
-> > I guess that Christoph is worry about adding another user interface
-> > for kinda device management; once we merge this, we can't fix it (for
-> > the raid unification).
-> 
-> Why can't it be fixed?
-> 
-> Either
-> 
-> a) there's going to be a transition period during which the "old"
-> interface is supported but depreciated and scheduled to be removed (all
-> driving the new unified same back-end),
+> Jens, your bug fix patches arrive just before I submit this bug report :)
 
-We should avoid removing the existing interface. Once we merge drbd, I
-don't think that it's a good idea to remove the drbd user interface.
+Good!
 
+-- 
+Jens Axboe
 
-> or b) there's going to be a new kernel which requires new user-space
-> tools sharp.
-> 
-> In either case, dm/md are affected by this, so a third interface doesn't
-> really make much difference. The refactoring needs to happen in the
-> back-end anyway, and that actually becomes easier when all concurrent
-> implementations are present and can be reworked at the same time.
-
-I don't think so. It's much easier to implement something that
-supports fewer user interfaces.
-
-
-> > BTW, DM already has something like drbd? I thought that there is a
-> > talk about that new target at LinuxCon.
-> 
-> dm-replicator is nowhere near as usable as DRBD, and not upstream yet
-
-I don't think usability at this point is important. The design
-matters. dm-replicator is built on the existing framework.
-
-And my question is, if drbd and dm-replicator will provide similar
-features, then why do we need both in mainline?
-
-
-> either. (Further, it's another independent implementation, pursued
-> instead of unifying any of the existing ones or helping to merge drbd -
-> don't get me started on my thoughts of that.)
-
-Again, dm-replicator is built on the existing framework instead of
-adding another 'multiple (virtual) devices' framework into mainline.
