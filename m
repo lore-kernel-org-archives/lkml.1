@@ -1,115 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbZIUSwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbZIUSxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbZIUSwN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 14:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZIUSwM
+	id S1753222AbZIUSxp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 14:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZIUSxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 14:52:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:64854 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbZIUSwM (ORCPT
+	Mon, 21 Sep 2009 14:53:43 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:41476 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753140AbZIUSxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 14:52:12 -0400
-Message-ID: <4AB7CB6D.9000200@vlnb.net>
-Date: Mon, 21 Sep 2009 22:52:29 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 21 Sep 2009 14:53:43 -0400
+Date: Mon, 21 Sep 2009 19:53:36 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org
+Subject: Re: [PATCH] VFS: document what MAY_ACCESS means
+Message-ID: <20090921185336.GA5633@shareable.org>
+References: <20090921012933.2631.85495.stgit@paris.rdu.redhat.com> <20090921081047.GA20006@shareable.org> <1253536193.17222.21.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Joel Becker <joel.becker@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Florian Haas <florian.haas@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: Re: [RFC v2 PATCH 0/19] A kernel-level configfs enabled generic	target
- engine for Linux v2.6.32
-References: <1253311656.4498.143.camel@haakon2.linux-iscsi.org>	 <4AB76BBB.3040703@vlnb.net> <1253547536.26893.21.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1253547536.26893.21.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19G+ZlDmCjsIovdU6mZAuKBLq5HWPJeVrh5hf3
- HsR/9npCMXTTbSMjsJeUGTuJ6b/f0O9eP4pzcoSzUGNtKt5oMD
- kdq+YgdFKVrumCbFTbl4g==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253536193.17222.21.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicholas A. Bellinger, on 09/21/2009 07:38 PM wrote:
-> On Mon, 2009-09-21 at 16:04 +0400, Vladislav Bolkhovitin wrote:
->> Nicholas A. Bellinger, on 09/19/2009 02:07 AM wrote:
->>> Greetings all,
->>>
->>> This is the second round of request for comments for TCM/ConfigFS v3.2 from lio-core-2.6.git.
->>> Thanks to the folks who made comments, and I again invite people to take a look and make
->>> recommendations on how the code can be futher improved to use the best available upstream
->>> interfaces.
->>>
->>> Also, the standalone patches for TCM v3.2 are now available from:
->>>
->>> http://kernel.org/pub/linux/kernel/people/nab/target_core_mod-patches/
->>>
->>> The first posting from 09112009 can be found here:
->>>
->>> http://marc.info/?l=linux-kernel&m=125272088024636
->>>
->>> The changelog since the posting on 09112009, which can be found here:
->>>
->>> *) Convert to struct mutex for struct sempahore initialized with init_MUTEX() (mentioned by Daniel Walker)
->>> *) Convert to struct completion for struct semaphore initialized with init_MUTEX_LOCKED() (mentioned by Daniel Walker)
->>> *) Convert to use Kbuild instead of Makefile for drivers/target/ (mentioned by Boaz Harrosh)
->>> *) Use include/asm-generic/div64.h for unsigned long long division on 32-bit architectures
->>> *) Use include/linux/math64.h for unsigned long long modulo on 32-bit architectures
->>>
->>> The lio-core-2.6.git tree can be found here:
->>>
->>> http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
->>>
->>> More Information about Target_Core_Mod/ConfigFS, and PR and ALUA:
->>>
->>> http://www.linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
->>> http://www.linux-iscsi.org/index.php/Persistent_Reservations
->>> http://www.linux-iscsi.org/index.php/ALUA
->>>
->>> The complete v3.x TCM CLI operations set can be found here:
->>>
->>> http://www.linux-iscsi.org/index.php/Lio-utils#v3.1_TCM_CLI_operations
->>>
->>> Instructions and examples for getting setup:
->>>
->>> http://www.linux-iscsi.org/builds/docs/LIO-3.0-Users_Reference_Manual.pdf
->>> http://www.linux-iscsi.org/index.php/Howto#Start_target_core_mod
->> Nicholas,
->>
->> In the previous iteration of this patchset I asked you some essential 
->> questions about what advantages TCM has over STGT which can't be 
->> implemented in STGT and can justify the move from it to TCM, as well as 
->> how did you test TCM to claim that TCM is generic and, hence, can work 
->> with hardware target adapters (http://lkml.org/lkml/2009/9/15/315). 
->> There was no reply answering those questions, instead you keep pushing 
->> your patches.
+Trond Myklebust wrote:
+> On Mon, 2009-09-21 at 09:10 +0100, Jamie Lokier wrote
+> > (Btw, side issue: I was very surprised to find fchdir() to an open
+> > directory can fail on NFS due to change of permissions, so the pattern
+> > dir = open("."); chdir("foo"); fchdir(dir) can fail to restore the
+> > current directory).
 > 
-> I am ignoring you because you ask questions that yourself have already
-> answered.  (why having certain drivers in kernel vs. user target mode
-> implementations make more sense than others).
+> Welcome to the world of stateless server-enforced security. Unlike the
+> POSIX model, a NFS server doesn't have the ability to track what
+> permissions have already been checked using a file descriptor. It
+> therefore needs to check permissions on each RPC operation you perform
+> using the credential you present then and there.
 
-Basically, none of those my arguments can be applicable to TCM in its 
-current state and all TCM "advantages" like PRs can be well implemented 
-in STGT, so I wonder, why do you bother people with requests for 
-"*inclusion* of Target_Core_Mod/ConfigFS v3.2 from lio-core-2.6.git code 
-*into mainline v2.6.32*" for such a raw code?
+No, no, it's not that.
 
-Vlad
+It's allowed to have the current directory be a directory you can't
+access any more.  You find out you've lost permission, as you say,
+later when you _do_ something with the directory.  In other words when
+you do a lookup or readdir from the directory.
 
+Putting it another way, this will _never_ error due to another process
+messing with the permissions of the original directory after subdir is
+opened:
+
+    dir=open(".");
+    dir2=open("/elsewhere");
+    fstatat(dir2, "something_elsewhere");
+
+But this can fail, leaving you in a different directory:
+
+    dir=open(".");
+    dir2=open("/elsewhere");
+    fchdir(dir2);
+    stat("something_elsewhere");
+    fchdir(dir);
+
+I find that surprising.  Imho, both codes are intended to have the
+same behaviour.
+
+Is there something in POSIX which says fchdir() must verify you still
+have execute permission in the directory you are switching to at the
+time you call fchdir()?
+
+I suspect having fchdir() fail in this admittedly obscure case is more
+likely to cause problems than the RPC permission check, due to
+surprise and no obvious error recovery strategy in an application
+where fchdir is used in some subroutine to temporarily switch
+directory and then return to the caller, which doesn't expect the
+current directory might be changed by the call.  I suspect when that
+happens, most applications will either terminate abruptly or behave
+wrongly later.  It's just a guess though....
+
+-- Jamie
