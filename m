@@ -1,96 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZIUNkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbZIUNkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbZIUNkn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZIUNkm
+	id S1753479AbZIUNkh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZIUNke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:40:42 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:37126 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbZIUNkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:40:39 -0400
-Date: Mon, 21 Sep 2009 15:40:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Theodore Tso <tytso@mit.edu>
-Subject: Re: [PATCH] fs: Fix busyloop in wb_writeback()
-Message-ID: <20090921134042.GY23126@kernel.dk>
-References: <1253121768-20673-1-git-send-email-jack@suse.cz> <20090916184106.GT23126@kernel.dk> <20090921130145.GA6266@localhost> <20090921130634.GX23126@kernel.dk> <20090921131057.GA15703@localhost>
+	Mon, 21 Sep 2009 09:40:34 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:34857 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751384AbZIUNkd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:40:33 -0400
+Date: Mon, 21 Sep 2009 15:40:46 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+cc: Linux Test Project <Ltp-list@lists.sourceforge.net>
+Subject: [LTP] mmapstress03 weirdness? (fwd)
+Message-ID: <alpine.LRH.2.00.0909211539520.16077@vixen.sonytel.be>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090921131057.GA15703@localhost>
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21 2009, Wu Fengguang wrote:
-> On Mon, Sep 21, 2009 at 09:06:34PM +0800, Jens Axboe wrote:
-> > On Mon, Sep 21 2009, Wu Fengguang wrote:
-> > > On Thu, Sep 17, 2009 at 02:41:06AM +0800, Jens Axboe wrote:
-> > > > On Wed, Sep 16 2009, Jan Kara wrote:
-> > > > > If all inodes are under writeback (e.g. in case when there's only one inode
-> > > > > with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
-> > > > > to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
-> > > > > waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
-> > > > > write anything.
-> > > > 
-> > > > Interesting, so this will happen if the dirtier and flush thread end up
-> > > > "fighting" each other over the same inode. I'll throw this into the
-> > > > testing mix.
-> > > > 
-> > > > How did you notice?
-> > > 
-> > > Jens, I found another busy loop. Not sure about the solution, but here
-> > > is the quick fact.
-> > > 
-> > > Tested git head is 1ef7d9aa32a8ee054c4d4fdcd2ea537c04d61b2f, which
-> > > seems to be the last writeback patch in the linux-next tree. I cannot
-> > > run the plain head of linux-next because it just refuses boot up.
-> > > 
-> > > On top of which Jan Kara's I_SYNC waiting patch and the attached
-> > > debugging patch is applied.
-> > > 
-> > > Test commands are:
-> > > 
-> > >         # mount /mnt/test # ext4 fs
-> > >         # echo 1 > /proc/sys/fs/dirty_debug
-> > > 
-> > >         # cp /dev/zero /mnt/test/zero0
-> > > 
-> > > After that the box is locked up, the system is busy doing these:
-> > > 
-> > > [   54.740295] requeue_io() +457: inode=79232
-> > > [   54.740300] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> > > [   54.740303] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> > > [   54.740317] requeue_io() +457: inode=79232
-> > > [   54.740322] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> > > [   54.740325] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> > > [   54.740339] requeue_io() +457: inode=79232
-> > > [   54.740344] mm/page-writeback.c +539 balance_dirty_pages(): comm=cp pid=3327 n=0
-> > > [   54.740347] global dirty=60345 writeback=10145 nfs=0 flags=_M towrite=1536 skipped=0
-> > > ......
-> > > 
-> > > Basically the traces show that balance_dirty_pages() is busy looping.
-> > > It cannot write anything because the inode always be requeued by this line:
-> > > 
-> > >         if (inode->i_state & I_SYNC) {
-> > >                if (!wait) {
-> > >                         requeue_io(inode);
-> > >                         return 0;
-> > >                 }
-> > > 
-> > > This seem to happen when the partition is FULL.
-> > 
-> > OK, I'll have to look into these issues soonish. I'll be travelling next
-> > week though, so I cannot do more about it right now. If you have time to
-> > work on tested patches, then that would be MUCH appreciated it!
-> 
-> Jens, your bug fix patches arrive just before I submit this bug report :)
+---------- Forwarded message ----------
+Date: Wed, 16 Sep 2009 18:37:12 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linux Test Project <Ltp-list@lists.sourceforge.net>
+Subject: [LTP] mmapstress03 weirdness?
 
-Good!
+On ppc64, with 32-bit userland, I get:
 
--- 
-Jens Axboe
+| Running tests.......
+| <<<test_start>>>
+| tag=mmapstress03 stime=1253117251
+| cmdline="mmapstress03"
+| contacts=""
+| analysis=exit
+| <<<test_output>>>
+| incrementing stop
+| : errno = 0: really large mmap didn't fail
+| mmapstress03    1  TFAIL  :  Test failed
+                     ^^^^^^^^^^^^^^^^^^^^^
+| <<<execution_status>>>
+| initiation_status="ok"
+| duration=0 termination_type=exited termination_id=0 corefile=no
+| cutime=0 cstime=0
+| <<<test_end>>>
+| INFO: ltp-pan reported all tests PASS
+                                   ^^^^
 
+The core part of this test is:
+
+        /* Ask for a ridiculously large mmap region at a high address */
+        if (mmap((caddr_t)(1UL << (POINTER_SIZE  - 1)) - pagesize,
+                (size_t)((1UL << (POINTER_SIZE - 1)) - pagesize),
+                PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_FIXED|MAP_SHARED, 0, 0)
+                != (caddr_t)-1)
+        {
+                ERROR("really large mmap didn't fail");
+                anyfail();
+        }
+        if (errno != ENOMEM && errno != EINVAL) {
+                ERROR("really large mmap didn't set errno = ENOMEM nor EINVAL");
+                anyfail();
+        }
+
+With 32-bit userland, this boils down to:
+
+| mmap addr 0x7fff0000 size 0x7fff0000
+| mmap returned 0x7fff0000
+
+i.e. mmap() succeeds, but (1) the test expects it to fail, so the test returns
+TFAIL, but (2) ltp-pan still reports that the tests passed?
+
+In addition, sometimes mmapstress03 fails due to SEGV. I created a small test
+program that just does the above mmap(), and depending on the distro and what
+else I print later it crashes with a SEGV, too. Probably this happens because
+the mmap() did succeed, and corrupted some existing mappings, cfr. the notes
+for MAP_FIXED:
+
+       MAP_FIXED
+              Don’t  interpret  addr  as  a hint: place the mapping at exactly
+              that address.  addr must be a multiple of the page size.  If the
+              memory  region  specified  by addr and len overlaps pages of any
+              existing mapping(s), then the overlapped part  of  the  existing
+              mapping(s)  will  be discarded.  If the specified address cannot
+              be used, mmap() will fail.  Because requiring  a  fixed  address
+              for  a  mapping is less portable, the use of this option is dis‐
+              couraged.
+
+
+JFYI, with 64-bit userland, this boils down to:
+
+| mmap addr 0x7fffffffffff0000 size 0x7fffffffffff0000
+| mmap returned 0xffffffffffffffff
+
+i.e. mmap() fails as expected, and the test succeeds.
+
+Does all of this sound OK?
+Thanks for your comments!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
