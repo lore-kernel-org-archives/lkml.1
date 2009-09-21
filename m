@@ -1,172 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZIUDEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZIUDMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbZIUDEN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 23:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbZIUDEL
+	id S1755575AbZIUDMG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 23:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZIUDMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 23:04:11 -0400
-Received: from mga14.intel.com ([143.182.124.37]:63366 "EHLO mga14.intel.com"
+	Sun, 20 Sep 2009 23:12:03 -0400
+Received: from mga03.intel.com ([143.182.124.21]:62383 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754889AbZIUDEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 23:04:11 -0400
+	id S1751807AbZIUDMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 23:12:01 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,421,1249282800"; 
-   d="scan'208";a="189732125"
-Date: Mon, 21 Sep 2009 11:04:02 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
-Message-ID: <20090921030402.GC6331@localhost>
-References: <20090911134241.GB19707@mit.edu> <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost> <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090919150351.GA19880@localhost> <20090920190006.GD16919@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090920190006.GD16919@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-IronPort-AV: E=Sophos;i="4.44,422,1249282800"; 
+   d="scan'208";a="189733249"
+Subject: Re: +
+ generic-ipi-fix-the-race-between-generic_smp_call_function_-and-hotplug_cfd.patch
+ added to -mm tree
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AB6EB1C.5090106@cn.fujitsu.com>
+References: <200907310030.n6V0Uqgw001644@imap1.linux-foundation.org>
+	 <1252616988.7205.102.camel@laptop>  <4AAA0001.2060703@cn.fujitsu.com>
+	 <1252696132.3756.21.camel@sbs-t61.sc.intel.com>
+	 <4AADEF2F.5080504@cn.fujitsu.com>
+	 <1252973802.2899.88.camel@sbs-t61.sc.intel.com>
+	 <4AAEF5DC.4070308@cn.fujitsu.com>
+	 <1253067602.2667.13.camel@sbs-t61.sc.intel.com>
+	 <4AB1A652.1010000@cn.fujitsu.com>
+	 <1253326599.3948.732.camel@sbs-t61.sc.intel.com>
+	 <4AB6EB1C.5090106@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Sun, 20 Sep 2009 20:11:22 -0700
+Message-Id: <1253502682.2528.4.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 03:00:06AM +0800, Jan Kara wrote:
-> On Sat 19-09-09 23:03:51, Wu Fengguang wrote:
-> > On Sat, Sep 19, 2009 at 12:26:07PM +0800, Wu Fengguang wrote:
-> > > On Sat, Sep 19, 2009 at 12:00:51PM +0800, Wu Fengguang wrote:
-> > > > On Sat, Sep 19, 2009 at 11:58:35AM +0800, Wu Fengguang wrote:
-> > > > > On Sat, Sep 19, 2009 at 01:52:52AM +0800, Theodore Tso wrote:
-> > > > > > On Fri, Sep 11, 2009 at 10:39:29PM +0800, Wu Fengguang wrote:
-> > > > > > > 
-> > > > > > > That would be good. Sorry for the late work. I'll allocate some time
-> > > > > > > in mid next week to help review and benchmark recent writeback works,
-> > > > > > > and hope to get things done in this merge window.
-> > > > > > 
-> > > > > > Did you have some chance to get more work done on the your writeback
-> > > > > > patches?
-> > > > > 
-> > > > > Sorry for the delay, I'm now testing the patches with commands
-> > > > > 
-> > > > >  cp /dev/zero /mnt/test/zero0 &
-> > > > >  dd if=/dev/zero of=/mnt/test/zero1 &
-> > > > > 
-> > > > > and the attached debug patch.
-> > > > > 
-> > > > > One problem I found with ext3/4 is, redirty_tail() is called repeatedly
-> > > > > in the traces, which could slow down the inode writeback significantly.
-> > > > 
-> > > > FYI, it's this redirty_tail() called in writeback_single_inode():
-> > > > 
-> > > >                         /*
-> > > >                          * Someone redirtied the inode while were writing back
-> > > >                          * the pages.
-> > > >                          */
-> > > >                         redirty_tail(inode);
-> > > 
-> > > Hmm, this looks like an old fashioned problem get blew up by the
-> > > 128MB MAX_WRITEBACK_PAGES.
-> > > 
-> > > The inode was redirtied by the busy cp/dd processes. Now it takes much
-> > > more time to sync 128MB, so that a heavy dirtier can easily redirty
-> > > the inode in that time window.
-> > > 
-> > > One single invocation of redirty_tail() could hold up the writeback of
-> > > current inode for up to 30 seconds.
+On Sun, 2009-09-20 at 19:55 -0700, Xiao Guangrong wrote:
+> 
+> Suresh Siddha wrote:
+> > On Wed, 2009-09-16 at 20:00 -0700, Xiao Guangrong wrote: 
+> >> How about manual check/handle pending IPI interruption in the CPU context?
+> >> like this:
+> >> --- a/kernel/cpu.c
+> >> +++ b/kernel/cpu.c
+> >> @@ -173,6 +173,9 @@ static int __ref take_cpu_down(void *_param)
+> >>  	struct take_cpu_down_param *param = _param;
+> >>  	int err;
+> >>  
+> >> +	generic_smp_call_function_interrupt();
+> >> +	generic_smp_call_function_single_interrupt();
+> >> +
 > > 
-> > It seems that this patch helps. However I'm afraid it's too late to
-> > risk merging such kind of patches now..
->   Fenguang, could we maybe write down how the logic should look like
-> and then look at the code and modify it as needed to fit the logic?
-> Because I couldn't find a compact description of the logic anywhere
-> in the code.
+> > At this place, how will you ensure that the smp_call_function initiated
+> > by this dying cpu has reached and got serviced at its destination?
+> > 
+> 
+> Suresh, sorry for my poor English, Do you mean that how we ensure it has
+> pending IPI request in the dying cpu?
+> 
+> generic_smp_call_function_*() will check it, if the cpu has pending request,
+> then handle it, else directly return.
+> 
 
-Good idea. It makes sense to write something down in Documentation/
-or embedded as code comments.
+I am referring to the missing csd_lock_wait() here that you had in the
+first version of your patch. Let's say, if cpu X is going offline, we
+need to ensure that the smp_call_function() initiated by cpu X (i.e.,
+smp_call_function IPI sent to some other cpu's from cpu X) got serviced
+before cpu X goes offline. We can't do csd_lock_wait() here, as that
+might deadlock (as all the other cpu's are already in stop machine with
+interrupts disabled).
 
->   Here is how I'd imaging the writeout logic should work:
-> We would have just two lists - b_dirty and b_more_io. Both would be
-> ordered by dirtied_when.
+> > All the other cpu's have disabled interrupts in the stop machine state
+> > by the time we come here and we can't wait.
+> > 
+> 
+> Why we can't wait? It manual check/handle the pending IPI request not wait
+> interruption happen.
+> 
+> It not has race here because all cpu's interruption is disabled, and it not
+> make stop machine slow because only the dying cpu can enter take_cpu_down(),
+> we just wait the dying cpu handle it's pending request. 
+> 
+> Am I misunderstand something?
+> 
+> Thanks,
+> Xiao
+>  
 
-Andrew has a very good description for the dirty/io/more_io queues:
-
-http://lkml.org/lkml/2006/2/7/5
-
-| So the protocol would be:
-|
-| s_io: contains expired and non-expired dirty inodes, with expired ones at
-| the head.  Unexpired ones (at least) are in time order.
-|
-| s_more_io: contains dirty expired inodes which haven't been fully written. 
-| Ordering doesn't matter (unless someone goes and changes
-| dirty_expire_centisecs - but as long as we don't do anything really bad in
-| response to this we'll be OK).
-|
-| s_dirty: contains expired and non-expired dirty inodes.  The non-expired
-| ones are in time-of-dirtying order.
-
-Since then s_io was changed to hold only _expired_ dirty inodes at the
-beginning of a full scan. It serves as a bounded set of dirty inodes.
-So that when finished a full scan of it, the writeback can go on to
-the next superblock, and old dirty files' writeback won't be delayed
-infinitely by poring in newly dirty files.
-
-It seems that the boundary could also be provided by some
-older_than_this timestamp. So removal of b_io is possible
-at least on this purpose.
-
->   A thread doing WB_SYNC_ALL writeback will just walk the list and cleanup
-> everything (we should be resistant against livelocks because we stop at
-> inode which has been dirtied after the sync has started).
-
-Yes, that would mean
-
-- older_than_this=now     for WB_SYNC_ALL
-- older_than_this=now-30s for WB_SYNC_NONE
-
->   A thread doing WB_SYNC_NONE writeback will start walking the list. If the
-> inode has I_SYNC set, it puts it on b_more_io. Otherwise it takes I_SYNC
-> and writes as much as it finds necessary from the first inode. If it
-> stopped before it wrote everything, it puts the inode at the end of
-> b_more_io.
-
-Agreed. The current code is doing that, and it is reasonably easy to
-reuse the code path for WB_SYNC_NONE/WB_SYNC_ALL?
-
-> If it wrote everything (writeback_index cycled or scanned the
-> whole range) but inode is dirty, it puts the inode at the end of b_dirty
-> and resets dirtied_when to the current time. Then it continues with the
-> next inode.
-
-Agreed. I think it makes sense to reset dirtied_when (thus delay 30s)
-if an inode still has dirty pages when we have finished a full scan of
-it, in order to
-- prevent pointless writeback IO of overwritten pages
-- somehow throttle IO for busy inodes
-
->   kupdate style writeback stops scanning dirty list when dirtied_when is
-> new enough. Then if b_more_io is nonempty, it splices it into the beginning
-> of the dirty list and restarts.
-
-Right.
-
->   Other types of writeback splice b_more_io to b_dirty when b_dirty gets
-> empty. pdflush style writeback writes until we drop below background dirty
-> limit. Other kinds of writeback (throttled threads, writeback submitted by
-> filesystem itself) write while nr_to_write > 0.
-
-I'd propose to always check older_than_this. For non-kupdate sync, it
-still makes sense to give some priority to expired inodes (generally
-it's suboptimal to sync those dirtied-just-now inodes). That is, to
-sync expired inodes first if there are any.
-
->   If we didn't write anything during the b_dirty scan, we wait until I_SYNC
-> of the first inode on b_more_io gets cleared before starting the next scan.
->   Does this look reasonably complete and cover all the cases?
-
-What about the congested case?
-
-Thanks,
-Fengguang
