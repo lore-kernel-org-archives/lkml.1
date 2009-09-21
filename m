@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZIUPWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbZIUPXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZIUPWP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 11:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbZIUPWO
+	id S1756601AbZIUPXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 11:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbZIUPXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 11:22:14 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:33569 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756553AbZIUPWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 11:22:14 -0400
-Date: Mon, 21 Sep 2009 16:22:19 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: a patch drop request in -mm
-Message-ID: <20090921152219.GQ12726@csn.ul.ie>
-References: <2f11576a0909210800l639560e4jad6cfc2e7f74538f@mail.gmail.com>
+	Mon, 21 Sep 2009 11:23:16 -0400
+Received: from na3sys009aog114.obsmtp.com ([74.125.149.211]:47474 "EHLO
+	na3sys009aog114.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756554AbZIUPXP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 11:23:15 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: Daniel Walker <dwalker@fifo99.com>
+CC: "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 21 Sep 2009 09:22:44 -0600
+Subject: RE: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
+Thread-Topic: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
+Thread-Index: Aco6bVLHfVaqSigWRHyr4yd6+7QYowAYVYnA
+Message-ID: <4B6A08C587958942AA3002690DD4F8C35C5124EB@cosmail02.lsi.com>
+References: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
+ <1253504435.9654.221.camel@desktop>
+In-Reply-To: <1253504435.9654.221.camel@desktop>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <2f11576a0909210800l639560e4jad6cfc2e7f74538f@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 12:00:51AM +0900, KOSAKI Motohiro wrote:
-> Mel,
-> 
-> Today, my test found following patch makes false-positive warning.
-> because, truncate can free the pages
-> although the pages are mlock()ed.
-> 
-> So, I think following patch should be dropped.
-> .. or, do you think truncate should clear PG_mlock before free the page?
-> 
+Daniel,
 
-Is there a reason that truncate cannot clear PG_mlock before freeing the
-page?
+Thanks for viewing the patches.  I did run the checkpatch.pl first before I submit the patches.  Is there possible you can tell me the errors in the specific patch, I need to find out if it is my e-mail setting problems or something else.
 
-> Can I ask your patch intention?
+Thanks,
+
+Bo Yang  
+
+-----Original Message-----
+From: Daniel Walker [mailto:dwalker@fifo99.com] 
+Sent: Sunday, September 20, 2009 11:41 PM
+To: Yang, Bo
+Cc: James.Bottomley@HansenPartnership.com; James.Bottomley@suse.de; linux-scsi@vger.kernel.org; akpm@osdl.org; linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
 
 
-Locked pages being freed to the page allocator were considered
-unexpected and a counter was in place to determine how often that
-situation occurred. However, I considered it unlikely that the counter
-would be noticed so the warning was put in place to catch what class of
-pages were getting freed locked inappropriately. I think a few anomolies
-have been cleared up since. Ultimately, it should have been safe to
-delete the check.
+Your patches all have numerous serious style problems.. There are far
+too many to even give a summary here, and they are all different kinds
+of problems..
 
-> 
-> 
-> =============================================================
-> commit 7a06930af46eb39351cbcdc1ab98701259f9a72c
-> Author: Mel Gorman <mel@csn.ul.ie>
-> Date:   Tue Aug 25 00:43:07 2009 +0200
-> 
->     When a page is freed with the PG_mlocked set, it is considered an
->     unexpected but recoverable situation.  A counter records how often this
->     event happens but it is easy to miss that this event has occured at
->     all.  This patch warns once when PG_mlocked is set to prompt debuggers
->     to check the counter to see how often it is happening.
-> 
->     Signed-off-by: Mel Gorman <mel@csn.ul.ie>
->     Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
->     Acked-by: Johannes Weiner <hannes@cmpxchg.org>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 28c2f3e..251fd73 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -494,6 +494,11 @@ static inline void __free_one_page(struct page *page,
->   */
->  static inline void free_page_mlock(struct page *page)
->  {
-> +       WARN_ONCE(1, KERN_WARNING
-> +               "Page flag mlocked set for process %s at pfn:%05lx\n"
-> +               "page:%p flags:%#lx\n",
-> +               current->comm, page_to_pfn(page),
-> +               page, page->flags|__PG_MLOCKED);
->         __dec_zone_page_state(page, NR_MLOCK);
->         __count_vm_event(UNEVICTABLE_MLOCKFREED);
->  }
-> 
+You would need to fix all these issues before these patches could move
+forward. Could you run scripts/checkpatch.pl on you patches and fix all
+the issues that it reports?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Daniel
+
