@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZIUB7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZIUCVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbZIUB7Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 21:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZIUB7O
+	id S1754235AbZIUCVl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 22:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZIUCVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 21:59:14 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:36215 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751793AbZIUB7O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 21:59:14 -0400
-Date: Sun, 20 Sep 2009 21:59:17 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Tilman Schmidt <tilman@imap.cc>
-cc: Matthias Geissert <matthias.geissert@web.de>, Greg KH <greg@kroah.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone VPA-II"
- ?
-In-Reply-To: <20090920181133.GA14366@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0909202152420.15304-100000@netrider.rowland.org>
+	Sun, 20 Sep 2009 22:21:39 -0400
+Received: from na3sys009aog102.obsmtp.com ([74.125.149.69]:52839 "EHLO
+	na3sys009aog102.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753257AbZIUCVi convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 22:21:38 -0400
+X-Greylist: delayed 647 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Sep 2009 22:21:35 EDT
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Sun, 20 Sep 2009 20:21:19 -0600
+Subject: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
+Thread-Topic: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
+Thread-Index: Aco28IhK0BCwqEkwToSTDcG+BIA9kwDb1hagAACJvwA=
+Message-ID: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009, Greg KH wrote:
+Add the Tape drive fix to the megaraid_sas driver: If the command is for the tape device, set the FW pthru timeout to the os layer timeout value.
 
-> Yes, I missed the fact that the ipaq driver needed to pay attention to
-> this, my mistake :(
-> 
-> I'm pretty much not able to write any new patches until the end of next
-> week, due to conferences I'm currently attending, so if someone wants to
-> knock up a patch to fix this before then, it would be most appreciated.
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-Here's a patch which ought to fix the oops.  I trust it won't cause 
-any existing devices to start misbehaving.  Tilman and Matthias, please 
-verify that this works okay on your systems.
+---
+drivers/scsi/megaraid/megaraid_sas.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-A better approach might be to test the bInterfaceClass value, but I 
-don't know if that would work; there might be some devices using a 
-strange value.
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-05-04 20:06:29.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-05-04 20:08:26.000000000 -0400
+@@ -687,6 +687,17 @@ megasas_build_dcdb(struct megasas_instan
+        memcpy(pthru->cdb, scp->cmnd, scp->cmd_len);
 
-Alan Stern
-
-
-
-Index: usb-2.6/drivers/usb/serial/ipaq.c
-===================================================================
---- usb-2.6.orig/drivers/usb/serial/ipaq.c
-+++ usb-2.6/drivers/usb/serial/ipaq.c
-@@ -966,6 +966,15 @@ static int ipaq_calc_num_ports(struct us
- static int ipaq_startup(struct usb_serial *serial)
- {
- 	dbg("%s", __func__);
+        /*
++       * If the command is for the tape device, set the
++       * pthru timeout to the os layer timeout value.
++       */
++       if (scp->device->type == TYPE_TAPE) {
++               if ((scp->request->timeout / HZ) > 0xFFFF)
++                       pthru->timeout = 0xFFFF;
++               else
++                       pthru->timeout = scp->request->timeout / HZ;
++       }
 +
-+	/* Some of the devices in ipaq_id_table[] are composite, and we
-+	 * shouldn't bind to all the interfaces.  This test will rule out
-+	 * some obviously invalid possibilities.
-+	 */
-+	if (serial->num_bulk_in < serial->num_ports ||
-+			serial->num_bulk_out < serial->num_ports)
-+		return -ENODEV;
-+
- 	if (serial->dev->actconfig->desc.bConfigurationValue != 1) {
- 		/*
- 		 * FIXME: HP iPaq rx3715, possibly others, have 1 config that
++       /*
+         * Construct SGL
+         */
+        if (IS_DMA64) {
 
