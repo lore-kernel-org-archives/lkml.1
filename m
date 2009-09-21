@@ -1,80 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZIUND0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZIUNEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbZIUND0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbZIUNDZ
+	id S1756090AbZIUNEk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbZIUNEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:03:25 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:43656 "EHLO mail.atlantis.sk"
+	Mon, 21 Sep 2009 09:04:38 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:50870 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755986AbZIUNDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:03:25 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: venkatesh.pallipadi@intel.com
-Subject: 2.6.31 regression: hangs on Compaq Evo N800c with ACPI enabled - bisected
-Date: Mon, 21 Sep 2009 15:03:19 +0200
-User-Agent: KMail/1.9.10
-Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	id S1756030AbZIUNEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:04:35 -0400
+Date: Mon, 21 Sep 2009 14:04:41 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: Tejun Heo <tj@kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] slqb: Do not use DEFINE_PER_CPU for per-node data
+Message-ID: <20090921130440.GN12726@csn.ul.ie>
+References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie> <1253302451-27740-2-git-send-email-mel@csn.ul.ie> <84144f020909200145w74037ab9vb66dae65d3b8a048@mail.gmail.com> <4AB5FD4D.3070005@kernel.org> <4AB5FFF8.7000602@cs.helsinki.fi> <4AB6508C.4070602@kernel.org> <4AB739A6.5060807@in.ibm.com> <20090921084248.GC12726@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200909211503.22661.linux@rainbow-software.org>
+In-Reply-To: <20090921084248.GC12726@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-kernel 2.6.31 hangs during boot on Compaq Evo N800c laptop. 2.6.30 works fine.
-See https://bugzilla.redhat.com/show_bug.cgi?id=522057
+On Mon, Sep 21, 2009 at 09:42:48AM +0100, Mel Gorman wrote:
+> On Mon, Sep 21, 2009 at 02:00:30PM +0530, Sachin Sant wrote:
+> > Tejun Heo wrote:
+> >> Pekka Enberg wrote:
+> >>   
+> >>> Tejun Heo wrote:
+> >>>     
+> >>>> Pekka Enberg wrote:
+> >>>>       
+> >>>>> On Fri, Sep 18, 2009 at 10:34 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+> >>>>>         
+> >>>>>> SLQB used a seemingly nice hack to allocate per-node data for the
+> >>>>>> statically
+> >>>>>> initialised caches. Unfortunately, due to some unknown per-cpu
+> >>>>>> optimisation, these regions are being reused by something else as the
+> >>>>>> per-node data is getting randomly scrambled. This patch fixes the
+> >>>>>> problem but it's not fully understood *why* it fixes the problem at the
+> >>>>>> moment.
+> >>>>>>           
+> >>>>> Ouch, that sounds bad. I guess it's architecture specific bug as x86
+> >>>>> works ok? Lets CC Tejun.
+> >>>>>         
+> >>>> Is the corruption being seen on ppc or s390?
+> >>>>       
+> >>> On ppc.
+> >>>     
+> >>
+> >> Can you please post full dmesg showing the corruption? 
+> 
+> There isn't a useful dmesg available and my evidence that it's within the
+> pcpu allocator is a bit weak. Symptons are crashing within SLQB when a
+> second CPU is brought up due to a bad data access with a declared per-cpu
+> area. Sometimes it'll look like the value was NULL and other times it's a
+> random.
+> 
+> The "per-cpu" area in this case is actually a per-node area. This implied that
+> it was either racing (but the locking looked sound), a buffer overflow (but
+> I couldn't find one) or the per-cpu areas were being written to by something
+> else unrelated.
 
-Bisection resulted in commit ee1ca48fae7e575d5e399d4fdcfe0afc1212a64c:
+This latter guess was close to the mark but not for the reasons I was
+guessing. There isn't magic per-cpu-area-freeing going on. Once I examined
+the implementation of per-cpu data, it was clear that the per-cpu areas for
+the node IDs were never being allocated in the first place on PowerPC. It's
+probable that this never worked but that it took a long time before SLQB
+was run on a memoryless configuration.
 
-$ git bisect bad
-ee1ca48fae7e575d5e399d4fdcfe0afc1212a64c is first bad commit
-commit ee1ca48fae7e575d5e399d4fdcfe0afc1212a64c
-Author: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-Date:   Thu May 21 17:09:10 2009 -0700
+This patch would replace patch 1 of the first hatchet job I did. It's possible
+a similar patch is needed for S390. I haven't looked at the implementation
+there and I don't have a means of testing it.
 
-    ACPI: Disable ARB_DISABLE on platforms where it is not needed
+=====
+powerpc: Allocate per-cpu areas for node IDs for SLQB to use as per-node areas
 
-    ARB_DISABLE is a NOP on all of the recent Intel platforms.
+SLQB uses DEFINE_PER_CPU to define per-node areas. An implicit
+assumption is made that all valid node IDs will have matching valid CPU
+ids. In memoryless configurations, it is possible to have a node ID with
+no CPU having the same ID. When this happens, a per-cpu are is not
+created and the value of paca[cpu].data_offset is some random value.
+This is later deferenced and the system crashes after accessing some
+invalid address.
 
-    For such platforms, reduce contention on c3_lock
-    by skipping the fake ARB_DISABLE.
+This patch hacks powerpc to allocate per-cpu areas for node IDs that
+have no corresponding CPU id. This gets around the immediate problem but
+it should be discussed if there is a requirement for a DEFINE_PER_NODE
+and how it should be implemented.
 
-    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ arch/powerpc/kernel/setup_64.c |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-:040000 040000 f05492fbba2c068f22d7aefca36896f07ff8611b 47e784478de3c386591a92181e7784f5d224a989 M      arch
-:040000 040000 a379b031d617def0094cca3f56c2eda510a0604b cc00f83544238d1757fdf2a5e62206d1a49de2de M      drivers
-
-Reverting this commit fixes the regression.
-
-CPU is Mobile Pentium 4-M:
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 2
-model name	: Mobile Intel(R) Pentium(R) 4 - M CPU 2.20GHz
-stepping	: 7
-cpu MHz		: 2200.000
-cache size	: 512 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe up pebs bts cid
-bogomips	: 4395.79
-clflush size	: 64
-power management:
-
--- 
-Ondrej Zary
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 1f68160..a5f52d4 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -588,6 +588,26 @@ void __init setup_per_cpu_areas(void)
+ 		paca[i].data_offset = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
+ 	}
++#ifdef CONFIG_SLQB
++	/* 
++	 * SLQB abuses DEFINE_PER_CPU to setup a per-node area. This trick
++	 * assumes that ever node ID will have a CPU of that ID to match.
++	 * On systems with memoryless nodes, this may not hold true. Hence,
++	 * we take a second pass initialising a "per-cpu" area for node-ids
++	 * that SLQB can use
++	 */
++	for_each_node_state(i, N_NORMAL_MEMORY) {
++
++		/* Skip node IDs that a valid CPU id exists for */
++		if (paca[i].data_offset)
++			continue;
++
++		ptr = alloc_bootmem_pages_node(NODE_DATA(cpu_to_node(i)), size);
++
++		paca[i].data_offset = ptr - __per_cpu_start;
++		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
++	}
++#endif /* CONFIG_SLQB */
+ }
+ #endif
+ 
