@@ -1,116 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbZIUHWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbZIUHXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181AbZIUHWK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 03:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZIUHWI
+	id S1753950AbZIUHXM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 03:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZIUHXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 03:22:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51845 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751463AbZIUHWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 03:22:05 -0400
-Date: Mon, 21 Sep 2009 07:21:37 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, sachinp@in.ibm.com,
-       davem@davemloft.net, markus.t.metzger@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       sachinp@in.ibm.com, davem@davemloft.net, markus.t.metzger@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
-References: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/urgent] perf_counter, powerpc, sparc: Fix compilation after perf_counter_overflow() change
-Message-ID: <tip-4f95aa6518ca8ae46d88be9abb8e5a33b54812e0@git.kernel.org>
-Git-Commit-ID: 4f95aa6518ca8ae46d88be9abb8e5a33b54812e0
-X-Mailer: tip-git-log-daemon
+	Mon, 21 Sep 2009 03:23:11 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:51895 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbZIUHXK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 03:23:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=GUyznrCWt68BRxBSqTMJzFA2YiuZls+7LRC1VATRlQFTJL93RdIpMz6ZQ9FanfNt9c
+         9V4AXK0l0WzXURO9jbq1DcbmofvLrMBElyVfq7yvFFhxBwCjjx2q7T/kBIkJhU5e4ECw
+         AaDD+ziaZGZZrpYJE4A43Dj+zsJdmq0Bx6oFg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 21 Sep 2009 07:21:38 +0000 (UTC)
+In-Reply-To: <1253445829.20020.626.camel@gandalf.stny.rr.com>
+References: <1253442878.7542.3.camel@laptop>
+	 <1253445829.20020.626.camel@gandalf.stny.rr.com>
+Date: Mon, 21 Sep 2009 09:23:12 +0200
+Message-ID: <c62985530909210023p7707b9efwc4a994522e53fa72@mail.gmail.com>
+Subject: Re: [PATCH] trace: export trace_profile_buf symbols
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: rostedt@goodmis.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4f95aa6518ca8ae46d88be9abb8e5a33b54812e0
-Gitweb:     http://git.kernel.org/tip/4f95aa6518ca8ae46d88be9abb8e5a33b54812e0
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Mon, 21 Sep 2009 16:44:32 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 21 Sep 2009 09:17:24 +0200
-
-perf_counter, powerpc, sparc: Fix compilation after perf_counter_overflow() change
-
-Commit 5622f295 ("x86, perf_counter, bts: Optimize BTS overflow
-handling") removed the regs field from struct perf_sample_data and
-added a regs parameter to perf_counter_overflow().  This breaks the
-build on powerpc (and Sparc) as reported by Sachin Sant:
-
-  arch/powerpc/kernel/perf_counter.c: In function 'record_and_restart':
-  arch/powerpc/kernel/perf_counter.c:1165: error: unknown field 'regs' specified in initializer
-
-This adjusts arch/powerpc/kernel/perf_counter.c to correspond with the
-new struct perf_sample_data and perf_counter_overflow().
-
-[ v2: also fix Sparc, Markus Metzger <markus.t.metzger@intel.com> ]
-
-Reported-by: Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Markus Metzger <markus.t.metzger@intel.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Le 20 septembre 2009 13:23, Steven Rostedt <rostedt@goodmis.org> a écrit :
+> On Sun, 2009-09-20 at 12:34 +0200, Peter Zijlstra wrote:
+>> ERROR: "trace_profile_buf_nmi" [fs/jbd2/jbd2.ko] undefined!
+>> ERROR: "trace_profile_buf" [fs/jbd2/jbd2.ko] undefined!
+>> ERROR: "trace_profile_buf_nmi" [fs/ext4/ext4.ko] undefined!
+>> ERROR: "trace_profile_buf" [fs/ext4/ext4.ko] undefined!
+>> ERROR: "trace_profile_buf_nmi" [arch/x86/kvm/kvm.ko] undefined!
+>> ERROR: "trace_profile_buf" [arch/x86/kvm/kvm.ko] undefined!
+>>
+>
+> Peter, I thought you never use modules.
 
 
----
- arch/powerpc/kernel/perf_counter.c |    3 +--
- arch/sparc/kernel/perf_counter.c   |    3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+And I forgot to think about them :-/
 
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 7ceefaf..5ccf9bc 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -1162,7 +1162,6 @@ static void record_and_restart(struct perf_counter *counter, unsigned long val,
- 	 */
- 	if (record) {
- 		struct perf_sample_data data = {
--			.regs	= regs,
- 			.addr	= 0,
- 			.period	= counter->hw.last_period,
- 		};
-@@ -1170,7 +1169,7 @@ static void record_and_restart(struct perf_counter *counter, unsigned long val,
- 		if (counter->attr.sample_type & PERF_SAMPLE_ADDR)
- 			perf_get_data_addr(regs, &data.addr);
- 
--		if (perf_counter_overflow(counter, nmi, &data)) {
-+		if (perf_counter_overflow(counter, nmi, &data, regs)) {
- 			/*
- 			 * Interrupts are coming too fast - throttle them
- 			 * by setting the counter to 0, so it will be
-diff --git a/arch/sparc/kernel/perf_counter.c b/arch/sparc/kernel/perf_counter.c
-index 09de403..b1265ce 100644
---- a/arch/sparc/kernel/perf_counter.c
-+++ b/arch/sparc/kernel/perf_counter.c
-@@ -493,7 +493,6 @@ static int __kprobes perf_counter_nmi_handler(struct notifier_block *self,
- 
- 	regs = args->regs;
- 
--	data.regs = regs;
- 	data.addr = 0;
- 
- 	cpuc = &__get_cpu_var(cpu_hw_counters);
-@@ -513,7 +512,7 @@ static int __kprobes perf_counter_nmi_handler(struct notifier_block *self,
- 		if (!sparc_perf_counter_set_period(counter, hwc, idx))
- 			continue;
- 
--		if (perf_counter_overflow(counter, 1, &data))
-+		if (perf_counter_overflow(counter, 1, &data, regs))
- 			sparc_pmu_disable_counter(hwc, idx);
- 	}
- 
+
+>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+
+
+>
+> -- Steve
+>
+>> ---
+>>  kernel/trace/trace_event_profile.c |    3 +++
+>>  1 files changed, 3 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+>> index 3aaa77c..f65e966 100644
+>> --- a/kernel/trace/trace_event_profile.c
+>> +++ b/kernel/trace/trace_event_profile.c
+>> @@ -17,6 +17,9 @@ typedef struct {char buf[FTRACE_MAX_PROFILE_SIZE];} profile_buf_t;
+>>  char         *trace_profile_buf;
+>>  char                 *trace_profile_buf_nmi;
+>>
+>> +EXPORT_SYMBOL_GPL(trace_profile_buf);
+>> +EXPORT_SYMBOL_GPL(trace_profile_buf_nmi);
+>> +
+>>  /* Count the events in use (per event id, not per instance) */
+>>  static int   total_profile_count;
+>>
+>>
+>>
+>
+>
