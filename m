@@ -1,132 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbZIUKHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZIUKIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932068AbZIUKHS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 06:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbZIUKHP
+	id S1755927AbZIUKIN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 06:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZIUKIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 06:07:15 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:55866 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755832AbZIUKHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 06:07:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=Xv7LRwx0uPkOmJXIXodQqbLkkrsMowDbTuSne4gpnYpXB6HqISjkTauhtbswrOksZ6
-         69Hl1kNSDXK0lBzSJkTlQiaW+2cPLZTNFQhmsBdS4iZ10ARVv8AiEcAEvkuG9ygHzOmO
-         PKKJZuYAVKLcpRkMgnrSqK0H2caBmFLFuiaD8=
+	Mon, 21 Sep 2009 06:08:10 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:52308 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755888AbZIUKII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 06:08:08 -0400
+Date: Mon, 21 Sep 2009 11:08:13 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Tso Ted <tytso@mit.edu>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@skynet.ie>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       James Ketrenos <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>
+Subject: Re: ipw2200: firmware DMA loading rework
+Message-ID: <20090921100813.GL12726@csn.ul.ie>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <200909191525.33297.bzolnier@gmail.com> <20090921085843.GF12726@csn.ul.ie> <200909211159.27344.bzolnier@gmail.com>
 MIME-Version: 1.0
-Date: Mon, 21 Sep 2009 12:07:16 +0200
-Message-ID: <c4e36d110909210307m6579807ehe4d659053c4dc696@mail.gmail.com>
-Subject: [PATCH] Add missing blk_trace_remove_sysfs to be in pair with 
-	blk_trace_init_sysfs
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: mbroz@redhat.com, lizf@cn.fujitsu.com, tytso@mit.edu,
-       jens.axboe@oracle.com, mingo@elte.hu
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200909211159.27344.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] Add missing blk_trace_remove_sysfs to be in pair with
-blk_trace_init_sysfs
-From: Zdenek Kabelac <zkabelac@redhat.com>
+On Mon, Sep 21, 2009 at 11:59:27AM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > > > > On Sunday 30 August 2009 14:37:42 Bartlomiej Zolnierkiewicz wrote:
+> > > > > >> On Friday 28 August 2009 05:42:31 Zhu Yi wrote:
+> > > > > >> > Bartlomiej Zolnierkiewicz reported an atomic order-6 allocation failure
+> > > > > >> > for ipw2200 firmware loading in kernel 2.6.30. High order allocation is
+> > > > > >>
+> > > > > >> s/2.6.30/2.6.31-rc6/
+> > > > > >>
+> > > > > >> The issue has always been there but it was some recent change that
+> > > > > >> explicitly triggered the allocation failures (after 2.6.31-rc1).
+> > > > > >
+> > > > > > ipw2200 fix works fine but yesterday I got the following error while mounting
+> > > > > > ext4 filesystem (mb_history is optional so the mount succeeded):
+> > > > > 
+> > > > > OK so the mount succeeded.
+> > > > > 
+> > > > > > EXT4-fs (dm-2): barriers enabled
+> > > > > > kjournald2 starting: pid 3137, dev dm-2:8, commit interval 5 seconds
+> > > > > > EXT4-fs (dm-2): internal journal on dm-2:8
+> > > > > > EXT4-fs (dm-2): delayed allocation enabled
+> > > > > > EXT4-fs: file extents enabled
+> > > > > > mount: page allocation failure. order:5, mode:0xc0d0
+> > > > > > Pid: 3136, comm: mount Not tainted 2.6.31-rc8-00015-gadda766-dirty #78
+> > > > > > Call Trace:
+> > > > > >  [<c0394de3>] ? printk+0xf/0x14
+> > > > > >  [<c016a693>] __alloc_pages_nodemask+0x400/0x442
+> > > > > >  [<c016a71b>] __get_free_pages+0xf/0x32
+> > > > > >  [<c01865cf>] __kmalloc+0x28/0xfa
+> > > > > >  [<c023d96f>] ? __spin_lock_init+0x28/0x4d
+> > > > > >  [<c01f529d>] ext4_mb_init+0x392/0x460
+> > > > > >  [<c01e99d2>] ext4_fill_super+0x1b96/0x2012
+> > > > > >  [<c0239bc8>] ? snprintf+0x15/0x17
+> > > > > >  [<c01c0b26>] ? disk_name+0x24/0x69
+> > > > > >  [<c018ba63>] get_sb_bdev+0xda/0x117
+> > > > > >  [<c01e6711>] ext4_get_sb+0x13/0x15
+> > > > > >  [<c01e7e3c>] ? ext4_fill_super+0x0/0x2012
+> > > > > >  [<c018ad2d>] vfs_kern_mount+0x3b/0x76
+> > > > > >  [<c018adad>] do_kern_mount+0x33/0xbd
+> > > > > >  [<c019d0af>] do_mount+0x660/0x6b8
+> > > > > >  [<c016a71b>] ? __get_free_pages+0xf/0x32
+> > > > > >  [<c019d168>] sys_mount+0x61/0x99
+> > > > > >  [<c0102908>] sysenter_do_call+0x12/0x36
+> > > > > > Mem-Info:
+> > > > > > DMA per-cpu:
+> > > > > > CPU    0: hi:    0, btch:   1 usd:   0
+> > > > > > Normal per-cpu:
+> > > > > > CPU    0: hi:  186, btch:  31 usd:   0
+> > > > > > Active_anon:25471 active_file:22802 inactive_anon:25812
+> > > > > >  inactive_file:33619 unevictable:2 dirty:2452 writeback:135 unstable:0
+> > > > > >  free:4346 slab:4308 mapped:26038 pagetables:912 bounce:0
+> > > > > > DMA free:2060kB min:84kB low:104kB high:124kB active_anon:1660kB inactive_anon:1848kB active_file:144kB inactive_file:868kB unevictable:0kB present:15788kB pages_scanned:0 all_unreclaimable? no
+> > > > > > lowmem_reserve[]: 0 489 489
+> > > > > > Normal free:15324kB min:2788kB low:3484kB high:4180kB active_anon:100224kB inactive_anon:101400kB active_file:91064kB inactive_file:133608kB unevictable:8kB present:501392kB pages_scanned:0 all_unreclaimable? no
+> > > > > > lowmem_reserve[]: 0 0 0
+> > > > > > DMA: 1*4kB 1*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB = 2060kB
+> > > > > > Normal: 1283*4kB 648*8kB 159*16kB 53*32kB 10*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 15324kB
+> > > > > > 57947 total pagecache pages
+> > > > > > 878 pages in swap cache
+> > > > > > Swap cache stats: add 920, delete 42, find 11/11
+> > > > > > Free swap  = 1016436kB
+> > > > > > Total swap = 1020116kB
+> > > > > > 131056 pages RAM
+> > > > > > 4233 pages reserved
+> > > > > > 90573 pages shared
+> > > > > > 77286 pages non-shared
+> > > > > > EXT4-fs: mballoc enabled
+> > > > > > EXT4-fs (dm-2): mounted filesystem with ordered data mode
+> > > > > >
+> > > > > > Thus it seems like the original bug is still there and any ideas how to
+> > > > > > debug the problem further are appreciated..
+> > > > > >
+> > > > > > The complete dmesg and kernel config are here:
+> > > > > >
+> > > > > > http://www.kernel.org/pub/linux/kernel/people/bart/ext4-paf.dmesg
+> > > > > > http://www.kernel.org/pub/linux/kernel/people/bart/ext4-paf.config
+> > > > > 
+> > > > > This looks very similar to the kmemleak ext4 reports upon a mount. If
+> > > > > it is the same issue, which from the trace it seems it is, then this
+> > > > > is due to an extra kmalloc() allocation and this apparently will not
+> > > > > get fixed on 2.6.31 due to the closeness of the merge window and the
+> > > > > non-criticalness this issue has been deemed.
+> > > > > 
+> > > > > A patch fix is part of the ext4-patchqueue
+> > > > > http://repo.or.cz/w/ext4-patch-queue.git
+> > > > 
+> > > > Thanks for the pointer but the page allocation failures that I hit seem
+> > > > to be caused by the memory management itself and the ext4 issue fixed by:
+> > > > 
+> > > > http://repo.or.cz/w/ext4-patch-queue.git?a=blob;f=memory-leak-fix-ext4_group_info-allocation;h=c919fff34e70ec85f96d1833f9ce460c451000de;hb=HEAD
+> > > > 
+> > > > is a different problem (unrelated to this one).
+> > > 
+> > > Here is another data point.
+> > > 
+> > > This time it is an order-6 page allocation failure for rt2870sta
+> > > (w/ upcoming driver changes) and Linus' tree from few days ago..
+> > > 
+> > 
+> > It's another high-order atomic allocation which is difficult to grant.
+> > I didn't look closely, but is this the same type of thing - large allocation
+> > failure during firmware loading? If so, is this during resume or is the
+> > device being reloaded for some other reason?
+> 
+> Just modprobing the driver on a system running for some time.
+> 
 
-Adds missing blk_trace_remove_sysfs() to be in pair with
-blk_trace_init_sysfs() introduced in commit
-1d54ad6da9192fed5dd3b60224d9f2dfea0dcd82.
+Was this a common situation before?
 
-Problem was noticed via kmemleak backtrace when some sysfs entries
-were note properly destroyed during  device removal:
+> > I suspect that there are going to be a few of these bugs cropping up
+> > every so often where network devices are assuming large atomic
+> > allocations will succeed because the "only time they happen" is during
+> > boot but these days are happening at runtime for other reasons.
+> 
+> I wouldn't go so far as calling a normal order-6 (256kB) allocation on
+> 512MB machine with 1024MB swap a bug.  Moreover such failures just never
+> happened before 2.6.31-rc1.
 
-unreferenced object 0xffff88001aa76640 (size 80):
-  comm "lvcreate", pid 2120, jiffies 4294885144
-  hex dump (first 32 bytes):
-    01 00 00 00 00 00 00 00 f0 65 a7 1a 00 88 ff ff  .........e......
-    90 66 a7 1a 00 88 ff ff 86 1d 53 81 ff ff ff ff  .f........S.....
-  backtrace:
-    [<ffffffff813f9cc6>] kmemleak_alloc+0x26/0x60
-    [<ffffffff8111d693>] kmem_cache_alloc+0x133/0x1c0
-    [<ffffffff81195891>] sysfs_new_dirent+0x41/0x120
-    [<ffffffff81194b0c>] sysfs_add_file_mode+0x3c/0xb0
-    [<ffffffff81197c81>] internal_create_group+0xc1/0x1a0
-    [<ffffffff81197d93>] sysfs_create_group+0x13/0x20
-    [<ffffffff810d8004>] blk_trace_init_sysfs+0x14/0x20
-    [<ffffffff8123f45c>] blk_register_queue+0x3c/0xf0
-    [<ffffffff812447e4>] add_disk+0x94/0x160
-    [<ffffffffa00d8b08>] dm_create+0x598/0x6e0 [dm_mod]
-    [<ffffffffa00de951>] dev_create+0x51/0x350 [dm_mod]
-    [<ffffffffa00de823>] ctl_ioctl+0x1a3/0x240 [dm_mod]
-    [<ffffffffa00de8f2>] dm_compat_ctl_ioctl+0x12/0x20 [dm_mod]
-    [<ffffffff81177bfd>] compat_sys_ioctl+0xcd/0x4f0
-    [<ffffffff81036ed8>] sysenter_dispatch+0x7/0x2c
-    [<ffffffffffffffff>] 0xffffffffffffffff
+It's not that normal, it's an allocation that cannot sleep and cannot
+reclaim. Why is something like firmware loading allocating memory like
+that? Is this use of GFP_ATOMIC relatively recent or has it always been
+that way?
 
-Signed-off-by: Zdenek Kabelac <zkabelac@redhat.com>
----
- block/blk-sysfs.c            |    2 ++
- include/linux/blktrace_api.h |    2 ++
- kernel/trace/blktrace.c      |    5 +++++
- 3 files changed, 9 insertions(+), 0 deletions(-)
+> I don't know why people don't see it but for me it has a memory management
+> regression and reliability issue written all over it.
+> 
 
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index d3aa2aa..130b10c 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -447,6 +447,7 @@ int blk_register_queue(struct gendisk *disk)
- 	if (ret) {
- 		kobject_uevent(&q->kobj, KOBJ_REMOVE);
- 		kobject_del(&q->kobj);
-+		blk_trace_remove_sysfs(disk_to_dev(disk));
- 		return ret;
- 	}
+Possibly but drivers that reload their firmware as a response to an
+error condition is relatively new and loading network drivers while the
+system is already up and running a long time does not strike me as
+typical system behaviour.
 
-@@ -465,6 +466,7 @@ void blk_unregister_queue(struct gendisk *disk)
-
- 		kobject_uevent(&q->kobj, KOBJ_REMOVE);
- 		kobject_del(&q->kobj);
-+		blk_trace_remove_sysfs(disk_to_dev(disk));
- 		kobject_put(&disk_to_dev(disk)->kobj);
- 	}
- }
-diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
-index 7e4350e..622939a 100644
---- a/include/linux/blktrace_api.h
-+++ b/include/linux/blktrace_api.h
-@@ -198,6 +198,7 @@ extern int blk_trace_setup(struct request_queue
-*q, char *name, dev_t dev,
- 			   char __user *arg);
- extern int blk_trace_startstop(struct request_queue *q, int start);
- extern int blk_trace_remove(struct request_queue *q);
-+extern void blk_trace_remove_sysfs(struct device *dev);
- extern int blk_trace_init_sysfs(struct device *dev);
-
- extern struct attribute_group blk_trace_attr_group;
-@@ -211,6 +212,7 @@ extern struct attribute_group blk_trace_attr_group;
- # define blk_trace_startstop(q, start)			(-ENOTTY)
- # define blk_trace_remove(q)				(-ENOTTY)
- # define blk_add_trace_msg(q, fmt, ...)			do { } while (0)
-+# define blk_trace_remove_sysfs(struct device *dev)	do { } while (0)
- static inline int blk_trace_init_sysfs(struct device *dev)
- {
- 	return 0;
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 7a34cb5..b5b8e35 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1653,6 +1653,11 @@ int blk_trace_init_sysfs(struct device *dev)
- 	return sysfs_create_group(&dev->kobj, &blk_trace_attr_group);
- }
-
-+void blk_trace_remove_sysfs(struct device *dev)
-+{
-+	sysfs_remove_group(&dev->kobj, &blk_trace_attr_group);
-+}
-+
- #endif /* CONFIG_BLK_DEV_IO_TRACE */
-
- #ifdef CONFIG_EVENT_TRACING
 -- 
-1.6.4.4
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
