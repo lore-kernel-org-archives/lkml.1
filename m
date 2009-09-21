@@ -1,56 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZIUQpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbZIUQps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbZIUQpY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbZIUQpX
+	id S1752955AbZIUQps (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZIUQpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:45:23 -0400
-Received: from mail-yw0-f194.google.com ([209.85.211.194]:37559 "EHLO
-	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751624AbZIUQpT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:45:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=bYz++Gul4zBDSuVPPC9bKdZsOCTEFKl1/F6t0vAP3xWBDg95DO7hEVFg3CzCo1aR8L
-         jgnh5yqmbW+g7MPB3MeOyfuGtIOOJ2LdEadyAZzmAdpN5oijV1fTiEIeQdK6dmuD4oUz
-         6W5rvLjpedxf4R27nIvreEve06YH1ZZT/j8jI=
+	Mon, 21 Sep 2009 12:45:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48616 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751529AbZIUQpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 12:45:46 -0400
+Date: Mon, 21 Sep 2009 18:45:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: gorcunov@gmail.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [crash] kernel BUG at net/core/pktgen.c:3503!
+Message-ID: <20090921164538.GA10011@elte.hu>
+References: <20090911.202543.52533792.davem@davemloft.net> <20090915183647.GA11628@elte.hu> <20090915185112.GA17587@lenovo> <20090917.102923.174779685.davem@davemloft.net> <20090917174448.GA9548@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090916050236.GF2756@core.coreip.homeip.net>
-References: <20090915062050.GB10232@core.coreip.homeip.net> 
-	<1253062178-18196-1-git-send-email-vapier@gentoo.org> <20090916050236.GF2756@core.coreip.homeip.net>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 21 Sep 2009 12:45:02 -0400
-Message-ID: <8bd0f97a0909210945s5e3d9613pa7a72271ec6b47bc@mail.gmail.com>
-Subject: Re: [Uclinux-dist-devel] [PATCH v2] input/keyboard: add ADP5588 
-	QWERTY I2C Keyboard Input device driver
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       linux-input@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090917174448.GA9548@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 16, 2009 at 01:02, Dmitry Torokhov wrote:
-> On Tue, Sep 15, 2009 at 08:49:38PM -0400, Mike Frysinger wrote:
->> From: Michael Hennerich <michael.hennerich@analog.com>
->>
->> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
->> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
->> ---
->> v2
->>       - merge my and Dmitry's clean up fixes
->>
->
-> Looks good, I'd also like to add this instead of recalcularing delay
-> every time:
 
-this should continue to work fine with cpu scaling right ?
--mike
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> 
+> * David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Cyrill Gorcunov <gorcunov@gmail.com>
+> > Date: Tue, 15 Sep 2009 22:51:12 +0400
+> > 
+> > > [Ingo Molnar - Tue, Sep 15, 2009 at 08:36:47PM +0200]
+> > > | 
+> > > | not sure which merge caused this, but i got this boot crash with latest 
+> > > | -git:
+> > > | 
+> > > | calling  flow_cache_init+0x0/0x1b9 @ 1
+> > > | initcall flow_cache_init+0x0/0x1b9 returned 0 after 64 usecs
+> > > | calling  pg_init+0x0/0x37c @ 1
+> > > | pktgen 2.72: Packet Generator for packet performance testing.
+> > > | ------------[ cut here ]------------
+> > > | kernel BUG at net/core/pktgen.c:3503!
+> > > | invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> > > | last sysfs file: 
+> > > | 
+> > > 
+> > > Hi Ingo,
+> > > 
+> > > just curious, will the following patch fix the problem?
+> > > I've been fixing problem with familiar symthoms on
+> > > system with custome virtual cpu implementation so
+> > > it may not help in mainline but anyway :)
+> > 
+> > Ingo, does Cyrill's patch help?
+> 
+> For now i've turned pktgen off in my tests. Will check it again once 
+> things have calmed down somewhat.
+> 
+> Also, i just tried to reproduce the pktgen crash with latest -git and 
+> the config i sent - no luck, so i cannot test Cyrill's patch either.
+> 
+> Btw., we are seeing some other preempt count and task related 
+> weirdnesses as well in other code, maybe it's related. No good pattern 
+> yet to act upon.
+> 
+> Anyway - please disregard this bugreport until i've investigated it 
+> closer.
+
+Update: i've further investigated it and this bug was caused by a 
+scheduler bug introduced in this merge window, which got fixed in:
+
+  3f04e8c: sched: Re-add lost cpu_allowed check to sched_fair.c::select_task_rq_fair()
+
+This bug caused CPU affinities to not work in essence - breaking kthread 
+per-cpu assumptions in net/core/pktgen.c.
+
+I've confirmed this by re-enabling pktgen in my tests and the crash has 
+no reappeared.
+
+Thanks,
+
+	Ingo
