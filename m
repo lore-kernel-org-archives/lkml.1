@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbZIUEX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZIUEZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbZIUEX4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 00:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbZIUEXy
+	id S1753561AbZIUEZH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 00:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbZIUEZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 00:23:54 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41239 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751699AbZIUEXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 00:23:53 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+4NIAga564zF0hrHdWPQRmDqbRU48IRCuymy3u6C
-	gL8xouHJt3pjiA
-Subject: Re: Poor desktop responsiveness with background I/O-operations
-From: Mike Galbraith <efault@gmx.de>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AB6C73C.1030004@gmail.com>
-References: <4AB59CBB.8090907@datenparkplatz.de>
-	 <20090920080728.73bfe2a1@infradead.org>
-	 <4AB5ECD0.7010903@datenparkplatz.de>
-	 <1253475521.9224.43.camel@marge.simson.net>  <4AB6C73C.1030004@gmail.com>
-Content-Type: text/plain
-Date: Mon, 21 Sep 2009 06:23:54 +0200
-Message-Id: <1253507034.23414.90.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+	Mon, 21 Sep 2009 00:25:06 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:60422 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751716AbZIUEZF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 00:25:05 -0400
+Date: Mon, 21 Sep 2009 06:25:06 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 0/4] Use macros rather than hardcoding section names
+Message-ID: <20090921042506.GA27311@merkur.ravnborg.org>
+References: <1253484855-8067-1-git-send-email-tabbott@ksplice.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253484855-8067-1-git-send-email-tabbott@ksplice.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-20 at 17:22 -0700, Justin P. Mattock wrote:
-> Wow, at first I did not notice anything
-> from your *.sh script, but then a few moments
-> later, the system became vary sluggish. firefox
-> takes about 15 seconds to load. OS is mint linux
-> with the latest HEAD on an imac9,1.
+On Sun, Sep 20, 2009 at 06:14:11PM -0400, Tim Abbott wrote:
+> This patch series cleans up the kernel's explicit references to
+> .data.page_aligned, .bss.page_aligned, and .data.init_task in C and
+> assembly code to instead use the standard macros for that purpose.
+> 
+> Version 4 differs from version 3 in two ways:
+> - It is rebased on top of current kbuild-next/master
+> - __LINKER_SCRIPT__ was renamed to LINKER_SCRIPT
+> 
+> Version 3 differs from version 2 in two ways:
+> - The .data.init_task patch also updates the score architecture
+> - The powerpc __page_aligned_data patch was removed (since Benjamin
+> Herrenschmidt said he was taking it).
+> 
+> Version 2 differed from version 1 in that it added the kbuild patch,
+> fixing breakage in the x86 linker script caused indirectly by
+> including linux/linkage.h in x86's asm/cache.h.
+> 
+> This cleanup is in preparation for being able to change the names of
+> the .data.page_aligned and .bss.page_aligned sections to be
+> compatible with -ffunction-sections -fdata-sections (a prerequisite
+> for Ksplice).
+> 
+> Joe Perches (1):
+>   Use new __init_task_data macro in arch init_task.c files.
+> 
+> Tim Abbott (3):
+>   kbuild: Don't define ALIGN and ENTRY when preprocessing linker
+>     scripts.
+>   Use macros for .bss.page_aligned section.
+>   Use macros for .data.page_aligned section.
 
-CFQ inherits IO priority from the parent on fork(), so nicing a shell or
-the dd should (and does) help a LOT.  It also inherits the CPU scheduler
-class.  I just checked, and IO does indeed inherit SCHED_IDLE as well as
-the RT classes (SCHED_BATCH does nothing).  Setting the dd to SCHED_IDLE
-makes a big difference, as it should, so there's a bigger hammer than
-nice + ionice.  SCHED_IDLE is CPU_adorable + IO_nicest.
+Thanks - applied all 4.
 
-Anyway, the problem seems to have to have at least two facets:
-1.  streaming IO causing pagecache reclaim.  That problem doesn't seem
-to want to go away.  Fixing that won't help 2 one bit though.
-
-2.  reads are sync, more heavily affected by seek latency than writes.
-If the disk your binaries live on is seeking a lot, you pay a LOT.  
-
-Hohum, IO + VM = haaaaard ;-)
-
-	-Mike
-
+	Sam
