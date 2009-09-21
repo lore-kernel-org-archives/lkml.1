@@ -1,173 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZIUSYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbZIUSYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbZIUSYA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 14:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZIUSX6
+	id S1753119AbZIUSYi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 14:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZIUSYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 14:23:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50247 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751671AbZIUSX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 14:23:57 -0400
-Date: Mon, 21 Sep 2009 20:23:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: [origin tree build failure] [PATCH] media: video: Fix build in
-	saa7164
-Message-ID: <20090921182345.GA25100@elte.hu>
-References: <20090919014930.7dd90f77@pedra.chehab.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090919014930.7dd90f77@pedra.chehab.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 21 Sep 2009 14:24:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35373 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752621AbZIUSYf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 14:24:35 -0400
+Date: Mon, 21 Sep 2009 11:23:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Michael Hennerich <michael.hennerich@analog.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [Uclinux-dist-devel] [PATCH] input/keyboard: new driver for 
+ ADP5520 MFD PMICs
+Message-Id: <20090921112346.12832b27.akpm@linux-foundation.org>
+In-Reply-To: <8bd0f97a0909210640q3ead3467gcccac227a9088d76@mail.gmail.com>
+References: <1253211850-29309-1-git-send-email-vapier@gentoo.org>
+	<20090919233044.8361a912.akpm@linux-foundation.org>
+	<8bd0f97a0909201540t25dd2337o15ebe63a2a9ca4ec@mail.gmail.com>
+	<20090920210451.60ad1b1f.akpm@linux-foundation.org>
+	<8bd0f97a0909210640q3ead3467gcccac227a9088d76@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 21 Sep 2009 09:40:46 -0400 Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-* Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
-
-> This series also contains several new drivers:
+> On Mon, Sep 21, 2009 at 00:04, Andrew Morton wrote:
+> > On Sun, 20 Sep 2009 18:40:41 -0400 Mike Frysinger wrote:
+> >> On Sun, Sep 20, 2009 at 02:30, Andrew Morton wrote:
+> >> > On Thu, 17 Sep 2009 14:24:10 -0400 Mike Frysinger wrote:
+> >> >> +struct adp5520_keys {
+> >> >> + __ __ struct input_dev *input;
+> >> >> + __ __ struct notifier_block notifier;
+> >> >> + __ __ struct device *master;
+> >> >> + __ __ unsigned short keycode[ADP5520_KEYMAPSIZE];
+> >> >
+> >> > Where is ADP5520_KEYMAPSIZE defined?
+> >>
+> >> all these things are in the common mfd adp5520 patch. __it introduces a
+> >> common adp5520 header.
+> >
+> > err, what common MFD patch? __There was nothing in either the changelog
+> > nor the patch title which indicated that this patch had a dependency on
+> > other patches. __This makes things harder for mergers and reviewers,
+> > especially when the patchset hits multiple subsystems, maintained by
+> > multiple developers.
+> >
+> > Probably the best way to handle this sort of thing is to present it as a
+> > sequence-numbered patch series with well-chosen cc's and an overall
+> > description of the dependencies and perhaps the merge plan in [patch
+> > 0/n].
 > 
->    - new driver for NXP saa7164;
+> the MFD patch has been sent to the MFD guy already for review.  being
+> an MFD means it touches like 4 or 5 different subsystems.  but the
+> only dependency is on the MFD core.
 
--tip testing found that an allyesconfig build buglet found its way into 
-this driver - find the fix below.
+What you said has nothing to do with what I said.
 
-Thanks,
+As the patch was presented, Dmitry or I could well have merged it only
+to find out that it doesn't compile.
 
-	Ingo
-
---------------------->
->From 67a0d8c7dfdf2de72ddec3d821ae87a80ecaed83 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 21 Sep 2009 20:14:47 +0200
-Subject: [PATCH] media: video: Fix build in saa7164
-
--tip testing found that the x86 build (64-bit allyesconfig) fails due to:
-
-  LD      vmlinux.o
-  drivers/built-in.o:(.bss+0x4b648): multiple definition of `debug'
-  arch/x86/built-in.o:(.kprobes.text+0x88): first defined here
-  ld: Warning: size of symbol `debug' changed from 90 in arch/x86/built-in.o to 4 in drivers/built-in.o
- make: *** [vmlinux.o] Error 1
-
-This is because recent saa7164 changes introduced a global symbol
-named 'debug'. The x86 platform code already defines a 'debug'
-symbol. (which is named in a too generic way as well - but it
-can be used nicely to weed out too generic symbols in drivers ;-)
-
-Rename it to saa_debug.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/media/video/saa7164/saa7164-api.c  |    8 ++++----
- drivers/media/video/saa7164/saa7164-cmd.c  |    2 +-
- drivers/media/video/saa7164/saa7164-core.c |    6 +++---
- drivers/media/video/saa7164/saa7164.h      |    4 ++--
- 4 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/media/video/saa7164/saa7164-api.c b/drivers/media/video/saa7164/saa7164-api.c
-index bb6df1b..6f094a9 100644
---- a/drivers/media/video/saa7164/saa7164-api.c
-+++ b/drivers/media/video/saa7164/saa7164-api.c
-@@ -415,7 +415,7 @@ int saa7164_api_enum_subdevs(struct saa7164_dev *dev)
- 		goto out;
- 	}
- 
--	if (debug & DBGLVL_API)
-+	if (saa_debug & DBGLVL_API)
- 		saa7164_dumphex16(dev, buf, (buflen/16)*16);
- 
- 	saa7164_api_dump_subdevs(dev, buf, buflen);
-@@ -480,7 +480,7 @@ int saa7164_api_i2c_read(struct saa7164_i2c *bus, u8 addr, u32 reglen, u8 *reg,
- 
- 	dprintk(DBGLVL_API, "%s() len = %d bytes\n", __func__, len);
- 
--	if (debug & DBGLVL_I2C)
-+	if (saa_debug & DBGLVL_I2C)
- 		saa7164_dumphex16(dev, buf, 2 * 16);
- 
- 	ret = saa7164_cmd_send(bus->dev, unitid, GET_CUR,
-@@ -488,7 +488,7 @@ int saa7164_api_i2c_read(struct saa7164_i2c *bus, u8 addr, u32 reglen, u8 *reg,
- 	if (ret != SAA_OK)
- 		printk(KERN_ERR "%s() error, ret(2) = 0x%x\n", __func__, ret);
- 	else {
--		if (debug & DBGLVL_I2C)
-+		if (saa_debug & DBGLVL_I2C)
- 			saa7164_dumphex16(dev, buf, sizeof(buf));
- 		memcpy(data, (buf + 2 * sizeof(u32) + reglen), datalen);
- 	}
-@@ -548,7 +548,7 @@ int saa7164_api_i2c_write(struct saa7164_i2c *bus, u8 addr, u32 datalen,
- 	*((u32 *)(buf + 1 * sizeof(u32))) = datalen - reglen;
- 	memcpy((buf + 2 * sizeof(u32)), data, datalen);
- 
--	if (debug & DBGLVL_I2C)
-+	if (saa_debug & DBGLVL_I2C)
- 		saa7164_dumphex16(dev, buf, sizeof(buf));
- 
- 	ret = saa7164_cmd_send(bus->dev, unitid, SET_CUR,
-diff --git a/drivers/media/video/saa7164/saa7164-cmd.c b/drivers/media/video/saa7164/saa7164-cmd.c
-index e097f1a..c45966e 100644
---- a/drivers/media/video/saa7164/saa7164-cmd.c
-+++ b/drivers/media/video/saa7164/saa7164-cmd.c
-@@ -250,7 +250,7 @@ int saa7164_cmd_wait(struct saa7164_dev *dev, u8 seqno)
- 	unsigned long stamp;
- 	int r;
- 
--	if (debug >= 4)
-+	if (saa_debug >= 4)
- 		saa7164_bus_dump(dev);
- 
- 	dprintk(DBGLVL_CMD, "%s(seqno=%d)\n", __func__, seqno);
-diff --git a/drivers/media/video/saa7164/saa7164-core.c b/drivers/media/video/saa7164/saa7164-core.c
-index f0dbead..60f3214 100644
---- a/drivers/media/video/saa7164/saa7164-core.c
-+++ b/drivers/media/video/saa7164/saa7164-core.c
-@@ -45,8 +45,8 @@ MODULE_LICENSE("GPL");
-  32 bus
-  */
- 
--unsigned int debug;
--module_param(debug, int, 0644);
-+unsigned int saa_debug;
-+module_param(saa_debug, int, 0644);
- MODULE_PARM_DESC(debug, "enable debug messages");
- 
- unsigned int waitsecs = 10;
-@@ -653,7 +653,7 @@ static int __devinit saa7164_initdev(struct pci_dev *pci_dev,
- 		printk(KERN_ERR "%s() Unsupported board detected, "
- 			"registering without firmware\n", __func__);
- 
--	dprintk(1, "%s() parameter debug = %d\n", __func__, debug);
-+	dprintk(1, "%s() parameter debug = %d\n", __func__, saa_debug);
- 	dprintk(1, "%s() parameter waitsecs = %d\n", __func__, waitsecs);
- 
- fail_fw:
-diff --git a/drivers/media/video/saa7164/saa7164.h b/drivers/media/video/saa7164/saa7164.h
-index 6753008..42660b5 100644
---- a/drivers/media/video/saa7164/saa7164.h
-+++ b/drivers/media/video/saa7164/saa7164.h
-@@ -375,9 +375,9 @@ extern int saa7164_buffer_dealloc(struct saa7164_tsport *port,
- 
- /* ----------------------------------------------------------- */
- 
--extern unsigned int debug;
-+extern unsigned int saa_debug;
- #define dprintk(level, fmt, arg...)\
--	do { if (debug & level)\
-+	do { if (saa_debug & level)\
- 		printk(KERN_DEBUG "%s: " fmt, dev->name, ## arg);\
- 	} while (0)
- 
