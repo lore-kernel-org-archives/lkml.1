@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751803AbZIUQVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbZIUQWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751803AbZIUQVk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZIUQVj
+	id S1752280AbZIUQWV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZIUQWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:21:39 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:56639 "EHLO mail.vyatta.com"
+	Mon, 21 Sep 2009 12:22:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36442 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbZIUQVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:21:38 -0400
-Date: Mon, 21 Sep 2009 09:21:30 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: virtualization@lists.linux-foundation.org,
-       "Xin, Xiaohui" <xiaohui.xin@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "mst@redhat.com" <mst@redhat.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hpa@zytor.com" <hpa@zytor.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
-Message-ID: <20090921092130.30984dbd@s6510>
-In-Reply-To: <200909211637.23299.rusty@rustcorp.com.au>
-References: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB94861@PDSMSX501.ccr.corp.intel.com>
-	<20090901090518.1193e412@nehalam>
-	<200909211637.23299.rusty@rustcorp.com.au>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751182AbZIUQWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 12:22:19 -0400
+Date: Mon, 21 Sep 2009 18:22:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@lst.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: [GIT PULL] tracing fixes
+Message-ID: <20090921162211.GA844@elte.hu>
+References: <20090921130228.GA25588@elte.hu> <alpine.LFD.2.01.0909210908020.4950@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0909210908020.4950@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Sep 2009 16:37:22 +0930
-Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> > > Actually this framework can apply to traditional network adapters which have
-> > > just one tx/rx queue pair. And applications using the same user/kernel interface
-> > > can utilize this framework to send/receive network traffic directly thru a tx/rx
-> > > queue pair in a network adapter.
-> > > 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-More importantly, when virtualizations is used with multi-queue NIC's the virtio-net
-NIC is a single CPU bottleneck. The virtio-net NIC should preserve the parallelism (lock
-free) using multiple receive/transmit queues. The number of queues should equal the
-number of CPUs.
+> On Mon, 21 Sep 2009, Ingo Molnar wrote:
+> > 
+> > Christoph Hellwig (1):
+> >       tracing: Remove markers
+> 
+> This seems to result in:
+> 
+> 	kernel/module.c:2951: warning: ?struct marker? declared inside parameter list
+> 	kernel/module.c:2951: warning: its scope is only this definition or declaration, which is probably not what you want
+> 
+> Hmm? Incomplete removal?
+
+Hm, yes, you are right, we missed that. I noticed the modpost 
+dependency:
+
+  http://marc.info/?l=linux-kernel&m=125326944223679&w=2
+
+but thought that it's safe and didnt notice that dangling 
+module_layout() reference and the build warning it generates in the 
+kernel.
+
+I _think_ the patch below should do the trick - module_layout() appears 
+to be an artificial symbol with 'significant' symbols listed in its 
+argument list so that it gets a proper signature. Removing the marker 
+symbol should thus be the solution, but i'm not 100% sure. Thoughts?
+
+	Ingo
+
+diff --git a/kernel/module.c b/kernel/module.c
+index b6ee424..392eb3d 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2947,7 +2947,6 @@ void module_layout(struct module *mod,
+ 		   struct modversion_info *ver,
+ 		   struct kernel_param *kp,
+ 		   struct kernel_symbol *ks,
+-		   struct marker *marker,
+ 		   struct tracepoint *tp)
+ {
+ }
