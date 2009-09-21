@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZIUVWC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbZIUV14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbZIUVWC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 17:22:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbZIUVV7
+	id S1754138AbZIUV14 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 17:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZIUV14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 17:21:59 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:48852 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753789AbZIUVV7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 17:21:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=uNO28/s78qqG4c1jKZhIevr3po7WjewPuf+0L9/yLpktA+PkCpWAvy8/kwva2JfZeM
-         xmP/ohJ7/oPoI/4wa1ydTyepd9o3zJElKxQr5MQeiUKwqEVPHnhmcoGAH4L7JnQcPyWB
-         8dwfXsxo0yVCgBXM78K9oGbmgdXkCvM7/PUUc=
+	Mon, 21 Sep 2009 17:27:56 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45431 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753489AbZIUV1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 17:27:55 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs / Novell
+To: Jamie Lokier <jamie@shareable.org>
+Subject: Re: fanotify as syscalls
+Date: Mon, 21 Sep 2009 23:27:20 +0200
+User-Agent: KMail/1.9.9
+Cc: Eric Paris <eparis@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+References: <20090912094110.GB24709@ioremap.net> <200909212204.51077.agruen@suse.de> <20090921202823.GB14700@shareable.org>
+In-Reply-To: <20090921202823.GB14700@shareable.org>
 MIME-Version: 1.0
-In-Reply-To: <20090921203509.GA648@Chamillionaire.breakpoint.cc>
-References: <20090628111019.GA15900@Chamillionaire.breakpoint.cc>
-	 <4A474EFF.5030607@cs.helsinki.fi>
-	 <19f34abd0907011327h7e90ec68r7ad0ed8666abafac@mail.gmail.com>
-	 <20090921203509.GA648@Chamillionaire.breakpoint.cc>
-Date: Mon, 21 Sep 2009 23:22:01 +0200
-Message-ID: <19f34abd0909211422n65c5802cj8fab1240ba14246a@mail.gmail.com>
-Subject: Re: [PATCH] kmemcheck: depend on HAVE_ARCH_KMEMCHECK
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909212327.20978.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/21 Sebastian Andrzej Siewior <sebastian@breakpoint.cc>:
-> * Vegard Nossum | 2009-07-01 22:27:32 [+0200]:
->
->>2009/6/28 Pekka Enberg <penberg@cs.helsinki.fi>:
->>> Sebastian Andrzej Siewior wrote:
->>>>
->>>> to make it selectable if it is available
->>>>
->>>> Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
->>>
->>> Looks good to me! Thanks.
->>>
->>> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
->>
->>Applied, thanks.
->
-> This patch did not make it into v31. Do you thing it is possible that it
-> will reach v32?
+On Monday, 21 September 2009 22:28:23 Jamie Lokier wrote:
+> It would be logical if fanotify could block and ack those [mount & umount
+> events] in the same way as it can block and ack other accesses (with the
+> usual filtering rules on which inodes trigger events, and which don't or are
+> cached).
 
-Yes. I will send a pull request tonight :-)
+Hmm. To me, fanotify is about file contents first of all: this is what 
+fanotify wants to be able to veto. Directory events seem reasonable to add 
+for inotify compatibility, but I see no need for access decisions on them. 
+Even less so for mounts and unmounts. (Besides, we can't hold any vfs locks 
+while asking fanotify so those operations wouldn't be atomic, anyway.)
 
-
-Vegard
+Thanks,
+Andreas
