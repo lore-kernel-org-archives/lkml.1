@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZIUWrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZIUWzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbZIUWrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 18:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbZIUWrU
+	id S1754285AbZIUWzM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 18:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZIUWzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 18:47:20 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:59105 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753614AbZIUWrU (ORCPT
+	Mon, 21 Sep 2009 18:55:11 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:51964 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752481AbZIUWzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 18:47:20 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-07.arcor-online.net 8759D3CA296
-Message-ID: <4AB8027A.1040600@arcor.de>
-Date: Tue, 22 Sep 2009 01:47:22 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+	Mon, 21 Sep 2009 18:55:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=d8JIjPlKzueIaoi74n5Vtu+eSm+Oxe22EpZPNNQpYhlVW/jAheRV/DDHZelN2Hm+C
+	Q0Z1pIBvg0bZkvguHoPfg==
+Date: Mon, 21 Sep 2009 15:55:01 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+       ebmunson@us.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
+       Randy Dunlap <randy.dunlap@oracle.com>, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, linux-ia64@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] remove duplicate asm/mman.h files
+In-Reply-To: <Pine.LNX.4.64.0909211258570.7831@sister.anvils>
+Message-ID: <alpine.DEB.1.00.0909211553000.30561@chino.kir.corp.google.com>
+References: <cover.1251197514.git.ebmunson@us.ibm.com> <200909181848.42192.arnd@arndb.de> <alpine.DEB.1.00.0909181236190.27556@chino.kir.corp.google.com> <200909211031.25369.arnd@arndb.de> <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0909211258570.7831@sister.anvils>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-To: James Cloos <cloos@jhcloos.com>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: Poor desktop responsiveness with background I/O-operations
-References: <4AB59CBB.8090907@datenparkplatz.de>	<20090920080728.73bfe2a1@infradead.org>	<4AB5ECD0.7010903@datenparkplatz.de>	<1253475521.9224.43.camel@marge.simson.net>	<4AB6C73C.1030004@gmail.com>	<1253507034.23414.90.camel@marge.simson.net>	<4AB72FDC.5090403@datenparkplatz.de>	<1253520364.25640.57.camel@marge.simson.net> <m3tyyw6pvz.fsf@lugabout.jhcloos.org>
-In-Reply-To: <m3tyyw6pvz.fsf@lugabout.jhcloos.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/21/2009 10:47 PM, James Cloos wrote:
->[...]
-> I had that kernel up for soemthing like five weeks, on a busy, low-ram
-> laptop, w/o and long pauses or other noticeable pain.  For at least two
-> years before that the best this laptop could manage before latency
-> became horrific was a fortnight, and weekly reboots were desirable.
->
-> Unfortunately, before I could send out a congratulatory note (I wanted
-> to first confirm that the result remained) I pulled up and started see-
-> ing even worse latency then ever.
->[...]
-> A git pull on a clone of Linus' tree is a great way to trigger the
-> problem.  As is using Gentoo's portage to install/upgrade anything.
-> (Bad python; no alligator!¹)
+On Mon, 21 Sep 2009, Hugh Dickins wrote:
 
-Fortunately, this is completely (at least here) solved by putting those 
-in make.conf:
+> Is it perhaps the case that some UNIX on ia64 does implement MAP_GROWSUP,
+> and these numbers in the Linux ia64 mman.h have been chosen to match that
+> reference implementation?  Tony will know.  But I wonder if you'd do
+> better at least to leave a MAP_GROWSUP comment on that line, so that
+> somebody doesn't go and reuse the empty slot later on.
+> 
 
-PORTAGE_NICENESS=19
-PORTAGE_IONICE_COMMAND="ionice -c 3 -p \${PID}"
+Reserving the bit from future use by adding a comment may be helpful, but 
+then let's do it for MAP_GROWSDOWN too.
