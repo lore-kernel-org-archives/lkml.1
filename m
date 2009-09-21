@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbZIUX4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZIUX6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbZIUX4b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 19:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbZIUX43
+	id S1754627AbZIUX6c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZIUX6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 19:56:29 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:50449 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754127AbZIUX42 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 19:56:28 -0400
-Date: Tue, 22 Sep 2009 00:56:15 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-Subject: Re: fanotify as syscalls
-Message-ID: <20090921235615.GK14700@shareable.org>
-References: <20090912094110.GB24709@ioremap.net> <200909212327.20978.agruen@suse.de> <20090921220002.GE14700@shareable.org> <200909220109.05995.agruen@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909220109.05995.agruen@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 21 Sep 2009 19:58:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:31664 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754511AbZIUX6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 19:58:30 -0400
+Date: Mon, 21 Sep 2009 20:57:54 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [origin tree build failure] [PATCH] media: video: Fix build in
+ saa7164
+Message-ID: <20090921205754.26c59c46@pedra.chehab.org>
+In-Reply-To: <20090921182345.GA25100@elte.hu>
+References: <20090919014930.7dd90f77@pedra.chehab.org>
+	<20090921182345.GA25100@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Gruenbacher wrote:
-> If the antimalware vendors want to base their decisions on pathnames then 
-> that's their decision, and they can check /proc/self/fd/N.
+Em Mon, 21 Sep 2009 20:23:45 +0200
+Ingo Molnar <mingo@elte.hu> escreveu:
 
-Race hazards and loopholes.  It doesn't work.
-
-> Waiting for your code to demonstrate; an object based cache (e.g.,
-> st_dev + st_ino) rather than a pathname based cache would seem more
-> reasonable.
-
-Nearly everything that people do with files involves paths.  The point
-is to cache what people (or their programs) do.  Apache does not
-consult inodes by number, and rsync does not write inodes by number :-)
-Yes, to the code...
-
-> > > but I see no need for access decisions on them.
-> >
-> > Please excuse me; I'm a bit confused.  Is fanotify intended just for
-> > use by access decision programs, or is the plan now for it to also be
-> > a replacement for inotify?  I'm getting conflicting signals about
-> > that.
 > 
-> Inotify doesn't support access decisions. So where's the problem with 
-> having "notify only" events for directory / mount / unmount events?
-
-No problem here.
-
-You seemed to be saying you want to add directory events to fanotify.
-But if fanotify is only intended for access decisions?  Something I
-must have misunderstood in that.
-
-> > If it's just for access decision programs, and if those aren't going
-> > to care about location, then there's no need to add directory events
-> > to fanotify at all.  But then I'll be demanding subtree support in
-> > inotify, please :-)
-> >
-> > > Even less so for mounts and unmounts.
-> >
-> >    (as root) mkdir foo; mount dodgy foo -oloop; mount --bind foo/cat
-> > /bin/cat
+> * Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
 > 
-> ... and then someone accesses /bin/cat, which triggers a fanotify access 
-> decision.
+> > This series also contains several new drivers:
+> > 
+> >    - new driver for NXP saa7164;
+> 
+> -tip testing found that an allyesconfig build buglet found its way into 
+> this driver - find the fix below.
+> 
 
-That's fine as long as there was no location-awareness in the logic
-which checked foo/innocent.txt and set that inode's "read-ok,cache-me" bit.
+> diff --git a/drivers/media/video/saa7164/saa7164-core.c b/drivers/media/video/saa7164/saa7164-core.c
+> index f0dbead..60f3214 100644
+> --- a/drivers/media/video/saa7164/saa7164-core.c
+> +++ b/drivers/media/video/saa7164/saa7164-core.c
+> @@ -45,8 +45,8 @@ MODULE_LICENSE("GPL");
+>   32 bus
+>   */
+>  
+> -unsigned int debug;
+> -module_param(debug, int, 0644);
+> +unsigned int saa_debug;
+> +module_param(saa_debug, int, 0644);
 
-Mount only matters if you're sensitive to location.  If you think
-location-independent checks make good anti-malware
-I_have_a_bridge_to_sell^H^H^H^H^H^H^H^H^H^H^Hfine with me :-)
+Hmm... it is better to use module_param_named(debug, saa_debug, int, 0644), to
+keep presenting the parameter as just "debug" to userspace.
 
--- Jamie
+> This is because recent saa7164 changes introduced a global symbol
+> named 'debug'. The x86 platform code already defines a 'debug'
+> symbol. (which is named in a too generic way as well - but it
+> can be used nicely to weed out too generic symbols in drivers ;-
+
+Agreed.
+
+Btw, I suggest to do a similar patch also for x86, to avoid such future conflicts.
+
+-- 
+
+Cheers,
+Mauro
