@@ -1,143 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbZIUOMC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZIUOR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756238AbZIUOMC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 10:12:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZIUOMA
+	id S1756255AbZIUOR6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 10:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbZIUOR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 10:12:00 -0400
-Received: from mga14.intel.com ([143.182.124.37]:63447 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756204AbZIUOL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 10:11:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,424,1249282800"; 
-   d="scan'208";a="189889210"
-Date: Mon, 21 Sep 2009 22:11:09 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       Dave Chinner <david@fromorbit.com>
-Subject: Re: [PATCH] fs: Fix busyloop in wb_writeback()
-Message-ID: <20090921141109.GA6479@localhost>
-References: <1253121768-20673-1-git-send-email-jack@suse.cz> <20090920023528.GA13114@localhost> <20090920174356.GA16919@duck.suse.cz> <20090921010859.GA6331@localhost> <20090921134511.GG1099@duck.suse.cz>
+	Mon, 21 Sep 2009 10:17:58 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:47201 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756020AbZIUOR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 10:17:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=iZPjs64ZwSJ2ab3AE3vhpB4JxRJOCcw2cbqDSYhckpV/G3Cbze9dvWPhA/t1CdV6H+
+         OgunYKtZngrmX9YyxZw6S3JPIM8XBLWWvSPqlZpVQDiOq+2H1DvQL/RCyw5TeTNEEYCn
+         c6sen7EHsJ1e58NCL+cJiCMxh4cCMaFisJPWg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090921134511.GG1099@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200909210759.22008.edt@aei.ca>
+References: <alpine.DEB.2.00.0909210610200.26881@skynet.skynet.ie>
+	 <200909210759.22008.edt@aei.ca>
+Date: Mon, 21 Sep 2009 10:17:59 -0400
+Message-ID: <a728f9f90909210717j11bfa6f3s395e078ed7ac62dd@mail.gmail.com>
+Subject: Re: [git pull] drm tree.
+From: Alex Deucher <alexdeucher@gmail.com>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 09:45:11PM +0800, Jan Kara wrote:
-> On Mon 21-09-09 09:08:59, Wu Fengguang wrote:
-> > On Mon, Sep 21, 2009 at 01:43:56AM +0800, Jan Kara wrote:
-> > > On Sun 20-09-09 10:35:28, Wu Fengguang wrote:
-> > > > On Thu, Sep 17, 2009 at 01:22:48AM +0800, Jan Kara wrote:
-> > > > > If all inodes are under writeback (e.g. in case when there's only one inode
-> > > > > with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
-> > > > > to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
-> > > > > waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
-> > > > > write anything.
-> > > > 
-> > > > Sorry, I realized that inode_wait_for_writeback() waits for I_SYNC.
-> > > > But inodes in b_more_io are not expected to have I_SYNC set. So your
-> > > > patch looks like a big no-op?
-> > >   Hmm, I don't think so. writeback_single_inode() does:
-> > >         if (inode->i_state & I_SYNC) {
-> > >                 /*
-> > >                  * If this inode is locked for writeback and we are not
-> > >                  * doing
-> > >                  * writeback-for-data-integrity, move it to b_more_io so
-> > >                  * that
-> > >                  * writeback can proceed with the other inodes on s_io.
-> > >                  *
-> > >                  * We'll have another go at writing back this inode when we
-> > >                  * completed a full scan of b_io.
-> > >                  */
-> > >                 if (!wait) {
-> > >                         requeue_io(inode);
-> > >                         return 0;
-> > >                 }
-> > > 
-> > >   So when we see inode under writeback, we put it to b_more_io. So I think
-> > > my patch really fixes the issue when two threads are racing on writing the
-> > > same inode.
-> > 
-> > Ah OK. So it busy loops when there are more syncing threads than dirty
-> > files. For example, one bdi flush thread plus one process running
-> > balance_dirty_pages().
->   Yes.
-> 
-> > > > The busy loop does exists, when bdi is congested.
-> > > > In this case, write_cache_pages() will refuse to write anything,
-> > > > we used to be calling congestion_wait() to take a breath, but now
-> > > > wb_writeback() purged that call and thus created a busy loop.
-> > >   I don't think congestion is an issue here. The device needen't be
-> > > congested for the busyloop to happen.
-> > 
-> > bdi congestion is a different case. When there are only one syncing
-> > thread, b_more_io inodes won't have I_SYNC, so your patch is a no-op.
-> > wb_writeback() or any of its sub-routines must wait/yield for a while
-> > to avoid busy looping on the congestion. Where is the wait with Jens'
-> > new code?
->   I agree someone must wait when we bail out due to congestion. But we bail
-> out only when wbc->nonblocking is set.
+On Mon, Sep 21, 2009 at 7:59 AM, Ed Tomlinson <edt@aei.ca> wrote:
+> On Monday 21 September 2009 01:12:54 Dave Airlie wrote:
+>>
+>> Hi Linus,
+>>
+>> Please pull the 'drm-linus' branch from
+>> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+>>
+>> This contains the main chunk of the drm changes for 2.6.32, I think Eric
+>> has been on holidays for a week so I'd expect some more Intel changes
+>> incoming in the merge window. It also contains a few merges for things
+>> that were conflicting with things I sent to you via the drm-fixes tree,
+>> but they weren't always trivial.
+>>
+>> Major highlights core drm/non-kms:
+>> move mga/r128/radeon to firmware loader - major LOC churn,
+>> decreases in-memory radeon module footprint quite a bit.
+>> r600 3D support in non-kms mode.
+>
+> Dave,
+>
+> What user space stuff (xorg/mesa) is required to use the R300 3D?
+>
 
-Here is another problem. wbc->nonblocking used to be set for kupdate
-and background writebacks, but now it's gone. So they will be blocked
-in get_request_wait(). That's fine, no busy loops.
+r300 3D has been available for years.  If you mean r600 3D, you need
+xf86-video-ati 6.12.4 or newer and mesa from git master.
 
-However this inverts the priority. pageout() still have nonblocking=1.
-So now vmscan can easily be live locked by heavy background writebacks.
+Alex
 
-Even though pageout() is inefficient and discouraged, it could be even
-more disastrous to livelock vmscan.
-
-Jens, I'd recommend to restore the nonblocking bits for this merge
-window. The per-bdi patches are such a big change, it's not a good
-time to piggy back more unrelated behavior changes.. I could submit
-patches to revert the nonblocking and congestion wait bits.
-
-> So I'd feel that callers setting this flag should handle it when we
-> stop the writeback due to congestion.
-
-Hmm, but we never stop writeback and return to caller on congestion :)
-Instead wb_writeback() will retry in loops. And it doesn't make sense
-to add duplicate retry loops in the callers.
-
-> > Another question is, why wbc.more_io can be ignored for kupdate syncs?
-> > I guess it would lead to slow writeback of large files.
-> > 
-> > This patch reflects my concerns on the two problems.
-> > 
-> > Thanks,
-> > Fengguang
-> > ---
-> >  fs/fs-writeback.c |    6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > --- linux.orig/fs/fs-writeback.c	2009-09-20 10:44:25.000000000 +0800
-> > +++ linux/fs/fs-writeback.c	2009-09-21 08:53:09.000000000 +0800
-> > @@ -818,8 +818,10 @@ static long wb_writeback(struct bdi_writ
-> >  		/*
-> >  		 * If we ran out of stuff to write, bail unless more_io got set
-> >  		 */
-> > -		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
-> > -			if (wbc.more_io && !wbc.for_kupdate)
-> > +		if (wbc.nr_to_write > 0) {
-> > +			if (wbc.encountered_congestion)
-> > +				congestion_wait(BLK_RW_ASYNC, HZ);
-> > +			if (wbc.more_io)
-> >  				continue;
-> >  			break;
-> >  		}
->   OK, this change looks reasonable but I think we'll have to revisit
-> the writeback logic more in detail as we discussed in the other thread.
-
-OK, and to check how exactly it should be combined with your patch.
-
-Thanks,
-Fengguang
+> TIA,
+> Ed Tomlinson
+>
+>> VGA arbitration support for core drm and kms (was waiting for
+>> jbarnes tree to land).
+>>
+>> core KMS:
+>> add support for GTF/CVT/DMT modes, gets us a long way towards X
+>> merge intel and radeon kms framebuffer implementations for sanity.
+>>
+>> radeon KMS:
+>> R600 KMS support + acceleration support.
+>> move to generating the safe register tables with a script.
+>> radeon tv-out supported ported from userspace
+>> rn50/r100/r200 command submission trackers added
+>>
+>> intel:
+>> some IGDNG fixes
+>> important fix for wrapping at end of ring
+>> more SDVO tv-out support
+>> dynamic clocking support
+>>
+>
+> ------------------------------------------------------------------------------
+> Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
+> is the only developer event you need to attend this year. Jumpstart your
+> developing skills, take BlackBerry mobile applications to market and stay
+> ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
+> http://p.sf.net/sfu/devconf
+> --
+> _______________________________________________
+> Dri-devel mailing list
+> Dri-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/dri-devel
+>
