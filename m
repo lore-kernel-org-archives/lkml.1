@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZIUHso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbZIUHuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbZIUHso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 03:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZIUHsm
+	id S1754901AbZIUHuI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 03:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZIUHuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 03:48:42 -0400
-Received: from dd2934.kasserver.com ([85.13.129.136]:38383 "EHLO
-	dd2934.kasserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752377AbZIUHsm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 03:48:42 -0400
-Message-ID: <4AB72FDC.5090403@datenparkplatz.de>
-Date: Mon, 21 Sep 2009 09:48:44 +0200
-From: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Poor desktop responsiveness with background I/O-operations
-References: <4AB59CBB.8090907@datenparkplatz.de>	 <20090920080728.73bfe2a1@infradead.org>	 <4AB5ECD0.7010903@datenparkplatz.de>	 <1253475521.9224.43.camel@marge.simson.net>  <4AB6C73C.1030004@gmail.com> <1253507034.23414.90.camel@marge.simson.net>
-In-Reply-To: <1253507034.23414.90.camel@marge.simson.net>
-Content-Type: text/plain; charset=ISO-8859-15
+	Mon, 21 Sep 2009 03:50:05 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:54005 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752318AbZIUHuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 03:50:04 -0400
+Date: Mon, 21 Sep 2009 09:50:05 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] coretemp support for Core i5 CPU
+Message-ID: <20090921095005.1ec418b7@hyperion.delvare>
+In-Reply-To: <51f3faa70909201553y75cb9f8q8ab34e9659fe479b@mail.gmail.com>
+References: <4AB5DE1F.1020004@gmail.com>
+	<20090920211620.1c18d7fb@hyperion.delvare>
+	<51f3faa70909201553y75cb9f8q8ab34e9659fe479b@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi and thanks for your reply!
+On Sun, 20 Sep 2009 16:53:53 -0600, Robert Hancock wrote:
+> On Sun, Sep 20, 2009 at 1:16 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> > Supporting the digital thermal sensor is one thing, but it is totally
+> > insufficient. If you look at the coretemp driver, you'll see we need to
+> > figure out a number of calibration values which are model-dependent. So
+> > we will need to check this part before adding support for new CPU
+> > models anyway.
+> 
+> Well, I see there is the TCC activation temperature which the reading
+> is relative to, which is detected on the mobile CPUs via an MSR read,
+> so it would only be a problem if they changed this temperature on
+> other CPUs..
 
+They actually did change it on almost every CPU model so far. I fail to
+see why that would suddenly change (even though I'd really love it.)
 
-Mike Galbraith wrote:
-> nicing a shell or the dd should (and does) help a LOT.
+> It might make sense to warn "unknown CPU model, temperature reading
+> may be suspect" or something, but I should think it should still load
+> as the temperature reading is likely still correct.
 
-If this is the only way to influence this, maybe the default settings
-for the niceness of interactive and non-interactive tasks are not the
-best choice. (Maybe a distribution problem in this case)
+Our experience is the exact opposite. The temperature reading is likely
+not correct. And we prefer not telling the user anything than to tell
+him/her something incorrect. Most users won't notice warnings in their
+kernel logs, all they see is a CPU temperature value in their desktop
+tray area.
 
+I hope Intel will finally take over the driver maintenance and deal
+with their own mess. It has been a pain for us to maintain since day 2.
 
-
-> reads are sync, more heavily affected by seek latency than writes.
-
-But how does this explain the seconds-long delays?
-
-If an interactive process causes a lot of seeks because of reads/writes
-which "are sync", I see how this can greatly slow down otherwise
-pipelined write operations, but the other way around?
+-- 
+Jean Delvare
