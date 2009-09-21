@@ -1,106 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZIUXMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZIUXZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754404AbZIUXMq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 19:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZIUXMq
+	id S1754451AbZIUXZL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZIUXZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 19:12:46 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:54239 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754276AbZIUXMp (ORCPT
+	Mon, 21 Sep 2009 19:25:05 -0400
+Received: from mga03.intel.com ([143.182.124.21]:15709 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754309AbZIUXZE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 19:12:45 -0400
-Date: Tue, 22 Sep 2009 00:12:27 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Andreas Gruenbacher <agruen@suse.de>, Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
-Subject: Re: fanotify as syscalls
-Message-ID: <20090921231227.GJ14700@shareable.org>
-References: <20090912094110.GB24709@ioremap.net> <200909190000.43556.agruen@suse.de> <1253329471.2630.30.camel@dhcp231-106.rdu.redhat.com> <200909212204.51077.agruen@suse.de> <20090921202823.GB14700@shareable.org> <alpine.DEB.2.00.0909211456180.1116@makko.or.mcafeemobile.com>
+	Mon, 21 Sep 2009 19:25:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,427,1249282800"; 
+   d="scan'208";a="190094133"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: David Rientjes <rientjes@google.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>,
+       "ebmunson@us.ibm.com" <ebmunson@us.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>,
+       "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "rth@twiddle.net" <rth@twiddle.net>,
+       "ink@jurassic.park.msu.ru" <ink@jurassic.park.msu.ru>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 21 Sep 2009 16:25:05 -0700
+Subject: RE: [PATCH] remove duplicate asm/mman.h files
+Thread-Topic: [PATCH] remove duplicate asm/mman.h files
+Thread-Index: Aco7DpSdHaW9EuyXSqqXWDc83BCZwQAApqCg
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E29CC3F1@orsmsx505.amr.corp.intel.com>
+References: <cover.1251197514.git.ebmunson@us.ibm.com>
+ <200909181848.42192.arnd@arndb.de>
+ <alpine.DEB.1.00.0909181236190.27556@chino.kir.corp.google.com>
+ <200909211031.25369.arnd@arndb.de>
+ <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0909211258570.7831@sister.anvils>
+ <alpine.DEB.1.00.0909211553000.30561@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0909211553000.30561@chino.kir.corp.google.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0909211456180.1116@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
-> On Mon, 21 Sep 2009, Jamie Lokier wrote:
-> 
-> > I think so to, and that'd be a great all round solution.
-> 
-> If this is for anti-malware vendors
+>> Is it perhaps the case that some UNIX on ia64 does implement MAP_GROWSUP,
+>> and these numbers in the Linux ia64 mman.h have been chosen to match that
+>> reference implementation?  Tony will know.  But I wonder if you'd do
+>> better at least to leave a MAP_GROWSUP comment on that line, so that
+>> somebody doesn't go and reuse the empty slot later on.
+>> 
+>
+> Reserving the bit from future use by adding a comment may be helpful, but 
+> then let's do it for MAP_GROWSDOWN too.
 
-Personally I'm not interested in anti-malware, and am simply
-interested in leveraging fsnotify improvements to accelerate userspace
-caches of information which depends on files (indexes, templates,
-compiler caches, stat caches etc.).  Basically make inotify better,
-and sufficiently correct for that purpose.
+Tony can only speculate because this bit has been in asm/mman.h
+since before I started working on Linux (it is in the 2.4.0
+version ... which is roughly when I started ... and long before
+I was responsible for it).
 
-My sticking my oar in lately is to ensure the fsnotify improvements
-are going in the (imho) right direction.  There's a lot of interesting
-apps waiting in the wings on this.  It doesn't have to be complicated,
-just... sensible.
+Perhaps it was assumed that it would be useful?  Linux/ia64 does
+use upwardly growing memory areas (the h/w register stack engine
+saves "stack" registers to an area that grows upwards).
 
-> to intercept userspace accesses 
-> they're currently doing it by hacking the syscall table, why don't we 
-> offer a way to monitor syscalls (kernel side) in a non racy way?
-> Modules can [un]register themselves for syscall intercaption, and receive 
-> the syscall number and parameters. They'd be able to change paramters, 
-> return error codes, and so on.
-> The cost of the check in the syscall path could even be under an 
-> alternative-like patching, if really neeeded.
-> The Pros of this would be:
-> 
-> - The kernel code to implement this would be trivially small, with no 
->   I-need-this-feature-too growth potential
+But since we have survived this long without it actually being
+implemented, it may be true that we don't really need it after
+all.
 
-(Fwiw, the {fa,fs,i}notify thing looks to me like it's getting simpler
-as we go.  Good design = decrease complexity + increase versatility.
-E.g. see epoll.)
-
-> - There won't be any externally visible API to maintain (and its kernel 
->   counter part) and expand
-> 
-> - Any system call can be intercepted, allowing it to be flexible while 
->   leaving the burden of the interception handling, and communication with 
->   userspace policy enforcers, to the anti-malware (or whoever really) 
->   companies modules
-> 
-> The anti-malware are already doing this (intercepting syscall), they 
-> already have code for it, and they always did (writing kernel 
-> modules/drivers, that is) for Windows.
-
-I don't mind at all if fanotify is replaced by a general purpose "take
-over the system call table" solution for anti-malware, and I still get
-to keep the fsnotify improvements :-)
-
-But I can't help noticing that we _already_ have quite well placed
-hooks for intercepting system calls, called security_this and
-security_that (SELinux etc), albeit they can't redirect things so much.
-
-However, being a little kinder, I suspect even the anti-malware
-vendors would rather not slow down everything with race-prone
-complicated tracking of everything every process does...  which is why
-fanotify allows it's "interest set" to be reduced from everything to a
-subset of files, and it's results to be cached, and let the races be
-handled in the normal way by VFS.
-
-Once you have an "interest set" and focus on files, it looks somewhat
-reasonable to use the fsnotify hooks.
-
-...That is, if you believe monitoring files is the best approach to
-anti-malware.  I can't help noticing that on (ahem) Windows, running
-just a "virus checker" which generically scans every file independent
-of it's location looking for signatures and keeping up with patches is
-no longer considered good enough.
-
--- Jamie
-
+-Tony
