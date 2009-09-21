@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbZIUJOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZIUJRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbZIUJOH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 05:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbZIUJOG
+	id S1755454AbZIUJRw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 05:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZIUJRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 05:14:06 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:47604 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbZIUJOF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 05:14:05 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=spVsv4sBZmB/82+knDdX+WJlZeLLwUfvRwbTX1lYXnCZfjoqqAZiahn5RC2OjdOQQ
-	10Fn9Ue1rr7EMb58Q81Og==
-Date: Mon, 21 Sep 2009 02:13:59 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>
-cc: ebmunson@us.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
-       randy.dunlap@oracle.com, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       linux-ia64@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] remove duplicate asm/mman.h files
-In-Reply-To: <200909211031.25369.arnd@arndb.de>
-Message-ID: <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
-References: <cover.1251197514.git.ebmunson@us.ibm.com> <200909181848.42192.arnd@arndb.de> <alpine.DEB.1.00.0909181236190.27556@chino.kir.corp.google.com> <200909211031.25369.arnd@arndb.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Mon, 21 Sep 2009 05:17:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40700 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755068AbZIUJRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 05:17:51 -0400
+Date: Mon, 21 Sep 2009 11:17:53 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: BUG: sleeping function called from invalid context at 
+ mm/slub.c:1717
+In-Reply-To: <28c262360909160016m19edee02g9215669f854e1026@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.0909211114400.17028@wotan.suse.de>
+References: <20090915085441.GF23126@kernel.dk>  <alpine.LNX.2.00.0909151202560.17028@wotan.suse.de> <28c262360909160016m19edee02g9215669f854e1026@mail.gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Sep 2009, Arnd Bergmann wrote:
+On Wed, 16 Sep 2009, Minchan Kim wrote:
 
-> > > -#define MCL_CURRENT	1		/* lock all current mappings */
-> > > -#define MCL_FUTURE	2		/* lock all future mappings */
-> > > +#define MAP_GROWSUP	0x0200		/* register stack-like segment */
-> > >  
-> > >  #ifdef __KERNEL__
-> > >  #ifndef __ASSEMBLY__
-> > 
-> > ia64 doesn't use MAP_GROWSUP, so it's probably not necessary to carry it 
-> > along with your cleanup.
+> We have to change description of hid_input_report.
 > 
-> ia64 is the only architecture defining it, nobody uses it in the kernel.
-> If the ia64 maintainers want to remove it in a separate patch, that
-> would probably be a good idea.
-> 
+>  * @interrupt: called from atomic?
+> I think it lost meaning.
 
-I'll do it then.
+Good point, I will change it, thanks.
 
-> I tried not to change the ABI in any way in my patch, and there is
-> a theoretical possibility that some user space program on ia64 currently
-> depends on that definition.
-> 
+> I am worried that interrupt variable is propagated down to sub 
+> functions. Is it right on sub functions?
 
-I don't buy that as justification, if some userspace program uses it based 
-on the false belief that it actually does what it says, it's probably 
-better to break their build than perpetuating the lie that it's different 
-than ~MAP_GROWSDOWN.
+Yes. This variable is not used for chosing correct allocation flags 
+anywhere else, it is just carrying the semantics what the HID core should 
+do, what callbacks to call, etc. So it's correct.
+But you are right that the name and kerneldocs is confusing, and I will 
+fix that.
 
+> One more thing, I am concerned about increasing GFP_ATOMIC customers 
+> although we can avoid it. Is it called rarely? Could you find a 
+> alternative method to overcome this issue?
 
-ia64: remove definition for MAP_GROWSUP
+This is just a temporary buffer for debugging output, it is freed almost 
+immediately later in the function, and even if the allocation fails, 
+nothing bad happens (just the debugging output is not delivered to the 
+debugfs buffer).
 
-MAP_GROWSUP is unused.
+Thanks,
 
-Signed-off-by: David Rientjes <rientjes@google.com>
----
-diff --git a/arch/ia64/include/asm/mman.h b/arch/ia64/include/asm/mman.h
---- a/arch/ia64/include/asm/mman.h
-+++ b/arch/ia64/include/asm/mman.h
-@@ -11,7 +11,6 @@
- #include <asm-generic/mman-common.h>
- 
- #define MAP_GROWSDOWN	0x00100		/* stack-like segment */
--#define MAP_GROWSUP	0x00200		/* register stack-like segment */
- #define MAP_DENYWRITE	0x00800		/* ETXTBSY */
- #define MAP_EXECUTABLE	0x01000		/* mark it as an executable */
- #define MAP_LOCKED	0x02000		/* pages are locked */
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
