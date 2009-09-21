@@ -1,160 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbZIUJh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbZIUJnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755829AbZIUJh7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 05:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbZIUJh6
+	id S1755823AbZIUJnR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 05:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbZIUJnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 05:37:58 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:42228 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755741AbZIUJh5 (ORCPT
+	Mon, 21 Sep 2009 05:43:15 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:61309 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755740AbZIUJnO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 05:37:57 -0400
-Message-ID: <4AB74956.8070708@nokia.com>
-Date: Mon, 21 Sep 2009 12:37:26 +0300
-From: Aaro Koskinen <aaro.koskinen@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 21 Sep 2009 05:43:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Mn3tJoAf/wx8hDexL1kpWA8BquJVZ3bg/SuJzFX0+mvdvNCIThsrfoJQL0THuVmA3H
+         sloGXilj/57NWmbV365ctGnk23iIXf5+R76mKeK7I7WTbYV5UhgZFm3B5cHRa99qM21z
+         RQaOnTmmig78+f3LcqUaAXYlnP4zwRN3k2T1g=
 MIME-Version: 1.0
-To: "ext Kirill A. Shutemov" <kirill@shutemov.name>
-CC: "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>,
-       Russell King <linux@arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
-Subject: Re: [PATCH v3 1/2] ARM: Pass IFSR register to do_PrefetchAbort()
-References: <2f6c0105e623b9134adbb2e849e8074722903fb9.1253530731.git.kirill@shutemov.name>
-In-Reply-To: <2f6c0105e623b9134adbb2e849e8074722903fb9.1253530731.git.kirill@shutemov.name>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Sep 2009 09:37:32.0048 (UTC) FILETIME=[24866900:01CA3A9F]
-X-Nokia-AV: Clean
+In-Reply-To: <200909202035.54220.gene.heskett@verizon.net>
+References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>
+	 <200909201637.52514.gene.heskett@verizon.net>
+	 <68676e00909201431j43402470g70df5519a963097b@mail.gmail.com>
+	 <200909202035.54220.gene.heskett@verizon.net>
+Date: Mon, 21 Sep 2009 11:43:16 +0200
+Message-ID: <68676e00909210243h7aab926cr225779826743ed33@mail.gmail.com>
+Subject: Re: [lm-sensors] it87 sensors need an ACPI driver (2.6.31)
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Gene Heskett <gene.heskett@verizon.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Sep 21, 2009 at 2:35 AM, Gene Heskett <gene.heskett@verizon.net> wrote:
+> On Sunday 20 September 2009, Luca Tettamanti wrote:
+>>On Sun, Sep 20, 2009 at 10:37 PM, Gene Heskett <gene.heskett@verizon.net>
+> wrote:
+>>> Jumping in the middle of this, I am another that it87 doesn't work very
+>>> well for,  ASUS M2N SLI Deluxe board.
+>>
+>>Please define "doesn't work well". asus_atk0110 should handle that
+>>board. In case of troubles enable CONFIG_HWMON_DEBUG_CHIP, load
+>>asus_atk0110 and post the content of the kernel log.
+>>
+> With that CONFIG_HWMON_DEBUG_CHIP enabled, dmesg (attached) looks semi-
+> kosher, but neither gkrellm nor sensors can show me data until it87 is
+> loaded.  I unloaded it87 and reloaded it several times just now.  Something
+> funkity someplace...  Is there a new application I need to dl and install?
 
-Kirill A. Shutemov wrote:
-> It needed for proper prefetch abort handling on ARMv7.
-> 
-> Instruction fault status register (IFSR) was introduced on ARMv7.
+You probably need to upgrade the lm-sensors package. Version 3.1.1 has
+support for ACPI devices.
 
-According to the ARMv7-AR reference manual it's available in ARMv6
-(see chapter G.7).
-
-> For older CPU we simulate IFSR with translation fault status. It
-> allows to generalize code.
-> 
-> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-> ---
->  arch/arm/include/asm/glue.h    |   10 ++++++++--
->  arch/arm/kernel/entry-armv.S   |   14 ++++----------
->  arch/arm/kernel/entry-common.S |    8 ++++++--
->  arch/arm/mm/fault.c            |    2 +-
->  4 files changed, 19 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/arm/include/asm/glue.h b/arch/arm/include/asm/glue.h
-> index a0e39d5..5bfaf6f 100644
-> --- a/arch/arm/include/asm/glue.h
-> +++ b/arch/arm/include/asm/glue.h
-> @@ -130,7 +130,10 @@
->  # ifdef CPU_PABORT_HANDLER
->  #  define MULTI_PABORT 1
->  # else
-> -#  define CPU_PABORT_HANDLER(reg, insn)	mrc p15, 0, reg, cr6, cr0, 2
-> +#  define CPU_PABORT_HANDLER(addr, ifsr, insn) \
-> +	mrc	p15, 0, addr, c6, c0, 2 ; \
-> +	mrc	p15, 0, ifsr, c5, c0, 1
-> +
->  # endif
->  #endif
->  
-> @@ -138,7 +141,10 @@
->  # ifdef CPU_PABORT_HANDLER
->  #  define MULTI_PABORT 1
->  # else
-> -#  define CPU_PABORT_HANDLER(reg, insn)	mov reg, insn
-> +#define __hash_5 #5
-> +#  define CPU_PABORT_HANDLER(addr, ifsr, insn) \
-> +	mov	addr, insn ; \
-> +	mov	ifsr, __hash_5
->  # endif
->  #endif
->  
-> diff --git a/arch/arm/kernel/entry-armv.S b/arch/arm/kernel/entry-armv.S
-> index 3d727a8..335ae58 100644
-> --- a/arch/arm/kernel/entry-armv.S
-> +++ b/arch/arm/kernel/entry-armv.S
-> @@ -303,22 +303,16 @@ __pabt_svc:
->  	tst	r3, #PSR_I_BIT
->  	biceq	r9, r9, #PSR_I_BIT
->  
-> -	@
-> -	@ set args, then call main handler
-> -	@
-> -	@  r0 - address of faulting instruction
-> -	@  r1 - pointer to registers on stack
-> -	@
->  #ifdef MULTI_PABORT
->  	mov	r0, r2			@ pass address of aborted instruction.
->  	ldr	r4, .LCprocfns
->  	mov	lr, pc
->  	ldr	pc, [r4, #PROCESSOR_PABT_FUNC]
->  #else
-> -	CPU_PABORT_HANDLER(r0, r2)
-> +	CPU_PABORT_HANDLER(r0, r1, r2)
->  #endif
->  	msr	cpsr_c, r9			@ Maybe enable interrupts
-> -	mov	r1, sp				@ regs
-> +	mov	r2, sp				@ regs
->  	bl	do_PrefetchAbort		@ call abort handler
->  
->  	@
-> @@ -697,10 +691,10 @@ __pabt_usr:
->  	mov	lr, pc
->  	ldr	pc, [r4, #PROCESSOR_PABT_FUNC]
->  #else
-> -	CPU_PABORT_HANDLER(r0, r2)
-> +	CPU_PABORT_HANDLER(r0, r1, r2)
->  #endif
->  	enable_irq				@ Enable interrupts
-> -	mov	r1, sp				@ regs
-> +	mov	r2, sp				@ regs
->  	bl	do_PrefetchAbort		@ call abort handler
->   UNWIND(.fnend		)
->  	/* fall through */
-> diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
-> index 807cfeb..931ab9a 100644
-> --- a/arch/arm/kernel/entry-common.S
-> +++ b/arch/arm/kernel/entry-common.S
-> @@ -426,10 +426,14 @@ sys_mmap2:
->  ENDPROC(sys_mmap2)
->  
->  ENTRY(pabort_ifar)
-> -		mrc	p15, 0, r0, cr6, cr0, 2
-> -ENTRY(pabort_noifar)
-> +		mrc	p15, 0, r0, c6, c0, 2		@ get IFAR
-> +		mrc	p15, 0, r1, c5, c0, 1		@ get IFSR
->  		mov	pc, lr
->  ENDPROC(pabort_ifar)
-> +ENTRY(pabort_noifar)
-> +		/* simulate IFSR with section translation fault status */
-> +		mov	r1, #5
-> +		mov	pc, lr
->  ENDPROC(pabort_noifar)
->  
->  #ifdef CONFIG_OABI_COMPAT
-> diff --git a/arch/arm/mm/fault.c b/arch/arm/mm/fault.c
-> index cc8829d..5e27462 100644
-> --- a/arch/arm/mm/fault.c
-> +++ b/arch/arm/mm/fault.c
-> @@ -506,7 +506,7 @@ do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
->  }
->  
->  asmlinkage void __exception
-> -do_PrefetchAbort(unsigned long addr, struct pt_regs *regs)
-> +do_PrefetchAbort(unsigned long addr, int ifsr, struct pt_regs *regs)
->  {
->  	do_translation_fault(addr, 0, regs);
->  }
-
+Luca
