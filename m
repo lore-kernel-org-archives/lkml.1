@@ -1,131 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZIUOUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZIUOKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbZIUOUL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 10:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbZIUOUK
+	id S1756227AbZIUOKf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 10:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbZIUOKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 10:20:10 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44122 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbZIUOUJ (ORCPT
+	Mon, 21 Sep 2009 10:10:34 -0400
+Received: from mail-yx0-f183.google.com ([209.85.210.183]:55763 "EHLO
+	mail-yx0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756060AbZIUOKd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 10:20:09 -0400
-Message-Id: <20090921141751.310933291@chello.nl>
-References: <20090921140848.444528343@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Mon, 21 Sep 2009 16:08:50 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       David Miller <davem@davemloft.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 2/2] perf,sparc: Use vmalloc to back the mmap() array
-Content-Disposition: inline; filename=perf-sparc-mmap-vmalloc.patch
+	Mon, 21 Sep 2009 10:10:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=n/Ueo2AYHpFZmm1KB8GZpvCkgyiV1kCFlIuwBARTkLhW8cA5T/Nuq8dltlAMrFDrzN
+         0bGQv0mQNSq3MJav15/GtW6eBKv80PDmZS3W6jLEaIZLk4EQ7mRbBYK+KidHgW/5DAqs
+         +jLUdFHCKN2VvV47eJ/A09nwI1vXL/UGAsdII=
+MIME-Version: 1.0
+In-Reply-To: <20090921140220.GD14381@ZenIV.linux.org.uk>
+References: <E1MpiJo-0005fv-2y@pomaz-ex.szeredi.hu> <E1MpiMo-0005h9-DG@pomaz-ex.szeredi.hu> 
+	<20090921140220.GD14381@ZenIV.linux.org.uk>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 21 Sep 2009 10:10:17 -0400
+Message-ID: <8bd0f97a0909210710h5bb75bcdwb666b51a9155a70a@mail.gmail.com>
+Subject: Re: [PATCH 2/2] vfs: fix d_path() for unreachable paths
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Valdis.Kletnieks@vt.edu, agruen@suse.de, hch@lst.de,
+       hugh.dickins@tiscali.co.uk, matthew@wil.cx
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement vmalloc() backed storage for perf_mmap().
+On Mon, Sep 21, 2009 at 10:02, Al Viro wrote:
+> * blackfin cplbinfo: utter crap; it's used to decide which procfs file
+> is being opened - by dumping full pathname into a (on-stack) buffer
+> and then parsing it.  Stupid *and* broken.
 
-Alternatively we could put this code in kernel/perf_counter_vmalloc.c
-and conditionally compile that or something, since there really isn't
-anything Sparc specific about it.
+it works without having to copy & paste the same exact structures over
+and over.  a suggestion as how to do it cleanly without bloating the
+code is certainly welcome.  it doesnt really matter that it's on the
+stack as the usage is small and d_path() is given the size of the
+buffer, so it isnt going to overflow.
 
-Suggested-by: David Miller <davem@davemloft.net>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
----
- arch/sparc/kernel/perf_counter.c |   72 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 72 insertions(+)
+> * blackfin traps.c:decode_address(): for one thing, pathnames has been
+> known to be longer than 256 bytes.
 
-Index: linux-2.6/arch/sparc/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/arch/sparc/kernel/perf_counter.c
-+++ linux-2.6/arch/sparc/kernel/perf_counter.c
-@@ -14,6 +14,7 @@
- 
- #include <linux/perf_counter.h>
- #include <linux/kprobes.h>
-+#include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/kdebug.h>
- #include <linux/mutex.h>
-@@ -554,3 +555,74 @@ void __init init_hw_perf_counters(void)
- 
- 	register_die_notifier(&perf_counter_nmi_notifier);
- }
-+
-+struct page *perf_mmap_to_page(void *addr)
-+{
-+	return vmalloc_to_page(addr);
-+}
-+
-+static void perf_mmap_unmark_page(void *addr)
-+{
-+	struct page *page = vmalloc_to_page(addr);
-+
-+	page->mapping = NULL;
-+}
-+
-+static void perf_mmap_data_free_work(struct work_struct *work)
-+{
-+	struct perf_mmap_data *data;
-+	void *base;
-+	int i;
-+
-+	data = container_of(work, struct perf_mmap_data, work);
-+
-+	base = data->user_page;
-+	for (i = 0; i < data->nr_pages + 1; i++)
-+		perf_mmap_unmark_page(base + (i * PAGE_SIZE));
-+
-+	vfree(base);
-+}
-+
-+void perf_mmap_data_free(struct perf_mmap_data *data)
-+{
-+	schedule_work(&data->work);
-+}
-+
-+struct perf_mmap_data *
-+perf_mmap_data_alloc(struct perf_counter *counter, int nr_pages)
-+{
-+	struct perf_mmap_data *data;
-+	unsigned long size;
-+	void *all_buf;
-+	int i;
-+
-+	WARN_ON(atomic_read(&counter->mmap_count));
-+
-+	size = sizeof(struct perf_mmap_data);
-+	size += nr_pages * sizeof(void *);
-+
-+	data = kzalloc(size, GFP_KERNEL);
-+	if (!data)
-+		goto fail;
-+
-+	INIT_WORK(&data->work, perf_mmap_data_free_work);
-+
-+	all_buf = vmalloc_user((nr_pages + 1) * PAGE_SIZE);
-+	if (!all_buf)
-+		goto fail_all_buf;
-+
-+	data->user_page = all_buf;
-+
-+	for (i = 0; i < nr_pages; i++)
-+		data->data_pages[i] = all_buf + ((i + 1) * PAGE_SIZE);
-+
-+	data->nr_pages = nr_pages;
-+
-+	return data;
-+
-+fail_all_buf:
-+	kfree(data);
-+
-+fail:
-+	return NULL;
-+}
+we know the paths are longer than 256 bytes.  the output is to give a
+reasonable idea of what is crashing.  realistically, nothing
+executable resides in a 256+ byte path on an embedded system.
 
--- 
+>  For another... locking in that loop
+> over processes and VMAs of each looks very suspicios, while we are at it.
 
+we've reviewed it several times and exercised it in multiple ways.  so
+unless you have a real idea of something being wrong, the code has
+been vetted heavily.
+-mike
