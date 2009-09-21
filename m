@@ -1,105 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZIUUSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbZIUVXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753866AbZIUUSM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 16:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZIUUSK
+	id S1754065AbZIUVXn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 17:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbZIUVXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 16:18:10 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:35754 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751175AbZIUUSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 16:18:09 -0400
-Subject: Re: [PATCH] VFS: document what MAY_ACCESS means
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org
-In-Reply-To: <20090921185336.GA5633@shareable.org>
-References: <20090921012933.2631.85495.stgit@paris.rdu.redhat.com>
-	 <20090921081047.GA20006@shareable.org>
-	 <1253536193.17222.21.camel@heimdal.trondhjem.org>
-	 <20090921185336.GA5633@shareable.org>
-Content-Type: text/plain
-Date: Mon, 21 Sep 2009 16:18:05 -0400
-Message-Id: <1253564285.17222.120.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Mon, 21 Sep 2009 17:23:42 -0400
+Received: from gateway11.websitewelcome.com ([67.18.72.139]:48322 "HELO
+	gateway11.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753940AbZIUVXl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 17:23:41 -0400
+X-Greylist: delayed 3599 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 17:23:41 EDT
+Message-ID: <4AB7E0D1.10506@paralogos.com>
+Date: Mon, 21 Sep 2009 13:23:45 -0700
+From: "Kevin D. Kissell" <kevink@paralogos.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ralf Baechle <ralf@linux-mips.org>
+CC: Julia Lawall <julia@diku.dk>, dmitri.vorobiev@gmail.com,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] arch/mips: remove duplicate structure field	initialization
+References: <Pine.LNX.4.64.0909211708200.8549@pc-004.diku.dk> <20090921192520.GB17310@linux-mips.org>
+In-Reply-To: <20090921192520.GB17310@linux-mips.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 8 msgs/h 2 sum rcpts/h 11 sum msgs/h 2 total rcpts 1524 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: FF3AF39B5D5A15EF9EF85BE4B14913ADE58FF4FB
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 2 total 269 max/h 6 blacklist 0 greylist 0 ratelimit 0
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator750.hostgator.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - paralogos.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-21 at 19:53 +0100, Jamie Lokier wrote:
-> Trond Myklebust wrote:
-> > On Mon, 2009-09-21 at 09:10 +0100, Jamie Lokier wrote
-> > > (Btw, side issue: I was very surprised to find fchdir() to an open
-> > > directory can fail on NFS due to change of permissions, so the pattern
-> > > dir = open("."); chdir("foo"); fchdir(dir) can fail to restore the
-> > > current directory).
-> > 
-> > Welcome to the world of stateless server-enforced security. Unlike the
-> > POSIX model, a NFS server doesn't have the ability to track what
-> > permissions have already been checked using a file descriptor. It
-> > therefore needs to check permissions on each RPC operation you perform
-> > using the credential you present then and there.
-> 
-> No, no, it's not that.
-> 
-> It's allowed to have the current directory be a directory you can't
-> access any more.  You find out you've lost permission, as you say,
-> later when you _do_ something with the directory.  In other words when
-> you do a lookup or readdir from the directory.
-> 
-> Putting it another way, this will _never_ error due to another process
-> messing with the permissions of the original directory after subdir is
-> opened:
-> 
->     dir=open(".");
->     dir2=open("/elsewhere");
->     fstatat(dir2, "something_elsewhere");
-> 
-> But this can fail, leaving you in a different directory:
-> 
->     dir=open(".");
->     dir2=open("/elsewhere");
->     fchdir(dir2);
->     stat("something_elsewhere");
->     fchdir(dir);
-> 
-> I find that surprising.  Imho, both codes are intended to have the
-> same behaviour.
-> 
-> Is there something in POSIX which says fchdir() must verify you still
-> have execute permission in the directory you are switching to at the
-> time you call fchdir()?
-> 
-> I suspect having fchdir() fail in this admittedly obscure case is more
-> likely to cause problems than the RPC permission check, due to
-> surprise and no obvious error recovery strategy in an application
-> where fchdir is used in some subroutine to temporarily switch
-> directory and then return to the caller, which doesn't expect the
-> current directory might be changed by the call.  I suspect when that
-> happens, most applications will either terminate abruptly or behave
-> wrongly later.  It's just a guess though....
+I'm still on the mailing list, and had seen this going by.  I'm not sure 
+where that second .flags declaration got added.  Way, way back when I 
+was pretty much the only maintainer of the file, irq_ipi.flags was 
+explicitly  initialized to IRQF_DISABLED by an actual assignment 
+statement in setp_cross_vpe_interrupts(), and the per-CPUness was 
+handled by an "irq_desc[cpu_ipi_irq].status |= IRQ_PER_CPU".  My guess 
+is that first someone (maybe me) migrated the IRQF_DISABLED assignment 
+into the declaration of the struct, and that later someone found the 
+IRQ_PER_CPU thing bogus or deprecated and converted it into a second 
+.flags line in the struct declaration, missing the fact that there was 
+already one there.
 
-Oh, I see what you're getting at.
+In any case, I'm willing to sign off on Julia's patch.  It's certainly 
+more important that the IRQ be PER_CPU than initially DISABLED, but 
+during the time when SMTC was seeing its heaviest testing at MIPS, both 
+attributes were true.
 
-So, looking at the code for fchdir(), it would appear that the
-permission check there is being made by the VFS, not NFS. I suspect that
-is because it is mandated by POSIX.
-Indeed, looking at the spec for fchdir(), it would appear that you _do_
-need valid permissions. See
+          Regards,
 
-   http://www.opengroup.org/onlinepubs/009695399/functions/fchdir.html
+          Kevin K.
 
-which states that the function returns EACCES if the process doesn't
-have search permissions.
-
-Cheers
-  Trond
+Ralf Baechle wrote:
+> On Mon, Sep 21, 2009 at 05:08:55PM +0200, Julia Lawall wrote:
+>
+> Adding Kevin "SMTC Kissel to cc.
+>
+>   
+>> From: Julia Lawall <julia@diku.dk>
+>>
+>> The definition of the irq_ipi structure has two initializations of the
+>> flags field.  This combines them.
+>>
+>> The semantic match that finds this problem is as follows:
+>> (http://coccinelle.lip6.fr/)
+>>
+>> // <smpl>
+>> @r@
+>> identifier I, s, fld;
+>> position p0,p;
+>> expression E;
+>> @@
+>>
+>> struct I s =@p0 { ... .fld@p = E, ...};
+>>
+>> @s@
+>> identifier I, s, r.fld;
+>> position r.p0,p;
+>> expression E;
+>> @@
+>>
+>> struct I s =@p0 { ... .fld@p = E, ...};
+>>
+>> @script:python@
+>> p0 << r.p0;
+>> fld << r.fld;
+>> ps << s.p;
+>> pr << r.p;
+>> @@
+>>
+>> if int(ps[0].line)!=int(pr[0].line) or int(ps[0].column)!=int(pr[0].column):
+>>   cocci.print_main(fld,p0)
+>> // </smpl>
+>>
+>> Signed-off-by: Julia Lawall <julia@diku.dk>
+>>
+>> ---
+>>  arch/mips/kernel/smtc.c             |    5 ++---
+>>  1 files changed, 2 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/mips/kernel/smtc.c b/arch/mips/kernel/smtc.c
+>> index 67153a0..4d181df 100644
+>> --- a/arch/mips/kernel/smtc.c
+>> +++ b/arch/mips/kernel/smtc.c
+>> @@ -1098,9 +1098,8 @@ static void ipi_irq_dispatch(void)
+>>  
+>>  static struct irqaction irq_ipi = {
+>>  	.handler	= ipi_interrupt,
+>> -	.flags		= IRQF_DISABLED,
+>> -	.name		= "SMTC_IPI",
+>> -	.flags		= IRQF_PERCPU
+>> +	.flags		= IRQF_DISABLED | IRQF_PERCPU,
+>> +	.name		= "SMTC_IPI"
+>>  };
+>>  
+>>  static void setup_cross_vpe_interrupts(unsigned int nvpe)
+>>     
+>
+> The actual semantic of this code as implemented by gcc is that all but the
+> last initializer are ignored so until somebody actually tests your code
+> I'll just remove the first of the two initializers and put a comment there.
+>
+>   Ralf
+>   
 
