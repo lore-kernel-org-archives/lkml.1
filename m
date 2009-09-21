@@ -1,104 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751518AbZIUQU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbZIUQBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751518AbZIUQU5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbZIUQUy
+	id S1752044AbZIUQBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZIUQBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:20:54 -0400
-Received: from na6sys009bog009.obsmtp.com ([74.125.150.58]:33943 "EHLO
-	na6sys009bog009.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751017AbZIUQUx convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:20:53 -0400
-X-Greylist: delayed 939 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 12:20:52 EDT
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: Daniel Walker <dwalker@fifo99.com>
-CC: "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 21 Sep 2009 10:04:57 -0600
-Subject: RE: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
-Thread-Topic: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
-Thread-Index: Aco61CwJMvwHxIOsQii5XA2F0X2XwAAAJZxA
-Message-ID: <4B6A08C587958942AA3002690DD4F8C35C51252F@cosmail02.lsi.com>
-References: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
-	 <1253504435.9654.221.camel@desktop>
-	 <4B6A08C587958942AA3002690DD4F8C35C5124EB@cosmail02.lsi.com>
- <1253548622.9654.233.camel@desktop>
-In-Reply-To: <1253548622.9654.233.camel@desktop>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 21 Sep 2009 12:01:45 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:40413 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751982AbZIUQBn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 12:01:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SWpIFniMP64P1cNRMKBnxJ8h/msyvYqbF+GngeTU8yU02qmDMWPegNUdlZ0Zh2smBy
+         tvEvtAbsX6IkQw5FteQgnLY+dlO4iJbat5X+B38l1dvkJOF6Z+rXuIYtohvmw9w0LHf6
+         ywFb7Bn/3lOjYdG70+xaQMD2DTJZTj27QzvD0=
+Date: Tue, 22 Sep 2009 00:05:32 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: jdike@addtoit.com, user-mode-linux-user@lists.sourceforge.net,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 5/5] arch/um: remove duplicate structure field
+	initialization
+Message-ID: <20090921160532.GC3868@hack>
+References: <Pine.LNX.4.64.0909192149250.27171@ask.diku.dk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0909192149250.27171@ask.diku.dk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel,
+On Sat, Sep 19, 2009 at 09:49:47PM +0200, Julia Lawall wrote:
+>From: Julia Lawall <julia@diku.dk>
+>
+>The definition of uml_netdev_ops has initializations of a local function
+>and eth_mac_addr for its ndo_set_mac_address field.  This change uses only
+>the local function.
+>
+>The semantic match that finds this problem is as follows:
+>(http://coccinelle.lip6.fr/)
+>
+>// <smpl>
+>@r@
+>identifier I, s, fld;
+>position p0,p;
+>expression E;
+>@@
+>
+>struct I s =@p0 { ... .fld@p = E, ...};
+>
+>@s@
+>identifier I, s, r.fld;
+>position r.p0,p;
+>expression E;
+>@@
+>
+>struct I s =@p0 { ... .fld@p = E, ...};
+>
+>@script:python@
+>p0 << r.p0;
+>fld << r.fld;
+>ps << s.p;
+>pr << r.p;
+>@@
+>
+>if int(ps[0].line)!=int(pr[0].line) or int(ps[0].column)!=int(pr[0].column):
+>  cocci.print_main(fld,p0)
+>// </smpl>
 
-Thanks Daniel.  Let me verify if this copy/paste did those changes.
 
-Bo Yang  
+Hmm, C99 said:
+"
+The initialization shall occur in initializer list order, each
+initializer provided for a particular subobject overriding any
+previously listed initializer for the same subobject [...]
+"
 
------Original Message-----
-From: Daniel Walker [mailto:dwalker@fifo99.com] 
-Sent: Monday, September 21, 2009 11:57 AM
-To: Yang, Bo
-Cc: James.Bottomley@HansenPartnership.com; James.Bottomley@suse.de; linux-scsi@vger.kernel.org; akpm@osdl.org; linux-kernel@vger.kernel.org
-Subject: RE: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
+I am wondering why gcc doesn't (can't?) complain about this?
 
-On Mon, 2009-09-21 at 09:22 -0600, Yang, Bo wrote:
-> Daniel,
+>
+>Signed-off-by: Julia Lawall <julia@diku.dk>
+>
+
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+>---
+> arch/um/drivers/net_kern.c          |    1 -
+> 1 files changed, 0 insertions(+), 1 deletions(-)
+>
+>diff --git a/arch/um/drivers/net_kern.c b/arch/um/drivers/net_kern.c
+>index a74245a..d17a623 100644
+>--- a/arch/um/drivers/net_kern.c
+>+++ b/arch/um/drivers/net_kern.c
+>@@ -379,7 +379,6 @@ static const struct net_device_ops uml_netdev_ops = {
+> 	.ndo_tx_timeout 	= uml_net_tx_timeout,
+> 	.ndo_set_mac_address	= uml_net_set_mac,
+> 	.ndo_change_mtu 	= uml_net_change_mtu,
+>-	.ndo_set_mac_address 	= eth_mac_addr,
+> 	.ndo_validate_addr	= eth_validate_addr,
+> };
 > 
-> Thanks for viewing the patches.  I did run the checkpatch.pl first before I submit the patches.  Is there possible you can tell me the errors in the specific patch, I need to find out if it is my e-mail setting problems or something else.
+>--
+>To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-There are problems in all your patches.. 
-
->From patch 1 (not all the errors),
-
-ERROR: patch seems to be corrupt (line wrapped?)
-#73: FILE: drivers/scsi/megaraid/megaraid_sas.c:686:
- memcpy(pthru->cdb, scp->cmnd, scp->cmd_len);
-
-ERROR: Invalid UTF-8, patch and commit message should be encoded in
-UTF-8
-#76: FILE: drivers/scsi/megaraid/megaraid_sas.c:688:
-+ * If the command is for the tape device, set the
- ^
-
-ERROR: Invalid UTF-8, patch and commit message should be encoded in
-UTF-8
-#77: FILE: drivers/scsi/megaraid/megaraid_sas.c:689:
-+ * pthru timeout to the os layer timeout value.
-
->From patch 2,
-
-WARNING: suspect code indent for conditional statements (7, 15)
-#107: FILE: drivers/scsi/megaraid/megaraid_sas.c:1306:
-+       if ((!cmd->abort_aen) && (instance->unload == 0)) {
-+               spin_lock_irqsave(&poll_aen_lock, flags);
-
-ERROR: code indent should use tabs where possible
-#108: FILE: drivers/scsi/megaraid/megaraid_sas.c:1307:
-+               spin_lock_irqsave(&poll_aen_lock, flags);$
-
-ERROR: code indent should use tabs where possible
-#109: FILE: drivers/scsi/megaraid/megaraid_sas.c:1308:
-+               megasas_poll_wait_aen = 1;$
-
-
-Actually, now that I look closer, other than the errors from patch 1 the
-rest of the patches have warnings similar to patch 2.. Did you do some
-type of copy&paste to put the patches into each email? Often times that
-will remove all the tabs which could cause the errors above.
-
-Daniel
-
-
+-- 
+Live like a child, think like the god.
+ 
