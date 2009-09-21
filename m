@@ -1,117 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZIUNc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZIUNfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbZIUNc1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZIUNcZ
+	id S1756189AbZIUNfG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZIUNfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:32:25 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:45788 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756020AbZIUNcY (ORCPT
+	Mon, 21 Sep 2009 09:35:04 -0400
+Received: from mail-pz0-f195.google.com ([209.85.222.195]:44277 "EHLO
+	mail-pz0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755764AbZIUNfC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:32:24 -0400
-Date: Mon, 21 Sep 2009 13:32:23 +0000
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-To: greg@kroah.org, torvalds@linux-foundation.org,
-       Lars Ericsson <Lars_Ericsson@telia.com>
-Cc: "'Frederik Deweerdt'" <frederik.deweerdt@xprog.eu>,
-       David.Woodhouse@intel.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, "'Ivo van Doorn'" <ivdoorn@gmail.com>
-Subject: [patch -stable] firware_class oops: fix firmware_loading_store
-	locking
-Message-ID: <20090921133223.GA13038@gambetta>
-References: <20090916205717.GB12117@gambetta> <8A019019C4474E589B9EC14F451C0579@gotws1589>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8A019019C4474E589B9EC14F451C0579@gotws1589>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 21 Sep 2009 09:35:02 -0400
+From: Nitin Gupta <ngupta@vflare.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: [PATCH RFC 1/2] Add notifiers for various swap events
+Date: Mon, 21 Sep 2009 19:03:59 +0530
+Message-Id: <1253540040-24860-1-git-send-email-ngupta@vflare.org>
+X-Mailer: git-send-email 1.6.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-On Fri, Sep 18, 2009 at 07:53:40PM +0200, Lars Ericsson wrote:
-> > On Wed, Sep 16, 2009 at 08:44:43PM +0200, Lars Ericsson wrote:
-> > > Hi,
-> > > 
-> > > I have discovered a Oops in the firmware_loading_store function. 
-> > > At first it looks like a timing issue but after adding a 
-> > BUG_ON test,
-> > > it fails every time. 
-> > > 
-> > > drivers\base\firmware_class:
-> > > ------------------------------
-> > >  541 01c0 F6463401 	testb $1,52(%esi)
-> > >  542 01c4 0F843FFF 	je .L38
-> > >  542      FFFF
-> > >  543              	.loc 1 174 0
-> > >  544 01ca 8B4630   	movl 48(%esi),%eax
-> > >  545 01cd 8B4004   	movl 4(%eax),%eax	<---- Oops
-> > >  546 01d0 E8FCFFFF 	call vfree
-> > >  546      FF
-> > > 
-> > > The code that fails was introduced in commit
-> > > 6e03a201bbe8137487f340d26aa662110e324b20 
-> > Could you try the following patch?
-> 
-> No, problem.
-> I have tried the patch and it works for me. I will continue my 
-> tests and report any problems. 
-> 
-> Should I close the http://bugzilla.kernel.org/show_bug.cgi?id=14185 ,
-> which I have created before I noticed you reply ?
-> 
-I'd rather wait someone picks it up for mainline inclusion. I've added
-your {Reported,Tested}-by tags.
+Add notifiers for following swap events:
+ - Swapon
+ - Swapoff
+ - When a swap slot is freed
 
-The bug its vanilla 2.6.31, and should be considered for -stable inclusion.
+This is required for ramzswap module which implements RAM based block
+devices to be used as swap disks. These devices require a notification
+on these events to function properly (as shown in patch 2/2).
 
-Regards,
-Frederik
+Currently, I'm not sure if any of these event notifiers have any other
+users. However, adding ramzswap specific hooks instead of this generic
+approach resulted in a bad/hacky code.
 
-----
+For SWAP_EVENT_SLOT_FREE, callbacks are made under swap_lock. Currently, this
+is not a problem since ramzswap is the only user and the callback it registers
+can be safely made under this lock. However, if this event finds more users,
+we might have to work on reducing contention on this lock.
 
-The code introduced by commit 6e03a201bbe8137487f340d26aa662110e324b20 leads
-to a potential null deref. The following patch adds the proper locking
-around the accesses to fw_priv->fw.
-See http://bugzilla.kernel.org/show_bug.cgi?id=14185 for a full bug report.
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
 
+---
+ include/linux/swap.h |   12 +++++++++
+ mm/swapfile.c        |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 79 insertions(+), 0 deletions(-)
 
-Reported-by: Lars Ericsson <Lars_Ericsson@telia.com>
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-Tested-by: Lars Ericsson <Lars_Ericsson@telia.com>
-
-
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 8a267c4..49105ed 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -171,12 +171,18 @@ static ssize_t firmware_loading_store(struct device *dev,
- 		break;
- 	case 0:
- 		if (test_bit(FW_STATUS_LOADING, &fw_priv->status)) {
-+			mutex_lock(&fw_lock);
-+			if (!fw_priv->fw) {
-+				mutex_unlock(&fw_lock);
-+				break;
-+			}
- 			vfree(fw_priv->fw->data);
- 			fw_priv->fw->data = vmap(fw_priv->pages,
- 						 fw_priv->nr_pages,
- 						 0, PAGE_KERNEL_RO);
- 			if (!fw_priv->fw->data) {
- 				dev_err(dev, "%s: vmap() failed\n", __func__);
-+				mutex_unlock(&fw_lock);
- 				goto err;
- 			}
- 			/* Pages will be freed by vfree() */
-@@ -185,6 +191,7 @@ static ssize_t firmware_loading_store(struct device *dev,
- 			fw_priv->nr_pages = 0;
- 			complete(&fw_priv->completion);
- 			clear_bit(FW_STATUS_LOADING, &fw_priv->status);
-+			mutex_unlock(&fw_lock);
- 			break;
- 		}
- 		/* fallthrough */
-
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 7c15334..2873aad 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -127,6 +127,12 @@ enum {
+ 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
+ };
+ 
++enum swap_event {
++	SWAP_EVENT_SWAPON,
++	SWAP_EVENT_SWAPOFF,
++	SWAP_EVENT_SLOT_FREE,
++};
++
+ #define SWAP_CLUSTER_MAX 32
+ 
+ #define SWAP_MAP_MAX	0x7ffe
+@@ -155,6 +161,7 @@ struct swap_info_struct {
+ 	unsigned int max;
+ 	unsigned int inuse_pages;
+ 	unsigned int old_block_size;
++	struct atomic_notifier_head slot_free_notify_list;
+ };
+ 
+ struct swap_list_t {
+@@ -295,8 +302,13 @@ extern sector_t swapdev_block(int, pgoff_t);
+ extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int reuse_swap_page(struct page *);
+ extern int try_to_free_swap(struct page *);
++extern int register_swap_event_notifier(struct notifier_block *nb,
++                                enum swap_event event, unsigned long val);
++extern int unregister_swap_event_notifier(struct notifier_block *nb,
++                                enum swap_event event, unsigned long val);
+ struct backing_dev_info;
+ 
++
+ /* linux/mm/thrash.c */
+ extern struct mm_struct *swap_token_mm;
+ extern void grab_swap_token(struct mm_struct *);
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 74f1102..f63643c 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -52,6 +52,9 @@ static struct swap_list_t swap_list = {-1, -1};
+ static struct swap_info_struct swap_info[MAX_SWAPFILES];
+ 
+ static DEFINE_MUTEX(swapon_mutex);
++static BLOCKING_NOTIFIER_HEAD(swapon_notify_list);
++static BLOCKING_NOTIFIER_HEAD(swapoff_notify_list);
++
+ 
+ /* For reference count accounting in swap_map */
+ /* enum for swap_map[] handling. internal use only */
+@@ -585,6 +588,8 @@ static int swap_entry_free(struct swap_info_struct *p,
+ 			swap_list.next = p - swap_info;
+ 		nr_swap_pages++;
+ 		p->inuse_pages--;
++		atomic_notifier_call_chain(&p->slot_free_notify_list,
++					offset, p->swap_file);
+ 	}
+ 	if (!swap_count(count))
+ 		mem_cgroup_uncharge_swap(ent);
+@@ -1626,6 +1631,7 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
+ 	p->swap_map = NULL;
+ 	p->flags = 0;
+ 	spin_unlock(&swap_lock);
++	blocking_notifier_call_chain(&swapoff_notify_list, type, swap_file);
+ 	mutex_unlock(&swapon_mutex);
+ 	vfree(swap_map);
+ 	/* Destroy swap account informatin */
+@@ -2014,7 +2020,9 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+ 	} else {
+ 		swap_info[prev].next = p - swap_info;
+ 	}
++	ATOMIC_INIT_NOTIFIER_HEAD(&p->slot_free_notify_list);
+ 	spin_unlock(&swap_lock);
++	blocking_notifier_call_chain(&swapon_notify_list, type, swap_file);
+ 	mutex_unlock(&swapon_mutex);
+ 	error = 0;
+ 	goto out;
+@@ -2216,3 +2224,62 @@ int valid_swaphandles(swp_entry_t entry, unsigned long *offset)
+ 	*offset = ++toff;
+ 	return nr_pages? ++nr_pages: 0;
+ }
++
++int register_swap_event_notifier(struct notifier_block *nb,
++				enum swap_event event, unsigned long val)
++{
++	switch (event) {
++	case SWAP_EVENT_SWAPON:
++		return blocking_notifier_chain_register(
++					&swapon_notify_list, nb);
++	case SWAP_EVENT_SWAPOFF:
++		return blocking_notifier_chain_register(
++					&swapoff_notify_list, nb);
++	case SWAP_EVENT_SLOT_FREE:
++		{
++		struct swap_info_struct *sis;
++
++		if (val > nr_swapfiles)
++			goto out;
++		sis = get_swap_info_struct(val);
++		return atomic_notifier_chain_register(
++				&sis->slot_free_notify_list, nb);
++		}
++	default:
++		pr_err("Invalid swap event: %d\n", event);
++	};
++
++out:
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(register_swap_event_notifier);
++
++int unregister_swap_event_notifier(struct notifier_block *nb,
++				enum swap_event event, unsigned long val)
++{
++	switch (event) {
++	case SWAP_EVENT_SWAPON:
++		return blocking_notifier_chain_unregister(
++					&swapon_notify_list, nb);
++	case SWAP_EVENT_SWAPOFF:
++		return blocking_notifier_chain_unregister(
++					&swapoff_notify_list, nb);
++	case SWAP_EVENT_SLOT_FREE:
++		{
++		struct swap_info_struct *sis;
++
++		if (val > nr_swapfiles)
++			goto out;
++		sis = get_swap_info_struct(val);
++		return atomic_notifier_chain_unregister(
++				&sis->slot_free_notify_list, nb);
++		}
++	default:
++		pr_err("Invalid swap event: %d\n", event);
++	};
++
++out:
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(unregister_swap_event_notifier);
++
