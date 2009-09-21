@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZIUOhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZIUOiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbZIUOhc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 10:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbZIUOhb
+	id S1756317AbZIUOiv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 10:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbZIUOit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 10:37:31 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:52929 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbZIUOhb (ORCPT
+	Mon, 21 Sep 2009 10:38:49 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47842 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750964AbZIUOis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 10:37:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH] warn about use of uninstalled kernel headers
-Date: Mon, 21 Sep 2009 16:37:12 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-10-generic; KDE/4.3.1; x86_64; ; )
-Cc: "Am?rico Wang" <xiyou.wangcong@gmail.com>, Caveh Jalali <ecaveh@gmail.com>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com> <2375c9f90909171849n429bc474heabdc4d4fd064226@mail.gmail.com> <20090918045259.GA23333@merkur.ravnborg.org>
-In-Reply-To: <20090918045259.GA23333@merkur.ravnborg.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 21 Sep 2009 10:38:48 -0400
+X-Sasl-enc: wO6DCORjJqXkODlPRHUNsDAPkcXT+LcoPp5/3+PuNEmG 1253543922
+Date: Mon, 21 Sep 2009 11:38:40 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ThinkPad T400 and the mute button ...
+Message-ID: <20090921143840.GA7476@khazad-dum.debian.net>
+References: <200909210935.29280.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909211637.12983.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18kVk6DbbqYD1yXDVetqzeC1P8npy9OoHNEu0q
- tEjT7/tCFhopBklb437jfjWTJw+ZvSj44lTf37weNhzBxwKCQG
- lWOcU9tKcEUH9ZvyvxzAQ==
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200909210935.29280.toralf.foerster@gmx.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 September 2009, Sam Ravnborg wrote:
-> > > I think we should no longer have the include2 directory at all with new kernels.
-> > >
-> > > LINUXINCLUDE already contains the right path in theory:
-> > >
-> > > LINUXINCLUDE    := -Iinclude \
-> > >                   $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
-> > >                   -I$(srctree)/arch/$(hdr-arch)/include               \
-> > >                   -include include/linux/autoconf.h
-> > 
-> > Hmm, at least in mmotm, we still have include2...
-> > 
-> > Maybe Sam is queueing the patches to remove include2?
-> I have them queued - yes.
-> But as they never hit -next they will wait another cycle.
+On Mon, 21 Sep 2009, Toralf Förster wrote:
+> It works - but only if the T400 is plugged into the docking station. Then both
+> the mute button at the T400 and the button of the external keyboard works fine.
+> However w/o the docking station pressing the mute button of the T400
+> gives under KDE the graphical response "mute on" - but that's all, the sound
+> isn't muted.
+> 
+> Is this behaviour known/expected or worth a bug report ?
 
-Variations of this are starting to turn into a FAQ. How about
-printing a useful warning when someone tries to use the kernel
-headers without installing them first?
+1. go single user, text mode.  No userspace HAL/udev/KDE/GNOME crap allowed
+for these tests ;-)
 
-	Arnd <><
----
-User applications frequently hit problems when they try to use
-the kernel headers directly, rather than the exported headers.
+2. Test mute/unmute in both keyboards, and check *WHICH* audio outputs get
+muted.  You have at least three: dock line-out, built-in speakers, built-in
+headphone-out.  Remember that some thinkpads (those without a MUTE LED) use
+a single press of volume up or down as unmute.
 
-This adds an explicit warning for this case, and points to
-a URL holding an explanation of why this is wrong and what
-to do about it.
+3. do the same testing using the alsa HDA mixer.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- include/linux/kernel.h     |    6 ++++++
- scripts/headers_install.pl |    2 +-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+4. Anything that doesn't light-up the MUTE LED is doing it on the HDA mixer.
+If you don't have a MUTE led, it gets far more difficult to know what is
+happening :-(
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index d6320a3..f392d72 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -656,6 +656,12 @@ extern int do_sysinfo(struct sysinfo *info);
- 
- #endif /* __KERNEL__ */
- 
-+#ifndef __EXPORTED_HEADERS__
-+#ifndef __KERNEL__
-+#warning Attempt to use kernel headers from user space, see http://kernelnewbies.org/KernelHeaders
-+#endif /* __KERNEL__ */
-+#endif /* __EXPORTED_HEADERS__ */
-+
- #define SI_LOAD_SHIFT	16
- struct sysinfo {
- 	long uptime;			/* Seconds since boot */
-diff --git a/scripts/headers_install.pl b/scripts/headers_install.pl
-index c6ae405..b89ca2c 100644
---- a/scripts/headers_install.pl
-+++ b/scripts/headers_install.pl
-@@ -20,7 +20,7 @@ use strict;
- 
- my ($readdir, $installdir, $arch, @files) = @ARGV;
- 
--my $unifdef = "scripts/unifdef -U__KERNEL__";
-+my $unifdef = "scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__";
- 
- foreach my $file (@files) {
- 	local *INFILE;
+5. thinkpad-acpi can tell you if the firmware thinks the internal MUTE gate
+is enabled or not: cat /proc/acpi/ibm/volume.  It won't be able to *set*
+mute state, AFAIK.  But it can read it.
+
+> BTW the BIOS is at the latest level (I hoped to avoid the command line 
+> eboot=pci w/ the new BIOS but no chance, that parameter is necessary to avoid
+
+Get someone to write a proper, specific bug report that could be sent to a
+BIOS engineer, pinpointing what is wrong and what should be fixed, and
+either I or the SuSE people can forward it to Lenovo.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
