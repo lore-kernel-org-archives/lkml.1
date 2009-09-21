@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbZIUN5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZIUOCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209AbZIUN5b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZIUN52
+	id S1756224AbZIUOCZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 10:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbZIUOCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:57:28 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:52173 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755943AbZIUN51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:57:27 -0400
-Date: Mon, 21 Sep 2009 14:57:33 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Tejun Heo <tj@kernel.org>
-Cc: Sachin Sant <sachinp@in.ibm.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] slqb: Do not use DEFINE_PER_CPU for per-node data
-Message-ID: <20090921135733.GP12726@csn.ul.ie>
-References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie> <1253302451-27740-2-git-send-email-mel@csn.ul.ie> <84144f020909200145w74037ab9vb66dae65d3b8a048@mail.gmail.com> <4AB5FD4D.3070005@kernel.org> <4AB5FFF8.7000602@cs.helsinki.fi> <4AB6508C.4070602@kernel.org> <4AB739A6.5060807@in.ibm.com> <20090921084248.GC12726@csn.ul.ie> <20090921130440.GN12726@csn.ul.ie> <4AB78385.6020900@kernel.org>
+	Mon, 21 Sep 2009 10:02:23 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46962 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756141AbZIUOCX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 10:02:23 -0400
+Date: Mon, 21 Sep 2009 15:02:20 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Valdis.Kletnieks@vt.edu, agruen@suse.de,
+       hch@lst.de, hugh.dickins@tiscali.co.uk, matthew@wil.cx
+Subject: Re: [PATCH 2/2] vfs: fix d_path() for unreachable paths
+Message-ID: <20090921140220.GD14381@ZenIV.linux.org.uk>
+References: <E1MpiJo-0005fv-2y@pomaz-ex.szeredi.hu> <E1MpiMo-0005h9-DG@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AB78385.6020900@kernel.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <E1MpiMo-0005h9-DG@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 10:45:41PM +0900, Tejun Heo wrote:
-> Hello,
+On Mon, Sep 21, 2009 at 02:51:42PM +0200, Miklos Szeredi wrote:
+> Hugh Dickins reported that an old version of gnome-vfs-daemon crashes
+> because it finds an entry in /proc/mounts where the mountpoint is
+> unreachable.  So revert /proc/mounts to the old behavior (or rather a
+> less crazy version of the old behavior).
 > 
-> Mel Gorman wrote:
-> > This latter guess was close to the mark but not for the reasons I was
-> > guessing. There isn't magic per-cpu-area-freeing going on. Once I examined
-> > the implementation of per-cpu data, it was clear that the per-cpu areas for
-> > the node IDs were never being allocated in the first place on PowerPC. It's
-> > probable that this never worked but that it took a long time before SLQB
-> > was run on a memoryless configuration.
-> 
-> Ah... okay, so node id was being used to access percpu memory but the
-> id wasn't in cpu_possible_map.  Yeah, that will access weird places in
-> between proper percpu areas. 
+> Also revert the effect on /proc/${PID}/maps for memory maps set up
+> with shmem_file_setup() or hugetlb_file_setup().  These functions set
+> up unlinked files under a kernel-private vfsmount.  Since this
+> vfsmount is unreachable from userspace, these maps will be reported
+> with the "(unreachable)" prefix, which is undesirable, because it
+> changes the kernel ABI and might break applications for no good
+> reason.
 
-Indeed
+Ho-hum...
+	a) d_op you've got there look like a candidate for libfs, if
+we go for that at all
+	b) I *really* don't like changing the behaviour of d_path() instead
+of doing new behaviour in a new function and deciding where to use it on
+case-by-case basis
+	c) having just grepped for d_path()... oh, man
+* blackfin cplbinfo: utter crap; it's used to decide which procfs file
+is being opened - by dumping full pathname into a (on-stack) buffer
+and then parsing it.  Stupid *and* broken.
+* blackfin traps.c:decode_address(): for one thing, pathnames has been
+known to be longer than 256 bytes.  For another... locking in that loop
+over processes and VMAs of each looks very suspicios, while we are at it.
+* pohmelfs_construct_path_string(): just what will happen if we are called
+from process chrooted into that bugger?  d_path() is badly abused there.
+* ext4_file_open(): d_path() per se is probably OK, but initializing
+path.mnt/path.dentry isn't.  mount --move racing with that thing => loads
+of fun.
+* sysfs_open_file(): racy in an obvious way, but probably won't do anything
+worse than garbage in oopsen.
 
-> I never thought about that.  I'll add
-> debug version of percpu access macros which check that the offset and
-> cpu make sense so that things like this can be caught easier.
-> 
-
-It would not hurt. I consider the per-node usage model to be rare but
-it's possible there are issues with CPU hotplug and per-cpu data lurking
-around that such a debug patch might catch.
-
-> As Pekka suggested, using MAX_NUMNODES seems more appropriate tho
-> although it's suboptimal in that it would waste memory and more
-> importantly not use node-local memory. :-(
-> 
-
-If the per-cpu macros are to be used for per-node data, it would need to
-be generalised to encompass more IDs than what is in cpu_possible_map.
-It depends on how much demand there is for per-node data and how much it
-helps. I have no data on that.
-
-> Sachin, does the hang you're seeing also disappear with Mel's patches?
-> 
-
-Sachin should be enjoying his holiday and I'm hogging his machine at the
-moment.  However, I can report that with this patch applied as well as the
-remote-free patch that the machine locks up after a random amount of time
-has passed and doesn't respond to sysrq. Setting
-CONFIG_RCU_CPU_STALL_DETECTOR=y didn't help throw up an error. Will
-enable a few other debug options related to stall detection and see does
-it pop out.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+I'm very uncomfortable with the silent change of behaviour, especially since
+existing callers seem to be split between "part of user-visible ABI" and
+"generally bogus, waiting for a gnat to fart".  At the very least it needs
+a serious audit of callers.
