@@ -1,71 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbZIUNlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZIUNpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbZIUNlW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbZIUNlT
+	id S1756178AbZIUNpO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZIUNpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:41:19 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:37138 "EHLO kernel.dk"
+	Mon, 21 Sep 2009 09:45:11 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57347 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751397AbZIUNlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:41:19 -0400
-Date: Mon, 21 Sep 2009 15:41:22 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, fengguang.wu@intel.com
-Subject: Re: [GIT PULL] a few writeback fixes
-Message-ID: <20090921134122.GZ23126@kernel.dk>
-References: <20090921125620.GV23126@kernel.dk> <20090921131138.GE1099@duck.suse.cz>
+	id S1751929AbZIUNpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:45:10 -0400
+Date: Mon, 21 Sep 2009 15:45:11 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [PATCH] fs: Fix busyloop in wb_writeback()
+Message-ID: <20090921134511.GG1099@duck.suse.cz>
+References: <1253121768-20673-1-git-send-email-jack@suse.cz> <20090920023528.GA13114@localhost> <20090920174356.GA16919@duck.suse.cz> <20090921010859.GA6331@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090921131138.GE1099@duck.suse.cz>
+In-Reply-To: <20090921010859.GA6331@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21 2009, Jan Kara wrote:
-> On Mon 21-09-09 14:56:20, Jens Axboe wrote:
->   Hi Jens,
+On Mon 21-09-09 09:08:59, Wu Fengguang wrote:
+> On Mon, Sep 21, 2009 at 01:43:56AM +0800, Jan Kara wrote:
+> > On Sun 20-09-09 10:35:28, Wu Fengguang wrote:
+> > > On Thu, Sep 17, 2009 at 01:22:48AM +0800, Jan Kara wrote:
+> > > > If all inodes are under writeback (e.g. in case when there's only one inode
+> > > > with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
+> > > > to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
+> > > > waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
+> > > > write anything.
+> > > 
+> > > Sorry, I realized that inode_wait_for_writeback() waits for I_SYNC.
+> > > But inodes in b_more_io are not expected to have I_SYNC set. So your
+> > > patch looks like a big no-op?
+> >   Hmm, I don't think so. writeback_single_inode() does:
+> >         if (inode->i_state & I_SYNC) {
+> >                 /*
+> >                  * If this inode is locked for writeback and we are not
+> >                  * doing
+> >                  * writeback-for-data-integrity, move it to b_more_io so
+> >                  * that
+> >                  * writeback can proceed with the other inodes on s_io.
+> >                  *
+> >                  * We'll have another go at writing back this inode when we
+> >                  * completed a full scan of b_io.
+> >                  */
+> >                 if (!wait) {
+> >                         requeue_io(inode);
+> >                         return 0;
+> >                 }
+> > 
+> >   So when we see inode under writeback, we put it to b_more_io. So I think
+> > my patch really fixes the issue when two threads are racing on writing the
+> > same inode.
 > 
-> > Jan, since we're not really sure on the inode wait yet, I dropped that
-> > patch. It's definitely something to look into, as are the congestion
-> > bits.
->   OK.
-> 
-> 								Honza
-> 
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index 1eea4fa..6bb510b 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -485,6 +485,7 @@ static void balance_dirty_pages(struct address_space *mapping)
-> >  	unsigned long bdi_thresh;
-> >  	unsigned long pages_written = 0;
-> >  	unsigned long write_chunk = sync_writeback_pages();
-> > +	unsigned long pause = 1;
-> >  
-> >  	struct backing_dev_info *bdi = mapping->backing_dev_info;
-> >  
-> > @@ -561,7 +562,15 @@ static void balance_dirty_pages(struct address_space *mapping)
-> >  		if (pages_written >= write_chunk)
-> >  			break;		/* We've done our duty */
-> >  
-> > -		schedule_timeout(1);
-> > +		schedule_timeout_interruptible(pause);
-> > +
-> > +		/*
-> > +		 * Increase the delay for each loop, up to our previous
-> > +		 * default of taking a 100ms nap.
-> > +		 */
-> > +		pause <<= 1;
-> > +		if (pause < HZ / 10)
-> > +			pause = HZ / 10;
->   Isn't this check the other way around?
+> Ah OK. So it busy loops when there are more syncing threads than dirty
+> files. For example, one bdi flush thread plus one process running
+> balance_dirty_pages().
+  Yes.
 
-Gah it is, how silly. I have fixed it up. Thanks, eagle eyes :-)
+> > > The busy loop does exists, when bdi is congested.
+> > > In this case, write_cache_pages() will refuse to write anything,
+> > > we used to be calling congestion_wait() to take a breath, but now
+> > > wb_writeback() purged that call and thus created a busy loop.
+> >   I don't think congestion is an issue here. The device needen't be
+> > congested for the busyloop to happen.
+> 
+> bdi congestion is a different case. When there are only one syncing
+> thread, b_more_io inodes won't have I_SYNC, so your patch is a no-op.
+> wb_writeback() or any of its sub-routines must wait/yield for a while
+> to avoid busy looping on the congestion. Where is the wait with Jens'
+> new code?
+  I agree someone must wait when we bail out due to congestion. But we bail
+out only when wbc->nonblocking is set. So I'd feel that callers setting
+this flag should handle it when we stop the writeback due to congestion.
 
+> Another question is, why wbc.more_io can be ignored for kupdate syncs?
+> I guess it would lead to slow writeback of large files.
+> 
+> This patch reflects my concerns on the two problems.
+> 
+> Thanks,
+> Fengguang
+> ---
+>  fs/fs-writeback.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> --- linux.orig/fs/fs-writeback.c	2009-09-20 10:44:25.000000000 +0800
+> +++ linux/fs/fs-writeback.c	2009-09-21 08:53:09.000000000 +0800
+> @@ -818,8 +818,10 @@ static long wb_writeback(struct bdi_writ
+>  		/*
+>  		 * If we ran out of stuff to write, bail unless more_io got set
+>  		 */
+> -		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+> -			if (wbc.more_io && !wbc.for_kupdate)
+> +		if (wbc.nr_to_write > 0) {
+> +			if (wbc.encountered_congestion)
+> +				congestion_wait(BLK_RW_ASYNC, HZ);
+> +			if (wbc.more_io)
+>  				continue;
+>  			break;
+>  		}
+  OK, this change looks reasonable but I think we'll have to revisit
+the writeback logic more in detail as we discussed in the other thread.
+
+									Honza
 -- 
-Jens Axboe
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
