@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751266AbZIUEFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751849AbZIUELR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751266AbZIUEFn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 00:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZIUEFm
+	id S1751849AbZIUELR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 00:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZIUELP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 00:05:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53132 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750782AbZIUEFm (ORCPT
+	Mon, 21 Sep 2009 00:11:15 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:36451 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbZIUELO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 00:05:42 -0400
-Date: Sun, 20 Sep 2009 21:04:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Michael Hennerich <michael.hennerich@analog.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [Uclinux-dist-devel] [PATCH] input/keyboard: new driver for 
- ADP5520 MFD PMICs
-Message-Id: <20090920210451.60ad1b1f.akpm@linux-foundation.org>
-In-Reply-To: <8bd0f97a0909201540t25dd2337o15ebe63a2a9ca4ec@mail.gmail.com>
-References: <1253211850-29309-1-git-send-email-vapier@gentoo.org>
-	<20090919233044.8361a912.akpm@linux-foundation.org>
-	<8bd0f97a0909201540t25dd2337o15ebe63a2a9ca4ec@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 Sep 2009 00:11:14 -0400
+X-IronPort-AV: E=Sophos;i="4.44,422,1249272000"; 
+   d="scan'208";a="6608320"
+Subject: [PATCH v2][bfin-sport-uart] Walk around RX underflow hardware
+	issue in 32-bit SPORT RX reading
+From: sonic zhang <sonic.adi@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Serial <linux-serial@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 21 Sep 2009 12:11:58 +0800
+Message-ID: <1253506318.22138.13.camel@eight.analog.com>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009 18:40:41 -0400 Mike Frysinger <vapier.adi@gmail.com> wrote:
+If another interrupt fires while doing a 32-bit read from RX FIFO,
+a fake RX underflow error will be generated.  So disable interrupts
+to prevent interruption while reading the FIFO.
 
-> On Sun, Sep 20, 2009 at 02:30, Andrew Morton wrote:
-> > On Thu, 17 Sep 2009 14:24:10 -0400 Mike Frysinger wrote:
-> >> +struct adp5520_keys {
-> >> + __ __ struct input_dev *input;
-> >> + __ __ struct notifier_block notifier;
-> >> + __ __ struct device *master;
-> >> + __ __ unsigned short keycode[ADP5520_KEYMAPSIZE];
-> >
-> > Where is ADP5520_KEYMAPSIZE defined?
-> 
-> all these things are in the common mfd adp5520 patch.  it introduces a
-> common adp5520 header.
 
-err, what common MFD patch?  There was nothing in either the changelog
-nor the patch title which indicated that this patch had a dependency on
-other patches.  This makes things harder for mergers and reviewers,
-especially when the patchset hits multiple subsystems, maintained by
-multiple developers.
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+---
+ drivers/serial/bfin_sport_uart.h |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
 
-Probably the best way to handle this sort of thing is to present it as a
-sequence-numbered patch series with well-chosen cc's and an overall
-description of the dependencies and perhaps the merge plan in [patch
-0/n].
+diff --git a/drivers/serial/bfin_sport_uart.h b/drivers/serial/bfin_sport_uart.h
+index 671d41c..f4e5a83 100644
+--- a/drivers/serial/bfin_sport_uart.h
++++ b/drivers/serial/bfin_sport_uart.h
+@@ -43,7 +43,21 @@
+ #define SPORT_GET_TFSDIV(sport)		bfin_read16(((sport)->port.membase + OFFSET_TFSDIV))
+ #define SPORT_GET_TX(sport)		bfin_read16(((sport)->port.membase + OFFSET_TX))
+ #define SPORT_GET_RX(sport)		bfin_read16(((sport)->port.membase + OFFSET_RX))
+-#define SPORT_GET_RX32(sport)		bfin_read32(((sport)->port.membase + OFFSET_RX))
++/*
++ * If another interrupt fires while doing a 32-bit read from RX FIFO,
++ * a fake RX underflow error will be generated.  So disable interrupts
++ * to prevent interruption while reading the FIFO.
++ * Once hardware design can root cause and officially log this, we can
++ * update the code to use a standard ANOMALY_XXX define.
++ */
++#define SPORT_GET_RX32(sport)  \
++({                             \
++	unsigned int __ret;             \
++	local_irq_disable();    \
++	__ret = bfin_read32(((sport)->port.membase + OFFSET_RX));       \
++	local_irq_enable();     \
++	__ret;                  \
++})
+ #define SPORT_GET_RCR1(sport)		bfin_read16(((sport)->port.membase + OFFSET_RCR1))
+ #define SPORT_GET_RCR2(sport)		bfin_read16(((sport)->port.membase + OFFSET_RCR2))
+ #define SPORT_GET_RCLKDIV(sport)	bfin_read16(((sport)->port.membase + OFFSET_RCLKDIV))
+-- 
+1.6.0
+
+
 
