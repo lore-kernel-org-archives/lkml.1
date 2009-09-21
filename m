@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZIUOzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZIUPIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524AbZIUOzR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 10:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbZIUOzI
+	id S1756547AbZIUPIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 11:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbZIUPIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 10:55:08 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:52132 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751716AbZIUOzF (ORCPT
+	Mon, 21 Sep 2009 11:08:18 -0400
+Received: from mail-yw0-f194.google.com ([209.85.211.194]:48012 "EHLO
+	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756344AbZIUPIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 10:55:05 -0400
-Date: Mon, 21 Sep 2009 16:55:08 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: bart.vanassche@gmail.com, kyle@moffetthome.net, sam@ravnborg.org,
-       neilb@suse.de, knikanth@suse.de, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, philipp.reisner@linbit.com,
-       hch@infradead.org, Mauelshagen@RedHat.com, James.Bottomley@suse.de,
-       lmb@suse.de, kosaki.motohiro@jp.fujitsu.com, jens.axboe@oracle.com,
-       davej@RedHat.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, drbd-dev@lists.linbit.com
-Subject: Re: [Drbd-dev] [GIT PULL] DRBD for 2.6.32
-Message-ID: <20090921145508.GH8072@barkeeper1-xen.linbit>
-Mail-Followup-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	bart.vanassche@gmail.com, kyle@moffetthome.net, sam@ravnborg.org,
-	neilb@suse.de, knikanth@suse.de, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, philipp.reisner@linbit.com,
-	hch@infradead.org, Mauelshagen@RedHat.com, James.Bottomley@suse.de,
-	lmb@suse.de, kosaki.motohiro@jp.fujitsu.com, jens.axboe@oracle.com,
-	davej@redhat.com, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org, drbd-dev@lists.linbit.com
-References: <20090918200803.GM23126@kernel.dk> <20090919141334N.fujita.tomonori@lab.ntt.co.jp> <20090919220232.GB31849@suse.de> <20090921223815U.fujita.tomonori@lab.ntt.co.jp> <20090921144308.GG8072@barkeeper1-xen.linbit>
+	Mon, 21 Sep 2009 11:08:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=b8LL23GyZN/PRWctv87alaKATe+SNTCy4U+9+tOu/CIRkG8IDyIlFf/h38vpCVO4my
+         vyRdGTfwRKVW2+NUy786A68xZeqZKFW258U3IQdoFivOS8UsPcuw/jCVgAFiXDdki+wC
+         ODHCsDgRfT3xSimqwivbE1vksOtnHlB3HMnTQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090921144308.GG8072@barkeeper1-xen.linbit>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Tue, 22 Sep 2009 00:00:51 +0900
+Message-ID: <2f11576a0909210800l639560e4jad6cfc2e7f74538f@mail.gmail.com>
+Subject: a patch drop request in -mm
+From: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 04:43:08PM +0200, Lars Ellenberg wrote:
-> > > > BTW, DM already has something like drbd? I thought that there is a
-> > > > talk about that new target at LinuxCon.
+Mel,
 
-...
+Today, my test found following patch makes false-positive warning.
+because, truncate can free the pages
+although the pages are mlock()ed.
 
-> If any of you happens to be at LinuxCon,
-> please discuss with Heinz (Maulshagen, dm-replicator)
-> and Phil (Reisner, DRBD), who both are present.
-> 
-> Heinz' talk about replicator is scheduled today, 10:30 am, 
+So, I think following patch should be dropped.
+.. or, do you think truncate should clear PG_mlock before free the page?
 
-And, Phil does a session about DRBD tomorrow,
- Tue 22. Sep, 2:45 pm
+Can I ask your patch intention?
 
-So, two good opportunities,
-for anyone who happens to be at or near LinuxCon, Portland.
 
-	Lars
+=============================================================
+commit 7a06930af46eb39351cbcdc1ab98701259f9a72c
+Author: Mel Gorman <mel@csn.ul.ie>
+Date:   Tue Aug 25 00:43:07 2009 +0200
+
+    When a page is freed with the PG_mlocked set, it is considered an
+    unexpected but recoverable situation.  A counter records how often this
+    event happens but it is easy to miss that this event has occured at
+    all.  This patch warns once when PG_mlocked is set to prompt debuggers
+    to check the counter to see how often it is happening.
+
+    Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+    Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+    Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 28c2f3e..251fd73 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -494,6 +494,11 @@ static inline void __free_one_page(struct page *page,
+  */
+ static inline void free_page_mlock(struct page *page)
+ {
++       WARN_ONCE(1, KERN_WARNING
++               "Page flag mlocked set for process %s at pfn:%05lx\n"
++               "page:%p flags:%#lx\n",
++               current->comm, page_to_pfn(page),
++               page, page->flags|__PG_MLOCKED);
+        __dec_zone_page_state(page, NR_MLOCK);
+        __count_vm_event(UNEVICTABLE_MLOCKFREED);
+ }
