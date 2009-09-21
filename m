@@ -1,88 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbZIUNTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZIUNEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756166AbZIUNTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 09:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZIUNTl
+	id S1756075AbZIUNEe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbZIUNEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 09:19:41 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:48405 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756120AbZIUNTj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 09:19:39 -0400
-X-Greylist: delayed 458 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 09:19:38 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=KD3MLP9iG+E9k5IHo8hDSgocie5A41DonnWk5bu/0aHcI8Qe9kB3v0u8nTbCFr5Mi5
-         eKsj3RKD608P99GKyJSoJmZoNlP2t1+8WQSymN+M09+oY7DMSsSdVFOPdRemS/V8FbZN
-         Wk/vw5Fi536KgWOdyf1KdZ7Saj6IAXbGN4Yfs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: ipw2200: firmware DMA loading rework
-Date: Mon, 21 Sep 2009 15:12:14 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-06456-g78f28b7-dirty; KDE/4.3.1; i686; ; )
-Cc: Mel Gorman <mel@csn.ul.ie>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Tso Ted <tytso@mit.edu>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@skynet.ie>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       James Ketrenos <jketreno@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <200909211246.34774.bzolnier@gmail.com> <1253530608.5216.17.camel@penberg-laptop>
-In-Reply-To: <1253530608.5216.17.camel@penberg-laptop>
+	Mon, 21 Sep 2009 09:04:34 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59199 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756000AbZIUNEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:04:33 -0400
+Message-ID: <4AB77BEF.1050207@redhat.com>
+Date: Mon, 21 Sep 2009 16:13:19 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-Message-Id: <200909211512.14785.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] ksm: fix rare page leak
+References: <Pine.LNX.4.64.0909211336300.4809@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0909211336300.4809@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 September 2009 12:56:48 Pekka Enberg wrote:
-> On Mon, 2009-09-21 at 12:46 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > > I don't know why people don't see it but for me it has a memory management
-> > > > regression and reliability issue written all over it.
-> > > 
-> > > Possibly but drivers that reload their firmware as a response to an
-> > > error condition is relatively new and loading network drivers while the
-> > > system is already up and running a long time does not strike me as
-> > > typical system behaviour.
-> > 
-> > Loading drivers after boot is a typical desktop/laptop behavior, please
-> > think about hotplug (the hardware in question is an USB dongle).
-> 
-> Yeah, I wonder what broke things. Did the wireless stack change in
-> 2.6.31-rc1 too? IIRC Mel ruled out page allocator changes as a suspect.
+Hugh Dickins wrote:
+> In the rare case when stable_tree_insert() finds a match when the prior
+> stable_tree_search() did not, it forgot to free the page reference (the
+> omission looks intentional, but I think that's because something else
+> used to be done there).
+>
+> Fix that by one put_page() for all three cases, call it tree_page
+> rather than page2[0], clarify the comment on this exceptional case,
+> and remove the comment in stable_tree_search() which contradicts it!
+>   
 
-The thing is that the mm behavior change has been narrowed down already
-over a month ago to -mm merge in 2.6.31-rc1 (as has been noted in my initial
-reports), I first though that that it was -next breakage but it turned out
-that it came the other way around (because -mm is not even pulled into -next
-currently -- great way to set an example for other kernel maintainers BTW).
+I feel small embarrassment, I probably copy-pasted the body of 
+unstable_tree_search_insert() when I wrote it.
+Good catch Hugh.
 
-I understand that behavior change may be justified and technically correct
-in itself.  I also completely agree that high order allocations in certain
-drivers need fixing anyway.
-
-However there is something wrong with the big picture and the way changes
-are happening.  I'm not saying that I'm surprised though, especially given
-the recent decline in the quality assurance and the paradigm shift that
-I'm seeing (some influential top level people talking that -rc1 is fine for
-testing new code now or the "new kernel new hardware" thing).
-
-Sorry but I have no more time currently to narrow down the issue some more
-(guess what, there are other kernel bugs standing in the way to bisect it
-and I would have to provide some reliable way to reproduce it first) so I
-see no more point in wasting people's time on this.  I can certainly get by
-with allocation failure here and there.  Not a big deal for me personally..
+Acked-by: Izik Eidus <ieidus@redhat.com>
