@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbZIUQKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbZIUQK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752535AbZIUQKm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZIUQKb
+	id S1752611AbZIUQK7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbZIUQK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:10:31 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41572 "EHLO gir.skynet.ie"
+	Mon, 21 Sep 2009 12:10:28 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54929 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbZIUQK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751251AbZIUQK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Sep 2009 12:10:26 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>
-Cc: heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>, Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/3] slqb: Allow SLQB to be used on PPC
-Date: Mon, 21 Sep 2009 17:10:26 +0100
-Message-Id: <1253549426-917-4-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1253549426-917-1-git-send-email-mel@csn.ul.ie>
-References: <1253549426-917-1-git-send-email-mel@csn.ul.ie>
+In-Reply-To: <alpine.LRH.2.00.0909211539520.16077@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0909211539520.16077@vixen.sonytel.be>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <87FFD936-384D-4A04-AD6D-90BBDD3DAD18@kernel.crashing.org>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux Test Project <Ltp-list@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [LTP] mmapstress03 weirdness? (fwd)
+Date: Mon, 21 Sep 2009 18:10:32 +0200
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SLQB was disabled on PPC as it would stab itself in the face when running
-on machines with CPUs on memoryless nodes. As those configurations should
-now work, allow SLQB to be configured again on PPC.
+>         if (mmap((caddr_t)(1UL << (POINTER_SIZE  - 1)) - pagesize,
+>                 (size_t)((1UL << (POINTER_SIZE - 1)) - pagesize),
+>                 PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_FIXED| 
+> MAP_SHARED, 0, 0)
+>                 != (caddr_t)-1)
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- init/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> With 32-bit userland, this boils down to:
+>
+> | mmap addr 0x7fff0000 size 0x7fff0000
+> | mmap returned 0x7fff0000
+>
+> i.e. mmap() succeeds,
 
-diff --git a/init/Kconfig b/init/Kconfig
-index adc10ab..8f55fde 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1033,7 +1033,7 @@ config SLUB
- 
- config SLQB
- 	bool "SLQB (Queued allocator)"
--	depends on !PPC && !S390
-+	depends on !S390
- 	help
- 	  SLQB is a proposed new slab allocator.
- 
--- 
-1.6.3.3
+Yes, on a powerpc64 kernel, every 32-bit userspace process has 4GB
+available (well, except the lowest few pages).  The process text sits
+normally at 1M and the shared libs around 256M.
+
+> but (1) the test expects it to fail, so the test returns
+> TFAIL,
+
+That's a bug in the test then.
+
+> but (2) ltp-pan still reports that the tests passed?
+
+Sounds like another bug.
+
+> In addition, sometimes mmapstress03 fails due to SEGV. I created a  
+> small test
+> program that just does the above mmap(), and depending on the  
+> distro and what
+> else I print later it crashes with a SEGV, too. Probably this  
+> happens because
+> the mmap() did succeed, and corrupted some existing mappings,
+
+It probably killed the stack, which sits all the way up near 4G.
+
+> JFYI, with 64-bit userland, this boils down to:
+>
+> | mmap addr 0x7fffffffffff0000 size 0x7fffffffffff0000
+> | mmap returned 0xffffffffffffffff
+>
+> i.e. mmap() fails as expected, and the test succeeds.
+
+It tries to map space that is reserved for the kernel (c000...)
+
+> Does all of this sound OK?
+
+Seems to me everything works fine, except the tests themselves.
+
+
+Segher
 
