@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZIUXZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbZIUXhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbZIUXZL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 19:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZIUXZF
+	id S1754486AbZIUXhR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbZIUXhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 19:25:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:15709 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754309AbZIUXZE convert rfc822-to-8bit (ORCPT
+	Mon, 21 Sep 2009 19:37:15 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:4718 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754385AbZIUXhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 19:25:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,427,1249282800"; 
-   d="scan'208";a="190094133"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: David Rientjes <rientjes@google.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       "ebmunson@us.ibm.com" <ebmunson@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>,
-       "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "rth@twiddle.net" <rth@twiddle.net>,
-       "ink@jurassic.park.msu.ru" <ink@jurassic.park.msu.ru>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 21 Sep 2009 16:25:05 -0700
-Subject: RE: [PATCH] remove duplicate asm/mman.h files
-Thread-Topic: [PATCH] remove duplicate asm/mman.h files
-Thread-Index: Aco7DpSdHaW9EuyXSqqXWDc83BCZwQAApqCg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E29CC3F1@orsmsx505.amr.corp.intel.com>
-References: <cover.1251197514.git.ebmunson@us.ibm.com>
- <200909181848.42192.arnd@arndb.de>
- <alpine.DEB.1.00.0909181236190.27556@chino.kir.corp.google.com>
- <200909211031.25369.arnd@arndb.de>
- <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0909211258570.7831@sister.anvils>
- <alpine.DEB.1.00.0909211553000.30561@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.00.0909211553000.30561@chino.kir.corp.google.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 21 Sep 2009 19:37:14 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: Nikos Chantziaras <realnc@arcor.de>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: Poor desktop responsiveness with background I/O-operations
+In-Reply-To: <4AB8027A.1040600@arcor.de> (Nikos Chantziaras's message of "Tue,
+	22 Sep 2009 01:47:22 +0300")
+References: <4AB59CBB.8090907@datenparkplatz.de>
+	<20090920080728.73bfe2a1@infradead.org>
+	<4AB5ECD0.7010903@datenparkplatz.de>
+	<1253475521.9224.43.camel@marge.simson.net>
+	<4AB6C73C.1030004@gmail.com>
+	<1253507034.23414.90.camel@marge.simson.net>
+	<4AB72FDC.5090403@datenparkplatz.de>
+	<1253520364.25640.57.camel@marge.simson.net>
+	<m3tyyw6pvz.fsf@lugabout.jhcloos.org> <4AB8027A.1040600@arcor.de>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.50 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2009 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Mon, 21 Sep 2009 19:34:50 -0400
+Message-ID: <m38wg73m8d.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Is it perhaps the case that some UNIX on ia64 does implement MAP_GROWSUP,
->> and these numbers in the Linux ia64 mman.h have been chosen to match that
->> reference implementation?  Tony will know.  But I wonder if you'd do
->> better at least to leave a MAP_GROWSUP comment on that line, so that
->> somebody doesn't go and reuse the empty slot later on.
->> 
->
-> Reserving the bit from future use by adding a comment may be helpful, but 
-> then let's do it for MAP_GROWSDOWN too.
+>>>>> "Nikos" == Nikos Chantziaras <realnc@arcor.de> writes:
 
-Tony can only speculate because this bit has been in asm/mman.h
-since before I started working on Linux (it is in the 2.4.0
-version ... which is roughly when I started ... and long before
-I was responsible for it).
+Nikos> On 09/21/2009 10:47 PM, James Cloos wrote:
+>> is a great way to trigger the problem.  As is using Gentoo's portage
+>> to install/upgrade anything.
 
-Perhaps it was assumed that it would be useful?  Linux/ia64 does
-use upwardly growing memory areas (the h/w register stack engine
-saves "stack" registers to an area that grows upwards).
+Nikos> Fortunately, this is completely (at least here) solved by putting
+Nikos> those in make.conf:
 
-But since we have survived this long without it actually being
-implemented, it may be true that we don't really need it after
-all.
+Nikos> PORTAGE_NICENESS=19
+Nikos> PORTAGE_IONICE_COMMAND="ionice -c 3 -p \${PID}"
 
--Tony
+I had NICENESS set, but had never noticed that PORTAGE_IONICE_COMMAND
+was available.  I'll give that a test.  Thanks.
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
