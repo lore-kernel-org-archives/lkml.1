@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbZIUC4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbZIUDGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbZIUC4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 22:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZIUC4P
+	id S1755641AbZIUDGR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 23:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbZIUDGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 22:56:15 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54827 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754720AbZIUC4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 22:56:14 -0400
-Message-ID: <4AB6EB1C.5090106@cn.fujitsu.com>
-Date: Mon, 21 Sep 2009 10:55:24 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 20 Sep 2009 23:06:12 -0400
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:53063 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755046AbZIUDGM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 23:06:12 -0400
+X-Greylist: delayed 479 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Sep 2009 23:06:12 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qQmYTrNX92f0C2fvqzmqDUpZNCRa9TXZg7bBC62djbUFoCGJwn9DNMP20XH7lmNuX5
+         GlU9xPTsl2YEz0wLsAb8Z4LYRcb7taU7SSSzA3u+F5xBnoMMBNbTaNurwXQpWZat7KLV
+         rEDgA+ClP80LQYWrdG9O4dv3OJ2vrfhCdMHvI=
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: + generic-ipi-fix-the-race-between-generic_smp_call_function_-and-hotplug_cfd.patch
- added to -mm tree
-References: <200907310030.n6V0Uqgw001644@imap1.linux-foundation.org>	 <1252616988.7205.102.camel@laptop>  <4AAA0001.2060703@cn.fujitsu.com>	 <1252696132.3756.21.camel@sbs-t61.sc.intel.com>	 <4AADEF2F.5080504@cn.fujitsu.com>	 <1252973802.2899.88.camel@sbs-t61.sc.intel.com>	 <4AAEF5DC.4070308@cn.fujitsu.com>	 <1253067602.2667.13.camel@sbs-t61.sc.intel.com>	 <4AB1A652.1010000@cn.fujitsu.com> <1253326599.3948.732.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1253326599.3948.732.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090920150842.GF11621@kroah.com>
+References: <ac3eb2510909171526ga51ecfag74af1a34a0437189@mail.gmail.com>
+	 <1253238637.4071.10.camel@yio.site> <20090918060210.GC7104@kroah.com>
+	 <alpine.LFD.2.01.0909180717380.4950@localhost.localdomain>
+	 <20090918150541.GB9307@kroah.com>
+	 <ac3eb2510909180837p195704e4y907e6f564acf6efd@mail.gmail.com>
+	 <ac3eb2510909181235m33846928sa8c790758c66233@mail.gmail.com>
+	 <20090918195005.GA11726@elte.hu>
+	 <21d7e9970909191843l6fbb835bme509c18cedfd728c@mail.gmail.com>
+	 <20090920150842.GF11621@kroah.com>
+Date: Mon, 21 Sep 2009 12:58:16 +1000
+Message-ID: <21d7e9970909201958k5318c319tbc4a664526530271@mail.gmail.com>
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied (Was: 
+	Re: [PATCH] Remove broken by design and by implementation devtmpfs 
+	maintenance disaster)
+From: Dave Airlie <airlied@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Kay Sievers <kay.sievers@vrfy.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Sep 21, 2009 at 1:08 AM, Greg KH <greg@kroah.com> wrote:
+> On Sun, Sep 20, 2009 at 11:43:33AM +1000, Dave Airlie wrote:
+>> >
+>> > Self-contained /dev is great, udev is a total PITA on older distros (on
+>> > this box it sometimes takes 3 minutes for udev to boot ...) so turning
+>> > on devtmpfs and getting something functional in exchange is a big
+>> > selling point IMO.
+>>
+>> udev taking 3 minutes usually means you have a kernel driver bug,
+>> udev doesn't have a sleep for 3 minutes, it loads drivers and usually
+>> waits for them to finish. Since someone decided to merge a stupid
+>> floppy PNP match I've seen a lot of floppyless machines hit a 30sec
+>> udev delay. so many that we disabled the pnp floppy on Fedora.
+>
+> Woah, I've run into this problem as well.  Where is this PNP floppy
+> match so I can disable it?
+>
+http://cvs.fedoraproject.org/viewvc/rpms/kernel/F-12/die-floppy-die.patch?revision=1.1&view=markup
 
+is what we are shipping currently, see if it helps.
 
-Suresh Siddha wrote:
-> On Wed, 2009-09-16 at 20:00 -0700, Xiao Guangrong wrote: 
->> How about manual check/handle pending IPI interruption in the CPU context?
->> like this:
->> --- a/kernel/cpu.c
->> +++ b/kernel/cpu.c
->> @@ -173,6 +173,9 @@ static int __ref take_cpu_down(void *_param)
->>  	struct take_cpu_down_param *param = _param;
->>  	int err;
->>  
->> +	generic_smp_call_function_interrupt();
->> +	generic_smp_call_function_single_interrupt();
->> +
-> 
-> At this place, how will you ensure that the smp_call_function initiated
-> by this dying cpu has reached and got serviced at its destination?
-> 
-
-Suresh, sorry for my poor English, Do you mean that how we ensure it has
-pending IPI request in the dying cpu?
-
-generic_smp_call_function_*() will check it, if the cpu has pending request,
-then handle it, else directly return.
-
-> All the other cpu's have disabled interrupts in the stop machine state
-> by the time we come here and we can't wait.
-> 
-
-Why we can't wait? It manual check/handle the pending IPI request not wait
-interruption happen.
-
-It not has race here because all cpu's interruption is disabled, and it not
-make stop machine slow because only the dying cpu can enter take_cpu_down(),
-we just wait the dying cpu handle it's pending request. 
-
-Am I misunderstand something?
-
-Thanks,
-Xiao
- 
+Dave.
