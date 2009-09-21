@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbZIUUDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZIUUFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753740AbZIUUDL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 16:03:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbZIUUDK
+	id S1753759AbZIUUFZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 16:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbZIUUFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 16:03:10 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:36832 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753518AbZIUUDJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 16:03:09 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Henk Martijn <h.h.martijn@gmail.com>, linux-input@vger.kernel.org
-Subject: Re: 2.6.31-0.1-default-07068-g43c1266 lockdep warning and scheduling while atomic BUG
-Date: Mon, 21 Sep 2009 22:04:49 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-References: <1253560490.2934.42.camel@localhost> <4AB7D9B8.6000501@gmail.com>
-In-Reply-To: <4AB7D9B8.6000501@gmail.com>
+	Mon, 21 Sep 2009 16:05:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51164 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753574AbZIUUFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 16:05:23 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs / Novell
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: fanotify as syscalls
+Date: Mon, 21 Sep 2009 22:04:50 +0200
+User-Agent: KMail/1.9.9
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+References: <20090912094110.GB24709@ioremap.net> <200909190000.43556.agruen@suse.de> <1253329471.2630.30.camel@dhcp231-106.rdu.redhat.com>
+In-Reply-To: <1253329471.2630.30.camel@dhcp231-106.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200909212204.50047.oliver@neukum.org>
+Message-Id: <200909212204.51077.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 21. September 2009 21:53:28 schrieb Henk Martijn:
-> This is a i7 based DELL and current git throws the following warning and
-> bug at me during boot:
+On Saturday, 19 September 2009 5:04:31 Eric Paris wrote:
+> Let me start by saying I am agreeing I should pursue subtree
+> notification.  It's what I think everyone really wants.  It's a great
+> idea, and I think you might have a simple way to get close.  Clearly
+> these are avenues I'm willing and hoping to pursue.  Also I say it
+> again, I believe the interface as proposed (except maybe some of my
+> exclusion stuff) is flexible enough to implement any of these ideas.
+> Does anyone disagree?
 
-Please try this patch
+It does seem flexible enough. However, the current interface assumes "global" 
+listeners (the mask argument of fanotify_init):
 
-	Regards
-		Oliver
+  int fanotify_init(int flags, int f_flags, __u64 mask,
+		    unsigned int priority);
 
---
+Once subtree support is added, this parameter becomes obsolete. That's pretty 
+broken for a syscall yet to be introduced.
 
-commit ca5c4a1397d1a1c0d1074f4d8922630fdd732780
-Author: Oliver Neukum <oliver@neukum.org>
-Date:   Mon Sep 21 22:02:01 2009 +0200
+> BUT to solve one of the main problems fanotify is intending to solve it
+> needs a way to be the 'fscking all notifier.'  It needs to be the whole
+> damn system.
 
-    hid:usbhid: fix wrong use of GFP_KERNEL
-    
-    hid_input_report() must be told it is called in interrupt context
+Think of a system after boot, with a single global namespace. Whatever you 
+access by filename is reachable from the namespace root. At this point, 
+nothing more global exists. A listener can watch the mount points of 
+interest, and everything's fine.
 
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index 1b0e07a..ab2869d 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -455,7 +455,7 @@ static void hid_ctrl(struct urb *urb)
- 		if (usbhid->ctrl[usbhid->ctrltail].dir == USB_DIR_IN)
- 			hid_input_report(urb->context,
- 				usbhid->ctrl[usbhid->ctrltail].report->type,
--				urb->transfer_buffer, urb->actual_length, 0);
-+				urb->transfer_buffer, urb->actual_length, 1);
- 		break;
- 	case -ESHUTDOWN:	/* unplug */
- 		unplug = 1;
+What's a bit more tricky is to ensure that this listener will continue to 
+receive all events from whatever else is mounted anywhere, irrespective of 
+namespaces. I think we can get there.
 
+By the way, Documentation/filesystems/sharedsubtree.txt describes how 
+filesystem namespaces work.
+
+Thanks,
+Andreas
