@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZIUUfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZIUUlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbZIUUfJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 16:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbZIUUfH
+	id S1752661AbZIUUlL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 16:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbZIUUlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 16:35:07 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:39752 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751232AbZIUUfH (ORCPT
+	Mon, 21 Sep 2009 16:41:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43228 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751474AbZIUUlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 16:35:07 -0400
-Date: Mon, 21 Sep 2009 22:35:09 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemcheck: depend on HAVE_ARCH_KMEMCHECK
-Message-ID: <20090921203509.GA648@Chamillionaire.breakpoint.cc>
-References: <20090628111019.GA15900@Chamillionaire.breakpoint.cc>
- <4A474EFF.5030607@cs.helsinki.fi>
- <19f34abd0907011327h7e90ec68r7ad0ed8666abafac@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <19f34abd0907011327h7e90ec68r7ad0ed8666abafac@mail.gmail.com>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 21 Sep 2009 16:41:08 -0400
+Date: Mon, 21 Sep 2009 13:41:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: rientjes@google.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] oom: dump stack and VM state when oom killer panics
+Message-Id: <20090921134104.79668479.akpm@linux-foundation.org>
+In-Reply-To: <20090918092427.8E48.A69D9226@jp.fujitsu.com>
+References: <alpine.DEB.1.00.0909171354570.17483@chino.kir.corp.google.com>
+	<20090918092427.8E48.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vegard Nossum | 2009-07-01 22:27:32 [+0200]:
+On Fri, 18 Sep 2009 09:26:37 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
->2009/6/28 Pekka Enberg <penberg@cs.helsinki.fi>:
->> Sebastian Andrzej Siewior wrote:
->>>
->>> to make it selectable if it is available
->>>
->>> Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
->>
->> Looks good to me! Thanks.
->>
->> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
->
->Applied, thanks.
+> Hello
+> 
+> > The oom killer header, including information such as the allocation order
+> > and gfp mask, current's cpuset and memory controller, call trace, and VM
+> > state information is currently only shown when the oom killer has
+> > selected a task to kill.
+> > 
+> > This information is omitted, however, when the oom killer panics either
+> > because of panic_on_oom sysctl settings or when no killable task was
+> > found.  It is still relevant to know crucial pieces of information such
+> > as the allocation order and VM state when diagnosing such issues,
+> > especially at boot.
+> > 
+> > This patch displays the oom killer header whenever it panics so that bug
+> > reports can include pertinent information to debug the issue, if
+> > possible.
+> > 
+> > Signed-off-by: David Rientjes <rientjes@google.com>
+> 
+> Good patch :)
+> 
+> I have one request. In panic case, I don't hope to call printk_ratelimit().
+> the infomation should be displayed always.
+> 
 
-This patch did not make it into v31. Do you thing it is possible that it
-will reach v32?
+The code shouldn't be using printk_ratelimit() - in fact nothing should
+be using it and we should remove printk_ratelimit() from the kernel, I
+suspect.
 
->Vegard
+Because it uses global state, so a printk_ratelimit() in some random
+net driver could cause printks from the oom-killer to be suppressed.
 
-Sebastian
+Switching to __ratelimit() would fix such interactions.
