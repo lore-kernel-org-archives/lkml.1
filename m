@@ -1,102 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbZIUMCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbZIUMEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755839AbZIUMCp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 08:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbZIUMCo
+	id S1755896AbZIUMEU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 08:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZIUMET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 08:02:44 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:34995 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752838AbZIUMCn (ORCPT
+	Mon, 21 Sep 2009 08:04:19 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:55258 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754073AbZIUMES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 08:02:43 -0400
-X-Trace: 261256486/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.63.13/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.63.13
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgUFAFUIt0pQKT8N/2dsb2JhbACBU852gjCBawU
-X-IronPort-AV: E=Sophos;i="4.44,424,1249254000"; 
-   d="scan'208";a="261256486"
-Date: Mon, 21 Sep 2009 13:02:44 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: David Rientjes <rientjes@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
-       ebmunson@us.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
-       randy.dunlap@oracle.com, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       linux-ia64@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] remove duplicate asm/mman.h files
-In-Reply-To: <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0909211258570.7831@sister.anvils>
-References: <cover.1251197514.git.ebmunson@us.ibm.com> <200909181848.42192.arnd@arndb.de>
- <alpine.DEB.1.00.0909181236190.27556@chino.kir.corp.google.com>
- <200909211031.25369.arnd@arndb.de> <alpine.DEB.1.00.0909210208180.16086@chino.kir.corp.google.com>
+	Mon, 21 Sep 2009 08:04:18 -0400
+Message-ID: <4AB76BBB.3040703@vlnb.net>
+Date: Mon, 21 Sep 2009 16:04:11 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Joel Becker <joel.becker@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Florian Haas <florian.haas@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       Daniel Walker <dwalker@fifo99.com>
+Subject: Re: [RFC v2 PATCH 0/19] A kernel-level configfs enabled generic target
+ engine for Linux v2.6.32
+References: <1253311656.4498.143.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1253311656.4498.143.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18jtd4rYPSXKZ0VGzoCmQbGYyI4iIgry0mG1PT
+ TMCMrja272+6LjEy5njjm/V41ViZcS4GHyxPVfFCwwxiStNES2
+ zAaXtAjVMIVwTkIhLECPw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Sep 2009, David Rientjes wrote:
-> On Mon, 21 Sep 2009, Arnd Bergmann wrote:
+Nicholas A. Bellinger, on 09/19/2009 02:07 AM wrote:
+> Greetings all,
 > 
-> > > > -#define MCL_CURRENT	1		/* lock all current mappings */
-> > > > -#define MCL_FUTURE	2		/* lock all future mappings */
-> > > > +#define MAP_GROWSUP	0x0200		/* register stack-like segment */
-> > > >  
-> > > >  #ifdef __KERNEL__
-> > > >  #ifndef __ASSEMBLY__
-> > > 
-> > > ia64 doesn't use MAP_GROWSUP, so it's probably not necessary to carry it 
-> > > along with your cleanup.
-> > 
-> > ia64 is the only architecture defining it, nobody uses it in the kernel.
-> > If the ia64 maintainers want to remove it in a separate patch, that
-> > would probably be a good idea.
-> > 
+> This is the second round of request for comments for TCM/ConfigFS v3.2 from lio-core-2.6.git.
+> Thanks to the folks who made comments, and I again invite people to take a look and make
+> recommendations on how the code can be futher improved to use the best available upstream
+> interfaces.
 > 
-> I'll do it then.
+> Also, the standalone patches for TCM v3.2 are now available from:
 > 
-> > I tried not to change the ABI in any way in my patch, and there is
-> > a theoretical possibility that some user space program on ia64 currently
-> > depends on that definition.
-> > 
+> http://kernel.org/pub/linux/kernel/people/nab/target_core_mod-patches/
 > 
-> I don't buy that as justification, if some userspace program uses it based 
-> on the false belief that it actually does what it says, it's probably 
-> better to break their build than perpetuating the lie that it's different 
-> than ~MAP_GROWSDOWN.
+> The first posting from 09112009 can be found here:
 > 
+> http://marc.info/?l=linux-kernel&m=125272088024636
 > 
-> ia64: remove definition for MAP_GROWSUP
+> The changelog since the posting on 09112009, which can be found here:
 > 
-> MAP_GROWSUP is unused.
+> *) Convert to struct mutex for struct sempahore initialized with init_MUTEX() (mentioned by Daniel Walker)
+> *) Convert to struct completion for struct semaphore initialized with init_MUTEX_LOCKED() (mentioned by Daniel Walker)
+> *) Convert to use Kbuild instead of Makefile for drivers/target/ (mentioned by Boaz Harrosh)
+> *) Use include/asm-generic/div64.h for unsigned long long division on 32-bit architectures
+> *) Use include/linux/math64.h for unsigned long long modulo on 32-bit architectures
+> 
+> The lio-core-2.6.git tree can be found here:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+> 
+> More Information about Target_Core_Mod/ConfigFS, and PR and ALUA:
+> 
+> http://www.linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
+> http://www.linux-iscsi.org/index.php/Persistent_Reservations
+> http://www.linux-iscsi.org/index.php/ALUA
+> 
+> The complete v3.x TCM CLI operations set can be found here:
+> 
+> http://www.linux-iscsi.org/index.php/Lio-utils#v3.1_TCM_CLI_operations
+> 
+> Instructions and examples for getting setup:
+> 
+> http://www.linux-iscsi.org/builds/docs/LIO-3.0-Users_Reference_Manual.pdf
+> http://www.linux-iscsi.org/index.php/Howto#Start_target_core_mod
 
-Is it perhaps the case that some UNIX on ia64 does implement MAP_GROWSUP,
-and these numbers in the Linux ia64 mman.h have been chosen to match that
-reference implementation?  Tony will know.  But I wonder if you'd do
-better at least to leave a MAP_GROWSUP comment on that line, so that
-somebody doesn't go and reuse the empty slot later on.
+Nicholas,
 
-Hugh
+In the previous iteration of this patchset I asked you some essential 
+questions about what advantages TCM has over STGT which can't be 
+implemented in STGT and can justify the move from it to TCM, as well as 
+how did you test TCM to claim that TCM is generic and, hence, can work 
+with hardware target adapters (http://lkml.org/lkml/2009/9/15/315). 
+There was no reply answering those questions, instead you keep pushing 
+your patches. (In fact, I received privately even 2 very emotional and 
+offensive replies from Nicholas Bellinger.)
 
-> 
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
-> diff --git a/arch/ia64/include/asm/mman.h b/arch/ia64/include/asm/mman.h
-> --- a/arch/ia64/include/asm/mman.h
-> +++ b/arch/ia64/include/asm/mman.h
-> @@ -11,7 +11,6 @@
->  #include <asm-generic/mman-common.h>
->  
->  #define MAP_GROWSDOWN	0x00100		/* stack-like segment */
-> -#define MAP_GROWSUP	0x00200		/* register stack-like segment */
->  #define MAP_DENYWRITE	0x00800		/* ETXTBSY */
->  #define MAP_EXECUTABLE	0x01000		/* mark it as an executable */
->  #define MAP_LOCKED	0x02000		/* pages are locked */
+So, since there is no reply, I didn't miss anything and there are no 
+points to justify the move from STGT to TCM, and TCM is "generic" only 
+for software iSCSI targets.
+
+For sake of completeness, I should also mention that the move from STGT 
+to TCM is not a move forward, it's a move backward, because TCM doesn't 
+allow creation of backend and target drivers in user space.
+
+Hopefully, somebody more authoritative than I will ask you to stop 
+pushing your patches until you address the above questions.
+
+Vlad
