@@ -1,112 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbZIUCea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZIUCgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754354AbZIUCea (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 22:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZIUCe3
+	id S1754495AbZIUCgN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 22:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZIUCgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 22:34:29 -0400
-Received: from na3sys009aog114.obsmtp.com ([74.125.149.211]:54880 "EHLO
-	na3sys009aog114.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751002AbZIUCe2 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 22:34:28 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
-Date: Sun, 20 Sep 2009 20:34:15 -0600
-Subject: [PATCH 3/12] scsi: megaraid_sas - Add poll mechanism to megaraid
- sas driver (part II)
-Thread-Topic: [PATCH 3/12] scsi: megaraid_sas - Add poll mechanism to
- megaraid sas driver (part II)
-Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQAABfzAANwH1OA=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C35C5123FD@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C51195F@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sun, 20 Sep 2009 22:36:11 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63338 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754049AbZIUCgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 22:36:11 -0400
+Message-ID: <4AB6E651.6050000@cn.fujitsu.com>
+Date: Mon, 21 Sep 2009 10:34:57 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/events: use list_for_entry_continue
+References: <4AB32364.7020602@cn.fujitsu.com> <4AB32389.1030005@cn.fujitsu.com> <20090918150930.GB5200@nowhere>
+In-Reply-To: <20090918150930.GB5200@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add poll support part II -- update the sysfs parameter to tell application driver support AEN poll
+Frederic Weisbecker wrote:
+> On Fri, Sep 18, 2009 at 02:07:05PM +0800, Li Zefan wrote:
+>> Simplify s_next() and t_next().
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>> ---
+> 
+> Nice.
+> I wonder if that can be even more simplified with
+> the following existing seq helpers:
+> 
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+Unfortunately they can't be used here, at least they can't
+help make code simpler, because we need to skip some list
+entries.
 
----
+But we can add seq_list_start_at() and seq_list_next_at(),
+which take a predicate and will return an entry which matches
+the predicate. I thought about it, and I can try it out.
 
-drivers/scsi/megaraid/megaraid_sas.c |   24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
-
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-09-13 09:49:11.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-09-13 10:11:50.000000000 -0400
-@@ -92,7 +92,7 @@ static DEFINE_MUTEX(megasas_async_queue_
-
- static int megasas_poll_wait_aen;
- static DECLARE_WAIT_QUEUE_HEAD(megasas_poll_wait);
--
-+static u32 support_poll_for_event;
- static u32 megasas_dbg_lvl;
-
- /* define lock for aen poll */
-@@ -3432,6 +3432,15 @@ static DRIVER_ATTR(release_date, S_IRUGO
-                   NULL);
-
- static ssize_t
-+megasas_sysfs_show_support_poll_for_event(struct device_driver *dd, char *buf)
-+{
-+       return sprintf(buf, "%u\n", support_poll_for_event);
-+}
-+
-+static DRIVER_ATTR(support_poll_for_event, S_IRUGO,
-+                       megasas_sysfs_show_support_poll_for_event, NULL);
-+
-+static ssize_t
- megasas_sysfs_show_dbg_lvl(struct device_driver *dd, char *buf)
- {
-        return sprintf(buf, "%u\n", megasas_dbg_lvl);
-@@ -3522,6 +3531,8 @@ static int __init megasas_init(void)
-        printk(KERN_INFO "megasas: %s %s\n", MEGASAS_VERSION,
-               MEGASAS_EXT_VERSION);
-
-+       support_poll_for_event = 2;
-+
-        memset(&megasas_mgmt_info, 0, sizeof(megasas_mgmt_info));
-
-        /*
-@@ -3554,6 +3565,12 @@ static int __init megasas_init(void)
-                                  &driver_attr_release_date);
-        if (rval)
-                goto err_dcf_rel_date;
-+
-+       rval = driver_create_file(&megasas_pci_driver.driver,
-+                               &driver_attr_support_poll_for_event);
-+       if (rval)
-+               goto err_dcf_support_poll_for_event;
-+
-        rval = driver_create_file(&megasas_pci_driver.driver,
-                                  &driver_attr_dbg_lvl);
-        if (rval)
-@@ -3570,7 +3587,12 @@ err_dcf_poll_mode_io:
-                           &driver_attr_dbg_lvl);
-err_dcf_dbg_lvl:
-        driver_remove_file(&megasas_pci_driver.driver,
-+                       &driver_attr_support_poll_for_event);
-+
-+err_dcf_support_poll_for_event:
-+       driver_remove_file(&megasas_pci_driver.driver,
-                           &driver_attr_release_date);
-+
- err_dcf_rel_date:
-        driver_remove_file(&megasas_pci_driver.driver, &driver_attr_version);
- err_dcf_attr_ver:
+> extern struct list_head *seq_list_start(struct list_head *head,
+> 		loff_t pos);
+> extern struct list_head *seq_list_start_head(struct list_head *head,
+> 		loff_t pos);
+> extern struct list_head *seq_list_next(void *v, struct list_head *head,
+> 		loff_t *ppos);
+> 
