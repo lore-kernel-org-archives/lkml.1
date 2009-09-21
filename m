@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751861AbZIUQpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZIUQpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751861AbZIUQpK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZIUQpK
+	id S1752884AbZIUQpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbZIUQpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:45:10 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:33739
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751369AbZIUQpI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:45:08 -0400
-X-SpamScore: -21
-X-BigFish: VPS-21(zz1432R98dN9371Pzz1202hzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KQBYIX-01-0QR-02
-X-M-MSG: 
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "'Rusty Russell'" <rusty@rustcorp.com.au>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
-Date: Mon, 21 Sep 2009 11:44:59 -0500
-Subject: RE: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
-Thread-Topic: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
-Thread-Index: AcnqPTsiJSrbeUZPTcanUENrgd2sixQnMCaA
-Message-ID: <DDE95BDD51FB774B804A9C029E735EE10379BEDA33@sausexmbp02.amd.com>
-References: <4A2835D8.6040903@kernel.org>
- <200906101552.17397.rusty@rustcorp.com.au>
- <6453C3CB8E2B3646B0D020C1126132730362099D@sausexmb4.amd.com>
- <200906111204.48441.rusty@rustcorp.com.au>
-In-Reply-To: <200906111204.48441.rusty@rustcorp.com.au>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 21 Sep 2009 12:45:23 -0400
+Received: from mail-yw0-f194.google.com ([209.85.211.194]:37559 "EHLO
+	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751624AbZIUQpT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 12:45:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=bYz++Gul4zBDSuVPPC9bKdZsOCTEFKl1/F6t0vAP3xWBDg95DO7hEVFg3CzCo1aR8L
+         jgnh5yqmbW+g7MPB3MeOyfuGtIOOJ2LdEadyAZzmAdpN5oijV1fTiEIeQdK6dmuD4oUz
+         6W5rvLjpedxf4R27nIvreEve06YH1ZZT/j8jI=
 MIME-Version: 1.0
+In-Reply-To: <20090916050236.GF2756@core.coreip.homeip.net>
+References: <20090915062050.GB10232@core.coreip.homeip.net> 
+	<1253062178-18196-1-git-send-email-vapier@gentoo.org> <20090916050236.GF2756@core.coreip.homeip.net>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 21 Sep 2009 12:45:02 -0400
+Message-ID: <8bd0f97a0909210945s5e3d9613pa7a72271ec6b47bc@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH v2] input/keyboard: add ADP5588 
+	QWERTY I2C Keyboard Input device driver
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       linux-input@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 11 Jun 2009 05:12:16 am Langsdorf, Mark wrote:
-> > > powernow_k8_target is problematic: it grabs a mutex.  cpufreq
-> > > people, is this called often?
-> >
-> > Yes.  It's the function that makes a frequency change
-> > happen, so 5+ times per second per core isn't
-> > unreasonable.
-> 
-> Right, so we need to revisit this.  I'll leave it for the 
-> moment and put it on my TODO list.
+On Wed, Sep 16, 2009 at 01:02, Dmitry Torokhov wrote:
+> On Tue, Sep 15, 2009 at 08:49:38PM -0400, Mike Frysinger wrote:
+>> From: Michael Hennerich <michael.hennerich@analog.com>
+>>
+>> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+>> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+>> ---
+>> v2
+>>       - merge my and Dmitry's clean up fixes
+>>
+>
+> Looks good, I'd also like to add this instead of recalcularing delay
+> every time:
 
-Rusty -
-
-Did you ever get any ideas on a solution to this?  I'm
-getting reports that the set_cpus_allowed_ptr() in
-powernow_k8_target() is breaking with changeset
-ebc79c4f8da0f92efa968e0328f32334a2ce80cf .  I haven't
-changed the powernow_k8 code, so I suspect something
-happened to set_cpus_allowed_ptr().
-
--Mark Langsdorf
-Operating System Research Center
-AMD
+this should continue to work fine with cpu scaling right ?
+-mike
