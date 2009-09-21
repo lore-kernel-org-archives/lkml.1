@@ -1,95 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZIUODm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZIUNhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbZIUODm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 10:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755831AbZIUODl
+	id S1756177AbZIUNhD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 09:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZIUNhC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 10:03:41 -0400
-Received: from mail-yw0-f185.google.com ([209.85.211.185]:42459 "EHLO
-	mail-yw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754073AbZIUODl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 10:03:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=VdFFCDFUAdOiag9fcwGxxLt1R5j5/DuvvYGIRlewxqbGOGVWyixQ7NJ96bDWHhhE0s
-         l+LIdeh+cgFCO4m33r+nGTj6QTeeBknYcLIFN11JbU0DkVxVylC2G3dfSKCUs0XGal0h
-         o6ZzLoc0nLBcD4xUgcTeqfHVb2eYm8uefIssA=
+	Mon, 21 Sep 2009 09:37:02 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49994 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750898AbZIUNg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 09:36:59 -0400
+Date: Mon, 21 Sep 2009 14:37:04 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, Tso Ted <tytso@mit.edu>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@skynet.ie>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       James Ketrenos <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>
+Subject: Re: ipw2200: firmware DMA loading rework
+Message-ID: <20090921133704.GO12726@csn.ul.ie>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <200909211246.34774.bzolnier@gmail.com> <1253530608.5216.17.camel@penberg-laptop> <200909211512.14785.bzolnier@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1253514780.3925.36.camel@adam-desktop>
-References: <1253224997-7422-1-git-send-email-vapier@gentoo.org> 
-	<20090918142911.2d0c4408.akpm@linux-foundation.org> <1253514780.3925.36.camel@adam-desktop>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 21 Sep 2009 09:36:25 -0400
-Message-ID: <8bd0f97a0909210636h655ba305sfef099b0f20a8176@mail.gmail.com>
-Subject: Re: [PATCH 1/2] spi: new SPI bus lock/unlock functions
-To: Li Yi <yi.li@analog.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       cooloney@kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200909211512.14785.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 02:33, Li Yi wrote:
-> On Fri, 2009-09-18 at 14:29 -0700, Andrew Morton wrote:
->> On Thu, 17 Sep 2009 18:03:16 -0400
->> Mike Frysinger <vapier@gentoo.org> wrote:
->>
->> > From: Yi Li <yi.li@analog.com>
->> >
->> > For some MMC cards over SPI bus, it needs to lock the SPI bus for its own
->> > use.  The SPI transfer must not be interrupted by other SPI devices that
->> > share the SPI bus with SPI MMC card.
->> >
->> > This patch introduces 2 APIs for SPI bus locking operation.
->> >
->> > Signed-off-by: Yi Li <yi.li@analog.com>
->> > Signed-off-by: Bryan Wu <cooloney@kernel.org>
->> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->> > ---
->> > Andrew: we've posted these in the past with no response.  could you pick
->> >         them up please ?
->> >
->> >  drivers/spi/spi.c       |   48 +++++++++++++++++++++++++++++++++++++++++++++++
->> >  include/linux/spi/spi.h |    7 ++++++
->> >  2 files changed, 55 insertions(+), 0 deletions(-)
->> >
->> > diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
->> > index 70845cc..b82b8ad 100644
->> > --- a/drivers/spi/spi.c
->> > +++ b/drivers/spi/spi.c
->> > @@ -653,6 +653,54 @@ static void spi_complete(void *arg)
->> >  }
->> >
->> >  /**
->> > + * spi_lock_bus - lock SPI bus for exclusive access
->> > + * @spi: device which want to lock the bus
->> > + * Context: any
->> > + *
->> > + * Once the caller owns exclusive access to the SPI bus,
->> > + * only messages for this device will be transferred.
->> > + * Messages for other devices are queued but not transferred until
->> > + * the bus owner unlock the bus.
->> > + *
->> > + * The caller may call spi_lock_bus() before spi_sync() or spi_async().
->> > + * So this call may be used in irq and other contexts which can't sleep,
->> > + * as well as from task contexts which can sleep.
->>
->> Hence spi_lock_bus() basically has to use a spinning lock?
->>
->> So code which has called spi_lock_bus() cannot sleep until it calls
->> spi_unlock_bus()?
->>
->> That's worth mentioning in the description.
->>
-> Code called spi_lock_bus() _can_ sleep. This is mentioned in the
-> comments.
+On Mon, Sep 21, 2009 at 03:12:14PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Monday 21 September 2009 12:56:48 Pekka Enberg wrote:
+> > On Mon, 2009-09-21 at 12:46 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > > > I don't know why people don't see it but for me it has a memory management
+> > > > > regression and reliability issue written all over it.
+> > > > 
+> > > > Possibly but drivers that reload their firmware as a response to an
+> > > > error condition is relatively new and loading network drivers while the
+> > > > system is already up and running a long time does not strike me as
+> > > > typical system behaviour.
+> > > 
+> > > Loading drivers after boot is a typical desktop/laptop behavior, please
+> > > think about hotplug (the hardware in question is an USB dongle).
+> > 
+> > Yeah, I wonder what broke things. Did the wireless stack change in
+> > 2.6.31-rc1 too? IIRC Mel ruled out page allocator changes as a suspect.
+> 
+> The thing is that the mm behavior change has been narrowed down already
+> over a month ago to -mm merge in 2.6.31-rc1 (as has been noted in my initial
+> reports), I first though that that it was -next breakage but it turned out
+> that it came the other way around (because -mm is not even pulled into -next
+> currently -- great way to set an example for other kernel maintainers BTW).
+> 
 
-should add might_sleep() to the common spi_lock_bus() function then.
--mike
+Is there a reliable reproduction case for this that narrowed it down to
+2.6.31-rc1? That is the window where a number of page-allocator optimisation
+patches made it in. None of them should have affected the allocator from a
+fragmentation perspective though.
+
+If you have a reliable reproduction case, testing between commits
+d239171e4f6efd58d7e423853056b1b6a74f1446..a1dd268cf6306565a31a48deff8bf4f6b4b105f7
+would be nice, particularly if it can be bisected within that small
+window rather than a full bisect of an rc1 which I know can be a major
+mess.
+
+> I understand that behavior change may be justified and technically correct
+> in itself.  I also completely agree that high order allocations in certain
+> drivers need fixing anyway.
+> 
+> However there is something wrong with the big picture and the way changes
+> are happening.  I'm not saying that I'm surprised though, especially given
+> the recent decline in the quality assurance and the paradigm shift that
+> I'm seeing (some influential top level people talking that -rc1 is fine for
+> testing new code now or the "new kernel new hardware" thing).
+> 
+
+The quality assurance comment is a bit unfair with respect to the page
+allocator. There are a lot of things that can have changed that would hose
+order-6 atomic allocations. Furthermore, test cases used for mm patches
+would not have taken into account such allocations as being critical. Even
+if it was considered, it would have been dismissed as "it makes no sense
+for drivers to be doing order-6 GFP_ATOMIC" allocations.
+
+> Sorry but I have no more time currently to narrow down the issue some more
+> (guess what, there are other kernel bugs standing in the way to bisect it
+> and I would have to provide some reliable way to reproduce it first) so I
+> see no more point in wasting people's time on this.  I can certainly get by
+> with allocation failure here and there.  Not a big deal for me personally..
+> 
+
+That is somewhat unfortunate. Even testing within the window above if
+possible would be very helpful if you get the chance.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
