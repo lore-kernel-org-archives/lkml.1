@@ -1,146 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZIUCrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbZIUC4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbZIUCrj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 22:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZIUCrg
+	id S1755246AbZIUC4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 22:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZIUC4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 22:47:36 -0400
-Received: from na3sys009aog106.obsmtp.com ([74.125.149.77]:41474 "EHLO
-	na3sys009aog106.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754508AbZIUCrf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 22:47:35 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
-Date: Sun, 20 Sep 2009 20:47:26 -0600
-Subject: [PATCH 12/12] scsi: megaraid_sas - version and docs update 
-Thread-Topic: [PATCH 12/12] scsi: megaraid_sas - version and docs update 
-Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQAABfzAAAAxetAAAF05EAAATiEQAAAy5GAAAEeYsAAAagLgAABgNiAAAIZ8AAAAe/pAANlh0yA=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C35C512408@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C5119E1@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sun, 20 Sep 2009 22:56:15 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54827 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754720AbZIUC4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 22:56:14 -0400
+Message-ID: <4AB6EB1C.5090106@cn.fujitsu.com>
+Date: Mon, 21 Sep 2009 10:55:24 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mm-commits@vger.kernel.org" <mm-commits@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + generic-ipi-fix-the-race-between-generic_smp_call_function_-and-hotplug_cfd.patch
+ added to -mm tree
+References: <200907310030.n6V0Uqgw001644@imap1.linux-foundation.org>	 <1252616988.7205.102.camel@laptop>  <4AAA0001.2060703@cn.fujitsu.com>	 <1252696132.3756.21.camel@sbs-t61.sc.intel.com>	 <4AADEF2F.5080504@cn.fujitsu.com>	 <1252973802.2899.88.camel@sbs-t61.sc.intel.com>	 <4AAEF5DC.4070308@cn.fujitsu.com>	 <1253067602.2667.13.camel@sbs-t61.sc.intel.com>	 <4AB1A652.1010000@cn.fujitsu.com> <1253326599.3948.732.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <1253326599.3948.732.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the version and documentation
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
 
----
+Suresh Siddha wrote:
+> On Wed, 2009-09-16 at 20:00 -0700, Xiao Guangrong wrote: 
+>> How about manual check/handle pending IPI interruption in the CPU context?
+>> like this:
+>> --- a/kernel/cpu.c
+>> +++ b/kernel/cpu.c
+>> @@ -173,6 +173,9 @@ static int __ref take_cpu_down(void *_param)
+>>  	struct take_cpu_down_param *param = _param;
+>>  	int err;
+>>  
+>> +	generic_smp_call_function_interrupt();
+>> +	generic_smp_call_function_single_interrupt();
+>> +
+> 
+> At this place, how will you ensure that the smp_call_function initiated
+> by this dying cpu has reached and got serviced at its destination?
+> 
 
-Documentation/scsi/ChangeLog.megaraid_sas |   62 ++++++++++++++++++++++++++++++
- drivers/scsi/megaraid/megaraid_sas.c      |    2
- drivers/scsi/megaraid/megaraid_sas.h      |    6 +-
- 3 files changed, 66 insertions(+), 4 deletions(-)
+Suresh, sorry for my poor English, Do you mean that how we ensure it has
+pending IPI request in the dying cpu?
 
-diff -rupN linux-2.6.28_orig/Documentation/scsi/ChangeLog.megaraid_sas linux-2.6.28_new/Documentation/scsi/ChangeLog.megaraid_sas
---- linux-2.6.28_orig/Documentation/scsi/ChangeLog.megaraid_sas 2009-09-15 05:32:34.000000000 -0400
-+++ linux-2.6.28_new/Documentation/scsi/ChangeLog.megaraid_sas  2009-09-15 06:12:38.000000000 -0400
-@@ -1,3 +1,65 @@
-+1 Release Date    : Tues.  July 28, 2009 10:12:45 PST 2009 -
-+                       (emaild-id:megaraidlinux@lsi.com)
-+                       Bo Yang
-+
-+2 Current Version : 00.00.04.12
-+3 Older Version   : 00.00.04.10
-+
-+1.     Change the AEN sys PD update from scsi_scan to
-+       scsi_add_device and scsi_remove_device.
-+2.     Takeoff the debug print-out in aen_polling routine.
-+
-+1 Release Date    : Thur.  July 02, 2009 10:12:45 PST 2009 -
-+                       (emaild-id:megaraidlinux@lsi.com)
-+                       Bo Yang
-+
-+2 Current Version : 00.00.04.10
-+3 Older Version   : 00.00.04.08
-+
-+1.     Add the 3 mins timeout during the controller initialize.
-+2.     Add the fix for 64bit sense date errors.
-+
-+1 Release Date    : Tues. May 05, 2009 10:12:45 PST 2009 -
-+                       (emaild-id:megaraidlinux@lsi.com)
-+                       Bo Yang
-+
-+2 Current Version : 00.00.04.08
-+3 Older Version   : 00.00.04.06
-+
-+1.     Add the fix of pending in FW after deleted the logic drives.
-+2.     Add the fix of deallocating memory after get pdlist.
-+
-+1 Release Date    : Tues. March 26, 2009 10:12:45 PST 2009 -
-+                       (emaild-id:megaraidlinux@lsi.com)
-+                       Bo Yang
-+
-+2 Current Version : 00.00.04.06
-+3 Older Version   : 00.00.04.04
-+
-+1.     Add the fix of the driver cmd empty fix of the driver cmd empty.
-+2.     Add the fix of the driver MSM AEN CMD cause the system slow.
-+
-+1 Release Date    : Tues. March 03, 2009 10:12:45 PST 2009 -
-+                       (emaild-id:megaraidlinux@lsi.com)
-+                       Bo Yang
-+
-+2 Current Version : 00.00.04.04
-+3 Older Version   : 00.00.04.01
-+
-+1.     Add the Tape drive fix to the driver: If the command is for
-+       the tape device, set the pthru timeout to the os layer timeout value.
-+
-+2.     Add Poll_wait mechanism to Gen-2 Linux driv.
-+               In the aen handler, driver needs to wakeup poll handler similar to
-+               the way it raises SIGIO.
-+
-+3.     Add new controller new SAS2 support to the driver.
-+
-+4.     Report the unconfigured PD (system PD) to OS.
-+
-+5.     Add the IEEE SGL support to the driver
-+
-+6.     Reasign the Application cmds to SAS2 controller
+generic_smp_call_function_*() will check it, if the cpu has pending request,
+then handle it, else directly return.
 
- 1 Release Date    : Thur.July. 24 11:41:51 PST 2008 -
-                        (emaild-id:megaraidlinux@lsi.com)
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-09-15 05:32:34.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-09-15 05:33:49.000000000 -0400
-@@ -10,7 +10,7 @@
-  *        2 of the License, or (at your option) any later version.
-  *
-  * FILE                : megaraid_sas.c
-- * Version     : v00.00.04.01-rc1
-+ * Version     : v00.00.04.12-rc1
-  *
-  * Authors:
-  *     (email-id : megaraidlinux@lsi.com)
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-09-15 05:32:34.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-09-15 05:34:40.000000000 -0400
-@@ -18,9 +18,9 @@
- /*
-  * MegaRAID SAS Driver meta data
-  */
--#define MEGASAS_VERSION                                "00.00.04.01"
--#define MEGASAS_RELDATE                                "July 24, 2008"
--#define MEGASAS_EXT_VERSION                    "Thu July 24 11:41:51 PST 2008"
-+#define MEGASAS_VERSION                                "00.00.04.12-rc1"
-+#define MEGASAS_RELDATE                                "Sep. 17, 2009"
-+#define MEGASAS_EXT_VERSION                    "Thu Sep. 17 11:41:51 PST 2009"
+> All the other cpu's have disabled interrupts in the stop machine state
+> by the time we come here and we can't wait.
+> 
 
- /*
-  * Device IDs
+Why we can't wait? It manual check/handle the pending IPI request not wait
+interruption happen.
+
+It not has race here because all cpu's interruption is disabled, and it not
+make stop machine slow because only the dying cpu can enter take_cpu_down(),
+we just wait the dying cpu handle it's pending request. 
+
+Am I misunderstand something?
+
+Thanks,
+Xiao
+ 
