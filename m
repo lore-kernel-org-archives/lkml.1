@@ -1,55 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZIUCgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZIUCif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZIUCgN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Sep 2009 22:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZIUCgL
+	id S1754567AbZIUCif (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Sep 2009 22:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZIUCie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Sep 2009 22:36:11 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63338 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754049AbZIUCgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Sep 2009 22:36:11 -0400
-Message-ID: <4AB6E651.6050000@cn.fujitsu.com>
-Date: Mon, 21 Sep 2009 10:34:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sun, 20 Sep 2009 22:38:34 -0400
+Received: from na3sys009aog112.obsmtp.com ([74.125.149.207]:37047 "EHLO
+	na3sys009aog112.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754018AbZIUCic convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Sep 2009 22:38:32 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
+Date: Sun, 20 Sep 2009 20:38:08 -0600
+Subject: [PATCH 4/12] scsi: megaraid_sas - Add new megaraid SAS 2 controller
+ support to the driver
+Thread-Topic: [PATCH 4/12] scsi: megaraid_sas - Add new megaraid SAS 2
+ controller support to the driver
+Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQAABfzAAAAxetAA2/ywMA==
+Message-ID: <4B6A08C587958942AA3002690DD4F8C35C5123FF@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C511977@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/events: use list_for_entry_continue
-References: <4AB32364.7020602@cn.fujitsu.com> <4AB32389.1030005@cn.fujitsu.com> <20090918150930.GB5200@nowhere>
-In-Reply-To: <20090918150930.GB5200@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Fri, Sep 18, 2009 at 02:07:05PM +0800, Li Zefan wrote:
->> Simplify s_next() and t_next().
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
-> 
-> Nice.
-> I wonder if that can be even more simplified with
-> the following existing seq helpers:
-> 
+Add the new megaraid sas 2 controller to the driver.  megaraid sas2 is LSI next generation SAS products.  driver add the interface to support this product.
 
-Unfortunately they can't be used here, at least they can't
-help make code simpler, because we need to skip some list
-entries.
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-But we can add seq_list_start_at() and seq_list_next_at(),
-which take a predicate and will return an entry which matches
-the predicate. I thought about it, and I can try it out.
+---
+drivers/scsi/megaraid/megaraid_sas.c |  139 +++++++++++++++++++++++++++++++++--
+ drivers/scsi/megaraid/megaraid_sas.h |    4 +
+ 2 files changed, 138 insertions(+), 5 deletions(-)
 
-> extern struct list_head *seq_list_start(struct list_head *head,
-> 		loff_t pos);
-> extern struct list_head *seq_list_start_head(struct list_head *head,
-> 		loff_t pos);
-> extern struct list_head *seq_list_next(void *v, struct list_head *head,
-> 		loff_t *ppos);
-> 
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-09-13 10:17:15.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-09-13 10:46:48.000000000 -0400
+@@ -76,6 +76,10 @@ static struct pci_device_id megasas_pci_
+        /* gen2*/
+        {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0079GEN2)},
+        /* gen2*/
++       {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0073SKINNY)},
++       /* skinny*/
++       {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0071SKINNY)},
++       /* skinny*/
+        {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_VERDE_ZCR)},
+        /* xscale IOP, vega */
+        {PCI_DEVICE(PCI_VENDOR_ID_DELL, PCI_DEVICE_ID_DELL_PERC5)},
+@@ -335,6 +339,99 @@ static struct megasas_instance_template
+ };
+
+ /**
++ * megasas_enable_intr_skinny -        Enables interrupts
++ * @regs:                      MFI register set
++ */
++static inline void
++megasas_enable_intr_skinny(struct megasas_register_set __iomem *regs)
++{
++       writel(0xFFFFFFFF, &(regs)->outbound_intr_mask);
++
++       writel(~MFI_SKINNY_ENABLE_INTERRUPT_MASK, &(regs)->outbound_intr_mask);
++
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_intr_mask);
++}
++
++/**
++ * megasas_disable_intr_skinny -       Disables interrupt
++ * @regs:                      MFI register set
++ */
++static inline void
++megasas_disable_intr_skinny(struct megasas_register_set __iomem *regs)
++{
++       u32 mask = 0xFFFFFFFF;
++       writel(mask, &regs->outbound_intr_mask);
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_intr_mask);
++}
++
++/**
++ * megasas_read_fw_status_reg_skinny - returns the current FW status value
++ * @regs:                      MFI register set
++ */
++static u32
++megasas_read_fw_status_reg_skinny(struct megasas_register_set __iomem *regs)
++{
++       return readl(&(regs)->outbound_scratch_pad);
++}
++
++/**
++ * megasas_clear_interrupt_skinny -    Check & clear interrupt
++ * @regs:                              MFI register set
++ */
++static int
++megasas_clear_intr_skinny(struct megasas_register_set __iomem *regs)
++{
++       u32 status;
++       /*
++        * Check if it is our interrupt
++        */
++       status = readl(&regs->outbound_intr_status);
++
++       if (!(status & MFI_SKINNY_ENABLE_INTERRUPT_MASK)) {
++               return 1;
++       }
++
++       /*
++        * Clear the interrupt by writing back the same value
++        */
++       writel(status, &regs->outbound_intr_status);
++
++       /*
++       * dummy read to flush PCI
++       */
++       readl(&regs->outbound_intr_status);
++
++       return 0;
++}
++
++/**
++ * megasas_fire_cmd_skinny -   Sends command to the FW
++ * @frame_phys_addr :          Physical address of cmd
++ * @frame_count :              Number of frames for the command
++ * @regs :                     MFI register set
++ */
++static inline void
++megasas_fire_cmd_skinny(dma_addr_t frame_phys_addr, u32 frame_count,
++                       struct megasas_register_set __iomem *regs)
++{
++       writel(0, &(regs)->inbound_high_queue_port);
++       writel((frame_phys_addr | (frame_count<<1))|1,
++               &(regs)->inbound_low_queue_port);
++}
++
++static struct megasas_instance_template megasas_instance_template_skinny = {
++
++       .fire_cmd = megasas_fire_cmd_skinny,
++       .enable_intr = megasas_enable_intr_skinny,
++       .disable_intr = megasas_disable_intr_skinny,
++       .clear_intr = megasas_clear_intr_skinny,
++       .read_fw_status_reg = megasas_read_fw_status_reg_skinny,
++};
++
++
++/**
+ *      The following functions are defined for gen2 (deviceid : 0x78 0x79)
+ *      controllers
+ */
+@@ -1587,16 +1684,34 @@ megasas_transition_to_ready(struct megas
+                        /*
+                         * Set the CLR bit in inbound doorbell
+                         */
+-                       writel(MFI_INIT_CLEAR_HANDSHAKE|MFI_INIT_HOTPLUG,
+-                               &instance->reg_set->inbound_doorbell);
++                       if ((instance->pdev->device == \
++                               PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
++                               (instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
++
++                               writel(
++                                 MFI_INIT_CLEAR_HANDSHAKE|MFI_INIT_HOTPLUG,
++                                 &instance->reg_set->reserved_0[0]);
++                       } else {
++                               writel(
++                                   MFI_INIT_CLEAR_HANDSHAKE|MFI_INIT_HOTPLUG,
++                                       &instance->reg_set->inbound_doorbell);
++                       }
+
+                        max_wait = 2;
+                        cur_state = MFI_STATE_WAIT_HANDSHAKE;
+                        break;
+
+                case MFI_STATE_BOOT_MESSAGE_PENDING:
+-                       writel(MFI_INIT_HOTPLUG,
+-                               &instance->reg_set->inbound_doorbell);
++                       if ((instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
++                       (instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
++                               writel(MFI_INIT_HOTPLUG,
++                               &instance->reg_set->reserved_0[0]);
++                       } else
++                               writel(MFI_INIT_HOTPLUG,
++                                       &instance->reg_set->inbound_doorbell);
+
+                        max_wait = 10;
+                        cur_state = MFI_STATE_BOOT_MESSAGE_PENDING;
+@@ -1607,7 +1722,15 @@ megasas_transition_to_ready(struct megas
+                         * Bring it to READY state; assuming max wait 10 secs
+                         */
+                        instance->instancet->disable_intr(instance->reg_set);
+-                       writel(MFI_RESET_FLAGS, &instance->reg_set->inbound_doorbell);
++                       if ((instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
++                               (instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
++                               writel(MFI_RESET_FLAGS,
++                                       &instance->reg_set->reserved_0[0]);
++                       } else
++                               writel(MFI_RESET_FLAGS,
++                                       &instance->reg_set->inbound_doorbell);
+
+                        max_wait = 60;
+                        cur_state = MFI_STATE_OPERATIONAL;
+@@ -2112,6 +2235,8 @@ static int megasas_init_mfi(struct megas
+         * Map the message registers
+         */
+        if ((instance->pdev->device == PCI_DEVICE_ID_LSI_SAS1078GEN2) ||
++               (instance->pdev->device == PCI_DEVICE_ID_LSI_SAS0071SKINNY) ||
++               (instance->pdev->device == PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
+                (instance->pdev->device == PCI_DEVICE_ID_LSI_SAS0079GEN2)) {
+                instance->base_addr = pci_resource_start(instance->pdev, 1);
+        } else {
+@@ -2142,6 +2267,10 @@ static int megasas_init_mfi(struct megas
+                case PCI_DEVICE_ID_LSI_SAS0079GEN2:
+                        instance->instancet = &megasas_instance_template_gen2;
+                        break;
++               case PCI_DEVICE_ID_LSI_SAS0073SKINNY:
++               case PCI_DEVICE_ID_LSI_SAS0071SKINNY:
++                       instance->instancet = &megasas_instance_template_skinny;
++                       break;
+                case PCI_DEVICE_ID_LSI_SAS1064R:
+                case PCI_DEVICE_ID_DELL_PERC5:
+                default:
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-09-13 10:17:15.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-09-13 10:35:03.000000000 -0400
+@@ -30,6 +30,8 @@
+ #define        PCI_DEVICE_ID_LSI_VERDE_ZCR             0x0413
+ #define        PCI_DEVICE_ID_LSI_SAS1078GEN2           0x0078
+ #define        PCI_DEVICE_ID_LSI_SAS0079GEN2           0x0079
++#define        PCI_DEVICE_ID_LSI_SAS0073SKINNY         0x0073
++#define        PCI_DEVICE_ID_LSI_SAS0071SKINNY         0x0071
+
+ /*
+  * =====================================
+@@ -584,6 +586,8 @@ struct megasas_ctrl_info {
+ #define MFI_REPLY_1078_MESSAGE_INTERRUPT       0x80000000
+ #define MFI_REPLY_GEN2_MESSAGE_INTERRUPT       0x00000001
+ #define MFI_GEN2_ENABLE_INTERRUPT_MASK         (0x00000001 | 0x00000004)
++#define MFI_REPLY_SKINNY_MESSAGE_INTERRUPT     0x40000000
++#define MFI_SKINNY_ENABLE_INTERRUPT_MASK       (0x00000001)
+
+ /*
+ * register set for both 1068 and 1078 controllers
