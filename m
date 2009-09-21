@@ -1,96 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbZIUQps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZIUQrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752955AbZIUQps (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 12:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZIUQpr
+	id S1751894AbZIUQrP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 12:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZIUQrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 12:45:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48616 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbZIUQpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 12:45:46 -0400
-Date: Mon, 21 Sep 2009 18:45:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: gorcunov@gmail.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [crash] kernel BUG at net/core/pktgen.c:3503!
-Message-ID: <20090921164538.GA10011@elte.hu>
-References: <20090911.202543.52533792.davem@davemloft.net> <20090915183647.GA11628@elte.hu> <20090915185112.GA17587@lenovo> <20090917.102923.174779685.davem@davemloft.net> <20090917174448.GA9548@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090917174448.GA9548@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 21 Sep 2009 12:47:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44493 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbZIUQrM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 12:47:12 -0400
+Subject: Re: TRACE_EVENT_ABI ?
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       mingo@elte.hu
+In-Reply-To: <20090921152853.2f8c0597@infradead.org>
+References: <20090921093652.0722d745@infradead.org>
+	 <alpine.DEB.2.00.0909210926010.7647@gandalf.stny.rr.com>
+	 <20090921152853.2f8c0597@infradead.org>
+Content-Type: text/plain
+Date: Mon, 21 Sep 2009 12:46:07 -0400
+Message-Id: <1253551567.2630.26.camel@frodo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
+On Mon, 2009-09-21 at 15:28 +0200, Arjan van de Ven wrote:
+> On Mon, 21 Sep 2009 09:26:41 -0400 (EDT)
+> Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> * David Miller <davem@davemloft.net> wrote:
-> 
-> > From: Cyrill Gorcunov <gorcunov@gmail.com>
-> > Date: Tue, 15 Sep 2009 22:51:12 +0400
 > > 
-> > > [Ingo Molnar - Tue, Sep 15, 2009 at 08:36:47PM +0200]
-> > > | 
-> > > | not sure which merge caused this, but i got this boot crash with latest 
-> > > | -git:
-> > > | 
-> > > | calling  flow_cache_init+0x0/0x1b9 @ 1
-> > > | initcall flow_cache_init+0x0/0x1b9 returned 0 after 64 usecs
-> > > | calling  pg_init+0x0/0x37c @ 1
-> > > | pktgen 2.72: Packet Generator for packet performance testing.
-> > > | ------------[ cut here ]------------
-> > > | kernel BUG at net/core/pktgen.c:3503!
-> > > | invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> > > | last sysfs file: 
-> > > | 
-> > > 
-> > > Hi Ingo,
-> > > 
-> > > just curious, will the following patch fix the problem?
-> > > I've been fixing problem with familiar symthoms on
-> > > system with custome virtual cpu implementation so
-> > > it may not help in mainline but anyway :)
+> > [ Resending due to wrong SMTP server ]
 > > 
-> > Ingo, does Cyrill's patch help?
+> > 
+> > On Mon, 21 Sep 2009, Arjan van de Ven wrote:
+> > 
+> > > Hi,
+> > > 
+> > > Ingo suggested to make a TRACE_EVENT_ABI, which is equivalent in
+> > > implementation to TRACE_EVENT, except that it signals a stable
+> > > interface.
+> > > 
+> > > In trying to implement this I'm running into a wall where
+> > > TRACE_EVENT keeps being defined in many different ways all over the
+> > > place, making this a really nasty hack to make it just an alias.
+> > > 
+> > > Do you have any clever ideas on how to make this an alias without
+> > > fouling up the whole tracing system?
+> > > 
+> > 
+> > I don't know what you've done so far, but can't you simply in
+> > tracepoint.h define:
+> > 
+> > #define TRACE_EVENT_API(a,b,c,d,e) TRACE_EVENT(a,b,c,d,e)
 > 
-> For now i've turned pktgen off in my tests. Will check it again once 
-> things have calmed down somewhat.
-> 
-> Also, i just tried to reproduce the pktgen crash with latest -git and 
-> the config i sent - no luck, so i cannot test Cyrill's patch either.
-> 
-> Btw., we are seeing some other preempt count and task related 
-> weirdnesses as well in other code, maybe it's related. No good pattern 
-> yet to act upon.
-> 
-> Anyway - please disregard this bugreport until i've investigated it 
-> closer.
+> unfortunately, due to the preprocessor trickery around TRACE_EVENT this
+> completely barfs.
 
-Update: i've further investigated it and this bug was caused by a 
-scheduler bug introduced in this merge window, which got fixed in:
+I forgot to tell you about PARAMS.
 
-  3f04e8c: sched: Re-add lost cpu_allowed check to sched_fair.c::select_task_rq_fair()
+This patch compiled for me;
 
-This bug caused CPU affinities to not work in essence - breaking kthread 
-per-cpu assumptions in net/core/pktgen.c.
+diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+index 63a3f7a..9a983d6 100644
+--- a/include/linux/tracepoint.h
++++ b/include/linux/tracepoint.h
+@@ -280,6 +280,10 @@ static inline void tracepoint_synchronize_unregister(void)
+  * TRACE_EVENT_FN to perform any (un)registration work.
+  */
+ 
++#define TRACE_EVENT_API(name, proto, args, tstruct, assign, print)	\
++	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
++		    PARAMS(tstruct), PARAMS(assign), PARAMS(print))
++
+ #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
+ 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+ #define TRACE_EVENT_FN(name, proto, args, struct,		\
+diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
+index b48f1ad..0ee1eb6 100644
+--- a/include/trace/events/sched.h
++++ b/include/trace/events/sched.h
+@@ -149,7 +149,7 @@ TRACE_EVENT(sched_wakeup_new,
+  * (NOTE: the 'rq' argument is not used by generic trace events,
+  *        but used by the latency tracer plugin. )
+  */
+-TRACE_EVENT(sched_switch,
++TRACE_EVENT_API(sched_switch,
+ 
+ 	TP_PROTO(struct rq *rq, struct task_struct *prev,
+ 		 struct task_struct *next),
 
-I've confirmed this by re-enabling pktgen in my tests and the crash has 
-no reappeared.
 
-Thanks,
-
-	Ingo
