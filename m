@@ -1,130 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbZIUXDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbZIUXJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbZIUXDr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 19:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZIUXDq
+	id S1754360AbZIUXJn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 19:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZIUXJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 19:03:46 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52809 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754181AbZIUXDp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 19:03:45 -0400
-X-Sasl-enc: ooOV5k5Pt9k/pmwa4E+qjnuCv4oSrwy8gW7CyQWxMrJX 1253574227
-Message-ID: <4AB80646.6020008@imap.cc>
-Date: Tue, 22 Sep 2009 01:03:34 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 21 Sep 2009 19:09:42 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47823 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754099AbZIUXJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 19:09:41 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs / Novell
+To: Jamie Lokier <jamie@shareable.org>
+Subject: Re: fanotify as syscalls
+Date: Tue, 22 Sep 2009 01:09:05 +0200
+User-Agent: KMail/1.9.9
+Cc: Eric Paris <eparis@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+References: <20090912094110.GB24709@ioremap.net> <200909212327.20978.agruen@suse.de> <20090921220002.GE14700@shareable.org>
+In-Reply-To: <20090921220002.GE14700@shareable.org>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Matthias Geissert <matthias.geissert@web.de>, Greg KH <greg@kroah.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone VPA-II"
- ?
-References: <Pine.LNX.4.44L0.0909202152420.15304-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0909202152420.15304-100000@netrider.rowland.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig93D456C34221B56F54BB677F"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909220109.05995.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig93D456C34221B56F54BB677F
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tuesday, 22 September 2009 0:00:02 Jamie Lokier wrote:
+> Andreas Gruenbacher wrote:
+> > On Monday, 21 September 2009 22:28:23 Jamie Lokier wrote:
+> > > It would be logical if fanotify could block and ack those [mount &
+> > > umount events] in the same way as it can block and ack other accesses
+> > > (with the usual filtering rules on which inodes trigger events, and
+> > > which don't or are cached).
+> >
+> > Hmm. To me, fanotify is about file contents first of all: this is what
+> > fanotify wants to be able to veto.
+>
+> Surely you don't assume that what constitutes malicious content is
+> independent of it's location and/or name?
 
-Am 21.09.2009 03:59 schrieb Alan Stern:
-> Here's a patch which ought to fix the oops.  I trust it won't cause=20
-> any existing devices to start misbehaving.  Tilman and Matthias, please=
-=20
-> verify that this works okay on your systems.
+If the antimalware vendors want to base their decisions on pathnames then 
+that's their decision, and they can check /proc/self/fd/N. We should be able 
+to treat directory events the same.
 
-It does fix the oops for me. The lines:
+> (See also "echo 'run_virus&' >>.bash_login).
+>
+> Wait a minute.  You don't assume that, otherwise why the interest in
+> subtrees? :-)
+>
+> > Directory events seem reasonable to add for inotify compatibility,
+>
+> Did you see may point about userspace caches and how directory events
+> are fundamental to that - there's no way to build a cache without them?
 
-ipaq 2-2:1.0: usb_probe_interface
-ipaq 2-2:1.0: usb_probe_interface - got id
-ipaq 2-2:1.0: PocketPC PDA converter detected
+Yes, there were some doubts about this appoach. Waiting for your code to 
+demonstrate; an object based cache (e.g., st_dev + st_ino) rather than a 
+pathname based cache would seem more reasonable.
 
-are now followed by
+> > but I see no need for access decisions on them.
+>
+> Please excuse me; I'm a bit confused.  Is fanotify intended just for
+> use by access decision programs, or is the plan now for it to also be
+> a replacement for inotify?  I'm getting conflicting signals about
+> that.
 
-ipaq: probe of 2-2:1.0 failed with error -5
+Inotify doesn't support access decisions. So where's the problem with 
+having "notify only" events for directory / mount / unmount events?
 
-and I end up with only a single
+> If it's just for access decision programs, and if those aren't going
+> to care about location, then there's no need to add directory events
+> to fanotify at all.  But then I'll be demanding subtree support in
+> inotify, please :-)
+>
+> > Even less so for mounts and unmounts.
+>
+>    (as root) mkdir foo; mount dodgy foo -oloop; mount --bind foo/cat
+> /bin/cat
 
-usb 2-2: PocketPC PDA converter now attached to ttyUSB0
-
-instead of two (ttyUSB0 and ttyUSB1) previously.
-
-The device still doesn't work because now rndis_host (which without
-the patch didn't even get a chance to look at the interface) complains:
-
-rndis_host 2-2:1.0: usb_probe_interface
-rndis_host 2-2:1.0: usb_probe_interface - got id
-rndis_host: probe of 2-2:1.0 failed with error -16
-
-But that's a different story which I'll investigate a bit further
-on my own before (if necessary) starting a discussion here.
-
-So from my point of view the patch is fine.
+... and then someone accesses /bin/cat, which triggers a fanotify access 
+decision.
 
 Thanks,
-Tilman
-
-> A better approach might be to test the bInterfaceClass value, but I=20
-> don't know if that would work; there might be some devices using a=20
-> strange value.
->=20
-> Alan Stern
->=20
->=20
->=20
-> Index: usb-2.6/drivers/usb/serial/ipaq.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-2.6.orig/drivers/usb/serial/ipaq.c
-> +++ usb-2.6/drivers/usb/serial/ipaq.c
-> @@ -966,6 +966,15 @@ static int ipaq_calc_num_ports(struct us
->  static int ipaq_startup(struct usb_serial *serial)
->  {
->  	dbg("%s", __func__);
-> +
-> +	/* Some of the devices in ipaq_id_table[] are composite, and we
-> +	 * shouldn't bind to all the interfaces.  This test will rule out
-> +	 * some obviously invalid possibilities.
-> +	 */
-> +	if (serial->num_bulk_in < serial->num_ports ||
-> +			serial->num_bulk_out < serial->num_ports)
-> +		return -ENODEV;
-> +
->  	if (serial->dev->actconfig->desc.bConfigurationValue !=3D 1) {
->  		/*
->  		 * FIXME: HP iPaq rx3715, possibly others, have 1 config that
->=20
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig93D456C34221B56F54BB677F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFKuAZQQ3+did9BuFsRAvK7AJ9t3elPQlg6/5+v8yzk4yJiGPMNRwCeNh8R
-hO2PiLXI/bz7s4TOyM4DFzo=
-=XqQi
------END PGP SIGNATURE-----
-
---------------enig93D456C34221B56F54BB677F--
+Andreas
