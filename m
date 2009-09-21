@@ -1,90 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZIUHcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZIUHdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754307AbZIUHcu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 03:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZIUHcs
+	id S1754645AbZIUHdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 03:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZIUHdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 03:32:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47477 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbZIUHcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 03:32:48 -0400
-Date: Mon, 21 Sep 2009 09:32:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Subject: Re: [tip:perfcounters/core] x86, perf_counter, bts: Optimize BTS
-	overflow handling
-Message-ID: <20090921073232.GC24467@elte.hu>
-References: <20090915130023.A16204@sedona.ch.intel.com> <tip-5622f295b53fb60dbf9bed3e2c89d182490a8b7f@git.kernel.org> <928CFBE8E7CB0040959E56B4EA41A77EC69BA609@irsmsx504.ger.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC69BA609@irsmsx504.ger.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 21 Sep 2009 03:33:19 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48674 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbZIUHdT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 03:33:19 -0400
+Date: Mon, 21 Sep 2009 09:33:28 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jan Kara <jack@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Poor desktop responsiveness with background I/O-operations
+Message-ID: <20090921093328.75ae5519@infradead.org>
+In-Reply-To: <1253517908.25640.37.camel@marge.simson.net>
+References: <4AB59CBB.8090907@datenparkplatz.de>
+	<alpine.LRH.2.00.0909202221010.25928@twin.jikos.cz>
+	<20090920220405.GA395@duck.suse.cz>
+	<1253517908.25640.37.camel@marge.simson.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 21 Sep 2009 09:25:08 +0200
+Mike Galbraith <efault@gmx.de> wrote:
+> I still occasionally see some largish numbers though, and suspect that
+> depends on how much cache was evicted.
 
-* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+if you run latencytop it'll at least tell you what kind of operating
+was going on that hit the delay...
 
-> >-----Original Message-----
-> >From: tip tree robot [mailto:bounces.tip@hpa.at.zytor.com] On Behalf Of tip-bot for Markus Metzger
-> >Sent: Friday, September 18, 2009 9:19 PM
-> >To: linux-tip-commits@vger.kernel.org
-> >Cc: linux-kernel@vger.kernel.org; hpa@zytor.com; mingo@redhat.com; a.p.zijlstra@chello.nl; Metzger,
-> >Markus T; tglx@linutronix.de; mingo@elte.hu
-> >Subject: [tip:perfcounters/core] x86, perf_counter, bts: Optimize BTS overflow handling
-> >
-> >Commit-ID:  5622f295b53fb60dbf9bed3e2c89d182490a8b7f
-> >Gitweb:     http://git.kernel.org/tip/5622f295b53fb60dbf9bed3e2c89d182490a8b7f
-> >Author:     Markus Metzger <markus.t.metzger@intel.com>
-> >AuthorDate: Tue, 15 Sep 2009 13:00:23 +0200
-> >Committer:  Ingo Molnar <mingo@elte.hu>
-> >CommitDate: Fri, 18 Sep 2009 20:43:20 +0200
-> >
-> >x86, perf_counter, bts: Optimize BTS overflow handling
-> >
-> >Draining the BTS buffer on a buffer overflow interrupt takes too
-> >long resulting in a kernel lockup when tracing the kernel.
-> >
-> >Restructure perf_counter sampling into sample creation and sample
-> >output.
-> >
-> >Prepare a single reference sample for BTS sampling and update the
-> >from and to address fields when draining the BTS buffer. Drain the
-> >entire BTS buffer between a single perf_output_begin() /
-> >perf_output_end() pair.
-> >
-> >Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
-> >Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> >LKML-Reference: <20090915130023.A16204@sedona.ch.intel.com>
-> >Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> Ingo,
-> 
-> This change should speed up BTS overflow handling enough to support
-> branch tracing the kernel.
-> Would you please drop 1653192f510bd8114b7b133d7289e6e5c3e95046
-> that disabled kernel tracing to work around the issue.
-
-Please send a proper patch that re-enables the (previously unreliable) 
-aspect of BTS tracing, with a changelog that explains that the feature 
-now works and with an indication that you've tested it.
-
-	Ingo
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
