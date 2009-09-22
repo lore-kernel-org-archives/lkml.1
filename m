@@ -1,61 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbZIVLcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZIVLc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756174AbZIVLcG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755988AbZIVLcE
+	id S1756154AbZIVLc4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755988AbZIVLcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:32:04 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47520 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756164AbZIVLcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:32:00 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/1PNYauVb12G/IRsVABCukItStFdmg7axVYwpY0U
-	dvJ17cFwbX4z8p
-Subject: Re: Poor desktop responsiveness with background I/O-operations
-From: Mike Galbraith <efault@gmx.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: James Cloos <cloos@jhcloos.com>, lkml <linux-kernel@vger.kernel.org>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>
-In-Reply-To: <20090922112246.GA23987@khazad-dum.debian.net>
-References: <20090920080728.73bfe2a1@infradead.org>
-	 <4AB5ECD0.7010903@datenparkplatz.de>
-	 <1253475521.9224.43.camel@marge.simson.net> <4AB6C73C.1030004@gmail.com>
-	 <1253507034.23414.90.camel@marge.simson.net>
-	 <4AB72FDC.5090403@datenparkplatz.de>
-	 <1253520364.25640.57.camel@marge.simson.net>
-	 <m3tyyw6pvz.fsf@lugabout.jhcloos.org>
-	 <1253603193.6875.118.camel@marge.simson.net>
-	 <1253611228.11051.2.camel@marge.simson.net>
-	 <20090922112246.GA23987@khazad-dum.debian.net>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 13:32:00 +0200
-Message-Id: <1253619120.13917.21.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
+	Tue, 22 Sep 2009 07:32:54 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:34028 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756032AbZIVLcy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:32:54 -0400
+Date: Tue, 22 Sep 2009 17:02:53 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Shaohua Li <shaohua.li@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [v6 PATCH 6/7]: POWER: add a default_idle idle loop for POWER.
+Message-ID: <20090922113253.GG7788@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090922112526.GA7788@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090922112526.GA7788@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 08:22 -0300, Henrique de Moraes Holschuh wrote:
-> On Tue, 22 Sep 2009, Mike Galbraith wrote:
-> > On Tue, 2009-09-22 at 09:06 +0200, Mike Galbraith wrote:
-> > > I don't know if distros provide a tool that supports SCHED_IDLE, if so,
-> > > you can use that to set both CPU and IO usage to IDLE class in one go.
-> > 
-> > P.S.  I just remembered, don't use SCHED_IDLE with kernels < 2.6.28.
-> > There are two patches wrt this scheduling class which did not go to the
-> > stable trees less than 2.6.28.
-> 
-> Since 2.6.27 is long-term, maybe they should be sent to 2.6.27?  It is weird
-> to have a long-term stable kernel for which the recommendation is "don't use
-> SCHED_IDLE".
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
 
-Yeah, that's what I thought too, but apparently maintainers didn't think
-SCHED_IDLE was common/important enough.
+In arch/powerpc/kernel/idle.c create a default_idle() routine by moving
+the failover condition of the cpu_idle() idle loop. This is needed by
+cpuidle infrastructure to call default_idle when other idle routines
+are not yet registered. Functionality remains the same, but the code is
+slightly moved around.
 
-	-Mike
 
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig              |    3 +++
+ arch/powerpc/include/asm/system.h |    1 +
+ arch/powerpc/kernel/idle.c        |    6 ++++++
+ 3 files changed, 10 insertions(+)
+
+Index: linux.trees.git/arch/powerpc/Kconfig
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/Kconfig
++++ linux.trees.git/arch/powerpc/Kconfig
+@@ -91,6 +91,9 @@ config ARCH_HAS_ILOG2_U64
+ config ARCH_HAS_CPU_IDLE_WAIT
+ 	def_bool y
+ 
++config ARCH_HAS_DEFAULT_IDLE
++	def_bool y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+Index: linux.trees.git/arch/powerpc/include/asm/system.h
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/include/asm/system.h
++++ linux.trees.git/arch/powerpc/include/asm/system.h
+@@ -218,6 +218,7 @@ extern unsigned long klimit;
+ extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+ 
++extern void default_idle(void);
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+ 
+ /*
+Index: linux.trees.git/arch/powerpc/kernel/idle.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/kernel/idle.c
++++ linux.trees.git/arch/powerpc/kernel/idle.c
+@@ -113,6 +113,12 @@ void cpu_idle_wait(void)
+ }
+ EXPORT_SYMBOL_GPL(cpu_idle_wait);
+ 
++void default_idle(void)
++{
++	HMT_low();
++	HMT_very_low();
++}
++
+ int powersave_nap;
+ 
+ #ifdef CONFIG_SYSCTL
