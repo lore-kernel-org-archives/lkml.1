@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbZIVLpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZIVLrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbZIVLpg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbZIVLpf
+	id S1756205AbZIVLrY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbZIVLrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:45:35 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38078 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756210AbZIVLpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:45:35 -0400
-Date: Tue, 22 Sep 2009 13:45:37 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Theodore Tso <tytso@mit.edu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "jack@suse.cz" <jack@suse.cz>
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
-Message-ID: <20090922114537.GB13887@duck.suse.cz>
-References: <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost> <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090921135321.GD6259@think> <20090922101335.GA27432@localhost> <20090922113055.GI10825@think>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090922113055.GI10825@think>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 22 Sep 2009 07:47:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55329 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756090AbZIVLrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:47:22 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/OvUxem/rOnb7KKn1S3MzAAhLq1CVa806onbh25/
+	9vqSscLn5DZP8J
+Subject: Re: mailing list for trace users
+From: Mike Galbraith <efault@gmx.de>
+To: Avi Kivity <avi@redhat.com>
+Cc: rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
+In-Reply-To: <4AB8B65F.7030602@redhat.com>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>
+	 <4AB8B65F.7030602@redhat.com>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 13:47:21 +0200
+Message-Id: <1253620041.13917.24.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.61
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 22-09-09 07:30:55, Chris Mason wrote:
-> > Yes a more general solution would help. I'd like to propose one which
-> > works in the other way round. In brief,
-> > (1) the VFS give a large enough per-file writeback quota to btrfs;
-> > (2) btrfs tells VFS "here is a (seek) boundary, stop voluntarily",
-> >     before exhausting the quota and be force stopped.
-> > 
-> > There will be two limits (the second one is new):
-> > 
-> > - total nr to write in one wb_writeback invocation
-> > - _max_ nr to write per file (before switching to sync the next inode)
-> > 
-> > The per-invocation limit is useful for balance_dirty_pages().
-> > The per-file number can be accumulated across successive wb_writeback
-> > invocations and thus can be much larger (eg. 128MB) than the legacy
-> > per-invocation number. 
-> > 
-> > The file system will only see the per-file numbers. The "max" means
-> > if btrfs find the current page to be the last page in the extent,
-> > it could indicate this fact to VFS by setting wbc->would_seek=1. The
-> > VFS will then switch to write the next inode.
-> > 
-> > The benefit of early voluntarily yield is, it reduced the possibility
-> > to be force stopped half way in an extent. When next time VFS returns
-> > to sync this inode, it will again be honored the full 128MB quota,
-> > which should be enough to cover a big fresh extent.
+On Tue, 2009-09-22 at 14:34 +0300, Avi Kivity wrote:
+> On 09/22/2009 02:28 PM, Mike Galbraith wrote:
+> > On Tue, 2009-09-22 at 12:13 +0300, Avi Kivity wrote:
+> >
+> >    
+> >> $ perf annotate -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run
+> >>    Error: symbol 'vmx_vcpu_run' not present amongst the samples.
+> >>
+> >> builtin symbols work.
+> >>      
+> > Ah.  Did you reboot or unload/load the module between record and
+> > annotate time?  There is no support for that at the moment.
+> >    
 > 
-> This is interesting, but it gets into a problem with defining what a
-> seek is.  On some hardware they are very fast and don't hurt at all.  It
-> might be more interesting to make timeslices.
-  With simple timeslices there's a problem that the time it takes to submit
-an IO isn't really related to the time it takes to complete the IO.  During
-submission we are limited just by availablity of free requests and sizes of
-request queues (which might be filled by another thread or by us writing
-different inode).
-  But as I described in my other email, we could probably estimate time it
-takes to complete the IO. At least CFQ keeps statistics needed for that. If
-we somehow generalized them and put them into BDI, we could probably use
-them during writeback...
+> No.  Still loaded and running.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Hm, must me a problem with parsing then.  If you add -v -v to the
+command line it'll spit out debug data.  For vmx_vcpu_run you should see
+a line like so if the module was parsed.
+
+new symbol: ffffffffa0065a49 [00000466]: ahci_interrupt, hist: (nil), obj_start: 0x2a49
+
+	-Mike
+
