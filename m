@@ -1,171 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZIVDvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbZIVD4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363AbZIVDvk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 23:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZIVDvh
+	id S1753419AbZIVD4N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 23:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbZIVD4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 23:51:37 -0400
-Received: from mail-yw0-f194.google.com ([209.85.211.194]:65325 "EHLO
-	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbZIVDvg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 23:51:36 -0400
-Message-ID: <4AB8498C.6040804@vflare.org>
-Date: Tue, 22 Sep 2009 09:20:36 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 21 Sep 2009 23:56:12 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51896 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753164AbZIVD4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 23:56:12 -0400
+Date: Tue, 22 Sep 2009 04:56:17 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Ingo Molnar <mingo@elte.hu>
+cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [origin tree build failure] [PATCH] Re: [git pull] drm tree.
+In-Reply-To: <20090921161207.GA9741@elte.hu>
+Message-ID: <alpine.DEB.2.00.0909220450440.7648@skynet.skynet.ie>
+References: <alpine.DEB.2.00.0909210610200.26881@skynet.skynet.ie> <20090921161207.GA9741@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
-Subject: Re: [PATCH 1/4] xvmalloc memory allocator
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org> <1253227412-24342-2-git-send-email-ngupta@vflare.org> <4AB3F60D.2030808@gmail.com>
-In-Reply-To: <4AB3F60D.2030808@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for late reply. I nearly missed this mail. My comments inline.
 
-On 09/19/2009 02:35 AM, Marcin Slusarz wrote:
-> Nitin Gupta wrote:
->> (...)
->> +
->> +/*
->> + * Allocate a memory page. Called when a pool needs to grow.
->> + */
->> +static struct page *xv_alloc_page(gfp_t flags)
->> +{
->> +	struct page *page;
->> +
->> +	page = alloc_page(flags);
->> +	if (unlikely(!page))
->> +		return 0;
->> +
->> +	return page;
->> +}
 > 
-> When alloc_page returns 0 it returns 0, when not - it returns page.
-> Why not call alloc_page directly?
+> there's a new build failure:
 > 
-
-We now call alloc_page() and __free_page directly. Removed these wrappers.
-
->> (...)
->> +/*
->> + * Remove block from freelist. Index 'slindex' identifies the freelist.
->> + */
->> +static void remove_block(struct xv_pool *pool, struct page *page, u32 offset,
->> +			struct block_header *block, u32 slindex)
->> +{
->> +	u32 flindex;
->> +	struct block_header *tmpblock;
-<snip>
->> +
->> +	return;
->> +}
+> drivers/built-in.o: In function `drm_irq_uninstall':
+> (.text+0xb719e): undefined reference to `vga_client_register'
+> drivers/built-in.o: In function `drm_irq_install':
+> (.text+0xb7309): undefined reference to `vga_client_register'
+> drivers/built-in.o: In function `radeon_device_fini':
+> (.text+0xe400f): undefined reference to `vga_client_register'
+> drivers/built-in.o: In function `radeon_device_init':
+> (.text+0xe455b): undefined reference to `vga_client_register'
 > 
-> needless return
+> with the attached config, introduced with upstream merge 44040f1.
 > 
-
-Removed.
-
-
->> +int xv_malloc(struct xv_pool *pool, u32 size, struct page **page,
->> +		u32 *offset, gfp_t flags)
->> +{
->> +	int error;
->> +	
-<snip>
->> +	if (!*page) {
->> +		spin_unlock(&pool->lock);
->> +		if (flags & GFP_NOWAIT)
->> +			return -ENOMEM;
->> +		error = grow_pool(pool, flags);
->> +		if (unlikely(error))
->> +			return -ENOMEM;
+> At first sight it appears to be due to CONFIG_DRM_RADEON relying on 
+> VGA_ARB facilities but this is not expressed in the Kconfig rules. The 
+> patch below solves this - but this is just a quick patch, i have not 
+> investigated any deeper.
 > 
-> shouldn't it return error? (grow_pool returns 0 or -ENOMEM for now but...)
->
+> Review of the code suggests that i915 has a similar dependency problem - 
+> i fixed that too.
 
-Yes, it should return error. Corrected.
+The way it should work is VGA ARB should be enabled on any platforms we
+have PCI unless EMBEDDED turns it off, since arbitration of VGA isn't 
+reliant on a drm device, I'm not sure what Kconfig magic this would 
+require, and where it would need to be. This patch should at least allow
+builds to work until I figure out any Kconfig magic.
 
+>From 8a874578cbf8b07b988e666c15fa0ba767f3c1cb Mon Sep 17 00:00:00 2001
+From: Dave Airlie <airlied@redhat.com>
+Date: Tue, 22 Sep 2009 13:53:00 +1000
+Subject: [PATCH] vgaarb: wrap the client register API so we can disable VGA ARB.
+
+This provides an dummy register function so everything builds
+if VGA arb is turned off.
+
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+---
+ include/linux/vgaarb.h |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/vgaarb.h b/include/linux/vgaarb.h
+index e81c64a..b0feb79 100644
+--- a/include/linux/vgaarb.h
++++ b/include/linux/vgaarb.h
+@@ -41,7 +41,7 @@
+  *     interrupts at any time.
+  */
+ extern void vga_set_legacy_decoding(struct pci_dev *pdev,
+-									unsigned int decodes);
++				    unsigned int decodes);
  
->> +
->> +		spin_lock(&pool->lock);
->> +		index = find_block(pool, size, page, offset);
->> +	}
->> +
->> +	if (!*page) {
->> +		spin_unlock(&pool->lock);
->> +		return -ENOMEM;
->> +	}
->> +
->> +	block = get_ptr_atomic(*page, *offset, KM_USER0);
->> +
->> +	remove_block_head(pool, block, index);
->> +
->> +	/* Split the block if required */
->> +	tmpoffset = *offset + size + XV_ALIGN;
->> +	tmpsize = block->size - size;
->> +	tmpblock = (struct block_header *)((char *)block + size + XV_ALIGN);
->> +	if (tmpsize) {
->> +		tmpblock->size = tmpsize - XV_ALIGN;
->> +		set_flag(tmpblock, BLOCK_FREE);
->> +		clear_flag(tmpblock, PREV_FREE);
->> +
->> +		set_blockprev(tmpblock, *offset);
->> +		if (tmpblock->size >= XV_MIN_ALLOC_SIZE)
->> +			insert_block(pool, *page, tmpoffset, tmpblock);
->> +
->> +		if (tmpoffset + XV_ALIGN + tmpblock->size != PAGE_SIZE) {
->> +			tmpblock = BLOCK_NEXT(tmpblock);
->> +			set_blockprev(tmpblock, tmpoffset);
->> +		}
->> +	} else {
->> +		/* This block is exact fit */
->> +		if (tmpoffset != PAGE_SIZE)
->> +			clear_flag(tmpblock, PREV_FREE);
->> +	}
->> +
->> +	block->size = origsize;
->> +	clear_flag(block, BLOCK_FREE);
->> +
->> +	put_ptr_atomic(block, KM_USER0);
->> +	spin_unlock(&pool->lock);
->> +
->> +	*offset += XV_ALIGN;
->> +
->> +	return 0;
->> +}
->> +
->> +/*
->> + * Free block identified with <page, offset>
->> + */
->> +void xv_free(struct xv_pool *pool, struct page *page, u32 offset)
->> +{
-<snip>
->> +	return;
->> +}
-> 
-> needless return
-> 
-> 
+ /**
+  *     vga_get         - acquire & locks VGA resources
+@@ -193,8 +193,17 @@ static inline int vga_conflicts(struct pci_dev *p1, struct pci_dev *p2)
+  * They driver will get a callback when VGA arbitration is first used
+  * by userspace since we some older X servers have issues.
+  */
++#if defined(CONFIG_VGA_ARB)
+ int vga_client_register(struct pci_dev *pdev, void *cookie,
+ 			void (*irq_set_state)(void *cookie, bool state),
+ 			unsigned int (*set_vga_decode)(void *cookie, bool state));
++#else
++static inline int vga_client_register(struct pci_dev *pdev, void *cookie,
++				      void (*irq_set_state)(void *cookie, bool state),
++				      unsigned int (*set_vga_decode)(void *cookie, bool state));
++{
++	return 0;
++}
++#endif
+ 
+ #endif /* LINUX_VGA_H */
+-- 
+1.6.0.6
 
-Removed.
-
-
-Regarding your comments on page_zero_filled: I'm not sure if using unsigned
-long is better or just u64 irrespective of arch. I just changed it to ulong
- -- some bechmarks can help decide which one is optimal. Maybe we need arch
-specific optimized versions which means moving it to lib/ or something.
-
-
-Thanks for your feedback.
-
-Nitin
