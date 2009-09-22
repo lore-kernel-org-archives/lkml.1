@@ -1,237 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbZIVRmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbZIVRmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932165AbZIVRmZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZIVRmI
+	id S1756886AbZIVRmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756738AbZIVRma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:42:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33166 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932120AbZIVRmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:42:03 -0400
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: npiggin@suse.de, viro@ZenIV.linux.org.uk, linux-ext4@vger.kernel.org,
-       hch@infradead.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Kara <jack@suse.cz>, tytso@mit.edu
-Subject: [PATCH 5/7] ext4: Convert filesystem to the new truncate calling convention
-Date: Tue, 22 Sep 2009 19:42:05 +0200
-Message-Id: <1253641325-12611-1-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
+	Tue, 22 Sep 2009 13:42:30 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:48364 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755502AbZIVRm1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 13:42:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LTvl5niqRtsyIcb79AvZK10924bJICnpzh60+7c5F5l+QFedLbtrExjECoLLOpEjAO
+         4zymIgjIlrOagi6yKqldSk2y8Df0gIv2pltWoJ4i0xq8yHtykUfRsVt9Kqsix7KcuFMH
+         MXiGbIhaWPBKDPciH8U51chQxw/pmeuvP9Yyo=
+MIME-Version: 1.0
+In-Reply-To: <19128.52482.184096.558888@pilspetsen.it.uu.se>
+References: <55a4f86e0909212101s3097a1e3yf225f3e165ff0bea@mail.gmail.com>
+	 <19128.52482.184096.558888@pilspetsen.it.uu.se>
+Date: Tue, 22 Sep 2009 10:42:30 -0700
+Message-ID: <55a4f86e0909221042h37977c59y4b137380b3d2a1b3@mail.gmail.com>
+Subject: Re: libATA SATA errors on DVD bad sectors...
+From: =?UTF-8?Q?Maciej_=C5=BBenczykowski?= <zenczykowski@gmail.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: linux-ext4@vger.kernel.org
-CC: tytso@mit.edu
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext4/file.c  |    2 +-
- fs/ext4/inode.c |  166 ++++++++++++++++++++++++++++++++----------------------
- 2 files changed, 99 insertions(+), 69 deletions(-)
+> Later you write that ata12 connects to a Promise SATA300 TX4.
+> In that case, port_status 0x20280000 means:
+> - Overrun Error
+> - Drive Error
+> - Packet Command Cycle
+> which means that the drive set its error status flag and raised an interrupt which prematurely terminated a data transfer.
 
-diff --git a/fs/ext4/file.c b/fs/ext4/file.c
-index 3f1873f..22f49d7 100644
---- a/fs/ext4/file.c
-+++ b/fs/ext4/file.c
-@@ -198,7 +198,7 @@ const struct file_operations ext4_file_operations = {
- };
- 
- const struct inode_operations ext4_file_inode_operations = {
--	.truncate	= ext4_truncate,
-+	.new_truncate	= 1,
- 	.setattr	= ext4_setattr,
- 	.getattr	= ext4_getattr,
- #ifdef CONFIG_EXT4_FS_XATTR
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 58492ab..be25874 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -4682,28 +4686,97 @@ int ext4_write_inode(struct inode *inode, int wait)
- }
- 
- /*
-- * ext4_setattr()
-+ * ext4_setsize()
-+ *
-+ * This is a helper for ext4_setattr(). It sets i_size, truncates page cache
-+ * and truncates inode blocks if they are over i_size.
-  *
-- * Called from notify_change.
-+ * We take care of updating i_disksize and adding inode to the orphan list.
-+ * That makes sure that we can guarantee that any commit will leave the blocks
-+ * being truncated in an unused state on disk.  (On recovery, the inode will
-+ * get truncated and the blocks will be freed, so we have a strong guarantee
-+ * that no future commit will leave these blocks visible to the user.)
-  *
-- * We want to trap VFS attempts to truncate the file as soon as
-- * possible.  In particular, we want to make sure that when the VFS
-- * shrinks i_size, we put the inode on the orphan list and modify
-- * i_disksize immediately, so that during the subsequent flushing of
-- * dirty pages and freeing of disk blocks, we can guarantee that any
-- * commit will leave the blocks being flushed in an unused state on
-- * disk.  (On recovery, the inode will get truncated and the blocks will
-- * be freed, so we have a strong guarantee that no future commit will
-- * leave these blocks visible to the user.)
-+ * Another thing we have to assure is that if we are in ordered mode and inode
-+ * is still attached to the committing transaction, we must we start writeout
-+ * of all the dirty pages which are being truncated.  This way we are sure that
-+ * all the data written in the previous transaction are already on disk
-+ * (truncate waits for pages under writeback).
-+ */
-+static int ext4_setsize(struct inode *inode, loff_t newsize)
-+{
-+	int error = 0, rc;
-+	loff_t oldsize = inode->i_size;
-+	handle_t *handle;
-+
-+	error = inode_newsize_ok(inode, newsize);
-+	if (error)
-+		goto out;
-+	/* VFS should have checked these and return error... */
-+	WARN_ON(!S_ISREG(inode->i_mode) || IS_APPEND(inode) ||
-+		IS_IMMUTABLE(inode));
-+
-+	if (newsize < oldsize) {
-+		handle = ext4_journal_start(inode, 3);
-+		if (IS_ERR(handle)) {
-+			error = PTR_ERR(handle);
-+			goto err_out;
-+		}
-+
-+		error = ext4_orphan_add(handle, inode);
-+		EXT4_I(inode)->i_disksize = newsize;
-+		rc = ext4_mark_inode_dirty(handle, inode);
-+		if (!error)
-+			error = rc;
-+		ext4_journal_stop(handle);
-+
-+		if (ext4_should_order_data(inode)) {
-+			error = ext4_begin_ordered_truncate(inode, newsize);
-+			if (error) {
-+				/* Do as much error cleanup as possible */
-+				handle = ext4_journal_start(inode, 3);
-+				if (IS_ERR(handle)) {
-+					ext4_orphan_del(NULL, inode);
-+					goto err_out;
-+				}
-+				ext4_orphan_del(handle, inode);
-+				ext4_journal_stop(handle);
-+				goto err_out;
-+			}
-+		}
-+	} else if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL)) {
-+		struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
-+
-+		if (newsize > sbi->s_bitmap_maxbytes) {
-+			error = -EFBIG;
-+			goto out;
-+		}
-+	}
-+
-+	i_size_write(inode, newsize);
-+	truncate_pagecache(inode, oldsize, newsize);
-+	ext4_truncate(inode);
-+
-+	/*
-+	 * If we failed to get a transaction handle at all, we need to clean up
-+         * the in-core orphan list manually.
-+	 */
-+	if (inode->i_nlink)
-+		ext4_orphan_del(NULL, inode);
-+err_out:
-+	ext4_std_error(inode->i_sb, error);
-+out:
-+	return error;
-+}
-+
-+
-+/*
-+ * ext4_setattr()
-  *
-- * Another thing we have to assure is that if we are in ordered mode
-- * and inode is still attached to the committing transaction, we must
-- * we start writeout of all the dirty pages which are being truncated.
-- * This way we are sure that all the data written in the previous
-- * transaction are already on disk (truncate waits for pages under
-- * writeback).
-+ * Handle special things ext4 needs for changing owner of the file, changing
-+ * ACLs, or truncating file.
-  *
-- * Called with inode->i_mutex down.
-+ * Called from notify_change with inode->i_mutex down.
-  */
- int ext4_setattr(struct dentry *dentry, struct iattr *attr)
- {
-@@ -4743,61 +4816,18 @@ int ext4_setattr(struct dentry *dentry, struct iattr *attr)
- 	}
- 
- 	if (attr->ia_valid & ATTR_SIZE) {
--		if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL)) {
--			struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
--
--			if (attr->ia_size > sbi->s_bitmap_maxbytes) {
--				error = -EFBIG;
--				goto err_out;
--			}
--		}
--	}
--
--	if (S_ISREG(inode->i_mode) &&
--	    attr->ia_valid & ATTR_SIZE && attr->ia_size < inode->i_size) {
--		handle_t *handle;
--
--		handle = ext4_journal_start(inode, 3);
--		if (IS_ERR(handle)) {
--			error = PTR_ERR(handle);
--			goto err_out;
--		}
--
--		error = ext4_orphan_add(handle, inode);
--		EXT4_I(inode)->i_disksize = attr->ia_size;
--		rc = ext4_mark_inode_dirty(handle, inode);
--		if (!error)
--			error = rc;
--		ext4_journal_stop(handle);
--
--		if (ext4_should_order_data(inode)) {
--			error = ext4_begin_ordered_truncate(inode,
--							    attr->ia_size);
--			if (error) {
--				/* Do as much error cleanup as possible */
--				handle = ext4_journal_start(inode, 3);
--				if (IS_ERR(handle)) {
--					ext4_orphan_del(NULL, inode);
--					goto err_out;
--				}
--				ext4_orphan_del(handle, inode);
--				ext4_journal_stop(handle);
--				goto err_out;
--			}
--		}
-+		error = ext4_setsize(inode, attr->ia_size);
-+		if (error)
-+			return error;
- 	}
- 
--	rc = inode_setattr(inode, attr);
--
--	/* If inode_setattr's call to ext4_truncate failed to get a
--	 * transaction handle at all, we need to clean up the in-core
--	 * orphan list manually. */
--	if (inode->i_nlink)
--		ext4_orphan_del(NULL, inode);
-+	generic_setattr(inode, attr);
- 
--	if (!rc && (ia_valid & ATTR_MODE))
-+	if (ia_valid & ATTR_MODE)
- 		rc = ext4_acl_chmod(inode);
- 
-+	/* Mark inode dirty due to changes done by generic_setattr() */
-+	mark_inode_dirty(inode);
- err_out:
- 	ext4_std_error(inode->i_sb, error);
- 	if (!error)
--- 
-1.6.0.2
+Yes, the code in question is here:
+http://lxr.linux.no/linux+v2.6.31/drivers/ata/sata_promise.c#L748
 
+> The obvious next experiment would be to swap the drives and see how the Lite-On behaves on the ICH9 and the LG behaves on the TX4.
+
+Yup, did that earlier this morning.  The controller is the cause, not
+the drives. (ie. getting the same error on ata12 even though it's now
+the LG, the LiteOn on AHCI is now kernel error message free, still
+giving IO errors of course)
+
+>  > Would it make sense to add this somewhere into the code as a 'bad sector' error condition and not perform a hard reset?
+>
+> The sata_promise driver upon seeing the port_status above sets AC_ERR_HSM and AC_ERR_DEV, and performs a soft reset. Apparently libata-eh follows up with a hard(er) reset, which doesn't surprise me given the HSM and DEV errors.
+
+> So things actually work Ok with the Lite-On on the TX4, and you're mainly concerned about log messages and potential performance loss?
+
+Yes, putting the LiteOn on the AHCI controller seems to speed stuff up
+a fair bit (some 20-25% or so).
+OTOH, I'd prefer to keep the blu-ray drive on AHCI, since the TX4
+controller is just a measly PCI controller.
+
+- Maciej
