@@ -1,46 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZIVRLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbZIVRNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394AbZIVRLY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZIVRLW
+	id S1752901AbZIVRNM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZIVRNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:11:22 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:56291 "EHLO
+	Tue, 22 Sep 2009 13:13:09 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:57065 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751568AbZIVRLW (ORCPT
+	by vger.kernel.org with ESMTP id S1751716AbZIVRNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:11:22 -0400
+	Tue, 22 Sep 2009 13:13:08 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Mike Frysinger <vapier@gentoo.org>,
        uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH v2] Linker script cleanup for blackfin
-Date: Tue, 22 Sep 2009 13:10:01 -0400
-Message-Id: <1253639402-27975-1-git-send-email-tabbott@ksplice.com>
+       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
+       Bryan Wu <cooloney@kernel.org>, Mike Frysinger <vapier.adi@gmail.com>
+Subject: [PATCH v2] blackfin: Cleanup linker script using new linker script macros.
+Date: Tue, 22 Sep 2009 13:10:02 -0400
+Message-Id: <1253639402-27975-2-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1253639402-27975-1-git-send-email-tabbott@ksplice.com>
+References: <1253639402-27975-1-git-send-email-tabbott@ksplice.com>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linux,
-
-This patch series contains a patch cleaning up the linker script on
-the blackfin architecture that's been approved by Mike Frysinger.
-Please merge.
-
-This cross-architecture linker script cleanup project is in
-preparation for adding support for building the kernel with
--ffunction-sections -fdata-sections, which is a prerequisite for
-Ksplice.
-
-	-Tim Abbott
-
-Tim Abbott (1):
-  blackfin: Cleanup linker script using new linker script macros.
-
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Bryan Wu <cooloney@kernel.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+---
  arch/blackfin/kernel/vmlinux.lds.S |   56 ++++--------------------------------
  1 files changed, 6 insertions(+), 50 deletions(-)
+
+diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
+index 21ac7c2..ffd90fb 100644
+--- a/arch/blackfin/kernel/vmlinux.lds.S
++++ b/arch/blackfin/kernel/vmlinux.lds.S
+@@ -96,8 +96,7 @@ SECTIONS
+ 	{
+ 		__sdata = .;
+ 		/* This gets done first, so the glob doesn't suck it in */
+-		. = ALIGN(32);
+-		*(.data.cacheline_aligned)
++		CACHELINE_ALIGNED_DATA(32)
+ 
+ #if !L1_DATA_A_LENGTH
+ 		. = ALIGN(32);
+@@ -116,12 +115,7 @@ SECTIONS
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 
+-		/* make sure the init_task is aligned to the
+-		 * kernel thread size so we can locate the kernel
+-		 * stack properly and quickly.
+-		 */
+-		. = ALIGN(THREAD_SIZE);
+-		*(.init_task.data)
++		INIT_TASK_DATA(THREAD_SIZE)
+ 
+ 		__edata = .;
+ 	}
+@@ -134,39 +128,10 @@ SECTIONS
+ 	. = ALIGN(PAGE_SIZE);
+ 	___init_begin = .;
+ 
+-	.init.text :
+-	{
+-		. = ALIGN(PAGE_SIZE);
+-		__sinittext = .;
+-		INIT_TEXT
+-		__einittext = .;
+-	}
+-	.init.data :
+-	{
+-		. = ALIGN(16);
+-		INIT_DATA
+-	}
+-	.init.setup :
+-	{
+-		. = ALIGN(16);
+-		___setup_start = .;
+-		*(.init.setup)
+-		___setup_end = .;
+-	}
+-	.initcall.init :
+-	{
+-		___initcall_start = .;
+-		INITCALLS
+-		___initcall_end = .;
+-	}
+-	.con_initcall.init :
+-	{
+-		___con_initcall_start = .;
+-		*(.con_initcall.init)
+-		___con_initcall_end = .;
+-	}
++	INIT_TEXT_SECTION(PAGE_SIZE)
++	. = ALIGN(16);
++	INIT_DATA_SECTION(16)
+ 	PERCPU(4)
+-	SECURITY_INIT
+ 
+ 	/* we have to discard exit text and such at runtime, not link time, to
+ 	 * handle embedded cross-section references (alt instructions, bug
+@@ -181,18 +146,9 @@ SECTIONS
+ 		EXIT_DATA
+ 	}
+ 
+-	.init.ramfs :
+-	{
+-		. = ALIGN(4);
+-		___initramfs_start = .;
+-		*(.init.ramfs)
+-		. = ALIGN(4);
+-		___initramfs_end = .;
+-	}
+-
+ 	__l1_lma_start = .;
+ 
+-	.text_l1 L1_CODE_START : AT(LOADADDR(.init.ramfs) + SIZEOF(.init.ramfs))
++	.text_l1 L1_CODE_START : AT(LOADADDR(.exit.data) + SIZEOF(.exit.data))
+ 	{
+ 		. = ALIGN(4);
+ 		__stext_l1 = .;
+-- 
+1.6.3.3
 
