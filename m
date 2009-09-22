@@ -1,80 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZIVSDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZIVSEC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZIVSDy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 14:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZIVSDx
+	id S1757017AbZIVSEC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 14:04:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZIVSEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 14:03:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58880 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755817AbZIVSDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 14:03:52 -0400
-Date: Tue, 22 Sep 2009 20:02:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Avi Kivity <avi@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Alok Kataria <akataria@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-Message-ID: <20090922180216.GA16789@elte.hu>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090919224430.GB9567@kroah.com> <1253419185.3253.21.camel@ank32.eng.vmware.com> <20090920074247.GA5733@elte.hu> <20090920095239.456ad6f2@infradead.org> <4AB5EF25.9070502@redhat.com> <4AB64EFC.10707@goop.org> <20090922080913.GB1475@elte.hu> <4AB900CC.7090409@goop.org>
+	Tue, 22 Sep 2009 14:04:00 -0400
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:61968 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755993AbZIVSD4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 14:03:56 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19QK3vzWubAwKeCEzmx3IFo
+Date: Tue, 22 Sep 2009 11:03:56 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: "Govindraj.R" <govindraj.raja@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org
+Subject: Re: [PATCH 1/3] OMAP UART: Adding support for omap-serial driver.
+Message-ID: <20090922180356.GJ14890@atomide.com>
+References: <51076.192.168.10.88.1253639068.squirrel@dbdmail.itg.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AB900CC.7090409@goop.org>
+In-Reply-To: <51076.192.168.10.88.1253639068.squirrel@dbdmail.itg.ti.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> On 09/22/09 01:09, Ingo Molnar wrote:
-> >>> kvm will be removing the pvmmu support soon; and Xen is talking about
-> >>> running paravirtualized guests in a vmx/svm container where they don't
-> >>> need most of the hooks.
-> >>>       
-> >> We have no plans to drop support for non-vmx/svm capable processors, 
-> >> let alone require ept/npt.
-> >     
-> > But, just to map out our plans for the future, do you concur with 
-> > the statements and numbers offered here by the VMware and KVM folks 
-> > that on sufficiently recent hardware, hardware-assisted 
-> > virtualization outperforms paravirt_ops in many (most?) workloads?
+* Govindraj.R <govindraj.raja@ti.com> [090922 10:06]:
+> From: Govindraj R <govindraj.raja@ti.com>
 > 
-> Well, what Avi is referring to here is some discussions about a hybrid 
-> paravirtualized mode, in which Xen runs a normal Xen PV guest within a 
-> hardware container in order to get some immediate optimisations, and 
-> allow further optimisations like using hardware assisted paging 
-> extensions.
+> This patch adds support for OMAP3430-HIGH SPEED UART Controller.
+
+Why do you have the same subject anad description is the same for all of them?
+
+> --- a/drivers/serial/Kconfig
+> +++ b/drivers/serial/Kconfig
+> @@ -1359,6 +1359,98 @@ config SERIAL_OF_PLATFORM
+>  	  Currently, only 8250 compatible ports are supported, but
+>  	  others can easily be added.
 > 
-> For KVM and VMI, which always use a shadow pagetable scheme, hardware 
-> paging is now unambigiously better than shadow pagetables, but for Xen 
-> PV guests the picture is mixed since they don't use shadow pagetables. 
-> The NPT/EPT extensions make updating the pagetable more efficent, but 
-> actual access is more expensive because of the higher load on the TLB 
-> and the increased expense of a TLB miss, so the actual performance 
-> effects are very workload dependent.
+> +config SERIAL_OMAP
+> +	bool "OMAP serial port support"
+> +	depends on ARM && ARCH_OMAP
+> +	select SERIAL_CORE
+> +	help
+> +	If you have a machine based on an Texas Instruments OMAP CPU you
+> +	can enable its onboard serial ports by enabling this option.
+> +
+> +config SERIAL_OMAP_CONSOLE
+> +	bool "Console on OMAP serial port"
+> +	depends on SERIAL_OMAP
+> +	select SERIAL_CORE_CONSOLE
+> +	help
+> +	If you have enabled the serial port on the Texas Instruments OMAP
+> +	CPU you can make it the console by answering Y to this option.
+> +
+> +	Even if you say Y here, the currently visible virtual console
+> +	(/dev/tty0) will still be used as the system console by default, but
+> +	you can alter that using a kernel command line option such as
+> +	"console=ttyS0". (Try "man bootparam" or see the documentation of
+> +	your boot loader (lilo or loadlin) about how to pass options to the
+> +	kernel at boot time.)
+> +
+> +config SERIAL_OMAP_DMA_UART1
+> +	bool "UART1 DMA support"
+> +	depends on SERIAL_OMAP
+> +	help
+> +	If you have enabled the serial port on the Texas Instruments OMAP
+> +	CPU you can enable the DMA transfer on UART 1 by answering
+> +	 to this option.
+> +
 
-obviously they are workload dependent - that's why numbers were posted 
-in this thread with various workloads. Do you concur with those 
-conclusions that they are generally a speedup over paravirt? If not, 
-which are the workloads where paravirt offers significant speedup over 
-hardware acceleration?
+Didn't I already comment these options should be passed in platform_data
+from board-*.c files?
 
-	Ingo
+> +config SERIAL_OMAP_UART1_RXDMA_TIMEOUT
+> +	int "Timeout value for RX DMA in microseconds"
+> +	depends on SERIAL_OMAP_DMA_UART1
+> +	default "1"
+> +	help
+> +	  Set the timeout value in which you want the data pulled by RX dma to
+> +	  be passed to the tty framework.
+> +
+
+This too.
+
+
+> +config SERIAL_OMAP_UART1_RXDMA_BUFSIZE
+> +	int "DMA buffer size for RX in bytes"
+> +	depends on SERIAL_OMAP_DMA_UART1
+> +	default "4096"
+> +	help
+> +	  Set the dma buffer size for UART Rx
+> +
+
+And this.
+
+
+> +config SERIAL_OMAP_DMA_UART2
+> +	bool "UART2 DMA support"
+> +	depends on SERIAL_OMAP
+> +	help
+> +	  If you have enabled the serial port on the Texas Instruments OMAP
+> +	  CPU you can enable the DMA transfer on UART 2 by answering
+> +	  to this option.
+> +
+
+And this.
+
+
+> +config SERIAL_OMAP_UART2_RXDMA_TIMEOUT
+> +	int "Timeout value for RX DMA in microseconds"
+> +	depends on SERIAL_OMAP_DMA_UART2
+> +	default "1"
+> +	help
+> +	  Set the timeout value in which you want the data pulled by RX dma to
+> +	  be passed to the tty framework.
+> +
+
+Yup this too.
+
+
+> +config SERIAL_OMAP_UART2_RXDMA_BUFSIZE
+> +	int "DMA buffer size for RX in bytes"
+> +	depends on SERIAL_OMAP_DMA_UART2
+> +	default "4096"
+> +	help
+> +	  Set the dma buffer size for UART Rx
+> +
+
+And this.
+
+> +config SERIAL_OMAP_DMA_UART3
+> +	bool "UART3 DMA support"
+> +	depends on SERIAL_OMAP
+> +	help
+> +	  If you have enabled the serial port on the Texas Instruments OMAP
+> +	  CPU you can enable the DMA transfer on UART 3 by answering
+> +	  to this option.
+> +
+
+And this.
+
+> +config SERIAL_OMAP_UART3_RXDMA_TIMEOUT
+> +	int "Timeout value for RX DMA in microseconds"
+> +	depends on SERIAL_OMAP_DMA_UART3
+> +	default "1"
+> +	help
+> +	  Set the timeout value in which you want the data pulled by RX dma to
+> +	  be passed to the tty framework.
+> +
+
+Ditto.
+
+> +config SERIAL_OMAP_UART3_RXDMA_BUFSIZE
+> +	int "DMA buffer size for RX in bytes"
+> +	depends on SERIAL_OMAP_DMA_UART3
+> +	default "4096"
+> +	help
+> +	  Set the dma buffer size for UART Rx
+> +
+
+Ditto.
+
