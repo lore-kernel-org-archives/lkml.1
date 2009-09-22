@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZIVGjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZIVGkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbZIVGjM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 02:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbZIVGjJ
+	id S1755303AbZIVGkL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 02:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZIVGkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 02:39:09 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:48483 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755162AbZIVGjI (ORCPT
+	Tue, 22 Sep 2009 02:40:10 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:56084 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754106AbZIVGkJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 02:39:08 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: regression in page writeback
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-kernel@vger.kernel.org, richard@rsk.demon.co.uk,
-       jens.axboe@oracle.com, akpm@linux-foundation.org,
-       Chris Mason <chris.mason@oracle.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <20090922054913.GA27260@sli10-desk.sh.intel.com>
-References: <20090922054913.GA27260@sli10-desk.sh.intel.com>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 08:40:12 +0200
-Message-Id: <1253601612.8439.274.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Sep 2009 02:40:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=JsJ/A1PpbJWbrl+EedvOnxuAFPZNvS/yri//vpnFdq5ae0agFZdgvEUYvc9aDCjQDZ
+         i/G6geF8Xg4lYBxDjFGZU9hzKK0I/PZl2P+baW+sQ98UleFQvn7xAhLcsSFLxxQFnuPr
+         s2NHyRG5cwifsn/Bsk9ruJiQ68JeJqaDSvt0Y=
+MIME-Version: 1.0
+In-Reply-To: <20090921090445.GG12726@csn.ul.ie>
+References: <202cde0e0909132230y52b805a4i8792f2e287b01acb@mail.gmail.com>
+	 <20090914165435.GA21554@infradead.org>
+	 <202cde0e0909162342xb2a8daeia90b33a172fc714b@mail.gmail.com>
+	 <20090917091408.GB13002@csn.ul.ie>
+	 <202cde0e0909202216i36e3eca3rc56ddde345b12bf9@mail.gmail.com>
+	 <20090921090445.GG12726@csn.ul.ie>
+Date: Tue, 22 Sep 2009 18:40:13 +1200
+Message-ID: <202cde0e0909212340h740adb51pbab6981aa3c994da@mail.gmail.com>
+Subject: Re: HugeTLB: Driver example
+From: Alexey Korolev <akorolex@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Munson <linux-mm@mgebm.net>,
+       Alexey Korolev <akorolev@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 13:49 +0800, Shaohua Li wrote:
-> Hi,
-> Commit d7831a0bdf06b9f722b947bb0c205ff7d77cebd8 causes disk io regression
-> in my test.
-> My system has 12 disks, each disk has two partitions. System runs fio sequence
-> write on all partitions, each partion has 8 jobs.
-> 2.6.31-rc1, fio gives 460m/s disk io
-> 2.6.31-rc2, fio gives about 400m/s disk io. Revert the patch, speed back to
-> 460m/s
-> 
-> Under latest git: fio gives 450m/s disk io; If reverting the patch, the speed
-> is 484m/s.
-> 
-> With the patch, fio reports less io merge and more interrupts. My naive
-> analysis is the patch makes balance_dirty_pages_ratelimited_nr() limits
-> write chunk to 8 pages and then soon go to sleep in balance_dirty_pages(),
-> because most time the bdi_nr_reclaimable < bdi_thresh, and so when write
-> the pages out, the chunk is 8 pages long instead of 4M long. Without the patch,
-> thread can write 8 pages and then move some pages to writeback, and then
-> continue doing write. The patch seems to break this.
-> 
-> Unfortunatelly I can't figure out a fix for this issue, hopefully you have more
-> ideas.
+>
+> I can't. The request was from 9-10 months ago for drivers about about 18
+> months ago for Xen when they were looking at this area. The authors are no
+> longer working in that area AFAIK as once it was discussed what would need
+> to be done to use huge pages, they balked. It's far easier now as most of
+> the difficulties have been addressed but the interested parties are not
+> likely to be looking at this area for some time.
+>
+> The most recent expression of interest was from KVM developers within the
+> company. On discussion, using huge pages was something they were going to
+> push out as there are other concerns that should be addressed first. I'd
+> say it'd be at least a year before they looked at huge pages for KVM.
+>
+Ok. I see. Thanks.
 
-This whole writeback business is very fragile, the patch does indeed
-cure a few cases and compounds a few other cases, typical trade off.
+>> It makes sense to get this
+>> feature merged as it provides a quite efficient way for performance
+>> increase. According to our test data, applying these little changes
+>> gives about 7-10% gain.
+>>
+>
+> What is this test data based on?
 
-People are looking at it.
+The test is based on the throughput of network packets processing. We
+read the data from DMA buffers whose are mmaped to user space and then
+parse packets by applications. If mapping is based on huge pages we
+have gain ~7-10% (more mbps).  Actually I was surprised a bit when
+find out that there is no possibility to have huge page mappings for
+device drivers. Probably people just don't know about this.
 
+Thanks,
+Alexey
