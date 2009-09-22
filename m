@@ -1,78 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbZIVBSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZIVFfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751605AbZIVBSr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 21:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZIVBSp
+	id S1754806AbZIVFfx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 01:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZIVFfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 21:18:45 -0400
-Received: from mail-ew0-f213.google.com ([209.85.219.213]:62166 "EHLO
-	mail-ew0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751432AbZIVBSo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 21:18:44 -0400
-X-Greylist: delayed 1606 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Sep 2009 21:18:43 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=V48k4AmNws1+MIutPXLg7Ir3fOkVTkSnxf8j7WvKb+UaTRNbvQFt7PgB+orBV/Z5bo
-         HmH00g3ZdRqs8YjutbsJIurAy1etdXf3y8A1+MIwPpiUsV79heGqOdYrps3JMJR51hVP
-         +9PwfJG0hyO9IHf0PO39S5izME5E+dotzHMRE=
-MIME-Version: 1.0
-In-Reply-To: <20090921190434.GA10101@dreamland.darkstar.lan>
-References: <4AB1C907.1070503@gmail.com>
-	 <20090920162306.GA18214@dreamland.darkstar.lan>
-	 <51f3faa70909201047x56313d99q7cdc49bcc4634b01@mail.gmail.com>
-	 <20090920185824.GA23206@dreamland.darkstar.lan>
-	 <51f3faa70909201551k70ace90x2b25351bfc04c555@mail.gmail.com>
-	 <20090921190434.GA10101@dreamland.darkstar.lan>
-Date: Mon, 21 Sep 2009 18:52:00 -0600
-Message-ID: <51f3faa70909211752i29ab88b4kbf33278e171e3fd5@mail.gmail.com>
-Subject: Re: asus_atk0110 not working on Asus P7P55D PRO
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 22 Sep 2009 01:35:52 -0400
+Received: from dcent.unixwiz.net ([99.25.142.34]:34405 "EHLO dcent.unixwiz.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754497AbZIVFfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 01:35:52 -0400
+From: Steve Friedl <steve@unixwiz.net>
+To: linux-kernel@vger.kernel.org
+Date: Mon, 21 Sep 2009 18:18:46 -0700
+Subject: [PATCH 1/8] staging: hv: Fixed typo in Hyper-V struct name: VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER
+Message-Id: <20090922053555.CA9007188F2@dcent.unixwiz.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 1:04 PM, Luca Tettamanti <kronos.it@gmail.com> wrote:
-> Il Sun, Sep 20, 2009 at 04:51:10PM -0600, Robert Hancock ha scritto:
->> On Sun, Sep 20, 2009 at 12:58 PM, Luca Tettamanti <kronos.it@gmail.com> wrote:
->> >> >> I'm guessing this board uses a different format than what the driver
->> >> >> is expecting. I'm attaching the gzipped decompiled DSDT from the
->> >> >> board, hopefully it's useful to somebody..
->> >> >
->> >> > Please try the following patch, it should detect the proper buffer size.
->> >> >
->> >>
->> >> Obviously something not quite right:
->> >
->> > Ah yes, the pointer for the output buffer was pointing to the wrong
->> > variable. Sorry for that ;)
->>
->> Cool, seems to be working.
->
-> Excellent :)
->
->> Though the high and critical temperatures
->> seem a bit odd, but maybe that's what the BIOS actually reports:
-> [...]
->> CPU Temperature:    +32.5°C  (high = +45.0°C, crit = +45.5°C)
->> MB Temperature:     +31.0°C  (high = +45.0°C, crit = +46.0°C)
->
-> The limits are declared in the DSDT, the driver doesn't do any
-> calculation.
-> It's possible that Asus changed the encoding (again); so far I've been
-> unable to locate a "version" field that would allow the driver to detect
-> a change in the data structures.
->
-> I've got a new patch for you: instead of probing and preallocating the
-> buffer this version lets ACPI code do the allocation; the return value
-> is cached anyway, so there won't be a big number of allocations.
-> Can you please test and see if it works?
+It seems that the VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER typedef/struct was
+misspelled (...MULIT.. -> ...MULTI...) so I felt compelled to fix it. This
+was the only change in this patch.
 
-Yes, this version still works..
+~~~ Steve
+
+Signed-off-by: Steve Friedl <steve@unixwiz.net>
+
+---
+ drivers/staging/hv/BlkVsc.c  |    2 +-
+ drivers/staging/hv/Channel.c |    6 +++---
+ drivers/staging/hv/Channel.h |    2 +-
+ drivers/staging/hv/StorVsc.c |    2 +-
+ drivers/staging/hv/Vmbus.c   |    4 ++--
+ 5 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/hv/BlkVsc.c b/drivers/staging/hv/BlkVsc.c
+index 51aa861..7999f1c 100644
+--- a/drivers/staging/hv/BlkVsc.c
++++ b/drivers/staging/hv/BlkVsc.c
+@@ -88,7 +88,7 @@ int BlkVscInitialize(struct hv_driver *Driver)
+ 	 * Divide the ring buffer data size (which is 1 page less than the ring
+ 	 * buffer size since that page is reserved for the ring buffer indices)
+ 	 * by the max request size (which is
+-	 * VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER + struct vstor_packet + u64)
++	 * VMBUS_CHANNEL_PACKET_MULTIPAGE_BUFFER + struct vstor_packet + u64)
+ 	 */
+ 	storDriver->MaxOutstandingRequestsPerChannel =
+ 		((storDriver->RingBufferSize - PAGE_SIZE) /
+diff --git a/drivers/staging/hv/Channel.c b/drivers/staging/hv/Channel.c
+index d649ee1..1dbf62a 100644
+--- a/drivers/staging/hv/Channel.c
++++ b/drivers/staging/hv/Channel.c
+@@ -781,7 +781,7 @@ int VmbusChannelSendPacketMultiPageBuffer(struct vmbus_channel *Channel,
+ 				void *Buffer, u32 BufferLen, u64 RequestId)
+ {
+ 	int ret;
+-	struct VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER desc;
++	struct VMBUS_CHANNEL_PACKET_MULTIPAGE_BUFFER desc;
+ 	u32 descSize;
+ 	u32 packetLen;
+ 	u32 packetLenAligned;
+@@ -801,10 +801,10 @@ int VmbusChannelSendPacketMultiPageBuffer(struct vmbus_channel *Channel,
+ 	ASSERT(PfnCount <= MAX_MULTIPAGE_BUFFER_COUNT);
+ 
+ 	/*
+-	 * Adjust the size down since VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER is
++	 * Adjust the size down since VMBUS_CHANNEL_PACKET_MULTIPAGE_BUFFER is
+ 	 * the largest size we support
+ 	 */
+-	descSize = sizeof(struct VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER) -
++	descSize = sizeof(struct VMBUS_CHANNEL_PACKET_MULTIPAGE_BUFFER) -
+ 			  ((MAX_MULTIPAGE_BUFFER_COUNT - PfnCount) *
+ 			  sizeof(u64));
+ 	packetLen = descSize + BufferLen;
+diff --git a/drivers/staging/hv/Channel.h b/drivers/staging/hv/Channel.h
+index 6b283ed..41736fe 100644
+--- a/drivers/staging/hv/Channel.h
++++ b/drivers/staging/hv/Channel.h
+@@ -40,7 +40,7 @@ struct VMBUS_CHANNEL_PACKET_PAGE_BUFFER {
+ } __attribute__((packed));
+ 
+ /* The format must be the same as struct vmdata_gpa_direct */
+-struct VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER {
++struct VMBUS_CHANNEL_PACKET_MULTIPAGE_BUFFER {
+ 	u16 Type;
+ 	u16 DataOffset8;
+ 	u16 Length8;
+diff --git a/drivers/staging/hv/StorVsc.c b/drivers/staging/hv/StorVsc.c
+index 14015c9..05a58a9 100644
+--- a/drivers/staging/hv/StorVsc.c
++++ b/drivers/staging/hv/StorVsc.c
+@@ -824,7 +824,7 @@ int StorVscInitialize(struct hv_driver *Driver)
+ 	 * Divide the ring buffer data size (which is 1 page less
+ 	 * than the ring buffer size since that page is reserved for
+ 	 * the ring buffer indices) by the max request size (which is
+-	 * VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER + struct vstor_packet + u64)
++	 * VMBUS_CHANNEL_PACKET_MULTIPAGE_BUFFER + struct vstor_packet + u64)
+ 	 */
+ 	storDriver->MaxOutstandingRequestsPerChannel =
+ 		((storDriver->RingBufferSize - PAGE_SIZE) /
+diff --git a/drivers/staging/hv/Vmbus.c b/drivers/staging/hv/Vmbus.c
+index a4dd06f..c65b843 100644
+--- a/drivers/staging/hv/Vmbus.c
++++ b/drivers/staging/hv/Vmbus.c
+@@ -280,9 +280,9 @@ int VmbusInitialize(struct hv_driver *drv)
+ 	DPRINT_INFO(VMBUS, "+++++++ Vmbus using SINT %d +++++++",
+ 			VMBUS_MESSAGE_SINT);
+ 	DPRINT_DBG(VMBUS, "sizeof(VMBUS_CHANNEL_PACKET_PAGE_BUFFER)=%zd, "
+-			"sizeof(VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER)=%zd",
++			"sizeof(VMBUS_CHANNEL_PACKET_MULTIPAGE_BUFFER)=%zd",
+ 			sizeof(struct VMBUS_CHANNEL_PACKET_PAGE_BUFFER),
+-			sizeof(struct VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER));
++			sizeof(struct VMBUS_CHANNEL_PACKET_MULTIPAGE_BUFFER));
+ 
+ 	drv->name = gDriverName;
+ 	memcpy(&drv->deviceType, &gVmbusDeviceType, sizeof(struct hv_guid));
+-- 
+1.6.5.rc1
+
