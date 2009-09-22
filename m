@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZIVTj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZIVTjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbZIVTj0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZIVTjX
+	id S1752591AbZIVTjb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZIVTj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:39:23 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:49576 "EHLO
+	Tue, 22 Sep 2009 15:39:26 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:39120 "EHLO
 	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752482AbZIVTjP (ORCPT
+	with ESMTP id S1752428AbZIVTjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:39:15 -0400
+	Tue, 22 Sep 2009 15:39:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=l/xjDLLjVbJ0vwKDpWTqmgeqw0U/xm1r7FPT8LGfYnM/mGg7Eea0jcbP3PCnkOqdCQ
-         MOAlZVFqP/2wZeMv9EcqW58qd3qKiwt0MDMsJ+TgFNdzRAjfUO34eQFKl+ymPgfYElfS
-         ehsTiDwP4EbQ8zG+4hLMU4ItxQhf8f0onvTig=
+        b=s0Py13IPlINa6q2A/GSx4QWf0xLCcixsmS3GqwidYYPTM0NAuOSxdBkZi19/EeA6wd
+         4VubKZKxxct64nNCD2sYnQlah0fi30cg+M7iunUJ3b++DamTa2bCiyuIw9c97zkJDAkK
+         kBoZbrFuCYZEwIkccoBGkq00oZ2TMQW2YkL2M=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -32,9 +32,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Tom Zanussi <tzanussi@gmail.com>
-Subject: [PATCH 19/24] ftrace: Fix trace_add_event_call() to initialize list
-Date: Tue, 22 Sep 2009 21:38:17 +0200
-Message-Id: <1253648302-5771-20-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 20/24] ftrace: Fix trace_remove_event_call() to lock trace_event_mutex
+Date: Tue, 22 Sep 2009 21:38:18 +0200
+Message-Id: <1253648302-5771-21-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
 References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
@@ -44,38 +44,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Handle failure path in trace_add_event_call() to fix the below bug
-which occurred when I tried to add invalid event twice.
-
-Could not create debugfs 'kmalloc' directory
-Failed to register kprobe event: kmalloc
-Faild to register probe event(-1)
-------------[ cut here ]------------
-WARNING: at /home/mhiramat/ksrc/random-tracing/lib/list_debug.c:26
-__list_add+0x27/0x5c()
-Hardware name:
-list_add corruption. next->prev should be prev (c07d78cc), but was
-00001000. (next=d854236c).
-Modules linked in: sunrpc uinput virtio_net virtio_balloon i2c_piix4 pcspkr
-i2c_core virtio_blk virtio_pci virtio_ring virtio [last unloaded:
-scsi_wait_scan]
-Pid: 1394, comm: tee Not tainted 2.6.31-rc9 #51
-Call Trace:
- [<c0438424>] warn_slowpath_common+0x65/0x7c
- [<c05371b3>] ? __list_add+0x27/0x5c
- [<c043846f>] warn_slowpath_fmt+0x24/0x27
- [<c05371b3>] __list_add+0x27/0x5c
- [<c047f050>] list_add+0xa/0xc
- [<c047f8f5>] trace_add_event_call+0x60/0x97
- [<c0483133>] command_trace_probe+0x42c/0x51b
- [<c044a1b3>] ? remove_wait_queue+0x22/0x27
- [<c042a9c0>] ? __wake_up+0x32/0x3b
- [<c04832f6>] probes_write+0xd4/0x10a
- [<c0483222>] ? probes_write+0x0/0x10a
- [<c04b27a9>] vfs_write+0x80/0xdf
- [<c04b289c>] sys_write+0x3b/0x5d
- [<c0670d41>] syscall_call+0x7/0xb
----[ end trace 2b962b5dc1fdc07d ]---
+Lock not only event_mutex but also trace_event_mutex in
+trace_remove_event_call() to protect __unregister_ftrace_event().
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Acked-by: Steven Rostedt <rostedt@goodmis.org>
@@ -94,30 +64,36 @@ Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <4AB1077F.6020107@redhat.com>
+LKML-Reference: <20090914204912.18779.68734.stgit@dhcp-100-2-132.bos.redhat.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace_events.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ kernel/trace/trace_events.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index ba34920..83cc2c0 100644
+index 83cc2c0..f85b0f1 100644
 --- a/kernel/trace/trace_events.c
 +++ b/kernel/trace/trace_events.c
-@@ -1010,9 +1010,12 @@ static int __trace_add_event_call(struct ftrace_event_call *call)
- 		return -ENOENT;
- 
- 	list_add(&call->list, &ftrace_events);
--	return event_create_dir(call, d_events, &ftrace_event_id_fops,
-+	ret = event_create_dir(call, d_events, &ftrace_event_id_fops,
- 				&ftrace_enable_fops, &ftrace_event_filter_fops,
- 				&ftrace_event_format_fops);
-+	if (ret < 0)
-+		list_del(&call->list);
-+	return ret;
+@@ -1054,6 +1054,9 @@ static void remove_subsystem_dir(const char *name)
+ 	}
  }
  
- /* Add an additional event_call dynamically */
++/*
++ * Must be called under locking both of event_mutex and trace_event_mutex.
++ */
+ static void __trace_remove_event_call(struct ftrace_event_call *call)
+ {
+ 	ftrace_event_enable_disable(call, 0);
+@@ -1070,7 +1073,9 @@ static void __trace_remove_event_call(struct ftrace_event_call *call)
+ void trace_remove_event_call(struct ftrace_event_call *call)
+ {
+ 	mutex_lock(&event_mutex);
++	down_write(&trace_event_mutex);
+ 	__trace_remove_event_call(call);
++	up_write(&trace_event_mutex);
+ 	mutex_unlock(&event_mutex);
+ }
+ 
 -- 
 1.6.2.3
 
