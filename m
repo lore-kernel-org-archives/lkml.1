@@ -1,179 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbZIVFgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZIVOi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbZIVFgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 01:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbZIVFgW
+	id S1756783AbZIVOi6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 10:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbZIVOi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 01:36:22 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:38721 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754550AbZIVFgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 01:36:21 -0400
-Date: Tue, 22 Sep 2009 11:06:11 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [v5 RFC PATCH 2/7]: cpuidle: implement a list based approach to
-	register a set of idle routines.
-Message-ID: <20090922053611.GC6417@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090922053314.GA6417@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090922053314.GA6417@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 22 Sep 2009 10:38:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2007 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756762AbZIVOiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 10:38:54 -0400
+Subject: Re: [GIT PULL] DRBD for 2.6.32
+From: Heinz Mauelshagen <heinzm@redhat.com>
+To: Lars Ellenberg <lars.ellenberg@linbit.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, lmb@suse.de,
+       jens.axboe@oracle.com, neilb@suse.de, hch@infradead.org,
+       James.Bottomley@suse.de, linux-kernel@vger.kernel.org,
+       drbd-dev@lists.linbit.com, akpm@linux-foundation.org,
+       bart.vanassche@gmail.com, davej@redhat.com, gregkh@suse.de,
+       kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
+       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
+       philipp.reisner@linbit.com, sam@ravnborg.org, Mauelshagen@redhat.com
+In-Reply-To: <20090921144308.GG8072@barkeeper1-xen.linbit>
+References: <20090918200803.GM23126@kernel.dk>
+	 <20090919141334N.fujita.tomonori@lab.ntt.co.jp>
+	 <20090919220232.GB31849@suse.de>
+	 <20090921223815U.fujita.tomonori@lab.ntt.co.jp>
+	 <20090921144308.GG8072@barkeeper1-xen.linbit>
+Content-Type: text/plain
+Organization: Red Hat GmbH
+Date: Tue, 22 Sep 2009 07:37:00 +0200
+Message-Id: <1253597820.9619.12.camel@nb.ww.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 11:03:14]:
+On Mon, 2009-09-21 at 16:43 +0200, Lars Ellenberg wrote:
+> On Mon, Sep 21, 2009 at 10:39:42PM +0900, FUJITA Tomonori wrote:
+> > > Either
+> > > 
+> > > a) there's going to be a transition period during which the "old"
+> > > interface is supported but depreciated and scheduled to be removed (all
+> > > driving the new unified same back-end),
+> > 
+> > We should avoid removing the existing interface. Once we merge drbd, I
+> > don't think that it's a good idea to remove the drbd user interface.
+> 
+> 
+> the drbd user interface is presented via
+> low level drbdsetup
+> and high level drbdadm (parses configuration files,
+> and calls out to drbdsetup).
+> 
+> changing (simplifying) the in-kernel configuration can be done any time,
+> as long as we can write a compat layer in the user land tools,
+> i.e. write drbdsetup so it will accept the same command line,
+> and try, based on "something" (sysfs file, genetlink group, 
+> environment variable, whatever) the "new" kernel interface,
+> or the "old" one.
+> 
+> I don't see any issue here.
+> 
+> > I don't think so. It's much easier to implement something that
+> > supports fewer user interfaces.
+> 
+> We can choose whatever user-kernel interface you like,
+> and change it with every dot release --
+> we'd just need to add additional compat code into
+> the drbdsetup userland binary.
+> 
+> > > > BTW, DM already has something like drbd? I thought that there is a
+> > > > talk about that new target at LinuxCon.
+> > > 
+> > > dm-replicator is nowhere near as usable as DRBD, and not upstream yet
+> > 
+> > I don't think usability at this point is important. The design
+> > matters. dm-replicator is built on the existing framework.
+> > 
+> > And my question is, if drbd and dm-replicator will provide similar
+> > features, then why do we need both in mainline?
+> 
+> dm-replicator is not there yet, and as such has zero user base.
 
-Implement a list based registering mechanism for architectures which
-have multiple sets of idle routines which are to be registered.
+dm-replicator is work in progress and we're aiming to ship it with
+RHEL6.
 
-Currently, in x86 it is done by merely setting pm_idle = idle_routine
-and managing this pm_idle pointer is messy.
+> 
+> To actually use it in the HA clustering world, quite a lot
+> userland glue would have to be written, which is not there yet either.
 
-To give an example of how this mechanism works:
-In x86, initially, idle routine is selected from the set of poll/mwait/
-c1e/default idle loops. So the selected idle loop is registered in cpuidle
-as one idle state cpuidle devices. Once ACPI comes up, it registers
-another set of idle states on top of this state. Again, suppose a module
-registers another set of idle loops, it is added to this list.
+We had quite some target table syntax settlement to work through but
+lvm2 support is coming along now hence leveraging the existing LVM2 UI
+(e.g. lvconvert) to support managing remote replication of a set of
+logical volumes to one or more remote sites.
 
-This provides a clean way of registering and unregistering idle state
-routines.
+> 
+> In contrast, DRBD is used in production, in many thousands of
+> installations worldwide since many years.
+> 
+> By design, dm-replicator is more comparable to dm-raid1, with the
+> knowledge that several mirror legs may break independently
+> (resulting in one "dirty log" per mirror leg), and come back
+> independendly, as well as the option of adding an on-disk ring-buffer to
+> any mirror leg.
 
-In the current implementation, pm_idle is set as the current idle routine
-being used and the old idle routine has to be maintained and when a module
-registers/unregisters an idle routine, confusion arises.
+The on-disk ring-buffer is not an option, it's mandatory and being used
+to ensure write ordering fidelity for all devices eing replicated in
+groups to one or more remote sites. dm-replicator ensures write ordering
+for a group of devices rather than single devices while replicating.
 
+The per remote device dirty logs are being used for initial
+synchronization of remote devices *and* to allow fallback to dirty
+logging in case the replication log (which ensures write ordering
+fidelity to allow for remote recovery after a failover) runs full. That
+fallback mode allows us to avoid starvation of application io when the
+log gets full.
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle.c |   50 ++++++++++++++++++++++++++++++++++++++++++----
- include/linux/cpuidle.h   |    1 
- 2 files changed, 47 insertions(+), 4 deletions(-)
+> 
+> It is by design NOT able to do dual-active mode.
 
-Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-+++ linux.trees.git/drivers/cpuidle/cpuidle.c
-@@ -21,6 +21,7 @@
- #include "cpuidle.h"
- 
- DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
-+DEFINE_PER_CPU(struct list_head, cpuidle_devices_list);
- 
- DEFINE_MUTEX(cpuidle_lock);
- LIST_HEAD(cpuidle_detected_devices);
-@@ -100,6 +101,44 @@ void cpuidle_resume_and_unlock(void)
- 
- EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
- 
-+int cpuidle_add_to_list(struct cpuidle_device *dev)
-+{
-+	int ret, cpu = dev->cpu;
-+	struct cpuidle_device *old_dev;
-+
-+	if (!list_empty(&per_cpu(cpuidle_devices_list, cpu))) {
-+		old_dev = list_first_entry(&per_cpu(cpuidle_devices_list, cpu),
-+				struct cpuidle_device, percpu_list[cpu]);
-+		cpuidle_remove_state_sysfs(old_dev);
-+	}
-+
-+	list_add(&dev->percpu_list[cpu], &per_cpu(cpuidle_devices_list, cpu));
-+	ret = cpuidle_add_state_sysfs(dev);
-+	return ret;
-+}
-+
-+void cpuidle_remove_from_list(struct cpuidle_device *dev)
-+{
-+	struct cpuidle_device *temp_dev;
-+	struct list_head *pos;
-+	int ret, cpu = dev->cpu;
-+
-+	list_for_each(pos, &per_cpu(cpuidle_devices_list, cpu)) {
-+		temp_dev = container_of(pos, struct cpuidle_device,
-+					percpu_list[cpu]);
-+		if (dev == temp_dev) {
-+			list_del(&temp_dev->percpu_list[cpu]);
-+			cpuidle_remove_state_sysfs(temp_dev);
-+		}
-+	}
-+
-+	if (!list_empty(&per_cpu(cpuidle_devices_list, cpu))) {
-+		temp_dev = list_first_entry(&per_cpu(cpuidle_devices_list, cpu),
-+				struct cpuidle_device, percpu_list[cpu]);
-+				ret = cpuidle_add_state_sysfs(temp_dev);
-+	}
-+}
-+
- /**
-  * cpuidle_enable_device - enables idle PM for a CPU
-  * @dev: the CPU
-@@ -124,7 +163,7 @@ int cpuidle_enable_device(struct cpuidle
- 			return ret;
- 	}
- 
--	if ((ret = cpuidle_add_state_sysfs(dev)))
-+	if ((cpuidle_add_to_list(dev)))
- 		return ret;
- 
- 	if (cpuidle_curr_governor->enable &&
-@@ -145,7 +184,7 @@ int cpuidle_enable_device(struct cpuidle
- 	return 0;
- 
- fail_sysfs:
--	cpuidle_remove_state_sysfs(dev);
-+	cpuidle_remove_from_list(dev);
- 
- 	return ret;
- }
-@@ -171,7 +210,7 @@ void cpuidle_disable_device(struct cpuid
- 	if (cpuidle_curr_governor->disable)
- 		cpuidle_curr_governor->disable(dev);
- 
--	cpuidle_remove_state_sysfs(dev);
-+	cpuidle_remove_from_list(dev);
- }
- 
- EXPORT_SYMBOL_GPL(cpuidle_disable_device);
-@@ -339,12 +378,15 @@ static inline void latency_notifier_init
-  */
- static int __init cpuidle_init(void)
- {
--	int ret;
-+	int ret, cpu;
- 
- 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
- 	if (ret)
- 		return ret;
- 
-+	for_each_possible_cpu(cpu)
-+		INIT_LIST_HEAD(&per_cpu(cpuidle_devices_list, cpu));
-+
- 	latency_notifier_init(&cpuidle_latency_notifier);
- 
- 	return 0;
-Index: linux.trees.git/include/linux/cpuidle.h
-===================================================================
---- linux.trees.git.orig/include/linux/cpuidle.h
-+++ linux.trees.git/include/linux/cpuidle.h
-@@ -93,6 +93,7 @@ struct cpuidle_device {
- 	struct cpuidle_state	*last_state;
- 
- 	struct list_head 	device_list;
-+	struct list_head	percpu_list[NR_CPUS];
- 	struct kobject		kobj;
- 	struct completion	kobj_unregister;
- 	void			*governor_data;
+This is a false statement.
+
+dm-replicator abstracts the logging of the data and the transport out
+into separate plugin-type modules. It just happens to be that the
+initial version is active-passive because of our requirements which aim
+at long distance replication, hence don't require active-active
+initially. A different log module can support active-active but this is
+not our goal initially.
+
+> 
+> If any of you happens to be at LinuxCon,
+> please discuss with Heinz (Maulshagen, dm-replicator)
+> and Phil (Reisner, DRBD), who both are present.
+> 
+> Heinz' talk about replicator is scheduled today, 10:30 am, 
+> that would be a good opportunity, I guess.
+
+My talk's past now but I'm still at the conference till Wednesday so
+please feel free to contact me.
+
+Heinz
+
+> 
+> > > either. (Further, it's another independent implementation, pursued
+> > > instead of unifying any of the existing ones or helping to merge drbd -
+> > > don't get me started on my thoughts of that.)
+> > 
+> > Again, dm-replicator is built on the existing framework instead of
+> > adding another 'multiple (virtual) devices' framework into mainline.
+> 
+> Well, not exactly.
+> 
+> It adds quite a bit of additional framework (to the device mapper
+> subsystem), before it then starts to use that additional framework
+> via the generic device mapper hooks.
+> 
+> On that same line DRBD could argue that it uses the existing generic
+> block layer framework, just adding a bit functionality ;)
+> 
+
