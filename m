@@ -1,232 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbZIVL1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZIVL2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756069AbZIVL1Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005AbZIVL1Y
+	id S1756076AbZIVL2Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbZIVL2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:27:24 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:58668 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755997AbZIVL1Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:27:24 -0400
-Date: Tue, 22 Sep 2009 16:57:10 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Shaohua Li <shaohua.li@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [v6 PATCH 1/7]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
-Message-ID: <20090922112710.GB7788@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090922112526.GA7788@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090922112526.GA7788@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 22 Sep 2009 07:28:15 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56987 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756015AbZIVL2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:28:14 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/0DcgJ7770aay/i8SJsMyShU3/ZfVMgcRnmdDiml
+	Szmt6BdaZaUudB
+Subject: Re: mailing list for trace users
+From: Mike Galbraith <efault@gmx.de>
+To: Avi Kivity <avi@redhat.com>
+Cc: rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
+In-Reply-To: <4AB89520.2050900@redhat.com>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+	 <4AB89520.2050900@redhat.com>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 13:28:14 +0200
+Message-Id: <1253618894.13917.18.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6899999999999999
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
+On Tue, 2009-09-22 at 12:13 +0300, Avi Kivity wrote:
 
-This patch cleans up drivers/cpuidle/cpuidle.c
-Earlier cpuidle assumed pm_idle as the default idle loop. Break that
-assumption and make it more generic. cpuidle_idle_call() which is the
-main idle loop of cpuidle is to be called by architectures which have
-registered to cpuidle.
+> $ perf annotate -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run
+>   Error: symbol 'vmx_vcpu_run' not present amongst the samples.
+> 
+> builtin symbols work.
 
-Remove routines cpuidle_install/uninstall_idle_handler() and
-cpuidle_kick_cpus() which are not needed anymore.
+Ah.  Did you reboot or unload/load the module between record and
+annotate time?  There is no support for that at the moment.
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle.c  |   48 +++++++--------------------------------------
- drivers/cpuidle/cpuidle.h  |    1 
- drivers/cpuidle/governor.c |    3 --
- include/linux/cpuidle.h    |    3 ++
- 4 files changed, 11 insertions(+), 44 deletions(-)
+There has been talk of eventually putting all pertinent data into
+perf.data to support remote analysis etc, but as things stand, module
+information is only available for the running kernel.
 
-Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-+++ linux.trees.git/drivers/cpuidle/cpuidle.c
-@@ -24,9 +24,6 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
- 
- DEFINE_MUTEX(cpuidle_lock);
- LIST_HEAD(cpuidle_detected_devices);
--static void (*pm_idle_old)(void);
--
--static int enabled_devices;
- 
- #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
- static void cpuidle_kick_cpus(void)
-@@ -46,7 +43,7 @@ static int __cpuidle_register_device(str
-  *
-  * NOTE: no locks or semaphores should be used here
-  */
--static void cpuidle_idle_call(void)
-+void cpuidle_idle_call(void)
- {
- 	struct cpuidle_device *dev = __get_cpu_var(cpuidle_devices);
- 	struct cpuidle_state *target_state;
-@@ -54,13 +51,10 @@ static void cpuidle_idle_call(void)
- 
- 	/* check if the device is ready */
- 	if (!dev || !dev->enabled) {
--		if (pm_idle_old)
--			pm_idle_old();
--		else
- #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
--			default_idle();
-+		default_idle();
- #else
--			local_irq_enable();
-+		local_irq_enable();
- #endif
- 		return;
- 	}
-@@ -74,7 +68,11 @@ static void cpuidle_idle_call(void)
- 	hrtimer_peek_ahead_timers();
- #endif
- 	/* ask the governor for the next state */
--	next_state = cpuidle_curr_governor->select(dev);
-+	if (dev->state_count > 1)
-+		next_state = cpuidle_curr_governor->select(dev);
-+	else
-+		next_state = 0;
-+
- 	if (need_resched())
- 		return;
- 	target_state = &dev->states[next_state];
-@@ -94,35 +92,11 @@ static void cpuidle_idle_call(void)
- }
- 
- /**
-- * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
-- */
--void cpuidle_install_idle_handler(void)
--{
--	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
--		/* Make sure all changes finished before we switch to new idle */
--		smp_wmb();
--		pm_idle = cpuidle_idle_call;
--	}
--}
--
--/**
-- * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
-- */
--void cpuidle_uninstall_idle_handler(void)
--{
--	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
--		pm_idle = pm_idle_old;
--		cpuidle_kick_cpus();
--	}
--}
--
--/**
-  * cpuidle_pause_and_lock - temporarily disables CPUIDLE
-  */
- void cpuidle_pause_and_lock(void)
- {
- 	mutex_lock(&cpuidle_lock);
--	cpuidle_uninstall_idle_handler();
- }
- 
- EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
-@@ -132,7 +106,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
-  */
- void cpuidle_resume_and_unlock(void)
- {
--	cpuidle_install_idle_handler();
- 	mutex_unlock(&cpuidle_lock);
- }
- 
-@@ -180,7 +153,6 @@ int cpuidle_enable_device(struct cpuidle
- 
- 	dev->enabled = 1;
- 
--	enabled_devices++;
- 	return 0;
- 
- fail_sysfs:
-@@ -211,7 +183,6 @@ void cpuidle_disable_device(struct cpuid
- 		cpuidle_curr_governor->disable(dev);
- 
- 	cpuidle_remove_state_sysfs(dev);
--	enabled_devices--;
- }
- 
- EXPORT_SYMBOL_GPL(cpuidle_disable_device);
-@@ -303,7 +274,6 @@ int cpuidle_register_device(struct cpuid
- 	}
- 
- 	cpuidle_enable_device(dev);
--	cpuidle_install_idle_handler();
- 
- 	mutex_unlock(&cpuidle_lock);
- 
-@@ -382,8 +352,6 @@ static int __init cpuidle_init(void)
- {
- 	int ret;
- 
--	pm_idle_old = pm_idle;
--
- 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
- 	if (ret)
- 		return ret;
-Index: linux.trees.git/drivers/cpuidle/governor.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/governor.c
-+++ linux.trees.git/drivers/cpuidle/governor.c
-@@ -48,8 +48,6 @@ int cpuidle_switch_governor(struct cpuid
- 	if (gov == cpuidle_curr_governor)
- 		return 0;
- 
--	cpuidle_uninstall_idle_handler();
--
- 	if (cpuidle_curr_governor) {
- 		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
- 			cpuidle_disable_device(dev);
-@@ -63,7 +61,6 @@ int cpuidle_switch_governor(struct cpuid
- 			return -EINVAL;
- 		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
- 			cpuidle_enable_device(dev);
--		cpuidle_install_idle_handler();
- 		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
- 	}
- 
-Index: linux.trees.git/include/linux/cpuidle.h
-===================================================================
---- linux.trees.git.orig/include/linux/cpuidle.h
-+++ linux.trees.git/include/linux/cpuidle.h
-@@ -112,6 +112,9 @@ static inline int cpuidle_get_last_resid
- 	return dev->last_residency;
- }
- 
-+extern void cpuidle_idle_call(void);
-+extern struct cpuidle_driver *cpuidle_curr_driver;
-+
- 
- /****************************
-  * CPUIDLE DRIVER INTERFACE *
-Index: linux.trees.git/drivers/cpuidle/cpuidle.h
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/cpuidle.h
-+++ linux.trees.git/drivers/cpuidle/cpuidle.h
-@@ -9,7 +9,6 @@
- 
- /* For internal use only */
- extern struct cpuidle_governor *cpuidle_curr_governor;
--extern struct cpuidle_driver *cpuidle_curr_driver;
- extern struct list_head cpuidle_governors;
- extern struct list_head cpuidle_detected_devices;
- extern struct mutex cpuidle_lock;
+	-Mike
+
