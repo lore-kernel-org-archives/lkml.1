@@ -1,129 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZIVIi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZIVIkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbZIVIi7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 04:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZIVIi5
+	id S1755494AbZIVIkO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 04:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZIVIkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 04:38:57 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:37573 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620AbZIVIi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 04:38:56 -0400
-Message-ID: <4AB88D09.3080907@gmail.com>
-Date: Tue, 22 Sep 2009 10:38:33 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 22 Sep 2009 04:40:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42198 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752621AbZIVIkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 04:40:10 -0400
+Date: Tue, 22 Sep 2009 08:39:36 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       lizf@cn.fujitsu.com, jolsa@redhat.com, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitsu.com, jolsa@redhat.com, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4AB865FA.5080801@cn.fujitsu.com>
+References: <4AB865FA.5080801@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/urgent] tracing: Fix off-by-one in trace_get_user()
+Message-ID: <tip-3c235a337e205da0f614e456be72881483dcde6e@git.kernel.org>
+Git-Commit-ID: 3c235a337e205da0f614e456be72881483dcde6e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Darren Hart <dvhltc@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 5/5] futex: fix wakeup race by setting TASK_INTERRUPTIBLE
- before queue_me
-References: <20090922052452.8717.39673.stgit@Aeon> <20090922053038.8717.97838.stgit@Aeon>
-In-Reply-To: <20090922053038.8717.97838.stgit@Aeon>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 22 Sep 2009 10:38:34 +0200 (CEST)
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 08:39:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren Hart a écrit :
-> PI futexes do not use the same plist_node_empty() test for wakeup. It was
-> possible for the waiter (in futex_wait_requeue_pi()) to set TASK_INTERRUPTIBLE
-> after the waker assigned the rtmutex to the waiter. The waiter would then note
-> the plist was not empty and call schedule(). The task would not be found by any
-> subsequeuent futex wakeups, resulting in a userspace hang. By moving the
-> setting of TASK_INTERRUPTIBLE to before the call to queue_me(), the race with
-> the waker is eliminated. Since we no longer call get_user() from within
-> queue_me(), there is no need to delay the setting of TASK_INTERRUPTIBLE until
-> after the call to queue_me().
-> 
-> The FUTEX_LOCK_PI operation is not affected as futex_lock_pi() relies entirely
-> on the rtmutex code to handle schedule() and wakeup.  The requeue PI code is
-> affected because the waiter starts as a non-PI waiter and is woken on a PI
-> futex.
-> 
-> Remove the crusty old comment about holding spinlocks() across get_user() as we
-> no longer do that. Correct the locking statement with a description of why the
-> test is performed.
+Commit-ID:  3c235a337e205da0f614e456be72881483dcde6e
+Gitweb:     http://git.kernel.org/tip/3c235a337e205da0f614e456be72881483dcde6e
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Tue, 22 Sep 2009 13:51:54 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 22 Sep 2009 10:28:53 +0200
 
-I am very confused by this ChangeLog...
+tracing: Fix off-by-one in trace_get_user()
 
-> 
-> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> CC: Eric Dumazet <eric.dumazet@gmail.com>
-> CC: Dinakar Guniguntala <dino@in.ibm.com>
-> CC: John Stultz <johnstul@us.ibm.com>
-> ---
-> 
->  kernel/futex.c |   15 +++------------
->  1 files changed, 3 insertions(+), 12 deletions(-)
-> 
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index f92afbe..463af2e 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -1656,17 +1656,8 @@ out:
->  static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
->  				struct hrtimer_sleeper *timeout)
->  {
-> -	queue_me(q, hb);
-> -
-> -	/*
-> -	 * There might have been scheduling since the queue_me(), as we
-> -	 * cannot hold a spinlock across the get_user() in case it
-> -	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
-> -	 * queueing ourselves into the futex hash. This code thus has to
-> -	 * rely on the futex_wake() code removing us from hash when it
-> -	 * wakes us up.
-> -	 */
->  	set_current_state(TASK_INTERRUPTIBLE);
+Leave the last slot for the tailing '\0'.
 
-Hmm, you missed the smp_mb() properties here...
-
-Before :
-     queue_me()
-     set_mb(current->state, TASK_INTERRUPTIBLE);
-     if (timeout) {...}
-     if (likely(!plist_node_empty(&q->list))) {
-	...
-     }
-
-After :
-     set_mb(current->state, TASK_INTERRUPTIBLE);
-     queue_me();
-     if (timeout) {...}
-// no barrier... why ar we still testing q->list
-// since it has no synchro between queue_me() and test ?
-     if (likely(!plist_node_empty(&q->list))) {
-	...
-     }
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <4AB865FA.5080801@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ kernel/trace/trace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> +	queue_me(q, hb);
->  
->  	/* Arm the timer */
->  	if (timeout) {
-> @@ -1676,8 +1667,8 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
->  	}
->  
->  	/*
-> -	 * !plist_node_empty() is safe here without any lock.
-> -	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
-> +	 * If we have been removed from the hash list, then another task
-> +	 * has tried to wake us, and we can skip the call to schedule().
->  	 */
->  	if (likely(!plist_node_empty(&q->list))) {
->  		/*
-> 
-
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index a35925d..ae17453 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -415,7 +415,7 @@ int trace_get_user(struct trace_parser *parser, const char __user *ubuf,
+ 
+ 	/* read the non-space input */
+ 	while (cnt && !isspace(ch)) {
+-		if (parser->idx < parser->size)
++		if (parser->idx < parser->size - 1)
+ 			parser->buffer[parser->idx++] = ch;
+ 		else {
+ 			ret = -EINVAL;
