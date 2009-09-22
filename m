@@ -1,58 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbZIVTJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbZIVTKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751811AbZIVTJd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZIVTJc
+	id S1751832AbZIVTKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbZIVTKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:09:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38646 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751321AbZIVTJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:09:32 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/YIQRhnIjYAQyAge3Et7/ji3/n45N5GCXYcJZrnz
-	+UblYPcU6SHM+c
-Subject: Re: mailing list for trace users
-From: Mike Galbraith <efault@gmx.de>
-To: Avi Kivity <avi@redhat.com>
-Cc: rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
-In-Reply-To: <4AB8D930.1090308@redhat.com>
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
-	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>
-	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>
-	 <4AB8BA37.4010305@redhat.com> <1253620488.13917.29.camel@marge.simson.net>
-	 <1253627604.7272.17.camel@marge.simson.net>  <4AB8D930.1090308@redhat.com>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 21:09:16 +0200
-Message-Id: <1253646556.7240.4.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+	Tue, 22 Sep 2009 15:10:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33812 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751466AbZIVTKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 15:10:44 -0400
+Date: Tue, 22 Sep 2009 19:09:43 GMT
+From: tip-bot for Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       seto.hidetoshi@jp.fujitsu.com, dnelson@redhat.com, ying.huang@intel.com,
+       ak@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: ying.huang@intel.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, dnelson@redhat.com,
+       seto.hidetoshi@jp.fujitsu.com, ak@linux.intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1253601357.15717.757.camel@yhuang-dev.sh.intel.com>
+References: <1253601357.15717.757.camel@yhuang-dev.sh.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: mce, inject: Use real inject-msg in raise_local
+Message-ID: <tip-14c0abf14a5e67e793131116bd97f57da37ccce3@git.kernel.org>
+Git-Commit-ID: 14c0abf14a5e67e793131116bd97f57da37ccce3
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 19:09:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 17:03 +0300, Avi Kivity wrote:
-> On 09/22/2009 04:53 PM, Mike Galbraith wrote:
-> >
-> > Parses fine here, and INSTALL_MOD_STRIP=1 made zero difference.  can you
-> > send me that module and .config gzipped up?
-> >
-> >    
-> 
-> Sent privately.
+Commit-ID:  14c0abf14a5e67e793131116bd97f57da37ccce3
+Gitweb:     http://git.kernel.org/tip/14c0abf14a5e67e793131116bd97f57da37ccce3
+Author:     Huang Ying <ying.huang@intel.com>
+AuthorDate: Tue, 22 Sep 2009 14:35:57 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 22 Sep 2009 21:06:37 +0200
 
-I can reproduce with your config, so do don't (thankfully) need to rip
-binary apart looking for tools things.  Will take a look.
+x86: mce, inject: Use real inject-msg in raise_local
 
-	Mike
+Current raise_local() uses a struct mce that comes from mce_write()
+as a parameter instead of the real inject-msg, so when we set
+mce.finished = 0 to clear injected MCE, the real inject stays
+valid.
 
+This will cause the remaining inject-msg affect the next injection,
+which is not desired.
+
+To fix this, real inject-msg is used in raise_local instead of the
+one on the stack.
+
+This patch is based on the diagnosis and the fixes by Dean Nelson.
+
+Reported-by: Dean Nelson <dnelson@redhat.com>
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+LKML-Reference: <1253601357.15717.757.camel@yhuang-dev.sh.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/cpu/mcheck/mce-inject.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce-inject.c b/arch/x86/kernel/cpu/mcheck/mce-inject.c
+index 7029f0e..472763d 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce-inject.c
++++ b/arch/x86/kernel/cpu/mcheck/mce-inject.c
+@@ -98,8 +98,9 @@ static struct notifier_block mce_raise_nb = {
+ };
+ 
+ /* Inject mce on current CPU */
+-static int raise_local(struct mce *m)
++static int raise_local(void)
+ {
++	struct mce *m = &__get_cpu_var(injectm);
+ 	int context = MCJ_CTX(m->inject_flags);
+ 	int ret = 0;
+ 	int cpu = m->extcpu;
+@@ -167,12 +168,12 @@ static void raise_mce(struct mce *m)
+ 			}
+ 			cpu_relax();
+ 		}
+-		raise_local(m);
++		raise_local();
+ 		put_cpu();
+ 		put_online_cpus();
+ 	} else
+ #endif
+-		raise_local(m);
++		raise_local();
+ }
+ 
+ /* Error injection interface */
