@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbZIVJ2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbZIVJat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755761AbZIVJ2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 05:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbZIVJ2h
+	id S1755756AbZIVJat (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 05:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbZIVJat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 05:28:37 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60488 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755706AbZIVJ2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 05:28:37 -0400
-Message-ID: <4AB89892.3080603@cn.fujitsu.com>
-Date: Tue, 22 Sep 2009 17:27:46 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 22 Sep 2009 05:30:49 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:54583 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755375AbZIVJas (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 05:30:48 -0400
+Date: Tue, 22 Sep 2009 11:30:23 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>, sachinp@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] slqb: Allow SLQB to be used on PPC
+Message-ID: <20090922093023.GA22441@osiris.boeblingen.de.ibm.com>
+References: <1253549426-917-1-git-send-email-mel@csn.ul.ie>
+ <1253549426-917-4-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf_counter: cleanup for __perf_event_sched_in()
-References: <4AB88F06.10900@cn.fujitsu.com> <19128.38623.956765.684792@cargo.ozlabs.ibm.com>
-In-Reply-To: <19128.38623.956765.684792@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253549426-917-4-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Paul Mackerras wrote:
-> Xiao Guangrong writes:
+On Mon, Sep 21, 2009 at 05:10:26PM +0100, Mel Gorman wrote:
+> SLQB was disabled on PPC as it would stab itself in the face when running
+> on machines with CPUs on memoryless nodes. As those configurations should
+> now work, allow SLQB to be configured again on PPC.
 > 
->> It must be a group leader if event->attr.pinned is "1"
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  init/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> True, but you shouldn't use BUG_ON unless there is no sensible way for
-> the kernel to continue executing, and that's not the case here.  Make
-> it WARN_ON, or better still, WARN_ON_ONCE.
+> diff --git a/init/Kconfig b/init/Kconfig
+> index adc10ab..8f55fde 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -1033,7 +1033,7 @@ config SLUB
 > 
+>  config SLQB
+>  	bool "SLQB (Queued allocator)"
+> -	depends on !PPC && !S390
+> +	depends on !S390
 
-Yeah, thanks for you point out, I'll fix it soon.
-
-Thanks,
-Xiao
-
+You can remove S390 from the list independently from this patch set.
+As already mentioned SLQB works again on s390 and whatever caused the
+bug I reported a few weeks back is gone.
