@@ -1,96 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbZIVTPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZIVTP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbZIVTPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZIVTPk
+	id S1751993AbZIVTP6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbZIVTP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:15:40 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:38995 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751923AbZIVTPh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:15:37 -0400
-Date: Tue, 22 Sep 2009 12:15:31 -0700
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>
-Message-ID: <20090922191529.GB4690@sirena.org.uk>
-References: <1253625499-9314-1-git-send-email-w.sang@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253625499-9314-1-git-send-email-w.sang@pengutronix.de>
-X-Cookie: Advancement in position.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 72.254.91.198
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [RFC] regulator: add driver for MAX8660/8661
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Tue, 22 Sep 2009 15:15:56 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:42652 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751387AbZIVTPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 15:15:55 -0400
+Date: Tue, 22 Sep 2009 21:15:46 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: herton@mandriva.com.br, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [rtc-linux] Re: rtc_cmos oops in cmos_rtc_ioctl
+Message-ID: <20090922211546.44c0cf56@i1501.lan.towertech.it>
+In-Reply-To: <200909221515.26777.herton@mandriva.com.br>
+References: <200909211553.38409.herton@mandriva.com.br>
+	<20090922124041.62abee25@i1501.lan.towertech.it>
+	<200909221515.26777.herton@mandriva.com.br>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 03:18:19PM +0200, Wolfram Sang wrote:
+On Tue, 22 Sep 2009 15:15:26 -0300
+Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
 
-Overall this looks pretty good - some comments...
+> 
+> Something like this?:
+> 
+> From a94365843ab40a1904c4bc244af4e551f2f2aca9 Mon Sep 17 00:00:00 2001
+> From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+> Date: Tue, 22 Sep 2009 13:46:00 -0300
+> Subject: [PATCH] rtc-cmos: convert RTC_AIE/RTC_UIE to rtc irq API
+> 
+> Drop ioctl function that handles RTC_AIE/RTC_UIE, and use instead the
+> rtc subsystem API (alarm_irq_enable/update_irq_enable callbacks).
+> 
+> Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
 
->  Documentation/power/regulator/max8660.txt |   32 ++
+ Looks nice. David?
 
-Hrm, if we're going to do this we should do it consistently for all the
-drivers.  I think I prefer documentation embedded in the source TBH but
-only a little bit.
+> --
+> Still, couldn't an oops still trigger with this with dev_set_drvdata after
+> rtc_device_register? Lets say, a small test program like this:
 
-> +This chip is a bit nasty because it is a write-only device. Thus, the driver
-> +uses shadow registers to keep track of its values. The main problem appears to
-> +be the initialization: When Linux boots up, we cannot know if the chip is in
-> +the default state or not, so we would have to pass such information in
-> +platform_data. As this adds a bit of complexity to the driver, this is left
-> +out for now until it is really needed.
+ dev_set_drvdata should be called before rtc_device_register. I guess
+ I'll have to patch every single driver :(
 
-The AB3100 regulator has a somewhat similar problem in that it appears
-to pretty much need some very device specific setup to be done since it
-expects software to do a lot of the bootstrapping.  Your plan of passing
-in platform data and just blatting the device configuration does seem
-reasonable if there's stuff like that.
 
-> +Note that disabling V3 or V4 has no effect if pin EN34 is driven high (pin and
-> +register are ORed, see datasheet).
+ [...]
 
-Might be worth exposing this for control via GPIO in a future version of
-the driver.
+> Compiled and run with similar udev rule. It's very unlikely, and I couldn't
+> get an oops anymore unless I moved dev_set_drvdata down in cmos_do_probe in
+> my test machine, but should be a possibility?
 
-> +- Make use of the forced PWM modes?
+ I don't think so.
+ 
 
-regulator_set_mode() - should be fairly straightforward.
 
-> +- ARD?
+-- 
 
-I'm not sure what you mean by this?
+ Best regards,
 
-> +	struct regulator_dev *rdev[0];
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
-I'm not a big fan of the 0 length array - just [] ought to do?
+  http://www.towertech.it
 
-> +static int max8660_dcdc_enable(struct regulator_dev *rdev)
-> +{
-> +	int ret;
-> +	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-> +	u8 val = (rdev_get_id(rdev) == MAX8660_V3) ? 1 : 4;
-> +	ret = max8660_write(max8660, MAX8660_OVER1, 0xff, val);
-> +	val = (rdev_get_id(rdev) == MAX8660_V3) ? 0x03 : 0x30;
-> +	return (ret != 0) ? :
-> +		max8660_write(max8660, MAX8660_VCC1, ~val, val & 0x11);
-
-Some comments here as to why you're also updating VCC1 would be helpful
-here, it's a bit obscure at the minute.
-
-> +		switch (pdata->subdevs[i].id) {
-> +		case MAX8660_V3:
-> +			if (boot_on)
-> +				max8660->shadow_regs[MAX8660_OVER1] |= 1;
-> +			break;
-
-Might be worth a comment explaining why you're doing this - I believe
-you need this to be done first so that set_voltage() doesn't power
-things off but it's not immediately obvious from the code.
