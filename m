@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZIVSQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbZIVSVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbZIVSQW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 14:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbZIVSQV
+	id S1756795AbZIVSVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 14:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbZIVSVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 14:16:21 -0400
-Received: from claw.goop.org ([74.207.240.146]:33429 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753363AbZIVSQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 14:16:21 -0400
-Message-ID: <4AB91478.2050508@goop.org>
-Date: Tue, 22 Sep 2009 11:16:24 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Tue, 22 Sep 2009 14:21:41 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:47738 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755745AbZIVSVl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 14:21:41 -0400
+Date: Tue, 22 Sep 2009 11:21:44 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Joe Perches <joe@perches.com>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, yehuda@newdream.net
+Subject: Re: [PATCH 02/21] ceph: on-wire types
+In-Reply-To: <1253642496.30020.58.camel@Joe-Laptop.home>
+Message-ID: <Pine.LNX.4.64.0909221120300.1552@cobra.newdream.net>
+References: <1253641129-28434-1-git-send-email-sage@newdream.net>
+ <1253641129-28434-2-git-send-email-sage@newdream.net>
+ <1253641129-28434-3-git-send-email-sage@newdream.net>
+ <1253642496.30020.58.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Avi Kivity <avi@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Alok Kataria <akataria@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090919224430.GB9567@kroah.com> <1253419185.3253.21.camel@ank32.eng.vmware.com> <20090920074247.GA5733@elte.hu> <20090920095239.456ad6f2@infradead.org> <4AB5EF25.9070502@redhat.com> <4AB64EFC.10707@goop.org> <20090922080913.GB1475@elte.hu> <4AB900CC.7090409@goop.org> <20090922180216.GA16789@elte.hu>
-In-Reply-To: <20090922180216.GA16789@elte.hu>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/22/09 11:02, Ingo Molnar wrote:
-> obviously they are workload dependent - that's why numbers were posted 
-> in this thread with various workloads. Do you concur with those 
-> conclusions that they are generally a speedup over paravirt? If not, 
-> which are the workloads where paravirt offers significant speedup over 
-> hardware acceleration?
->   
+On Tue, 22 Sep 2009, Joe Perches wrote:
 
-We're not in a position to do any useful measurements yet.
+> On Tue, 2009-09-22 at 10:38 -0700, Sage Weil wrote:
+> > These headers describe the types used to exchange messages between the
+> > Ceph client and various servers.  All types are little-endian and
+> > packed.
+> []
+> > diff --git a/fs/ceph/ceph_fs.h b/fs/ceph/ceph_fs.h
+> > new file mode 100644
+> > index 0000000..15150fc
+> > --- /dev/null
+> > +++ b/fs/ceph/ceph_fs.h
+> []
+> > +static inline __u32 frag_make(__u32 b, __u32 v)
+> > +{
+> > +	return (b << 24) |
+> > +		(v & (0xffffffu << (24-b)) & 0xffffffu);
+> > +}
+> 
+> frag_<foo> inlines might have a conflict with ipv6
 
-    J
+I'll prefix those with 'ceph_'.
 
+> > +static inline const char *ceph_mds_state_name(int s)
+> > +{
+> > +	switch (s) {
+> []
+> > +	case CEPH_MDS_STATE_STOPPING:   return "up:stopping";
+> > +	default: return "";
+> > +	}
+> > +	return NULL;
+> > +}
+> 
+> inline?
+> 
+> It's probably better not to use inlines here
+> as the strings could be duplicated unnecessarily.
+
+Agreed.  They were easier to maintain that way when the constants changed 
+frequently, but they can be uninlined now.
+
+Thanks!
+sage
