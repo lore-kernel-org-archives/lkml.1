@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbZIVHdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbZIVHhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752316AbZIVHdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 03:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZIVHdP
+	id S1753119AbZIVHhV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 03:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZIVHhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 03:33:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38591 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbZIVHdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 03:33:14 -0400
-Date: Tue, 22 Sep 2009 09:33:14 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Mike Frysinger <vapier@gentoo.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH] input/keyboard: new driver for ADP5520 MFD PMICs
-In-Reply-To: <20090922055954.GB9658@core.coreip.homeip.net>
-Message-ID: <alpine.LRH.2.00.0909220933090.27145@twin.jikos.cz>
-References: <1253211850-29309-1-git-send-email-vapier@gentoo.org> <20090922055954.GB9658@core.coreip.homeip.net>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Tue, 22 Sep 2009 03:37:20 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:54892 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbZIVHhT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 03:37:19 -0400
+Date: Tue, 22 Sep 2009 09:37:18 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Chen Liqin <liqin.chen@sunplusct.com>
+Cc: Tim Abbott <tabbott@ksplice.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, liqin.gnu@gmail.com
+Subject: Re: [PATCH 1/2] score: add head files define in vmlinux.lds.S
+Message-ID: <20090922073718.GA29384@merkur.ravnborg.org>
+References: <1253601122.27225.2.camel@ad3ser01>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253601122.27225.2.camel@ad3ser01>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Sep 2009, Dmitry Torokhov wrote:
-
-> > +	if (event & KP_INT) {
-> > +		adp5520_read(dev->master, KP_INT_STAT_1, &reg_val_low);
-> > +		adp5520_read(dev->master, KP_INT_STAT_2, &reg_val_high);
-> > +
-> > +		keymask = (reg_val_high << 8) | reg_val_low;
-> > +		/* Read twice to clear */
-> > +		adp5520_read(dev->master, KP_INT_STAT_1, &reg_val_low);
-> > +		adp5520_read(dev->master, KP_INT_STAT_2, &reg_val_high);
-> > +		keymask |= (reg_val_high << 8) | reg_val_low;
-> > +		adp5520_keys_report_event(dev, keymask, 1);
-> > +	}
-> > +
-> > +	if (event & KR_INT) {
+On Tue, Sep 22, 2009 at 02:32:02PM +0800, Chen Liqin wrote:
 > 
-> Why do you check the same condition twice?
+> Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
+> ---
+>  arch/score/kernel/vmlinux.lds.S |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/score/kernel/vmlinux.lds.S b/arch/score/kernel/vmlinux.lds.S
+> index aab4703..eebcbaa 100644
+> --- a/arch/score/kernel/vmlinux.lds.S
+> +++ b/arch/score/kernel/vmlinux.lds.S
+> @@ -24,6 +24,8 @@
+>   */
+>  
+>  #include <asm-generic/vmlinux.lds.h>
+> +#include <asm/thread_info.h>
+> +#include <asm/page.h>
+>  
+>  OUTPUT_ARCH(score)
+>  ENTRY(_stext)
 
-It actually doesn't seem to be the same condition (KP_INT vs. KR_INT), but 
-it's difficult to say, as these constants are apparently added in some 
-other patch I have no idea about.
-And the same for other constants used in the code ... the patch seems to 
-be quite incomplete.
+Hi Chen.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+I assume this is needed to allow Tim's patchset to build.
+The preferred way is that you integrate this into the original
+patch and apply it to your tree.
 
+We prefer arch specific patches to go in via the arch trees.
+
+I sometime takes patches in via kbuild that touches a lot
+of architectures but stuff like like should go in
+via you.
+
+For score (and for other archs) I cannot even build test stuff..
+
+	Sam
