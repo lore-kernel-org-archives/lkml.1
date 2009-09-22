@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZIVACj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZIVAPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZIVACj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 20:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbZIVACi
+	id S1754599AbZIVAPl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 20:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZIVAPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 20:02:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56263 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754397AbZIVACi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 20:02:38 -0400
-Message-ID: <4AB813F3.8060102@kernel.org>
-Date: Tue, 22 Sep 2009 09:01:55 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 21 Sep 2009 20:15:40 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:60513 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754599AbZIVAPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 20:15:38 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jamie Lokier <jamie@shareable.org>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Eric Paris <eparis@redhat.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+References: <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
+	<20090911212731.GA19901@shareable.org>
+	<1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
+	<20090912094110.GB24709@ioremap.net>
+	<20090914001759.GB30621@shareable.org>
+	<20090914140720.GA8564@ioremap.net>
+	<1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
+	<20090915201620.GB32192@ioremap.net>
+	<1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
+	<20090916120523.GA12830@ioremap.net>
+	<20090916122723.GE29359@shareable.org>
+	<alpine.LFD.2.01.0909170934450.4950@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 21 Sep 2009 17:15:28 -0700
+In-Reply-To: <alpine.LFD.2.01.0909170934450.4950@localhost.localdomain> (Linus Torvalds's message of "Thu\, 17 Sep 2009 09\:40\:16 -0700 \(PDT\)")
+Message-ID: <m1r5tzq1gf.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       sachinp@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc: Allocate per-cpu areas for node IDs for
- SLQB to use as per-node areas
-References: <1253549426-917-1-git-send-email-mel@csn.ul.ie> <1253549426-917-2-git-send-email-mel@csn.ul.ie>
-In-Reply-To: <1253549426-917-2-git-send-email-mel@csn.ul.ie>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 00:01:57 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Linus Torvalds <torvalds@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.1 XMSolicitRefs_0 Weightloss drug
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: fanotify as syscalls
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-Mel Gorman wrote:
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 1f68160..a5f52d4 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -588,6 +588,26 @@ void __init setup_per_cpu_areas(void)
->  		paca[i].data_offset = ptr - __per_cpu_start;
->  		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
->  	}
-> +#ifdef CONFIG_SLQB
-> +	/* 
-> +	 * SLQB abuses DEFINE_PER_CPU to setup a per-node area. This trick
-> +	 * assumes that ever node ID will have a CPU of that ID to match.
-> +	 * On systems with memoryless nodes, this may not hold true. Hence,
-> +	 * we take a second pass initialising a "per-cpu" area for node-ids
-> +	 * that SLQB can use
-> +	 */
-> +	for_each_node_state(i, N_NORMAL_MEMORY) {
-> +
-> +		/* Skip node IDs that a valid CPU id exists for */
-> +		if (paca[i].data_offset)
-> +			continue;
-> +
-> +		ptr = alloc_bootmem_pages_node(NODE_DATA(cpu_to_node(i)), size);
-> +
-> +		paca[i].data_offset = ptr - __per_cpu_start;
-> +		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
-> +	}
-> +#endif /* CONFIG_SLQB */
->  }
->  #endif
+> Quite frankly, I have _never_ever_ seen a good reason for talking to the 
+> kernel with some idiotic packet interface. It's just a fancy way to do 
+> ioctl's, and everybody knows that ioctl's are bad and evil. Why are fancy 
+> packet interfaces suddenly much better?
 
-Eh... I don't know.  This seems too hacky to me.  Why not just
-allocate pointer array of MAX_NUMNODES and allocate per-node memory
-there?  This will be slightly more expensive but I doubt it will be
-noticeable.  The only extra overhead is the cachline footprint for the
-extra array.
+For working with the networking stack there are a lot of advantages because
+netlink is the interface to everything in the network stack.
 
-Thanks.
+There are nice things like the packet to create a new interface is the same
+packet the kernel sends everyone to report a new interface etc.
 
--- 
-tejun
+netlink also seems to get the structured data thing right.  You can
+parse the packet even if you don't understand everything.  Each tag is
+well defined like a syscall, taking exactly one kind of argument.
+Which avoids the worst failure of ioctl in that you can't even parse
+everything, and the argument may be a linked list in the calling
+process or something else atrocious.
+
+All of that said syscalls are good, and I would not recommend netlink
+to anything not in the network stack.
+
+Eric
