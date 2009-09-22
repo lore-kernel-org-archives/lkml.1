@@ -1,59 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbZIVEnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZIVFIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753789AbZIVEnP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 00:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbZIVEnN
+	id S1754431AbZIVFIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 01:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZIVFIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 00:43:13 -0400
-Received: from [195.41.46.235] ([195.41.46.235]:60329 "EHLO pfepa.post.tele.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753461AbZIVEnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 00:43:13 -0400
-Date: Tue, 22 Sep 2009 06:43:10 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Am?rico Wang <xiyou.wangcong@gmail.com>, Caveh Jalali <ecaveh@gmail.com>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] warn about use of uninstalled kernel headers
-Message-ID: <20090922044310.GA29208@merkur.ravnborg.org>
-References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com> <2375c9f90909171849n429bc474heabdc4d4fd064226@mail.gmail.com> <20090918045259.GA23333@merkur.ravnborg.org> <200909211637.12983.arnd@arndb.de>
+	Tue, 22 Sep 2009 01:08:20 -0400
+Received: from mail-px0-f199.google.com ([209.85.216.199]:41506 "EHLO
+	mail-px0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753828AbZIVFIT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 01:08:19 -0400
+X-Greylist: delayed 1482 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Sep 2009 01:08:19 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=xUZXLb0wmUUrlOXAN47XfTF5bVzsAToKv+xjXLJ5jhfmBFAGC6M3X2/FYW8dUAeM3m
+         piZ5T529GawSwfycTsk2btLiX2pDn+p3BeCOsi3A0OqAM3LDvhqge64MD7BAPEgMDNFG
+         CKch5uaNCMYses4BIbkMeYbznvw6iNp+tu3dw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909211637.12983.arnd@arndb.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Tue, 22 Sep 2009 10:13:40 +0530
+Message-ID: <ba5648fa0909212143g36f47acck2e4b610429c477ec@mail.gmail.com>
+Subject: BlueZ Supported Profiles
+From: bluezprofile kernel <bluezprofile@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 04:37:12PM +0200, Arnd Bergmann wrote:
-> User applications frequently hit problems when they try to use
-> the kernel headers directly, rather than the exported headers.
-> 
-> This adds an explicit warning for this case, and points to
-> a URL holding an explanation of why this is wrong and what
-> to do about it.
+Hi,
+I would like to know what are all profiles supported by BlueZ?
+Is there any site gives list of profiles supported by BlueZ?
+I am using BlueZ 4.46.
 
-Like the idea.
-
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  include/linux/kernel.h     |    6 ++++++
->  scripts/headers_install.pl |    2 +-
->  2 files changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index d6320a3..f392d72 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -656,6 +656,12 @@ extern int do_sysinfo(struct sysinfo *info);
->  
->  #endif /* __KERNEL__ */
->  
-> +#ifndef __EXPORTED_HEADERS__
-But why do we need this "__EXPORTED_HEADERS__" thing?
-
-?
-
-	Sam
+-- Nic shen
