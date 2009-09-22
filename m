@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZIVPqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZIVPqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbZIVPqZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZIVPqX
+	id S1756669AbZIVPqV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZIVPqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:46:23 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51037 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756836AbZIVPqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:46:22 -0400
-Date: Tue, 22 Sep 2009 21:15:49 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alan Cox <alan@linux.intel.com>, virtualization@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
-	generic guest and host communication
-Message-ID: <20090922154549.GA11379@amit-x200.redhat.com>
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <1252678386-17404-2-git-send-email-amit.shah@redhat.com> <20090911170010.34c80f2d@linux.intel.com> <200909221214.04340.rusty@rustcorp.com.au>
+	Tue, 22 Sep 2009 11:46:20 -0400
+Received: from server78.greatnet.de ([83.133.96.102]:51098 "EHLO
+	server78.greatnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753659AbZIVPqT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 11:46:19 -0400
+Message-ID: <4AB8F142.9090609@nachtwindheim.de>
+Date: Tue, 22 Sep 2009 17:46:10 +0200
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909221214.04340.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: khali@linux-fr.org, jbarnes@virtousgeek.org
+CC: linux-pci@vger.kernel.org, linux-i2c@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Crash on reading the whole PCI config of PIIX4 SMBus
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Tue) Sep 22 2009 [12:14:04], Rusty Russell wrote:
-> On Sat, 12 Sep 2009 01:30:10 am Alan Cox wrote:
-> > > The interface presented to guest userspace is of a simple char
-> > > device, so it can be used like this:
-> > > 
-> > >     fd = open("/dev/vcon2", O_RDWR);
-> > >     ret = read(fd, buf, 100);
-> > >     ret = write(fd, string, strlen(string));
-> > > 
-> > > Each port is to be assigned a unique function, for example, the
-> > > first 4 ports may be reserved for libvirt usage, the next 4 for
-> > > generic streaming data and so on. This port-function mapping
-> > > isn't finalised yet.
-> > 
-> > Unless I am missing something this looks completely bonkers
-> > 
-> > Every time we have a table of numbers for functionality it ends in
-> > tears. We have to keep tables up to date and managed, we have to
-> > administer the magical number to name space.
-> 
-> The number comes from the ABI; we need some identifier for the different
-> ports.  Amit started using names, and I said "just use numbers"; they have
-> to be documented and agreed by all clients anyway.
-> 
-> ie. the host says "here's a port id 7", which might be the cut & paste
-> port or whatever.
+Hi there,
 
-Yeah; port 0 has to be reserved for a console (and then we might need
-to do a bit more for multiple consoles -- hvc operates on a 'vtermno',
-so we need to allocate them as well).
+at boot time my system (Wincor/Nixdorf Beetle D1) sometimes crashs while loading the i2c-piix4 driver.
+I found out that I can always trigger the crash as root, which one of those:  
 
-Also, a 'name' property can be attached to ports, as has been suggested:
+# hexdump -C /proc/bus/pci/00/07.3
+# hexdump -C /sys/bus/pci/devices/0000:00:07.3/config
+# lspci -s 07.3 -xxx
 
-qemu ... -device virtconport,name=org.qemu.clipboard,port=3,...
+While initialization the i2c-piix4 driver does two reads to the config space, at 0xd2 and 0xd6,
+in a relative short time. That sometimes triggers the crash,
+but isn't that precise like one of those commands.
 
-spawns a port at id 3 and the guest will also place a file:
+While my investigations I put a printk() between those two reads and had no more crashs
+on module loading. I tested that with a script, doing insmod/rmmod 100 times in a row.
 
-/sys/class/virtio-console/vcon3/name
+But printk() can't be the solution, so I tried msleep(1) and udelay(250),
+but with each of these my system crashed.
+The time for the read and one printk() takes ~100 us on my machine,
+so both time values should be more than enough, if time would have been the reason.
 
-which has "org.qemu.clipboard" as contents, so udev scripts could
-create a symlink:
+Does someone have an idea what the driver should do between those two reads, to avoid crashing?
+Can somebody with the same device trigger this crash too (greped LKML 2001-2008, found nothing)?
+I have another box with this device and I'll test this in 4 hours.
+Or is just my Hardware broken and I should blacklist the module?
 
-/dev/vcon/org.qemu.clipboard -> /dev/vcon3
+I used 2.6.26-2 (deb/lenny) and 2.6.31 (vanilla) whith the same results.
 
-		Amit
+Btw, I also tried:
+
+$ for i in `seq 300`; do sensors; done
+
+which brought the same machine down (only 2.6.31) with an:
+
+do_IRQ: 0.66 No irq handler for vector (irq -1)
+
+
+#lspci -s 07.3 -vvvn
+
+00:07.3 0680: 8086:7113 (rev 02)
+	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Interrupt: pin ? routed to IRQ 9
+	Kernel driver in use: piix4_smbus
+	Kernel modules: i2c-piix4
+
