@@ -1,313 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZIVNjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbZIVNjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbZIVNjJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbZIVNjI
+	id S1756355AbZIVNjU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbZIVNjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:39:08 -0400
-Received: from mxout-08.mxes.net ([216.86.168.183]:47069 "EHLO
-	mxout-08.mxes.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755154AbZIVNiy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:38:54 -0400
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-To: rusty@rustcorp.com.au
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       linux-modules@vger.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: [PATCH 4/4] module: speed up find_symbol() using binary search on the builtin symbol tables
-Date: Tue, 22 Sep 2009 14:38:38 +0100
-Message-Id: <1253626718-18887-5-git-send-email-alan-jenkins@tuffmail.co.uk>
-X-Mailer: git-send-email 1.6.3.2
-In-Reply-To: <1253626718-18887-1-git-send-email-alan-jenkins@tuffmail.co.uk>
-References: <1253626718-18887-1-git-send-email-alan-jenkins@tuffmail.co.uk>
+	Tue, 22 Sep 2009 09:39:18 -0400
+Received: from mga14.intel.com ([143.182.124.37]:53474 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756145AbZIVNjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:39:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,431,1249282800"; 
+   d="scan'208";a="190307773"
+Date: Tue, 22 Sep 2009 21:39:04 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Li, Shaohua" <shaohua.li@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20090922133904.GA9967@localhost>
+References: <20090922054913.GA27260@sli10-desk.sh.intel.com> <20090922104915.GA1649@localhost> <20090922115015.GB6175@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922115015.GB6175@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The builtin symbol tables are now sorted, so we can use a binary
-search.
+On Tue, Sep 22, 2009 at 07:50:15PM +0800, Li, Shaohua wrote:
+> On Tue, Sep 22, 2009 at 06:49:15PM +0800, Wu, Fengguang wrote:
+> > Shaohua,
+> > 
+> > On Tue, Sep 22, 2009 at 01:49:13PM +0800, Li, Shaohua wrote:
+> > > Hi,
+> > > Commit d7831a0bdf06b9f722b947bb0c205ff7d77cebd8 causes disk io regression
+> > > in my test.
+> > > My system has 12 disks, each disk has two partitions. System runs fio sequence
+> > > write on all partitions, each partion has 8 jobs.
+> > > 2.6.31-rc1, fio gives 460m/s disk io
+> > > 2.6.31-rc2, fio gives about 400m/s disk io. Revert the patch, speed back to
+> > > 460m/s
+> > > 
+> > > Under latest git: fio gives 450m/s disk io; If reverting the patch, the speed
+> > > is 484m/s.
+> > > 
+> > > With the patch, fio reports less io merge and more interrupts. My naive
+> > > analysis is the patch makes balance_dirty_pages_ratelimited_nr() limits
+> > > write chunk to 8 pages and then soon go to sleep in balance_dirty_pages(),
+> > > because most time the bdi_nr_reclaimable < bdi_thresh, and so when write
+> > > the pages out, the chunk is 8 pages long instead of 4M long. Without the patch,
+> > > thread can write 8 pages and then move some pages to writeback, and then
+> > > continue doing write. The patch seems to break this.
+> > 
+> > Do you have trace/numbers for above descriptions?
+> No. Just guess, because there is less io merge. And watch each bdi's states,
+> bdi_nr_reclaimable < bdi_thresh seems always true.
 
-The symbol tables in modules are still unsorted and require linear
-searching as before. But since the generic each_symbol() is removed,
-the code size only goes up 8 bytes overall on i386.
+Ah OK.
 
-On my EeePC 701, coldplug is mainly cpu bound and takes 1.5 seconds
-during boot. perf showed this change eliminated 20% of cpu cycles during
-coldplug, saving 0.3 seconds of real time.
+> > > Unfortunatelly I can't figure out a fix for this issue, hopefully
+> > > you have more ideas.
+> > 
+> > Attached is a very verbose writeback debug patch, hope it helps and
+> > won't disturb the workload a lot :)
+> Hmm, the log buf will get overflowed soon, there is > 400m/s io. I tried
+> to produce this issue in a system with two disks, but fail. Anyway, I'll try
+> it out tomorrow.
 
-These savings may not be representative since my config is not very well
-tuned.  The numbers above represent the loading of 35 modules,
-referencing a total of 441 symbols.  Nevertheless, it shows why I think
-this is worth doing.
+Thank you~  I'd recommend to use netconsole or serial line, and stop
+local klogd because the write of log messages could add noises. 
 
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
----
- kernel/module.c |  209 ++++++++++++++++++++++++++++++-------------------------
- 1 files changed, 113 insertions(+), 96 deletions(-)
-
-diff --git a/kernel/module.c b/kernel/module.c
-index b24fc55..c78481d 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -203,31 +203,38 @@ struct symsearch {
- #define symversion(base, idx) ((base != NULL) ? ((base) + (idx)) : NULL)
- #endif
- 
--static bool each_symbol_in_section(const struct symsearch *arr,
--				   unsigned int arrsize,
--				   struct module *owner,
--				   bool (*fn)(const struct symsearch *syms,
--					      struct module *owner,
--					      unsigned int symnum, void *data),
--				   void *data)
--{
--	unsigned int i, j;
--
--	for (j = 0; j < arrsize; j++) {
--		for (i = 0; i < arr[j].stop - arr[j].start; i++)
--			if (fn(&arr[j], owner, i, data))
--				return true;
-+/* binary search on sorted symbols */
-+static bool find_symbol_in_kernel_section(const struct symsearch *syms,
-+					  const char *name,
-+					  unsigned int *symnum)
-+{
-+	int lo = 0, hi = syms->stop - syms->start - 1;
-+	int mid, cmp;
-+
-+	while (lo <= hi) {
-+		mid = (lo + hi) / 2;
-+		cmp = strcmp(syms->start[mid].name, name);
-+		if (cmp == 0) {
-+			*symnum = mid;
-+			return true;
-+		}
-+		else if (cmp < 0)
-+			hi = mid - 1;
-+		else
-+			lo = mid + 1;
- 	}
- 
- 	return false;
- }
- 
--/* Returns true as soon as fn returns true, otherwise false. */
--static bool each_symbol(bool (*fn)(const struct symsearch *arr, struct module *owner,
--			    unsigned int symnum, void *data), void *data)
-+
-+static bool find_symbol_in_kernel(const char *name,
-+				  struct symsearch *sym,
-+				  unsigned int *symnum)
- {
--	struct module *mod;
--	const struct symsearch arr[] = {
-+	unsigned int j;
-+
-+	struct symsearch arr[] = {
- 		{ __start___ksymtab, __stop___ksymtab, __start___kcrctab,
- 		  NOT_GPL_ONLY, false },
- 		{ __start___ksymtab_gpl, __stop___ksymtab_gpl,
-@@ -246,66 +253,101 @@ static bool each_symbol(bool (*fn)(const struct symsearch *arr, struct module *o
- #endif
- 	};
- 
--	if (each_symbol_in_section(arr, ARRAY_SIZE(arr), NULL, fn, data))
--		return true;
-+	for (j = 0; j < ARRAY_SIZE(arr); j++)
-+		if (find_symbol_in_kernel_section(&arr[j], name, symnum)) {
-+			*sym = arr[j];
-+			return true;
-+		}
- 
--	list_for_each_entry_rcu(mod, &modules, list) {
--		struct symsearch arr[] = {
--			{ mod->syms, mod->syms + mod->num_syms, mod->crcs,
--			  NOT_GPL_ONLY, false },
--			{ mod->gpl_syms, mod->gpl_syms + mod->num_gpl_syms,
--			  mod->gpl_crcs,
--			  GPL_ONLY, false },
--			{ mod->gpl_future_syms,
--			  mod->gpl_future_syms + mod->num_gpl_future_syms,
--			  mod->gpl_future_crcs,
--			  WILL_BE_GPL_ONLY, false },
-+	return false;
-+}
-+
-+/* linear search on unsorted symbols */
-+static bool find_symbol_in_module_section(const struct symsearch *syms,
-+					  const char *name,
-+					  unsigned int *symnum)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < syms->stop - syms->start; i++)
-+		if (strcmp(syms->start[i].name, name) == 0) {
-+			*symnum = i;
-+			return true;
-+		}
-+
-+	return false;
-+}
-+
-+
-+static bool find_symbol_in_module(struct module *mod,
-+				  const char *name,
-+				  struct symsearch *sym,
-+				  unsigned int *symnum)
-+{
-+	unsigned int j;
-+
-+	struct symsearch arr[] = {
-+		{ mod->syms, mod->syms + mod->num_syms, mod->crcs,
-+			NOT_GPL_ONLY, false },
-+		{ mod->gpl_syms, mod->gpl_syms + mod->num_gpl_syms,
-+			mod->gpl_crcs,
-+			GPL_ONLY, false },
-+		{ mod->gpl_future_syms,
-+			mod->gpl_future_syms + mod->num_gpl_future_syms,
-+			mod->gpl_future_crcs,
-+			WILL_BE_GPL_ONLY, false },
- #ifdef CONFIG_UNUSED_SYMBOLS
--			{ mod->unused_syms,
--			  mod->unused_syms + mod->num_unused_syms,
--			  mod->unused_crcs,
--			  NOT_GPL_ONLY, true },
--			{ mod->unused_gpl_syms,
--			  mod->unused_gpl_syms + mod->num_unused_gpl_syms,
--			  mod->unused_gpl_crcs,
--			  GPL_ONLY, true },
-+		{ mod->unused_syms,
-+			mod->unused_syms + mod->num_unused_syms,
-+			mod->unused_crcs,
-+			NOT_GPL_ONLY, true },
-+		{ mod->unused_gpl_syms,
-+			mod->unused_gpl_syms + mod->num_unused_gpl_syms,
-+			mod->unused_gpl_crcs,
-+			GPL_ONLY, true },
- #endif
--		};
-+	};
- 
--		if (each_symbol_in_section(arr, ARRAY_SIZE(arr), mod, fn, data))
-+	for (j = 0; j < ARRAY_SIZE(arr); j++) {
-+		if (find_symbol_in_module_section(&arr[j], name, symnum)) {
-+			*sym = arr[j];
- 			return true;
-+		}
- 	}
-+
- 	return false;
- }
- 
--struct find_symbol_arg {
--	/* Input */
--	const char *name;
--	bool gplok;
--	bool warn;
-+/* Find a symbol and return it, along with, (optional) crc and
-+ * (optional) module which owns it */
-+const struct kernel_symbol *find_symbol(const char *name,
-+					struct module **owner,
-+					const unsigned long **crc,
-+					bool gplok,
-+					bool warn)
-+{
-+	struct symsearch syms;
-+	unsigned int symnum;
-+	struct module *mod = NULL;
- 
--	/* Output */
--	struct module *owner;
--	const unsigned long *crc;
--	const struct kernel_symbol *sym;
--};
-+	if (find_symbol_in_kernel(name, &syms, &symnum))
-+		goto found;
- 
--static bool find_symbol_in_section(const struct symsearch *syms,
--				   struct module *owner,
--				   unsigned int symnum, void *data)
--{
--	struct find_symbol_arg *fsa = data;
-+	list_for_each_entry_rcu(mod, &modules, list)
-+		if (find_symbol_in_module(mod, name, &syms, &symnum))
-+			goto found;
- 
--	if (strcmp(syms->start[symnum].name, fsa->name) != 0)
--		return false;
-+	DEBUGP("Failed to find symbol %s\n", name);
-+	return NULL;
- 
--	if (!fsa->gplok) {
--		if (syms->licence == GPL_ONLY)
--			return false;
--		if (syms->licence == WILL_BE_GPL_ONLY && fsa->warn) {
-+found:
-+	if (!gplok) {
-+		if (syms.licence == GPL_ONLY)
-+			return NULL;
-+		if (syms.licence == WILL_BE_GPL_ONLY && warn) {
- 			printk(KERN_WARNING "Symbol %s is being used "
- 			       "by a non-GPL module, which will not "
--			       "be allowed in the future\n", fsa->name);
-+			       "be allowed in the future\n", name);
- 			printk(KERN_WARNING "Please see the file "
- 			       "Documentation/feature-removal-schedule.txt "
- 			       "in the kernel source tree for more details.\n");
-@@ -313,9 +355,9 @@ static bool find_symbol_in_section(const struct symsearch *syms,
- 	}
- 
- #ifdef CONFIG_UNUSED_SYMBOLS
--	if (syms->unused && fsa->warn) {
-+	if (syms.unused && warn) {
- 		printk(KERN_WARNING "Symbol %s is marked as UNUSED, "
--		       "however this module is using it.\n", fsa->name);
-+		       "however this module is using it.\n", name);
- 		printk(KERN_WARNING
- 		       "This symbol will go away in the future.\n");
- 		printk(KERN_WARNING
-@@ -326,36 +368,11 @@ static bool find_symbol_in_section(const struct symsearch *syms,
- 	}
- #endif
- 
--	fsa->owner = owner;
--	fsa->crc = symversion(syms->crcs, symnum);
--	fsa->sym = &syms->start[symnum];
--	return true;
--}
--
--/* Find a symbol and return it, along with, (optional) crc and
-- * (optional) module which owns it */
--const struct kernel_symbol *find_symbol(const char *name,
--					struct module **owner,
--					const unsigned long **crc,
--					bool gplok,
--					bool warn)
--{
--	struct find_symbol_arg fsa;
--
--	fsa.name = name;
--	fsa.gplok = gplok;
--	fsa.warn = warn;
--
--	if (each_symbol(find_symbol_in_section, &fsa)) {
--		if (owner)
--			*owner = fsa.owner;
--		if (crc)
--			*crc = fsa.crc;
--		return fsa.sym;
--	}
--
--	DEBUGP("Failed to find symbol %s\n", name);
--	return NULL;
-+	if (owner)
-+		*owner = mod;
-+	if (crc)
-+		*crc = symversion(syms.crcs, symnum);
-+	return &syms.start[symnum];
- }
- EXPORT_SYMBOL_GPL(find_symbol);
- 
--- 
-1.6.3.2
+Thanks,
+Fengguang
 
