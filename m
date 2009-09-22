@@ -1,95 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZIVFk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbZIVFkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbZIVFk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 01:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZIVFk0
+	id S1754977AbZIVFkX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 01:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbZIVFkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 01:40:26 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:58964 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754902AbZIVFkY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 01:40:24 -0400
-Date: Tue, 22 Sep 2009 11:10:24 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [v5 RFC PATCH 6/7]: POWER: add a default_idle idle loop for POWER.
-Message-ID: <20090922054024.GG6417@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090922053314.GA6417@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 22 Sep 2009 01:40:22 -0400
+Received: from dcent.unixwiz.net ([99.25.142.34]:48761 "EHLO dcent.unixwiz.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753711AbZIVFkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 01:40:22 -0400
+Date: Mon, 21 Sep 2009 22:40:26 -0700
+From: Steve Friedl <steve@unixwiz.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/8] staging: hv: Changed |typedef RING_BUFFER| to |struct hv_ring_buffer| throughout.
+Message-ID: <20090922054026.GA5959@dcent.unixwiz.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090922053314.GA6417@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 11:03:14]:
+The style guide (and Greg's prior work) have suggested that the typedef
+UPPERCASENAME style is not appropriate in the Linux kernel (even though
+it's been de rigueur in Win32 development for 20 years), so I'm fixing
+a couple more of them that remain... one at a time.
 
-In arch/powerpc/kernel/idle.c create a default_idle() routine by moving
-the failover condition of the cpu_idle() idle loop. This is needed by
-cpuidle infrastructure to call default_idle when other idle routines
-are not yet registered. Functionality remains the same, but the code is
-slightly moved around.
+~~~ Steve
 
+Signed-off-by: Steve Friedl <steve@unixwiz.net>
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- arch/powerpc/Kconfig              |    3 +++
- arch/powerpc/include/asm/system.h |    1 +
- arch/powerpc/kernel/idle.c        |    6 ++++++
- 3 files changed, 10 insertions(+)
+ drivers/staging/hv/RingBuffer.c |    6 +++---
+ drivers/staging/hv/RingBuffer.h |    6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-Index: linux.trees.git/arch/powerpc/Kconfig
-===================================================================
---- linux.trees.git.orig/arch/powerpc/Kconfig
-+++ linux.trees.git/arch/powerpc/Kconfig
-@@ -88,6 +88,9 @@ config ARCH_HAS_ILOG2_U64
- 	bool
- 	default y if 64BIT
+diff --git a/drivers/staging/hv/RingBuffer.c b/drivers/staging/hv/RingBuffer.c
+index f69ae33..ffd64ac 100644
+--- a/drivers/staging/hv/RingBuffer.c
++++ b/drivers/staging/hv/RingBuffer.c
+@@ -295,15 +295,15 @@ Description:
+ --*/
+ int RingBufferInit(RING_BUFFER_INFO *RingInfo, void *Buffer, u32 BufferLen)
+ {
+-	ASSERT(sizeof(RING_BUFFER) == PAGE_SIZE);
++	ASSERT(sizeof(struct hv_ring_buffer) == PAGE_SIZE);
  
-+config ARCH_HAS_DEFAULT_IDLE
-+	def_bool y
-+
- config GENERIC_HWEIGHT
- 	bool
- 	default y
-Index: linux.trees.git/arch/powerpc/include/asm/system.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/include/asm/system.h
-+++ linux.trees.git/arch/powerpc/include/asm/system.h
-@@ -218,6 +218,7 @@ extern unsigned long klimit;
- extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
- extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+ 	memset(RingInfo, 0, sizeof(RING_BUFFER_INFO));
  
-+extern void default_idle(void);
- extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+-	RingInfo->RingBuffer = (RING_BUFFER*)Buffer;
++	RingInfo->RingBuffer = (struct hv_ring_buffer*)Buffer;
+ 	RingInfo->RingBuffer->ReadIndex = RingInfo->RingBuffer->WriteIndex = 0;
  
- /*
-Index: linux.trees.git/arch/powerpc/kernel/idle.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/idle.c
-+++ linux.trees.git/arch/powerpc/kernel/idle.c
-@@ -94,6 +94,12 @@ void cpu_idle(void)
- 	}
- }
+ 	RingInfo->RingSize = BufferLen;
+-	RingInfo->RingDataSize = BufferLen - sizeof(RING_BUFFER);
++	RingInfo->RingDataSize = BufferLen - sizeof(struct hv_ring_buffer);
  
-+void default_idle(void)
-+{
-+	HMT_low();
-+	HMT_very_low();
-+}
-+
- int powersave_nap;
+ 	spin_lock_init(&RingInfo->ring_lock);
  
- #ifdef CONFIG_SYSCTL
+diff --git a/drivers/staging/hv/RingBuffer.h b/drivers/staging/hv/RingBuffer.h
+index 6202157..1ea2ced 100644
+--- a/drivers/staging/hv/RingBuffer.h
++++ b/drivers/staging/hv/RingBuffer.h
+@@ -27,7 +27,7 @@
+ 
+ #include <linux/scatterlist.h>
+ 
+-typedef struct _RING_BUFFER {
++struct hv_ring_buffer {
+ 	/* Offset in bytes from the start of ring data below */
+ 	volatile u32 WriteIndex;
+ 
+@@ -51,10 +51,10 @@ typedef struct _RING_BUFFER {
+ 	 * !!! DO NOT place any fields below this !!!
+ 	 */
+ 	u8 Buffer[0];
+-} __attribute__((packed)) RING_BUFFER;
++} __attribute__((packed));
+ 
+ typedef struct _RING_BUFFER_INFO {
+-	RING_BUFFER *RingBuffer;
++	struct hv_ring_buffer *RingBuffer;
+ 	u32 RingSize;			/* Include the shared header */
+ 	spinlock_t ring_lock;
+ 
+-- 
+1.6.5.rc1
