@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbZIVKCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbZIVKCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbZIVKCN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 06:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755887AbZIVKCM
+	id S1755923AbZIVKCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 06:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbZIVKCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 06:02:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37845 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755872AbZIVKCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 06:02:11 -0400
-X-Authenticated: #15509084
-X-Provags-ID: V01U2FsdGVkX18XjsJiiOgXAiknqwsHH6EI0J1ZDwdnNRYg7f0m+o
-	aRw/cDMSjsQdLR
-Message-ID: <4AB8A0A2.3010300@gmx.de>
-Date: Tue, 22 Sep 2009 12:02:10 +0200
-From: Axel Birndt <towerlexa@gmx.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 22 Sep 2009 06:02:30 -0400
+Received: from mail-pz0-f173.google.com ([209.85.222.173]:38554 "EHLO
+	mail-pz0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755910AbZIVKCa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 06:02:30 -0400
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <greg@kroah.com>,
-       Robert Hancock <hancockr@shaw.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-pci@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Daniel Ritz <daniel.ritz@gmx.ch>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 3/3 pci#linux-next] pccard: configure CLS on attach
-References: <4A4EE3E9.7090205@kernel.org> <20090917103131.55eca691@jbarnes-g45> <4AB88C28.8070602@kernel.org>
-In-Reply-To: <4AB88C28.8070602@kernel.org>
+Date: Tue, 22 Sep 2009 15:32:33 +0530
+Message-ID: <d760cf2d0909220302h1d74915atde0f6fe3b0fb3d6c@mail.gmail.com>
+Subject: TODO file for ramzswap
+From: Nitin Gupta <ngupta@vflare.org>
+To: Greg KH <greg@kroah.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.66
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+TODO file for ramzswap.
 
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
 
-Tejun Heo schrieb:
-> For non hotplug PCI devices, the system firmware usually configures
-> CLS correctly.  For pccard devices system firmware can't do it and
-> Linux PCI layer doesn't do it either.  Unfortunately this leads to
-> poor performance for certain devices (sata_sil).  Unless MWI, which
-> requires separate configuration, is to be used, CLS doesn't affect
-> correctness, so the configuration should be harmless.
-> 
-> This patch makes pci_set_cacheline_size() always built and export it
-> and make pccard call it during attach.
-> 
-> Please note that some other PCI hotplug drivers (shpchp and pciehp)
-> also configure CLS on hotplug.
+---
+ drivers/staging/ramzswap/TODO |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Hello Tejun,
-
-i would like to ask, when this patch is usable for normal guy's, like me.
-could you tell me in which kernel release or in which bugfix this will
-be implemented?
-
-currently i'am using Kubuntu 8.04 with all current released bugfixes and
-kernel updates...
-
-thanks and regards
-
--- 
-
-Regards Axel
+diff --git a/drivers/staging/ramzswap/TODO b/drivers/staging/ramzswap/TODO
+new file mode 100644
+index 0000000..bac40d6
+--- /dev/null
++++ b/drivers/staging/ramzswap/TODO
+@@ -0,0 +1,6 @@
++TODO:
++	- Add support for swap notifiers
++	- Remove CONFIG_ARM hack
++
++Please send patches to Greg Kroah-Hartman <greg@kroah.com> and
++Nitin Gupta <ngupta@vflare.org>
