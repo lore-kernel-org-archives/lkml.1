@@ -1,90 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbZIVKKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZIVKNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755706AbZIVKKq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 06:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZIVKKo
+	id S1755799AbZIVKNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 06:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbZIVKNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 06:10:44 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:35707 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753331AbZIVKKo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 06:10:44 -0400
-Date: Tue, 22 Sep 2009 15:40:46 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH] fix error handling in load_module()
-Message-ID: <20090922101046.GA8316@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20090907141558.GA5456@linux.vnet.ibm.com> <20090910141430.a00dcc94.akpm@linux-foundation.org> <4AB79091.1050004@kernel.org> <200909221435.22512.rusty@rustcorp.com.au>
+	Tue, 22 Sep 2009 06:13:45 -0400
+Received: from mga03.intel.com ([143.182.124.21]:12469 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753363AbZIVKNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 06:13:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,431,1249282800"; 
+   d="scan'208";a="190249187"
+Date: Tue, 22 Sep 2009 18:13:35 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
+Message-ID: <20090922101335.GA27432@localhost>
+References: <1252654450-25721-1-git-send-email-jens.axboe@oracle.com> <20090911134241.GB19707@mit.edu> <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost> <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090921135321.GD6259@think>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200909221435.22512.rusty@rustcorp.com.au>
+In-Reply-To: <20090921135321.GD6259@think>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell <rusty@rustcorp.com.au> [2009-09-22 14:35:21]:
-
-> On Tue, 22 Sep 2009 12:11:21 am Tejun Heo wrote:
-> > Hello, Andrew.
-> > 
-> > Andrew Morton wrote:
-> > > My reverse engineering of the secret, undocumented percpu_modfree()
-> > > indicates that its mad inventor intended that percpu_modfree(NULL) be a
-> > > valid thing to do.
+On Mon, Sep 21, 2009 at 09:53:21PM +0800, Chris Mason wrote:
+> On Sat, Sep 19, 2009 at 12:26:07PM +0800, Wu Fengguang wrote:
+> > On Sat, Sep 19, 2009 at 12:00:51PM +0800, Wu Fengguang wrote:
+> > > On Sat, Sep 19, 2009 at 11:58:35AM +0800, Wu Fengguang wrote:
+> > > > On Sat, Sep 19, 2009 at 01:52:52AM +0800, Theodore Tso wrote:
+> > > > > On Fri, Sep 11, 2009 at 10:39:29PM +0800, Wu Fengguang wrote:
+> > > > > > 
+> > > > > > That would be good. Sorry for the late work. I'll allocate some time
+> > > > > > in mid next week to help review and benchmark recent writeback works,
+> > > > > > and hope to get things done in this merge window.
+> > > > > 
+> > > > > Did you have some chance to get more work done on the your writeback
+> > > > > patches?
+> > > > 
+> > > > Sorry for the delay, I'm now testing the patches with commands
+> > > > 
+> > > >  cp /dev/zero /mnt/test/zero0 &
+> > > >  dd if=/dev/zero of=/mnt/test/zero1 &
+> > > > 
+> > > > and the attached debug patch.
+> > > > 
+> > > > One problem I found with ext3/4 is, redirty_tail() is called repeatedly
+> > > > in the traces, which could slow down the inode writeback significantly.
 > > > 
-> > > It calls free_percpu(), all implementations of which appear to secretly
-> > > support free_percpu(NULL).
+> > > FYI, it's this redirty_tail() called in writeback_single_inode():
+> > > 
+> > >                         /*
+> > >                          * Someone redirtied the inode while were writing back
+> > >                          * the pages.
+> > >                          */
+> > >                         redirty_tail(inode);
 > > 
-> > Eh... unfortunately, the original percpu_modfree() implementation
-> > didn't seem to support it.
+> > Hmm, this looks like an old fashioned problem get blew up by the
+> > 128MB MAX_WRITEBACK_PAGES.
 > 
-> OK, I'll Andrew's fix for Tejun, and after his (spot-on!) comment about
-> percpu_modfree never taking NULL, I've fixed the one caller to match
-> the other two:
-> 
-> Subject: module: don't call percpu_modfree on NULL pointer.
-> 
-> The general one handles NULL, the static obsolescent
-> (CONFIG_HAVE_LEGACY_PER_CPU_AREA) one in module.c doesn't; Eric's
-> commit 720eba31 assumed it did, and various frobbings since then kept
-> that assumption.
-> 
-> All other callers in module.c all protect it with an if; this effectively
-> does the same as free_init is only goto if we fail percpu_modalloc().
+> I'm starting to rethink the 128MB MAX_WRITEBACK_PAGES.  128MB is the
+> right answer for the flusher thread on sequential IO, but definitely not
+> on random IO.  We don't want the flusher to get bogged down on random
+> writeback and start ignoring every other file.
 
-Thanks, the patch fixes the issue.
+Hmm, I'd think a larger MAX_WRITEBACK_PAGES shall never increase the
+writeback randomness.
 
-> Reported-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Eric Dumazet <dada1@cosmosbay.com>
-> Cc: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Américo Wang <xiyou.wangcong@gmail.com>
+> My btrfs performance branch has long had a change to bump the
+> nr_to_write up based on the size of the delayed allocation that we're
+> doing.  It helped, but not as much as I really expected it too, and a
+> similar patch from Christoph for XFS was good but not great.
 > 
-> diff --git a/kernel/module.c b/kernel/module.c
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -2522,8 +2522,8 @@ static noinline struct module *load_modu
->   free_unload:
->  	module_unload_free(mod);
->  #if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
-> +	percpu_modfree(mod->refptr);
->   free_init:
-> -	percpu_modfree(mod->refptr);
->  #endif
->  	module_free(mod, mod->module_init);
->   free_core:
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-			
-			Kamalesh
+> It turns out the problem is in write_cache_pages.  It processes a whole
+> pagevec at a time, something like this:
+> 
+> while(!done) {
+> 	for each page in the pagegvec {
+> 		writepage()
+> 		if (wbc->nr_to_write <= 0)
+> 			done = 1;
+> 	}
+> }
+> 
+> If the filesystem decides to bump nr_to_write to cover a whole
+> extent (or a max reasonable size), the new value of nr_to_write may
+> be ignored if nr_to_write had already gone done to zero.
+> 
+> I fixed btrfs to recheck nr_to_write every time, and the results are
+> much smoother.  This is what it looks like to write out all the .o files
+> in the kernel.
+> 
+> http://oss.oracle.com/~mason/seekwatcher/btrfs-nr-to-write.png
+> 
+> In this graph, Btrfs is writing the full extent or 8192 pages, whichever
+> is smaller.  The write_cache_pages change is here, but it is local to
+> the btrfs copy of write_cache_pages:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable.git;a=commit;h=f85d7d6c8f2ad4a86a1f4f4e3791f36dede2fa76
+
+It seems you tried to an upper limit of 32-64MB:
+
++               if (wbc->nr_to_write < delalloc_to_write) {
++                       int thresh = 8192;
++
++                       if (delalloc_to_write < thresh * 2)
++                               thresh = delalloc_to_write;
++                       wbc->nr_to_write = min_t(u64, delalloc_to_write,
++                                                thresh);
++               }
+
+However it is possible that btrfs bumps up nr_to_write for each inode, 
+so that the accumulated bump ups are too large to be acceptable for
+balance_dirty_pages().
+
+And it's not always "bump ups". nr_to_write could be decreased if it's
+already a large value.
+
+> I'd rather see a more formal use of hints from the FS about efficient IO
+> than a blanket increase of the writeback max.  It's more work than
+> bumping a single #define, but even with the #define at 1GB, we're going
+> to end up splitting extents and seeking when nr_to_write does finally
+> get down to zero.
+> 
+> Btrfs currently only bumps the nr_to_write when it creates the extent, I
+> need to change it to also bump it when it finds an existing extent.
+
+Yes a more general solution would help. I'd like to propose one which
+works in the other way round. In brief,
+(1) the VFS give a large enough per-file writeback quota to btrfs;
+(2) btrfs tells VFS "here is a (seek) boundary, stop voluntarily",
+    before exhausting the quota and be force stopped.
+
+There will be two limits (the second one is new):
+
+- total nr to write in one wb_writeback invocation
+- _max_ nr to write per file (before switching to sync the next inode)
+
+The per-invocation limit is useful for balance_dirty_pages().
+The per-file number can be accumulated across successive wb_writeback
+invocations and thus can be much larger (eg. 128MB) than the legacy
+per-invocation number. 
+
+The file system will only see the per-file numbers. The "max" means
+if btrfs find the current page to be the last page in the extent,
+it could indicate this fact to VFS by setting wbc->would_seek=1. The
+VFS will then switch to write the next inode.
+
+The benefit of early voluntarily yield is, it reduced the possibility
+to be force stopped half way in an extent. When next time VFS returns
+to sync this inode, it will again be honored the full 128MB quota,
+which should be enough to cover a big fresh extent.
+
+Thanks,
+Fengguang
