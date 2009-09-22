@@ -1,60 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbZIVRSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZIVRWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754317AbZIVRSi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZIVRSg
+	id S1752707AbZIVRWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZIVRWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:18:36 -0400
-Received: from mail-in-09.arcor-online.net ([151.189.21.49]:54610 "EHLO
-	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750977AbZIVRSg (ORCPT
+	Tue, 22 Sep 2009 13:22:20 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:48941 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbZIVRWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:18:36 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-01.arcor-online.net CDCE233280E
-Message-ID: <4AB906EE.5080300@arcor.de>
-Date: Tue, 22 Sep 2009 20:18:38 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+	Tue, 22 Sep 2009 13:22:19 -0400
+Message-ID: <4AB907AD.1020605@us.ibm.com>
+Date: Tue, 22 Sep 2009 10:21:49 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-CC: Brian McGrew <brian@visionpro.com>, linux-kernel@vger.kernel.org
-Subject: Re: (un)mount ramfs from C code
-References: <C6DE438F.127DA%brian@visionpro.com> <4AB905C6.2040605@arcor.de>
-In-Reply-To: <4AB905C6.2040605@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 5/5] futex: fix wakeup race by setting TASK_INTERRUPTIBLE
+ before queue_me
+References: <20090922052452.8717.39673.stgit@Aeon> <20090922053038.8717.97838.stgit@Aeon> <4AB88D09.3080907@gmail.com>
+In-Reply-To: <4AB88D09.3080907@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/22/2009 08:13 PM, Nikos Chantziaras wrote:
-> On 09/22/2009 07:04 PM, Brian McGrew wrote:
->> Good morning all!
+Eric Dumazet wrote:
+> Darren Hart a écrit :
+>> PI futexes do not use the same plist_node_empty() test for wakeup. It was
+>> possible for the waiter (in futex_wait_requeue_pi()) to set TASK_INTERRUPTIBLE
+>> after the waker assigned the rtmutex to the waiter. The waiter would then note
+>> the plist was not empty and call schedule(). The task would not be found by any
+>> subsequeuent futex wakeups, resulting in a userspace hang. By moving the
+>> setting of TASK_INTERRUPTIBLE to before the call to queue_me(), the race with
+>> the waker is eliminated. Since we no longer call get_user() from within
+>> queue_me(), there is no need to delay the setting of TASK_INTERRUPTIBLE until
+>> after the call to queue_me().
 >>
->> So I'm using a ramfs for temporary files, thank you whoever designed
->> that,
->> it works great!
+>> The FUTEX_LOCK_PI operation is not affected as futex_lock_pi() relies entirely
+>> on the rtmutex code to handle schedule() and wakeup.  The requeue PI code is
+>> affected because the waiter starts as a non-PI waiter and is woken on a PI
+>> futex.
 >>
->> I can mkdir, mount, chmoud, readand write and then umount the thing
->> from the
->> command line just fine.
+>> Remove the crusty old comment about holding spinlocks() across get_user() as we
+>> no longer do that. Correct the locking statement with a description of why the
+>> test is performed.
+> 
+> I am very confused by this ChangeLog...
+> 
+>> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>> Cc: Peter Zijlstra <peterz@infradead.org>
+>> Cc: Steven Rostedt <rostedt@goodmis.org>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> CC: Eric Dumazet <eric.dumazet@gmail.com>
+>> CC: Dinakar Guniguntala <dino@in.ibm.com>
+>> CC: John Stultz <johnstul@us.ibm.com>
+>> ---
 >>
->> What I need now is some method from within my C/C++ code to determine
->> if the
->> ramfs is mounted, if not, then mount it so I can use it and unmount it
->> when
->> I'm done, without making a system call.
+>>  kernel/futex.c |   15 +++------------
+>>  1 files changed, 3 insertions(+), 12 deletions(-)
 >>
->> Can this be done? Is there any access to mount/unmount from C/C++?
->
-> I suppose looking at the source code of the 'mount' utility could prove
-> very enlightening. You can find it at:
->
-> http://www.kernel.org/pub/linux/utils/util-linux-ng
+>> diff --git a/kernel/futex.c b/kernel/futex.c
+>> index f92afbe..463af2e 100644
+>> --- a/kernel/futex.c
+>> +++ b/kernel/futex.c
+>> @@ -1656,17 +1656,8 @@ out:
+>>  static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+>>  				struct hrtimer_sleeper *timeout)
+>>  {
+>> -	queue_me(q, hb);
+>> -
+>> -	/*
+>> -	 * There might have been scheduling since the queue_me(), as we
+>> -	 * cannot hold a spinlock across the get_user() in case it
+>> -	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
+>> -	 * queueing ourselves into the futex hash. This code thus has to
+>> -	 * rely on the futex_wake() code removing us from hash when it
+>> -	 * wakes us up.
+>> -	 */
+>>  	set_current_state(TASK_INTERRUPTIBLE);
+> 
+> Hmm, you missed the smp_mb() properties here...
+> 
+> Before :
+>      queue_me()
+>      set_mb(current->state, TASK_INTERRUPTIBLE);
+>      if (timeout) {...}
+>      if (likely(!plist_node_empty(&q->list))) {
+> 	...
+>      }
+> 
+> After :
+>      set_mb(current->state, TASK_INTERRUPTIBLE);
+>      queue_me();
+>      if (timeout) {...}
+> // no barrier... why ar we still testing q->list
+> // since it has no synchro between queue_me() and test ?
 
-Also, "man 2 mount" will provide docs about the the mount() function in 
-<sys/mount.h>.  If for some reason that man page isn't provided in your 
-system, you can find a copy at:
+As Ingo said, the barrier is covered by the spin_unlock() in queue_me() 
+according to memory-barriers.txt:
 
-   http://linux.die.net/man/2/mount
+
+  (2) UNLOCK operation implication:
+
+      Memory operations issued before the UNLOCK will be completed before
+      the UNLOCK operation has completed.
+
+>      if (likely(!plist_node_empty(&q->list))) {
+
+Note that this test is really just an optimization to avoid calling 
+schedule() if the waker has already removed the futex_q from the list. 
+If it is about to wake us, but hasn't removed us from the list, it will 
+have set TASK_RUNNING and schedule() will do the right thing, with a 
+little more overhead than is truly necessary.
+
+Thanks,
+
+Darren Hart
+
+> 	...
+>      }
+> 
+> 
+> 
+>> +	queue_me(q, hb);
+>>  
+>>  	/* Arm the timer */
+>>  	if (timeout) {
+>> @@ -1676,8 +1667,8 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+>>  	}
+>>  
+>>  	/*
+>> -	 * !plist_node_empty() is safe here without any lock.
+>> -	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
+>> +	 * If we have been removed from the hash list, then another task
+>> +	 * has tried to wake us, and we can skip the call to schedule().
+>>  	 */
+>>  	if (likely(!plist_node_empty(&q->list))) {
+>>  		/*
+>>
+> 
+
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
