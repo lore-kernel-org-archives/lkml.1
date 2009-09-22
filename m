@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756484AbZIVQ4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbZIVQ5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756484AbZIVQ4F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 12:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbZIVQ4E
+	id S1756611AbZIVQ5c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 12:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbZIVQ53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 12:56:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49725 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756417AbZIVQ4C (ORCPT
+	Tue, 22 Sep 2009 12:57:29 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48915 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754690AbZIVQ51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 12:56:02 -0400
-Subject: Re: [PATCH v2] core, x86: Add user return notifiers
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Avi Kivity <avi@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>
-In-Reply-To: <4AB900B1.9070901@redhat.com>
-References: <4AB3CDEC.5050902@zytor.com>
-	 <1253342422-13811-1-git-send-email-avi@redhat.com>
-	 <4AB8980D.5070803@redhat.com>  <20090922143223.GA31702@elte.hu>
-	 <1253638205.18939.4.camel@laptop>  <4AB900B1.9070901@redhat.com>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 18:55:54 +0200
-Message-Id: <1253638554.18939.5.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Sep 2009 12:57:27 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Greg Ungerer <gerg@uclinux.org>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH v2 0/2] Linker script cleanup patches for m68knommu
+Date: Tue, 22 Sep 2009 12:56:53 -0400
+Message-Id: <1253638615-27009-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 19:52 +0300, Avi Kivity wrote:
-> On 09/22/2009 07:50 PM, Peter Zijlstra wrote:
-> >> Would be nice to convert some existing open-coded return-to-user-space
-> >> logic to this facility. One such candidate would be lockdep_sys_exit?
-> >>      
-> > And here I was thinking this was one of the hottest code paths in the
-> > whole kernel...
-> >    
-> 
-> If you're using lockdep, surely that's not your biggest worry?
+Greg,
 
-No, but that's all under #ifdef and fully disappears when not enabled.
-Generic return-tu-user notifiers don't sound like they will though.
+This patch series is an updated version of the patch I sent you on
+September 6 cleaning up the m68knommu architecture's linker scripts.
+Since the original patches had a few bugs, I figured I'd send you a
+clean copy of state as of when I last hear from you two weeks ago.
+
+This cross-architecture linker script cleanup project is in
+preparation for adding support for building the kernel with
+-ffunction-sections -fdata-sections, which is a prerequisite for
+Ksplice.
+
+Tim Abbott (2):
+  m68knommu: Make THREAD_SIZE available to assembly files.
+  m68knommu: Clean up linker script using new linker script macros.
+
+ arch/m68k/include/asm/thread_info_no.h |    4 +-
+ arch/m68knommu/kernel/vmlinux.lds.S    |   41 ++++++++-----------------------
+ 2 files changed, 13 insertions(+), 32 deletions(-)
 
