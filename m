@@ -1,145 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbZIVTaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751824AbZIVTe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752048AbZIVTaq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZIVTap
+	id S1751824AbZIVTe4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZIVTez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:30:45 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:41299 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751941AbZIVTal (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:30:41 -0400
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090920074247.GA5733@elte.hu>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
-	 <20090919224430.GB9567@kroah.com>
-	 <1253419185.3253.21.camel@ank32.eng.vmware.com>
-	 <20090920074247.GA5733@elte.hu>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 22 Sep 2009 12:30:45 -0700
-Message-Id: <1253647845.10565.20.camel@ank32.eng.vmware.com>
+	Tue, 22 Sep 2009 15:34:55 -0400
+Received: from gold.linx.net ([195.66.232.40]:52052 "EHLO gold.linx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808AbZIVTey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 15:34:54 -0400
+Subject: Re: 2.6.31-07068-g43c1266 Early boot exception
+From: Tony Vroon <tony@linx.net>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <4AB89417.7090005@kernel.org>
+References: <1253560490.2934.42.camel@localhost>
+	 <4AB7D349.4000802@zytor.com> <1253566046.2773.10.camel@localhost>
+	 <4AB89417.7090005@kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MmM8FBgZu5EQns4vcbym"
+Organization: London Internet Exchange (LINX; AS5459)
+Date: Tue, 22 Sep 2009 20:36:26 +0100
+Message-Id: <1253648186.2766.5.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
 
-On Sun, 2009-09-20 at 00:42 -0700, Ingo Molnar wrote:
+--=-MmM8FBgZu5EQns4vcbym
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> The thing is, the overwhelming majority of vmware users dont benefit 
-> from hardware features like nested page tables yet. So this needs to be 
-> done _way_ more carefully, with a proper sunset period of a couple of 
-> kernel cycles.
+On Tue, 2009-09-22 at 18:08 +0900, Tejun Heo wrote:
+> Can you please try the patch below?  Also, please build the kernel
+> with debug info and ask gdb which line the crash corresponds to?
+> ie. l *pcpu_embed_first_chunk+0x1e2
 
-I am fine with that too. Below is a patch which adds notes in
-feature-removal-schedule.txt, I have marked it for removal from 2.6.34.
-Please consider this patch for 2.6.32.
+Patch applied, no additional output visible:
+OAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+ACPI: INT_SRC_OVR (bus 0 bus_irq 14 global_irq 14 high edge)
+ACPI: INT_SRC_OVR (bus 0 bus_irq 15 global_irq 15 high edge)
+Using ACPI (MADT) for SMP configuration information
+ACPI: HPET id: 0x10de8201 base: 0xfed00000
+SMP: allowing 12 CPUs, 0 hotplug CPUs
+Allocating PCI resources starting at b00000000 (gap:b0000000:30000000)
+NR_CPUS: 12 nr_cpumask_bits:12 nr_cpu_ids:12 nr_node_ids:2
+PERCPU: Embedded 23 pages/cpu @ffff880028200000 s73688 r0 d20520 u26214
+PANIC: early exception 06 rip 10:ffffffff81598250 error 0 cr2 d0fff6
+Pid: 0, comm: swapper Not tainted 2.6.31-07068-g43c266-dirty #1
+Call Trace:
+[<ffffffff815719b5>] early_idt_handler+0x55/0x68
+[<ffffffff81587259>] ? pcpu_setup_first_chunk+0x40b/0x703
+[<ffffffff81587273>] ? pcpu_setup_first_chunk+0x427/0x703
+[<ffffffff81587a78>] pcpu_embed_first_chunk+0x1fd/0x261
+[<ffffffff8158a927>] ? pcpu_fc_alloc+0x0/0xac
+[<ffffffff8157a908>] ? pcpu_fc_free+0x0/0x1f
+[<ffffffff8157a749>] setup_per_cpu_areas+0x65/0x219
+[<ffffffff815721ff>] start_kernel+0x124/0x2c5
+[<ffffffff81571a92>] x86_64_start_reservations+0x82/0x86
+[<ffffffff81571b7a>] x86_64_start_kernel+0xe4/0xeb
+RIP pcpu_setup_first_chunk+0x40d/0x703
 
-> If we were able to rip out all (or most) of paravirt from arch/x86 it 
-> would be tempting for other technical reasons - but the patch above is 
-> well localized.
+gdb output:
 
-We can certainly look at removing some paravirt-hooks which are only
-used by VMI. Not sure if there are any but will take a look when we
-actually remove VMI.
+(gdb) l *pcpu_embed_first_chunk+0x1fd
+0xffffffff81587a78 is in pcpu_embed_first_chunk (mm/percpu.c:1845).
+1840=09
+1841		pr_info("PERCPU: Embedded %zu pages/cpu @%p s%zu r%zu d%zu u%zu
+\n",
+1842			PFN_DOWN(size_sum), base, ai->static_size, ai->reserved_size,
+1843			ai->dyn_size, ai->unit_size);
+1844=09
+1845		rc =3D pcpu_setup_first_chunk(ai, base);
+1846		goto out_free;
+1847=09
+1848	out_free_areas:
+1849		for (group =3D 0; group < ai->nr_groups; group++)
 
-Thanks,
-Alok
+Regards,
+Tony V.
 
---
+--=-MmM8FBgZu5EQns4vcbym
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Mark VMI for deprecation in feature-removal-schedule.txt.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-From: Alok N Kataria <akataria@vmware.com>
+iEYEABECAAYFAkq5JzoACgkQp5vW4rUFj5rvLgCdG/zkSAj8ayM9QgAJ5kCd7NS5
+Tr8An2W3Qcii8SOmi04RZ9+lq5z/WCX5
+=w+2Y
+-----END PGP SIGNATURE-----
 
-Add text in feature-removal.txt and also modify Kconfig to disable
-vmi by default.
-Patch on top of tip/master.
-
-Details about VMware's plan about retiring VMI  can be found here
-http://blogs.vmware.com/guestosguide/2009/09/vmi-retirement.html
-
----
-
- Documentation/feature-removal-schedule.txt |   24 ++++++++++++++++++++++++
- arch/x86/Kconfig                           |    8 +++++---
- 2 files changed, 29 insertions(+), 3 deletions(-)
-
-
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index fa75220..b985328 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -459,3 +459,27 @@ Why:	OSS sound_core grabs all legacy minors (0-255) of SOUND_MAJOR
- 	will also allow making ALSA OSS emulation independent of
- 	sound_core.  The dependency will be broken then too.
- Who:	Tejun Heo <tj@kernel.org>
-+
-+----------------------------
-+
-+What:	Support for VMware's guest paravirtuliazation technique [VMI] will be
-+	dropped.
-+When:	2.6.34
-+Why:	With the recent innovations in CPU hardware acceleration technologies
-+	from Intel and AMD, VMware ran a few experiments to compare these
-+	techniques to guest paravirtulization technique on VMware's platform.
-+	These hardware assisted virtualization techniques have outperformed the
-+	performance benefits provided by VMI in most of the workloads. VMware
-+	expects that these hardware features will be ubiquitous in a couple of
-+	years, as a result, VMware has started a phased retirement of this
-+	feature from the hypervisor. We will be removing this feature from the
-+	Kernel too, in a couple of releases.
-+	Please note that VMI has always been an optimization and non-VMI kernels
-+	still work fine on VMware's platform.
-+
-+	For more details about VMI retirement take a look at this,
-+	http://blogs.vmware.com/guestosguide/2009/09/vmi-retirement.html
-+
-+Who:	Alok N Kataria <akataria@vmware.com>
-+
-+----------------------------
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index e214f45..1f3e156 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -485,14 +485,16 @@ if PARAVIRT_GUEST
- source "arch/x86/xen/Kconfig"
- 
- config VMI
--	bool "VMI Guest support"
--	select PARAVIRT
--	depends on X86_32
-+	bool "VMI Guest support [will be deprecated soon]"
-+	default n
-+	depends on X86_32 && PARAVIRT
- 	---help---
- 	  VMI provides a paravirtualized interface to the VMware ESX server
- 	  (it could be used by other hypervisors in theory too, but is not
- 	  at the moment), by linking the kernel to a GPL-ed ROM module
- 	  provided by the hypervisor.
-+	  VMware has started a phased retirement of this feature from there
-+	  products. Please see feature-removal-schedule.txt for details.
- 
- config KVM_CLOCK
- 	bool "KVM paravirtualized clock"
-
+--=-MmM8FBgZu5EQns4vcbym--
 
