@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZIVP0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbZIVPbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756912AbZIVP0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbZIVP0o
+	id S1755804AbZIVPbx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZIVPbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:26:44 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:58095 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756873AbZIVP0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:26:43 -0400
-Date: Tue, 22 Sep 2009 16:26:49 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       sachinp@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>
-Subject: Re: [RFC PATCH 0/3] Fix SLQB on memoryless configurations V2
-Message-ID: <20090922152649.GG25965@csn.ul.ie>
-References: <1253549426-917-1-git-send-email-mel@csn.ul.ie> <1253577603.7103.174.camel@pasglop>
+	Tue, 22 Sep 2009 11:31:52 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33170 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753598AbZIVPbw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 11:31:52 -0400
+Date: Tue, 22 Sep 2009 11:29:43 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Mike Frysinger <vapier.adi@gmail.com>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH] blackfin: Cleanup linker script using new linker script
+ 	macros.
+In-Reply-To: <8bd0f97a0909161337v6edbe204wfd83b4c3118b3a27@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0909221035180.15595@dr-wily.mit.edu>
+References: <1252292753-11792-1-git-send-email-tabbott@ksplice.com>  <8bd0f97a0909152013oe652087gf5cd227a1997a5b3@mail.gmail.com>  <alpine.DEB.1.10.0909160107500.19188@dr-wily.mit.edu> <20090916202655.GA17153@merkur.ravnborg.org>
+ <8bd0f97a0909161337v6edbe204wfd83b4c3118b3a27@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1253577603.7103.174.camel@pasglop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1257051904-1216702761-1253630140=:15595"
+Content-ID: <alpine.DEB.1.10.0909221128530.15595@dr-wily.mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 10:00:03AM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-09-21 at 17:10 +0100, Mel Gorman wrote:
-> > 
-> > It needs signed-off from the powerpc side because it's now allocating
-> > more
-> > memory potentially (Ben?). An alternative to this patch is in V1 that
-> > statically declares the per-node structures but this is potentially
-> > sub-optimal but from a performance and memory utilisation perspective.
-> 
-> So if I understand correctly, we have a problem with both cpu-less and
-> memory-less nodes. Interesting setups :-)
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-memoryless anyway because of the per-node trick. I'm not aware of
-cpuless problems but I suspect cpuless nodes exist for more than ppc64.
+---1257051904-1216702761-1253630140=:15595
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-ID: <alpine.DEB.1.10.0909221035411.15595@dr-wily.mit.edu>
 
-> I have no strong objection on the allocating of the per-cpu data for
-> the cpu-less nodes. However, I wonder if we should do that a bit more
-> nicely, maybe with some kind of "adjusted" cpu_possible_mask() (could be
-> something like cpu_node_valid_mask or similar) to be used by percpu.
-> 
+On Wed, 16 Sep 2009, Mike Frysinger wrote:
 
-That would be reasonable if per-node data becomes more popular although
-with only SLQB depending on per-node data, it's hard to justify unless
-SLQB *really* benefits from per-node.
+> On Wed, Sep 16, 2009 at 16:26, Sam Ravnborg wrote:
+> > On Wed, Sep 16, 2009 at 11:58:01AM -0400, Tim Abbott wrote:
+> >> OK. =A0I guess we should plan to modify the INIT_DATA_SECTION macro to=
+ add
+> >> another argument specifying an alignment level for .init.ramfs. =A0It'=
+d be
+> >> inconvenient to add that right now since there are a lot of patches in
+> >> linux-next or otherwise in flight that introduce uses of
+> >> INIT_DATA_SECTION, and those patches would all be broken by changing t=
+his
+> >> now. =A0Once the dust settles on that for this release, I'll submit a =
+patch
+> >> adding said argument to INIT_DATA_SECTION.
+> >
+> > But this is all discarded during runtime so the added alignment has no =
+cost in the end - no?
+>=20
+> once things are booted, there should be no difference.  but
+> storage/boot costs increase (you have to store/extract/copy that extra
+> data).  you know how miserly we embedded people like to be ;).
 
-Lumping the per-cpu allocator to cover per-cpu and per-node feels a bit
-confusing. Maybe it would have been easier if there simply were never
-memoryless nodes and cpus were always mapped to their closest, instead of
-their local, node. There likely would be a few corner cases though and memory
-hotplug would add to the mess. I haven't been able to decide on a sensible
-way forward that doesn't involve a number of invasive changes.
+OK, so how do you want to do this?  The options I see are:
+(1) we merge this patch now, and add the new alignment argument for -rc2
+(2) we add the alignment argument sometime after -rc1 and then merge this=
+=20
+for -rc2
 
-> Mostly because it would be nice to have built-in debug features in
-> per-cpu and in that case, it would need some way to know a valid
-> number from an invalid one). Either that or just keep track of the
-> mask of cpus that had percpu data allocated to them
-> 
-
-The former would be nice, the latter would be a requirement if per-node data
-was pursued.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+=09-Tim Abbott
+---1257051904-1216702761-1253630140=:15595--
