@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbZIVUGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZIVUHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752116AbZIVUGd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 16:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZIVUGc
+	id S1752230AbZIVUHh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 16:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbZIVUHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 16:06:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41575 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbZIVUGb (ORCPT
+	Tue, 22 Sep 2009 16:07:34 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43117 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbZIVUHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 16:06:31 -0400
-Date: Tue, 22 Sep 2009 16:06:35 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH] vfs: new FROM_ACCESS flag
-Message-ID: <20090922200635.GB28826@infradead.org>
-References: <20090921013048.2763.1494.stgit@paris.rdu.redhat.com> <20090922135612.GA17769@infradead.org> <1253640526.2747.7.camel@dhcp231-106.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253640526.2747.7.camel@dhcp231-106.rdu.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	Tue, 22 Sep 2009 16:07:34 -0400
+Date: Tue, 22 Sep 2009 22:07:47 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: gabe@blackfam.net
+Cc: gabebblack@gmail.com, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
+Subject: Re: TI PCIe-PCI bridge quirks
+Message-ID: <20090922220747.702c3b11@infradead.org>
+In-Reply-To: <8a15eb2b0909221237s5d3e408do4e3bed8aaaa337a8@mail.gmail.com>
+References: <8a15eb2b0909221201k70b9e9darc6fda53f87bfae29@mail.gmail.com>
+	<20090922211101.076e9763@infradead.org>
+	<8a15eb2b0909221237s5d3e408do4e3bed8aaaa337a8@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 01:28:46PM -0400, Eric Paris wrote:
-> > only using MAY_ACCESS for calles from access() insteaf of introducing
-> > a FROM_ACCESS flag and causing lots of naming confusion.
+On Tue, 22 Sep 2009 14:37:16 -0500
+Gabe Black <gabebblack@gmail.com> wrote:
+
+> On Tue, Sep 22, 2009 at 2:11 PM, Arjan van de Ven
+> <arjan@infradead.org> wrote:
+> >
+> > sounds like this is worth a PCI quirk in the kernel...
+> >
 > 
-> What would you think of a new, MUST_REVALIDATE_PERMS which will do what
-> MAY_ACCESS does today.  MAY_ACCESS would be just for access(2) and would
-> be the flag that I use for SELinux?
+> Is there documentation on how one would go about writing a "PCI
+> quirk"?
+> 
 
-Yeah, something like this.  I don't like the MUST_REVALIDATE_PERMS name
-too much, but unless someone comes up with a better one I can live with
-it.
+I would look at the existing quirks in the drivers/pci/quirks.c file...
+plenty of good (or bad, depending on how you look at it) examples...
 
+--  
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
