@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZIVLvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbZIVLv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbZIVLvN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbZIVLvM
+	id S1756298AbZIVLv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbZIVLv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:51:12 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:56062 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753405AbZIVLvM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:51:12 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
-Date: Tue, 22 Sep 2009 13:50:54 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-10-generic; KDE/4.3.1; x86_64; ; )
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org,
-       "Xin, Xiaohui" <xiaohui.xin@intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hpa@zytor.com" <hpa@zytor.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-References: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB94861@PDSMSX501.ccr.corp.intel.com> <20090921162718.GM26034@sequoia.sous-sol.org> <20090922103807.GA2555@redhat.com>
-In-Reply-To: <20090922103807.GA2555@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 22 Sep 2009 07:51:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:50875 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756276AbZIVLv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:51:56 -0400
+Message-ID: <4AB8BA37.4010305@redhat.com>
+Date: Tue, 22 Sep 2009 14:51:19 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Mike Galbraith <efault@gmx.de>
+CC: rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
+Subject: Re: mailing list for trace users
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>
+In-Reply-To: <1253620041.13917.24.camel@marge.simson.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909221350.54847.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+5Tk4mdsSBrAID+Ky/wbZRbaTgDkNRlQeRM9w
- x2lb4Cd0aNma001cErfz/2UPVxb9vSo151+gw9wzN+zxTtIERi
- V2lWNO9hhw7XgXau5PHVw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 September 2009, Michael S. Tsirkin wrote:
-> > > More importantly, when virtualizations is used with multi-queue
-> > > NIC's the virtio-net NIC is a single CPU bottleneck. The virtio-net
-> > > NIC should preserve the parallelism (lock free) using multiple
-> > > receive/transmit queues. The number of queues should equal the
-> > > number of CPUs.
-> > 
-> > Yup, multiqueue virtio is on todo list ;-)
-> > 
-> 
-> Note we'll need multiqueue tap for that to help.
+On 09/22/2009 02:47 PM, Mike Galbraith wrote:
+>
+> Hm, must me a problem with parsing then.  If you add -v -v to the
+> command line it'll spit out debug data.  For vmx_vcpu_run you should see
+> a line like so if the module was parsed.
+>
+> new symbol: ffffffffa0065a49 [00000466]: ahci_interrupt, hist: (nil), obj_start: 0x2a49
+>
+> 	-Mike
+>
+>    
 
-My idea for that was to open multiple file descriptors to the same
-macvtap device and let the kernel figure out the  right thing to
-do with that. You can do the same with raw packed sockets in case
-of vhost_net, but I wouldn't want to add more complexity to the
-tun/tap driver for this.
+$ perf annotate -v -v -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run  | 
+grep vmx_vcpu_run
+new symbol: ffffffffa006f596 [0000dead]: vmx_vcpu_run    [kvm_intel], 
+hist: (nil), obj_start: (nil)
+  ffffffffa006f596-ffffffffa006fb73 vmx_vcpu_run    [kvm_intel]
+  Error: symbol 'vmx_vcpu_run' not present amongst the samples.
 
-	Arnd <><
+Looks like internal confusion.
+
+-- 
+error compiling committee.c: too many arguments to function
+
