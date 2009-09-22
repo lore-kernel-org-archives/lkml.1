@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbZIVP0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZIVP0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbZIVP0M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756862AbZIVP0L
+	id S1756912AbZIVP0o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbZIVP0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:26:11 -0400
-Received: from mail-px0-f199.google.com ([209.85.216.199]:62126 "EHLO
-	mail-px0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756850AbZIVP0K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:26:10 -0400
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Sandeep Paulraj <s-paulraj@ti.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ARM: includecheck fix: mach-davinci, board-dm365-evm.c
-References: <1253624821.3784.8.camel@ht.satnam>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Tue, 22 Sep 2009 08:26:12 -0700
-In-Reply-To: <1253624821.3784.8.camel@ht.satnam> (Jaswinder Singh Rajput's message of "Tue\, 22 Sep 2009 18\:37\:01 +0530")
-Message-ID: <87k4zrdmqz.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 22 Sep 2009 11:26:44 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58095 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756873AbZIVP0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 11:26:43 -0400
+Date: Tue, 22 Sep 2009 16:26:49 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
+       sachinp@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC PATCH 0/3] Fix SLQB on memoryless configurations V2
+Message-ID: <20090922152649.GG25965@csn.ul.ie>
+References: <1253549426-917-1-git-send-email-mel@csn.ul.ie> <1253577603.7103.174.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1253577603.7103.174.camel@pasglop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+On Tue, Sep 22, 2009 at 10:00:03AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-09-21 at 17:10 +0100, Mel Gorman wrote:
+> > 
+> > It needs signed-off from the powerpc side because it's now allocating
+> > more
+> > memory potentially (Ben?). An alternative to this patch is in V1 that
+> > statically declares the per-node structures but this is potentially
+> > sub-optimal but from a performance and memory utilisation perspective.
+> 
+> So if I understand correctly, we have a problem with both cpu-less and
+> memory-less nodes. Interesting setups :-)
+> 
 
-> fix the following 'make includecheck' warning:
->
->   arch/arm/mach-davinci/board-dm365-evm.c: mach/common.h is included more than once.
->
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+memoryless anyway because of the per-node trick. I'm not aware of
+cpuless problems but I suspect cpuless nodes exist for more than ppc64.
 
-Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+> I have no strong objection on the allocating of the per-cpu data for
+> the cpu-less nodes. However, I wonder if we should do that a bit more
+> nicely, maybe with some kind of "adjusted" cpu_possible_mask() (could be
+> something like cpu_node_valid_mask or similar) to be used by percpu.
+> 
 
+That would be reasonable if per-node data becomes more popular although
+with only SLQB depending on per-node data, it's hard to justify unless
+SLQB *really* benefits from per-node.
+
+Lumping the per-cpu allocator to cover per-cpu and per-node feels a bit
+confusing. Maybe it would have been easier if there simply were never
+memoryless nodes and cpus were always mapped to their closest, instead of
+their local, node. There likely would be a few corner cases though and memory
+hotplug would add to the mess. I haven't been able to decide on a sensible
+way forward that doesn't involve a number of invasive changes.
+
+> Mostly because it would be nice to have built-in debug features in
+> per-cpu and in that case, it would need some way to know a valid
+> number from an invalid one). Either that or just keep track of the
+> mask of cpus that had percpu data allocated to them
+> 
+
+The former would be nice, the latter would be a requirement if per-node data
+was pursued.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
