@@ -1,136 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbZIVNdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZIVNeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbZIVNdI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZIVNdH
+	id S1755334AbZIVNeN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803AbZIVNeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:33:07 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47240 "EHLO gir.skynet.ie"
+	Tue, 22 Sep 2009 09:34:12 -0400
+Received: from mga03.intel.com ([143.182.124.21]:64349 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751402AbZIVNdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:33:06 -0400
-Date: Tue, 22 Sep 2009 14:33:12 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, heiko.carstens@de.ibm.com,
-       sachinp@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/3] slqb: Treat pages freed on a memoryless node as
-	local node
-Message-ID: <20090922133311.GD25965@csn.ul.ie>
-References: <1253302451-27740-1-git-send-email-mel@csn.ul.ie> <1253302451-27740-3-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0909181657280.9490@V090114053VZO-1> <20090919114621.GC1225@csn.ul.ie> <1253554449.7017.256.camel@useless.americas.hpqcorp.net>
+	id S1754690AbZIVNeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:34:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,431,1249282800"; 
+   d="scan'208";a="190306284"
+Date: Tue, 22 Sep 2009 21:33:58 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
+Message-ID: <20090922133358.GC7675@localhost>
+References: <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost> <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090921135321.GD6259@think> <20090922101335.GA27432@localhost> <20090922113055.GA13887@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253554449.7017.256.camel@useless.americas.hpqcorp.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090922113055.GA13887@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 01:34:09PM -0400, Lee Schermerhorn wrote:
-> On Sat, 2009-09-19 at 12:46 +0100, Mel Gorman wrote:
-> > On Fri, Sep 18, 2009 at 05:01:14PM -0400, Christoph Lameter wrote:
-> > > On Fri, 18 Sep 2009, Mel Gorman wrote:
-> > > 
-> > > > --- a/mm/slqb.c
-> > > > +++ b/mm/slqb.c
-> > > > @@ -1726,6 +1726,7 @@ static __always_inline void __slab_free(struct kmem_cache *s,
-> > > >  	struct kmem_cache_cpu *c;
-> > > >  	struct kmem_cache_list *l;
-> > > >  	int thiscpu = smp_processor_id();
-> > > > +	int thisnode = numa_node_id();
-> > > 
-> > > thisnode must be the first reachable node with usable RAM. Not the current
-> > > node. cpu 0 may be on node 0 but there is no memory on 0. Instead
-> > > allocations fall back to node 2 (depends on policy effective as well. The
-> > > round robin meory policy default on bootup may result in allocations from
-> > > different nodes as well).
-> > > 
+On Tue, Sep 22, 2009 at 07:30:55PM +0800, Jan Kara wrote:
+> On Tue 22-09-09 18:13:35, Wu Fengguang wrote:
+> > Yes a more general solution would help. I'd like to propose one which
+> > works in the other way round. In brief,
+> > (1) the VFS give a large enough per-file writeback quota to btrfs;
+> > (2) btrfs tells VFS "here is a (seek) boundary, stop voluntarily",
+> >     before exhausting the quota and be force stopped.
 > > 
-> > Agreed. Note that this is the free path and the point was to illustrate
-> > that SLQB is always trying to allocate full pages locally and always
-> > freeing them remotely. It always going to the allocator instead of going
-> > to the remote lists first. On a memoryless system, this acts as a leak.
+> > There will be two limits (the second one is new):
 > > 
-> > A more appropriate fix may be for the kmem_cache_cpu to remember what it
-> > considers a local node. Ordinarily it'll be numa_node_id() but on memoryless
-> > node it would be the closest reachable node. How would that sound?
+> > - total nr to write in one wb_writeback invocation
+> > - _max_ nr to write per file (before switching to sync the next inode)
 > > 
+> > The per-invocation limit is useful for balance_dirty_pages().
+> > The per-file number can be accumulated across successive wb_writeback
+> > invocations and thus can be much larger (eg. 128MB) than the legacy
+> > per-invocation number. 
+>   Actually, it doesn't make much sence to have a per-file limit in number
+> of pages. I've been playing with an idea that we could have a per-file
+> *time* quota. That would have an advantage that if a file generates random
+> IO, we wouldn't block for longer time on it than when it generates linear
+> IO.
+
+Heh, FYI recently I tried per-file submission time quota:
+
+        http://lkml.org/lkml/2009/9/10/54
+
+Though I didn't take randomness of IO into account, which definitely
+deserves some attention.
+
+>   I imagine that in ->writepage we would substract from given time quota in
+> wbc the time it takes to write the current page. It would need some context
+> in wbc so that it is able to tell whether the IO is linear or random to
+> properly account for some seek penalty but generally it seems to be
+> doable...
+
+Yeah, maybe page segments that are distant enough could be treated as "seeks".
+
+>   Filesystems implementing ->writepages can then make decision whether they
+> have enough time quota to seek to next extent and write it out or whether
+> they should rather yield to other inodes...
+
+Yeah, it's possible. VFS provides (one or more) quota info and
+file systems decide when to yield.
+
+Thanks,
+Fengguang
+
+> > The file system will only see the per-file numbers. The "max" means
+> > if btrfs find the current page to be the last page in the extent,
+> > it could indicate this fact to VFS by setting wbc->would_seek=1. The
+> > VFS will then switch to write the next inode.
+> > 
+> > The benefit of early voluntarily yield is, it reduced the possibility
+> > to be force stopped half way in an extent. When next time VFS returns
+> > to sync this inode, it will again be honored the full 128MB quota,
+> > which should be enough to cover a big fresh extent.
 > 
-> Interesting.  I've been working on a somewhat similar issue on SLAB and
-> ia64.  SLAB doesn't handle fallback very efficiently when local
-> allocations fail.
-> 
-
-The problem with SLQB was a bit more severe. It was degraded
-performance, it hit an OOM storm very quickly and died.
-
-> We noticed, recently,  on a 2.6.72-based kernel that our large ia64
-
-Assume you mean 2.6.27 or HP has some spectacular technology :)
-
-> platforms, when configured in "fully interleaved" mode [all memory on a
-> separate memory-only "pseudo-node"] ran significantly slower on, e.g.,
-> AIM, hackbench, ... than in "100% cell local memory" mode.   In the
-> interleaved mode [0%CLM], all of the actual nodes appear as memoryless,
-> so ALL allocations are, effectively, off node.
-> 
-> I had a patch for SLES11 that addressed this [and eliminated the
-> regression] by doing pretty much what Christoph suggests:  treating the
-> first node in the zone list for memoryless nodes as the local node for
-> slab allocations.  This is, after all, where all "local" allocations
-> will come from, or at least will look first.  Apparently my patch is
-> incomplete, esp in handling of alien caches, as it plain doesn't work on
-> mainline kernels.  I.e., the regression is still there.  
-> 
-
-Interesting. What you're seeing is a performance degradation but SLQB has
-a more severe problem. It almost looks like memory is getting corrupt and
-I think list accesses are being raced without a lock. I thought I could see
-where it was happening but it didn't solve the problem.
-
-> The regression is easily visible with hackbench:
-> hackbench 400 process 200
-> Running with 400*40 (== 16000) tasks
-> 
-> 100% CLM [no memoryless nodes]:
-> 	Of 100 samples, Average: 10.388; Min: 9.901; Max: 12.382
-> 
-> 0% CLM [all cpus on memoryless nodes; memory on 1 memory only
-> pseudo-node]:
-> 	Of 50 samples, Average: 242.453; Min: 237.719; Max: 245.671
-> 
-
-Oof, much more severe a regression than you'd expect from remote
-accesses.
-
-> That's from a mainline kernel ~13Aug--2.3.30-ish.  I verified the
-> regression still exists in 2.6.31-rc6 a couple of weeks back.
-> 
-> Hope to get back to this soon...
-> 
-
-Don't suppose a profile shows where all the time is being spent? As this
-is 2.6.27, can you check the value of /proc/sys/vm/zone_reclaim_mode? If
-it's 1, try setting it to 0 because you might be spending all the time
-reclaiming uselessly.
-
-> SLUB doesn't seem to have this problem with memoryless nodes and I
-> haven't tested SLQB on this config.  x86_64 does not see this issue
-> because in doesn't support memoryless nodes--all cpus on memoryless
-> nodes are moved to other nodes with memory. 
-
-Other discussions imply that ppc64 should look at doing something
-similar even though it would be pretty invasive.
-
-> [I'm not sure the current
-> strategy of ingoring distance when "rehoming" the cpus is a good long
-> term strategy, but that's a topic for another discussion :).]
-> 
-
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> 								Honza
+> -- 
+> Jan Kara <jack@suse.cz>
+> SUSE Labs, CR
