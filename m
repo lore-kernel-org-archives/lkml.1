@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZIVQzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZIVRCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbZIVQzr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 12:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbZIVQzr
+	id S1756628AbZIVRCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZIVRCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 12:55:47 -0400
-Received: from mail-yw0-f188.google.com ([209.85.211.188]:55169 "EHLO
-	mail-yw0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756032AbZIVQzq convert rfc822-to-8bit (ORCPT
+	Tue, 22 Sep 2009 13:02:48 -0400
+Received: from mail-yx0-f173.google.com ([209.85.210.173]:60741 "EHLO
+	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752472AbZIVRCs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 12:55:46 -0400
+	Tue, 22 Sep 2009 13:02:48 -0400
+X-Greylist: delayed 1535 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Sep 2009 13:02:47 EDT
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:from:date:x-google-sender-auth:message-id
-         :subject:to:content-type:content-transfer-encoding;
-        b=q4hu5qgIdLXLo8Invfk5HCcxotv+bTJqoqvUrVpIJ+6S24SPbRVxHlPZuVjsAaPJwb
-         OpvQyrfcth1Xfgj0YiZkUkRMB6xI74WGIIWTpquTQwlnsmqQo7z1DMauNCWhfdN2K8Tr
-         /puOR1bxKN7xa0J4Nzy2/R/u/Nzsn0uGF5mYA=
+        h=mime-version:from:date:message-id:subject:to:content-type
+         :content-transfer-encoding;
+        b=jBVi1HH8cNvaW0CQFXaoeINupb9EGnpq7bObAld0V0pX6GRokvsXkj5t2Pif1aOyRq
+         5fNTo6O4Z2MSKoVPY4Cy6/FftbKBFwSGmOCiwoIpIGywPYgRCWo623yyu1QT5TS4lFt5
+         ZtVrakMDet/lpy4RIGiXLLX7IIj2p6NCBRUkM=
 MIME-Version: 1.0
-From: pradeep hettiarachchi <pradeepmh@wayne.edu>
-Date: Tue, 22 Sep 2009 12:30:34 -0400
-X-Google-Sender-Auth: 90b488938531f225
-Message-ID: <8fe204b0909220930t13db248cw8f9a8da7db4a4927@mail.gmail.com>
+From: pradeep hettiarachchi <pacprnt@gmail.com>
+Date: Tue, 22 Sep 2009 12:31:24 -0400
+Message-ID: <8fe204b0909220931j5925938ft5bec2adf19513f5a@mail.gmail.com>
 Subject: Intel Local APIC behavior on low frequencies
 To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=windows-1252
@@ -37,12 +37,12 @@ some info on this matter.
 
 
 
-I need to find some information about local APIC and CPU frequency
-scaling behavior.  Currently I am modifying  the Linux kernel for my
+I need to find some information about local APIC and CPU frequency
+scaling behavior.  Currently I am modifying  the Linux kernel for my
 research, which involves studying a custom job scheduler I am
-developing at different CPU frequencies.  As we know, if the kernel
-works in tick-less mode (and in hi resolution mode) it uses the local
-APIC as a clock event device and as the clock tick device.
+developing at different CPU frequencies.  As we know, if the kernel
+works in tick-less mode (and in hi resolution mode) it uses the local
+APIC as a clock event device and as the clock tick device.
 
 
 
@@ -53,8 +53,8 @@ tool chain.
 The information I am trying to find is:
 
 1) I want to find-out the tick count(say for a 100 ms period) of the
-local APIC when the CPU operates at different operating frequencies.
-When I study this matter, I found that the local APIC does not tick
+local APIC when the CPU operates at different operating frequencies.
+When I study this matter, I found that the local APIC does not tick
 (does not work accurately) reliably as the clock frequency is varied.
 It works accurately in the maximum frequency of the system. Do you
 know any reason for that? or it is the way it operates?(is that
@@ -75,5 +75,7 @@ happens from the LAPIC handler "hrtimer_interrupt" which I replace
 with a dummy handler.
 
 Thank you in advance.
+
+
 
 -Pradeep
