@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbZIVMfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZIVMhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756064AbZIVMfS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 08:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZIVMfS
+	id S1756199AbZIVMhw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 08:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZIVMhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 08:35:18 -0400
-Received: from ozlabs.org ([203.10.76.45]:48997 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084AbZIVMfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 08:35:17 -0400
-Date: Tue, 22 Sep 2009 22:34:24 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Arjan van de Ven <arjan@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] perf: Update PERF_EVENT_FORK header definition
-Message-ID: <20090922123424.GD19453@kryten>
+	Tue, 22 Sep 2009 08:37:51 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:60615 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752867AbZIVMhv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 08:37:51 -0400
+Date: Tue, 22 Sep 2009 08:37:50 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: best practices:  which "uaccess.h" should one include?
+In-Reply-To: <200909221409.02211.arnd@arndb.de>
+Message-ID: <alpine.LFD.2.00.0909220835340.31679@localhost>
+References: <alpine.LFD.2.00.0909220226080.10448@localhost> <200909221409.02211.arnd@arndb.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 22 Sep 2009, Arnd Bergmann wrote:
 
-PERF_EVENT_FORK always outputs the time field, so update the header to
-reflect this.
+> On Tuesday 22 September 2009, Robert P. J. Day wrote:
+> >   philosophically, which is the "correct" uaccess.h header file to
+> > include in kernel code -- <linux/uaccess.h> or <asm/uaccess.h>?
+> > the first explicitly includes the second so that's a safe choice
+> > but, generally, there's been a tendency to shift toward including
+> > the "linux" header files.  opinion?  there's quite a mixture under
+> > the drivers/ directory.
+>
+> The preferred one is linux/uaccess.h, the same is true for many
+> headers that traditionally only existed in asm/.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+  i know -- i've sent in a few patches of my own to make some of those
+changes.  i just wanted to be clear since i'm writing a short tutorial
+on kernel/user space copying and wanted to make the correct
+recommendation for the header file to include.
 
-Index: linux.trees.git/include/linux/perf_counter.h
-===================================================================
---- linux.trees.git.orig/include/linux/perf_counter.h	2009-09-22 20:24:37.000000000 +1000
-+++ linux.trees.git/include/linux/perf_counter.h	2009-09-22 20:24:47.000000000 +1000
-@@ -364,7 +364,7 @@ enum perf_event_type {
- 	 *	struct perf_event_header	header;
- 	 *	u32				pid, ppid;
- 	 *	u32				tid, ptid;
--	 *	{ u64				time;     } && PERF_SAMPLE_TIME
-+	 *	u64				time;
- 	 * };
- 	 */
- 	PERF_EVENT_FORK			= 7,
-Index: linux.trees.git/include/linux/perf_event.h
-===================================================================
---- linux.trees.git.orig/include/linux/perf_event.h	2009-09-22 20:24:37.000000000 +1000
-+++ linux.trees.git/include/linux/perf_event.h	2009-09-22 20:24:57.000000000 +1000
-@@ -360,7 +360,7 @@ enum perf_event_type {
- 	 *	struct perf_event_header	header;
- 	 *	u32				pid, ppid;
- 	 *	u32				tid, ptid;
--	 *	{ u64				time;     } && PERF_SAMPLE_TIME
-+	 *	u64				time;
- 	 * };
- 	 */
- 	PERF_RECORD_FORK			= 7,
+> There are some headers with explicit #warning or #error messages
+> when they are not included from linux/foo.h, e.g. spinlock_types.h,
+> bitops.h or rwsem.h.
+
+  yup, i've seen those, too.  thanks.
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
