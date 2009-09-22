@@ -1,80 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZIVQkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbZIVQmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbZIVQkU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 12:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZIVQkT
+	id S1752605AbZIVQmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 12:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZIVQmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 12:40:19 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:58129 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751281AbZIVQkS (ORCPT
+	Tue, 22 Sep 2009 12:42:16 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48687 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754642AbZIVQmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 12:40:18 -0400
-Message-ID: <4AB8FE25.90806@oss.ntt.co.jp>
-Date: Wed, 23 Sep 2009 01:41:09 +0900
-From: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Christoph Hellwig <hch@lst.de>, t-sato@yk.jp.nec.com,
-       m-hamaguchi@ys.jp.nec.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Sandeen <sandeen@redhat.com>
-Subject: Re: [PATCH 3/4] Do not allow umounting of frozen filesystems
-References: <4A94C151.8020900@oss.ntt.co.jp> <20090826173839.GA20175@lst.de> <4A965BD1.205@oss.ntt.co.jp> <4A9692CF.80508@oss.ntt.co.jp> <20090922110737.GL5858@ZenIV.linux.org.uk>
-In-Reply-To: <20090922110737.GL5858@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 22 Sep 2009 12:42:16 -0400
+Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
+From: Peter Zijlstra <peterz@infradead.org>
+To: Raistlin <raistlin@linux.it>
+Cc: Daniel Walker <dwalker@fifo99.com>, claudio@evidence.eu.com,
+       michael@evidence.eu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, johan.eker@ericsson.com, p.faure@akatech.ch,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
+In-Reply-To: <1253628061.20345.173.camel@Palantir>
+References: <1253615424.20345.76.camel@Palantir>
+	 <1253625878.6575.34.camel@desktop>  <1253628061.20345.173.camel@Palantir>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 18:42:01 +0200
+Message-Id: <1253637721.18939.3.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro さんは書きました:
-> On Thu, Aug 27, 2009 at 11:06:07PM +0900, Fernando Luis V?zquez Cao wrote:
->   
->> Instead of making umount users wait until the filesystem is
->> unfreezed return EBUSY, which is very convenient in HA
->> configurations.
->>
->> This could have been implemented at a lower level but it would
->> require considerable plumbing in functions such as release_mounts
->> which do not return errors.
->>     
->
->   
->> +	if (sb->s_bdev != NULL) {
->> +		mutex_lock(&sb->s_bdev->bd_fsfreeze_mutex);
->> +		if (sb->s_frozen != SB_UNFROZEN) {
->> +			mutex_unlock(&sb->s_bdev->bd_fsfreeze_mutex);
->> +			return -EBUSY;
->> +		}
->> +	}
->>     
->
-> NAK.  First of all, it _partially_ breaks umount -l for no good reason.
-> If the first fs on the mountpoint is frozen, we fail; if it's deeper
-> we succeed just fine (and delay actual fs shutdown until the thaw).
->
-> As far as I can see, the real problem is that fsthaw ioctl has braindead
-> API; it takes some opened file on fs in question.  Why not do a bdev
-> ioctl instead?  Then we could let umount go ahead just fine, leaving
-> fs frozen (and not shut down until it thaws).  And whoever does thaw
-> (via bdev ioctl) will automatically trigger the actual fs shutdown.
-> Just with Christoph's pair of patches...
->   
+On Tue, 2009-09-22 at 16:01 +0200, Raistlin wrote:
+> On Tue, 2009-09-22 at 06:24 -0700, Daniel Walker wrote:
+> > You've got some type of encoding corruption in your patch,
+> > 
+> Oops! Sorry about that... :(
 
-I basically agree with you. The current API creates a lot of locking 
-issues that could be tackled
-more cleanly with the bdev ioctls you suggest.
+Don't worry, they are fine.
 
-> IOW, I'd rather add two new ioctls (check if frozen/thaw), both by
-> bdev.  On top of the first two patches in this set.
->   
-
-I am happy to see you would welcome a check ioctl.
-
-If there is consensus on the bdev ioctl approach I could send patches.
-
-Thanks,
-
-Fernando
