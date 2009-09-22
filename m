@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbZIVHxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbZIVH4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754557AbZIVHxx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 03:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZIVHxw
+	id S1754246AbZIVH4L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 03:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZIVH4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 03:53:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58440 "EHLO mx2.mail.elte.hu"
+	Tue, 22 Sep 2009 03:56:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58542 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbZIVHxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 03:53:51 -0400
-Date: Tue, 22 Sep 2009 09:53:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: Re: [origin tree build failure] [PATCH] media: video: Fix build in
-	saa7164
-Message-ID: <20090922075332.GA32302@elte.hu>
-References: <20090919014930.7dd90f77@pedra.chehab.org> <20090921182345.GA25100@elte.hu> <20090921205754.26c59c46@pedra.chehab.org>
+	id S1753327AbZIVH4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 03:56:08 -0400
+Date: Tue, 22 Sep 2009 09:56:11 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Mike Frysinger <vapier@gentoo.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Bryan Wu <cooloney@kernel.org>
+Subject: RE: [PATCH] input/keyboard: new driver for ADP5520 MFD PMICs
+In-Reply-To: <8A42379416420646B9BFAC9682273B6D0DFAD237@limkexm3.ad.analog.com>
+Message-ID: <alpine.LNX.2.00.0909220954360.17028@wotan.suse.de>
+References: <1253211850-29309-1-git-send-email-vapier@gentoo.org> <20090922055954.GB9658@core.coreip.homeip.net> <alpine.LRH.2.00.0909220933090.27145@twin.jikos.cz> <8A42379416420646B9BFAC9682273B6D0DFAD237@limkexm3.ad.analog.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090921205754.26c59c46@pedra.chehab.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 22 Sep 2009, Hennerich, Michael wrote:
 
-* Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
-
-> Em Mon, 21 Sep 2009 20:23:45 +0200
-> Ingo Molnar <mingo@elte.hu> escreveu:
+> >It actually doesn't seem to be the same condition (KP_INT vs. KR_INT), 
+> >but it's difficult to say, as these constants are apparently added in 
+> >some other patch I have no idea about.
 > 
-> > 
-> > * Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
-> > 
-> > > This series also contains several new drivers:
-> > > 
-> > >    - new driver for NXP saa7164;
-> > 
-> > -tip testing found that an allyesconfig build buglet found its way into 
-> > this driver - find the fix below.
-> > 
+> KP Key-Press versus Key-Release 
 > 
-> > diff --git a/drivers/media/video/saa7164/saa7164-core.c b/drivers/media/video/saa7164/saa7164-core.c
-> > index f0dbead..60f3214 100644
-> > --- a/drivers/media/video/saa7164/saa7164-core.c
-> > +++ b/drivers/media/video/saa7164/saa7164-core.c
-> > @@ -45,8 +45,8 @@ MODULE_LICENSE("GPL");
-> >   32 bus
-> >   */
-> >  
-> > -unsigned int debug;
-> > -module_param(debug, int, 0644);
-> > +unsigned int saa_debug;
-> > +module_param(saa_debug, int, 0644);
+> >And the same for other constants used in the code ... the patch seems to
+> >be quite incomplete.
 > 
-> Hmm... it is better to use module_param_named(debug, saa_debug, int, 0644), to
-> keep presenting the parameter as just "debug" to userspace.
-
-ah, yes, fully agreed - i thought i did that but apparently modified it 
-in this instance.
-
-> > This is because recent saa7164 changes introduced a global symbol 
-> > named 'debug'. The x86 platform code already defines a 'debug' 
-> > symbol. (which is named in a too generic way as well - but it can be 
-> > used nicely to weed out too generic symbols in drivers ;-
+> The missing constants are in include/linux/mfd/adp5520.h
 > 
-> Agreed.
-> 
-> Btw, I suggest to do a similar patch also for x86, to avoid such 
-> future conflicts.
+> This file was sent in a different patch, adding support for the Multi Function Device Core 
+> (drivers/mfd/adp5520.c)
 
-Actually, Andrew considers it a feature that allows us to filter out too 
-generic names early on :-)
+The dependency on another patch should be either at least expressed in the 
+patch Changelog, or even better send the patches as series with proper 
+numbering, so that the dependency is obvious.
 
-	Ingo
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
