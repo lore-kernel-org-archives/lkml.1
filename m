@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbZIVIRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbZIVIYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbZIVIRA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 04:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZIVIQ6
+	id S1755023AbZIVIYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 04:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZIVIYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 04:16:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33588 "EHLO mx3.mail.elte.hu"
+	Tue, 22 Sep 2009 04:24:35 -0400
+Received: from mga14.intel.com ([143.182.124.37]:34586 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754073AbZIVIQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 04:16:57 -0400
-Date: Tue, 22 Sep 2009 10:16:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET percpu#for-next] percpu: convert ia64 to dynamic
-	percpu and drop the old one
-Message-ID: <20090922081631.GD1475@elte.hu>
-References: <1253605214-23210-1-git-send-email-tj@kernel.org>
+	id S1751084AbZIVIYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 04:24:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,430,1249282800"; 
+   d="scan'208";a="190221681"
+Date: Tue, 22 Sep 2009 16:24:27 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20090922082427.GA24888@localhost>
+References: <20090922054913.GA27260@sli10-desk.sh.intel.com> <1253601612.8439.274.camel@twins> <20090922080505.GB9192@localhost> <1253606965.8439.281.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253605214-23210-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1253606965.8439.281.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 22, 2009 at 04:09:25PM +0800, Peter Zijlstra wrote:
+> On Tue, 2009-09-22 at 16:05 +0800, Wu Fengguang wrote:
+> > 
+> > I'm not sure how this patch stopped the "overshooting" behavior.
+> > Maybe it managed to not start the background pdflush, or the started
+> > pdflush thread exited because it found writeback is in progress by
+> > someone else?
+> > 
+> > -               if (bdi_nr_reclaimable) {
+> > +               if (bdi_nr_reclaimable > bdi_thresh) {
+> 
+> The idea is that we shouldn't move more pages from dirty -> writeback
+> when there's not actually that much dirty left.
 
-* Tejun Heo <tj@kernel.org> wrote:
+IMHO this makes little sense given that pdflush will move all dirty
+pages anyway. pdflush should already be started to do background
+writeback before the process is throttled, and it is designed to sync
+all current dirty pages as quick as possible and as much as possible.
 
-> Hello, all.
-> 
-> This patchset converts ia64 to dynamic percpu allocator and drop the
-> now unused old percpu allocator.  This patchset contains the following
-> four patches.
-> 
->  0001-vmalloc-rename-local-variables-vmalloc_start-and-vma.patch
->  0002-ia64-allocate-percpu-area-for-cpu0-like-percpu-areas.patch
->  0003-ia64-convert-to-dynamic-percpu-allocator.patch
->  0004-percpu-kill-legacy-percpu-allocator.patch
-> 
-> 0001 is misc prep to avoid macro / local variable collision.  0002
-> makes ia64 allocate percpu area for cpu0 in the same way it does for
-> other cpus.  0003 converts ia64 to dynamic percpu allocator and 0004
-> drops now unused legacy allocator.
-> 
-> Contig memory model was verified with ski emulator.  Discontig and
-> sparse models were verified on a 4-way SGI altix machine.  I've run
-> percpu stress test module for quite a while on the machine.
-> 
-> Mike Travis, it would be great if you can test this on your machine.
-> I'd really like to see how it would behave on a machine with that many
-> NUMA nodes.
-> 
-> This patchset is available in the following git tree.
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git convert-ia64
-> 
-> Hmmm... kernel.org seems slow to sync today.  If the branch isn't
-> mirroreed, please pull from the master.
-> 
-> Thanks.
-> 
->  arch/ia64/Kconfig              |    3 
->  arch/ia64/kernel/setup.c       |   12 --
->  arch/ia64/kernel/vmlinux.lds.S |   11 +-
->  arch/ia64/mm/contig.c          |   87 ++++++++++++++++----
->  arch/ia64/mm/discontig.c       |  120 +++++++++++++++++++++++++--
->  include/linux/percpu.h         |   24 -----
->  kernel/module.c                |  150 ----------------------------------
->  mm/Makefile                    |    4 
->  mm/allocpercpu.c               |  177 -----------------------------------------
->  mm/percpu.c                    |    2 
->  mm/vmalloc.c                   |   16 +--
->  11 files changed, 193 insertions(+), 413 deletions(-)
+> Now, I'm not sure about the > bdi_thresh part, I've suggested to maybe
+> use bdi_thresh/2 a few times, but it generally didn't seem to make much
+> of a difference.
 
-Kudos, really nice stuff!
+One possible difference is, the process may end up waiting longer time
+in order to sync write_chunk pages and quit the throttle. This could
+hurt the responsiveness of the throttled process.
 
-	Ingo
+Thanks,
+Fengguang
