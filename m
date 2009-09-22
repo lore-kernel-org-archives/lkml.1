@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZIVLrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZIVLuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbZIVLrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbZIVLrX
+	id S1756213AbZIVLuQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZIVLuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:47:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55329 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756090AbZIVLrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:47:22 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/OvUxem/rOnb7KKn1S3MzAAhLq1CVa806onbh25/
-	9vqSscLn5DZP8J
-Subject: Re: mailing list for trace users
-From: Mike Galbraith <efault@gmx.de>
-To: Avi Kivity <avi@redhat.com>
-Cc: rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
-In-Reply-To: <4AB8B65F.7030602@redhat.com>
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
-	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>
-	 <4AB8B65F.7030602@redhat.com>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 13:47:21 +0200
-Message-Id: <1253620041.13917.24.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.61
+	Tue, 22 Sep 2009 07:50:15 -0400
+Received: from mga09.intel.com ([134.134.136.24]:29698 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752620AbZIVLuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:50:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,431,1249282800"; 
+   d="scan'208";a="552673689"
+Date: Tue, 22 Sep 2009 19:50:15 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20090922115015.GB6175@sli10-desk.sh.intel.com>
+References: <20090922054913.GA27260@sli10-desk.sh.intel.com> <20090922104915.GA1649@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922104915.GA1649@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 14:34 +0300, Avi Kivity wrote:
-> On 09/22/2009 02:28 PM, Mike Galbraith wrote:
-> > On Tue, 2009-09-22 at 12:13 +0300, Avi Kivity wrote:
-> >
-> >    
-> >> $ perf annotate -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run
-> >>    Error: symbol 'vmx_vcpu_run' not present amongst the samples.
-> >>
-> >> builtin symbols work.
-> >>      
-> > Ah.  Did you reboot or unload/load the module between record and
-> > annotate time?  There is no support for that at the moment.
-> >    
+On Tue, Sep 22, 2009 at 06:49:15PM +0800, Wu, Fengguang wrote:
+> Shaohua,
 > 
-> No.  Still loaded and running.
-
-Hm, must me a problem with parsing then.  If you add -v -v to the
-command line it'll spit out debug data.  For vmx_vcpu_run you should see
-a line like so if the module was parsed.
-
-new symbol: ffffffffa0065a49 [00000466]: ahci_interrupt, hist: (nil), obj_start: 0x2a49
-
-	-Mike
-
+> On Tue, Sep 22, 2009 at 01:49:13PM +0800, Li, Shaohua wrote:
+> > Hi,
+> > Commit d7831a0bdf06b9f722b947bb0c205ff7d77cebd8 causes disk io regression
+> > in my test.
+> > My system has 12 disks, each disk has two partitions. System runs fio sequence
+> > write on all partitions, each partion has 8 jobs.
+> > 2.6.31-rc1, fio gives 460m/s disk io
+> > 2.6.31-rc2, fio gives about 400m/s disk io. Revert the patch, speed back to
+> > 460m/s
+> > 
+> > Under latest git: fio gives 450m/s disk io; If reverting the patch, the speed
+> > is 484m/s.
+> > 
+> > With the patch, fio reports less io merge and more interrupts. My naive
+> > analysis is the patch makes balance_dirty_pages_ratelimited_nr() limits
+> > write chunk to 8 pages and then soon go to sleep in balance_dirty_pages(),
+> > because most time the bdi_nr_reclaimable < bdi_thresh, and so when write
+> > the pages out, the chunk is 8 pages long instead of 4M long. Without the patch,
+> > thread can write 8 pages and then move some pages to writeback, and then
+> > continue doing write. The patch seems to break this.
+> 
+> Do you have trace/numbers for above descriptions?
+No. Just guess, because there is less io merge. And watch each bdi's states,
+bdi_nr_reclaimable < bdi_thresh seems always true.
+ 
+> > Unfortunatelly I can't figure out a fix for this issue, hopefully
+> > you have more ideas.
+> 
+> Attached is a very verbose writeback debug patch, hope it helps and
+> won't disturb the workload a lot :)
+Hmm, the log buf will get overflowed soon, there is > 400m/s io. I tried
+to produce this issue in a system with two disks, but fail. Anyway, I'll try
+it out tomorrow.
