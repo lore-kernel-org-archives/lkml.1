@@ -1,108 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZIVATu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZIVAXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbZIVATu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 20:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZIVATt
+	id S1754757AbZIVAXK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 20:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZIVAXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 20:19:49 -0400
-Received: from gate.crashing.org ([63.228.1.57]:45751 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbZIVATs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 20:19:48 -0400
-Subject: Re: [LTP] mmapstress03 weirdness? (fwd)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux Test Project <Ltp-list@lists.sourceforge.net>
-In-Reply-To: <alpine.LRH.2.00.0909211539520.16077@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0909211539520.16077@vixen.sonytel.be>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Sep 2009 10:19:41 +1000
-Message-Id: <1253578781.7103.186.camel@pasglop>
+	Mon, 21 Sep 2009 20:23:08 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:58216 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754623AbZIVAXG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 20:23:06 -0400
+Date: Mon, 21 Sep 2009 17:22:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jamie Lokier <jamie@shareable.org>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Eric Paris <eparis@redhat.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+Subject: Re: fanotify as syscalls
+Message-Id: <20090921172224.e33f5b08.randy.dunlap@oracle.com>
+In-Reply-To: <m1r5tzq1gf.fsf@fess.ebiederm.org>
+References: <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
+	<20090911212731.GA19901@shareable.org>
+	<1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
+	<20090912094110.GB24709@ioremap.net>
+	<20090914001759.GB30621@shareable.org>
+	<20090914140720.GA8564@ioremap.net>
+	<1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
+	<20090915201620.GB32192@ioremap.net>
+	<1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
+	<20090916120523.GA12830@ioremap.net>
+	<20090916122723.GE29359@shareable.org>
+	<alpine.LFD.2.01.0909170934450.4950@localhost.localdomain>
+	<m1r5tzq1gf.fsf@fess.ebiederm.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4AB818C4.0144:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-21 at 15:40 +0200, Geert Uytterhoeven wrote:
+On Mon, 21 Sep 2009 17:15:28 -0700 Eric W. Biederman wrote:
 
+> Linus Torvalds <torvalds@linux-foundation.org> writes:
 > 
-> With 32-bit userland, this boils down to:
+> > Quite frankly, I have _never_ever_ seen a good reason for talking to the 
+> > kernel with some idiotic packet interface. It's just a fancy way to do 
+> > ioctl's, and everybody knows that ioctl's are bad and evil. Why are fancy 
+> > packet interfaces suddenly much better?
 > 
-> | mmap addr 0x7fff0000 size 0x7fff0000
-> | mmap returned 0x7fff0000
+> For working with the networking stack there are a lot of advantages because
+> netlink is the interface to everything in the network stack.
 > 
-> i.e. mmap() succeeds, but (1) the test expects it to fail, so the test returns
-> TFAIL, but (2) ltp-pan still reports that the tests passed?
-
-What is the output of /proc/<pid>/maps after that mmap ?
-
-With a 64-bit kernel, 32-bit userspace has access to the entire 4G
-address space, so mapping 2G-64k at the 2G-64k point can work, provided
-you aren't overlapping an existing mapping such as the stack.
-
-> In addition, sometimes mmapstress03 fails due to SEGV. I created a small test
-> program that just does the above mmap(), and depending on the distro and what
-> else I print later it crashes with a SEGV, too. Probably this happens because
-> the mmap() did succeed, and corrupted some existing mappings, cfr. the notes
-> for MAP_FIXED:
-
-That's possible.
-
->        MAP_FIXED
->               Don’t  interpret  addr  as  a hint: place the mapping at exactly
->               that address.  addr must be a multiple of the page size.  If the
->               memory  region  specified  by addr and len overlaps pages of any
->               existing mapping(s), then the overlapped part  of  the  existing
->               mapping(s)  will  be discarded.  If the specified address cannot
->               be used, mmap() will fail.  Because requiring  a  fixed  address
->               for  a  mapping is less portable, the use of this option is dis‐
->               couraged.
-
-Yeah, I suppose the test might be wiping out its own stack for example
-
-IE. I think that test is just bogus :-)
-
-> JFYI, with 64-bit userland, this boils down to:
+> There are nice things like the packet to create a new interface is the same
+> packet the kernel sends everyone to report a new interface etc.
 > 
-> | mmap addr 0x7fffffffffff0000 size 0x7fffffffffff0000
-> | mmap returned 0xffffffffffffffff
+> netlink also seems to get the structured data thing right.  You can
+> parse the packet even if you don't understand everything.  Each tag is
+> well defined like a syscall, taking exactly one kind of argument.
+> Which avoids the worst failure of ioctl in that you can't even parse
+> everything, and the argument may be a linked list in the calling
+> process or something else atrocious.
 > 
-> i.e. mmap() fails as expected, and the test succeeds.
+> All of that said syscalls are good, and I would not recommend netlink
+> to anything not in the network stack.
 
-Right because on 64-bit userspace, you only are allowed something like
-16T of address space.
+like CONFIG_SCSI_NETLINK and CONFIG_QUOTA_NETLINK_INTERFACE  :(
 
-> Does all of this sound OK?
-> Thanks for your comments!
 
-Yes, I think so far, it's just bogus tests :-)
-
-Cheers,
-Ben.
-
-> With kind regards,
-> 
-> Geert Uytterhoeven
-> Software Architect
-> Techsoft Centre
-> 
-> Technology and Software Centre Europe
-> The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-> 
-> Phone:    +32 (0)2 700 8453
-> Fax:      +32 (0)2 700 8622
-> E-mail:   Geert.Uytterhoeven@sonycom.com
-> Internet: http://www.sony-europe.com/
-> 
-> A division of Sony Europe (Belgium) N.V.
-> VAT BE 0413.825.160 · RPR Brussels
-> Fortis · BIC GEBABEBB · IBAN BE41293037680010
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
+---
+~Randy
