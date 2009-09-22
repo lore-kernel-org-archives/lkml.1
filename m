@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbZIVXkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbZIVXfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbZIVXkv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 19:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZIVXku
+	id S1753157AbZIVXfe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 19:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbZIVXfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 19:40:50 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:53032 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753116AbZIVXkt (ORCPT
+	Tue, 22 Sep 2009 19:35:33 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:56644 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969AbZIVXfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 19:40:49 -0400
+	Tue, 22 Sep 2009 19:35:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=JIPWhq7UZ+UL9MbMuTRPzs8krkRZ2/Xu2kblSvp+pR63W8V7VIqQZMyCcWYHk/AaCR
-         piOo3jzcSuvYWxUGW4oA9VHxULgrp2CnD/qUbGUi36WOTTjTJtpGbZyMth7wHgsa1Hvs
-         4dcUuXsCa1ugaQH7di7t7KzyODTU+vsOS61AI=
-Message-ID: <4AB95F41.1070500@lwfinger.net>
-Date: Tue, 22 Sep 2009 18:35:29 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=a9UBDykauSoXpwlfyJA2A7Zcg6uIh3fXrXzSp+zy8hW2qtfUy53NfkaoPJZzTTWY4X
+         IzzALKVL3ZDb0+KIkFRfNlug9YpcBkSDvnKh7egzknvsCp5mMtCZBVlrVxMch2sCcQnO
+         6Qgw0mTkiYg3N8aX8K9V5XaRFZGRwSihm5pEM=
+Date: Wed, 23 Sep 2009 01:35:31 +0200
+From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david.graham@intel.com, Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG 2.6.30+] e100 sometimes causes oops during resume
+Message-ID: <20090922233531.GA3198@bizet.domek.prywatny>
+References: <20090915120538.GA26806@bizet.domek.prywatny> <200909170118.53965.rjw@sisk.pl> <4AB29F4A.3030102@intel.com> <200909180027.37387.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Gary Hade <garyhade@us.ibm.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: fixing "pci=use_crs"
-References: <200909161715.24376.bjorn.helgaas@hp.com> <200909171016.50087.bjorn.helgaas@hp.com> <4AB50FF2.1070104@lwfinger.net> <200909211520.56800.bjorn.helgaas@hp.com>
-In-Reply-To: <200909211520.56800.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909180027.37387.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Saturday 19 September 2009 11:08:02 am Larry Finger wrote:
->> Bjorn Helgaas wrote:
->>> It looks like you have an HP box -- what exactly is it and
->>> what BIOS version do you have?  Maybe I can borrow one to play
->>> with myself so I don't have to bug you as much.
->> It is an HP dv2815nr. The BIOS is F.21. I understand that debugging
->> is much easier when you have the machine in hand, but I don't mind
->> providing information.
->> ...
->> Do you want me to boot with "pci=use_crs"?
+On Fri, Sep 18, 2009 at 12:27:37AM +0200, Rafael J. Wysocki wrote:
+> On Thursday 17 September 2009, Graham, David wrote:
+> > Rafael J. Wysocki wrote:
+> > > I guess the driver releases its DMA buffer during suspend and attempts to
+> > > allocate it back on resume, which is not really smart (if that really is the
+> > > case).
+
+> > Yes, we free a 70KB block (0x80 by 0x230 bytes) on suspend and 
+> > reallocate on resume, and so that's an Order 5 request. It looks 
+> > symmetric, and hasn't changed for years. I don't think we are leaking 
+> > memory, which points back to that the memory is too fragmented to 
+> > satisfy the request.
+> > 
+> > I also concur that Rafael's commit 6905b1f1 shouldn't change the logic 
+> > in the driver for systems with e100 (like yours Karol) that could 
+> > already sleep, and I don't see anything else in the driver that looks to 
+> > be relevant. I'm expecting that your test result without commit 6905b1f1 
+> > will still show the problem.
+> > 
+> > So I wonder if this new issue may be triggered by some other change in 
+> > the memory subsystem ?
+
+> I think so.  There have been reports about order 2 allocations failing for
+> 2.6.31, so it looks like newer kernels are more likely to expose such problems.
 > 
-> That'd be great.  HP's bureaucracy makes it hard for me to borrow
-> machines.  If you could also turn on CONFIG_PNP_DEBUG_MESSAGES
-> and boot with "pnp.debug", we should get some clues about what _CRS
-> returns for all the ACPI devices.  Just attach the resulting dmesg
-> to the bugzilla (http://bugzilla.kernel.org/show_bug.cgi?id=14183).
+> Adding linux-mm to the CC list.
 
-I put the dmesg output with pci=use_crs and pnp.debug in the bugzilla.
+I've hit this bug 2 times since my last email.  Is there anything I
+could do?
 
-Larry
+Maybe I should revert following commits (chosen somewhat randomly)?
 
+1. 49255c619fbd482d704289b5eb2795f8e3b7ff2e
 
+2. dd5d241ea955006122d76af88af87de73fec25b4 - alters changes made by
+commit above
 
+Any ideas?
+
+Thanks.
