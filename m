@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbZIVPLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbZIVPNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbZIVPLP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbZIVPLO
+	id S1756748AbZIVPNt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZIVPNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:11:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40735 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756683AbZIVPLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:11:14 -0400
-Subject: [PATCH] STAGING: includecheck fix: vt6656, wcmd.c
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>,
-       Forest Bond <forest@alittletooquiet.net>,
-       Staging <devel@driverdev.osuosl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 20:41:13 +0530
-Message-Id: <1253632273.3784.44.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Sep 2009 11:13:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37425 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753828AbZIVPNs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 11:13:48 -0400
+Date: Tue, 22 Sep 2009 08:13:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] perf fixes
+In-Reply-To: <20090922145924.GA2485@elte.hu>
+Message-ID: <alpine.LFD.2.01.0909220812440.4950@localhost.localdomain>
+References: <20090922075144.GA21122@elte.hu> <alpine.LFD.2.01.0909220749100.4950@localhost.localdomain> <20090922145924.GA2485@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fix the following 'make includecheck' warning:
 
-  drivers/staging/vt6656/wcmd.c: card.h is included more than once.
+On Tue, 22 Sep 2009, Ingo Molnar wrote:
+>
+> hm, i think it's mirroring - the repo itself looks good on 
+> master.kernel.org:
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- drivers/staging/vt6656/wcmd.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Yeah, I see it on master, not on the public sites.
 
-diff --git a/drivers/staging/vt6656/wcmd.c b/drivers/staging/vt6656/wcmd.c
-index 6912344..0464093 100644
---- a/drivers/staging/vt6656/wcmd.c
-+++ b/drivers/staging/vt6656/wcmd.c
-@@ -48,7 +48,6 @@
- #include "wmgr.h"
- #include "power.h"
- #include "wctl.h"
--#include "card.h"
- #include "baseband.h"
- #include "control.h"
- #include "rxtx.h"
--- 
-1.6.0.6
+I pulled it from there and just fixed the descriptions (since I prefer the 
+messages to point to the public sites that everybody can see)
 
-
+		Linus
