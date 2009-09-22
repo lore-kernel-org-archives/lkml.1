@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbZIVKFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZIVKHC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbZIVKFf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 06:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbZIVKFf
+	id S1755913AbZIVKHC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 06:07:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZIVKHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 06:05:35 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:58182 "EHLO gir.skynet.ie"
+	Tue, 22 Sep 2009 06:07:01 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58269 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752867AbZIVKFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 06:05:34 -0400
-Date: Tue, 22 Sep 2009 11:05:40 +0100
+	id S1755319AbZIVKHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 06:07:00 -0400
+Date: Tue, 22 Sep 2009 11:07:06 +0100
 From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, heiko.carstens@de.ibm.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Tejun Heo <tj@kernel.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [RFC PATCH 0/3] Fix SLQB on memoryless configurations V2
-Message-ID: <20090922100540.GD12254@csn.ul.ie>
-References: <1253549426-917-1-git-send-email-mel@csn.ul.ie> <20090921174656.GS12726@csn.ul.ie> <alpine.DEB.1.10.0909211349530.3106@V090114053VZO-1> <20090921180739.GT12726@csn.ul.ie> <alpine.DEB.1.10.0909211412050.3106@V090114053VZO-1>
+Message-ID: <20090922100706.GE12254@csn.ul.ie>
+References: <1253549426-917-1-git-send-email-mel@csn.ul.ie> <20090921174656.GS12726@csn.ul.ie> <alpine.DEB.1.10.0909211349530.3106@V090114053VZO-1> <20090921180739.GT12726@csn.ul.ie> <4AB85A8F.6010106@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0909211412050.3106@V090114053VZO-1>
+In-Reply-To: <4AB85A8F.6010106@in.ibm.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 02:17:40PM -0400, Christoph Lameter wrote:
-> On Mon, 21 Sep 2009, Mel Gorman wrote:
-> > Can you spot if there is something fundamentally wrong with patch 2? I.e. what
-> > is wrong with treating the closest node as local instead of only the
-> > closest node?
-> 
-> Depends on the way locking is done for percpu queues (likely lockless).
-> A misidentification of the numa locality of an object may result in locks
-> not being taken that should have been taken.
-> 
+On Tue, Sep 22, 2009 at 10:33:11AM +0530, Sachin Sant wrote:
+> Mel Gorman wrote:
+>> On Mon, Sep 21, 2009 at 01:54:12PM -0400, Christoph Lameter wrote:
+>>   
+>>> Lets just keep SLQB back until the basic issues with memoryless nodes are
+>>> resolved.
+>>>     
+>>
+>> It's not even super-clear that the memoryless nodes issues are entirely
+>> related to SLQB. Sachin for example says that there was a stall issue
+>> with memoryless nodes that could be triggered without SLQB. Sachin, is
+>> that still accurate?
+>>   
+>
+> I think there are two different problems that we are dealing with.
+>
 
-Ok, I'll continue looking from that perspective and see what comes out.
-I've spotted a few possible anomolies which I'll stick into a separate
-patch.
+Agreed.
 
-> > > Or just allow SLQB for !NUMA configurations and merge it now.
-> > >
-> >
-> > Forcing SLQB !NUMA will not rattle out any existing list issues
-> > unfortunately :(.
-> 
-> But it will make SLQB work right in permitted configurations. The NUMA
-> issues can then be fixed later upstream.
-> 
+> First one is the SLQB not working on a ppc64 box which seems to be specific
+> to only one machine and i haven't seen that on other power boxes.The patches
+> that you have posted seems to allow the box to boot, but eventually it hits
+> the stall issue(related to percpu dynamic allocator not working on ppc64),
+> which is the second problem we are dealing with.
+>
+> The stall issue seems to be much more critical as it is affecting almost
+> all of the power boxes that i have tested with (4 in all).
+> This issue is seen with Linus tree as well and was first seen with
+> 2.6.31-git5 (0cb583fd..) 
+>
+> The stall issue was reported here:
+> http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-September/075791.html
+>
 
-I'm going to punt the decision on this one to Pekka or Nick. My feeling
-is leave it enabled for NUMA so it can be identified if it gets fixed
-for some other reason - e.g. the stalls are due to a per-cpu problem as
-stated by Sachin and SLQB happens to exasperate the problem.
+Because of this, I'd like to try and get SLQB as far as it can at the
+moment and then treat this problem from scratch. I'd rather not treat
+multiple different bugs as if they were one problem when they probably
+are not.
+
+Thanks
 
 -- 
 Mel Gorman
