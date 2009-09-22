@@ -1,54 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZIVNJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbZIVNLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbZIVNJr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbZIVNJq
+	id S1756560AbZIVNLi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbZIVNLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:09:46 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:55407 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756528AbZIVNJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:09:46 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] warn about use of uninstalled kernel headers
-Date: Tue, 22 Sep 2009 15:09:47 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-10-generic; KDE/4.3.1; x86_64; ; )
-Cc: "Am?rico Wang" <xiyou.wangcong@gmail.com>, Caveh Jalali <ecaveh@gmail.com>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com> <200909211637.12983.arnd@arndb.de> <20090922044310.GA29208@merkur.ravnborg.org>
-In-Reply-To: <20090922044310.GA29208@merkur.ravnborg.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 22 Sep 2009 09:11:38 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:53216 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756525AbZIVNLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:11:37 -0400
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909221509.47369.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+Zyb9jDWfRzepwRX6WfLTazjwu3XPMKbpl+bb
- nde5ynh7S+GA1yYDUZSbXHx8UQrMgIMLwrL2z5UT2NTAo8F6oM
- BUUF3+QxTRbLSvGp5Veew==
+Message-ID: <19128.52482.184096.558888@pilspetsen.it.uu.se>
+Date: Tue, 22 Sep 2009 15:11:30 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: =?UTF-8?Q?Maciej_=C5=BBenczykowski?= <zenczykowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: libATA SATA errors on DVD bad sectors...
+In-Reply-To: <55a4f86e0909212101s3097a1e3yf225f3e165ff0bea@mail.gmail.com>
+References: <55a4f86e0909212101s3097a1e3yf225f3e165ff0bea@mail.gmail.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 September 2009, Sam Ravnborg wrote:
-> > +#ifndef __EXPORTED_HEADERS__
-> But why do we need this "__EXPORTED_HEADERS__" thing?
-> 
-> ?
+(cc: linux-ide added)
 
-The problem is that the warning should only be for headers
-that are not installed yet, but it needs to be stripped
-in the installed version. Since we're already postprocessing
-all files with unifdef, that seemed like the easiest way 
-to strip out the #warning. Obviously, I couldn't use the
-#ifdef __KERNEL__ logic, because that would either warn
-give false positives when building kernel code or when
-building user code from installed headers.
+=?UTF-8?Q?Maciej_=C5=BBenczykowski?= writes:
+ > I'm getting the following on bad sectors on a pretty badly scratched DVD:
+ > 
+ > Sep 21 20:23:20 zeus kernel: ata12.00: exception Emask 0x0 SAct 0x0
+ > SErr 0x0 action 0x6
+ > Sep 21 20:23:20 zeus kernel: ata12.00: port_status 0x20280000
 
-	Arnd <><
+Later you write that ata12 connects to a Promise SATA300 TX4.
+In that case, port_status 0x20280000 means:
+- Overrun Error
+- Drive Error
+- Packet Command Cycle
+which means that the drive set its error status flag and raised an interrupt
+which prematurely terminated a data transfer.
+
+ > Sep 21 20:23:20 zeus kernel: ata12.00: cmd
+ > a0/01:00:00:00:08/00:00:00:00:00/a0 tag 0 dma 2048 in
+ > Sep 21 20:23:20 zeus kernel:         cdb a8 00 00 16 02 6c 00 00  00
+ > 01 00 00 00 00 00 00
+ > Sep 21 20:23:20 zeus kernel:         res
+ > 51/30:03:00:00:00/00:00:00:00:00/e0 Emask 0x2 (HSM violation)
+ > Sep 21 20:23:20 zeus kernel: ata12.00: status: { DRDY ERR }
+ > Sep 21 20:23:20 zeus kernel: ata12: hard resetting link
+ > Sep 21 20:23:21 zeus kernel: ata12: SATA link up 1.5 Gbps (SStatus 113
+ > SControl 300)
+ > Sep 21 20:23:21 zeus kernel: ata12.00: configured for UDMA/100
+ > Sep 21 20:23:21 zeus kernel: ata12: EH complete
+ > 
+ > Sep 21 20:23:24 zeus kernel: ata12.00: exception Emask 0x0 SAct 0x0
+ > SErr 0x0 action 0x6
+ > Sep 21 20:23:24 zeus kernel: ata12.00: port_status 0x20280000
+ > Sep 21 20:23:24 zeus kernel: ata12.00: cmd
+ > a0/01:00:00:00:08/00:00:00:00:00/a0 tag 0 dma 2048 in
+ > Sep 21 20:23:24 zeus kernel:         cdb a8 00 00 16 02 6d 00 00  00
+ > 01 00 00 00 00 00 00
+ > Sep 21 20:23:24 zeus kernel:         res
+ > 51/30:03:00:00:00/00:00:00:00:00/e0 Emask 0x2 (HSM violation)
+ > Sep 21 20:23:24 zeus kernel: ata12.00: status: { DRDY ERR }
+ > Sep 21 20:23:24 zeus kernel: ata12: hard resetting link
+ > Sep 21 20:23:24 zeus kernel: ata12: SATA link up 1.5 Gbps (SStatus 113
+ > SControl 300)
+ > Sep 21 20:23:25 zeus kernel: ata12.00: configured for UDMA/100
+ > Sep 21 20:23:25 zeus kernel: ata12: EH complete
+ > 
+ > The command being run is:
+ > sg_dd blk_sgio=1 bpt=1 bs=2048 cdbsz=12 coe=0 coe_limit=0 if=/dev/srX
+ > odir of=badsector.bin count=1 skip=$i
+ > 
+ > on a Fedora 11 box:
+ > Linux zeus 2.6.30.5-43.fc11.x86_64 #1 SMP Thu Aug 27 21:39:52 EDT 2009
+ > x86_64 x86_64 x86_64 GNU/Linux
+ > 
+ > These only seem to show up when the DVD is inserted into /dev/sr1.
+ > /dev/sr0 doesn't seem to spew this crap (although both drives fail to
+ > read the sector).
+ > 
+ > /sys/block/sr0 ->
+ > ../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sr0
+ > /sys/block/sr1 ->
+ > ../devices/pci0000:00/0000:00:1e.0/0000:03:09.0/host11/target11:0:0/11:0:0:0/block/sr1
+ > 
+ > ata1.00: HL-DT-ST BD-RE GGW-H20L YL05 UDMA/133
+ > ata12.00: LITE-ON DVDRW LH-20A1L BL06 UDMA/100
+ > 
+ > # lspci [-n] | egrep '1e.0|1f.2|3:09'
+ > 00:1f.2 0106: 8086:2922 SATA controller: Intel Corporation
+ > 82801IR/IO/IH (ICH9R/DO/DH) 6 port SATA AHCI Controller (rev 02)
+ > 00:1e.0 0604: 8086:244e PCI bridge: Intel Corporation 82801 PCI Bridge (rev 92)
+ > 03:09.0 0180: 105a:3d17 Mass storage controller: Promise Technology,
+ > Inc. PDC40718 (SATA 300 TX4) (rev 02)
+ > 
+ > ie. the Lite-On drive on the promise TX4 controller has issues, while
+ > the LG on the intel AHCI controller seems fine...
+
+The obvious next experiment would be to swap the drives and see how
+the Lite-On behaves on the ICH9 and the LG behaves on the TX4.
+
+ > Would it make sense to add this somewhere into the code as a 'bad
+ > sector' error condition and not perform a hard reset?
+
+The sata_promise driver upon seeing the port_status above sets
+AC_ERR_HSM and AC_ERR_DEV, and performs a soft reset. Apparently
+libata-eh follows up with a hard(er) reset, which doesn't surprise
+me given the HSM and DEV errors.
+
+ > It may be worth pointing out that the LiteOn drive is significantly
+ > faster in dealing with the bad sectors, and actually successfully
+ > reads a far larger number of them (about 15% of the sectors that the
+ > LG can't read, the Lite-On can, and in about 2/3 of the time).  I
+ > would guess that if it didn't have to hard reset the bus, it'd be even
+ > faster...
+
+So things actually work Ok with the Lite-On on the TX4, and you're mainly
+concerned about log messages and potential performance loss?
+
+/Mikael
