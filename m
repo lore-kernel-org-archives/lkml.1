@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214AbZIVTsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbZIVTuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752214AbZIVTsv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbZIVTst
+	id S1752193AbZIVTuW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbZIVTuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:48:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37056 "EHLO ogre.sisk.pl"
+	Tue, 22 Sep 2009 15:50:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37071 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750901AbZIVTss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:48:48 -0400
+	id S1751480AbZIVTuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 15:50:20 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andreas Mohr <andi@lisas.de>
+To: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [PATCH] PCI PM: Read device power state from register after updating it (rev. 2)
-Date: Tue, 22 Sep 2009 21:50:01 +0200
+Date: Tue, 22 Sep 2009 21:51:35 +0200
 User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: linux-pci@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20090922080747.GA20853@rhlx01.hs-esslingen.de>
-In-Reply-To: <20090922080747.GA20853@rhlx01.hs-esslingen.de>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200909212337.01812.rjw@sisk.pl> <20090922091620.599ab046@infradead.org>
+In-Reply-To: <20090922091620.599ab046@infradead.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909222150.01185.rjw@sisk.pl>
+Message-Id: <200909222151.36022.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 September 2009, Andreas Mohr wrote:
-> Hi Rafael,
+On Tuesday 22 September 2009, Arjan van de Ven wrote:
+> On Mon, 21 Sep 2009 23:37:01 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> >  
+> > -	dev->current_state = state;
+> > +	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+> > +	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
+> > +	/* Return error code if we have failed to change the state */
+> > +	if (dev->current_state != state)
+> > +		dev_info(&dev->dev, "Refused to change power state, "
+> > +			"currently in D%d\n", dev->current_state);
+> 
+> I would suspect that you want this message only once...
+> to avoid it flooding logs and such
 
-Hi,
+Hmm?  I don't think we use pci_set_power_state() _that_ often.
 
-> first you say "returning an error code in such cases would..."
-> and then the patch content has...?
+> or at least ratelimiting it
 
-I don't quite understand your comment, care to elaborate?
-
-Rafael
+That sounds like a good idea, though, will respin.
