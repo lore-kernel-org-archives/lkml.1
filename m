@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZIVMgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbZIVMfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbZIVMgM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 08:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZIVMgL
+	id S1756064AbZIVMfS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 08:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZIVMfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 08:36:11 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:65458 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098AbZIVMgK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 08:36:10 -0400
-Message-ID: <4AB8C429.60804@gmail.com>
-Date: Tue, 22 Sep 2009 15:33:45 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 22 Sep 2009 08:35:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:48997 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751084AbZIVMfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 08:35:17 -0400
+Date: Tue, 22 Sep 2009 22:34:24 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Arjan van de Ven <arjan@linux.intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] perf: Update PERF_EVENT_FORK header definition
+Message-ID: <20090922123424.GD19453@kryten>
 MIME-Version: 1.0
-To: torvalds@linux-foundation.org
-CC: tomi.valkeinen@nokia.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, tony@atomide.com, linux-omap@vger.kernel.org,
-       linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
-References: <1253622588.25232.11.camel@tubuntu>
-In-Reply-To: <1253622588.25232.11.camel@tubuntu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 22 Sep 2009 12:35:48.0132 (UTC) FILETIME=[364D0E40:01CA3B81]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/22/2009 03:29 PM, Tomi Valkeinen wrote:
-> Linus,
->
-> Here's the new display subsystem and framebuffer driver for OMAP2/3.
->
-> The driver has been reviewed on linux-omap and linux-fbdev-devel, and is in
-> use, for example, on N900, Beagle Board and Overo boards. We have an ACK for
-> the OMAP parts from Tony Lindgren, who maintains the OMAP platform.
->
-> We have gotten positive feedback about the driver, for example in this thread:
-> http://marc.info/?l=linux-kernel&m=125171081901820&w=2
->
-> The driver is actively maintained and developed further, and I have already a
-> bunch of patches on top of these patches, but I would like to get the big core
-> driver merged first. After the driver is merged, other people can send patches
-> to LCD drivers and board files to enable the new display subsystem on their
-> boards.
->
-> Andrew said 2-3 weeks ago that he'll merge the driver (after he has looked
-> through it), but he hasn't responded since then. I'm guessing he's quite busy.
 
-Just in case it matters, here is my redundant confirmation that we are
-successfully using this piece of software for about a year.
+PERF_EVENT_FORK always outputs the time field, so update the header to
+reflect this.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux.trees.git/include/linux/perf_counter.h
+===================================================================
+--- linux.trees.git.orig/include/linux/perf_counter.h	2009-09-22 20:24:37.000000000 +1000
++++ linux.trees.git/include/linux/perf_counter.h	2009-09-22 20:24:47.000000000 +1000
+@@ -364,7 +364,7 @@ enum perf_event_type {
+ 	 *	struct perf_event_header	header;
+ 	 *	u32				pid, ppid;
+ 	 *	u32				tid, ptid;
+-	 *	{ u64				time;     } && PERF_SAMPLE_TIME
++	 *	u64				time;
+ 	 * };
+ 	 */
+ 	PERF_EVENT_FORK			= 7,
+Index: linux.trees.git/include/linux/perf_event.h
+===================================================================
+--- linux.trees.git.orig/include/linux/perf_event.h	2009-09-22 20:24:37.000000000 +1000
++++ linux.trees.git/include/linux/perf_event.h	2009-09-22 20:24:57.000000000 +1000
+@@ -360,7 +360,7 @@ enum perf_event_type {
+ 	 *	struct perf_event_header	header;
+ 	 *	u32				pid, ppid;
+ 	 *	u32				tid, ptid;
+-	 *	{ u64				time;     } && PERF_SAMPLE_TIME
++	 *	u64				time;
+ 	 * };
+ 	 */
+ 	PERF_RECORD_FORK			= 7,
