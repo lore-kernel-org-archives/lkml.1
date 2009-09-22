@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750995AbZIVAiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751281AbZIVAr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750995AbZIVAiR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 20:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZIVAiP
+	id S1751281AbZIVAr7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 20:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbZIVAr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 20:38:15 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:59559 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750801AbZIVAiP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 20:38:15 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Wei Chong Tan <weichong78@gmail.com>
-Subject: Re: PATCH: ARCH in builddeb
-Date: Tue, 22 Sep 2009 02:38:16 +0200
-User-Agent: KMail/1.9.9
-Cc: sam@ravnborg.org, max@stro.at, linux-kernel@vger.kernel.org
-References: <31cb94fa0909132225l6cb98739o59d105ef480d1cd2@mail.gmail.com> <31cb94fa0909172010v1af9b528vcad5fefbf75341e9@mail.gmail.com> <200909201509.14794.elendil@planet.nl>
-In-Reply-To: <200909201509.14794.elendil@planet.nl>
+	Mon, 21 Sep 2009 20:47:57 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53577 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750783AbZIVAr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Sep 2009 20:47:57 -0400
+Message-ID: <4AB81E70.4060103@cn.fujitsu.com>
+Date: Tue, 22 Sep 2009 08:46:40 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
+Subject: Re: mailing list for trace users
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com> <20090921191729.GE5018@nowhere>
+In-Reply-To: <20090921191729.GE5018@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909220238.17579.elendil@planet.nl>
-X-OriginalArrivalTime: 22 Sep 2009 00:38:18.0003 (UTC) FILETIME=[FA6CAE30:01CA3B1C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 September 2009, Frans Pop wrote:
-> So, somehow dpkg is able to do the right thing based on what is set for
-> gcc (I expect from the CROSS_COMPILE option), but not if that gets
-> overruled as both your patches seem to be doing.
+Frederic Weisbecker wrote:
+> On Wed, Sep 16, 2009 at 04:16:22PM -0400, Steven Rostedt wrote:
+>> What are people's thoughts about creating a linux-trace-users mailing
+>> list on vger.kernel.org?
+>>
+>> This would be a place for users of tracers and even perf. For asking
+>> questions about how to use the debugfs/tracing directory or the perf
+>> tool.
+>>
+>> This will not be a place for kernel development. Patches for the tracing
+>> infrastructure should still go through LKML. This will be a place to ask
+>> how-to questions, or any other kind of help questions.
+>>
+>> LKML can be quite intimidating, and it is not a place to ask help
+>> questions anyway. I think adding a linux-trace-users mailing list would
+>> be a good idea.
+>>
+>> Thoughts?
+>>
+>> -- Steve
+> 
+> 
+> Why not. That could also gather informations from LKML threads by
+> Cc'ing it while explaining how to use the tools in random discussions.
+> 
 
-Actually, I think the correct way to build a linux kernel for i386 on an 
-amd64 [1] system is to use 'linux32 make deb-pkg' [2]. With that no 
-changes to the kernel build system should be needed at all, and I think 
-with that you even should not need to set the ARCH variable.
++1
 
-It should also be possible to build a 64-bit kernel for i386 on amd64 that 
-way using 'linux32 make ARCH=x86_64 deb-pkg'.
+And then the mailing list needs to be renamed to linux-trace. And
+we need to advertise it, in Documentation, Kconfig?
 
-Untested, but AFAIK that should work. Sorry for not mentioning it earlier, 
-but it's a command I've never really used myself and I keep forgetting 
-about it :-/
-
-Cheers,
-FJP
-
-[1] amd64 as in the Debian architecture, which also covers Intel 64-bit
-[2] linux32 is in until-linux package and thus guaranteed to be available
