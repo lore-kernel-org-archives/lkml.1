@@ -1,473 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbZIVHkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbZIVHvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbZIVHkv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 03:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZIVHkt
+	id S1753896AbZIVHvz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 03:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZIVHvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 03:40:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44578 "EHLO hera.kernel.org"
+	Tue, 22 Sep 2009 03:51:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57218 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbZIVHkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 03:40:45 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [PATCH 4/4] percpu: kill legacy percpu allocator
-Date: Tue, 22 Sep 2009 16:40:14 +0900
-Message-Id: <1253605214-23210-5-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1253605214-23210-1-git-send-email-tj@kernel.org>
-References: <1253605214-23210-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 07:40:31 +0000 (UTC)
+	id S1753044AbZIVHvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 03:51:53 -0400
+Date: Tue, 22 Sep 2009 09:51:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [GIT PULL] perf fixes
+Message-ID: <20090922075144.GA21122@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With ia64 converted, there's no arch left which still uses legacy
-percpu allocator.  Kill it.
+Linus,
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>
----
- include/linux/percpu.h |   24 -------
- kernel/module.c        |  150 ----------------------------------------
- mm/Makefile            |    4 -
- mm/allocpercpu.c       |  177 ------------------------------------------------
- mm/percpu.c            |    2 -
- 5 files changed, 0 insertions(+), 357 deletions(-)
- delete mode 100644 mm/allocpercpu.c
+Please pull the latest perf-fixes-for-linus git tree from:
 
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 878836c..5baf5b8 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -34,8 +34,6 @@
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perf-fixes-for-linus
+
+This fixes a brown paperbag build error in PowerPC caused by the rename.
+
+Would it be possible for you to pull this fix as the first thing today, 
+to keep it together with 43c1266, the merge commit of the rename, to 
+minimize the bisection breakage window for PowerPC?
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Paul Mackerras (1):
+      perf_event, powerpc: Fix compilation after big perf_counter rename
+
+
+ arch/powerpc/include/asm/perf_event.h |    4 +-
+ arch/powerpc/kernel/perf_event.c      |   38 ++++++++++++++++----------------
+ 2 files changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/perf_event.h b/arch/powerpc/include/asm/perf_event.h
+index 2499aaa..3288ce3 100644
+--- a/arch/powerpc/include/asm/perf_event.h
++++ b/arch/powerpc/include/asm/perf_event.h
+@@ -14,7 +14,7 @@
  
- #ifdef CONFIG_SMP
+ #define MAX_HWEVENTS		8
+ #define MAX_EVENT_ALTERNATIVES	8
+-#define MAX_LIMITED_HWEVENTS	2
++#define MAX_LIMITED_HWCOUNTERS	2
  
--#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
--
- /* minimum unit size, also is the maximum supported allocation size */
- #define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(64 << 10)
+ /*
+  * This struct provides the constants and functions needed to
+@@ -22,7 +22,7 @@
+  */
+ struct power_pmu {
+ 	const char	*name;
+-	int		n_event;
++	int		n_counter;
+ 	int		max_alternatives;
+ 	unsigned long	add_fields;
+ 	unsigned long	test_adder;
+diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
+index 197b7d9..bbcbae1 100644
+--- a/arch/powerpc/kernel/perf_event.c
++++ b/arch/powerpc/kernel/perf_event.c
+@@ -30,8 +30,8 @@ struct cpu_hw_events {
+ 	u64 events[MAX_HWEVENTS];
+ 	unsigned int flags[MAX_HWEVENTS];
+ 	unsigned long mmcr[3];
+-	struct perf_event *limited_event[MAX_LIMITED_HWEVENTS];
+-	u8  limited_hwidx[MAX_LIMITED_HWEVENTS];
++	struct perf_event *limited_counter[MAX_LIMITED_HWCOUNTERS];
++	u8  limited_hwidx[MAX_LIMITED_HWCOUNTERS];
+ 	u64 alternatives[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
+ 	unsigned long amasks[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
+ 	unsigned long avalues[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
+@@ -253,7 +253,7 @@ static int power_check_constraints(struct cpu_hw_events *cpuhw,
+ 	unsigned long addf = ppmu->add_fields;
+ 	unsigned long tadd = ppmu->test_adder;
  
-@@ -130,28 +128,6 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
- #define per_cpu_ptr(ptr, cpu)	SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
+-	if (n_ev > ppmu->n_event)
++	if (n_ev > ppmu->n_counter)
+ 		return -1;
  
- extern void *__alloc_reserved_percpu(size_t size, size_t align);
--
--#else /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
--
--struct percpu_data {
--	void *ptrs[1];
--};
--
--/* pointer disguising messes up the kmemleak objects tracking */
--#ifndef CONFIG_DEBUG_KMEMLEAK
--#define __percpu_disguise(pdata) (struct percpu_data *)~(unsigned long)(pdata)
--#else
--#define __percpu_disguise(pdata) (struct percpu_data *)(pdata)
--#endif
--
--#define per_cpu_ptr(ptr, cpu)						\
--({									\
--        struct percpu_data *__p = __percpu_disguise(ptr);		\
--        (__typeof__(ptr))__p->ptrs[(cpu)];				\
--})
--
--#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
--
- extern void *__alloc_percpu(size_t size, size_t align);
- extern void free_percpu(void *__pdata);
- 
-diff --git a/kernel/module.c b/kernel/module.c
-index b6ee424..bac3fe8 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -369,8 +369,6 @@ EXPORT_SYMBOL_GPL(find_module);
- 
- #ifdef CONFIG_SMP
- 
--#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
--
- static void *percpu_modalloc(unsigned long size, unsigned long align,
- 			     const char *name)
- {
-@@ -394,154 +392,6 @@ static void percpu_modfree(void *freeme)
- 	free_percpu(freeme);
+ 	/* First see if the events will go on as-is */
+@@ -426,7 +426,7 @@ static int is_limited_pmc(int pmcnum)
+ 		&& (pmcnum == 5 || pmcnum == 6);
  }
  
--#else /* ... CONFIG_HAVE_LEGACY_PER_CPU_AREA */
--
--/* Number of blocks used and allocated. */
--static unsigned int pcpu_num_used, pcpu_num_allocated;
--/* Size of each block.  -ve means used. */
--static int *pcpu_size;
--
--static int split_block(unsigned int i, unsigned short size)
--{
--	/* Reallocation required? */
--	if (pcpu_num_used + 1 > pcpu_num_allocated) {
--		int *new;
--
--		new = krealloc(pcpu_size, sizeof(new[0])*pcpu_num_allocated*2,
--			       GFP_KERNEL);
--		if (!new)
--			return 0;
--
--		pcpu_num_allocated *= 2;
--		pcpu_size = new;
--	}
--
--	/* Insert a new subblock */
--	memmove(&pcpu_size[i+1], &pcpu_size[i],
--		sizeof(pcpu_size[0]) * (pcpu_num_used - i));
--	pcpu_num_used++;
--
--	pcpu_size[i+1] -= size;
--	pcpu_size[i] = size;
--	return 1;
--}
--
--static inline unsigned int block_size(int val)
--{
--	if (val < 0)
--		return -val;
--	return val;
--}
--
--static void *percpu_modalloc(unsigned long size, unsigned long align,
--			     const char *name)
--{
--	unsigned long extra;
--	unsigned int i;
--	void *ptr;
--	int cpu;
--
--	if (align > PAGE_SIZE) {
--		printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
--		       name, align, PAGE_SIZE);
--		align = PAGE_SIZE;
--	}
--
--	ptr = __per_cpu_start;
--	for (i = 0; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
--		/* Extra for alignment requirement. */
--		extra = ALIGN((unsigned long)ptr, align) - (unsigned long)ptr;
--		BUG_ON(i == 0 && extra != 0);
--
--		if (pcpu_size[i] < 0 || pcpu_size[i] < extra + size)
--			continue;
--
--		/* Transfer extra to previous block. */
--		if (pcpu_size[i-1] < 0)
--			pcpu_size[i-1] -= extra;
--		else
--			pcpu_size[i-1] += extra;
--		pcpu_size[i] -= extra;
--		ptr += extra;
--
--		/* Split block if warranted */
--		if (pcpu_size[i] - size > sizeof(unsigned long))
--			if (!split_block(i, size))
--				return NULL;
--
--		/* add the per-cpu scanning areas */
--		for_each_possible_cpu(cpu)
--			kmemleak_alloc(ptr + per_cpu_offset(cpu), size, 0,
--				       GFP_KERNEL);
--
--		/* Mark allocated */
--		pcpu_size[i] = -pcpu_size[i];
--		return ptr;
--	}
--
--	printk(KERN_WARNING "Could not allocate %lu bytes percpu data\n",
--	       size);
--	return NULL;
--}
--
--static void percpu_modfree(void *freeme)
--{
--	unsigned int i;
--	void *ptr = __per_cpu_start + block_size(pcpu_size[0]);
--	int cpu;
--
--	/* First entry is core kernel percpu data. */
--	for (i = 1; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
--		if (ptr == freeme) {
--			pcpu_size[i] = -pcpu_size[i];
--			goto free;
--		}
--	}
--	BUG();
--
-- free:
--	/* remove the per-cpu scanning areas */
--	for_each_possible_cpu(cpu)
--		kmemleak_free(freeme + per_cpu_offset(cpu));
--
--	/* Merge with previous? */
--	if (pcpu_size[i-1] >= 0) {
--		pcpu_size[i-1] += pcpu_size[i];
--		pcpu_num_used--;
--		memmove(&pcpu_size[i], &pcpu_size[i+1],
--			(pcpu_num_used - i) * sizeof(pcpu_size[0]));
--		i--;
--	}
--	/* Merge with next? */
--	if (i+1 < pcpu_num_used && pcpu_size[i+1] >= 0) {
--		pcpu_size[i] += pcpu_size[i+1];
--		pcpu_num_used--;
--		memmove(&pcpu_size[i+1], &pcpu_size[i+2],
--			(pcpu_num_used - (i+1)) * sizeof(pcpu_size[0]));
--	}
--}
--
--static int percpu_modinit(void)
--{
--	pcpu_num_used = 2;
--	pcpu_num_allocated = 2;
--	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
--			    GFP_KERNEL);
--	/* Static in-kernel percpu data (used). */
--	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
--	/* Free room. */
--	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
--	if (pcpu_size[1] < 0) {
--		printk(KERN_ERR "No per-cpu room for modules.\n");
--		pcpu_num_used = 1;
--	}
--
--	return 0;
--}
--__initcall(percpu_modinit);
--
--#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
--
- static unsigned int find_pcpusec(Elf_Ehdr *hdr,
- 				 Elf_Shdr *sechdrs,
- 				 const char *secstrings)
-diff --git a/mm/Makefile b/mm/Makefile
-index ea4b18b..1195920 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -33,11 +33,7 @@ obj-$(CONFIG_FAILSLAB) += failslab.o
- obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
- obj-$(CONFIG_FS_XIP) += filemap_xip.o
- obj-$(CONFIG_MIGRATION) += migrate.o
--ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- obj-$(CONFIG_SMP) += percpu.o
--else
--obj-$(CONFIG_SMP) += allocpercpu.o
--endif
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
- obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
-diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
-deleted file mode 100644
-index df34cea..0000000
---- a/mm/allocpercpu.c
-+++ /dev/null
-@@ -1,177 +0,0 @@
--/*
-- * linux/mm/allocpercpu.c
-- *
-- * Separated from slab.c August 11, 2006 Christoph Lameter
-- */
--#include <linux/mm.h>
--#include <linux/module.h>
--#include <linux/bootmem.h>
--#include <asm/sections.h>
--
--#ifndef cache_line_size
--#define cache_line_size()	L1_CACHE_BYTES
--#endif
--
--/**
-- * percpu_depopulate - depopulate per-cpu data for given cpu
-- * @__pdata: per-cpu data to depopulate
-- * @cpu: depopulate per-cpu data for this cpu
-- *
-- * Depopulating per-cpu data for a cpu going offline would be a typical
-- * use case. You need to register a cpu hotplug handler for that purpose.
-- */
--static void percpu_depopulate(void *__pdata, int cpu)
--{
--	struct percpu_data *pdata = __percpu_disguise(__pdata);
--
--	kfree(pdata->ptrs[cpu]);
--	pdata->ptrs[cpu] = NULL;
--}
--
--/**
-- * percpu_depopulate_mask - depopulate per-cpu data for some cpu's
-- * @__pdata: per-cpu data to depopulate
-- * @mask: depopulate per-cpu data for cpu's selected through mask bits
-- */
--static void __percpu_depopulate_mask(void *__pdata, const cpumask_t *mask)
--{
--	int cpu;
--	for_each_cpu_mask_nr(cpu, *mask)
--		percpu_depopulate(__pdata, cpu);
--}
--
--#define percpu_depopulate_mask(__pdata, mask) \
--	__percpu_depopulate_mask((__pdata), &(mask))
--
--/**
-- * percpu_populate - populate per-cpu data for given cpu
-- * @__pdata: per-cpu data to populate further
-- * @size: size of per-cpu object
-- * @gfp: may sleep or not etc.
-- * @cpu: populate per-data for this cpu
-- *
-- * Populating per-cpu data for a cpu coming online would be a typical
-- * use case. You need to register a cpu hotplug handler for that purpose.
-- * Per-cpu object is populated with zeroed buffer.
-- */
--static void *percpu_populate(void *__pdata, size_t size, gfp_t gfp, int cpu)
--{
--	struct percpu_data *pdata = __percpu_disguise(__pdata);
--	int node = cpu_to_node(cpu);
--
--	/*
--	 * We should make sure each CPU gets private memory.
--	 */
--	size = roundup(size, cache_line_size());
--
--	BUG_ON(pdata->ptrs[cpu]);
--	if (node_online(node))
--		pdata->ptrs[cpu] = kmalloc_node(size, gfp|__GFP_ZERO, node);
--	else
--		pdata->ptrs[cpu] = kzalloc(size, gfp);
--	return pdata->ptrs[cpu];
--}
--
--/**
-- * percpu_populate_mask - populate per-cpu data for more cpu's
-- * @__pdata: per-cpu data to populate further
-- * @size: size of per-cpu object
-- * @gfp: may sleep or not etc.
-- * @mask: populate per-cpu data for cpu's selected through mask bits
-- *
-- * Per-cpu objects are populated with zeroed buffers.
-- */
--static int __percpu_populate_mask(void *__pdata, size_t size, gfp_t gfp,
--				  cpumask_t *mask)
--{
--	cpumask_t populated;
--	int cpu;
--
--	cpus_clear(populated);
--	for_each_cpu_mask_nr(cpu, *mask)
--		if (unlikely(!percpu_populate(__pdata, size, gfp, cpu))) {
--			__percpu_depopulate_mask(__pdata, &populated);
--			return -ENOMEM;
--		} else
--			cpu_set(cpu, populated);
--	return 0;
--}
--
--#define percpu_populate_mask(__pdata, size, gfp, mask) \
--	__percpu_populate_mask((__pdata), (size), (gfp), &(mask))
--
--/**
-- * alloc_percpu - initial setup of per-cpu data
-- * @size: size of per-cpu object
-- * @align: alignment
-- *
-- * Allocate dynamic percpu area.  Percpu objects are populated with
-- * zeroed buffers.
-- */
--void *__alloc_percpu(size_t size, size_t align)
--{
--	/*
--	 * We allocate whole cache lines to avoid false sharing
--	 */
--	size_t sz = roundup(nr_cpu_ids * sizeof(void *), cache_line_size());
--	void *pdata = kzalloc(sz, GFP_KERNEL);
--	void *__pdata = __percpu_disguise(pdata);
--
--	/*
--	 * Can't easily make larger alignment work with kmalloc.  WARN
--	 * on it.  Larger alignment should only be used for module
--	 * percpu sections on SMP for which this path isn't used.
--	 */
--	WARN_ON_ONCE(align > SMP_CACHE_BYTES);
--
--	if (unlikely(!pdata))
--		return NULL;
--	if (likely(!__percpu_populate_mask(__pdata, size, GFP_KERNEL,
--					   &cpu_possible_map)))
--		return __pdata;
--	kfree(pdata);
--	return NULL;
--}
--EXPORT_SYMBOL_GPL(__alloc_percpu);
--
--/**
-- * free_percpu - final cleanup of per-cpu data
-- * @__pdata: object to clean up
-- *
-- * We simply clean up any per-cpu object left. No need for the client to
-- * track and specify through a bis mask which per-cpu objects are to free.
-- */
--void free_percpu(void *__pdata)
--{
--	if (unlikely(!__pdata))
--		return;
--	__percpu_depopulate_mask(__pdata, cpu_possible_mask);
--	kfree(__percpu_disguise(__pdata));
--}
--EXPORT_SYMBOL_GPL(free_percpu);
--
--/*
-- * Generic percpu area setup.
-- */
--#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
--unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
--
--EXPORT_SYMBOL(__per_cpu_offset);
--
--void __init setup_per_cpu_areas(void)
--{
--	unsigned long size, i;
--	char *ptr;
--	unsigned long nr_possible_cpus = num_possible_cpus();
--
--	/* Copy section for each CPU (we discard the original) */
--	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
--	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
--
--	for_each_possible_cpu(i) {
--		__per_cpu_offset[i] = ptr - __per_cpu_start;
--		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
--		ptr += size;
--	}
--}
--#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 43d8cac..adbc5a4 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -46,8 +46,6 @@
-  *
-  * To use this allocator, arch code should do the followings.
-  *
-- * - drop CONFIG_HAVE_LEGACY_PER_CPU_AREA
-- *
-  * - define __addr_to_pcpu_ptr() and __pcpu_ptr_to_addr() to translate
-  *   regular address to percpu pointer and back if they need to be
-  *   different from the default
--- 
-1.6.4.2
-
+-static void freeze_limited_events(struct cpu_hw_events *cpuhw,
++static void freeze_limited_counters(struct cpu_hw_events *cpuhw,
+ 				    unsigned long pmc5, unsigned long pmc6)
+ {
+ 	struct perf_event *event;
+@@ -434,7 +434,7 @@ static void freeze_limited_events(struct cpu_hw_events *cpuhw,
+ 	int i;
+ 
+ 	for (i = 0; i < cpuhw->n_limited; ++i) {
+-		event = cpuhw->limited_event[i];
++		event = cpuhw->limited_counter[i];
+ 		if (!event->hw.idx)
+ 			continue;
+ 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
+@@ -445,7 +445,7 @@ static void freeze_limited_events(struct cpu_hw_events *cpuhw,
+ 	}
+ }
+ 
+-static void thaw_limited_events(struct cpu_hw_events *cpuhw,
++static void thaw_limited_counters(struct cpu_hw_events *cpuhw,
+ 				  unsigned long pmc5, unsigned long pmc6)
+ {
+ 	struct perf_event *event;
+@@ -453,7 +453,7 @@ static void thaw_limited_events(struct cpu_hw_events *cpuhw,
+ 	int i;
+ 
+ 	for (i = 0; i < cpuhw->n_limited; ++i) {
+-		event = cpuhw->limited_event[i];
++		event = cpuhw->limited_counter[i];
+ 		event->hw.idx = cpuhw->limited_hwidx[i];
+ 		val = (event->hw.idx == 5) ? pmc5 : pmc6;
+ 		atomic64_set(&event->hw.prev_count, val);
+@@ -495,9 +495,9 @@ static void write_mmcr0(struct cpu_hw_events *cpuhw, unsigned long mmcr0)
+ 		       "i" (SPRN_PMC5), "i" (SPRN_PMC6));
+ 
+ 	if (mmcr0 & MMCR0_FC)
+-		freeze_limited_events(cpuhw, pmc5, pmc6);
++		freeze_limited_counters(cpuhw, pmc5, pmc6);
+ 	else
+-		thaw_limited_events(cpuhw, pmc5, pmc6);
++		thaw_limited_counters(cpuhw, pmc5, pmc6);
+ 
+ 	/*
+ 	 * Write the full MMCR0 including the event overflow interrupt
+@@ -653,7 +653,7 @@ void hw_perf_enable(void)
+ 			continue;
+ 		idx = hwc_index[i] + 1;
+ 		if (is_limited_pmc(idx)) {
+-			cpuhw->limited_event[n_lim] = event;
++			cpuhw->limited_counter[n_lim] = event;
+ 			cpuhw->limited_hwidx[n_lim] = idx;
+ 			++n_lim;
+ 			continue;
+@@ -702,7 +702,7 @@ static int collect_events(struct perf_event *group, int max_count,
+ 		flags[n] = group->hw.event_base;
+ 		events[n++] = group->hw.config;
+ 	}
+-	list_for_each_entry(event, &group->sibling_list, list_entry) {
++	list_for_each_entry(event, &group->sibling_list, group_entry) {
+ 		if (!is_software_event(event) &&
+ 		    event->state != PERF_EVENT_STATE_OFF) {
+ 			if (n >= max_count)
+@@ -742,7 +742,7 @@ int hw_perf_group_sched_in(struct perf_event *group_leader,
+ 		return 0;
+ 	cpuhw = &__get_cpu_var(cpu_hw_events);
+ 	n0 = cpuhw->n_events;
+-	n = collect_events(group_leader, ppmu->n_event - n0,
++	n = collect_events(group_leader, ppmu->n_counter - n0,
+ 			   &cpuhw->event[n0], &cpuhw->events[n0],
+ 			   &cpuhw->flags[n0]);
+ 	if (n < 0)
+@@ -764,7 +764,7 @@ int hw_perf_group_sched_in(struct perf_event *group_leader,
+ 	cpuctx->active_oncpu += n;
+ 	n = 1;
+ 	event_sched_in(group_leader, cpu);
+-	list_for_each_entry(sub, &group_leader->sibling_list, list_entry) {
++	list_for_each_entry(sub, &group_leader->sibling_list, group_entry) {
+ 		if (sub->state != PERF_EVENT_STATE_OFF) {
+ 			event_sched_in(sub, cpu);
+ 			++n;
+@@ -797,7 +797,7 @@ static int power_pmu_enable(struct perf_event *event)
+ 	 */
+ 	cpuhw = &__get_cpu_var(cpu_hw_events);
+ 	n0 = cpuhw->n_events;
+-	if (n0 >= ppmu->n_event)
++	if (n0 >= ppmu->n_counter)
+ 		goto out;
+ 	cpuhw->event[n0] = event;
+ 	cpuhw->events[n0] = event->hw.config;
+@@ -848,11 +848,11 @@ static void power_pmu_disable(struct perf_event *event)
+ 		}
+ 	}
+ 	for (i = 0; i < cpuhw->n_limited; ++i)
+-		if (event == cpuhw->limited_event[i])
++		if (event == cpuhw->limited_counter[i])
+ 			break;
+ 	if (i < cpuhw->n_limited) {
+ 		while (++i < cpuhw->n_limited) {
+-			cpuhw->limited_event[i-1] = cpuhw->limited_event[i];
++			cpuhw->limited_counter[i-1] = cpuhw->limited_counter[i];
+ 			cpuhw->limited_hwidx[i-1] = cpuhw->limited_hwidx[i];
+ 		}
+ 		--cpuhw->n_limited;
+@@ -1078,7 +1078,7 @@ const struct pmu *hw_perf_event_init(struct perf_event *event)
+ 	 */
+ 	n = 0;
+ 	if (event->group_leader != event) {
+-		n = collect_events(event->group_leader, ppmu->n_event - 1,
++		n = collect_events(event->group_leader, ppmu->n_counter - 1,
+ 				   ctrs, events, cflags);
+ 		if (n < 0)
+ 			return ERR_PTR(-EINVAL);
+@@ -1230,7 +1230,7 @@ static void perf_event_interrupt(struct pt_regs *regs)
+ 	int nmi;
+ 
+ 	if (cpuhw->n_limited)
+-		freeze_limited_events(cpuhw, mfspr(SPRN_PMC5),
++		freeze_limited_counters(cpuhw, mfspr(SPRN_PMC5),
+ 					mfspr(SPRN_PMC6));
+ 
+ 	perf_read_regs(regs);
+@@ -1260,7 +1260,7 @@ static void perf_event_interrupt(struct pt_regs *regs)
+ 	 * Any that we processed in the previous loop will not be negative.
+ 	 */
+ 	if (!found) {
+-		for (i = 0; i < ppmu->n_event; ++i) {
++		for (i = 0; i < ppmu->n_counter; ++i) {
+ 			if (is_limited_pmc(i + 1))
+ 				continue;
+ 			val = read_pmc(i + 1);
