@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZIVPE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443AbZIVPGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbZIVPE0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZIVPEZ
+	id S1756443AbZIVPGZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZIVPGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:04:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34452 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753711AbZIVPEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:04:25 -0400
-Subject: [PATCH] STAGING: Remove dead code rtl8192e, ieee80211_crypt_wep.c
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Anthony Wong <awong1@novell.com>,
-       Staging <devel@driverdev.osuosl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 20:34:24 +0530
-Message-Id: <1253631864.3784.38.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Sep 2009 11:06:25 -0400
+Received: from mail-pz0-f173.google.com ([209.85.222.173]:60891 "EHLO
+	mail-pz0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753998AbZIVPGY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 11:06:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=abZM1xQl9PTWp5q3vkyIYnTHDToXhJu6QyYsiNDuVlvyk3VZp8ryo+xKJ7tQkT5IN8
+         ux1Jb/2qd7bqNRHIUhMIEW/ZDfu5Uf70QsCxTrEtqV/ve3yvYGWUw3gN1WKGrtwFinYo
+         SVTseB0C3N4VPz+B4Lc9TrVLM2QFapv9so+FU=
+Date: Tue, 22 Sep 2009 08:06:22 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Mike Frysinger <vapier@gentoo.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org, Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH] input/keyboard: new driver for ADP5520 MFD PMICs
+Message-ID: <20090922150622.GC9658@core.coreip.homeip.net>
+References: <1253211850-29309-1-git-send-email-vapier@gentoo.org> <20090922055954.GB9658@core.coreip.homeip.net> <alpine.LRH.2.00.0909220933090.27145@twin.jikos.cz> <8A42379416420646B9BFAC9682273B6D0DFAD237@limkexm3.ad.analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8A42379416420646B9BFAC9682273B6D0DFAD237@limkexm3.ad.analog.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 22, 2009 at 08:53:19AM +0100, Hennerich, Michael wrote:
+> 
+> >From: Jiri Kosina
+> >Sent: Tuesday, September 22, 2009 9:33 AM
+> >
+> >On Mon, 21 Sep 2009, Dmitry Torokhov wrote:
+> >
+> >> > +	if (event & KP_INT) {
+> >> > +		adp5520_read(dev->master, KP_INT_STAT_1, &reg_val_low);
+> >> > +		adp5520_read(dev->master, KP_INT_STAT_2, &reg_val_high);
+> >> > +
+> >> > +		keymask = (reg_val_high << 8) | reg_val_low;
+> >> > +		/* Read twice to clear */
+> >> > +		adp5520_read(dev->master, KP_INT_STAT_1, &reg_val_low);
+> >> > +		adp5520_read(dev->master, KP_INT_STAT_2, &reg_val_high);
+> >> > +		keymask |= (reg_val_high << 8) | reg_val_low;
+> >> > +		adp5520_keys_report_event(dev, keymask, 1);
+> >> > +	}
+> >> > +
+> >> > +	if (event & KR_INT) {
+> >>
+> >> Why do you check the same condition twice?
+> >
+> >It actually doesn't seem to be the same condition (KP_INT vs. KR_INT), but
+> >it's difficult to say, as these constants are apparently added in some
+> >other patch I have no idea about.
+> 
+> KP Key-Press versus Key-Release 
+> 
 
-Remove dead code from drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c
+Yeah, my bad... However the constants could be made more distinct.
 
-This also fixed following 'make includecheck' warnings:
-
-  drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c: rtl_crypto.h is included more than once.
-  drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c: linux/crypto.h is included more than once.
-  drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c: asm/scatterlist.h is included more than once.
-  drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c: linux/crc32.h is included more than once.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- .../rtl8192e/ieee80211/ieee80211_crypt_wep.c       |   17 -----------------
- 1 files changed, 0 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c b/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c
-index 5678313..5289c27 100644
---- a/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c
-+++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_wep.c
-@@ -9,7 +9,6 @@
-  * more details.
-  */
- 
--//#include <linux/config.h>
- #include <linux/version.h>
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -32,19 +31,8 @@
- #else
-     #include <linux/scatterlist.h>
- #endif
--//#include <asm/scatterlist.h>
- #include <linux/crc32.h>
--//
--/*
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
--#include "rtl_crypto.h"
--#else
--#include <linux/crypto.h>
--#endif
- 
--#include <asm/scatterlist.h>
--#include <linux/crc32.h>
--*/
- MODULE_AUTHOR("Jouni Malinen");
- MODULE_DESCRIPTION("Host AP crypt: WEP");
- MODULE_LICENSE("GPL");
-@@ -380,14 +368,9 @@ void __exit ieee80211_crypto_wep_exit(void)
- 
- void ieee80211_wep_null(void)
- {
--//	printk("============>%s()\n", __FUNCTION__);
-         return;
- }
- #if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0))
--//EXPORT_SYMBOL(ieee80211_wep_null);
- #else
- EXPORT_SYMBOL_NOVERS(ieee80211_wep_null);
- #endif
--
--//module_init(ieee80211_crypto_wep_init);
--//module_exit(ieee80211_crypto_wep_exit);
 -- 
-1.6.0.6
-
-
+Dmitry
