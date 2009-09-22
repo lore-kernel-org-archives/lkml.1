@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZIVR22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbZIVR2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbZIVR22 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZIVR21
+	id S1755464AbZIVR2x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbZIVR2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:28:27 -0400
-Received: from enyo.dsw2k3.info ([195.71.86.239]:57608 "EHLO enyo.dsw2k3.info"
+	Tue, 22 Sep 2009 13:28:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:6937 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbZIVR21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:28:27 -0400
-Date: Tue, 22 Sep 2009 19:28:19 +0200
-From: Matthias Schniedermeyer <ms@citd.de>
-To: Brian McGrew <brian@visionpro.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: (un)mount ramfs from C code
-Message-ID: <20090922172819.GA27978@citd.de>
-References: <C6DE438F.127DA%brian@visionpro.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <C6DE438F.127DA%brian@visionpro.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1751629AbZIVR2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 13:28:52 -0400
+Subject: Re: [PATCH] vfs: new FROM_ACCESS flag
+From: Eric Paris <eparis@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+In-Reply-To: <20090922135612.GA17769@infradead.org>
+References: <20090921013048.2763.1494.stgit@paris.rdu.redhat.com>
+	 <20090922135612.GA17769@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Sep 2009 13:28:46 -0400
+Message-Id: <1253640526.2747.7.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22.09.2009 09:04, Brian McGrew wrote:
-> Good morning all!
+On Tue, 2009-09-22 at 09:56 -0400, Christoph Hellwig wrote:
+> On Sun, Sep 20, 2009 at 09:30:48PM -0400, Eric Paris wrote:
+> > This new acc_mode flag is just to tell the security system this inode
+> > permission check is from the access system call.  The security system can
+> > use this information as it finds appropriete.  In particular SELinux plans to
+> > use this flag to alter what we choose to audit and what we do not choose to
+> > audit.
 > 
-> So I'm using a ramfs for temporary files, thank you whoever designed that,
-> it works great!
-> 
-> I can mkdir, mount, chmoud, readand write and then umount the thing from the
-> command line just fine.
-> 
-> What I need now is some method from within my C/C++ code to determine if the
-> ramfs is mounted, if not, then mount it so I can use it and unmount it when
-> I'm done, without making a system call.
-> 
-> Can this be done?  Is there any access to mount/unmount from C/C++?
+> I think you're better off splitting the existing MAY_ACCESS flag and
+> only using MAY_ACCESS for calles from access() insteaf of introducing
+> a FROM_ACCESS flag and causing lots of naming confusion.
 
-The "/bin/mountpoint"-util appears to stat the mountpoint and it's 
-parent directory and compares if they have the same device-no (st_dev). 
-If they are different, then something is mounted.
+What would you think of a new, MUST_REVALIDATE_PERMS which will do what
+MAY_ACCESS does today.  MAY_ACCESS would be just for access(2) and would
+be the flag that I use for SELinux?
 
-
-
-
-
-
-Bis denn
-
--- 
-Real Programmers consider "what you see is what you get" to be just as 
-bad a concept in Text Editors as it is in women. No, the Real Programmer
-wants a "you asked for it, you got it" text editor -- complicated, 
-cryptic, powerful, unforgiving, dangerous.
+-Eric
 
