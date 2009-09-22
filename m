@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbZIVOdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbZIVOgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756682AbZIVOdK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 10:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZIVOdJ
+	id S1756706AbZIVOgE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 10:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbZIVOgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 10:33:09 -0400
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:55251 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753327AbZIVOdI (ORCPT
+	Tue, 22 Sep 2009 10:36:03 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41185 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754996AbZIVOgC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 10:33:08 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19JxhVtbtt55xWqNQq47fju
-Date: Tue, 22 Sep 2009 07:33:02 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: torvalds@linux-foundation.org, tomi.valkeinen@nokia.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, linux-omap@vger.kernel.org,
-       linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
-Message-ID: <20090922143301.GN27699@atomide.com>
-References: <1253622588.25232.11.camel@tubuntu> <4AB8C429.60804@gmail.com>
+	Tue, 22 Sep 2009 10:36:02 -0400
+Date: Tue, 22 Sep 2009 15:36:04 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
+       tytso@mit.edu
+Subject: Re: [PATCH 5/7] ext4: Convert filesystem to the new truncate
+	calling convention
+Message-ID: <20090922143604.GA2183@ZenIV.linux.org.uk>
+References: <1253200907-31392-1-git-send-email-jack@suse.cz> <1253200907-31392-6-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AB8C429.60804@gmail.com>
+In-Reply-To: <1253200907-31392-6-git-send-email-jack@suse.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Artem Bityutskiy <dedekind1@gmail.com> [090922 05:36]:
-> On 09/22/2009 03:29 PM, Tomi Valkeinen wrote:
->> Linus,
->>
->> Here's the new display subsystem and framebuffer driver for OMAP2/3.
->>
->> The driver has been reviewed on linux-omap and linux-fbdev-devel, and is in
->> use, for example, on N900, Beagle Board and Overo boards. We have an ACK for
->> the OMAP parts from Tony Lindgren, who maintains the OMAP platform.
->>
->> We have gotten positive feedback about the driver, for example in this thread:
->> http://marc.info/?l=linux-kernel&m=125171081901820&w=2
->>
->> The driver is actively maintained and developed further, and I have already a
->> bunch of patches on top of these patches, but I would like to get the big core
->> driver merged first. After the driver is merged, other people can send patches
->> to LCD drivers and board files to enable the new display subsystem on their
->> boards.
->>
->> Andrew said 2-3 weeks ago that he'll merge the driver (after he has looked
->> through it), but he hasn't responded since then. I'm guessing he's quite busy.
+On Thu, Sep 17, 2009 at 05:21:45PM +0200, Jan Kara wrote:
+> CC: linux-ext4@vger.kernel.org
+> CC: tytso@mit.edu
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+>  fs/ext4/file.c  |    2 +-
+>  fs/ext4/inode.c |  166 ++++++++++++++++++++++++++++++++----------------------
+>  2 files changed, 99 insertions(+), 69 deletions(-)
+> 
+> diff --git a/fs/ext4/file.c b/fs/ext4/file.c
+> index 3f1873f..22f49d7 100644
+> --- a/fs/ext4/file.c
+> +++ b/fs/ext4/file.c
+> @@ -198,7 +198,7 @@ const struct file_operations ext4_file_operations = {
+>  };
+>  
+>  const struct inode_operations ext4_file_inode_operations = {
+> -	.truncate	= ext4_truncate,
+> +	.new_truncate	= 1,
+>  	.setattr	= ext4_setattr,
+>  	.getattr	= ext4_getattr,
+>  #ifdef CONFIG_EXT4_FS_XATTR
+> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+> index 58492ab..be25874 100644
+> --- a/fs/ext4/inode.c
+> +++ b/fs/ext4/inode.c
+> @@ -3354,6 +3354,7 @@ static int ext4_journalled_set_page_dirty(struct page *page)
+>  }
+>  
+>  static const struct address_space_operations ext4_ordered_aops = {
+> +	.new_writepage		= 1,
 
-I guess that was because there were some merge conflicts at that point, but
-those are sorted out now.
+No.  We already have one half-finished series here; mixing it with another
+one is not going to happen.  Such flags are tolerable only as bisectability
+helpers.  They *must* disappear by the end of series.  Before it can be
+submitted for merge.
 
-> Just in case it matters, here is my redundant confirmation that we are
-> successfully using this piece of software for about a year.
-
-Ack, it would be nice to get this merged.
-
-Regards,
-
-Tony
+In effect, you are mixing truncate switchover with your writepage one.
+Please, split and reorder.
