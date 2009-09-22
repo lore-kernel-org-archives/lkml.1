@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZIVHHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZIVGeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbZIVHHJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 03:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbZIVHHI
+	id S1755237AbZIVGeo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 02:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZIVGel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 03:07:08 -0400
-Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:47938
-	"EHLO mswedge2.sunplus.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755264AbZIVHHH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 03:07:07 -0400
-Subject: [PATCH 2/2] score: update email address
-From: Chen Liqin <liqin.chen@sunplusct.com>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, liqin.gnu@gmail.com
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 14:34:12 +0800
-Message-Id: <1253601252.27225.4.camel@ad3ser01>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+	Tue, 22 Sep 2009 02:34:41 -0400
+Received: from ozlabs.org ([203.10.76.45]:50128 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755207AbZIVGej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 02:34:39 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] virtio-blk: add support for cache flush
+Date: Tue, 22 Sep 2009 16:04:41 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <20090917175742.GA2416@lst.de>
+In-Reply-To: <20090917175742.GA2416@lst.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909221604.41838.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Sep 2009 03:27:42 am Christoph Hellwig wrote:
+> 
+> Recent qemu has added a VIRTIO_BLK_F_FLUSH flag to advertise that the
+> virtual disk has a volatile write cache that needs to be flushed.  In case
+> we see this feature implement tell the Linux block layer about the fact
+> and use the new VIRTIO_BLK_T_FLUSH to flush the cache when required.  This
+> allows for an correct and simple implementation of write barriers.
 
-Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
----
- MAINTAINERS |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Thanks Christoph, this looks very nice.  Applied, will push soon.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 751a307..66e80ad 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4458,7 +4458,7 @@ SCORE ARCHITECTURE
- P:	Chen Liqin
- M:	liqin.chen@sunplusct.com
- P:	Lennox Wu
--M:	lennox.wu@sunplusct.com
-+M:	lennox.wu@gmail.com
- W:	http://www.sunplusct.com
- S:	Supported
- 
--- 
-1.6.2
+> + *   VIRTIO_BLK_T_OUT may be combinaed with VIRTIO_BLK_T_SCSI_CMD or
+> + *   VIRTIO_BLK_T_BARRIER.  VIRTIO_BLK_T_FLUSH is a command of it's own
+> + *   and may no be comined with any of the other flags.
 
+I fixed the typos here :)
 
-
+Thanks!
+Rusty.
