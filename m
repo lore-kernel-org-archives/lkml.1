@@ -1,55 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbZIVV3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbZIVV3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753052AbZIVV3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 17:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZIVV3f
+	id S1752970AbZIVV3F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 17:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbZIVV3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 17:29:35 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47108 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbZIVV3f (ORCPT
+	Tue, 22 Sep 2009 17:29:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49288 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbZIVV3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 17:29:35 -0400
-Message-ID: <4AB9414C.6060805@zytor.com>
-Date: Tue, 22 Sep 2009 14:27:40 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	 <20090919224430.GB9567@kroah.com>	 <1253419185.3253.21.camel@ank32.eng.vmware.com>	 <20090920074247.GA5733@elte.hu> <1253647845.10565.20.camel@ank32.eng.vmware.com>
-In-Reply-To: <1253647845.10565.20.camel@ank32.eng.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 Sep 2009 17:29:03 -0400
+Date: Tue, 22 Sep 2009 18:28:27 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
+Subject: Re: docbooks fatal build error (v4l & dvb)
+Message-ID: <20090922182827.3d844748@pedra.chehab.org>
+In-Reply-To: <20090922124248.59e57b55.randy.dunlap@oracle.com>
+References: <20090922124248.59e57b55.randy.dunlap@oracle.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> Hi Ingo,
-> 
-> On Sun, 2009-09-20 at 00:42 -0700, Ingo Molnar wrote:
-> 
->> The thing is, the overwhelming majority of vmware users dont benefit 
->> from hardware features like nested page tables yet. So this needs to be 
->> done _way_ more carefully, with a proper sunset period of a couple of 
->> kernel cycles.
-> 
-> I am fine with that too. Below is a patch which adds notes in
-> feature-removal-schedule.txt, I have marked it for removal from 2.6.34.
-> Please consider this patch for 2.6.32.
-> 
+Hi Randy,
 
-This seems way, way too early still.
+Em Tue, 22 Sep 2009 12:42:48 -0700
+Randy Dunlap <randy.dunlap@oracle.com> escreveu:
 
-	-hpa
+> 2.6.31-git11:  this prevents other docbooks from being built.
+> 
+> mkdir -p /linux-2.6.31-git11/Documentation/DocBook/media/
+> cp /linux-2.6.31-git11/Documentation/DocBook/dvb/*.png /linux-2.6.31-git11/Documentation/DocBook/v4l/*.gif /linux-2.6.31-git11/Documentation/DocBook/media/
+> cp: cannot stat `/linux-2.6.31-git11/Documentation/DocBook/dvb/*.png': No such file or directory
+> cp: cannot stat `/linux-2.6.31-git11/Documentation/DocBook/v4l/*.gif': No such file or directory
+> make[1]: *** [media] Error 1
+
+
+Hmm... here, it is working fine. I've did it on a newer tree, cloned from Linus
+one. This is the last patch on it:
+
+commit 7fa07729e439a6184bd824746d06a49cca553f15
+Merge: 991d79b a8f90e9
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Tue Sep 22 08:11:04 2009 -0700
+
+
+$ make htmldocs
+mkdir -p /home/v4l/tokernel/wrk/linux-2.6/Documentation/DocBook/media/
+cp /home/v4l/tokernel/wrk/linux-2.6/Documentation/DocBook/dvb/*.png /home/v4l/tokernel/wrk/linux-2.6/Documentation/DocBook/v4l/*.gif /home/v4l/tokernel/wrk/linux-2.6/Documentation/DocBook/media/
+rm -rf Documentation/DocBook/index.html && echo '<h1>Linux Kernel HTML
+Documentation</h1>' >> Documentation/DocBook/index.html && echo '<h2>Kernel
+Version: 2.6.31</h2>' >> Documentation/DocBook/index.html && cat
+Documentation/DocBook/alsa-driver-api.html
+Documentation/DocBook/debugobjects.html
+Documentation/DocBook/device-drivers.html
+Documentation/DocBook/deviceiobook.html Documentation/DocBook/filesystems.html
+Documentation/DocBook/gadget.html Documentation/DocBook/genericirq.html
+Documentation/DocBook/kernel-api.html Documentation/DocBook/kernel-hacking.html
+Documentation/DocBook/kernel-locking.html Documentation/DocBook/kgdb.html
+Documentation/DocBook/libata.html Documentation/DocBook/librs.html
+Documentation/DocBook/lsm.html Documentation/DocBook/mac80211.html
+Documentation/DocBook/mcabook.html Documentation/DocBook/media.html
+Documentation/DocBook/mtdnand.html Documentation/DocBook/networking.html
+Documentation/DocBook/procfs-guide.html Documentation/DocBook/rapidio.html
+Documentation/DocBook/regulator.html Documentation/DocBook/s390-drivers.html
+Documentation/DocBook/scsi.html Documentation/DocBook/sh.html
+Documentation/DocBook/tracepoint.html Documentation/DocBook/uio-howto.html
+Documentation/DocBook/usb.html
+Documentation/DocBook/writing-an-alsa-driver.html
+Documentation/DocBook/writing_usb_driver.html
+Documentation/DocBook/z8530book.html >> Documentation/DocBook/index.html
+
+I also double checked that the files are there:
+
+$ git log Documentation/DocBook/v4l/fieldseq_bt.gif
+commit 8e080c2e6cadada82a6b520e0c23a1cb974822d5
+Author: Mauro Carvalho Chehab <mchehab@redhat.com>
+Date:   Sun Sep 13 22:16:04 2009 -0300
+
+    V4L/DVB (12761): DocBook: add media API specs
+
+    The V4L and DVB API's are there for a long time. however, up to now,
+    no efforts were done to merge them to kernel DocBook.
+
+    This patch adds the current versions of the specs as an unique compendium.
+
+    Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+
+
+
+
+
+Cheers,
+Mauro
