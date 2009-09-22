@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751382AbZIVTws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751321AbZIVT4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751382AbZIVTws (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZIVTws
+	id S1751321AbZIVT4Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbZIVT4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:52:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37089 "EHLO ogre.sisk.pl"
+	Tue, 22 Sep 2009 15:56:25 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:45681 "EHLO mail.atlantis.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbZIVTwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:52:47 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH] make refrigerator cold
-Date: Tue, 22 Sep 2009 21:54:09 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Len Brown <len.brown@intel.com>, Matt Helsley <matthltc@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20090921210416.1982bcab@nehalam>
-In-Reply-To: <20090921210416.1982bcab@nehalam>
+	id S1751076AbZIVT4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 15:56:24 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: Hibernation oops with 2.6.31 won't fit the screen - bisected
+Date: Tue, 22 Sep 2009 21:56:19 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, magnus.damm@gmail.com, tglx@linutronix.de
+References: <200909192155.01225.linux@rainbow-software.org> <200909192344.55258.elendil@planet.nl>
+In-Reply-To: <200909192344.55258.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
+Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909222154.09726.rjw@sisk.pl>
+Content-Disposition: inline
+Message-Id: <200909222156.21871.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 September 2009, Stephen Hemminger wrote:
-> By marking it cold, then the code path in kernel thread 
-> usage of try_to_freeze() that is normally used be
-> selected.
+On Saturday 19 September 2009 23:44:54 Frans Pop wrote:
+> Ondrej Zary wrote:
+> > hibernation worked great with 2.6.30 - I had over a month of uptime (it
+> > never worked so well before - always crashed after some time). But in
+> > 2.6.31, it's broken again - and completely. The first hibernation works
+> > but it always crashes on the second one.
+> >
+> > The problem is that the oops is so long that it does not fit the screen -
+> > even 1280x1024 is not enough. Scrolling does not work (as it used to do
+> > on 2.4 kernels), netconsole does not catch it. So how can I debug this?
+>
+> One way to get at least an indication of what broke the hibernation is to
+> run a bisection to find the change that broke hibernation. That could
+> provide sufficient clues for a next step.
+>
+> Would that be an option for you?
 
-The sentence above isn't very clear IMO, could you please rephrase?
+I bisected it and found this:
 
-> Don't think it matters that much for performance but the
-> concordance of this patch struck me as humorous.
+c7121843685de2bf7f3afd3ae1d6a146010bf1fc is first bad commit
+commit c7121843685de2bf7f3afd3ae1d6a146010bf1fc
+Author: Magnus Damm <magnus.damm@gmail.com>
+Date:   Tue Jul 28 14:09:55 2009 -0700
 
-Well, yeah.
+    clocksource: Save mult_orig in clocksource_disable()
 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> 
-> --- a/include/linux/freezer.h	2009-09-21 20:34:17.579233461 -0700
-> +++ b/include/linux/freezer.h	2009-09-21 20:35:25.724322028 -0700
-> @@ -47,7 +47,7 @@ static inline bool should_send_signal(st
->  /* Takes and releases task alloc lock using task_lock() */
->  extern int thaw_process(struct task_struct *p);
->  
-> -extern void refrigerator(void);
-> +extern void refrigerator(void) __cold;
->  extern int freeze_processes(void);
->  extern void thaw_processes(void);
+    To fix the common case where ->enable() does not set up
+    mult, make sure mult_orig is saved in mult on disable.
+
+    Also add comments to explain why we do this.
+
+    Signed-off-by: Magnus Damm <damm@igel.co.jp>
+    Cc: johnstul@us.ibm.com
+    Cc: lethal@linux-sh.org
+    Cc: akpm@linux-foundation.org
+    LKML-Reference: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+:040000 040000 c965062bc79af46cdb3522fc7ab1cc81d2f84de3 26616c88a8128b25fd15c3da39ac6251cd9723b6 M      include
+
+
+Reverting this commit fixes the problem.
+
+-- 
+Ondrej Zary
