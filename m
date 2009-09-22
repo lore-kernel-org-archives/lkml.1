@@ -1,114 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbZIVJhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZIVJhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410AbZIVJhH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 05:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbZIVJhG
+	id S1755833AbZIVJhN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 05:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbZIVJhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 05:37:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47825 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755702AbZIVJhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 05:37:04 -0400
-Date: Tue, 22 Sep 2009 11:36:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Airlie <airlied@linux.ie>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: [origin tree build failure] [PATCH] Re: [git pull] drm tree.
-Message-ID: <20090922093651.GA30786@elte.hu>
-References: <alpine.DEB.2.00.0909210610200.26881@skynet.skynet.ie> <20090921161207.GA9741@elte.hu> <alpine.DEB.2.00.0909220450440.7648@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0909220450440.7648@skynet.skynet.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 22 Sep 2009 05:37:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50657 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755783AbZIVJhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 05:37:08 -0400
+Date: Tue, 22 Sep 2009 11:37:08 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Avi Kivity <avi@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH v2] core, x86: Add user return notifiers
+Message-ID: <20090922113708.65f655f6@infradead.org>
+In-Reply-To: <4AB8980D.5070803@redhat.com>
+References: <4AB3CDEC.5050902@zytor.com>
+	<1253342422-13811-1-git-send-email-avi@redhat.com>
+	<4AB8980D.5070803@redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 22 Sep 2009 12:25:33 +0300
+Avi Kivity <avi@redhat.com> wrote:
 
-* Dave Airlie <airlied@linux.ie> wrote:
+> On 09/19/2009 09:40 AM, Avi Kivity wrote:
+> > Add a general per-cpu notifier that is called whenever the kernel is
+> > about to return to userspace.  The notifier uses a thread_info flag
+> > and existing checks, so there is no impact on user return or context
+> > switch fast paths.
+> >    
+> 
+> Ingo/Peter?
 
-> > there's a new build failure:
-> > 
-> > drivers/built-in.o: In function `drm_irq_uninstall':
-> > (.text+0xb719e): undefined reference to `vga_client_register'
-> > drivers/built-in.o: In function `drm_irq_install':
-> > (.text+0xb7309): undefined reference to `vga_client_register'
-> > drivers/built-in.o: In function `radeon_device_fini':
-> > (.text+0xe400f): undefined reference to `vga_client_register'
-> > drivers/built-in.o: In function `radeon_device_init':
-> > (.text+0xe455b): undefined reference to `vga_client_register'
-> > 
-> > with the attached config, introduced with upstream merge 44040f1.
-> > 
-> > At first sight it appears to be due to CONFIG_DRM_RADEON relying on 
-> > VGA_ARB facilities but this is not expressed in the Kconfig rules. The 
-> > patch below solves this - but this is just a quick patch, i have not 
-> > investigated any deeper.
-> > 
-> > Review of the code suggests that i915 has a similar dependency problem - 
-> > i fixed that too.
-> 
-> The way it should work is VGA ARB should be enabled on any platforms we
-> have PCI unless EMBEDDED turns it off, since arbitration of VGA isn't 
-> reliant on a drm device, I'm not sure what Kconfig magic this would 
-> require, and where it would need to be. This patch should at least allow
-> builds to work until I figure out any Kconfig magic.
-> 
-> >From 8a874578cbf8b07b988e666c15fa0ba767f3c1cb Mon Sep 17 00:00:00 2001
-> From: Dave Airlie <airlied@redhat.com>
-> Date: Tue, 22 Sep 2009 13:53:00 +1000
-> Subject: [PATCH] vgaarb: wrap the client register API so we can disable VGA ARB.
-> 
-> This provides an dummy register function so everything builds
-> if VGA arb is turned off.
-> 
-> Signed-off-by: Dave Airlie <airlied@redhat.com>
-> ---
->  include/linux/vgaarb.h |   11 ++++++++++-
->  1 files changed, 10 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/vgaarb.h b/include/linux/vgaarb.h
-> index e81c64a..b0feb79 100644
-> --- a/include/linux/vgaarb.h
-> +++ b/include/linux/vgaarb.h
-> @@ -41,7 +41,7 @@
->   *     interrupts at any time.
->   */
->  extern void vga_set_legacy_decoding(struct pci_dev *pdev,
-> -									unsigned int decodes);
-> +				    unsigned int decodes);
->  
->  /**
->   *     vga_get         - acquire & locks VGA resources
-> @@ -193,8 +193,17 @@ static inline int vga_conflicts(struct pci_dev *p1, struct pci_dev *p2)
->   * They driver will get a callback when VGA arbitration is first used
->   * by userspace since we some older X servers have issues.
->   */
-> +#if defined(CONFIG_VGA_ARB)
->  int vga_client_register(struct pci_dev *pdev, void *cookie,
->  			void (*irq_set_state)(void *cookie, bool state),
->  			unsigned int (*set_vga_decode)(void *cookie, bool state));
-> +#else
-> +static inline int vga_client_register(struct pci_dev *pdev, void *cookie,
-> +				      void (*irq_set_state)(void *cookie, bool state),
-> +				      unsigned int (*set_vga_decode)(void *cookie, bool state));
-> +{
-> +	return 0;
-> +}
-> +#endif
+isn't this like really expensive when used ?
 
-Yeah - making APIs config invariant is a good idea in any case, 
-regardless of Kconfig magic.
 
-Thanks,
 
-	Ingo
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
