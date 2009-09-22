@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZIVIN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZIVINh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbZIVIN3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 04:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZIVIN1
+	id S1755445AbZIVINh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 04:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZIVIN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 04:13:27 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60159 "EHLO gate.crashing.org"
+	Tue, 22 Sep 2009 04:13:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60902 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbZIVINZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 04:13:25 -0400
-Subject: Re: [RFC PATCH 0/3] Fix SLQB on memoryless configurations V2
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-In-Reply-To: <alpine.DEB.1.00.0909220023070.9061@chino.kir.corp.google.com>
-References: <1253549426-917-1-git-send-email-mel@csn.ul.ie>
-	 <1253577603.7103.174.camel@pasglop>
-	 <alpine.DEB.1.00.0909211704180.4798@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0909220227050.3719@V090114053VZO-1>
-	 <alpine.DEB.1.00.0909220023070.9061@chino.kir.corp.google.com>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 18:11:17 +1000
-Message-Id: <1253607077.7103.219.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1753980AbZIVIN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 04:13:26 -0400
+Date: Tue, 22 Sep 2009 10:13:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
+	perf_counter rename
+Message-ID: <20090922081318.GC1475@elte.hu>
+References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com> <1253584591.7103.197.camel@pasglop> <20090922072834.GA25470@elte.hu> <1253606415.7103.216.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253606415.7103.216.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 00:59 -0700, David Rientjes wrote:
-> The equivalent of proximity domains then describes the distance between 
-> all localities; these distances need not be one-way, it is possible for 
-> distance in one direction to be different from the opposite direction, 
-> just as ACPI pxm's allow.
+
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Tue, 2009-09-22 at 09:28 +0200, Ingo Molnar wrote:
+> > 
+> > Nevertheless you are right that i should have caught this particular 
+> > PowerPC build bug - i missed it - sorry about that!
 > 
-> A "node" in this plan is simply a system locality consisting of memory.
-> 
-> For subsystems such as slab allocators, all we require is cpu_to_node() 
-> tables which would map cpu localities to nodes and describe them in terms 
-> of local or remote distance (or whatever the SLIT says, if provided).  All 
-> present day information can still be represented in this model, we've just 
-> added additional layers of abstraction internally.
+> Allright. Well, to help in general, we are setting up a build-bot here 
+> too that will build -tip HEAD for at least powerpc daily with a few 
+> configs too.
 
-While I like the idea of NUMA nodes being strictly memory and everything
-else being expressed by distances, we'll have to clean up quite a few
-corners with skeletons in various states of decompositions waiting for
-us there.
+Cool, that's really useful! Especially during the weekends that will be 
+helpful, in that timeframe linux-next driven testing has a latency of 
+72-95 hours and -tip usually has an uptick in patches.
 
-For example, we have code here or there that (ab)uses the NUMA node
-information to link devices with their iommu, that sort of thing. IE, a
-hard dependency which isn't really related to a concept of distance to
-any memory.
+Thanks,
 
-At least on powerpc, nowadays, I can pretty much make everything
-fallback to some representation in the device-tree though, thus it
-shouldn't be -that- hard to fix I suppose.
-
-Cheers,
-Ben.
-
+	Ingo
