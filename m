@@ -1,661 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbZIVNTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbZIVNSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756572AbZIVNTF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbZIVNTE
+	id S1755104AbZIVNSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbZIVNSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:19:04 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33857 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754943AbZIVNTB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:19:01 -0400
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Wolfram Sang <w.sang@pengutronix.de>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [RFC] regulator: add driver for MAX8660/8661
-Date: Tue, 22 Sep 2009 15:18:19 +0200
-Message-Id: <1253625499-9314-1-git-send-email-w.sang@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.3
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Tue, 22 Sep 2009 09:18:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:15289 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751084AbZIVNSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:18:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,431,1249282800"; 
+   d="scan'208";a="190301377"
+Date: Tue, 22 Sep 2009 21:18:32 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
+Message-ID: <20090922131832.GB7675@localhost>
+References: <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost> <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090921135321.GD6259@think> <20090922101335.GA27432@localhost> <20090922113055.GI10825@think>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922113055.GI10825@think>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*** Not intended to be merged yet ***
+On Tue, Sep 22, 2009 at 07:30:55PM +0800, Chris Mason wrote:
+> On Tue, Sep 22, 2009 at 06:13:35PM +0800, Wu Fengguang wrote:
+> > On Mon, Sep 21, 2009 at 09:53:21PM +0800, Chris Mason wrote:
+> > > On Sat, Sep 19, 2009 at 12:26:07PM +0800, Wu Fengguang wrote:
+> > > > On Sat, Sep 19, 2009 at 12:00:51PM +0800, Wu Fengguang wrote:
+> > > > > On Sat, Sep 19, 2009 at 11:58:35AM +0800, Wu Fengguang wrote:
+> > > > > > On Sat, Sep 19, 2009 at 01:52:52AM +0800, Theodore Tso wrote:
+> > > > > > > On Fri, Sep 11, 2009 at 10:39:29PM +0800, Wu Fengguang wrote:
+> > > > > > > > 
+> > > > > > > > That would be good. Sorry for the late work. I'll allocate some time
+> > > > > > > > in mid next week to help review and benchmark recent writeback works,
+> > > > > > > > and hope to get things done in this merge window.
+> > > > > > > 
+> > > > > > > Did you have some chance to get more work done on the your writeback
+> > > > > > > patches?
+> > > > > > 
+> > > > > > Sorry for the delay, I'm now testing the patches with commands
+> > > > > > 
+> > > > > >  cp /dev/zero /mnt/test/zero0 &
+> > > > > >  dd if=/dev/zero of=/mnt/test/zero1 &
+> > > > > > 
+> > > > > > and the attached debug patch.
+> > > > > > 
+> > > > > > One problem I found with ext3/4 is, redirty_tail() is called repeatedly
+> > > > > > in the traces, which could slow down the inode writeback significantly.
+> > > > > 
+> > > > > FYI, it's this redirty_tail() called in writeback_single_inode():
+> > > > > 
+> > > > >                         /*
+> > > > >                          * Someone redirtied the inode while were writing back
+> > > > >                          * the pages.
+> > > > >                          */
+> > > > >                         redirty_tail(inode);
+> > > > 
+> > > > Hmm, this looks like an old fashioned problem get blew up by the
+> > > > 128MB MAX_WRITEBACK_PAGES.
+> > > 
+> > > I'm starting to rethink the 128MB MAX_WRITEBACK_PAGES.  128MB is the
+> > > right answer for the flusher thread on sequential IO, but definitely not
+> > > on random IO.  We don't want the flusher to get bogged down on random
+> > > writeback and start ignoring every other file.
+> > 
+> > Hmm, I'd think a larger MAX_WRITEBACK_PAGES shall never increase the
+> > writeback randomness.
+> 
+> It doesn't increase the randomness, but if we have a file full of
+> buffered random IO (say from bdb or rpm), the 128MB max will mean that
+> one file dominates the flusher thread writeback completely.
 
-Here is my current, already working version for a MAX8660 regulator driver. See
-the documentation for some notes. I'm still undecided if merging the functions
-for the different regulator types into more generic functions should be done
-before finishing the other todos; it looks a bit crowded this way. Some details
-are still a bit hackish, I'm hoping for some general comments about the way
-things are done here. Thanks in advance! :)
+What if we add a bdi->max_segments quota? A segment is a continuous
+run of dirty pages in the inode address space. SSD or fast RAID could
+set it to a large enough value.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > 
+> > > My btrfs performance branch has long had a change to bump the
+> > > nr_to_write up based on the size of the delayed allocation that we're
+> > > doing.  It helped, but not as much as I really expected it too, and a
+> > > similar patch from Christoph for XFS was good but not great.
+> > > 
+> > > It turns out the problem is in write_cache_pages.  It processes a whole
+> > > pagevec at a time, something like this:
+> > > 
+> > > while(!done) {
+> > > 	for each page in the pagegvec {
+> > > 		writepage()
+> > > 		if (wbc->nr_to_write <= 0)
+> > > 			done = 1;
+> > > 	}
+> > > }
+> > > 
+> > > If the filesystem decides to bump nr_to_write to cover a whole
+> > > extent (or a max reasonable size), the new value of nr_to_write may
+> > > be ignored if nr_to_write had already gone done to zero.
+> > > 
+> > > I fixed btrfs to recheck nr_to_write every time, and the results are
+> > > much smoother.  This is what it looks like to write out all the .o files
+> > > in the kernel.
+> > > 
+> > > http://oss.oracle.com/~mason/seekwatcher/btrfs-nr-to-write.png
+> > > 
+> > > In this graph, Btrfs is writing the full extent or 8192 pages, whichever
+> > > is smaller.  The write_cache_pages change is here, but it is local to
+> > > the btrfs copy of write_cache_pages:
+> > > 
+> > > http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable.git;a=commit;h=f85d7d6c8f2ad4a86a1f4f4e3791f36dede2fa76
+> > 
+> > It seems you tried to an upper limit of 32-64MB:
+> > 
+> > +               if (wbc->nr_to_write < delalloc_to_write) {
+> > +                       int thresh = 8192;
+> > +
+> > +                       if (delalloc_to_write < thresh * 2)
+> > +                               thresh = delalloc_to_write;
+> > +                       wbc->nr_to_write = min_t(u64, delalloc_to_write,
+> > +                                                thresh);
+> > +               }
+> > 
+> > However it is possible that btrfs bumps up nr_to_write for each inode, 
+> > so that the accumulated bump ups are too large to be acceptable for
+> > balance_dirty_pages().
+> 
+> We bump up to a limit of 64MB more than the original nr_to_write. This
+> is because when we do bump we know we'll write the whole amount, and
+> then write_cache_pages will end.
 
----
- Documentation/power/regulator/max8660.txt |   32 ++
- drivers/regulator/Kconfig                 |    7 +
- drivers/regulator/Makefile                |    1 +
- drivers/regulator/max8660.c               |  471 +++++++++++++++++++++++++++++
- include/linux/regulator/max8660.h         |   57 ++++
- 5 files changed, 568 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/power/regulator/max8660.txt
- create mode 100644 drivers/regulator/max8660.c
- create mode 100644 include/linux/regulator/max8660.h
+Imagine this scenario. There are inodes A, B, C, ...
 
-diff --git a/Documentation/power/regulator/max8660.txt b/Documentation/power/regulator/max8660.txt
-new file mode 100644
-index 0000000..143a0c0
---- /dev/null
-+++ b/Documentation/power/regulator/max8660.txt
-@@ -0,0 +1,32 @@
-+MAX8660/8661 Regulator Driver for Linux 2.6
-+===========================================
-+
-+Datasheet
-+---------
-+
-+http://datasheets.maxim-ic.com/en/ds/MAX8660-MAX8661.pdf
-+
-+Comments
-+--------
-+
-+This chip is a bit nasty because it is a write-only device. Thus, the driver
-+uses shadow registers to keep track of its values. The main problem appears to
-+be the initialization: When Linux boots up, we cannot know if the chip is in
-+the default state or not, so we would have to pass such information in
-+platform_data. As this adds a bit of complexity to the driver, this is left
-+out for now until it is really needed.
-+
-+The Target Voltage 2 Registers for V3, V4 and V5 are not used by this driver.
-+
-+Note that disabling V3 or V4 has no effect if pin EN34 is driven high (pin and
-+register are ORed, see datasheet).
-+
-+TO DO:
-+------
-+
-+- Accept inital values other than the default ones
-+- Make use of the forced PWM modes?
-+- ARD?
-+- If all todo-items are implemented, check if one set of functions for V3-V7 is
-+  sufficent. For maximum flexibility during development, they are seperated for
-+  now.
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index f431779..e2d8eb2 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -75,6 +75,13 @@ config REGULATOR_MAX1586
- 	  regulator via I2C bus. The provided regulator is suitable
- 	  for PXA27x chips to control VCC_CORE and VCC_USIM voltages.
- 
-+config REGULATOR_MAX8660
-+	tristate "Maxim 8660/8661 voltage regulator"
-+	depends on I2C
-+	help
-+	  This driver controls a Maxim 8660/8661 voltage output
-+	  regulator via I2C bus.
-+
- config REGULATOR_TWL4030
- 	bool "TI TWL4030/TWL5030/TPS695x0 PMIC"
- 	depends on TWL4030_CORE
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 4d762c4..da57e3e 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_REGULATOR_USERSPACE_CONSUMER) += userspace-consumer.o
- obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
- obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
- obj-$(CONFIG_REGULATOR_MAX1586) += max1586.o
-+obj-$(CONFIG_REGULATOR_MAX8660) += max8660.o
- obj-$(CONFIG_REGULATOR_TWL4030) += twl4030-regulator.o
- obj-$(CONFIG_REGULATOR_WM8350) += wm8350-regulator.o
- obj-$(CONFIG_REGULATOR_WM8400) += wm8400-regulator.o
-diff --git a/drivers/regulator/max8660.c b/drivers/regulator/max8660.c
-new file mode 100644
-index 0000000..d8c0b4d
---- /dev/null
-+++ b/drivers/regulator/max8660.c
-@@ -0,0 +1,471 @@
-+/*
-+ * max8660.c  --  Voltage regulation for the Maxim 8660/8661
-+ *
-+ * based on max1586.c and wm8400-regulator.c
-+ *
-+ * Copyright (C) 2009 Wolfram Sang, Pengutronix e.K.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+#include <linux/module.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/regulator/max8660.h>
-+
-+
-+#define MAX8660_DCDC_MIN_UV	 725000
-+#define MAX8660_DCDC_MAX_UV	1800000
-+#define MAX8660_DCDC_STEP	  25000
-+#define MAX8660_DCDC_MAX_SEL	0x2b
-+
-+#define MAX8660_LDO5_MIN_UV	1700000
-+#define MAX8660_LDO5_MAX_UV	2000000
-+#define MAX8660_LDO5_STEP	  25000
-+#define MAX8660_LDO5_MAX_SEL	0x0c
-+
-+#define MAX8660_LDO67_MIN_UV	1800000
-+#define MAX8660_LDO67_MAX_UV	3300000
-+#define MAX8660_LDO67_STEP	 100000
-+#define MAX8660_LDO67_MAX_SEL	0x0f
-+
-+enum {
-+	MAX8660_OVER1,
-+	MAX8660_OVER2,
-+	MAX8660_VCC1,
-+	MAX8660_ADTV1,
-+	MAX8660_ADTV2,
-+	MAX8660_SDTV1,
-+	MAX8660_SDTV2,
-+	MAX8660_MDTV1,
-+	MAX8660_MDTV2,
-+	MAX8660_L12VCR,
-+	MAX8660_FPWM,
-+	MAX8660_N_REGS,	/* not a real register */
-+};
-+
-+struct max8660 {
-+	struct i2c_client *client;
-+	u8 shadow_regs[MAX8660_N_REGS];		/* as chip is write only */
-+	struct regulator_dev *rdev[0];
-+};
-+
-+static int max8660_write(struct max8660 *max8660, u8 reg, u8 mask, u8 val)
-+{
-+	static const u8 max8660_addresses[MAX8660_N_REGS] =
-+	  { 0x10, 0x12, 0x20, 0x23, 0x24, 0x29, 0x2a, 0x32, 0x33, 0x39, 0x80 };
-+
-+	int ret;
-+	u8 reg_val = (max8660->shadow_regs[reg] & mask) | val;
-+	dev_dbg(&max8660->client->dev, "Writing reg %02x with %02x\n",
-+			max8660_addresses[reg], reg_val);
-+	ret = i2c_smbus_write_byte_data(max8660->client,
-+			max8660_addresses[reg], reg_val);
-+	if (ret == 0)
-+		max8660->shadow_regs[reg] = reg_val;
-+
-+	return ret;
-+}
-+
-+
-+/*
-+ * DCDC functions
-+ */
-+
-+static int max8660_dcdc_is_enabled(struct regulator_dev *rdev)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 val = max8660->shadow_regs[MAX8660_OVER1];
-+	u8 mask = (rdev_get_id(rdev) == MAX8660_V3) ? 1 : 4;
-+	return !!(val & mask);
-+}
-+
-+static int max8660_dcdc_enable(struct regulator_dev *rdev)
-+{
-+	int ret;
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 val = (rdev_get_id(rdev) == MAX8660_V3) ? 1 : 4;
-+	ret = max8660_write(max8660, MAX8660_OVER1, 0xff, val);
-+	val = (rdev_get_id(rdev) == MAX8660_V3) ? 0x03 : 0x30;
-+	return (ret != 0) ? :
-+		max8660_write(max8660, MAX8660_VCC1, ~val, val & 0x11);
-+}
-+
-+static int max8660_dcdc_disable(struct regulator_dev *rdev)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 mask = (rdev_get_id(rdev) == MAX8660_V3) ? ~1 : ~4;
-+	return max8660_write(max8660, MAX8660_OVER1, mask, 0);
-+}
-+
-+static int max8660_dcdc_list(struct regulator_dev *rdev, unsigned selector)
-+{
-+	if (selector > MAX8660_DCDC_MAX_SEL)
-+		return -EINVAL;
-+	return MAX8660_DCDC_MIN_UV + selector * MAX8660_DCDC_STEP;
-+}
-+
-+static int max8660_dcdc_get(struct regulator_dev *rdev)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 reg = (rdev_get_id(rdev) == MAX8660_V3) ? MAX8660_ADTV1 : MAX8660_SDTV1;
-+	u8 selector = max8660->shadow_regs[reg];
-+	return MAX8660_DCDC_MIN_UV + selector * MAX8660_DCDC_STEP;
-+}
-+
-+static int max8660_dcdc_set(struct regulator_dev *rdev, int min_uV, int max_uV)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 reg, selector;
-+
-+	if (min_uV < MAX8660_DCDC_MIN_UV || min_uV > MAX8660_DCDC_MAX_UV)
-+		return -EINVAL;
-+	if (max_uV < MAX8660_DCDC_MIN_UV || max_uV > MAX8660_DCDC_MAX_UV)
-+		return -EINVAL;
-+
-+	reg = (rdev_get_id(rdev) == MAX8660_V3) ? MAX8660_ADTV1 : MAX8660_SDTV1;
-+	selector = (min_uV - (MAX8660_DCDC_MIN_UV - MAX8660_DCDC_STEP + 1))
-+			/ MAX8660_DCDC_STEP;
-+
-+	if (MAX8660_DCDC_MIN_UV + selector * MAX8660_DCDC_STEP > max_uV)
-+		return -EINVAL;
-+
-+	return max8660_write(max8660, reg, 0, selector);
-+}
-+
-+static struct regulator_ops max8660_dcdc_ops = {
-+	.is_enabled = max8660_dcdc_is_enabled,
-+	.enable = max8660_dcdc_enable,
-+	.disable = max8660_dcdc_disable,
-+	.list_voltage = max8660_dcdc_list,
-+	.set_voltage = max8660_dcdc_set,
-+	.get_voltage = max8660_dcdc_get,
-+};
-+
-+
-+/*
-+ * LDO5 functions
-+ */
-+
-+static int max8660_ldo5_list(struct regulator_dev *rdev, unsigned selector)
-+{
-+	if (selector > MAX8660_LDO5_MAX_SEL)
-+		return -EINVAL;
-+	return MAX8660_LDO5_MIN_UV + selector * MAX8660_LDO5_STEP;
-+}
-+
-+static int max8660_ldo5_get(struct regulator_dev *rdev)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 selector = max8660->shadow_regs[MAX8660_MDTV1];
-+
-+	return MAX8660_LDO5_MIN_UV + selector * MAX8660_LDO5_STEP;
-+}
-+
-+static int max8660_ldo5_set(struct regulator_dev *rdev, int min_uV, int max_uV)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 selector;
-+	int ret;
-+
-+	if (min_uV < MAX8660_LDO5_MIN_UV || min_uV > MAX8660_LDO5_MAX_UV)
-+		return -EINVAL;
-+	if (max_uV < MAX8660_LDO5_MIN_UV || max_uV > MAX8660_LDO5_MAX_UV)
-+		return -EINVAL;
-+
-+	selector = (min_uV - (MAX8660_LDO5_MIN_UV - MAX8660_LDO5_STEP + 1))
-+			/ MAX8660_LDO5_STEP;
-+	if (MAX8660_LDO5_MIN_UV + selector * MAX8660_LDO5_STEP > max_uV)
-+		return -EINVAL;
-+
-+	ret = max8660_write(max8660, MAX8660_MDTV1, 0, selector);
-+	if (ret)
-+		return ret;
-+	return max8660_write(max8660, MAX8660_VCC1, 0x3f, 0x40);
-+}
-+
-+static struct regulator_ops max8660_ldo5_ops = {
-+	.list_voltage = max8660_ldo5_list,
-+	.set_voltage = max8660_ldo5_set,
-+	.get_voltage = max8660_ldo5_get,
-+};
-+
-+
-+/*
-+ * LDO67 functions
-+ */
-+
-+static int max8660_ldo67_is_enabled(struct regulator_dev *rdev)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 val = max8660->shadow_regs[MAX8660_OVER2];
-+	u8 mask = (rdev_get_id(rdev) == MAX8660_V6) ? 2 : 4;
-+	return !!(val & mask);
-+}
-+
-+static int max8660_ldo67_enable(struct regulator_dev *rdev)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 bit = (rdev_get_id(rdev) == MAX8660_V6) ? 2 : 4;
-+	return max8660_write(max8660, MAX8660_OVER2, 0xff, bit);
-+}
-+
-+static int max8660_ldo67_disable(struct regulator_dev *rdev)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 mask = (rdev_get_id(rdev) == MAX8660_V6) ? ~2 : ~4;
-+	return max8660_write(max8660, MAX8660_OVER2, mask, 0);
-+}
-+
-+static int max8660_ldo67_list(struct regulator_dev *rdev, unsigned selector)
-+{
-+	if (selector > MAX8660_LDO67_MAX_SEL)
-+		return -EINVAL;
-+	return MAX8660_LDO67_MIN_UV + selector * MAX8660_LDO67_STEP;
-+}
-+
-+static int max8660_ldo67_get(struct regulator_dev *rdev)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 shift = (rdev_get_id(rdev) == MAX8660_V6) ? 0 : 4;
-+	u8 selector = (max8660->shadow_regs[MAX8660_L12VCR] >> shift) & 0xf;
-+
-+	return MAX8660_LDO67_MIN_UV + selector * MAX8660_LDO67_STEP;
-+}
-+
-+static int max8660_ldo67_set(struct regulator_dev *rdev, int min_uV, int max_uV)
-+{
-+	struct max8660 *max8660 = rdev_get_drvdata(rdev);
-+	u8 selector;
-+
-+	if (min_uV < MAX8660_LDO67_MIN_UV || min_uV > MAX8660_LDO67_MAX_UV)
-+		return -EINVAL;
-+	if (max_uV < MAX8660_LDO67_MIN_UV || max_uV > MAX8660_LDO67_MAX_UV)
-+		return -EINVAL;
-+
-+	selector = (min_uV - (MAX8660_LDO67_MIN_UV - MAX8660_LDO67_STEP + 1))
-+			/ MAX8660_LDO67_STEP;
-+
-+	if (MAX8660_LDO67_MIN_UV + selector * MAX8660_LDO67_STEP > max_uV)
-+		return -EINVAL;
-+
-+	if (rdev_get_id(rdev) == MAX8660_V6)
-+		return max8660_write(max8660, MAX8660_L12VCR, 0xf0, selector);
-+	else
-+		return max8660_write(max8660, MAX8660_L12VCR, 0x0f, selector << 4);
-+}
-+
-+static struct regulator_ops max8660_ldo67_ops = {
-+	.is_enabled = max8660_ldo67_is_enabled,
-+	.enable = max8660_ldo67_enable,
-+	.disable = max8660_ldo67_disable,
-+	.list_voltage = max8660_ldo67_list,
-+	.get_voltage = max8660_ldo67_get,
-+	.set_voltage = max8660_ldo67_set,
-+};
-+
-+static struct regulator_desc max8660_reg[] = {
-+	{
-+		.name = "V3(DCDC)",
-+		.id = MAX8660_V3,
-+		.ops = &max8660_dcdc_ops,
-+		.type = REGULATOR_VOLTAGE,
-+		.n_voltages = MAX8660_DCDC_MAX_SEL + 1,
-+		.owner = THIS_MODULE,
-+	},
-+	{
-+		.name = "V4(DCDC)",
-+		.id = MAX8660_V4,
-+		.ops = &max8660_dcdc_ops,
-+		.type = REGULATOR_VOLTAGE,
-+		.n_voltages = MAX8660_DCDC_MAX_SEL + 1,
-+		.owner = THIS_MODULE,
-+	},
-+	{
-+		.name = "V5(LDO)",
-+		.id = MAX8660_V5,
-+		.ops = &max8660_ldo5_ops,
-+		.type = REGULATOR_VOLTAGE,
-+		.n_voltages = MAX8660_LDO5_MAX_SEL + 1,
-+		.owner = THIS_MODULE,
-+	},
-+	{
-+		.name = "V6(LDO)",
-+		.id = MAX8660_V6,
-+		.ops = &max8660_ldo67_ops,
-+		.type = REGULATOR_VOLTAGE,
-+		.n_voltages = MAX8660_LDO67_MAX_SEL + 1,
-+		.owner = THIS_MODULE,
-+	},
-+	{
-+		.name = "V7(LDO)",
-+		.id = MAX8660_V7,
-+		.ops = &max8660_ldo67_ops,
-+		.type = REGULATOR_VOLTAGE,
-+		.n_voltages = MAX8660_LDO67_MAX_SEL + 1,
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int max8660_probe(struct i2c_client *client,
-+			      const struct i2c_device_id *i2c_id)
-+{
-+	struct regulator_dev **rdev;
-+	struct max8660_platform_data *pdata = client->dev.platform_data;
-+	struct max8660 *max8660;
-+	int boot_on, i, id, ret = -EINVAL;
-+
-+	if (pdata->num_subdevs > MAX8660_V_END) {
-+		dev_err(&client->dev, "Too much regulators found!\n");
-+		goto out;
-+	}
-+
-+	max8660 = kzalloc(sizeof(struct max8660) +
-+			sizeof(struct regulator_dev *) * MAX8660_V_END,
-+			GFP_KERNEL);
-+	if (!max8660) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	max8660->client = client;
-+	rdev = max8660->rdev;
-+
-+	/* First loop sets up shadow registers to prevent glitches */
-+	max8660->shadow_regs[MAX8660_ADTV1] =
-+		max8660->shadow_regs[MAX8660_ADTV2] =
-+		max8660->shadow_regs[MAX8660_SDTV1] =
-+		max8660->shadow_regs[MAX8660_SDTV2] = 0x1b;
-+	max8660->shadow_regs[MAX8660_MDTV1] =
-+		max8660->shadow_regs[MAX8660_MDTV2] = 0x04;
-+
-+	for (i = 0; i < pdata->num_subdevs; i++) {
-+
-+		if (!pdata->subdevs[i].platform_data)
-+			goto err_free;
-+
-+		boot_on = pdata->subdevs[i].platform_data->constraints.boot_on;
-+
-+		switch (pdata->subdevs[i].id) {
-+		case MAX8660_V3:
-+			if (boot_on)
-+				max8660->shadow_regs[MAX8660_OVER1] |= 1;
-+			break;
-+
-+		case MAX8660_V4:
-+			if (boot_on)
-+				max8660->shadow_regs[MAX8660_OVER1] |= 4;
-+			break;
-+
-+		case MAX8660_V5:
-+			break;
-+
-+		case MAX8660_V6:
-+			if (boot_on)
-+				max8660->shadow_regs[MAX8660_OVER2] |= 2;
-+			break;
-+
-+		case MAX8660_V7:
-+			if (!strcmp(i2c_id->name, "max8661")) {
-+				dev_err(&client->dev, "Regulator not on this chip!\n");
-+				goto err_free;
-+			}
-+
-+			if (boot_on)
-+				max8660->shadow_regs[MAX8660_OVER2] |= 4;
-+			break;
-+
-+		default:
-+			dev_err(&client->dev, "invalid regulator %s\n",
-+				 pdata->subdevs[i].name);
-+			goto err_free;
-+		}
-+	}
-+
-+	/* Second loop finally registers devices */
-+	for (i = 0; i < pdata->num_subdevs; i++) {
-+
-+		id = pdata->subdevs[i].id;
-+
-+		rdev[i] = regulator_register(&max8660_reg[id], &client->dev,
-+					     pdata->subdevs[i].platform_data,
-+					     max8660);
-+		if (IS_ERR(rdev[i])) {
-+			ret = PTR_ERR(rdev[i]);
-+			dev_err(&client->dev, "failed to register %s\n",
-+				max8660_reg[id].name);
-+			goto err_unregister;
-+		}
-+	}
-+
-+	i2c_set_clientdata(client, rdev);
-+	dev_info(&client->dev, "Maxim 8660/8661 regulator driver loaded\n");
-+	return 0;
-+
-+err_unregister:
-+	while (--i >= 0)
-+		regulator_unregister(rdev[i]);
-+err_free:
-+	kfree(max8660);
-+out:
-+	return ret;
-+}
-+
-+static int max8660_remove(struct i2c_client *client)
-+{
-+	struct regulator_dev **rdev = i2c_get_clientdata(client);
-+	int i;
-+
-+	for (i = 0; i < MAX8660_V_END; i++)
-+		if (rdev[i])
-+			regulator_unregister(rdev[i]);
-+	kfree(rdev);
-+	i2c_set_clientdata(client, NULL);
-+
-+	return 0;
-+}
-+
-+static const struct i2c_device_id max8660_id[] = {
-+	{ "max8660", 0 },
-+	{ "max8661", 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, max8660_id);
-+
-+static struct i2c_driver max8660_driver = {
-+	.probe = max8660_probe,
-+	.remove = max8660_remove,
-+	.driver		= {
-+		.name	= "max8660",
-+	},
-+	.id_table	= max8660_id,
-+};
-+
-+static int __init max8660_init(void)
-+{
-+	return i2c_add_driver(&max8660_driver);
-+}
-+subsys_initcall(max8660_init);
-+
-+static void __exit max8660_exit(void)
-+{
-+	i2c_del_driver(&max8660_driver);
-+}
-+module_exit(max8660_exit);
-+
-+/* Module information */
-+MODULE_DESCRIPTION("MAXIM 8660/8661 voltage regulator driver");
-+MODULE_AUTHOR("Wolfram Sang");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/regulator/max8660.h b/include/linux/regulator/max8660.h
-new file mode 100644
-index 0000000..b6542b1
---- /dev/null
-+++ b/include/linux/regulator/max8660.h
-@@ -0,0 +1,55 @@
-+/*
-+ * max8660.h  --  Voltage regulation for the Maxim 8660/8661
-+ *
-+ * Copyright (C) 2009 Wolfram Sang, Pengutronix e.K.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#ifndef __LINUX_REGULATOR_MAX8660_H
-+#define __LINUX_REGULATOR_MAX8660_H
-+
-+#include <linux/regulator/machine.h>
-+
-+enum {
-+	MAX8660_V3,
-+	MAX8660_V4,
-+	MAX8660_V5,
-+	MAX8660_V6,
-+	MAX8660_V7,
-+	MAX8660_V_END,
-+};
-+
-+/**
-+ * max8660_subdev_data - regulator subdev data
-+ * @id: regulator id
-+ * @name: regulator name
-+ * @platform_data: regulator init data
-+ */
-+struct max8660_subdev_data {
-+	int				id;
-+	char				*name;
-+	struct regulator_init_data	*platform_data;
-+};
-+
-+/**
-+ * max8660_platform_data - platform data for max8660
-+ * @num_subdevs: number of regulators used
-+ * @subdevs: regulators used
-+ */
-+struct max8660_platform_data {
-+	int num_subdevs;
-+	struct max8660_subdev_data *subdevs;
-+};
-+#endif
--- 
-1.6.3.3
+A) delalloc_to_write=3000 but only 1000 pages dirty.
+B) delalloc_to_write=3000 but only 1000 pages dirty.
+C) delalloc_to_write=3000 but only 1000 pages dirty.
+...
 
+Then nr_to_write will be
+A) bumped up to 3000 and fall to 2000
+B) bumped up to 3000 and fall to 2000
+C) bumped up to 3000 and fall to 2000
+...
+
+Because nr_to_write is non-zero after write_cache_pages() returns, so
+wb_writeback() will keep calling write_cache_pages() for new inodes.
+In the end, the real written pages accumulate to a very large value
+for a single wb_writeback() invocation.
+
+So there is a possibility in theory.
+
+> > 
+> > And it's not always "bump ups". nr_to_write could be decreased if it's
+> > already a large value.
+> 
+> Sorry, I don't see where it is decreased.
+
+When nr_to_write=2*8192, delalloc_to_write=2*8192+1,
+nr_to_write will be set to 8192. However this should be harmless and
+it is very unlikely someone will pass in such nr_to_write values.
+
+> > > I'd rather see a more formal use of hints from the FS about efficient IO
+> > > than a blanket increase of the writeback max.  It's more work than
+> > > bumping a single #define, but even with the #define at 1GB, we're going
+> > > to end up splitting extents and seeking when nr_to_write does finally
+> > > get down to zero.
+> > > 
+> > > Btrfs currently only bumps the nr_to_write when it creates the extent, I
+> > > need to change it to also bump it when it finds an existing extent.
+> > 
+> > Yes a more general solution would help. I'd like to propose one which
+> > works in the other way round. In brief,
+> > (1) the VFS give a large enough per-file writeback quota to btrfs;
+> > (2) btrfs tells VFS "here is a (seek) boundary, stop voluntarily",
+> >     before exhausting the quota and be force stopped.
+> > 
+> > There will be two limits (the second one is new):
+> > 
+> > - total nr to write in one wb_writeback invocation
+> > - _max_ nr to write per file (before switching to sync the next inode)
+> > 
+> > The per-invocation limit is useful for balance_dirty_pages().
+> > The per-file number can be accumulated across successive wb_writeback
+> > invocations and thus can be much larger (eg. 128MB) than the legacy
+> > per-invocation number. 
+> > 
+> > The file system will only see the per-file numbers. The "max" means
+> > if btrfs find the current page to be the last page in the extent,
+> > it could indicate this fact to VFS by setting wbc->would_seek=1. The
+> > VFS will then switch to write the next inode.
+> > 
+> > The benefit of early voluntarily yield is, it reduced the possibility
+> > to be force stopped half way in an extent. When next time VFS returns
+> > to sync this inode, it will again be honored the full 128MB quota,
+> > which should be enough to cover a big fresh extent.
+> 
+> This is interesting, but it gets into a problem with defining what a
+> seek is.  On some hardware they are very fast and don't hurt at all.  It
+> might be more interesting to make timeslices.
+
+We could have quotas for max pages, page segments and submission time.
+Will they be good enough? The first two quotas could be made per-bdi
+to reflect hardware capabilities.
+
+Thanks,
+Fengguang
