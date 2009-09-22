@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZIVRQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbZIVRQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbZIVRQF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZIVRQE
+	id S1754677AbZIVRQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZIVRQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:16:04 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40002 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315AbZIVRQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:16:03 -0400
-Date: Tue, 22 Sep 2009 19:16:04 +0200
-From: Jan Kara <jack@suse.cz>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
-       tytso@mit.edu
-Subject: Re: [PATCH 5/7] ext4: Convert filesystem to the new truncate
-	calling convention
-Message-ID: <20090922171604.GA31447@duck.suse.cz>
-References: <1253200907-31392-1-git-send-email-jack@suse.cz> <1253200907-31392-6-git-send-email-jack@suse.cz> <20090922143604.GA2183@ZenIV.linux.org.uk>
+	Tue, 22 Sep 2009 13:16:19 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:47215 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754270AbZIVRQS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 13:16:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=KJZ5OlOojF1CGYZvhmRpRsc6qmsECuzJk/Bv+Fn2ZRBIf5Yj6rpyjQvLt3k6NlhM5
+	FEoLbVm/EOGraAvBxTEuw==
+Date: Tue, 22 Sep 2009 10:16:14 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+cc: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
+       "mingo@elte.hu" <mingo@elte.hu>, jbarnes@virtuousgeek.org,
+       "yinghai@kernel.org" <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86: fix cpumask_of_pcibus() to handle nid of -1
+In-Reply-To: <1253597220.2519.4.camel@sbs-t61>
+Message-ID: <alpine.DEB.1.00.0909221014240.7114@chino.kir.corp.google.com>
+References: <1253597220.2519.4.camel@sbs-t61>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090922143604.GA2183@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 22-09-09 15:36:04, Al Viro wrote:
-> On Thu, Sep 17, 2009 at 05:21:45PM +0200, Jan Kara wrote:
-> > CC: linux-ext4@vger.kernel.org
-> > CC: tytso@mit.edu
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > ---
-> >  fs/ext4/file.c  |    2 +-
-> >  fs/ext4/inode.c |  166 ++++++++++++++++++++++++++++++++----------------------
-> >  2 files changed, 99 insertions(+), 69 deletions(-)
-> > 
-> > diff --git a/fs/ext4/file.c b/fs/ext4/file.c
-> > index 3f1873f..22f49d7 100644
-> > --- a/fs/ext4/file.c
-> > +++ b/fs/ext4/file.c
-> > @@ -198,7 +198,7 @@ const struct file_operations ext4_file_operations = {
-> >  };
-> >  
-> >  const struct inode_operations ext4_file_inode_operations = {
-> > -	.truncate	= ext4_truncate,
-> > +	.new_truncate	= 1,
-> >  	.setattr	= ext4_setattr,
-> >  	.getattr	= ext4_getattr,
-> >  #ifdef CONFIG_EXT4_FS_XATTR
-> > diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> > index 58492ab..be25874 100644
-> > --- a/fs/ext4/inode.c
-> > +++ b/fs/ext4/inode.c
-> > @@ -3354,6 +3354,7 @@ static int ext4_journalled_set_page_dirty(struct page *page)
-> >  }
-> >  
-> >  static const struct address_space_operations ext4_ordered_aops = {
-> > +	.new_writepage		= 1,
-> 
-> No.  We already have one half-finished series here; mixing it with another
-> one is not going to happen.  Such flags are tolerable only as bisectability
-> helpers.  They *must* disappear by the end of series.  Before it can be
-> submitted for merge.
-> 
-> In effect, you are mixing truncate switchover with your writepage one.
-> Please, split and reorder.
-  Well, this wasn't meant as a final version of those patches. It was
-meant as a request for comment whether it makes sence to fix the problem
-how I propose to fix it. If we agree on that, I'll go and convert the rest
-of filesystems so that we can remove .new_writepage hack. By that time I
-hope that new truncate sequence patches will be merged so that dependency
-should go away as well...
+On Mon, 21 Sep 2009, Suresh Siddha wrote:
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> On my two socket NHM-EP system, with CONFIG_DEBUG_PER_CPU_MAPS=y I see:
+> 
+>   cpumask_of_node(-1): no node_to_cpumask_map!
+>   Pid: 5635, comm: irqbalance Not tainted 2.6.31-07068-g43c1266-dirty #145
+>   Call Trace:
+>    [<ffffffff81031033>] cpumask_of_node+0x4f/0x58
+>    [<ffffffff811b5a8c>] local_cpus_show+0x1f/0x48
+>    [<ffffffff812c3c65>] dev_attr_show+0x20/0x44
+>    [<ffffffff810fcade>] sysfs_read_file+0xb2/0x131
+>    [<ffffffff810b2702>] vfs_read+0xab/0x147
+>    [<ffffffff810b2862>] sys_read+0x47/0x6f
+>    [<ffffffff8100af6b>] system_call_fastpath+0x16/0x1b
+> 
+> Fix x86 version of cpumask_of_pcibus() to handle node id of "-1"
+> (default value indicating that I/O isn't tied to any particular node).
+> 
+
+This is already fixed in -mm with 
+x86-default-pcibus-cpumask-to-all-cpus-if-it-lacks-affinity.patch and is 
+awaiting inclusion via Jesse Barnes' tree.
