@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZIVLvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZIVLvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbZIVLvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbZIVLvV
+	id S1756270AbZIVLvm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbZIVLvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:51:21 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:65520 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756173AbZIVLvU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:51:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=nHQujzteJ1m9oNDwEzKJtqZL2BBrcvuHe4SSC2xiclh01/A8vY77NKr0LdtBGNBqhN
-         GGVlpLe2+vhQm0UX5EajRJV0pb3nwfwSYOngyh4W0Vt64SO9qQ3SxvRcVPpHuQnMh18U
-         ZR61NjInZsJ61na6dMzjDzmFkgDYl1rxlCmGc=
-MIME-Version: 1.0
-Date: Tue, 22 Sep 2009 13:51:22 +0200
-Message-ID: <c4e36d110909220451s5c58a10esc00c1c1d01f6c3a4@mail.gmail.com>
-Subject: [PATCH] Make a basic error check for failure in register_disk()
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Tejun Heo <tj@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 22 Sep 2009 07:51:42 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44425 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756239AbZIVLvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:51:41 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18EyVYYuuUEnS2r8hXxsKGS8wmDTWMqIVmnw89wps
+	evJFSeTKkvjqY+
+Subject: Re: mailing list for trace users
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Avi Kivity <avi@redhat.com>, rostedt@goodmis.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <1253617179.7695.17.camel@twins>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+	 <4AB89520.2050900@redhat.com>  <1253617179.7695.17.camel@twins>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 13:51:37 +0200
+Message-Id: <1253620297.13917.28.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.67
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make a basic error check for failure in register_disk() to avoid kernel BUG
-when sysfs entry could not be created (i.e. duplicate filename).
-Fix is not perfect as register_disk() and add_disk() should probably return
-error code in this case but avoids this BUG message:
+On Tue, 2009-09-22 at 12:59 +0200, Peter Zijlstra wrote:
 
-kernel BUG at fs/sysfs/group.c:65!
- [<ffffffff812d6eac>] ? device_add+0x3c/0x5a0
- [<ffffffff811767c3>] sysfs_create_group+0x13/0x20
- [<ffffffff810c6c14>] blk_trace_init_sysfs+0x14/0x20
- [<ffffffff8121e3b0>] blk_register_queue+0x40/0x100
- [<ffffffff81223438>] add_disk+0xf8/0x170
- [<ffffffffa00bb3aa>] dm_create+0x37a/0x5b0 [dm_mod]
- ...
+> We need a /proc/modules parser that then also locates and loads .ko
+> files which aren't stripped.
+> 
+> I think Mike played around with that a bit.
 
-Problem has been noticed during check of some dm error code path.
+Nope.
 
-Signed-off-by: Zdenek Kabelac <zkabelac@redhat.com>
+> The typical problem is that people use 'make INSTALL_MOD_STRIP=1
+> modules_install' to install their modules, because otherwise the initrd
+> thingies explode, the side effect is that the !initrd modules are
+> stripped too.
 
----
- block/genhd.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Oh, yeah, that would explain it.  Stripped module is a nogo.
 
-diff --git a/block/genhd.c b/block/genhd.c
-index f4c64c2..317f961 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -544,6 +544,10 @@ void add_disk(struct gendisk *disk)
- 	blk_register_region(disk_devt(disk), disk->minors, NULL,
- 			    exact_match, exact_lock, disk);
- 	register_disk(disk);
-+	if (!disk_to_dev(disk)->kobj.parent) {
-+		WARN_ON(1);
-+		return;
-+	}
- 	blk_register_queue(disk);
+	-Mike
 
- 	bdi = &disk->queue->backing_dev_info;
