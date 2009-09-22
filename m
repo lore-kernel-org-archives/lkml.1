@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbZIVX1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbZIVXkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752659AbZIVX1d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 19:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZIVX1d
+	id S1753436AbZIVXkv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 19:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZIVXku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 19:27:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35086 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751439AbZIVX1c (ORCPT
+	Tue, 22 Sep 2009 19:40:50 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:53032 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753116AbZIVXkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 19:27:32 -0400
-Date: Tue, 22 Sep 2009 16:25:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: dbrownell@users.sourceforge.net, dwmw2@infradead.org, dedekind1@gmail.com,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] mtd: m25p80: Add support for CAT25xxx serial
- EEPROMs
-Message-Id: <20090922162548.3e20e67c.akpm@linux-foundation.org>
-In-Reply-To: <20090818214628.GB22651@oksana.dev.rtsoft.ru>
-References: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
-	<20090818214628.GB22651@oksana.dev.rtsoft.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Sep 2009 19:40:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=JIPWhq7UZ+UL9MbMuTRPzs8krkRZ2/Xu2kblSvp+pR63W8V7VIqQZMyCcWYHk/AaCR
+         piOo3jzcSuvYWxUGW4oA9VHxULgrp2CnD/qUbGUi36WOTTjTJtpGbZyMth7wHgsa1Hvs
+         4dcUuXsCa1ugaQH7di7t7KzyODTU+vsOS61AI=
+Message-ID: <4AB95F41.1070500@lwfinger.net>
+Date: Tue, 22 Sep 2009 18:35:29 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Gary Hade <garyhade@us.ibm.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: fixing "pci=use_crs"
+References: <200909161715.24376.bjorn.helgaas@hp.com> <200909171016.50087.bjorn.helgaas@hp.com> <4AB50FF2.1070104@lwfinger.net> <200909211520.56800.bjorn.helgaas@hp.com>
+In-Reply-To: <200909211520.56800.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009 01:46:28 +0400
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-
-> CAT25 chips (as manufactured by On Semiconductor, previously Catalyst
-> Semiconductor) are similar to the original M25Px0 chips, except:
+Bjorn Helgaas wrote:
+> On Saturday 19 September 2009 11:08:02 am Larry Finger wrote:
+>> Bjorn Helgaas wrote:
+>>> It looks like you have an HP box -- what exactly is it and
+>>> what BIOS version do you have?  Maybe I can borrow one to play
+>>> with myself so I don't have to bug you as much.
+>> It is an HP dv2815nr. The BIOS is F.21. I understand that debugging
+>> is much easier when you have the machine in hand, but I don't mind
+>> providing information.
+>> ...
+>> Do you want me to boot with "pci=use_crs"?
 > 
-> - Address width can vary (1-2 bytes, in contrast to 3 bytes in M25P
->   chips). So, implement convenient m25p_addr2cmd() and m25p_cmdsz()
->   calls, and place address width information into flash_info struct;
-> 
-> - Page size can vary, therefore we shouldn't hardcode it, so get rid
->   of FLASH_PAGESIZE definition, and place the page size information
->   into flash_info struct;
-> 
-> - CAT25 EEPROMs don't need to be erased, so add NO_ERASE flag, and
->   propagate it to the mtd subsystem.
+> That'd be great.  HP's bureaucracy makes it hard for me to borrow
+> machines.  If you could also turn on CONFIG_PNP_DEBUG_MESSAGES
+> and boot with "pnp.debug", we should get some clues about what _CRS
+> returns for all the ACPI devices.  Just attach the resulting dmesg
+> to the bugzilla (http://bugzilla.kernel.org/show_bug.cgi?id=14183).
 
-This patch (still) doesn't know about the mx25l3205d, mx25l12805d and
-mx25l12855e devices.
+I put the dmesg output with pci=use_crs and pnp.debug in the bugzilla.
 
-I randomly did this:
+Larry
 
-->	{ "mx25l3205d", INFO(0xc22016, 0, 64 * 1024, 64, 256, 3, 0) },
-->	{ "mx25l6405d", INFO(0xc22017, 0, 64 * 1024, 128, 256, 3, 0) },
-	{ "mx25l12805d", INFO(0xc22018, 0, 64 * 1024, 256, 256, 3, 0) },
-->	{ "mx25l12855e", INFO(0xc22618, 0, 64 * 1024, 256, 256, 3, 0) },
+
 
