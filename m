@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbZIVPdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZIVPjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbZIVPdX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZIVPdX
+	id S1756543AbZIVPjv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZIVPjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:33:23 -0400
-Received: from fifo99.com ([67.223.236.141]:60400 "EHLO fifo99.com"
+	Tue, 22 Sep 2009 11:39:51 -0400
+Received: from kroah.org ([198.145.64.141]:45970 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753731AbZIVPdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:33:22 -0400
-Subject: Re: [PATCH 1/2] Add COH 901 318 DMA block driver
-From: Daniel Walker <dwalker@fifo99.com>
-To: Linus Walleij <linus.walleij@stericsson.com>
-Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1253630313-20225-1-git-send-email-linus.walleij@stericsson.com>
-References: <1253630313-20225-1-git-send-email-linus.walleij@stericsson.com>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 08:33:22 -0700
-Message-Id: <1253633602.22454.0.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1751084AbZIVPju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 11:39:50 -0400
+Date: Tue, 22 Sep 2009 08:37:52 -0700
+From: Greg KH <greg@kroah.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nitin Gupta <ngupta@vflare.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
+Subject: Re: [PATCH 0/3] compcache: in-memory compressed swapping v4
+Message-ID: <20090922153752.GA24256@kroah.com>
+References: <1253595414-2855-1-git-send-email-ngupta@vflare.org>
+ <1253600030.30406.2.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253600030.30406.2.camel@penberg-laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 16:38 +0200, Linus Walleij wrote:
-> +       val &= ~COH901318_CX_CFG_CH_ENABLE;
-> +       writel(val, virtbase + COH901318_CX_CFG +
-> +              COH901318_CX_CFG_SPACING * channel);
-> +
-> +       writel(val, virtbase + COH901318_CX_CFG +
-> +              COH901318_CX_CFG_SPACING * channel);
-> +       wmb();
-> +
-> +       /* Spin-wait for it to actually go inactive */
-> +       while (readl(virtbase + COH901318_CX_STAT+COH901318_CX_STAT_SPACING *
-> +                    channel) & COH901318_CX_STAT_ACTIVE) {}
+On Tue, Sep 22, 2009 at 09:13:50AM +0300, Pekka Enberg wrote:
+> On Tue, 2009-09-22 at 10:26 +0530, Nitin Gupta wrote:
+> >  drivers/staging/Kconfig                   |    2 +
+> >  drivers/staging/Makefile                  |    1 +
+> >  drivers/staging/ramzswap/Kconfig          |   21 +
+> >  drivers/staging/ramzswap/Makefile         |    3 +
+> >  drivers/staging/ramzswap/ramzswap.txt     |   51 +
+> >  drivers/staging/ramzswap/ramzswap_drv.c   | 1462 +++++++++++++++++++++++++++++
+> >  drivers/staging/ramzswap/ramzswap_drv.h   |  173 ++++
+> >  drivers/staging/ramzswap/ramzswap_ioctl.h |   50 +
+> >  drivers/staging/ramzswap/xvmalloc.c       |  533 +++++++++++
+> >  drivers/staging/ramzswap/xvmalloc.h       |   30 +
+> >  drivers/staging/ramzswap/xvmalloc_int.h   |   86 ++
+> >  include/linux/swap.h                      |    5 +
+> >  mm/swapfile.c                             |   34 +
+> >  13 files changed, 2451 insertions(+), 0 deletions(-)
+> 
+> This diffstat is not up to date, I think.
+> 
+> Greg, would you mind taking this driver into staging? There are some
+> issues that need to be ironed out for it to be merged to kernel proper
+> but I think it would benefit from being exposed to mainline.
 
-You might want to add a cpu_relax() here ..
+That would be fine, will there be a new set of patches for me to apply,
+or is this the correct series?
 
-Daniel
+thanks,
 
-
-
+greg k-h
