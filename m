@@ -1,78 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZIVU5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbZIVU6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752570AbZIVU5d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 16:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZIVU5a
+	id S1753115AbZIVU6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 16:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZIVU6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 16:57:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37360 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751386AbZIVU5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 16:57:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] PCI PM: Read device power state from register after updating it (rev. 3)
-Date: Tue, 22 Sep 2009 22:58:25 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, Andreas Mohr <andi@lisas.de>,
-       kevin granade <kevin.granade@gmail.com>
-References: <200909212337.01812.rjw@sisk.pl>
-In-Reply-To: <200909212337.01812.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 22 Sep 2009 16:58:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60337 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751604AbZIVU6j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 16:58:39 -0400
+Date: Tue, 22 Sep 2009 13:58:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+Message-Id: <20090922135838.33ebe36b.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20090529142527.071669e0@172.19.0.2>
+References: <6.0.0.20.2.20090529142527.071669e0@172.19.0.2>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909222258.25904.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Fri, 29 May 2009 14:35:55 +0900
+Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-After attempting to change the power state of a PCI device
-pci_raw_set_power_state() doesn't check if the value it wrote into
-the device's PCI_PM_CTRL register has been stored in there, but
-unconditionally modifies the device's current_state field to reflect
-the change.  This may cause problems to happen if the power state of
-the device hasn't been changed in fact, because it will make the PCI
-PM core think that the device is in a power state it really is not
-in.
+> I added blk_run_backing_dev on page_cache_async_readahead
+> so readahead I/O is unpluged to improve throughput on 
+> especially RAID environment. 
 
-To prevent such situations from happening modify
-pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
-register after writing into it and uses the value read from the
-register to update the device's current_state field.  Also make it
-print a message saying that the device refused to change its power
-state as requested (returning an error code in such cases would cause
-suspend regressions to appear on some systems, where device drivers'
-suspend routines return error codes if pci_set_power_state() fails).
+I still haven't sent this upstream.  It's unclear to me that we've
+decided that it merits merging?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+
+I added blk_run_backing_dev on page_cache_async_readahead so readahead I/O
+is unpluged to improve throughput on especially RAID environment.
+
+The normal case is, if page N become uptodate at time T(N), then T(N) <=
+T(N+1) holds.  With RAID (and NFS to some degree), there is no strict
+ordering, the data arrival time depends on runtime status of individual
+disks, which breaks that formula.  So in do_generic_file_read(), just
+after submitting the async readahead IO request, the current page may well
+be uptodate, so the page won't be locked, and the block device won't be
+implicitly unplugged:
+
+               if (PageReadahead(page))
+                        page_cache_async_readahead()
+                if (!PageUptodate(page))
+                                goto page_not_up_to_date;
+                //...
+page_not_up_to_date:
+                lock_page_killable(page);
+
+Therefore explicit unplugging can help.
+
+Following is the test result with dd.
+
+#dd if=testdir/testfile of=/dev/null bs=16384
+
+-2.6.30-rc6
+1048576+0 records in
+1048576+0 records out
+17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+
+-2.6.30-rc6-patched
+1048576+0 records in
+1048576+0 records out
+17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+
+(7Disks RAID-0 Array)
+
+-2.6.30-rc6
+1054976+0 records in
+1054976+0 records out
+17284726784 bytes (17 GB) copied, 212.233 seconds, 81.4 MB/s
+
+-2.6.30-rc6-patched
+1054976+0 records out
+17284726784 bytes (17 GB) copied, 198.878 seconds, 86.9 MB/s
+
+(7Disks RAID-5 Array)
+
+The patch was found to improve performance with the SCST scsi target
+driver.  See
+http://sourceforge.net/mailarchive/forum.php?thread_name=a0272b440906030714g67eabc5k8f847fb1e538cc62%40mail.gmail.com&forum_name=scst-devel
+
+[akpm@linux-foundation.org: unbust comment layout]
+[akpm@linux-foundation.org: "fix" CONFIG_BLOCK=n]
+Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Tested-by: Ronald <intercommit@gmail.com>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
-Respin to fix issues pointed out by the reviewers.
 
-Thanks,
-Rafael
----
- drivers/pci/pci.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ mm/readahead.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -513,7 +513,11 @@ static int pci_raw_set_power_state(struc
- 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
- 		udelay(PCI_PM_D2_DELAY);
+diff -puN mm/readahead.c~readahead-add-blk_run_backing_dev mm/readahead.c
+--- a/mm/readahead.c~readahead-add-blk_run_backing_dev
++++ a/mm/readahead.c
+@@ -547,5 +547,17 @@ page_cache_async_readahead(struct addres
  
--	dev->current_state = state;
-+	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-+	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
-+	if (dev->current_state != state && printk_ratelimit())
-+		dev_info(&dev->dev, "Refused to change power state, "
-+			"currently in D%d\n", dev->current_state);
- 
- 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
- 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
+ 	/* do read-ahead */
+ 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
++
++#ifdef CONFIG_BLOCK
++	/*
++	 * Normally the current page is !uptodate and lock_page() will be
++	 * immediately called to implicitly unplug the device. However this
++	 * is not always true for RAID conifgurations, where data arrives
++	 * not strictly in their submission order. In this case we need to
++	 * explicitly kick off the IO.
++	 */
++	if (PageUptodate(page))
++		blk_run_backing_dev(mapping->backing_dev_info, NULL);
++#endif
+ }
+ EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+_
+
+
