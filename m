@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZIVLf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbZIVLk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbZIVLf2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZIVLf2
+	id S1756115AbZIVLk3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZIVLk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:35:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:65034 "EHLO mx1.redhat.com"
+	Tue, 22 Sep 2009 07:40:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34164 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756065AbZIVLf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:35:27 -0400
-Message-ID: <4AB8B65F.7030602@redhat.com>
-Date: Tue, 22 Sep 2009 14:34:55 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1754360AbZIVLk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:40:28 -0400
+Message-ID: <4AB8B795.4010400@kernel.org>
+Date: Tue, 22 Sep 2009 20:40:05 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
-Subject: Re: mailing list for trace users
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com>	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>
-In-Reply-To: <1253618894.13917.18.camel@marge.simson.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: 2.6.31-07068-g43c1266 Early boot exception
+References: <1253560490.2934.42.camel@localhost>	<4AB7D349.4000802@zytor.com>	<1253566046.2773.10.camel@localhost>	<4AB89417.7090005@kernel.org> <20090922112351.6b07d259@infradead.org>
+In-Reply-To: <20090922112351.6b07d259@infradead.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 11:40:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/22/2009 02:28 PM, Mike Galbraith wrote:
-> On Tue, 2009-09-22 at 12:13 +0300, Avi Kivity wrote:
->
->    
->> $ perf annotate -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run
->>    Error: symbol 'vmx_vcpu_run' not present amongst the samples.
->>
->> builtin symbols work.
->>      
-> Ah.  Did you reboot or unload/load the module between record and
-> annotate time?  There is no support for that at the moment.
->    
+Arjan van de Ven wrote:
+> if you build with debuginfo.. run
+> perl scripts/markup_oops.pl on your dmesg
+> 
+> that gives you not just the line, but the whole context of the crash.
 
-No.  Still loaded and running.
+Darn, I knew there gotta be something like that.  That's a pretty nice
+script.  Thanks for the tip.  :-)
 
 -- 
-error compiling committee.c: too many arguments to function
-
+tejun
