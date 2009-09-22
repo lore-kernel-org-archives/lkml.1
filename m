@@ -1,102 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZIVRlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbZIVRlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbZIVRlH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:41:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbZIVRlF
+	id S1756334AbZIVRlM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbZIVRlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:41:05 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:41668 "EHLO
+	Tue, 22 Sep 2009 13:41:09 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:41672 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754898AbZIVRlE (ORCPT
+	with ESMTP id S1755539AbZIVRlE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Sep 2009 13:41:04 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
 Cc: yehuda@newdream.net, Sage Weil <sage@newdream.net>
-Subject: [PATCH 00/21] ceph distributed file system client
-Date: Tue, 22 Sep 2009 10:38:28 -0700
-Message-Id: <1253641129-28434-1-git-send-email-sage@newdream.net>
+Subject: [PATCH 01/21] ceph: documentation
+Date: Tue, 22 Sep 2009 10:38:29 -0700
+Message-Id: <1253641129-28434-2-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1253641129-28434-1-git-send-email-sage@newdream.net>
+References: <1253641129-28434-1-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Mount options, syntax.
 
-This is v0.15 of the Ceph distributed file system client.  Changes since
-v0.14:
-
- - checkpatch, sparse cleanups
- - ioctl number documented
- - some message api simplifications, avoiding more memory allocations
- - message pools to avoid additional ENOMEM situations
- - new ioctl to determine object name and location/address for given file offset
- - osd failure handling bug fix
- - debugfs cleanups
-
-I've pretty much run out of substantiative feedback to address with
-this code.  There are a few more memory preallocation issues I am
-continuing to look at, but I don't think they are show stoppers.  The
-code has been running on my test cluster for the last week without
-problems, and would greatly benefit from broader testing.
-
-Any additional review, or suggestions for how to get this merged are
-much appreciated.
-
-Thanks-
-sage
-
-Kernel client git tree:
-        git://ceph.newdream.net/linux-ceph-client.git
-
-System:
-	git://ceph.newdream.net/ceph.git
-
+Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- Documentation/filesystems/ceph.txt   |  140 ++
- Documentation/ioctl/ioctl-number.txt |    1 +
- fs/Kconfig                           |    1 +
- fs/Makefile                          |    1 +
- fs/ceph/Kconfig                      |   26 +
- fs/ceph/Makefile                     |   35 +
- fs/ceph/addr.c                       | 1117 +++++++++++++
- fs/ceph/buffer.h                     |   83 +
- fs/ceph/caps.c                       | 2800 ++++++++++++++++++++++++++++++++
- fs/ceph/ceph_debug.h                 |   35 +
- fs/ceph/ceph_fs.h                    |  937 +++++++++++
- fs/ceph/ceph_ver.h                   |    6 +
- fs/ceph/crush/crush.c                |  140 ++
- fs/ceph/crush/crush.h                |  188 +++
- fs/ceph/crush/hash.h                 |   90 ++
- fs/ceph/crush/mapper.c               |  589 +++++++
- fs/ceph/crush/mapper.h               |   20 +
- fs/ceph/debugfs.c                    |  430 +++++
- fs/ceph/decode.h                     |  136 ++
- fs/ceph/dir.c                        | 1175 ++++++++++++++
- fs/ceph/export.c                     |  222 +++
- fs/ceph/file.c                       |  902 +++++++++++
- fs/ceph/inode.c                      | 2404 ++++++++++++++++++++++++++++
- fs/ceph/ioctl.c                      |  157 ++
- fs/ceph/ioctl.h                      |   39 +
- fs/ceph/mds_client.c                 | 2915 ++++++++++++++++++++++++++++++++++
- fs/ceph/mds_client.h                 |  321 ++++
- fs/ceph/mdsmap.c                     |  139 ++
- fs/ceph/mdsmap.h                     |   47 +
- fs/ceph/messenger.c                  | 1868 ++++++++++++++++++++++
- fs/ceph/messenger.h                  |  255 +++
- fs/ceph/mon_client.c                 |  694 ++++++++
- fs/ceph/mon_client.h                 |  109 ++
- fs/ceph/msgpool.c                    |  167 ++
- fs/ceph/msgpool.h                    |   26 +
- fs/ceph/msgr.h                       |  157 ++
- fs/ceph/osd_client.c                 | 1292 +++++++++++++++
- fs/ceph/osd_client.h                 |  144 ++
- fs/ceph/osdmap.c                     |  872 ++++++++++
- fs/ceph/osdmap.h                     |   94 ++
- fs/ceph/rados.h                      |  426 +++++
- fs/ceph/snap.c                       |  897 +++++++++++
- fs/ceph/super.c                      | 1015 ++++++++++++
- fs/ceph/super.h                      |  945 +++++++++++
- fs/ceph/types.h                      |   27 +
- 45 files changed, 24084 insertions(+), 0 deletions(-)
+ Documentation/filesystems/ceph.txt |  140 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 140 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/filesystems/ceph.txt
+
+diff --git a/Documentation/filesystems/ceph.txt b/Documentation/filesystems/ceph.txt
+new file mode 100644
+index 0000000..66e40e4
+--- /dev/null
++++ b/Documentation/filesystems/ceph.txt
+@@ -0,0 +1,140 @@
++Ceph Distributed File System
++============================
++
++Ceph is a distributed network file system designed to provide good
++performance, reliability, and scalability.
++
++Basic features include:
++
++ * POSIX semantics
++ * Seamless scaling from 1 to many thousands of nodes
++ * High availability and reliability.  No single points of failure.
++ * N-way replication of data across storage nodes
++ * Fast recovery from node failures
++ * Automatic rebalancing of data on node addition/removal
++ * Easy deployment: most FS components are userspace daemons
++
++Also,
++ * Flexible snapshots (on any directory)
++ * Recursive accounting (nested files, directories, bytes)
++
++In contrast to cluster filesystems like GFS, OCFS2, and GPFS that rely
++on symmetric access by all clients to shared block devices, Ceph
++separates data and metadata management into independent server
++clusters, similar to Lustre.  Unlike Lustre, however, metadata and
++storage nodes run entirely as user space daemons.  Storage nodes
++utilize btrfs to store data objects, leveraging its advanced features
++(checksumming, metadata replication, etc.).  File data is striped
++across storage nodes in large chunks to distribute workload and
++facilitate high throughputs.  When storage nodes fail, data is
++re-replicated in a distributed fashion by the storage nodes themselves
++(with some minimal coordination from a cluster monitor), making the
++system extremely efficient and scalable.
++
++Metadata servers effectively form a large, consistent, distributed
++in-memory cache above the file namespace that is extremely scalable,
++dynamically redistributes metadata in response to workload changes,
++and can tolerate arbitrary (well, non-Byzantine) node failures.  The
++metadata server takes a somewhat unconventional approach to metadata
++storage to significantly improve performance for common workloads.  In
++particular, inodes with only a single link are embedded in
++directories, allowing entire directories of dentries and inodes to be
++loaded into its cache with a single I/O operation.  The contents of
++extremely large directories can be fragmented and managed by
++independent metadata servers, allowing scalable concurrent access.
++
++The system offers automatic data rebalancing/migration when scaling
++from a small cluster of just a few nodes to many hundreds, without
++requiring an administrator carve the data set into static volumes or
++go through the tedious process of migrating data between servers.
++When the file system approaches full, new nodes can be easily added
++and things will "just work."
++
++Ceph includes flexible snapshot mechanism that allows a user to create
++a snapshot on any subdirectory (and its nested contents) in the
++system.  Snapshot creation and deletion are as simple as 'mkdir
++.snap/foo' and 'rmdir .snap/foo'.
++
++Ceph also provides some recursive accounting on directories for nested
++files and bytes.  That is, a 'getfattr -d foo' on any directory in the
++system will reveal the total number of nested regular files and
++subdirectories, and a summation of all nested file sizes.  This makes
++the identification of large disk space consumers relatively quick, as
++no 'du' or similar recursive scan of the file system is required.
++
++
++Mount Syntax
++============
++
++The basic mount syntax is:
++
++ # mount -t ceph monip[:port][,monip2[:port]...]:/[subdir] mnt
++
++You only need to specify a single monitor, as the client will get the
++full list when it connects.  (However, if the monitor you specify
++happens to be down, the mount won't succeed.)  The port can be left
++off if the monitor is using the default.  So if the monitor is at
++1.2.3.4,
++
++ # mount -t ceph 1.2.3.4:/ /mnt/ceph
++
++is sufficient.  If /sbin/mount.ceph is installed, a hostname can be
++used instead of an IP address.
++
++
++
++Mount Options
++=============
++
++  ip=A.B.C.D[:N]
++  port=N
++	Specify the IP and/or port the client should bind to locally.
++	There is normally not much reason to do this.  If the IP is not
++	specified, the client's IP address is determined by looking at the
++	address it's connection to the monitor originates from.
++
++  wsize=X
++	Specify the maximum write size in bytes.  By default there is no
++	maximu.  Ceph will normally size writes based on the file stripe
++	size.
++
++  rsize=X
++	Specify the maximum readahead.
++
++  mount_timeout=X
++	Specify the timeout value for mount (in seconds), in the case
++	of a non-responsive Ceph file system.  The default is 30
++	seconds.
++
++  rbytes
++	When stat() is called on a directory, set st_size to 'rbytes',
++	the summation of file sizes over all files nested beneath that
++	directory.  This is the default.
++
++  norbytes
++	When stat() is called on a directory, set st_size to the
++	number of entries in that directory.
++
++  nocrc
++	Disable CRC32C calculation for data writes.  If set, the OSD
++	must rely on TCP's error correction to detect data corruption
++	in the data payload.
++
++  noasyncreaddir
++	Disable client's use its local cache to satisfy	readdir
++	requests.  (This does not change correctness; the client uses
++	cached metadata only when a lease or capability ensures it is
++	valid.)
++
++
++More Information
++================
++
++For more information on Ceph, see the home page at
++	http://ceph.newdream.net/
++
++The Linux kernel client source tree is available at
++	git://ceph.newdream.net/linux-ceph-client.git
++
++and the source for the full system is at
++	git://ceph.newdream.net/ceph.git
+-- 
+1.5.6.5
+
