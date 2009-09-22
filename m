@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZIVQx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756484AbZIVQ4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbZIVQx5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 12:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbZIVQx4
+	id S1756484AbZIVQ4F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 12:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbZIVQ4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 12:53:56 -0400
-Received: from claw.goop.org ([74.207.240.146]:56490 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755195AbZIVQx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 12:53:56 -0400
-Message-ID: <4AB90127.2000809@goop.org>
-Date: Tue, 22 Sep 2009 09:53:59 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Avi Kivity <avi@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Alok Kataria <akataria@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090920095239.456ad6f2@infradead.org> <4AB5EF25.9070502@redhat.com> <200909221652.35446.rusty@rustcorp.com.au>
-In-Reply-To: <200909221652.35446.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 22 Sep 2009 12:56:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49725 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756417AbZIVQ4C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 12:56:02 -0400
+Subject: Re: [PATCH v2] core, x86: Add user return notifiers
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Avi Kivity <avi@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>
+In-Reply-To: <4AB900B1.9070901@redhat.com>
+References: <4AB3CDEC.5050902@zytor.com>
+	 <1253342422-13811-1-git-send-email-avi@redhat.com>
+	 <4AB8980D.5070803@redhat.com>  <20090922143223.GA31702@elte.hu>
+	 <1253638205.18939.4.camel@laptop>  <4AB900B1.9070901@redhat.com>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 18:55:54 +0200
+Message-Id: <1253638554.18939.5.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/22/09 00:22, Rusty Russell wrote:
-> When they're all gone, even I don't think lguest is sufficient excuse
-> to keep CONFIG_PARAVIRT.  Oh well.  But that will probably be a while.
->   
+On Tue, 2009-09-22 at 19:52 +0300, Avi Kivity wrote:
+> On 09/22/2009 07:50 PM, Peter Zijlstra wrote:
+> >> Would be nice to convert some existing open-coded return-to-user-space
+> >> logic to this facility. One such candidate would be lockdep_sys_exit?
+> >>      
+> > And here I was thinking this was one of the hottest code paths in the
+> > whole kernel...
+> >    
+> 
+> If you're using lockdep, surely that's not your biggest worry?
 
-/Solidarność/!
+No, but that's all under #ifdef and fully disappears when not enabled.
+Generic return-tu-user notifiers don't sound like they will though.
 
-    J
