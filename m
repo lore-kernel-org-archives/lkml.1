@@ -1,70 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZIVIbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbZIVIeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZIVIbL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 04:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbZIVIbJ
+	id S1755440AbZIVIeU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 04:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZIVIeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 04:31:09 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:34456 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755007AbZIVIbI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 04:31:08 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: regression in page writeback
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>
-In-Reply-To: <20090922082427.GA24888@localhost>
-References: <20090922054913.GA27260@sli10-desk.sh.intel.com>
-	 <1253601612.8439.274.camel@twins> <20090922080505.GB9192@localhost>
-	 <1253606965.8439.281.camel@twins>  <20090922082427.GA24888@localhost>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 10:32:14 +0200
-Message-Id: <1253608335.8439.283.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 22 Sep 2009 04:34:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50724 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753579AbZIVIeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 04:34:15 -0400
+Message-ID: <4AB88BE2.2030501@kernel.org>
+Date: Tue, 22 Sep 2009 17:33:38 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Greg KH <greg@kroah.com>, Robert Hancock <hancockr@shaw.ca>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-pci@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Daniel Ritz <daniel.ritz@gmx.ch>,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Axel Birndt <towerlexa@gmx.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>
+Subject: [PATCH 1/3 pci#linux-next] pci: determine CLS more intelligently
+References: <4A4EE3E9.7090205@kernel.org> <20090917103131.55eca691@jbarnes-g45>
+In-Reply-To: <20090917103131.55eca691@jbarnes-g45>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 08:33:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 16:24 +0800, Wu Fengguang wrote:
-> On Tue, Sep 22, 2009 at 04:09:25PM +0800, Peter Zijlstra wrote:
-> > On Tue, 2009-09-22 at 16:05 +0800, Wu Fengguang wrote:
-> > > 
-> > > I'm not sure how this patch stopped the "overshooting" behavior.
-> > > Maybe it managed to not start the background pdflush, or the started
-> > > pdflush thread exited because it found writeback is in progress by
-> > > someone else?
-> > > 
-> > > -               if (bdi_nr_reclaimable) {
-> > > +               if (bdi_nr_reclaimable > bdi_thresh) {
-> > 
-> > The idea is that we shouldn't move more pages from dirty -> writeback
-> > when there's not actually that much dirty left.
-> 
-> IMHO this makes little sense given that pdflush will move all dirty
-> pages anyway. pdflush should already be started to do background
-> writeback before the process is throttled, and it is designed to sync
-> all current dirty pages as quick as possible and as much as possible.
+Till now, CLS has been determined either by arch code or as
+L1_CACHE_BYTES.  Only x86 and ia64 set CLS explicitly and x86 doesn't
+always get it right.  On most configurations, the chance is that
+firmware configures the correct value during boot.
 
-Not so, pdflush (or now the bdi writer thread thingies) should not
-deplete all dirty pages but should stop writing once they are below the
-background limit.
+This patch makes pci_init() determine CLS by looking at what firmware
+has configured.  It scans all devices and if all non-zero values
+agree, the value is used.  If none is configured or there is a
+disagreement, pci_dfl_cache_line_size is used.  arch can set the dfl
+value (via PCI_CACHE_LINE_BYTES or pci_dfl_cache_line_size) or
+override the actual one.
 
-> > Now, I'm not sure about the > bdi_thresh part, I've suggested to maybe
-> > use bdi_thresh/2 a few times, but it generally didn't seem to make much
-> > of a difference.
-> 
-> One possible difference is, the process may end up waiting longer time
-> in order to sync write_chunk pages and quit the throttle. This could
-> hurt the responsiveness of the throttled process.
+ia64, x86 and sparc64 updated to set the default cls instead of the
+actual one.
 
-Well, that's all because this congestion_wait stuff is borken..
+While at it, declare pci_cache_line_size and pci_dfl_cache_line_size
+in pci.h and drop private declarations from arch code.
 
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: David Miller <davem@davemloft.net>
+Acked-by: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tony Luck <tony.luck@intel.com>
+---
+Sorry about the delay.  Here are the regenerated patches.  They are
+against linux-next branch of pci-2.6.git tree as of Sept 22nd
+(76baeebf7df493703eeb4428eac015bdb7fabda6).  Thanks.
+
+ arch/ia64/pci/pci.c   |    9 +++------
+ arch/x86/pci/common.c |    8 +++-----
+ drivers/pci/pci.c     |   49 +++++++++++++++++++++++++++++++++++++++++--------
+ include/linux/pci.h   |    2 ++
+ 4 files changed, 49 insertions(+), 19 deletions(-)
+
+Index: work/arch/ia64/pci/pci.c
+===================================================================
+--- work.orig/arch/ia64/pci/pci.c
++++ work/arch/ia64/pci/pci.c
+@@ -715,9 +715,6 @@ int ia64_pci_legacy_write(struct pci_bus
+ 	return ret;
+ }
+
+-/* It's defined in drivers/pci/pci.c */
+-extern u8 pci_cache_line_size;
+-
+ /**
+  * set_pci_cacheline_size - determine cacheline size for PCI devices
+  *
+@@ -726,7 +723,7 @@ extern u8 pci_cache_line_size;
+  *
+  * Code mostly taken from arch/ia64/kernel/palinfo.c:cache_info().
+  */
+-static void __init set_pci_cacheline_size(void)
++static void __init set_pci_dfl_cacheline_size(void)
+ {
+ 	unsigned long levels, unique_caches;
+ 	long status;
+@@ -746,7 +743,7 @@ static void __init set_pci_cacheline_siz
+ 			"(status=%ld)\n", __func__, status);
+ 		return;
+ 	}
+-	pci_cache_line_size = (1 << cci.pcci_line_size) / 4;
++	pci_dfl_cache_line_size = (1 << cci.pcci_line_size) / 4;
+ }
+
+ u64 ia64_dma_get_required_mask(struct device *dev)
+@@ -777,7 +774,7 @@ EXPORT_SYMBOL_GPL(dma_get_required_mask)
+
+ static int __init pcibios_init(void)
+ {
+-	set_pci_cacheline_size();
++	set_pci_dfl_cacheline_size();
+ 	return 0;
+ }
+
+Index: work/arch/x86/pci/common.c
+===================================================================
+--- work.orig/arch/x86/pci/common.c
++++ work/arch/x86/pci/common.c
+@@ -410,8 +410,6 @@ struct pci_bus * __devinit pcibios_scan_
+ 	return bus;
+ }
+
+-extern u8 pci_cache_line_size;
+-
+ int __init pcibios_init(void)
+ {
+ 	struct cpuinfo_x86 *c = &boot_cpu_data;
+@@ -426,11 +424,11 @@ int __init pcibios_init(void)
+ 	 * and P4. It's also good for 386/486s (which actually have 16)
+ 	 * as quite a few PCI devices do not support smaller values.
+ 	 */
+-	pci_cache_line_size = 32 >> 2;
++	pci_dfl_cache_line_size = 32 >> 2;
+ 	if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
+-		pci_cache_line_size = 64 >> 2;	/* K7 & K8 */
++		pci_dfl_cache_line_size = 64 >> 2;	/* K7 & K8 */
+ 	else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
+-		pci_cache_line_size = 128 >> 2;	/* P4 */
++		pci_dfl_cache_line_size = 128 >> 2;	/* P4 */
+
+ 	pcibios_resource_survey();
+
+Index: work/drivers/pci/pci.c
+===================================================================
+--- work.orig/drivers/pci/pci.c
++++ work/drivers/pci/pci.c
+@@ -47,6 +47,19 @@ unsigned long pci_cardbus_mem_size = DEF
+ unsigned long pci_hotplug_io_size  = DEFAULT_HOTPLUG_IO_SIZE;
+ unsigned long pci_hotplug_mem_size = DEFAULT_HOTPLUG_MEM_SIZE;
+
++#ifndef PCI_CACHE_LINE_BYTES
++#define PCI_CACHE_LINE_BYTES L1_CACHE_BYTES
++#endif
++
++/*
++ * The default CLS is used if arch didn't set CLS explicitly and not
++ * all pci devices agree on the same value.  Arch can override either
++ * the dfl or actual value as it sees fit.  Don't forget this is
++ * measured in 32-bit words, not bytes.
++ */
++u8 pci_dfl_cache_line_size __initdata = PCI_CACHE_LINE_BYTES >> 2;
++u8 pci_cache_line_size;
++
+ /**
+  * pci_bus_max_busnr - returns maximum PCI bus number of given bus' children
+  * @bus: pointer to PCI bus structure to search
+@@ -1879,14 +1892,6 @@ void pci_clear_mwi(struct pci_dev *dev)
+
+ #else
+
+-#ifndef PCI_CACHE_LINE_BYTES
+-#define PCI_CACHE_LINE_BYTES L1_CACHE_BYTES
+-#endif
+-
+-/* This can be overridden by arch code. */
+-/* Don't forget this is measured in 32-bit words, not bytes */
+-u8 pci_cache_line_size = PCI_CACHE_LINE_BYTES / 4;
+-
+ /**
+  * pci_set_cacheline_size - ensure the CACHE_LINE_SIZE register is programmed
+  * @dev: the PCI device for which MWI is to be enabled
+@@ -2722,9 +2727,37 @@ int __attribute__ ((weak)) pci_ext_cfg_a
+ static int __devinit pci_init(void)
+ {
+ 	struct pci_dev *dev = NULL;
++	u8 cls = 0;
++	u8 tmp;
++
++	if (pci_cache_line_size)
++		printk(KERN_DEBUG "PCI: CLS %u bytes\n",
++		       pci_cache_line_size << 2);
+
+ 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+ 		pci_fixup_device(pci_fixup_final, dev);
++		/*
++		 * If arch hasn't set it explicitly yet, use the CLS
++		 * value shared by all PCI devices.  If there's a
++		 * mismatch, fall back to the default value.
++		 */
++		if (!pci_cache_line_size) {
++			pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &tmp);
++			if (!cls)
++				cls = tmp;
++			if (!tmp || cls == tmp)
++				continue;
++
++			printk(KERN_DEBUG "PCI: CLS mismatch (%u != %u), "
++			       "using %u bytes\n", cls << 2, tmp << 2,
++			       pci_dfl_cache_line_size << 2);
++			pci_cache_line_size = pci_dfl_cache_line_size;
++		}
++	}
++	if (!pci_cache_line_size) {
++		printk(KERN_DEBUG "PCI: CLS %u bytes, default %u\n",
++		       cls << 2, pci_dfl_cache_line_size << 2);
++		pci_cache_line_size = cls;
+ 	}
+
+ 	return 0;
+Index: work/include/linux/pci.h
+===================================================================
+--- work.orig/include/linux/pci.h
++++ work/include/linux/pci.h
+@@ -1246,6 +1246,8 @@ extern int pci_pci_problems;
+
+ extern unsigned long pci_cardbus_io_size;
+ extern unsigned long pci_cardbus_mem_size;
++extern u8 pci_dfl_cache_line_size;
++extern u8 pci_cache_line_size;
+
+ extern unsigned long pci_hotplug_io_size;
+ extern unsigned long pci_hotplug_mem_size;
