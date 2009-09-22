@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbZIVHS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZIVHWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbZIVHS2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 03:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZIVHS1
+	id S1755356AbZIVHWh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 03:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbZIVHWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 03:18:27 -0400
-Received: from mail-pz0-f173.google.com ([209.85.222.173]:56166 "EHLO
-	mail-pz0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753564AbZIVHS0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 03:18:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=hovkoXs0Gdvh0SOQByKDCvf4MsfsT6BTIjDD7IKzEj3yNj2MzmItp2jxVUAwa1iJpg
-         ZS9CMaOV6pqb+titWW7zCRIwPiTACG/rEP5nO7Pt5xapXYABjdufhTVg5qOZfqt48Kb8
-         mTLcFa8SbMZEgQsY5KuTaSICc/siXPNsQl2kY=
+	Tue, 22 Sep 2009 03:22:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:33401 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754073AbZIVHWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 03:22:33 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+Date: Tue, 22 Sep 2009 16:52:32 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Alok Kataria <akataria@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090920095239.456ad6f2@infradead.org> <4AB5EF25.9070502@redhat.com>
+In-Reply-To: <4AB5EF25.9070502@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <3877989d0909220017l61394c3cy769e95656db70d22@mail.gmail.com>
-References: <3877989d0909220017l61394c3cy769e95656db70d22@mail.gmail.com>
-Date: Tue, 22 Sep 2009 15:18:29 +0800
-Message-ID: <3877989d0909220018x4233cbdx99359cc45e5c2153@mail.gmail.com>
-Subject: Re: [RFC PATCH] delete unnecessary BUG_ON !policy->cur
-From: Luming Yu <luming.yu@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary=000e0cd32874b38e580474256723
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909221652.35446.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd32874b38e580474256723
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Sun, 20 Sep 2009 06:30:21 pm Avi Kivity wrote:
+> On 09/20/2009 10:52 AM, Arjan van de Ven wrote:
+> > On Sun, 20 Sep 2009 09:42:47 +0200
+> > Ingo Molnar<mingo@elte.hu>  wrote:
+> >
+> >    
+> >> If we were able to rip out all (or most) of paravirt from arch/x86 it
+> >> would be tempting for other technical reasons - but the patch above
+> >> is well localized.
+> >>      
+> > interesting question is if this would allow us to remove a few of the
+> > paravirt hooks....
+> >    
+> 
+> kvm will be removing the pvmmu support soon; and Xen is talking about 
+> running paravirtualized guests in a vmx/svm container where they don't 
+> need most of the hooks.
 
-Patch attached!
+When they're all gone, even I don't think lguest is sufficient excuse
+to keep CONFIG_PARAVIRT.  Oh well.  But that will probably be a while.
 
-On Tue, Sep 22, 2009 at 3:17 PM, Luming Yu <luming.yu@gmail.com> wrote:
-> Hi there,
->
-> When testing upstream Git tree, there is a BUG_ON hit on a IA64 system
-> with RHEL 5 user space installed.
-> Please review the patch below, If make sense, please apply.
->
-> Ps. The patch is enclosed in attachment. The inlined one
-> is c&p of it for reading.
->
->
-> Thanks,
-> Luming
->
-> Signed-off-by: Yu Luming <luming.yu@intel.com>
->
-> =C2=A0cpufreq_userspace.c | =C2=A0 =C2=A01 -
-> =C2=A01 file changed, 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/cpufreq_userspace.c
-> b/drivers/cpufreq/cpufreq_userspace.c
-> index 66d2d1d..63bd232 100644
-> --- a/drivers/cpufreq/cpufreq_userspace.c
-> +++ b/drivers/cpufreq/cpufreq_userspace.c
-> @@ -119,7 +119,6 @@ static int cpufreq_governor_userspace(st
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0case CPUFREQ_GOV_START:
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (!cpu_online(cp=
-u))
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0return -EINVAL;
-> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 BUG_ON(!policy->cur);
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0mutex_lock(&usersp=
-ace_mutex);
->
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (cpus_using_use=
-rspace_governor =3D=3D 0) {
->
-
---000e0cd32874b38e580474256723
-Content-Type: application/octet-stream; name="10.patch"
-Content-Disposition: attachment; filename="10.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fzwbnfil0
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxX3VzZXJzcGFjZS5jIGIvZHJpdmVy
-cy9jcHVmcmVxL2NwdWZyZXFfdXNlcnNwYWNlLmMKaW5kZXggNjZkMmQxZC4uNjNiZDIzMiAxMDA2
-NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXFfdXNlcnNwYWNlLmMKKysrIGIvZHJpdmVy
-cy9jcHVmcmVxL2NwdWZyZXFfdXNlcnNwYWNlLmMKQEAgLTExOSw3ICsxMTksNiBAQCBzdGF0aWMg
-aW50IGNwdWZyZXFfZ292ZXJub3JfdXNlcnNwYWNlKHN0CiAJY2FzZSBDUFVGUkVRX0dPVl9TVEFS
-VDoKIAkJaWYgKCFjcHVfb25saW5lKGNwdSkpCiAJCQlyZXR1cm4gLUVJTlZBTDsKLQkJQlVHX09O
-KCFwb2xpY3ktPmN1cik7CiAJCW11dGV4X2xvY2soJnVzZXJzcGFjZV9tdXRleCk7CiAKIAkJaWYg
-KGNwdXNfdXNpbmdfdXNlcnNwYWNlX2dvdmVybm9yID09IDApIHsK
---000e0cd32874b38e580474256723--
+Cheers,
+Rusty.
