@@ -1,97 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZIVNeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZIVNfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbZIVNeN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803AbZIVNeM
+	id S1755560AbZIVNfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZIVNfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:34:12 -0400
-Received: from mga03.intel.com ([143.182.124.21]:64349 "EHLO mga03.intel.com"
+	Tue, 22 Sep 2009 09:35:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33901 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754690AbZIVNeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:34:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,431,1249282800"; 
-   d="scan'208";a="190306284"
-Date: Tue, 22 Sep 2009 21:33:58 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
-Message-ID: <20090922133358.GC7675@localhost>
-References: <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost> <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090921135321.GD6259@think> <20090922101335.GA27432@localhost> <20090922113055.GA13887@duck.suse.cz>
+	id S1755378AbZIVNfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:35:16 -0400
+Date: Tue, 22 Sep 2009 13:34:02 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       davem@davemloft.net, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
+       davem@davemloft.net, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/printk] ratelimit: Use per ratelimit context locking
+Message-ID: <tip-979f693def9084a452846365dfde5dcb28366333@git.kernel.org>
+Git-Commit-ID: 979f693def9084a452846365dfde5dcb28366333
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090922113055.GA13887@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 13:34:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 07:30:55PM +0800, Jan Kara wrote:
-> On Tue 22-09-09 18:13:35, Wu Fengguang wrote:
-> > Yes a more general solution would help. I'd like to propose one which
-> > works in the other way round. In brief,
-> > (1) the VFS give a large enough per-file writeback quota to btrfs;
-> > (2) btrfs tells VFS "here is a (seek) boundary, stop voluntarily",
-> >     before exhausting the quota and be force stopped.
-> > 
-> > There will be two limits (the second one is new):
-> > 
-> > - total nr to write in one wb_writeback invocation
-> > - _max_ nr to write per file (before switching to sync the next inode)
-> > 
-> > The per-invocation limit is useful for balance_dirty_pages().
-> > The per-file number can be accumulated across successive wb_writeback
-> > invocations and thus can be much larger (eg. 128MB) than the legacy
-> > per-invocation number. 
->   Actually, it doesn't make much sence to have a per-file limit in number
-> of pages. I've been playing with an idea that we could have a per-file
-> *time* quota. That would have an advantage that if a file generates random
-> IO, we wouldn't block for longer time on it than when it generates linear
-> IO.
+Commit-ID:  979f693def9084a452846365dfde5dcb28366333
+Gitweb:     http://git.kernel.org/tip/979f693def9084a452846365dfde5dcb28366333
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 22 Sep 2009 14:44:11 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 22 Sep 2009 15:31:34 +0200
 
-Heh, FYI recently I tried per-file submission time quota:
+ratelimit: Use per ratelimit context locking
 
-        http://lkml.org/lkml/2009/9/10/54
+I'd like to use printk_ratelimit() in atomic context, but that's
+not possible right now due to the spinlock usage this commit
+introduced more than a year ago:
 
-Though I didn't take randomness of IO into account, which definitely
-deserves some attention.
+  717115e: printk ratelimiting rewrite
 
->   I imagine that in ->writepage we would substract from given time quota in
-> wbc the time it takes to write the current page. It would need some context
-> in wbc so that it is able to tell whether the IO is linear or random to
-> properly account for some seek penalty but generally it seems to be
-> doable...
+As a first step push the lock into the ratelimit state structure.
+This allows us to deal with locking failures to be considered as an
+event related to that state being too busy.
 
-Yeah, maybe page segments that are distant enough could be treated as "seeks".
+Also clean up the code a bit (without changing functionality):
 
->   Filesystems implementing ->writepages can then make decision whether they
-> have enough time quota to seek to next extent and write it out or whether
-> they should rather yield to other inodes...
+ - tidy up the definitions
 
-Yeah, it's possible. VFS provides (one or more) quota info and
-file systems decide when to yield.
+ - clean up the code flow
 
-Thanks,
-Fengguang
+This also shrinks the code a tiny bit:
 
-> > The file system will only see the per-file numbers. The "max" means
-> > if btrfs find the current page to be the last page in the extent,
-> > it could indicate this fact to VFS by setting wbc->would_seek=1. The
-> > VFS will then switch to write the next inode.
-> > 
-> > The benefit of early voluntarily yield is, it reduced the possibility
-> > to be force stopped half way in an extent. When next time VFS returns
-> > to sync this inode, it will again be honored the full 128MB quota,
-> > which should be enough to cover a big fresh extent.
-> 
-> 								Honza
-> -- 
-> Jan Kara <jack@suse.cz>
-> SUSE Labs, CR
+   text	   data	    bss	    dec	    hex	filename
+    264	      0	      4	    268	    10c	ratelimit.o.before
+    255	      0	      0	    255	     ff	ratelimit.o.after
+
+( Whole-kernel data size got a bit larger, because we have
+  two ratelimit-state data structures right now. )
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David S. Miller <davem@davemloft.net>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/linux/ratelimit.h |   30 ++++++++++++++++++++----------
+ lib/ratelimit.c           |   29 +++++++++++++----------------
+ 2 files changed, 33 insertions(+), 26 deletions(-)
+
+diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
+index 00044b8..187bc16 100644
+--- a/include/linux/ratelimit.h
++++ b/include/linux/ratelimit.h
+@@ -1,20 +1,30 @@
+ #ifndef _LINUX_RATELIMIT_H
+ #define _LINUX_RATELIMIT_H
++
+ #include <linux/param.h>
++#include <linux/spinlock_types.h>
+ 
+-#define DEFAULT_RATELIMIT_INTERVAL (5 * HZ)
+-#define DEFAULT_RATELIMIT_BURST 10
++#define DEFAULT_RATELIMIT_INTERVAL	(5 * HZ)
++#define DEFAULT_RATELIMIT_BURST		10
+ 
+ struct ratelimit_state {
+-	int interval;
+-	int burst;
+-	int printed;
+-	int missed;
+-	unsigned long begin;
++	spinlock_t	lock;		/* protect the state */
++
++	int		interval;
++	int		burst;
++	int		printed;
++	int		missed;
++	unsigned long	begin;
+ };
+ 
+-#define DEFINE_RATELIMIT_STATE(name, interval, burst)		\
+-		struct ratelimit_state name = {interval, burst,}
++#define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)		\
++									\
++	struct ratelimit_state name = {					\
++		.lock		= __SPIN_LOCK_UNLOCKED(name.lock),	\
++		.interval	= interval_init,			\
++		.burst		= burst_init,				\
++	}
+ 
+ extern int __ratelimit(struct ratelimit_state *rs);
+-#endif
++
++#endif /* _LINUX_RATELIMIT_H */
+diff --git a/lib/ratelimit.c b/lib/ratelimit.c
+index 26187ed..0e2c28e 100644
+--- a/lib/ratelimit.c
++++ b/lib/ratelimit.c
+@@ -7,15 +7,12 @@
+  * parameter. Now every user can use their own standalone ratelimit_state.
+  *
+  * This file is released under the GPLv2.
+- *
+  */
+ 
+ #include <linux/kernel.h>
+ #include <linux/jiffies.h>
+ #include <linux/module.h>
+ 
+-static DEFINE_SPINLOCK(ratelimit_lock);
+-
+ /*
+  * __ratelimit - rate limiting
+  * @rs: ratelimit_state data
+@@ -26,11 +23,12 @@ static DEFINE_SPINLOCK(ratelimit_lock);
+ int __ratelimit(struct ratelimit_state *rs)
+ {
+ 	unsigned long flags;
++	int ret;
+ 
+ 	if (!rs->interval)
+ 		return 1;
+ 
+-	spin_lock_irqsave(&ratelimit_lock, flags);
++	spin_lock_irqsave(&rs->lock, flags);
+ 	if (!rs->begin)
+ 		rs->begin = jiffies;
+ 
+@@ -38,20 +36,19 @@ int __ratelimit(struct ratelimit_state *rs)
+ 		if (rs->missed)
+ 			printk(KERN_WARNING "%s: %d callbacks suppressed\n",
+ 				__func__, rs->missed);
+-		rs->begin = 0;
++		rs->begin   = 0;
+ 		rs->printed = 0;
+-		rs->missed = 0;
++		rs->missed  = 0;
+ 	}
+-	if (rs->burst && rs->burst > rs->printed)
+-		goto print;
+-
+-	rs->missed++;
+-	spin_unlock_irqrestore(&ratelimit_lock, flags);
+-	return 0;
++	if (rs->burst && rs->burst > rs->printed) {
++		rs->printed++;
++		ret = 1;
++	} else {
++		rs->missed++;
++		ret = 0;
++	}
++	spin_unlock_irqrestore(&rs->lock, flags);
+ 
+-print:
+-	rs->printed++;
+-	spin_unlock_irqrestore(&ratelimit_lock, flags);
+-	return 1;
++	return ret;
+ }
+ EXPORT_SYMBOL(__ratelimit);
