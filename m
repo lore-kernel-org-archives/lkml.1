@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbZIVWSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZIVWYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314AbZIVWSj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 18:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZIVWSg
+	id S1752601AbZIVWYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 18:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZIVWYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 18:18:36 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:60001 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbZIVWSe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 18:18:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=C/mSh5PXQgtwgGjBkzOUwDSr9BEfgVviTIMBrPA91DSMie6svaKzvzNTa36BxLRO24
-         p5a7qV7EEdLjpV0xJIyncDox1Guo+uUquGmBCCV6hUGowNvO7fFhR+hzBcbpLnQVqNIQ
-         xhIYPNo11n+jNYTskqG2SbSqlxSVhBXm8GTQ0=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 2/2] tracing/workqueue: Use %pf in workqueue trace events
-Date: Wed, 23 Sep 2009 00:18:30 +0200
-Message-Id: <1253657910-2536-3-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1253657910-2536-1-git-send-email-fweisbec@gmail.com>
-References: <1253657910-2536-1-git-send-email-fweisbec@gmail.com>
+	Tue, 22 Sep 2009 18:24:42 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:49980 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751179AbZIVWYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 18:24:41 -0400
+Date: Tue, 22 Sep 2009 15:24:43 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: [PATCH tip/core/rcu 0/4] Josh and Ingo review feedback and
+	bloatwatch RCU
+Message-ID: <20090922222443.GA3178@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anton Blanchard <anton@samba.org>
+This patch set applies two sets of review feedback from Josh Triplett and
+checkpatch feedback from Ingo Molnar.  It also contains a forward-port
+of Bloatwatch RCU, courtesy of David Howells.
 
-Using %pf instead of %pF supresses printing of the function offset
-which will always be 0 in the case of worklet functions.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <20090922024033.GB31801@kryten>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- include/trace/events/workqueue.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/trace/events/workqueue.h b/include/trace/events/workqueue.h
-index fcfd9a1..e4612db 100644
---- a/include/trace/events/workqueue.h
-+++ b/include/trace/events/workqueue.h
-@@ -26,7 +26,7 @@ TRACE_EVENT(workqueue_insertion,
- 		__entry->func		= work->func;
- 	),
- 
--	TP_printk("thread=%s:%d func=%pF", __entry->thread_comm,
-+	TP_printk("thread=%s:%d func=%pf", __entry->thread_comm,
- 		__entry->thread_pid, __entry->func)
- );
- 
-@@ -48,7 +48,7 @@ TRACE_EVENT(workqueue_execution,
- 		__entry->func		= work->func;
- 	),
- 
--	TP_printk("thread=%s:%d func=%pF", __entry->thread_comm,
-+	TP_printk("thread=%s:%d func=%pf", __entry->thread_comm,
- 		__entry->thread_pid, __entry->func)
- );
- 
--- 
-1.6.2.3
-
+ b/include/linux/hardirq.h  |   24 ++++
+ b/include/linux/rcupdate.h |    4 
+ b/include/linux/rcutiny.h  |  103 ++++++++++++++++++
+ b/include/linux/rcutree.h  |    1 
+ b/init/Kconfig             |    9 +
+ b/init/main.c              |    1 
+ b/kernel/Makefile          |    1 
+ b/kernel/rcupdate.c        |    3 
+ b/kernel/rcutiny.c         |  246 ++++++++++++++++++++++++++++++++++++++++++++-
+ b/kernel/rcutorture.c      |    4 
+ b/kernel/rcutree.c         |   29 +++--
+ b/kernel/rcutree.h         |    6 -
+ b/kernel/rcutree_plugin.h  |   51 ++++-----
+ b/kernel/rcutree_trace.c   |   13 +-
+ include/linux/rcupdate.h   |    6 +
+ include/linux/rcutree.h    |   12 +-
+ kernel/rcupdate.c          |    4 
+ kernel/rcutree.c           |   95 ++++++-----------
+ kernel/rcutree.h           |   57 ++++++++--
+ kernel/rcutree_plugin.h    |   24 +++-
+ 20 files changed, 557 insertions(+), 136 deletions(-)
