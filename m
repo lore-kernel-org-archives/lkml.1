@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbZIVWZR (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 22 Sep 2009 18:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZIVWZQ
+	id S1753449AbZIVWZZ (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 22 Sep 2009 18:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZIVWZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 18:25:16 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:51692 "EHLO e5.ny.us.ibm.com"
+	Tue, 22 Sep 2009 18:25:20 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:51695 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbZIVWZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 18:25:14 -0400
+	id S1752513AbZIVWZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 18:25:15 -0400
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 1/4] Apply review feedback from Josh Triplett, part 1
-Date: Tue, 22 Sep 2009 15:25:13 -0700
-Message-Id: <12536583163749-git-send-email->
+Subject: [PATCH tip/core/rcu 3/4] Apply Ingo's checkpatch feedback
+Date: Tue, 22 Sep 2009 15:25:15 -0700
+Message-Id: <12536583161514-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20090922222443.GA3178@linux.vnet.ibm.com>
 References: <20090922222443.GA3178@linux.vnet.ibm.com>
@@ -26,247 +26,203 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+Move declarations and update storage classes to make checkpatch happy.
+
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/rcutree.h |    1 -
- kernel/rcutree.c        |   29 ++++++++++++++++----------
- kernel/rcutree.h        |    6 ++--
- kernel/rcutree_plugin.h |   50 +++++++++++++++++++++++-----------------------
- 4 files changed, 46 insertions(+), 40 deletions(-)
+ include/linux/rcutree.h |    6 +++++-
+ kernel/rcupdate.c       |    3 ---
+ kernel/rcutorture.c     |    4 +---
+ kernel/rcutree.c        |   23 -----------------------
+ kernel/rcutree.h        |   26 +++++++++++++++++++++++++-
+ kernel/rcutree_trace.c  |   12 ++++++------
+ 6 files changed, 37 insertions(+), 37 deletions(-)
 
 diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
-index 3768277..88109c8 100644
+index 19a3b06..46e9ab3 100644
 --- a/include/linux/rcutree.h
 +++ b/include/linux/rcutree.h
-@@ -85,7 +85,6 @@ static inline void synchronize_rcu_bh_expedited(void)
+@@ -30,10 +30,14 @@
+ #ifndef __LINUX_RCUTREE_H
+ #define __LINUX_RCUTREE_H
  
- extern void __rcu_init(void);
- extern void rcu_check_callbacks(int cpu, int user);
--extern void rcu_restart_cpu(int cpu);
++struct notifier_block;
++
+ extern void rcu_sched_qs(int cpu);
+ extern void rcu_bh_qs(int cpu);
+-
++extern int rcu_cpu_notify(struct notifier_block *self,
++			  unsigned long action, void *hcpu);
+ extern int rcu_needs_cpu(int cpu);
++extern int rcu_expedited_torture_stats(char *page);
  
- extern long rcu_batches_completed(void);
- extern long rcu_batches_completed_bh(void);
+ #ifdef CONFIG_TREE_PREEMPT_RCU
+ 
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index 37ac454..8e79513 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -259,9 +259,6 @@ static void rcu_migrate_callback(struct rcu_head *notused)
+ 		wake_up(&rcu_migrate_wq);
+ }
+ 
+-extern int rcu_cpu_notify(struct notifier_block *self,
+-			  unsigned long action, void *hcpu);
+-
+ static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
+ 		unsigned long action, void *hcpu)
+ {
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+index e4b9ce6..1c9f423 100644
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -605,8 +605,6 @@ static struct rcu_torture_ops sched_ops_sync = {
+ 	.name		= "sched_sync"
+ };
+ 
+-extern int rcu_expedited_torture_stats(char *page);
+-
+ static struct rcu_torture_ops sched_expedited_ops = {
+ 	.init		= rcu_sync_torture_init,
+ 	.cleanup	= NULL,
+@@ -648,7 +646,7 @@ rcu_torture_writer(void *arg)
+ 		old_rp = rcu_torture_current;
+ 		rp->rtort_mbtest = 1;
+ 		rcu_assign_pointer(rcu_torture_current, rp);
+-		smp_wmb();
++		smp_wmb(); /* Mods to old_rp must follow rcu_assign_pointer() */
+ 		if (old_rp) {
+ 			i = old_rp->rtort_pipe_count;
+ 			if (i > RCU_TORTURE_PIPE_LEN)
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 24f627e..d45ffb8 100644
+index 61472bd..a074f13 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -100,6 +100,16 @@ static void __cpuinit rcu_init_percpu_data(int cpu, struct rcu_state *rsp,
- #include "rcutree_plugin.h"
+@@ -80,29 +80,6 @@ DEFINE_PER_CPU(struct rcu_data, rcu_sched_data);
+ struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
+ DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
+ 
+-/* Forward declarations for rcutree_plugin.h */
+-static inline void rcu_bootup_announce(void);
+-long rcu_batches_completed(void);
+-static void rcu_preempt_note_context_switch(int cpu);
+-static int rcu_preempted_readers(struct rcu_node *rnp);
+-#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+-static void rcu_print_task_stall(struct rcu_node *rnp);
+-#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+-static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp);
+-#ifdef CONFIG_HOTPLUG_CPU
+-static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
+-				      struct rcu_node *rnp,
+-				      struct rcu_data *rdp);
+-static void rcu_preempt_offline_cpu(int cpu);
+-#endif /* #ifdef CONFIG_HOTPLUG_CPU */
+-static void rcu_preempt_check_callbacks(int cpu);
+-static void rcu_preempt_process_callbacks(void);
+-void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu));
+-static int rcu_preempt_pending(int cpu);
+-static int rcu_preempt_needs_cpu(int cpu);
+-static void __cpuinit rcu_preempt_init_percpu_data(int cpu);
+-static void __init __rcu_init_preempt(void);
+-
  
  /*
-+ * Return true if an RCU grace period is in progress.  The ACCESS_ONCE()s
-+ * permit this function to be invoked without holding the root rcu_node
-+ * structure's ->lock, but of course results can be subject to change.
-+ */
-+static int rcu_gp_in_progress(struct rcu_state *rsp)
-+{
-+	return ACCESS_ONCE(rsp->completed) != ACCESS_ONCE(rsp->gpnum);
-+}
-+
-+/*
-  * Note a quiescent state.  Because we do not need to know
-  * how many quiescent states passed, just if there was at least
-  * one since the start of the grace period, this just sets a flag.
-@@ -172,9 +182,7 @@ cpu_has_callbacks_ready_to_invoke(struct rcu_data *rdp)
- static int
- cpu_needs_another_gp(struct rcu_state *rsp, struct rcu_data *rdp)
- {
--	/* ACCESS_ONCE() because we are accessing outside of lock. */
--	return *rdp->nxttail[RCU_DONE_TAIL] &&
--	       ACCESS_ONCE(rsp->completed) == ACCESS_ONCE(rsp->gpnum);
-+	return *rdp->nxttail[RCU_DONE_TAIL] && !rcu_gp_in_progress(rsp);
- }
- 
- /*
-@@ -481,7 +489,7 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
- 
- 	spin_lock_irqsave(&rnp->lock, flags);
- 	delta = jiffies - rsp->jiffies_stall;
--	if (delta < RCU_STALL_RAT_DELAY || rsp->gpnum == rsp->completed) {
-+	if (delta < RCU_STALL_RAT_DELAY || !rcu_gp_in_progress(rsp)) {
- 		spin_unlock_irqrestore(&rnp->lock, flags);
- 		return;
- 	}
-@@ -532,8 +540,7 @@ static void check_cpu_stall(struct rcu_state *rsp, struct rcu_data *rdp)
- 		/* We haven't checked in, so go dump stack. */
- 		print_cpu_stall(rsp);
- 
--	} else if (rsp->gpnum != rsp->completed &&
--		   delta >= RCU_STALL_RAT_DELAY) {
-+	} else if (rcu_gp_in_progress(rsp) && delta >= RCU_STALL_RAT_DELAY) {
- 
- 		/* They had two time units to dump stack, so complain. */
- 		print_other_cpu_stall(rsp);
-@@ -698,9 +705,9 @@ rcu_process_gp_end(struct rcu_state *rsp, struct rcu_data *rdp)
-  * hold rnp->lock, as required by rcu_start_gp(), which will release it.
-  */
- static void cpu_quiet_msk_finish(struct rcu_state *rsp, unsigned long flags)
--	__releases(rnp->lock)
-+	__releases(rcu_get_root(rsp)->lock)
- {
--	WARN_ON_ONCE(rsp->completed == rsp->gpnum);
-+	WARN_ON_ONCE(!rcu_gp_in_progress(rsp));
- 	rsp->completed = rsp->gpnum;
- 	rcu_process_gp_end(rsp, rsp->rda[smp_processor_id()]);
- 	rcu_start_gp(rsp, flags);  /* releases root node's rnp->lock. */
-@@ -1087,7 +1094,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 	struct rcu_node *rnp = rcu_get_root(rsp);
- 	u8 signaled;
- 
--	if (ACCESS_ONCE(rsp->completed) == ACCESS_ONCE(rsp->gpnum))
-+	if (!rcu_gp_in_progress(rsp))
- 		return;  /* No grace period in progress, nothing to force. */
- 	if (!spin_trylock_irqsave(&rsp->fqslock, flags)) {
- 		rsp->n_force_qs_lh++; /* Inexact, can lose counts.  Tough! */
-@@ -1246,7 +1253,7 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
- 	rdp->nxttail[RCU_NEXT_TAIL] = &head->next;
- 
- 	/* Start a new grace period if one not already started. */
--	if (ACCESS_ONCE(rsp->completed) == ACCESS_ONCE(rsp->gpnum)) {
-+	if (!rcu_gp_in_progress(rsp)) {
- 		unsigned long nestflag;
- 		struct rcu_node *rnp_root = rcu_get_root(rsp);
- 
-@@ -1326,7 +1333,7 @@ static int __rcu_pending(struct rcu_state *rsp, struct rcu_data *rdp)
- 	}
- 
- 	/* Has an RCU GP gone long enough to send resched IPIs &c? */
--	if (ACCESS_ONCE(rsp->completed) != ACCESS_ONCE(rsp->gpnum) &&
-+	if (rcu_gp_in_progress(rsp) &&
- 	    ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)) {
- 		rdp->n_rp_need_fqs++;
- 		return 1;
+  * Return true if an RCU grace period is in progress.  The ACCESS_ONCE()s
 diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index 8e8287a..9aa8c8a 100644
+index a48d11f..e6ab31c 100644
 --- a/kernel/rcutree.h
 +++ b/kernel/rcutree.h
-@@ -48,14 +48,14 @@
- #elif NR_CPUS <= RCU_FANOUT_SQ
- #  define NUM_RCU_LVLS	      2
- #  define NUM_RCU_LVL_0	      1
--#  define NUM_RCU_LVL_1	      (((NR_CPUS) + RCU_FANOUT - 1) / RCU_FANOUT)
-+#  define NUM_RCU_LVL_1	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT)
- #  define NUM_RCU_LVL_2	      (NR_CPUS)
- #  define NUM_RCU_LVL_3	      0
- #elif NR_CPUS <= RCU_FANOUT_CUBE
- #  define NUM_RCU_LVLS	      3
- #  define NUM_RCU_LVL_0	      1
--#  define NUM_RCU_LVL_1	      (((NR_CPUS) + RCU_FANOUT_SQ - 1) / RCU_FANOUT_SQ)
--#  define NUM_RCU_LVL_2	      (((NR_CPUS) + (RCU_FANOUT) - 1) / (RCU_FANOUT))
-+#  define NUM_RCU_LVL_1	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT_SQ)
-+#  define NUM_RCU_LVL_2	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT)
- #  define NUM_RCU_LVL_3	      NR_CPUS
- #else
- # error "CONFIG_RCU_FANOUT insufficient for NR_CPUS"
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 09b7325..01485e8 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -150,6 +150,16 @@ void __rcu_read_lock(void)
- }
- EXPORT_SYMBOL_GPL(__rcu_read_lock);
+@@ -270,5 +270,29 @@ extern struct rcu_state rcu_preempt_state;
+ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
+ #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
  
-+/*
-+ * Check for preempted RCU readers blocking the current grace period
-+ * for the specified rcu_node structure.  If the caller needs a reliable
-+ * answer, it must hold the rcu_node's ->lock.
-+ */
-+static int rcu_preempted_readers(struct rcu_node *rnp)
-+{
-+	return !list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
-+}
+-#endif /* #ifdef RCU_TREE_NONCORE */
++#else /* #ifdef RCU_TREE_NONCORE */
+ 
++/* Forward declarations for rcutree_plugin.h */
++static inline void rcu_bootup_announce(void);
++long rcu_batches_completed(void);
++static void rcu_preempt_note_context_switch(int cpu);
++static int rcu_preempted_readers(struct rcu_node *rnp);
++#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
++static void rcu_print_task_stall(struct rcu_node *rnp);
++#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
++static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp);
++#ifdef CONFIG_HOTPLUG_CPU
++static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
++				      struct rcu_node *rnp,
++				      struct rcu_data *rdp);
++static void rcu_preempt_offline_cpu(int cpu);
++#endif /* #ifdef CONFIG_HOTPLUG_CPU */
++static void rcu_preempt_check_callbacks(int cpu);
++static void rcu_preempt_process_callbacks(void);
++void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu));
++static int rcu_preempt_pending(int cpu);
++static int rcu_preempt_needs_cpu(int cpu);
++static void __cpuinit rcu_preempt_init_percpu_data(int cpu);
++static void __init __rcu_init_preempt(void);
 +
- static void rcu_read_unlock_special(struct task_struct *t)
- {
- 	int empty;
-@@ -196,7 +206,7 @@ static void rcu_read_unlock_special(struct task_struct *t)
- 				break;
- 			spin_unlock(&rnp->lock);  /* irqs remain disabled. */
- 		}
--		empty = list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
-+		empty = !rcu_preempted_readers(rnp);
- 		list_del_init(&t->rcu_node_entry);
- 		t->rcu_blocked_node = NULL;
- 
-@@ -207,7 +217,7 @@ static void rcu_read_unlock_special(struct task_struct *t)
- 		 * drop rnp->lock and restore irq.
- 		 */
- 		if (!empty && rnp->qsmask == 0 &&
--		    list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1])) {
-+		    !rcu_preempted_readers(rnp)) {
- 			struct rcu_node *rnp_p;
- 
- 			if (rnp->parent == NULL) {
-@@ -257,12 +267,12 @@ static void rcu_print_task_stall(struct rcu_node *rnp)
- {
- 	unsigned long flags;
- 	struct list_head *lp;
--	int phase = rnp->gpnum & 0x1;
-+	int phase;
- 	struct task_struct *t;
- 
--	if (!list_empty(&rnp->blocked_tasks[phase])) {
-+	if (rcu_preempted_readers(rnp)) {
- 		spin_lock_irqsave(&rnp->lock, flags);
--		phase = rnp->gpnum & 0x1; /* re-read under lock. */
-+		phase = rnp->gpnum & 0x1;
- 		lp = &rnp->blocked_tasks[phase];
- 		list_for_each_entry(t, lp, rcu_node_entry)
- 			printk(" P%d", t->pid);
-@@ -281,20 +291,10 @@ static void rcu_print_task_stall(struct rcu_node *rnp)
-  */
- static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp)
- {
--	WARN_ON_ONCE(!list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]));
-+	WARN_ON_ONCE(rcu_preempted_readers(rnp));
- 	WARN_ON_ONCE(rnp->qsmask);
++#endif /* #else #ifdef RCU_TREE_NONCORE */
+diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
+index c89f5e9..f09af28 100644
+--- a/kernel/rcutree_trace.c
++++ b/kernel/rcutree_trace.c
+@@ -93,7 +93,7 @@ static int rcudata_open(struct inode *inode, struct file *file)
+ 	return single_open(file, show_rcudata, NULL);
  }
  
--/*
-- * Check for preempted RCU readers for the specified rcu_node structure.
-- * If the caller needs a reliable answer, it must hold the rcu_node's
-- * >lock.
-- */
--static int rcu_preempted_readers(struct rcu_node *rnp)
--{
--	return !list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
--}
--
- #ifdef CONFIG_HOTPLUG_CPU
- 
- /*
-@@ -462,6 +462,15 @@ static void rcu_preempt_note_context_switch(int cpu)
- {
+-static struct file_operations rcudata_fops = {
++static const struct file_operations rcudata_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = rcudata_open,
+ 	.read = seq_read,
+@@ -145,7 +145,7 @@ static int rcudata_csv_open(struct inode *inode, struct file *file)
+ 	return single_open(file, show_rcudata_csv, NULL);
  }
  
-+/*
-+ * Because preemptable RCU does not exist, there are never any preempted
-+ * RCU readers.
-+ */
-+static int rcu_preempted_readers(struct rcu_node *rnp)
-+{
-+	return 0;
-+}
-+
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+-static struct file_operations rcudata_csv_fops = {
++static const struct file_operations rcudata_csv_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = rcudata_csv_open,
+ 	.read = seq_read,
+@@ -159,7 +159,7 @@ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
+ 	struct rcu_node *rnp;
  
- /*
-@@ -484,15 +493,6 @@ static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp)
- 	WARN_ON_ONCE(rnp->qsmask);
+ 	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
+-	              "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu\n",
++		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu\n",
+ 		   rsp->completed, rsp->gpnum, rsp->signaled,
+ 		   (long)(rsp->jiffies_force_qs - jiffies),
+ 		   (int)(jiffies & 0xffff),
+@@ -196,7 +196,7 @@ static int rcuhier_open(struct inode *inode, struct file *file)
+ 	return single_open(file, show_rcuhier, NULL);
  }
  
--/*
-- * Because preemptable RCU does not exist, there are never any preempted
-- * RCU readers.
-- */
--static int rcu_preempted_readers(struct rcu_node *rnp)
--{
--	return 0;
--}
--
- #ifdef CONFIG_HOTPLUG_CPU
+-static struct file_operations rcuhier_fops = {
++static const struct file_operations rcuhier_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = rcuhier_open,
+ 	.read = seq_read,
+@@ -222,7 +222,7 @@ static int rcugp_open(struct inode *inode, struct file *file)
+ 	return single_open(file, show_rcugp, NULL);
+ }
  
- /*
+-static struct file_operations rcugp_fops = {
++static const struct file_operations rcugp_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = rcugp_open,
+ 	.read = seq_read,
+@@ -276,7 +276,7 @@ static int rcu_pending_open(struct inode *inode, struct file *file)
+ 	return single_open(file, show_rcu_pending, NULL);
+ }
+ 
+-static struct file_operations rcu_pending_fops = {
++static const struct file_operations rcu_pending_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = rcu_pending_open,
+ 	.read = seq_read,
 -- 
 1.5.2.5
 
