@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZIVHQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbZIVHRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbZIVHQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 03:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZIVHQM
+	id S1755207AbZIVHRJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 03:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZIVHRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 03:16:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45279 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbZIVHQM (ORCPT
+	Tue, 22 Sep 2009 03:17:06 -0400
+Received: from mail-pz0-f173.google.com ([209.85.222.173]:44761 "EHLO
+	mail-pz0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753405AbZIVHRF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 03:16:12 -0400
-Date: Tue, 22 Sep 2009 09:16:20 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] PCI PM: Read device power state from register after
- updating it (rev. 2)
-Message-ID: <20090922091620.599ab046@infradead.org>
-In-Reply-To: <200909212337.01812.rjw@sisk.pl>
-References: <200909212337.01812.rjw@sisk.pl>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 22 Sep 2009 03:17:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=MSUpSbaiflv8vxHTtG5q6U4RVFPCtL8qmHdM79XMJUb3/bZjFGOFCOtaslLoRRBfT3
+         yJw1AoMYRwyncP9sBmAwR3So8U1dEuPYiadiQTrqnMLo8mkYQ61B3dkLyvctFLcgazKh
+         0iGXAVNTwVQ2EXDqtDp5//CpehJBWXFEmWuNw=
+MIME-Version: 1.0
+Date: Tue, 22 Sep 2009 15:17:08 +0800
+Message-ID: <3877989d0909220017l61394c3cy769e95656db70d22@mail.gmail.com>
+Subject: [RFC PATCH] delete unnecessary BUG_ON !policy->cur
+From: Luming Yu <luming.yu@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Sep 2009 23:37:01 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->  
-> -	dev->current_state = state;
-> +	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-> +	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
-> +	/* Return error code if we have failed to change the state */
-> +	if (dev->current_state != state)
-> +		dev_info(&dev->dev, "Refused to change power state, "
-> +			"currently in D%d\n", dev->current_state);
+Hi there,
 
-I would suspect that you want this message only once...
-to avoid it flooding logs and such
+When testing upstream Git tree, there is a BUG_ON hit on a IA64 system
+with RHEL 5 user space installed.
+Please review the patch below, If make sense, please apply.
 
-or at least ratelimiting it
+Ps. The patch is enclosed in attachment. The inlined one
+is c&p of it for reading.
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks,
+Luming
+
+Signed-off-by: Yu Luming <luming.yu@intel.com>
+
+ cpufreq_userspace.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cpufreq_userspace.c
+b/drivers/cpufreq/cpufreq_userspace.c
+index 66d2d1d..63bd232 100644
+--- a/drivers/cpufreq/cpufreq_userspace.c
++++ b/drivers/cpufreq/cpufreq_userspace.c
+@@ -119,7 +119,6 @@ static int cpufreq_governor_userspace(st
+ 	case CPUFREQ_GOV_START:
+ 		if (!cpu_online(cpu))
+ 			return -EINVAL;
+-		BUG_ON(!policy->cur);
+ 		mutex_lock(&userspace_mutex);
+
+ 		if (cpus_using_userspace_governor == 0) {
