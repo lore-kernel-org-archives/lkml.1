@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZIVNxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbZIVNyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbZIVNxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZIVNxa
+	id S1756301AbZIVNyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZIVNys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:53:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36644 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755422AbZIVNx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:53:29 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19rBs4otuRroh43kqbclAopiKDTpffv6nvEqhFV6m
-	d3AFCAGGg8npR8
-Subject: Re: mailing list for trace users
-From: Mike Galbraith <efault@gmx.de>
-To: Avi Kivity <avi@redhat.com>
-Cc: rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
-In-Reply-To: <1253620488.13917.29.camel@marge.simson.net>
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
-	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>
-	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>
-	 <4AB8BA37.4010305@redhat.com>  <1253620488.13917.29.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Tue, 22 Sep 2009 15:53:24 +0200
-Message-Id: <1253627604.7272.17.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+	Tue, 22 Sep 2009 09:54:48 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:60092 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753896AbZIVNys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:54:48 -0400
+Date: Tue, 22 Sep 2009 14:54:53 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nick Piggin <npiggin@suse.de>, Christoph Lameter <cl@linux-foundation.org>,
+       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] slqb: Record what node is local to a kmem_cache_cpu
+Message-ID: <20090922135453.GF25965@csn.ul.ie>
+References: <1253624054-10882-1-git-send-email-mel@csn.ul.ie> <1253624054-10882-3-git-send-email-mel@csn.ul.ie> <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 13:54 +0200, Mike Galbraith wrote:
-> On Tue, 2009-09-22 at 14:51 +0300, Avi Kivity wrote:
-> > On 09/22/2009 02:47 PM, Mike Galbraith wrote:
-> > >
-> > > Hm, must me a problem with parsing then.  If you add -v -v to the
-> > > command line it'll spit out debug data.  For vmx_vcpu_run you should see
-> > > a line like so if the module was parsed.
-> > >
-> > > new symbol: ffffffffa0065a49 [00000466]: ahci_interrupt, hist: (nil), obj_start: 0x2a49
-> > >
-> > > 	-Mike
-> > >
-> > >    
-> > 
-> > $ perf annotate -v -v -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run  | 
-> > grep vmx_vcpu_run
-> > new symbol: ffffffffa006f596 [0000dead]: vmx_vcpu_run    [kvm_intel], 
-> > hist: (nil), obj_start: (nil)
-> >   ffffffffa006f596-ffffffffa006fb73 vmx_vcpu_run    [kvm_intel]
-> >   Error: symbol 'vmx_vcpu_run' not present amongst the samples.
-> > 
-> > Looks like internal confusion.
+On Tue, Sep 22, 2009 at 04:38:32PM +0300, Pekka Enberg wrote:
+> Hi Mel,
 > 
-> Guess I need to build a kvm_intel gizmo.
+> On Tue, Sep 22, 2009 at 3:54 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+> > When freeing a page, SLQB checks if the page belongs to the local node.
+> > If it is not, it is considered a remote free. On the allocation side, it
+> > always checks the local lists and if they are empty, the page allocator
+> > is called. On memoryless configurations, this is effectively a memory
+> > leak and the machine quickly kills itself in an OOM storm.
+> >
+> > This patch records what node ID is considered local to a CPU. As the
+> > management structure for the CPU is always allocated from the closest
+> > node, the node the CPU structure resides on is considered "local".
+> >
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> I don't understand how the memory leak happens from the above
+> description (or reading the code). page_to_nid() returns some crazy
+> value at free time?
 
-Parses fine here, and INSTALL_MOD_STRIP=1 made zero difference.  can you
-send me that module and .config gzipped up?
+Nope, it isn't a leak as such, the allocator knows where the memory is.
+The problem is that is always frees remote but on allocation, it sees
+the per-cpu list is empty and calls the page allocator again. The remote
+lists just grow.
 
-	-Mike
+> The remote list isn't drained properly?
+> 
 
+That is another way of looking at it. When the remote lists get to a
+watermark, they should drain. However, it's worth pointing out if it's
+repaired in this fashion, the performance of SLQB will suffer as it'll
+never reuse the local list of pages and instead always get cold pages
+from the allocator.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
