@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZIVOsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbZIVOvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbZIVOsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 10:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbZIVOsR
+	id S1756766AbZIVOvB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 10:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZIVOvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 10:48:17 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:55139 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756543AbZIVOsQ (ORCPT
+	Tue, 22 Sep 2009 10:51:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42879 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751402AbZIVOu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 10:48:16 -0400
-Date: Tue, 22 Sep 2009 16:48:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, linux-modules@vger.org
-Subject: Re: [PATCH 2/4] kbuild: sort the list of symbols exported by the
-	kernel (__ksymtab)
-Message-ID: <20090922144819.GB29949@merkur.ravnborg.org>
-References: <1253626718-18887-1-git-send-email-alan-jenkins@tuffmail.co.uk> <1253626718-18887-3-git-send-email-alan-jenkins@tuffmail.co.uk>
+	Tue, 22 Sep 2009 10:50:59 -0400
+Date: Tue, 22 Sep 2009 07:49:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] perf fixes
+In-Reply-To: <20090922075144.GA21122@elte.hu>
+Message-ID: <alpine.LFD.2.01.0909220749100.4950@localhost.localdomain>
+References: <20090922075144.GA21122@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253626718-18887-3-git-send-email-alan-jenkins@tuffmail.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 02:38:36PM +0100, Alan Jenkins wrote:
-> modpost of vmlinux.o now extracts the ksymtab sections and outputs
-> sorted versions of them as .tmp_exports.c.  These sorted sections
-> are linked into vmlinux and the original unsorted sections are
-> discarded.
+
+
+On Tue, 22 Sep 2009, Ingo Molnar wrote:
 > 
-> This will allow modules to be loaded faster, resolving symbols using
-> binary search, without any increase in the memory needed for the
-> symbol tables.
+> Please pull the latest perf-fixes-for-linus git tree from:
 > 
-> This does not affect the building of modules, so hopefully it won't
-> affect compile times too much.
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perf-fixes-for-linus
+> 
+> This fixes a brown paperbag build error in PowerPC caused by the rename.
 
-I do not quite follow you here.
+Hmm. Forgot to push? I'm getting
 
-With your patch:
+	fatal: Couldn't find remote ref perf-fixes-for-linus
 
-For vmlinux we define our symbols in sections
-named *_sorted - but they are not sorted.
+but maybe it's due to exta-long mirroring delays too.
 
-We than create a small .c file that uses the original sections names
-which is what is used in the final vmlinux.
-
-Could we replace the content of these sections rather than playing
-games with the names?
-
-	Sam
+		Linus
