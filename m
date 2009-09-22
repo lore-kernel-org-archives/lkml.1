@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZIVPqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbZIVPqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbZIVPqV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZIVPqU
+	id S1756923AbZIVPqt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbZIVPqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:46:20 -0400
-Received: from server78.greatnet.de ([83.133.96.102]:51098 "EHLO
-	server78.greatnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753659AbZIVPqT (ORCPT
+	Tue, 22 Sep 2009 11:46:49 -0400
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:39868 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756490AbZIVPqs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:46:19 -0400
-Message-ID: <4AB8F142.9090609@nachtwindheim.de>
-Date: Tue, 22 Sep 2009 17:46:10 +0200
-From: Henrik Kretzschmar <henne@nachtwindheim.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Tue, 22 Sep 2009 11:46:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=hxGVPn17ZusZAK1c5oO9u1SBblmodb5R557qnS/ues1IMqV58UxeKOLBs9wBml+Gas
+         A/bZ9WPuweXy9eiHl1jGs+wIopp84gqswFWDVtiEBci55g+VPP490YWg1G5p9hXxpi8X
+         cuBAcIlHi5r7H7f2Cl3e515n3dSw4iOq1/0iI=
 MIME-Version: 1.0
-To: khali@linux-fr.org, jbarnes@virtousgeek.org
-CC: linux-pci@vger.kernel.org, linux-i2c@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Crash on reading the whole PCI config of PIIX4 SMBus
+In-Reply-To: <alpine.DEB.1.10.0909221133380.15595@dr-wily.mit.edu>
+References: <1252292753-11792-1-git-send-email-tabbott@ksplice.com> 
+	<8bd0f97a0909152013oe652087gf5cd227a1997a5b3@mail.gmail.com> 
+	<alpine.DEB.1.10.0909160107500.19188@dr-wily.mit.edu> <20090916202655.GA17153@merkur.ravnborg.org> 
+	<8bd0f97a0909161337v6edbe204wfd83b4c3118b3a27@mail.gmail.com> 
+	<alpine.DEB.1.10.0909221035180.15595@dr-wily.mit.edu> <8bd0f97a0909220830w7435ee32h3ec8f667e2b46d79@mail.gmail.com> 
+	<alpine.DEB.1.10.0909221133380.15595@dr-wily.mit.edu>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 22 Sep 2009 11:46:32 -0400
+Message-ID: <8bd0f97a0909220846h338291fbwf1290d7a55443bbb@mail.gmail.com>
+Subject: Re: [PATCH] blackfin: Cleanup linker script using new linker script 
+	macros.
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
+On Tue, Sep 22, 2009 at 11:39, Tim Abbott wrote:
+> On Tue, 22 Sep 2009, Mike Frysinger wrote:
+>> On Tue, Sep 22, 2009 at 11:29, Tim Abbott wrote:
+>> > On Wed, 16 Sep 2009, Mike Frysinger wrote:
+>> >> On Wed, Sep 16, 2009 at 16:26, Sam Ravnborg wrote:
+>> >> > On Wed, Sep 16, 2009 at 11:58:01AM -0400, Tim Abbott wrote:
+>> >> >> OK.  I guess we should plan to modify the INIT_DATA_SECTION macro to add
+>> >> >> another argument specifying an alignment level for .init.ramfs.  It'd be
+>> >> >> inconvenient to add that right now since there are a lot of patches in
+>> >> >> linux-next or otherwise in flight that introduce uses of
+>> >> >> INIT_DATA_SECTION, and those patches would all be broken by changing this
+>> >> >> now.  Once the dust settles on that for this release, I'll submit a patch
+>> >> >> adding said argument to INIT_DATA_SECTION.
+>> >> >
+>> >> > But this is all discarded during runtime so the added alignment has no cost in the end - no?
+>> >>
+>> >> once things are booted, there should be no difference.  but
+>> >> storage/boot costs increase (you have to store/extract/copy that extra
+>> >> data).  you know how miserly we embedded people like to be ;).
+>> >
+>> > OK, so how do you want to do this?  The options I see are:
+>> > (1) we merge this patch now, and add the new alignment argument for -rc2
+>> > (2) we add the alignment argument sometime after -rc1 and then merge this
+>> > for -rc2
+>>
+>> doing it in two steps is OK by me and sounds like it'd be easier for you
+>
+> Both options involve two steps -- but as (1) is obviously easier for me, I
+> assume that's what you were referring to.  Thanks.
+>
+> So are you going to send this to Linus?  I'd be happy to do so, but I'd
+> need your ack.
 
-at boot time my system (Wincor/Nixdorf Beetle D1) sometimes crashs while loading the i2c-piix4 driver.
-I found out that I can always trigger the crash as root, which one of those:  
-
-# hexdump -C /proc/bus/pci/00/07.3
-# hexdump -C /sys/bus/pci/devices/0000:00:07.3/config
-# lspci -s 07.3 -xxx
-
-While initialization the i2c-piix4 driver does two reads to the config space, at 0xd2 and 0xd6,
-in a relative short time. That sometimes triggers the crash,
-but isn't that precise like one of those commands.
-
-While my investigations I put a printk() between those two reads and had no more crashs
-on module loading. I tested that with a script, doing insmod/rmmod 100 times in a row.
-
-But printk() can't be the solution, so I tried msleep(1) and udelay(250),
-but with each of these my system crashed.
-The time for the read and one printk() takes ~100 us on my machine,
-so both time values should be more than enough, if time would have been the reason.
-
-Does someone have an idea what the driver should do between those two reads, to avoid crashing?
-Can somebody with the same device trigger this crash too (greped LKML 2001-2008, found nothing)?
-I have another box with this device and I'll test this in 4 hours.
-Or is just my Hardware broken and I should blacklist the module?
-
-I used 2.6.26-2 (deb/lenny) and 2.6.31 (vanilla) whith the same results.
-
-Btw, I also tried:
-
-$ for i in `seq 300`; do sensors; done
-
-which brought the same machine down (only 2.6.31) with an:
-
-do_IRQ: 0.66 No irq handler for vector (irq -1)
-
-
-#lspci -s 07.3 -vvvn
-
-00:07.3 0680: 8086:7113 (rev 02)
-	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-	Interrupt: pin ? routed to IRQ 9
-	Kernel driver in use: piix4_smbus
-	Kernel modules: i2c-piix4
-
+if you apply the .text_l1 update (.init.ramfs -> .exit.data), then you
+can add my s-o-b.  otherwise the original patch as posted is broken.
+-mike
