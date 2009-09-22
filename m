@@ -1,123 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbZIVJK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbZIVJNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbZIVJK7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 05:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755563AbZIVJK5
+	id S1755692AbZIVJNj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 05:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbZIVJNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 05:10:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58812 "EHLO mx3.mail.elte.hu"
+	Tue, 22 Sep 2009 05:13:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:28758 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755521AbZIVJK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 05:10:56 -0400
-Date: Tue, 22 Sep 2009 11:10:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 5/5] futex: fix wakeup race by setting
-	TASK_INTERRUPTIBLE before queue_me
-Message-ID: <20090922091045.GB7755@elte.hu>
-References: <20090922052452.8717.39673.stgit@Aeon> <20090922053038.8717.97838.stgit@Aeon> <4AB88D09.3080907@gmail.com>
+	id S1755574AbZIVJNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 05:13:37 -0400
+Message-ID: <4AB89520.2050900@redhat.com>
+Date: Tue, 22 Sep 2009 12:13:04 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AB88D09.3080907@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: rostedt@goodmis.org
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
+Subject: Re: mailing list for trace users
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+In-Reply-To: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/16/2009 11:16 PM, Steven Rostedt wrote:
+> What are people's thoughts about creating a linux-trace-users mailing
+> list on vger.kernel.org?
+>
+> This would be a place for users of tracers and even perf. For asking
+> questions about how to use the debugfs/tracing directory or the perf
+> tool.
+>
+> This will not be a place for kernel development. Patches for the tracing
+> infrastructure should still go through LKML. This will be a place to ask
+> how-to questions, or any other kind of help questions.
+>
+> LKML can be quite intimidating, and it is not a place to ask help
+> questions anyway. I think adding a linux-trace-users mailing list would
+> be a good idea.
+>    
 
-* Eric Dumazet <eric.dumazet@gmail.com> wrote:
+Yes please.  Here's a question to start it off - how to I 'perf 
+annotate' a symbol in a module?
 
-> Darren Hart a ??crit :
-> > PI futexes do not use the same plist_node_empty() test for wakeup. It was
-> > possible for the waiter (in futex_wait_requeue_pi()) to set TASK_INTERRUPTIBLE
-> > after the waker assigned the rtmutex to the waiter. The waiter would then note
-> > the plist was not empty and call schedule(). The task would not be found by any
-> > subsequeuent futex wakeups, resulting in a userspace hang. By moving the
-> > setting of TASK_INTERRUPTIBLE to before the call to queue_me(), the race with
-> > the waker is eliminated. Since we no longer call get_user() from within
-> > queue_me(), there is no need to delay the setting of TASK_INTERRUPTIBLE until
-> > after the call to queue_me().
-> > 
-> > The FUTEX_LOCK_PI operation is not affected as futex_lock_pi() relies entirely
-> > on the rtmutex code to handle schedule() and wakeup.  The requeue PI code is
-> > affected because the waiter starts as a non-PI waiter and is woken on a PI
-> > futex.
-> > 
-> > Remove the crusty old comment about holding spinlocks() across get_user() as we
-> > no longer do that. Correct the locking statement with a description of why the
-> > test is performed.
-> 
-> I am very confused by this ChangeLog...
-> 
-> > 
-> > Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > CC: Eric Dumazet <eric.dumazet@gmail.com>
-> > CC: Dinakar Guniguntala <dino@in.ibm.com>
-> > CC: John Stultz <johnstul@us.ibm.com>
-> > ---
-> > 
-> >  kernel/futex.c |   15 +++------------
-> >  1 files changed, 3 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/kernel/futex.c b/kernel/futex.c
-> > index f92afbe..463af2e 100644
-> > --- a/kernel/futex.c
-> > +++ b/kernel/futex.c
-> > @@ -1656,17 +1656,8 @@ out:
-> >  static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
-> >  				struct hrtimer_sleeper *timeout)
-> >  {
-> > -	queue_me(q, hb);
-> > -
-> > -	/*
-> > -	 * There might have been scheduling since the queue_me(), as we
-> > -	 * cannot hold a spinlock across the get_user() in case it
-> > -	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
-> > -	 * queueing ourselves into the futex hash. This code thus has to
-> > -	 * rely on the futex_wake() code removing us from hash when it
-> > -	 * wakes us up.
-> > -	 */
-> >  	set_current_state(TASK_INTERRUPTIBLE);
-> 
-> Hmm, you missed the smp_mb() properties here...
-> 
-> Before :
->      queue_me()
->      set_mb(current->state, TASK_INTERRUPTIBLE);
->      if (timeout) {...}
->      if (likely(!plist_node_empty(&q->list))) {
-> 	...
->      }
-> 
-> After :
->      set_mb(current->state, TASK_INTERRUPTIBLE);
->      queue_me();
->      if (timeout) {...}
-> // no barrier... why ar we still testing q->list
-> // since it has no synchro between queue_me() and test ?
->      if (likely(!plist_node_empty(&q->list))) {
-> 	...
->      }
+$ perf report
+# Samples: 68202
+#
+# Overhead          Command  Shared Object  Symbol
+# ........  ...............  .............  ......
+#
+     84.17%  qemu-system-x86  [kernel]       [k] vmx_vcpu_run    [kvm_intel]
+      4.28%  qemu-system-x86  [kernel]       [k] kvm_arch_vcpu_ioctl_run 
+[kvm]
+      0.88%  qemu-system-x86  [kernel]       [k] add_preempt_count
+      0.75%  qemu-system-x86  [kernel]       [k] _spin_unlock_irqrestore
+      0.68%  qemu-system-x86  [kernel]       [k] _spin_lock_irq
 
-queue_me() itself does a spin_unlock(), so at least for the bits 
-protected by hb->lock it should be half-serializing.
+$ perf annotate -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run
+  Error: symbol 'vmx_vcpu_run' not present amongst the samples.
 
-	Ingo
+builtin symbols work.
+
+-- 
+error compiling committee.c: too many arguments to function
+
