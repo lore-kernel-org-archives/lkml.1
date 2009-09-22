@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZIVNIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZIVNJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbZIVNIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756497AbZIVNIR
+	id S1756550AbZIVNJr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbZIVNJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:08:17 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:34162 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756467AbZIVNIQ convert rfc822-to-8bit (ORCPT
+	Tue, 22 Sep 2009 09:09:46 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:55407 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756528AbZIVNJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:08:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SaLBXxqdO5jzPhrAXYScJLTwnvwy0Hvar0rx0/z42JX1DErq2ShbddFzVSI2US9d8z
-         82i0Ln/YLsrMf8a9dMhhZqz60ZFg+ztlQzuLPmnOzN9W7ehvi2zAFKs12uyxOGBWz4M6
-         vZQ70MGPrEc4NQkkXlU04iXnP+9+Q4ecKDi3o=
+	Tue, 22 Sep 2009 09:09:46 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] warn about use of uninstalled kernel headers
+Date: Tue, 22 Sep 2009 15:09:47 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-10-generic; KDE/4.3.1; x86_64; ; )
+Cc: "Am?rico Wang" <xiyou.wangcong@gmail.com>, Caveh Jalali <ecaveh@gmail.com>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com> <200909211637.12983.arnd@arndb.de> <20090922044310.GA29208@merkur.ravnborg.org>
+In-Reply-To: <20090922044310.GA29208@merkur.ravnborg.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-In-Reply-To: <20090922143053.287fc8a5@vlado>
-References: <ba5648fa0909212143g36f47acck2e4b610429c477ec@mail.gmail.com>
-	 <20090922143053.287fc8a5@vlado>
-Date: Tue, 22 Sep 2009 10:08:19 -0300
-Message-ID: <2d5a2c100909220608j1600e8f2k4063d6b2ff7b3296@mail.gmail.com>
-Subject: Re: BlueZ Supported Profiles
-From: Luiz Augusto von Dentz <luiz.dentz@gmail.com>
-To: Vladimir Botka <vbotka@gmail.com>
-Cc: bluezprofile kernel <bluezprofile@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909221509.47369.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+Zyb9jDWfRzepwRX6WfLTazjwu3XPMKbpl+bb
+ nde5ynh7S+GA1yYDUZSbXHx8UQrMgIMLwrL2z5UT2NTAo8F6oM
+ BUUF3+QxTRbLSvGp5Veew==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tuesday 22 September 2009, Sam Ravnborg wrote:
+> > +#ifndef __EXPORTED_HEADERS__
+> But why do we need this "__EXPORTED_HEADERS__" thing?
+> 
+> ?
 
-On Tue, Sep 22, 2009 at 9:30 AM, Vladimir Botka <vbotka@gmail.com> wrote:
-> On Tue, 22 Sep 2009 10:13:40 +0530
-> bluezprofile kernel <bluezprofile@gmail.com> wrote:
->
->> Hi,
->> I would like to know what are all profiles supported by BlueZ?
->> Is there any site gives list of profiles supported by BlueZ?
->> I am using BlueZ 4.46.
->>
+The problem is that the warning should only be for headers
+that are not installed yet, but it needs to be stripped
+in the installed version. Since we're already postprocessing
+all files with unifdef, that seemed like the easiest way 
+to strip out the #warning. Obviously, I couldn't use the
+#ifdef __KERNEL__ logic, because that would either warn
+give false positives when building kernel code or when
+building user code from installed headers.
 
-BlueZ is modular, so it depends on which plugins you have enabled.
-Also some profiles like a2dp and hfp depend on others components such
-as PulseAudio to really work, so the answer is not that simple.
-Perhaps you should ask what profiles you want so we can give a more
-direct answer, in general we support most profiles used by desktops
-and phones.
-
-> Hi,
-> you can see the provided services with the command:
-> # sdptool browse BTADDR
->
-> Get the BTADDR from the output of:
-> # hcitool scan
->
-> Run these command from another Linux box.
-
-You can do the very same think locally:
-# sdptool browse local
-
-
--- 
-Luiz Augusto von Dentz
-Engenheiro de Computação
+	Arnd <><
