@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbZIVH4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZIVH5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754246AbZIVH4L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 03:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZIVH4J
+	id S1754786AbZIVH5x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 03:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZIVH5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 03:56:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58542 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753327AbZIVH4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 03:56:08 -0400
-Date: Tue, 22 Sep 2009 09:56:11 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Mike Frysinger <vapier@gentoo.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Bryan Wu <cooloney@kernel.org>
-Subject: RE: [PATCH] input/keyboard: new driver for ADP5520 MFD PMICs
-In-Reply-To: <8A42379416420646B9BFAC9682273B6D0DFAD237@limkexm3.ad.analog.com>
-Message-ID: <alpine.LNX.2.00.0909220954360.17028@wotan.suse.de>
-References: <1253211850-29309-1-git-send-email-vapier@gentoo.org> <20090922055954.GB9658@core.coreip.homeip.net> <alpine.LRH.2.00.0909220933090.27145@twin.jikos.cz> <8A42379416420646B9BFAC9682273B6D0DFAD237@limkexm3.ad.analog.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Tue, 22 Sep 2009 03:57:52 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:50989 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753025AbZIVH5v convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 03:57:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LpFq81B023A4gie9qUclYq+SwAQUQ3Biw3okE2XERN5C8jGF1DC7hr4dN8pwPuVN7B
+         eeym7CPxpiGPu03Ub2e/Lc0g6XCJ9UVj0ezgXbqfZyO53dqIqwmt2ohvJJljQGR4tIWR
+         0NPdYDDHxcfC+PsJekcp3w40wY6I92eIt1FD8=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4AB86A03.7060207@cn.fujitsu.com>
+References: <c4e36d110909210307m6579807ehe4d659053c4dc696@mail.gmail.com>
+	 <4AB86A03.7060207@cn.fujitsu.com>
+Date: Tue, 22 Sep 2009 09:57:52 +0200
+Message-ID: <c4e36d110909220057q6d9ce816yfcec7de4849c1969@mail.gmail.com>
+Subject: Re: [PATCH] Add missing blk_trace_remove_sysfs to be in pair with 
+	blk_trace_init_sysfs
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mbroz@redhat.com,
+       tytso@mit.edu, jens.axboe@oracle.com, mingo@elte.hu
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009, Hennerich, Michael wrote:
+2009/9/22 Li Zefan <lizf@cn.fujitsu.com>:
+> Zdenek Kabelac wrote:
+>> Subject: [PATCH] Add missing blk_trace_remove_sysfs to be in pair with
+>> blk_trace_init_sysfs
+>> From: Zdenek Kabelac <zkabelac@redhat.com>
+>>
+>> Adds missing blk_trace_remove_sysfs() to be in pair with
+>> blk_trace_init_sysfs() introduced in commit
+>> 1d54ad6da9192fed5dd3b60224d9f2dfea0dcd82.
+>>
+>> Problem was noticed via kmemleak backtrace when some sysfs entries
+>> were note properly destroyed during  device removal:
+>>
+>
+> Thanks for reporting and fixing this!
+>
+>> @@ -465,6 +466,7 @@ void blk_unregister_queue(struct gendisk *disk)
+>>
+>>               kobject_uevent(&q->kobj, KOBJ_REMOVE);
+>>               kobject_del(&q->kobj);
+>> +             blk_trace_remove_sysfs(disk_to_dev(disk));
+>
+> This should be moved outside of 'if'.
+>
 
-> >It actually doesn't seem to be the same condition (KP_INT vs. KR_INT), 
-> >but it's difficult to say, as these constants are apparently added in 
-> >some other patch I have no idea about.
-> 
-> KP Key-Press versus Key-Release 
-> 
-> >And the same for other constants used in the code ... the patch seems to
-> >be quite incomplete.
-> 
-> The missing constants are in include/linux/mfd/adp5520.h
-> 
-> This file was sent in a different patch, adding support for the Multi Function Device Core 
-> (drivers/mfd/adp5520.c)
+I was not really sure about the proper place - if it could be placed
+before if() or after the if(){} - as I've not checked in depth
+connection between kobj and sysfs. It's somewhat unclear why all the
+kobject operation are only within this if(){} block - so I've thought
+there is some reason...
+IMHO only elv_unregister_queue() should be probably in the if(){} block.
 
-The dependency on another patch should be either at least expressed in the 
-patch Changelog, or even better send the patches as series with proper 
-numbering, so that the dependency is obvious.
+Feel free to update/fix.
 
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Zdenek
