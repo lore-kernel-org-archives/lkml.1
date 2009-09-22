@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZIVGeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZIVGfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755237AbZIVGeo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 02:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZIVGel
+	id S1755223AbZIVGfb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 02:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbZIVGfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 02:34:41 -0400
-Received: from ozlabs.org ([203.10.76.45]:50128 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755207AbZIVGej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 02:34:39 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] virtio-blk: add support for cache flush
-Date: Tue, 22 Sep 2009 16:04:41 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <20090917175742.GA2416@lst.de>
-In-Reply-To: <20090917175742.GA2416@lst.de>
+	Tue, 22 Sep 2009 02:35:30 -0400
+Received: from netsys.kaist.ac.kr ([143.248.239.50]:37179 "EHLO
+	netsys.kaist.ac.kr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754824AbZIVGfa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 02:35:30 -0400
+From: "Junhee Lee" <junhee@netsys.kaist.ac.kr>
+To: "'Arjan van de Ven'" <arjan@infradead.org>,
+       "'Robert Hancock'" <hancockrwd@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+References: <015f01ca3090$85e8a280$91b9e780$@kaist.ac.kr>	<4AB673C1.7020909@gmail.com> <20090920203048.7b1b5aa2@infradead.org>
+In-Reply-To: <20090920203048.7b1b5aa2@infradead.org>
+Subject: RE: microsecond event scheduling in an application
+Date: Tue, 22 Sep 2009 15:35:09 +0900
+Message-ID: <005601ca3b4e$d5361660$7fa24320$@kaist.ac.kr>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909221604.41838.rusty@rustcorp.com.au>
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Aco6IC18ABCMcwY4S8q7GNjooAfm3gBLkaCQ
+Content-Language: ko
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009 03:27:42 am Christoph Hellwig wrote:
+Thanks Arjan van de Ven. 
+Your comment is very useful to me.
+Now I am trying to solve microsecond events scheduling using hrtimer.
+
+-----Original Message-----
+From: Arjan van de Ven [mailto:arjan@infradead.org] 
+Sent: Monday, September 21, 2009 3:31 AM
+To: Robert Hancock
+Cc: Junhee Lee; linux-kernel@vger.kernel.org
+Subject: Re: microsecond event scheduling in an application
+
+On Sun, 20 Sep 2009 12:26:09 -0600
+Robert Hancock <hancockrwd@gmail.com> wrote:
+
+> On 09/08/2009 08:27 AM, Junhee Lee wrote:
+> > I am working on event scheduler which handles events in microsecond
+> > level. Actual this program is a network emulator using simulation
+> > codes. I'd like to expect that network emulator is working as
+> > simulation behaviors. Thus high resolution timer interrupt is
+> > required. But high resolution timer interrupt derived by high tick
+> > frequency (jiffies clock) must effect the system performance.
+> > Are there any comments or ways to support microsecond event
+> > scheduling without performance degradation?
 > 
-> Recent qemu has added a VIRTIO_BLK_F_FLUSH flag to advertise that the
-> virtual disk has a volatile write cache that needs to be flushed.  In case
-> we see this feature implement tell the Linux block layer about the fact
-> and use the new VIRTIO_BLK_T_FLUSH to flush the cache when required.  This
-> allows for an correct and simple implementation of write barriers.
+> Just increasing HZ will degrade performance, yes, but we have
+> hrtimers now which should be able to use granularities smaller than
+> one jiffy, so it shouldn't be needed..
 
-Thanks Christoph, this looks very nice.  Applied, will push soon.
 
-> + *   VIRTIO_BLK_T_OUT may be combinaed with VIRTIO_BLK_T_SCSI_CMD or
-> + *   VIRTIO_BLK_T_BARRIER.  VIRTIO_BLK_T_FLUSH is a command of it's own
-> + *   and may no be comined with any of the other flags.
+select/poll use hrtimers, which are jiffies independent....
 
-I fixed the typos here :)
+you'll be hard pressed to notice jiffies granularity in userspace
+nowadays..
 
-Thanks!
-Rusty.
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
+
