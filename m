@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZIVFa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZIVFah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZIVFa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 01:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803AbZIVFa1
+	id S1754843AbZIVFah (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 01:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbZIVFaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 01:30:27 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:45886 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754796AbZIVFaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 01:30:22 -0400
+	Tue, 22 Sep 2009 01:30:35 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:47468 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754749AbZIVFaa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 01:30:30 -0400
 From: Darren Hart <dvhltc@us.ibm.com>
-Subject: [PATCH 3/5] futex: make function kernel-doc commentary consistent
+Subject: [PATCH 4/5] futex: correct futex_q woken state commentary
 To: linux-kernel@vger.kernel.org
 Cc: Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
@@ -18,8 +19,8 @@ Cc: Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
        Eric Dumazet <eric.dumazet@gmail.com>,
        Dinakar Guniguntala <dino@in.ibm.com>,
        John Stultz <johnstul@us.ibm.com>
-Date: Mon, 21 Sep 2009 22:30:22 -0700
-Message-ID: <20090922053022.8717.13339.stgit@Aeon>
+Date: Mon, 21 Sep 2009 22:30:30 -0700
+Message-ID: <20090922053029.8717.62798.stgit@Aeon>
 In-Reply-To: <20090922052452.8717.39673.stgit@Aeon>
 References: <20090922052452.8717.39673.stgit@Aeon>
 User-Agent: StGIT/0.14.2
@@ -30,9 +31,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the existing function kernel-doc consistent throughout futex.c, following
-Documentation/kernel-doc-nano-howto.txt as closely as possible.  When unsure,
-at least be consistent within futex.c.
+Use kernel-doc format to describe struct futex_q.  Correct the wakeup
+definition to eliminate the statement about waking the waiter between
+the plist_del() and the q->lock_ptr = 0. Note in the comment that PI
+futexes have a different definition of the woken state.
 
 Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -44,101 +46,64 @@ CC: Dinakar Guniguntala <dino@in.ibm.com>
 CC: John Stultz <johnstul@us.ibm.com>
 ---
 
- kernel/futex.c |   41 +++++++++++++++++++++--------------------
- 1 files changed, 21 insertions(+), 20 deletions(-)
+ kernel/futex.c |   32 ++++++++++++++++----------------
+ 1 files changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/kernel/futex.c b/kernel/futex.c
-index cedcd60..720fa3d 100644
+index 720fa3d..f92afbe 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -198,11 +198,12 @@ static void drop_futex_key_refs(union futex_key *key)
- }
- 
- /**
-- * get_futex_key - Get parameters which are the keys for a futex.
-- * @uaddr: virtual address of the futex
-- * @fshared: 0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
-- * @key: address where result is stored.
-- * @rw: mapping needs to be read/write (values: VERIFY_READ, VERIFY_WRITE)
-+ * get_futex_key() - Get parameters which are the keys for a futex
-+ * @uaddr:	virtual address of the futex
-+ * @fshared:	0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
-+ * @key:	address where result is stored.
-+ * @rw:		mapping needs to be read/write (values: VERIFY_READ,
-+ * 		VERIFY_WRITE)
-  *
-  * Returns a negative error code or 0
-  * The key words are stored in *key on success.
-@@ -288,8 +289,8 @@ void put_futex_key(int fshared, union futex_key *key)
- 	drop_futex_key_refs(key);
- }
+@@ -89,36 +89,36 @@ struct futex_pi_state {
+ 	union futex_key key;
+ };
  
 -/*
-- * fault_in_user_writeable - fault in user address and verify RW access
+- * We use this hashed waitqueue instead of a normal wait_queue_t, so
 +/**
-+ * fault_in_user_writeable() - Fault in user address and verify RW access
-  * @uaddr:	pointer to faulting user space address
++ * struct futex_q - The hashed futex queue entry, one per waiting task
++ * @task:		the task waiting on the futex
++ * @lock_ptr:		the hash bucket lock
++ * @key:		the key the futex is hashed on
++ * @pi_state:		optional priority inheritance state
++ * @rt_waiter:		rt_waiter storage for use with requeue_pi
++ * @requeue_pi_key:	the requeue_pi target futex key
++ * @bitset:		bitset for the optional bitmasked wakeup
++ *
++ * We use this hashed waitqueue, instead of a normal wait_queue_t, so
+  * we can wake only the relevant ones (hashed queues may be shared).
   *
-  * Slow path to fixup the fault we just took in the atomic write
-@@ -309,8 +310,8 @@ static int fault_in_user_writeable(u32 __user *uaddr)
- 
- /**
-  * futex_top_waiter() - Return the highest priority waiter on a futex
-- * @hb:     the hash bucket the futex_q's reside in
-- * @key:    the futex key (to distinguish it from other futex futex_q's)
-+ * @hb:		the hash bucket the futex_q's reside in
-+ * @key:	the futex key (to distinguish it from other futex futex_q's)
-  *
-  * Must be called with the hb lock held.
+  * A futex_q has a woken state, just like tasks have TASK_RUNNING.
+  * It is considered woken when plist_node_empty(&q->list) || q->lock_ptr == 0.
+  * The order of wakup is always to make the first condition true, then
+- * wake up q->waiter, then make the second condition true.
++ * the second.
++ *
++ * PI futexes are typically woken before they are removed from the hash list via
++ * the rt_mutex code. See unqueue_me_pi().
   */
-@@ -588,7 +589,7 @@ lookup_pi_state(u32 uval, struct futex_hash_bucket *hb,
- }
+ struct futex_q {
+ 	struct plist_node list;
+-	/* Waiter reference */
+-	struct task_struct *task;
  
- /**
-- * futex_lock_pi_atomic() - atomic work required to acquire a pi aware futex
-+ * futex_lock_pi_atomic() - Atomic work required to acquire a pi aware futex
-  * @uaddr:		the pi futex user address
-  * @hb:			the pi futex hash bucket
-  * @key:		the futex key associated with uaddr and hb
-@@ -1011,9 +1012,9 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
+-	/* Which hash list lock to use: */
++	struct task_struct *task;
+ 	spinlock_t *lock_ptr;
+-
+-	/* Key which the futex is hashed on: */
+ 	union futex_key key;
+-
+-	/* Optional priority inheritance state: */
+ 	struct futex_pi_state *pi_state;
+-
+-	/* rt_waiter storage for requeue_pi: */
+ 	struct rt_mutex_waiter *rt_waiter;
+-
+-	/* The expected requeue pi target futex key: */
+ 	union futex_key *requeue_pi_key;
+-
+-	/* Bitset for the optional bitmasked wakeup */
+ 	u32 bitset;
+ };
  
- /**
-  * requeue_pi_wake_futex() - Wake a task that acquired the lock during requeue
-- * q:	the futex_q
-- * key:	the key of the requeue target futex
-- * hb:  the hash_bucket of the requeue target futex
-+ * @q:		the futex_q
-+ * @key:	the key of the requeue target futex
-+ * @hb:		the hash_bucket of the requeue target futex
-  *
-  * During futex_requeue, with requeue_pi=1, it is possible to acquire the
-  * target futex if it is uncontended or via a lock steal.  Set the futex_q key
-@@ -2319,9 +2320,9 @@ out:
-  */
- 
- /**
-- * sys_set_robust_list - set the robust-futex list head of a task
-- * @head: pointer to the list-head
-- * @len: length of the list-head, as userspace expects
-+ * sys_set_robust_list() - Set the robust-futex list head of a task
-+ * @head:	pointer to the list-head
-+ * @len:	length of the list-head, as userspace expects
-  */
- SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
- 		size_t, len)
-@@ -2340,10 +2341,10 @@ SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
- }
- 
- /**
-- * sys_get_robust_list - get the robust-futex list head of a task
-- * @pid: pid of the process [zero for current task]
-- * @head_ptr: pointer to a list-head pointer, the kernel fills it in
-- * @len_ptr: pointer to a length field, the kernel fills in the header size
-+ * sys_get_robust_list() - Get the robust-futex list head of a task
-+ * @pid:	pid of the process [zero for current task]
-+ * @head_ptr:	pointer to a list-head pointer, the kernel fills it in
-+ * @len_ptr:	pointer to a length field, the kernel fills in the header size
-  */
- SYSCALL_DEFINE3(get_robust_list, int, pid,
- 		struct robust_list_head __user * __user *, head_ptr,
 
