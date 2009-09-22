@@ -1,231 +1,519 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751606AbZIVSma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751651AbZIVSmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751606AbZIVSma (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 14:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZIVSm1
+	id S1751651AbZIVSmg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 14:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbZIVSmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 14:42:27 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:36913 "EHLO
+	Tue, 22 Sep 2009 14:42:35 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:41365 "EHLO
 	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbZIVSmT (ORCPT
+	with ESMTP id S1751554AbZIVSm2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 14:42:19 -0400
+	Tue, 22 Sep 2009 14:42:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=vy9rlfKD64fF6xhZe1xurTR1N5jasJYK9oiYfTwUp4uURWBKF/WdofEOpCrChRHaQ7
-         f4/+RSKQX7nFiEIt1Ozo5cUkmRn/h6dLAF2FRzW0OKj4sTT5KDHNs52sCrv8VTw88D7d
-         ufOBuVRT4bJMV9dj8N6TiOLaWjg2jNzoKIhuo=
+        b=FMXQ1q6gXexJDflmE1t2LKkb2noGK7v62TOnp5hKaFzyirKs3ye0t53oen3+NUHCZL
+         E85RfuDgCDgPJhdrd5SiCis/LlCUuCOZjDCDBAbOr6/mW6MIJmmxc3qv6rf3pg8OsZF0
+         DT3mJAL+teeSdLRtehm4eqlOtgOE2vdIJkEho=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Date: Tue, 22 Sep 2009 20:44:07 +0200
-Message-Id: <20090922184407.7695.96809.sendpatchset@localhost.localdomain>
+Date: Tue, 22 Sep 2009 20:44:15 +0200
+Message-Id: <20090922184415.7695.91160.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090922184321.7695.11150.sendpatchset@localhost.localdomain>
 References: <20090922184321.7695.11150.sendpatchset@localhost.localdomain>
-Subject: [PATCH 5/8] Staging: rt28x0: updates from vendor's V2.1.0.0 drivers
+Subject: [PATCH 6/8] Staging: rt28x0: remove unused code from common/dfs.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rt28x0: updates from vendor's V2.1.0.0 drivers
-
-Port changes from:
-
-* 2009_0420_RT2860_Linux_STA_V2.1.0.0
-* 2009_0302_RT2870_Linux_STA_v2.1.0.0
-* 2009_0525_RT3070_Linux_STA_v2.1.1.0
-
-to in-kernel drivers.
-
-
->From the RT2860 driver release note:
-
-[2.1.0.0]
-1. New generation schema for multiple OS porting
-2. Fixed Ad-hoc ping failed in noisy environment. (Probe Response has too
-    many retry packet then cause "not enough space in MgmtRing")
-3. Fixed WPA(2)PSK issue when group cipher of AP is WEP40 or WEP104.
-4. Modified iwpriv ra0 get_site_survey:
-	In scan list result: Security shows "NONE" when AP is OPEN/NONE,
-	shows "WEP" when AP is OPEN/WEP or SHARED/WEP, shows
-	"WPAPSK(WPA2PSK)/TKIP(AES)" when AP is WPAPSK(WPA2PSK)/TKIP(AES)
-	shows "WPA(WPA2)/TKIP(AES)" when AP is WPA(WPA2)/TKIP(AES)
-5. Support kthread.
-6. Add New A band channel list region 15 contains the whole channels in
-   the A band region 4 and the new CE channel 167,169,171,173
-7. Add New IEEE802.11r functionality.
-8. Fixed WPA2-Enterprise failed when AP reboot or turn off then turn on.
-9. Fixed STA cannot connect to 11B only AP when the setting of is PHY_11GN.
-
-
->From the RT2870 driver release note:
-
-[V2.1.0.0]
-1. New generation schema for multiple OS porting.
-2. Fixed Ad-hoc ping failed in noisy environment. (Probe Response has too
-   many retry packet then cause "not enough space in MgmtRing").
-3. Fixed WPS failed with D-Link DIR-628 in 5GHz.
-4. Change FastRoaming in DAT file to AutoRoaming.
-5. Support kthread.
-6. Add New A band channel list region 15 contains the whole channels in
-   the A band region and the new CE channel 167,169,171,173.
-7. New IEEE802.11r functionality.
-
-
->From the RT3070 driver release note:
-
-Version V2.1.1.0
-       1. Linux kernel 2.6.29 support.
-       2. Fix eFuse write from BIN file bug.
-
-Version 2.1.0.0
-       1. New generation schema for multiple OS porting
-       2. Fixed Ad-hoc ping failed in noisy environment.
-       3. Modified iwpriv ra0 get_site_survey:
-       4. Change FastRoaming in DAT file to AutoRoaming.
-       5. Support kthread.
-       6. New IEEE802.11r functionality.
-
-
-Tested with RT2860 and RT3070 chipsets.
+Subject: [PATCH] Staging: rt28x0: remove unused code from common/dfs.c
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-The patch itself can be obtained from:
+ drivers/staging/rt2860/common/dfs.c |  378 ------------------------------------
+ drivers/staging/rt2860/dfs.h        |   75 -------
+ 2 files changed, 453 deletions(-)
 
-http://www.kernel.org/pub/linux/kernel/people/bart/ralink/staging-rt28x0-updates-from-vendors-v2.1.0.0-driver.patch
-
-[ it is too big for the mailing list ]
-
- drivers/staging/rt2860/2860_main_dev.c         | 1319 ---
- drivers/staging/rt2860/Makefile                |   26 
- drivers/staging/rt2860/aironet.h               |  210 
- drivers/staging/rt2860/ap.h                    |   12 
- drivers/staging/rt2860/chip/mac_pci.h          |  365 
- drivers/staging/rt2860/chip/mac_usb.h          |  365 
- drivers/staging/rt2860/chip/rt2860.h           |   56 
- drivers/staging/rt2860/chip/rt2870.h           |   47 
- drivers/staging/rt2860/chip/rt3070.h           |   68 
- drivers/staging/rt2860/chip/rt30xx.h           |   48 
- drivers/staging/rt2860/chip/rtmp_mac.h         | 1334 +++
- drivers/staging/rt2860/chip/rtmp_phy.h         |  405 +
- drivers/staging/rt2860/chips/rt3070.c          |  185 
- drivers/staging/rt2860/chips/rt30xx.c          |  525 +
- drivers/staging/rt2860/chlist.h                | 1215 ---
- drivers/staging/rt2860/common/2860_rtmp_init.c |  897 --
- drivers/staging/rt2860/common/action.c         |   12 
- drivers/staging/rt2860/common/ba_action.c      |  147 
- drivers/staging/rt2860/common/cmm_aes.c        | 1404 +++
- drivers/staging/rt2860/common/cmm_asic.c       | 2531 ++++++
- drivers/staging/rt2860/common/cmm_cfg.c        |  290 
- drivers/staging/rt2860/common/cmm_data.c       |  906 --
- drivers/staging/rt2860/common/cmm_data_2860.c  | 1197 ---
- drivers/staging/rt2860/common/cmm_data_pci.c   | 1153 +++
- drivers/staging/rt2860/common/cmm_data_usb.c   |  968 ++
- drivers/staging/rt2860/common/cmm_info.c       |  822 +-
- drivers/staging/rt2860/common/cmm_mac_pci.c    | 1504 +++
- drivers/staging/rt2860/common/cmm_mac_usb.c    | 1216 +++
- drivers/staging/rt2860/common/cmm_profile.c    | 1736 ++++
- drivers/staging/rt2860/common/cmm_sanity.c     |  233 
- drivers/staging/rt2860/common/cmm_sync.c       |   70 
- drivers/staging/rt2860/common/cmm_tkip.c       |  882 ++
- drivers/staging/rt2860/common/cmm_wep.c        |  499 +
- drivers/staging/rt2860/common/cmm_wpa.c        | 3332 +++++++-
- drivers/staging/rt2860/common/crypt_hmac.c     |  279 
- drivers/staging/rt2860/common/crypt_md5.c      |  352 
- drivers/staging/rt2860/common/crypt_sha2.c     |  535 +
- drivers/staging/rt2860/common/dfs.c            |   66 
- drivers/staging/rt2860/common/ee_efuse.c       | 1525 ++++
- drivers/staging/rt2860/common/ee_prom.c        |  270 
- drivers/staging/rt2860/common/eeprom.c         | 1462 ---
- drivers/staging/rt2860/common/firmware.h       |    2 
- drivers/staging/rt2860/common/firmware_3070.h  |  517 +
- drivers/staging/rt2860/common/md5.c            | 1415 ---
- drivers/staging/rt2860/common/mlme.c           | 9508 ++++++++-----------------
- drivers/staging/rt2860/common/rt_channel.c     | 1280 +++
- drivers/staging/rt2860/common/rt_rf.c          |  194 
- drivers/staging/rt2860/common/rtmp_init.c      | 1969 ++---
- drivers/staging/rt2860/common/rtmp_mcu.c       |  233 
- drivers/staging/rt2860/common/rtmp_timer.c     |  323 
- drivers/staging/rt2860/common/rtmp_tkip.c      | 1586 ----
- drivers/staging/rt2860/common/rtmp_wep.c       |  497 -
- drivers/staging/rt2860/common/spectrum.c       |  460 +
- drivers/staging/rt2860/config.mk               |  241 
- drivers/staging/rt2860/crypt_hmac.h            |   82 
- drivers/staging/rt2860/crypt_md5.h             |   80 
- drivers/staging/rt2860/crypt_sha2.h            |  109 
- drivers/staging/rt2860/dfs.h                   |   32 
- drivers/staging/rt2860/eeprom.h                |   93 
- drivers/staging/rt2860/iface/rtmp_pci.h        |   83 
- drivers/staging/rt2860/iface/rtmp_usb.h        |  200 
- drivers/staging/rt2860/md5.h                   |  107 
- drivers/staging/rt2860/mlme.h                  |   89 
- drivers/staging/rt2860/oid.h                   |  135 
- drivers/staging/rt2860/pci_main_dev.c          |  873 ++
- drivers/staging/rt2860/rt2860.h                |  333 
- drivers/staging/rt2860/rt28xx.h                | 1688 ----
- drivers/staging/rt2860/rt_config.h             |   32 
- drivers/staging/rt2860/rt_linux.c              |  615 +
- drivers/staging/rt2860/rt_linux.h              |  966 +-
- drivers/staging/rt2860/rt_main_dev.c           |  750 -
- drivers/staging/rt2860/rt_pci_rbus.c           |  877 ++
- drivers/staging/rt2860/rt_profile.c            | 1839 ----
- drivers/staging/rt2860/rt_usb.c                |  828 ++
- drivers/staging/rt2860/rtmp.h                  | 2894 +++----
- drivers/staging/rt2860/rtmp_chip.h             |  265 
- drivers/staging/rt2860/rtmp_def.h              |  289 
- drivers/staging/rt2860/rtmp_dot11.h            |  102 
- drivers/staging/rt2860/rtmp_iface.h            |   84 
- drivers/staging/rt2860/rtmp_mcu.h              |   55 
- drivers/staging/rt2860/rtmp_os.h               |   98 
- drivers/staging/rt2860/rtmp_timer.h            |  156 
- drivers/staging/rt2860/rtmp_type.h             |   55 
- drivers/staging/rt2860/rtusb_io.h              |  189 
- drivers/staging/rt2860/spectrum.h              |  169 
- drivers/staging/rt2860/spectrum_def.h          |  148 
- drivers/staging/rt2860/sta/aironet.c           | 1312 ---
- drivers/staging/rt2860/sta/assoc.c             |  327 
- drivers/staging/rt2860/sta/auth.c              |  138 
- drivers/staging/rt2860/sta/auth_rsp.c          |   16 
- drivers/staging/rt2860/sta/connect.c           |  637 -
- drivers/staging/rt2860/sta/rtmp_data.c         |  257 
- drivers/staging/rt2860/sta/sanity.c            |   44 
- drivers/staging/rt2860/sta/sync.c              |  398 -
- drivers/staging/rt2860/sta/wpa.c               | 1994 -----
- drivers/staging/rt2860/sta_ioctl.c             |  761 +-
- drivers/staging/rt2860/usb_main_dev.c          |  897 ++
- drivers/staging/rt2860/wpa.h                   |  104 
- drivers/staging/rt2870/2870_main_dev.c         | 1530 ----
- drivers/staging/rt2870/Makefile                |   32 
- drivers/staging/rt2870/chips/rt3070.c          |    1 
- drivers/staging/rt2870/chips/rt30xx.c          |    1 
- drivers/staging/rt2870/common/2870_rtmp_init.c | 1730 ----
- drivers/staging/rt2870/common/acction.c        |    1 
- drivers/staging/rt2870/common/cmm_aes.c        |    1 
- drivers/staging/rt2870/common/cmm_asic.c       |    1 
- drivers/staging/rt2870/common/cmm_cfg.c        |    1 
- drivers/staging/rt2870/common/cmm_data_2870.c  |  936 --
- drivers/staging/rt2870/common/cmm_data_usb.c   |    1 
- drivers/staging/rt2870/common/cmm_mac_usb.c    |    1 
- drivers/staging/rt2870/common/cmm_profile.c    |    1 
- drivers/staging/rt2870/common/cmm_tkip.c       |    1 
- drivers/staging/rt2870/common/cmm_wep.c        |    1 
- drivers/staging/rt2870/common/crypt_hmac.c     |    1 
- drivers/staging/rt2870/common/crypt_md5.c      |    1 
- drivers/staging/rt2870/common/crypt_sha2.c     |    1 
- drivers/staging/rt2870/common/ee_efuse.c       |    1 
- drivers/staging/rt2870/common/rt_channel.c     |    1 
- drivers/staging/rt2870/common/rt_rf.c          |    1 
- drivers/staging/rt2870/common/rtmp_mcu.c       |    1 
- drivers/staging/rt2870/common/rtmp_timer.c     |    1 
- drivers/staging/rt2870/common/rtusb_bulk.c     |   37 
- drivers/staging/rt2870/common/rtusb_data.c     |   55 
- drivers/staging/rt2870/common/rtusb_io.c       |  465 -
- drivers/staging/rt2870/rt2870.h                |  583 -
- drivers/staging/rt2870/rt_usb.c                |    1 
- drivers/staging/rt2870/usb_main_dev.c          |    1 
- drivers/staging/rt3070/firmware.h              |    2 
- 128 files changed, 39592 insertions(+), 35692 deletions(-)
+Index: b/drivers/staging/rt2860/common/dfs.c
+===================================================================
+--- a/drivers/staging/rt2860/common/dfs.c
++++ b/drivers/staging/rt2860/common/dfs.c
+@@ -37,196 +37,6 @@
+ 
+ #include "../rt_config.h"
+ 
+-typedef struct _RADAR_DURATION_TABLE
+-{
+-	ULONG RDDurRegion;
+-	ULONG RadarSignalDuration;
+-	ULONG Tolerance;
+-} RADAR_DURATION_TABLE, *PRADAR_DURATION_TABLE;
+-
+-
+-
+-UCHAR RdIdleTimeTable[MAX_RD_REGION][4] =
+-{
+-	{9, 250, 250, 250},		// CE
+-#ifdef DFS_FCC_BW40_FIX
+-	{1, 250, 250, 250},		// FCC
+-#else
+-	{4, 250, 250, 250},		// FCC
+-#endif
+-	{4, 250, 250, 250},		// JAP
+-	{15, 250, 250, 250},	// JAP_W53
+-	{4, 250, 250, 250}		// JAP_W56
+-};
+-
+-/*
+-	========================================================================
+-
+-	Routine Description:
+-		Bbp Radar detection routine
+-
+-	Arguments:
+-		pAd 	Pointer to our adapter
+-
+-	Return Value:
+-
+-	========================================================================
+-*/
+-VOID BbpRadarDetectionStart(
+-	IN PRTMP_ADAPTER pAd)
+-{
+-	UINT8 RadarPeriod;
+-
+-	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 114, 0x02);
+-	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 121, 0x20);
+-	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 122, 0x00);
+-	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 123, 0x08/*0x80*/);
+-	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 124, 0x28);
+-	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 125, 0xff);
+-
+-#ifdef MERGE_ARCH_TEAM
+-	if ((pAd->CommonCfg.RadarDetect.RDDurRegion == JAP) || (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W53) || (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W56))
+-	{
+-		pAd->CommonCfg.RadarDetect.RDDurRegion = JAP;
+-		pAd->CommonCfg.RadarDetect.RDDurRegion = JapRadarType(pAd);
+-		if (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W56)
+-		{
+-			pAd->CommonCfg.RadarDetect.DfsSessionTime = 13;
+-		}
+-		else if (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W53)
+-		{
+-			pAd->CommonCfg.RadarDetect.DfsSessionTime = 15;
+-		}
+-	}
+-#endif // MERGE_ARCH_TEAM //
+-
+-	RadarPeriod = ((UINT)RdIdleTimeTable[pAd->CommonCfg.RadarDetect.RDDurRegion][0] + (UINT)pAd->CommonCfg.RadarDetect.DfsSessionTime) < 250 ?
+-			(RdIdleTimeTable[pAd->CommonCfg.RadarDetect.RDDurRegion][0] + pAd->CommonCfg.RadarDetect.DfsSessionTime) : 250;
+-
+-#ifdef MERGE_ARCH_TEAM
+-
+-
+-#else // Original RT28xx source code.
+-	RTMP_IO_WRITE8(pAd, 0x7020, 0x1d);
+-	RTMP_IO_WRITE8(pAd, 0x7021, 0x40);
+-#endif // MERGE_ARCH_TEAM //
+-
+-	RadarDetectionStart(pAd, 0, RadarPeriod);
+-	return;
+-}
+-
+-/*
+-	========================================================================
+-
+-	Routine Description:
+-		Bbp Radar detection routine
+-
+-	Arguments:
+-		pAd 	Pointer to our adapter
+-
+-	Return Value:
+-
+-	========================================================================
+-*/
+-VOID BbpRadarDetectionStop(
+-	IN PRTMP_ADAPTER pAd)
+-{
+-	RTMP_IO_WRITE8(pAd, 0x7020, 0x1d);
+-	RTMP_IO_WRITE8(pAd, 0x7021, 0x60);
+-
+-	RadarDetectionStop(pAd);
+-	return;
+-}
+-
+-/*
+-	========================================================================
+-
+-	Routine Description:
+-		Radar detection routine
+-
+-	Arguments:
+-		pAd 	Pointer to our adapter
+-
+-	Return Value:
+-
+-	========================================================================
+-*/
+-VOID RadarDetectionStart(
+-	IN PRTMP_ADAPTER pAd,
+-	IN BOOLEAN CTSProtect,
+-	IN UINT8 CTSPeriod)
+-{
+-	UINT8 DfsActiveTime = (pAd->CommonCfg.RadarDetect.DfsSessionTime & 0x1f);
+-	UINT8 CtsProtect = (CTSProtect == 1) ? 0x02 : 0x01; // CTS protect.
+-
+-	if (CTSProtect != 0)
+-	{
+-		switch(pAd->CommonCfg.RadarDetect.RDDurRegion)
+-		{
+-		case FCC:
+-		case JAP_W56:
+-			CtsProtect = 0x03;
+-			break;
+-
+-		case JAP:
+-			{
+-				UCHAR RDDurRegion;
+-				RDDurRegion = JapRadarType(pAd);
+-				if (RDDurRegion == JAP_W56)
+-					CtsProtect = 0x03;
+-				else
+-					CtsProtect = 0x02;
+-				break;
+-			}
+-
+-		case CE:
+-		case JAP_W53:
+-		default:
+-			CtsProtect = 0x02;
+-			break;
+-		}
+-	}
+-	else
+-		CtsProtect = 0x01;
+-
+-
+-	// send start-RD with CTS protection command to MCU
+-	// highbyte [7]		reserve
+-	// highbyte [6:5]	0x: stop Carrier/Radar detection
+-	// highbyte [10]:	Start Carrier/Radar detection without CTS protection, 11: Start Carrier/Radar detection with CTS protection
+-	// highbyte [4:0]	Radar/carrier detection duration. In 1ms.
+-
+-	// lowbyte [7:0]	Radar/carrier detection period, in 1ms.
+-	AsicSendCommandToMcu(pAd, 0x60, 0xff, CTSPeriod, DfsActiveTime | (CtsProtect << 5));
+-	//AsicSendCommandToMcu(pAd, 0x63, 0xff, 10, 0);
+-
+-	return;
+-}
+-
+-/*
+-	========================================================================
+-
+-	Routine Description:
+-		Radar detection routine
+-
+-	Arguments:
+-		pAd 	Pointer to our adapter
+-
+-	Return Value:
+-		TRUE	Found radar signal
+-		FALSE	Not found radar signal
+-
+-	========================================================================
+-*/
+-VOID RadarDetectionStop(
+-	IN PRTMP_ADAPTER	pAd)
+-{
+-	DBGPRINT(RT_DEBUG_TRACE,("RadarDetectionStop.\n"));
+-	AsicSendCommandToMcu(pAd, 0x60, 0xff, 0x00, 0x00);	// send start-RD with CTS protection command to MCU
+-
+-	return;
+-}
+-
+ /*
+ 	========================================================================
+ 
+@@ -260,191 +70,3 @@ BOOLEAN RadarChannelCheck(
+ 
+ 	return result;
+ }
+-
+-ULONG JapRadarType(
+-	IN PRTMP_ADAPTER pAd)
+-{
+-	ULONG		i;
+-	const UCHAR	Channel[15]={52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
+-
+-	if (pAd->CommonCfg.RadarDetect.RDDurRegion != JAP)
+-	{
+-		return pAd->CommonCfg.RadarDetect.RDDurRegion;
+-	}
+-
+-	for (i=0; i<15; i++)
+-	{
+-		if (pAd->CommonCfg.Channel == Channel[i])
+-		{
+-			break;
+-		}
+-	}
+-
+-	if (i < 4)
+-		return JAP_W53;
+-	else if (i < 15)
+-		return JAP_W56;
+-	else
+-		return JAP; // W52
+-
+-}
+-
+-ULONG RTMPBbpReadRadarDuration(
+-	IN PRTMP_ADAPTER	pAd)
+-{
+-	UINT8 byteValue = 0;
+-	ULONG result;
+-
+-	BBP_IO_READ8_BY_REG_ID(pAd, BBP_R115, &byteValue);
+-
+-	result = 0;
+-	switch (byteValue)
+-	{
+-	case 1: // radar signal detected by pulse mode.
+-	case 2: // radar signal detected by width mode.
+-		result = RTMPReadRadarDuration(pAd);
+-		break;
+-
+-	case 0: // No radar signal.
+-	default:
+-
+-		result = 0;
+-		break;
+-	}
+-
+-	return result;
+-}
+-
+-ULONG RTMPReadRadarDuration(
+-	IN PRTMP_ADAPTER	pAd)
+-{
+-	ULONG result = 0;
+-
+-	return result;
+-
+-}
+-
+-VOID RTMPCleanRadarDuration(
+-	IN PRTMP_ADAPTER	pAd)
+-{
+-	return;
+-}
+-
+-/*
+-    ========================================================================
+-    Routine Description:
+-        Radar wave detection. The API should be invoke each second.
+-
+-    Arguments:
+-        pAd         - Adapter pointer
+-
+-    Return Value:
+-        None
+-
+-    ========================================================================
+-*/
+-VOID ApRadarDetectPeriodic(
+-	IN PRTMP_ADAPTER pAd)
+-{
+-	INT	i;
+-
+-	pAd->CommonCfg.RadarDetect.InServiceMonitorCount++;
+-
+-	for (i=0; i<pAd->ChannelListNum; i++)
+-	{
+-		if (pAd->ChannelList[i].RemainingTimeForUse > 0)
+-		{
+-			pAd->ChannelList[i].RemainingTimeForUse --;
+-			if ((pAd->Mlme.PeriodicRound%5) == 0)
+-			{
+-				DBGPRINT(RT_DEBUG_TRACE, ("RadarDetectPeriodic - ch=%d, RemainingTimeForUse=%d\n", pAd->ChannelList[i].Channel, pAd->ChannelList[i].RemainingTimeForUse));
+-			}
+-		}
+-	}
+-
+-	//radar detect
+-	if ((pAd->CommonCfg.Channel > 14)
+-		&& (pAd->CommonCfg.bIEEE80211H == 1)
+-		&& RadarChannelCheck(pAd, pAd->CommonCfg.Channel))
+-	{
+-		RadarDetectPeriodic(pAd);
+-	}
+-
+-	return;
+-}
+-
+-// Periodic Radar detection, switch channel will occur in RTMPHandleTBTTInterrupt()
+-// Before switch channel, driver needs doing channel switch announcement.
+-VOID RadarDetectPeriodic(
+-	IN PRTMP_ADAPTER	pAd)
+-{
+-	// need to check channel availability, after switch channel
+-	if (pAd->CommonCfg.RadarDetect.RDMode != RD_SILENCE_MODE)
+-			return;
+-
+-	// channel availability check time is 60sec, use 65 for assurance
+-	if (pAd->CommonCfg.RadarDetect.RDCount++ > pAd->CommonCfg.RadarDetect.ChMovingTime)
+-	{
+-		DBGPRINT(RT_DEBUG_TRACE, ("Not found radar signal, start send beacon and radar detection in service monitor\n\n"));
+-			BbpRadarDetectionStop(pAd);
+-		AsicEnableBssSync(pAd);
+-		pAd->CommonCfg.RadarDetect.RDMode = RD_NORMAL_MODE;
+-
+-
+-		return;
+-	}
+-
+-	return;
+-}
+-
+-
+-/*
+-    ==========================================================================
+-    Description:
+-		change channel moving time for DFS testing.
+-
+-	Arguments:
+-	    pAdapter                    Pointer to our adapter
+-	    wrq                         Pointer to the ioctl argument
+-
+-    Return Value:
+-        None
+-
+-    Note:
+-        Usage:
+-               1.) iwpriv ra0 set ChMovTime=[value]
+-    ==========================================================================
+-*/
+-INT Set_ChMovingTime_Proc(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PSTRING arg)
+-{
+-	UINT8 Value;
+-
+-	Value = (UINT8) simple_strtol(arg, 0, 10);
+-
+-	pAd->CommonCfg.RadarDetect.ChMovingTime = Value;
+-
+-	DBGPRINT(RT_DEBUG_TRACE, ("%s:: %d\n", __func__,
+-		pAd->CommonCfg.RadarDetect.ChMovingTime));
+-
+-	return TRUE;
+-}
+-
+-INT Set_LongPulseRadarTh_Proc(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PSTRING arg)
+-{
+-	UINT8 Value;
+-
+-	Value = (UINT8) simple_strtol(arg, 0, 10) > 10 ? 10 : simple_strtol(arg, 0, 10);
+-
+-	pAd->CommonCfg.RadarDetect.LongPulseRadarTh = Value;
+-
+-	DBGPRINT(RT_DEBUG_TRACE, ("%s:: %d\n", __func__,
+-		pAd->CommonCfg.RadarDetect.LongPulseRadarTh));
+-
+-	return TRUE;
+-}
+-
+-
+Index: b/drivers/staging/rt2860/dfs.h
+===================================================================
+--- a/drivers/staging/rt2860/dfs.h
++++ b/drivers/staging/rt2860/dfs.h
+@@ -36,81 +36,6 @@
+     Fonchi    03-12-2007      created
+ */
+ 
+-#define RADAR_PULSE 1
+-#define RADAR_WIDTH 2
+-
+-#define WIDTH_RD_IDLE 0
+-#define WIDTH_RD_CHECK 1
+-
+-
+-
+-/*************************************************************************
+-  *
+-  *	DFS Radar related definitions.
+-  *
+-  ************************************************************************/
+-//#define CARRIER_DETECT_TASK_NUM	6
+-//#define RADAR_DETECT_TASK_NUM	7
+-
+-// McuRadarState && McuCarrierState for 2880-SW-MCU
+-#define FREE_FOR_TX				0
+-#define WAIT_CTS_BEING_SENT		1
+-#define DO_DETECTION			2
+-
+-// McuRadarEvent
+-#define RADAR_EVENT_CTS_SENT			0x01 // Host signal MCU that CTS has been sent
+-#define RADAR_EVENT_CTS_CARRIER_SENT	0x02 // Host signal MCU that CTS has been sent (Carrier)
+-#define RADAR_EVENT_RADAR_DETECTING		0x04 // Radar detection is on going, carrier detection hold back
+-#define RADAR_EVENT_CARRIER_DETECTING	0x08 // Carrier detection is on going, radar detection hold back
+-#define RADAR_EVENT_WIDTH_RADAR			0x10 // BBP == 2 radar detected
+-#define RADAR_EVENT_CTS_KICKED			0x20 // Radar detection need to sent double CTS, first CTS sent
+-
+-// McuRadarCmd
+-#define DETECTION_STOP			0
+-#define RADAR_DETECTION			1
+-#define CARRIER_DETECTION		2
+-
+-VOID BbpRadarDetectionStart(
+-	IN PRTMP_ADAPTER pAd);
+-
+-VOID BbpRadarDetectionStop(
+-	IN PRTMP_ADAPTER pAd);
+-
+-VOID RadarDetectionStart(
+-	IN PRTMP_ADAPTER pAd,
+-	IN BOOLEAN CTS_Protect,
+-	IN UINT8 CTSPeriod);
+-
+-VOID RadarDetectionStop(
+-	IN PRTMP_ADAPTER	pAd);
+-
+-VOID RadarDetectPeriodic(
+-	IN PRTMP_ADAPTER	pAd);
+-
+-
+ BOOLEAN RadarChannelCheck(
+ 	IN PRTMP_ADAPTER	pAd,
+ 	IN UCHAR			Ch);
+-
+-ULONG JapRadarType(
+-	IN PRTMP_ADAPTER pAd);
+-
+-ULONG RTMPBbpReadRadarDuration(
+-	IN PRTMP_ADAPTER	pAd);
+-
+-ULONG RTMPReadRadarDuration(
+-	IN PRTMP_ADAPTER	pAd);
+-
+-VOID RTMPCleanRadarDuration(
+-	IN PRTMP_ADAPTER	pAd);
+-
+-
+-INT Set_ChMovingTime_Proc(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PSTRING arg);
+-
+-INT Set_LongPulseRadarTh_Proc(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PSTRING arg);
+-
+-
