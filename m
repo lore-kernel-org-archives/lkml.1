@@ -1,90 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZIVNfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZIVNfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbZIVNfT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZIVNfQ
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:35:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33899 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754725AbZIVNfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755364AbZIVNfN (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 22 Sep 2009 09:35:13 -0400
-Date: Tue, 22 Sep 2009 13:34:16 GMT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZIVNfL
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 22 Sep 2009 09:35:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33896 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753998AbZIVNfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:35:10 -0400
+Date: Tue, 22 Sep 2009 13:34:29 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       davem@davemloft.net, akpm@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
-       davem@davemloft.net, akpm@linux-foundation.org, tglx@linutronix.de,
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
        mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/printk] ratelimit: Fix/allow use in atomic contexts
-Message-ID: <tip-edaac8e3167501cda336231d00611bf59c164346@git.kernel.org>
-Git-Commit-ID: edaac8e3167501cda336231d00611bf59c164346
+Subject: [tip:perf/urgent] perf stat: Fix zero total printouts
+Message-ID: <tip-c7f7fea30b7e52c9d4b9cef271110a98d59adcbc@git.kernel.org>
+Git-Commit-ID: c7f7fea30b7e52c9d4b9cef271110a98d59adcbc
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 13:34:16 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 13:34:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  edaac8e3167501cda336231d00611bf59c164346
-Gitweb:     http://git.kernel.org/tip/edaac8e3167501cda336231d00611bf59c164346
+Commit-ID:  c7f7fea30b7e52c9d4b9cef271110a98d59adcbc
+Gitweb:     http://git.kernel.org/tip/c7f7fea30b7e52c9d4b9cef271110a98d59adcbc
 Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 22 Sep 2009 14:44:11 +0200
+AuthorDate: Tue, 22 Sep 2009 14:53:51 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 22 Sep 2009 14:05:48 +0200
+CommitDate: Tue, 22 Sep 2009 15:01:47 +0200
 
-ratelimit: Fix/allow use in atomic contexts
+perf stat: Fix zero total printouts
 
-I'd like to use printk_ratelimit() in NMI context, but it's not
-robust right now due to spinlock usage in lib/ratelimit.c. If an
-NMI is unlucky enough to hit just that spot we might lock up trying
-to take the spinlock again.
+Before:
 
-Fix that by using a trylock variant. If we contend on that lock we
-can genuinely skip the message because the state is just being
-accessed by another CPU (or by this CPU).
+           0  sched:sched_switch #        nan M/sec
 
-( We could use atomics for the suppressed messages field, but
-  i doubt it matters in practice and it makes the code heavier. )
+After:
+
+           0  sched:sched_switch #      0.000 M/sec
 
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David S. Miller <davem@davemloft.net>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- lib/ratelimit.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
+ tools/perf/builtin-stat.c |   18 ++++++++++++++----
+ 1 files changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/lib/ratelimit.c b/lib/ratelimit.c
-index 0e2c28e..69bfcac 100644
---- a/lib/ratelimit.c
-+++ b/lib/ratelimit.c
-@@ -28,7 +28,15 @@ int __ratelimit(struct ratelimit_state *rs)
- 	if (!rs->interval)
- 		return 1;
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 16af2d8..e5f6ece 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -338,14 +338,24 @@ static void nsec_printout(int counter, double avg)
  
--	spin_lock_irqsave(&rs->lock, flags);
-+	/*
-+	 * If we contend on this state's lock then almost
-+	 * by definition we are too busy to print a message,
-+	 * in addition to the one that will be printed by
-+	 * the entity that is holding the lock already:
-+	 */
-+	if (!spin_trylock_irqsave(&rs->lock, flags))
-+		return 1;
+ static void abs_printout(int counter, double avg)
+ {
++	double total, ratio = 0.0;
 +
- 	if (!rs->begin)
- 		rs->begin = jiffies;
+ 	fprintf(stderr, " %14.0f  %-24s", avg, event_name(counter));
+ 
+ 	if (MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter)) {
+-		fprintf(stderr, " # %10.3f IPC  ",
+-				avg / avg_stats(&runtime_cycles_stats));
++		total = avg_stats(&runtime_cycles_stats);
++
++		if (total)
++			ratio = avg / total;
++
++		fprintf(stderr, " # %10.3f IPC  ", ratio);
+ 	} else {
+-		fprintf(stderr, " # %10.3f M/sec",
+-				1000.0 * avg / avg_stats(&runtime_nsecs_stats));
++		total = avg_stats(&runtime_nsecs_stats);
++
++		if (total)
++			ratio = 1000.0 * avg / total;
++
++		fprintf(stderr, " # %10.3f M/sec", ratio);
+ 	}
+ }
  
