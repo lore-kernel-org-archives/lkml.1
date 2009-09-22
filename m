@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZIVXUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZIVXI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbZIVXUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 19:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZIVXUb
+	id S1752809AbZIVXI5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 19:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZIVXI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 19:20:31 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:52798 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752064AbZIVXUb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 19:20:31 -0400
-Date: Tue, 22 Sep 2009 19:07:28 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: =?GB2312?B?t8nR1Q==?= <win847@gmail.com>
-cc: Mel Gorman <mel@csn.ul.ie>, Sachin Sant <sachinp@in.ibm.com>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH 0/3] Fix SLQB on memoryless configurations V2
-In-Reply-To: <363172900909220629j2f5174cbo9fe027354948d37@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0909221904550.24141@V090114053VZO-1>
-References: <1253549426-917-1-git-send-email-mel@csn.ul.ie>  <20090921174656.GS12726@csn.ul.ie>  <alpine.DEB.1.10.0909211349530.3106@V090114053VZO-1>  <20090921180739.GT12726@csn.ul.ie> <4AB85A8F.6010106@in.ibm.com>  <20090922125546.GA25965@csn.ul.ie>
- <4AB8CB81.4080309@in.ibm.com>  <20090922132018.GB25965@csn.ul.ie> <363172900909220629j2f5174cbo9fe027354948d37@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Sep 2009 19:08:56 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33219 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751535AbZIVXIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 19:08:55 -0400
+Date: Wed, 23 Sep 2009 09:08:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: failed to fetch md-current and md trees
+Message-Id: <20090923090854.40f492df.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__23_Sep_2009_09_08_54_+1000_YIlHo8rx1pAKB6.o"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009, ?? wrote:
+--Signature=_Wed__23_Sep_2009_09_08_54_+1000_YIlHo8rx1pAKB6.o
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 800KB. How can I config kernel config to reduce kernel size, I want to get
-> smaller size  like 500KB.
+Hi Neil,
 
+Today's linux-next fetch of the md{,-curent} trees failed like this:
 
-500kb? That may be a tough call.
+md-current: git
+fatal: The remote end hung up unexpectedly
 
-> *CONFIG_NETFILTER=y*
+I will use the version that I have previously fetched.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Can you drop this one?
+--Signature=_Wed__23_Sep_2009_09_08_54_+1000_YIlHo8rx1pAKB6.o
+Content-Type: application/pgp-signature
 
-Is CONFIG_EMBEDDED set? Maybe I skipped it.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAkq5WQYACgkQjjKRsyhoI8xJ/QCdFqKOkZxnjkDL7AdsBwAbiC0U
+QuwAoJWLUHBfzyunSQ6nJqKamd1TZnRk
+=bQwH
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Sep_2009_09_08_54_+1000_YIlHo8rx1pAKB6.o--
