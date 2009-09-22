@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbZIVOgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZIVOiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbZIVOgE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 10:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbZIVOgD
+	id S1756717AbZIVOiA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 10:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZIVOh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 10:36:03 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41185 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754996AbZIVOgC (ORCPT
+	Tue, 22 Sep 2009 10:37:59 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:54125 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753828AbZIVOh6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 10:36:02 -0400
-Date: Tue, 22 Sep 2009 15:36:04 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
-       tytso@mit.edu
-Subject: Re: [PATCH 5/7] ext4: Convert filesystem to the new truncate
-	calling convention
-Message-ID: <20090922143604.GA2183@ZenIV.linux.org.uk>
-References: <1253200907-31392-1-git-send-email-jack@suse.cz> <1253200907-31392-6-git-send-email-jack@suse.cz>
+	Tue, 22 Sep 2009 10:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=OM5Ybos41Wq8LyVNaH8L16Xn6DY3024kWLK9mkVvByaztHStVME1zWuiEq7Qh2PU5d
+         to6tSP5NDCBVNgGAk/Noa6/BQWba2rAk7VA/z+miXLX2LQouoAeeaBtOK4OmNRdp3/Z/
+         UV9qMJnaVZv5JFy4gN74D0pzZNa7fNBBEvV5A=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: Steve French <sfrench@samba.org>
+Subject: cifs oops at mount in linus git
+Date: Tue, 22 Sep 2009 16:37:57 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.31; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253200907-31392-6-git-send-email-jack@suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200909221637.57722.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 17, 2009 at 05:21:45PM +0200, Jan Kara wrote:
-> CC: linux-ext4@vger.kernel.org
-> CC: tytso@mit.edu
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> ---
->  fs/ext4/file.c  |    2 +-
->  fs/ext4/inode.c |  166 ++++++++++++++++++++++++++++++++----------------------
->  2 files changed, 99 insertions(+), 69 deletions(-)
-> 
-> diff --git a/fs/ext4/file.c b/fs/ext4/file.c
-> index 3f1873f..22f49d7 100644
-> --- a/fs/ext4/file.c
-> +++ b/fs/ext4/file.c
-> @@ -198,7 +198,7 @@ const struct file_operations ext4_file_operations = {
->  };
->  
->  const struct inode_operations ext4_file_inode_operations = {
-> -	.truncate	= ext4_truncate,
-> +	.new_truncate	= 1,
->  	.setattr	= ext4_setattr,
->  	.getattr	= ext4_getattr,
->  #ifdef CONFIG_EXT4_FS_XATTR
-> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> index 58492ab..be25874 100644
-> --- a/fs/ext4/inode.c
-> +++ b/fs/ext4/inode.c
-> @@ -3354,6 +3354,7 @@ static int ext4_journalled_set_page_dirty(struct page *page)
->  }
->  
->  static const struct address_space_operations ext4_ordered_aops = {
-> +	.new_writepage		= 1,
 
-No.  We already have one half-finished series here; mixing it with another
-one is not going to happen.  Such flags are tolerable only as bisectability
-helpers.  They *must* disappear by the end of series.  Before it can be
-submitted for merge.
+This oops is happening in latest linus master. Few days ago there
+was no such problem. Is this anything known?
 
-In effect, you are mixing truncate switchover with your writepage one.
-Please, split and reorder.
+[50421.547540] general protection fault: 0000 [#1] PREEMPT SMP                                                                                               
+[50421.547544] last sysfs file: /sys/class/power_supply/BAT0/energy_full                                                                                     
+[50421.547546] CPU 0
+[50421.547547] Modules linked in: nls_utf8 cifs iwlagn sco bridge stp llc xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables tun input_polldev 
+rfcomm bnep l2cap crc16 ipv6 sch_sfq acpi_cpufreq cryptd aes_x86_64 aes_generic xts gf128mul dm_crypt btusb bluetooth dm_mod usbhid hid uvcvideo videodev v4l1_compat 
+v4l2_compat_ioctl32 joydev snd_hda_codec_conexant arc4 ecb snd_hda_intel snd_hda_codec iwlcore mac80211 snd_hwdep snd_pcm snd_timer uhci_hcd ehci_hcd yenta_socket firewire_ohci 
+cfg80211 sdhci_pci thinkpad_acpi snd psmouse sdhci firewire_core rfkill sg mmc_core rsrc_nonstatic soundcore usbcore evdev pcspkr processor serio_raw sr_mod snd_page_alloc ricoh_mmc 
+crc_itu_t pcmcia_core e1000e nvram cdrom iTCO_wdt i2c_i801 iTCO_vendor_support led_class wmi thermal battery ac xfs exportfs sd_mod crc_t10dif ahci libata scsi_mod [last unloaded: iwlagn]
+[50421.547607] Pid: 24094, comm: mount.cifs Not tainted 2.6.31 #36 2764CTO
+[50421.547609] RIP: 0010:[<ffffffffa04e572e>]  [<ffffffffa04e572e>] cifs_get_tcp_session+0x411/0x572 [cifs]
+[50421.547621] RSP: 0018:ffff880116439b98  EFLAGS: 00010287
+[50421.547623] RAX: ffff880116438000 RBX: ffff8801164e1400 RCX: 0000000000000000
+[50421.547625] RDX: ffff10016133db00 RSI: 0000000000000206 RDI: ffffffff8125cdc6
+[50421.547626] RBP: ffff880116439c58 R08: ffff880116438000 R09: ffff880028213e00
+[50421.547628] R10: ffffffff81487dd8 R11: 0000000000000005 R12: ffff880064d2eb80
+[50421.547630] R13: ffff880116439ba8 R14: ffff8801164e1400 R15: 0000000000000000
+[50421.547633] FS:  00007f1bbc0ca6f0(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
+[50421.547635] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[50421.547637] CR2: 00007f4741e20340 CR3: 00000001164b9000 CR4: 00000000000006f0
+[50421.547639] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[50421.547641] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[50421.547643] Process mount.cifs (pid: 24094, threadinfo ffff880116438000, task ffff88013ad38000)
+[50421.547645] Stack:
+[50421.547646]  0000000000000000 ffffffff0000000d 9200a8c000000002 0000000000000000
+[50421.547649] <0> 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+[50421.547652] <0> 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+[50421.547655] Call Trace:
+[50421.547665]  [<ffffffffa04e76d6>] cifs_mount+0x18a3/0x23c9 [cifs]
+[50421.547673]  [<ffffffffa04da93b>] cifs_get_sb+0x181/0x2d3 [cifs]
+[50421.547678]  [<ffffffff810d5626>] vfs_kern_mount+0x9e/0x12a
+[50421.547681]  [<ffffffff810d5710>] do_kern_mount+0x48/0xe8
+[50421.547684]  [<ffffffff810eaf24>] do_mount+0x785/0x7f2
+[50421.547687]  [<ffffffff810eb019>] sys_mount+0x88/0xc7
+[50421.547691]  [<ffffffff8100ba6b>] system_call_fastpath+0x16/0x1b
+[50421.547692] Code: 48 8b 04 25 08 b5 00 00 48 2d d8 1f 00 00 ff 40 1c 65 8b 0c 25 30 cc 00 00 48 8b 15 f5 d6 02 00 48 63 c9 48 03 14 cd 60 5c 4e 81 <48> ff 02 48 8b 15 e0 d6 02 00 48 03 
+14 cd 60 5c 4e 81 83 3d 81
+[50421.547718] RIP  [<ffffffffa04e572e>] cifs_get_tcp_session+0x411/0x572 [cifs]
+[50421.547732]  RSP <ffff880116439b98>
+[50421.547734] ---[ end trace cc36b55daefbf636 ]---
+[50421.547736] note: mount.cifs[24094] exited with preempt_count 2
+
+-- 
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
