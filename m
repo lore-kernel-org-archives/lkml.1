@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZIVUHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZIVW01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752230AbZIVUHh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 16:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbZIVUHe
+	id S1752637AbZIVW01 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 18:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZIVW00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 16:07:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43117 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbZIVUHe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 16:07:34 -0400
-Date: Tue, 22 Sep 2009 22:07:47 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: gabe@blackfam.net
-Cc: gabebblack@gmail.com, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
-Subject: Re: TI PCIe-PCI bridge quirks
-Message-ID: <20090922220747.702c3b11@infradead.org>
-In-Reply-To: <8a15eb2b0909221237s5d3e408do4e3bed8aaaa337a8@mail.gmail.com>
-References: <8a15eb2b0909221201k70b9e9darc6fda53f87bfae29@mail.gmail.com>
-	<20090922211101.076e9763@infradead.org>
-	<8a15eb2b0909221237s5d3e408do4e3bed8aaaa337a8@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 22 Sep 2009 18:26:26 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:30547 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbZIVW0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 18:26:25 -0400
+Date: Tue, 22 Sep 2009 13:17:46 -0700
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>, rostedt@goodmis.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [perf] Finding uninstalled modules Was Re: mailing list for trace
+	users
+Message-ID: <20090922201746.GH5216@ghostprotocols.net>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com> <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net> <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net> <4AB8BA37.4010305@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB8BA37.4010305@redhat.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009 14:37:16 -0500
-Gabe Black <gabebblack@gmail.com> wrote:
+Em Tue, Sep 22, 2009 at 02:51:19PM +0300, Avi Kivity escreveu:
+> On 09/22/2009 02:47 PM, Mike Galbraith wrote:
+>>
+>> Hm, must me a problem with parsing then.  If you add -v -v to the
+>> command line it'll spit out debug data.  For vmx_vcpu_run you should see
+>> a line like so if the module was parsed.
+>>
+>> new symbol: ffffffffa0065a49 [00000466]: ahci_interrupt, hist: (nil), obj_start: 0x2a49
+>>
+>> 	-Mike
+>
+> $ perf annotate -v -v -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run  |  
 
-> On Tue, Sep 22, 2009 at 2:11 PM, Arjan van de Ven
-> <arjan@infradead.org> wrote:
-> >
-> > sounds like this is worth a PCI quirk in the kernel...
-> >
-> 
-> Is there documentation on how one would go about writing a "PCI
-> quirk"?
-> 
+Here is the problem, he is passing a vmlinux, that way we don't parse
+/proc/kallsyms, so no module symbols, he uses -m to load the modules
+symbols but mod_dso__load_module_paths only looks at /lib/modules/, i.e.
+installed modules.
 
-I would look at the existing quirks in the drivers/pci/quirks.c file...
-plenty of good (or bad, depending on how you look at it) examples...
+I guess Avi hasn't installed modules, right? So the right fix for this
+case is to figure out where modules are from the path given to -k, i.e.
+we first use ~avi/kvm/linux-2.6/ as the modules path prefix and then
+fallback to /lib/modules if we can't find modules there, right?
 
---  
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> grep vmx_vcpu_run
+> new symbol: ffffffffa006f596 [0000dead]: vmx_vcpu_run    [kvm_intel],  
+> hist: (nil), obj_start: (nil)
+>  ffffffffa006f596-ffffffffa006fb73 vmx_vcpu_run    [kvm_intel]
+>  Error: symbol 'vmx_vcpu_run' not present amongst the samples.
+>
+> Looks like internal confusion.
+>
+> -- 
+> error compiling committee.c: too many arguments to function
