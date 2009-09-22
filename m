@@ -1,129 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZIVLan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbZIVLa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbZIVLan (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbZIVLal
+	id S1756149AbZIVLa5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbZIVLaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:30:41 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:60287 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756092AbZIVLaj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:30:39 -0400
-Date: Tue, 22 Sep 2009 17:00:37 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Shaohua Li <shaohua.li@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [v6 PATCH 4/7]: POWER: enable cpuidle for POWER.
-Message-ID: <20090922113037.GE7788@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090922112526.GA7788@linux.vnet.ibm.com>
+	Tue, 22 Sep 2009 07:30:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37593 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755195AbZIVLay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:30:54 -0400
+Date: Tue, 22 Sep 2009 13:30:55 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
+Message-ID: <20090922113055.GA13887@duck.suse.cz>
+References: <20090911134241.GB19707@mit.edu> <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost> <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090921135321.GD6259@think> <20090922101335.GA27432@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090922112526.GA7788@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090922101335.GA27432@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
+On Tue 22-09-09 18:13:35, Wu Fengguang wrote:
+> Yes a more general solution would help. I'd like to propose one which
+> works in the other way round. In brief,
+> (1) the VFS give a large enough per-file writeback quota to btrfs;
+> (2) btrfs tells VFS "here is a (seek) boundary, stop voluntarily",
+>     before exhausting the quota and be force stopped.
+> 
+> There will be two limits (the second one is new):
+> 
+> - total nr to write in one wb_writeback invocation
+> - _max_ nr to write per file (before switching to sync the next inode)
+> 
+> The per-invocation limit is useful for balance_dirty_pages().
+> The per-file number can be accumulated across successive wb_writeback
+> invocations and thus can be much larger (eg. 128MB) than the legacy
+> per-invocation number. 
+  Actually, it doesn't make much sence to have a per-file limit in number
+of pages. I've been playing with an idea that we could have a per-file
+*time* quota. That would have an advantage that if a file generates random
+IO, we wouldn't block for longer time on it than when it generates linear
+IO.
+  I imagine that in ->writepage we would substract from given time quota in
+wbc the time it takes to write the current page. It would need some context
+in wbc so that it is able to tell whether the IO is linear or random to
+properly account for some seek penalty but generally it seems to be
+doable...
+  Filesystems implementing ->writepages can then make decision whether they
+have enough time quota to seek to next extent and write it out or whether
+they should rather yield to other inodes...
+ 
+> The file system will only see the per-file numbers. The "max" means
+> if btrfs find the current page to be the last page in the extent,
+> it could indicate this fact to VFS by setting wbc->would_seek=1. The
+> VFS will then switch to write the next inode.
+> 
+> The benefit of early voluntarily yield is, it reduced the possibility
+> to be force stopped half way in an extent. When next time VFS returns
+> to sync this inode, it will again be honored the full 128MB quota,
+> which should be enough to cover a big fresh extent.
 
-This patch enables the cpuidle option in Kconfig for pSeries.
-
-Currently cpuidle infrastructure is enabled only for x86 and ARM.
-This code is almost completely borrowed from x86 to enable
-cpuidle for pSeries.
-
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig              |   17 +++++++++++++++++
- arch/powerpc/include/asm/system.h |    2 ++
- arch/powerpc/kernel/idle.c        |   19 +++++++++++++++++++
- 3 files changed, 38 insertions(+)
-
-Index: linux.trees.git/arch/powerpc/Kconfig
-===================================================================
---- linux.trees.git.orig/arch/powerpc/Kconfig
-+++ linux.trees.git/arch/powerpc/Kconfig
-@@ -88,6 +88,9 @@ config ARCH_HAS_ILOG2_U64
- 	bool
- 	default y if 64BIT
- 
-+config ARCH_HAS_CPU_IDLE_WAIT
-+	def_bool y
-+
- config GENERIC_HWEIGHT
- 	bool
- 	default y
-@@ -243,6 +246,20 @@ source "kernel/Kconfig.freezer"
- source "arch/powerpc/sysdev/Kconfig"
- source "arch/powerpc/platforms/Kconfig"
- 
-+menu "Power management options"
-+
-+source "drivers/cpuidle/Kconfig"
-+
-+config PSERIES_PROCESSOR_IDLE
-+	bool "Idle Power Management Support for pSeries"
-+	depends on PPC_PSERIES && CPU_IDLE
-+	default y
-+	help
-+	  Idle Power Management Support for pSeries. This hooks onto cpuidle
-+	  infrastructure to help in idle cpu power management.
-+
-+endmenu
-+
- menu "Kernel options"
- 
- config HIGHMEM
-Index: linux.trees.git/arch/powerpc/include/asm/system.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/include/asm/system.h
-+++ linux.trees.git/arch/powerpc/include/asm/system.h
-@@ -546,5 +546,7 @@ extern void account_system_vtime(struct 
- 
- extern struct dentry *powerpc_debugfs_root;
- 
-+void cpu_idle_wait(void);
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_SYSTEM_H */
-Index: linux.trees.git/arch/powerpc/kernel/idle.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/idle.c
-+++ linux.trees.git/arch/powerpc/kernel/idle.c
-@@ -102,6 +102,25 @@ void cpu_idle(void)
- 	}
- }
- 
-+static void do_nothing(void *unused)
-+{
-+}
-+
-+/*
-+ * cpu_idle_wait - Used to ensure that all the CPUs come out of the old
-+ * idle loop and start using the new idle loop.
-+ * Required while changing idle handler on SMP systems.
-+ * Caller must have changed idle handler to the new value before the call.
-+ */
-+void cpu_idle_wait(void)
-+{
-+	/* Ensure that new value of ppc_md.power_save is set */
-+	smp_mb();
-+	/* kick all the CPUs so that they exit out of ppc_md.power_save */
-+	smp_call_function(do_nothing, NULL, 1);
-+}
-+EXPORT_SYMBOL_GPL(cpu_idle_wait);
-+
- int powersave_nap;
- 
- #ifdef CONFIG_SYSCTL
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
