@@ -1,34 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbZIVGbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZIVG1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbZIVGbN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 02:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZIVGbK
+	id S1755215AbZIVG1k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 02:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZIVG1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 02:31:10 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:58531 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753711AbZIVGbJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 02:31:09 -0400
-X-Greylist: delayed 385 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Sep 2009 02:31:09 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=AcOcyvDovNT9EQSY4phH0H122QRighLP6/UppX85kHUAGJO4U2wLvZMQXZIShLXxMP
-         Zb2YSIyCsiz78YR+xNTavfpjTJVmez4NsmdoUcDzh25aoyhMkE6F7lKeTxjSOUNut0DJ
-         8VzTXDQJV6rQSFwg0QvguAQveuA8gHTqTp1gM=
+	Tue, 22 Sep 2009 02:27:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:44922 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755172AbZIVG1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 02:27:37 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] virtio-blk: set QUEUE_ORDERED_DRAIN by default
+Date: Tue, 22 Sep 2009 15:57:38 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: borntraeger@de.ibm.com, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+References: <20090820205616.GA5503@lst.de> <20090917173142.GA1518@lst.de>
+In-Reply-To: <20090917173142.GA1518@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <b8f627e0909212323mbeb0fd1yba25aafb58ef686b@mail.gmail.com>
-References: <b8f627e0909212323mbeb0fd1yba25aafb58ef686b@mail.gmail.com>
-Date: Tue, 22 Sep 2009 12:24:47 +0600
-Message-ID: <b8f627e0909212324t120c5a9bp4958d7fad22fc692@mail.gmail.com>
-Subject: Re: splice between non-pipe (tcp socket) fds
-From: =?KOI8-R?B?7cHSyyDrz9LFzsLF0sc=?= <socketpair@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909221557.39272.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please add me to CC in this thread.
+On Fri, 18 Sep 2009 03:01:42 am Christoph Hellwig wrote:
+> Err, I'll take this one back for now pending some more discussion.
+> What we need more urgently is the writeback cache flag, which is now
+> implemented in qemu, patch following ASAP.
+
+OK, still catching up on mail.  I'll push them out of the queue for now.
+
+Thanks,
+Rusty.
