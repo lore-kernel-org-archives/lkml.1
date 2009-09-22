@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZIVFhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZIVFiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbZIVFhU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 01:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZIVFhS
+	id S1754910AbZIVFiM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 01:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZIVFiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 01:37:18 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:33071 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754654AbZIVFhQ (ORCPT
+	Tue, 22 Sep 2009 01:38:09 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:58734 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753489AbZIVFiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 01:37:16 -0400
-Date: Tue, 22 Sep 2009 11:07:16 +0530
+	Tue, 22 Sep 2009 01:38:09 -0400
+Date: Tue, 22 Sep 2009 11:08:09 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Joel Schopp <jschopp@austin.ibm.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -21,9 +21,8 @@ To: Joel Schopp <jschopp@austin.ibm.com>,
        Gautham R Shenoy <ego@in.ibm.com>,
        Arun Bharadwaj <arun@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [v5 RFC PATCH 3/7]: x86: refactor x86 idle power management code
-	and remove all instances of pm_idle.
-Message-ID: <20090922053716.GD6417@linux.vnet.ibm.com>
+Subject: [v5 RFC PATCH 4/7]: POWER: enable cpuidle for POWER.
+Message-ID: <20090922053809.GE6417@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 References: <20090922053314.GA6417@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -37,304 +36,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 11:03:14]:
 
-This patch cleans up x86 of all instances of pm_idle.
+This patch enables the cpuidle option in Kconfig for pSeries.
 
-pm_idle which was earlier called from cpu_idle() idle loop
-is replaced by cpuidle_idle_call.
-
-x86 also registers to cpuidle when the idle routine is selected,
-by populating the cpuidle_device data structure for each cpu.
-
-This is replicated for apm module and for xen, which also used pm_idle.
+Currently cpuidle infrastructure is enabled only for x86 and ARM.
 
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- arch/x86/kernel/apm_32.c     |   37 +++++++++++++++++++++--
- arch/x86/kernel/process.c    |   69 ++++++++++++++++++++++++++++++++++---------
- arch/x86/kernel/process_32.c |    3 +
- arch/x86/kernel/process_64.c |    3 +
- arch/x86/xen/setup.c         |   22 +++++++++++++
- 5 files changed, 114 insertions(+), 20 deletions(-)
+ arch/powerpc/Kconfig |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Index: linux.trees.git/arch/x86/kernel/process.c
+Index: linux.trees.git/arch/powerpc/Kconfig
 ===================================================================
---- linux.trees.git.orig/arch/x86/kernel/process.c
-+++ linux.trees.git/arch/x86/kernel/process.c
-@@ -9,6 +9,8 @@
- #include <linux/pm.h>
- #include <linux/clockchips.h>
- #include <linux/random.h>
-+#include <linux/cpuidle.h>
-+
- #include <trace/power.h>
- #include <asm/system.h>
- #include <asm/apic.h>
-@@ -247,12 +249,6 @@ int sys_vfork(struct pt_regs *regs)
- unsigned long boot_option_idle_override = 0;
- EXPORT_SYMBOL(boot_option_idle_override);
+--- linux.trees.git.orig/arch/powerpc/Kconfig
++++ linux.trees.git/arch/powerpc/Kconfig
+@@ -243,6 +243,20 @@ source "kernel/Kconfig.freezer"
+ source "arch/powerpc/sysdev/Kconfig"
+ source "arch/powerpc/platforms/Kconfig"
  
--/*
-- * Powermanagement idle function, if any..
-- */
--void (*pm_idle)(void);
--EXPORT_SYMBOL(pm_idle);
--
- #ifdef CONFIG_X86_32
- /*
-  * This halt magic was a workaround for ancient floppy DMA
-@@ -531,15 +527,58 @@ static void c1e_idle(void)
- 		default_idle();
- }
++menu "Power management options"
++
++source "drivers/cpuidle/Kconfig"
++
++config PSERIES_PROCESSOR_IDLE
++	bool "Idle Power Management Support for pSeries"
++	depends on PPC_PSERIES && CPU_IDLE
++	default y
++	help
++	  Idle Power Management Support for pSeries. This hooks onto cpuidle
++	  infrastructure to help in idle cpu power management.
++
++endmenu
++
+ menu "Kernel options"
  
-+static void (*local_idle)(void);
-+DEFINE_PER_CPU(struct cpuidle_device, idle_devices);
-+
-+struct cpuidle_driver cpuidle_default_driver = {
-+	.name =         "cpuidle_default",
-+};
-+
-+static int local_idle_loop(struct cpuidle_device *dev, struct cpuidle_state *st)
-+{
-+	ktime_t t1, t2;
-+	s64 diff;
-+	int ret;
-+
-+	t1 = ktime_get();
-+	local_idle();
-+	t2 = ktime_get();
-+
-+	diff = ktime_to_us(ktime_sub(t2, t1));
-+	if (diff > INT_MAX)
-+		diff = INT_MAX;
-+	ret = (int) diff;
-+
-+	return ret;
-+}
-+static int __cpuinit setup_cpuidle_simple(void)
-+{
-+	struct cpuidle_device *dev;
-+	int cpu;
-+
-+	if (!cpuidle_curr_driver)
-+		cpuidle_register_driver(&cpuidle_default_driver);
-+
-+	for_each_online_cpu(cpu) {
-+		dev = &per_cpu(idle_devices, cpu);
-+		dev->cpu = cpu;
-+		dev->states[0].enter = local_idle_loop;
-+		dev->state_count = 1;
-+		cpuidle_register_device(dev);
-+	}
-+	return 0;
-+}
-+late_initcall(setup_cpuidle_simple);
-+
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
- #ifdef CONFIG_SMP
--	if (pm_idle == poll_idle && smp_num_siblings > 1) {
-+	if (local_idle == poll_idle && smp_num_siblings > 1) {
- 		printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
- 			" performance may degrade.\n");
- 	}
- #endif
--	if (pm_idle)
-+	if (local_idle)
- 		return;
- 
- 	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
-@@ -547,18 +586,20 @@ void __cpuinit select_idle_routine(const
- 		 * One CPU supports mwait => All CPUs supports mwait
- 		 */
- 		printk(KERN_INFO "using mwait in idle threads.\n");
--		pm_idle = mwait_idle;
-+		local_idle = mwait_idle;
- 	} else if (check_c1e_idle(c)) {
- 		printk(KERN_INFO "using C1E aware idle routine\n");
--		pm_idle = c1e_idle;
-+		local_idle = c1e_idle;
- 	} else
--		pm_idle = default_idle;
-+		local_idle = default_idle;
-+
-+	return;
- }
- 
- void __init init_c1e_mask(void)
- {
- 	/* If we're using c1e_idle, we need to allocate c1e_mask. */
--	if (pm_idle == c1e_idle) {
-+	if (local_idle == c1e_idle) {
- 		alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
- 		cpumask_clear(c1e_mask);
- 	}
-@@ -571,7 +612,7 @@ static int __init idle_setup(char *str)
- 
- 	if (!strcmp(str, "poll")) {
- 		printk("using polling idle threads.\n");
--		pm_idle = poll_idle;
-+		local_idle = poll_idle;
- 	} else if (!strcmp(str, "mwait"))
- 		force_mwait = 1;
- 	else if (!strcmp(str, "halt")) {
-@@ -582,7 +623,7 @@ static int __init idle_setup(char *str)
- 		 * To continue to load the CPU idle driver, don't touch
- 		 * the boot_option_idle_override.
- 		 */
--		pm_idle = default_idle;
-+		local_idle = default_idle;
- 		idle_halt = 1;
- 		return 0;
- 	} else if (!strcmp(str, "nomwait")) {
-Index: linux.trees.git/arch/x86/kernel/process_32.c
-===================================================================
---- linux.trees.git.orig/arch/x86/kernel/process_32.c
-+++ linux.trees.git/arch/x86/kernel/process_32.c
-@@ -40,6 +40,7 @@
- #include <linux/uaccess.h>
- #include <linux/io.h>
- #include <linux/kdebug.h>
-+#include <linux/cpuidle.h>
- 
- #include <asm/pgtable.h>
- #include <asm/system.h>
-@@ -113,7 +114,7 @@ void cpu_idle(void)
- 			local_irq_disable();
- 			/* Don't trace irqs off for idle */
- 			stop_critical_timings();
--			pm_idle();
-+			cpuidle_idle_call();
- 			start_critical_timings();
- 		}
- 		tick_nohz_restart_sched_tick();
-Index: linux.trees.git/arch/x86/kernel/process_64.c
-===================================================================
---- linux.trees.git.orig/arch/x86/kernel/process_64.c
-+++ linux.trees.git/arch/x86/kernel/process_64.c
-@@ -39,6 +39,7 @@
- #include <linux/io.h>
- #include <linux/ftrace.h>
- #include <linux/dmi.h>
-+#include <linux/cpuidle.h>
- 
- #include <asm/pgtable.h>
- #include <asm/system.h>
-@@ -142,7 +143,7 @@ void cpu_idle(void)
- 			enter_idle();
- 			/* Don't trace irqs off for idle */
- 			stop_critical_timings();
--			pm_idle();
-+			cpuidle_idle_call();
- 			start_critical_timings();
- 			/* In many cases the interrupt that ended idle
- 			   has already called exit_idle. But some idle
-Index: linux.trees.git/arch/x86/kernel/apm_32.c
-===================================================================
---- linux.trees.git.orig/arch/x86/kernel/apm_32.c
-+++ linux.trees.git/arch/x86/kernel/apm_32.c
-@@ -2257,6 +2257,38 @@ static struct dmi_system_id __initdata a
- 	{ }
- };
- 
-+DEFINE_PER_CPU(struct cpuidle_device, apm_idle_devices);
-+
-+struct cpuidle_driver cpuidle_apm_driver = {
-+	.name =         "cpuidle_apm",
-+};
-+
-+void __cpuinit setup_cpuidle_apm(void)
-+{
-+	struct cpuidle_device *dev;
-+
-+	if (!cpuidle_curr_driver)
-+		cpuidle_register_driver(&cpuidle_apm_driver);
-+
-+	dev = &per_cpu(apm_idle_devices, smp_processor_id());
-+	dev->cpu = smp_processor_id();
-+	dev->states[0].enter = apm_cpu_idle;
-+	dev->state_count = 1;
-+	cpuidle_register_device(dev);
-+}
-+
-+void exit_cpuidle_apm(void)
-+{
-+	struct cpuidle_device *dev;
-+	int cpu;
-+
-+	for_each_online_cpu(cpu) {
-+		dev = &per_cpu(apm_idle_devices, cpu);
-+		cpuidle_unregister_device(dev);
-+	}
-+}
-+
-+
- /*
-  * Just start the APM thread. We do NOT want to do APM BIOS
-  * calls from anything but the APM thread, if for no other reason
-@@ -2394,8 +2426,7 @@ static int __init apm_init(void)
- 	if (HZ != 100)
- 		idle_period = (idle_period * HZ) / 100;
- 	if (idle_threshold < 100) {
--		original_pm_idle = pm_idle;
--		pm_idle  = apm_cpu_idle;
-+		setup_cpuidle_apm();
- 		set_pm_idle = 1;
- 	}
- 
-@@ -2407,7 +2438,7 @@ static void __exit apm_exit(void)
- 	int error;
- 
- 	if (set_pm_idle) {
--		pm_idle = original_pm_idle;
-+		exit_cpuidle_apm();
- 		/*
- 		 * We are about to unload the current idle thread pm callback
- 		 * (pm_idle), Wait for all processors to update cached/local
-Index: linux.trees.git/arch/x86/xen/setup.c
-===================================================================
---- linux.trees.git.orig/arch/x86/xen/setup.c
-+++ linux.trees.git/arch/x86/xen/setup.c
-@@ -8,6 +8,7 @@
- #include <linux/sched.h>
- #include <linux/mm.h>
- #include <linux/pm.h>
-+#include <linux/cpuidle.h>
- 
- #include <asm/elf.h>
- #include <asm/vdso.h>
-@@ -151,6 +152,25 @@ void __cpuinit xen_enable_syscall(void)
- #endif /* CONFIG_X86_64 */
- }
- 
-+DEFINE_PER_CPU(struct cpuidle_device, idle_devices);
-+struct cpuidle_driver cpuidle_xen_driver = {
-+	.name =         "cpuidle_xen",
-+};
-+
-+void __cpuinit setup_cpuidle_xen(void)
-+{
-+	struct cpuidle_device *dev;
-+
-+	if (!cpuidle_curr_driver)
-+		cpuidle_register_driver(&cpuidle_xen_driver);
-+
-+	dev = &per_cpu(idle_devices, smp_processor_id());
-+	dev->cpu = smp_processor_id();
-+	dev->states[0].enter = xen_idle;
-+	dev->state_count = 1;
-+	cpuidle_register_device(dev);
-+}
-+
- void __init xen_arch_setup(void)
- {
- 	struct physdev_set_iopl set_iopl;
-@@ -186,7 +206,7 @@ void __init xen_arch_setup(void)
- 	       MAX_GUEST_CMDLINE > COMMAND_LINE_SIZE ?
- 	       COMMAND_LINE_SIZE : MAX_GUEST_CMDLINE);
- 
--	pm_idle = xen_idle;
-+	setup_cpuidle_xen();
- 
- 	paravirt_disable_iospace();
- 
+ config HIGHMEM
