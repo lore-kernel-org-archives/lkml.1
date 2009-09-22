@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbZIVIKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZIVIIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755137AbZIVIKR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 04:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbZIVIKP
+	id S1755336AbZIVIIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 04:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZIVIIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 04:10:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41612 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754383AbZIVIKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 04:10:14 -0400
-Date: Tue, 22 Sep 2009 10:09:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Avi Kivity <avi@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Alok Kataria <akataria@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-Message-ID: <20090922080913.GB1475@elte.hu>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090919224430.GB9567@kroah.com> <1253419185.3253.21.camel@ank32.eng.vmware.com> <20090920074247.GA5733@elte.hu> <20090920095239.456ad6f2@infradead.org> <4AB5EF25.9070502@redhat.com> <4AB64EFC.10707@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AB64EFC.10707@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 22 Sep 2009 04:08:17 -0400
+Received: from viefep12-int.chello.at ([62.179.121.32]:60236 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754877AbZIVIIQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 04:08:16 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: regression in page writeback
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>
+In-Reply-To: <20090922080505.GB9192@localhost>
+References: <20090922054913.GA27260@sli10-desk.sh.intel.com>
+	 <1253601612.8439.274.camel@twins>  <20090922080505.GB9192@localhost>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 10:09:25 +0200
+Message-Id: <1253606965.8439.281.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> On 09/20/09 02:00, Avi Kivity wrote:
-> > On 09/20/2009 10:52 AM, Arjan van de Ven wrote:
-> >> On Sun, 20 Sep 2009 09:42:47 +0200
-> >> Ingo Molnar<mingo@elte.hu>  wrote:
-> >>
-> >>   
-> >>> If we were able to rip out all (or most) of paravirt from arch/x86 it
-> >>> would be tempting for other technical reasons - but the patch above
-> >>> is well localized.
-> >>>      
-> >> interesting question is if this would allow us to remove a few of the
-> >> paravirt hooks....
-> >>    
-> >
-> > kvm will be removing the pvmmu support soon; and Xen is talking about
-> > running paravirtualized guests in a vmx/svm container where they don't
-> > need most of the hooks.
+On Tue, 2009-09-22 at 16:05 +0800, Wu Fengguang wrote:
 > 
-> We have no plans to drop support for non-vmx/svm capable processors, 
-> let alone require ept/npt.
+> I'm not sure how this patch stopped the "overshooting" behavior.
+> Maybe it managed to not start the background pdflush, or the started
+> pdflush thread exited because it found writeback is in progress by
+> someone else?
+> 
+> -               if (bdi_nr_reclaimable) {
+> +               if (bdi_nr_reclaimable > bdi_thresh) {
 
-But, just to map out our plans for the future, do you concur with the 
-statements and numbers offered here by the VMware and KVM folks that
-on sufficiently recent hardware, hardware-assisted virtualization 
-outperforms paravirt_ops in many (most?) workloads?
+The idea is that we shouldn't move more pages from dirty -> writeback
+when there's not actually that much dirty left.
 
-I.e. paravirt_ops becomes a legacy hardware thing, not a core component 
-of the design of arch/x86/.
+Now, I'm not sure about the > bdi_thresh part, I've suggested to maybe
+use bdi_thresh/2 a few times, but it generally didn't seem to make much
+of a difference.
 
-(with a long obsoletion period, of course.)
 
-Thanks,
 
-	Ingo
