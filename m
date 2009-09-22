@@ -1,125 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbZIVNLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbZIVNNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbZIVNLi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbZIVNLi
+	id S1756575AbZIVNNN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbZIVNNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:11:38 -0400
-Received: from fanny.its.uu.se ([130.238.4.241]:53216 "EHLO fanny.its.uu.se"
+	Tue, 22 Sep 2009 09:13:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:57112 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756525AbZIVNLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:11:37 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1756276AbZIVNNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:13:11 -0400
+Subject: Re: [2.6.31] Memory leak in SCSI initialization?
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200909221318.IFD17141.OQLtSFJVOOFFMH@I-love.SAKURA.ne.jp>
+References: <200909221318.IFD17141.OQLtSFJVOOFFMH@I-love.SAKURA.ne.jp>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 23:13:14 +1000
+Message-Id: <1253625194.5923.10.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <19128.52482.184096.558888@pilspetsen.it.uu.se>
-Date: Tue, 22 Sep 2009 15:11:30 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: =?UTF-8?Q?Maciej_=C5=BBenczykowski?= <zenczykowski@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: libATA SATA errors on DVD bad sectors...
-In-Reply-To: <55a4f86e0909212101s3097a1e3yf225f3e165ff0bea@mail.gmail.com>
-References: <55a4f86e0909212101s3097a1e3yf225f3e165ff0bea@mail.gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc: linux-ide added)
+On Tue, 2009-09-22 at 13:18 +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> I can see below message appears for 15 times in
+> /sys/kernel/debug/kmemleak after processing /init inside initramfs.
+> 
+> unreferenced object 0xdeadb5c8 (size 32):
+>   comm "insmod", pid 543, jiffies 4294674766
+>   backtrace:
+>     [<c048a22c>] create_object+0x135/0x202
+>     [<c048a31e>] kmemleak_alloc+0x25/0x49
+>     [<c04865d9>] kmemleak_alloc_recursive+0x1c/0x22
+>     [<c0486d33>] __kmalloc+0x6c/0xb9
+>     [<c04f5675>] kvasprintf+0x2d/0x4a
+>     [<c04ef5af>] kobject_set_name_vargs+0x21/0x50
+>     [<c054bbd7>] dev_set_name+0x1a/0x1c
+>     [<e08dc1b7>] scsi_sysfs_device_initialize+0x8b/0xe4 [scsi_mod]
+>     [<e08d9bbf>] scsi_alloc_sdev+0x134/0x18f [scsi_mod]
+>     [<e08d9e7a>] scsi_probe_and_add_lun+0x107/0xa98 [scsi_mod]
+>     [<e08da946>] __scsi_scan_target+0x70/0x4b1 [scsi_mod]
+>     [<e08dadbe>] scsi_scan_channel+0x37/0x60 [scsi_mod]
+>     [<e08dae9f>] scsi_scan_host_selected+0xb8/0xf1 [scsi_mod]
+>     [<e08daf2c>] do_scsi_scan_host+0x54/0x5d [scsi_mod]
+>     [<e08db2ef>] scsi_scan_host+0x14d/0x165 [scsi_mod]
+>     [<e0959771>] mptspi_probe+0x2cd/0x2f8 [mptspi]
 
-=?UTF-8?Q?Maciej_=C5=BBenczykowski?= writes:
- > I'm getting the following on bad sectors on a pretty badly scratched DVD:
- > 
- > Sep 21 20:23:20 zeus kernel: ata12.00: exception Emask 0x0 SAct 0x0
- > SErr 0x0 action 0x6
- > Sep 21 20:23:20 zeus kernel: ata12.00: port_status 0x20280000
+I think this will fix it:
 
-Later you write that ata12 connects to a Promise SATA300 TX4.
-In that case, port_status 0x20280000 means:
-- Overrun Error
-- Drive Error
-- Packet Command Cycle
-which means that the drive set its error status flag and raised an interrupt
-which prematurely terminated a data transfer.
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index 9ce5c34..284bcbe 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -957,7 +957,7 @@ static inline void scsi_destroy_sdev(struct scsi_device *sdev)
+        if (sdev->host->hostt->slave_destroy)
+                sdev->host->hostt->slave_destroy(sdev);
+        transport_destroy_device(&sdev->sdev_gendev);
+-       put_device(&sdev->sdev_gendev);
++       put_device(&sdev->sdev_dev);
+ }
+ 
+ #ifdef CONFIG_SCSI_LOGGING
 
- > Sep 21 20:23:20 zeus kernel: ata12.00: cmd
- > a0/01:00:00:00:08/00:00:00:00:00/a0 tag 0 dma 2048 in
- > Sep 21 20:23:20 zeus kernel:         cdb a8 00 00 16 02 6c 00 00  00
- > 01 00 00 00 00 00 00
- > Sep 21 20:23:20 zeus kernel:         res
- > 51/30:03:00:00:00/00:00:00:00:00/e0 Emask 0x2 (HSM violation)
- > Sep 21 20:23:20 zeus kernel: ata12.00: status: { DRDY ERR }
- > Sep 21 20:23:20 zeus kernel: ata12: hard resetting link
- > Sep 21 20:23:21 zeus kernel: ata12: SATA link up 1.5 Gbps (SStatus 113
- > SControl 300)
- > Sep 21 20:23:21 zeus kernel: ata12.00: configured for UDMA/100
- > Sep 21 20:23:21 zeus kernel: ata12: EH complete
- > 
- > Sep 21 20:23:24 zeus kernel: ata12.00: exception Emask 0x0 SAct 0x0
- > SErr 0x0 action 0x6
- > Sep 21 20:23:24 zeus kernel: ata12.00: port_status 0x20280000
- > Sep 21 20:23:24 zeus kernel: ata12.00: cmd
- > a0/01:00:00:00:08/00:00:00:00:00/a0 tag 0 dma 2048 in
- > Sep 21 20:23:24 zeus kernel:         cdb a8 00 00 16 02 6d 00 00  00
- > 01 00 00 00 00 00 00
- > Sep 21 20:23:24 zeus kernel:         res
- > 51/30:03:00:00:00/00:00:00:00:00/e0 Emask 0x2 (HSM violation)
- > Sep 21 20:23:24 zeus kernel: ata12.00: status: { DRDY ERR }
- > Sep 21 20:23:24 zeus kernel: ata12: hard resetting link
- > Sep 21 20:23:24 zeus kernel: ata12: SATA link up 1.5 Gbps (SStatus 113
- > SControl 300)
- > Sep 21 20:23:25 zeus kernel: ata12.00: configured for UDMA/100
- > Sep 21 20:23:25 zeus kernel: ata12: EH complete
- > 
- > The command being run is:
- > sg_dd blk_sgio=1 bpt=1 bs=2048 cdbsz=12 coe=0 coe_limit=0 if=/dev/srX
- > odir of=badsector.bin count=1 skip=$i
- > 
- > on a Fedora 11 box:
- > Linux zeus 2.6.30.5-43.fc11.x86_64 #1 SMP Thu Aug 27 21:39:52 EDT 2009
- > x86_64 x86_64 x86_64 GNU/Linux
- > 
- > These only seem to show up when the DVD is inserted into /dev/sr1.
- > /dev/sr0 doesn't seem to spew this crap (although both drives fail to
- > read the sector).
- > 
- > /sys/block/sr0 ->
- > ../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sr0
- > /sys/block/sr1 ->
- > ../devices/pci0000:00/0000:00:1e.0/0000:03:09.0/host11/target11:0:0/11:0:0:0/block/sr1
- > 
- > ata1.00: HL-DT-ST BD-RE GGW-H20L YL05 UDMA/133
- > ata12.00: LITE-ON DVDRW LH-20A1L BL06 UDMA/100
- > 
- > # lspci [-n] | egrep '1e.0|1f.2|3:09'
- > 00:1f.2 0106: 8086:2922 SATA controller: Intel Corporation
- > 82801IR/IO/IH (ICH9R/DO/DH) 6 port SATA AHCI Controller (rev 02)
- > 00:1e.0 0604: 8086:244e PCI bridge: Intel Corporation 82801 PCI Bridge (rev 92)
- > 03:09.0 0180: 105a:3d17 Mass storage controller: Promise Technology,
- > Inc. PDC40718 (SATA 300 TX4) (rev 02)
- > 
- > ie. the Lite-On drive on the promise TX4 controller has issues, while
- > the LG on the intel AHCI controller seems fine...
 
-The obvious next experiment would be to swap the drives and see how
-the Lite-On behaves on the ICH9 and the LG behaves on the TX4.
+sdev_dev has class == sdev_class. The release function for sdev_class is
+scsi_device_cls_release(), and _that_ does a put on the sdev_gendev.
 
- > Would it make sense to add this somewhere into the code as a 'bad
- > sector' error condition and not perform a hard reset?
+But someone who groks all that mess, er beauty ;D, should check that
+makes sense.
 
-The sata_promise driver upon seeing the port_status above sets
-AC_ERR_HSM and AC_ERR_DEV, and performs a soft reset. Apparently
-libata-eh follows up with a hard(er) reset, which doesn't surprise
-me given the HSM and DEV errors.
+cheers
 
- > It may be worth pointing out that the LiteOn drive is significantly
- > faster in dealing with the bad sectors, and actually successfully
- > reads a far larger number of them (about 15% of the sectors that the
- > LG can't read, the Lite-On can, and in about 2/3 of the time).  I
- > would guess that if it didn't have to hard reset the bus, it'd be even
- > faster...
-
-So things actually work Ok with the Lite-On on the TX4, and you're mainly
-concerned about log messages and potential performance loss?
-
-/Mikael
