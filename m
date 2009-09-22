@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbZIVRb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZIVRj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755315AbZIVRb4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZIVRby
+	id S1755966AbZIVRj0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZIVRjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:31:54 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:52130 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbZIVRby (ORCPT
+	Tue, 22 Sep 2009 13:39:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33612 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753930AbZIVRjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:31:54 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=k+yYpz9y2cXhVVGWXna2VosHWJNCs0ry1LLBkN7FB1w4xxWzecvbC1Uh7GyNIaT2I
-	3oJCKIpgHUBXpiJP5dKmQ==
-Date: Tue, 22 Sep 2009 10:31:47 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       sachinp@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>
-Subject: Re: [RFC PATCH 0/3] Fix SLQB on memoryless configurations V2
-In-Reply-To: <20090922152649.GG25965@csn.ul.ie>
-Message-ID: <alpine.DEB.1.00.0909221018380.7114@chino.kir.corp.google.com>
-References: <1253549426-917-1-git-send-email-mel@csn.ul.ie> <1253577603.7103.174.camel@pasglop> <20090922152649.GG25965@csn.ul.ie>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 22 Sep 2009 13:39:24 -0400
+Message-ID: <4AB90AC3.20908@zytor.com>
+Date: Tue, 22 Sep 2009 10:34:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Tim Abbott <tabbott@ksplice.com>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH v4 4/4] Use macros for .data.page_aligned section.
+References: <1253484855-8067-1-git-send-email-tabbott@ksplice.com>	 <1253484855-8067-5-git-send-email-tabbott@ksplice.com> <1253576808.7103.167.camel@pasglop>
+In-Reply-To: <1253576808.7103.167.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009, Mel Gorman wrote:
-
-> Lumping the per-cpu allocator to cover per-cpu and per-node feels a bit
-> confusing. Maybe it would have been easier if there simply were never
-> memoryless nodes and cpus were always mapped to their closest, instead of
-> their local, node. There likely would be a few corner cases though and memory
-> hotplug would add to the mess. I haven't been able to decide on a sensible
-> way forward that doesn't involve a number of invasive changes.
+Benjamin Herrenschmidt wrote:
+> On Sun, 2009-09-20 at 18:14 -0400, Tim Abbott wrote:
+>> This patch changes the remaining direct references to
+>> .data.page_aligned in C and assembly code to use the macros in
+>> include/linux/linkage.h.
+>>
+>> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>> Cc: Ingo Molnar <mingo@redhat.com>
+>> Cc: H. Peter Anvin <hpa@zytor.com>
+>> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
 > 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>> Cc: Sam Ravnborg <sam@ravnborg.org>
 
-I strongly agree with removing memoryless node support from the kernel, 
-but I don't think we should substitute it with a multiple cpu binding 
-approach because it doesn't export the true physical topology of the 
-system.
-
-If we treat all cpus equally with respect to a region of memory when one 
-happens to be more remote, userspace can no longer use sched_setaffinity() 
-for latency-sensitive apps nor can it correctly interleave with other 
-nodes.  Reduced to its simplest form, a machine now with a single node 
-because memoryless nodes have been obsoleted would incorrectly report that 
-all cpus are true siblings.
-
-While memoryless nodes are inconvenient for the implementation, they do 
-have the benefit of being able to represent the actual physical topology 
-when binding cpus to their nearest node, even though it may not be local, 
-would not.
-
-It's important to accurately represent the physical topology, and that can 
-be done with the device class abstraction model as I described in 
-http://lkml.org/lkml/2009/9/22/97 of which a node is only a locality of a 
-particular type.
+Acked-by: H. Peter Anvin <hpa@zytor.com>
