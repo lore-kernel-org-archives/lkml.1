@@ -1,98 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZIVNfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbZIVNfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbZIVNfN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZIVNfL
+	id S1755661AbZIVNfd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZIVNfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:35:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33896 "EHLO hera.kernel.org"
+	Tue, 22 Sep 2009 09:35:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33913 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753998AbZIVNfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:35:10 -0400
-Date: Tue, 22 Sep 2009 13:34:29 GMT
+	id S1753896AbZIVNf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:35:28 -0400
+Date: Tue, 22 Sep 2009 13:34:43 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       seto.hidetoshi@jp.fujitsu.com, ying.huang@intel.com, ak@linux.intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: ying.huang@intel.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, seto.hidetoshi@jp.fujitsu.com,
+       ak@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf stat: Fix zero total printouts
-Message-ID: <tip-c7f7fea30b7e52c9d4b9cef271110a98d59adcbc@git.kernel.org>
-Git-Commit-ID: c7f7fea30b7e52c9d4b9cef271110a98d59adcbc
+Subject: [tip:x86/urgent] x86: mce: Clean up thermal throttling state tracking code
+Message-ID: <tip-3967684006f30c253bc6d4a6604d1bad4a7fc672@git.kernel.org>
+Git-Commit-ID: 3967684006f30c253bc6d4a6604d1bad4a7fc672
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 13:34:30 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 13:34:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c7f7fea30b7e52c9d4b9cef271110a98d59adcbc
-Gitweb:     http://git.kernel.org/tip/c7f7fea30b7e52c9d4b9cef271110a98d59adcbc
+Commit-ID:  3967684006f30c253bc6d4a6604d1bad4a7fc672
+Gitweb:     http://git.kernel.org/tip/3967684006f30c253bc6d4a6604d1bad4a7fc672
 Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 22 Sep 2009 14:53:51 +0200
+AuthorDate: Tue, 22 Sep 2009 15:50:24 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 22 Sep 2009 15:01:47 +0200
+CommitDate: Tue, 22 Sep 2009 17:30:41 +0200
 
-perf stat: Fix zero total printouts
+x86: mce: Clean up thermal throttling state tracking code
 
-Before:
+Instead of a mess of three separate percpu variables, consolidate
+the state into a single structure.
 
-           0  sched:sched_switch #        nan M/sec
+Also clean up therm_throt_process(), use cleaner and more
+understandable variable names and a clearer logic.
 
-After:
+This, without changing the logic, makes the code more
+streamlined, more readable and smaller as well:
 
-           0  sched:sched_switch #      0.000 M/sec
+   text	   data	    bss	    dec	    hex	filename
+   1487	    169	      4	   1660	    67c	therm_throt.o.before
+   1432	    176	      4	   1612	    64c	therm_throt.o.after
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Huang Ying <ying.huang@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-stat.c |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |   63 ++++++++++++++++++-----------
+ 1 files changed, 39 insertions(+), 24 deletions(-)
 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 16af2d8..e5f6ece 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -338,14 +338,24 @@ static void nsec_printout(int counter, double avg)
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index 63a56d1..db80b57 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -34,20 +34,30 @@
+ /* How long to wait between reporting thermal events */
+ #define CHECK_INTERVAL		(300 * HZ)
  
- static void abs_printout(int counter, double avg)
+-static DEFINE_PER_CPU(__u64, next_check) = INITIAL_JIFFIES;
+-static DEFINE_PER_CPU(unsigned long, thermal_throttle_count);
+-static DEFINE_PER_CPU(bool, thermal_throttle_active);
++/*
++ * Current thermal throttling state:
++ */
++struct thermal_state {
++	bool			is_throttled;
++
++	u64			next_check;
++	unsigned long		throttle_count;
++};
++
++static DEFINE_PER_CPU(struct thermal_state, thermal_state);
+ 
+-static atomic_t therm_throt_en		= ATOMIC_INIT(0);
++static atomic_t therm_throt_en	= ATOMIC_INIT(0);
+ 
+ #ifdef CONFIG_SYSFS
+ #define define_therm_throt_sysdev_one_ro(_name)				\
+ 	static SYSDEV_ATTR(_name, 0444, therm_throt_sysdev_show_##_name, NULL)
+ 
+ #define define_therm_throt_sysdev_show_func(name)			\
+-static ssize_t therm_throt_sysdev_show_##name(struct sys_device *dev,	\
+-					struct sysdev_attribute *attr,	\
+-					      char *buf)		\
++									\
++static ssize_t therm_throt_sysdev_show_##name(				\
++			struct sys_device *dev,				\
++			struct sysdev_attribute *attr,			\
++			char *buf)					\
+ {									\
+ 	unsigned int cpu = dev->id;					\
+ 	ssize_t ret;							\
+@@ -55,7 +65,7 @@ static ssize_t therm_throt_sysdev_show_##name(struct sys_device *dev,	\
+ 	preempt_disable();	/* CPU hotplug */			\
+ 	if (cpu_online(cpu))						\
+ 		ret = sprintf(buf, "%lu\n",				\
+-			      per_cpu(thermal_throttle_##name, cpu));	\
++			      per_cpu(thermal_state, cpu).name);	\
+ 	else								\
+ 		ret = 0;						\
+ 	preempt_enable();						\
+@@ -63,11 +73,11 @@ static ssize_t therm_throt_sysdev_show_##name(struct sys_device *dev,	\
+ 	return ret;							\
+ }
+ 
+-define_therm_throt_sysdev_show_func(count);
+-define_therm_throt_sysdev_one_ro(count);
++define_therm_throt_sysdev_show_func(throttle_count);
++define_therm_throt_sysdev_one_ro(throttle_count);
+ 
+ static struct attribute *thermal_throttle_attrs[] = {
+-	&attr_count.attr,
++	&attr_throttle_count.attr,
+ 	NULL
+ };
+ 
+@@ -93,33 +103,38 @@ static struct attribute_group thermal_throttle_attr_group = {
+  *          1 : Event should be logged further, and a message has been
+  *              printed to the syslog.
+  */
+-static int therm_throt_process(int curr)
++static int therm_throt_process(bool is_throttled)
  {
-+	double total, ratio = 0.0;
+-	unsigned int cpu = smp_processor_id();
+-	__u64 tmp_jiffs = get_jiffies_64();
+-	bool was_throttled = __get_cpu_var(thermal_throttle_active);
+-	bool is_throttled = __get_cpu_var(thermal_throttle_active) = curr;
++	struct thermal_state *state;
++	unsigned int this_cpu;
++	bool was_throttled;
++	u64 now;
 +
- 	fprintf(stderr, " %14.0f  %-24s", avg, event_name(counter));
++	this_cpu = smp_processor_id();
++	now = get_jiffies_64();
++	state = &per_cpu(thermal_state, this_cpu);
++
++	was_throttled = state->is_throttled;
++	state->is_throttled = is_throttled;
  
- 	if (MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter)) {
--		fprintf(stderr, " # %10.3f IPC  ",
--				avg / avg_stats(&runtime_cycles_stats));
-+		total = avg_stats(&runtime_cycles_stats);
-+
-+		if (total)
-+			ratio = avg / total;
-+
-+		fprintf(stderr, " # %10.3f IPC  ", ratio);
- 	} else {
--		fprintf(stderr, " # %10.3f M/sec",
--				1000.0 * avg / avg_stats(&runtime_nsecs_stats));
-+		total = avg_stats(&runtime_nsecs_stats);
-+
-+		if (total)
-+			ratio = 1000.0 * avg / total;
-+
-+		fprintf(stderr, " # %10.3f M/sec", ratio);
+ 	if (is_throttled)
+-		__get_cpu_var(thermal_throttle_count)++;
++		state->throttle_count++;
+ 
+ 	if (!(was_throttled ^ is_throttled) &&
+-	    time_before64(tmp_jiffs, __get_cpu_var(next_check)))
++			time_before64(now, state->next_check))
+ 		return 0;
+ 
+-	__get_cpu_var(next_check) = tmp_jiffs + CHECK_INTERVAL;
++	state->next_check = now + CHECK_INTERVAL;
+ 
+ 	/* if we just entered the thermal event */
+ 	if (is_throttled) {
+-		printk(KERN_CRIT "CPU%d: Temperature above threshold, "
+-		       "cpu clock throttled (total events = %lu)\n",
+-		       cpu, __get_cpu_var(thermal_throttle_count));
++		printk(KERN_CRIT "CPU%d: Temperature above threshold, cpu clock throttled (total events = %lu)\n", this_cpu, state->throttle_count);
+ 
+ 		add_taint(TAINT_MACHINE_CHECK);
+ 		return 1;
  	}
+ 	if (was_throttled) {
+-		printk(KERN_INFO "CPU%d: Temperature/speed normal\n", cpu);
++		printk(KERN_INFO "CPU%d: Temperature/speed normal\n", this_cpu);
+ 		return 1;
+ 	}
+ 
+@@ -213,7 +228,7 @@ static void intel_thermal_interrupt(void)
+ 	__u64 msr_val;
+ 
+ 	rdmsrl(MSR_IA32_THERM_STATUS, msr_val);
+-	if (therm_throt_process(msr_val & THERM_STATUS_PROCHOT))
++	if (therm_throt_process((msr_val & THERM_STATUS_PROCHOT) != 0))
+ 		mce_log_therm_throt_event(msr_val);
  }
  
