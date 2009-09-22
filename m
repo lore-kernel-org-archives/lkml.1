@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZIVMhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbZIVMin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbZIVMhw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 08:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZIVMhv
+	id S932074AbZIVMin (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 08:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZIVMin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 08:37:51 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:60615 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbZIVMhv (ORCPT
+	Tue, 22 Sep 2009 08:38:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45480 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754996AbZIVMim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 08:37:51 -0400
-Date: Tue, 22 Sep 2009 08:37:50 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: best practices:  which "uaccess.h" should one include?
-In-Reply-To: <200909221409.02211.arnd@arndb.de>
-Message-ID: <alpine.LFD.2.00.0909220835340.31679@localhost>
-References: <alpine.LFD.2.00.0909220226080.10448@localhost> <200909221409.02211.arnd@arndb.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 22 Sep 2009 08:38:42 -0400
+Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
+From: Peter Zijlstra <peterz@infradead.org>
+To: Claudio Scordino <claudio@evidence.eu.com>
+Cc: Raistlin <raistlin@linux.it>, michael@evidence.eu.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       johan.eker@ericsson.com, p.faure@akatech.ch,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
+In-Reply-To: <4AB8BBEF.2040604@evidence.eu.com>
+References: <1253615424.20345.76.camel@Palantir>
+	 <4AB8BBEF.2040604@evidence.eu.com>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 14:38:26 +0200
+Message-Id: <1253623106.4452.9.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009, Arnd Bergmann wrote:
+On Tue, 2009-09-22 at 13:58 +0200, Claudio Scordino wrote:
+> > This implementation is part of a FP7 European project called ACTORS,
+> > and financially supported by the European commission
+> > (see http://www.actors-project.eu).
+> > 
+> > The involved partners (which include Ericsson Research, Evidence Srl,
+> > AKAtech) strongly believe that a general-purpose operating system like
+> > Linux should provide a standard real-time scheduling policy (like the
+> > one implemented in this patch) still allowing to schedule non-real-time
+> > tasks in the usual way.
+> 
+> Hi Peter, hi all,
+> 
+>       note that the request of having an EDF scheduling class integrated 
+> in the mainline kernel does not come from academy, but comes from industry.
 
-> On Tuesday 22 September 2009, Robert P. J. Day wrote:
-> >   philosophically, which is the "correct" uaccess.h header file to
-> > include in kernel code -- <linux/uaccess.h> or <asm/uaccess.h>?
-> > the first explicitly includes the second so that's a safe choice
-> > but, generally, there's been a tendency to shift toward including
-> > the "linux" header files.  opinion?  there's quite a mixture under
-> > the drivers/ directory.
->
-> The preferred one is linux/uaccess.h, the same is true for many
-> headers that traditionally only existed in asm/.
+Yeah, I know, there's lots of interest in having a deadline scheduler.
 
-  i know -- i've sent in a few patches of my own to make some of those
-changes.  i just wanted to be clear since i'm writing a short tutorial
-on kernel/user space copying and wanted to make the correct
-recommendation for the header file to include.
+One of the things we'll have to look at is removing all the EDF
+assumptions from it.
 
-> There are some headers with explicit #warning or #error messages
-> when they are not included from linux/foo.h, e.g. spinlock_types.h,
-> bitops.h or rwsem.h.
+I think we'll be wanting to do something like s/EDF/DEADLINE/
+s/edf/deadline/ etc. on the code base to begin with.
 
-  yup, i've seen those, too.  thanks.
+I think the task model as exposed through sched_param_ex needs a little
+more thought as well.
 
-rday
---
+But anyway, I'm very glad to see the code.. and am hoping to have some
+time myself to prod at the PI code to work with this.
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
