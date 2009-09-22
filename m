@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751321AbZIVT4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751728AbZIVUD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751321AbZIVT4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbZIVT4Z
+	id S1751728AbZIVUD6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 16:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZIVUD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:56:25 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:45681 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751076AbZIVT4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:56:24 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: Hibernation oops with 2.6.31 won't fit the screen - bisected
-Date: Tue, 22 Sep 2009 21:56:19 +0200
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, magnus.damm@gmail.com, tglx@linutronix.de
-References: <200909192155.01225.linux@rainbow-software.org> <200909192344.55258.elendil@planet.nl>
-In-Reply-To: <200909192344.55258.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 22 Sep 2009 16:03:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33540 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750707AbZIVUDz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 16:03:55 -0400
+Date: Tue, 22 Sep 2009 13:03:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tomi.valkeinen@nokia.com
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tony@atomide.com, linux-omap@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
+Message-Id: <20090922130304.ffe24448.akpm@linux-foundation.org>
+In-Reply-To: <1253622588.25232.11.camel@tubuntu>
+References: <1253622588.25232.11.camel@tubuntu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909222156.21871.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 September 2009 23:44:54 Frans Pop wrote:
-> Ondrej Zary wrote:
-> > hibernation worked great with 2.6.30 - I had over a month of uptime (it
-> > never worked so well before - always crashed after some time). But in
-> > 2.6.31, it's broken again - and completely. The first hibernation works
-> > but it always crashes on the second one.
-> >
-> > The problem is that the oops is so long that it does not fit the screen -
-> > even 1280x1024 is not enough. Scrolling does not work (as it used to do
-> > on 2.4 kernels), netconsole does not catch it. So how can I debug this?
->
-> One way to get at least an indication of what broke the hibernation is to
-> run a bisection to find the change that broke hibernation. That could
-> provide sufficient clues for a next step.
->
-> Would that be an option for you?
+On Tue, 22 Sep 2009 15:29:48 +0300
+Tomi Valkeinen <tomi.valkeinen@nokia.com> wrote:
 
-I bisected it and found this:
+> Linus,
+> 
+> Here's the new display subsystem and framebuffer driver for OMAP2/3.
+> 
+> The driver has been reviewed on linux-omap and linux-fbdev-devel, and is in
+> use, for example, on N900, Beagle Board and Overo boards. We have an ACK for
+> the OMAP parts from Tony Lindgren, who maintains the OMAP platform.
+> 
+> We have gotten positive feedback about the driver, for example in this thread:
+> http://marc.info/?l=linux-kernel&m=125171081901820&w=2
+> 
+> The driver is actively maintained and developed further, and I have already a
+> bunch of patches on top of these patches, but I would like to get the big core
+> driver merged first. After the driver is merged, other people can send patches
+> to LCD drivers and board files to enable the new display subsystem on their
+> boards.
+> 
+> Andrew said 2-3 weeks ago that he'll merge the driver (after he has looked
+> through it), but he hasn't responded since then. I'm guessing he's quite busy.
 
-c7121843685de2bf7f3afd3ae1d6a146010bf1fc is first bad commit
-commit c7121843685de2bf7f3afd3ae1d6a146010bf1fc
-Author: Magnus Damm <magnus.damm@gmail.com>
-Date:   Tue Jul 28 14:09:55 2009 -0700
+That's because it came very late and conflicts considerably with
+changes which are already pending.
 
-    clocksource: Save mult_orig in clocksource_disable()
+> Please pull the new OMAP2/3 display subsystem driver from:
+> 
+>   git://gitorious.org/linux-omap-dss2/linux.git for-linus
+> 
 
-    To fix the common case where ->enable() does not set up
-    mult, make sure mult_orig is saved in mult on disable.
+Confused.  These conflicts heavily with the changes which I've already
+queued, does it not?  Ones which were queued way earlier than this
+material.
 
-    Also add comments to explain why we do this.
+If so, why on earth did you send a pull request, knowing that it would
+trash my tree?
 
-    Signed-off-by: Magnus Damm <damm@igel.co.jp>
-    Cc: johnstul@us.ibm.com
-    Cc: lethal@linux-sh.org
-    Cc: akpm@linux-foundation.org
-    LKML-Reference: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-:040000 040000 c965062bc79af46cdb3522fc7ab1cc81d2f84de3 26616c88a8128b25fd15c3da39ac6251cd9723b6 M      include
-
-
-Reverting this commit fixes the problem.
-
--- 
-Ondrej Zary
