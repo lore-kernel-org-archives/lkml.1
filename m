@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbZIVTjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbZIVTjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752521AbZIVTjP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZIVTjN
+	id S1752549AbZIVTjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbZIVTjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:39:13 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:49576 "EHLO
+	Tue, 22 Sep 2009 15:39:17 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:39120 "EHLO
 	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752420AbZIVTjG (ORCPT
+	with ESMTP id S1752456AbZIVTjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:39:06 -0400
+	Tue, 22 Sep 2009 15:39:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=NZb/pr4SCQYc8CKIrrJkynBE8Gx8zzwt8+Z+uPJUzV9LhzhiGm7K/ZvpI0DG8hi1Zi
-         U9/G0cobfYlJBogNna3URmd8b01TynEKs3ueW94xUFEIautTYCD2vIK0mVcbV608yHKI
-         A+CmSrrbgrmvFzvvHELZ+1YY4nI+4I410qb7A=
+        b=Mlk/75EzzdZOAPBgE/4jo85A0P4u1RAJiJDtsfosCRnkgPnCxHts/PDLBZ5Qr/OV94
+         VvhGivHazwA4h/5TO+GccggkuzM+lDRSTHFAs+QG0p/aNTfpImjgbIP0HFdaUVjg1Cd2
+         dUOkXPhU88hxyLR9W60p3RDMyokBP8tv/zSzA=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -24,17 +24,17 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Jim Keniston <jkenisto@us.ibm.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: [PATCH 17/24] tracing/kprobes: Support custom subsystem for each kprobe event
-Date: Tue, 22 Sep 2009 21:38:15 +0200
-Message-Id: <1253648302-5771-18-git-send-email-fweisbec@gmail.com>
+       Tom Zanussi <tzanussi@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 18/24] tracing/kprobes: Fix trace_probe registration order
+Date: Tue, 22 Sep 2009 21:38:16 +0200
+Message-Id: <1253648302-5771-19-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
 References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
@@ -44,20 +44,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Support specifying a custom subsystem(group) for each kprobe event.
-This allows users to create new group to control several probes
-at once, or add events to existing groups as additional tracepoints.
-
-New synopsis:
- p[:[subsys/]event-name] KADDR|KSYM[+offs] [ARGS]
+Fix trace_probe registration order. ftrace_event_call and ftrace_event
+must be registered before kprobe/kretprobe, because tracing/profiling
+handlers dereference the event-id.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Andi Kleen <ak@linux.intel.com>
 Cc: Christoph Hellwig <hch@infradead.org>
 Cc: Frank Ch. Eigler <fche@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jason Baron <jbaron@redhat.com>
@@ -66,142 +63,86 @@ Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <20090910235353.22412.15149.stgit@dhcp-100-2-132.bos.redhat.com>
+LKML-Reference: <20090914204856.18779.52961.stgit@dhcp-100-2-132.bos.redhat.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- Documentation/trace/kprobetrace.txt |    5 +++--
- kernel/trace/trace_kprobe.c         |   33 +++++++++++++++++++++++++++------
- 2 files changed, 30 insertions(+), 8 deletions(-)
+ kernel/trace/trace_kprobe.c |   42 +++++++++++++++++++-----------------------
+ 1 files changed, 19 insertions(+), 23 deletions(-)
 
-diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index a849889..6521681 100644
---- a/Documentation/trace/kprobetrace.txt
-+++ b/Documentation/trace/kprobetrace.txt
-@@ -25,9 +25,10 @@ probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
- 
- Synopsis of kprobe_events
- -------------------------
--  p[:EVENT] SYMBOL[+offs]|MEMADDR [FETCHARGS]	: Set a probe
--  r[:EVENT] SYMBOL[+0] [FETCHARGS]		: Set a return probe
-+  p[:[GRP/]EVENT] SYMBOL[+offs]|MEMADDR [FETCHARGS]	: Set a probe
-+  r[:[GRP/]EVENT] SYMBOL[+0] [FETCHARGS]		: Set a return probe
- 
-+ GRP		: Group name. If omitted, use "kprobes" for it.
-  EVENT		: Event name. If omitted, the event name is generated
- 		  based on SYMBOL+offs or MEMADDR.
-  SYMBOL[+offs]	: Symbol+offset where the probe is inserted.
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 1746afe..cbc0870 100644
+index cbc0870..ea0db8e 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -36,6 +36,7 @@
- #define MAX_TRACE_ARGS 128
- #define MAX_ARGSTR_LEN 63
- #define MAX_EVENT_NAME_LEN 64
-+#define KPROBE_EVENT_SYSTEM "kprobes"
+@@ -347,20 +347,15 @@ static struct trace_probe *find_probe_event(const char *event)
+ 	return NULL;
+ }
  
- /* currently, trace_kprobe only supports X86. */
- 
-@@ -265,7 +266,8 @@ static LIST_HEAD(probe_list);
- /*
-  * Allocate new trace_probe and initialize it (including kprobes).
-  */
--static struct trace_probe *alloc_trace_probe(const char *event,
-+static struct trace_probe *alloc_trace_probe(const char *group,
-+					     const char *event,
- 					     void *addr,
- 					     const char *symbol,
- 					     unsigned long offs,
-@@ -298,9 +300,16 @@ static struct trace_probe *alloc_trace_probe(const char *event,
- 	if (!tp->call.name)
- 		goto error;
- 
-+	if (!group)
-+		goto error;
-+	tp->call.system = kstrdup(group, GFP_KERNEL);
-+	if (!tp->call.system)
-+		goto error;
-+
- 	INIT_LIST_HEAD(&tp->list);
- 	return tp;
- error:
-+	kfree(tp->call.name);
- 	kfree(tp->symbol);
- 	kfree(tp);
- 	return ERR_PTR(-ENOMEM);
-@@ -322,6 +331,7 @@ static void free_trace_probe(struct trace_probe *tp)
- 	for (i = 0; i < tp->nr_args; i++)
- 		free_probe_arg(&tp->args[i]);
- 
-+	kfree(tp->call.system);
- 	kfree(tp->call.name);
- 	kfree(tp->symbol);
- 	kfree(tp);
-@@ -530,8 +540,8 @@ static int create_trace_probe(int argc, char **argv)
+-static void __unregister_trace_probe(struct trace_probe *tp)
++/* Unregister a trace_probe and probe_event: call with locking probe_lock */
++static void unregister_trace_probe(struct trace_probe *tp)
  {
- 	/*
- 	 * Argument syntax:
--	 *  - Add kprobe: p[:EVENT] SYMBOL[+OFFS]|ADDRESS [FETCHARGS]
--	 *  - Add kretprobe: r[:EVENT] SYMBOL[+0] [FETCHARGS]
-+	 *  - Add kprobe: p[:[GRP/]EVENT] KSYM[+OFFS]|KADDR [FETCHARGS]
-+	 *  - Add kretprobe: r[:[GRP/]EVENT] KSYM[+0] [FETCHARGS]
- 	 * Fetch args:
- 	 *  aN	: fetch Nth of function argument. (N:0-)
- 	 *  rv	: fetch return value
-@@ -549,7 +559,7 @@ static int create_trace_probe(int argc, char **argv)
- 	struct trace_probe *tp;
- 	int i, ret = 0;
- 	int is_return = 0;
--	char *symbol = NULL, *event = NULL, *arg = NULL;
-+	char *symbol = NULL, *event = NULL, *arg = NULL, *group = NULL;
- 	unsigned long offset = 0;
- 	void *addr = NULL;
- 	char buf[MAX_EVENT_NAME_LEN];
-@@ -566,6 +576,15 @@ static int create_trace_probe(int argc, char **argv)
+ 	if (probe_is_return(tp))
+ 		unregister_kretprobe(&tp->rp);
+ 	else
+ 		unregister_kprobe(&tp->rp.kp);
+-}
+-
+-/* Unregister a trace_probe and probe_event: call with locking probe_lock */
+-static void unregister_trace_probe(struct trace_probe *tp)
+-{
+-	unregister_probe_event(tp);
+-	__unregister_trace_probe(tp);
+ 	list_del(&tp->list);
++	unregister_probe_event(tp);
+ }
  
- 	if (argv[0][1] == ':') {
- 		event = &argv[0][2];
-+		if (strchr(event, '/')) {
-+			group = event;
-+			event = strchr(group, '/') + 1;
-+			event[-1] = '\0';
-+			if (strlen(group) == 0) {
-+				pr_info("Group name is not specifiled\n");
-+				return -EINVAL;
-+			}
-+		}
- 		if (strlen(event) == 0) {
- 			pr_info("Event name is not specifiled\n");
- 			return -EINVAL;
-@@ -592,6 +611,8 @@ static int create_trace_probe(int argc, char **argv)
- 	argc -= 2; argv += 2;
+ /* Register a trace_probe and probe_event */
+@@ -371,6 +366,19 @@ static int register_trace_probe(struct trace_probe *tp)
  
- 	/* setup a probe */
-+	if (!group)
-+		group = KPROBE_EVENT_SYSTEM;
- 	if (!event) {
- 		/* Make a new event name */
- 		if (symbol)
-@@ -602,7 +623,8 @@ static int create_trace_probe(int argc, char **argv)
- 				 is_return ? 'r' : 'p', addr);
- 		event = buf;
- 	}
--	tp = alloc_trace_probe(event, addr, symbol, offset, argc, is_return);
-+	tp = alloc_trace_probe(group, event, addr, symbol, offset, argc,
-+			       is_return);
- 	if (IS_ERR(tp))
- 		return PTR_ERR(tp);
+ 	mutex_lock(&probe_lock);
  
-@@ -1217,7 +1239,6 @@ static int register_probe_event(struct trace_probe *tp)
- 	int ret;
- 
- 	/* Initialize ftrace_event_call */
--	call->system = "kprobes";
- 	if (probe_is_return(tp)) {
- 		tp->event.trace = print_kretprobe_event;
- 		call->raw_init = probe_event_raw_init;
++	/* register as an event */
++	old_tp = find_probe_event(tp->call.name);
++	if (old_tp) {
++		/* delete old event */
++		unregister_trace_probe(old_tp);
++		free_trace_probe(old_tp);
++	}
++	ret = register_probe_event(tp);
++	if (ret) {
++		pr_warning("Faild to register probe event(%d)\n", ret);
++		goto end;
++	}
++
+ 	if (probe_is_return(tp))
+ 		ret = register_kretprobe(&tp->rp);
+ 	else
+@@ -384,21 +392,9 @@ static int register_trace_probe(struct trace_probe *tp)
+ 				   tp->rp.kp.addr);
+ 			ret = -EINVAL;
+ 		}
+-		goto end;
+-	}
+-	/* register as an event */
+-	old_tp = find_probe_event(tp->call.name);
+-	if (old_tp) {
+-		/* delete old event */
+-		unregister_trace_probe(old_tp);
+-		free_trace_probe(old_tp);
+-	}
+-	ret = register_probe_event(tp);
+-	if (ret) {
+-		pr_warning("Faild to register probe event(%d)\n", ret);
+-		__unregister_trace_probe(tp);
+-	}
+-	list_add_tail(&tp->list, &probe_list);
++		unregister_probe_event(tp);
++	} else
++		list_add_tail(&tp->list, &probe_list);
+ end:
+ 	mutex_unlock(&probe_lock);
+ 	return ret;
 -- 
 1.6.2.3
 
