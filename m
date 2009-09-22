@@ -1,115 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbZIVJI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbZIVJK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654AbZIVJI7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 05:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbZIVJI5
+	id S1755671AbZIVJK7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 05:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755563AbZIVJK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 05:08:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58518 "EHLO hera.kernel.org"
+	Tue, 22 Sep 2009 05:10:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58812 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755496AbZIVJI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 05:08:56 -0400
-Message-ID: <4AB89417.7090005@kernel.org>
-Date: Tue, 22 Sep 2009 18:08:39 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1755521AbZIVJK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 05:10:56 -0400
+Date: Tue, 22 Sep 2009 11:10:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 5/5] futex: fix wakeup race by setting
+	TASK_INTERRUPTIBLE before queue_me
+Message-ID: <20090922091045.GB7755@elte.hu>
+References: <20090922052452.8717.39673.stgit@Aeon> <20090922053038.8717.97838.stgit@Aeon> <4AB88D09.3080907@gmail.com>
 MIME-Version: 1.0
-To: Tony Vroon <tony@linx.net>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.31-07068-g43c1266 Early boot exception
-References: <1253560490.2934.42.camel@localhost>	 <4AB7D349.4000802@zytor.com> <1253566046.2773.10.camel@localhost>
-In-Reply-To: <1253566046.2773.10.camel@localhost>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 22 Sep 2009 09:08:43 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB88D09.3080907@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Vroon wrote:
-> Thanks Ingo. 11-step bisection reveals:
+
+* Eric Dumazet <eric.dumazet@gmail.com> wrote:
+
+> Darren Hart a ??crit :
+> > PI futexes do not use the same plist_node_empty() test for wakeup. It was
+> > possible for the waiter (in futex_wait_requeue_pi()) to set TASK_INTERRUPTIBLE
+> > after the waker assigned the rtmutex to the waiter. The waiter would then note
+> > the plist was not empty and call schedule(). The task would not be found by any
+> > subsequeuent futex wakeups, resulting in a userspace hang. By moving the
+> > setting of TASK_INTERRUPTIBLE to before the call to queue_me(), the race with
+> > the waker is eliminated. Since we no longer call get_user() from within
+> > queue_me(), there is no need to delay the setting of TASK_INTERRUPTIBLE until
+> > after the call to queue_me().
+> > 
+> > The FUTEX_LOCK_PI operation is not affected as futex_lock_pi() relies entirely
+> > on the rtmutex code to handle schedule() and wakeup.  The requeue PI code is
+> > affected because the waiter starts as a non-PI waiter and is woken on a PI
+> > futex.
+> > 
+> > Remove the crusty old comment about holding spinlocks() across get_user() as we
+> > no longer do that. Correct the locking statement with a description of why the
+> > test is performed.
 > 
-> chainsaw@prometheus /cvs/linux-2.6 $ git bisect bad
-> fd1e8a1fe2b54df6c185b4fa65f181f50b9c4d4e is the first bad commit
-> commit fd1e8a1fe2b54df6c185b4fa65f181f50b9c4d4e
-> Author: Tejun Heo <tj@kernel.org>
-> Date:   Fri Aug 14 15:00:51 2009 +0900
+> I am very confused by this ChangeLog...
 > 
->     percpu: introduce pcpu_alloc_info and pcpu_group_info
+> > 
+> > Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > CC: Eric Dumazet <eric.dumazet@gmail.com>
+> > CC: Dinakar Guniguntala <dino@in.ibm.com>
+> > CC: John Stultz <johnstul@us.ibm.com>
+> > ---
+> > 
+> >  kernel/futex.c |   15 +++------------
+> >  1 files changed, 3 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/kernel/futex.c b/kernel/futex.c
+> > index f92afbe..463af2e 100644
+> > --- a/kernel/futex.c
+> > +++ b/kernel/futex.c
+> > @@ -1656,17 +1656,8 @@ out:
+> >  static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+> >  				struct hrtimer_sleeper *timeout)
+> >  {
+> > -	queue_me(q, hb);
+> > -
+> > -	/*
+> > -	 * There might have been scheduling since the queue_me(), as we
+> > -	 * cannot hold a spinlock across the get_user() in case it
+> > -	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
+> > -	 * queueing ourselves into the futex hash. This code thus has to
+> > -	 * rely on the futex_wake() code removing us from hash when it
+> > -	 * wakes us up.
+> > -	 */
+> >  	set_current_state(TASK_INTERRUPTIBLE);
 > 
-> I will repeat the early exception here:
-> IOAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 14 global_irq 14 high edge)
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 15 global_irq 15 high edge)
-> Using ACPI (MADT) for SMP configuration information
-> ACPI: HPET id: 0x10de8201 base: 0xfed00000
-> SMP: allowing 12 CPUs, 0 hotplug CPUs
-> Allocating PCI resources starting at b00000000 (gap:b00000000:3000000
-> NR_CPUS: 12 nr_cpumask_bits:12 nr_cpu_ids:12 nr_node_ids:2
-> PERCPU: Embedded 23 pages/cpu @ffff880028200000 s73688 r0 d20520 u262
-> PANIC: early exception 06 rip 10:ffffffff815a50e6 error 0 cr2 d0fff6
-> Pid: 0, comm: swapper Not tained 2.6.31-07068-g43c266 #1
-> Call Trace:
-> [<ffffffff81591175>] early_idt_handler+0x55/0x68
-> [<ffffffff815a50e6>] ? pcpu_setup_first_chunk+0x40b/0x692
-> [<ffffffff815a50ff>] ? pcpu_setup_first_chunk+0x424/0x692
-> [<ffffffff815a5867>] pcpu_embed_first_chunk+0x1e2/0x241
-> [<ffffffff81598c14>] ? pcpu_fc_alloc+0x0/0xac
-> [<ffffffff81598bf5>] ? pcpu_fc_free+0x0/0x1f
-> [<ffffffff81598a36>] setup_per_cpu_areas+0x65/0x219
-> [<ffffffff815919bf>] start_kernel+0x124/0x2c5
-> [<ffffffff81591252>] x86_64_start_reservations+0x82/0x86
-> [<ffffffff8159133a>] x86_64_start_kernel+0xe4/0xeb
-> RIP pcpu_setup_first_chunk+0x40b/0x692
+> Hmm, you missed the smp_mb() properties here...
+> 
+> Before :
+>      queue_me()
+>      set_mb(current->state, TASK_INTERRUPTIBLE);
+>      if (timeout) {...}
+>      if (likely(!plist_node_empty(&q->list))) {
+> 	...
+>      }
+> 
+> After :
+>      set_mb(current->state, TASK_INTERRUPTIBLE);
+>      queue_me();
+>      if (timeout) {...}
+> // no barrier... why ar we still testing q->list
+> // since it has no synchro between queue_me() and test ?
+>      if (likely(!plist_node_empty(&q->list))) {
+> 	...
+>      }
 
-Can you please try the patch below?  Also, please build the kernel
-with debug info and ask gdb which line the crash corresponds to?
-ie. l *pcpu_embed_first_chunk+0x1e2
+queue_me() itself does a spin_unlock(), so at least for the bits 
+protected by hb->lock it should be half-serializing.
 
-Thanks.
-
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 43d8cac..66b7d5e 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -1812,6 +1812,9 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, ssize_t dyn_size,
- 		/* allocate space for the whole group */
- 		ptr = alloc_fn(cpu, gi->nr_units * ai->unit_size, atom_size);
- 		if (!ptr) {
-+			printk("PERCPU: failed to allocate %zu bytes for "
-+			       "group %d from cpu%u\n",
-+			       gi->nr_units * ai->unit_size, group, cpu);
- 			rc = -ENOMEM;
- 			goto out_free_areas;
- 		}
-@@ -1844,8 +1847,9 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, ssize_t dyn_size,
-
- out_free_areas:
- 	for (group = 0; group < ai->nr_groups; group++)
--		free_fn(areas[group],
--			ai->groups[group].nr_units * ai->unit_size);
-+		if (areas[group])
-+			free_fn(areas[group],
-+				ai->groups[group].nr_units * ai->unit_size);
- out_free:
- 	pcpu_free_alloc_info(ai);
- 	if (areas)
-@@ -1956,7 +1960,8 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
-
- enomem:
- 	while (--j >= 0)
--		free_fn(page_address(pages[j]), PAGE_SIZE);
-+		if (pages[j])
-+			free_fn(page_address(pages[j]), PAGE_SIZE);
- 	rc = -ENOMEM;
- out_free_ar:
- 	free_bootmem(__pa(pages), pages_size);
-
-
--- 
-tejun
+	Ingo
