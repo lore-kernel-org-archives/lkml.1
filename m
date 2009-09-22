@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbZIVXHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbZIVXAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbZIVXHS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 19:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZIVXHO
+	id S1752162AbZIVXAo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 19:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZIVXAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 19:07:14 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:38105 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751556AbZIVXHK (ORCPT
+	Tue, 22 Sep 2009 19:00:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54751 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbZIVXAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 19:07:10 -0400
-Date: Tue, 22 Sep 2009 18:52:31 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Tejun Heo <tj@kernel.org>
-cc: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] vmalloc: rename local variables vmalloc_start and
- vmalloc_end
-In-Reply-To: <1253605214-23210-2-git-send-email-tj@kernel.org>
-Message-ID: <alpine.DEB.1.10.0909221851380.9410@V090114053VZO-1>
-References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-2-git-send-email-tj@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 22 Sep 2009 19:00:43 -0400
+Message-ID: <4AB956AC.9050700@zytor.com>
+Date: Tue, 22 Sep 2009 15:58:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: akataria@vmware.com
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	 <20090919224430.GB9567@kroah.com>	 <1253419185.3253.21.camel@ank32.eng.vmware.com>	 <20090920074247.GA5733@elte.hu>	 <1253647845.10565.20.camel@ank32.eng.vmware.com>	 <4AB9414C.6060805@zytor.com> <1253656476.10565.28.camel@ank32.eng.vmware.com>
+In-Reply-To: <1253656476.10565.28.camel@ank32.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009, Tejun Heo wrote:
+Alok Kataria wrote:
+> 
+> What do you suggest would be the right time ? 
+> 
+> Please note that the next major release of VMware's product will not
+> have this supported. Also that, most of our customers will actually be
+> running some distro's enterprise release, rather than running the
+> cutting edge kernel. So IMO there is still a window of around 1-1.5
+> years, until a customer actually sees a kernel which has dropped VMI
+> support.
+> 
 
->   const unsigned long vmalloc_end = vmalloc_end & ~(align - 1);
->
-> Rename local variables vmalloc_start and vmalloc_end to vm_start and
-> vm_end to avoid the collision.
+I would say it might make sense pulling it out around the end of 2010, 
+which would be about 6 kernel releases from now -- 2.6.37.
 
-Could you keep vmalloc_end and vmalloc_start? vm_start and vm_end may led
-to misinterpretations as start and end of the memory area covered by the
-VM.
+	-hpa
 
