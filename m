@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZIVRj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZIVRhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbZIVRj0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZIVRjY
+	id S1755636AbZIVRhF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754918AbZIVRhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:39:24 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33612 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753930AbZIVRjY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:39:24 -0400
-Message-ID: <4AB90AC3.20908@zytor.com>
-Date: Tue, 22 Sep 2009 10:34:59 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 22 Sep 2009 13:37:04 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41871 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752328AbZIVRhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 13:37:02 -0400
+Date: Tue, 22 Sep 2009 19:37:04 +0200
+From: Jan Kara <jack@suse.cz>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       linux-mm@kvack.org, npiggin@suse.de, tytso@mit.edu
+Subject: Re: [PATCH 5/7] ext4: Convert filesystem to the new truncate
+	calling convention
+Message-ID: <20090922173704.GB31447@duck.suse.cz>
+References: <1253200907-31392-1-git-send-email-jack@suse.cz> <1253200907-31392-6-git-send-email-jack@suse.cz> <20090922143604.GA2183@ZenIV.linux.org.uk> <20090922171604.GA31447@duck.suse.cz> <20090922172347.GG14381@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Tim Abbott <tabbott@ksplice.com>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH v4 4/4] Use macros for .data.page_aligned section.
-References: <1253484855-8067-1-git-send-email-tabbott@ksplice.com>	 <1253484855-8067-5-git-send-email-tabbott@ksplice.com> <1253576808.7103.167.camel@pasglop>
-In-Reply-To: <1253576808.7103.167.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922172347.GG14381@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Sun, 2009-09-20 at 18:14 -0400, Tim Abbott wrote:
->> This patch changes the remaining direct references to
->> .data.page_aligned in C and assembly code to use the macros in
->> include/linux/linkage.h.
->>
->> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
->> Cc: Thomas Gleixner <tglx@linutronix.de>
->> Cc: Ingo Molnar <mingo@redhat.com>
->> Cc: H. Peter Anvin <hpa@zytor.com>
->> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+On Tue 22-09-09 18:23:47, Al Viro wrote:
+> On Tue, Sep 22, 2009 at 07:16:04PM +0200, Jan Kara wrote:
+> > > No.  We already have one half-finished series here; mixing it with another
+> > > one is not going to happen.  Such flags are tolerable only as bisectability
+> > > helpers.  They *must* disappear by the end of series.  Before it can be
+> > > submitted for merge.
+> > > 
+> > > In effect, you are mixing truncate switchover with your writepage one.
+> > > Please, split and reorder.
 > 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >   Well, this wasn't meant as a final version of those patches. It was
+> > meant as a request for comment whether it makes sence to fix the problem
+> > how I propose to fix it. If we agree on that, I'll go and convert the rest
+> > of filesystems so that we can remove .new_writepage hack. By that time I
+> > hope that new truncate sequence patches will be merged so that dependency
+> > should go away as well...
 > 
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
->> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Could you carve just the ext4 part of truncate series out of that and
+> post it separately?
+  Definitely. Actually, I've sent that patch to Nick in private but you're
+right I should have posted it to the list as well. Will do it in a moment.
+Thanks for a reminder.
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
