@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZIVLpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbZIVLpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756201AbZIVLpR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 07:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbZIVLpQ
+	id S1756228AbZIVLpg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 07:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbZIVLpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 07:45:16 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:49016 "EHLO mgw1.diku.dk"
+	Tue, 22 Sep 2009 07:45:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38078 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755860AbZIVLpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 07:45:14 -0400
-Date: Tue, 22 Sep 2009 13:45:16 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: "John W. Linville" <linville@tuxdriver.com>,
-       Ulrich Kunitz <kune@deine-taler.de>, Daniel Drake <dsd@gentoo.org>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/net/wireless: Use usb_endpoint_dir_out
-Message-ID: <Pine.LNX.4.64.0909221344370.20456@pc-004.diku.dk>
+	id S1756210AbZIVLpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 07:45:35 -0400
+Date: Tue, 22 Sep 2009 13:45:37 +0200
+From: Jan Kara <jack@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Theodore Tso <tytso@mit.edu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
+Message-ID: <20090922114537.GB13887@duck.suse.cz>
+References: <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk> <20090911143929.GA25499@localhost> <20090918175252.GF26991@mit.edu> <20090919035835.GA9921@localhost> <20090919040051.GA10245@localhost> <20090919042607.GA19752@localhost> <20090921135321.GD6259@think> <20090922101335.GA27432@localhost> <20090922113055.GI10825@think>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922113055.GI10825@think>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Tue 22-09-09 07:30:55, Chris Mason wrote:
+> > Yes a more general solution would help. I'd like to propose one which
+> > works in the other way round. In brief,
+> > (1) the VFS give a large enough per-file writeback quota to btrfs;
+> > (2) btrfs tells VFS "here is a (seek) boundary, stop voluntarily",
+> >     before exhausting the quota and be force stopped.
+> > 
+> > There will be two limits (the second one is new):
+> > 
+> > - total nr to write in one wb_writeback invocation
+> > - _max_ nr to write per file (before switching to sync the next inode)
+> > 
+> > The per-invocation limit is useful for balance_dirty_pages().
+> > The per-file number can be accumulated across successive wb_writeback
+> > invocations and thus can be much larger (eg. 128MB) than the legacy
+> > per-invocation number. 
+> > 
+> > The file system will only see the per-file numbers. The "max" means
+> > if btrfs find the current page to be the last page in the extent,
+> > it could indicate this fact to VFS by setting wbc->would_seek=1. The
+> > VFS will then switch to write the next inode.
+> > 
+> > The benefit of early voluntarily yield is, it reduced the possibility
+> > to be force stopped half way in an extent. When next time VFS returns
+> > to sync this inode, it will again be honored the full 128MB quota,
+> > which should be enough to cover a big fresh extent.
+> 
+> This is interesting, but it gets into a problem with defining what a
+> seek is.  On some hardware they are very fast and don't hurt at all.  It
+> might be more interesting to make timeslices.
+  With simple timeslices there's a problem that the time it takes to submit
+an IO isn't really related to the time it takes to complete the IO.  During
+submission we are limited just by availablity of free requests and sizes of
+request queues (which might be filled by another thread or by us writing
+different inode).
+  But as I described in my other email, we could probably estimate time it
+takes to complete the IO. At least CFQ keeps statistics needed for that. If
+we somehow generalized them and put them into BDI, we could probably use
+them during writeback...
 
-Use the usb_endpoint_dir_out API function.  Note that the use of
-USB_TYPE_MASK in the original code is incorrect; it results in a test that
-is always false.
-
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-struct usb_endpoint_descriptor *endpoint;
-expression E;
-@@
-
-- (endpoint->bEndpointAddress & E) == USB_DIR_OUT
-+ usb_endpoint_dir_out(endpoint)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/net/wireless/zd1211rw/zd_usb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -u -p a/drivers/net/wireless/zd1211rw/zd_usb.c b/drivers/net/wireless/zd1211rw/zd_usb.c
---- a/drivers/net/wireless/zd1211rw/zd_usb.c
-+++ b/drivers/net/wireless/zd1211rw/zd_usb.c
-@@ -1070,7 +1070,7 @@ static int eject_installer(struct usb_in
- 
- 	/* Find bulk out endpoint */
- 	endpoint = &iface_desc->endpoint[1].desc;
--	if ((endpoint->bEndpointAddress & USB_TYPE_MASK) == USB_DIR_OUT &&
-+	if (usb_endpoint_dir_out(endpoint) &&
- 	    usb_endpoint_xfer_bulk(endpoint)) {
- 		bulk_out_ep = endpoint->bEndpointAddress;
- 	} else {
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
