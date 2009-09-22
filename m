@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZIVJhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbZIVJjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbZIVJhN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 05:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbZIVJhL
+	id S1755817AbZIVJjj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 05:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZIVJji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 05:37:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50657 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755783AbZIVJhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 05:37:08 -0400
-Date: Tue, 22 Sep 2009 11:37:08 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH v2] core, x86: Add user return notifiers
-Message-ID: <20090922113708.65f655f6@infradead.org>
-In-Reply-To: <4AB8980D.5070803@redhat.com>
-References: <4AB3CDEC.5050902@zytor.com>
-	<1253342422-13811-1-git-send-email-avi@redhat.com>
-	<4AB8980D.5070803@redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Sep 2009 05:39:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:34125 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755523AbZIVJji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 05:39:38 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-ID: <19128.39768.149110.673711@cargo.ozlabs.ibm.com>
+Date: Tue, 22 Sep 2009 19:39:36 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf_counter: cleanup for __perf_event_sched_in()
+In-Reply-To: <4AB88F06.10900@cn.fujitsu.com>
+References: <4AB88F06.10900@cn.fujitsu.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009 12:25:33 +0300
-Avi Kivity <avi@redhat.com> wrote:
+Xiao Guangrong writes:
 
-> On 09/19/2009 09:40 AM, Avi Kivity wrote:
-> > Add a general per-cpu notifier that is called whenever the kernel is
-> > about to return to userspace.  The notifier uses a thread_info flag
-> > and existing checks, so there is no impact on user return or context
-> > switch fast paths.
-> >    
-> 
-> Ingo/Peter?
+> It must be a group leader if event->attr.pinned is "1"
 
-isn't this like really expensive when used ?
+Actually, looking at this more closely, it has to be a group leader
+anyway since it's at the top level of ctx->group_list.  In fact I see
+four places where we do:
 
+		list_for_each_entry(event, &ctx->group_list, group_entry) {
+			if (event == event->group_leader)
+				...
 
+or the equivalent, three of which appear to have been introduced by
+afedadf2 ("perf_counter: Optimize sched in/out of counters") back in
+May by Peter Z.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+As far as I can see the if () is superfluous in each case (a singleton
+event will be a group of 1 and will have its group_leader pointing to
+itself).  Peter, do you agree or have I missed something?
+
+Paul.
