@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZIVAPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbZIVATT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbZIVAPl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Sep 2009 20:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZIVAPk
+	id S1754720AbZIVATT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Sep 2009 20:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbZIVATT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Sep 2009 20:15:40 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:60513 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754599AbZIVAPi (ORCPT
+	Mon, 21 Sep 2009 20:19:19 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:12597 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754642AbZIVATS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Sep 2009 20:15:38 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jamie Lokier <jamie@shareable.org>, Evgeniy Polyakov <zbr@ioremap.net>,
-       Eric Paris <eparis@redhat.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-References: <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
-	<20090911212731.GA19901@shareable.org>
-	<1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
-	<20090912094110.GB24709@ioremap.net>
-	<20090914001759.GB30621@shareable.org>
-	<20090914140720.GA8564@ioremap.net>
-	<1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
-	<20090915201620.GB32192@ioremap.net>
-	<1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
-	<20090916120523.GA12830@ioremap.net>
-	<20090916122723.GE29359@shareable.org>
-	<alpine.LFD.2.01.0909170934450.4950@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 21 Sep 2009 17:15:28 -0700
-In-Reply-To: <alpine.LFD.2.01.0909170934450.4950@localhost.localdomain> (Linus Torvalds's message of "Thu\, 17 Sep 2009 09\:40\:16 -0700 \(PDT\)")
-Message-ID: <m1r5tzq1gf.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 21 Sep 2009 20:19:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=MLt3KlmofAsO7nikBec1yDkC6ox5qOJOKbauRUPqiULZVsu0vMHGw1bEZQgVnG+LY
+	NUe9C3+asdJsgaQMyeJSA==
+Date: Mon, 21 Sep 2009 17:19:13 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
+       sachinp@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [RFC PATCH 0/3] Fix SLQB on memoryless configurations V2
+In-Reply-To: <1253577603.7103.174.camel@pasglop>
+Message-ID: <alpine.DEB.1.00.0909211704180.4798@chino.kir.corp.google.com>
+References: <1253549426-917-1-git-send-email-mel@csn.ul.ie> <1253577603.7103.174.camel@pasglop>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Linus Torvalds <torvalds@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.1 XMSolicitRefs_0 Weightloss drug
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: fanotify as syscalls
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Tue, 22 Sep 2009, Benjamin Herrenschmidt wrote:
 
-> Quite frankly, I have _never_ever_ seen a good reason for talking to the 
-> kernel with some idiotic packet interface. It's just a fancy way to do 
-> ioctl's, and everybody knows that ioctl's are bad and evil. Why are fancy 
-> packet interfaces suddenly much better?
+> So if I understand correctly, we have a problem with both cpu-less and
+> memory-less nodes. Interesting setups :-)
+> 
 
-For working with the networking stack there are a lot of advantages because
-netlink is the interface to everything in the network stack.
+I agree with Christoph that we need to resolve the larger kernel issue of 
+memoryless nodes in the kernel and the result of that work will most 
+likely become the basis from which the slqb fixes originate.
 
-There are nice things like the packet to create a new interface is the same
-packet the kernel sends everyone to report a new interface etc.
+I disagree that we need kernel support for memoryless nodes on x86 and 
+probably on all architectures period.  "NUMA nodes" will always contain 
+memory by definition and I think hijacking the node abstraction away from 
+representing anything but memory affinity is wrong in the interest of a 
+long-term maintainable kernel and will continue to cause issues such as 
+this in other subsystems.
 
-netlink also seems to get the structured data thing right.  You can
-parse the packet even if you don't understand everything.  Each tag is
-well defined like a syscall, taking exactly one kind of argument.
-Which avoids the worst failure of ioctl in that you can't even parse
-everything, and the argument may be a linked list in the calling
-process or something else atrocious.
+I do understand the asymmetries of these machines, including the ppc that 
+is triggering this particular hang with slqb.  But I believe the support 
+can be implemented in a different way: I would offer an alternative 
+representation based entirely on node distances.  This would isolate each 
+region of memory that has varying affinity to cpus, pci busses, etc., into 
+nodes and then report a distance, whether local or remote, to other nodes 
+much in the way the ACPI specification does with proximity domains.
 
-All of that said syscalls are good, and I would not recommend netlink
-to anything not in the network stack.
-
-Eric
+Using node distances instead of memoryless nodes would still be able to 
+represent all asymmetric machines that currently benefit from the support 
+by binding devices to memory regions to which they have the closest 
+affinity and then reporting relative distances to other nodes via 
+node_distance().
