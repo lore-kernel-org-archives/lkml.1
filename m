@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbZIVJco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZIVJds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755839AbZIVJco (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 05:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbZIVJcn
+	id S1755825AbZIVJds (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 05:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbZIVJdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 05:32:43 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40474 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755489AbZIVJcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 05:32:43 -0400
-Date: Tue, 22 Sep 2009 10:32:49 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] slqb: Allow SLQB to be used on PPC
-Message-ID: <20090922093249.GC12254@csn.ul.ie>
-References: <1253549426-917-1-git-send-email-mel@csn.ul.ie> <1253549426-917-4-git-send-email-mel@csn.ul.ie> <20090922093023.GA22441@osiris.boeblingen.de.ibm.com>
+	Tue, 22 Sep 2009 05:33:45 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64800 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754404AbZIVJdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 05:33:44 -0400
+Message-ID: <4AB899C7.3000808@cn.fujitsu.com>
+Date: Tue, 22 Sep 2009 17:32:55 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090922093023.GA22441@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] perf_counter: cleanup for __perf_event_sched_in()
+References: <4AB88F06.10900@cn.fujitsu.com> <19128.38623.956765.684792@cargo.ozlabs.ibm.com> <4AB89892.3080603@cn.fujitsu.com>
+In-Reply-To: <4AB89892.3080603@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 11:30:23AM +0200, Heiko Carstens wrote:
-> On Mon, Sep 21, 2009 at 05:10:26PM +0100, Mel Gorman wrote:
-> > SLQB was disabled on PPC as it would stab itself in the face when running
-> > on machines with CPUs on memoryless nodes. As those configurations should
-> > now work, allow SLQB to be configured again on PPC.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  init/Kconfig |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/init/Kconfig b/init/Kconfig
-> > index adc10ab..8f55fde 100644
-> > --- a/init/Kconfig
-> > +++ b/init/Kconfig
-> > @@ -1033,7 +1033,7 @@ config SLUB
-> > 
-> >  config SLQB
-> >  	bool "SLQB (Queued allocator)"
-> > -	depends on !PPC && !S390
-> > +	depends on !S390
-> 
-> You can remove S390 from the list independently from this patch set.
-> As already mentioned SLQB works again on s390 and whatever caused the
-> bug I reported a few weeks back is gone.
-> 
+It must be a group leader if event->attr.pinned is "1"
 
-Nice one. Thanks.
+Changlog:
+Use WARN_ON_ONCE() instead of BUG_ON() as Paul Mackerras's suggestion
 
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ kernel/perf_event.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 76ac4db..dc3221b 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -1258,12 +1258,11 @@ __perf_event_sched_in(struct perf_event_context *ctx,
+ 		if (event->cpu != -1 && event->cpu != cpu)
+ 			continue;
+ 
+-		if (event != event->group_leader)
+-			event_sched_in(event, cpuctx, ctx, cpu);
+-		else {
+-			if (group_can_go_on(event, cpuctx, 1))
+-				group_sched_in(event, cpuctx, ctx, cpu);
+-		}
++		/* Only a group leader can be pinned */
++		WARN_ON_ONCE(event != event->group_leader);
++
++		if (group_can_go_on(event, cpuctx, 1))
++			group_sched_in(event, cpuctx, ctx, cpu);
+ 
+ 		/*
+ 		 * If this pinned group hasn't been scheduled,
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.1.2
+
