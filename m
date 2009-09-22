@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbZIVTjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZIVTj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbZIVTjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbZIVTjR
+	id S1752541AbZIVTj0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZIVTjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:39:17 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:39120 "EHLO
+	Tue, 22 Sep 2009 15:39:23 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:49576 "EHLO
 	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752456AbZIVTjL (ORCPT
+	with ESMTP id S1752482AbZIVTjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:39:11 -0400
+	Tue, 22 Sep 2009 15:39:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Mlk/75EzzdZOAPBgE/4jo85A0P4u1RAJiJDtsfosCRnkgPnCxHts/PDLBZ5Qr/OV94
-         VvhGivHazwA4h/5TO+GccggkuzM+lDRSTHFAs+QG0p/aNTfpImjgbIP0HFdaUVjg1Cd2
-         dUOkXPhU88hxyLR9W60p3RDMyokBP8tv/zSzA=
+        b=l/xjDLLjVbJ0vwKDpWTqmgeqw0U/xm1r7FPT8LGfYnM/mGg7Eea0jcbP3PCnkOqdCQ
+         MOAlZVFqP/2wZeMv9EcqW58qd3qKiwt0MDMsJ+TgFNdzRAjfUO34eQFKl+ymPgfYElfS
+         ehsTiDwP4EbQ8zG+4hLMU4ItxQhf8f0onvTig=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -24,17 +24,17 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Jim Keniston <jkenisto@us.ibm.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 18/24] tracing/kprobes: Fix trace_probe registration order
-Date: Tue, 22 Sep 2009 21:38:16 +0200
-Message-Id: <1253648302-5771-19-git-send-email-fweisbec@gmail.com>
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: [PATCH 19/24] ftrace: Fix trace_add_event_call() to initialize list
+Date: Tue, 22 Sep 2009 21:38:17 +0200
+Message-Id: <1253648302-5771-20-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
 References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
@@ -44,9 +44,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Fix trace_probe registration order. ftrace_event_call and ftrace_event
-must be registered before kprobe/kretprobe, because tracing/profiling
-handlers dereference the event-id.
+Handle failure path in trace_add_event_call() to fix the below bug
+which occurred when I tried to add invalid event twice.
+
+Could not create debugfs 'kmalloc' directory
+Failed to register kprobe event: kmalloc
+Faild to register probe event(-1)
+------------[ cut here ]------------
+WARNING: at /home/mhiramat/ksrc/random-tracing/lib/list_debug.c:26
+__list_add+0x27/0x5c()
+Hardware name:
+list_add corruption. next->prev should be prev (c07d78cc), but was
+00001000. (next=d854236c).
+Modules linked in: sunrpc uinput virtio_net virtio_balloon i2c_piix4 pcspkr
+i2c_core virtio_blk virtio_pci virtio_ring virtio [last unloaded:
+scsi_wait_scan]
+Pid: 1394, comm: tee Not tainted 2.6.31-rc9 #51
+Call Trace:
+ [<c0438424>] warn_slowpath_common+0x65/0x7c
+ [<c05371b3>] ? __list_add+0x27/0x5c
+ [<c043846f>] warn_slowpath_fmt+0x24/0x27
+ [<c05371b3>] __list_add+0x27/0x5c
+ [<c047f050>] list_add+0xa/0xc
+ [<c047f8f5>] trace_add_event_call+0x60/0x97
+ [<c0483133>] command_trace_probe+0x42c/0x51b
+ [<c044a1b3>] ? remove_wait_queue+0x22/0x27
+ [<c042a9c0>] ? __wake_up+0x32/0x3b
+ [<c04832f6>] probes_write+0xd4/0x10a
+ [<c0483222>] ? probes_write+0x0/0x10a
+ [<c04b27a9>] vfs_write+0x80/0xdf
+ [<c04b289c>] sys_write+0x3b/0x5d
+ [<c0670d41>] syscall_call+0x7/0xb
+---[ end trace 2b962b5dc1fdc07d ]---
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Acked-by: Steven Rostedt <rostedt@goodmis.org>
@@ -55,6 +84,7 @@ Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Andi Kleen <ak@linux.intel.com>
 Cc: Christoph Hellwig <hch@infradead.org>
 Cc: Frank Ch. Eigler <fche@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jason Baron <jbaron@redhat.com>
@@ -64,85 +94,30 @@ Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <20090914204856.18779.52961.stgit@dhcp-100-2-132.bos.redhat.com>
+LKML-Reference: <4AB1077F.6020107@redhat.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace_kprobe.c |   42 +++++++++++++++++++-----------------------
- 1 files changed, 19 insertions(+), 23 deletions(-)
+ kernel/trace/trace_events.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index cbc0870..ea0db8e 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -347,20 +347,15 @@ static struct trace_probe *find_probe_event(const char *event)
- 	return NULL;
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index ba34920..83cc2c0 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -1010,9 +1010,12 @@ static int __trace_add_event_call(struct ftrace_event_call *call)
+ 		return -ENOENT;
+ 
+ 	list_add(&call->list, &ftrace_events);
+-	return event_create_dir(call, d_events, &ftrace_event_id_fops,
++	ret = event_create_dir(call, d_events, &ftrace_event_id_fops,
+ 				&ftrace_enable_fops, &ftrace_event_filter_fops,
+ 				&ftrace_event_format_fops);
++	if (ret < 0)
++		list_del(&call->list);
++	return ret;
  }
  
--static void __unregister_trace_probe(struct trace_probe *tp)
-+/* Unregister a trace_probe and probe_event: call with locking probe_lock */
-+static void unregister_trace_probe(struct trace_probe *tp)
- {
- 	if (probe_is_return(tp))
- 		unregister_kretprobe(&tp->rp);
- 	else
- 		unregister_kprobe(&tp->rp.kp);
--}
--
--/* Unregister a trace_probe and probe_event: call with locking probe_lock */
--static void unregister_trace_probe(struct trace_probe *tp)
--{
--	unregister_probe_event(tp);
--	__unregister_trace_probe(tp);
- 	list_del(&tp->list);
-+	unregister_probe_event(tp);
- }
- 
- /* Register a trace_probe and probe_event */
-@@ -371,6 +366,19 @@ static int register_trace_probe(struct trace_probe *tp)
- 
- 	mutex_lock(&probe_lock);
- 
-+	/* register as an event */
-+	old_tp = find_probe_event(tp->call.name);
-+	if (old_tp) {
-+		/* delete old event */
-+		unregister_trace_probe(old_tp);
-+		free_trace_probe(old_tp);
-+	}
-+	ret = register_probe_event(tp);
-+	if (ret) {
-+		pr_warning("Faild to register probe event(%d)\n", ret);
-+		goto end;
-+	}
-+
- 	if (probe_is_return(tp))
- 		ret = register_kretprobe(&tp->rp);
- 	else
-@@ -384,21 +392,9 @@ static int register_trace_probe(struct trace_probe *tp)
- 				   tp->rp.kp.addr);
- 			ret = -EINVAL;
- 		}
--		goto end;
--	}
--	/* register as an event */
--	old_tp = find_probe_event(tp->call.name);
--	if (old_tp) {
--		/* delete old event */
--		unregister_trace_probe(old_tp);
--		free_trace_probe(old_tp);
--	}
--	ret = register_probe_event(tp);
--	if (ret) {
--		pr_warning("Faild to register probe event(%d)\n", ret);
--		__unregister_trace_probe(tp);
--	}
--	list_add_tail(&tp->list, &probe_list);
-+		unregister_probe_event(tp);
-+	} else
-+		list_add_tail(&tp->list, &probe_list);
- end:
- 	mutex_unlock(&probe_lock);
- 	return ret;
+ /* Add an additional event_call dynamically */
 -- 
 1.6.2.3
 
