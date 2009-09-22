@@ -1,335 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZIVNkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZIVNmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbZIVNkP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 09:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbZIVNkN
+	id S1755869AbZIVNmN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 09:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbZIVNmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 09:40:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53714 "EHLO mx2.mail.elte.hu"
+	Tue, 22 Sep 2009 09:42:12 -0400
+Received: from fifo99.com ([67.223.236.141]:52686 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754786AbZIVNkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 09:40:11 -0400
-Date: Tue, 22 Sep 2009 15:39:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@linux.intel.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] x86: mce: New MCE logging design
-Message-ID: <20090922133949.GA13045@elte.hu>
-References: <1253269241.15717.525.camel@yhuang-dev.sh.intel.com> <20090918110953.GA9930@elte.hu> <1253511438.15717.705.camel@yhuang-dev.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253511438.15717.705.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1755529AbZIVNmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 09:42:11 -0400
+Subject: Re: [PATCH]lock_stat: Adding "nr_contender" and "max_contender" to
+ show  the degree of contention on ticket spinlock
+From: Daniel Walker <dwalker@fifo99.com>
+To: Yang Xi <yangxilkm@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <d36bb30d0909212310p1195f52eu3d6c53ff1d0c0113@mail.gmail.com>
+References: <d36bb30d0909212310p1195f52eu3d6c53ff1d0c0113@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 06:42:16 -0700
+Message-Id: <1253626936.6575.39.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-09-22 at 16:10 +1000, Yang Xi wrote:
+> diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+> index 4e77853..a2396d8 100644
+> --- a/arch/x86/include/asm/spinlock.h
+> +++ b/arch/x86/include/asm/spinlock.h
+> @@ -172,6 +172,15 @@ static inline int
+> __ticket_spin_is_contended(raw_spinlock_t *lock)
+>         return (((tmp >> TICKET_SHIFT) - tmp) & ((1 << TICKET_SHIFT) - 1)) > 1;
+>  }
 
-* Huang Ying <ying.huang@intel.com> wrote:
 
-> Hi, Ingo,
-> 
-> I think it is a interesting idea to replace the original MCE logging 
-> part implementation (MCE log ring buffer + /dev/mcelog misc device) 
-> with tracing infrastructure. The tracing infrastructure has definitely 
-> more features than original method, but it is more complex than 
-> original method too.
+You patch is line wrapped .. It means it might not be easy to apply it..
+You need to tell your mailer that the patch is "preformatted" . In the
+kernel tree look at "Documentation/email-clients.txt" for more
+information.
 
-TRACE_EVENT() can be used to define the tracepoint itself - but most of 
-the benefit comes from using the performance events subsystem for event 
-reporting. It's a perfect match for MCE events - see below.
+(btw, since your using git anyway you might want to look into using
+git-format-patch and git-send-email for submitting)
 
-> The tracing infrastructure is good at tracing. But I think it may be 
-> too complex to be used as a (hardware) error processing mechanism. I 
-> think the error processing should be simple and relatively independent 
-> with other part of the kernel to avoid triggering more (hardware) 
-> error during error processing. What do you think about this?
+Daniel
 
-The fact that event reporting is used for other things as well might 
-even make it more fault-resilient than open-coded MCE code: just due to 
-it possibly being hot in the cache already (and thus not needing extra 
-DRAM cycles to a possibly faulty piece of hardware) while the MCE code, 
-not used by anything else, has to be brought into the cache for error 
-processing - triggering more faults.
 
-But ... that argument is even largely irrelevant: the overriding core 
-kernel principle was always that of reuse of facilities. We want to keep 
-performance event reporting simple and robust too, so re-using 
-facilities is a good thing and the needs of MCE logging will improve 
-perf events - and vice versa.
-
-Furthermore, to me as x86 maintainer it matters a lot that a piece of 
-code i maintain is clean, well-designed and maintainable in the long 
-run. The current /dev/mcelog code is not clean and not maintainable,
-and that needs to be fixed before it can be extended.
-
-That MCE logging also becomes more robust and more feature-rich as a 
-result is a happy side-effect.
-
-> Even if we will reach consensus at some point to re-write MCE logging 
-> part totally. We still need to fix the bugs in original implementation 
-> before the new implementation being ready. Do you agree?
-
-Well, this is all 2.6.33 stuff and that's plenty of time to do the 
-generic events + perf events approach.
-
-Anyway, i think we can work on these MCE enhancements much better if we 
-move it to the level of actual patches. Let me give you a (very small) 
-demonstration of my requests.
-
-The patch attached below adds two new events to the MCE code, to the 
-thermal throttling code:
-
-  mce_thermal_throttle_hot
-  mce_thermal_throttle_cold
-
-If you apply the patch below to latest -tip and boot that kernel and do:
-
-	cd tools/perf/
-	make -j install
-
-And type 'perf list', those two new MCE events will show up in the list 
-of available events:
-
-  # perf list
-  [...]
-    mce:mce_thermal_throttle_hot               [Tracepoint event]
-    mce:mce_thermal_throttle_cold              [Tracepoint event]
-  [...]
-
-Initially you can check whether those events are occuring:
-
-  # perf stat -a -e mce:mce_thermal_throttle_hot sleep 1
-
-   Performance counter stats for 'sleep 1':
-
-              0  mce:mce_thermal_throttle_hot #      0.000 M/sec
-
-    1.000672214  seconds time elapsed
-
-None on a normal system. Now, i tried it on a system that gets frequent 
-thermal events, and there it gives:
-
-  # perf stat -a -e mce:mce_thermal_throttle_hot sleep 1
-
-  Performance counter stats for 'sleep 1':
-
-              73  mce:mce_thermal_throttle_hot #      0.000 M/sec
-
-     1.000765260  seconds time elapsed
-
-Now i can observe the frequency of those thermal throttling events:
-
-  # perf stat --repeat 10 -a -e mce:mce_thermal_throttle_hot sleep 1
-
-  Performance counter stats for 'sleep 1' (10 runs):
-
-             184  mce:mce_thermal_throttle_hot #      0.000 M/sec   ( +-   1.971% )
-
-     1.006488821  seconds time elapsed   ( +-   0.203% )
-
-184/sec is pretty hefty, with a relatively stable rate.
-
-Now i try to see exactly which code is affected by those thermal 
-throttling events. For that i use 'perf record', and profile the whole 
-system for 10 seconds:
-
-  # perf record -f -e mce:mce_thermal_throttle_hot -c 1 -a sleep 10
-  [ perf record: Woken up 4 times to write data ]
-  [ perf record: Captured and wrote 0.802 MB perf.data (~35026 samples) ]
-
-And i used 'perf report' to analyze where the MCE events occured:
-
- # Samples: 2495
- #
- # Overhead         Command             Shared Object  Symbol
- # ........  ..............  ........................  ......
- #
-    55.39%       hackbench  [vdso]                    [.] 0x000000f77e1430
-    35.27%       hackbench                  f77c2430  [.] 0x000000f77c2430
-     3.05%       hackbench  [kernel]                  [k] ia32_setup_sigcontext
-     0.88%            bash  [vdso]                    [.] 0x000000f776f430
-     0.64%            bash                  f7731430  [.] 0x000000f7731430
-     0.52%       hackbench  ./hackbench               [.] sender
-     0.48%            nice                  f7753430  [.] 0x000000f7753430
-     0.36%       hackbench  ./hackbench               [.] receiver
-     0.24%            perf  /lib64/libc-2.5.so        [.] __GI_read
-     0.24%       hackbench  /lib/libc-2.5.so          [.] __libc_read
-
-Most of the events concentrate themselves to around syscall entry 
-points. That's not because the system is doing that most of the time - 
-it's probably because the fast syscall entry point is a critical path of 
-the CPU and overheating events likely concentrate themselves to around 
-that place.
-
-Now lets how we can do very detailed MCE logs, with per CPU data, 
-timestamps and other events mixed. For that i use perf record again:
-
-# perf record -R -f -e mce:mce_thermal_throttle_hot:r -e mce:mce_thermal_throttle_cold:r -e irq:irq_handler_entry:r -M -c 1 -a sleep 10
-[ perf record: Woken up 12 times to write data ]
-[ perf record: Captured and wrote 1.167 MB perf.data (~50990 samples) ]
-
-And i use 'perf trace' to look at the result:
-
-       hackbench-5070  [000]  1542.044184301: mce_thermal_throttle_hot: throttle_count=150852
-       hackbench-5070  [000]  1542.044672817: mce_thermal_throttle_cold: throttle_count=150852
-       hackbench-5056  [000]  1542.047029212: mce_thermal_throttle_hot: throttle_count=150853
-       hackbench-5057  [000]  1542.047518733: mce_thermal_throttle_cold: throttle_count=150853
-       hackbench-5058  [000]  1542.049822672: mce_thermal_throttle_hot: throttle_count=150854
-       hackbench-5046  [000]  1542.050312612: mce_thermal_throttle_cold: throttle_count=150854
-       hackbench-5072  [000]  1542.052720357: mce_thermal_throttle_hot: throttle_count=150855
-       hackbench-5072  [000]  1542.053210612: mce_thermal_throttle_cold: throttle_count=150855
-           :5074-5074  [000]  1542.055689468: mce_thermal_throttle_hot: throttle_count=150856
-       hackbench-5011  [000]  1542.056179849: mce_thermal_throttle_cold: throttle_count=150856
-           :5061-5061  [000]  1542.056937152: mce_thermal_throttle_hot: throttle_count=150857
-       hackbench-5048  [000]  1542.057428970: mce_thermal_throttle_cold: throttle_count=150857
-       hackbench-5053  [000]  1542.060372255: mce_thermal_throttle_hot: throttle_count=150858
-       hackbench-5054  [000]  1542.060863006: mce_thermal_throttle_cold: throttle_count=150858
-
-The first thing we can see it from the trace, only the first core 
-reports thermal events (the box is a dual-core box). The other thing is 
-the timing: the CPU is in 'hot' state for about ~490 microseconds, then 
-in 'cold' state for ~250 microseconds.
-
-So the CPU spends about 65% of its time in hot-throttled state, to cool 
-down enough to switch back to cold mode again.
-
-Also, most of the overheating events hit the 'hackbench' app. (which is 
-no surprise on this box as it is only running that workload - but might 
-be interesting on other systems with more mixed workloads.)
-
-So even in its completely MCE-unaware form, and with this small patch 
-that took 5 minutes to write, the performance events subsystem and 
-tooling can already give far greater insight into characteristics of 
-these events than the MCE subsystem did before.
-
-Obviously the reported events can be used for different, MCE specific 
-things as well:
-
- - Report an alert on the desktop (without having to scan the syslog all 
-   the time)
-
- - Mail the sysadmin
-
- - Do some specific policy action such as soft-throttle the workload 
-   until the situation and the log data can be examined.
-
-As i outlined it in my previous mail, the perf events subsystem provides 
-a wide range of facilities that can be used for that purpose.
-
-If there are aspects of MCE reporting usecases that necessiate the 
-extension of perf events, then we can do that - both sides will benefit 
-from it. What we dont want to do is to prolongue the pain caused by the 
-inferior, buggy and poorly designed /dev/mcelog ABI and code. It's not 
-serving our users well and people are spending time on fixing something 
-that has been misdesigned from the get go instead of concentrating on 
-improving the right facilities.
-
-So this is really how i see the future of the MCE logging subsystem: use 
-meaningful generic events that empowers users, admins and tools to do 
-something intelligent with the available stream of MCE data. The 
-hardware tells us a _lot_ of information - lets use and expose that in a 
-structured form.
-
-	Ingo
-
----
- arch/x86/kernel/cpu/mcheck/therm_throt.c |    9 +++++
- include/trace/events/mce.h               |   47 +++++++++++++++++++++++++++++++
- 2 files changed, 55 insertions(+), 1 deletion(-)
-
-Index: linux/arch/x86/kernel/cpu/mcheck/therm_throt.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ linux/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -31,6 +31,9 @@
- #include <asm/mce.h>
- #include <asm/msr.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/mce.h>
-+
- /* How long to wait between reporting thermal events */
- #define CHECK_INTERVAL		(300 * HZ)
- 
-@@ -118,8 +121,12 @@ static int therm_throt_process(bool is_t
- 	was_throttled = state->is_throttled;
- 	state->is_throttled = is_throttled;
- 
--	if (is_throttled)
-+	if (is_throttled) {
- 		state->throttle_count++;
-+		trace_mce_thermal_throttle_hot(state->throttle_count);
-+	} else {
-+		trace_mce_thermal_throttle_cold(state->throttle_count);
-+	}
- 
- 	if (time_before64(now, state->next_check) &&
- 			state->throttle_count != state->last_throttle_count)
-Index: linux/include/trace/events/mce.h
-===================================================================
---- /dev/null
-+++ linux/include/trace/events/mce.h
-@@ -0,0 +1,47 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM mce
-+
-+#if !defined(_TRACE_MCE_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_MCE_H
-+
-+#include <linux/ktime.h>
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(mce_thermal_throttle_hot,
-+
-+	TP_PROTO(unsigned int throttle_count),
-+
-+	TP_ARGS(throttle_count),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,		throttle_count	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->throttle_count = throttle_count;
-+	),
-+
-+	TP_printk("throttle_count=%Lu", __entry->throttle_count)
-+);
-+
-+TRACE_EVENT(mce_thermal_throttle_cold,
-+
-+	TP_PROTO(unsigned int throttle_count),
-+
-+	TP_ARGS(throttle_count),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,		throttle_count	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->throttle_count = throttle_count;
-+	),
-+
-+	TP_printk("throttle_count=%Lu", __entry->throttle_count)
-+);
-+
-+#endif /* _TRACE_MCE_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
