@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZIVG1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbZIVG3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbZIVG1k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 02:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZIVG1i
+	id S1754642AbZIVG3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 02:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbZIVG3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 02:27:38 -0400
-Received: from ozlabs.org ([203.10.76.45]:44922 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755172AbZIVG1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 02:27:37 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] virtio-blk: set QUEUE_ORDERED_DRAIN by default
-Date: Tue, 22 Sep 2009 15:57:38 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: borntraeger@de.ibm.com, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-References: <20090820205616.GA5503@lst.de> <20090917173142.GA1518@lst.de>
-In-Reply-To: <20090917173142.GA1518@lst.de>
+	Tue, 22 Sep 2009 02:29:22 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:39591 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753564AbZIVG3V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 02:29:21 -0400
+Date: Tue, 22 Sep 2009 02:29:13 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: best practices:  which "uaccess.h" should one include?
+Message-ID: <alpine.LFD.2.00.0909220226080.10448@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909221557.39272.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009 03:01:42 am Christoph Hellwig wrote:
-> Err, I'll take this one back for now pending some more discussion.
-> What we need more urgently is the writeback cache flag, which is now
-> implemented in qemu, patch following ASAP.
 
-OK, still catching up on mail.  I'll push them out of the queue for now.
+  philosophically, which is the "correct" uaccess.h header file to
+include in kernel code -- <linux/uaccess.h> or <asm/uaccess.h>?  the
+first explicitly includes the second so that's a safe choice but,
+generally, there's been a tendency to shift toward including the
+"linux" header files.  opinion?  there's quite a mixture under the
+drivers/ directory.
 
-Thanks,
-Rusty.
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
