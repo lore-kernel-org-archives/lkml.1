@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZIVFah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbZIVFaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZIVFah (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 01:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbZIVFaf
+	id S1754872AbZIVFaq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 01:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbZIVFam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 01:30:35 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:47468 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754749AbZIVFaa (ORCPT
+	Tue, 22 Sep 2009 01:30:42 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:35368 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754841AbZIVFai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 01:30:30 -0400
+	Tue, 22 Sep 2009 01:30:38 -0400
 From: Darren Hart <dvhltc@us.ibm.com>
-Subject: [PATCH 4/5] futex: correct futex_q woken state commentary
+Subject: [PATCH 5/5] futex: fix wakeup race by setting TASK_INTERRUPTIBLE
+	before queue_me
 To: linux-kernel@vger.kernel.org
 Cc: Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
@@ -19,8 +20,8 @@ Cc: Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
        Eric Dumazet <eric.dumazet@gmail.com>,
        Dinakar Guniguntala <dino@in.ibm.com>,
        John Stultz <johnstul@us.ibm.com>
-Date: Mon, 21 Sep 2009 22:30:30 -0700
-Message-ID: <20090922053029.8717.62798.stgit@Aeon>
+Date: Mon, 21 Sep 2009 22:30:38 -0700
+Message-ID: <20090922053038.8717.97838.stgit@Aeon>
 In-Reply-To: <20090922052452.8717.39673.stgit@Aeon>
 References: <20090922052452.8717.39673.stgit@Aeon>
 User-Agent: StGIT/0.14.2
@@ -31,10 +32,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use kernel-doc format to describe struct futex_q.  Correct the wakeup
-definition to eliminate the statement about waking the waiter between
-the plist_del() and the q->lock_ptr = 0. Note in the comment that PI
-futexes have a different definition of the woken state.
+PI futexes do not use the same plist_node_empty() test for wakeup. It was
+possible for the waiter (in futex_wait_requeue_pi()) to set TASK_INTERRUPTIBLE
+after the waker assigned the rtmutex to the waiter. The waiter would then note
+the plist was not empty and call schedule(). The task would not be found by any
+subsequeuent futex wakeups, resulting in a userspace hang. By moving the
+setting of TASK_INTERRUPTIBLE to before the call to queue_me(), the race with
+the waker is eliminated. Since we no longer call get_user() from within
+queue_me(), there is no need to delay the setting of TASK_INTERRUPTIBLE until
+after the call to queue_me().
+
+The FUTEX_LOCK_PI operation is not affected as futex_lock_pi() relies entirely
+on the rtmutex code to handle schedule() and wakeup.  The requeue PI code is
+affected because the waiter starts as a non-PI waiter and is woken on a PI
+futex.
+
+Remove the crusty old comment about holding spinlocks() across get_user() as we
+no longer do that. Correct the locking statement with a description of why the
+test is performed.
 
 Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -46,64 +61,41 @@ CC: Dinakar Guniguntala <dino@in.ibm.com>
 CC: John Stultz <johnstul@us.ibm.com>
 ---
 
- kernel/futex.c |   32 ++++++++++++++++----------------
- 1 files changed, 16 insertions(+), 16 deletions(-)
+ kernel/futex.c |   15 +++------------
+ 1 files changed, 3 insertions(+), 12 deletions(-)
 
 diff --git a/kernel/futex.c b/kernel/futex.c
-index 720fa3d..f92afbe 100644
+index f92afbe..463af2e 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -89,36 +89,36 @@ struct futex_pi_state {
- 	union futex_key key;
- };
+@@ -1656,17 +1656,8 @@ out:
+ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+ 				struct hrtimer_sleeper *timeout)
+ {
+-	queue_me(q, hb);
+-
+-	/*
+-	 * There might have been scheduling since the queue_me(), as we
+-	 * cannot hold a spinlock across the get_user() in case it
+-	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
+-	 * queueing ourselves into the futex hash. This code thus has to
+-	 * rely on the futex_wake() code removing us from hash when it
+-	 * wakes us up.
+-	 */
+ 	set_current_state(TASK_INTERRUPTIBLE);
++	queue_me(q, hb);
  
--/*
-- * We use this hashed waitqueue instead of a normal wait_queue_t, so
-+/**
-+ * struct futex_q - The hashed futex queue entry, one per waiting task
-+ * @task:		the task waiting on the futex
-+ * @lock_ptr:		the hash bucket lock
-+ * @key:		the key the futex is hashed on
-+ * @pi_state:		optional priority inheritance state
-+ * @rt_waiter:		rt_waiter storage for use with requeue_pi
-+ * @requeue_pi_key:	the requeue_pi target futex key
-+ * @bitset:		bitset for the optional bitmasked wakeup
-+ *
-+ * We use this hashed waitqueue, instead of a normal wait_queue_t, so
-  * we can wake only the relevant ones (hashed queues may be shared).
-  *
-  * A futex_q has a woken state, just like tasks have TASK_RUNNING.
-  * It is considered woken when plist_node_empty(&q->list) || q->lock_ptr == 0.
-  * The order of wakup is always to make the first condition true, then
-- * wake up q->waiter, then make the second condition true.
-+ * the second.
-+ *
-+ * PI futexes are typically woken before they are removed from the hash list via
-+ * the rt_mutex code. See unqueue_me_pi().
-  */
- struct futex_q {
- 	struct plist_node list;
--	/* Waiter reference */
--	struct task_struct *task;
+ 	/* Arm the timer */
+ 	if (timeout) {
+@@ -1676,8 +1667,8 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+ 	}
  
--	/* Which hash list lock to use: */
-+	struct task_struct *task;
- 	spinlock_t *lock_ptr;
--
--	/* Key which the futex is hashed on: */
- 	union futex_key key;
--
--	/* Optional priority inheritance state: */
- 	struct futex_pi_state *pi_state;
--
--	/* rt_waiter storage for requeue_pi: */
- 	struct rt_mutex_waiter *rt_waiter;
--
--	/* The expected requeue pi target futex key: */
- 	union futex_key *requeue_pi_key;
--
--	/* Bitset for the optional bitmasked wakeup */
- 	u32 bitset;
- };
- 
+ 	/*
+-	 * !plist_node_empty() is safe here without any lock.
+-	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
++	 * If we have been removed from the hash list, then another task
++	 * has tried to wake us, and we can skip the call to schedule().
+ 	 */
+ 	if (likely(!plist_node_empty(&q->list))) {
+ 		/*
 
