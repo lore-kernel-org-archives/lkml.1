@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZIVPxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbZIVPxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbZIVPxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbZIVPxf
+	id S1755104AbZIVPxP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbZIVPxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:53:35 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:57642 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755869AbZIVPxd (ORCPT
+	Tue, 22 Sep 2009 11:53:15 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:46941 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbZIVPxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:53:33 -0400
-Message-ID: <4AB8F2BE.8060007@vflare.org>
-Date: Tue, 22 Sep 2009 21:22:30 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 22 Sep 2009 11:53:14 -0400
+Date: Tue, 22 Sep 2009 11:52:59 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: regression in page writeback
+Message-ID: <20090922155259.GL10825@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Wu Fengguang <fengguang.wu@intel.com>,
+	"Li, Shaohua" <shaohua.li@intel.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+	"jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>
+References: <20090922054913.GA27260@sli10-desk.sh.intel.com>
+ <1253601612.8439.274.camel@twins>
+ <20090922080505.GB9192@localhost>
+ <1253606965.8439.281.camel@twins>
+ <20090922082427.GA24888@localhost>
+ <1253608335.8439.283.camel@twins>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
-Subject: Re: [PATCH 0/3] compcache: in-memory compressed swapping v4
-References: <1253595414-2855-1-git-send-email-ngupta@vflare.org> <1253600030.30406.2.camel@penberg-laptop> <20090922153752.GA24256@kroah.com>
-In-Reply-To: <20090922153752.GA24256@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253608335.8439.283.camel@twins>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt016.oracle.com [141.146.116.25]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4AB8F2DE.00F5:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/22/2009 09:07 PM, Greg KH wrote:
-> On Tue, Sep 22, 2009 at 09:13:50AM +0300, Pekka Enberg wrote:
->> On Tue, 2009-09-22 at 10:26 +0530, Nitin Gupta wrote:
->>>  drivers/staging/Kconfig                   |    2 +
->>>  drivers/staging/Makefile                  |    1 +
->>>  drivers/staging/ramzswap/Kconfig          |   21 +
->>>  drivers/staging/ramzswap/Makefile         |    3 +
->>>  drivers/staging/ramzswap/ramzswap.txt     |   51 +
->>>  drivers/staging/ramzswap/ramzswap_drv.c   | 1462 +++++++++++++++++++++++++++++
->>>  drivers/staging/ramzswap/ramzswap_drv.h   |  173 ++++
->>>  drivers/staging/ramzswap/ramzswap_ioctl.h |   50 +
->>>  drivers/staging/ramzswap/xvmalloc.c       |  533 +++++++++++
->>>  drivers/staging/ramzswap/xvmalloc.h       |   30 +
->>>  drivers/staging/ramzswap/xvmalloc_int.h   |   86 ++
->>>  include/linux/swap.h                      |    5 +
->>>  mm/swapfile.c                             |   34 +
->>>  13 files changed, 2451 insertions(+), 0 deletions(-)
->>
->> This diffstat is not up to date, I think.
->>
->> Greg, would you mind taking this driver into staging? There are some
->> issues that need to be ironed out for it to be merged to kernel proper
->> but I think it would benefit from being exposed to mainline.
+On Tue, Sep 22, 2009 at 10:32:14AM +0200, Peter Zijlstra wrote:
+> On Tue, 2009-09-22 at 16:24 +0800, Wu Fengguang wrote:
+> > On Tue, Sep 22, 2009 at 04:09:25PM +0800, Peter Zijlstra wrote:
+> > > On Tue, 2009-09-22 at 16:05 +0800, Wu Fengguang wrote:
+> > > > 
+> > > > I'm not sure how this patch stopped the "overshooting" behavior.
+> > > > Maybe it managed to not start the background pdflush, or the started
+> > > > pdflush thread exited because it found writeback is in progress by
+> > > > someone else?
+> > > > 
+> > > > -               if (bdi_nr_reclaimable) {
+> > > > +               if (bdi_nr_reclaimable > bdi_thresh) {
+> > > 
+> > > The idea is that we shouldn't move more pages from dirty -> writeback
+> > > when there's not actually that much dirty left.
+> > 
+> > IMHO this makes little sense given that pdflush will move all dirty
+> > pages anyway. pdflush should already be started to do background
+> > writeback before the process is throttled, and it is designed to sync
+> > all current dirty pages as quick as possible and as much as possible.
 > 
-> That would be fine, will there be a new set of patches for me to apply,
-> or is this the correct series?
+> Not so, pdflush (or now the bdi writer thread thingies) should not
+> deplete all dirty pages but should stop writing once they are below the
+> background limit.
+> 
+> > > Now, I'm not sure about the > bdi_thresh part, I've suggested to maybe
+> > > use bdi_thresh/2 a few times, but it generally didn't seem to make much
+> > > of a difference.
+> > 
+> > One possible difference is, the process may end up waiting longer time
+> > in order to sync write_chunk pages and quit the throttle. This could
+> > hurt the responsiveness of the throttled process.
+> 
+> Well, that's all because this congestion_wait stuff is borken..
 > 
 
-This is the correct series.
+I'd suggest retesting with a new baseline against the code in Linus' git
+today.  Overall I think the change to make balance_dirty_pages() sleep
+instead of kick more IO out is a very good one.  It helps in most
+workloads here.
 
-Thanks,
-Nitin
+The congestion_wait() from 2.6.31 may just be too long to sleep waiting
+for progress on very fast IO rigs.  Try switching to
+schedule_timeout_interruptible(1);
+
+-chris
+
