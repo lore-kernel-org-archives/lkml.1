@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbZIVRNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZIVRQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753681AbZIVRNm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZIVRNl
+	id S1754033AbZIVRQF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZIVRQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:13:41 -0400
-Received: from mail-in-12.arcor-online.net ([151.189.21.52]:44659 "EHLO
-	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752111AbZIVRNk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:13:40 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-01.arcor-online.net 2952A3328DB
-Message-ID: <4AB905C6.2040605@arcor.de>
-Date: Tue, 22 Sep 2009 20:13:42 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+	Tue, 22 Sep 2009 13:16:04 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40002 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbZIVRQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 13:16:03 -0400
+Date: Tue, 22 Sep 2009 19:16:04 +0200
+From: Jan Kara <jack@suse.cz>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
+       tytso@mit.edu
+Subject: Re: [PATCH 5/7] ext4: Convert filesystem to the new truncate
+	calling convention
+Message-ID: <20090922171604.GA31447@duck.suse.cz>
+References: <1253200907-31392-1-git-send-email-jack@suse.cz> <1253200907-31392-6-git-send-email-jack@suse.cz> <20090922143604.GA2183@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Brian McGrew <brian@visionpro.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: (un)mount ramfs from C code
-References: <C6DE438F.127DA%brian@visionpro.com>
-In-Reply-To: <C6DE438F.127DA%brian@visionpro.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922143604.GA2183@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/22/2009 07:04 PM, Brian McGrew wrote:
-> Good morning all!
->
-> So I'm using a ramfs for temporary files, thank you whoever designed that,
-> it works great!
->
-> I can mkdir, mount, chmoud, readand write and then umount the thing from the
-> command line just fine.
->
-> What I need now is some method from within my C/C++ code to determine if the
-> ramfs is mounted, if not, then mount it so I can use it and unmount it when
-> I'm done, without making a system call.
->
-> Can this be done?  Is there any access to mount/unmount from C/C++?
+On Tue 22-09-09 15:36:04, Al Viro wrote:
+> On Thu, Sep 17, 2009 at 05:21:45PM +0200, Jan Kara wrote:
+> > CC: linux-ext4@vger.kernel.org
+> > CC: tytso@mit.edu
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > ---
+> >  fs/ext4/file.c  |    2 +-
+> >  fs/ext4/inode.c |  166 ++++++++++++++++++++++++++++++++----------------------
+> >  2 files changed, 99 insertions(+), 69 deletions(-)
+> > 
+> > diff --git a/fs/ext4/file.c b/fs/ext4/file.c
+> > index 3f1873f..22f49d7 100644
+> > --- a/fs/ext4/file.c
+> > +++ b/fs/ext4/file.c
+> > @@ -198,7 +198,7 @@ const struct file_operations ext4_file_operations = {
+> >  };
+> >  
+> >  const struct inode_operations ext4_file_inode_operations = {
+> > -	.truncate	= ext4_truncate,
+> > +	.new_truncate	= 1,
+> >  	.setattr	= ext4_setattr,
+> >  	.getattr	= ext4_getattr,
+> >  #ifdef CONFIG_EXT4_FS_XATTR
+> > diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+> > index 58492ab..be25874 100644
+> > --- a/fs/ext4/inode.c
+> > +++ b/fs/ext4/inode.c
+> > @@ -3354,6 +3354,7 @@ static int ext4_journalled_set_page_dirty(struct page *page)
+> >  }
+> >  
+> >  static const struct address_space_operations ext4_ordered_aops = {
+> > +	.new_writepage		= 1,
+> 
+> No.  We already have one half-finished series here; mixing it with another
+> one is not going to happen.  Such flags are tolerable only as bisectability
+> helpers.  They *must* disappear by the end of series.  Before it can be
+> submitted for merge.
+> 
+> In effect, you are mixing truncate switchover with your writepage one.
+> Please, split and reorder.
+  Well, this wasn't meant as a final version of those patches. It was
+meant as a request for comment whether it makes sence to fix the problem
+how I propose to fix it. If we agree on that, I'll go and convert the rest
+of filesystems so that we can remove .new_writepage hack. By that time I
+hope that new truncate sequence patches will be merged so that dependency
+should go away as well...
 
-I suppose looking at the source code of the 'mount' utility could prove 
-very enlightening.  You can find it at:
-
-   http://www.kernel.org/pub/linux/utils/util-linux-ng
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
