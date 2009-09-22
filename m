@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbZIVPcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbZIVPdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbZIVPcp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 11:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZIVPco
+	id S1756892AbZIVPdX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 11:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZIVPdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 11:32:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58758 "EHLO mx1.suse.de"
+	Tue, 22 Sep 2009 11:33:23 -0400
+Received: from fifo99.com ([67.223.236.141]:60400 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753313AbZIVPcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 11:32:43 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs / Novell
-To: Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: fanotify as syscalls
-Date: Tue, 22 Sep 2009 17:31:34 +0200
-User-Agent: KMail/1.9.9
-Cc: Jamie Lokier <jamie@shareable.org>, Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
-References: <20090912094110.GB24709@ioremap.net> <20090921231227.GJ14700@shareable.org> <alpine.DEB.2.00.0909211816020.1116@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.2.00.0909211816020.1116@makko.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1753731AbZIVPdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 11:33:22 -0400
+Subject: Re: [PATCH 1/2] Add COH 901 318 DMA block driver
+From: Daniel Walker <dwalker@fifo99.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1253630313-20225-1-git-send-email-linus.walleij@stericsson.com>
+References: <1253630313-20225-1-git-send-email-linus.walleij@stericsson.com>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 08:33:22 -0700
+Message-Id: <1253633602.22454.0.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909221731.34717.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 22 September 2009 16:51:39 Davide Libenzi wrote:
-> On Tue, 22 Sep 2009, Jamie Lokier wrote:
-> > I don't mind at all if fanotify is replaced by a general purpose "take
-> > over the system call table" solution ...
->
-> That was not what I meant ;)
-> You'd register/unregister as syscall interceptor, receiving syscall number
-> and parameters, you'd be able to return status/error codes directly, and
-> you'd have the ability to eventually change the parameters. All this
-> should be pretty trivial code, and at the same time give full syscall
-> visibility to the modules.
+On Tue, 2009-09-22 at 16:38 +0200, Linus Walleij wrote:
+> +       val &= ~COH901318_CX_CFG_CH_ENABLE;
+> +       writel(val, virtbase + COH901318_CX_CFG +
+> +              COH901318_CX_CFG_SPACING * channel);
+> +
+> +       writel(val, virtbase + COH901318_CX_CFG +
+> +              COH901318_CX_CFG_SPACING * channel);
+> +       wmb();
+> +
+> +       /* Spin-wait for it to actually go inactive */
+> +       while (readl(virtbase + COH901318_CX_STAT+COH901318_CX_STAT_SPACING *
+> +                    channel) & COH901318_CX_STAT_ACTIVE) {}
 
-The fatal flaw of syscall interception is race conditions: you look up a 
-pathname in your interception layer; then when you call into the proper 
-syscall, the kernel again looks up the same pathname. There is no way to 
-guarantee that you end up at the same object in both lookups. The security 
-and fsnotify hooks are placed in the appropriate spots to avoid exactly that.
+You might want to add a cpu_relax() here ..
 
-Andreas
+Daniel
+
+
+
