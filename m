@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbZIVTi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbZIVTjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330AbZIVTi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 15:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbZIVTiy
+	id S1752385AbZIVTjB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 15:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbZIVTi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 15:38:54 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:6632 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752238AbZIVTis (ORCPT
+	Tue, 22 Sep 2009 15:38:58 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:39120 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752212AbZIVTiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 15:38:48 -0400
+	Tue, 22 Sep 2009 15:38:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=en0GhkyepT0Vh8XzpsY1IgPZzVQpj5SJZ+7LVPXUAs535OSfHSHG3UmJFrBaauhoqF
-         Qhqz0Gw+vACpPy8fp3KsNBh7ILrXuZyJXpzl/Rmqpxjq7FApi+ykpymwgX4B9gG9w4aZ
-         QUKrjeyJxyssPDIWFUr6/hjC9EIm6KLaXy1Gw=
+        b=Na5VeSCLni7OpGXLwtZON5c1mqTsAqIS7yRQuQAHT9AI2f+XRLj2zlTULJC6Mho7tl
+         CxMbiczyPcttRovOMyVWNlCMjWXereQrekBY0vEzb04Dx02Fo5MXZAkUNstSxEqQ0jrl
+         ZLlaU8bL76oH3it+VnikiBfkkgt2g3WCSdMQw=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -32,9 +32,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Tom Zanussi <tzanussi@gmail.com>
-Subject: [PATCH 11/24] x86/ptrace: Fix regs_get_argument_nth() to add correct offset
-Date: Tue, 22 Sep 2009 21:38:09 +0200
-Message-Id: <1253648302-5771-12-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 12/24] tracing/kprobes: Fix probe offset to be unsigned
+Date: Tue, 22 Sep 2009 21:38:10 +0200
+Message-Id: <1253648302-5771-13-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
 References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
@@ -44,12 +44,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Fix regs_get_argument_nth() to add correct offset bytes. Because
-offset_of() returns offset in byte, the offset should be added
-to char * instead of unsigned long *.
+Prohibit user to specify negative offset from symbols.
+Since kprobe.offset is unsigned int, the offset must be always positive
+value.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
 Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Andi Kleen <ak@linux.intel.com>
@@ -66,25 +65,116 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <20090910235306.22412.31613.stgit@dhcp-100-2-132.bos.redhat.com>
+LKML-Reference: <20090910235314.22412.64631.stgit@dhcp-100-2-132.bos.redhat.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- arch/x86/kernel/ptrace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ Documentation/trace/kprobetrace.txt |   14 +++++++-------
+ kernel/trace/trace_kprobe.c         |   19 +++++++------------
+ 2 files changed, 14 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index a33a17d..caffb68 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -150,7 +150,7 @@ static const int arg_offs_table[] = {
- unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n)
+diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
+index 3de7517..db55318 100644
+--- a/Documentation/trace/kprobetrace.txt
++++ b/Documentation/trace/kprobetrace.txt
+@@ -25,15 +25,15 @@ probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
+ 
+ Synopsis of kprobe_events
+ -------------------------
+-  p[:EVENT] SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: Set a probe
+-  r[:EVENT] SYMBOL[+0] [FETCHARGS]			: Set a return probe
++  p[:EVENT] SYMBOL[+offs]|MEMADDR [FETCHARGS]	: Set a probe
++  r[:EVENT] SYMBOL[+0] [FETCHARGS]		: Set a return probe
+ 
+- EVENT			: Event name. If omitted, the event name is generated
+-			  based on SYMBOL+offs or MEMADDR.
+- SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted.
+- MEMADDR		: Address where the probe is inserted.
++ EVENT		: Event name. If omitted, the event name is generated
++		  based on SYMBOL+offs or MEMADDR.
++ SYMBOL[+offs]	: Symbol+offset where the probe is inserted.
++ MEMADDR	: Address where the probe is inserted.
+ 
+- FETCHARGS		: Arguments. Each probe can have up to 128 args.
++ FETCHARGS	: Arguments. Each probe can have up to 128 args.
+   %REG	: Fetch register REG
+   sN	: Fetch Nth entry of stack (N >= 0)
+   sa	: Fetch stack address.
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 19a6de6..c24b7e9 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -210,7 +210,7 @@ static __kprobes const char *probe_symbol(struct trace_probe *tp)
+ 	return tp->symbol ? tp->symbol : "unknown";
+ }
+ 
+-static __kprobes long probe_offset(struct trace_probe *tp)
++static __kprobes unsigned int probe_offset(struct trace_probe *tp)
  {
- 	if (n < ARRAY_SIZE(arg_offs_table))
--		return *((unsigned long *)regs + arg_offs_table[n]);
-+		return *(unsigned long *)((char *)regs + arg_offs_table[n]);
- 	else {
- 		/*
- 		 * The typical case: arg n is on the stack.
+ 	return (probe_is_return(tp)) ? tp->rp.kp.offset : tp->kp.offset;
+ }
+@@ -380,7 +380,7 @@ end:
+ }
+ 
+ /* Split symbol and offset. */
+-static int split_symbol_offset(char *symbol, long *offset)
++static int split_symbol_offset(char *symbol, unsigned long *offset)
+ {
+ 	char *tmp;
+ 	int ret;
+@@ -389,16 +389,11 @@ static int split_symbol_offset(char *symbol, long *offset)
+ 		return -EINVAL;
+ 
+ 	tmp = strchr(symbol, '+');
+-	if (!tmp)
+-		tmp = strchr(symbol, '-');
+-
+ 	if (tmp) {
+ 		/* skip sign because strict_strtol doesn't accept '+' */
+-		ret = strict_strtol(tmp + 1, 0, offset);
++		ret = strict_strtoul(tmp + 1, 0, offset);
+ 		if (ret)
+ 			return ret;
+-		if (*tmp == '-')
+-			*offset = -(*offset);
+ 		*tmp = '\0';
+ 	} else
+ 		*offset = 0;
+@@ -520,7 +515,7 @@ static int create_trace_probe(int argc, char **argv)
+ {
+ 	/*
+ 	 * Argument syntax:
+-	 *  - Add kprobe: p[:EVENT] SYMBOL[+OFFS|-OFFS]|ADDRESS [FETCHARGS]
++	 *  - Add kprobe: p[:EVENT] SYMBOL[+OFFS]|ADDRESS [FETCHARGS]
+ 	 *  - Add kretprobe: r[:EVENT] SYMBOL[+0] [FETCHARGS]
+ 	 * Fetch args:
+ 	 *  aN	: fetch Nth of function argument. (N:0-)
+@@ -539,7 +534,7 @@ static int create_trace_probe(int argc, char **argv)
+ 	int i, ret = 0;
+ 	int is_return = 0;
+ 	char *symbol = NULL, *event = NULL;
+-	long offset = 0;
++	unsigned long offset = 0;
+ 	void *addr = NULL;
+ 
+ 	if (argc < 2)
+@@ -605,7 +600,7 @@ static int create_trace_probe(int argc, char **argv)
+ 
+ 	if (tp->symbol) {
+ 		kp->symbol_name = tp->symbol;
+-		kp->offset = offset;
++		kp->offset = (unsigned int)offset;
+ 	} else
+ 		kp->addr = addr;
+ 
+@@ -675,7 +670,7 @@ static int probes_seq_show(struct seq_file *m, void *v)
+ 	seq_printf(m, ":%s", tp->call.name);
+ 
+ 	if (tp->symbol)
+-		seq_printf(m, " %s%+ld", probe_symbol(tp), probe_offset(tp));
++		seq_printf(m, " %s+%u", probe_symbol(tp), probe_offset(tp));
+ 	else
+ 		seq_printf(m, " 0x%p", probe_address(tp));
+ 
 -- 
 1.6.2.3
 
