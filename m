@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZIVHkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZIVHlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbZIVHkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 03:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZIVHkx
+	id S1754749AbZIVHlW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 03:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZIVHkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 03:40:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44584 "EHLO hera.kernel.org"
+	Tue, 22 Sep 2009 03:40:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44582 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752444AbZIVHks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 03:40:48 -0400
+	id S1752250AbZIVHkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 03:40:47 -0400
 From: Tejun Heo <tj@kernel.org>
 To: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
        Fenghua Yu <fenghua.yu@intel.com>,
@@ -19,9 +19,9 @@ To: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
 Cc: Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>,
        Fenghua Yu <fenghua.yu@intel.com>,
        linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu areas for other cpus
-Date: Tue, 22 Sep 2009 16:40:12 +0900
-Message-Id: <1253605214-23210-3-git-send-email-tj@kernel.org>
+Subject: [PATCH 3/4] ia64: convert to dynamic percpu allocator
+Date: Tue, 22 Sep 2009 16:40:13 +0900
+Message-Id: <1253605214-23210-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1253605214-23210-1-git-send-email-tj@kernel.org>
 References: <1253605214-23210-1-git-send-email-tj@kernel.org>
@@ -30,173 +30,237 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpu0 used special percpu area reserved by the linker, __cpu0_per_cpu,
-which is set up early in boot by head.S.  However, this doesn't
-guarantee that the area will be on the same node as cpu0 and the
-percpu area for cpu0 ends up very far away from percpu areas for other
-cpus which cause problems for congruent percpu allocator.
+Unlike other archs, ia64 reserves space for percpu areas during early
+memory initialization.  These areas occupy a contiguous region indexed
+by cpu number on contiguous memory model or are grouped by node on
+discontiguous memory model.
 
-This patch makes percpu area initialization allocate percpu area for
-cpu0 like any other cpus and copy it from __cpu0_per_cpu which now
-resides in the __init area.  This means that for cpu0, percpu area is
-first setup at __cpu0_per_cpu early by head.S and then moved to an
-area in the linear mapping during memory initialization and it's not
-allowed to take a pointer to percpu variables between head.S and
-memory initialization.
+As allocation and initialization are done by the arch code, all that
+setup_per_cpu_areas() needs to do is communicating the determined
+layout to the percpu allocator.  This patch implements
+setup_per_cpu_areas() for both contig and discontig memory models and
+drops HAVE_LEGACY_PER_CPU_AREA.
+
+Please note that for contig model, the allocation itself is modified
+only to allocate for possible cpus instead of NR_CPUS.  As dynamic
+percpu allocator can handle non-direct mapping, there's no reason to
+allocate memory for cpus which aren't possible.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Fenghua Yu <fenghua.yu@intel.com>
 Cc: linux-ia64 <linux-ia64@vger.kernel.org>
 ---
- arch/ia64/kernel/vmlinux.lds.S |   11 +++++----
- arch/ia64/mm/contig.c          |   47 +++++++++++++++++++++++++--------------
- arch/ia64/mm/discontig.c       |   35 ++++++++++++++++++++---------
- 3 files changed, 60 insertions(+), 33 deletions(-)
+ arch/ia64/Kconfig        |    3 --
+ arch/ia64/kernel/setup.c |   12 ------
+ arch/ia64/mm/contig.c    |   50 ++++++++++++++++++++++++---
+ arch/ia64/mm/discontig.c |   85 ++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 130 insertions(+), 20 deletions(-)
 
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 0a0c77b..1295ba3 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -166,6 +166,12 @@ SECTIONS
- 	}
- #endif
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 011a1cd..e624611 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -89,9 +89,6 @@ config GENERIC_TIME_VSYSCALL
+ 	bool
+ 	default y
  
-+#ifdef	CONFIG_SMP
-+  . = ALIGN(PERCPU_PAGE_SIZE);
-+  __cpu0_per_cpu = .;
-+  . = . + PERCPU_PAGE_SIZE;	/* cpu0 per-cpu space */
-+#endif
-+
-   . = ALIGN(PAGE_SIZE);
-   __init_end = .;
+-config HAVE_LEGACY_PER_CPU_AREA
+-	def_bool y
+-
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y
  
-@@ -198,11 +204,6 @@ SECTIONS
-   data : { } :data
-   .data : AT(ADDR(.data) - LOAD_OFFSET)
- 	{
--#ifdef	CONFIG_SMP
--  . = ALIGN(PERCPU_PAGE_SIZE);
--		__cpu0_per_cpu = .;
--  . = . + PERCPU_PAGE_SIZE;	/* cpu0 per-cpu space */
--#endif
- 		INIT_TASK_DATA(PAGE_SIZE)
- 		CACHELINE_ALIGNED_DATA(SMP_CACHE_BYTES)
- 		READ_MOSTLY_DATA(SMP_CACHE_BYTES)
-diff --git a/arch/ia64/mm/contig.c b/arch/ia64/mm/contig.c
-index 2f724d2..9493bbf 100644
---- a/arch/ia64/mm/contig.c
-+++ b/arch/ia64/mm/contig.c
-@@ -154,36 +154,49 @@ static void *cpu_data;
- void * __cpuinit
- per_cpu_init (void)
- {
--	int cpu;
--	static int first_time=1;
-+	static bool first_time = true;
-+	void *cpu0_data = __cpu0_per_cpu;
-+	unsigned int cpu;
-+
-+	if (!first_time)
-+		goto skip;
-+	first_time = false;
- 
- 	/*
- 	 * get_free_pages() cannot be used before cpu_init() done.  BSP
- 	 * allocates "NR_CPUS" pages for all CPUs to avoid that AP calls
- 	 * get_zeroed_page().
- 	 */
--	if (first_time) {
--		void *cpu0_data = __cpu0_per_cpu;
-+	for (cpu = 0; cpu < NR_CPUS; cpu++) {
-+		void *src = cpu == 0 ? cpu0_data : __phys_per_cpu_start;
- 
--		first_time=0;
-+		memcpy(cpu_data, src, __per_cpu_end - __per_cpu_start);
-+		__per_cpu_offset[cpu] = (char *)cpu_data - __per_cpu_start;
-+		per_cpu(local_per_cpu_offset, cpu) = __per_cpu_offset[cpu];
- 
--		__per_cpu_offset[0] = (char *) cpu0_data - __per_cpu_start;
--		per_cpu(local_per_cpu_offset, 0) = __per_cpu_offset[0];
-+		/*
-+		 * percpu area for cpu0 is moved from the __init area
-+		 * which is setup by head.S and used till this point.
-+		 * Update ar.k3.  This move is ensures that percpu
-+		 * area for cpu0 is on the correct node and its
-+		 * virtual address isn't insanely far from other
-+		 * percpu areas which is important for congruent
-+		 * percpu allocator.
-+		 */
-+		if (cpu == 0)
-+			ia64_set_kr(IA64_KR_PER_CPU_DATA, __pa(cpu_data) -
-+				    (unsigned long)__per_cpu_start);
- 
--		for (cpu = 1; cpu < NR_CPUS; cpu++) {
--			memcpy(cpu_data, __phys_per_cpu_start, __per_cpu_end - __per_cpu_start);
--			__per_cpu_offset[cpu] = (char *) cpu_data - __per_cpu_start;
--			cpu_data += PERCPU_PAGE_SIZE;
--			per_cpu(local_per_cpu_offset, cpu) = __per_cpu_offset[cpu];
--		}
-+		cpu_data += PERCPU_PAGE_SIZE;
- 	}
-+skip:
- 	return __per_cpu_start + __per_cpu_offset[smp_processor_id()];
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index 1de86c9..42f8a18 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -856,18 +856,6 @@ identify_cpu (struct cpuinfo_ia64 *c)
  }
  
+ /*
+- * In UP configuration, setup_per_cpu_areas() is defined in
+- * include/linux/percpu.h
+- */
+-#ifdef CONFIG_SMP
+-void __init
+-setup_per_cpu_areas (void)
+-{
+-	/* start_kernel() requires this... */
+-}
+-#endif
+-
+-/*
+  * Do the following calculations:
+  *
+  * 1. the max. cache line size.
+diff --git a/arch/ia64/mm/contig.c b/arch/ia64/mm/contig.c
+index 9493bbf..c86ce4f 100644
+--- a/arch/ia64/mm/contig.c
++++ b/arch/ia64/mm/contig.c
+@@ -163,11 +163,11 @@ per_cpu_init (void)
+ 	first_time = false;
+ 
+ 	/*
+-	 * get_free_pages() cannot be used before cpu_init() done.  BSP
+-	 * allocates "NR_CPUS" pages for all CPUs to avoid that AP calls
+-	 * get_zeroed_page().
++	 * get_free_pages() cannot be used before cpu_init() done.
++	 * BSP allocates PERCPU_PAGE_SIZE bytes for all possible CPUs
++	 * to avoid that AP calls get_zeroed_page().
+ 	 */
+-	for (cpu = 0; cpu < NR_CPUS; cpu++) {
++	for_each_possible_cpu(cpu) {
+ 		void *src = cpu == 0 ? cpu0_data : __phys_per_cpu_start;
+ 
+ 		memcpy(cpu_data, src, __per_cpu_end - __per_cpu_start);
+@@ -196,9 +196,49 @@ skip:
  static inline void
  alloc_per_cpu_data(void)
  {
--	cpu_data = __alloc_bootmem(PERCPU_PAGE_SIZE * NR_CPUS-1,
-+	cpu_data = __alloc_bootmem(PERCPU_PAGE_SIZE * NR_CPUS,
+-	cpu_data = __alloc_bootmem(PERCPU_PAGE_SIZE * NR_CPUS,
++	cpu_data = __alloc_bootmem(PERCPU_PAGE_SIZE * num_possible_cpus(),
  				   PERCPU_PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
  }
++
++/**
++ * setup_per_cpu_areas - setup percpu areas
++ *
++ * Arch code has already allocated and initialized percpu areas.  All
++ * this function has to do is to teach the determined layout to the
++ * dynamic percpu allocator, which happens to be more complex than
++ * creating whole new ones using helpers.
++ */
++void __init
++setup_per_cpu_areas(void)
++{
++	struct pcpu_alloc_info *ai;
++	struct pcpu_group_info *gi;
++	unsigned int cpu;
++	int rc;
++
++	ai = pcpu_alloc_alloc_info(1, num_possible_cpus());
++	if (!ai)
++		panic("failed to allocate pcpu_alloc_info");
++	gi = &ai->groups[0];
++
++	/* units are assigned consecutively to possible cpus */
++	for_each_possible_cpu(cpu)
++		gi->cpu_map[gi->nr_units++] = cpu;
++
++	/* set parameters */
++	ai->static_size		= __per_cpu_end - __per_cpu_start;
++	ai->reserved_size	= PERCPU_MODULE_RESERVE;
++	ai->dyn_size		= PERCPU_DYNAMIC_RESERVE;
++	ai->unit_size		= PERCPU_PAGE_SIZE;
++	ai->atom_size		= PAGE_SIZE;
++	ai->alloc_size		= PERCPU_PAGE_SIZE;
++
++	rc = pcpu_setup_first_chunk(ai, __per_cpu_start + __per_cpu_offset[0]);
++	if (rc)
++		panic("failed to setup percpu area (err=%d)", rc);
++
++	pcpu_free_alloc_info(ai);
++}
  #else
+ #define alloc_per_cpu_data() do { } while (0)
+ #endif /* CONFIG_SMP */
 diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
-index d85ba98..35a61ec 100644
+index 35a61ec..69e9e91 100644
 --- a/arch/ia64/mm/discontig.c
 +++ b/arch/ia64/mm/discontig.c
-@@ -143,17 +143,30 @@ static void *per_cpu_node_setup(void *cpu_data, int node)
- 	int cpu;
- 
- 	for_each_possible_early_cpu(cpu) {
--		if (cpu == 0) {
--			void *cpu0_data = __cpu0_per_cpu;
--			__per_cpu_offset[cpu] = (char*)cpu0_data -
--				__per_cpu_start;
--		} else if (node == node_cpuid[cpu].nid) {
--			memcpy(__va(cpu_data), __phys_per_cpu_start,
--			       __per_cpu_end - __per_cpu_start);
--			__per_cpu_offset[cpu] = (char*)__va(cpu_data) -
--				__per_cpu_start;
--			cpu_data += PERCPU_PAGE_SIZE;
--		}
-+		void *src = cpu == 0 ? __cpu0_per_cpu : __phys_per_cpu_start;
-+
-+		if (node != node_cpuid[cpu].nid)
-+			continue;
-+
-+		memcpy(__va(cpu_data), src, __per_cpu_end - __per_cpu_start);
-+		__per_cpu_offset[cpu] = (char *)__va(cpu_data) -
-+			__per_cpu_start;
-+
-+		/*
-+		 * percpu area for cpu0 is moved from the __init area
-+		 * which is setup by head.S and used till this point.
-+		 * Update ar.k3.  This move is ensures that percpu
-+		 * area for cpu0 is on the correct node and its
-+		 * virtual address isn't insanely far from other
-+		 * percpu areas which is important for congruent
-+		 * percpu allocator.
-+		 */
-+		if (cpu == 0)
-+			ia64_set_kr(IA64_KR_PER_CPU_DATA,
-+				    (unsigned long)cpu_data -
-+				    (unsigned long)__per_cpu_start);
-+
-+		cpu_data += PERCPU_PAGE_SIZE;
- 	}
- #endif
+@@ -172,6 +172,91 @@ static void *per_cpu_node_setup(void *cpu_data, int node)
  	return cpu_data;
+ }
+ 
++#ifdef CONFIG_SMP
++/**
++ * setup_per_cpu_areas - setup percpu areas
++ *
++ * Arch code has already allocated and initialized percpu areas.  All
++ * this function has to do is to teach the determined layout to the
++ * dynamic percpu allocator, which happens to be more complex than
++ * creating whole new ones using helpers.
++ */
++void __init setup_per_cpu_areas(void)
++{
++	struct pcpu_alloc_info *ai;
++	struct pcpu_group_info *uninitialized_var(gi);
++	unsigned int *cpu_map;
++	void *base;
++	unsigned long base_offset;
++	unsigned int cpu;
++	ssize_t static_size, reserved_size, dyn_size;
++	int node, prev_node, unit, nr_units, rc;
++
++	ai = pcpu_alloc_alloc_info(MAX_NUMNODES, nr_cpu_ids);
++	if (!ai)
++		panic("failed to allocate pcpu_alloc_info");
++	cpu_map = ai->groups[0].cpu_map;
++
++	/* determine base */
++	base = (void *)ULONG_MAX;
++	for_each_possible_cpu(cpu)
++		base = min(base,
++			   (void *)(__per_cpu_offset[cpu] + __per_cpu_start));
++	base_offset = (void *)__per_cpu_start - base;
++
++	/* build cpu_map, units are grouped by node */
++	unit = 0;
++	for_each_node(node)
++		for_each_possible_cpu(cpu)
++			if (node == node_cpuid[cpu].nid)
++				cpu_map[unit++] = cpu;
++	nr_units = unit;
++
++	/* set basic parameters */
++	static_size = __per_cpu_end - __per_cpu_start;
++	reserved_size = PERCPU_MODULE_RESERVE;
++	dyn_size = PERCPU_PAGE_SIZE - static_size - reserved_size;
++	if (dyn_size < 0)
++		panic("percpu area overflow static=%zd reserved=%zd\n",
++		      static_size, reserved_size);
++
++	ai->static_size		= static_size;
++	ai->reserved_size	= reserved_size;
++	ai->dyn_size		= dyn_size;
++	ai->unit_size		= PERCPU_PAGE_SIZE;
++	ai->atom_size		= PAGE_SIZE;
++	ai->alloc_size		= PERCPU_PAGE_SIZE;
++
++	/*
++	 * CPUs are put into groups according to node.  Walk cpu_map
++	 * and create new groups at node boundaries.
++	 */
++	prev_node = -1;
++	ai->nr_groups = 0;
++	for (unit = 0; unit < nr_units; unit++) {
++		cpu = cpu_map[unit];
++		node = node_cpuid[cpu].nid;
++
++		if (node == prev_node) {
++			gi->nr_units++;
++			continue;
++		}
++		prev_node = node;
++
++		gi = &ai->groups[ai->nr_groups++];
++		gi->nr_units		= 1;
++		gi->base_offset		= __per_cpu_offset[cpu] + base_offset;
++		gi->cpu_map		= &cpu_map[unit];
++	}
++
++	rc = pcpu_setup_first_chunk(ai, base);
++	if (rc)
++		panic("failed to setup percpu area (err=%d)", rc);
++
++	pcpu_free_alloc_info(ai);
++}
++#endif
++
+ /**
+  * fill_pernode - initialize pernode data.
+  * @node: the node id.
 -- 
 1.6.4.2
 
