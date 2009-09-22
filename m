@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbZIVRXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZIVR22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753610AbZIVRXp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 13:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZIVRXp
+	id S1754862AbZIVR22 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 13:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZIVR21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 13:23:45 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:60981 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbZIVRXo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 13:23:44 -0400
-Date: Tue, 22 Sep 2009 18:23:47 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
-       tytso@mit.edu
-Subject: Re: [PATCH 5/7] ext4: Convert filesystem to the new truncate
-	calling convention
-Message-ID: <20090922172347.GG14381@ZenIV.linux.org.uk>
-References: <1253200907-31392-1-git-send-email-jack@suse.cz> <1253200907-31392-6-git-send-email-jack@suse.cz> <20090922143604.GA2183@ZenIV.linux.org.uk> <20090922171604.GA31447@duck.suse.cz>
+	Tue, 22 Sep 2009 13:28:27 -0400
+Received: from enyo.dsw2k3.info ([195.71.86.239]:57608 "EHLO enyo.dsw2k3.info"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750952AbZIVR21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 13:28:27 -0400
+Date: Tue, 22 Sep 2009 19:28:19 +0200
+From: Matthias Schniedermeyer <ms@citd.de>
+To: Brian McGrew <brian@visionpro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: (un)mount ramfs from C code
+Message-ID: <20090922172819.GA27978@citd.de>
+References: <C6DE438F.127DA%brian@visionpro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090922171604.GA31447@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <C6DE438F.127DA%brian@visionpro.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 07:16:04PM +0200, Jan Kara wrote:
-> > No.  We already have one half-finished series here; mixing it with another
-> > one is not going to happen.  Such flags are tolerable only as bisectability
-> > helpers.  They *must* disappear by the end of series.  Before it can be
-> > submitted for merge.
-> > 
-> > In effect, you are mixing truncate switchover with your writepage one.
-> > Please, split and reorder.
+On 22.09.2009 09:04, Brian McGrew wrote:
+> Good morning all!
+> 
+> So I'm using a ramfs for temporary files, thank you whoever designed that,
+> it works great!
+> 
+> I can mkdir, mount, chmoud, readand write and then umount the thing from the
+> command line just fine.
+> 
+> What I need now is some method from within my C/C++ code to determine if the
+> ramfs is mounted, if not, then mount it so I can use it and unmount it when
+> I'm done, without making a system call.
+> 
+> Can this be done?  Is there any access to mount/unmount from C/C++?
 
->   Well, this wasn't meant as a final version of those patches. It was
-> meant as a request for comment whether it makes sence to fix the problem
-> how I propose to fix it. If we agree on that, I'll go and convert the rest
-> of filesystems so that we can remove .new_writepage hack. By that time I
-> hope that new truncate sequence patches will be merged so that dependency
-> should go away as well...
+The "/bin/mountpoint"-util appears to stat the mountpoint and it's 
+parent directory and compares if they have the same device-no (st_dev). 
+If they are different, then something is mounted.
 
-Could you carve just the ext4 part of truncate series out of that and
-post it separately?
+
+
+
+
+
+Bis denn
+
+-- 
+Real Programmers consider "what you see is what you get" to be just as 
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated, 
+cryptic, powerful, unforgiving, dangerous.
+
