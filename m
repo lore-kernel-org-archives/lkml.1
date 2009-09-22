@@ -1,106 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZIVVK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbZIVVTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753236AbZIVVK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 17:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZIVVK2
+	id S1752967AbZIVVTj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 17:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZIVVTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 17:10:28 -0400
-Received: from mga11.intel.com ([192.55.52.93]:42800 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751583AbZIVVKY convert rfc822-to-8bit (ORCPT
+	Tue, 22 Sep 2009 17:19:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35832 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752809AbZIVVTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 17:10:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,433,1249282800"; 
-   d="scan'208";a="495904644"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Luck, Tony" <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Tejun Heo <tj@kernel.org>
-CC: Nick Piggin <npiggin@suse.de>, "Yu, Fenghua" <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 22 Sep 2009 14:10:25 -0700
-Subject: RE: [PATCHSET percpu#for-next] percpu: convert ia64 to dynamic
-	percpu and drop the old one
-Thread-Topic: [PATCHSET percpu#for-next] percpu: convert ia64 to dynamic
-	percpu and drop the old one
-Thread-Index: Aco7XQHoshjCJG79TD652cfgIyS8vgAaKYnAAAB/+dA=
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E29CCADC@orsmsx505.amr.corp.intel.com>
-References: <1253605214-23210-1-git-send-email-tj@kernel.org>
- <20090922081631.GD1475@elte.hu>
- <57C9024A16AD2D4C97DC78E552063EA3E29CCA8E@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E29CCA8E@orsmsx505.amr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 22 Sep 2009 17:19:38 -0400
+Date: Tue, 22 Sep 2009 14:17:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: avorontsov@ru.mvista.com, ben@fluff.org, dwmw2@infradead.org,
+       grant.likely@secretlab.ca, benh@kernel.crashing.org, khali@linux-fr.org,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/6] mtd: m25p80: Convert to device table matching
+Message-Id: <20090922141705.b5d31e24.akpm@linux-foundation.org>
+In-Reply-To: <200908031954.50955.david-b@pacbell.net>
+References: <20090731003957.GA23982@oksana.dev.rtsoft.ru>
+	<20090731004100.GB8371@oksana.dev.rtsoft.ru>
+	<200908031954.50955.david-b@pacbell.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ski must have missed something.  I just tried to boot this on a
-> "tiger_defconfig" kernel[1] and it panic'd early in boot.  I'll need
-> to re-connect my serial console to get the useful part of the
-> panic message ... what's on the VGA console isn't very helpful :-(
+On Mon, 3 Aug 2009 19:54:50 -0700
+David Brownell <david-b@pacbell.net> wrote:
 
-Ok.  Here is the tail of the console log.  The instruction at the
-faulting address is a "ld8 r3=[r14]" and r14 is indeed 0x0.
+> On Thursday 30 July 2009, Anton Vorontsov wrote:
+> > This patch converts the m25p80 driver so that now it uses .id_table
+> > for device matching, making it properly detect devices on OpenFirmware
+> > platforms (prior to this patch the driver misdetected non-JEDEC chips,
+> > seeing all chips as "m25p80").
+> 
+> I suspect "detect" is a misnomer there.  It only "detects" JEDEC chips.
+> All others got explicit declarations ... so if there's misbehavior for
+> other chips, it's because those declarations were poorly handled.  Maybe
+> they were not properly flagged as non-JDEC
+> 
+>  
+> > Also, now jedec_probe() only does jedec probing, nothing else. If it
+> > is not able to detect a chip, NULL is returned and the driver fall
+> > backs to the information specified by the platform (platform_data, or
+> > exact ID).
+> 
+> I'd rather keep the warning, so there's a clue about what's really
+> going on:  JEDEC chip found, but its ID is not handled.
+> 
 
-... nothing apparently odd leading up to here ...
-ACPI: Core revision 20090521
-Boot processor id 0x0/0xc618
-Unable to handle kernel NULL pointer dereference (address 0000000000000000)
-migration/0[3]: Oops 8813272891392 [1]
-Modules linked in:
+afaik there was no response to David's review comments, so this patch
+is in the "stuck" state.
 
-Pid: 3, CPU 0, comm:          migration/0
-psr : 00001010085a2018 ifs : 800000000000050e ip  : [<a00000010006a470>]    Not tainted (2.6.31-tiger-smp)
-ip is at __wake_up_common+0xb0/0x120
-unat: 0000000000000000 pfs : 000000000000030b rsc : 0000000000000003
-rnat: 0000000000000000 bsps: 0000000000000000 pr  : 0000000000002941
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70433f
-csd : 0930ffff00090000 ssd : 0930ffff00090000
-b0  : a00000010006c1a0 b6  : a000000100080f20 b7  : a00000010000bc20
-f6  : 1003e0000000000000000 f7  : 1003e0000000000000002
-f8  : 1003e00000000a0722fad f9  : 1003e000000000cf5bbc7
-f10 : 1003e081f5d33de276e7b f11 : 1003e0000000000000000
-r1  : a000000100da9de0 r2  : 00000000fffedfeb r3  : e0000001c0210230
-r8  : 00000010085a6018 r9  : 0000000000000001 r10 : ffffffffffff7100
-r11 : ffffffffffff7100 r12 : e0000001c021fe00 r13 : e0000001c0210000
-r14 : 0000000000000000 r15 : ffffffffffffffe8 r16 : a000000100bc4708
-r17 : a000000100bcbe30 r18 : 0000000000000000 r19 : e0000001c0210be4
-r20 : 0000000000000001 r21 : 0000000000000001 r22 : 0000000000000000
-r23 : e0000001c0210038 r24 : e0000001c0210000 r25 : e000000180007090
-r26 : a000000100076000 r27 : 00000010085a6018 r28 : 00000000ffffffff
-r29 : e0000001c021001c r30 : 0000000000000000 r31 : ffffffffffff7120
 
-Call Trace:
- [<a000000100015a30>] show_stack+0x50/0xa0
-                                sp=e0000001c021f9d0 bsp=e0000001c0210f00
- [<a0000001000162a0>] show_regs+0x820/0x860
-                                sp=e0000001c021fba0 bsp=e0000001c0210ea8
- [<a00000010003abc0>] die+0x1a0/0x2c0
-                                sp=e0000001c021fba0 bsp=e0000001c0210e68
- [<a0000001000645d0>] ia64_do_page_fault+0x8b0/0x9e0
-                                sp=e0000001c021fba0 bsp=e0000001c0210e18
- [<a00000010000c420>] ia64_native_leave_kernel+0x0/0x270
-                                sp=e0000001c021fc30 bsp=e0000001c0210e18
- [<a00000010006a470>] __wake_up_common+0xb0/0x120
-                                sp=e0000001c021fe00 bsp=e0000001c0210da0
- [<a00000010006c1a0>] complete+0x60/0xa0
-                                sp=e0000001c021fe00 bsp=e0000001c0210d70
- [<a0000001000815a0>] migration_thread+0x680/0x700
-                                sp=e0000001c021fe00 bsp=e0000001c0210ca0
- [<a0000001000b9630>] kthread+0x110/0x140
-                                sp=e0000001c021fe00 bsp=e0000001c0210c68
- [<a000000100013cf0>] kernel_thread_helper+0x30/0x60
-                                sp=e0000001c021fe30 bsp=e0000001c0210c40
- [<a00000010000a0c0>] start_kernel_thread+0x20/0x40
-                                sp=e0000001c021fe30 bsp=e0000001c0210c40
-
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> >  drivers/mtd/devices/m25p80.c |  146 +++++++++++++++++++++++-------------------
+> >  1 files changed, 80 insertions(+), 66 deletions(-)
+> > 
+> > diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+> > index 10ed195..0d74b38 100644
+> > --- a/drivers/mtd/devices/m25p80.c
+> > +++ b/drivers/mtd/devices/m25p80.c
+> > 			... deletia ...
+> 
+> > @@ -481,74 +480,83 @@ struct flash_info {
+> >  #define	SECT_4K		0x01		/* OPCODE_BE_4K works uniformly */
+> >  };
+> >  
+> > +#define INFO(_jedec_id, _ext_id, _sector_size, _n_sectors, _flags)	\
+> > +	((kernel_ulong_t)&(struct flash_info) {				\
+> > +		.jedec_id = (_jedec_id),				\
+> > +		.ext_id = (_ext_id),					\
+> > +		.sector_size = (_sector_size),				\
+> > +		.n_sectors = (_n_sectors),				\
+> > +		.flags = (_flags),					\
+> > +	})
+> 
+> Anonymous inlined structures ... kind of ugly, but I can
+> understand why you might not want to declare and name a
+> few dozen single-use structures.
+> 
+> 
+> >  
+> >  /* NOTE: double check command sets and memory organization when you add
+> >   * more flash chips.  This current list focusses on newer chips, which
+> >   * have been converging on command sets which including JEDEC ID.
+> >   */
+> > -static struct flash_info __devinitdata m25p_data [] = {
+> > -
+> > +static const struct spi_device_id m25p_ids[] = {
+> >  	/* Atmel -- some are (confusingly) marketed as "DataFlash" */
+> > -	{ "at25fs010",  0x1f6601, 0, 32 * 1024, 4, SECT_4K, },
+> > -	{ "at25fs040",  0x1f6604, 0, 64 * 1024, 8, SECT_4K, },
+> > +	{ "at25fs010",  INFO(0x1f6601, 0, 32 * 1024, 4, SECT_4K) },
+> > +	{ "at25fs040",  INFO(0x1f6604, 0, 64 * 1024, 8, SECT_4K) },
+> >  
+> > 		... deletia ...
+> >  
+> 
+> > @@ -596,6 +602,7 @@ static struct flash_info *__devinit jedec_probe(struct spi_device *spi)
+> >   */
+> >  static int __devinit m25p_probe(struct spi_device *spi)
+> >  {
+> > +	const struct spi_device_id	*id;
+> >  	struct flash_platform_data	*data;
+> >  	struct m25p			*flash;
+> >  	struct flash_info		*info;
+> > @@ -608,32 +615,38 @@ static int __devinit m25p_probe(struct spi_device *spi)
+> >  	 */
+> >  	data = spi->dev.platform_data;
+> >  	if (data && data->type) {
+> 
+> At this point I wonder why you're not changing the probe sequence
+> more.  Get "id" and then "id" here.  If it's for "m25p80" assume
+> it's an old-style board init and do the current logic.  Else just
+> verify "info".
+> 
+> There's a new error case of course:  new-style but data->type
+> doesn't match id->name.
+> 
+> 
+> > -		for (i = 0, info = m25p_data;
+> > -				i < ARRAY_SIZE(m25p_data);
+> > -				i++, info++) {
+> > -			if (strcmp(data->type, info->name) == 0)
+> > -				break;
+> > +		for (i = 0; i < ARRAY_SIZE(m25p_ids) - 1; i++) {
+> > +			id = &m25p_ids[i];
+> > +			info = (void *)m25p_ids[i].driver_data;
+> > +			if (strcmp(data->type, id->name))
+> > +				continue;
+> > +			break;
+> >  		}
+> >  
+> >  		/* unrecognized chip? */
+> > -		if (i == ARRAY_SIZE(m25p_data)) {
+> > +		if (i == ARRAY_SIZE(m25p_ids) - 1) {
+> 
+> Better:  "if (info == NULL) ..."   You've got all the pointers
+> in hand; don't use indices.
+> 
+> >  			DEBUG(MTD_DEBUG_LEVEL0, "%s: unrecognized id %s\n",
+> >  					dev_name(&spi->dev), data->type);
+> >  			info = NULL;
+> >  
+> >  		/* recognized; is that chip really what's there? */
+> >  		} else if (info->jedec_id) {
+> > -			struct flash_info	*chip = jedec_probe(spi);
+> > +			id = jedec_probe(spi);
+> >  
+> > -			if (!chip || chip != info) {
+> > +			if (id != &m25p_ids[i]) {
+> 
+> Again, don't use indices except during the lookup.
+> 
+> >  				dev_warn(&spi->dev, "found %s, expected %s\n",
+> > -						chip ? chip->name : "UNKNOWN",
+> > -						info->name);
+> > +						id ? id->name : "UNKNOWN",
+> > +						m25p_ids[i].name);
+> >  				info = NULL;
+> >  			}
+> >  		}
+> > -	} else
+> > -		info = jedec_probe(spi);
+> > +	} else {
+> > +		id = jedec_probe(spi);
+> > +		if (!id)
+> > +			id = spi_get_device_id(spi);
+> > +
+> > +		info = (void *)id->driver_data;
+> > +	}
+> >  
+> >  	if (!info)
+> >  		return -ENODEV;
+> 
