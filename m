@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZIWAKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZIWAOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbZIWAKK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 20:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZIWAKJ
+	id S1753481AbZIWAOU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 20:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZIWAOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 20:10:09 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41931 "EHLO gir.skynet.ie"
+	Tue, 22 Sep 2009 20:14:19 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23863 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753112AbZIWAKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 20:10:09 -0400
-Date: Wed, 23 Sep 2009 01:10:15 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, mingo@elte.hu
-cc: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org
-Subject: [git pull] vga arb build fix.
-Message-ID: <alpine.DEB.2.00.0909230109160.7108@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753140AbZIWAOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 20:14:19 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+Subject: [PATCH] kmemcheck: clean up kmemcheck_annotate_bitfield
+X-Fcc: ~/Mail/linus
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20090923001301.3ED5922@magilla.sf.frob.com>
+Date: Tue, 22 Sep 2009 17:13:01 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The commit 181f7c5dd3832763bdf2756b6d2d8a49bdf12791 change traded a
+style warning from sparse for a syntax warning from the real compiler
+(and perhaps an error with compilers old enough).  The use of a local
+variable inside BUILD_BUG_ON() is pretty questionable too, though it
+works with the compiler's constant-folding in practice.
 
-Hi Linus,
+This change cleans it all up a little more sanely.
+The details are self-explanatory.
 
-Please pull the 'vgaarb-fix' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git vgaarb-fix
+Signed-off-by: Roland McGrath <roland@redhat.com>
+CC: Johannes Berg <johannes@sipsolutions.net>
+CC: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ include/linux/kmemcheck.h |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
 
-this just fixes the build when DRM is on but VGA arb is off.
-
-Dave.
-
- include/linux/vgaarb.h |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
-
-commit 7c329288d72e025db4feac65f0fed95fb3e3ef1c
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Wed Sep 23 09:52:18 2009 +1000
-
-    vgaarb: make client interface config invariant.
-    
-    Fixes build when VGA_ARB is off.
-    
-    Reported-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+diff --git a/include/linux/kmemcheck.h b/include/linux/kmemcheck.h
+index c800660..9e2c5f4 100644
+--- a/include/linux/kmemcheck.h
++++ b/include/linux/kmemcheck.h
+@@ -143,16 +143,14 @@ static inline bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
+ #define kmemcheck_bitfield_end(name)	\
+ 	int name##_end[0];
+ 
++#define kmemcheck_bitfield_stretch(ptr, name)	\
++	((long) &(ptr)->name##_end - (long) &(ptr)->name##_begin)
++
+ #define kmemcheck_annotate_bitfield(ptr, name)				\
+ 	do {								\
+-		if (!ptr)						\
+-			break;						\
+-									\
+-		int _n = (long) &((ptr)->name##_end)			\
+-			- (long) &((ptr)->name##_begin);		\
+-		BUILD_BUG_ON(_n < 0);					\
+-									\
+-		kmemcheck_mark_initialized(&((ptr)->name##_begin), _n);	\
++		BUILD_BUG_ON(kmemcheck_bitfield_stretch(ptr, name) < 0);\
++		kmemcheck_mark_initialized(&(ptr)->name##_begin,	\
++			kmemcheck_bitfield_stretch(ptr, name));		\
+ 	} while (0)
+ 
+ #define kmemcheck_annotate_variable(var)				\
