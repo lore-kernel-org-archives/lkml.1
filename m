@@ -1,203 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbZIWRhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZIWRip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbZIWRhV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 13:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZIWRhS
+	id S1752728AbZIWRip (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 13:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZIWRip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 13:37:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41675 "EHLO mx2.mail.elte.hu"
+	Wed, 23 Sep 2009 13:38:45 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39094 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbZIWRhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 13:37:17 -0400
-Date: Wed, 23 Sep 2009 19:37:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>, Jason Wessel <jason.wessel@windriver.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: [origin tree boot hang] [PATCH] Revert "early_printk: Allow more
-	than one early console"
-Message-ID: <20090923173709.GA18056@elte.hu>
-References: <20090923135539.GA6542@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090923135539.GA6542@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751932AbZIWRio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 13:38:44 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH v2] bfin-otp: add writing support
+Date: Wed, 23 Sep 2009 13:38:46 -0400
+Message-Id: <1253727526-12785-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc1
+In-Reply-To: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
+References: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The on-chip OTP may be written at runtime, so enable support for it in the
+driver.  However, since writing should really be done only on development
+systems, don't bend over backwards to make sure the simple software lock
+is per-fd -- per-device is OK.
 
->       early_printk: Allow more than one early console
-
-this patch broke things pretty badly on x86, with pretty much any 
-config, as long as the early console is used - which most of my 
-test-systems do :-(
-
-I'm getting an early boot hard lockup, which is due to an infinite 
-stream of:
-
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
-[    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 000000003fff0000 (usable)
-[    0.000000]  BIOS-e820: 000000003fff0000 - 000000003fff3000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 000000003fff3000 - 0000000040000000 (ACPI data)
-[    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-[    0.000000] console [earlyser0] enabled
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpuset
-[ ... ]
-
-i've reverted it via the patch below, as it clearly has unintended side 
-effects.
-
-	Ingo
-
->From 1070163596c13d3c34809c747c7800b3b06b158e Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 23 Sep 2009 19:31:04 +0200
-Subject: [PATCH] Revert "early_printk: Allow more than one early console"
-
-This reverts commit c9530948bc626c8b638015c0b32abb9615659ec6.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- arch/x86/kernel/early_printk.c |   65 +++++++++++++++++++--------------------
- 1 files changed, 32 insertions(+), 33 deletions(-)
+v2
+	- switch to unlocked ioctl as pointed out by Jiri Slaby
 
-diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
-index 2acfd3f..519a5e1 100644
---- a/arch/x86/kernel/early_printk.c
-+++ b/arch/x86/kernel/early_printk.c
-@@ -176,19 +176,10 @@ asmlinkage void early_printk(const char *fmt, ...)
- 	va_end(ap);
- }
+ drivers/char/bfin-otp.c |  173 +++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 129 insertions(+), 44 deletions(-)
+
+diff --git a/drivers/char/bfin-otp.c b/drivers/char/bfin-otp.c
+index 0a01329..e3dd24b 100644
+--- a/drivers/char/bfin-otp.c
++++ b/drivers/char/bfin-otp.c
+@@ -1,8 +1,7 @@
+ /*
+  * Blackfin On-Chip OTP Memory Interface
+- *  Supports BF52x/BF54x
+  *
+- * Copyright 2007-2008 Analog Devices Inc.
++ * Copyright 2007-2009 Analog Devices Inc.
+  *
+  * Enter bugs at http://blackfin.uclinux.org/
+  *
+@@ -17,8 +16,10 @@
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/types.h>
++#include <mtd/mtd-abi.h>
  
--static inline void early_console_register(struct console *con, int keep_early)
--{
--	early_console = con;
--	if (keep_early)
--		early_console->flags &= ~CON_BOOT;
--	else
--		early_console->flags |= CON_BOOT;
--	register_console(early_console);
--}
+ #include <asm/blackfin.h>
++#include <asm/bfrom.h>
+ #include <asm/uaccess.h>
  
- static int __init setup_early_printk(char *buf)
- {
--	int keep;
-+	int keep_early;
+ #define stamp(fmt, args...) pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
+@@ -30,39 +31,6 @@
  
- 	if (!buf)
- 		return 0;
-@@ -197,34 +188,42 @@ static int __init setup_early_printk(char *buf)
- 		return 0;
- 	early_console_initialized = 1;
+ static DEFINE_MUTEX(bfin_otp_lock);
  
--	keep = (strstr(buf, "keep") != NULL);
+-/* OTP Boot ROM functions */
+-#define _BOOTROM_OTP_COMMAND           0xEF000018
+-#define _BOOTROM_OTP_READ              0xEF00001A
+-#define _BOOTROM_OTP_WRITE             0xEF00001C
 -
--	while (*buf != '\0') {
--		if (!strncmp(buf, "serial", 6)) {
--			early_serial_init(buf + 6);
--			early_console_register(&early_serial_console, keep);
--		}
--		if (!strncmp(buf, "ttyS", 4)) {
--			early_serial_init(buf + 4);
--			early_console_register(&early_serial_console, keep);
--		}
--		if (!strncmp(buf, "vga", 3) &&
--		    boot_params.screen_info.orig_video_isVGA == 1) {
--			max_xpos = boot_params.screen_info.orig_video_cols;
--			max_ypos = boot_params.screen_info.orig_video_lines;
--			current_ypos = boot_params.screen_info.orig_y;
--			early_console_register(&early_vga_console, keep);
--		}
-+	keep_early = (strstr(buf, "keep") != NULL);
-+
-+	if (!strncmp(buf, "serial", 6)) {
-+		early_serial_init(buf + 6);
-+		early_console = &early_serial_console;
-+	} else if (!strncmp(buf, "ttyS", 4)) {
-+		early_serial_init(buf);
-+		early_console = &early_serial_console;
-+	} else if (!strncmp(buf, "vga", 3)
-+		&& boot_params.screen_info.orig_video_isVGA == 1) {
-+		max_xpos = boot_params.screen_info.orig_video_cols;
-+		max_ypos = boot_params.screen_info.orig_video_lines;
-+		current_ypos = boot_params.screen_info.orig_y;
-+		early_console = &early_vga_console;
- #ifdef CONFIG_EARLY_PRINTK_DBGP
--		if (!strncmp(buf, "dbgp", 4) && !early_dbgp_init(buf + 4))
--			early_console_register(&early_dbgp_console, keep);
-+	} else if (!strncmp(buf, "dbgp", 4)) {
-+		if (early_dbgp_init(buf+4) < 0)
-+			return 0;
-+		early_console = &early_dbgp_console;
-+		/*
-+		 * usb subsys will reset ehci controller, so don't keep
-+		 * that early console
-+		 */
-+		keep_early = 0;
- #endif
- #ifdef CONFIG_HVC_XEN
--		if (!strncmp(buf, "xen", 3))
--			early_console_register(&xenboot_console, keep);
-+	} else if (!strncmp(buf, "xen", 3)) {
-+		early_console = &xenboot_console;
- #endif
--		buf++;
- 	}
-+
-+	if (keep_early)
-+		early_console->flags &= ~CON_BOOT;
-+	else
-+		early_console->flags |= CON_BOOT;
-+	register_console(early_console);
- 	return 0;
+-static u32 (* const otp_command)(u32 command, u32 value) = (void *)_BOOTROM_OTP_COMMAND;
+-static u32 (* const otp_read)(u32 page, u32 flags, u64 *page_content) = (void *)_BOOTROM_OTP_READ;
+-static u32 (* const otp_write)(u32 page, u32 flags, u64 *page_content) = (void *)_BOOTROM_OTP_WRITE;
+-
+-/* otp_command(): defines for "command" */
+-#define OTP_INIT             0x00000001
+-#define OTP_CLOSE            0x00000002
+-
+-/* otp_{read,write}(): defines for "flags" */
+-#define OTP_LOWER_HALF       0x00000000 /* select upper/lower 64-bit half (bit 0) */
+-#define OTP_UPPER_HALF       0x00000001
+-#define OTP_NO_ECC           0x00000010 /* do not use ECC */
+-#define OTP_LOCK             0x00000020 /* sets page protection bit for page */
+-#define OTP_ACCESS_READ      0x00001000
+-#define OTP_ACCESS_READWRITE 0x00002000
+-
+-/* Return values for all functions */
+-#define OTP_SUCCESS          0x00000000
+-#define OTP_MASTER_ERROR     0x001
+-#define OTP_WRITE_ERROR      0x003
+-#define OTP_READ_ERROR       0x005
+-#define OTP_ACC_VIO_ERROR    0x009
+-#define OTP_DATA_MULT_ERROR  0x011
+-#define OTP_ECC_MULT_ERROR   0x021
+-#define OTP_PREV_WR_ERROR    0x041
+-#define OTP_DATA_SB_WARN     0x100
+-#define OTP_ECC_SB_WARN      0x200
+-
+ /**
+  *	bfin_otp_read - Read OTP pages
+  *
+@@ -86,9 +54,11 @@ static ssize_t bfin_otp_read(struct file *file, char __user *buff, size_t count,
+ 	page = *pos / (sizeof(u64) * 2);
+ 	while (bytes_done < count) {
+ 		flags = (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
+-		stamp("processing page %i (%s)", page, (flags == OTP_UPPER_HALF ? "upper" : "lower"));
+-		ret = otp_read(page, flags, &content);
++		stamp("processing page %i (0x%x:%s)", page, flags,
++			(flags & OTP_UPPER_HALF ? "upper" : "lower"));
++		ret = bfrom_OtpRead(page, flags, &content);
+ 		if (ret & OTP_MASTER_ERROR) {
++			stamp("error from otp: 0x%x", ret);
+ 			bytes_done = -EIO;
+ 			break;
+ 		}
+@@ -96,7 +66,7 @@ static ssize_t bfin_otp_read(struct file *file, char __user *buff, size_t count,
+ 			bytes_done = -EFAULT;
+ 			break;
+ 		}
+-		if (flags == OTP_UPPER_HALF)
++		if (flags & OTP_UPPER_HALF)
+ 			++page;
+ 		bytes_done += sizeof(content);
+ 		*pos += sizeof(content);
+@@ -108,14 +78,53 @@ static ssize_t bfin_otp_read(struct file *file, char __user *buff, size_t count,
  }
  
+ #ifdef CONFIG_BFIN_OTP_WRITE_ENABLE
++static bool allow_writes;
++
++/**
++ *	bfin_otp_init_timing - setup OTP timing parameters
++ *
++ *	Required before doing any write operation.  Algorithms from HRM.
++ */
++static u32 bfin_otp_init_timing(void)
++{
++	u32 tp1, tp2, tp3, timing;
++
++	tp1 = get_sclk() / 1000000;
++	tp2 = (2 * get_sclk() / 10000000) << 8;
++	tp3 = (0x1401) << 15;
++	timing = tp1 | tp2 | tp3;
++	if (bfrom_OtpCommand(OTP_INIT, timing))
++		return 0;
++
++	return timing;
++}
++
++/**
++ *	bfin_otp_deinit_timing - set timings to only allow reads
++ *
++ *	Should be called after all writes are done.
++ */
++static void bfin_otp_deinit_timing(u32 timing)
++{
++	/* mask bits [31:15] so that any attempts to write fail */
++	bfrom_OtpCommand(OTP_CLOSE, 0);
++	bfrom_OtpCommand(OTP_INIT, timing & ~(-1 << 15));
++	bfrom_OtpCommand(OTP_CLOSE, 0);
++}
++
+ /**
+- *	bfin_otp_write - Write OTP pages
++ *	bfin_otp_write - write OTP pages
+  *
+  *	All writes must be in half page chunks (half page == 64 bits).
+  */
+ static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t count, loff_t *pos)
+ {
+-	stampit();
++	ssize_t bytes_done;
++	u32 timing, page, base_flags, flags, ret;
++	u64 content;
++
++	if (!allow_writes)
++		return -EACCES;
+ 
+ 	if (count % sizeof(u64))
+ 		return -EMSGSIZE;
+@@ -123,20 +132,96 @@ static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t
+ 	if (mutex_lock_interruptible(&bfin_otp_lock))
+ 		return -ERESTARTSYS;
+ 
+-	/* need otp_init() documentation before this can be implemented */
++	stampit();
++
++	timing = bfin_otp_init_timing();
++	if (timing == 0) {
++		mutex_unlock(&bfin_otp_lock);
++		return -EIO;
++	}
++
++	base_flags = OTP_CHECK_FOR_PREV_WRITE;
++
++	bytes_done = 0;
++	page = *pos / (sizeof(u64) * 2);
++	while (bytes_done < count) {
++		flags = base_flags | (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
++		stamp("processing page %i (0x%x:%s) from %p", page, flags,
++			(flags & OTP_UPPER_HALF ? "upper" : "lower"), buff + bytes_done);
++		if (copy_from_user(&content, buff + bytes_done, sizeof(content))) {
++			bytes_done = -EFAULT;
++			break;
++		}
++		ret = bfrom_OtpWrite(page, flags, &content);
++		if (ret & OTP_MASTER_ERROR) {
++			stamp("error from otp: 0x%x", ret);
++			bytes_done = -EIO;
++			break;
++		}
++		if (flags & OTP_UPPER_HALF)
++			++page;
++		bytes_done += sizeof(content);
++		*pos += sizeof(content);
++	}
++
++	bfin_otp_deinit_timing(timing);
+ 
+ 	mutex_unlock(&bfin_otp_lock);
+ 
++	return bytes_done;
++}
++
++static long bfin_otp_ioctl(struct file *filp, unsigned cmd, unsigned long arg)
++{
++	stampit();
++
++	switch (cmd) {
++	case OTPLOCK: {
++		u32 timing;
++		int ret = -EIO;
++
++		if (!allow_writes)
++			return -EACCES;
++
++		if (mutex_lock_interruptible(&bfin_otp_lock))
++			return -ERESTARTSYS;
++
++		timing = bfin_otp_init_timing();
++		if (timing) {
++			u32 otp_result = bfrom_OtpWrite(arg, OTP_LOCK, NULL);
++			stamp("locking page %lu resulted in 0x%x", arg, otp_result);
++			if (!(otp_result & OTP_MASTER_ERROR))
++				ret = 0;
++
++			bfin_otp_deinit_timing(timing);
++		}
++
++		mutex_unlock(&bfin_otp_lock);
++
++		return ret;
++	}
++
++	case MEMLOCK:
++		allow_writes = false;
++		return 0;
++
++	case MEMUNLOCK:
++		allow_writes = true;
++		return 0;
++	}
++
+ 	return -EINVAL;
+ }
+ #else
+ # define bfin_otp_write NULL
++# define bfin_otp_ioctl NULL
+ #endif
+ 
+ static struct file_operations bfin_otp_fops = {
+-	.owner    = THIS_MODULE,
+-	.read     = bfin_otp_read,
+-	.write    = bfin_otp_write,
++	.owner          = THIS_MODULE,
++	.unlocked_ioctl = bfin_otp_ioctl,
++	.read           = bfin_otp_read,
++	.write          = bfin_otp_write,
+ };
+ 
+ static struct miscdevice bfin_otp_misc_device = {
+-- 
+1.6.5.rc1
+
