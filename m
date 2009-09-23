@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZIXAhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbZIXAlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbZIXAhK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbZIXAgq
+	id S1754446AbZIXAlk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbZIXA33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:36:46 -0400
+	Wed, 23 Sep 2009 20:29:29 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39156 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752592AbZIXA3v (ORCPT
+	with ESMTP id S1752537AbZIXA3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:51 -0400
+	Wed, 23 Sep 2009 20:29:18 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>
-Subject: [PATCH v18 61/80] c/r: restore file->f_cred
-Date: Wed, 23 Sep 2009 19:51:41 -0400
-Message-Id: <1253749920-18673-62-git-send-email-orenl@librato.com>
+       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
+       Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>
+Subject: [PATCH v18 62/80] c/r: checkpoint and restore (shared) task's sighand_struct
+Date: Wed, 23 Sep 2009 19:51:42 -0400
+Message-Id: <1253749920-18673-63-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -26,75 +27,471 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+This patch adds the checkpointing and restart of signal handling
+state - 'struct sighand_struct'. Since the contents of this state
+only affect userspace, no input validation is required.
 
-Restore a file's f_cred.  This is set to the cred of the task doing
-the open, so often it will be the same as that of the restarted task.
+Add _NSIG to kernel constants saved/tested with image header.
+
+Number of signals (_NSIG) is arch-dependent, but is within __KERNEL__
+and not visibile to userspace compile. Therefore, define per arch
+CKPT_ARCH_NSIG in <asm/checkpoint_hdr.h>.
 
 Changelog[v1]:
-  - [Nathan Lynch] discard const from struct cred * where appropriate
+  - Rename headerless struct ckpt_hdr_* to struct ckpt_*
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/files.c             |   18 ++++++++++++++++--
- include/linux/checkpoint_hdr.h |    2 +-
- 2 files changed, 17 insertions(+), 3 deletions(-)
+ arch/s390/include/asm/checkpoint_hdr.h |    8 ++
+ arch/x86/include/asm/checkpoint_hdr.h  |    8 ++
+ checkpoint/Makefile                    |    3 +-
+ checkpoint/checkpoint.c                |    2 +
+ checkpoint/objhash.c                   |   26 +++++
+ checkpoint/process.c                   |   19 ++++
+ checkpoint/restart.c                   |    3 +
+ checkpoint/signal.c                    |  163 ++++++++++++++++++++++++++++++++
+ include/linux/checkpoint.h             |    9 ++-
+ include/linux/checkpoint_hdr.h         |   22 +++++
+ 10 files changed, 261 insertions(+), 2 deletions(-)
+ create mode 100644 checkpoint/signal.c
 
-diff --git a/checkpoint/files.c b/checkpoint/files.c
-index 190c95b..1de89d6 100644
---- a/checkpoint/files.c
-+++ b/checkpoint/files.c
-@@ -147,12 +147,18 @@ static int scan_fds(struct files_struct *files, int **fdtable)
- int checkpoint_file_common(struct ckpt_ctx *ctx, struct file *file,
- 			   struct ckpt_hdr_file *h)
- {
-+	struct cred *f_cred = (struct cred *) file->f_cred;
-+
- 	h->f_flags = file->f_flags;
- 	h->f_mode = file->f_mode;
- 	h->f_pos = file->f_pos;
- 	h->f_version = file->f_version;
+diff --git a/arch/s390/include/asm/checkpoint_hdr.h b/arch/s390/include/asm/checkpoint_hdr.h
+index ad9449e..1976355 100644
+--- a/arch/s390/include/asm/checkpoint_hdr.h
++++ b/arch/s390/include/asm/checkpoint_hdr.h
+@@ -82,6 +82,14 @@ struct ckpt_hdr_mm_context {
+ 	unsigned long asce_limit;
+ };
  
--	/* FIX: need also file->uid, file->gid, file->f_owner, etc */
-+	h->f_credref = checkpoint_obj(ctx, f_cred, CKPT_OBJ_CRED);
-+	if (h->f_credref < 0)
-+		return h->f_credref;
++#define CKPT_ARCH_NSIG  64
++#ifdef __KERNEL__
++#include <asm/signal.h>
++#if CKPT_ARCH_NSIG != _SIGCONTEXT_NSIG
++#error CKPT_ARCH_NSIG size is wrong (asm/sigcontext.h and asm/checkpoint_hdr.h)
++#endif
++#endif
 +
-+	/* FIX: need also file->f_owner, etc */
+ struct ckpt_hdr_header_arch {
+ 	struct ckpt_hdr h;
+ };
+diff --git a/arch/x86/include/asm/checkpoint_hdr.h b/arch/x86/include/asm/checkpoint_hdr.h
+index 0e756b0..1228d1b 100644
+--- a/arch/x86/include/asm/checkpoint_hdr.h
++++ b/arch/x86/include/asm/checkpoint_hdr.h
+@@ -48,6 +48,14 @@ enum {
+ 	CKPT_HDR_MM_CONTEXT_LDT,
+ };
  
- 	return 0;
++#define CKPT_ARCH_NSIG  64
++#ifdef __KERNEL__
++#include <asm/signal.h>
++#if CKPT_ARCH_NSIG != _NSIG
++#error CKPT_ARCH_NSIG size is wrong per asm/signal.h and asm/checkpoint_hdr.h
++#endif
++#endif
++
+ struct ckpt_hdr_header_arch {
+ 	struct ckpt_hdr h;
+ 	/* FIXME: add HAVE_HWFP */
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+index bb2c0ca..f8a55df 100644
+--- a/checkpoint/Makefile
++++ b/checkpoint/Makefile
+@@ -10,4 +10,5 @@ obj-$(CONFIG_CHECKPOINT) += \
+ 	process.o \
+ 	namespace.o \
+ 	files.o \
+-	memory.o
++	memory.o \
++	signal.o
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index 27eec5c..3460c03 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -288,6 +288,8 @@ static void fill_kernel_const(struct ckpt_const *h)
+ 	h->task_comm_len = sizeof(tsk->comm);
+ 	/* mm */
+ 	h->mm_saved_auxv_len = sizeof(mm->saved_auxv);
++	/* signal */
++	h->signal_nsig = _NSIG;
+ 	/* uts */
+ 	h->uts_sysname_len = sizeof(uts->sysname);
+ 	h->uts_nodename_len = sizeof(uts->nodename);
+diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+index f8a3210..b4034dc 100644
+--- a/checkpoint/objhash.c
++++ b/checkpoint/objhash.c
+@@ -125,6 +125,22 @@ static int obj_mm_users(void *ptr)
+ 	return atomic_read(&((struct mm_struct *) ptr)->mm_users);
  }
-@@ -489,8 +495,16 @@ int restore_file_common(struct ckpt_ctx *ctx, struct file *file,
- 	fmode_t new_mode = file->f_mode;
- 	fmode_t saved_mode = (__force fmode_t) h->f_mode;
- 	int ret;
-+	struct cred *cred;
+ 
++static int obj_sighand_grab(void *ptr)
++{
++	atomic_inc(&((struct sighand_struct *) ptr)->count);
++	return 0;
++}
 +
-+	/* FIX: need to restore owner etc */
++static void obj_sighand_drop(void *ptr, int lastref)
++{
++	__cleanup_sighand((struct sighand_struct *) ptr);
++}
++
++static int obj_sighand_users(void *ptr)
++{
++	return atomic_read(&((struct sighand_struct *) ptr)->count);
++}
++
+ static int obj_ns_grab(void *ptr)
+ {
+ 	get_nsproxy((struct nsproxy *) ptr);
+@@ -263,6 +279,16 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 		.checkpoint = checkpoint_mm,
+ 		.restore = restore_mm,
+ 	},
++	/* sighand object */
++	{
++		.obj_name = "SIGHAND",
++		.obj_type = CKPT_OBJ_SIGHAND,
++		.ref_drop = obj_sighand_drop,
++		.ref_grab = obj_sighand_grab,
++		.ref_users = obj_sighand_users,
++		.checkpoint = checkpoint_sighand,
++		.restore = restore_sighand,
++	},
+ 	/* ns object */
+ 	{
+ 		.obj_name = "NSPROXY",
+diff --git a/checkpoint/process.c b/checkpoint/process.c
+index 1e79f73..56f33dd 100644
+--- a/checkpoint/process.c
++++ b/checkpoint/process.c
+@@ -181,6 +181,7 @@ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
+ 	struct ckpt_hdr_task_objs *h;
+ 	int files_objref;
+ 	int mm_objref;
++	int sighand_objref;
+ 	int ret;
  
--	/* FIX: need to restore uid, gid, owner etc */
-+	/* restore the cred */
-+	cred = ckpt_obj_fetch(ctx, h->f_credref, CKPT_OBJ_CRED);
-+	if (IS_ERR(cred))
-+		return PTR_ERR(cred);
-+	put_cred(file->f_cred);
-+	file->f_cred = get_cred(cred);
+ 	/*
+@@ -214,11 +215,19 @@ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
+ 		return mm_objref;
+ 	}
  
- 	/* safe to set 1st arg (fd) to 0, as command is F_SETFL */
- 	ret = vfs_fcntl(0, F_SETFL, h->f_flags & CKPT_SETFL_MASK, file);
++	sighand_objref = checkpoint_obj_sighand(ctx, t);
++	ckpt_debug("sighand: objref %d\n", sighand_objref);
++	if (sighand_objref < 0) {
++		ckpt_write_err(ctx, "TE", "sighand_struct", sighand_objref);
++		return sighand_objref;
++	}
++
+ 	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_TASK_OBJS);
+ 	if (!h)
+ 		return -ENOMEM;
+ 	h->files_objref = files_objref;
+ 	h->mm_objref = mm_objref;
++	h->sighand_objref = sighand_objref;
+ 	ret = ckpt_write_obj(ctx, &h->h);
+ 	ckpt_hdr_put(ctx, h);
+ 
+@@ -382,6 +391,9 @@ int ckpt_collect_task(struct ckpt_ctx *ctx, struct task_struct *t)
+ 	if (ret < 0)
+ 		return ret;
+ 	ret = ckpt_collect_mm(ctx, t);
++	if (ret < 0)
++		return ret;
++	ret = ckpt_collect_sighand(ctx, t);
+ 
+ 	return ret;
+ }
+@@ -529,10 +541,17 @@ static int restore_task_objs(struct ckpt_ctx *ctx)
+ 
+ 	ret = restore_obj_file_table(ctx, h->files_objref);
+ 	ckpt_debug("file_table: ret %d (%p)\n", ret, current->files);
++	if (ret < 0)
++		goto out;
+ 
+ 	ret = restore_obj_mm(ctx, h->mm_objref);
+ 	ckpt_debug("mm: ret %d (%p)\n", ret, current->mm);
++	if (ret < 0)
++		goto out;
+ 
++	ret = restore_obj_sighand(ctx, h->sighand_objref);
++	ckpt_debug("sighand: ret %d (%p)\n", ret, current->sighand);
++ out:
+ 	ckpt_hdr_put(ctx, h);
+ 	return ret;
+ }
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+index 53a759a..73c4e72 100644
+--- a/checkpoint/restart.c
++++ b/checkpoint/restart.c
+@@ -383,6 +383,9 @@ static int check_kernel_const(struct ckpt_const *h)
+ 	/* mm */
+ 	if (h->mm_saved_auxv_len != sizeof(mm->saved_auxv))
+ 		return -EINVAL;
++	/* signal */
++	if (h->signal_nsig != _NSIG)
++		return -EINVAL;
+ 	/* uts */
+ 	if (h->uts_sysname_len != sizeof(uts->sysname))
+ 		return -EINVAL;
+diff --git a/checkpoint/signal.c b/checkpoint/signal.c
+new file mode 100644
+index 0000000..1aadadd
+--- /dev/null
++++ b/checkpoint/signal.c
+@@ -0,0 +1,163 @@
++/*
++ *  Checkpoint task signals
++ *
++ *  Copyright (C) 2009 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++/* default debug level for output */
++#define CKPT_DFLAG  CKPT_DSYS
++
++#include <linux/sched.h>
++#include <linux/signal.h>
++#include <linux/errno.h>
++#include <linux/checkpoint.h>
++#include <linux/checkpoint_hdr.h>
++
++static inline void fill_sigset(struct ckpt_sigset *h, sigset_t *sigset)
++{
++	memcpy(&h->sigset, sigset, sizeof(*sigset));
++}
++
++static inline void load_sigset(sigset_t *sigset, struct ckpt_sigset *h)
++{
++	memcpy(sigset, &h->sigset, sizeof(*sigset));
++}
++
++/***********************************************************************
++ * sighand checkpoint/collect/restart
++ */
++
++static int do_checkpoint_sighand(struct ckpt_ctx *ctx,
++				 struct sighand_struct *sighand)
++{
++	struct ckpt_hdr_sighand *h;
++	struct ckpt_sigaction *hh;
++	struct sigaction *sa;
++	int i, ret;
++
++	h = ckpt_hdr_get_type(ctx, _NSIG * sizeof(*hh) + sizeof(*h),
++			      CKPT_HDR_SIGHAND);
++	if (!h)
++		return -ENOMEM;
++
++	hh = h->action;
++	spin_lock_irq(&sighand->siglock);
++	for (i = 0; i < _NSIG; i++) {
++		sa = &sighand->action[i].sa;
++		hh[i]._sa_handler = (unsigned long) sa->sa_handler;
++		hh[i].sa_flags = sa->sa_flags;
++		hh[i].sa_restorer = (unsigned long) sa->sa_restorer;
++		fill_sigset(&hh[i].sa_mask, &sa->sa_mask);
++	}
++	spin_unlock_irq(&sighand->siglock);
++
++	ret = ckpt_write_obj(ctx, &h->h);
++	ckpt_hdr_put(ctx, h);
++
++	return ret;
++}
++
++int checkpoint_sighand(struct ckpt_ctx *ctx, void *ptr)
++{
++	return do_checkpoint_sighand(ctx, (struct sighand_struct *) ptr);
++}
++
++int checkpoint_obj_sighand(struct ckpt_ctx *ctx, struct task_struct *t)
++{
++	struct sighand_struct *sighand;
++	int objref;
++
++	read_lock(&tasklist_lock);
++	sighand = rcu_dereference(t->sighand);
++	atomic_inc(&sighand->count);
++	read_unlock(&tasklist_lock);
++
++	objref = checkpoint_obj(ctx, sighand, CKPT_OBJ_SIGHAND);
++	__cleanup_sighand(sighand);
++
++	return objref;
++}
++
++int ckpt_collect_sighand(struct ckpt_ctx *ctx, struct task_struct *t)
++{
++	struct sighand_struct *sighand;
++	int ret;
++
++	read_lock(&tasklist_lock);
++	sighand = rcu_dereference(t->sighand);
++	atomic_inc(&sighand->count);
++	read_unlock(&tasklist_lock);
++
++	ret = ckpt_obj_collect(ctx, sighand, CKPT_OBJ_SIGHAND);
++	__cleanup_sighand(sighand);
++
++	return ret;
++}
++
++static struct sighand_struct *do_restore_sighand(struct ckpt_ctx *ctx)
++{
++	struct ckpt_hdr_sighand *h;
++	struct ckpt_sigaction *hh;
++	struct sighand_struct *sighand;
++	struct sigaction *sa;
++	int i;
++
++	h = ckpt_read_obj_type(ctx, _NSIG * sizeof(*hh) + sizeof(*h),
++			       CKPT_HDR_SIGHAND);
++	if (IS_ERR(h))
++		return ERR_PTR(PTR_ERR(h));
++
++	sighand = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
++	if (!sighand) {
++		sighand = ERR_PTR(-ENOMEM);
++		goto out;
++	}
++	atomic_set(&sighand->count, 1);
++
++	hh = h->action;
++	for (i = 0; i < _NSIG; i++) {
++		sa = &sighand->action[i].sa;
++		sa->sa_handler = (void *) (unsigned long) hh[i]._sa_handler;
++		sa->sa_flags = hh[i].sa_flags;
++		sa->sa_restorer = (void *) (unsigned long) hh[i].sa_restorer;
++		load_sigset(&sa->sa_mask, &hh[i].sa_mask);
++	}
++ out:
++	ckpt_hdr_put(ctx, h);
++	return sighand;
++}
++
++void *restore_sighand(struct ckpt_ctx *ctx)
++{
++	return (void *) do_restore_sighand(ctx);
++}
++
++int restore_obj_sighand(struct ckpt_ctx *ctx, int sighand_objref)
++{
++	struct sighand_struct *sighand;
++	struct sighand_struct *old_sighand;
++
++	sighand = ckpt_obj_fetch(ctx, sighand_objref, CKPT_OBJ_SIGHAND);
++	if (IS_ERR(sighand))
++		return PTR_ERR(sighand);
++
++	if (sighand == current->sighand)
++		return 0;
++
++	atomic_inc(&sighand->count);
++
++	/* manipulate tsk->sighand with tasklist lock write-held */
++	write_lock_irq(&tasklist_lock);
++	old_sighand = rcu_dereference(current->sighand);
++	spin_lock(&old_sighand->siglock);
++	rcu_assign_pointer(current->sighand, sighand);
++	spin_unlock(&old_sighand->siglock);
++	write_unlock_irq(&tasklist_lock);
++	__cleanup_sighand(old_sighand);
++
++	return 0;
++}
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index 3dbf188..c0e549e 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -245,6 +245,14 @@ extern int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode);
+ 	 VM_RESERVED | VM_NORESERVE | VM_HUGETLB | VM_NONLINEAR |	\
+ 	 VM_MAPPED_COPY | VM_INSERTPAGE | VM_MIXEDMAP | VM_SAO)
+ 
++/* signals */
++extern int checkpoint_obj_sighand(struct ckpt_ctx *ctx, struct task_struct *t);
++extern int restore_obj_sighand(struct ckpt_ctx *ctx, int sighand_objref);
++
++extern int ckpt_collect_sighand(struct ckpt_ctx *ctx, struct task_struct *t);
++extern int checkpoint_sighand(struct ckpt_ctx *ctx, void *ptr);
++extern void *restore_sighand(struct ckpt_ctx *ctx);
++
+ static inline int ckpt_validate_errno(int errno)
+ {
+ 	return (errno >= 0) && (errno < MAX_ERRNO);
+@@ -277,7 +285,6 @@ static inline int ckpt_validate_errno(int errno)
+ 			memcpy(LIVE, SAVE, count * sizeof(*SAVE));	\
+ 	} while (0)
+ 
+-
+ /* debugging flags */
+ #define CKPT_DBASE	0x1		/* anything */
+ #define CKPT_DSYS	0x2		/* generic (system) */
 diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index 3f00bce..ca24112 100644
+index ca24112..3d3a105 100644
 --- a/include/linux/checkpoint_hdr.h
 +++ b/include/linux/checkpoint_hdr.h
-@@ -350,7 +350,7 @@ struct ckpt_hdr_file {
- 	__u32 f_type;
- 	__u32 f_mode;
- 	__u32 f_flags;
--	__u32 _padding;
-+	__s32 f_credref;
- 	__u64 f_pos;
- 	__u64 f_version;
+@@ -87,6 +87,8 @@ enum {
+ 	CKPT_HDR_IPC_MSG_MSG,
+ 	CKPT_HDR_IPC_SEM,
+ 
++	CKPT_HDR_SIGHAND = 601,
++
+ 	CKPT_HDR_TAIL = 9001,
+ 
+ 	CKPT_HDR_ERROR = 9999,
+@@ -113,6 +115,7 @@ enum obj_type {
+ 	CKPT_OBJ_FILE_TABLE,
+ 	CKPT_OBJ_FILE,
+ 	CKPT_OBJ_MM,
++	CKPT_OBJ_SIGHAND,
+ 	CKPT_OBJ_NS,
+ 	CKPT_OBJ_UTS_NS,
+ 	CKPT_OBJ_IPC_NS,
+@@ -129,6 +132,8 @@ struct ckpt_const {
+ 	__u16 task_comm_len;
+ 	/* mm */
+ 	__u16 mm_saved_auxv_len;
++	/* signal */
++	__u16 signal_nsig;
+ 	/* uts */
+ 	__u16 uts_sysname_len;
+ 	__u16 uts_nodename_len;
+@@ -299,6 +304,7 @@ struct ckpt_hdr_task_objs {
+ 
+ 	__s32 files_objref;
+ 	__s32 mm_objref;
++	__s32 sighand_objref;
  } __attribute__((aligned(8)));
+ 
+ /* restart blocks */
+@@ -414,6 +420,22 @@ struct ckpt_hdr_pgarr {
+ 	__u64 nr_pages;		/* number of pages to saved */
+ } __attribute__((aligned(8)));
+ 
++/* signals */
++struct ckpt_sigset {
++	__u8 sigset[CKPT_ARCH_NSIG / 8];
++} __attribute__((aligned(8)));
++
++struct ckpt_sigaction {
++	__u64 _sa_handler;
++	__u64 sa_flags;
++	__u64 sa_restorer;
++	struct ckpt_sigset sa_mask;
++} __attribute__((aligned(8)));
++
++struct ckpt_hdr_sighand {
++	struct ckpt_hdr h;
++	struct ckpt_sigaction action[0];
++} __attribute__((aligned(8)));
+ 
+ /* ipc commons */
+ struct ckpt_hdr_ipcns {
 -- 
 1.6.0.4
 
