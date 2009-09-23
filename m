@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752343AbZIWPru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752425AbZIWPt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752343AbZIWPru (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 11:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZIWPru
+	id S1752425AbZIWPt3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 11:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZIWPt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 11:47:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35940 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751685AbZIWPrt (ORCPT
+	Wed, 23 Sep 2009 11:49:28 -0400
+Received: from server78.greatnet.de ([83.133.96.102]:45685 "EHLO
+	server78.greatnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751338AbZIWPt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 11:47:49 -0400
-Message-ID: <4ABA42D4.9070308@zytor.com>
-Date: Wed, 23 Sep 2009 08:46:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 23 Sep 2009 11:49:27 -0400
+Message-ID: <4ABA4382.1000707@nachtwindheim.de>
+Date: Wed, 23 Sep 2009 17:49:22 +0200
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: Re: 2.6.31-07068-g43c1266 Early boot exception
-References: <1253560490.2934.42.camel@localhost>	 <4AB7D349.4000802@zytor.com> <1253566046.2773.10.camel@localhost>	 <4AB89417.7090005@kernel.org> <1253648186.2766.5.camel@localhost>	 <4AB9B7B7.30200@kernel.org> <1253697550.3434.1.camel@localhost> <4AB9E925.8010502@kernel.org>
-In-Reply-To: <4AB9E925.8010502@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jean Delvare <khali@linux-fr.org>
+CC: Wolfram Sang <w.sang@pengutronix.de>, linux-pci@vger.kernel.org,
+       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Crash on reading the whole PCI config of PIIX4 SMBus
+References: <4AB8F142.9090609@nachtwindheim.de>	<20090922231839.GA20656@pengutronix.de>	<4ABA1B9C.9070302@nachtwindheim.de>	<20090923153531.1642b77d@hyperion.delvare>	<4ABA2CA1.8070806@nachtwindheim.de> <20090923161518.5cb29107@hyperion.delvare>
+In-Reply-To: <20090923161518.5cb29107@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Tony Vroon wrote:
->> On Wed, 2009-09-23 at 14:52 +0900, Tejun Heo wrote:
->>> Can you please do l on the above rip - ffffffff81598250?
->> I was unable to:
->> (gdb) l *ffffffff81598250
->> No symbol "ffffffff81598250" in current context.
-> 
-> Ah... you should have done l *0xffffffff81598250.
-> 
+Jean Delvare schrieb:
 
-A better way to do this is:
+> That's right, but it doesn't explain why i2c-piix4 crashes in the first
+> place, not why merely loading it causes further lspci -xxx to crash
+> when they did not beforehand. I admit I am totally clueless.
+>   
+Sorry, I expressed myself a bit unclear.
 
-addr2line -e vmlinux 0xffffffff81598250
+With _worked_ I meant the system crashed (thats what killer commands are for).
 
-No need to involve gdb.
+lspci -xxx (and co) bring this system down in every case, module loaded or not.
+Obvious this crash occuress when reading the config space in short periods.
 
-	-hpa
+lspci (or better proc-fs and sys-fs) do that, and i2c-piix4 does it sometimes.
+
+Looking at read() of drivers/pci/proc.c i had the idea of stalking the critical area with:
+
+#!/bin/sh
+for i in `seq 100`; do
+ dd if=/proc/bus/pci/00/07.3 of=/dev/null bs=1 count=n 2>/dev/null;
+done
+
+
+I got no crashes with n == 192, but with n == 193 theres no reaction from the system.
+
+Maybe it's interesting, that (all the time after crashes) the screen
+(in my case the console with a blinking cursor) can still be seen.
+But no reaction on keyboard hits.
+
+Also strange is, that the device works well IF those two read accesses have not done the crash.
+I'll test tomorrow without the second read access, just to know if it works.
+
+
+
+
 
