@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZIWBSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZIWBUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbZIWBSG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 21:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZIWBSF
+	id S1753839AbZIWBUR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 21:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZIWBUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 21:18:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:56437 "EHLO mga03.intel.com"
+	Tue, 22 Sep 2009 21:20:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54067 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753711AbZIWBSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 21:18:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,434,1249282800"; 
-   d="scan'208";a="190572830"
-Date: Wed, 23 Sep 2009 09:17:58 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: regression in page writeback
-Message-ID: <20090923011758.GC6382@localhost>
-References: <20090922054913.GA27260@sli10-desk.sh.intel.com> <1253601612.8439.274.camel@twins> <20090922080505.GB9192@localhost> <1253606965.8439.281.camel@twins> <20090922082427.GA24888@localhost> <1253608335.8439.283.camel@twins> <20090922155259.GL10825@think> <20090923002220.GA6382@localhost> <20090922175452.d66400dd.akpm@linux-foundation.org>
+	id S1753719AbZIWBUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 21:20:14 -0400
+Message-ID: <4AB97776.3070906@kernel.org>
+Date: Wed, 23 Sep 2009 10:18:46 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090922175452.d66400dd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Axel Birndt <towerlexa@gmx.de>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <greg@kroah.com>,
+       Robert Hancock <hancockr@shaw.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-pci@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Daniel Ritz <daniel.ritz@gmx.ch>,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 3/3 pci#linux-next] pccard: configure CLS on attach
+References: <4A4EE3E9.7090205@kernel.org> <20090917103131.55eca691@jbarnes-g45> <4AB88C28.8070602@kernel.org> <4AB8A0A2.3010300@gmx.de>
+In-Reply-To: <4AB8A0A2.3010300@gmx.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 01:18:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 08:54:52AM +0800, Andrew Morton wrote:
-> On Wed, 23 Sep 2009 08:22:20 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+Hello, Axel.
+
+Axel Birndt wrote:
+> Tejun Heo schrieb:
+>> For non hotplug PCI devices, the system firmware usually configures
+>> CLS correctly.  For pccard devices system firmware can't do it and
+>> Linux PCI layer doesn't do it either.  Unfortunately this leads to
+>> poor performance for certain devices (sata_sil).  Unless MWI, which
+>> requires separate configuration, is to be used, CLS doesn't affect
+>> correctness, so the configuration should be harmless.
+>>
+>> This patch makes pci_set_cacheline_size() always built and export it
+>> and make pccard call it during attach.
+>>
+>> Please note that some other PCI hotplug drivers (shpchp and pciehp)
+>> also configure CLS on hotplug.
 > 
-> > Jens' per-bdi writeback has another improvement. In 2.6.31, when
-> > superblocks A and B both have 100000 dirty pages, it will first
-> > exhaust A's 100000 dirty pages before going on to sync B's.
+> i would like to ask, when this patch is usable for normal guy's, like me.
+> could you tell me in which kernel release or in which bugfix this will
+> be implemented?
 > 
-> That would only be true if someone broke 2.6.31.  Did they?
-> 
-> SYSCALL_DEFINE0(sync)
-> {
-> 	wakeup_pdflush(0);
-> 	sync_filesystems(0);
-> 	sync_filesystems(1);
-> 	if (unlikely(laptop_mode))
-> 		laptop_sync_completion();
-> 	return 0;
-> }
-> 
-> the sync_filesystems(0) is supposed to non-blockingly start IO against
-> all devices.  It used to do that correctly.  But people mucked with it
-> so perhaps it no longer does.
+> currently i'am using Kubuntu 8.04 with all current released bugfixes and
+> kernel updates...
 
-I'm referring to writeback_inodes(). Each invocation of which (to sync
-4MB) will do the same iteration over superblocks A => B => C ... So if
-A has dirty pages, it will always be served first.
+This patch is rather dangerous and should sit out for a while in
+linux-next and then -rc.  In mainline, I think it will appear in
+2.6.33.  Distros may choose to backport them but I don't think they'll
+do it before the change at least lands on -rc which is at least 3+
+months away.  It's also possible for distros to backport it but enable
+it only if certain kernel parameter is set but you'll have to ask each
+distro whether they're willing to do such thing.
 
-So if wbc->bdi == NULL (which is true for kupdate/background sync), it
-will have to first exhaust A before going on to B and C.
+Thanks.
 
-There are no "cursor" in the superblock level iterations.
-
-sync wants to exhaust all new inodes in A,B,C anyway, and it has the
-live lock prevention logic based on dirtied_when, so that's not a big
-problem for sync.
-
-Thanks,
-Fengguang
-
+-- 
+tejun
