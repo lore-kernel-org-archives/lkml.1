@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZIWIsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZIWIs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbZIWIsE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 04:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbZIWIsD
+	id S1754630AbZIWIs0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 04:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZIWIsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 04:48:03 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:43924 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754480AbZIWIsC (ORCPT
+	Wed, 23 Sep 2009 04:48:25 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:57931 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754491AbZIWIsY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 04:48:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=hmUZ5sypONC/3HfSPBPNufrIHcLA286VdA02jugNumkT+FS7Ycxc1AGvkXT74uFqoN
-         3p3iO9XYQK1OwgrOav8ZjdWWsXu67+78EbUBnHoV4WvJmkMJNv6K0YFppo3cEtVi+yBD
-         w+HoHR2D7gInf4KmLzthHkFbUzkukPMjUPkvg=
+	Wed, 23 Sep 2009 04:48:24 -0400
+Date: Wed, 23 Sep 2009 09:48:16 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: [PATCH] vfs: new FROM_ACCESS flag
+Message-ID: <20090923084816.GA7687@shareable.org>
+References: <20090921013048.2763.1494.stgit@paris.rdu.redhat.com> <20090922135612.GA17769@infradead.org> <1253640526.2747.7.camel@dhcp231-106.rdu.redhat.com> <20090922200635.GB28826@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <aa79d98a0909230044q3548cf0bjda62e05e0400edd6@mail.gmail.com>
-References: <7863dc4c0909221409v7893bfd3o4b590d5951a233ba@mail.gmail.com>
-	 <20090922212453.GB6062@nowhere> <1253686585.7695.84.camel@twins>
-	 <20090923073253.GA18022@elte.hu> <20090923074028.GA3078@elte.hu>
-	 <aa79d98a0909230044q3548cf0bjda62e05e0400edd6@mail.gmail.com>
-Date: Wed, 23 Sep 2009 12:48:04 +0400
-Message-ID: <aa79d98a0909230148j47232382oe28c6d88eef181c4@mail.gmail.com>
-Subject: Re: perf sched record hangs machine
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Chris Malley <mail@chrismalley.co.uk>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922200635.GB28826@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/23/09, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> On 9/23/09, Ingo Molnar <mingo@elte.hu> wrote:
->>
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>>
->>> * Peter Zijlstra <peterz@infradead.org> wrote:
->>>
->>> >         .size   default_send_IPI_self, .-default_send_IPI_self
->>> >
->>> > Which seems to suggest that cmove is in __prepare_ICR, but I'm not
->>> > sure how that can cause a page-fault, as that function is rather
->>> > pointer-less.
->>> >
->>> > Did it maybe delay evaluating apic->dest_logical that late, it appear
->>> > to be the first usage of that argument?
->>> >
->>> > Ingo, any ideas?
->>>
->>> Yeah, the problem is:
->>>
->>> [    0.042445] Local APIC not detected. Using dummy APIC emulation.
->>>
->>> we shouldnt be trying to program the lapic in that case - all ops
->>> should be a NOP, including send-ipi-self. Cyrill?
->>
->> Cyrill, the right fix would be to define a:
->>
->> 	struct apic apic_none;
->>
->> with dummy functions injected. Set struct apic *apic to _that_, instead
->> of apic_default.
->>
->> This means that if we manage to detect a local APIC, we will set it to
->> apic_default (or some other driver) - but the bootup default will be 'no
->> APIC'.
->>
->
-> May it wait till evening (i'll back from office and take a look)?
->
->> This is a lot cleaner and a lot less error-prone than the direct
->> frobbing of the function pointers.
->>
->> 	Ingo
->>
->
+Christoph Hellwig wrote:
+> On Tue, Sep 22, 2009 at 01:28:46PM -0400, Eric Paris wrote:
+> > > only using MAY_ACCESS for calles from access() insteaf of introducing
+> > > a FROM_ACCESS flag and causing lots of naming confusion.
+> > 
+> > What would you think of a new, MUST_REVALIDATE_PERMS which will do what
+> > MAY_ACCESS does today.  MAY_ACCESS would be just for access(2) and would
+> > be the flag that I use for SELinux?
+> 
+> Yeah, something like this.  I don't like the MUST_REVALIDATE_PERMS name
+> too much, but unless someone comes up with a better one I can live with
+> it.
 
-Btw, meanwhile Chris may try to pass lapic boot-option in attempt to
-reenable apic via msr registers. Also (iirc) i feel we may be hiding
-errors if complete noop apic would be used since i belive we need to
-check out under which condition a particular operation is called and
-when apic is disabled it's mean we're switched to UP mode and
-inter-cpu interrupts are under suspicion too. Will take a look during
-~6 hours ;)
+MAY_ACCESS is used in only these places:
+
+    - access/faccessat
+    - chdir/fchdir
+    - chroot
+
+And it is checked in only two easy to change places: nfs/dir.c and
+fuse/dir.c.
+
+Therefore how about MAY_CHDIR.
+
+-- Jamie
