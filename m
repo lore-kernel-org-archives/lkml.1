@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbZIWWCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbZIWWLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752460AbZIWWCb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 18:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZIWWCa
+	id S1752180AbZIWWLX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 18:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbZIWWLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 18:02:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37502 "EHLO hera.kernel.org"
+	Wed, 23 Sep 2009 18:11:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54563 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbZIWWC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 18:02:29 -0400
-Message-ID: <4ABA9B14.20904@kernel.org>
-Date: Thu, 24 Sep 2009 07:03:00 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751039AbZIWWLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 18:11:21 -0400
+Date: Thu, 24 Sep 2009 00:10:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, linux@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, a.p.zijlstra@chello.nl,
+       fweisbec@gmail.com, acme@redhat.com, mhiramat@redhat.com,
+       postmaster@vger.kernel.org
+Subject: Re: mailing list for trace users
+Message-ID: <20090923221059.GB29816@elte.hu>
+References: <20090923114823.GC4132@elte.hu> <20090923.111245.193724900.davem@davemloft.net> <20090923194122.GB20934@elte.hu> <20090923.145518.255137716.davem@davemloft.net>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu areas
- for other cpus
-References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-3-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0909221856050.9410@V090114053VZO-1> <4AB983B6.6050203@kernel.org> <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1> <4ABA2A3A.6020308@kernel.org> <alpine.DEB.1.10.0909231315310.4025@V090114053VZO-1>
-In-Reply-To: <alpine.DEB.1.10.0909231315310.4025@V090114053VZO-1>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 22:02:13 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090923.145518.255137716.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Wed, 23 Sep 2009, Tejun Heo wrote:
-> 
->> any special handling.  What problems are you seeing?
-> 
-> per cpu variable access on IA64 does not use the percpu_offset for the
-> calculation of the current per cpu data area. Its using a virtual mapping.
-> 
-> How does the new percpu allocator support this? Does it use different
-> methods of access for static and dynamic percpu access?
 
-That's only when __ia64_per_cpu_var() macro is used in arch code which
-always references static perpcu variable in the kernel image which
-falls inside PERCPU_PAGE_SIZE.  For everything else, __my_cpu_offset
-is defined as __ia64_per_cpu_var(local_per_cpu_offset) and regular
-pointer offsetting is used.
+* David Miller <davem@davemloft.net> wrote:
 
-Thanks.
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Wed, 23 Sep 2009 21:41:22 +0200
+> 
+> > David, i have asked for the proper name _BEFORE_ you have created 
+> > it,
+> 
+> Ingo would you relax already? I'll change the name if you want me to, 
+> no problem.
 
--- 
-tejun
+Seems like the native-speaker concensus is overwhelmingly against my 
+proposal and in favor of the name you chose, so i stand corrected on 
+that matter and please leave the linux-trace-users naming.
+
+> You're lack of face-to-face interaction with people is why you 
+> constantly blow up like this.  Please make an effort to change this in 
+> the future.
+
+I have no trouble with hundreds of people i work with, except you - and 
+you are in a pretty similar position - and that's sad. Such 
+incompatibilities happen (to no real fault of any of the sides) and 
+we'll have to learn to deal with it.
+
+Thanks,
+
+	Ingo
