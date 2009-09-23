@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbZIWPf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbZIWPit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752431AbZIWPf0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 11:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZIWPf0
+	id S1752198AbZIWPit (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 11:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZIWPit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 11:35:26 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:33236 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750829AbZIWPfZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 11:35:25 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 23 Sep 2009 08:35:18 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: "hch@infradead.org" <hch@infradead.org>
-cc: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Jamie Lokier <jamie@shareable.org>, Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "alan@linux.intel.com" <alan@linux.intel.com>
-Subject: Re: fanotify as syscalls
-In-Reply-To: <20090923112018.GA2946@infradead.org>
-Message-ID: <alpine.DEB.2.00.0909230827100.21515@makko.or.mcafeemobile.com>
-References: <20090912094110.GB24709@ioremap.net> <200909221731.34717.agruen@suse.de> <alpine.DEB.2.00.0909220836200.10460@makko.or.mcafeemobile.com> <200909230939.34003.tvrtko.ursulin@sophos.com> <20090923112018.GA2946@infradead.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 23 Sep 2009 11:38:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38661 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751467AbZIWPis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 11:38:48 -0400
+Date: Wed, 23 Sep 2009 17:38:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] introduce TRACE_EVENT_ABI (was Re: TRACE_EVENT_ABI ?)
+Message-ID: <20090923153834.GA6105@elte.hu>
+References: <20090923124340.GA6093@infradead.org> <1253714632.4498.3.camel@frodo>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253714632.4498.3.camel@frodo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009, hch@infradead.org wrote:
 
-> On Wed, Sep 23, 2009 at 09:39:33AM +0100, Tvrtko Ursulin wrote:
-> > Lived with it because there was no other option. We used LSM while it was 
-> > available for modules but then it was taken away. 
-> > 
-> > And not all vendors even use syscall interception, not even across platforms, 
-> > of which you sound so sure about. You can't even scan something which is not 
-> > in your namespace if you are at the syscall level. And you can't catch things 
-> > like kernel nfsd. No, syscall interception is not really appropriate at all.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> On Wed, 2009-09-23 at 08:43 -0400, Christoph Hellwig wrote:
+
+> > I'm not sure we can support any as an ABI yet.  The text format 
+> > seems to volatile in general - not just the output of the individual 
+> > trace events but also the common file format, and for the binary 
+> > format we need to figure a good way to tag the output yet.  Also 
+> > when we define one as one ABI we should make very clear what that 
+> > means, e.g. does it have to stay exactly as is?  Or can we add new 
+> > fields but not remove old one?
 > 
-> The "Anti-Malware" industry is just snake oil anyway.  I think the
-> proper approach to support it is just to add various no-op exports claim
-> to do something and all the people requiring anti-virus on Linux will be
-> just as happy with it.
+> I had this discussion with people in Portland. We seem to agree that 
+> this should just lock the old fields in, but you can add new ones at 
+> the end.
 
-The fear is that this becomes a trojan horse (no pun intended) for more 
-and more hooks and "stuff", driven by we-really-need-this-too and 
-we-really-need-that-too. And once something it's in, it's harder to say no, 
-under the pressure of offering a "limited solution".
-This ws the reason I threw the syscall tracing thing in, so they have a 
-low level generic hook, and they cam knock themselves out in their module 
-(might need a few exports, but that's about it).
+Yeah, that's the sanest approach i was thinking about when i suggested 
+TRACE_EVENT_ABI() to Arjan and Peter.
 
+The raw record is opaque, comes with a length field and goes into the 
+ring-buffer so it's nicely extensible. Existing bits shouldnt change.
 
+User-space that relies on a record can define a structure of that and 
+copy that over from the ring-buffer - and ignore any new bits.
 
-- Davide
+What i'd also like to see is the use of typical ABI-safe type fields in 
+the trace definitions themselves: u8, u32, u64, etc. 'long' is obviously 
+not good. Could we do some automation for that perhaps? I.e. emit a 
+warning (boot time or so) if TRACE_EVENT_ABI() is used with unsafe type 
+fields.
 
+( Endianness is another detail, if perf.data is shipped to a
+  different-endian system. Best is probably to define a new perf.data
+  attribute extension with the endianness of the generator system
+  included. That way the perf.data parser can convert endianness if it 
+  wants/needs to. )
 
+	Ingo
