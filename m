@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbZIXAe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbZIXAnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbZIXAe0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbZIXAeY
+	id S1754509AbZIXAnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZIXAnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:34:24 -0400
-Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
+	Wed, 23 Sep 2009 20:43:11 -0400
+Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39156 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753532AbZIXAaE (ORCPT
+	with ESMTP id S1753124AbZIXA3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:30:04 -0400
+	Wed, 23 Sep 2009 20:29:22 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>
-Subject: [PATCH v18 63/80] c/r: [signal 1/4] blocked and template for shared signals
-Date: Wed, 23 Sep 2009 19:51:43 -0400
-Message-Id: <1253749920-18673-64-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 64/80] c/r: [signal 2/4] checkpoint/restart of rlimit
+Date: Wed, 23 Sep 2009 19:51:44 -0400
+Message-Id: <1253749920-18673-65-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -27,362 +27,244 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds checkpoint/restart of blocked signals mask
-(t->blocked) and a template for shared signals (t->signal).
-
-Because t->signal sharing is tied to threads, we ensure proper sharing
-of t->signal (struct signal_struct) for threads only.
-
-Access to t->signal is protected by locking t->sighand->lock.
-Therefore, the usual checkpoint_obj() invoking the callback
-checkpoint_signal(ctx, signal) is insufficient because the task
-pointer is unavailable.
-
-Instead, handling of t->signal sharing is explicit using helpers
-like ckpt_obj_lookup_add(), ckpt_obj_fetch() and ckpt_obj_insert().
-The actual state is saved (if needed) _after_ the task_objs data.
-
-To prevent tasks from handling restored signals during restart,
-set their mask to block all signals and only restore the original
-mask at the very end (before the last sync point).
-
-Introduce per-task pointer 'ckpt_data' to temporary store data
-for restore actions that are deferred to the end (like restoring
-the signal block mask).
+This patch adds checkpoint and restart of rlimit information
+that is part of shared signal_struct.
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 Acked-by: Louis Rilling <Louis.Rilling@kerlabs.com>
 ---
- checkpoint/objhash.c           |    7 +++
- checkpoint/process.c           |   64 ++++++++++++++++++++++++-
- checkpoint/signal.c            |  104 ++++++++++++++++++++++++++++++++++++++++
- include/linux/checkpoint.h     |    6 ++
- include/linux/checkpoint_hdr.h |   14 +++++-
- 5 files changed, 193 insertions(+), 2 deletions(-)
+ checkpoint/checkpoint.c        |    2 ++
+ checkpoint/restart.c           |    3 +++
+ checkpoint/signal.c            |   27 +++++++++++++++++++++++----
+ include/linux/checkpoint_hdr.h |   17 +++++++++++++++++
+ include/linux/resource.h       |    4 ++++
+ kernel/sys.c                   |   36 +++++++++++++++++++++++-------------
+ 6 files changed, 72 insertions(+), 17 deletions(-)
 
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-index b4034dc..bf2f761 100644
---- a/checkpoint/objhash.c
-+++ b/checkpoint/objhash.c
-@@ -289,6 +289,13 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.checkpoint = checkpoint_sighand,
- 		.restore = restore_sighand,
- 	},
-+	/* signal object */
-+	{
-+		.obj_name = "SIGNAL",
-+		.obj_type = CKPT_OBJ_SIGNAL,
-+		.ref_drop = obj_no_drop,
-+		.ref_grab = obj_no_grab,
-+	},
- 	/* ns object */
- 	{
- 		.obj_name = "NSPROXY",
-diff --git a/checkpoint/process.c b/checkpoint/process.c
-index 56f33dd..e596e2a 100644
---- a/checkpoint/process.c
-+++ b/checkpoint/process.c
-@@ -182,7 +182,8 @@ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
- 	int files_objref;
- 	int mm_objref;
- 	int sighand_objref;
--	int ret;
-+	int signal_objref;
-+	int first, ret;
- 
- 	/*
- 	 * Shared objects may have dependencies among them: task->mm
-@@ -222,14 +223,36 @@ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
- 		return sighand_objref;
- 	}
- 
-+	/*
-+	 * Handle t->signal differently because the checkpoint method
-+	 * for t->signal needs access to owning task_struct to access
-+	 * t->sighand (to lock/unlock). First explicitly determine if
-+	 * need to save, and only below invoke checkpoint_obj_signal()
-+	 * if needed.
-+	 */
-+	signal_objref = ckpt_obj_lookup_add(ctx, t->signal,
-+					    CKPT_OBJ_SIGNAL, &first);
-+	ckpt_debug("signal: objref %d\n", signal_objref);
-+	if (signal_objref < 0)
-+		return signal_objref;
-+
- 	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_TASK_OBJS);
- 	if (!h)
- 		return -ENOMEM;
- 	h->files_objref = files_objref;
- 	h->mm_objref = mm_objref;
- 	h->sighand_objref = sighand_objref;
-+	h->signal_objref = signal_objref;
- 	ret = ckpt_write_obj(ctx, &h->h);
- 	ckpt_hdr_put(ctx, h);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* actually save t->signal, if need to */
-+	if (first)
-+		ret = checkpoint_obj_signal(ctx, t);
-+	if (ret < 0)
-+		ckpt_write_err(ctx, "TE", "signal_struct", ret);
- 
- 	return ret;
- }
-@@ -375,6 +398,10 @@ int checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- 		goto out;
- 	ret = checkpoint_cpu(ctx, t);
- 	ckpt_debug("cpu %d\n", ret);
-+	if (ret < 0)
-+		goto out;
-+	ret = checkpoint_task_signal(ctx, t);
-+	ckpt_debug("task-signal %d\n", ret);
-  out:
- 	ctx->tsk = NULL;
- 	return ret;
-@@ -551,6 +578,11 @@ static int restore_task_objs(struct ckpt_ctx *ctx)
- 
- 	ret = restore_obj_sighand(ctx, h->sighand_objref);
- 	ckpt_debug("sighand: ret %d (%p)\n", ret, current->sighand);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = restore_obj_signal(ctx, h->signal_objref);
-+	ckpt_debug("signal: ret %d (%p)\n", ret, current->signal);
-  out:
- 	ckpt_hdr_put(ctx, h);
- 	return ret;
-@@ -688,11 +720,37 @@ int restore_restart_block(struct ckpt_ctx *ctx)
- 	return ret;
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index 3460c03..ae79df7 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -297,6 +297,8 @@ static void fill_kernel_const(struct ckpt_const *h)
+ 	h->uts_version_len = sizeof(uts->version);
+ 	h->uts_machine_len = sizeof(uts->machine);
+ 	h->uts_domainname_len = sizeof(uts->domainname);
++	/* rlimit */
++	h->rlimit_nlimits = RLIM_NLIMITS;
  }
  
-+/* pre_restore_task - prepare the task for restore */
-+static int pre_restore_task(struct ckpt_ctx *ctx)
-+{
-+	sigset_t sigset;
-+
-+	/*
-+	 * Block task's signals to avoid interruptions due to signals,
-+	 * say, from restored timers, file descriptors etc. Signals
-+	 * will be unblocked when restore completes.
-+	 *
-+	 * NOTE: tasks with file descriptors set to send a SIGKILL as
-+	 * i/o notification may fail the restart if a signal occurs
-+	 * before that task completed its restore. FIX ?
-+	 */
-+	sigfillset(&sigset);
-+	sigdelset(&sigset, SIGKILL);
-+	sigdelset(&sigset, SIGSTOP);
-+	sigprocmask(SIG_SETMASK, &sigset, NULL);
-+
-+	return 0;
-+}
-+
- /* read the entire state of the current task */
- int restore_task(struct ckpt_ctx *ctx)
- {
- 	int ret;
- 
-+	ret = pre_restore_task(ctx);
-+	if (ret < 0)
-+		goto out;
-+
- 	ret = restore_task_struct(ctx);
- 	ckpt_debug("task %d\n", ret);
- 	if (ret < 0)
-@@ -720,6 +778,10 @@ int restore_task(struct ckpt_ctx *ctx)
- 		goto out;
- 	ret = restore_creds(ctx);
- 	ckpt_debug("creds: ret %d\n", ret);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = restore_task_signal(ctx);
-  out:
- 	return ret;
- }
-diff --git a/checkpoint/signal.c b/checkpoint/signal.c
-index 1aadadd..3fac75c 100644
---- a/checkpoint/signal.c
-+++ b/checkpoint/signal.c
-@@ -161,3 +161,107 @@ int restore_obj_sighand(struct ckpt_ctx *ctx, int sighand_objref)
+ /* write the checkpoint header */
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+index 73c4e72..340698a 100644
+--- a/checkpoint/restart.c
++++ b/checkpoint/restart.c
+@@ -399,6 +399,9 @@ static int check_kernel_const(struct ckpt_const *h)
+ 		return -EINVAL;
+ 	if (h->uts_domainname_len != sizeof(uts->domainname))
+ 		return -EINVAL;
++	/* rlimit */
++	if (h->rlimit_nlimits != RLIM_NLIMITS)
++		return -EINVAL;
  
  	return 0;
  }
-+
-+/***********************************************************************
-+ * signal checkpoint/restart
-+ */
-+
-+static int checkpoint_signal(struct ckpt_ctx *ctx, struct task_struct *t)
-+{
-+	struct ckpt_hdr_signal *h;
-+	int ret;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_SIGNAL);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	/* fill in later */
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+	return ret;
-+}
-+
-+int checkpoint_obj_signal(struct ckpt_ctx *ctx, struct task_struct *t)
-+{
-+	BUG_ON(t->flags & PF_EXITING);
-+	return checkpoint_signal(ctx, t);
-+}
-+
-+static int restore_signal(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_signal *h;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_SIGNAL);
-+	if (IS_ERR(h))
-+		return PTR_ERR(h);
-+
-+	/* fill in later */
-+
-+	ckpt_hdr_put(ctx, h);
-+	return 0;
-+}
-+
-+int restore_obj_signal(struct ckpt_ctx *ctx, int signal_objref)
-+{
-+	struct signal_struct *signal;
-+	int ret = 0;
-+
-+	signal = ckpt_obj_fetch(ctx, signal_objref, CKPT_OBJ_SIGNAL);
-+	if (!IS_ERR(signal)) {
-+		/*
-+		 * signal_struct is already shared properly as it is
-+		 * tied to thread groups. Since thread relationships
-+		 * are already restore now, t->signal must match.
-+		 */
-+		if (signal != current->signal)
-+			ret = -EINVAL;
-+	} else if (PTR_ERR(signal) == -EINVAL) {
-+		/* first timer: add to hash and restore our t->signal */
-+		ret = ckpt_obj_insert(ctx, current->signal,
-+				      signal_objref, CKPT_OBJ_SIGNAL);
-+		if (ret >= 0)
-+			ret = restore_signal(ctx);
-+	} else {
-+		ret = PTR_ERR(signal);
-+	}
-+
-+	return ret;
-+}
-+
-+int checkpoint_task_signal(struct ckpt_ctx *ctx, struct task_struct *t)
-+{
-+	struct ckpt_hdr_signal_task *h;
-+	int ret;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_SIGNAL_TASK);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	fill_sigset(&h->blocked, &t->blocked);
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+	return ret;
-+}
-+
-+int restore_task_signal(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_signal_task *h;
-+	sigset_t blocked;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_SIGNAL_TASK);
-+	if (IS_ERR(h))
-+		return PTR_ERR(h);
-+
-+	load_sigset(&blocked, &h->blocked);
-+	/* silently remove SIGKILL, SIGSTOP */
-+	sigdelset(&blocked, SIGKILL);
-+	sigdelset(&blocked, SIGSTOP);
-+
-+	sigprocmask(SIG_SETMASK, &blocked, NULL);
-+	recalc_sigpending();
-+
-+	ckpt_hdr_put(ctx, h);
-+	return 0;
-+}
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index c0e549e..ec98a43 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -253,6 +253,12 @@ extern int ckpt_collect_sighand(struct ckpt_ctx *ctx, struct task_struct *t);
- extern int checkpoint_sighand(struct ckpt_ctx *ctx, void *ptr);
- extern void *restore_sighand(struct ckpt_ctx *ctx);
+diff --git a/checkpoint/signal.c b/checkpoint/signal.c
+index 3fac75c..04013ef 100644
+--- a/checkpoint/signal.c
++++ b/checkpoint/signal.c
+@@ -14,6 +14,7 @@
+ #include <linux/sched.h>
+ #include <linux/signal.h>
+ #include <linux/errno.h>
++#include <linux/resource.h>
+ #include <linux/checkpoint.h>
+ #include <linux/checkpoint_hdr.h>
  
-+extern int checkpoint_obj_signal(struct ckpt_ctx *ctx, struct task_struct *t);
-+extern int restore_obj_signal(struct ckpt_ctx *ctx, int signal_objref);
-+
-+extern int checkpoint_task_signal(struct ckpt_ctx *ctx, struct task_struct *t);
-+extern int restore_task_signal(struct ckpt_ctx *ctx);
-+
- static inline int ckpt_validate_errno(int errno)
+@@ -169,13 +170,22 @@ int restore_obj_sighand(struct ckpt_ctx *ctx, int sighand_objref)
+ static int checkpoint_signal(struct ckpt_ctx *ctx, struct task_struct *t)
  {
- 	return (errno >= 0) && (errno < MAX_ERRNO);
+ 	struct ckpt_hdr_signal *h;
++	struct signal_struct *signal;
++	struct rlimit *rlim;
+ 	int ret;
+ 
+ 	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_SIGNAL);
+ 	if (!h)
+ 		return -ENOMEM;
+ 
+-	/* fill in later */
++	signal = t->signal;
++	rlim = signal->rlim;
++
++	/* rlimit */
++	for (i = 0; i < RLIM_NLIMITS; i++) {
++		h->rlim[i].rlim_cur = rlim[i].rlim_cur;
++		h->rlim[i].rlim_max = rlim[i].rlim_max;
++	}
+ 
+ 	ret = ckpt_write_obj(ctx, &h->h);
+ 	ckpt_hdr_put(ctx, h);
+@@ -191,15 +201,24 @@ int checkpoint_obj_signal(struct ckpt_ctx *ctx, struct task_struct *t)
+ static int restore_signal(struct ckpt_ctx *ctx)
+ {
+ 	struct ckpt_hdr_signal *h;
++	struct rlimit rlim;
++	int i, ret;
+ 
+ 	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_SIGNAL);
+ 	if (IS_ERR(h))
+ 		return PTR_ERR(h);
+ 
+-	/* fill in later */
+-
++	/* rlimit */
++	for (i = 0; i < RLIM_NLIMITS; i++) {
++		rlim.rlim_cur = h->rlim[i].rlim_cur;
++		rlim.rlim_max = h->rlim[i].rlim_max;
++		ret = do_setrlimit(i, &rlim);
++		if (ret < 0)
++			break;
++	}
++ out:
+ 	ckpt_hdr_put(ctx, h);
+-	return 0;
++	return ret;
+ }
+ 
+ int restore_obj_signal(struct ckpt_ctx *ctx, int signal_objref)
 diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index 3d3a105..ee949b5 100644
+index ee949b5..203b4ee 100644
 --- a/include/linux/checkpoint_hdr.h
 +++ b/include/linux/checkpoint_hdr.h
-@@ -88,6 +88,8 @@ enum {
- 	CKPT_HDR_IPC_SEM,
- 
- 	CKPT_HDR_SIGHAND = 601,
-+	CKPT_HDR_SIGNAL,
-+	CKPT_HDR_SIGNAL_TASK,
- 
- 	CKPT_HDR_TAIL = 9001,
- 
-@@ -116,6 +118,7 @@ enum obj_type {
- 	CKPT_OBJ_FILE,
- 	CKPT_OBJ_MM,
- 	CKPT_OBJ_SIGHAND,
-+	CKPT_OBJ_SIGNAL,
- 	CKPT_OBJ_NS,
- 	CKPT_OBJ_UTS_NS,
- 	CKPT_OBJ_IPC_NS,
-@@ -210,7 +213,6 @@ struct ckpt_hdr_task {
- 	__u32 compat_robust_futex_list; /* a compat __user ptr */
- 	__u32 robust_futex_head_len;
- 	__u64 robust_futex_list; /* a __user ptr */
--
+@@ -144,6 +144,8 @@ struct ckpt_const {
+ 	__u16 uts_version_len;
+ 	__u16 uts_machine_len;
+ 	__u16 uts_domainname_len;
++	/* rlimit */
++	__u16 rlimit_nlimits;
  } __attribute__((aligned(8)));
  
- /* Posix capabilities */
-@@ -305,6 +307,7 @@ struct ckpt_hdr_task_objs {
- 	__s32 files_objref;
- 	__s32 mm_objref;
- 	__s32 sighand_objref;
-+	__s32 signal_objref;
- } __attribute__((aligned(8)));
- 
- /* restart blocks */
-@@ -437,6 +440,15 @@ struct ckpt_hdr_sighand {
+ /* checkpoint image header */
+@@ -440,8 +442,23 @@ struct ckpt_hdr_sighand {
  	struct ckpt_sigaction action[0];
  } __attribute__((aligned(8)));
  
-+struct ckpt_hdr_signal {
-+	struct ckpt_hdr h;
++struct ckpt_rlimit {
++	__u64 rlim_cur;
++	__u64 rlim_max;
 +} __attribute__((aligned(8)));
 +
-+struct ckpt_hdr_signal_task {
-+	struct ckpt_hdr h;
-+	struct ckpt_sigset blocked;
-+} __attribute__((aligned(8)));
++/* cannot include <linux/resource.h> from userspace, so define: */
++#define CKPT_RLIM_NLIMITS  16
++#ifdef __KERNEL__
++#include <linux/resource.h>
++#if CKPT_RLIM_NLIMITS != RLIM_NLIMITS
++#error CKPT_RLIM_NLIMIT size is wrong per asm-generic/resource.h
++#endif
++#endif
 +
- /* ipc commons */
- struct ckpt_hdr_ipcns {
+ struct ckpt_hdr_signal {
  	struct ckpt_hdr h;
++	struct ckpt_rlimit rlim[CKPT_RLIM_NLIMITS];
+ } __attribute__((aligned(8)));
+ 
+ struct ckpt_hdr_signal_task {
+diff --git a/include/linux/resource.h b/include/linux/resource.h
+index 40fc7e6..87e1bf3 100644
+--- a/include/linux/resource.h
++++ b/include/linux/resource.h
+@@ -72,4 +72,8 @@ struct rlimit {
+ 
+ int getrusage(struct task_struct *p, int who, struct rusage __user *ru);
+ 
++#ifdef __KERNEL__
++extern int do_setrlimit(unsigned int resource, struct rlimit *rlim);
++#endif
++
+ #endif
+diff --git a/kernel/sys.c b/kernel/sys.c
+index da4f9e0..0979a3f 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1144,40 +1144,39 @@ SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource,
+ 
+ #endif
+ 
+-SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
++int do_setrlimit(unsigned int resource, struct rlimit *new_rlim)
+ {
+-	struct rlimit new_rlim, *old_rlim;
++	struct rlimit *old_rlim;
+ 	int retval;
+ 
+ 	if (resource >= RLIM_NLIMITS)
+ 		return -EINVAL;
+-	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
+-		return -EFAULT;
+-	if (new_rlim.rlim_cur > new_rlim.rlim_max)
++	if (new_rlim->rlim_cur > new_rlim->rlim_max)
+ 		return -EINVAL;
++
+ 	old_rlim = current->signal->rlim + resource;
+-	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
++	if ((new_rlim->rlim_max > old_rlim->rlim_max) &&
+ 	    !capable(CAP_SYS_RESOURCE))
+ 		return -EPERM;
+-	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
++	if (resource == RLIMIT_NOFILE && new_rlim->rlim_max > sysctl_nr_open)
+ 		return -EPERM;
+ 
+-	retval = security_task_setrlimit(resource, &new_rlim);
++	retval = security_task_setrlimit(resource, new_rlim);
+ 	if (retval)
+ 		return retval;
+ 
+-	if (resource == RLIMIT_CPU && new_rlim.rlim_cur == 0) {
++	if (resource == RLIMIT_CPU && new_rlim->rlim_cur == 0) {
+ 		/*
+ 		 * The caller is asking for an immediate RLIMIT_CPU
+ 		 * expiry.  But we use the zero value to mean "it was
+ 		 * never set".  So let's cheat and make it one second
+ 		 * instead
+ 		 */
+-		new_rlim.rlim_cur = 1;
++		new_rlim->rlim_cur = 1;
+ 	}
+ 
+ 	task_lock(current->group_leader);
+-	*old_rlim = new_rlim;
++	*old_rlim = *new_rlim;
+ 	task_unlock(current->group_leader);
+ 
+ 	if (resource != RLIMIT_CPU)
+@@ -1189,14 +1188,25 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ 	 * very long-standing error, and fixing it now risks breakage of
+ 	 * applications, so we live with it
+ 	 */
+-	if (new_rlim.rlim_cur == RLIM_INFINITY)
++	if (new_rlim->rlim_cur == RLIM_INFINITY)
+ 		goto out;
+ 
+-	update_rlimit_cpu(new_rlim.rlim_cur);
++	update_rlimit_cpu(new_rlim->rlim_cur);
+ out:
+ 	return 0;
+ }
+ 
++SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
++{
++	struct rlimit new_rlim;
++
++	if (resource >= RLIM_NLIMITS)
++		return -EINVAL;
++	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
++		return -EFAULT;
++	return do_setrlimit(resource, &new_rlim);
++}
++
+ /*
+  * It would make sense to put struct rusage in the task_struct,
+  * except that would make the task_struct be *really big*.  After
 -- 
 1.6.0.4
 
