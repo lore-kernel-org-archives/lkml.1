@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZIXAeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbZIXA3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbZIXAeb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZIXAe2
+	id S1753272AbZIXA3f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZIXA3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:34:28 -0400
+	Wed, 23 Sep 2009 20:29:32 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753499AbZIXAaB (ORCPT
+	with ESMTP id S1752835AbZIXA3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:30:01 -0400
+	Wed, 23 Sep 2009 20:29:18 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>
-Subject: [PATCH v18 73/80] c/r: correctly restore pgid
-Date: Wed, 23 Sep 2009 19:51:53 -0400
-Message-Id: <1253749920-18673-74-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 74/80] c/r: support for controlling terminal and job control
+Date: Wed, 23 Sep 2009 19:51:54 -0400
+Message-Id: <1253749920-18673-75-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -27,526 +27,281 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The main challenge with restoring the pgid of tasks is that the
-original "owner" (the process with that pid) might have exited
-already. I call these "ghost" pgids. 'mktree' does create these
-processes, but they then exit without participating in the restart.
+Add checkpoint/restart of controlling terminal: current->signal->tty.
+This is only done for session leaders.
 
-To solve this, this patch introduces a RESTART_GHOST flag, used for
-"ghost" owners that are created only to pass their pgid to other
-tasks. ('mktree' now makes them call restart(2) instead of exiting).
+If the session leader belongs to the ancestor pid-ns, then checkpoint
+skips this tty; On restart, it will not be restored, and whatever tty
+is in place from parent pid-ns (at restart) will be inherited.
 
-When a "ghost" task calls restart(2), it will be placed on a wait
-queue until the restart completes and then exit. This guarantees that
-the pgid that it owns remains available for all (regular) restarting
-tasks for when they need it.
-
-Regular tasks perform the restart as before, except that they also
-now restore their old pgrp, which is guaranteed to exist.
-
-Changelog [v3]:
-  - Fix leak of ckpt_ctx when restoring "ghost" tasks
-Changelog [v2]:
-  - Call change_pid() only if new pgrp differs from current one
-Changelog [v1]:
-  - Verify that pgid owner is a thread-group-leader.
-  - Handle the case of pgid/sid == 0 using root's parent pid-ns
+Chagnelog [v1]:
+  - Don't restore tty_old_pgrp it pgid is CKPT_PID_NULL
+  - Initialize pgrp to NULL in restore_signal
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- checkpoint/process.c             |   97 +++++++++++++++++++++++++++
- checkpoint/restart.c             |  137 +++++++++++++++++++++++++++-----------
- checkpoint/sys.c                 |    3 +-
- include/linux/checkpoint.h       |   11 +++-
- include/linux/checkpoint_hdr.h   |    3 +
- include/linux/checkpoint_types.h |    6 +-
- 6 files changed, 214 insertions(+), 43 deletions(-)
+ checkpoint/signal.c            |   79 +++++++++++++++++++++++++++++++++++++++-
+ drivers/char/tty_io.c          |   33 +++++++++++++----
+ include/linux/checkpoint.h     |    1 +
+ include/linux/checkpoint_hdr.h |    6 +++
+ include/linux/tty.h            |    5 +++
+ 5 files changed, 115 insertions(+), 9 deletions(-)
 
-diff --git a/checkpoint/process.c b/checkpoint/process.c
-index e596e2a..3c02f8e 100644
---- a/checkpoint/process.c
-+++ b/checkpoint/process.c
-@@ -24,6 +24,57 @@
- #include <linux/syscalls.h>
+diff --git a/checkpoint/signal.c b/checkpoint/signal.c
+index 5ff0734..cd3956d 100644
+--- a/checkpoint/signal.c
++++ b/checkpoint/signal.c
+@@ -316,11 +316,12 @@ static int checkpoint_signal(struct ckpt_ctx *ctx, struct task_struct *t)
+ 	struct ckpt_hdr_signal *h;
+ 	struct signal_struct *signal;
+ 	struct sigpending shared_pending;
++	struct tty_struct *tty = NULL;
+ 	struct rlimit *rlim;
+ 	struct timeval tval;
+ 	cputime_t cputime;
+ 	unsigned long flags;
+-	int i, ret;
++	int i, ret = 0;
  
+ 	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_SIGNAL);
+ 	if (!h)
+@@ -398,9 +399,34 @@ static int checkpoint_signal(struct ckpt_ctx *ctx, struct task_struct *t)
+ 	cputime_to_timeval(signal->it_prof_incr, &tval);
+ 	h->it_prof_incr = timeval_to_ns(&tval);
  
-+pid_t ckpt_pid_nr(struct ckpt_ctx *ctx, struct pid *pid)
-+{
-+	return pid ? pid_nr_ns(pid, ctx->root_nsproxy->pid_ns) : CKPT_PID_NULL;
-+}
-+
-+/* must be called with tasklist_lock or rcu_read_lock() held */
-+struct pid *_ckpt_find_pgrp(struct ckpt_ctx *ctx, pid_t pgid)
-+{
-+	struct task_struct *p;
-+	struct pid *pgrp;
-+
-+	if (pgid == 0) {
-+		/*
-+		 * At checkpoint the pgid owner lived in an ancestor
-+		 * pid-ns. The best we can do (sanely and safely) is
-+		 * to examine the parent of this restart's root: if in
-+		 * a distinct pid-ns, use its pgrp; otherwise fail.
-+		 */
-+		p = ctx->root_task->real_parent;
-+		if (p->nsproxy->pid_ns == current->nsproxy->pid_ns)
-+			return NULL;
-+		pgrp = task_pgrp(p);
-+	} else {
-+		/*
-+		 * Find the owner process of this pgid (it must exist
-+		 * if pgrp exists). It must be a thread group leader.
-+		 */
-+		pgrp = find_vpid(pgid);
-+		p = pid_task(pgrp, PIDTYPE_PID);
-+		if (!p || !thread_group_leader(p))
-+			return NULL;
-+		/*
-+		 * The pgrp must "belong" to our restart tree (compare
-+		 * p->checkpoint_ctx to ours). This prevents malicious
-+		 * input from (guessing and) using unrelated pgrps. If
-+		 * the owner is dead, then it doesn't have a context,
-+		 * so instead compare against its (real) parent's.
-+		 */
-+		if (p->exit_state == EXIT_ZOMBIE)
-+			p = p->real_parent;
-+		if (p->checkpoint_ctx != ctx)
-+			return NULL;
++	/* tty */
++	if (signal->leader) {
++		h->tty_old_pgrp = ckpt_pid_nr(ctx, signal->tty_old_pgrp);
++		tty = tty_kref_get(signal->tty);
++		if (tty) {
++			/* irq is already disabled */
++			spin_lock(&tty->ctrl_lock);
++			h->tty_pgrp = ckpt_pid_nr(ctx, tty->pgrp);
++			spin_unlock(&tty->ctrl_lock);
++			tty_kref_put(tty);
++		}
 +	}
 +
-+	if (task_session(current) != task_session(p))
-+		return NULL;
-+
-+	return pgrp;
-+}
-+
-+
- #ifdef CONFIG_FUTEX
- static void save_task_robust_futex_list(struct ckpt_hdr_task *h,
- 					struct task_struct *t)
-@@ -720,6 +771,49 @@ int restore_restart_block(struct ckpt_ctx *ctx)
- 	return ret;
- }
+ 	unlock_task_sighand(t, &flags);
  
-+static int restore_task_pgid(struct ckpt_ctx *ctx)
-+{
-+	struct task_struct *task = current;
-+	struct pid *pgrp;
-+	pid_t pgid;
-+	int ret;
-+
+-	ret = ckpt_write_obj(ctx, &h->h);
 +	/*
-+	 * We enforce the following restrictions on restoring pgrp:
-+	 *  1) Only thread group leaders restore pgrp
-+	 *  2) Session leader cannot change own pgrp
-+	 *  3) Owner of pgrp must belong to same restart tree
-+	 *  4) Must have same session as other tasks in same pgrp
-+	 *  5) Change must pass setpgid security callback
-+	 *
-+	 * TODO - check if we need additional restrictions ?
++	 * If the session is in an ancestor namespace, skip this tty
++	 * and set tty_objref = 0. It will not be explicitly restored,
++	 * but rather inherited from parent pid-ns at restart time.
 +	 */
-+
-+	if (!thread_group_leader(task))  /* (1) */
-+		return 0;
-+
-+	pgid = ctx->pids_arr[ctx->active_pid].vpgid;
-+
-+	if (pgid == task_pgrp_vnr(task))  /* nothing to do */
-+		return 0;
-+
-+	if (task->signal->leader)  /* (2) */
-+		return -EINVAL;
-+
-+	ret = -EINVAL;
-+
-+	write_lock_irq(&tasklist_lock);
-+	pgrp = _ckpt_find_pgrp(ctx, pgid);  /* (3) and (4) */
-+	if (pgrp && task_pgrp(task) != pgrp) {
-+		ret = security_task_setpgid(task, pgid);  /* (5) */
-+		if (!ret)
-+			change_pid(task, PIDTYPE_PGID, pgrp);
++	if (tty && ckpt_pid_nr(ctx, tty->session) > 0) {
++		h->tty_objref = checkpoint_obj(ctx, tty, CKPT_OBJ_TTY);
++		if (h->tty_objref < 0)
++			ret = h->tty_objref;
 +	}
-+	write_unlock_irq(&tasklist_lock);
 +
-+	return ret;
-+}
-+
- /* pre_restore_task - prepare the task for restore */
- static int pre_restore_task(struct ckpt_ctx *ctx)
- {
-@@ -760,6 +854,9 @@ int restore_task(struct ckpt_ctx *ctx)
- 	if (ret)
++	if (!ret)
++		ret = ckpt_write_obj(ctx, &h->h);
+ 	if (!ret)
+ 		ret = checkpoint_sigpending(ctx, &shared_pending);
+ 
+@@ -471,8 +497,10 @@ static int restore_signal(struct ckpt_ctx *ctx)
+ 	struct ckpt_hdr_signal *h;
+ 	struct sigpending new_pending;
+ 	struct sigpending *pending;
++	struct tty_struct *tty = NULL;
+ 	struct itimerval itimer;
+ 	struct rlimit rlim;
++	struct pid *pgrp = NULL;
+ 	int i, ret;
+ 
+ 	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_SIGNAL);
+@@ -492,6 +520,40 @@ static int restore_signal(struct ckpt_ctx *ctx)
+ 	if (ret < 0)
  		goto out;
  
-+	ret = restore_task_pgid(ctx);
-+	if (ret < 0)
-+		goto out;
- 	ret = restore_task_objs(ctx);
- 	ckpt_debug("objs %d\n", ret);
- 	if (ret < 0)
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index 1016278..543b380 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -511,6 +511,11 @@ static int restore_read_tree(struct ckpt_ctx *ctx)
- 	return ret;
- }
- 
-+static inline int all_tasks_activated(struct ckpt_ctx *ctx)
-+{
-+	return (ctx->active_pid == ctx->nr_pids);
-+}
-+
- static inline pid_t get_active_pid(struct ckpt_ctx *ctx)
- {
- 	int active = ctx->active_pid;
-@@ -535,30 +540,42 @@ do { \
- 	_restore_notify_error(ctx, errno); \
- } while(0)
- 
-+static void restore_task_done(struct ckpt_ctx *ctx)
-+{
-+	if (atomic_dec_and_test(&ctx->nr_total))
-+		complete(&ctx->complete);
-+	BUG_ON(atomic_read(&ctx->nr_total) < 0);
-+}
-+
- static int restore_activate_next(struct ckpt_ctx *ctx)
- {
- 	struct task_struct *task;
- 	pid_t pid;
- 
--	if (++ctx->active_pid >= ctx->nr_pids) {
--		complete(&ctx->complete);
--		return 0;
--	}
-+	ctx->active_pid++;
- 
--	pid = get_active_pid(ctx);
-+	BUG_ON(ctx->active_pid > ctx->nr_pids);
- 
--	rcu_read_lock();
--	task = find_task_by_pid_ns(pid, ctx->root_nsproxy->pid_ns);
--	/* target task must have same restart context */
--	if (task && task->checkpoint_ctx == ctx)
--		wake_up_process(task);
--	else
--		task = NULL;
--	rcu_read_unlock();
-+	if (!all_tasks_activated(ctx)) {
-+		/* wake up next task in line to restore its state */
-+		pid = get_active_pid(ctx);
- 
--	if (!task) {
--		restore_notify_error(ctx, -ESRCH);
--		return -ESRCH;
-+		rcu_read_lock();
-+		task = find_task_by_pid_ns(pid, ctx->root_nsproxy->pid_ns);
-+		/* target task must have same restart context */
-+		if (task && task->checkpoint_ctx == ctx)
-+			wake_up_process(task);
-+		else
-+			task = NULL;
-+		rcu_read_unlock();
-+
-+		if (!task) {
-+			restore_notify_error(ctx, -ESRCH);
-+			return -ESRCH;
++	/* tty - session */
++	if (h->tty_objref) {
++		tty = ckpt_obj_fetch(ctx, h->tty_objref, CKPT_OBJ_TTY);
++		if (IS_ERR(tty)) {
++			ret = PTR_ERR(tty);
++			goto out;
++		}
++		/* this will fail unless we're the session leader */
++		ret = tiocsctty(tty, 0);
++		if (ret < 0)
++			goto out;
++		/* now restore the foreground group (job control) */
++		if (h->tty_pgrp) {
++			/*
++			 * If tty_pgrp == CKPT_PID_NULL, below will
++			 * fail, so no need for explicit test
++			 */
++			ret = do_tiocspgrp(tty, tty_pair_get_tty(tty),
++					   h->tty_pgrp);
++			if (ret < 0)
++				goto out;
 +		}
 +	} else {
-+		/* wake up ghosts tasks so that they can terminate */
-+		wake_up_all(&ctx->ghostq);
- 	}
- 
- 	return 0;
-@@ -593,7 +610,7 @@ static int wait_task_sync(struct ckpt_ctx *ctx)
- 	return 0;
- }
- 
--static int do_restore_task(void)
-+static struct ckpt_ctx *wait_checkpoint_ctx(void)
- {
- 	DECLARE_WAIT_QUEUE_HEAD(waitq);
- 	struct ckpt_ctx *ctx, *old_ctx;
-@@ -605,11 +622,11 @@ static int do_restore_task(void)
- 	 */
- 	ret = wait_event_interruptible(waitq, current->checkpoint_ctx);
- 	if (ret < 0)
--		return ret;
-+		return ERR_PTR(ret);
- 
- 	ctx = xchg(&current->checkpoint_ctx, NULL);
- 	if (!ctx)
--		return -EAGAIN;
-+		return ERR_PTR(-EAGAIN);
- 	ckpt_ctx_get(ctx);
- 
- 	/*
-@@ -628,9 +645,43 @@ static int do_restore_task(void)
- 		/* alert our coordinator that we bail */
- 		restore_notify_error(ctx, -EAGAIN);
- 		ckpt_ctx_put(ctx);
--		return -EAGAIN;
-+
-+		ctx = ERR_PTR(-EAGAIN);
- 	}
- 
-+	return ctx;
-+}
-+
-+static int do_ghost_task(void)
-+{
-+	struct ckpt_ctx *ctx;
-+
-+	ctx = wait_checkpoint_ctx();
-+	if (IS_ERR(ctx))
-+		return PTR_ERR(ctx);
-+
-+	current->flags |= PF_RESTARTING;
-+
-+	wait_event_interruptible(ctx->ghostq,
-+				 all_tasks_activated(ctx) ||
-+				 ckpt_test_ctx_error(ctx));
-+
-+	current->exit_signal = -1;
-+	ckpt_ctx_put(ctx);
-+	do_exit(0);
-+
-+	/* NOT REACHED */
-+}
-+
-+static int do_restore_task(void)
-+{
-+	struct ckpt_ctx *ctx, *old_ctx;
-+	int zombie, ret;
-+
-+	ctx = wait_checkpoint_ctx();
-+	if (IS_ERR(ctx))
-+		return PTR_ERR(ctx);
-+
- 	current->flags |= PF_RESTARTING;
- 
- 	/* wait for our turn, do the restore, and tell next task in line */
-@@ -638,24 +689,28 @@ static int do_restore_task(void)
- 	if (ret < 0)
- 		goto out;
- 
--	ret = restore_task(ctx);
-+	zombie = restore_task(ctx);
-+	if (zombie < 0) {
-+		ret = zombie;
-+		goto out;
++		/*
++		 * If tty_objref isn't set, we _keep_ whatever tty we
++		 * already have as a ctty. Why does this make sense ?
++		 * - If our session is "within" the restart context,
++		 * then that session has no controlling terminal.
++		 * - If out session is "outside" the restart context,
++                 * then we're like to keep whatever we inherit from
++                 * the parent pid-ns.
++		 */
 +	}
 +
-+	ret = restore_activate_next(ctx);
- 	if (ret < 0)
- 		goto out;
- 
  	/*
- 	 * zombie: we're done here; do_exit() will notice the @ctx on
--	 * our current->checkpoint_ctx (and our PF_RESTARTING) - it
--	 * will call restore_activate_next() and release the @ctx.
-+	 * our current->checkpoint_ctx (and our PF_RESTARTING), will
-+	 * call restore_task_done() and release the @ctx. This ensures
-+	 * that we only report done after we really become zombie.
- 	 */
--	if (ret) {
-+	if (zombie) {
- 		ckpt_ctx_put(ctx);
- 		do_exit(current->exit_code);
- 	}
+ 	 * Reset real/virt/prof itimer (in case they were set), to
+ 	 * prevent unwanted signals after flushing current signals
+@@ -503,7 +565,20 @@ static int restore_signal(struct ckpt_ctx *ctx)
+ 	do_setitimer(ITIMER_VIRTUAL, &itimer, NULL);
+ 	do_setitimer(ITIMER_PROF, &itimer, NULL);
  
--	ret = restore_activate_next(ctx);
--	if (ret < 0)
--		goto out;
--
-+	restore_task_done(ctx);
- 	ret = wait_task_sync(ctx);
-  out:
- 	old_ctx = xchg(&current->checkpoint_ctx, NULL);
-@@ -666,6 +721,7 @@ static int do_restore_task(void)
- 	if (ret < 0 && !ckpt_test_ctx_error(ctx)) {
- 		restore_notify_error(ctx, ret);
- 		wake_up_all(&ctx->waitq);
-+		wake_up_all(&ctx->ghostq);
- 	}
++	/* tty - tty_old_pgrp */
++	if (current->signal->leader && h->tty_old_pgrp != CKPT_PID_NULL) {
++		rcu_read_lock();
++		pgrp = get_pid(_ckpt_find_pgrp(ctx, h->tty_old_pgrp));
++		rcu_read_unlock();
++		if (!pgrp)
++			goto out;
++	}
++
+ 	spin_lock_irq(&current->sighand->siglock);
++	/* tty - tty_old_pgrp */
++	put_pid(current->signal->tty_old_pgrp);
++	current->signal->tty_old_pgrp = pgrp;
++	/* pending signals */
+ 	pending = &current->signal->shared_pending;
+ 	flush_sigqueue(pending);
+ 	pending->signal = new_pending.signal;
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 72f4432..1b220c1 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -2130,7 +2130,7 @@ static int fionbio(struct file *file, int __user *p)
+  *		Takes ->siglock() when updating signal->tty
+  */
  
- 	current->flags &= ~PF_RESTARTING;
-@@ -687,11 +743,11 @@ static int prepare_descendants(struct ckpt_ctx *ctx, struct task_struct *root)
- 	struct task_struct *parent = NULL;
- 	struct task_struct *task = root;
- 	struct ckpt_ctx *old_ctx;
--	int nr_pids = ctx->nr_pids;
-+	int nr_pids = 0;
- 	int ret = 0;
- 
- 	read_lock(&tasklist_lock);
--	while (nr_pids) {
-+	while (1) {
- 		ckpt_debug("consider task %d\n", task_pid_vnr(task));
- 		if (task_ptrace(task) & PT_PTRACED) {
- 			ret = -EBUSY;
-@@ -718,7 +774,7 @@ static int prepare_descendants(struct ckpt_ctx *ctx, struct task_struct *root)
- 			}
- 			ckpt_debug("prepare task %d\n", task_pid_vnr(task));
- 			wake_up_process(task);
--			nr_pids--;
-+			nr_pids++;
- 		}
- 
- 		/* if has children - proceed with child */
-@@ -748,12 +804,16 @@ static int prepare_descendants(struct ckpt_ctx *ctx, struct task_struct *root)
- 		}
- 	}
- 	read_unlock(&tasklist_lock);
--	ckpt_debug("left %d ret %d root/task %d\n", nr_pids, ret, task == root);
-+	ckpt_debug("nr %d/%d  ret %d\n", ctx->nr_pids, nr_pids, ret);
- 
--	/* fail unless number of processes matches */
--	if (!ret && (nr_pids || task != root))
-+	/*
-+	 * Actual tasks count may exceed ctx->nr_pids due of 'dead'
-+	 * tasks used as place-holders for PGIDs, but not fall short.
-+	 */
-+	if (!ret && (nr_pids < ctx->nr_pids))
- 		ret = -ESRCH;
- 
-+	atomic_set(&ctx->nr_total, nr_pids);
- 	return ret;
- }
- 
-@@ -832,7 +892,7 @@ static int init_restart_ctx(struct ckpt_ctx *ctx, pid_t pid)
- 	if (!nsproxy)
- 		return -ESRCH;
- 
--	ctx->active_pid = -1;	/* see restore_activate_next, get_active_pid */
-+	ctx->active_pid = -1;   /* see restore_activate_next, get_active_pid */
- 
- 	return 0;
- }
-@@ -973,12 +1033,14 @@ static long restore_retval(void)
- 	return ret;
- }
- 
--long do_restart(struct ckpt_ctx *ctx, pid_t pid)
-+long do_restart(struct ckpt_ctx *ctx, pid_t pid, unsigned long flags)
+-static int tiocsctty(struct tty_struct *tty, int arg)
++int tiocsctty(struct tty_struct *tty, int arg)
  {
- 	long ret;
+ 	int ret = 0;
+ 	if (current->signal->leader && (task_session(current) == tty->session))
+@@ -2219,10 +2219,10 @@ static int tiocgpgrp(struct tty_struct *tty, struct tty_struct *real_tty, pid_t
+ }
  
- 	if (ctx)
- 		ret = do_restore_coord(ctx, pid);
-+	else if (flags & RESTART_GHOST)
-+		ret = do_ghost_task();
- 	else
- 		ret = do_restore_task();
+ /**
+- *	tiocspgrp		-	attempt to set process group
++ *	do_tiocspgrp		-	attempt to set process group
+  *	@tty: tty passed by user
+  *	@real_tty: tty side device matching tty passed by user
+- *	@p: pid pointer
++ *	@pid: pgrp_nr
+  *
+  *	Set the process group of the tty to the session passed. Only
+  *	permitted where the tty session is our session.
+@@ -2230,10 +2230,10 @@ static int tiocgpgrp(struct tty_struct *tty, struct tty_struct *real_tty, pid_t
+  *	Locking: RCU, ctrl lock
+  */
  
-@@ -1025,8 +1087,7 @@ void exit_checkpoint(struct task_struct *tsk)
- 	/* restarting zombies will activate next task in restart */
- 	if (tsk->flags & PF_RESTARTING) {
- 		BUG_ON(ctx->active_pid == -1);
--		if (restore_activate_next(ctx) < 0)
--			pr_warning("c/r: [%d] failed zombie exit\n", tsk->pid);
-+		restore_task_done(ctx);
- 	}
+-static int tiocspgrp(struct tty_struct *tty, struct tty_struct *real_tty, pid_t __user *p)
++int do_tiocspgrp(struct tty_struct *tty,
++		 struct tty_struct *real_tty, pid_t pgrp_nr)
+ {
+ 	struct pid *pgrp;
+-	pid_t pgrp_nr;
+ 	int retval = tty_check_change(real_tty);
+ 	unsigned long flags;
  
- 	ckpt_ctx_put(ctx);
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-index d6a1650..76a3fa9 100644
---- a/checkpoint/sys.c
-+++ b/checkpoint/sys.c
-@@ -238,6 +238,7 @@ static struct ckpt_ctx *ckpt_ctx_alloc(int fd, unsigned long uflags,
- 	INIT_LIST_HEAD(&ctx->pgarr_list);
- 	INIT_LIST_HEAD(&ctx->pgarr_pool);
- 	init_waitqueue_head(&ctx->waitq);
-+	init_waitqueue_head(&ctx->ghostq);
+@@ -2245,8 +2245,6 @@ static int tiocspgrp(struct tty_struct *tty, struct tty_struct *real_tty, pid_t
+ 	    (current->signal->tty != real_tty) ||
+ 	    (real_tty->session != task_session(current)))
+ 		return -ENOTTY;
+-	if (get_user(pgrp_nr, p))
+-		return -EFAULT;
+ 	if (pgrp_nr < 0)
+ 		return -EINVAL;
+ 	rcu_read_lock();
+@@ -2268,6 +2266,27 @@ out_unlock:
+ }
  
- 	err = -EBADF;
- 	ctx->file = fget(fd);
-@@ -334,7 +335,7 @@ SYSCALL_DEFINE3(restart, pid_t, pid, int, fd, unsigned long, flags)
- 	if (IS_ERR(ctx))
- 		return PTR_ERR(ctx);
- 
--	ret = do_restart(ctx, pid);
-+	ret = do_restart(ctx, pid, flags);
- 
- 	ckpt_ctx_put(ctx);
- 	return ret;
+ /**
++ *	tiocspgrp		-	attempt to set process group
++ *	@tty: tty passed by user
++ *	@real_tty: tty side device matching tty passed by user
++ *	@p: pid pointer
++ *
++ *	Set the process group of the tty to the session passed. Only
++ *	permitted where the tty session is our session.
++ *
++ *	Locking: RCU, ctrl lock
++ */
++
++static int tiocspgrp(struct tty_struct *tty, struct tty_struct *real_tty, pid_t __user *p)
++{
++	pid_t pgrp_nr;
++
++	if (get_user(pgrp_nr, p))
++		return -EFAULT;
++	return do_tiocspgrp(tty, real_tty, pgrp_nr);
++}
++
++/**
+  *	tiocgsid		-	get session id
+  *	@tty: tty passed by user
+  *	@real_tty: tty side of the tty pased by the user if a pty else the tty
 diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 7c117fc..8e1cce7 100644
+index 8e1cce7..e00dd70 100644
 --- a/include/linux/checkpoint.h
 +++ b/include/linux/checkpoint.h
-@@ -18,6 +18,7 @@
- /* restart user flags */
- #define RESTART_TASKSELF	0x1
- #define RESTART_FROZEN		0x2
-+#define RESTART_GHOST		0x4
+@@ -84,6 +84,7 @@ extern char *ckpt_fill_fname(struct path *path, struct path *root,
  
- #ifdef __KERNEL__
- #ifdef CONFIG_CHECKPOINT
-@@ -44,7 +45,10 @@
+ /* pids */
+ extern pid_t ckpt_pid_nr(struct ckpt_ctx *ctx, struct pid *pid);
++extern struct pid *_ckpt_find_pgrp(struct ckpt_ctx *ctx, pid_t pgid);
  
- /* ckpt_ctx: uflags */
- #define CHECKPOINT_USER_FLAGS		CHECKPOINT_SUBTREE
--#define RESTART_USER_FLAGS		(RESTART_TASKSELF | RESTART_FROZEN)
-+#define RESTART_USER_FLAGS  \
-+	(RESTART_TASKSELF | \
-+	 RESTART_FROZEN | \
-+	 RESTART_GHOST)
- 
- extern void exit_checkpoint(struct task_struct *tsk);
- 
-@@ -78,6 +82,9 @@ extern int ckpt_read_consume(struct ckpt_ctx *ctx, int len, int type);
- extern char *ckpt_fill_fname(struct path *path, struct path *root,
- 			     char *buf, int *len);
- 
-+/* pids */
-+extern pid_t ckpt_pid_nr(struct ckpt_ctx *ctx, struct pid *pid);
-+
  /* socket functions */
  extern int ckpt_sock_getnames(struct ckpt_ctx *ctx,
- 			      struct socket *socket,
-@@ -130,7 +137,7 @@ extern void ckpt_ctx_get(struct ckpt_ctx *ctx);
- extern void ckpt_ctx_put(struct ckpt_ctx *ctx);
- 
- extern long do_checkpoint(struct ckpt_ctx *ctx, pid_t pid);
--extern long do_restart(struct ckpt_ctx *ctx, pid_t pid);
-+extern long do_restart(struct ckpt_ctx *ctx, pid_t pid, unsigned long flags);
- 
- /* task */
- extern int ckpt_activate_next(struct ckpt_ctx *ctx);
 diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index bf584cb..842177f 100644
+index 842177f..9ae35a0 100644
 --- a/include/linux/checkpoint_hdr.h
 +++ b/include/linux/checkpoint_hdr.h
-@@ -215,6 +215,9 @@ struct ckpt_pids {
- 	__s32 vsid;
+@@ -578,13 +578,19 @@ struct ckpt_rlimit {
+ 
+ struct ckpt_hdr_signal {
+ 	struct ckpt_hdr h;
++	/* rlimit */
+ 	struct ckpt_rlimit rlim[CKPT_RLIM_NLIMITS];
++	/* itimer */
+ 	__u64 it_real_value;
+ 	__u64 it_real_incr;
+ 	__u64 it_virt_value;
+ 	__u64 it_virt_incr;
+ 	__u64 it_prof_value;
+ 	__u64 it_prof_incr;
++	/* tty */
++	__s32 tty_objref;
++	__s32 tty_pgrp;
++	__s32 tty_old_pgrp;
  } __attribute__((aligned(8)));
  
-+/* pids */
-+#define CKPT_PID_NULL  -1
-+
- /* task data */
- struct ckpt_hdr_task {
- 	struct ckpt_hdr h;
-diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
-index be45666..9b7b4dd 100644
---- a/include/linux/checkpoint_types.h
-+++ b/include/linux/checkpoint_types.h
-@@ -68,9 +68,11 @@ struct ckpt_ctx {
- 	/* [multi-process restart] */
- 	struct ckpt_pids *pids_arr;	/* array of all pids [restart] */
- 	int nr_pids;			/* size of pids array */
-+	atomic_t nr_total;		/* total tasks count (with ghosts) */
- 	int active_pid;			/* (next) position in pids array */
--	struct completion complete;	/* container root and other tasks on */
--	wait_queue_head_t waitq;	/* start, end, and restart ordering */
-+	struct completion complete;	/* completion for container root */
-+	wait_queue_head_t waitq;	/* waitqueue for restarting tasks */
-+	wait_queue_head_t ghostq;	/* waitqueue for ghost tasks */
- 	struct cred *realcred, *ecred;	/* tmp storage for cred at restart */
+ struct ckpt_hdr_signal_task {
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 295447b..9447251 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -471,6 +471,11 @@ extern void tty_ldisc_enable(struct tty_struct *tty);
+ /* This one is for ptmx_close() */
+ extern int tty_release(struct inode *inode, struct file *filp);
  
- 	struct ckpt_stats stats;	/* statistics */
++/* These are for checkpoint/restart */
++extern int tiocsctty(struct tty_struct *tty, int arg);
++extern int do_tiocspgrp(struct tty_struct *tty,
++			struct tty_struct *real_tty, pid_t pgrp_nr);
++
+ #ifdef CONFIG_CHECKPOINT
+ struct ckpt_ctx;
+ struct ckpt_hdr_file;
 -- 
 1.6.0.4
 
