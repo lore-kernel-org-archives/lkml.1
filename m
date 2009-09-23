@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZIWIYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZIWI0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbZIWIYd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 04:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZIWIYb
+	id S1754560AbZIWI0n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 04:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZIWI0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 04:24:31 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:40765 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754553AbZIWIY0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 04:24:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=GppwVJ3kBwm28IXl6wrD9+kxyX7U+K22WjT52SFq5BVX5E6Lpg0b8g3ReUAWzgEAxQ
-         h8oDjUYoliLwn6CPIEy7e3ag4rYe5Iin4KtQxtjTJ/DZpjoOCyhQ7uilDRnBzuSAKYYR
-         beoxsMfzfObXm1qloGCorDfw3iND2Qd1KGZ/o=
-MIME-Version: 1.0
-In-Reply-To: <1253690346-17865-1-git-send-email-anuj.aggarwal@ti.com>
-References: <1253690346-17865-1-git-send-email-anuj.aggarwal@ti.com>
-Date: Wed, 23 Sep 2009 13:54:30 +0530
-X-Google-Sender-Auth: fa2c9b0b34c6dfe9
-Message-ID: <618f0c910909230124q773b90f6xd377e67a758e1237@mail.gmail.com>
-Subject: Re: [PATCH] SDMA: Fixing bug in omap_dma_set_global_params()
-From: Venkatraman S <svenkatr@ti.com>
-To: Anuj Aggarwal <anuj.aggarwal@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 23 Sep 2009 04:26:42 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49566 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754504AbZIWI0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 04:26:41 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+JNzRCCQCJR/f/OgHTxkGDuIa9XdofqpmL1raLN+
+	jurAeOa2o5U+5i
+Subject: Re: mailing list for trace users
+From: Mike Galbraith <efault@gmx.de>
+To: Avi Kivity <avi@redhat.com>
+Cc: rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>, postmaster@vger.kernel.org
+In-Reply-To: <4AB9221A.8010507@redhat.com>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>
+	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>
+	 <4AB8BA37.4010305@redhat.com> <1253620488.13917.29.camel@marge.simson.net>
+	 <1253627604.7272.17.camel@marge.simson.net>  <4AB8D930.1090308@redhat.com>
+	 <1253646556.7240.4.camel@marge.simson.net>  <4AB9221A.8010507@redhat.com>
+Content-Type: text/plain
+Date: Wed, 23 Sep 2009 10:26:40 +0200
+Message-Id: <1253694400.8155.30.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 12:49 PM, Anuj Aggarwal <anuj.aggarwal@ti.com> wrote:
-> Argument tparams was not being used to program
-> global register GCR.HI_THREAD_RESERVED. This patch fixes the same.
->
-> Signed-off-by: Anuj Aggarwal <anuj.aggarwal@ti.com>
-> ---
->  arch/arm/plat-omap/dma.c |   13 +++++++------
->  1 files changed, 7 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/arm/plat-omap/dma.c b/arch/arm/plat-omap/dma.c
-> index bf08634..7a7b6df 100644
-> --- a/arch/arm/plat-omap/dma.c
-> +++ b/arch/arm/plat-omap/dma.c
-> @@ -829,10 +829,10 @@ EXPORT_SYMBOL(omap_free_dma);
->  *
->  * @param arb_rate
->  * @param max_fifo_depth
-> - * @param tparams - Number of thereads to reserve : DMA_THREAD_RESERVE_NORM
-> - *                                                 DMA_THREAD_RESERVE_ONET
-> - *                                                 DMA_THREAD_RESERVE_TWOT
-> - *                                                 DMA_THREAD_RESERVE_THREET
-> + * @param tparams - Number of threads to reserve : DMA_THREAD_RESERVE_NORM
-> + *                                                DMA_THREAD_RESERVE_ONET
-> + *                                                DMA_THREAD_RESERVE_TWOT
-> + *                                                DMA_THREAD_RESERVE_THREET
->  */
->  void
->  omap_dma_set_global_params(int arb_rate, int max_fifo_depth, int tparams)
-> @@ -847,8 +847,9 @@ omap_dma_set_global_params(int arb_rate, int max_fifo_depth, int tparams)
->        if (arb_rate == 0)
->                arb_rate = 1;
->
-> -       reg = (arb_rate & 0xff) << 16;
-> -       reg |= (0xff & max_fifo_depth);
-> +       reg = 0xff & max_fifo_depth;
-> +       reg |= (0x3 & tparams) << 12;
-> +       reg |= (arb_rate & 0xff) << 16;
->
->        dma_write(reg, GCR);
->  }
+On Tue, 2009-09-22 at 22:14 +0300, Avi Kivity wrote:
+> On 09/22/2009 10:09 PM, Mike Galbraith wrote:
+> > On Tue, 2009-09-22 at 17:03 +0300, Avi Kivity wrote:
+> >    
+> >> On 09/22/2009 04:53 PM, Mike Galbraith wrote:
+> >>      
+> >>> Parses fine here, and INSTALL_MOD_STRIP=1 made zero difference.  can you
+> >>> send me that module and .config gzipped up?
+> >>>
+> >>>
+> >>>        
+> >> Sent privately.
+> >>      
+> > I can reproduce with your config, so do don't (thankfully) need to rip
+> > binary apart looking for tools things.  Will take a look.
+> >    
+> 
+> Thanks!  While trace/perf still have some rough edges, they've already 
+> proven incredibly valuable for debugging and performance analysis.
 
-max_fifo_depth should not be set to zero. Perhaps it deserves a check
-similar to arb_rate ?
+Heh, fixed that... pass the baggies please ;-)
+
+With your config, symbols were being loaded twice.  Parsing of vmlinux
+and modules goes fine.  Unless there are no modules currently loaded, or
+_the last module scanned isn't loaded_ that is.  dso__load_modules()
+then returns 0, and we fall back to kallsyms.. making a mess.
+
+Anyway, there's some other bustage with your config, so I'm going to
+have to do more symbol table debugging/validation.
+
+	-Mike
+
