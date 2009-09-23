@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZIWHdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbZIWHdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZIWHdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 03:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbZIWHdR
+	id S1754443AbZIWHdM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 03:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbZIWHdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 03:33:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:59654 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 03:33:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33699 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754365AbZIWHdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 03:33:14 -0400
-Message-ID: <4AB9CE66.1030504@redhat.com>
-Date: Wed, 23 Sep 2009 09:29:42 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1754344AbZIWHdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 03:33:05 -0400
+Date: Wed, 23 Sep 2009 09:32:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Chris Malley <mail@chrismalley.co.uk>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: perf sched record hangs machine
+Message-ID: <20090923073253.GA18022@elte.hu>
+References: <7863dc4c0909221409v7893bfd3o4b590d5951a233ba@mail.gmail.com> <20090922212453.GB6062@nowhere> <1253686585.7695.84.camel@twins>
 MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	 <20090919224430.GB9567@kroah.com>	 <1253419185.3253.21.camel@ank32.eng.vmware.com>	 <20090920074247.GA5733@elte.hu> <1253647845.10565.20.camel@ank32.eng.vmware.com>
-In-Reply-To: <1253647845.10565.20.camel@ank32.eng.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253686585.7695.84.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/22/09 21:30, Alok Kataria wrote:
-> Hi Ingo,
->
-> On Sun, 2009-09-20 at 00:42 -0700, Ingo Molnar wrote:
->
->>
->> The thing is, the overwhelming majority of vmware users dont benefit
->> from hardware features like nested page tables yet. So this needs to be
->> done _way_ more carefully, with a proper sunset period of a couple of
->> kernel cycles.
->
-> I am fine with that too. Below is a patch which adds notes in
-> feature-removal-schedule.txt, I have marked it for removal from 2.6.34.
-> Please consider this patch for 2.6.32.
 
-Hmm.  Given that you are talking about vmi not being supported any more 
-in *future* products, there is a huge installed base with vmi support 
-available, right?  I don't think we should zap the code that quickly.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
->   config VMI
-> -	bool "VMI Guest support"
-> -	select PARAVIRT
-> -	depends on X86_32
-> +	bool "VMI Guest support [will be deprecated soon]"
-> +	default n
-> +	depends on X86_32&&  PARAVIRT
->   	---help---
->   	  VMI provides a paravirtualized interface to the VMware ESX server
->   	  (it could be used by other hypervisors in theory too, but is not
->   	  at the moment), by linking the kernel to a GPL-ed ROM module
->   	  provided by the hypervisor.
-> +	  VMware has started a phased retirement of this feature from there
-> +	  products. Please see feature-removal-schedule.txt for details.
+>         .size   default_send_IPI_self, .-default_send_IPI_self
+> 
+> Which seems to suggest that cmove is in __prepare_ICR, but I'm not 
+> sure how that can cause a page-fault, as that function is rather 
+> pointer-less.
+> 
+> Did it maybe delay evaluating apic->dest_logical that late, it appear 
+> to be the first usage of that argument?
+> 
+> Ingo, any ideas?
 
-How about adding version numbers here?  i.e. latest versions with vmi 
-support are workstation x.y, ...
+Yeah, the problem is:
 
-So people can easily figure whenever it makes sense to turn this on for 
-their environment.
+[    0.042445] Local APIC not detected. Using dummy APIC emulation.
 
-cheers
-   Gerd
+we shouldnt be trying to program the lapic in that case - all ops should 
+be a NOP, including send-ipi-self. Cyrill?
 
+	Ingo
