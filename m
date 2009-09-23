@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbZIWQlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbZIWQoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752011AbZIWQlB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 12:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZIWQlA
+	id S1752763AbZIWQoe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 12:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZIWQoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 12:41:00 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:59041 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751463AbZIWQlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 12:41:00 -0400
-Message-ID: <4ABA5004.7050903@redhat.com>
-Date: Wed, 23 Sep 2009 09:42:44 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 23 Sep 2009 12:44:32 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:51073 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbZIWQob (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 12:44:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=fS8tOYNJsLZYzAe7TSLiYEah1ZgeyaDgbDjckMFfZyvVojZEt+0CXLQqT2jFKCX1m8
+         2SEyKnZ+mvA7vAWzwBHKBmcUIw+VBOlFEF8sFKQfYv9NVAB8yv0tqMno/kKg/yprYuKd
+         auyZV1+9pbsBaLQCqnfd+2IvYs7kKcJOaxeB8=
+Date: Wed, 23 Sep 2009 09:44:27 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Marc Dionne <marc.c.dionne@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: Current git: no keyboard when booting in verbose mode
+Message-ID: <20090923164426.GB13435@core.coreip.homeip.net>
+References: <6041d2000909221754n2ee1982xe08f938a35358c00@mail.gmail.com> <alpine.LRH.2.00.0909231108100.27145@twin.jikos.cz> <6041d2000909230516g60bad387r3613927ae0d8f5a7@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL] tracing/kprobes: Kprobes core/tracing/profiling	updates
-References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com> <20090923105252.GA32176@elte.hu>
-In-Reply-To: <20090923105252.GA32176@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6041d2000909230516g60bad387r3613927ae0d8f5a7@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Wed, Sep 23, 2009 at 08:16:02AM -0400, Marc Dionne wrote:
+> On Wed, Sep 23, 2009 at 5:09 AM, Jiri Kosina <jkosina@suse.cz> wrote:
+> >
+> > [ adding some CCs ]
+> >
+> > On Tue, 22 Sep 2009, Marc Dionne wrote:
+> >
+> >> I'm having issues with the current kernel in git, and wondering if this
+> >> will ring a bell for anyone. The main symptom is that on most boots the
+> >> keyboard is not detected - the system gets to the console login prompt
+> >> but input is not recognized.  Sometimes (rarely) the keyboard will be ok
+> >> at the console, but the keyboard and mouse are non functional once in X.
+> >
+> > Are both keyboard and mouse in question PS/2?
 > 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> No - keyboard is PS/2 but the mouse is USB.
 > 
->> Hi Ingo,
->>
->> Kprobes has been nicely improved lately. The x86 instruction decoder 
->> has been fixed to support cross builds and mmx instruction set, 
->> besides of a lot of various kprobes core fixes.
->>
->> The tracing part has evolved too, we can define human names for 
->> arguments and custom subsystem names for dynamic tracepoints.
->>
->> And also kprobes profiling and raw dynamic tracepoint samples are now 
->> supported through perf. Looks like most of the kernel parts are now in 
->> place for a perf support. Things are going to be focused on a perf 
->> kprobes tool to exploit that.
+> >> - On a failed boot with no keyboard, this line is missing from dmesg:
+> >>     AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input2
+> >
+> > Could you please provide output from kernel booted with 'i8042.debug' from
+> > the failing case?
 > 
-> Nice progress. What's the expected timeline of exhaustive tools/perf/ 
-> support?
+> Attached are the dmesg output for a successful boot (with "quiet") and
+> a failed one.  I see that the i8042.debug output is quite different
+> for the 2 cases.
+> 
 
-Hi Ingo,
-
-That's under reviewing, I'll post it as soon as possible. :-)
-Now I'm considering about it's interface.
-In the 1st release, I'll use -P "probe-and-arg-definition" option
-which I suggested perviously, but it is also possible to use
--p "event" -a "arg" option which Frederic suggested.
-
-Thank you,
+Hmm, nothing obvious jumps at me... Just keyboard not responding at all
+in the bad case. Any chance of bisecting? Maybe check before first input
+merge and after?
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Dmitry
