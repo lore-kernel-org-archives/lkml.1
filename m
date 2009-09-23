@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbZIWX6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbZIWX6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752155AbZIWX6A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 19:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbZIWX57
+	id S1752496AbZIWX6s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 19:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZIWX6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 19:57:59 -0400
+	Wed, 23 Sep 2009 19:58:46 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:34745 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbZIWX54 (ORCPT
+	with ESMTP id S1751523AbZIWX55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 19:57:56 -0400
+	Wed, 23 Sep 2009 19:57:57 -0400
 X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Sep 2009 19:57:55 EDT
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -17,10 +17,10 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>
-Subject: [PATCH v18 10/80] c/r: make file_pos_read/write() public
-Date: Wed, 23 Sep 2009 19:50:50 -0400
-Message-Id: <1253749920-18673-11-git-send-email-orenl@librato.com>
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v18 11/80] pids 1/7: Factor out code to allocate pidmap page
+Date: Wed, 23 Sep 2009 19:50:51 -0400
+Message-Id: <1253749920-18673-12-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -28,56 +28,89 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These two are used in the next patch when calling vfs_read/write()
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+To implement support for clone_with_pids() system call we would
+need to allocate pidmap page in more than one place. Move this
+code to a new function alloc_pidmap_page().
+
+Changelog[v2]:
+	- (Matt Helsley, Dave Hansen) Have alloc_pidmap_page() return
+	  -ENOMEM on error instead of -1.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- fs/read_write.c    |   10 ----------
- include/linux/fs.h |   10 ++++++++++
- 2 files changed, 10 insertions(+), 10 deletions(-)
+ kernel/pid.c |   46 ++++++++++++++++++++++++++++++----------------
+ 1 files changed, 30 insertions(+), 16 deletions(-)
 
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 6c8c55d..d331975 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -359,16 +359,6 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
+diff --git a/kernel/pid.c b/kernel/pid.c
+index 31310b5..f618096 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -122,9 +122,34 @@ static void free_pidmap(struct upid *upid)
+ 	atomic_inc(&map->nr_free);
+ }
  
- EXPORT_SYMBOL(vfs_write);
- 
--static inline loff_t file_pos_read(struct file *file)
--{
--	return file->f_pos;
--}
--
--static inline void file_pos_write(struct file *file, loff_t pos)
--{
--	file->f_pos = pos;
--}
--
- SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
++static int alloc_pidmap_page(struct pidmap *map)
++{
++	void *page;
++
++	if (likely(map->page))
++		return 0;
++
++	page = kzalloc(PAGE_SIZE, GFP_KERNEL);
++
++	/*
++	 * Free the page if someone raced with us installing it:
++	 */
++	spin_lock_irq(&pidmap_lock);
++	if (map->page)
++		kfree(page);
++	else
++		map->page = page;
++	spin_unlock_irq(&pidmap_lock);
++
++	if (unlikely(!map->page))
++		return -ENOMEM;
++
++	return 0;
++}
++
+ static int alloc_pidmap(struct pid_namespace *pid_ns)
  {
- 	struct file *file;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 73e9b64..a21f175 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1548,6 +1548,16 @@ ssize_t rw_copy_check_uvector(int type, const struct iovec __user * uvector,
- 				struct iovec *fast_pointer,
- 				struct iovec **ret_pointer);
+-	int i, offset, max_scan, pid, last = pid_ns->last_pid;
++	int i, rc, offset, max_scan, pid, last = pid_ns->last_pid;
+ 	struct pidmap *map;
  
-+static inline loff_t file_pos_read(struct file *file)
-+{
-+	return file->f_pos;
-+}
+ 	pid = last + 1;
+@@ -134,21 +159,10 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ 	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
+ 	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
+ 	for (i = 0; i <= max_scan; ++i) {
+-		if (unlikely(!map->page)) {
+-			void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
+-			/*
+-			 * Free the page if someone raced with us
+-			 * installing it:
+-			 */
+-			spin_lock_irq(&pidmap_lock);
+-			if (map->page)
+-				kfree(page);
+-			else
+-				map->page = page;
+-			spin_unlock_irq(&pidmap_lock);
+-			if (unlikely(!map->page))
+-				break;
+-		}
++		rc = alloc_pidmap_page(map);
++		if (rc)
++			break;
 +
-+static inline void file_pos_write(struct file *file, loff_t pos)
-+{
-+	file->f_pos = pos;
-+}
-+
- extern ssize_t vfs_read(struct file *, char __user *, size_t, loff_t *);
- extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
- extern ssize_t vfs_readv(struct file *, const struct iovec __user *,
+ 		if (likely(atomic_read(&map->nr_free))) {
+ 			do {
+ 				if (!test_and_set_bit(offset, map->page)) {
 -- 
 1.6.0.4
 
