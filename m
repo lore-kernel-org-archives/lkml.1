@@ -1,180 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371AbZIWThj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751389AbZIWTkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752371AbZIWThj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 15:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbZIWThi
+	id S1751389AbZIWTkL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 15:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZIWTkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 15:37:38 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:44604 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbZIWThg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 15:37:36 -0400
-Message-ID: <4ABA78DC.7070604@redhat.com>
-Date: Wed, 23 Sep 2009 22:37:00 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Wed, 23 Sep 2009 15:40:09 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:58221 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbZIWTkJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 15:40:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fgmzdtr7pzKLPFmahqmeLtU4kC7g3Dtyaieh0o+5ilc66LQjSrpYBkwfF/xZRoiwOt
+         YdvFJ4bYx11E3mgxu9hyW5J+4Kzum6opQVkh75kfYbgPx8EQyaqff0Cf1AL+TVwrawZY
+         Q5vpNA6oNJ2WjFKU194PwRlodHp728LpyDjAo=
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com> <4AB10B67.2050108@redhat.com> <4AB13B09.5040308@gmail.com> <4AB151D7.10402@redhat.com> <4AB1A8FD.2010805@gmail.com> <20090921214312.GJ7182@ovro.caltech.edu> <4AB89C48.4020903@redhat.com> <4ABA3005.60905@gmail.com> <4ABA32AF.50602@redhat.com> <4ABA3A73.5090508@gmail.com> <4ABA61D1.80703@gmail.com>
-In-Reply-To: <4ABA61D1.80703@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090923193020.GA20934@elte.hu>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+	 <20090922.153201.225375909.davem@davemloft.net>
+	 <20090923114725.GB4132@elte.hu>
+	 <20090923.111444.247045711.davem@davemloft.net>
+	 <20090923193020.GA20934@elte.hu>
+Date: Wed, 23 Sep 2009 21:40:12 +0200
+Message-ID: <520f0cf10909231240g11f5cafei5cbb4ed494eba76d@mail.gmail.com>
+Subject: Re: mailing list for trace users
+From: John Kacur <jkacur@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, a.p.zijlstra@chello.nl,
+       fweisbec@gmail.com, acme@redhat.com, mhiramat@redhat.com,
+       postmaster@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23/2009 08:58 PM, Gregory Haskins wrote:
+On Wed, Sep 23, 2009 at 9:30 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * David Miller <davem@davemloft.net> wrote:
+>
+>> From: Ingo Molnar <mingo@elte.hu>
+>> Date: Wed, 23 Sep 2009 13:47:25 +0200
 >>
->>> It also pulls parts of the device model into the host kernel.
->>>        
->> That is the point.  Most of it needs to be there for performance.
->>      
-> To clarify this point:
+>> > Could you please also create the linux-perf-users list, for perf
+>> > events and the perf tool related user questions? (We have asked for
+>> > this before but must have gotten lost somewhere)
+>>
+>> I think your communities are similar enough and small enough that you
+>> could share this list.
 >
-> There are various aspects about designing high-performance virtual
-> devices such as providing the shortest paths possible between the
-> physical resources and the consumers.  Conversely, we also need to
-> ensure that we meet proper isolation/protection guarantees at the same
-> time.  What this means is there are various aspects to any
-> high-performance PV design that require to be placed in-kernel to
-> maximize the performance yet properly isolate the guest.
+> It's two separate subsystems. There's a lot of non-tracing aspects of
+> performance events: it does profiling, counting, latency analysis, etc.
+> The tool is named 'perf', the subsystem is named 'performance events',
+> and the most typical workflows dont do any tracing.
 >
-> For instance, you are required to have your signal-path (interrupts and
-> hypercalls), your memory-path (gpa translation), and
-> addressing/isolation model in-kernel to maximize performance.
->    
-
-Exactly.  That's what vhost puts into the kernel and nothing more.
-
-> Vbus accomplishes its in-kernel isolation model by providing a
-> "container" concept, where objects are placed into this container by
-> userspace.  The host kernel enforces isolation/protection by using a
-> namespace to identify objects that is only relevant within a specific
-> container's context (namely, a "u32 dev-id").  The guest addresses the
-> objects by its dev-id, and the kernel ensures that the guest can't
-> access objects outside of its dev-id namespace.
->    
-
-vhost manages to accomplish this without any kernel support.  The guest 
-simply has not access to any vhost resources other than the guest->host 
-doorbell, which is handed to the guest outside vhost (so it's somebody 
-else's problem, in userspace).
-
-> All that is required is a way to transport a message with a "devid"
-> attribute as an address (such as DEVCALL(devid)) and the framework
-> provides the rest of the decode+execute function.
->    
-
-vhost avoids that.
-
-> Contrast this to vhost+virtio-pci (called simply "vhost" from here).
->    
-
-It's the wrong name.  vhost implements only the data path.
-
-> It is not immune to requiring in-kernel addressing support either, but
-> rather it just does it differently (and its not as you might expect via
-> qemu).
+> And i beg to differ about the size of the communities. It's just been
+> added upstream...
 >
-> Vhost relies on QEMU to render PCI objects to the guest, which the guest
-> assigns resources (such as BARs, interrupts, etc).
-
-vhost does not rely on qemu.  It relies on its user to handle 
-configuration.  In one important case it's qemu+pci.  It could just as 
-well be the lguest launcher.
-
->    A PCI-BAR in this
-> example may represent a PIO address for triggering some operation in the
-> device-model's fast-path.  For it to have meaning in the fast-path, KVM
-> has to have in-kernel knowledge of what a PIO-exit is, and what to do
-> with it (this is where pio-bus and ioeventfd come in).  The programming
-> of the PIO-exit and the ioeventfd are likewise controlled by some
-> userspace management entity (i.e. qemu).   The PIO address and value
-> tuple form the address, and the ioeventfd framework within KVM provide
-> the decode+execute function.
->    
-
-Right.
-
-> This idea seemingly works fine, mind you, but it rides on top of a *lot*
-> of stuff including but not limited to: the guests pci stack, the qemu
-> pci emulation, kvm pio support, and ioeventfd.  When you get into
-> situations where you don't have PCI or even KVM underneath you (e.g. a
-> userspace container, Ira's rig, etc) trying to recreate all of that PCI
-> infrastructure for the sake of using PCI is, IMO, a lot of overhead for
-> little gain.
->    
-
-For the N+1th time, no.  vhost is perfectly usable without pci.  Can we 
-stop raising and debunking this point?
-
-> All you really need is a simple decode+execute mechanism, and a way to
-> program it from userspace control.  vbus tries to do just that:
-> commoditize it so all you need is the transport of the control messages
-> (like DEVCALL()), but the decode+execute itself is reuseable, even
-> across various environments (like KVM or Iras rig).
->    
-
-If you think it should be "commodotized", write libvhostconfig.so.
-
-> And your argument, I believe, is that vbus allows both to be implemented
-> in the kernel (though to reiterate, its optional) and is therefore a bad
-> design, so lets discuss that.
+> Also, what is the policy for adding new lists to vger.kernel.org? If a
+> subsystem maintainer asks for a list named after a core kernel
+> subsystem, how frequently is it rejected, and on what basis?
 >
-> I believe the assertion is that things like config-space are best left
-> to userspace, and we should only relegate fast-path duties to the
-> kernel.  The problem is that, in my experience, a good deal of
-> config-space actually influences the fast-path and thus needs to
-> interact with the fast-path mechanism eventually anyway.
-> Whats left
-> over that doesn't fall into this category may cheaply ride on existing
-> plumbing, so its not like we created something new or unnatural just to
-> support this subclass of config-space.
->    
-
-Flexibility is reduced, because changing code in the kernel is more 
-expensive than in userspace, and kernel/user interfaces aren't typically 
-as wide as pure userspace interfaces.  Security is reduced, since a bug 
-in the kernel affects the host, while a bug in userspace affects just on 
-guest.
-
-Example: feature negotiation.  If it happens in userspace, it's easy to 
-limit what features we expose to the guest.  If it happens in the 
-kernel, we need to add an interface to let the kernel know which 
-features it should expose to the guest.  We also need to add an 
-interface to let userspace know which features were negotiated, if we 
-want to implement live migration.  Something fairly trivial bloats rapidly.
-
-> For example: take an attribute like the mac-address assigned to a NIC.
-> This clearly doesn't need to be in-kernel and could go either way (such
-> as a PCI config-space register).
+> I find it sad that such an arbitrary looking negative decision from you
+> forces a user list away from vger. I wouldnt mind it to be closed if it
+> has no significant traffic after a year or lifetime or so - many vger
+> lists have almost no traffic to begin with.
 >
-> As another example: consider an option bit that enables a new feature
-> that affects the fast-path, like RXBUF merging.  If we use the split
-> model where config space is handled by userspace and fast-path is
-> in-kernel, the userspace component is only going to act as a proxy.
-> I.e. it will pass the option down to the kernel eventually.  Therefore,
-> there is little gain in trying to split this type of slow-path out to
-> userspace.  In fact, its more work.
->    
+> Also, i cannot help but to observe the fact that you've fought the
+> original perfcounters project in a very ugly and public way less than a
+> year ago. Dont you think that you 'deciding' this matter in such a
+> negative fashion is a conflict of interest?
+>
+>        Ingo
 
-As you can see above, userspace needs to be involved in this, and the 
-number of interfaces required is smaller if it's in userspace: you only 
-need to know which features the kernel supports (they can be enabled 
-unconditionally, just not exposed).
+Yikes - Ingo, I don't want to spawn a long thread here about what to
+call the list, but
+as a native English speaker, I think that "linux-trace-users" sounds
+much nicer than
+"linux-tracing-users".
 
-Further, some devices are perfectly happy to be implemented in 
-userspace, so we need userspace configuration support anyway.  Why 
-reimplement it in the kernel?
+Perhaps, trace is an adjective describing the kind of users, in any
+case, it doesn't
+sound like "one trace" - so, could we go this one?
+(if you insist on linux-tracing then you have to drop the word "users")
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+John
