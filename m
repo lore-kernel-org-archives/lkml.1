@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZIWJPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbZIWJQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZIWJPG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 05:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZIWJPF
+	id S1753189AbZIWJQD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 05:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZIWJQC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 05:15:05 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:6196 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbZIWJPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 05:15:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=nx8hsMjxkqrB0svj7koA5p8pksGYvLW+oLTxRtuOuWKUATh8gEx+vap/IDOTi4Nkpw
-         g9tmpifAHAe/p6fTEuw8ec+ZolgJflCOeIb1/Gd8Y7MO+GxmbooXKqxKWKI3YL2Djb+c
-         Q44VcoTYVrsJyHyqruyWgcr4jzMBIyX86/of4=
+	Wed, 23 Sep 2009 05:16:02 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36365 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752033AbZIWJQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 05:16:00 -0400
+Date: Wed, 23 Sep 2009 11:15:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Mike Galbraith <efault@gmx.de>,
+       rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [perf] Finding uninstalled modules Was Re: mailing list for
+	trace users
+Message-ID: <20090923091549.GB21748@elte.hu>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com> <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net> <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net> <4AB8BA37.4010305@redhat.com> <20090922201746.GH5216@ghostprotocols.net> <4AB9DCC8.5050603@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <aa79d98a0909230148j47232382oe28c6d88eef181c4@mail.gmail.com>
-References: <7863dc4c0909221409v7893bfd3o4b590d5951a233ba@mail.gmail.com>
-	 <20090922212453.GB6062@nowhere> <1253686585.7695.84.camel@twins>
-	 <20090923073253.GA18022@elte.hu> <20090923074028.GA3078@elte.hu>
-	 <aa79d98a0909230044q3548cf0bjda62e05e0400edd6@mail.gmail.com>
-	 <aa79d98a0909230148j47232382oe28c6d88eef181c4@mail.gmail.com>
-Date: Wed, 23 Sep 2009 10:15:07 +0100
-X-Google-Sender-Auth: 2ab58a6bc9a95fe6
-Message-ID: <7863dc4c0909230215u2fed3edciec84f93f24d3ae1@mail.gmail.com>
-Subject: Re: perf sched record hangs machine
-From: Chris Malley <mail@chrismalley.co.uk>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB9DCC8.5050603@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/23 Cyrill Gorcunov <gorcunov@gmail.com>:
+
+* Avi Kivity <avi@redhat.com> wrote:
+
+> On 09/22/2009 11:17 PM, Arnaldo Carvalho de Melo wrote:
+>>
+>>> $ perf annotate -v -v -k ~avi/kvm/linux-2.6/vmlinux -m vmx_vcpu_run  |
+>>>      
+>> Here is the problem, he is passing a vmlinux, that way we don't parse
+>> /proc/kallsyms, so no module symbols, he uses -m to load the modules
+>> symbols but mod_dso__load_module_paths only looks at /lib/modules/, i.e.
+>> installed modules.
+>>
+>> I guess Avi hasn't installed modules, right? So the right fix for 
+>> this case is to figure out where modules are from the path given to 
+>> -k, i.e. we first use ~avi/kvm/linux-2.6/ as the modules path prefix 
+>> and then fallback to /lib/modules if we can't find modules there, 
+>> right?
 >
-> Btw, meanwhile Chris may try to pass lapic boot-option in attempt to
-> reenable apic via msr registers. Also (iirc) i feel we may be hiding
-> errors if complete noop apic would be used since i belive we need to
-> check out under which condition a particular operation is called and
-> when apic is disabled it's mean we're switched to UP mode and
-> inter-cpu interrupts are under suspicion too. Will take a look during
-> ~6 hours ;)
->
+> Modules were installed (I always load them with modprobe).  It's 
+> possible that the installed modules were a later version than the 
+> loaded modules, but Mike's reply leads me to believe there was a real 
+> bug there.
 
-Hi Cyrill
+Yes, definitely - 'perf annotate' not giving you what you expected is a 
+bug by definition - regardless of how you build your kernel, how you 
+loaded your modules and how the symbols and tables are distributed 
+across the system.
 
-Heh, yes that just occurred to me as well.  With the lapic boot option
-I can't reproduce the problem, and get a good recording every time.
-Don't know why the BIOS had disabled it (can't see any specific
-option).
-
-cheers
-Chris
+	Ingo
