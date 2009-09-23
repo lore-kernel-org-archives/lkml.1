@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbZIWU7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbZIWVGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752710AbZIWU7r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 16:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZIWU7q
+	id S1752650AbZIWVGM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 17:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZIWVGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 16:59:46 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:56859 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752425AbZIWU7p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 16:59:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=q0wKR4MkQBZeQahXF/3LaOWJO9zlLsFlzhPAmUh/V/1LjpOKFsIWd2wTE5U+VPhOfp
-         41qgFv2F0oE15igVq5RSvHdRDFFMjGQBXrGLggYu6NNQo3qJE+jVet0/5ZlCPbaTghFA
-         NMFO11o2hl8w132xKa298DNqo/3al4ED+T8Qg=
+	Wed, 23 Sep 2009 17:06:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53005 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751105AbZIWVGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 17:06:11 -0400
+Date: Wed, 23 Sep 2009 23:05:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jason Wessel <jason.wessel@windriver.com>, Len Brown <lenb@kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [origin tree boot hang] [PATCH] Revert "early_printk: Allow
+	morethan one early console"
+Message-ID: <20090923210555.GA13492@elte.hu>
+References: <20090923135539.GA6542@kroah.com> <20090923173709.GA18056@elte.hu> <4ABA6182.1000106@windriver.com> <20090923190239.GC24251@elte.hu> <20090923191756.GA25163@elte.hu>
 MIME-Version: 1.0
-Date: Wed, 23 Sep 2009 21:59:47 +0100
-Message-ID: <5a44caba0909231359q5835a293h24882e7f22b0db95@mail.gmail.com>
-Subject: PATCH 1/1: rt2x00dev.c / rt2x00lib.h fixes build breakage
-From: Ken Lewis <kennylewis@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>
-Content-Type: multipart/mixed; boundary=0016364d1da1c05d37047444fe54
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090923191756.GA25163@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0010]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016364d1da1c05d37047444fe54
-Content-Type: text/plain; charset=ISO-8859-1
 
-The headers in drivers/net/wireless/rt2x00/rt2x00lib.h don't match the
-use of the function in rt2x00dev.c  The build fails as a result.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-This has been a problem in linux-next since early September.  I've
-e-mailed a patch to linux-next and to linux-net, but the 2.6.32 merge
-window has brought the problem to the mainline and so I'm re-sending
-my patch.  I've opened a bug on bugzilla:
-http://bugzilla.kernel.org/show_bug.cgi?id=14217
 
-Take care.
-Ken
+> The commit point to which the attached config and bootlog belongs is:
+> 
+>   2.6.31-07863-gb64ada6
+> 
+> Reverting:
+> 
+>   c953094: early_printk: Allow more than one early console
+> 
+> solves it.
 
---0016364d1da1c05d37047444fe54
-Content-Type: text/x-diff; charset=US-ASCII; name="diff-fix-for-rt2x00lib.h.patch"
-Content-Disposition: attachment; filename="diff-fix-for-rt2x00lib.h.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fzyk4zkw0
+btw., the boot options are:
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L3dpcmVsZXNzL3J0MngwMC9ydDJ4MDBsaWIuaCBiL2Ry
-aXZlcnMvbmV0L3dpcmVsZXNzL3J0MngwMC9ydDJ4MDBsaWIuaAppbmRleCA1NDYyY2I1Li41Njdm
-MDI5IDEwMDY0NAotLS0gYS9kcml2ZXJzL25ldC93aXJlbGVzcy9ydDJ4MDAvcnQyeDAwbGliLmgK
-KysrIGIvZHJpdmVycy9uZXQvd2lyZWxlc3MvcnQyeDAwL3J0MngwMGxpYi5oCkBAIC0zODAsNyAr
-MzgwLDcgQEAgc3RhdGljIGlubGluZSB2b2lkIHJ0MngwMGNyeXB0b190eF9pbnNlcnRfaXYoc3Ry
-dWN0IHNrX2J1ZmYgKnNrYiwKIHsKIH0KIAotc3RhdGljIGlubGluZSB2b2lkIHJ0MngwMGNyeXB0
-b19yeF9pbnNlcnRfaXYoc3RydWN0IHNrX2J1ZmYgKnNrYiwgYm9vbCBsMnBhZCwKK3N0YXRpYyBp
-bmxpbmUgdm9pZCBydDJ4MDBjcnlwdG9fcnhfaW5zZXJ0X2l2KHN0cnVjdCBza19idWZmICpza2Is
-CiAJCQkJCSAgICAgdW5zaWduZWQgaW50IGhlYWRlcl9sZW5ndGgsCiAJCQkJCSAgICAgc3RydWN0
-IHJ4ZG9uZV9lbnRyeV9kZXNjICpyeGRlc2MpCiB7Cg==
---0016364d1da1c05d37047444fe54--
+Command line: root=/dev/sda6 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200 debug
+initcall_debug apic=verbose sysrq_always_enabled ignore_loglevel 
+selinux=0 nmi_watchdog=0 panic=1 3
+
+So it's nothing out of the ordinary - typical early-printk use: handover 
+from earlyprintk serial console to the real serial console.
+
+	Ingo
