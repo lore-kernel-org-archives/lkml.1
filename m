@@ -1,95 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZIWX2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZIWXii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbZIWX2z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 19:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZIWX2x
+	id S1752125AbZIWXii (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 19:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbZIWXii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 19:28:53 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:60610 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752083AbZIWX2w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 19:28:52 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar4EAN9LukpMROOX/2dsb2JhbACBUdVIhBsF
-Date: Wed, 23 Sep 2009 19:28:55 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
-	energy
-Message-ID: <20090923232855.GB9621@Krystal>
-References: <20090923174820.GA12827@Krystal> <4ABA631A.8030306@nortel.com> <20090923190337.GA16983@Krystal> <20090923223204.GA2921@Krystal> <4ABAAB4F.2060905@nortel.com>
+	Wed, 23 Sep 2009 19:38:38 -0400
+Received: from sh.osrg.net ([192.16.179.4]:34315 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750986AbZIWXih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 19:38:37 -0400
+Date: Thu, 24 Sep 2009 08:37:14 +0900
+To: neilb@suse.de
+Cc: fujita.tomonori@lab.ntt.co.jp, lmb@suse.de, lars.ellenberg@linbit.com,
+       arjan@infradead.org, jens.axboe@oracle.com, hch@infradead.org,
+       James.Bottomley@suse.de, linux-kernel@vger.kernel.org,
+       drbd-dev@lists.linbit.com, akpm@linux-foundation.org,
+       bart.vanassche@gmail.com, davej@redhat.com, gregkh@suse.de,
+       kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
+       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
+       philipp.reisner@linbit.com, sam@ravnborg.org, Mauelshagen@redhat.com
+Subject: Re: [GIT PULL] DRBD for 2.6.32
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <19130.43495.807916.962040@notabene.brown>
+References: <20090922062034.GE22732@suse.de>
+	<20090923203531C.fujita.tomonori@lab.ntt.co.jp>
+	<19130.43495.807916.962040@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <4ABAAB4F.2060905@nortel.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 19:25:09 up 36 days, 10:14,  2 users,  load average: 0.07, 0.14,
-	0.16
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <20090924083617J.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 24 Sep 2009 08:37:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chris Friesen (cfriesen@nortel.com) wrote:
-> On 09/23/2009 04:32 PM, Mathieu Desnoyers wrote:
+On Thu, 24 Sep 2009 09:06:15 +1000
+Neil Brown <neilb@suse.de> wrote:
+
+> On Wednesday September 23, fujita.tomonori@lab.ntt.co.jp wrote:
+> > On Tue, 22 Sep 2009 08:20:34 +0200
+> > Lars Marowsky-Bree <lmb@suse.de> wrote:
+> > 
+> > > On 2009-09-22T07:27:21, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > 
+> > > > > If it happens, once that happens, that _will_ be an ABI break.
+> > > > 
+> > > > You misunderstand the raid unification.
+> > > > 
+> > > > We will not unify the kernel<->userspace configuration interface
+> > > > because we can't break the kernel<->userspace ABI.
+> > > 
+> > > I disagree here. Who says we can't over time, and with due notice?
+> > > 
+> > > For sure, the new ABI needs to co-exist with the old ones for a while,
+> > > until it is proven and fully complete, but then, why can't the old one
+> > > be marked as depreciated and phased out over 1-2 years time?
+> > 
+> > Let me know If you find a Linux storage developer who say, "Yeah, we
+> > can remove the md ABI over 1-2 years time after the raid unification".
 > 
+> I would have said 3-5 years, that being about the time frame for
+> enterprise releases, and it would be best if every enterprise vendor
+
+Enterprise vendors don't pick up the latest kernel. So I think that we
+need more.
+
+
+> got to have a release that supported both the old and the new
+> interface.  But I don't have a problem with migrating to a better ABI
+> is we actually had a better ABI.
+> > 
+> > Seems that you have a very different idea from other kernel developers
+> > about the stable ABI.
 > 
-> > /*
-> >  * Defer thread waiting. Single thread.
-> >  */
-> > static void wait_defer(void)
-> > {
-> >         atomic_dec(&defer_thread_futex);
-> >         smp_mb();       /* Write futex before read queue */
-> >         if (rcu_defer_num_callbacks()) {
-> >                 smp_mb();       /* Read queue before write futex */
-> >                 /* Callbacks are queued, don't wait. */
-> >                 atomic_set(&defer_thread_futex, 0);
-> >         } else {
-> >                 smp_rmb();      /* Read queue before read futex */
-> >                 if (atomic_read(&defer_thread_futex) == -1)
-> >                         futex(&defer_thread_futex, FUTEX_WAIT, -1,
-> >                               NULL, NULL, 0);
-> >         }
-> > }
+> CONFIG_SYSFS_DEPRECATED_V2  seems to suggest that other kernel
+> developers understand that we sometimes make mistakes and need to
+> deprecate them.
+
+Yeah, however, we can try not to make mistakes.
+
+
+> However I think this is all very premature as there is even a coherent
+> proposal for what unification might look like, let alone broad
+> agreement or implementation.  I would *much* rather we spent our
+> energies debating that than debating whether or not DRBD should get
+> merged.... Maybe would should only accept votes on "Should DRBD get
+> merged" from people provide constructive input to the question "what
+> would a unified virtual block device model look like".
 > 
-> > The goal here is that if call_rcu() enqueues a callback (even if it
-> > races with defer thread going to sleep), there should not be a
-> > potentially infinite delay before it gets executed.
+> > 
+> > Improving the existing framework is a proper approach.
 > 
-> It doesn't seem like the test for the number of callbacks should be
-> necessary.  I don't see anything like that in the glibc code, nor do I
-> remember anything like that in the futex sample code.
-> 
+> Yes.  So let's do it.
 
-The mutex code (and usual futex users) use futex to implement mutual
-exclusion.  My goal is to send a wakeup signal to a thread waiting for
-work to perform when adding such work. But without any mutual exclusion.
-
-So it is understandable that glibc code or futex sample code does not
-cover that, given this use is, well, creative. ;)
-
-> I'm still not totally convinced that you can avoid race conditions
-> without using atomic test-and-set or compare-and-exchange.  I haven't
-> sat down and worked it out completely though.
-> 
-
-Yes.. this is heavily dependent on the states and values which can be
-reached. I should probably take time to create a promela model and run
-that though the spin model checker to be sure.
-
-Thanks for the comments,
-
-Mathieu
-
-> Chris
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+So we should implement something like drbd on the top of dm framework,
+one of the existing 'virtual device' frameworks. That would improve dm
+and we could get better ideas about "what would a unified virtual
+block device model look like".
