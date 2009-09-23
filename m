@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZIXAm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbZIXAat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbZIXAm2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbZIXAmZ
+	id S1754101AbZIXAat (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZIXAar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:42:25 -0400
-Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39156 "EHLO
+	Wed, 23 Sep 2009 20:30:47 -0400
+Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbZIXA3Y (ORCPT
+	with ESMTP id S1753925AbZIXAaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:24 -0400
+	Wed, 23 Sep 2009 20:30:11 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>
-Subject: [PATCH v18 43/80] c/r: dump anonymous- and file-mapped- shared memory
-Date: Wed, 23 Sep 2009 19:51:23 -0400
-Message-Id: <1253749920-18673-44-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 44/80] c/r: restore anonymous- and file-mapped- shared memory
+Date: Wed, 23 Sep 2009 19:51:24 -0400
+Message-Id: <1253749920-18673-45-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -27,532 +27,324 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We now handle anonymous and file-mapped shared memory. Support for IPC
-shared memory requires support for IPC first. We extend ckpt_write_vma()
-to detect shared memory VMAs and handle it separately than private
-memory.
+The bulk of the work is in ckpt_read_vma(), which has been refactored:
+the part that create the suitable 'struct file *' for the mapping is
+now larger and moved to a separate function. What's left is to read
+the VMA description, get the file pointer, create the mapping, and
+proceed to read the contents in.
 
-There is not much to do for file-mapped shared memory, except to force
-msync() on the region to ensure that the file system is consistent
-with the checkpoint image. Use our internal type CKPT_VMA_SHM_FILE.
+Both anonymous shared VMAs that have been read earlier (as indicated
+by a look up to objhash) and file-mapped shared VMAs are skipped.
+Anonymous shared VMAs seen for the first time have their contents
+read in directly to the backing inode, as indexed by the page numbers
+(as opposed to virtual addresses).
 
-Anonymous shared memory is always backed by inode in shmem filesystem.
-We use that inode to look up the VMA in the objhash and register it if
-not found (on first encounter). In this case, the type of the VMA is
-CKPT_VMA_SHM_ANON, and we dump the contents. On the other hand, if it is
-found there, we must have already saved it before, so we change the
-type to CKPT_VMA_SHM_ANON_SKIP and skip it.
-
-To dump the contents of a shmem VMA, we loop through the pages of the
-inode in the shmem filesystem, and dump the contents of each dirty
-(allocated) page - unallocated pages must be clean.
-
-Note that we save the original size of a shmem VMA because it may have
-been re-mapped partially. The format itself remains like with private
-VMAs, except that instead of addresses we record _indices_ (page nr)
-into the backing inode.
-
-Changelog[v18]:
-  - Mark the backing file as visited at chekcpoint
+Changelog[v14]:
+  - Introduce patch
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/memory.c            |  143 +++++++++++++++++++++++++++++++++++----
- checkpoint/objhash.c           |   17 +++++
- include/linux/checkpoint.h     |   15 +++--
- include/linux/checkpoint_hdr.h |    8 ++
- mm/filemap.c                   |   39 +++++++++++-
- mm/mmap.c                      |    2 +-
- mm/shmem.c                     |   35 ++++++++++
- 7 files changed, 236 insertions(+), 23 deletions(-)
+ checkpoint/memory.c        |   66 ++++++++++++++++++++++++++++++++-----------
+ include/linux/checkpoint.h |    6 ++++
+ include/linux/mm.h         |    2 +
+ mm/filemap.c               |   13 ++++++++-
+ mm/shmem.c                 |   49 ++++++++++++++++++++++++++++++++
+ 5 files changed, 118 insertions(+), 18 deletions(-)
 
 diff --git a/checkpoint/memory.c b/checkpoint/memory.c
-index 6a0dfaf..697896f 100644
+index 697896f..f765993 100644
 --- a/checkpoint/memory.c
 +++ b/checkpoint/memory.c
-@@ -21,6 +21,7 @@
- #include <linux/pagemap.h>
- #include <linux/mm_types.h>
- #include <linux/proc_fs.h>
-+#include <linux/swap.h>
- #include <linux/checkpoint.h>
- #include <linux/checkpoint_hdr.h>
- 
-@@ -281,6 +282,54 @@ static struct page *consider_private_page(struct vm_area_struct *vma,
+@@ -849,13 +849,36 @@ static int restore_read_page(struct ckpt_ctx *ctx, struct page *page, void *p)
+ 	return 0;
  }
  
- /**
-+ * consider_shared_page - return page pointer for dirty pages
-+ * @ino - inode of shmem object
-+ * @idx - page index in shmem object
-+ *
-+ * Looks up the page that corresponds to the index in the shmem object,
-+ * and returns the page if it was modified (and grabs a reference to it),
-+ * or otherwise returns NULL (or error).
-+ */
-+static struct page *consider_shared_page(struct inode *ino, unsigned long idx)
++static struct page *bring_private_page(unsigned long addr)
++{
++	struct page *page;
++	int ret;
++
++	ret = get_user_pages(current, current->mm, addr, 1, 1, 1, &page, NULL);
++	if (ret < 0)
++		page = ERR_PTR(ret);
++	return page;
++}
++
++static struct page *bring_shared_page(unsigned long idx, struct inode *ino)
 +{
 +	struct page *page = NULL;
 +	int ret;
 +
-+	/*
-+	 * Inspired by do_shmem_file_read(): very simplified version.
-+	 *
-+	 * FIXME: consolidate with do_shmem_file_read()
-+	 */
-+
-+	ret = shmem_getpage(ino, idx, &page, SGP_READ, NULL);
++	ret = shmem_getpage(ino, idx, &page, SGP_WRITE, NULL);
 +	if (ret < 0)
 +		return ERR_PTR(ret);
-+
-+	/*
-+	 * Only care about dirty pages; shmem_getpage() only returns
-+	 * pages that have been allocated, so they must be dirty. The
-+	 * pages returned are locked and referenced.
-+	 */
-+
-+	if (page) {
++	if (page)
 +		unlock_page(page);
-+		/*
-+		 * If users can be writing to this page using arbitrary
-+		 * virtual addresses, take care about potential aliasing
-+		 * before reading the page on the kernel side.
-+		 */
-+		if (mapping_writably_mapped(ino->i_mapping))
-+			flush_dcache_page(page);
-+		/*
-+		 * Mark the page accessed if we read the beginning.
-+		 */
-+		mark_page_accessed(page);
-+	}
-+
 +	return page;
 +}
 +
-+/**
-  * vma_fill_pgarr - fill a page-array with addr/page tuples
-  * @ctx - checkpoint context
-  * @vma - vma to scan
-@@ -289,17 +338,16 @@ static struct page *consider_private_page(struct vm_area_struct *vma,
-  * Returns the number of pages collected
+ /**
+  * read_pages_contents - read in data of pages in page-array chain
+  * @ctx - restart context
   */
- static int vma_fill_pgarr(struct ckpt_ctx *ctx,
--			  struct vm_area_struct *vma,
--			  unsigned long *start)
-+			  struct vm_area_struct *vma, struct inode *inode,
-+			  unsigned long *start, unsigned long end)
+-static int read_pages_contents(struct ckpt_ctx *ctx)
++static int read_pages_contents(struct ckpt_ctx *ctx, struct inode *inode)
  {
--	unsigned long end = vma->vm_end;
- 	unsigned long addr = *start;
+-	struct mm_struct *mm = current->mm;
  	struct ckpt_pgarr *pgarr;
- 	int nr_used;
- 	int cnt = 0;
+ 	unsigned long *vaddrs;
+ 	char *buf;
+@@ -865,17 +888,22 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
+ 	if (!buf)
+ 		return -ENOMEM;
  
- 	/* this function is only for private memory (anon or file-mapped) */
--	BUG_ON(vma->vm_flags & (VM_SHARED | VM_MAYSHARE));
-+	BUG_ON(inode && vma);
- 
- 	do {
- 		pgarr = pgarr_current(ctx);
-@@ -311,7 +359,11 @@ static int vma_fill_pgarr(struct ckpt_ctx *ctx,
- 		while (addr < end) {
+-	down_read(&mm->mmap_sem);
++	down_read(&current->mm->mmap_sem);
+ 	list_for_each_entry_reverse(pgarr, &ctx->pgarr_list, list) {
+ 		vaddrs = pgarr->vaddrs;
+ 		for (i = 0; i < pgarr->nr_used; i++) {
  			struct page *page;
  
--			page = consider_private_page(vma, addr);
-+			if (vma)
-+				page = consider_private_page(vma, addr);
+ 			_ckpt_debug(CKPT_DPAGE, "got page %#lx\n", vaddrs[i]);
+-			ret = get_user_pages(current, mm, vaddrs[i],
+-					     1, 1, 1, &page, NULL);
+-			if (ret < 0)
++			if (inode)
++				page = bring_shared_page(vaddrs[i], inode);
 +			else
-+				page = consider_shared_page(inode, addr);
++				page = bring_private_page(vaddrs[i]);
 +
- 			if (IS_ERR(page))
- 				return PTR_ERR(page);
++			if (IS_ERR(page)) {
++				ret = PTR_ERR(page);
+ 				goto out;
++			}
  
-@@ -323,7 +375,10 @@ static int vma_fill_pgarr(struct ckpt_ctx *ctx,
- 				pgarr->nr_used++;
- 			}
+ 			ret = restore_read_page(ctx, page, buf);
+ 			page_cache_release(page);
+@@ -886,14 +914,15 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
+ 	}
  
--			addr += PAGE_SIZE;
-+			if (vma)
-+				addr += PAGE_SIZE;
-+			else
-+				addr++;
- 
- 			if (pgarr_is_full(pgarr))
- 				break;
-@@ -395,23 +450,32 @@ static int vma_dump_pages(struct ckpt_ctx *ctx, int total)
- }
- 
- /**
-- * checkpoint_memory_contents - dump contents of a VMA with private memory
-+ * checkpoint_memory_contents - dump contents of a memory region
-  * @ctx - checkpoint context
-- * @vma - vma to scan
-+ * @vma - vma to scan (--or--)
-+ * @inode - inode to scan
-  *
-  * Collect lists of pages that needs to be dumped, and corresponding
-  * virtual addresses into ctx->pgarr_list page-array chain. Then dump
-  * the addresses, followed by the page contents.
-  */
- static int checkpoint_memory_contents(struct ckpt_ctx *ctx,
--				      struct vm_area_struct *vma)
-+				      struct vm_area_struct *vma,
-+				      struct inode *inode)
- {
- 	struct ckpt_hdr_pgarr *h;
- 	unsigned long addr, end;
- 	int cnt, ret;
- 
--	addr = vma->vm_start;
--	end = vma->vm_end;
-+	BUG_ON(vma && inode);
-+
-+	if (vma) {
-+		addr = vma->vm_start;
-+		end = vma->vm_end;
-+	} else {
-+		addr = 0;
-+		end = PAGE_ALIGN(i_size_read(inode)) >> PAGE_CACHE_SHIFT;
-+	}
- 
- 	/*
- 	 * Work iteratively, collecting and dumping at most CKPT_PGARR_BATCH
-@@ -437,7 +501,7 @@ static int checkpoint_memory_contents(struct ckpt_ctx *ctx,
- 	 */
- 
- 	while (addr < end) {
--		cnt = vma_fill_pgarr(ctx, vma, &addr);
-+		cnt = vma_fill_pgarr(ctx, vma, inode, &addr, end);
- 		if (cnt == 0)
- 			break;
- 		else if (cnt < 0)
-@@ -481,7 +545,7 @@ static int checkpoint_memory_contents(struct ckpt_ctx *ctx,
-  * @vma_objref: vma objref
-  */
- int generic_vma_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma,
--			   enum vma_type type, int vma_objref)
-+			   enum vma_type type, int vma_objref, int ino_objref)
- {
- 	struct ckpt_hdr_vma *h;
- 	int ret;
-@@ -495,6 +559,13 @@ int generic_vma_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma,
- 
- 	h->vma_type = type;
- 	h->vma_objref = vma_objref;
-+	h->ino_objref = ino_objref;
-+
-+	if (vma->vm_file)
-+		h->ino_size = i_size_read(vma->vm_file->f_dentry->d_inode);
-+	else
-+		h->ino_size = 0;
-+
- 	h->vm_start = vma->vm_start;
- 	h->vm_end = vma->vm_end;
- 	h->vm_page_prot = pgprot_val(vma->vm_page_prot);
-@@ -522,10 +593,37 @@ int private_vma_checkpoint(struct ckpt_ctx *ctx,
- 
- 	BUG_ON(vma->vm_flags & (VM_SHARED | VM_MAYSHARE));
- 
--	ret = generic_vma_checkpoint(ctx, vma, type, vma_objref);
-+	ret = generic_vma_checkpoint(ctx, vma, type, vma_objref, 0);
-+	if (ret < 0)
-+		goto out;
-+	ret = checkpoint_memory_contents(ctx, vma, NULL);
-+ out:
-+	return ret;
-+}
-+
-+/**
-+ * shmem_vma_checkpoint - dump contents of private (anon, file) vma
-+ * @ctx: checkpoint context
-+ * @vma: vma object
-+ * @type: vma type
-+ * @objref: vma object id
-+ */
-+int shmem_vma_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma,
-+			 enum vma_type type, int ino_objref)
-+{
-+	struct file *file = vma->vm_file;
-+	int ret;
-+
-+	ckpt_debug("type %d, ino_ref %d\n", type, ino_objref);
-+	BUG_ON(!(vma->vm_flags & (VM_SHARED | VM_MAYSHARE)));
-+	BUG_ON(!file);
-+
-+	ret = generic_vma_checkpoint(ctx, vma, type, 0, ino_objref);
- 	if (ret < 0)
- 		goto out;
--	ret = checkpoint_memory_contents(ctx, vma);
-+	if (type == CKPT_VMA_SHM_ANON_SKIP)
-+		goto out;
-+	ret = checkpoint_memory_contents(ctx, NULL, file->f_dentry->d_inode);
   out:
- 	return ret;
- }
-@@ -991,6 +1089,21 @@ static struct restore_vma_ops restore_vma_ops[] = {
- 		.vma_type = CKPT_VMA_FILE,
- 		.restore = filemap_restore,
- 	},
-+	/* anonymous shared */
-+	{
-+		.vma_name = "ANON SHARED",
-+		.vma_type = CKPT_VMA_SHM_ANON,
-+	},
-+	/* anonymous shared (skipped) */
-+	{
-+		.vma_name = "ANON SHARED (skip)",
-+		.vma_type = CKPT_VMA_SHM_ANON_SKIP,
-+	},
-+	/* file-mapped shared */
-+	{
-+		.vma_name = "FILE SHARED",
-+		.vma_type = CKPT_VMA_SHM_FILE,
-+	},
- };
- 
- /**
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-index 734be3a..be9411f 100644
---- a/checkpoint/objhash.c
-+++ b/checkpoint/objhash.c
-@@ -64,6 +64,16 @@ static int obj_no_grab(void *ptr)
+-	up_read(&mm->mmap_sem);
++	up_read(&current->mm->mmap_sem);
+ 	kfree(buf);
  	return 0;
  }
  
-+static int obj_inode_grab(void *ptr)
-+{
-+	return igrab((struct inode *) ptr) ? 0 : -EBADF;
-+}
-+
-+static void obj_inode_drop(void *ptr, int lastref)
-+{
-+	iput((struct inode *) ptr);
-+}
-+
- static int obj_file_table_grab(void *ptr)
+ /**
+- * restore_memory_contents - restore contents of a VMA with private memory
++ * restore_memory_contents - restore contents of a memory region
+  * @ctx - restart context
++ * @inode - backing inode
+  *
+  * Reads a header that specifies how many pages will follow, then reads
+  * a list of virtual addresses into ctx->pgarr_list page-array chain,
+@@ -901,7 +930,7 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
+  * these steps until reaching a header specifying "0" pages, which marks
+  * the end of the contents.
+  */
+-static int restore_memory_contents(struct ckpt_ctx *ctx)
++int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode)
  {
- 	atomic_inc(&((struct files_struct *) ptr)->count);
-@@ -120,6 +130,13 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.ref_drop = obj_no_drop,
- 		.ref_grab = obj_no_grab,
- 	},
-+	/* inode object */
-+	{
-+		.obj_name = "INODE",
-+		.obj_type = CKPT_OBJ_INODE,
-+		.ref_drop = obj_inode_drop,
-+		.ref_grab = obj_inode_grab,
-+	},
- 	/* files_struct object */
+ 	struct ckpt_hdr_pgarr *h;
+ 	unsigned long nr_pages;
+@@ -928,7 +957,7 @@ static int restore_memory_contents(struct ckpt_ctx *ctx)
+ 		ret = read_pages_vaddrs(ctx, nr_pages);
+ 		if (ret < 0)
+ 			break;
+-		ret = read_pages_contents(ctx);
++		ret = read_pages_contents(ctx, inode);
+ 		if (ret < 0)
+ 			break;
+ 		pgarr_reset_all(ctx);
+@@ -986,9 +1015,9 @@ static unsigned long calc_map_flags_bits(unsigned long orig_vm_flags)
+  * @file - file to map (NULL for anonymous)
+  * @h - vma header data
+  */
+-static unsigned long generic_vma_restore(struct mm_struct *mm,
+-					 struct file *file,
+-					 struct ckpt_hdr_vma *h)
++unsigned long generic_vma_restore(struct mm_struct *mm,
++				  struct file *file,
++				  struct ckpt_hdr_vma *h)
+ {
+ 	unsigned long vm_size, vm_start, vm_flags, vm_prot, vm_pgoff;
+ 	unsigned long addr;
+@@ -1033,7 +1062,7 @@ int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
+ 	if (IS_ERR((void *) addr))
+ 		return PTR_ERR((void *) addr);
+ 
+-	return restore_memory_contents(ctx);
++	return restore_memory_contents(ctx, NULL);
+ }
+ 
+ /**
+@@ -1093,16 +1122,19 @@ static struct restore_vma_ops restore_vma_ops[] = {
  	{
- 		.obj_name = "FILE_TABLE",
+ 		.vma_name = "ANON SHARED",
+ 		.vma_type = CKPT_VMA_SHM_ANON,
++		.restore = shmem_restore,
+ 	},
+ 	/* anonymous shared (skipped) */
+ 	{
+ 		.vma_name = "ANON SHARED (skip)",
+ 		.vma_type = CKPT_VMA_SHM_ANON_SKIP,
++		.restore = shmem_restore,
+ 	},
+ 	/* file-mapped shared */
+ 	{
+ 		.vma_name = "FILE SHARED",
+ 		.vma_type = CKPT_VMA_SHM_FILE,
++		.restore = filemap_restore,
+ 	},
+ };
+ 
+@@ -1121,15 +1153,15 @@ static int restore_vma(struct ckpt_ctx *ctx, struct mm_struct *mm)
+ 	if (IS_ERR(h))
+ 		return PTR_ERR(h);
+ 
+-	ckpt_debug("vma %#lx-%#lx flags %#lx type %d vmaref %d\n",
++	ckpt_debug("vma %#lx-%#lx flags %#lx type %d vmaref %d inoref %d\n",
+ 		   (unsigned long) h->vm_start, (unsigned long) h->vm_end,
+ 		   (unsigned long) h->vm_flags, (int) h->vma_type,
+-		   (int) h->vma_objref);
++		   (int) h->vma_objref, (int) h->ino_objref);
+ 
+ 	ret = -EINVAL;
+ 	if (h->vm_end < h->vm_start)
+ 		goto out;
+-	if (h->vma_objref < 0)
++	if (h->vma_objref < 0 || h->ino_objref < 0)
+ 		goto out;
+ 	if (h->vma_type >= CKPT_VMA_MAX)
+ 		goto out;
 diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index cb13e8f..5a130d7 100644
+index 5a130d7..2770fc2 100644
 --- a/include/linux/checkpoint.h
 +++ b/include/linux/checkpoint.h
-@@ -170,11 +170,15 @@ extern void ckpt_pgarr_free(struct ckpt_ctx *ctx);
- extern int generic_vma_checkpoint(struct ckpt_ctx *ctx,
- 				  struct vm_area_struct *vma,
- 				  enum vma_type type,
--				  int vma_objref);
-+				  int vma_objref, int ino_objref);
- extern int private_vma_checkpoint(struct ckpt_ctx *ctx,
- 				  struct vm_area_struct *vma,
- 				  enum vma_type type,
- 				  int vma_objref);
-+extern int shmem_vma_checkpoint(struct ckpt_ctx *ctx,
-+				struct vm_area_struct *vma,
-+				enum vma_type type,
-+				int ino_objref);
+@@ -187,9 +187,15 @@ extern int ckpt_collect_mm(struct ckpt_ctx *ctx, struct task_struct *t);
+ extern int checkpoint_mm(struct ckpt_ctx *ctx, void *ptr);
+ extern void *restore_mm(struct ckpt_ctx *ctx);
  
- extern int checkpoint_obj_mm(struct ckpt_ctx *ctx, struct task_struct *t);
- extern int restore_obj_mm(struct ckpt_ctx *ctx, int mm_objref);
-@@ -187,11 +191,10 @@ extern int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++extern unsigned long generic_vma_restore(struct mm_struct *mm,
++					 struct file *file,
++					 struct ckpt_hdr_vma *h);
++
+ extern int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
  			       struct file *file, struct ckpt_hdr_vma *h);
  
- 
--#define CKPT_VMA_NOT_SUPPORTED					\
--	(VM_SHARED | VM_MAYSHARE | VM_IO | VM_HUGETLB |		\
--	 VM_NONLINEAR | VM_PFNMAP | VM_RESERVED | VM_NORESERVE	\
--	 | VM_HUGETLB | VM_NONLINEAR | VM_MAPPED_COPY |		\
--	 VM_INSERTPAGE | VM_MIXEDMAP | VM_SAO)
-+#define CKPT_VMA_NOT_SUPPORTED						\
-+	(VM_IO | VM_HUGETLB | VM_NONLINEAR | VM_PFNMAP |		\
-+	 VM_RESERVED | VM_NORESERVE | VM_HUGETLB | VM_NONLINEAR |	\
-+	 VM_MAPPED_COPY | VM_INSERTPAGE | VM_MIXEDMAP | VM_SAO)
- 
- static inline int ckpt_validate_errno(int errno)
- {
-diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index 097d2e2..23095f2 100644
---- a/include/linux/checkpoint_hdr.h
-+++ b/include/linux/checkpoint_hdr.h
-@@ -91,6 +91,7 @@ struct ckpt_hdr_objref {
- /* shared objects types */
- enum obj_type {
- 	CKPT_OBJ_IGNORE = 0,
-+	CKPT_OBJ_INODE,
- 	CKPT_OBJ_FILE_TABLE,
- 	CKPT_OBJ_FILE,
- 	CKPT_OBJ_MM,
-@@ -176,6 +177,7 @@ struct ckpt_hdr_task {
- /* task's shared resources */
- struct ckpt_hdr_task_objs {
- 	struct ckpt_hdr h;
++extern int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode);
 +
- 	__s32 files_objref;
- 	__s32 mm_objref;
- } __attribute__((aligned(8)));
-@@ -256,6 +258,9 @@ enum vma_type {
- 	CKPT_VMA_VDSO,		/* special vdso vma */
- 	CKPT_VMA_ANON,		/* private anonymous */
- 	CKPT_VMA_FILE,		/* private mapped file */
-+	CKPT_VMA_SHM_ANON,	/* shared anonymous */
-+	CKPT_VMA_SHM_ANON_SKIP,	/* shared anonymous (skip contents) */
-+	CKPT_VMA_SHM_FILE,	/* shared mapped file, only msync */
- 	CKPT_VMA_MAX
- };
  
-@@ -264,6 +269,9 @@ struct ckpt_hdr_vma {
- 	struct ckpt_hdr h;
- 	__u32 vma_type;
- 	__s32 vma_objref;	/* objref of backing file */
-+	__s32 ino_objref;	/* objref of shared segment */
-+	__u32 _padding;
-+	__u64 ino_size;		/* size of shared segment */
+ #define CKPT_VMA_NOT_SUPPORTED						\
+ 	(VM_IO | VM_HUGETLB | VM_NONLINEAR | VM_PFNMAP |		\
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index b565a82..3632e66 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1188,6 +1188,8 @@ extern int filemap_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
+ 			   struct ckpt_hdr_vma *hh);
+ extern int special_mapping_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
+ 				   struct ckpt_hdr_vma *hh);
++extern int shmem_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++			 struct ckpt_hdr_vma *hh);
+ #endif
  
- 	__u64 vm_start;
- 	__u64 vm_end;
+ /* readahead.c */
 diff --git a/mm/filemap.c b/mm/filemap.c
-index ef7205b..055f126 100644
+index 055f126..eb7653d 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1654,6 +1654,8 @@ int filemap_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
+@@ -1711,17 +1711,28 @@ int filemap_restore(struct ckpt_ctx *ctx,
+ 		    struct ckpt_hdr_vma *h)
  {
- 	struct file *file = vma->vm_file;
- 	int vma_objref;
-+	int ino_objref;
-+	int first, ret;
+ 	struct file *file;
++	unsigned long addr;
+ 	int ret;
  
- 	if (vma->vm_flags & CKPT_VMA_NOT_SUPPORTED) {
- 		pr_warning("c/r: unsupported VMA %#lx\n", vma->vm_flags);
-@@ -1666,7 +1668,42 @@ int filemap_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
- 	if (vma_objref < 0)
- 		return vma_objref;
+ 	if (h->vma_type == CKPT_VMA_FILE &&
+ 	    (h->vm_flags & (VM_SHARED | VM_MAYSHARE)))
+ 		return -EINVAL;
++	if (h->vma_type == CKPT_VMA_SHM_FILE &&
++	    !(h->vm_flags & (VM_SHARED | VM_MAYSHARE)))
++		return -EINVAL;
  
--	return private_vma_checkpoint(ctx, vma, CKPT_VMA_FILE, vma_objref);
-+	if (vma->vm_flags & (VM_SHARED | VM_MAYSHARE)) {
-+		/*
-+		 * Citing mmap(2): "Updates to the mapping are visible
-+		 * to other processes that map this file, and are
-+		 * carried through to the underlying file. The file
-+		 * may not actually be updated until msync(2) or
-+		 * munmap(2) is called"
-+		 *
-+		 * Citing msync(2): "Without use of this call there is
-+		 * no guarantee that changes are written back before
-+		 * munmap(2) is called."
-+		 *
-+		 * Force msync for region of shared mapped files, to
-+		 * ensure that that the file system is consistent with
-+		 * the checkpoint image.  (inspired by sys_msync).
-+		 */
-+
-+		ino_objref = ckpt_obj_lookup_add(ctx, file->f_dentry->d_inode,
-+					       CKPT_OBJ_INODE, &first);
-+		if (ino_objref < 0)
-+			return ino_objref;
-+
-+		if (first) {
-+			ret = vfs_fsync(file, file->f_path.dentry, 0);
-+			if (ret < 0)
-+				return ret;
-+		}
-+
-+		ret = generic_vma_checkpoint(ctx, vma, CKPT_VMA_SHM_FILE,
-+					     vma_objref, ino_objref);
+ 	file = ckpt_obj_fetch(ctx, h->vma_objref, CKPT_OBJ_FILE);
+ 	if (IS_ERR(file))
+ 		return PTR_ERR(file);
+ 
+-	ret = private_vma_restore(ctx, mm, file, h);
++	if (h->vma_type == CKPT_VMA_FILE) {
++		/* private mapped file */
++		ret = private_vma_restore(ctx, mm, file, h);
 +	} else {
-+		ret = private_vma_checkpoint(ctx, vma, CKPT_VMA_FILE,
-+					     vma_objref);
++		/* shared mapped file */
++		addr = generic_vma_restore(mm, file, h);
++		ret = (IS_ERR((void *) addr) ? PTR_ERR((void *) addr) : 0);
 +	}
-+
-+	return ret;
+ 	return ret;
  }
- 
- int filemap_restore(struct ckpt_ctx *ctx,
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 3be4678..aa262eb 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -2296,7 +2296,7 @@ static int special_mapping_checkpoint(struct ckpt_ctx *ctx,
- 	if (!name || strcmp(name, "[vdso]"))
- 		return -ENOSYS;
- 
--	return generic_vma_checkpoint(ctx, vma, CKPT_VMA_VDSO, 0);
-+	return generic_vma_checkpoint(ctx, vma, CKPT_VMA_VDSO, 0, 0);
- }
- 
- int special_mapping_restore(struct ckpt_ctx *ctx,
+ #endif /* CONFIG_CHECKPOINT */
 diff --git a/mm/shmem.c b/mm/shmem.c
-index d80532b..3e50bd1 100644
+index 3e50bd1..d1e348f 100644
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -30,6 +30,7 @@
- #include <linux/module.h>
- #include <linux/swap.h>
- #include <linux/ima.h>
-+#include <linux/checkpoint.h>
+@@ -2411,6 +2411,55 @@ static int shmem_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
  
- static struct vfsmount *shm_mnt;
- 
-@@ -2381,6 +2382,37 @@ static void shmem_destroy_inode(struct inode *inode)
- 	kmem_cache_free(shmem_inode_cachep, SHMEM_I(inode));
+ 	return shmem_vma_checkpoint(ctx, vma, vma_type, ino_objref);
  }
- 
-+#ifdef CONFIG_CHECKPOINT
-+static int shmem_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
-+{
-+	enum vma_type vma_type;
-+	int ino_objref;
-+	int first;
 +
-+	/* should be private anonymous ... verify that this is the case */
-+	if (vma->vm_flags & CKPT_VMA_NOT_SUPPORTED) {
-+		pr_warning("c/r: unsupported VMA %#lx\n", vma->vm_flags);
-+		return -ENOSYS;
++int shmem_restore(struct ckpt_ctx *ctx,
++		  struct mm_struct *mm, struct ckpt_hdr_vma *h)
++{
++	unsigned long addr;
++	struct file *file;
++	int ret = 0;
++
++	file = ckpt_obj_fetch(ctx, h->ino_objref, CKPT_OBJ_FILE);
++	if (PTR_ERR(file) == -EINVAL)
++		file = NULL;
++	if (IS_ERR(file))
++		return PTR_ERR(file);
++
++	/* if file is NULL, this is the premiere - create and insert */
++	if (!file) {
++		if (h->vma_type != CKPT_VMA_SHM_ANON)
++			return -EINVAL;
++		/*
++		 * in theory could pass NULL to mmap and let it create
++		 * the file. But, if 'shm_size != vm_end - vm_start',
++		 * or if 'vm_pgoff != 0', then the vma reflects only a
++		 * portion of the shm object and we need to "manually"
++		 * create the full shm object.
++		 */
++		file = shmem_file_setup("/dev/zero", h->ino_size, h->vm_flags);
++		if (IS_ERR(file))
++			return PTR_ERR(file);
++		ret = ckpt_obj_insert(ctx, file, h->ino_objref, CKPT_OBJ_FILE);
++		if (ret < 0)
++			goto out;
++	} else {
++		if (h->vma_type != CKPT_VMA_SHM_ANON_SKIP)
++			return -EINVAL;
++		/* Already need fput() for the file above; keep path simple */
++		get_file(file);
 +	}
 +
-+	BUG_ON(!vma->vm_file);
++	addr = generic_vma_restore(mm, file, h);
++	if (IS_ERR((void *) addr))
++		return PTR_ERR((void *) addr);
 +
-+	/* we collected the file but we don't checkpoint it per-se */
-+	ret = ckpt_obj_visit(ctx, vma->vm_file, CKPT_OBJ_FILE);
-+	if (ret < 0)
-+		return ret;
-+
-+	ino_objref = ckpt_obj_lookup_add(ctx, vma->vm_file->f_dentry->d_inode,
-+					 CKPT_OBJ_INODE, &first);
-+	if (ino_objref < 0)
-+		return ino_objref;
-+
-+	vma_type = (first ? CKPT_VMA_SHM_ANON : CKPT_VMA_SHM_ANON_SKIP);
-+
-+	return shmem_vma_checkpoint(ctx, vma, vma_type, ino_objref);
++	if (h->vma_type == CKPT_VMA_SHM_ANON)
++		ret = restore_memory_contents(ctx, file->f_dentry->d_inode);
++ out:
++	fput(file);
++	return ret;
 +}
-+#endif /* CONFIG_CHECKPOINT */
 +
+ #endif /* CONFIG_CHECKPOINT */
+ 
  static void init_once(void *foo)
- {
- 	struct shmem_inode_info *p = (struct shmem_inode_info *) foo;
-@@ -2492,6 +2524,9 @@ static struct vm_operations_struct shmem_vm_ops = {
- 	.set_policy     = shmem_set_policy,
- 	.get_policy     = shmem_get_policy,
- #endif
-+#ifdef CONFIG_CHECKPOINT
-+	.checkpoint	= shmem_checkpoint,
-+#endif
- };
- 
- 
 -- 
 1.6.0.4
 
