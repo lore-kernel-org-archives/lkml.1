@@ -1,69 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZIWGpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZIWGva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbZIWGpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 02:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZIWGpw
+	id S1754199AbZIWGva (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 02:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZIWGva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 02:45:52 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51089 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753888AbZIWGpw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 02:45:52 -0400
-Subject: Re: [PATCH tip/core/rcu 0/4] Josh and Ingo review feedback and
- bloatwatch RCU
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-In-Reply-To: <20090922222443.GA3178@linux.vnet.ibm.com>
-References: <20090922222443.GA3178@linux.vnet.ibm.com>
-Content-Type: text/plain
+	Wed, 23 Sep 2009 02:51:30 -0400
+Received: from gate.lvk.cs.msu.su ([158.250.17.1]:59516 "EHLO lvk.cs.msu.su"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753948AbZIWGv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 02:51:29 -0400
+From: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Inter-process send()/recv() using zero-copy ?
+Date: Wed, 23 Sep 2009 10:51:31 +0400
+User-Agent: KMail/1.9.9
+References: <4AB9B9B7.1020309@exalead.com> <20090923084314.78283f24@infradead.org>
+In-Reply-To: <20090923084314.78283f24@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 23 Sep 2009 08:45:42 +0200
-Message-Id: <1253688342.7695.99.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Disposition: inline
+Message-Id: <200909231051.31818@zigzag.lvk.cs.msu.su>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 15:24 -0700, Paul E. McKenney wrote:
-> This patch set applies two sets of review feedback from Josh Triplett and
-> checkpatch feedback from Ingo Molnar.  It also contains a forward-port
-> of Bloatwatch RCU, courtesy of David Howells.
+> the problem you have is that
+> 1) memory copies are cheap
+>    (say, 3000 cycles/page or less)
 
-It would be much easier to review if these patches had a changelog
-describing the problem they address :-)
+What about L1 cache pollution? Doesn't it change situation?
 
-The first one seems to do:
-
-A)
- - aggregate 'rsp->completed == rsp->gpnum' expressions into a
-   common function.
-
- - consistently use ACCESS_ONCE() in the above mentioned function
-
-B)
- - use DIV_ROUND_UP()
-
-C)
- - aggregate list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x01])
-expressions into a common function.
+> 2) page table operations (mmap etc) are very expensive.
+>
+> these two combined tend to not make it a win to substitute simple
+> copies with complex pagetable tricks.
 
 
-Could have been three patches, but ACK.
-
-
-The second patch seems to mostly add comments, but also moves code
-around and makes it static, which could have been split in two patches.
-
-The purpose of the move code around bit could be a cleanup?
-
-Looks to preserve the logic, but didn't go out on a limb to verify, ACK.
-
-
-The third and fourth do have an adequate changelog :-) 
