@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752255AbZIWXFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbZIWXNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752255AbZIWXFY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 19:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZIWXFW
+	id S1752520AbZIWXNx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 19:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZIWXNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 19:05:22 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56556 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbZIWXFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 19:05:21 -0400
-From: Neil Brown <neilb@suse.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 24 Sep 2009 09:06:15 +1000
+	Wed, 23 Sep 2009 19:13:52 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:49066 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbZIWXNw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 19:13:52 -0400
+Message-ID: <4ABAAB4F.2060905@nortel.com>
+Date: Wed, 23 Sep 2009 17:12:15 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
+ energy
+References: <20090923174820.GA12827@Krystal> <4ABA631A.8030306@nortel.com> <20090923190337.GA16983@Krystal> <20090923223204.GA2921@Krystal>
+In-Reply-To: <20090923223204.GA2921@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <19130.43495.807916.962040@notabene.brown>
-Cc: lmb@suse.de, lars.ellenberg@linbit.com, arjan@infradead.org,
-       jens.axboe@oracle.com, neilb@suse.de, hch@infradead.org,
-       James.Bottomley@suse.de, linux-kernel@vger.kernel.org,
-       drbd-dev@lists.linbit.com, akpm@linux-foundation.org,
-       bart.vanassche@gmail.com, davej@redhat.com, gregkh@suse.de,
-       kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
-       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
-       philipp.reisner@linbit.com, sam@ravnborg.org, Mauelshagen@redhat.com
-Subject: Re: [GIT PULL] DRBD for 2.6.32
-In-Reply-To: message from FUJITA Tomonori on Wednesday September 23
-References: <20090921165321.GJ8072@barkeeper1-xen.linbit>
-	<20090922072617U.fujita.tomonori@lab.ntt.co.jp>
-	<20090922062034.GE22732@suse.de>
-	<20090923203531C.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-OriginalArrivalTime: 23 Sep 2009 23:13:53.0326 (UTC) FILETIME=[8477CCE0:01CA3CA3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday September 23, fujita.tomonori@lab.ntt.co.jp wrote:
-> On Tue, 22 Sep 2009 08:20:34 +0200
-> Lars Marowsky-Bree <lmb@suse.de> wrote:
-> 
-> > On 2009-09-22T07:27:21, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > 
-> > > > If it happens, once that happens, that _will_ be an ABI break.
-> > > 
-> > > You misunderstand the raid unification.
-> > > 
-> > > We will not unify the kernel<->userspace configuration interface
-> > > because we can't break the kernel<->userspace ABI.
-> > 
-> > I disagree here. Who says we can't over time, and with due notice?
-> > 
-> > For sure, the new ABI needs to co-exist with the old ones for a while,
-> > until it is proven and fully complete, but then, why can't the old one
-> > be marked as depreciated and phased out over 1-2 years time?
-> 
-> Let me know If you find a Linux storage developer who say, "Yeah, we
-> can remove the md ABI over 1-2 years time after the raid unification".
-
-I would have said 3-5 years, that being about the time frame for
-enterprise releases, and it would be best if every enterprise vendor
-got to have a release that supported both the old and the new
-interface.  But I don't have a problem with migrating to a better ABI
-is we actually had a better ABI.
-> 
-> Seems that you have a very different idea from other kernel developers
-> about the stable ABI.
-
-CONFIG_SYSFS_DEPRECATED_V2  seems to suggest that other kernel
-developers understand that we sometimes make mistakes and need to
-deprecate them.
+On 09/23/2009 04:32 PM, Mathieu Desnoyers wrote:
 
 
-However I think this is all very premature as there is even a coherent
-proposal for what unification might look like, let alone broad
-agreement or implementation.  I would *much* rather we spent our
-energies debating that than debating whether or not DRBD should get
-merged.... Maybe would should only accept votes on "Should DRBD get
-merged" from people provide constructive input to the question "what
-would a unified virtual block device model look like".
+> /*
+>  * Defer thread waiting. Single thread.
+>  */
+> static void wait_defer(void)
+> {
+>         atomic_dec(&defer_thread_futex);
+>         smp_mb();       /* Write futex before read queue */
+>         if (rcu_defer_num_callbacks()) {
+>                 smp_mb();       /* Read queue before write futex */
+>                 /* Callbacks are queued, don't wait. */
+>                 atomic_set(&defer_thread_futex, 0);
+>         } else {
+>                 smp_rmb();      /* Read queue before read futex */
+>                 if (atomic_read(&defer_thread_futex) == -1)
+>                         futex(&defer_thread_futex, FUTEX_WAIT, -1,
+>                               NULL, NULL, 0);
+>         }
+> }
 
-> 
-> Improving the existing framework is a proper approach.
+> The goal here is that if call_rcu() enqueues a callback (even if it
+> races with defer thread going to sleep), there should not be a
+> potentially infinite delay before it gets executed.
 
-Yes.  So let's do it.
+It doesn't seem like the test for the number of callbacks should be
+necessary.  I don't see anything like that in the glibc code, nor do I
+remember anything like that in the futex sample code.
 
-NeilBrown
+I'm still not totally convinced that you can avoid race conditions
+without using atomic test-and-set or compare-and-exchange.  I haven't
+sat down and worked it out completely though.
+
+Chris
