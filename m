@@ -1,114 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751151AbZIWEDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751345AbZIWEFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751151AbZIWEDV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 00:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbZIWEDU
+	id S1751345AbZIWEFr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 00:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZIWEFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 00:03:20 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51825 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbZIWEDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 00:03:20 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org, Oleg Nesterov <oleg@redhat.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] x86: ptrace: sysret path should reach syscall_trace_leave
-X-Fcc: ~/Mail/linus
-Emacs: ballast for RAM.
-Message-Id: <20090923040211.7733314093@magilla.sf.frob.com>
-Date: Tue, 22 Sep 2009 21:02:11 -0700 (PDT)
+	Wed, 23 Sep 2009 00:05:46 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:38220 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbZIWEFp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 00:05:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Qw/yu5Br5zvb5nwsZXMirB/CMVxITZVxQo8dU6aWkN6iYCC8l0GTyxP8ZH73AcCq+L
+         s+Ah2qtLQqPx2vXrrh5jgqFejIHb4ZQa5s6Tz5J/DZSWHTX+24swV88uKduW8JqjkDVA
+         KLEwRsu3yqoS9TDne7AmD8CIl5iAXmuvtGSPk=
+Date: Tue, 22 Sep 2009 21:05:43 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.32-rc0
+Message-ID: <20090923040543.GC1458@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 7fa07729e439a6184bd824746d06a49cca553f15:
-  Linus Torvalds (1):
-        Merge branch 'perf-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+Hi Linus,
 
-are available in the git repository at:
+Please pull from:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-roland.git x86/ptrace-syscall-exit
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-Roland McGrath (1):
-      x86: ptrace: sysret path should reach syscall_trace_leave
+to receive 2nd round of updates for the input subsystem. You will get a
+few new input drivers for embedded platforms and generic suspend/resume
+for input devices.
 
- arch/x86/kernel/entry_64.S |   22 ++++++++--------------
- 1 files changed, 8 insertions(+), 14 deletions(-)
----
-[PATCH] x86: ptrace: sysret path should reach syscall_trace_leave
+Changelog:
+---------
 
-If TIF_SYSCALL_TRACE or TIF_SINGLESTEP is set while inside a syscall,
-the path back to user mode should get to syscall_trace_leave.
+Dmitry Torokhov (6):
+      Input: libps2 - additional locking for i8042 ports
+      Input: add generic suspend and resume for input devices
+      Input: atkbd - rely on input core to restore state on resume
+      Input: synaptics_i2c - switch to using __cancel_delayed_work()
+      Input: dm355evm_keys - remove dm355evm_keys_hardirq
+      Input: max7359 - use threaded IRQs
 
-This does happen in most circumstances.  The exception to this is on
-the 64-bit syscall fastpath, when no such flag was set on syscall
-entry and nothing else has punted it off the fastpath for exit.  That
-one exit fastpath fails to check for _TIF_WORK_SYSCALL_EXIT flags.
-This makes the behavior inconsistent with what 32-bit tasks see and
-what the native 32-bit kernel always does, and what 64-bit tasks see
-in all cases where the iret path is taken anyhow.
+Javier Herrero (1):
+      Input: add driver for OpenCores Keyboard Controller
 
-Perhaps the only example that is affected is a ptrace stop inside
-do_fork (for PTRACE_O_TRACE{CLONE,FORK,VFORK,VFORKDONE}).  Other
-syscalls with internal ptrace stop points (execve) already take the
-iret exit path for unrelated reasons.
+Joonyoung Shim (1):
+      Input: add touchscreen driver for MELFAS MCS-5000 controller
 
-Test cases for both PTRACE_SYSCALL and PTRACE_SINGLESTEP variants are at:
-http://sources.redhat.com/cgi-bin/cvsweb.cgi/~checkout~/tests/ptrace-tests/tests/syscall-from-clone.c?cvsroot=systemtap
-http://sources.redhat.com/cgi-bin/cvsweb.cgi/~checkout~/tests/ptrace-tests/tests/step-from-clone.c?cvsroot=systemtap
+Kim Kyuwon (1):
+      Input: add driver for Maxim MAX7359 key switch controller
 
-There was no special benefit to the sysret path's special path to call
-do_notify_resume, because it always takes the iret exit path at the end.
-So this change just makes the sysret exit path join the iret exit path
-for all the signals and ptrace cases.  The fastpath still applies to
-the plain syscall-audit and resched cases.
+Michael Hennerich (2):
+      Input: ad7879 - add support for AD7889
+      Input: add driver for ADP5588 QWERTY I2C Keypad
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
-CC: Oleg Nesterov <oleg@redhat.com>
----
- arch/x86/kernel/entry_64.S |   22 ++++++++--------------
- 1 files changed, 8 insertions(+), 14 deletions(-)
+Raphael Derosso Pereira (1):
+      Input: add driver for Atmel AT42QT2160 Sensor Chip
 
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index 681c3fd..b5c061f 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -536,20 +536,13 @@ sysret_signal:
- 	bt $TIF_SYSCALL_AUDIT,%edx
- 	jc sysret_audit
- #endif
--	/* edx:	work flags (arg3) */
--	leaq -ARGOFFSET(%rsp),%rdi # &pt_regs -> arg1
--	xorl %esi,%esi # oldset -> arg2
--	SAVE_REST
--	FIXUP_TOP_OF_STACK %r11
--	call do_notify_resume
--	RESTORE_TOP_OF_STACK %r11
--	RESTORE_REST
--	movl $_TIF_WORK_MASK,%edi
--	/* Use IRET because user could have changed frame. This
--	   works because ptregscall_common has called FIXUP_TOP_OF_STACK. */
--	DISABLE_INTERRUPTS(CLBR_NONE)
--	TRACE_IRQS_OFF
--	jmp int_with_check
-+	/*
-+	 * We have a signal, or exit tracing or single-step.
-+	 * These all wind up with the iret return path anyway,
-+	 * so just join that path right now.
-+	 */
-+	FIXUP_TOP_OF_STACK %r11, -ARGOFFSET
-+	jmp int_check_syscall_exit_work
- 
- badsys:
- 	movq $-ENOSYS,RAX-ARGOFFSET(%rsp)
-@@ -654,6 +647,7 @@ int_careful:
- int_very_careful:
- 	TRACE_IRQS_ON
- 	ENABLE_INTERRUPTS(CLBR_NONE)
-+int_check_syscall_exit_work:
- 	SAVE_REST
- 	/* Check for syscall exit trace */
- 	testl $_TIF_WORK_SYSCALL_EXIT,%edx
+
+Diffstat:
+--------
+
+ drivers/input/input.c                   |   64 +++++-
+ drivers/input/keyboard/Kconfig          |   40 +++
+ drivers/input/keyboard/Makefile         |    4 +
+ drivers/input/keyboard/adp5588-keys.c   |  361 ++++++++++++++++++++++++++++
+ drivers/input/keyboard/atkbd.c          |   25 --
+ drivers/input/keyboard/max7359_keypad.c |  330 +++++++++++++++++++++++++
+ drivers/input/keyboard/opencores-kbd.c  |  180 ++++++++++++++
+ drivers/input/keyboard/qt2160.c         |  397 +++++++++++++++++++++++++++++++
+ drivers/input/misc/dm355evm_keys.c      |   26 +--
+ drivers/input/mouse/sentelic.c          |   18 +-
+ drivers/input/mouse/synaptics_i2c.c     |   51 +++--
+ drivers/input/serio/i8042.c             |   41 ++++
+ drivers/input/serio/libps2.c            |   28 ++-
+ drivers/input/touchscreen/Kconfig       |   17 +-
+ drivers/input/touchscreen/Makefile      |    1 +
+ drivers/input/touchscreen/ad7879.c      |    6 +-
+ drivers/input/touchscreen/mcs5000_ts.c  |  318 +++++++++++++++++++++++++
+ drivers/leds/leds-clevo-mail.c          |    8 +
+ drivers/platform/x86/acer-wmi.c         |    2 +
+ include/linux/i2c/adp5588.h             |   92 +++++++
+ include/linux/i2c/mcs5000_ts.h          |   24 ++
+ include/linux/i8042.h                   |   30 +++
+ include/linux/input.h                   |    2 +-
+ include/linux/libps2.h                  |    2 +
+ 24 files changed, 1987 insertions(+), 80 deletions(-)
+ create mode 100644 drivers/input/keyboard/adp5588-keys.c
+ create mode 100644 drivers/input/keyboard/max7359_keypad.c
+ create mode 100644 drivers/input/keyboard/opencores-kbd.c
+ create mode 100644 drivers/input/keyboard/qt2160.c
+ create mode 100644 drivers/input/touchscreen/mcs5000_ts.c
+ create mode 100644 include/linux/i2c/adp5588.h
+ create mode 100644 include/linux/i2c/mcs5000_ts.h
+
+-- 
+Dmitry
+
