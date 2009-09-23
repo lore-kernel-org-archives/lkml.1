@@ -1,115 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbZIWXOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZIWXT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbZIWXOp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 19:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZIWXOo
+	id S1752591AbZIWXT4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 19:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZIWXTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 19:14:44 -0400
-Received: from mail.windriver.com ([147.11.1.11]:33517 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751400AbZIWXOn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 19:14:43 -0400
-Message-ID: <4ABAAB89.1080407@windriver.com>
-Date: Wed, 23 Sep 2009 18:13:13 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [origin tree boot hang] [PATCH] Revert "early_printk:Allowmorethan
- one early console"
-References: <20090923135539.GA6542@kroah.com> <20090923173709.GA18056@elte.hu> <4ABA6182.1000106@windriver.com> <20090923190239.GC24251@elte.hu> <20090923191756.GA25163@elte.hu> <20090923210555.GA13492@elte.hu> <4ABA90C6.3000600@windriver.com> <20090923213929.GA20204@elte.hu> <4ABAA398.7080903@windriver.com> <alpine.LFD.2.01.0909231553480.3303@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0909231553480.3303@localhost.localdomain>
-Content-Type: multipart/mixed;
- boundary="------------050200090802020405060708"
-X-OriginalArrivalTime: 23 Sep 2009 23:13:17.0586 (UTC) FILETIME=[6F2A4F20:01CA3CA3]
+	Wed, 23 Sep 2009 19:19:55 -0400
+Received: from ozlabs.org ([203.10.76.45]:50694 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752272AbZIWXTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 19:19:53 -0400
+Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
+ perf_counter rename
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20090923124420.GA5525@elte.hu>
+References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
+	 <1253584591.7103.197.camel@pasglop> <20090922072834.GA25470@elte.hu>
+	 <1253606415.7103.216.camel@pasglop> <1253620332.10476.4.camel@concordia>
+	 <20090923124420.GA5525@elte.hu>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-dsMRROmAQtR/Ng/y8OV0"
+Date: Thu, 24 Sep 2009 09:19:55 +1000
+Message-Id: <1253747995.6110.5.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050200090802020405060708
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Linus Torvalds wrote:
-> On Wed, 23 Sep 2009, Jason Wessel wrote:
->   
->> Perhaps you will consider adding this patch to your tree?   It fixes the
->> specific case you mentioned.  It will still allow the board to boot and
->> instead of crashing, print a warning on the second instance.
->>     
->
-> Ugh. This looks totally bogus.
->
-> Why don't you just add CON_REGISTERED to the console flags, and do
->
-> 	/* Already registered? */
-> 	if (early_console->flags & CON_REGISTERED)
-> 		return;
-> 	early_console->flags |= CON_REGISTERED;
->
-> there instead? That whole "loop over existing consoles to check their 
-> names" looks silly and broken, and you're already playing with the flags 
-> in there (CON_BOOT).
->   
+--=-dsMRROmAQtR/Ng/y8OV0
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Seems reasonable to me.  We don't even have to add a new flag, because
-we already have the index set to != -1 when the console registration
-succeeds.
+On Wed, 2009-09-23 at 14:44 +0200, Ingo Molnar wrote:
+> * Michael Ellerman <michael@ellerman.id.au> wrote:
+>=20
+> > On Tue, 2009-09-22 at 18:00 +1000, Benjamin Herrenschmidt wrote:
+> > > On Tue, 2009-09-22 at 09:28 +0200, Ingo Molnar wrote:
+> > > >=20
+> > > > Nevertheless you are right that i should have caught this particula=
+r=20
+> > > > PowerPC build bug - i missed it - sorry about that!
+> > > >=20
+> > > Allright. Well, to help in general, we are setting up a build-bot
+> > > here too that will build -tip HEAD for at least powerpc daily with
+> > > a few configs too.
+> >=20
+> > Results here:
+> >=20
+> > http://kisskb.ellerman.id.au/kisskb/branch/12/
+>=20
+> ok, seems green for today - the two failures are: one a powerpc=20
+> toolchain problem it appears, plus a mainline warning.
 
-Here is the revised patch.
+Yep that looks more or less normal.
 
-Jason.
+> Btw., for me to be able to notice failures there it would have to email=20
+> me automatically if there's any -tip build failures that do not occur=20
+> with the upstream branch. Does it have such a feature?
 
+Not really, it sends mails to me, but it doesn't have a way to filter
+them by branch. I think the plan is we'll keep an eye on it and either
+send you patches or at least let you know that it's broken.
 
+cheers
 
---------------050200090802020405060708
-Content-Type: text/x-diff;
- name="0001-early_printk-Protect-against-using-the-same-device-t.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-early_printk-Protect-against-using-the-same-device-t.pa";
- filename*1="tch"
+--=-dsMRROmAQtR/Ng/y8OV0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
->From 66081d4a28cb17f58b09fe05a5a9c8441fc701ac Mon Sep 17 00:00:00 2001
-From: Jason Wessel <jason.wessel@windriver.com>
-Date: Wed, 23 Sep 2009 18:11:31 -0500
-Subject: [PATCH 1/1] early_printk: Protect against using the same device twice
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-If you use the kernel argument:
+iEYEABECAAYFAkq6rRcACgkQdSjSd0sB4dJ/swCcC09/VsHJPFg0omKD9djUOGr5
+3vwAmgIxcArq3t8WHXTve0UfdHHthd9H
+=PH6M
+-----END PGP SIGNATURE-----
 
-earlyprintk=serial,ttyS0,115200
+--=-dsMRROmAQtR/Ng/y8OV0--
 
-This will cause a recursive crash.  Instead warn the end user that they
-specified the device a second time.
-
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- arch/x86/kernel/early_printk.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
-index 2acfd3f..41fd965 100644
---- a/arch/x86/kernel/early_printk.c
-+++ b/arch/x86/kernel/early_printk.c
-@@ -178,6 +178,11 @@ asmlinkage void early_printk(const char *fmt, ...)
- 
- static inline void early_console_register(struct console *con, int keep_early)
- {
-+	if (early_console->index != -1) {
-+		printk(KERN_CRIT "ERROR: earlyprintk= %s already used\n",
-+		       con->name);
-+		return;
-+	}
- 	early_console = con;
- 	if (keep_early)
- 		early_console->flags &= ~CON_BOOT;
--- 
-1.6.3.1.9.g95405b
-
-
---------------050200090802020405060708--
