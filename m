@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZIWOB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752983AbZIWOCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbZIWOB3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 10:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbZIWOB2
+	id S1752983AbZIWOCI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 10:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbZIWOCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 10:01:28 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:32832 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbZIWOB2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 10:01:28 -0400
+	Wed, 23 Sep 2009 10:02:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44143 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752935AbZIWOCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 10:02:05 -0400
+Message-ID: <4ABA2A3A.6020308@kernel.org>
+Date: Wed, 23 Sep 2009 23:01:30 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-In-Reply-To: <20090923115751.GA11820@infradead.org>
-References: <20090921144308.GG8072@barkeeper1-xen.linbit> <20090921165252.04e335b1@infradead.org> 
-	<20090921165321.GJ8072@barkeeper1-xen.linbit> <20090922072617U.fujita.tomonori@lab.ntt.co.jp> 
-	<f73f7ab80909211751p4d797556lcce5e47c3241b5ef@mail.gmail.com> 
-	<20090923115751.GA11820@infradead.org>
-From: Kyle Moffett <kyle@moffetthome.net>
-Date: Wed, 23 Sep 2009 10:01:09 -0400
-Message-ID: <f73f7ab80909230701k438be273y1e363a9ef5579e4d@mail.gmail.com>
-Subject: Re: [GIT PULL] DRBD for 2.6.32
-To: Christoph Hellwig <hch@infradead.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, lars.ellenberg@linbit.com,
-       arjan@infradead.org, lmb@suse.de, jens.axboe@oracle.com, neilb@suse.de,
-       James.Bottomley@suse.de, linux-kernel@vger.kernel.org,
-       drbd-dev@lists.linbit.com, akpm@linux-foundation.org,
-       bart.vanassche@gmail.com, davej@redhat.com, gregkh@suse.de,
-       kosaki.motohiro@jp.fujitsu.com, torvalds@linux-foundation.org,
-       nab@linux-iscsi.org, knikanth@suse.de, philipp.reisner@linbit.com,
-       sam@ravnborg.org, Mauelshagen@redhat.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu areas
+ for other cpus
+References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-3-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0909221856050.9410@V090114053VZO-1> <4AB983B6.6050203@kernel.org> <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1>
+In-Reply-To: <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 14:01:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 07:57, Christoph Hellwig <hch@infradead.org> wrote:
-> On Mon, Sep 21, 2009 at 08:51:32PM -0400, Kyle Moffett wrote:
->> You have to realize that this project is NOT a new one, it's been
->> around quite a decent number of years (since kernel 2.2-ish).  Yes,
->> the ABI is unique and has its warts, but there are a lot of things
->> that depend on it.
->
-> So?  That's never been an argument.  Quite contrary, we ignored upstream
-> for years and fucked up out of tree but please merge anyway is almost
-> a counter-argument.
+Hello,
 
-That's not what happened with DRBD at *all*.  It was a large project
-that ignored upstream for a while yes... but recently they decided to
-do things right and submitted all of their patches for review and
-comments.  After a good number of review cycles during which they were
-model citizens for making big necessary changes, nobody could find
-anything technically wrong with the code.
+Christoph Lameter wrote:
+> You did not answer my question.
 
-Now people are asking the out-of-tree project to continue to maintain
-their otherwise-perfectly-merge-ready patchset while also implementing
-a bunch of MD/DM/RAID-integration code.  Meanwhile several of the
-DM/MD RAID guys who *already* have their code upstream have not been
-having much luck defining a usable userspace API for the proposed
-integrated configuration model.
+Hmmm...
 
-At the very least, the code is at the point where Greg KH could easily
-merge it into staging:
-  * The code is under GPLv2
-  * The goal of the developers is to get it merged in the near future
-  * It builds properly on x86
-  * It's for a new feature (not an existing one)
-  * There's a reliable point-of-contact for the code
+> The local percpu variables are accessed via a static per cpu
+> virtual mapping. You cannot place per cpu variables outside of that
+> virtual address range of PERCPU_PAGE_SIZE.
+> 
+> What happens if the percpu allocator allocates more data than available in
+> the reserved area?
 
-The only thing missing is a list of exactly what still needs to be
-fixed.  I see a lot of handwaving about "We want a new API", but
-nobody defining what the requirements for that are.  If nobody can
-figure that out yet, then I see no reason it shouldn't be mainline
-mergeable; both Neil Brown and Jens Axboe seem to think this is ready
-to merge as well.
+I still don't understand your question.  Static percpu variables are
+always allocated from the first chunk inside that PERCPU_PAGE_SIZE
+area.  Dynamic allocations can go outside of that but they don't need
+any special handling.  What problems are you seeing?
 
-Cheers,
-Kyle Moffett
+-- 
+tejun
