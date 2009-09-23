@@ -1,123 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZIWAu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbZIWAvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582AbZIWAu2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 20:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbZIWAu1
+	id S1753629AbZIWAvZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 20:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbZIWAvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 20:50:27 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:47351 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753395AbZIWAu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 20:50:26 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: jan.kratochvil@redhat.com, Oleg Nesterov <oleg@redhat.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] x86: ptrace: sign-extend eax with orig_eax>=0
-X-Fcc: ~/Mail/linus
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20090923004651.2D99513F37@magilla.sf.frob.com>
-Date: Tue, 22 Sep 2009 17:46:51 -0700 (PDT)
+	Tue, 22 Sep 2009 20:51:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40415 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753595AbZIWAvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 20:51:23 -0400
+Date: Tue, 22 Sep 2009 17:50:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH] kmemcheck: clean up kmemcheck_annotate_bitfield
+Message-Id: <20090922175008.422945e5.akpm@linux-foundation.org>
+In-Reply-To: <20090923001301.3ED5922@magilla.sf.frob.com>
+References: <20090923001301.3ED5922@magilla.sf.frob.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 32-bit ptrace syscall on a 64-bit kernel (32-bit debugger on
-32-bit task) behaves differently than a native 32-bit kernel.  When
-setting a register state of orig_eax>=0 and eax=-ERESTART* when the
-debugged task is NOT on its way out of a 32-bit syscall, the task will
-fail to do the syscall restart logic that it should do.
+On Tue, 22 Sep 2009 17:13:01 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
 
-Test case available at http://sources.redhat.com/cgi-bin/cvsweb.cgi/~checkout~/tests/ptrace-tests/tests/erestartsys-trap.c?cvsroot=systemtap
+> The commit 181f7c5dd3832763bdf2756b6d2d8a49bdf12791 change traded a
+> style warning from sparse for a syntax warning from the real compiler
+> (and perhaps an error with compilers old enough).  The use of a local
+> variable inside BUILD_BUG_ON() is pretty questionable too, though it
+> works with the compiler's constant-folding in practice.
+> 
+> This change cleans it all up a little more sanely.
+> The details are self-explanatory.
+> 
+> Signed-off-by: Roland McGrath <roland@redhat.com>
+> CC: Johannes Berg <johannes@sipsolutions.net>
+> CC: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+>  include/linux/kmemcheck.h |   14 ++++++--------
+>  1 files changed, 6 insertions(+), 8 deletions(-)
+> 
+> diff --git a/include/linux/kmemcheck.h b/include/linux/kmemcheck.h
+> index c800660..9e2c5f4 100644
+> --- a/include/linux/kmemcheck.h
+> +++ b/include/linux/kmemcheck.h
+> @@ -143,16 +143,14 @@ static inline bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
+>  #define kmemcheck_bitfield_end(name)	\
+>  	int name##_end[0];
+>  
+> +#define kmemcheck_bitfield_stretch(ptr, name)	\
+> +	((long) &(ptr)->name##_end - (long) &(ptr)->name##_begin)
+> +
+>  #define kmemcheck_annotate_bitfield(ptr, name)				\
+>  	do {								\
+> -		if (!ptr)						\
+> -			break;						\
+> -									\
+> -		int _n = (long) &((ptr)->name##_end)			\
+> -			- (long) &((ptr)->name##_begin);		\
+> -		BUILD_BUG_ON(_n < 0);					\
+> -									\
+> -		kmemcheck_mark_initialized(&((ptr)->name##_begin), _n);	\
+> +		BUILD_BUG_ON(kmemcheck_bitfield_stretch(ptr, name) < 0);\
+> +		kmemcheck_mark_initialized(&(ptr)->name##_begin,	\
+> +			kmemcheck_bitfield_stretch(ptr, name));		\
+>  	} while (0)
+>  
+>  #define kmemcheck_annotate_variable(var)				\
 
-This happens because the 32-bit ptrace syscall sets eax=0xffffffff
-when it sets orig_eax>=0.  The resuming task will not sign-extend this
-for the -ERESTART* check because TS_COMPAT is not set.  (So the task
-thinks it is restarting after a 64-bit syscall, not a 32-bit one.)
+I just sent Linus the simple version:
 
-The fix is to have 32-bit ptrace calls sign-extend eax when orig_eax>=0.
-The long comment in the change explains the scenarios and caveats fully.
+--- a/include/linux/kmemcheck.h~include-linux-kmemcheckh-fix-a-trillion-warnings
++++ a/include/linux/kmemcheck.h
+@@ -145,10 +145,12 @@ static inline bool kmemcheck_is_obj_init
+ 
+ #define kmemcheck_annotate_bitfield(ptr, name)				\
+ 	do {								\
++		int _n;							\
++									\
+ 		if (!ptr)						\
+ 			break;						\
+ 									\
+-		int _n = (long) &((ptr)->name##_end)			\
++		_n = (long) &((ptr)->name##_end)			\
+ 			- (long) &((ptr)->name##_begin);		\
+ 		BUILD_BUG_ON(_n < 0);					\
+ 									\
+_
 
-Reported-by: Jan.Kratochvil@redhat.com
-Signed-off-by: Roland McGrath <roland@redhat.com>
-Reviewed-by: Oleg Nesterov <oleg@redhat.com>
+That BUILD_BUG_ON() is just wrong, but nobody knew that because the
+present version of BUILD_BUG_ON() silently does nothing if passed an
+expression which isn't a compile-time constant.  This was all fixed in
+the just-sent
+build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it.patch:
+
+
+From: "Jan Beulich" <JBeulich@novell.com>
+
+gcc permitting variable length arrays makes the current construct used for
+BUILD_BUG_ON() useless, as that doesn't produce any diagnostic if the
+controlling expression isn't really constant.  Instead, this patch makes
+it so that a bit field gets used here.  Consequently, those uses where the
+condition isn't really constant now also need fixing.
+
+Note that in the gfp.h, kmemcheck.h, and virtio_config.h cases
+MAYBE_BUILD_BUG_ON() really just serves documentation purposes - even if
+the expression is compile time constant (__builtin_constant_p() yields
+true), the array is still deemed of variable length by gcc, and hence the
+whole expression doesn't have the intended effect.
+
+[akpm@linux-foundation.org: make arch/sparc/include/asm/vio.h compile]
+[akpm@linux-foundation.org: more nonsensical assertions in tpm.c..]
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: Mimi Zohar <zohar@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/x86/kernel/ptrace.c |   55 +++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 54 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 8d7d5c9..ecb7a49 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -1120,7 +1120,6 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 value)
- 	R32(edi, di);
- 	R32(esi, si);
- 	R32(ebp, bp);
--	R32(eax, ax);
- 	R32(eip, ip);
- 	R32(esp, sp);
+ arch/sparc/include/asm/vio.h  |    2 +-
+ drivers/char/tpm/tpm.c        |    4 ++--
+ drivers/net/niu.c             |    2 +-
+ include/linux/gfp.h           |    2 +-
+ include/linux/kernel.h        |    8 ++++++--
+ include/linux/kmemcheck.h     |    2 +-
+ include/linux/virtio_config.h |    3 +--
+ 7 files changed, 13 insertions(+), 10 deletions(-)
+
+diff -puN arch/sparc/include/asm/vio.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it arch/sparc/include/asm/vio.h
+--- a/arch/sparc/include/asm/vio.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it
++++ a/arch/sparc/include/asm/vio.h
+@@ -258,7 +258,7 @@ static inline void *vio_dring_entry(stru
+ static inline u32 vio_dring_avail(struct vio_dring_state *dr,
+ 				  unsigned int ring_size)
+ {
+-	BUILD_BUG_ON(!is_power_of_2(ring_size));
++	MAYBE_BUILD_BUG_ON(!is_power_of_2(ring_size));
  
-@@ -1130,6 +1129,60 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 value)
- 		 * causes (long)orig_ax < 0 tests to fire correctly.
- 		 */
- 		regs->orig_ax = (long) (s32) value;
-+
-+		/*
-+		 * Whenever setting orig_eax to indicate a system call in
-+		 * progress, make sure an eax value set by the debugger gets
-+		 * sign-extended so that any ax == -ERESTART* tests fire
-+		 * correctly.
-+		 *
-+		 * When those tests (in handle_signal) are done directly
-+		 * after an actual 32-bit syscall, then TS_COMPAT is set and
-+		 * so syscall_get_error() does sign-extension.  However, the
-+		 * debugger sometimes saves that state and then restores it
-+		 * later with the intent of picking up the old thread state
-+		 * that can be about to do syscall restart.
-+		 *
-+		 * When it's a 32-bit debugger, that truncates ax to 32 bits.
-+		 * If the debugger restores thread state and resumes after a
-+		 * ptrace stop when the child was not doing a new syscall, it
-+		 * will not have TS_COMPAT set to make syscall_get_error()
-+		 * notice and do the sign-extension.
-+		 *
-+		 * We can't have syscall_get_error() always sign-extend,
-+		 * since that's wrong for 64-bit syscalls.  We want it to
-+		 * check TS_COMPAT rather than TIF_IA32 to avoid a false
-+		 * positive in the oddball case of a 32-bit task doing a
-+		 * syscall from a 64-bit code segment.  In the "restored
-+		 * thread state" case, it has no way to know whether the
-+		 * restored state refers to a 32-bit or 64-bit syscall.
-+		 *
-+		 * So we can't win 'em all.  We assume that if you are using
-+		 * a 32-bit debugger, you don't really care about arcane
-+		 * interference with a child trying to use 64-bit syscalls.
-+		 * (Just use a 64-bit debugger on it instead!)  What we do
-+		 * here makes a 32-bit debugger fiddling a 32-bit task
-+		 * consistent with what happens on a native 32-bit kernel.
-+		 *
-+		 * NOTE!  Since we have no similar logic in putreg(), we
-+		 * just expect a 64-bit debugger to save/restore the full
-+		 * 64 bits.  If a 64-bit debugger were to treat a 32-bit
-+		 * task differently and save/restore only 32 bits per
-+		 * register, it would have to grok orig_eax >= 0 and know
-+		 * to sign-extend its saved eax when setting it as 64 bits.
-+		 */
-+		if (regs->orig_ax >= 0)
-+			regs->ax = (long) (s32) regs->ax;
-+		break;
-+
-+	case offsetof(struct user32, regs.eax):
-+		/*
-+		 * As above, for either order of setting both ax and orig_ax.
-+		 */
-+		if (regs->orig_ax >= 0)
-+			regs->ax = (long) (s32) value;
-+		else
-+			regs->ax = value;
- 		break;
+ 	return (dr->pending -
+ 		((dr->prod - dr->cons) & (ring_size - 1)));
+diff -puN drivers/char/tpm/tpm.c~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it drivers/char/tpm/tpm.c
+--- a/drivers/char/tpm/tpm.c~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it
++++ a/drivers/char/tpm/tpm.c
+@@ -696,7 +696,7 @@ int __tpm_pcr_read(struct tpm_chip *chip
  
- 	case offsetof(struct user32, regs.eflags):
+ 	cmd.header.in = pcrread_header;
+ 	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
+-	BUILD_BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
++	BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
+ 	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
+ 			  "attempting to read a pcr value");
+ 
+@@ -760,7 +760,7 @@ int tpm_pcr_extend(u32 chip_num, int pcr
+ 		return -ENODEV;
+ 
+ 	cmd.header.in = pcrextend_header;
+-	BUILD_BUG_ON(be32_to_cpu(cmd.header.in.length) > EXTEND_PCR_SIZE);
++	BUG_ON(be32_to_cpu(cmd.header.in.length) > EXTEND_PCR_SIZE);
+ 	cmd.params.pcrextend_in.pcr_idx = cpu_to_be32(pcr_idx);
+ 	memcpy(cmd.params.pcrextend_in.hash, hash, TPM_DIGEST_SIZE);
+ 	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
+diff -puN drivers/net/niu.c~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it drivers/net/niu.c
+--- a/drivers/net/niu.c~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it
++++ a/drivers/net/niu.c
+@@ -5615,7 +5615,7 @@ static void niu_init_tx_mac(struct niu *
+ 	/* The XMAC_MIN register only accepts values for TX min which
+ 	 * have the low 3 bits cleared.
+ 	 */
+-	BUILD_BUG_ON(min & 0x7);
++	BUG_ON(min & 0x7);
+ 
+ 	if (np->flags & NIU_FLAGS_XMAC)
+ 		niu_init_tx_xmac(np, min, max);
+diff -puN include/linux/gfp.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it include/linux/gfp.h
+--- a/include/linux/gfp.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it
++++ a/include/linux/gfp.h
+@@ -220,7 +220,7 @@ static inline enum zone_type gfp_zone(gf
+ 					 ((1 << ZONES_SHIFT) - 1);
+ 
+ 	if (__builtin_constant_p(bit))
+-		BUILD_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
++		MAYBE_BUILD_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
+ 	else {
+ #ifdef CONFIG_DEBUG_VM
+ 		BUG_ON((GFP_ZONE_BAD >> bit) & 1);
+diff -puN include/linux/kernel.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it include/linux/kernel.h
+--- a/include/linux/kernel.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it
++++ a/include/linux/kernel.h
+@@ -678,13 +678,17 @@ struct sysinfo {
+ };
+ 
+ /* Force a compilation error if condition is true */
+-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
++#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
++
++/* Force a compilation error if condition is constant and true */
++#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
+ 
+ /* Force a compilation error if condition is true, but also produce a
+    result (of value 0 and type size_t), so the expression can be used
+    e.g. in a structure initializer (or where-ever else comma expressions
+    aren't permitted). */
+-#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
++#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
++#define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
+ 
+ /* Trap pasters of __FUNCTION__ at compile-time */
+ #define __FUNCTION__ (__func__)
+diff -puN include/linux/kmemcheck.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it include/linux/kmemcheck.h
+--- a/include/linux/kmemcheck.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it
++++ a/include/linux/kmemcheck.h
+@@ -152,7 +152,7 @@ static inline bool kmemcheck_is_obj_init
+ 									\
+ 		_n = (long) &((ptr)->name##_end)			\
+ 			- (long) &((ptr)->name##_begin);		\
+-		BUILD_BUG_ON(_n < 0);					\
++		MAYBE_BUILD_BUG_ON(_n < 0);				\
+ 									\
+ 		kmemcheck_mark_initialized(&((ptr)->name##_begin), _n);	\
+ 	} while (0)
+diff -puN include/linux/virtio_config.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it include/linux/virtio_config.h
+--- a/include/linux/virtio_config.h~build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it
++++ a/include/linux/virtio_config.h
+@@ -109,8 +109,7 @@ static inline bool virtio_has_feature(co
+ 				      unsigned int fbit)
+ {
+ 	/* Did you forget to fix assumptions on max features? */
+-	if (__builtin_constant_p(fbit))
+-		BUILD_BUG_ON(fbit >= 32);
++	MAYBE_BUILD_BUG_ON(fbit >= 32);
+ 
+ 	if (fbit < VIRTIO_TRANSPORT_F_START)
+ 		virtio_check_driver_offered_feature(vdev, fbit);
+_
+
