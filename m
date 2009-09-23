@@ -1,81 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752037AbZIWKxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbZIWK54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752037AbZIWKxH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 06:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZIWKxG
+	id S1752107AbZIWK54 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 06:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZIWK54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 06:53:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49449 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751620AbZIWKxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 06:53:04 -0400
-Date: Wed, 23 Sep 2009 12:52:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL] tracing/kprobes: Kprobes core/tracing/profiling
-	updates
-Message-ID: <20090923105252.GA32176@elte.hu>
-References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
+	Wed, 23 Sep 2009 06:57:56 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:48456 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751955AbZIWK5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 06:57:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=BpQqGQLFYzxCiIY4yeaOEu4gtQ+2Me9PNsbAt4CHY3SIi6ORWHCoKA4VOAXLmAvxIW
+         p5320bBE4Fpa4J/eZx3RSlQI4WXlUBpYtIRoQWY3Fie3NmCH6KcyvA2riMDmj6TqAMjn
+         FFwRIYRwAxoGCKmKnr7CqFMTrGzVwWcyJX+a4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253648302-5771-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090923103244.7aa5d027@infradead.org>
+References: <20090921093652.0722d745@infradead.org>
+	 <alpine.DEB.2.00.0909210926010.7647@gandalf.stny.rr.com>
+	 <20090921152853.2f8c0597@infradead.org>
+	 <1253551567.2630.26.camel@frodo>
+	 <20090921200042.29f0cf49@infradead.org>
+	 <1253568031.2935.5.camel@frodo>
+	 <20090923103244.7aa5d027@infradead.org>
+Date: Wed, 23 Sep 2009 12:57:58 +0200
+Message-ID: <c62985530909230357k5050a3cese1e303abea61f831@mail.gmail.com>
+Subject: Re: [patch] introduce TRACE_EVENT_ABI (was Re: TRACE_EVENT_ABI ?)
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/9/23, Arjan van de Ven <arjan@infradead.org>:
+> From e2c647ae2d3ddc25b804f0419956caf40d89c606 Mon Sep 17 00:00:00 2001
+> From: Steven Rostedt <rostedt@goodmis.org>
+> Date: Mon, 21 Sep 2009 20:14:53 +0200
+> Subject: [PATCH] trace: introduce TRACE_EVENT_ABI
+>
+> Some trace events are suitable to form a stable userspace ABI;
+> this patch introduces infrastructure to mark them as such,
+> and marks the first few tracepoints this way
+>
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  include/linux/tracepoint.h   |    4 ++++
+>  include/trace/events/power.h |    6 +++---
+>  include/trace/events/sched.h |    4 ++--
+>  3 files changed, 9 insertions(+), 5 deletions(-)
+>
+> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> index 63a3f7a..4cb454f 100644
+> --- a/include/linux/tracepoint.h
+> +++ b/include/linux/tracepoint.h
+> @@ -280,6 +280,10 @@ static inline void tracepoint_synchronize_unregister(void)
+>  * TRACE_EVENT_FN to perform any (un)registration work.
+>  */
+>
+> +#define TRACE_EVENT_ABI(name, proto, args, tstruct, assign, print)     \
+> +       TRACE_EVENT(name, PARAMS(proto), PARAMS(args),                  \
+> +                   PARAMS(tstruct), PARAMS(assign), PARAMS(print))
+> +
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Hi Ingo,
-> 
-> Kprobes has been nicely improved lately. The x86 instruction decoder 
-> has been fixed to support cross builds and mmx instruction set, 
-> besides of a lot of various kprobes core fixes.
-> 
-> The tracing part has evolved too, we can define human names for 
-> arguments and custom subsystem names for dynamic tracepoints.
-> 
-> And also kprobes profiling and raw dynamic tracepoint samples are now 
-> supported through perf. Looks like most of the kernel parts are now in 
-> place for a perf support. Things are going to be focused on a perf 
-> kprobes tool to exploit that.
+You may probably need to undefine it from trace/define_trace.h
+once every cpp magic have been done (ie: once trace/ftrace.h
+have been included.)
 
-Nice progress. What's the expected timeline of exhaustive tools/perf/ 
-support?
+Because some files include several tracepoint/trace event headers,
+then linux/tracepoint.h gets included several times and eventually
+TRACE_EVENT_ABI() would be redefined (and then crash).
 
-> Concerning this git tree, based on tip:/tracing/kprobes, I had to 
-> merge tracing/core inside few weeks ago because it needed build fixes 
-> that were in tracing/core (the merge commit provides the details). The 
-> tree is self contained but it's already async with recent upstream 
-> tracing updates. It means that merging upstream tree or tracing/core 
-> inside may result in non-trivial conflicts. I can handle them, or 
-> rebase the whole, as you prefer.
-> 
-> The tree can be found at:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	tracing/kprobes
+That's why we have:
 
-Would be nice to merge latest -git into this tree and resolve the 
-conflicts:
+#ifdef CONFIG_EVENT_TRACING
+#include <trace/ftrace.h>
+#endif
 
- kernel/trace/Makefile
- kernel/trace/trace.h
- kernel/trace/trace_event_types.h
- kernel/trace/trace_export.c
+#undef TRACE_EVENT
+#undef TRACE_EVENT_FN
+#undef TRACE_HEADER_MULTI_READ
 
-Then i could pull it into tip:tracing/kprobes for more testing.
+in define_trace.h: to allow such re-inclusion of tracepoint.h
+and avoid redefinitions of TRACE_EVENT and TRACE_EVENT_FN.
 
-	Ingo
+So you just need to add:
+
+ #undef TRACE_EVENT
+ #undef TRACE_EVENT_FN
++#undef TRACE_EVENT_ABI
+ #undef TRACE_HEADER_MULTI_READ
+
+
+The problem is visible if you build napi that has such
+multiple tracepoint headers included in a single C file.
+
+Thanks.
