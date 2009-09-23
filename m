@@ -1,127 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbZIWQSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbZIWQTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbZIWQSq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 12:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbZIWQSo
+	id S1752357AbZIWQTu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 12:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZIWQTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 12:18:44 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:34979 "EHLO e9.ny.us.ibm.com"
+	Wed, 23 Sep 2009 12:19:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39775 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750752AbZIWQSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 12:18:43 -0400
-Message-ID: <4ABA4A5B.2060107@us.ibm.com>
-Date: Wed, 23 Sep 2009 09:18:35 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751244AbZIWQTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 12:19:48 -0400
+Date: Wed, 23 Sep 2009 16:19:13 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       seto.hidetoshi@jp.fujitsu.com, GNUtoo@no-log.org, ying.huang@intel.com,
+       ak@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       seto.hidetoshi@jp.fujitsu.com, GNUtoo@no-log.org, ying.huang@intel.com,
+       ak@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <bug-14204-5438@http.bugzilla.kernel.org/>
+References: <bug-14204-5438@http.bugzilla.kernel.org/>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: mce: Use safer ways to access MCE registers
+Message-ID: <tip-11868a2dc4f5e4f2f652bfd259e1360193fcee62@git.kernel.org>
+Git-Commit-ID: 11868a2dc4f5e4f2f652bfd259e1360193fcee62
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rt11
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <4AB91817.1050108@us.ibm.com>
-In-Reply-To: <4AB91817.1050108@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 16:19:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren Hart wrote:
-> Thomas Gleixner wrote:
->> We are pleased to announce the next update to our new preempt-rt
->> series.
->>
->>    - latencytop fix
->>
->>    - disable SPARSE_IRQ, DMAR, IRQ_REMAP for -rt
->>
->> Known issues:
->>    - ARM highmem
->>    - scheduler load balancing oddities. Peter is working on it.
->>    - timer_interrupt hang check (still working on somthing useful)
->>
->> The planned "add back MIPS support" is postponed to rt12.
->>
->> Download locations:
->>
->>     http://rt.et.redhat.com/download/
->>     http://www.kernel.org/pub/linux/kernel/projects/rt/
->>
->> Git release branch:
->>     
->> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git 
->> rt/2.6.31
->>   Git development branch:
->>     
->> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git 
->> rt/head
->>
->> Gitweb:
->>     
->> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31 
->>
->>
->> Information on the RT patch can be found at:
->>
->>     http://rt.wiki.kernel.org/index.php/Main_Page
->>
->> to build the 2.6.31-rt11 tree, the following patches should be
->> applied:
->>
->>     http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.tar.bz2
->>     
->> http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rt11.bz2
->>
->> Enjoy !
->>
->>       tglx
->>
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe 
->> linux-rt-users" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> Hitting a repeating BUG at boot on my Thinkpad T60p:
-> 
-> [    2.861699] BUG: sleeping function called from invalid context at 
-> kernel/rtmutex.c:684
-> [    2.861839] in_atomic(): 1, irqs_disabled(): 0, pid: 777, name: sleep
-> [    2.861967] Pid: 777, comm: sleep Not tainted 2.6.31-rc4-rt1-dvh01 #1
-> [    2.862092] Call Trace:
-> [    2.862217]  [<c012d881>] __might_sleep+0xe1/0x100
-> [    2.862343]  [<c056ccba>] rt_spin_lock+0x2a/0x70
-> [    2.862468]  [<c018243a>] res_counter_uncharge+0x2a/0x50
-> [    2.862593]  [<c01e6e23>] __mem_cgroup_uncharge_common+0x93/0x190
-> [    2.862720]  [<c01e6fb8>] mem_cgroup_uncharge_page+0x28/0x30
-> [    2.862845]  [<c01d6b87>] page_remove_rmap+0x47/0x50
-> [    2.862969]  [<c01cf2d9>] unmap_vmas+0x349/0x6b0
-> [    2.863093]  [<c01d45e5>] exit_mmap+0xc5/0x1c0
-> [    2.863217]  [<c0140481>] mmput+0x51/0xc0
-> [    2.863339]  [<c0146465>] exit_mm+0x105/0x140
-> [    2.863462]  [<c01465b5>] do_exit+0x115/0x760
-> [    2.863584]  [<c0146cc4>] sys_exit+0x14/0x20
-> [    2.863707]  [<c0103025>] syscall_call+0x7/0xb
-> 
-> I'm looking for a problem with preempt_disable() between LinuxCon 
-> seesions now.  But if someone already knows the problem, thought I'd post.
-> 
+Commit-ID:  11868a2dc4f5e4f2f652bfd259e1360193fcee62
+Gitweb:     http://git.kernel.org/tip/11868a2dc4f5e4f2f652bfd259e1360193fcee62
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 23 Sep 2009 17:49:55 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 23 Sep 2009 18:08:26 +0200
 
-Ugh, nevermind, this was an -rc4 kernel.  2.6.31-rt11 does not see this 
-problem.
+x86: mce: Use safer ways to access MCE registers
+
+Use rdmsrl_safe() when accessing MCE registers. While in
+theory we always 'know' which ones are safe to access from
+the capability bits, there's a lot of hardware variations
+and reality might differ from theory, as it did in this case:
+
+   http://bugzilla.kernel.org/show_bug.cgi?id=14204
+
+[    0.010016] mce: CPU supports 5 MCE banks
+[    0.011029] general protection fault: 0000 [#1]
+[    0.011998] last sysfs file:
+[    0.011998] Modules linked in:
+[    0.011998]
+[    0.011998] Pid: 0, comm: swapper Not tainted (2.6.31_router #1) HP Vectra
+[    0.011998] EIP: 0060:[<c100d9b9>] EFLAGS: 00010246 CPU: 0
+[    0.011998] EIP is at mce_rdmsrl+0x19/0x60
+[    0.011998] EAX: 00000000 EBX: 00000001 ECX: 00000407 EDX: 08000000
+[    0.011998] ESI: 00000000 EDI: 8c000000 EBP: 00000405 ESP: c17d5eac
+
+So WARN_ONCE() instead of crashing the box.
+
+( also fix a number of stylistic inconsistencies in the code. )
+
+Note, we might still crash in wrmsrl() if we get that far, but
+we shouldnt if the registers are truly inaccessible.
+
+Reported-by: GNUtoo <GNUtoo@no-log.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Huang Ying <ying.huang@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+LKML-Reference: <bug-14204-5438@http.bugzilla.kernel.org/>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+---
+ arch/x86/kernel/cpu/mcheck/mce.c |   23 +++++++++++++++++++++--
+ 1 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 2f5aab2..4b2af86 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -305,13 +305,25 @@ static int msr_to_offset(u32 msr)
+ static u64 mce_rdmsrl(u32 msr)
+ {
+ 	u64 v;
++
+ 	if (__get_cpu_var(injectm).finished) {
+ 		int offset = msr_to_offset(msr);
++
+ 		if (offset < 0)
+ 			return 0;
+ 		return *(u64 *)((char *)&__get_cpu_var(injectm) + offset);
+ 	}
+-	rdmsrl(msr, v);
++
++	if (rdmsrl_safe(msr, &v)) {
++		WARN_ONCE(1, "mce: Unable to read msr %d!\n", msr);
++		/*
++		 * Return zero in case the access faulted. This should
++		 * not happen normally but can happen if the CPU does
++		 * something weird, or if the code is buggy.
++		 */
++		v = 0;
++	}
++
+ 	return v;
+ }
+ 
+@@ -319,6 +331,7 @@ static void mce_wrmsrl(u32 msr, u64 v)
+ {
+ 	if (__get_cpu_var(injectm).finished) {
+ 		int offset = msr_to_offset(msr);
++
+ 		if (offset >= 0)
+ 			*(u64 *)((char *)&__get_cpu_var(injectm) + offset) = v;
+ 		return;
+@@ -415,7 +428,7 @@ static inline void mce_get_rip(struct mce *m, struct pt_regs *regs)
+ 		m->ip = mce_rdmsrl(rip_msr);
+ }
+ 
+-#ifdef CONFIG_X86_LOCAL_APIC 
++#ifdef CONFIG_X86_LOCAL_APIC
+ /*
+  * Called after interrupts have been reenabled again
+  * when a MCE happened during an interrupts off region
+@@ -1172,6 +1185,7 @@ static int mce_banks_init(void)
+ 		return -ENOMEM;
+ 	for (i = 0; i < banks; i++) {
+ 		struct mce_bank *b = &mce_banks[i];
++
+ 		b->ctl = -1ULL;
+ 		b->init = 1;
+ 	}
+@@ -1203,6 +1217,7 @@ static int __cpuinit mce_cap_init(void)
+ 	banks = b;
+ 	if (!mce_banks) {
+ 		int err = mce_banks_init();
++
+ 		if (err)
+ 			return err;
+ 	}
+@@ -1237,6 +1252,7 @@ static void mce_init(void)
+ 
+ 	for (i = 0; i < banks; i++) {
+ 		struct mce_bank *b = &mce_banks[i];
++
+ 		if (!b->init)
+ 			continue;
+ 		wrmsrl(MSR_IA32_MCx_CTL(i), b->ctl);
+@@ -1626,6 +1642,7 @@ static int mce_disable(void)
+ 
+ 	for (i = 0; i < banks; i++) {
+ 		struct mce_bank *b = &mce_banks[i];
++
+ 		if (b->init)
+ 			wrmsrl(MSR_IA32_MCx_CTL(i), 0);
+ 	}
+@@ -1911,6 +1928,7 @@ static void mce_disable_cpu(void *h)
+ 		cmci_clear();
+ 	for (i = 0; i < banks; i++) {
+ 		struct mce_bank *b = &mce_banks[i];
++
+ 		if (b->init)
+ 			wrmsrl(MSR_IA32_MCx_CTL(i), 0);
+ 	}
+@@ -1928,6 +1946,7 @@ static void mce_reenable_cpu(void *h)
+ 		cmci_reenable();
+ 	for (i = 0; i < banks; i++) {
+ 		struct mce_bank *b = &mce_banks[i];
++
+ 		if (b->init)
+ 			wrmsrl(MSR_IA32_MCx_CTL(i), b->ctl);
+ 	}
