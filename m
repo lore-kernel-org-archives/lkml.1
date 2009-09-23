@@ -1,82 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZIWIRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZIWITV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbZIWIRd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 04:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbZIWIRd
+	id S1754516AbZIWITV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 04:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZIWITU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 04:17:33 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:57453 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 04:19:20 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:64788 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754327AbZIWIRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 04:17:32 -0400
-Message-ID: <4AB9D975.1060403@redhat.com>
-Date: Wed, 23 Sep 2009 01:16:53 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH 19/24] ftrace: Fix trace_add_event_call() to initialize
- list
-References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com> <1253648302-5771-20-git-send-email-fweisbec@gmail.com> <4AB975DD.9040205@cn.fujitsu.com>
-In-Reply-To: <4AB975DD.9040205@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	id S1754338AbZIWITU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 04:19:20 -0400
+Date: Wed, 23 Sep 2009 10:19:21 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       Eric B Munson <ebmunson@us.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Dave Airlie <airlied@linux.ie>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: v2.6.31-7381-g7fa0772: new build warnings: kmemcheck,
+ __deprecated, hugetlb, radeon
+Message-ID: <20090923101921.34edd245@hyperion.delvare>
+In-Reply-To: <20090923091958.6a0f9d58@hyperion.delvare>
+References: <4AB8FC88.8020608@s5r6.in-berlin.de>
+	<20090923091958.6a0f9d58@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
->> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
->> index ba34920..83cc2c0 100644
->> --- a/kernel/trace/trace_events.c
->> +++ b/kernel/trace/trace_events.c
->> @@ -1010,9 +1010,12 @@ static int __trace_add_event_call(struct ftrace_event_call *call)
->>  		return -ENOENT;
->>  
->>  	list_add(&call->list, &ftrace_events);
->> -	return event_create_dir(call, d_events, &ftrace_event_id_fops,
->> +	ret = event_create_dir(call, d_events, &ftrace_event_id_fops,
->>  				&ftrace_enable_fops, &ftrace_event_filter_fops,
->>  				&ftrace_event_format_fops);
->> +	if (ret < 0)
->> +		list_del(&call->list);
->> +	return ret;
-> 
-> seems it's a bit better to call list_add() after event_create_dir()
-> returns 0.
+On Wed, 23 Sep 2009 09:19:58 +0200, Jean Delvare wrote:
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 
-Sure, that's another way to do. But I'm afraid that will make a difference
-from trace_module_add_events() path.
-
----
-                call->mod = mod;
-                list_add(&call->list, &ftrace_events);
-                event_create_dir(call, d_events,
-                                 &file_ops->id, &file_ops->enable,
-                                 &file_ops->filter, &file_ops->format);
----
-Anyway, this also needs to check the result of event_create_dir().
-
-Thank you,
+Oops, I messed up there. That was supposed to be a simple Cc:, bad
+copy-and-paste, sorry. Please fix before pushing upstream.
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Jean Delvare
