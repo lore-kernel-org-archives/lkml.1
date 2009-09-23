@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751611AbZIWM6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbZIWM7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751611AbZIWM6x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 08:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZIWM6x
+	id S1751930AbZIWM7Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 08:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbZIWM7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 08:58:53 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60703 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbZIWM6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 08:58:52 -0400
-Message-ID: <4ABA1B75.7040900@redhat.com>
-Date: Wed, 23 Sep 2009 15:58:29 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 23 Sep 2009 08:59:24 -0400
+Received: from server78.greatnet.de ([83.133.96.102]:43701 "EHLO
+	server78.greatnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbZIWM7X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 08:59:23 -0400
+Message-ID: <4ABA1B9C.9070302@nachtwindheim.de>
+Date: Wed, 23 Sep 2009 14:59:08 +0200
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: Arnaldo Carvalho de Melo <acme@redhat.com>, rostedt@goodmis.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [patch] Re: [perf] Finding uninstalled modules Was Re: mailing
- list for trace users
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com>	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>	 <4AB8BA37.4010305@redhat.com> <20090922201746.GH5216@ghostprotocols.net>	 <4AB9DCC8.5050603@redhat.com> <1253697658.11461.36.camel@marge.simson.net>	 <4AB9F08E.1020106@redhat.com> <1253705515.7835.41.camel@marge.simson.net>
-In-Reply-To: <1253705515.7835.41.camel@marge.simson.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Wolfram Sang <w.sang@pengutronix.de>
+CC: khali@linux-fr.org, jbarnes@virtousgeek.org, linux-pci@vger.kernel.org,
+       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Crash on reading the whole PCI config of PIIX4 SMBus
+References: <4AB8F142.9090609@nachtwindheim.de> <20090922231839.GA20656@pengutronix.de>
+In-Reply-To: <20090922231839.GA20656@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23/2009 02:31 PM, Mike Galbraith wrote:
+Wolfram Sang schrieb:
+> On Tue, Sep 22, 2009 at 05:46:10PM +0200, Henrik Kretzschmar wrote:
 >
-> You can't annotate module symbols without -m.  If you don't provide -k,
-> annotate will look for vmlinux in cwd.  If there's one there, it'll
-> silently parse it.  For a module symbol, no -m means no symbol.
+>   
+>> at boot time my system (Wincor/Nixdorf Beetle D1) sometimes crashs while loading the i2c-piix4 driver.
+>>     
 >
-> marge:/root/tmp # perf annotate -v -v -m ext3_mark_iloc_dirty 2>&1| grep ext3_mark_iloc_dirty
-> new symbol: ffffffffa005f8cf [0000dead]: ext3_mark_iloc_dirty   [ext3], hist: (nil), obj_start: (nil)
->   ffffffffa005f8cf-ffffffffa005fc20 ext3_mark_iloc_dirty [ext3]
->   Error: symbol 'ext3_mark_iloc_dirty' not present amongst the samples.
+> Have you checked if you have the latest BIOS for this machine? Sometimes
+> PCI-problems got fixed there...
 >
-> With -k -m it works here.
->
->    
+>   
+Thanks for you fast replies,
+
+the latest BIOS (05/08) is already installed, so no fixing can be expected that way
 
 
-Not for me.  'perf report', for example, shows
+I tested my killer-commands at the other box @home with no crashes.
 
-     63.08%  qemu-system-x86  
-[kernel]                                              [k] packet_exit
-      4.71%  qemu-system-x86  
-[kernel]                                              [k] hpet_next_event
-      4.38%             init  
-[kernel]                                              [k] 
-mwait_idle_with_hints
+The commands _work_ with a coldstarted Linux and i2c-piix not loaded,
+so the only thing I can do is blacklisting it and renounce sensors support,
+having a good a argument for a new hardware aquisition. :)
 
-While 'perf top' still shows vmx_vcpu_run.
+For completness the message with the SMBus revision, which is not the pci-revision, is:
 
--- 
-error compiling committee.c: too many arguments to function
+SMBus Host Controller at 0x1040, revision 0
+
+
+The "?" at the interrupt line of lspci is a little strange:
+
+>> Interrupt: pin ? routed to IRQ 9
+
+looking at lspci -x -s 7.3 I can see that PCI_INTERRUPT_PIN == 0 
+
+I cant see that i2p-piix does any interrupts, refering /proc/irq/9/spurious
+
+The driver says:
+ 
+Using Interrupt SMI# for SMBus
+
+I'm not sure, but my box @home has the same lspci output with the "?".
+
+So long, thanks for help.
+
+
 
