@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbZIXAcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZIXA3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754034AbZIXAcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZIXAaS
+	id S1753446AbZIXA3x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbZIXA3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:30:18 -0400
+	Wed, 23 Sep 2009 20:29:51 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbZIXA3d (ORCPT
+	with ESMTP id S1753110AbZIXA3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:33 -0400
+	Wed, 23 Sep 2009 20:29:21 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>
-Subject: [PATCH v18 31/80] c/r: detect resource leaks for whole-container checkpoint
-Date: Wed, 23 Sep 2009 19:51:11 -0400
-Message-Id: <1253749920-18673-32-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 32/80] deferqueue: generic queue to defer work
+Date: Wed, 23 Sep 2009 19:51:12 -0400
+Message-Id: <1253749920-18673-33-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -27,446 +27,299 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a 'users' count to objhash items, and, for a !CHECKPOINT_SUBTREE
-checkpoint, return an error code if the actual objects' counts are
-higher, indicating leaks (references to the objects from a task not
-being checkpointed).
+Add a interface to postpone an action until the end of the entire
+checkpoint or restart operation. This is useful when during the
+scan of tasks an operation cannot be performed in place, to avoid
+the need for a second scan.
 
-The comparison of the objhash user counts to object refcounts as a
-basis for checking for leaks comes from Alexey's OpenVZ-based c/r
-patchset.
+One use case is when restoring an ipc shared memory region that has
+been deleted (but is still attached), during restart it needs to be
+create, attached and then deleted. However, creation and attachment
+are performed in distinct locations, so deletion can not be performed
+on the spot. Instead, this work (delete) is deferred until later.
+(This example is in one of the following patches).
 
-"Leak detection" occurs _before_ any real state is saved, as a
-pre-step. This prevents races due to sharing with outside world where
-the sharing ceases before the leak test takes place, thus protecting
-the checkpoint image from inconsistencies.
+This interface allows chronic procrastination in the kernel:
 
-Once leak testing concludes, checkpoint will proceed. Because objects
-are already in the objhash, checkpoint_obj() cannot distinguish
-between the first and subsequent encounters. This is solved with a
-flag (CKPT_OBJ_CHECKPOINTED) per object.
+deferqueue_create(void):
+    Allocates and returns a new deferqueue.
 
-Two additional checks take place during checkpoint: for objects that
-were created during, and objects destroyed, while the leak-detection
-pre-step took place. (By the time this occurs part of the checkpoint
-image has been written out to disk, so this is purely advisory).
+deferqueue_run(deferqueue):
+    Executes all the pending works in the queue. Returns the number
+    of works executed, or an error upon the first error reported by
+    a deferred work.
 
-Changelog[v18]:
-  - [Dan Smith] Fix ckpt_obj_lookup_add() leak detection logic
-  - Replace some EAGAIN with EBUSY
-  - Add a few more ckpt_write_err()s
-  - Introduce CKPT_OBJ_VISITED
-  - ckpt_obj_collect() returns objref for new objects, 0 otherwise
-  - Rename ckpt_obj_checkpointed() to ckpt_obj_visited()
-  - Introduce ckpt_obj_visit() to mark objects as visited
-  - Set the CHECKPOINTED flag on objects before calling checkpoint
-Changelog[v17]:
-  - Leak detection is performed in two-steps
-  - Detect reverse-leaks (objects disappearing unexpectedly)
-  - Skip reverse-leak detection if ops->ref_users isn't defined
+deferqueue_add(deferqueue, data, size, func, dtor):
+    Enqueue a deferred work. @function is the callback function to
+    do the work, which will be called with @data as an argument.
+    @size tells the size of data. @dtor is a destructor callback
+    that is invoked for deferred works remaining in the queue when
+    the queue is destroyed. NOTE: for a given deferred work, @dtor
+    is _not_ called if @func was already called (regardless of the
+    return value of the latter).
+
+deferqueue_destroy(deferqueue):
+    Free the deferqueue and any queued items while invoking the
+    @dtor callback for each queued item.
+
+Why aren't we using the existing kernel workqueue mechanism?  We need
+to defer to work until the end of the operation: not earlier, since we
+need other things to be in place; not later, to not block waiting for
+it. However, the workqueue schedules the work for 'some time later'.
+Also, the kernel workqueue may run in any task context, but we require
+many times that an operation be run in the context of some specific
+restarting task (e.g., restoring IPC state of a certain ipc_ns).
+
+Instead, this mechanism is a simple way for the c/r operation as a
+whole, and later a task in particular, to defer some action until
+later (but not arbitrarily later) _in the restore_ operation.
+
+Changelog[v18]
+  - Interface to pass simple pointers as data with deferqueue
+Changelog[v17]
+  - Fix deferqueue_add() function
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/checkpoint.c    |   41 ++++++++++
- checkpoint/objhash.c       |  188 +++++++++++++++++++++++++++++++++++++++++++-
- checkpoint/process.c       |    5 +
- include/linux/checkpoint.h |    7 ++
- 4 files changed, 237 insertions(+), 4 deletions(-)
+ checkpoint/Kconfig         |    5 ++
+ include/linux/deferqueue.h |   78 +++++++++++++++++++++++++++++++
+ kernel/Makefile            |    1 +
+ kernel/deferqueue.c        |  109 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 193 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/deferqueue.h
+ create mode 100644 kernel/deferqueue.c
 
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 93d7860..c21646d 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -473,6 +473,24 @@ static int checkpoint_pids(struct ckpt_ctx *ctx)
- 	return ret;
- }
+diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
+index 21fc86b..4a2c845 100644
+--- a/checkpoint/Kconfig
++++ b/checkpoint/Kconfig
+@@ -2,10 +2,15 @@
+ # implemented the hooks for processor state etc. needed by the
+ # core checkpoint/restart code.
  
-+static int collect_objects(struct ckpt_ctx *ctx)
-+{
-+	int n, ret = 0;
++config DEFERQUEUE
++	bool
++	default n
 +
-+	for (n = 0; n < ctx->nr_tasks; n++) {
-+		ckpt_debug("dumping task #%d\n", n);
-+		ret = ckpt_collect_task(ctx, ctx->tasks_arr[n]);
-+		if (ret < 0) {
-+			ctx->tsk = ctx->tasks_arr[n];
-+			ckpt_write_err(ctx, "TE", "collect failed", ret);
-+			ctx->tsk = NULL;
-+			break;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
- /* count number of tasks in tree (and optionally fill pid's in array) */
- static int tree_count_tasks(struct ckpt_ctx *ctx)
- {
-@@ -719,6 +737,21 @@ long do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
- 	if (ret < 0)
- 		goto out;
- 
-+	if (!(ctx->uflags & CHECKPOINT_SUBTREE)) {
-+		/*
-+		 * Verify that all objects are contained (no leaks):
-+		 * First collect them all into the while counting users
-+		 * and then compare to the objects' real user counts.
-+		 */
-+		ret = collect_objects(ctx);
-+		if (ret < 0)
-+			goto out;
-+		if (!ckpt_obj_contained(ctx)) {
-+			ret = -EBUSY;
-+			goto out;
-+		}
-+	}
-+
- 	ret = checkpoint_write_header(ctx);
- 	if (ret < 0)
- 		goto out;
-@@ -728,6 +761,14 @@ long do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
- 	ret = checkpoint_all_tasks(ctx);
- 	if (ret < 0)
- 		goto out;
-+
-+	/* verify that all objects were indeed visited */
-+	if (!ckpt_obj_visited(ctx)) {
-+		ckpt_write_err(ctx, "E", "leak: unvisited", -EBUSY);
-+		ret = -EBUSY;
-+		goto out;
-+	}
-+
- 	ret = checkpoint_write_tail(ctx);
- 	if (ret < 0)
- 		goto out;
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-index e7f5393..dd1f3e5 100644
---- a/checkpoint/objhash.c
-+++ b/checkpoint/objhash.c
-@@ -25,27 +25,32 @@ struct ckpt_obj_ops {
- 	enum obj_type obj_type;
- 	void (*ref_drop)(void *ptr, int lastref);
- 	int (*ref_grab)(void *ptr);
-+	int (*ref_users)(void *ptr);
- 	int (*checkpoint)(struct ckpt_ctx *ctx, void *ptr);
- 	void *(*restore)(struct ckpt_ctx *ctx);
- };
- 
- struct ckpt_obj {
-+	int users;
- 	int objref;
- 	int flags;
- 	void *ptr;
- 	struct ckpt_obj_ops *ops;
- 	struct hlist_node hash;
-+	struct hlist_node next;
- };
- 
- /* object internal flags */
- #define CKPT_OBJ_CHECKPOINTED		0x1   /* object already checkpointed */
-+#define CKPT_OBJ_VISITED		0x2   /* object already visited */
- 
- struct ckpt_obj_hash {
- 	struct hlist_head *head;
-+	struct hlist_head list;
- 	int next_free_objref;
- };
- 
--/* helper grab/drop functions: */
-+/* helper grab/drop/users functions */
- 
- static void obj_no_drop(void *ptr, int lastref)
- {
-@@ -114,6 +119,7 @@ int ckpt_obj_hash_alloc(struct ckpt_ctx *ctx)
- 
- 	obj_hash->head = head;
- 	obj_hash->next_free_objref = 1;
-+	INIT_HLIST_HEAD(&obj_hash->list);
- 
- 	ctx->obj_hash = obj_hash;
- 	return 0;
-@@ -181,6 +187,7 @@ static struct ckpt_obj *obj_new(struct ckpt_ctx *ctx, void *ptr,
- 
- 	obj->ptr = ptr;
- 	obj->ops = ops;
-+	obj->users = 2;  /* extra reference that objhash itself takes */
- 
- 	if (!objref) {
- 		/* use @obj->ptr to index, assign objref (checkpoint) */
-@@ -198,6 +205,7 @@ static struct ckpt_obj *obj_new(struct ckpt_ctx *ctx, void *ptr,
- 		obj = ERR_PTR(ret);
- 	} else {
- 		hlist_add_head(&obj->hash, &ctx->obj_hash->head[i]);
-+		hlist_add_head(&obj->next, &ctx->obj_hash->list);
- 	}
- 
- 	return obj;
-@@ -230,12 +238,35 @@ static struct ckpt_obj *obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
- 		*first = 1;
- 	} else {
- 		BUG_ON(obj->ops->obj_type != type);
-+		obj->users++;
- 		*first = 0;
- 	}
- 	return obj;
- }
- 
- /**
-+ * ckpt_obj_collect - collect object into objhash
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @type: object type
-+ *
-+ * [used during checkpoint].
-+ * Return: objref if object is new, 0 otherwise, or an error
+ config CHECKPOINT
+ 	bool "Checkpoint/restart (EXPERIMENTAL)"
+ 	depends on CHECKPOINT_SUPPORT && EXPERIMENTAL
+ 	depends on CGROUP_FREEZER
++	select DEFERQUEUE
+ 	help
+ 	  Application checkpoint/restart is the ability to save the
+ 	  state of a running application so that it can later resume
+diff --git a/include/linux/deferqueue.h b/include/linux/deferqueue.h
+new file mode 100644
+index 0000000..ea3b620
+--- /dev/null
++++ b/include/linux/deferqueue.h
+@@ -0,0 +1,78 @@
++/*
++ * deferqueue.h --- deferred work queue handling for Linux.
 + */
-+int ckpt_obj_collect(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
-+{
-+	struct ckpt_obj *obj;
-+	int first;
 +
-+	obj = obj_lookup_add(ctx, ptr, type, &first);
-+	if (IS_ERR(obj))
-+		return PTR_ERR(obj);
-+	ckpt_debug("%s objref %d first %d\n",
-+		   obj->ops->obj_name, obj->objref, first);
-+	return (first ? obj->objref : 0);
-+}
++#ifndef _LINUX_DEFERQUEUE_H
++#define _LINUX_DEFERQUEUE_H
 +
-+/**
-  * ckpt_obj_lookup - lookup object (by pointer) in objhash
-  * @ctx: checkpoint context
-  * @ptr: pointer to object
-@@ -255,6 +286,21 @@ int ckpt_obj_lookup(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
- 	return obj ? obj->objref : 0;
- }
- 
-+static inline int obj_reverse_leak(struct ckpt_ctx *ctx, struct ckpt_obj *obj)
-+{
-+	/*
-+	 * A "reverse" leak ?  All objects should already be in the
-+	 * objhash by now. But an outside task may have created an
-+	 * object while we were collecting, which we didn't catch.
-+	 */
-+	if (obj->ops->ref_users && !(ctx->uflags & CHECKPOINT_SUBTREE)) {
-+		ckpt_write_err(ctx, "OP", "leak: reverse added late (%s)",
-+			       obj->objref, obj->ptr, obj->ops->obj_name);
-+		return -EBUSY;
-+	}
-+	return 0;
-+}
++#include <linux/list.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
 +
- /**
-  * ckpt_obj_lookup_add - lookup object and add if not in objhash
-  * @ctx: checkpoint context
-@@ -275,7 +321,11 @@ int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
- 		return PTR_ERR(obj);
- 	ckpt_debug("%s objref %d first %d\n",
- 		   obj->ops->obj_name, obj->objref, *first);
--	obj->flags |= CKPT_OBJ_CHECKPOINTED;
-+
-+	if (*first && obj_reverse_leak(ctx, obj))
-+		return -EBUSY;
-+
-+	obj->flags |= CKPT_OBJ_VISITED;
- 	return obj->objref;
- }
- 
-@@ -315,6 +365,9 @@ int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
- 	if (IS_ERR(obj))
- 		return PTR_ERR(obj);
- 
-+	if (new && obj_reverse_leak(ctx, obj))
-+		return -EBUSY;
-+
- 	if (!(obj->flags & CKPT_OBJ_CHECKPOINTED)) {
- 		h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_OBJREF);
- 		if (!h)
-@@ -329,14 +382,141 @@ int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
- 			return ret;
- 
- 		/* invoke callback to actually dump the state */
--		if (obj->ops->checkpoint)
--			ret = obj->ops->checkpoint(ctx, ptr);
-+		BUG_ON(!obj->ops->checkpoint);
- 
- 		obj->flags |= CKPT_OBJ_CHECKPOINTED;
-+		ret = obj->ops->checkpoint(ctx, ptr);
- 	}
-+
-+	obj->flags |= CKPT_OBJ_VISITED;
- 	return (ret < 0 ? ret : obj->objref);
- }
- 
-+/**
-+ * ckpt_obj_visit - mark object as visited
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @type: object type
++/*
++ * This interface allows chronic procrastination in the kernel:
 + *
-+ * [used during checkpoint].
-+ * Marks the object as visited, or fail if not found
++ * deferqueue_create(void):
++ *     Allocates and returns a new deferqueue.
++ *
++ * deferqueue_run(deferqueue):
++ *     Executes all the pending works in the queue. Returns the number
++ *     of works executed, or an error upon the first error reported by
++ *     a deferred work.
++ *
++ * deferqueue_add(deferqueue, data, size, func, dtor):
++ * 	Enqueue a deferred work. @function is the callback function to
++ *      do the work, which will be called with @data as an argument.
++ *      @size tells the size of data. @dtor is a destructor callback
++ *      that is invoked for deferred works remaining in the queue when
++ *      the queue is destroyed. NOTE: for a given deferred work, @dtor
++ *      is _not_ called if @func was already called (regardless of the
++ *      return value of the latter).
++ *
++ * deferqueue_destroy(deferqueue):
++ *      Free the deferqueue and any queued items while invoking the
++ *      @dtor callback for each queued item.
++ *
++ * The following helpers are useful when @data is a simple pointer:
++ *
++ * deferqueue_add_ptr(deferqueue, ptr, func, dtor):
++ *	Enqueue a deferred work whos data is @ptr.
++ *
++ * deferqueue_data_ptr(data):
++ *	Convert a deferqueue @data to a void * pointer.
 + */
-+int ckpt_obj_visit(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
++
++
++typedef int (*deferqueue_func_t)(void *);
++
++struct deferqueue_entry {
++	deferqueue_func_t function;
++	deferqueue_func_t destructor;
++	struct list_head list;
++	char data[0];
++};
++
++struct deferqueue_head {
++	spinlock_t lock;
++	struct list_head list;
++};
++
++struct deferqueue_head *deferqueue_create(void);
++void deferqueue_destroy(struct deferqueue_head *head);
++int deferqueue_add(struct deferqueue_head *head, void *data, int size,
++		   deferqueue_func_t func, deferqueue_func_t dtor);
++int deferqueue_run(struct deferqueue_head *head);
++
++static inline int deferqueue_add_ptr(struct deferqueue_head *head, void *ptr,
++				     deferqueue_func_t func,
++				     deferqueue_func_t dtor)
 +{
-+	struct ckpt_obj *obj;
-+
-+	obj = obj_find_by_ptr(ctx, ptr);
-+	BUG_ON(obj && obj->ops->obj_type != type);
-+
-+	if (!obj) {
-+		if (!(ctx->uflags & CHECKPOINT_SUBTREE)) {
-+			/* if not found report reverse leak (full container) */
-+			ckpt_write_err(ctx, "OP", "leak: reverse unknown (%s)",
-+				       obj->objref, obj->ptr,
-+				       obj->ops->obj_name);
-+			return -EBUSY;
-+		}
-+	} else {
-+		ckpt_debug("visit %s objref %d\n",
-+			   obj->ops->obj_name, obj->objref);
-+		obj->flags |= CKPT_OBJ_VISITED;
-+	}
-+	return 0;
++	return deferqueue_add(head, &ptr, sizeof(ptr), func, dtor);
 +}
 +
-+/* increment the 'users' count of an object */
-+static void ckpt_obj_users_inc(struct ckpt_ctx *ctx, void *ptr, int increment)
++static inline void *deferqueue_data_ptr(void *data)
 +{
-+	struct ckpt_obj *obj;
++	return *((void **) data);
++}
 +
-+	obj = obj_find_by_ptr(ctx, ptr);
-+	if (obj)
-+		obj->users += increment;
++#endif
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 2093a69..ef229da 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -23,6 +23,7 @@ CFLAGS_REMOVE_cgroup-debug.o = -pg
+ CFLAGS_REMOVE_sched_clock.o = -pg
+ endif
+ 
++obj-$(CONFIG_DEFERQUEUE) += deferqueue.o
+ obj-$(CONFIG_FREEZER) += freezer.o
+ obj-$(CONFIG_PROFILING) += profile.o
+ obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
+diff --git a/kernel/deferqueue.c b/kernel/deferqueue.c
+new file mode 100644
+index 0000000..3fb388b
+--- /dev/null
++++ b/kernel/deferqueue.c
+@@ -0,0 +1,109 @@
++/*
++ *  Infrastructure to manage deferred work
++ *
++ *  This differs from a workqueue in that the work must be deferred
++ *  until specifically run by the caller.
++ *
++ *  As the only user currently is checkpoint/restart, which has
++ *  very simple usage, the locking is kept simple.  Adding rules
++ *  is protected by the head->lock.  But deferqueue_run() is only
++ *  called once, after all entries have been added.  So it is not
++ *  protected.  Similarly, _destroy is only called once when the
++ *  ckpt_ctx is releeased, so it is not locked or refcounted.  These
++ *  can of course be added if needed by other users.
++ *
++ *  Why not use workqueue ?  We need to defer work until the end of an
++ *  operation: not earlier, since we need other things to be in place;
++ *  not later, to not block waiting for it. However, the workqueue
++ *  schedules the work for 'some time later'. Also, workqueue may run
++ *  in any task context, but we require many times that an operation
++ *  be run in the context of some specific restarting task (e.g.,
++ *  restoring IPC state of a certain ipc_ns).
++ *
++ *  Instead, this mechanism is a simple way for the c/r operation as a
++ *  whole, and later a task in particular, to defer some action until
++ *  later (but not arbitrarily later) _in the restore_ operation.
++ *
++ *  Copyright (C) 2009 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/deferqueue.h>
++
++struct deferqueue_head *deferqueue_create(void)
++{
++	struct deferqueue_head *h = kmalloc(sizeof(*h), GFP_KERNEL);
++	if (h) {
++		spin_lock_init(&h->lock);
++		INIT_LIST_HEAD(&h->list);
++	}
++	return h;
++}
++
++void deferqueue_destroy(struct deferqueue_head *h)
++{
++	if (!list_empty(&h->list)) {
++		struct deferqueue_entry *dq, *n;
++
++		pr_debug("%s: freeing non-empty queue\n", __func__);
++		list_for_each_entry_safe(dq, n, &h->list, list) {
++			dq->destructor(dq->data);
++			list_del(&dq->list);
++			kfree(dq);
++		}
++	}
++	kfree(h);
++}
++
++int deferqueue_add(struct deferqueue_head *head, void *data, int size,
++		   deferqueue_func_t func, deferqueue_func_t dtor)
++{
++	struct deferqueue_entry *dq;
++
++	dq = kmalloc(sizeof(*dq) + size, GFP_KERNEL);
++	if (!dq)
++		return -ENOMEM;
++
++	dq->function = func;
++	dq->destructor = dtor;
++	memcpy(dq->data, data, size);
++
++	pr_debug("%s: adding work %p func %p dtor %p\n",
++		 __func__, dq, func, dtor);
++	spin_lock(&head->lock);
++	list_add_tail(&dq->list, &head->list);
++	spin_unlock(&head->lock);
++	return 0;
 +}
 +
 +/*
-+ * "Leak detection" - to guarantee a consistent checkpoint of a full
-+ * container we verify that all resources are confined and isolated in
-+ * that container:
++ * deferqueue_run - perform all work in the work queue
++ * @head: deferqueue_head from which to run
 + *
-+ * c/r code first walks through all tasks and collects all shared
-+ * resources into the objhash, while counting the references to them;
-+ * then, it compares this count to the object's real reference count,
-+ * and if they don't match it means that an object has "leaked" to the
-+ * outside.
-+ *
-+ * Otherwise, it is guaranteed that there are no references outside
-+ * (of container). c/r code now proceeds to walk through all tasks,
-+ * again, and checkpoints the resources. It ensures that all resources
-+ * are already in the objhash, and that all of them are checkpointed.
-+ * Otherwise it means that due to a race, an object was created or
-+ * destroyed during the first walk but not accounted for.
-+ *
-+ * For instance, consider an outside task A that shared files_struct
-+ * with inside task B. Then, after B's files where collected, A opens
-+ * or closes a file, and immediately exits - before the first leak
-+ * test is performed, such that the test passes.
++ * returns: number of works performed, or < 0 on error
 + */
-+
-+/**
-+ * ckpt_obj_contained - test if shared objects are contained in checkpoint
-+ * @ctx: checkpoint context
-+ *
-+ * Loops through all objects in the table and compares the number of
-+ * references accumulated during checkpoint, with the reference count
-+ * reported by the kernel.
-+ *
-+ * Return 1 if respective counts match for all objects, 0 otherwise.
-+ */
-+int ckpt_obj_contained(struct ckpt_ctx *ctx)
++int deferqueue_run(struct deferqueue_head *head)
 +{
-+	struct ckpt_obj *obj;
-+	struct hlist_node *node;
++	struct deferqueue_entry *dq, *n;
++	int nr = 0;
++	int ret;
 +
-+	/* account for ctx->file reference (if in the table already) */
-+	ckpt_obj_users_inc(ctx, ctx->file, 1);
-+
-+	hlist_for_each_entry(obj, node, &ctx->obj_hash->list, next) {
-+		if (!obj->ops->ref_users)
-+			continue;
-+		if (obj->ops->ref_users(obj->ptr) != obj->users) {
-+			ckpt_debug("usage leak: %s\n", obj->ops->obj_name);
-+			ckpt_write_err(ctx, "OP", "leak: usage (%d != %d (%s)",
-+				       obj->objref, obj->ptr,
-+				       obj->ops->ref_users(obj->ptr),
-+				       obj->users, obj->ops->obj_name);
-+			return 0;
-+		}
++	list_for_each_entry_safe(dq, n, &head->list, list) {
++		pr_debug("doing work %p function %p\n", dq, dq->function);
++		/* don't call destructor - function callback should do it */
++		ret = dq->function(dq->data);
++		if (ret < 0)
++			pr_debug("wq function failed %d\n", ret);
++		list_del(&dq->list);
++		kfree(dq);
++		nr++;
 +	}
 +
-+	return 1;
++	return nr;
 +}
-+
-+/**
-+ * ckpt_obj_visited - test that all shared objects were visited
-+ * @ctx: checkpoint context
-+ *
-+ * Return 1 if all objects where visited, 0 otherwise.
-+ */
-+int ckpt_obj_visited(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_obj *obj;
-+	struct hlist_node *node;
-+
-+	hlist_for_each_entry(obj, node, &ctx->obj_hash->list, next) {
-+		if (!(obj->flags & CKPT_OBJ_VISITED)) {
-+			ckpt_debug("reverse leak: %s (%d)\n",
-+				   obj->ops->obj_name, obj->objref);
-+			ckpt_write_err(ctx, "OP", "leak: not visited (%s)",
-+				       obj->objref, obj->ptr,
-+				       obj->ops->obj_name);
-+			return 0;
-+		}
-+	}
-+
-+	return 1;
-+}
-+
- /**************************************************************************
-  * Restart
-  */
-diff --git a/checkpoint/process.c b/checkpoint/process.c
-index 2580b31..5e690d3 100644
---- a/checkpoint/process.c
-+++ b/checkpoint/process.c
-@@ -246,6 +246,11 @@ int checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- 	return ret;
- }
- 
-+int ckpt_collect_task(struct ckpt_ctx *ctx, struct task_struct *t)
-+{
-+	return 0;
-+}
-+
- /***********************************************************************
-  * Restart
-  */
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 1315884..b698b19 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -96,6 +96,12 @@ extern int ckpt_obj_hash_alloc(struct ckpt_ctx *ctx);
- extern int restore_obj(struct ckpt_ctx *ctx, struct ckpt_hdr_objref *h);
- extern int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr,
- 			  enum obj_type type);
-+extern int ckpt_obj_collect(struct ckpt_ctx *ctx, void *ptr,
-+			    enum obj_type type);
-+extern int ckpt_obj_contained(struct ckpt_ctx *ctx);
-+extern int ckpt_obj_visited(struct ckpt_ctx *ctx);
-+extern int ckpt_obj_visit(struct ckpt_ctx *ctx, void *ptr,
-+			  enum obj_type type);
- extern int ckpt_obj_lookup(struct ckpt_ctx *ctx, void *ptr,
- 			   enum obj_type type);
- extern int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
-@@ -114,6 +120,7 @@ extern long do_restart(struct ckpt_ctx *ctx, pid_t pid);
- 
- /* task */
- extern int ckpt_activate_next(struct ckpt_ctx *ctx);
-+extern int ckpt_collect_task(struct ckpt_ctx *ctx, struct task_struct *t);
- extern int checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t);
- extern int restore_task(struct ckpt_ctx *ctx);
- 
 -- 
 1.6.0.4
 
