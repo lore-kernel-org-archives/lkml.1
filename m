@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbZIWGnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZIWGpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbZIWGnA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 02:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZIWGm7
+	id S1754196AbZIWGpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 02:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZIWGpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 02:42:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38393 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753982AbZIWGm7 (ORCPT
+	Wed, 23 Sep 2009 02:45:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51089 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753888AbZIWGpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 02:42:59 -0400
-Date: Wed, 23 Sep 2009 08:43:14 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Xavier Roche <roche+kml2@exalead.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Inter-process send()/recv() using zero-copy ?
-Message-ID: <20090923084314.78283f24@infradead.org>
-In-Reply-To: <4AB9B9B7.1020309@exalead.com>
-References: <4AB9B9B7.1020309@exalead.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Sep 2009 02:45:52 -0400
+Subject: Re: [PATCH tip/core/rcu 0/4] Josh and Ingo review feedback and
+ bloatwatch RCU
+From: Peter Zijlstra <peterz@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+In-Reply-To: <20090922222443.GA3178@linux.vnet.ibm.com>
+References: <20090922222443.GA3178@linux.vnet.ibm.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Wed, 23 Sep 2009 08:45:42 +0200
+Message-Id: <1253688342.7695.99.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009 08:01:27 +0200
-Xavier Roche <roche+kml2@exalead.com> wrote:
+On Tue, 2009-09-22 at 15:24 -0700, Paul E. McKenney wrote:
+> This patch set applies two sets of review feedback from Josh Triplett and
+> checkpatch feedback from Ingo Molnar.  It also contains a forward-port
+> of Bloatwatch RCU, courtesy of David Howells.
 
-> Hi folks,
-> 
-> I was wondering if there was a way to have zero-copy send()/recv(),
-> when the socket is connected to the local machine (to another process
-> on the same machine, for example) ?
-> 
-> Such feature would be only feasible with page-aligned blocks, from an
-> a mmap'ed block to another one, I guess.
-> 
-> Typical case:
-> 
-> Process #1 (uid A)
-> buff = mmap(0, size, ..) /* anonymous or not */
-> ...
-> send(s, buff, size, 0)
-> munmap(buff, size)
-> 
-> Process #2 (uid B)
-> buff = mmap(0, size, .. | MAP_ANONYMOUS, ..)
-> recv(s, buff, size, 0)
-> 
-> In an ideal fantasy world, the first process would use send() to 
-> transmit the complete page-aligned memory block to the other side,
-> and the second process would use recv() to get the memory block on a
-> similar anonymously mmap'ed block, and the only operation the kernel
-> would do would be to share the memory block between the two processes
-> with copy-on-write.
-> 
-> On the real world, the same operation requires a first read of the
-> whole memory block (possibly partially on disk) and a complete write
-> (possibly partially on disk, too) with two copies of the same memory
-> region at the end.
-> 
-> Two solutions can be used to 
+It would be much easier to review if these patches had a changelog
+describing the problem they address :-)
 
-the problem you have is that
-1) memory copies are cheap
-   (say, 3000 cycles/page or less)
-2) page table operations (mmap etc) are very expensive.
+The first one seems to do:
 
-these two combined tend to not make it a win to substitute simple
-copies with complex pagetable tricks.
+A)
+ - aggregate 'rsp->completed == rsp->gpnum' expressions into a
+   common function.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+ - consistently use ACCESS_ONCE() in the above mentioned function
+
+B)
+ - use DIV_ROUND_UP()
+
+C)
+ - aggregate list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x01])
+expressions into a common function.
+
+
+Could have been three patches, but ACK.
+
+
+The second patch seems to mostly add comments, but also moves code
+around and makes it static, which could have been split in two patches.
+
+The purpose of the move code around bit could be a cleanup?
+
+Looks to preserve the logic, but didn't go out on a limb to verify, ACK.
+
+
+The third and fourth do have an adequate changelog :-) 
