@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbZIXAa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZIXAhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754122AbZIXAa7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbZIXAa4
+	id S1754080AbZIXAhv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZIXAhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:30:56 -0400
+	Wed, 23 Sep 2009 20:37:48 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752530AbZIXAaM (ORCPT
+	with ESMTP id S1753381AbZIXA3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:30:12 -0400
+	Wed, 23 Sep 2009 20:29:45 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>
-Subject: [PATCH v18 37/80] c/r: dump memory address space (private memory)
-Date: Wed, 23 Sep 2009 19:51:17 -0400
-Message-Id: <1253749920-18673-38-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 38/80] c/r: restore memory address space (private memory)
+Date: Wed, 23 Sep 2009 19:51:18 -0400
+Message-Id: <1253749920-18673-39-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -27,1268 +27,854 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For each vma, there is a 'struct ckpt_vma'; Then comes the actual
-contents, in one or more chunk: each chunk begins with a header that
-specifies how many pages it holds, then the virtual addresses of all
-the dumped pages in that chunk, followed by the actual contents of all
-dumped pages. A header with zero number of pages marks the end of the
-contents.  Then comes the next vma and so on.
+Restoring the memory address space begins with nuking the existing one
+of the current process, and then reading the vma state and contents.
+Call do_mmap_pgoffset() for each vma and then read in the data.
 
-To checkpoint a vma, call the ops->checkpoint() method of that vma.
-Normally the per-vma function will invoke generic_vma_checkpoint()
-which first writes the vma description, followed by the specific
-logic to dump the contents of the pages.
-
-Currently for private mapped memory we save the pathname of the file
-that is mapped (restart will use it to re-open it and then map it).
-Later we change that to reference a file object.
-
-Changelog[v18]:
-  - Tighten checks on supported vma to checkpoint or restart
-  - Add a few more ckpt_write_err()s
-  - [Serge Hallyn] Export filemap_checkpoint() (used later for ext4)
-  - Use ckpt_collect_file() instead of ckpt_obj_collect() for files
-  - In collect_mm() use retval from ckpt_obj_collect() to test for
-    first-time-object
 Changelog[v17]:
-  - Only collect sub-objects of mm_struct once
-  - Save mm->{flags,def_flags,saved_auxv}
+  - Tighten checks on supported vma to checkpoint or restart
+Changelog[v17]:
+  - Restore mm->{flags,def_flags,saved_auxv}
+  - Fix bogus warning in do_restore_mm()
 Changelog[v16]:
-  - Precede vaddrs/pages with a buffer header
-  - Checkpoint mm->exe_file
-  - Handle shared task->mm
+  - Restore mm->exe_file
 Changelog[v14]:
-  - Modify the ops->checkpoint method to be much more powerful
-  - Improve support for VDSO (with special_mapping checkpoint callback)
-  - Save new field 'vdso' in mm_context
-  - Revert change to pr_debug(), back to ckpt_debug()
+  - Introduce per vma-type restore() function
+  - Merge restart code into same file as checkpoint (memory.c)
+  - Compare saved 'vdso' field of mm_context with current value
   - Check whether calls to ckpt_hbuf_get() fail
   - Discard field 'h->parent'
+  - Revert change to pr_debug(), back to ckpt_debug()
 Changelog[v13]:
-  - pgprot_t is an abstract type; use the proper accessor (fix for
-    64-bit powerpc (Nathan Lynch <ntl@pobox.com>)
+  - Avoid access to hh->vma_type after the header is freed
+  - Test for no vma's in exit_mmap() before calling unmap_vma() (or it
+    may crash if restart fails after having removed all vma's)
 Changelog[v12]:
-  - Hide pgarr management inside ckpt_private_vma_fill_pgarr()
-  - Fix management of pgarr chain reset and alloc/expand: keep empty
-    pgarr in a pool chain
   - Replace obsolete ckpt_debug() with pr_debug()
-Changelog[v11]:
-  - Copy contents of 'init->fs->root' instead of pointing to them.
-  - Add missing test for VM_MAYSHARE when dumping memory
-Changelog[v10]:
-  - Acquire dcache_lock around call to __d_path() in ckpt_fill_name()
 Changelog[v9]:
   - Introduce ckpt_ctx_checkpoint() for checkpoint-specific ctx setup
-  - Test if __d_path() changes mnt/dentry (when crossing filesystem
-    namespace boundary). for now ckpt_fill_fname() fails the checkpoint.
 Changelog[v7]:
   - Fix argument given to kunmap_atomic() in memory dump/restore
 Changelog[v6]:
   - Balance all calls to ckpt_hbuf_get() with matching ckpt_hbuf_put()
     (even though it's not really needed)
 Changelog[v5]:
-  - Improve memory dump code (following Dave Hansen's comments)
+  - Improve memory restore code (following Dave Hansen's comments)
   - Change dump format (and code) to allow chunks of <vaddrs, pages>
     instead of one long list of each
-  - Fix use of follow_page() to avoid faulting in non-present pages
+  - Memory restore now maps user pages explicitly to copy data into them,
+    instead of reading directly to user space; got rid of mprotect_fixup()
 Changelog[v4]:
   - Use standard list_... for ckpt_pgarr
 
+
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- arch/x86/include/asm/checkpoint_hdr.h |    8 +
- arch/x86/mm/checkpoint.c              |   31 ++
- checkpoint/Makefile                   |    3 +-
- checkpoint/checkpoint.c               |    3 +
- checkpoint/memory.c                   |  697 +++++++++++++++++++++++++++++++++
- checkpoint/objhash.c                  |   25 ++
- checkpoint/process.c                  |   12 +
- checkpoint/sys.c                      |    3 +
- include/linux/checkpoint.h            |   26 ++
- include/linux/checkpoint_hdr.h        |   52 +++
- include/linux/checkpoint_types.h      |    5 +
- include/linux/mm.h                    |    5 +
- mm/filemap.c                          |   25 ++
- mm/mmap.c                             |   28 ++
- 14 files changed, 922 insertions(+), 1 deletions(-)
- create mode 100644 checkpoint/memory.c
+ arch/x86/include/asm/ldt.h     |    7 +
+ arch/x86/mm/checkpoint.c       |   64 ++++++
+ checkpoint/memory.c            |  472 ++++++++++++++++++++++++++++++++++++++++
+ checkpoint/objhash.c           |    1 +
+ checkpoint/process.c           |    3 +
+ checkpoint/restart.c           |    4 +
+ fs/exec.c                      |    2 +-
+ include/linux/checkpoint.h     |    7 +
+ include/linux/checkpoint_hdr.h |    2 +-
+ include/linux/mm.h             |   13 +
+ mm/filemap.c                   |   19 ++
+ mm/mmap.c                      |   23 ++-
+ 12 files changed, 614 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/checkpoint_hdr.h b/arch/x86/include/asm/checkpoint_hdr.h
-index f4d1e14..0e756b0 100644
---- a/arch/x86/include/asm/checkpoint_hdr.h
-+++ b/arch/x86/include/asm/checkpoint_hdr.h
-@@ -45,6 +45,7 @@
- /* arch dependent header types */
- enum {
- 	CKPT_HDR_CPU_FPU = 201,
-+	CKPT_HDR_MM_CONTEXT_LDT,
- };
+diff --git a/arch/x86/include/asm/ldt.h b/arch/x86/include/asm/ldt.h
+index 46727eb..f2845f9 100644
+--- a/arch/x86/include/asm/ldt.h
++++ b/arch/x86/include/asm/ldt.h
+@@ -37,4 +37,11 @@ struct user_desc {
+ #define MODIFY_LDT_CONTENTS_CODE	2
  
- struct ckpt_hdr_header_arch {
-@@ -118,4 +119,11 @@ struct ckpt_hdr_cpu {
- #define CKPT_X86_SEG_TLS	0x4000	/* 0100 0000 0000 00xx */
- #define CKPT_X86_SEG_LDT	0x8000	/* 100x xxxx xxxx xxxx */
- 
-+struct ckpt_hdr_mm_context {
-+	struct ckpt_hdr h;
-+	__u64 vdso;
-+	__u32 ldt_entry_size;
-+	__u32 nldt;
-+} __attribute__((aligned(8)));
+ #endif /* !__ASSEMBLY__ */
 +
- #endif /* __ASM_X86_CKPT_HDR__H */
++#ifdef __KERNEL__
++#include <linux/linkage.h>
++asmlinkage int sys_modify_ldt(int func, void __user *ptr,
++			      unsigned long bytecount);
++#endif
++
+ #endif /* _ASM_X86_LDT_H */
 diff --git a/arch/x86/mm/checkpoint.c b/arch/x86/mm/checkpoint.c
-index 023039f..83ed047 100644
+index 83ed047..9dd8e12 100644
 --- a/arch/x86/mm/checkpoint.c
 +++ b/arch/x86/mm/checkpoint.c
-@@ -324,6 +324,37 @@ int checkpoint_write_header_arch(struct ckpt_ctx *ctx)
+@@ -13,6 +13,7 @@
+ 
+ #include <asm/desc.h>
+ #include <asm/i387.h>
++#include <asm/elf.h>
+ 
+ #include <linux/checkpoint.h>
+ #include <linux/checkpoint_hdr.h>
+@@ -560,3 +561,66 @@ int restore_read_header_arch(struct ckpt_ctx *ctx)
+ 	ckpt_hdr_put(ctx, h);
  	return ret;
  }
- 
-+/* dump the mm->context state */
-+int checkpoint_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm)
++
++int restore_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm)
 +{
 +	struct ckpt_hdr_mm_context *h;
++	unsigned int n;
 +	int ret;
 +
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_MM_CONTEXT);
-+	if (!h)
-+		return -ENOMEM;
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_MM_CONTEXT);
++	if (IS_ERR(h))
++		return PTR_ERR(h);
 +
-+	mutex_lock(&mm->context.lock);
++	ckpt_debug("nldt %d vdso %#lx (%p)\n",
++		 h->nldt, (unsigned long) h->vdso, mm->context.vdso);
 +
-+	h->vdso = (unsigned long) mm->context.vdso;
-+	h->ldt_entry_size = LDT_ENTRY_SIZE;
-+	h->nldt = mm->context.size;
++	ret = -EINVAL;
++	if (h->vdso != (unsigned long) mm->context.vdso)
++		goto out;
++	if (h->ldt_entry_size != LDT_ENTRY_SIZE)
++		goto out;
 +
-+	ckpt_debug("nldt %d vdso %#llx\n", h->nldt, h->vdso);
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
++	ret = _ckpt_read_obj_type(ctx, NULL,
++				  h->nldt * LDT_ENTRY_SIZE,
++				  CKPT_HDR_MM_CONTEXT_LDT);
 +	if (ret < 0)
 +		goto out;
 +
-+	ret = ckpt_write_obj_type(ctx, mm->context.ldt,
-+				  mm->context.size * LDT_ENTRY_SIZE,
-+				  CKPT_HDR_MM_CONTEXT_LDT);
++	/*
++	 * to utilize the syscall modify_ldt() we first convert the data
++	 * in the checkpoint image from 'struct desc_struct' to 'struct
++	 * user_desc' with reverse logic of include/asm/desc.h:fill_ldt()
++	 */
++	for (n = 0; n < h->nldt; n++) {
++		struct user_desc info;
++		struct desc_struct desc;
++		mm_segment_t old_fs;
++
++		ret = ckpt_kread(ctx, &desc, LDT_ENTRY_SIZE);
++		if (ret < 0)
++			break;
++
++		info.entry_number = n;
++		info.base_addr = desc.base0 | (desc.base1 << 16);
++		info.limit = desc.limit0;
++		info.seg_32bit = desc.d;
++		info.contents = desc.type >> 2;
++		info.read_exec_only = (desc.type >> 1) ^ 1;
++		info.limit_in_pages = desc.g;
++		info.seg_not_present = desc.p ^ 1;
++		info.useable = desc.avl;
++
++		old_fs = get_fs();
++		set_fs(get_ds());
++		ret = sys_modify_ldt(1, (struct user_desc __user *) &info,
++				     sizeof(info));
++		set_fs(old_fs);
++
++		if (ret < 0)
++			break;
++	}
 + out:
-+	mutex_unlock(&mm->context.lock);
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
+diff --git a/checkpoint/memory.c b/checkpoint/memory.c
+index d19d627..6a0dfaf 100644
+--- a/checkpoint/memory.c
++++ b/checkpoint/memory.c
+@@ -15,6 +15,9 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/file.h>
++#include <linux/err.h>
++#include <linux/mm.h>
++#include <linux/mman.h>
+ #include <linux/pagemap.h>
+ #include <linux/mm_types.h>
+ #include <linux/proc_fs.h>
+@@ -695,3 +698,472 @@ int ckpt_collect_mm(struct ckpt_ctx *ctx, struct task_struct *t)
+ 
+ 	return ret;
+ }
++
++/***********************************************************************
++ * Restart
++ *
++ * Unlike checkpoint, restart is executed in the context of each restarting
++ * process: vma regions are restored via a call to mmap(), and the data is
++ * read into the address space of the current process.
++ */
++
++/**
++ * read_pages_vaddrs - read addresses of pages to page-array chain
++ * @ctx - restart context
++ * @nr_pages - number of address to read
++ */
++static int read_pages_vaddrs(struct ckpt_ctx *ctx, unsigned long nr_pages)
++{
++	struct ckpt_pgarr *pgarr;
++	unsigned long *vaddrp;
++	int nr, ret;
++
++	while (nr_pages) {
++		pgarr = pgarr_current(ctx);
++		if (!pgarr)
++			return -ENOMEM;
++		nr = pgarr_nr_free(pgarr);
++		if (nr > nr_pages)
++			nr = nr_pages;
++		vaddrp = &pgarr->vaddrs[pgarr->nr_used];
++		ret = ckpt_kread(ctx, vaddrp, nr * sizeof(unsigned long));
++		if (ret < 0)
++			return ret;
++		pgarr->nr_used += nr;
++		nr_pages -= nr;
++	}
++	return 0;
++}
++
++static int restore_read_page(struct ckpt_ctx *ctx, struct page *page, void *p)
++{
++	void *ptr;
++	int ret;
++
++	ret = ckpt_kread(ctx, p, PAGE_SIZE);
++	if (ret < 0)
++		return ret;
++
++	ptr = kmap_atomic(page, KM_USER1);
++	memcpy(ptr, p, PAGE_SIZE);
++	kunmap_atomic(ptr, KM_USER1);
++
++	return 0;
++}
++
++/**
++ * read_pages_contents - read in data of pages in page-array chain
++ * @ctx - restart context
++ */
++static int read_pages_contents(struct ckpt_ctx *ctx)
++{
++	struct mm_struct *mm = current->mm;
++	struct ckpt_pgarr *pgarr;
++	unsigned long *vaddrs;
++	char *buf;
++	int i, ret = 0;
++
++	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	down_read(&mm->mmap_sem);
++	list_for_each_entry_reverse(pgarr, &ctx->pgarr_list, list) {
++		vaddrs = pgarr->vaddrs;
++		for (i = 0; i < pgarr->nr_used; i++) {
++			struct page *page;
++
++			_ckpt_debug(CKPT_DPAGE, "got page %#lx\n", vaddrs[i]);
++			ret = get_user_pages(current, mm, vaddrs[i],
++					     1, 1, 1, &page, NULL);
++			if (ret < 0)
++				goto out;
++
++			ret = restore_read_page(ctx, page, buf);
++			page_cache_release(page);
++
++			if (ret < 0)
++				goto out;
++		}
++	}
++
++ out:
++	up_read(&mm->mmap_sem);
++	kfree(buf);
++	return 0;
++}
++
++/**
++ * restore_memory_contents - restore contents of a VMA with private memory
++ * @ctx - restart context
++ *
++ * Reads a header that specifies how many pages will follow, then reads
++ * a list of virtual addresses into ctx->pgarr_list page-array chain,
++ * followed by the actual contents of the corresponding pages. Iterates
++ * these steps until reaching a header specifying "0" pages, which marks
++ * the end of the contents.
++ */
++static int restore_memory_contents(struct ckpt_ctx *ctx)
++{
++	struct ckpt_hdr_pgarr *h;
++	unsigned long nr_pages;
++	int len, ret = 0;
++
++	while (1) {
++		h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_PGARR);
++		if (IS_ERR(h))
++			break;
++
++		ckpt_debug("total pages %ld\n", (unsigned long) h->nr_pages);
++
++		nr_pages = h->nr_pages;
++		ckpt_hdr_put(ctx, h);
++
++		if (!nr_pages)
++			break;
++
++		len = nr_pages * (sizeof(unsigned long) + PAGE_SIZE);
++		ret = _ckpt_read_buffer(ctx, NULL, len);
++		if (ret < 0)
++			break;
++
++		ret = read_pages_vaddrs(ctx, nr_pages);
++		if (ret < 0)
++			break;
++		ret = read_pages_contents(ctx);
++		if (ret < 0)
++			break;
++		pgarr_reset_all(ctx);
++	}
++
 +	return ret;
 +}
 +
- /**************************************************************************
-  * Restart
-  */
-diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-index 1d0c058..f56a7d6 100644
---- a/checkpoint/Makefile
-+++ b/checkpoint/Makefile
-@@ -8,4 +8,5 @@ obj-$(CONFIG_CHECKPOINT) += \
- 	checkpoint.o \
- 	restart.o \
- 	process.o \
--	files.o
-+	files.o \
-+	memory.o
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 4cc2a2f..f907485 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -280,10 +280,13 @@ int ckpt_write_err(struct ckpt_ctx *ctx, char *pre, char *fmt, ...)
- static void fill_kernel_const(struct ckpt_const *h)
++/**
++ * calc_map_prot_bits - convert vm_flags to mmap protection
++ * orig_vm_flags: source vm_flags
++ */
++static unsigned long calc_map_prot_bits(unsigned long orig_vm_flags)
++{
++	unsigned long vm_prot = 0;
++
++	if (orig_vm_flags & VM_READ)
++		vm_prot |= PROT_READ;
++	if (orig_vm_flags & VM_WRITE)
++		vm_prot |= PROT_WRITE;
++	if (orig_vm_flags & VM_EXEC)
++		vm_prot |= PROT_EXEC;
++	if (orig_vm_flags & PROT_SEM)   /* only (?) with IPC-SHM  */
++		vm_prot |= PROT_SEM;
++
++	return vm_prot;
++}
++
++/**
++ * calc_map_flags_bits - convert vm_flags to mmap flags
++ * orig_vm_flags: source vm_flags
++ */
++static unsigned long calc_map_flags_bits(unsigned long orig_vm_flags)
++{
++	unsigned long vm_flags = 0;
++
++	vm_flags = MAP_FIXED;
++	if (orig_vm_flags & VM_GROWSDOWN)
++		vm_flags |= MAP_GROWSDOWN;
++	if (orig_vm_flags & VM_DENYWRITE)
++		vm_flags |= MAP_DENYWRITE;
++	if (orig_vm_flags & VM_EXECUTABLE)
++		vm_flags |= MAP_EXECUTABLE;
++	if (orig_vm_flags & VM_MAYSHARE)
++		vm_flags |= MAP_SHARED;
++	else
++		vm_flags |= MAP_PRIVATE;
++
++	return vm_flags;
++}
++
++/**
++ * generic_vma_restore - restore a vma
++ * @mm - address space
++ * @file - file to map (NULL for anonymous)
++ * @h - vma header data
++ */
++static unsigned long generic_vma_restore(struct mm_struct *mm,
++					 struct file *file,
++					 struct ckpt_hdr_vma *h)
++{
++	unsigned long vm_size, vm_start, vm_flags, vm_prot, vm_pgoff;
++	unsigned long addr;
++
++	if (h->vm_end < h->vm_start)
++		return -EINVAL;
++	if (h->vma_objref < 0)
++		return -EINVAL;
++
++	vm_start = h->vm_start;
++	vm_pgoff = h->vm_pgoff;
++	vm_size = h->vm_end - h->vm_start;
++	vm_prot = calc_map_prot_bits(h->vm_flags);
++	vm_flags = calc_map_flags_bits(h->vm_flags);
++
++	down_write(&mm->mmap_sem);
++	addr = do_mmap_pgoff(file, vm_start, vm_size,
++			     vm_prot, vm_flags, vm_pgoff);
++	up_write(&mm->mmap_sem);
++	ckpt_debug("size %#lx prot %#lx flag %#lx pgoff %#lx => %#lx\n",
++		 vm_size, vm_prot, vm_flags, vm_pgoff, addr);
++
++	return addr;
++}
++
++/**
++ * private_vma_restore - read vma data, recreate it and read contents
++ * @ctx: checkpoint context
++ * @mm: memory address space
++ * @file: file to use for mapping
++ * @h - vma header data
++ */
++int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++			struct file *file, struct ckpt_hdr_vma *h)
++{
++	unsigned long addr;
++
++	if (h->vm_flags & (VM_SHARED | VM_MAYSHARE))
++		return -EINVAL;
++
++	addr = generic_vma_restore(mm, file, h);
++	if (IS_ERR((void *) addr))
++		return PTR_ERR((void *) addr);
++
++	return restore_memory_contents(ctx);
++}
++
++/**
++ * anon_private_restore - read vma data, recreate it and read contents
++ * @ctx: checkpoint context
++ * @mm: memory address space
++ * @h - vma header data
++ */
++static int anon_private_restore(struct ckpt_ctx *ctx,
++				     struct mm_struct *mm,
++				     struct ckpt_hdr_vma *h)
++{
++	/*
++	 * vm_pgoff for anonymous mapping is the "global" page
++	 * offset (namely from addr 0x0), so we force a zero
++	 */
++	h->vm_pgoff = 0;
++
++	return private_vma_restore(ctx, mm, NULL, h);
++}
++
++/* callbacks to restore vma per its type: */
++struct restore_vma_ops {
++	char *vma_name;
++	enum vma_type vma_type;
++	int (*restore) (struct ckpt_ctx *ctx,
++			struct mm_struct *mm,
++			struct ckpt_hdr_vma *ptr);
++};
++
++static struct restore_vma_ops restore_vma_ops[] = {
++	/* ignored vma */
++	{
++		.vma_name = "IGNORE",
++		.vma_type = CKPT_VMA_IGNORE,
++		.restore = NULL,
++	},
++	/* special mapping (vdso) */
++	{
++		.vma_name = "VDSO",
++		.vma_type = CKPT_VMA_VDSO,
++		.restore = special_mapping_restore,
++	},
++	/* anonymous private */
++	{
++		.vma_name = "ANON PRIVATE",
++		.vma_type = CKPT_VMA_ANON,
++		.restore = anon_private_restore,
++	},
++	/* file-mapped private */
++	{
++		.vma_name = "FILE PRIVATE",
++		.vma_type = CKPT_VMA_FILE,
++		.restore = filemap_restore,
++	},
++};
++
++/**
++ * restore_vma - read vma data, recreate it and read contents
++ * @ctx: checkpoint context
++ * @mm: memory address space
++ */
++static int restore_vma(struct ckpt_ctx *ctx, struct mm_struct *mm)
++{
++	struct ckpt_hdr_vma *h;
++	struct restore_vma_ops *ops;
++	int ret;
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_VMA);
++	if (IS_ERR(h))
++		return PTR_ERR(h);
++
++	ckpt_debug("vma %#lx-%#lx flags %#lx type %d vmaref %d\n",
++		   (unsigned long) h->vm_start, (unsigned long) h->vm_end,
++		   (unsigned long) h->vm_flags, (int) h->vma_type,
++		   (int) h->vma_objref);
++
++	ret = -EINVAL;
++	if (h->vm_end < h->vm_start)
++		goto out;
++	if (h->vma_objref < 0)
++		goto out;
++	if (h->vma_type >= CKPT_VMA_MAX)
++		goto out;
++	if (h->vm_flags & CKPT_VMA_NOT_SUPPORTED)
++		return -ENOSYS;
++
++	ops = &restore_vma_ops[h->vma_type];
++
++	/* make sure we don't change this accidentally */
++	BUG_ON(ops->vma_type != h->vma_type);
++
++	if (ops->restore) {
++		ckpt_debug("vma type %s\n", ops->vma_name);
++		ret = ops->restore(ctx, mm, h);
++	} else {
++		ckpt_debug("vma ignored\n");
++		ret = 0;
++	}
++ out:
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
++
++static int destroy_mm(struct mm_struct *mm)
++{
++	struct vm_area_struct *vmnext = mm->mmap;
++	struct vm_area_struct *vma;
++	int ret;
++
++	while (vmnext) {
++		vma = vmnext;
++		vmnext = vmnext->vm_next;
++		ret = do_munmap(mm, vma->vm_start, vma->vm_end-vma->vm_start);
++		if (ret < 0) {
++			pr_warning("c/r: failed do_munmap (%d)\n", ret);
++			return ret;
++		}
++	}
++	return 0;
++}
++
++static struct mm_struct *do_restore_mm(struct ckpt_ctx *ctx)
++{
++	struct ckpt_hdr_mm *h;
++	struct mm_struct *mm = NULL;
++	struct file *file;
++	unsigned int nr;
++	int ret;
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_MM);
++	if (IS_ERR(h))
++		return (struct mm_struct *) h;
++
++	ckpt_debug("map_count %d\n", h->map_count);
++
++	/* XXX need more sanity checks */
++
++	ret = -EINVAL;
++	if ((h->start_code > h->end_code) ||
++	    (h->start_data > h->end_data))
++		goto out;
++	if (h->exe_objref < 0)
++		goto out;
++	if (h->def_flags & ~VM_LOCKED)
++		goto out;
++	if (h->flags & ~(MMF_DUMP_FILTER_MASK |
++			 ((1 << MMF_DUMP_FILTER_BITS) - 1)))
++		goto out;
++
++	mm = current->mm;
++
++	/* point of no return -- destruct current mm */
++	down_write(&mm->mmap_sem);
++	ret = destroy_mm(mm);
++	if (ret < 0) {
++		up_write(&mm->mmap_sem);
++		goto out;
++	}
++
++	mm->flags = h->flags;
++	mm->def_flags = h->def_flags;
++
++	mm->start_code = h->start_code;
++	mm->end_code = h->end_code;
++	mm->start_data = h->start_data;
++	mm->end_data = h->end_data;
++	mm->start_brk = h->start_brk;
++	mm->brk = h->brk;
++	mm->start_stack = h->start_stack;
++	mm->arg_start = h->arg_start;
++	mm->arg_end = h->arg_end;
++	mm->env_start = h->env_start;
++	mm->env_end = h->env_end;
++
++	/* restore the ->exe_file */
++	if (h->exe_objref) {
++		file = ckpt_obj_fetch(ctx, h->exe_objref, CKPT_OBJ_FILE);
++		if (IS_ERR(file)) {
++			up_write(&mm->mmap_sem);
++			ret = PTR_ERR(file);
++			goto out;
++		}
++		set_mm_exe_file(mm, file);
++	}
++
++	ret = _ckpt_read_buffer(ctx, mm->saved_auxv, sizeof(mm->saved_auxv));
++	up_write(&mm->mmap_sem);
++	if (ret < 0)
++		goto out;
++
++	for (nr = h->map_count; nr; nr--) {
++		ret = restore_vma(ctx, mm);
++		if (ret < 0)
++			goto out;
++	}
++
++	ret = restore_mm_context(ctx, mm);
++ out:
++	ckpt_hdr_put(ctx, h);
++	if (ret < 0)
++		return ERR_PTR(ret);
++	/* restore_obj() expect an extra reference */
++	atomic_inc(&mm->mm_users);
++	return mm;
++}
++
++void *restore_mm(struct ckpt_ctx *ctx)
++{
++	return (void *) do_restore_mm(ctx);
++}
++
++int restore_obj_mm(struct ckpt_ctx *ctx, int mm_objref)
++{
++	struct mm_struct *mm;
++	int ret;
++
++	mm = ckpt_obj_fetch(ctx, mm_objref, CKPT_OBJ_MM);
++	if (IS_ERR(mm))
++		return PTR_ERR(mm);
++
++	if (mm == current->mm)
++		return 0;
++
++	ret = exec_mmap(mm);
++	if (ret < 0)
++		return ret;
++
++	atomic_inc(&mm->mm_users);
++	return 0;
++}
+diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+index 4c207c3..734be3a 100644
+--- a/checkpoint/objhash.c
++++ b/checkpoint/objhash.c
+@@ -148,6 +148,7 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 		.ref_grab = obj_mm_grab,
+ 		.ref_users = obj_mm_users,
+ 		.checkpoint = checkpoint_mm,
++		.restore = restore_mm,
+ 	},
+ };
+ 
+diff --git a/checkpoint/process.c b/checkpoint/process.c
+index 3d0eb36..1788a39 100644
+--- a/checkpoint/process.c
++++ b/checkpoint/process.c
+@@ -373,6 +373,9 @@ static int restore_task_objs(struct ckpt_ctx *ctx)
+ 	ret = restore_obj_file_table(ctx, h->files_objref);
+ 	ckpt_debug("file_table: ret %d (%p)\n", ret, current->files);
+ 
++	ret = restore_obj_mm(ctx, h->mm_objref);
++	ckpt_debug("mm: ret %d (%p)\n", ret, current->mm);
++
+ 	ckpt_hdr_put(ctx, h);
+ 	return ret;
+ }
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+index 73db44a..6183074 100644
+--- a/checkpoint/restart.c
++++ b/checkpoint/restart.c
+@@ -373,11 +373,15 @@ int ckpt_read_consume(struct ckpt_ctx *ctx, int len, int type)
+ static int check_kernel_const(struct ckpt_const *h)
  {
  	struct task_struct *tsk;
 +	struct mm_struct *mm;
  	struct new_utsname *uts;
  
  	/* task */
- 	h->task_comm_len = sizeof(tsk->comm);
+ 	if (h->task_comm_len != sizeof(tsk->comm))
+ 		return -EINVAL;
 +	/* mm */
-+	h->mm_saved_auxv_len = sizeof(mm->saved_auxv);
++	if (h->mm_saved_auxv_len != sizeof(mm->saved_auxv))
++		return -EINVAL;
  	/* uts */
- 	h->uts_release_len = sizeof(uts->release);
- 	h->uts_version_len = sizeof(uts->version);
-diff --git a/checkpoint/memory.c b/checkpoint/memory.c
-new file mode 100644
-index 0000000..d19d627
---- /dev/null
-+++ b/checkpoint/memory.c
-@@ -0,0 +1,697 @@
-+/*
-+ *  Checkpoint/restart memory contents
-+ *
-+ *  Copyright (C) 2008-2009 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
+ 	if (h->uts_release_len != sizeof(uts->release))
+ 		return -EINVAL;
+diff --git a/fs/exec.c b/fs/exec.c
+index 172ceb6..c8436a7 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -695,7 +695,7 @@ int kernel_read(struct file *file, loff_t offset,
+ 
+ EXPORT_SYMBOL(kernel_read);
+ 
+-static int exec_mmap(struct mm_struct *mm)
++int exec_mmap(struct mm_struct *mm)
+ {
+ 	struct task_struct *tsk;
+ 	struct mm_struct * old_mm, *active_mm;
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index 70d9506..cb13e8f 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -136,6 +136,7 @@ extern int checkpoint_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm);
+ extern int restore_read_header_arch(struct ckpt_ctx *ctx);
+ extern int restore_thread(struct ckpt_ctx *ctx);
+ extern int restore_cpu(struct ckpt_ctx *ctx);
++extern int restore_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm);
+ 
+ extern int checkpoint_restart_block(struct ckpt_ctx *ctx,
+ 				    struct task_struct *t);
+@@ -176,9 +177,15 @@ extern int private_vma_checkpoint(struct ckpt_ctx *ctx,
+ 				  int vma_objref);
+ 
+ extern int checkpoint_obj_mm(struct ckpt_ctx *ctx, struct task_struct *t);
++extern int restore_obj_mm(struct ckpt_ctx *ctx, int mm_objref);
+ 
+ extern int ckpt_collect_mm(struct ckpt_ctx *ctx, struct task_struct *t);
+ extern int checkpoint_mm(struct ckpt_ctx *ctx, void *ptr);
++extern void *restore_mm(struct ckpt_ctx *ctx);
 +
-+/* default debug level for output */
-+#define CKPT_DFLAG  CKPT_DMEM
++extern int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++			       struct file *file, struct ckpt_hdr_vma *h);
 +
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/file.h>
-+#include <linux/pagemap.h>
-+#include <linux/mm_types.h>
-+#include <linux/proc_fs.h>
-+#include <linux/checkpoint.h>
-+#include <linux/checkpoint_hdr.h>
+ 
+ #define CKPT_VMA_NOT_SUPPORTED					\
+ 	(VM_SHARED | VM_MAYSHARE | VM_IO | VM_HUGETLB |		\
+diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
+index f29f87a..097d2e2 100644
+--- a/include/linux/checkpoint_hdr.h
++++ b/include/linux/checkpoint_hdr.h
+@@ -250,7 +250,7 @@ struct ckpt_hdr_mm {
+ 	__u64 arg_start, arg_end, env_start, env_end;
+ } __attribute__((aligned(8)));
+ 
+-/* vma subtypes */
++/* vma subtypes - index into restore_vma_dispatch[] */
+ enum vma_type {
+ 	CKPT_VMA_IGNORE = 0,
+ 	CKPT_VMA_VDSO,		/* special vdso vma */
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index d5f9889..0d0c46b 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1148,6 +1148,9 @@ extern int do_munmap(struct mm_struct *, unsigned long, size_t);
+ 
+ extern unsigned long do_brk(unsigned long, unsigned long);
+ 
++/* fs/exec.c */
++extern int exec_mmap(struct mm_struct *mm);
 +
-+/*
-+ * page-array chains: each ckpt_pgarr describes a set of <struct page *,vaddr>
-+ * tuples (where vaddr is the virtual address of a page in a particular mm).
-+ * Specifically, we use separate arrays so that all vaddrs can be written
-+ * and read at once.
-+ */
+ /* filemap.c */
+ extern unsigned long page_unuse(struct page *);
+ extern void truncate_inode_pages(struct address_space *, loff_t);
+@@ -1166,6 +1169,16 @@ extern int filemap_checkpoint(struct ckpt_ctx *, struct vm_area_struct *);
+ int write_one_page(struct page *page, int wait);
+ void task_dirty_inc(struct task_struct *tsk);
+ 
 +
-+struct ckpt_pgarr {
-+	unsigned long *vaddrs;
-+	struct page **pages;
-+	unsigned int nr_used;
-+	struct list_head list;
-+};
++/* checkpoint/restart */
++#ifdef CONFIG_CHECKPOINT
++struct ckpt_hdr_vma;
++extern int filemap_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++			   struct ckpt_hdr_vma *hh);
++extern int special_mapping_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++				   struct ckpt_hdr_vma *hh);
++#endif
 +
-+#define CKPT_PGARR_TOTAL  (PAGE_SIZE / sizeof(void *))
-+#define CKPT_PGARR_BATCH  (16 * CKPT_PGARR_TOTAL)
+ /* readahead.c */
+ #define VM_MAX_READAHEAD	128	/* kbytes */
+ #define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 72ba805..ef7205b 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1668,6 +1668,25 @@ int filemap_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
+ 
+ 	return private_vma_checkpoint(ctx, vma, CKPT_VMA_FILE, vma_objref);
+ }
 +
-+static inline int pgarr_is_full(struct ckpt_pgarr *pgarr)
++int filemap_restore(struct ckpt_ctx *ctx,
++		    struct mm_struct *mm,
++		    struct ckpt_hdr_vma *h)
 +{
-+	return (pgarr->nr_used == CKPT_PGARR_TOTAL);
-+}
-+
-+static inline int pgarr_nr_free(struct ckpt_pgarr *pgarr)
-+{
-+	return CKPT_PGARR_TOTAL - pgarr->nr_used;
-+}
-+
-+/*
-+ * utilities to alloc, free, and handle 'struct ckpt_pgarr' (page-arrays)
-+ * (common to ckpt_mem.c and rstr_mem.c).
-+ *
-+ * The checkpoint context structure has two members for page-arrays:
-+ *   ctx->pgarr_list: list head of populated page-array chain
-+ *   ctx->pgarr_pool: list head of empty page-array pool chain
-+ *
-+ * During checkpoint (and restart) the chain tracks the dirty pages (page
-+ * pointer and virtual address) of each MM. For a particular MM, these are
-+ * always added to the head of the page-array chain (ctx->pgarr_list).
-+ * Before the next chunk of pages, the chain is reset (by dereferencing
-+ * all pages) but not freed; instead, empty descsriptors are kept in pool.
-+ *
-+ * The head of the chain page-array ("current") advances as necessary. When
-+ * it gets full, a new page-array descriptor is pushed in front of it. The
-+ * new descriptor is taken from first empty descriptor (if one exists, for
-+ * instance, after a chain reset), or allocated on-demand.
-+ *
-+ * When dumping the data, the chain is traversed in reverse order.
-+ */
-+
-+/* return first page-array in the chain */
-+static inline struct ckpt_pgarr *pgarr_first(struct ckpt_ctx *ctx)
-+{
-+	if (list_empty(&ctx->pgarr_list))
-+		return NULL;
-+	return list_first_entry(&ctx->pgarr_list, struct ckpt_pgarr, list);
-+}
-+
-+/* return (and detach) first empty page-array in the pool, if exists */
-+static inline struct ckpt_pgarr *pgarr_from_pool(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_pgarr *pgarr;
-+
-+	if (list_empty(&ctx->pgarr_pool))
-+		return NULL;
-+	pgarr = list_first_entry(&ctx->pgarr_pool, struct ckpt_pgarr, list);
-+	list_del(&pgarr->list);
-+	return pgarr;
-+}
-+
-+/* release pages referenced by a page-array */
-+static void pgarr_release_pages(struct ckpt_pgarr *pgarr)
-+{
-+	ckpt_debug("total pages %d\n", pgarr->nr_used);
-+	/*
-+	 * both checkpoint and restart use 'nr_used', however we only
-+	 * collect pages during checkpoint; in restart we simply return
-+	 * because pgarr->pages remains NULL.
-+	 */
-+	if (pgarr->pages) {
-+		struct page **pages = pgarr->pages;
-+		int nr = pgarr->nr_used;
-+
-+		while (nr--)
-+			page_cache_release(pages[nr]);
-+	}
-+
-+	pgarr->nr_used = 0;
-+}
-+
-+/* free a single page-array object */
-+static void pgarr_free_one(struct ckpt_pgarr *pgarr)
-+{
-+	pgarr_release_pages(pgarr);
-+	kfree(pgarr->pages);
-+	kfree(pgarr->vaddrs);
-+	kfree(pgarr);
-+}
-+
-+/* free the chains of page-arrays (populated and empty pool) */
-+void ckpt_pgarr_free(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_pgarr *pgarr, *tmp;
-+
-+	list_for_each_entry_safe(pgarr, tmp, &ctx->pgarr_list, list) {
-+		list_del(&pgarr->list);
-+		pgarr_free_one(pgarr);
-+	}
-+
-+	list_for_each_entry_safe(pgarr, tmp, &ctx->pgarr_pool, list) {
-+		list_del(&pgarr->list);
-+		pgarr_free_one(pgarr);
-+	}
-+}
-+
-+/* allocate a single page-array object */
-+static struct ckpt_pgarr *pgarr_alloc_one(unsigned long flags)
-+{
-+	struct ckpt_pgarr *pgarr;
-+
-+	pgarr = kzalloc(sizeof(*pgarr), GFP_KERNEL);
-+	if (!pgarr)
-+		return NULL;
-+	pgarr->vaddrs = kmalloc(CKPT_PGARR_TOTAL * sizeof(unsigned long),
-+				GFP_KERNEL);
-+	if (!pgarr->vaddrs)
-+		goto nomem;
-+
-+	/* pgarr->pages is needed only for checkpoint */
-+	if (flags & CKPT_CTX_CHECKPOINT) {
-+		pgarr->pages = kmalloc(CKPT_PGARR_TOTAL *
-+				       sizeof(struct page *), GFP_KERNEL);
-+		if (!pgarr->pages)
-+			goto nomem;
-+	}
-+
-+	return pgarr;
-+ nomem:
-+	pgarr_free_one(pgarr);
-+	return NULL;
-+}
-+
-+/* pgarr_current - return the next available page-array in the chain
-+ * @ctx: checkpoint context
-+ *
-+ * Returns the first page-array in the list that has space. Otherwise,
-+ * try the next page-array after the last non-empty one, and move it to
-+ * the front of the chain. Extends the list if none has space.
-+ */
-+static struct ckpt_pgarr *pgarr_current(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_pgarr *pgarr;
-+
-+	pgarr = pgarr_first(ctx);
-+	if (pgarr && !pgarr_is_full(pgarr))
-+		return pgarr;
-+
-+	pgarr = pgarr_from_pool(ctx);
-+	if (!pgarr)
-+		pgarr = pgarr_alloc_one(ctx->kflags);
-+	if (!pgarr)
-+		return NULL;
-+
-+	list_add(&pgarr->list, &ctx->pgarr_list);
-+	return pgarr;
-+}
-+
-+/* reset the page-array chain (dropping page references if necessary) */
-+static void pgarr_reset_all(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_pgarr *pgarr;
-+
-+	list_for_each_entry(pgarr, &ctx->pgarr_list, list)
-+		pgarr_release_pages(pgarr);
-+	list_splice_init(&ctx->pgarr_list, &ctx->pgarr_pool);
-+}
-+
-+/**************************************************************************
-+ * Checkpoint
-+ *
-+ * Checkpoint is outside the context of the checkpointee, so one cannot
-+ * simply read pages from user-space. Instead, we scan the address space
-+ * of the target to cherry-pick pages of interest. Selected pages are
-+ * enlisted in a page-array chain (attached to the checkpoint context).
-+ * To save their contents, each page is mapped to kernel memory and then
-+ * dumped to the file descriptor.
-+ */
-+
-+
-+/**
-+ * private_follow_page - return page pointer for dirty pages
-+ * @vma - target vma
-+ * @addr - page address
-+ *
-+ * Looks up the page that correspond to the address in the vma, and
-+ * returns the page if it was modified (and grabs a reference to it),
-+ * or otherwise returns NULL (or error).
-+ */
-+static struct page *consider_private_page(struct vm_area_struct *vma,
-+					  unsigned long addr)
-+{
-+	struct page *page;
-+
-+	/*
-+	 * simplified version of get_user_pages(): already have vma,
-+	 * only need FOLL_ANON, and (for now) ignore fault stats.
-+	 *
-+	 * follow_page() will return NULL if the page is not present
-+	 * (swapped), ZERO_PAGE(0) if the pte wasn't allocated, and
-+	 * the actual page pointer otherwise.
-+	 *
-+	 * FIXME: consolidate with get_user_pages()
-+	 */
-+
-+	cond_resched();
-+	while (!(page = follow_page(vma, addr, FOLL_ANON | FOLL_GET))) {
-+		int ret;
-+
-+		/* the page is swapped out - bring it in (optimize ?) */
-+		ret = handle_mm_fault(vma->vm_mm, vma, addr, 0);
-+		if (ret & VM_FAULT_ERROR) {
-+			if (ret & VM_FAULT_OOM)
-+				return ERR_PTR(-ENOMEM);
-+			else if (ret & VM_FAULT_SIGBUS)
-+				return ERR_PTR(-EFAULT);
-+			else
-+				BUG();
-+			break;
-+		}
-+		cond_resched();
-+	}
-+
-+	if (IS_ERR(page))
-+		return page;
-+
-+	/*
-+	 * Only care about dirty pages: either anonymous non-zero pages,
-+	 * or file-backed COW (copy-on-write) pages that were modified.
-+	 * A clean COW page is not interesting because its contents are
-+	 * identical to the backing file; ignore such pages.
-+	 * A file-backed broken COW is identified by its page_mapping()
-+	 * being unset (NULL) because the page will no longer be mapped
-+	 * to the original file after having been modified.
-+	 */
-+	if (page == ZERO_PAGE(0)) {
-+		/* this is the zero page: ignore */
-+		page_cache_release(page);
-+		page = NULL;
-+	} else if (vma->vm_file && (page_mapping(page) != NULL)) {
-+		/* file backed clean cow: ignore */
-+		page_cache_release(page);
-+		page = NULL;
-+	}
-+
-+	return page;
-+}
-+
-+/**
-+ * vma_fill_pgarr - fill a page-array with addr/page tuples
-+ * @ctx - checkpoint context
-+ * @vma - vma to scan
-+ * @start - start address (updated)
-+ *
-+ * Returns the number of pages collected
-+ */
-+static int vma_fill_pgarr(struct ckpt_ctx *ctx,
-+			  struct vm_area_struct *vma,
-+			  unsigned long *start)
-+{
-+	unsigned long end = vma->vm_end;
-+	unsigned long addr = *start;
-+	struct ckpt_pgarr *pgarr;
-+	int nr_used;
-+	int cnt = 0;
-+
-+	/* this function is only for private memory (anon or file-mapped) */
-+	BUG_ON(vma->vm_flags & (VM_SHARED | VM_MAYSHARE));
-+
-+	do {
-+		pgarr = pgarr_current(ctx);
-+		if (!pgarr)
-+			return -ENOMEM;
-+
-+		nr_used = pgarr->nr_used;
-+
-+		while (addr < end) {
-+			struct page *page;
-+
-+			page = consider_private_page(vma, addr);
-+			if (IS_ERR(page))
-+				return PTR_ERR(page);
-+
-+			if (page) {
-+				_ckpt_debug(CKPT_DPAGE,
-+					    "got page %#lx\n", addr);
-+				pgarr->pages[pgarr->nr_used] = page;
-+				pgarr->vaddrs[pgarr->nr_used] = addr;
-+				pgarr->nr_used++;
-+			}
-+
-+			addr += PAGE_SIZE;
-+
-+			if (pgarr_is_full(pgarr))
-+				break;
-+		}
-+
-+		cnt += pgarr->nr_used - nr_used;
-+
-+	} while ((cnt < CKPT_PGARR_BATCH) && (addr < end));
-+
-+	*start = addr;
-+	return cnt;
-+}
-+
-+/* dump contents of a pages: use kmap_atomic() to avoid TLB flush */
-+static int checkpoint_dump_page(struct ckpt_ctx *ctx,
-+				struct page *page, char *buf)
-+{
-+	void *ptr;
-+
-+	ptr = kmap_atomic(page, KM_USER1);
-+	memcpy(buf, ptr, PAGE_SIZE);
-+	kunmap_atomic(ptr, KM_USER1);
-+
-+	return ckpt_kwrite(ctx, buf, PAGE_SIZE);
-+}
-+
-+/**
-+ * vma_dump_pages - dump pages listed in the ctx page-array chain
-+ * @ctx - checkpoint context
-+ * @total - total number of pages
-+ *
-+ * First dump all virtual addresses, followed by the contents of all pages
-+ */
-+static int vma_dump_pages(struct ckpt_ctx *ctx, int total)
-+{
-+	struct ckpt_pgarr *pgarr;
-+	void *buf;
-+	int i, ret = 0;
-+
-+	if (!total)
-+		return 0;
-+
-+	i =  total * (sizeof(unsigned long) + PAGE_SIZE);
-+	ret = ckpt_write_obj_type(ctx, NULL, i, CKPT_HDR_BUFFER);
-+	if (ret < 0)
-+		return ret;
-+
-+	list_for_each_entry_reverse(pgarr, &ctx->pgarr_list, list) {
-+		ret = ckpt_kwrite(ctx, pgarr->vaddrs,
-+				  pgarr->nr_used * sizeof(unsigned long));
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	buf = (void *) __get_free_page(GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	list_for_each_entry_reverse(pgarr, &ctx->pgarr_list, list) {
-+		for (i = 0; i < pgarr->nr_used; i++) {
-+			ret = checkpoint_dump_page(ctx, pgarr->pages[i], buf);
-+			if (ret < 0)
-+				goto out;
-+		}
-+	}
-+ out:
-+	free_page((unsigned long) buf);
-+	return ret;
-+}
-+
-+/**
-+ * checkpoint_memory_contents - dump contents of a VMA with private memory
-+ * @ctx - checkpoint context
-+ * @vma - vma to scan
-+ *
-+ * Collect lists of pages that needs to be dumped, and corresponding
-+ * virtual addresses into ctx->pgarr_list page-array chain. Then dump
-+ * the addresses, followed by the page contents.
-+ */
-+static int checkpoint_memory_contents(struct ckpt_ctx *ctx,
-+				      struct vm_area_struct *vma)
-+{
-+	struct ckpt_hdr_pgarr *h;
-+	unsigned long addr, end;
-+	int cnt, ret;
-+
-+	addr = vma->vm_start;
-+	end = vma->vm_end;
-+
-+	/*
-+	 * Work iteratively, collecting and dumping at most CKPT_PGARR_BATCH
-+	 * in each round. Each iterations is divided into two steps:
-+	 *
-+	 * (1) scan: scan through the PTEs of the vma to collect the pages
-+	 * to dump (later we'll also make them COW), while keeping a list
-+	 * of pages and their corresponding addresses on ctx->pgarr_list.
-+	 *
-+	 * (2) dump: write out a header specifying how many pages, followed
-+	 * by the addresses of all pages in ctx->pgarr_list, followed by
-+	 * the actual contents of all pages. (Then, release the references
-+	 * to the pages and reset the page-array chain).
-+	 *
-+	 * (This split makes the logic simpler by first counting the pages
-+	 * that need saving. More importantly, it allows for a future
-+	 * optimization that will reduce application downtime by deferring
-+	 * the actual write-out of the data to after the application is
-+	 * allowed to resume execution).
-+	 *
-+	 * After dumping the entire contents, conclude with a header that
-+	 * specifies 0 pages to mark the end of the contents.
-+	 */
-+
-+	while (addr < end) {
-+		cnt = vma_fill_pgarr(ctx, vma, &addr);
-+		if (cnt == 0)
-+			break;
-+		else if (cnt < 0)
-+			return cnt;
-+
-+		ckpt_debug("collected %d pages\n", cnt);
-+
-+		h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_PGARR);
-+		if (!h)
-+			return -ENOMEM;
-+
-+		h->nr_pages = cnt;
-+		ret = ckpt_write_obj(ctx, &h->h);
-+		ckpt_hdr_put(ctx, h);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = vma_dump_pages(ctx, cnt);
-+		if (ret < 0)
-+			return ret;
-+
-+		pgarr_reset_all(ctx);
-+	}
-+
-+	/* mark end of contents with header saying "0" pages */
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_PGARR);
-+	if (!h)
-+		return -ENOMEM;
-+	h->nr_pages = 0;
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+
-+	return ret;
-+}
-+
-+/**
-+ * generic_vma_checkpoint - dump metadata of vma
-+ * @ctx: checkpoint context
-+ * @vma: vma object
-+ * @type: vma type
-+ * @vma_objref: vma objref
-+ */
-+int generic_vma_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma,
-+			   enum vma_type type, int vma_objref)
-+{
-+	struct ckpt_hdr_vma *h;
-+	int ret;
-+
-+	ckpt_debug("vma %#lx-%#lx flags %#lx type %d\n",
-+		 vma->vm_start, vma->vm_end, vma->vm_flags, type);
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_VMA);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	h->vma_type = type;
-+	h->vma_objref = vma_objref;
-+	h->vm_start = vma->vm_start;
-+	h->vm_end = vma->vm_end;
-+	h->vm_page_prot = pgprot_val(vma->vm_page_prot);
-+	h->vm_flags = vma->vm_flags;
-+	h->vm_pgoff = vma->vm_pgoff;
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+
-+	return ret;
-+}
-+
-+/**
-+ * private_vma_checkpoint - dump contents of private (anon, file) vma
-+ * @ctx: checkpoint context
-+ * @vma: vma object
-+ * @type: vma type
-+ * @vma_objref: vma objref
-+ */
-+int private_vma_checkpoint(struct ckpt_ctx *ctx,
-+			   struct vm_area_struct *vma,
-+			   enum vma_type type, int vma_objref)
-+{
-+	int ret;
-+
-+	BUG_ON(vma->vm_flags & (VM_SHARED | VM_MAYSHARE));
-+
-+	ret = generic_vma_checkpoint(ctx, vma, type, vma_objref);
-+	if (ret < 0)
-+		goto out;
-+	ret = checkpoint_memory_contents(ctx, vma);
-+ out:
-+	return ret;
-+}
-+
-+/**
-+ * anonymous_checkpoint - dump contents of private-anonymous vma
-+ * @ctx: checkpoint context
-+ * @vma: vma object
-+ */
-+static int anonymous_checkpoint(struct ckpt_ctx *ctx,
-+				struct vm_area_struct *vma)
-+{
-+	/* should be private anonymous ... verify that this is the case */
-+	BUG_ON(vma->vm_flags & VM_MAYSHARE);
-+	BUG_ON(vma->vm_file);
-+
-+	return private_vma_checkpoint(ctx, vma, CKPT_VMA_ANON, 0);
-+}
-+
-+static int do_checkpoint_mm(struct ckpt_ctx *ctx, struct mm_struct *mm)
-+{
-+	struct ckpt_hdr_mm *h;
-+	struct vm_area_struct *vma;
-+	int exe_objref = 0;
-+	int ret;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_MM);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	down_read(&mm->mmap_sem);
-+
-+	h->flags = mm->flags;
-+	h->def_flags = mm->def_flags;
-+
-+	h->start_code = mm->start_code;
-+	h->end_code = mm->end_code;
-+	h->start_data = mm->start_data;
-+	h->end_data = mm->end_data;
-+	h->start_brk = mm->start_brk;
-+	h->brk = mm->brk;
-+	h->start_stack = mm->start_stack;
-+	h->arg_start = mm->arg_start;
-+	h->arg_end = mm->arg_end;
-+	h->env_start = mm->env_start;
-+	h->env_end = mm->env_end;
-+
-+	h->map_count = mm->map_count;
-+
-+	/* checkpoint the ->exe_file */
-+	if (mm->exe_file) {
-+		exe_objref = checkpoint_obj(ctx, mm->exe_file, CKPT_OBJ_FILE);
-+		if (exe_objref < 0) {
-+			ret = exe_objref;
-+			goto out;
-+		}
-+		h->exe_objref = exe_objref;
-+	}
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = ckpt_write_buffer(ctx, mm->saved_auxv, sizeof(mm->saved_auxv));
-+	if (ret < 0)
-+		return ret;
-+
-+	/* write the vma's */
-+	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-+		ckpt_debug("vma %#lx-%#lx flags %#lx\n",
-+			 vma->vm_start, vma->vm_end, vma->vm_flags);
-+		if (vma->vm_flags & CKPT_VMA_NOT_SUPPORTED) {
-+			ckpt_write_err(ctx, "TE", "vma: bad flags (%#lx)\n",
-+				       -ENOSYS, vma->vm_flags);
-+			return -ENOSYS;
-+		}
-+		if (!vma->vm_ops)
-+			ret = anonymous_checkpoint(ctx, vma);
-+		else if (vma->vm_ops->checkpoint)
-+			ret = (*vma->vm_ops->checkpoint)(ctx, vma);
-+		else
-+			ret = -ENOSYS;
-+		if (ret < 0) {
-+			ckpt_write_err(ctx, "TE", "vma: failed", ret);
-+			goto out;
-+		}
-+		/*
-+		 * The file was collected, but not always checkpointed;
-+		 * be safe and mark as visited to appease leak detection
-+		 */
-+		if (vma->vm_file && !(ctx->uflags & CHECKPOINT_SUBTREE)) {
-+			ret = ckpt_obj_visit(ctx, vma->vm_file, CKPT_OBJ_FILE);
-+			if (ret < 0)
-+				goto out;
-+		}
-+	}
-+
-+	ret = checkpoint_mm_context(ctx, mm);
-+ out:
-+	ckpt_hdr_put(ctx, h);
-+	up_read(&mm->mmap_sem);
-+	return ret;
-+}
-+
-+int checkpoint_mm(struct ckpt_ctx *ctx, void *ptr)
-+{
-+	return do_checkpoint_mm(ctx, (struct mm_struct *) ptr);
-+}
-+
-+int checkpoint_obj_mm(struct ckpt_ctx *ctx, struct task_struct *t)
-+{
-+	struct mm_struct *mm;
-+	int objref;
-+
-+	mm = get_task_mm(t);
-+	objref = checkpoint_obj(ctx, mm, CKPT_OBJ_MM);
-+	mmput(mm);
-+
-+	return objref;
-+}
-+
-+/***********************************************************************
-+ * Collect
-+ */
-+
-+static int collect_mm(struct ckpt_ctx *ctx, struct mm_struct *mm)
-+{
-+	struct vm_area_struct *vma;
 +	struct file *file;
 +	int ret;
 +
-+	/* if already exists (ret == 0), nothing to do */
-+	ret = ckpt_obj_collect(ctx, mm, CKPT_OBJ_MM);
-+	if (ret <= 0)
-+		return ret;
++	if (h->vma_type == CKPT_VMA_FILE &&
++	    (h->vm_flags & (VM_SHARED | VM_MAYSHARE)))
++		return -EINVAL;
 +
-+	/* if first time for this mm (ret > 0), proceed inside */
-+	down_read(&mm->mmap_sem);
-+	if (mm->exe_file) {
-+		ret = ckpt_collect_file(ctx, mm->exe_file);
-+		if (ret < 0) {
-+			ckpt_write_err(ctx, "TE", "mm: collect exe_file", ret);
-+			goto out;
-+		}
-+	}
-+	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-+		file = vma->vm_file;
-+		if (!file)
-+			continue;
-+		ret = ckpt_collect_file(ctx, file);
-+		if (ret < 0) {
-+			ckpt_write_err(ctx, "TE", "mm: collect vm_file", ret);
-+			break;
-+		}
-+	}
-+ out:
-+	up_read(&mm->mmap_sem);
-+	return ret;
++	file = ckpt_obj_fetch(ctx, h->vma_objref, CKPT_OBJ_FILE);
++	if (IS_ERR(file))
++		return PTR_ERR(file);
 +
-+}
-+
-+int ckpt_collect_mm(struct ckpt_ctx *ctx, struct task_struct *t)
-+{
-+	struct mm_struct *mm;
-+	int ret;
-+
-+	mm = get_task_mm(t);
-+	ret = collect_mm(ctx, mm);
-+	mmput(mm);
-+
++	ret = private_vma_restore(ctx, mm, file, h);
 +	return ret;
 +}
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-index b7c8fdb..4c207c3 100644
---- a/checkpoint/objhash.c
-+++ b/checkpoint/objhash.c
-@@ -96,6 +96,22 @@ static int obj_file_users(void *ptr)
- 	return atomic_long_read(&((struct file *) ptr)->f_count);
- }
+ #endif /* CONFIG_CHECKPOINT */
  
-+static int obj_mm_grab(void *ptr)
-+{
-+	atomic_inc(&((struct mm_struct *) ptr)->mm_users);
-+	return 0;
-+}
-+
-+static void obj_mm_drop(void *ptr, int lastref)
-+{
-+	mmput((struct mm_struct *) ptr);
-+}
-+
-+static int obj_mm_users(void *ptr)
-+{
-+	return atomic_read(&((struct mm_struct *) ptr)->mm_users);
-+}
-+
- static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 	/* ignored object */
- 	{
-@@ -124,6 +140,15 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.checkpoint = checkpoint_file,
- 		.restore = restore_file,
- 	},
-+	/* mm object */
-+	{
-+		.obj_name = "MM",
-+		.obj_type = CKPT_OBJ_MM,
-+		.ref_drop = obj_mm_drop,
-+		.ref_grab = obj_mm_grab,
-+		.ref_users = obj_mm_users,
-+		.checkpoint = checkpoint_mm,
-+	},
- };
- 
- 
-diff --git a/checkpoint/process.c b/checkpoint/process.c
-index 6ad9c01..3d0eb36 100644
---- a/checkpoint/process.c
-+++ b/checkpoint/process.c
-@@ -108,6 +108,7 @@ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
- {
- 	struct ckpt_hdr_task_objs *h;
- 	int files_objref;
-+	int mm_objref;
- 	int ret;
- 
- 	files_objref = checkpoint_obj_file_table(ctx, t);
-@@ -117,10 +118,18 @@ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
- 		return files_objref;
- 	}
- 
-+	mm_objref = checkpoint_obj_mm(ctx, t);
-+	ckpt_debug("mm: objref %d\n", mm_objref);
-+	if (mm_objref < 0) {
-+		ckpt_write_err(ctx, "TE", "mm_struct", mm_objref);
-+		return mm_objref;
-+	}
-+
- 	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_TASK_OBJS);
- 	if (!h)
- 		return -ENOMEM;
- 	h->files_objref = files_objref;
-+	h->mm_objref = mm_objref;
- 	ret = ckpt_write_obj(ctx, &h->h);
- 	ckpt_hdr_put(ctx, h);
- 
-@@ -278,6 +287,9 @@ int ckpt_collect_task(struct ckpt_ctx *ctx, struct task_struct *t)
- 	int ret;
- 
- 	ret = ckpt_collect_file_table(ctx, t);
-+	if (ret < 0)
-+		return ret;
-+	ret = ckpt_collect_mm(ctx, t);
- 
- 	return ret;
- }
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-index 1373ff9..1c98eee 100644
---- a/checkpoint/sys.c
-+++ b/checkpoint/sys.c
-@@ -199,6 +199,7 @@ static void ckpt_ctx_free(struct ckpt_ctx *ctx)
- 
- 	ckpt_obj_hash_free(ctx);
- 	path_put(&ctx->fs_mnt);
-+	ckpt_pgarr_free(ctx);
- 
- 	if (ctx->tasks_arr)
- 		task_arr_free(ctx);
-@@ -230,6 +231,8 @@ static struct ckpt_ctx *ckpt_ctx_alloc(int fd, unsigned long uflags,
- 	ctx->ktime_begin = ktime_get();
- 
- 	atomic_set(&ctx->refcount, 0);
-+	INIT_LIST_HEAD(&ctx->pgarr_list);
-+	INIT_LIST_HEAD(&ctx->pgarr_pool);
- 	init_waitqueue_head(&ctx->waitq);
- 
- 	err = -EBADF;
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 026d058..70d9506 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -131,6 +131,7 @@ extern int restore_task(struct ckpt_ctx *ctx);
- extern int checkpoint_write_header_arch(struct ckpt_ctx *ctx);
- extern int checkpoint_thread(struct ckpt_ctx *ctx, struct task_struct *t);
- extern int checkpoint_cpu(struct ckpt_ctx *ctx, struct task_struct *t);
-+extern int checkpoint_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm);
- 
- extern int restore_read_header_arch(struct ckpt_ctx *ctx);
- extern int restore_thread(struct ckpt_ctx *ctx);
-@@ -162,6 +163,29 @@ extern int checkpoint_file_common(struct ckpt_ctx *ctx, struct file *file,
- extern int restore_file_common(struct ckpt_ctx *ctx, struct file *file,
- 			       struct ckpt_hdr_file *h);
- 
-+/* memory */
-+extern void ckpt_pgarr_free(struct ckpt_ctx *ctx);
-+
-+extern int generic_vma_checkpoint(struct ckpt_ctx *ctx,
-+				  struct vm_area_struct *vma,
-+				  enum vma_type type,
-+				  int vma_objref);
-+extern int private_vma_checkpoint(struct ckpt_ctx *ctx,
-+				  struct vm_area_struct *vma,
-+				  enum vma_type type,
-+				  int vma_objref);
-+
-+extern int checkpoint_obj_mm(struct ckpt_ctx *ctx, struct task_struct *t);
-+
-+extern int ckpt_collect_mm(struct ckpt_ctx *ctx, struct task_struct *t);
-+extern int checkpoint_mm(struct ckpt_ctx *ctx, void *ptr);
-+
-+#define CKPT_VMA_NOT_SUPPORTED					\
-+	(VM_SHARED | VM_MAYSHARE | VM_IO | VM_HUGETLB |		\
-+	 VM_NONLINEAR | VM_PFNMAP | VM_RESERVED | VM_NORESERVE	\
-+	 | VM_HUGETLB | VM_NONLINEAR | VM_MAPPED_COPY |		\
-+	 VM_INSERTPAGE | VM_MIXEDMAP | VM_SAO)
-+
- static inline int ckpt_validate_errno(int errno)
- {
- 	return (errno >= 0) && (errno < MAX_ERRNO);
-@@ -173,6 +197,8 @@ static inline int ckpt_validate_errno(int errno)
- #define CKPT_DRW	0x4		/* image read/write */
- #define CKPT_DOBJ	0x8		/* shared objects */
- #define CKPT_DFILE	0x10		/* files and filesystem */
-+#define CKPT_DMEM	0x20		/* memory state */
-+#define CKPT_DPAGE	0x40		/* memory pages */
- 
- #define CKPT_DDEFAULT	0xffff		/* default debug level */
- 
-diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index 1124375..f29f87a 100644
---- a/include/linux/checkpoint_hdr.h
-+++ b/include/linux/checkpoint_hdr.h
-@@ -66,6 +66,11 @@ enum {
- 	CKPT_HDR_FILE_NAME,
- 	CKPT_HDR_FILE,
- 
-+	CKPT_HDR_MM = 401,
-+	CKPT_HDR_VMA,
-+	CKPT_HDR_PGARR,
-+	CKPT_HDR_MM_CONTEXT,
-+
- 	CKPT_HDR_TAIL = 9001,
- 
- 	CKPT_HDR_ERROR = 9999,
-@@ -88,6 +93,7 @@ enum obj_type {
- 	CKPT_OBJ_IGNORE = 0,
- 	CKPT_OBJ_FILE_TABLE,
- 	CKPT_OBJ_FILE,
-+	CKPT_OBJ_MM,
- 	CKPT_OBJ_MAX
- };
- 
-@@ -95,6 +101,8 @@ enum obj_type {
- struct ckpt_const {
- 	/* task */
- 	__u16 task_comm_len;
-+	/* mm */
-+	__u16 mm_saved_auxv_len;
- 	/* uts */
- 	__u16 uts_release_len;
- 	__u16 uts_version_len;
-@@ -169,6 +177,7 @@ struct ckpt_hdr_task {
- struct ckpt_hdr_task_objs {
- 	struct ckpt_hdr h;
- 	__s32 files_objref;
-+	__s32 mm_objref;
- } __attribute__((aligned(8)));
- 
- /* restart blocks */
-@@ -227,4 +236,47 @@ struct ckpt_hdr_file_generic {
- 	struct ckpt_hdr_file common;
- } __attribute__((aligned(8)));
- 
-+/* memory layout */
-+struct ckpt_hdr_mm {
-+	struct ckpt_hdr h;
-+	__u32 map_count;
-+	__s32 exe_objref;
-+
-+	__u64 def_flags;
-+	__u64 flags;
-+
-+	__u64 start_code, end_code, start_data, end_data;
-+	__u64 start_brk, brk, start_stack;
-+	__u64 arg_start, arg_end, env_start, env_end;
-+} __attribute__((aligned(8)));
-+
-+/* vma subtypes */
-+enum vma_type {
-+	CKPT_VMA_IGNORE = 0,
-+	CKPT_VMA_VDSO,		/* special vdso vma */
-+	CKPT_VMA_ANON,		/* private anonymous */
-+	CKPT_VMA_FILE,		/* private mapped file */
-+	CKPT_VMA_MAX
-+};
-+
-+/* vma descriptor */
-+struct ckpt_hdr_vma {
-+	struct ckpt_hdr h;
-+	__u32 vma_type;
-+	__s32 vma_objref;	/* objref of backing file */
-+
-+	__u64 vm_start;
-+	__u64 vm_end;
-+	__u64 vm_page_prot;
-+	__u64 vm_flags;
-+	__u64 vm_pgoff;
-+} __attribute__((aligned(8)));
-+
-+/* page array */
-+struct ckpt_hdr_pgarr {
-+	struct ckpt_hdr h;
-+	__u64 nr_pages;		/* number of pages to saved */
-+} __attribute__((aligned(8)));
-+
-+
- #endif /* _CHECKPOINT_CKPT_HDR_H_ */
-diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
-index 795742f..f214109 100644
---- a/include/linux/checkpoint_types.h
-+++ b/include/linux/checkpoint_types.h
-@@ -15,6 +15,8 @@
- #include <linux/sched.h>
- #include <linux/nsproxy.h>
- #include <linux/list.h>
-+#include <linux/sched.h>
-+#include <linux/nsproxy.h>
- #include <linux/path.h>
- #include <linux/fs.h>
- #include <linux/ktime.h>
-@@ -49,6 +51,9 @@ struct ckpt_ctx {
- 	char err_string[256];	/* checkpoint: error string */
- 	int errno;		/* restart: errno that caused failure */
- 
-+	struct list_head pgarr_list;	/* page array to dump VMA contents */
-+	struct list_head pgarr_pool;	/* pool of empty page arrays chain */
-+
- 	/* [multi-process checkpoint] */
- 	struct task_struct **tasks_arr; /* array of all tasks [checkpoint] */
- 	int nr_tasks;                   /* size of tasks array */
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index d5ace89..d5f9889 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1157,6 +1157,11 @@ extern void truncate_inode_pages_range(struct address_space *,
- /* generic vm_area_ops exported for stackable file systems */
- extern int filemap_fault(struct vm_area_struct *, struct vm_fault *);
- 
-+#ifdef CONFIG_CHECKPOINT
-+/* generic vm_area_ops exported for mapped files checkpoint */
-+extern int filemap_checkpoint(struct ckpt_ctx *, struct vm_area_struct *);
-+#endif
-+
- /* mm/page-writeback.c */
- int write_one_page(struct page *page, int wait);
- void task_dirty_inc(struct task_struct *tsk);
-diff --git a/mm/filemap.c b/mm/filemap.c
-index ccea3b6..72ba805 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -34,6 +34,7 @@
- #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
- #include <linux/memcontrol.h>
- #include <linux/mm_inline.h> /* for page_is_file_cache() */
-+#include <linux/checkpoint.h>
- #include "internal.h"
- 
- /*
-@@ -1648,8 +1649,32 @@ page_not_uptodate:
- }
- EXPORT_SYMBOL(filemap_fault);
- 
-+#ifdef CONFIG_CHECKPOINT
-+int filemap_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
-+{
-+	struct file *file = vma->vm_file;
-+	int vma_objref;
-+
-+	if (vma->vm_flags & CKPT_VMA_NOT_SUPPORTED) {
-+		pr_warning("c/r: unsupported VMA %#lx\n", vma->vm_flags);
-+		return -ENOSYS;
-+	}
-+
-+	BUG_ON(!file);
-+
-+	vma_objref = checkpoint_obj(ctx, file, CKPT_OBJ_FILE);
-+	if (vma_objref < 0)
-+		return vma_objref;
-+
-+	return private_vma_checkpoint(ctx, vma, CKPT_VMA_FILE, vma_objref);
-+}
-+#endif /* CONFIG_CHECKPOINT */
-+
  struct vm_operations_struct generic_file_vm_ops = {
- 	.fault		= filemap_fault,
-+#ifdef CONFIG_CHECKPOINT
-+	.checkpoint	= filemap_checkpoint,
-+#endif
- };
- 
- /* This is used for a general mmap of a disk file */
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 8101de4..7415a61 100644
+index 7415a61..3be4678 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -29,6 +29,7 @@
- #include <linux/rmap.h>
- #include <linux/mmu_notifier.h>
- #include <linux/perf_counter.h>
-+#include <linux/checkpoint.h>
- 
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -2267,9 +2268,36 @@ static void special_mapping_close(struct vm_area_struct *vma)
- {
+@@ -2110,7 +2110,7 @@ void exit_mmap(struct mm_struct *mm)
+ 	tlb = tlb_gather_mmu(mm, 1);
+ 	/* update_hiwater_rss(mm) here? but nobody should be looking */
+ 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
+-	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
++	end = vma ? unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL) : 0;
+ 	vm_unacct_memory(nr_accounted);
+ 	free_pgtables(tlb, vma, FIRST_USER_ADDRESS, 0);
+ 	tlb_finish_mmu(tlb, 0, end);
+@@ -2269,6 +2269,14 @@ static void special_mapping_close(struct vm_area_struct *vma)
  }
  
-+#ifdef CONFIG_CHECKPOINT
-+static int special_mapping_checkpoint(struct ckpt_ctx *ctx,
-+				      struct vm_area_struct *vma)
-+{
-+	const char *name;
+ #ifdef CONFIG_CHECKPOINT
++/*
++ * FIX:
++ *   - checkpoint vdso pages (once per distinct vdso is enough)
++ *   - check for compatilibility between saved and current vdso
++ *   - accommodate for dynamic kernel data in vdso page
++ *
++ * Current, we require COMPAT_VDSO which somewhat mitigates the issue
++ */
+ static int special_mapping_checkpoint(struct ckpt_ctx *ctx,
+ 				      struct vm_area_struct *vma)
+ {
+@@ -2290,6 +2298,19 @@ static int special_mapping_checkpoint(struct ckpt_ctx *ctx,
+ 
+ 	return generic_vma_checkpoint(ctx, vma, CKPT_VMA_VDSO, 0);
+ }
 +
++int special_mapping_restore(struct ckpt_ctx *ctx,
++			    struct mm_struct *mm,
++			    struct ckpt_hdr_vma *h)
++{
 +	/*
 +	 * FIX:
 +	 * Currently, we only handle VDSO/vsyscall special handling.
-+	 * Even that, is very basic - we just skip the contents and
-+	 * hope for the best in terms of compatilibity upon restart.
++	 * Even that, is very basic - call arch_setup_additional_pages
++	 * requiring the same mapping (start address) as before.
 +	 */
-+
-+	if (vma->vm_flags & CKPT_VMA_NOT_SUPPORTED)
-+		return -ENOSYS;
-+
-+	name = arch_vma_name(vma);
-+	if (!name || strcmp(name, "[vdso]"))
-+		return -ENOSYS;
-+
-+	return generic_vma_checkpoint(ctx, vma, CKPT_VMA_VDSO, 0);
++	return arch_setup_additional_pages(NULL, h->vm_start, 0);
 +}
-+#endif /* CONFIG_CHECKPOINT */
-+
- static struct vm_operations_struct special_mapping_vmops = {
- 	.close = special_mapping_close,
- 	.fault = special_mapping_fault,
-+#ifdef CONFIG_CHECKPOINT
-+	.checkpoint = special_mapping_checkpoint,
-+#endif
- };
+ #endif /* CONFIG_CHECKPOINT */
  
- /*
+ static struct vm_operations_struct special_mapping_vmops = {
 -- 
 1.6.0.4
 
