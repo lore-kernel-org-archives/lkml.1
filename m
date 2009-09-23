@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751648AbZIWPYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbZIWP0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751648AbZIWPYJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 11:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZIWPYI
+	id S1751782AbZIWP0R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 11:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZIWP0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 11:24:08 -0400
-Received: from fifo99.com ([67.223.236.141]:40341 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbZIWPYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 11:24:07 -0400
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-From: Daniel Walker <dwalker@fifo99.com>
+	Wed, 23 Sep 2009 11:26:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46634 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751252AbZIWP0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 11:26:16 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+BsOUIjGuBFFgig5nyLEdHNOrf5MIfeAwGBpbkdL
+	1QAeOWjs+aAO4C
+Subject: Re: [patch] Re: [perf] Finding uninstalled modules Was Re: mailing
+ list for trace users
+From: Mike Galbraith <efault@gmx.de>
 To: Avi Kivity <avi@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jonathan Corbet <corbet@lwn.net>,
-       Raistlin <raistlin@linux.it>, Peter Zijlstra <peterz@infradead.org>,
-       claudio@evidence.eu.com, michael@evidence.eu.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-In-Reply-To: <4ABA3ACF.50106@redhat.com>
-References: <1253615424.20345.76.camel@Palantir>
-	 <1253625878.6575.34.camel@desktop> <20090922173916.257dff1d@tpl.lwn.net>
-	 <1253663739.4317.12.camel@desktop> <20090922180611.7a47adcc@tpl.lwn.net>
-	 <1253666423.25689.30.camel@desktop> <4ABA0AA6.3010408@redhat.com>
-	 <20090923122530.GB6390@elte.hu> <1253717459.20648.39.camel@desktop>
-	 <4ABA37A5.4000806@redhat.com> <1253718532.20648.46.camel@desktop>
-	 <4ABA3ACF.50106@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, rostedt@goodmis.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <4ABA3A37.2070108@redhat.com>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>
+	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>
+	 <4AB8BA37.4010305@redhat.com> <20090922201746.GH5216@ghostprotocols.net>
+	 <4AB9DCC8.5050603@redhat.com> <1253697658.11461.36.camel@marge.simson.net>
+	 <4AB9F08E.1020106@redhat.com> <1253705515.7835.41.camel@marge.simson.net>
+	 <4ABA1B75.7040900@redhat.com>  <4ABA1E3B.40800@redhat.com>
+	 <1253713800.7816.15.camel@marge.simson.net>  <4ABA2A0B.1010103@redhat.com>
+	 <1253714972.7816.23.camel@marge.simson.net>  <4ABA3321.9090503@redhat.com>
+	 <1253717548.7816.34.camel@marge.simson.net>  <4ABA3732.3040907@redhat.com>
+	 <1253718323.7816.42.camel@marge.simson.net>  <4ABA3A37.2070108@redhat.com>
 Content-Type: text/plain
-Date: Wed, 23 Sep 2009 08:24:05 -0700
-Message-Id: <1253719445.20648.57.camel@desktop>
+Date: Wed, 23 Sep 2009 17:26:16 +0200
+Message-Id: <1253719576.7816.53.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-23 at 18:12 +0300, Avi Kivity wrote:
-> On 09/23/2009 06:08 PM, Daniel Walker wrote:
+On Wed, 2009-09-23 at 18:09 +0300, Avi Kivity wrote:
+> On 09/23/2009 06:05 PM, Mike Galbraith wrote:
 > >
-> >> Not true, you want to address the major issues first.  What's the point
-> >> of fixing whitespace if the whole approach is rejected? if it has to
-> >> undergo a rewrite? (not an opinion on EDF btw, just as an example)
+> >> Well, you don't need to do anything to open a file from cwd: that's the
+> >> default.  You need to actively prepend /lib/modules/blah to get it to
+> >> load from the correct location.  What I don't understand is why it is
+> >> only hitting me (esp. as it used to work).
 > >>      
-> > I'm not sure why your fixated on whitespace , but thinking about it more
-> > I don't think it matters .. If you fix whitespace or major issues first,
-> > it doesn't matter .. All the issues have to eventually get fixed .. Not
-> > to mentioned that LKML is not something you could remotely control in
-> > that way.
-> >    
-> 
-> A technical issue is that if you rewrite the code the whitespace fix 
-> becomes irrelevant.  But more important is that it's a distraction when 
-> people are thinking about requirements and design.
-
-It's not irrelevant, since a person doing that rewrite will be
-conscience of whitespace during the re-write ..
-
-The same with general coding style, if someone does a rewrite who has
-been alerted to checkpatch problems they will likely use it themselves
-leaving no need for someone else to comment on it.
-
-> >>> In this case the author is not totally aware of how to submit this
-> >>> code.. I don't think it's at all inappropriate to comment on that. His
-> >>> next submission will likely be much cleaner and nicer. It may even speed
-> >>> up the inclusion process since he'll be more easily able to submit the
-> >>> code (with practice and comments from us).
-> >>>
-> >>>        
-> >> Give people some credit.
-> >>      
-> > What do you mean?
+> > If your modules.dep, always was missing the /lib/modules/blah bit, it
+> > never worked for you.  I wrote the thing with the rash assumption that
+> > it always contained full path like mine does :)
 > >
 > >    
 > 
-> If he's able to write a scheduling class, he'll pick up the coding style 
-> when it becomes relevant.
+> Ah, changed there, I missed that part earlier, sorry.  So it's probably 
+> a change in modules.dep generation instead of tools/perf.
+> 
+> > So, I just need to check whether it's full path or not, prepend or take
+> > the path as is, and hope there aren't several other ways to get screwed
+> > up by modules.dep content.
+> >    
+> 
+> Maybe we should fix that then (though I prefer relative paths myself).
 
-There's plenty of large projects that never get off the ground cause
-people don't follow the coding style, or don't write clean code.. Take a
-look at the staging tree there's plenty of large dirty projects in
-there.
+I'll do the check for relative vs full thing, and a bail noisily if it
+finds something else.  (later i guess, wife is giving me the evil eye;)
 
-Daniel 
+> > Too bad the kernel doesn't store the path in /sys/modules/bla/path.
+> > That would be nicer than rummaging around in a mutable file.
+> >    
+> 
+> But then you rely on a running kernel.  Be nice to be able to ship 
+> perf.data.
+
+Long term, all pertinent data should go into a shippable perf.data.
+
+	-Mike
 
