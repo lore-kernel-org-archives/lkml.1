@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbZIWUhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbZIWUra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752286AbZIWUhv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 16:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZIWUht
+	id S1752517AbZIWUra (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 16:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZIWUr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 16:37:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47452 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751282AbZIWUht (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 16:37:49 -0400
-Date: Wed, 23 Sep 2009 13:37:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Izik Eidus <ieidus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       hugh.dickins@tiscali.co.uk, aarcange@redhat.com, ieidus@redhat.com
-Subject: Re: [PATCH] ksm: change default values to better fit into mainline
- kernel
-Message-Id: <20090923133735.dbe5dcec.akpm@linux-foundation.org>
-In-Reply-To: <1253736347-3779-1-git-send-email-ieidus@redhat.com>
-References: <1253736347-3779-1-git-send-email-ieidus@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Sep 2009 16:47:29 -0400
+Received: from tundra.namei.org ([65.99.196.166]:34934 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752113AbZIWUr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 16:47:28 -0400
+Date: Thu, 24 Sep 2009 06:46:32 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Paris <eparis@redhat.com>, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT] bugfixes for the security subsystem
+Message-ID: <alpine.LRH.2.00.0909240643380.5253@tundra.namei.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009 23:05:47 +0300
-Izik Eidus <ieidus@redhat.com> wrote:
+Hi Linus,
 
-> +static void __init ksm_init_max_kernel_pages(void)
-> +{
-> +	ksm_max_kernel_pages = nr_free_buffer_pages() / 4;
-> +}
-> +
->  static int __init ksm_slab_init(void)
->  {
->  	rmap_item_cache = KSM_KMEM_CACHE(rmap_item, 0);
-> @@ -1667,6 +1673,8 @@ static int __init ksm_init(void)
->  	struct task_struct *ksm_thread;
->  	int err;
->  
-> +	ksm_init_max_kernel_pages();
+Please pull these fixes.
 
-Was it really worth creating a new function for this?
+The following changes since commit 43c1266ce4dc06bfd236cec31e11e9ecd69c0bef:
+  Linus Torvalds (1):
+        Merge branch 'perfcounters-rename-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
---- a/mm/ksm.c~ksm-change-default-values-to-better-fit-into-mainline-kernel-fix
-+++ a/mm/ksm.c
-@@ -184,11 +184,6 @@ static DEFINE_SPINLOCK(ksm_mmlist_lock);
- 		sizeof(struct __struct), __alignof__(struct __struct),\
- 		(__flags), NULL)
- 
--static void __init ksm_init_max_kernel_pages(void)
--{
--	ksm_max_kernel_pages = nr_free_buffer_pages() / 4;
--}
--
- static int __init ksm_slab_init(void)
- {
- 	rmap_item_cache = KSM_KMEM_CACHE(rmap_item, 0);
-@@ -1673,7 +1668,7 @@ static int __init ksm_init(void)
- 	struct task_struct *ksm_thread;
- 	int err;
- 
--	ksm_init_max_kernel_pages();
-+	ksm_max_kernel_pages = nr_free_buffer_pages() / 4;
- 
- 	err = ksm_slab_init();
- 	if (err)
-_
+are available in the git repository at:
 
-oh well, whatever.
+  git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
+
+Andrew Morton (1):
+      include/linux/cred.h: fix build
+
+David Howells (1):
+      KEYS: Have the garbage collector set its timer for live expired keys
+
+Eric Paris (1):
+      SELinux: do not destroy the avc_cache_nodep
+
+Jason Gunthorpe (1):
+      tpm-fixup-pcrs-sysfs-file-update
+
+Randy Dunlap (1):
+      creds_are_invalid() needs to be exported for use by modules:
+
+ drivers/char/tpm/tpm.c |    5 ++---
+ include/linux/cred.h   |   18 +-----------------
+ kernel/cred.c          |   19 +++++++++++++++++++
+ security/keys/gc.c     |    4 ++--
+ security/selinux/avc.c |   19 +++++++++++++++----
+ 5 files changed, 39 insertions(+), 26 deletions(-)
+
+
+-- 
+James Morris
+<jmorris@namei.org>
