@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZIXAnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZIXAlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754463AbZIXAnn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZIXAni
+	id S1754388AbZIXAlJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZIXAlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:43:38 -0400
+	Wed, 23 Sep 2009 20:41:07 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39156 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753066AbZIXA3U (ORCPT
+	with ESMTP id S1753232AbZIXA3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:20 -0400
+	Wed, 23 Sep 2009 20:29:31 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Nathan Lynch <ntl@pobox.com>
-Subject: [PATCH v18 79/80] powerpc: enable checkpoint support in Kconfig
-Date: Wed, 23 Sep 2009 19:51:59 -0400
-Message-Id: <1253749920-18673-80-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 80/80] powerpc: clone_with_pids implementation
+Date: Wed, 23 Sep 2009 19:52:00 -0400
+Message-Id: <1253749920-18673-81-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -29,25 +29,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nathan Lynch <ntl@pobox.com>
 
+Mostly copy-paste from existing clone code.
+
+(may want to hold off applying this until the ongoing clone_with_pids
+discussion is resolved.)
+
 Signed-off-by: Nathan Lynch <ntl@pobox.com>
 ---
- arch/powerpc/Kconfig |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/syscalls.h |    4 ++++
+ arch/powerpc/include/asm/systbl.h   |    1 +
+ arch/powerpc/include/asm/unistd.h   |    3 ++-
+ arch/powerpc/kernel/entry_32.S      |    8 ++++++++
+ arch/powerpc/kernel/entry_64.S      |    5 +++++
+ arch/powerpc/kernel/process.c       |   20 +++++++++++++++++++-
+ 6 files changed, 39 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index d00131c..2ca160e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -26,6 +26,9 @@ config MMU
- 	bool
- 	default y
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
+index eb8eb40..25dfe8b 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -24,6 +24,10 @@ asmlinkage int sys_execve(unsigned long a0, unsigned long a1,
+ asmlinkage int sys_clone(unsigned long clone_flags, unsigned long usp,
+ 		int __user *parent_tidp, void __user *child_threadptr,
+ 		int __user *child_tidp, int p6, struct pt_regs *regs);
++asmlinkage int sys_clone_with_pids(unsigned long clone_flags,
++		unsigned long usp, int __user *parent_tidp,
++		void __user *child_threadptr, int __user *child_tidp,
++		void __user *upid_setp, struct pt_regs *regs);
+ asmlinkage int sys_fork(unsigned long p1, unsigned long p2,
+ 		unsigned long p3, unsigned long p4, unsigned long p5,
+ 		unsigned long p6, struct pt_regs *regs);
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 3d44cf3..e3c0b96 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -328,3 +328,4 @@ COMPAT_SYS_SPU(pwritev)
+ COMPAT_SYS(rt_tgsigqueueinfo)
+ SYSCALL(checkpoint)
+ SYSCALL(restart)
++PPC_SYS(clone_with_pids)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index ef41ebb..c54db8b 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -347,10 +347,11 @@
+ #define __NR_rt_tgsigqueueinfo	322
+ #define __NR_checkpoint		323
+ #define __NR_restart		324
++#define __NR_clone_with_pids	325
  
-+config CHECKPOINT_SUPPORT
-+	def_bool y
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		325
++#define __NR_syscalls		326
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 3cadba6..081dd36 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -586,6 +586,14 @@ ppc_clone:
+ 	stw	r0,_TRAP(r1)		/* register set saved */
+ 	b	sys_clone
+ 
++	.globl	ppc_clone_with_pids
++ppc_clone_with_pids:
++	SAVE_NVGPRS(r1)
++	lwz	r0,_TRAP(r1)
++	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
++	stw	r0,_TRAP(r1)		/* register set saved */
++	b	sys_clone_with_pids
 +
- config GENERIC_CMOS_UPDATE
- 	def_bool y
+ 	.globl	ppc_swapcontext
+ ppc_swapcontext:
+ 	SAVE_NVGPRS(r1)
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 43e0734..39fa316 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -320,6 +320,11 @@ _GLOBAL(ppc_clone)
+ 	bl	.sys_clone
+ 	b	syscall_exit
  
++_GLOBAL(ppc_clone_with_pids)
++	bl	.save_nvgprs
++	bl	.sys_clone_with_pids
++	b	syscall_exit
++
+ _GLOBAL(ppc32_swapcontext)
+ 	bl	.save_nvgprs
+ 	bl	.compat_sys_swapcontext
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 892a9f2..7bf21cc 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -895,7 +895,25 @@ int sys_clone(unsigned long clone_flags, unsigned long usp,
+ 		child_tidp = TRUNC_PTR(child_tidp);
+ 	}
+ #endif
+- 	return do_fork(clone_flags, usp, regs, 0, parent_tidp, child_tidp);
++	return do_fork(clone_flags, usp, regs, 0, parent_tidp, child_tidp);
++}
++
++int sys_clone_with_pids(unsigned long clone_flags, unsigned long usp,
++	      int __user *parent_tidp, void __user *child_threadptr,
++	      int __user *child_tidp, void __user *upid_setp,
++	      struct pt_regs *regs)
++{
++	CHECK_FULL_REGS(regs);
++	if (usp == 0)
++		usp = regs->gpr[1];
++#ifdef CONFIG_PPC64
++	if (test_thread_flag(TIF_32BIT)) {
++		parent_tidp = TRUNC_PTR(parent_tidp);
++		child_tidp = TRUNC_PTR(child_tidp);
++	}
++#endif
++	return do_fork_with_pids(clone_flags, usp, regs, 0,
++				 parent_tidp, child_tidp, upid_setp);
+ }
+ 
+ int sys_fork(unsigned long p1, unsigned long p2, unsigned long p3,
 -- 
 1.6.0.4
 
