@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbZIWQoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751941AbZIWQuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752710AbZIWQoV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 12:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZIWQoU
+	id S1751941AbZIWQuV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 12:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZIWQuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 12:44:20 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:27202 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 12:50:19 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:49102 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751685AbZIWQoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 12:44:19 -0400
-Message-ID: <4ABA50C2.6080607@redhat.com>
-Date: Wed, 23 Sep 2009 09:45:54 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1751179AbZIWQuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 12:50:19 -0400
+Date: Wed, 23 Sep 2009 09:50:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: [PATCH tip/core/rcu 0/4] Josh and Ingo review feedback and
+	Bloatwatch RCU
+Message-ID: <20090923165012.GA13801@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       a.p.zijlstra@chello.nl, fweisbec@gmail.com, acme@redhat.com,
-       tglx@linutronix.de, postmaster@vger.kernel.org
-Subject: Re: mailing list for trace users
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com> <20090922.153201.225375909.davem@davemloft.net> <20090923114725.GB4132@elte.hu>
-In-Reply-To: <20090923114725.GB4132@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> * David Miller <davem@davemloft.net> wrote:
-> 
->> From: Steven Rostedt <rostedt@goodmis.org>
->> Date: Wed, 16 Sep 2009 16:16:22 -0400
->>
->>> What are people's thoughts about creating a linux-trace-users mailing
->>> list on vger.kernel.org?
->>
->> I've created this list.
-> 
-> Could you please also create the linux-perf-users list, for perf events 
-> and the perf tool related user questions? (We have asked for this before 
-> but must have gotten lost somewhere)
+This patch set applies two sets of review feedback from Josh Triplett
+and checkpatch feedback from Ingo Molnar.  It also contains a forward-port
+of Bloatwatch RCU, courtesy of David Howells.
 
-I thought perf users also talk on the linux tracing list.
-What will linux-tracing-users cover, only ftrace?
+This series is a respin of http://lkml.org/lkml/2009/9/22/554, including
+improved changelogs and Peter Zijlstra's Acked-by for the first two
+patches in the series.
 
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+ b/include/linux/hardirq.h  |   24 ++++
+ b/include/linux/rcupdate.h |    4 
+ b/include/linux/rcutiny.h  |  103 ++++++++++++++++++
+ b/include/linux/rcutree.h  |    1 
+ b/init/Kconfig             |    9 +
+ b/init/main.c              |    1 
+ b/kernel/Makefile          |    1 
+ b/kernel/rcupdate.c        |    3 
+ b/kernel/rcutiny.c         |  246 ++++++++++++++++++++++++++++++++++++++++++++-
+ b/kernel/rcutorture.c      |    4 
+ b/kernel/rcutree.c         |   29 +++--
+ b/kernel/rcutree.h         |    6 -
+ b/kernel/rcutree_plugin.h  |   51 ++++-----
+ b/kernel/rcutree_trace.c   |   13 +-
+ include/linux/rcupdate.h   |    6 +
+ include/linux/rcutree.h    |   12 +-
+ kernel/rcupdate.c          |    4 
+ kernel/rcutree.c           |   95 ++++++-----------
+ kernel/rcutree.h           |   57 ++++++++--
+ kernel/rcutree_plugin.h    |   24 +++-
+ 20 files changed, 557 insertions(+), 136 deletions(-)
