@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZIWG2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbZIWGcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbZIWG2L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 02:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZIWG2L
+	id S1754133AbZIWGcv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 02:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbZIWGcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 02:28:11 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:49876 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786AbZIWG2J (ORCPT
+	Wed, 23 Sep 2009 02:32:50 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:58009 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753787AbZIWGcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 02:28:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LzOCcn7DxyCjRvgvB3ri1oa+WRZP6j37C/pjg1zw8heCbqmUYQ7MjF3mt6sKMTb0hN
-         UJPwOwnBDEK968uFgALp0rcTQlYQfRCfK8mGEBVJfkflOMUPqbbWgD7jA10jYGL046Le
-         tWY3/yBm33GsPQ0yJDJcwWKjMV4A7tJU9xTjU=
-Date: Tue, 22 Sep 2009 23:28:09 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH v2] input/keyboard: new driver for ADP5520 MFD PMICs
-Message-ID: <20090923062808.GD1458@core.coreip.homeip.net>
-References: <1253211850-29309-1-git-send-email-vapier@gentoo.org> <1253682916-27387-1-git-send-email-vapier@gentoo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253682916-27387-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 23 Sep 2009 02:32:50 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH] sched: Make sure task has correct sched_class after
+ policy change
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing <linux-kernel@vger.kernel.org>
+In-Reply-To: <e286470be617e07797b7.1253672517@mudlark.pw.nest>
+References: <e286470be617e07797b7.1253672517@mudlark.pw.nest>
+Content-Type: text/plain
+Date: Wed, 23 Sep 2009 08:32:59 +0200
+Message-Id: <1253687579.7695.89.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 01:15:16AM -0400, Mike Frysinger wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+On Wed, 2009-09-23 at 02:21 +0000, Peter Williams wrote:
+> From the code in rt_mutex_setprio(), it is evident that the intention
+> is that task's with a RT 'prio' value as a consequence of receiving a PI
+> boost also have their 'sched_class' field set to '&rt_sched_class'.
+> However, the code in __setscheduler() could result in this intention
+> being frustrated.
 > 
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> ---
-> this patch requires:
-> 	[PATCH] mfd: ADP5520 Multifunction LCD Backlight and Keypad Input Device Driver
+> This patch fixes this problem.
 > 
-> v2
-> 	- address feedback from Dmitry
-> 
+> Signed-off-by: Peter Williams <pwil3058@bigpond.net.au>
 
-Looks good. I assume you want it to be merged with the rest of ADP5520
-patches, so:
+I think you're right, but the problem seems to be that it sets
+sched_class based on policy, which seems fragile in the face of PI.
 
-Acked-by: Dmitry Torokhov <dtor@mail.ru>
+How about the alternative below?
 
--- 
-Dmitry
+---
+ kernel/sched.c |   17 ++++-------------
+ 1 files changed, 4 insertions(+), 13 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 91843ba..753a52c 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6129,23 +6129,14 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
+ {
+ 	BUG_ON(p->se.on_rq);
+ 
+-	p->policy = policy;
+-	switch (p->policy) {
+-	case SCHED_NORMAL:
+-	case SCHED_BATCH:
+-	case SCHED_IDLE:
+-		p->sched_class = &fair_sched_class;
+-		break;
+-	case SCHED_FIFO:
+-	case SCHED_RR:
+-		p->sched_class = &rt_sched_class;
+-		break;
+-	}
+-
+ 	p->rt_priority = prio;
+ 	p->normal_prio = normal_prio(p);
+ 	/* we are holding p->pi_lock already */
+ 	p->prio = rt_mutex_getprio(p);
++	if (rt_prio(p->prio))
++		p->sched_class = &rt_sched_class;
++	else
++		p->sched_class = &fair_sched_class;
+ 	set_load_weight(p);
+ }
+ 
+
+
