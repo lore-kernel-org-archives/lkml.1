@@ -1,103 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751720AbZIWOiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbZIWOkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751720AbZIWOiN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 10:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZIWOiN
+	id S1752245AbZIWOkE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 10:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbZIWOkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 10:38:13 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:47840 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbZIWOiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 10:38:12 -0400
-Date: Wed, 23 Sep 2009 16:38:15 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [RFC] regulator: add driver for MAX8660/8661
-Message-ID: <20090923143815.GC3131@pengutronix.de>
-References: <1253625499-9314-1-git-send-email-w.sang@pengutronix.de> <1253629577.11624.278.camel@vega>
+	Wed, 23 Sep 2009 10:40:03 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:54549 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750776AbZIWOkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 10:40:02 -0400
+Message-ID: <4ABA3321.9090503@redhat.com>
+Date: Wed, 23 Sep 2009 17:39:29 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0vzXIDBeUiKkjNJl"
-Content-Disposition: inline
-In-Reply-To: <1253629577.11624.278.camel@vega>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Mike Galbraith <efault@gmx.de>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>, rostedt@goodmis.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [patch] Re: [perf] Finding uninstalled modules Was Re: mailing
+ list for trace users
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>	 <4AB8BA37.4010305@redhat.com> <20090922201746.GH5216@ghostprotocols.net>	 <4AB9DCC8.5050603@redhat.com> <1253697658.11461.36.camel@marge.simson.net>	 <4AB9F08E.1020106@redhat.com> <1253705515.7835.41.camel@marge.simson.net>	 <4ABA1B75.7040900@redhat.com>  <4ABA1E3B.40800@redhat.com>	 <1253713800.7816.15.camel@marge.simson.net>  <4ABA2A0B.1010103@redhat.com> <1253714972.7816.23.camel@marge.simson.net>
+In-Reply-To: <1253714972.7816.23.camel@marge.simson.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/23/2009 05:09 PM, Mike Galbraith wrote:
+>
+>> Mine says:
+>>
+>>     kernel/arch/x86/kvm/kvm.ko:
+>>     kernel/arch/x86/kvm/kvm-intel.ko: kernel/arch/x86/kvm/kvm.ko
+>>
+>> Which is reasonable for /lib/modules/2.6.31, not for a source directory.
+>>      
+> Yup, there's the problem.  The code assumes that the path to modules.dep
+> and the path stored in modules.dep will agree.
+>
+> Wants some robustification.
+>    
 
---0vzXIDBeUiKkjNJl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The trace shows modules.dep was picked up from /lib/modules/2.6.31, so 
+if it continued that and picked up the modules from the same place, 
+everything would work.  Why does it try to pick up the modules from cwd?
 
-Hi Liam,
+-- 
+error compiling committee.c: too many arguments to function
 
-> Fwiw, the WM8350 has several similar boot up modes. Luckily we can read
-> back this device to determine mode and any boot loader config. It may
-> also be required to add any shadow register changes to your
-> platform_data. i.e. if boot loader does any writes.
-
-While I thought about how to achieve that (Specify voltages and convert them
-back to selector-values? Ask for the selector value? Enforce a complete
-register set?), I concluded that there are lots of details in here, and I'd
-spare that for the case when it is actually needed. In our case, it is not.
-
-> Btw, have you tried register read back ? The data sheet mentions a
-> "bidirectional" I2C SDA line implying the device registers can be read
-> back, even though they are all marked W in the register map.
-
-The line itself has the capability of being bidirectional, still the chips =
-has
-no logic for being read. Page 37 states:
-
-"The MAX8660/MAX8661 are write-only devices and recognize the 'write byte'
-protocol as defined in the SMBus specification and shown in section A of Fi=
-gure
-11..."
-
-And to be very sure, I just tried a read -> '-EIO'
-
-
->=20
-> > +The Target Voltage 2 Registers for V3, V4 and V5 are not used by this =
-driver.
-> > +
-> > +Note that disabling V3 or V4 has no effect if pin EN34 is driven high =
-(pin and
-> > +register are ORed, see datasheet).
-> > +
->=20
-> Sounds like EN34 status should be in platform_data.
-
-Good idea, will implement that.
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---0vzXIDBeUiKkjNJl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkq6MtcACgkQD27XaX1/VRutcQCfQVf9C9MrN7GcAimvUHnvEzVA
-chcAoJ/H5rjDzGK8Yj51+2NxaaiQat36
-=nxMg
------END PGP SIGNATURE-----
-
---0vzXIDBeUiKkjNJl--
