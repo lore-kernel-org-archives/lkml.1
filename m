@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751717AbZIWVYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751890AbZIWVaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751717AbZIWVYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 17:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZIWVYk
+	id S1751890AbZIWVaf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 17:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZIWVab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 17:24:40 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:48239 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbZIWVYj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 17:24:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LeAkuFj0n2VPZkMMSeFeuSY3gHXcC1kXjWwlc/d5ys7ZIF/wGoDqJvq8SOZPR1zBPZ
-         fN8eDjO9Oh5T4s0pX9zYJ6cBh3kiz1Okhab1jzdqAMoB7xVNusQljK7JIZ9KY2dhyODQ
-         8hNip8lXdQIbpEK9DV+kGcqrTKQ1Br6QjOack=
-Date: Wed, 23 Sep 2009 23:24:40 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL] tracing/kprobes: Kprobes core/tracing/profiling
-	updates
-Message-ID: <20090923212438.GA5190@nowhere>
-References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com> <20090923105252.GA32176@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090923105252.GA32176@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 23 Sep 2009 17:30:31 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55522 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751206AbZIWVab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 17:30:31 -0400
+Subject: Re: [regression, bisected] adb trackpad disappears after suspend
+ to ram
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jan Scholz <scholz@fias.uni-frankfurt.de>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <200909231538.51227.rjw@sisk.pl>
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+	 <200906032200.55563.rjw@sisk.pl> <1253676745.7103.268.camel@pasglop>
+	 <200909231538.51227.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 07:28:52 +1000
+Message-Id: <1253741332.7103.324.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 12:52:52PM +0200, Ingo Molnar wrote:
-> Would be nice to merge latest -git into this tree and resolve the 
-> conflicts:
+On Wed, 2009-09-23 at 15:38 +0200, Rafael J. Wysocki wrote:
+> > This patch fixes it by using IRQF_TIMER for both the PMU and the I2C
+> > interrupts. I prefer doing it this way than moving the call sites since
+> > I really want those platform functions to still be called after all
+> > drivers (and before sysdevs).
 > 
->  kernel/trace/Makefile
->  kernel/trace/trace.h
->  kernel/trace/trace_event_types.h
->  kernel/trace/trace_export.c
-> 
-> Then i could pull it into tip:tracing/kprobes for more testing.
-> 
-> 	Ingo
+> Alternatively, you could introduce a new flag IRQF_NOSUSPEND and use that
+> instead of IRQF_TIMER.  That would be cleaner than using IRQF_TIMER for
+> non-timer interrupts IMHO.
 
+I totally agree. The current patch is still good for stable though.
 
-I've just merged latest upstream tree into it and pushed
-that in a new branch:
+I'll send it to Greg after I've upstreamed it, we can introduce IRQF_NOSUSPEND
+in a second patch.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	tracing/kprobes-v2
+Ben.
 
-There were several conflicts, not trivial. I hope I haven't missed
-something. But it boots well, I've tested a simple kprobe creation
-and fetched its events through perf without any problem.
-
-Thanks,
-Frederic.
-
-PS: I'd recommend you to define a name when you define a kprobe.
-For example if you want to get the first argument of sys_open,
-don't create it using:
-
-	p sys_open a0
-
-but rather:
-
-	p:my_probe_name sys_open a0
-
-Otherwise you will get a default kprobe name that doesn't seem
-to make perf trace happy (put in my TODO list).
 
