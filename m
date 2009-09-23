@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbZIWFxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZIWGI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbZIWFxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 01:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZIWFxV
+	id S1753800AbZIWGI6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 02:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZIWGI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 01:53:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51091 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751868AbZIWFxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 01:53:21 -0400
-Message-ID: <4AB9B7B7.30200@kernel.org>
-Date: Wed, 23 Sep 2009 14:52:55 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Wed, 23 Sep 2009 02:08:58 -0400
+Received: from mail-gw.exalead.com ([193.47.80.29]:38640 "EHLO exalead.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753092AbZIWGI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 02:08:57 -0400
+X-Greylist: delayed 453 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Sep 2009 02:08:57 EDT
+Message-ID: <4AB9B9B7.1020309@exalead.com>
+Date: Wed, 23 Sep 2009 08:01:27 +0200
+From: Xavier Roche <roche+kml2@exalead.com>
+Organization: Exalead
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.22) Gecko/20090606 SeaMonkey/1.1.17
 MIME-Version: 1.0
-To: Tony Vroon <tony@linx.net>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.31-07068-g43c1266 Early boot exception
-References: <1253560490.2934.42.camel@localhost>	 <4AB7D349.4000802@zytor.com> <1253566046.2773.10.camel@localhost>	 <4AB89417.7090005@kernel.org> <1253648186.2766.5.camel@localhost>
-In-Reply-To: <1253648186.2766.5.camel@localhost>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Inter-process send()/recv() using zero-copy ?
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 05:52:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi folks,
 
-Tony Vroon wrote:
-> On Tue, 2009-09-22 at 18:08 +0900, Tejun Heo wrote:
->> Can you please try the patch below?  Also, please build the kernel
->> with debug info and ask gdb which line the crash corresponds to?
->> ie. l *pcpu_embed_first_chunk+0x1e2
-> 
-> Patch applied, no additional output visible:
-> OAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 14 global_irq 14 high edge)
-> ACPI: INT_SRC_OVR (bus 0 bus_irq 15 global_irq 15 high edge)
-> Using ACPI (MADT) for SMP configuration information
-> ACPI: HPET id: 0x10de8201 base: 0xfed00000
-> SMP: allowing 12 CPUs, 0 hotplug CPUs
-> Allocating PCI resources starting at b00000000 (gap:b0000000:30000000)
-> NR_CPUS: 12 nr_cpumask_bits:12 nr_cpu_ids:12 nr_node_ids:2
-> PERCPU: Embedded 23 pages/cpu @ffff880028200000 s73688 r0 d20520 u26214
-> PANIC: early exception 06 rip 10:ffffffff81598250 error 0 cr2 d0fff6
+I was wondering if there was a way to have zero-copy send()/recv(), when 
+the socket is connected to the local machine (to another process on the 
+same machine, for example) ?
 
-Can you please do l on the above rip - ffffffff81598250?
+Such feature would be only feasible with page-aligned blocks, from an a 
+mmap'ed block to another one, I guess.
 
-Thanks.
+Typical case:
 
--- 
-tejun
+Process #1 (uid A)
+buff = mmap(0, size, ..) /* anonymous or not */
+...
+send(s, buff, size, 0)
+munmap(buff, size)
+
+Process #2 (uid B)
+buff = mmap(0, size, .. | MAP_ANONYMOUS, ..)
+recv(s, buff, size, 0)
+
+In an ideal fantasy world, the first process would use send() to 
+transmit the complete page-aligned memory block to the other side, and 
+the second process would use recv() to get the memory block on a similar 
+anonymously mmap'ed block, and the only operation the kernel would do 
+would be to share the memory block between the two processes with 
+copy-on-write.
+
+On the real world, the same operation requires a first read of the whole 
+memory block (possibly partially on disk) and a complete write (possibly 
+partially on disk, too) with two copies of the same memory region at the 
+end.
+
+Two solutions can be used to emulate such feature:
+
+1. use a temporary mmap'ed file
+- but requires a temporary file
+- permissions for the file ? (not necessarily from the same UID)
+- special case for local network block transmissions vs. machine-to-machine
+
+2. use shared memory explicitely
+- handling of permissions ? (ditto)
+- special case for local network block transmissions vs. machine-to-machine
+
+splice() and friends do not appear to give any help for this case, and I 
+was wondering if there was a chance to do that ?
+
