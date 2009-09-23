@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbZIWGTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZIWGUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860AbZIWGTl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 02:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZIWGTl
+	id S1753949AbZIWGUz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 02:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZIWGUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 02:19:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34511 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 02:20:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:25529 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752686AbZIWGTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 02:19:40 -0400
+	id S1752854AbZIWGUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 02:20:54 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -18,65 +18,53 @@ To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
 Cc: Linus Torvalds <torvalds@linux-foundation.org>, jan.kratochvil@redhat.com,
        Oleg Nesterov <oleg@redhat.com>, x86@kernel.org,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/4] x86: clean up orig_ax handling
-In-Reply-To: Roland McGrath's message of  Tuesday, 22 September 2009 19:40:49 -0700 <20090923024049.AA85913F37@magilla.sf.frob.com>
+Subject: [PATCH 1/4] asm-generic: syscall_get_nr returns int
+In-Reply-To: Roland McGrath's message of  Tuesday, 22 September 2009 23:18:34 -0700 <20090923061834.BE13A22@magilla.sf.frob.com>
 X-Fcc: ~/Mail/linus
 References: <20090923004651.2D99513F37@magilla.sf.frob.com>
 	<alpine.LFD.2.01.0909221757200.4950@localhost.localdomain>
 	<20090923024049.AA85913F37@magilla.sf.frob.com>
-X-Shopping-List: (1) Grandiloquent squeeze axes
-   (2) Prosthetic melons
-   (3) Tyrannical destroyer toothpicks
-   (4) Autonomous warriors
-Message-Id: <20090923061834.BE13A22@magilla.sf.frob.com>
-Date: Tue, 22 Sep 2009 23:18:34 -0700 (PDT)
+	<20090923061834.BE13A22@magilla.sf.frob.com>
+Emacs: freely redistributable; void where prohibited by law.
+Message-Id: <20090923061949.29E4F14093@magilla.sf.frob.com>
+Date: Tue, 22 Sep 2009 23:19:49 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the aforementioned other tack on this.  
+Only 32 bits of system call number are meaningful, so make the
+specification for syscall_get_nr() be to return int, not long.
 
-I said earlier that getreg() (i.e. 64-bit ptrace/core-dump fetches)
-should sign-extend the low 32 bits of orig_ax up.  But I've changed my
-mind.  It's true that today you can store 0xffffffff via either 64-bit
-ptrace or 32-bit ptrace and then read back -1 via 64-bit ptrace.  (This
-wasn't always so, and so we can hope that no debugger really depends on
-it.)  What seems more important is that tracing and core dumps correctly
-show the full orig_ax value incoming in %rax from userland, since
-%rax=__NR_foo|(1UL<<32) behaves differently (i.e. -ENOSYS) than
-%eax=_NR_foo in actual fact when user-mode does "syscall" with those
-values.  In a bogon case like that, you would like to have traces/dumps
-tell you why the task is not making a proper syscall rather than lie
-about what register bits it entered the kernel with.
-
-Patches 1-3 change no ptrace-tests outcomes, i.e. don't regress on the
-test cases that went with the original sign-extension changes.  They
-reintroduce e.g. the ability to blindly read and write back the whole
-regset when at syscall-entry tracing with %rax=__NR_foo|(1UL<<32) and
-have that fail with -ENOSYS as it would without tracing rather than
-perturb the tracee to call sys_foo instead.  (Not that this is useful.)
-
-Patch 4 does Linus's fix for the outstanding bug.  I've verified it works.
-
-
-Thanks,
-Roland
+Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
-The following changes since commit 7fa07729e439a6184bd824746d06a49cca553f15:
-  Linus Torvalds (1):
-        Merge branch 'perf-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+ include/asm-generic/syscall.h |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-roland.git x86/orig_ax
-
-Roland McGrath (4):
-      asm-generic: syscall_get_nr returns int
-      x86: syscall_get_nr returns int
-      x86: ptrace: do not sign-extend orig_ax on write
-      x86: ptrace: set TS_COMPAT when 32-bit ptrace sets orig_eax>=0
-
- arch/x86/include/asm/syscall.h |   14 +++++++-------
- arch/x86/kernel/ptrace.c       |   21 ++++++++-------------
- include/asm-generic/syscall.h  |    8 ++++++--
- 3 files changed, 21 insertions(+), 22 deletions(-)
+diff --git a/include/asm-generic/syscall.h b/include/asm-generic/syscall.h
+index ea8087b..5c122ae 100644
+--- a/include/asm-generic/syscall.h
++++ b/include/asm-generic/syscall.h
+@@ -1,7 +1,7 @@
+ /*
+  * Access to user system call parameters and results
+  *
+- * Copyright (C) 2008 Red Hat, Inc.  All rights reserved.
++ * Copyright (C) 2008-2009 Red Hat, Inc.  All rights reserved.
+  *
+  * This copyrighted material is made available to anyone wishing to use,
+  * modify, copy, or redistribute it subject to the terms and conditions
+@@ -32,9 +32,13 @@ struct pt_regs;
+  * If @task is not executing a system call, i.e. it's blocked
+  * inside the kernel for a fault or signal, returns -1.
+  *
++ * Note this returns int even on 64-bit machines.  Only 32 bits of
++ * system call number can be meaningful.  If the actual arch value
++ * is 64 bits, this truncates to 32 bits so 0xffffffff means -1.
++ *
+  * It's only valid to call this when @task is known to be blocked.
+  */
+-long syscall_get_nr(struct task_struct *task, struct pt_regs *regs);
++int syscall_get_nr(struct task_struct *task, struct pt_regs *regs);
+ 
+ /**
+  * syscall_rollback - roll back registers after an aborted system call
