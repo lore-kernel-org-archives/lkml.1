@@ -1,81 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZIWGlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZIWGnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbZIWGlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 02:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZIWGlT
+	id S1754009AbZIWGnQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 02:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZIWGnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 02:41:19 -0400
-Received: from mga09.intel.com ([134.134.136.24]:29017 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753927AbZIWGlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 02:41:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,436,1249282800"; 
-   d="scan'208";a="450873466"
-Date: Wed, 23 Sep 2009 14:41:20 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Wu Fengguang <fengguang.wu@intel.com>,
+	Wed, 23 Sep 2009 02:43:15 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:34756 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754182AbZIWGnO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 02:43:14 -0400
+Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Reply-To: tomi.valkeinen@nokia.com
+To: ext Andrew Morton <akpm@linux-foundation.org>
+Cc: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: regression in page writeback
-Message-ID: <20090923064120.GA3194@sli10-desk.sh.intel.com>
-References: <20090922054913.GA27260@sli10-desk.sh.intel.com> <1253601612.8439.274.camel@twins> <20090922080505.GB9192@localhost> <1253606965.8439.281.camel@twins> <20090922082427.GA24888@localhost> <1253608335.8439.283.camel@twins> <20090922155259.GL10825@think>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090922155259.GL10825@think>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       "tony@atomide.com" <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-fbdev-devel@lists.sourceforge.net" 
+	<linux-fbdev-devel@lists.sourceforge.net>
+In-Reply-To: <20090922130304.ffe24448.akpm@linux-foundation.org>
+References: <1253622588.25232.11.camel@tubuntu>
+	 <20090922130304.ffe24448.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Nokia Oyj
+Date: Wed, 23 Sep 2009 09:42:24 +0300
+Message-Id: <1253688144.14841.7.camel@tubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Sep 2009 06:42:29.0816 (UTC) FILETIME=[05887B80:01CA3C19]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 11:52:59PM +0800, Chris Mason wrote:
-> On Tue, Sep 22, 2009 at 10:32:14AM +0200, Peter Zijlstra wrote:
-> > On Tue, 2009-09-22 at 16:24 +0800, Wu Fengguang wrote:
-> > > On Tue, Sep 22, 2009 at 04:09:25PM +0800, Peter Zijlstra wrote:
-> > > > On Tue, 2009-09-22 at 16:05 +0800, Wu Fengguang wrote:
-> > > > > 
-> > > > > I'm not sure how this patch stopped the "overshooting" behavior.
-> > > > > Maybe it managed to not start the background pdflush, or the started
-> > > > > pdflush thread exited because it found writeback is in progress by
-> > > > > someone else?
-> > > > > 
-> > > > > -               if (bdi_nr_reclaimable) {
-> > > > > +               if (bdi_nr_reclaimable > bdi_thresh) {
-> > > > 
-> > > > The idea is that we shouldn't move more pages from dirty -> writeback
-> > > > when there's not actually that much dirty left.
-> > > 
-> > > IMHO this makes little sense given that pdflush will move all dirty
-> > > pages anyway. pdflush should already be started to do background
-> > > writeback before the process is throttled, and it is designed to sync
-> > > all current dirty pages as quick as possible and as much as possible.
+On Tue, 2009-09-22 at 22:03 +0200, ext Andrew Morton wrote:
+> On Tue, 22 Sep 2009 15:29:48 +0300
+> Tomi Valkeinen <tomi.valkeinen@nokia.com> wrote:
+> 
+> > Linus,
 > > 
-> > Not so, pdflush (or now the bdi writer thread thingies) should not
-> > deplete all dirty pages but should stop writing once they are below the
-> > background limit.
+> > Here's the new display subsystem and framebuffer driver for OMAP2/3.
 > > 
-> > > > Now, I'm not sure about the > bdi_thresh part, I've suggested to maybe
-> > > > use bdi_thresh/2 a few times, but it generally didn't seem to make much
-> > > > of a difference.
-> > > 
-> > > One possible difference is, the process may end up waiting longer time
-> > > in order to sync write_chunk pages and quit the throttle. This could
-> > > hurt the responsiveness of the throttled process.
+> > The driver has been reviewed on linux-omap and linux-fbdev-devel, and is in
+> > use, for example, on N900, Beagle Board and Overo boards. We have an ACK for
+> > the OMAP parts from Tony Lindgren, who maintains the OMAP platform.
 > > 
-> > Well, that's all because this congestion_wait stuff is borken..
+> > We have gotten positive feedback about the driver, for example in this thread:
+> > http://marc.info/?l=linux-kernel&m=125171081901820&w=2
+> > 
+> > The driver is actively maintained and developed further, and I have already a
+> > bunch of patches on top of these patches, but I would like to get the big core
+> > driver merged first. After the driver is merged, other people can send patches
+> > to LCD drivers and board files to enable the new display subsystem on their
+> > boards.
+> > 
+> > Andrew said 2-3 weeks ago that he'll merge the driver (after he has looked
+> > through it), but he hasn't responded since then. I'm guessing he's quite busy.
+> 
+> That's because it came very late and conflicts considerably with
+> changes which are already pending.
+> 
+> > Please pull the new OMAP2/3 display subsystem driver from:
+> > 
+> >   git://gitorious.org/linux-omap-dss2/linux.git for-linus
 > > 
 > 
-> I'd suggest retesting with a new baseline against the code in Linus' git
-> today.  Overall I think the change to make balance_dirty_pages() sleep
-> instead of kick more IO out is a very good one.  It helps in most
-> workloads here.
-I tested today's git tree v2.6.31-7068-g43c1266, looks the regression
-disappears. the disk io is almost stable to about 480m/s with/without the patch.
+> Confused.  These conflicts heavily with the changes which I've already
+> queued, does it not?  Ones which were queued way earlier than this
+> material.
+> 
+> If so, why on earth did you send a pull request, knowing that it would
+> trash my tree?
 
-Thanks,
-Shaohua
+Ah, my mistake. I'm new to getting patches merged and the process
+involved. Somehow I thought the patches you have went already in, and as
+I didn't get any replies for couple of week, I pursued another route.
+Sorry about the confusion.
+
+Let's continue this with less audience, no need to bother everyone with
+this.
+
+ Tomi
+
+
