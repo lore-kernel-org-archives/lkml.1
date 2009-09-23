@@ -1,105 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbZIWK54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752128AbZIWLCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752107AbZIWK54 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 06:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZIWK54
+	id S1752128AbZIWLCl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 07:02:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZIWLCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 06:57:56 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:48456 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbZIWK5z (ORCPT
+	Wed, 23 Sep 2009 07:02:40 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:24591 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbZIWLCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 06:57:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=BpQqGQLFYzxCiIY4yeaOEu4gtQ+2Me9PNsbAt4CHY3SIi6ORWHCoKA4VOAXLmAvxIW
-         p5320bBE4Fpa4J/eZx3RSlQI4WXlUBpYtIRoQWY3Fie3NmCH6KcyvA2riMDmj6TqAMjn
-         FFwRIYRwAxoGCKmKnr7CqFMTrGzVwWcyJX+a4=
+	Wed, 23 Sep 2009 07:02:39 -0400
+Date: Wed, 23 Sep 2009 04:02:16 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: [GIT PULL] ocfs2 changes for 2.6.32 (take 2, no syscall)
+Message-ID: <20090923110215.GA27900@mail.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <20090911200458.GA15416@mail.oracle.com>
+ <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20090923103244.7aa5d027@infradead.org>
-References: <20090921093652.0722d745@infradead.org>
-	 <alpine.DEB.2.00.0909210926010.7647@gandalf.stny.rr.com>
-	 <20090921152853.2f8c0597@infradead.org>
-	 <1253551567.2630.26.camel@frodo>
-	 <20090921200042.29f0cf49@infradead.org>
-	 <1253568031.2935.5.camel@frodo>
-	 <20090923103244.7aa5d027@infradead.org>
-Date: Wed, 23 Sep 2009 12:57:58 +0200
-Message-ID: <c62985530909230357k5050a3cese1e303abea61f831@mail.gmail.com>
-Subject: Re: [patch] introduce TRACE_EVENT_ABI (was Re: TRACE_EVENT_ABI ?)
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4ABA0043.0241:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/23, Arjan van de Ven <arjan@infradead.org>:
-> From e2c647ae2d3ddc25b804f0419956caf40d89c606 Mon Sep 17 00:00:00 2001
-> From: Steven Rostedt <rostedt@goodmis.org>
-> Date: Mon, 21 Sep 2009 20:14:53 +0200
-> Subject: [PATCH] trace: introduce TRACE_EVENT_ABI
->
-> Some trace events are suitable to form a stable userspace ABI;
-> this patch introduces infrastructure to mark them as such,
-> and marks the first few tracepoints this way
->
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  include/linux/tracepoint.h   |    4 ++++
->  include/trace/events/power.h |    6 +++---
->  include/trace/events/sched.h |    4 ++--
->  3 files changed, 9 insertions(+), 5 deletions(-)
->
-> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> index 63a3f7a..4cb454f 100644
-> --- a/include/linux/tracepoint.h
-> +++ b/include/linux/tracepoint.h
-> @@ -280,6 +280,10 @@ static inline void tracepoint_synchronize_unregister(void)
->  * TRACE_EVENT_FN to perform any (un)registration work.
->  */
->
-> +#define TRACE_EVENT_ABI(name, proto, args, tstruct, assign, print)     \
-> +       TRACE_EVENT(name, PARAMS(proto), PARAMS(args),                  \
-> +                   PARAMS(tstruct), PARAMS(assign), PARAMS(print))
-> +
+On Mon, Sep 14, 2009 at 02:32:36PM -0700, Linus Torvalds wrote:
+> So I'm not pulling this. Not until I get the feeling that there is 
+> consensus.
 
+Linus,
+	Here are all of the ocfs2 changes without the reflink(2)
+system call.  The snapshot functionality is still available via the
+ocfs2 ioctl(2).  I'm going to formulate up a new system call based on
+the discussion we've had, but clearly that's not something for 2.6.32
+anymore.
+	Please pull.
 
-You may probably need to undefine it from trace/define_trace.h
-once every cpp magic have been done (ie: once trace/ftrace.h
-have been included.)
+The following changes since commit 8379e7c46cc48f51197dd663fc6676f47f2a1e71:
+  Sunil Mushran (1):
+        ocfs2: ocfs2_write_begin_nolock() should handle len=0
 
-Because some files include several tracepoint/trace event headers,
-then linux/tracepoint.h gets included several times and eventually
-TRACE_EVENT_ABI() would be redefined (and then crash).
+are available in the git repository at:
 
-That's why we have:
+  git://git.kernel.org/pub/scm/linux/kernel/git/jlbec/ocfs2.git upstream-linus
 
-#ifdef CONFIG_EVENT_TRACING
-#include <trace/ftrace.h>
-#endif
+Coly Li (1):
+      dlmglue.c: add missed mlog lines
 
-#undef TRACE_EVENT
-#undef TRACE_EVENT_FN
-#undef TRACE_HEADER_MULTI_READ
+Joel Becker (40):
+      ocfs2: Make the ocfs2_caching_info structure self-contained.
+      ocfs2: Change metadata caching locks to an operations structure.
+      ocfs2: Take the inode out of the metadata read/write paths.
+      ocfs2: move ip_last_trans to struct ocfs2_caching_info
+      ocfs2: move ip_created_trans to struct ocfs2_caching_info
+      ocfs2: Pass struct ocfs2_caching_info to the journal functions.
+      ocfs2: Store the ocfs2_caching_info on ocfs2_extent_tree.
+      ocfs2: Pass ocfs2_caching_info to ocfs2_read_extent_block().
+      ocfs2: ocfs2_find_path() only needs the caching info
+      ocfs2: ocfs2_create_new_meta_bhs() doesn't need struct inode.
+      ocfs2: Pass ocfs2_extent_tree to ocfs2_unlink_path()
+      ocfs2: ocfs2_complete_edge_insert() doesn't need struct inode at all.
+      ocfs2: Get inode out of ocfs2_rotate_subtree_root_right().
+      ocfs2: Pass ocfs2_extent_tree to ocfs2_get_subtree_root()
+      ocfs2: Drop struct inode from ocfs2_extent_tree_operations.
+      ocfs2: ocfs2_rotate_tree_right() doesn't need struct inode.
+      ocfs2: ocfs2_update_edge_lengths() doesn't need struct inode.
+      ocfs2: ocfs2_rotate_subtree_left() doesn't need struct inode.
+      ocfs2: __ocfs2_rotate_tree_left() doesn't need struct inode.
+      ocfs2: ocfs2_rotate_tree_left() no longer needs struct inode.
+      ocfs2: ocfs2_merge_rec_left/right() no longer need struct inode.
+      ocfs2: ocfs2_try_to_merge_extent() doesn't need struct inode.
+      ocfs2: ocfs2_grow_branch() and ocfs2_append_rec_to_path() lose struct inode.
+      ocfs2: ocfs2_truncate_rec() doesn't need struct inode.
+      ocfs2: Make truncating the extent map an extent_tree_operation.
+      ocfs2: ocfs2_insert_at_leaf() doesn't need struct inode.
+      ocfs2: Give ocfs2_split_record() an extent_tree instead of an inode.
+      ocfs2: ocfs2_do_insert_extent() and ocfs2_insert_path() no longer need an inode.
+      ocfs2: ocfs2_extent_contig() only requires the superblock.
+      ocfs2: Swap inode for extent_tree in ocfs2_figure_merge_contig_type().
+      ocfs2: Remove inode from ocfs2_figure_extent_contig().
+      ocfs2: ocfs2_figure_insert_type() no longer needs struct inode.
+      ocfs2: Make extent map insertion an extent_tree_operation.
+      ocfs2: ocfs2_insert_extent() no longer needs struct inode.
+      ocfs2: ocfs2_add_clusters_in_btree() no longer needs struct inode.
+      ocfs2: ocfs2_remove_extent() no longer needs struct inode.
+      ocfs2: ocfs2_split_and_insert() no longer needs struct inode.
+      ocfs2: Teach ocfs2_replace_extent_rec() to use an extent_tree.
+      ocfs2: __ocfs2_mark_extent_written() doesn't need struct inode.
+      ocfs2: Pass ocfs2_caching_info into ocfs_init_*_extent_tree().
 
-in define_trace.h: to allow such re-inclusion of tracepoint.h
-and avoid redefinitions of TRACE_EVENT and TRACE_EVENT_FN.
+Sunil Mushran (1):
+      ocfs2: __ocfs2_abort() should not enable panic for local mounts
 
-So you just need to add:
+Tao Ma (42):
+      ocfs2: Define refcount tree structure.
+      ocfs2: Add metaecc for ocfs2_refcount_block.
+      ocfs2: Add ocfs2_read_refcount_block.
+      ocfs2: Abstract caching info checkpoint.
+      ocfs2: Add new refcount tree lock resource in dlmglue.
+      ocfs2: Add caching info for refcount tree.
+      ocfs2: Add refcount tree lock mechanism.
+      ocfs2: Basic tree root operation.
+      ocfs2: Wrap ocfs2_extent_contig in ocfs2_extent_tree.
+      ocfs2: Abstract extent split process.
+      ocfs2: Add refcount b-tree as a new extent tree.
+      ocfs2: move tree path functions to alloc.h.
+      ocfs2: Add support for incrementing refcount in the tree.
+      ocfs2: Add support of decrementing refcount for delete.
+      ocfs2: Add functions for extents refcounted.
+      ocfs2: Decrement refcount when truncating refcounted extents.
+      ocfs2: Add CoW support.
+      ocfs2: CoW refcount tree improvement.
+      ocfs2: Integrate CoW in file write.
+      ocfs2: CoW a reflinked cluster when it is truncated.
+      ocfs2: Add normal functions for reflink a normal file's extents.
+      ocfs2: handle file attributes issue for reflink.
+      ocfs2: Return extent flags for xattr value tree.
+      ocfs2: Abstract duplicate clusters process in CoW.
+      ocfs2: Add CoW support for xattr.
+      ocfs2: Remove inode from ocfs2_xattr_bucket_get_name_value.
+      ocfs2: Abstract the creation of xattr block.
+      ocfs2: Abstract ocfs2 xattr tree extend rec iteration process.
+      ocfs2: Attach xattr clusters to refcount tree.
+      ocfs2: Call refcount tree remove process properly.
+      ocfs2: Create an xattr indexed block if needed.
+      ocfs2: Add reflink support for xattr.
+      ocfs2: Modify removing xattr process for refcount.
+      ocfs2: Don't merge in 1st refcount ops of reflink.
+      ocfs2: Make transaction extend more efficient.
+      ocfs2: Use proper parameter for some inode operation.
+      ocfs2: Create reflinked file in orphan dir.
+      ocfs2: Add preserve to reflink.
+      ocfs2: Implement ocfs2_reflink.
+      ocfs2: Enable refcount tree support.
+      ocfs2: Add ioctl for reflink.
+      ocfs2: Use buffer IO if we are appending a file.
 
- #undef TRACE_EVENT
- #undef TRACE_EVENT_FN
-+#undef TRACE_EVENT_ABI
- #undef TRACE_HEADER_MULTI_READ
+Wengang Wang (1):
+      ocfs2: add spinlock protection when dealing with lockres->purge.
 
+ fs/ocfs2/Makefile          |    1 +
+ fs/ocfs2/alloc.c           | 1342 ++++++++------
+ fs/ocfs2/alloc.h           |  101 +-
+ fs/ocfs2/aops.c            |   37 +-
+ fs/ocfs2/aops.h            |    2 +
+ fs/ocfs2/buffer_head_io.c  |   47 +-
+ fs/ocfs2/buffer_head_io.h  |    8 +-
+ fs/ocfs2/cluster/masklog.c |    1 +
+ fs/ocfs2/cluster/masklog.h |    1 +
+ fs/ocfs2/dir.c             |  107 +-
+ fs/ocfs2/dlm/dlmthread.c   |    6 +-
+ fs/ocfs2/dlmglue.c         |  105 +-
+ fs/ocfs2/dlmglue.h         |    6 +
+ fs/ocfs2/extent_map.c      |   33 +-
+ fs/ocfs2/extent_map.h      |    8 +-
+ fs/ocfs2/file.c            |  151 ++-
+ fs/ocfs2/file.h            |    2 +
+ fs/ocfs2/inode.c           |   86 +-
+ fs/ocfs2/inode.h           |   20 +-
+ fs/ocfs2/ioctl.c           |   14 +
+ fs/ocfs2/journal.c         |   82 +-
+ fs/ocfs2/journal.h         |   94 +-
+ fs/ocfs2/localalloc.c      |   12 +-
+ fs/ocfs2/namei.c           |  341 ++++-
+ fs/ocfs2/namei.h           |    6 +
+ fs/ocfs2/ocfs2.h           |   52 +-
+ fs/ocfs2/ocfs2_fs.h        |  107 ++-
+ fs/ocfs2/ocfs2_lockid.h    |    5 +
+ fs/ocfs2/quota_global.c    |    5 +-
+ fs/ocfs2/quota_local.c     |   26 +-
+ fs/ocfs2/refcounttree.c    | 4313 ++++++++++++++++++++++++++++++++++++++++++++
+ fs/ocfs2/refcounttree.h    |  106 ++
+ fs/ocfs2/resize.c          |   16 +-
+ fs/ocfs2/slot_map.c        |   10 +-
+ fs/ocfs2/suballoc.c        |   35 +-
+ fs/ocfs2/super.c           |   13 +-
+ fs/ocfs2/uptodate.c        |  265 ++--
+ fs/ocfs2/uptodate.h        |   51 +-
+ fs/ocfs2/xattr.c           | 2056 +++++++++++++++++++--
+ fs/ocfs2/xattr.h           |   15 +-
+ 40 files changed, 8512 insertions(+), 1176 deletions(-)
+ create mode 100644 fs/ocfs2/refcounttree.c
+ create mode 100644 fs/ocfs2/refcounttree.h
+-- 
 
-The problem is visible if you build napi that has such
-multiple tracepoint headers included in a single C file.
+"But then she looks me in the eye
+ And says, 'We're going to last forever,'
+ And man you know I can't begin to doubt it.
+ Cause it just feels so good and so free and so right,
+ I know we ain't never going to change our minds about it, Hey!
+ Here comes my girl."
 
-Thanks.
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
