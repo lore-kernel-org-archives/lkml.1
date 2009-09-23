@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbZIWOIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZIWOJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753080AbZIWOIP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 10:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZIWOIP
+	id S1753110AbZIWOJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 10:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbZIWOJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 10:08:15 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:39613 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbZIWOIO (ORCPT
+	Wed, 23 Sep 2009 10:09:21 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:17870 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbZIWOJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 10:08:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=PXdWYcx8W7+CVYtzQ256hOXuXPDCWvl0Ag7/3E7QoYwtaVdFDS8BlWgB+2pnJEYqTx
-         7zCWmlC9pE0CS0HW4sNK6huRq85ZGAn8K2WiaUR6N3LjILbe/CIAlZIOOdpC1D8pGuhd
-         VmADrT8ZeMnDiTdnbQmKEI4ZPuiFGwoxnEgaE=
+	Wed, 23 Sep 2009 10:09:20 -0400
+Date: Wed, 23 Sep 2009 10:08:40 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
+Message-ID: <20090923140840.GB2794@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Wu Fengguang <fengguang.wu@intel.com>, Theodore Tso <tytso@mit.edu>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	"jack@suse.cz" <jack@suse.cz>
+References: <20090918175252.GF26991@mit.edu>
+ <20090919035835.GA9921@localhost>
+ <20090919040051.GA10245@localhost>
+ <20090919042607.GA19752@localhost>
+ <20090921135321.GD6259@think>
+ <20090922101335.GA27432@localhost>
+ <20090922113055.GI10825@think>
+ <20090922131832.GB7675@localhost>
+ <20090922155941.GM10825@think>
+ <20090923010541.GB6382@localhost>
 MIME-Version: 1.0
-In-Reply-To: <4ABA20FF.4020601@evidence.eu.com>
-References: <1253615424.20345.76.camel@Palantir>
-	 <63386a3d0909221355o45cccdf2j707a5cb4cf36754b@mail.gmail.com>
-	 <4ABA20FF.4020601@evidence.eu.com>
-Date: Wed, 23 Sep 2009 16:08:17 +0200
-Message-ID: <63386a3d0909230708g10aa2911vaa39a6e02530c902@mail.gmail.com>
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Claudio Scordino <claudio@evidence.eu.com>
-Cc: Raistlin <raistlin@linux.it>, Peter Zijlstra <peterz@infradead.org>,
-       michael@evidence.eu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090923010541.GB6382@localhost>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4ABA2BEC.007C:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Claudio, thanks for the detailed answer!
+On Wed, Sep 23, 2009 at 09:05:41AM +0800, Wu Fengguang wrote:
 
-2009/9/23 Claudio Scordino <claudio@evidence.eu.com>:
+[ timeslice based limits on number of pages sent by the bdi threads ]
 
-> With EDF, instead, the test is much easier: if the bandwidth is less than
-> 100%, then you are sure that the deadlines will be met. In other words, you
-> can fully exploit processor bandwidth up to 100% being sure that timing
-> constraints of EDF tasks will be guaranteed.
+> > 
+> > The reason I prefer the timeslice idea is that we don't need the
+> > hardware to tell us how fast it is.  We just write for a while and move
+> > on.
+> 
+> That makes sense.  Note that the triple (pages, page segments,
+> submission time) can somehow adapt to hardware capabilities
+> (and at least won't hurt fast arrays).
+> 
+> - max pages are set to large enough number for big arrays
+> - max page segments could be based on the existing blk_queue_nonrot()
+> - submission time = 1s, which is mainly a safeguard for slow devices
+>   (ie. usb stick), to prevent one single inode from taking too much
+>   time. This time limit has little performance impacts.
+> 
+> Possible merits are
+> - these parameters are concrete ones and easy to handle
+> - it's natural to implement related logics in the VFS level
+> - file systems can do nothing to get most benefits
+> 
+> Also the (now necessary) per-invocation limit could be somehow
+> eliminated when balance_dirty_pages() does not do IO itself.
 
-This must be under the assumption that all code running in the system
-is preemtible, is it not? Which means, negligible or close to negligible
-non-preemptible code.
+I think there are probably a lot of good ways to improve on our single
+max number of pages metric from today, but I'm worried about the
+calculation time finding page segments.  The radix tree
+isn't all that well suited to it.
 
-How much as we might like it to be, that is not (yet) the situation
-with the Linux kernel, far off.
+But, if you've got a patch I'd be happy to run a comparison against it.
+Jens' box will be better at showing any CPU cost to the radix walking.
 
-So we will still very much need the CONFIG_PREEMPT_RT patch
-to get closer to that ideal situation, and we still need to get rid of
-the BKL.
+-chris
 
-Well I guess you aldready know that, but take it as a note to
-the bystanders of this discussion, which are plenty.
-
-Now I ought to write fewer mails and look into solving that little
-problem... You don't happen to know if we can have a EU FP7
-project sponsored to rid out the BKL and switch and test drivers
-en masse to use threaded interrupt handlers do you? ;-)
-
-Linus Walleij
