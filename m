@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZIWVTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751651AbZIWVXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752952AbZIWVTB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 17:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZIWVTA
+	id S1751651AbZIWVXS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 17:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbZIWVXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 17:19:00 -0400
-Received: from bamako.nerim.net ([62.4.17.28]:61108 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751282AbZIWVTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 17:19:00 -0400
-Date: Wed, 23 Sep 2009 23:19:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rudolf Marek <r.marek@assembler.cz>,
-       Hans de Goede <hdegoede@redhat.com>
-Subject: [GIT PULL] hwmon updates for 2.6.32, round 2
-Message-ID: <20090923231901.2bb8f0f4@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Sep 2009 17:23:15 -0400
+Received: from mail.windriver.com ([147.11.1.11]:50420 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbZIWVXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 17:23:14 -0400
+Message-ID: <4ABA90C6.3000600@windriver.com>
+Date: Wed, 23 Sep 2009 16:19:02 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Len Brown <lenb@kernel.org>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [origin tree boot hang] [PATCH] Revert "early_printk: Allowmorethan
+ one early console"
+References: <20090923135539.GA6542@kroah.com> <20090923173709.GA18056@elte.hu> <4ABA6182.1000106@windriver.com> <20090923190239.GC24251@elte.hu> <20090923191756.GA25163@elte.hu> <20090923210555.GA13492@elte.hu>
+In-Reply-To: <20090923210555.GA13492@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Sep 2009 21:19:05.0848 (UTC) FILETIME=[7B360F80:01CA3C93]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>
+>   
+>> The commit point to which the attached config and bootlog belongs is:
+>>
+>>   2.6.31-07863-gb64ada6
+>>
+>> Reverting:
+>>
+>>   c953094: early_printk: Allow more than one early console
+>>
+>> solves it.
+>>     
+>
+> btw., the boot options are:
+>
+> Command line: root=/dev/sda6 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200 debug
+> initcall_debug apic=verbose sysrq_always_enabled ignore_loglevel 
+> selinux=0 nmi_watchdog=0 panic=1 3
+>
+>   
 
-Please pull some hwmon subsystem updates for Linux 2.6.32 from:
+AH HA!
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git hwmon-for-linus
+earlyprintk=serial,ttyS0,115200
 
-I've just pushed it there, should be there in a short moment.
+You are invoking the same device twice which is why you are having infinite recursion.  It was not obvious to me why the earlyprintk code would allow "serial" or "ttyS", but perhaps we need to protect for that?
 
-Main changes are the removal of the legacy fsc drivers, and more CPU
-models supported by the coretemp driver.
+Your boot line should be:
 
- Documentation/feature-removal-schedule.txt |    8 -
- Documentation/hwmon/coretemp               |    4 +-
- Documentation/hwmon/fscher                 |  169 -------
- drivers/hwmon/Kconfig                      |   34 +--
- drivers/hwmon/Makefile                     |    2 -
- drivers/hwmon/adm1031.c                    |   40 ++
- drivers/hwmon/coretemp.c                   |   57 ++-
- drivers/hwmon/fscher.c                     |  680 ----------------------------
- drivers/hwmon/fscpos.c                     |  654 --------------------------
- drivers/hwmon/ltc4215.c                    |    2 +-
- drivers/hwmon/ltc4245.c                    |    3 +-
- 11 files changed, 93 insertions(+), 1560 deletions(-)
- delete mode 100644 Documentation/hwmon/fscher
- delete mode 100644 drivers/hwmon/fscher.c
- delete mode 100644 drivers/hwmon/fscpos.c
+earlyprintk=serial,115200
 
----------------
+OR
 
-Huaxu Wan (1):
-      hwmon: (coretemp) Add Lynnfield CPU
+earlyprintk=ttyS0,115200
 
-Ira Snyder (1):
-      hwmon: (adm1031) Add sysfs files for temperature offsets
+The line you had there before would have been the equivalent of doing:
 
-Ira W. Snyder (2):
-      hwmon: (ltc4215) Clear faults at startup
-      hwmon: (ltc4245) Clear faults at startup
+earlyprintk=ttyS0,ttyS0,115200
 
-Jean Delvare (1):
-      hwmon: Delete deprecated FSC drivers
-
-Rudolf Marek (2):
-      hwmon: (coretemp) Fix Atom CPUs support
-      hwmon: (coretemp) Add support for Penryn mobile CPUs
+Given this, do we still need to execute the revert your revert?  Or perhaps do we need to add some protection?
 
 Thanks,
--- 
-Jean Delvare
+Jason.
+
