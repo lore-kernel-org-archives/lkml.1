@@ -1,69 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbZIWIsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbZIWIkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbZIWIsp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 04:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZIWIso
+	id S1754604AbZIWIkW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 04:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZIWIkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 04:48:44 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:36358 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754527AbZIWIsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 04:48:42 -0400
-X-Greylist: delayed 550 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Sep 2009 04:48:41 EDT
-From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Organization: Sophos Plc
-To: Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: fanotify as syscalls
-Date: Wed, 23 Sep 2009 09:39:33 +0100
-User-Agent: KMail/1.9.10
-Cc: Andreas Gruenbacher <agruen@suse.de>, Jamie Lokier <jamie@shareable.org>,
-       Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "alan@linux.intel.com" <alan@linux.intel.com>,
-       "hch@infradead.org" <hch@infradead.org>
-References: <20090912094110.GB24709@ioremap.net> <200909221731.34717.agruen@suse.de> <alpine.DEB.2.00.0909220836200.10460@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.2.00.0909220836200.10460@makko.or.mcafeemobile.com>
-MIME-Version: 1.0
-Message-Id: <200909230939.34003.tvrtko.ursulin@sophos.com>
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 23/09/2009 09:39:34,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 23/09/2009 09:39:34,
-	Serialize complete at 23/09/2009 09:39:34
-X-TNEFEvaluated: 1
+	Wed, 23 Sep 2009 04:40:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57166 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754506AbZIWIkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 04:40:20 -0400
+Subject: Re: [PATCH 1/2] perf_counter: cleanup for __perf_event_sched_*()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AB9D7FA.5040707@cn.fujitsu.com>
+References: <4AB88F06.10900@cn.fujitsu.com>
+	 <19128.39768.149110.673711@cargo.ozlabs.ibm.com>
+	 <4AB98BB0.6020202@cn.fujitsu.com>
+	 <19129.38627.94363.857137@cargo.ozlabs.ibm.com>
+	 <4AB9D7FA.5040707@cn.fujitsu.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
+Date: Wed, 23 Sep 2009 10:40:30 +0200
+Message-Id: <1253695230.7695.122.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 September 2009 17:04:44 Davide Libenzi wrote:
-> On Tue, 22 Sep 2009, Andreas Gruenbacher wrote:
-> > The fatal flaw of syscall interception is race conditions: you look up a
-> > pathname in your interception layer; then when you call into the proper
-> > syscall, the kernel again looks up the same pathname. There is no way to
-> > guarantee that you end up at the same object in both lookups. The
-> > security and fsnotify hooks are placed in the appropriate spots to avoid
-> > exactly that.
->
-> Fatal? You mean, for this corner case that the anti-malware industry lived
-> with for so much time (in Linux and Windows), you're prepared in pushing
-> all the logic that is currently implemented into their modules, into the
-> kernel?
+On Wed, 2009-09-23 at 16:10 +0800, Xiao Guangrong wrote:
+> Paul Mackerras says:
+> 
+> "Actually, looking at this more closely, it has to be a group leader
+> anyway since it's at the top level of ctx->group_list.  In fact I see
+> four places where we do:
+> 
+>   list_for_each_entry(event, &ctx->group_list, group_entry) {
+> 	if (event == event->group_leader)
+> 		...
+> 
+> or the equivalent, three of which appear to have been introduced by
+> afedadf2 ("perf_counter: Optimize sched in/out of counters") back in
+> May by Peter Z.
+> 
+> As far as I can see the if () is superfluous in each case (a singleton
+> event will be a group of 1 and will have its group_leader pointing to
+> itself)."
+> 
+> [Can be found at http://marc.info/?l=linux-kernel&m=125361238901442&w=2]
+> 
+> So, this patch fix it.
 
-Lived with it because there was no other option. We used LSM while it was 
-available for modules but then it was taken away. 
+Hrm.. I think its not just a cleanup, but an actual bugfix.
 
-And not all vendors even use syscall interception, not even across platforms, 
-of which you sound so sure about. You can't even scan something which is not 
-in your namespace if you are at the syscall level. And you can't catch things 
-like kernel nfsd. No, syscall interception is not really appropriate at all.
+The intent was to call event_sched_{in,out}() for single counter groups
+because that's cheaper than group_sched_{in,out}(), however..
 
-Tvrtko
+ - as you noticed, I got the condition wrong, it should have read:
+
+     list_empty(&event->sibling_list)
+
+ - it failed to call group_can_go_on() which deals with ->exclusive.
+
+ - it also doesn't call hw_perf_group_sched_in() which might break
+   power.
+
+Also, I'm not sure I like the comments and WARN_ON bits, the changelog
+should be sufficient.
+
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  kernel/perf_event.c |   41 +++++++++++++++++++++++------------------
+>  1 files changed, 23 insertions(+), 18 deletions(-)
+> 
+> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+> index 76ac4db..9ca975a 100644
+> --- a/kernel/perf_event.c
+> +++ b/kernel/perf_event.c
+> @@ -1032,10 +1032,13 @@ void __perf_event_sched_out(struct perf_event_context *ctx,
+>  	perf_disable();
+>  	if (ctx->nr_active) {
+>  		list_for_each_entry(event, &ctx->group_list, group_entry) {
+> -			if (event != event->group_leader)
+> -				event_sched_out(event, cpuctx, ctx);
+> -			else
+> -				group_sched_out(event, cpuctx, ctx);
+> +
+> +			/*
+> +			 * It has to be a group leader since it's at the top
+> +			 * level of ctx->group_list
+> +			 */
+> +			WARN_ON_ONCE(event != event->group_leader);
+> +			group_sched_out(event, cpuctx, ctx);
+>  		}
+>  	}
+>  	perf_enable();
+> @@ -1258,12 +1261,14 @@ __perf_event_sched_in(struct perf_event_context *ctx,
+>  		if (event->cpu != -1 && event->cpu != cpu)
+>  			continue;
+>  
+> -		if (event != event->group_leader)
+> -			event_sched_in(event, cpuctx, ctx, cpu);
+> -		else {
+> -			if (group_can_go_on(event, cpuctx, 1))
+> -				group_sched_in(event, cpuctx, ctx, cpu);
+> -		}
+> +		/*
+> +		 * It has to be a group leader since it's at the top
+> +		 * level of ctx->group_list
+> +		 */
+> +		WARN_ON_ONCE(event != event->group_leader);
+> +
+> +		if (group_can_go_on(event, cpuctx, 1))
+> +			group_sched_in(event, cpuctx, ctx, cpu);
+>  
+>  		/*
+>  		 * If this pinned group hasn't been scheduled,
+> @@ -1291,15 +1296,15 @@ __perf_event_sched_in(struct perf_event_context *ctx,
+>  		if (event->cpu != -1 && event->cpu != cpu)
+>  			continue;
+>  
+> -		if (event != event->group_leader) {
+> -			if (event_sched_in(event, cpuctx, ctx, cpu))
+> +		/*
+> +		 * It has to be a group leader since it's at the top
+> +		 * level of ctx->group_list
+> +		 */
+> +		WARN_ON_ONCE(event != event->group_leader);
+> +
+> +		if (group_can_go_on(event, cpuctx, can_add_hw))
+> +			if (group_sched_in(event, cpuctx, ctx, cpu))
+>  				can_add_hw = 0;
+> -		} else {
+> -			if (group_can_go_on(event, cpuctx, can_add_hw)) {
+> -				if (group_sched_in(event, cpuctx, ctx, cpu))
+> -					can_add_hw = 0;
+> -			}
+> -		}
+>  	}
+>  	perf_enable();
+>   out:
