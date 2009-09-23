@@ -1,115 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752037AbZIWVdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbZIWVkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752037AbZIWVdy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 17:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZIWVdw
+	id S1752193AbZIWVkK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 17:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbZIWVkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 17:33:52 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48515 "EHLO e2.ny.us.ibm.com"
+	Wed, 23 Sep 2009 17:40:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45063 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751816AbZIWVdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 17:33:49 -0400
-Subject: Re: [ANNOUNCE] 2.6.31-rt11
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Reply-To: will_schmidt@vnet.ibm.com
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
-In-Reply-To: <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	 <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
-	 <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
-	 <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
-	 <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
-	 <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
-	 <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
-	 <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
-	 <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
-	 <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
-	 <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
-	 <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
-	 <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
-	 <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
-	 <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
-	 <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
-	 <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 23 Sep 2009 16:33:48 -0500
-Message-Id: <1253741628.5001.4.camel@lexx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1751981AbZIWVkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 17:40:06 -0400
+Date: Wed, 23 Sep 2009 23:39:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: Len Brown <lenb@kernel.org>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [origin tree boot hang] [PATCH] Revert "early_printk:
+	Allowmorethan one early console"
+Message-ID: <20090923213929.GA20204@elte.hu>
+References: <20090923135539.GA6542@kroah.com> <20090923173709.GA18056@elte.hu> <4ABA6182.1000106@windriver.com> <20090923190239.GC24251@elte.hu> <20090923191756.GA25163@elte.hu> <20090923210555.GA13492@elte.hu> <4ABA90C6.3000600@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ABA90C6.3000600@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-19 at 00:39 +0200, Thomas Gleixner wrote:
-> We are pleased to announce the next update to our new preempt-rt
-> series.
-> 
->    - latencytop fix
-> 
->    - disable SPARSE_IRQ, DMAR, IRQ_REMAP for -rt
-> 
-> Known issues:
->    - ARM highmem
->    - scheduler load balancing oddities. Peter is working on it.
->    - timer_interrupt hang check (still working on somthing useful)
-> 
-> The planned "add back MIPS support" is postponed to rt12.
 
+* Jason Wessel <jason.wessel@windriver.com> wrote:
 
-Just a light workload and a couple boot tests so far, 2.6.31-rt11
-appears to be running good on my powerpc64 systems.  (power6 JS22
-blades).  
+> Ingo Molnar wrote:
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >
+> >   
+> >> The commit point to which the attached config and bootlog belongs is:
+> >>
+> >>   2.6.31-07863-gb64ada6
+> >>
+> >> Reverting:
+> >>
+> >>   c953094: early_printk: Allow more than one early console
+> >>
+> >> solves it.
+> >>     
+> >
+> > btw., the boot options are:
+> >
+> > Command line: root=/dev/sda6 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200 debug
+> > initcall_debug apic=verbose sysrq_always_enabled ignore_loglevel 
+> > selinux=0 nmi_watchdog=0 panic=1 3
+> >
+> >   
+> 
+> AH HA!
+> 
+> earlyprintk=serial,ttyS0,115200
+> 
+> You are invoking the same device twice which is why you are having 
+> infinite recursion.  It was not obvious to me why the earlyprintk code 
+> would allow "serial" or "ttyS", but perhaps we need to protect for 
+> that?
+> 
+> Your boot line should be:
+> 
+> earlyprintk=serial,115200
+> 
+> OR
+> 
+> earlyprintk=ttyS0,115200
 
-Thanks. :-)
--Will
+ah, indeed!
 
+> The line you had there before would have been the equivalent of doing:
+> 
+> earlyprintk=ttyS0,ttyS0,115200
+> 
+> Given this, do we still need to execute the revert your revert?  Or 
+> perhaps do we need to add some protection?
 
+I have such lines on other boxes too. I'd suggest to add protection if 
+it's not too ugly - the typoed line worked and was pretty natural to do, 
+and the failure mode is nasty enough.
 
-> 
-> Download locations:
-> 
->     http://rt.et.redhat.com/download/
->     http://www.kernel.org/pub/linux/kernel/projects/rt/
-> 
-> Git release branch:
->     git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
->   
-> Git development branch:
->     git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
-> 
-> Gitweb:
->     http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
-> 
-> Information on the RT patch can be found at:
-> 
->     http://rt.wiki.kernel.org/index.php/Main_Page
-> 
-> to build the 2.6.31-rt11 tree, the following patches should be
-> applied:
-> 
->     http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.tar.bz2
->     http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rt11.bz2
-> 
-> Enjoy !
-> 
->       tglx
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+	Ingo
