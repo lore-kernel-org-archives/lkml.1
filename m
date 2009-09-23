@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbZIWFHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbZIWFG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753770AbZIWFHl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 01:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZIWFHi
+	id S1752513AbZIWFG4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 01:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZIWFGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 01:07:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60407 "EHLO hera.kernel.org"
+	Wed, 23 Sep 2009 01:06:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60373 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753519AbZIWFHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 01:07:34 -0400
+	id S1751477AbZIWFGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 01:06:52 -0400
 From: Tejun Heo <tj@kernel.org>
 To: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
        Fenghua Yu <fenghua.yu@intel.com>,
@@ -18,117 +18,139 @@ To: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
        linux-kernel@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>,
        Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [PATCH 1/5] ia64: don't alias VMALLOC_END to vmalloc_end
-Date: Wed, 23 Sep 2009 14:06:18 +0900
-Message-Id: <1253682382-24740-2-git-send-email-tj@kernel.org>
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: [PATCH 2/5] ia64: initialize cpu maps early
+Date: Wed, 23 Sep 2009 14:06:19 +0900
+Message-Id: <1253682382-24740-3-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1253682382-24740-1-git-send-email-tj@kernel.org>
 References: <1253682382-24740-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 05:06:46 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 05:06:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If CONFIG_VIRTUAL_MEM_MAP is enabled, ia64 defines macro VMALLOC_END
-as unsigned long variable vmalloc_end which is adjusted to prepare
-room for vmemmap.  This becomes probnlematic if a local variables
-vmalloc_end is defined in some function (not very unlikely) and
-VMALLOC_END is used in the function - the function thinks its
-referencing the global VMALLOC_END value but would be referencing its
-own local vmalloc_end variable.
+All information necessary to initialize cpu possible and present maps
+are available once early_acpi_boot_init() is complete.  Reorganize
+setup_arch() and acpi init functions such that,
 
-There's no reason VMALLOC_END should be a macro.  Just define it as an
-unsigned long variable if CONFIG_VIRTUAL_MEM_MAP is set to avoid nasty
-surprises.
+* CPU information is printed after LAPIC entries are parsed in
+  early_acpi_boot_init().
+
+* smp_build_cpu_map() is called by setup_arch() instead of acpi
+  functions.
+
+* smp_build_cpu_map() is called once all CPU related information is
+  available before memory is initialized.
+
+This is primarily to allow find_memory() to use cpu maps but is also a
+general cleanup.  Please note that with this change, the somewhat
+ad-hoc early_cpu_possible_map defined and used for NUMA configurations
+is probably unnecessary.  Something to clean up another day.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Fenghua Yu <fenghua.yu@intel.com>
 Cc: linux-ia64 <linux-ia64@vger.kernel.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>
 ---
- arch/ia64/include/asm/meminit.h |    2 +-
- arch/ia64/include/asm/pgtable.h |    3 +--
- arch/ia64/mm/contig.c           |    4 ++--
- arch/ia64/mm/discontig.c        |    4 ++--
- arch/ia64/mm/init.c             |    4 ++--
- 5 files changed, 8 insertions(+), 9 deletions(-)
+ arch/ia64/kernel/acpi.c  |   33 +++++++++++++++------------------
+ arch/ia64/kernel/setup.c |   11 +++++------
+ 2 files changed, 20 insertions(+), 24 deletions(-)
 
-diff --git a/arch/ia64/include/asm/meminit.h b/arch/ia64/include/asm/meminit.h
-index 688a812..61c7b17 100644
---- a/arch/ia64/include/asm/meminit.h
-+++ b/arch/ia64/include/asm/meminit.h
-@@ -61,7 +61,7 @@ extern int register_active_ranges(u64 start, u64 len, int nid);
+diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
+index baec6f0..40574ae 100644
+--- a/arch/ia64/kernel/acpi.c
++++ b/arch/ia64/kernel/acpi.c
+@@ -702,11 +702,23 @@ int __init early_acpi_boot_init(void)
+ 		printk(KERN_ERR PREFIX
+ 		       "Error parsing MADT - no LAPIC entries\n");
  
- #ifdef CONFIG_VIRTUAL_MEM_MAP
- # define LARGE_GAP	0x40000000 /* Use virtual mem map if hole is > than this */
--  extern unsigned long vmalloc_end;
-+  extern unsigned long VMALLOC_END;
-   extern struct page *vmem_map;
-   extern int find_largest_hole(u64 start, u64 end, void *arg);
-   extern int create_mem_map_page_table(u64 start, u64 end, void *arg);
-diff --git a/arch/ia64/include/asm/pgtable.h b/arch/ia64/include/asm/pgtable.h
-index 8840a69..69bf138 100644
---- a/arch/ia64/include/asm/pgtable.h
-+++ b/arch/ia64/include/asm/pgtable.h
-@@ -228,8 +228,7 @@ ia64_phys_addr_valid (unsigned long addr)
- #define VMALLOC_START		(RGN_BASE(RGN_GATE) + 0x200000000UL)
- #ifdef CONFIG_VIRTUAL_MEM_MAP
- # define VMALLOC_END_INIT	(RGN_BASE(RGN_GATE) + (1UL << (4*PAGE_SHIFT - 9)))
--# define VMALLOC_END		vmalloc_end
--  extern unsigned long vmalloc_end;
-+extern unsigned long VMALLOC_END;
- #else
- #if defined(CONFIG_SPARSEMEM) && defined(CONFIG_SPARSEMEM_VMEMMAP)
- /* SPARSEMEM_VMEMMAP uses half of vmalloc... */
-diff --git a/arch/ia64/mm/contig.c b/arch/ia64/mm/contig.c
-index 2f724d2..1341437 100644
---- a/arch/ia64/mm/contig.c
-+++ b/arch/ia64/mm/contig.c
-@@ -270,8 +270,8 @@ paging_init (void)
++#ifdef CONFIG_SMP
++	if (available_cpus == 0) {
++		printk(KERN_INFO "ACPI: Found 0 CPUS; assuming 1\n");
++		printk(KERN_INFO "CPU 0 (0x%04x)", hard_smp_processor_id());
++		smp_boot_data.cpu_phys_id[available_cpus] =
++		    hard_smp_processor_id();
++		available_cpus = 1;	/* We've got at least one of these, no? */
++	}
++	smp_boot_data.cpu_count = available_cpus;
++#endif
++	/* Make boot-up look pretty */
++	printk(KERN_INFO "%d CPUs available, %d CPUs total\n", available_cpus,
++	       total_cpus);
++
+ 	return 0;
+ }
  
- 		map_size = PAGE_ALIGN(ALIGN(max_low_pfn, MAX_ORDER_NR_PAGES) *
- 			sizeof(struct page));
--		vmalloc_end -= map_size;
--		vmem_map = (struct page *) vmalloc_end;
-+		VMALLOC_END -= map_size;
-+		vmem_map = (struct page *) VMALLOC_END;
- 		efi_memmap_walk(create_mem_map_page_table, NULL);
+-
+-
+ int __init acpi_boot_init(void)
+ {
  
- 		/*
-diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
-index d85ba98..9f24b3c 100644
---- a/arch/ia64/mm/discontig.c
-+++ b/arch/ia64/mm/discontig.c
-@@ -666,9 +666,9 @@ void __init paging_init(void)
- 	sparse_init();
+@@ -769,18 +781,8 @@ int __init acpi_boot_init(void)
+ 	if (acpi_table_parse(ACPI_SIG_FADT, acpi_parse_fadt))
+ 		printk(KERN_ERR PREFIX "Can't find FADT\n");
  
- #ifdef CONFIG_VIRTUAL_MEM_MAP
--	vmalloc_end -= PAGE_ALIGN(ALIGN(max_low_pfn, MAX_ORDER_NR_PAGES) *
-+	VMALLOC_END -= PAGE_ALIGN(ALIGN(max_low_pfn, MAX_ORDER_NR_PAGES) *
- 		sizeof(struct page));
--	vmem_map = (struct page *) vmalloc_end;
-+	vmem_map = (struct page *) VMALLOC_END;
- 	efi_memmap_walk(create_mem_map_page_table, NULL);
- 	printk("Virtual mem_map starts at 0x%p\n", vmem_map);
++#ifdef CONFIG_ACPI_NUMA
+ #ifdef CONFIG_SMP
+-	if (available_cpus == 0) {
+-		printk(KERN_INFO "ACPI: Found 0 CPUS; assuming 1\n");
+-		printk(KERN_INFO "CPU 0 (0x%04x)", hard_smp_processor_id());
+-		smp_boot_data.cpu_phys_id[available_cpus] =
+-		    hard_smp_processor_id();
+-		available_cpus = 1;	/* We've got at least one of these, no? */
+-	}
+-	smp_boot_data.cpu_count = available_cpus;
+-
+-	smp_build_cpu_map();
+-# ifdef CONFIG_ACPI_NUMA
+ 	if (srat_num_cpus == 0) {
+ 		int cpu, i = 1;
+ 		for (cpu = 0; cpu < smp_boot_data.cpu_count; cpu++)
+@@ -789,14 +791,9 @@ int __init acpi_boot_init(void)
+ 				node_cpuid[i++].phys_id =
+ 				    smp_boot_data.cpu_phys_id[cpu];
+ 	}
+-# endif
  #endif
-diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-index 1d28624..f301071 100644
---- a/arch/ia64/mm/init.c
-+++ b/arch/ia64/mm/init.c
-@@ -44,8 +44,8 @@ extern void ia64_tlb_init (void);
- unsigned long MAX_DMA_ADDRESS = PAGE_OFFSET + 0x100000000UL;
- 
- #ifdef CONFIG_VIRTUAL_MEM_MAP
--unsigned long vmalloc_end = VMALLOC_END_INIT;
--EXPORT_SYMBOL(vmalloc_end);
-+unsigned long VMALLOC_END = VMALLOC_END_INIT;
-+EXPORT_SYMBOL(VMALLOC_END);
- struct page *vmem_map;
- EXPORT_SYMBOL(vmem_map);
+-#ifdef CONFIG_ACPI_NUMA
+ 	build_cpu_to_node_map();
  #endif
+-	/* Make boot-up look pretty */
+-	printk(KERN_INFO "%d CPUs available, %d CPUs total\n", available_cpus,
+-	       total_cpus);
+ 	return 0;
+ }
+ 
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index 1de86c9..5d77c1e 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -566,19 +566,18 @@ setup_arch (char **cmdline_p)
+ 	early_acpi_boot_init();
+ # ifdef CONFIG_ACPI_NUMA
+ 	acpi_numa_init();
+-#ifdef CONFIG_ACPI_HOTPLUG_CPU
++#  ifdef CONFIG_ACPI_HOTPLUG_CPU
+ 	prefill_possible_map();
+-#endif
++#  endif
+ 	per_cpu_scan_finalize((cpus_weight(early_cpu_possible_map) == 0 ?
+ 		32 : cpus_weight(early_cpu_possible_map)),
+ 		additional_cpus > 0 ? additional_cpus : 0);
+ # endif
+-#else
+-# ifdef CONFIG_SMP
+-	smp_build_cpu_map();	/* happens, e.g., with the Ski simulator */
+-# endif
+ #endif /* CONFIG_APCI_BOOT */
+ 
++#ifdef CONFIG_SMP
++	smp_build_cpu_map();
++#endif
+ 	find_memory();
+ 
+ 	/* process SAL system table: */
 -- 
 1.6.4.2
 
