@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbZIWLr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbZIWLrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbZIWLr7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 07:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZIWLr6
+	id S1752318AbZIWLrl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 07:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZIWLrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 07:47:58 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:27370 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 07:47:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42923 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbZIWLr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 07:47:57 -0400
-Message-ID: <4ABA0AA6.3010408@redhat.com>
-Date: Wed, 23 Sep 2009 14:46:46 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1751645AbZIWLrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 07:47:40 -0400
+Date: Wed, 23 Sep 2009 13:47:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, a.p.zijlstra@chello.nl,
+       fweisbec@gmail.com, acme@redhat.com, tglx@linutronix.de,
+       mhiramat@redhat.com, postmaster@vger.kernel.org
+Subject: Re: mailing list for trace users
+Message-ID: <20090923114725.GB4132@elte.hu>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com> <20090922.153201.225375909.davem@davemloft.net>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: Jonathan Corbet <corbet@lwn.net>, Raistlin <raistlin@linux.it>,
-       Peter Zijlstra <peterz@infradead.org>, claudio@evidence.eu.com,
-       michael@evidence.eu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-References: <1253615424.20345.76.camel@Palantir>	 <1253625878.6575.34.camel@desktop> <20090922173916.257dff1d@tpl.lwn.net>	 <1253663739.4317.12.camel@desktop>  <20090922180611.7a47adcc@tpl.lwn.net> <1253666423.25689.30.camel@desktop>
-In-Reply-To: <1253666423.25689.30.camel@desktop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922.153201.225375909.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23/2009 03:40 AM, Daniel Walker wrote:
-> I am trying to make the kernel (or community) better, but my motivation
-> is purely my own (as it often is with people on this list) ..
->
-> I don't see the effects your indicating, discouraging contributions .. I
-> think if anything I'm helping people to get to a place where they can
-> contribute in a comfortable way without worrying about things like
-> checkpatch .. I think the problem most submitters have on this list is
-> that no one tells them they are doing something wrong so they don't
-> correct it. I clearly recall submitting my first several patches
-> copy-and-pasted which got either ignored , or caused a maintainer lots
-> of pain .. Had I been told earlier that it was a problem I would have
-> corrected it immediately (and been happy to have been notified about
-> it)..
->
->    
 
-Look at the context.  Here we have a new scheduling class introduced out 
-of the blue.  The discussion should be around whether it makes sense; if 
-it does, whether the design is good or not; if it is, whether the code 
-is maintainable or not, if that passes, whether there are bugs in the 
-code or not.  Until we've decided that Linux needs this scheduling class 
-and that this patchset is well designed and written, spelling errors are 
-just a nuisance and distract people from the important issues.
+* David Miller <davem@davemloft.net> wrote:
 
-> discouraging contributions is more something that happens when you get
-> the responses I got earlier in this thread..
->    
+> From: Steven Rostedt <rostedt@goodmis.org>
+> Date: Wed, 16 Sep 2009 16:16:22 -0400
+> 
+> > What are people's thoughts about creating a linux-trace-users mailing
+> > list on vger.kernel.org?
+> 
+> I've created this list.
 
-That's probably intentional.  Whitespace fixes have their place but not 
-at this stage in a patch's lifecycle.
+Could you please also create the linux-perf-users list, for perf events 
+and the perf tool related user questions? (We have asked for this before 
+but must have gotten lost somewhere)
 
--- 
-error compiling committee.c: too many arguments to function
+Thanks a lot in advance,
 
+	Ingo
