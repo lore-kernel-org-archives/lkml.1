@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZIWBlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZIWBnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbZIWBlO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 21:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZIWBlN
+	id S1753864AbZIWBnA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 21:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZIWBnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 21:41:13 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62054 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753593AbZIWBlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 21:41:13 -0400
-Message-ID: <4AB97CB6.4000004@cn.fujitsu.com>
-Date: Wed, 23 Sep 2009 09:41:10 +0800
-From: Shan Wei <shanwei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: dfeng@redhat.com, kaber@trash.net, yoshfuji@linux-ipv6.org,
-       jmorris@namei.org, pekkas@netcore.fi, kuznet@ms2.inr.ac.ru,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] ipv4: fix do_ip_setsockopt optlen check for IP_MULTICAST_IF
-References: <1253164784-15789-1-git-send-email-dfeng@redhat.com>	<4AB1FE2A.1060906@cn.fujitsu.com> <20090922.133819.173686372.davem@davemloft.net>
-In-Reply-To: <20090922.133819.173686372.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Sep 2009 21:43:00 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45325 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753563AbZIWBm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 21:42:59 -0400
+Date: Wed, 23 Sep 2009 11:42:57 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Rudolf Marek <r.marek@assembler.cz>,
+       Michael Riepe <michael.riepe@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: manual merge of the jdelvare-hwmon tree with Linus'
+ tree
+Message-Id: <20090923114257.e6e101cf.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__23_Sep_2009_11_42_57_+1000_sMsBsdFOHSm=.uqM"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote, at 09/23/2009 04:38 AM:
-> From: Shan Wei <shanwei@cn.fujitsu.com>
-> Date: Thu, 17 Sep 2009 17:15:22 +0800
-> 
->> Xiaotian Feng wrote, at 09/17/2009 01:19 PM:
->>> Due to man page of setsockopt, if optlen is not valid, kernel should return
->>> -EINVAL. But a simple testcase as following, errno is 0, which means setsockopt
->>> is successful.
->>>
->>>         addr.s_addr = inet_addr("192.1.2.3");
->>>         setsockopt(s, IPPROTO_IP, IP_MULTICAST_IF, &addr, 1);
->>> 	printf("errno is %d\n", errno);
->>>
->>> This patch fixes the optlen check part, with the patch, we got errno EINVAL.
->>>
->> I also think it's a bug, the freebsd also does the optlen check. 
->> But the style should be coincident with other option: firstly check the
->> availability of optlen, then copy option value from user and deal with it.   
->>
->> How about this one:
-> 
-> This definitely is better and cleaner, but please don't post such
-> things without proper signoffs and commit messages because now
-> I have to ask you to do that instead of me just applying your
-> patch :-/
-> 
+--Signature=_Wed__23_Sep_2009_11_42_57_+1000_sMsBsdFOHSm=.uqM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm so sorry about that. The whole patch is below.
+Hi Jean,
 
-[PATCH BUGFIX] ipv4: check optlen for IP_MULTICAST_IF option
+Today's linux-next merge of the jdelvare-hwmon tree got a conflict in
+drivers/hwmon/coretemp.c between commit
+0bf41d9f414a5cf558aff234a0ff486257537574 ("drivers/hwmon/coretemp.c:
+enable the Intel Atom") from Linus' tree and commit
+af663ff4d88e09c4e45661251e3c1eeff147ffc1 ("hwmon: (coretemp) Add support
+for Atom CPUs") from the jdelvare-hwmon tree.
 
-Due to man page of setsockopt, if optlen is not valid, kernel should return
--EINVAL. But a simple testcase as following, errno is 0, which means setsockopt
-is successful.
-	addr.s_addr = inet_addr("192.1.2.3");
-	setsockopt(s, IPPROTO_IP, IP_MULTICAST_IF, &addr, 1);
-	printf("errno is %d\n", errno);
+I used the version from the jdelvare-hwmon for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Xiaotian Feng(dfeng@redhat.com) caught the bug. We fix it firstly checking
-the availability of optlen and then dealing with the logic like other options. 
+--Signature=_Wed__23_Sep_2009_11_42_57_+1000_sMsBsdFOHSm=.uqM
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Reported-by: Xiaotian Feng <dfeng@redhat.com> 
-Signed-off-by: Shan Wei <shanwei@cn.fujitsu.com>
-Acked-by: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
----
- net/ipv4/ip_sockglue.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+iEYEARECAAYFAkq5fSEACgkQjjKRsyhoI8yiXwCglPk0FAslayPp6fOaYL3Ih/rL
+HHQAnAnURWC2pE3JPHzSSaAhTLHlMx3E
+=6jUk
+-----END PGP SIGNATURE-----
 
-diff --git a/net/ipv4/ip_sockglue.c b/net/ipv4/ip_sockglue.c
-index fc7993e..5a06935 100644
---- a/net/ipv4/ip_sockglue.c
-+++ b/net/ipv4/ip_sockglue.c
-@@ -611,6 +611,9 @@ static int do_ip_setsockopt(struct sock *sk, int level,
- 		 *	Check the arguments are allowable
- 		 */
- 
-+		if (optlen < sizeof(struct in_addr))
-+			goto e_inval;
-+
- 		err = -EFAULT;
- 		if (optlen >= sizeof(struct ip_mreqn)) {
- 			if (copy_from_user(&mreq, optval, sizeof(mreq)))
--- 
-1.6.0.4
+--Signature=_Wed__23_Sep_2009_11_42_57_+1000_sMsBsdFOHSm=.uqM--
