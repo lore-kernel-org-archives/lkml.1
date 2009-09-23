@@ -1,112 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751767AbZIWUIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbZIWUNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751767AbZIWUIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 16:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZIWUIt
+	id S1752419AbZIWUNt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 16:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZIWUNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 16:08:49 -0400
-Received: from mail-yw0-f174.google.com ([209.85.211.174]:49109 "EHLO
-	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbZIWUIs convert rfc822-to-8bit (ORCPT
+	Wed, 23 Sep 2009 16:13:47 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:6613 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750911AbZIWUNq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 16:08:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=veBQe7miSeWYr309HL8WcRUFAg3gyMVfMfBl4ZVjvsbxY9j+ph6LPGOVklwfioNSDh
-         H4bxj0/aEh8SAknuBu4Fy2vq9g1DS9KPn51759PwNlWM2CLnt9qaLu5M6NKDbNmzeLtq
-         pKE2DYjV+0Oxt+WzhM4gMcVwAtqld3ZPuXins=
-MIME-Version: 1.0
-In-Reply-To: <20090923194957.GA19358@elte.hu>
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
-	 <20090922.153201.225375909.davem@davemloft.net>
-	 <20090923114725.GB4132@elte.hu>
-	 <20090923.111444.247045711.davem@davemloft.net>
-	 <20090923193020.GA20934@elte.hu>
-	 <520f0cf10909231240g11f5cafei5cbb4ed494eba76d@mail.gmail.com>
-	 <20090923194957.GA19358@elte.hu>
-Date: Wed, 23 Sep 2009 22:08:51 +0200
-Message-ID: <520f0cf10909231308y7c82227cvf19a36ae59b6a6cb@mail.gmail.com>
-Subject: Re: mailing list for trace users
-From: John Kacur <jkacur@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, a.p.zijlstra@chello.nl,
-       fweisbec@gmail.com, acme@redhat.com, mhiramat@redhat.com,
-       postmaster@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Sep 2009 16:13:46 -0400
+Date: Wed, 23 Sep 2009 23:22:21 +0300
+From: Izik Eidus <ieidus@redhat.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, davem@redhat.com, hugh.dickins@tiscali.co.uk,
+       aarcange@redhat.com, gleb@redhat.com
+Subject: update_mmu_cache() when write protecting pte.
+Message-ID: <20090923232221.1d566a5c@woof.woof>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 9:49 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * John Kacur <jkacur@gmail.com> wrote:
->
->> On Wed, Sep 23, 2009 at 9:30 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> >
->> > * David Miller <davem@davemloft.net> wrote:
->> >
->> >> From: Ingo Molnar <mingo@elte.hu>
->> >> Date: Wed, 23 Sep 2009 13:47:25 +0200
->> >>
->> >> > Could you please also create the linux-perf-users list, for perf
->> >> > events and the perf tool related user questions? (We have asked for
->> >> > this before but must have gotten lost somewhere)
->> >>
->> >> I think your communities are similar enough and small enough that you
->> >> could share this list.
->> >
->> > It's two separate subsystems. There's a lot of non-tracing aspects of
->> > performance events: it does profiling, counting, latency analysis, etc.
->> > The tool is named 'perf', the subsystem is named 'performance events',
->> > and the most typical workflows dont do any tracing.
->> >
->> > And i beg to differ about the size of the communities. It's just been
->> > added upstream...
->> >
->> > Also, what is the policy for adding new lists to vger.kernel.org? If a
->> > subsystem maintainer asks for a list named after a core kernel
->> > subsystem, how frequently is it rejected, and on what basis?
->> >
->> > I find it sad that such an arbitrary looking negative decision from you
->> > forces a user list away from vger. I wouldnt mind it to be closed if it
->> > has no significant traffic after a year or lifetime or so - many vger
->> > lists have almost no traffic to begin with.
->> >
->> > Also, i cannot help but to observe the fact that you've fought the
->> > original perfcounters project in a very ugly and public way less
->> > than a year ago. Dont you think that you 'deciding' this matter in
->> > such a negative fashion is a conflict of interest?
->> >
->> > ? ? ? ?Ingo
->>
->> Yikes - Ingo, I don't want to spawn a long thread here about what to
->> call the list, but as a native English speaker, I think that
->> "linux-trace-users" sounds much nicer than "linux-tracing-users".
->
-> That argument i can and will accept of course ...
->
-> The "sorry, i ignored you twice and now it's unfortunately too late"
-> excuse given by David i will not ;-)
->
-> Note that this mail you replied to was about
-> linux-perf-users@vger.kernel.org, which David refused to create,
-> suggesting that perf users should mail to
-> linux-trace-users@vger.kernel.org instead. (which is a curious argument
-> - if you use a tool named 'perf', or if you are using PAPI to count
-> events, would it occur to you to mail to that list?)
->
->        Ingo
->
+Hi, Hugh just found out that ksm was not calling to update_mmu_cache()
+after it set new pte when it changed ptes mapping to point into the new
+shared-readonly page (ksmpage).
 
-Oh, for that matter, as a user of both tracing and the perf tool, I think it IS
-appropriate to have separate lists.
+It is understandable that it is a bug and ksm have to call it right
+after set_pte_at_notify() get called, but the question is: does ksm
+have to call it only there or should it call it even when it
+write-protect pte (while not changing the physical address the pte is
+pointing to).
 
-John
+I am asking this question because it seems that fork() dont call it...
+
+(below a patch that fix the problem in case we need it just when we
+change the physical mapping, if we need it even when we write protect
+the pages, then we need to add another update_mmu_cache()  call)
+
+Thanks.
+
+>From 82d27f67a8b20767dc6119422189f73b52168c8d Mon Sep 17 00:00:00 2001
+From: Izik Eidus <ieidus@redhat.com>
+Date: Wed, 23 Sep 2009 22:37:34 +0300
+Subject: [PATCH] ksm: add update_mmu_cache() when changing pte mapping.
+
+This patch add update_mmu_cache() call right after set_pte_at_notify()
+Without this function ksm is probably broken for powerpc and sparc archs.
+
+(Noticed by Hugh Dickins)
+
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
+---
+ mm/ksm.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/mm/ksm.c b/mm/ksm.c
+index f7edac3..e8d16eb 100644
+--- a/mm/ksm.c
++++ b/mm/ksm.c
+@@ -719,6 +719,7 @@ static int replace_page(struct vm_area_struct *vma, struct page *oldpage,
+ 	flush_cache_page(vma, addr, pte_pfn(*ptep));
+ 	ptep_clear_flush(vma, addr, ptep);
+ 	set_pte_at_notify(mm, addr, ptep, mk_pte(newpage, prot));
++	update_mmu_cache(vma, addr, pte);
+ 
+ 	page_remove_rmap(oldpage);
+ 	put_page(oldpage);
+-- 
+1.5.6.5
+
