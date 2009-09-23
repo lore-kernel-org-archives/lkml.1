@@ -1,278 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbZIWJmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751698AbZIWJoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752289AbZIWJmP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 05:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZIWJmO
+	id S1751698AbZIWJoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 05:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZIWJn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 05:42:14 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38026 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751360AbZIWJmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 05:42:13 -0400
-Subject: Re: PCI HotPlug and Adding Resources after Linux Boots
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <80955630EE34634AB5030FB8CE9BDCEFD7459DF2@EXBEDCLST.empirix.com>
-References: <80955630EE34634AB5030FB8CE9BDCEFD7459DF2@EXBEDCLST.empirix.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Sep 2009 19:42:07 +1000
-Message-Id: <1253698927.7103.312.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 23 Sep 2009 05:43:59 -0400
+Received: from mail-qy0-f188.google.com ([209.85.221.188]:34014 "EHLO
+	mail-qy0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbZIWJn6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 05:43:58 -0400
+X-Greylist: delayed 7420 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Sep 2009 05:43:57 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=s1j+ZSd3oUIb96v8uLfHYSPlIo8hwACitdoMQSoLXDAmt8plEHjFoVwkupa13qlvqC
+         9Q663Di4DpqLbIRyyDc4FbkU+w5Uy/5oqEXRtgF9PK1lIFpS+JkipM+ofcnnHChDP2fD
+         Rda7qSmUTQkP3HJVMQaXYTwSxOmrg4owrawt0=
+MIME-Version: 1.0
+Date: Wed, 23 Sep 2009 17:44:01 +0800
+Message-ID: <505766fa0909230244r3737379s1748a8f7c181f366@mail.gmail.com>
+Subject: Re: Linux guest domain with two vnets , the dirty quick fix
+From: hyl <heyongli@gmail.com>
+To: sparclinux@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 15:36 -0400, Morrison, Tom wrote:
-> I am not exactly sure who to direct this question to (general Linux
-> kernel or LinuxPPC),
+1. add the debug code:
+--- a/drivers/net/sunvnet.c
++++ b/drivers/net/sunvnet.c
+@@ -540,6 +540,11 @@ static void vnet_event(void *arg, int event)
+                }
+                if (err == 0)
+                        break;
++                {
++                  long stackdiff;
++                 viodbg(DATA, "** vio:%llx, vio->lp:%llx, stack:%llx\n",
++                                   &vio,     &vio->lp,     &stackdiff);
++                }
+                viodbg(DATA, "TAG [%02x:%02x:%04x:%08x]\n",
+                       msgbuf.tag.type,
+                       msgbuf.tag.stype,
 
-PCI Hotplug is reasonably arch specific at the moment so I suppose
-here's is as good as anywhere else to ask :-)
+2. the output
+from the below output, we see a re-enter to  vnet_event happend. the
+vio-hardwre report 2 interrupt
+for same packet/or msg( why?)
 
-> so I am directing to both – in hopes that someone will recognize this
-> problem – and perhaps
-> 
-> give me some suggestions on how to proceed…
+vio: ID[0] vnet_walk_rx start[00000009] end[00000008]
+vio: ID[0] vio_walk_rx_one desc[02:00:0000003c:00000001:842800:800]
+vio: ID[0] vio_walk_rx_one desc[01:00:00000000:00000001:845000:800]
+vio: ID[0] ** vio:fffff8003f9cafa8, vio->lp:fffff8003ebf0008,
+stack:fffff8003f9cafa0  << same ldc vio
+vio: ID[0] ** vio:fffff8003f9cafa8, vio->lp:fffff8003ebf0008,
+stack:fffff8003f9ccc     << with diffrent run stack
+afa0
+vio: ID[0] TAG [02:01:0042:0d4becc7]
+vio: ID[0] TAG [02:01:0042:0d4becc7]
+...........
+vio: ID[0] vnet_walk_rx start[0000000a] end[00000009]
+vio: ID[0] vio_walk_rx_one desc[02:00:0000003c:00000001:845000:800]
+vio: ID[0] vio_walk_rx_one desc[02:00:0000003c:00000001:845000:800]
+vio: ID[0] vio_walk_rx_one desc[01:00:00000000:00000001:847800:800]
+vio: ID[0] vio_walk_rx_one desc[01:00:00000000:00000001:847800:800]
+vio: ID[0] ** vio:fffff8003f9cb588, vio->lp:fffff8003ebf0008,
+stack:fffff8003f9cb580
+vio: ID[0] ** vio:fffff8003f9cb588, vio->lp:fffff8003ebf0008,
+stack:fffff8003f9ccc
 
-There's a few things you can do, though I don't have time just right now
-to give you a detailed answer. I'll try again later.
 
-In the meantime, some of the answers could be around not using full
-automatic resource assignment, but instead, pre-initializing the top
-bridge with some resources that are going to be enough for the device.
+3. where need protection
+the reason is :
+static irqreturn_t ldc_rx(int irq, void *dev_id){
 
-You can also try to get the bridge to re-allocate. There's various funky
-locking issues with doing that though as long as it's during boot time,
-it's not too much of a problem.
+out:
+	spin_unlock_irqrestore(&lp->lock, flags);
+                                                                  <<
+here run with out any lock
+	send_events(lp, event_mask);
 
-There are other more or less hackish ways to do it, but I'll have to
-give it more thought.
+4. the dirty fix, welcome fain grained lock implementation suggestion:
 
-I'm quite stretched at the moment so if you don't hear back from me in
-the upcoming few days, don't hesitate to ping me again.
+>From f24f76cc7b9bba04fcbe0406d8a1ada959c0bc4a Mon Sep 17 00:00:00 2001
+From: Yongli He <yongli.he@windriver.com>
+Date: Wed, 23 Sep 2009 17:42:16 +0800
+Subject: [PATCH] Sun ldom vnet driver dead lock
 
-Cheers,
-Ben. 
+static irqreturn_t ldc_rx(int irq, void *dev_id){
+...
+out:
+	spin_unlock_irqrestore(&lp->lock, flags);
+                     << here run with out any lock
+	send_events(lp, event_mask);
+       //if 2 vnet attach to same vswitch, ldom
+       //will report 2 irq then lead to dead lock
+       //on the vio->lock or lp->lock
+}
 
-> 
-> I am running Linux (2.6.23x (and 2.6.27.x)) on a MPC8572 based system.
-> 
->  
-> 
-> I have an 8616 switch that has a Port (6) connected to a FPGA that is 
-> 
-> NOT loaded at before Linux boots (note: this port is configured for
-> HOTPLUG
-> 
-> events - which we do get after FPGA  is loaded). We are NOT using a 
-> 
-> static device tree map (because the devices in the system are very
-> dynamic).
-> 
-> 
-> We use instead the pci auto scan mechanism(s) to scan/assign
-> resources 
-> 
-> (including into the BAR registers) at bootup to all of the devices
-> that are 
-> 
-> attached to this MPC8572…
-> 
->  
-> 
-> Here is the port that is attached to the device (note: there are NO 
-> 
-> resources assigned at this point this port):
-> 
->  
-> 
-> -------------------------------------------------------------------------------------------------
-> 
-> 02:06.0 PCI bridge: PLX Technology, Inc.: Unknown device 8616 (rev bb)
-> (prog-if 00 [Normal decode])
-> 
->         Flags: bus master, fast devsel, latency 0
-> 
->         Bus: primary=02, secondary=05, subordinate=05, sec-latency=0
-> 
->         Capabilities: [40] Power Management version 3
-> 
->         Capabilities: [48] Message Signalled Interrupts: 64bit+
-> Queue=0/2 Enable+
-> 
->         Capabilities: [68] #10 [0162]
-> 
->         Capabilities: [a4] #0d [0000]
-> 
->  
-> 
-> root@slave7 ~ # lspci -t
-> 
-> -+-[01]---00.0-[02-05]--+-01.0
-> 
->  |                      +-04.0-[03]--
-> 
->  |                      +-05.0-[04]--
-> 
->  |                      \-06.0-[05]—
-> 
->  
-> 
-> -------------------------------------------------------------------------------------------------
-> 
->  
-> 
-> Later, after I detect there is an FPGA to load - I load it. At
-> completion of the
-> 
-> loading of the FPGA - the 8616  detects the FPGA – and creates a
-> HotPlug 
-> 
-> event that the PCI Express HotPlug Driver handles:
-> 
-> -------------------------------------------------------------------------------------------------
-> 
->  
-> 
-> root@slave7 ~ # pciehp: pcie_isr: intr_loc 8
-> 
-> pciehp: pciehp:  Presence/Notify input change.
-> 
-> pciehp: Card present on Slot(0005_0070)
-> 
-> pciehp: Surprise Removal
-> 
-> pciehp: hpc_get_power_status: SLOTCTRL 80 value read 8
-> 
-> pciehp: hpc_get_attention_status: SLOTCTRL 80, value read 8
-> 
-> pciehp: board_added: slot device, slot offset, hp slot = 0, 0 ,0
-> 
-> pciehp: hpc_check_lnk_status: lnk_status = 2021
-> 
-> PCI: Found 0000:05:00.0 [1172/0004] 00ff00 00
-> 
-> PCI: Calling quirk c0012d3c for 0000:05:00.0
-> 
-> program_fw_provided_values: Could not get hotplug parameters
-> 
-> entering assign resources (size: 2000000)
-> 
-> PCI: Failed to allocate mem resource #0:2000000@0 for 0000:05:00.0
-> 
-> bus pci: add device 0000:05:00.0
-> 
-> entering uevent
-> 
-> pci: Trying to Match Device 0000:05:00.0 with Driver pcieport-driver
-> 
-> pci: Trying to Match Device 0000:05:00.0 with Driver serial
-> 
-> pci: Trying to Match Device 0000:05:00.0 with Driver pexntb
-> 
-> pciehp: hpc_get_power_status: SLOTCTRL 80 value read 8
-> 
-> pciehp: hpc_get_attention_status: SLOTCTRL 80, value read 8
-> 
->  
-> 
-> 02:06.0 PCI bridge: PLX Technology, Inc.: Unknown device 8616 (rev bb)
-> (prog-if 00 [Normal decode])
-> 
->         Flags: bus master, fast devsel, latency 0
-> 
->         Bus: primary=02, secondary=05, subordinate=05, sec-latency=0
-> 
->         Capabilities: [40] Power Management version 3
-> 
->         Capabilities: [48] Message Signalled Interrupts: 64bit+
-> Queue=0/2 Enable+
-> 
->         Capabilities: [68] #10 [0162]
-> 
->         Capabilities: [a4] #0d [0000]
-> 
->  
-> 
-> 05:00.0 Class ff00: Altera Corporation: Unknown device 0004 (rev 01)
-> 
->         Subsystem: Altera Corporation: Unknown device 0004
-> 
->         Flags: fast devsel
-> 
->         Capabilities: [50] Message Signalled Interrupts: 64bit+
-> Queue=0/5 Enable-
-> 
->         Capabilities: [78] Power Management version 3
-> 
->         Capabilities: [80] #10 [0001]
-> 
->  
-> 
-> root@slave7 ~ # lspci -t
-> 
-> -+-[01]---00.0-[02-05]--+-01.0
-> 
->  |                      +-04.0-[03]--
-> 
->  |                      +-05.0-[04]--
-> 
->  |                      \-06.0-[05]----00.0
-> 
->  \-[00]---00.0
-> 
->  
-> 
-> -------------------------------------------------------------------------------------------------
-> 
->  
-> 
-> So, as you can see – the device has been read – and it requires 32M of
-> resources, but
-> 
-> because its parent doesn’t have any resources allocated – it seemingly
-> can’t allocate and
-> 
-> use any additional resources.
-> 
->  
-> 
-> How do I ‘customize’ and/or add resources at this point for this
-> device (using semi-standard mechanisms)?
-> 
->  
-> 
-> Thanks in advance for any/all ideas…
-> 
->  
-> 
->  
-> 
-> I 
-> 
->  
-> 
-> Tom Morrison
-> Principal Software Engineer
-> 
-> EMPIRIX 
-> 20 Crosby Drive - Bedford, MA  01730
-> p: 781.266.3567 f: 781.266.3670 
-> email: tmorrison@empirix.com 
-> www.empirix.com
-> 
-> 
-> 
-> 
->  
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+this version fix just serialize all the event.
 
+Signed-off-by: Yongli He <heyongli@gmail.com>
+---
+ arch/sparc64/kernel/ldc.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/arch/sparc64/kernel/ldc.c b/arch/sparc64/kernel/ldc.c
+index a6b75cd..8d7c9b5 100644
+--- a/arch/sparc64/kernel/ldc.c
++++ b/arch/sparc64/kernel/ldc.c
+@@ -785,6 +785,8 @@ static void send_events(struct ldc_channel *lp,
+unsigned int event_mask)
+ 		lp->cfg.event(lp->event_arg, LDC_EVENT_DATA_READY);
+ }
+
++static spinlock_t event_lock=__SPIN_LOCK_UNLOCKED("ldc_event lock");
++
+ static irqreturn_t ldc_rx(int irq, void *dev_id)
+ {
+ 	struct ldc_channel *lp = dev_id;
+@@ -892,9 +894,10 @@ handshake_complete:
+ 	}
+
+ out:
++	spin_lock_irqsave(&event_lock, flags);//serialize all events
+ 	spin_unlock_irqrestore(&lp->lock, flags);
+-
+ 	send_events(lp, event_mask);
++        spin_unlock_irqrestore(&event_lock, flags);
+
+ 	return IRQ_HANDLED;
+ }
+-- 
+1.5.5.1.dirty
+
+
+
+
+2009/9/23 hyl <heyongli@gmail.com>:
+> console output:
+>
+> e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+> e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+> e1000e: Copyright (c) 1999-2008 Intel Corporation.
+> e1000e: Copyright (c) 1999-2008 Intel Corporation.
+> sunvnet.c:v1.0 (June 25, 2007)
+> sunvnet.c:v1.0 (June 25, 2007)
+> eth0: Sun LDOM vnet 00:14:4f:f9:68:e0:t
+> e0
+> eth0: PORT ( remote-mac 00:14:4f:fa:03:81 switch-port )
+> eth0: PORT ( remote-mac 00:14:4f:fa:03:81 switch-port )
+> eth0: PORT ( remote-mac 00:14:4f:f9:84:06 )
+> eth0: PORT ( remote-mac 00:14:4f:f9:84:06 )
+> eth0: PORT ( remote-mac 00:14:4f:f9:9a:40 )
+> eth0: PORT ( remote-mac 00:14:4f:f9:9a:40 )
+> eth0: PORT ( remote-mac 00:14:4f:f8:c5:7b )
+> eth0: PORT ( remote-mac 00:14:4f:f8:c5:7b )
+> eth1: Sun LDOM vnet 00:14:4f:f8:c5:7b:t
+> 7b
+> eth1: PORT ( remote-mac 00:14:4f:fa:03:81 switch-port )
+> eth1: PORT ( remote-mac 00:14:4f:fa:03:81 switch-port )
+> eth1: PORT ( remote-mac 00:14:4f:f9:84:06 )
+> eth1: PORT ( remote-mac 00:14:4f:f9:84:06 )
+> eth1: PORT ( remote-mac 00:14:4f:f9:9a:40 )
+> eth1: PORT ( remote-mac 00:14:4f:f9:9a:40 )
+> eth1: PORT ( remote-mac 00:14:4f:f9:68:e0 )
+> eth1: PORT ( remote-mac 00:14:4f:f9:68:e0 )
+>
+> two vnets bound to the same vswitch, then hang,
+> ldm add-vnet vnet0 primary-vsw1 dom1
+> ldm add-vnet vnet1 primary-vsw1 ldom1
+>
+> If 'eth1' and 'eth2' are bound to different vswitches, everything is fine.
+>
+>
+> Yongli He
+>
