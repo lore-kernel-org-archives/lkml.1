@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbZIWGcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZIWGiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbZIWGcv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 02:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbZIWGcu
+	id S1754172AbZIWGiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 02:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZIWGiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 02:32:50 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:58009 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753787AbZIWGcu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 02:32:50 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] sched: Make sure task has correct sched_class after
- policy change
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing <linux-kernel@vger.kernel.org>
-In-Reply-To: <e286470be617e07797b7.1253672517@mudlark.pw.nest>
-References: <e286470be617e07797b7.1253672517@mudlark.pw.nest>
-Content-Type: text/plain
-Date: Wed, 23 Sep 2009 08:32:59 +0200
-Message-Id: <1253687579.7695.89.camel@twins>
+	Wed, 23 Sep 2009 02:38:23 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48266 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754009AbZIWGiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 02:38:23 -0400
+Date: Wed, 23 Sep 2009 16:38:17 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jan Beulich <JBeulich@novell.com>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: linux-next: manual merge of the usb tree with Linus' tree
+Message-Id: <20090923163817.44bcebb8.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__23_Sep_2009_16_38_17_+1000_WpdwWgg0dAT3me5q"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-23 at 02:21 +0000, Peter Williams wrote:
-> From the code in rt_mutex_setprio(), it is evident that the intention
-> is that task's with a RT 'prio' value as a consequence of receiving a PI
-> boost also have their 'sched_class' field set to '&rt_sched_class'.
-> However, the code in __setscheduler() could result in this intention
-> being frustrated.
-> 
-> This patch fixes this problem.
-> 
-> Signed-off-by: Peter Williams <pwil3058@bigpond.net.au>
+--Signature=_Wed__23_Sep_2009_16_38_17_+1000_WpdwWgg0dAT3me5q
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think you're right, but the problem seems to be that it sets
-sched_class based on policy, which seems fragile in the face of PI.
+Hi Greg,
 
-How about the alternative below?
+Today's linux-next merge of the usb tree got a conflict in
+arch/x86/kernel/early_printk.c between commit
+414128bd33fef3242747154dfa444970bc5caf4c ("x86: Increase timeout for EHCI
+debug port reset completion in early printk") from Linus' tree and commit
+bd965307ef6b7a56219f8883d5038f6573a94f6e ("USB: ehci,dbgp,early_printk:
+split ehci debug driver from early_printk.c") from the usb tree.
 
----
- kernel/sched.c |   17 ++++-------------
- 1 files changed, 4 insertions(+), 13 deletions(-)
+The latter moved the code that the former modified.  A later USB patch
+used an even longer loop delay.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 91843ba..753a52c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6129,23 +6129,14 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
- {
- 	BUG_ON(p->se.on_rq);
- 
--	p->policy = policy;
--	switch (p->policy) {
--	case SCHED_NORMAL:
--	case SCHED_BATCH:
--	case SCHED_IDLE:
--		p->sched_class = &fair_sched_class;
--		break;
--	case SCHED_FIFO:
--	case SCHED_RR:
--		p->sched_class = &rt_sched_class;
--		break;
--	}
--
- 	p->rt_priority = prio;
- 	p->normal_prio = normal_prio(p);
- 	/* we are holding p->pi_lock already */
- 	p->prio = rt_mutex_getprio(p);
-+	if (rt_prio(p->prio))
-+		p->sched_class = &rt_sched_class;
-+	else
-+		p->sched_class = &fair_sched_class;
- 	set_load_weight(p);
- }
- 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Wed__23_Sep_2009_16_38_17_+1000_WpdwWgg0dAT3me5q
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkq5wlkACgkQjjKRsyhoI8wdtQCfZ3bZXLFENqu27HOlwlb4cfZQ
+vT0An32K63mky/leiybLDUeXs1/p7JIk
+=k1BN
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Sep_2009_16_38_17_+1000_WpdwWgg0dAT3me5q--
