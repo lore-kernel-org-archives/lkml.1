@@ -1,81 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751403AbZIWNky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751568AbZIWNoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751403AbZIWNky (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 09:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZIWNkw
+	id S1751568AbZIWNoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 09:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZIWNoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 09:40:52 -0400
-Received: from mga14.intel.com ([143.182.124.37]:39347 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbZIWNkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 09:40:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,438,1249282800"; 
-   d="scan'208";a="190753481"
-Date: Wed, 23 Sep 2009 21:40:39 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jan Kara <jack@suse.cz>,
-       Theodore Tso <tytso@mit.edu>, Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/6] writeback: don't delay inodes redirtied by a fast
-	dirtier
-Message-ID: <20090923134039.GA1196@localhost>
-References: <20090923123337.990689487@intel.com> <20090923124028.060887241@intel.com> <20090923132008.GB32347@localhost> <20090923132351.GA32404@infradead.org>
+	Wed, 23 Sep 2009 09:44:16 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:42689 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbZIWNoP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 09:44:15 -0400
+Message-ID: <4ABA262F.9040407@gmail.com>
+Date: Wed, 23 Sep 2009 15:44:15 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090923132351.GA32404@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Miller <davem@davemloft.net>
+CC: albcamus@gmail.com, parag.lkml@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net: Fix sock_wfree() race
+References: <4AA64A11.7090804@gmail.com>	<4AA6DF7B.7060105@gmail.com>	<20090911.114337.150207703.davem@davemloft.net> <20090911.125242.244008840.davem@davemloft.net>
+In-Reply-To: <20090911.125242.244008840.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 23 Sep 2009 15:44:15 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 09:23:51PM +0800, Christoph Hellwig wrote:
-> On Wed, Sep 23, 2009 at 09:20:08PM +0800, Wu Fengguang wrote:
-> > I noticed that
-> > - the write chunk size of balance_dirty_pages() is 12, which is pretty
-> >   small and inefficient.
-> > - during copy, the inode is sometimes redirty_tail (old behavior) and
-> >   sometimes requeue_io (new behavior).
-> > - during copy, the directory inode will always be synced and then
-> >   redirty_tail.
-> > - after copy, the inode will be redirtied after sync.
+David Miller a écrit :
+> From: David Miller <davem@davemloft.net>
+> Date: Fri, 11 Sep 2009 11:43:37 -0700 (PDT)
 > 
-> Yeah, XFS uses generic_file_uffered_write and the heuristics in there
-> for balance_dirty_pages turned out to be really bad.  So far we didn't
-> manage to sucessfully get that fixed, though.
-
-Ah sorry. It's because of the first patch, it does not always "bump up"
-the write chunk. In your case it is obviously decreased (the original
-ratelimit_pages=4096 is much larger value).  I'll fix it.
-
-> > It shall not be a problem to use requeue_io for XFS, because whether
-> > it be requeue_io or redirty_tail, write_inode() will be called once
-> > for every 4MB.
-> > 
-> > It would be inefficient if XFS really tries to write inode and
-> > directory inode's metadata every time it synced 4MB page. If
-> > that write attempt is turned into _real_ IO, that would be bad
-> > and kill performance. Increasing MAX_WRITEBACK_PAGES may help
-> > reduce the frequency of write_inode() though.
+>> From: Eric Dumazet <eric.dumazet@gmail.com>
+>> Date: Wed, 09 Sep 2009 00:49:31 +0200
+>>
+>>> [PATCH] net: Fix sock_wfree() race
+>>>
+>>> Commit 2b85a34e911bf483c27cfdd124aeb1605145dc80
+>>> (net: No more expensive sock_hold()/sock_put() on each tx)
+>>> opens a window in sock_wfree() where another cpu
+>>> might free the socket we are working on.
+>>>
+>>> Fix is to call sk->sk_write_space(sk) only
+>>> while still holding a reference on sk.
+>>>
+>>> Since doing this call is done before the 
+>>> atomic_sub(truesize, &sk->sk_wmem_alloc), we should pass truesize as 
+>>> a bias for possible sk_wmem_alloc evaluations.
+>>>
+>>> Reported-by: Jike Song <albcamus@gmail.com>
+>>> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+>> Applied to net-next-2.6, thanks.  I'll queue up your simpler
+>> version for -stable.
 > 
-> The way we call write_inode for XFS is extremly inefficient for XFS.  As
-> you noticed XFS tends to redirty the inode on I/O completion, and we
-> also cluster inode writeouts.  For XFS we'd really prefer to not
-> intermix data and inode writeout, but first do the data writeout and
-> then later push out the inodes, preferably with as many as possible
-> inodes to sweep out in one go.
+> Eric, I have to revert, as you didn't update the callbacks
+> of several protocols such as SCTP and RDS in this change.
+> 
+> Let me know when you have a fixed version of this patch :-)
 
-I guess the difficult part would be possible policy requirements
-on the max batch size (max number of inodes or pages to write before
-switching to write metadata) and the delay time (between the sync of
-data and metadata). It may take a long time to make a full scan of
-the dirty list.
+Sorry for the delay David. But this is complex. I am not
+sure we can do a clean and safe thing, not counting
+the added bloat.
 
-Thanks,
-Fengguang
+If we do :
+
+void sock_wfree(struct sk_buff *skb)
+{
+        struct sock *sk = skb->sk;
+        int res;
+
+        if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE))
+                sk->sk_write_space(sk, skb->truesize);
+
+        res = atomic_sub_return(skb->truesize, &sk->sk_wmem_alloc);
+        /*
+         * if sk_wmem_alloc reached 0, we are last user and should
+         * free this sock, as sk_free() call could not do it.
+         */
+        if (res == 0)
+                __sk_free(sk);
+}
+
+
+There is still a possibility multiple cpus call sock_wfree()
+for the same socket, and that they all call sk_write_space()
+with their bias, yet the protocol still has a possible too
+big estimation of sk_wmem_alloc
+
+We could miss to wakeup a blocked writer in case low sk->sk_sndbuf
+values are setup. (One could argue that with small sk_sndbuf
+values we should not have many packets in flight : Keep in mind
+sk_sndbuf can be lowered by the user)
+
+
+With second patch we instead have :
+
+void sock_wfree(struct sk_buff *skb)
+{
+	struct sock *sk = skb->sk;
+	unsigned int len = skb->truesize;
+
+	if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE)) {
+		/*
+		 * Keep a reference on sk_wmem_alloc, this will be released
+		 * after sk_write_space() call
+		 */
+		atomic_sub(len - 1, &sk->sk_wmem_alloc);
+		sk->sk_write_space(sk);
+		len = 1;
+	}
+	/*
+	 * if sk_wmem_alloc reaches 0, we must finish what sk_free()
+	 * could not do because of in-flight packets
+	 */
+	if (atomic_sub_return(len, &sk->sk_wmem_alloc) == 0)
+		__sk_free(sk);
+}
+
+The accumulated transient error on sk_wmem_alloc is then < num_online_cpus(),
+that should be OK even for very small sk_sndbuf values.
+
+Of course TCP doesnt have to pay the price of sk_write_space() and the second
+atomic operation re-added by this fix.
+
+Here is the patch for reference :
+
+[PATCH] net: Fix sock_wfree() race
+
+Commit 2b85a34e911bf483c27cfdd124aeb1605145dc80
+(net: No more expensive sock_hold()/sock_put() on each tx)
+opens a window in sock_wfree() where another cpu
+might free the socket we are working on.
+
+A fix is to call sk->sk_write_space(sk) while still
+holding a reference on sk.
+
+
+Reported-by: Jike Song <albcamus@gmail.com>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+ net/core/sock.c |   19 ++++++++++++-------
+ 1 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 30d5446..e1f034e 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -1228,17 +1228,22 @@ void __init sk_init(void)
+ void sock_wfree(struct sk_buff *skb)
+ {
+ 	struct sock *sk = skb->sk;
+-	int res;
++	unsigned int len = skb->truesize;
+ 
+-	/* In case it might be waiting for more memory. */
+-	res = atomic_sub_return(skb->truesize, &sk->sk_wmem_alloc);
+-	if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE))
++	if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE)) {
++		/*
++		 * Keep a reference on sk_wmem_alloc, this will be released
++		 * after sk_write_space() call
++		 */
++		atomic_sub(len - 1, &sk->sk_wmem_alloc);
+ 		sk->sk_write_space(sk);
++		len = 1;
++	}
+ 	/*
+-	 * if sk_wmem_alloc reached 0, we are last user and should
+-	 * free this sock, as sk_free() call could not do it.
++	 * if sk_wmem_alloc reaches 0, we must finish what sk_free()
++	 * could not do because of in-flight packets
+ 	 */
+-	if (res == 0)
++	if (atomic_sub_return(len, &sk->sk_wmem_alloc) == 0)
+ 		__sk_free(sk);
+ }
+ EXPORT_SYMBOL(sock_wfree);
+
