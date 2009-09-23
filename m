@@ -1,52 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751554AbZIWPWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751648AbZIWPYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751554AbZIWPWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 11:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZIWPWW
+	id S1751648AbZIWPYJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 11:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZIWPYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 11:22:22 -0400
-Received: from mga12.intel.com ([143.182.124.36]:60219 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750911AbZIWPWV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 11:22:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,439,1249282800"; 
-   d="scan'208";a="190792241"
-Message-ID: <4ABA3D31.8020507@linux.intel.com>
-Date: Wed, 23 Sep 2009 17:22:25 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       tglx@linutronix.de, Yinghai Lu <yinghai@kernel.org>,
-       Huang Ying <ying.huang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [boot crash] Re: [tip:x86/mce3] x86, mce: use 64bit machine	check
- code on 32bit
-References: <tip-4efc0670baf4b14bc95502e54a83ccf639146125@git.kernel.org> <20090812113652.GA19632@elte.hu> <4A88E3E4.40506@jp.fujitsu.com> <20090817083544.GC15390@elte.hu> <4A891E17.1090901@jp.fujitsu.com> <20090817092047.GB21269@elte.hu> <4A893A14.1070103@linux.intel.com> <20090922154157.GA17497@elte.hu>
-In-Reply-To: <20090922154157.GA17497@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 23 Sep 2009 11:24:08 -0400
+Received: from fifo99.com ([67.223.236.141]:40341 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751014AbZIWPYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 11:24:07 -0400
+Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
+From: Daniel Walker <dwalker@fifo99.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jonathan Corbet <corbet@lwn.net>,
+       Raistlin <raistlin@linux.it>, Peter Zijlstra <peterz@infradead.org>,
+       claudio@evidence.eu.com, michael@evidence.eu.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       johan.eker@ericsson.com, p.faure@akatech.ch,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
+In-Reply-To: <4ABA3ACF.50106@redhat.com>
+References: <1253615424.20345.76.camel@Palantir>
+	 <1253625878.6575.34.camel@desktop> <20090922173916.257dff1d@tpl.lwn.net>
+	 <1253663739.4317.12.camel@desktop> <20090922180611.7a47adcc@tpl.lwn.net>
+	 <1253666423.25689.30.camel@desktop> <4ABA0AA6.3010408@redhat.com>
+	 <20090923122530.GB6390@elte.hu> <1253717459.20648.39.camel@desktop>
+	 <4ABA37A5.4000806@redhat.com> <1253718532.20648.46.camel@desktop>
+	 <4ABA3ACF.50106@redhat.com>
+Content-Type: text/plain
+Date: Wed, 23 Sep 2009 08:24:05 -0700
+Message-Id: <1253719445.20648.57.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Wed, 2009-09-23 at 18:12 +0300, Avi Kivity wrote:
+> On 09/23/2009 06:08 PM, Daniel Walker wrote:
+> >
+> >> Not true, you want to address the major issues first.  What's the point
+> >> of fixing whitespace if the whole approach is rejected? if it has to
+> >> undergo a rewrite? (not an opinion on EDF btw, just as an example)
+> >>      
+> > I'm not sure why your fixated on whitespace , but thinking about it more
+> > I don't think it matters .. If you fix whitespace or major issues first,
+> > it doesn't matter .. All the issues have to eventually get fixed .. Not
+> > to mentioned that LKML is not something you could remotely control in
+> > that way.
+> >    
+> 
+> A technical issue is that if you rewrite the code the whitespace fix 
+> becomes irrelevant.  But more important is that it's a distraction when 
+> people are thinking about requirements and design.
 
-> Your sloppiness of not fixing mce_rdmsrl() as i requested brought us 
-> this new boot crash regression in 2.6.31, in mce_rdmsrl():
+It's not irrelevant, since a person doing that rewrite will be
+conscience of whitespace during the re-write ..
 
-Ingo, that's because the MSRs already have capability bits. If the
-capability bits don't work we have to find out why, not hack around
-without understanding it it by using rdmsrl_safe(). Most likely something
-more is wrong then and it has to be fixed properly.
+The same with general coding style, if someone does a rewrite who has
+been alerted to checkpatch problems they will likely use it themselves
+leaving no need for someone else to comment on it.
 
-I'll work with the reporter to find out what the problem is.
-Thanks for bringing that bug to my attention.
+> >>> In this case the author is not totally aware of how to submit this
+> >>> code.. I don't think it's at all inappropriate to comment on that. His
+> >>> next submission will likely be much cleaner and nicer. It may even speed
+> >>> up the inclusion process since he'll be more easily able to submit the
+> >>> code (with practice and comments from us).
+> >>>
+> >>>        
+> >> Give people some credit.
+> >>      
+> > What do you mean?
+> >
+> >    
+> 
+> If he's able to write a scheduling class, he'll pick up the coding style 
+> when it becomes relevant.
 
--Andi
+There's plenty of large projects that never get off the ground cause
+people don't follow the coding style, or don't write clean code.. Take a
+look at the staging tree there's plenty of large dirty projects in
+there.
 
+Daniel 
 
