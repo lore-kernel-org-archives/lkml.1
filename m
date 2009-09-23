@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbZIXA3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZIXAaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418AbZIXA3s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZIXA3m
+	id S1753519AbZIXAaB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbZIXA3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:29:42 -0400
+	Wed, 23 Sep 2009 20:29:55 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753081AbZIXA3U (ORCPT
+	with ESMTP id S1753069AbZIXA3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:20 -0400
+	Wed, 23 Sep 2009 20:29:23 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [PATCH v18 14/80] pids 4/7: Add target_pids parameter to alloc_pid()
-Date: Wed, 23 Sep 2009 19:50:54 -0400
-Message-Id: <1253749920-18673-15-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 15/80] pids 5/7: Add target_pids parameter to copy_process()
+Date: Wed, 23 Sep 2009 19:50:55 -0400
+Message-Id: <1253749920-18673-16-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -29,87 +29,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-This parameter is currently NULL, but will be used in a follow-on patch.
+The new parameter will be used in a follow-on patch when clone_with_pids()
+is implemented.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- include/linux/pid.h |    2 +-
- kernel/fork.c       |    3 ++-
- kernel/pid.c        |   13 ++++++++++---
- 3 files changed, 13 insertions(+), 5 deletions(-)
+ kernel/fork.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/pid.h b/include/linux/pid.h
-index 49f1c2f..914185d 100644
---- a/include/linux/pid.h
-+++ b/include/linux/pid.h
-@@ -119,7 +119,7 @@ extern struct pid *find_get_pid(int nr);
- extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
- int next_pidmap(struct pid_namespace *pid_ns, int last);
- 
--extern struct pid *alloc_pid(struct pid_namespace *ns);
-+extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *target_pids);
- extern void free_pid(struct pid *pid);
- 
- /*
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 851ccd1..2811bdb 100644
+index 2811bdb..5156d02 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
-@@ -940,6 +940,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+@@ -935,12 +935,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 					unsigned long stack_size,
+ 					int __user *child_tidptr,
+ 					struct pid *pid,
++					pid_t *target_pids,
+ 					int trace)
+ {
  	int retval;
  	struct task_struct *p;
  	int cgroup_callbacks_done = 0;
-+	pid_t *target_pids = NULL;
+-	pid_t *target_pids = NULL;
  
  	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
  		return ERR_PTR(-EINVAL);
-@@ -1110,7 +1111,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 		goto bad_fork_cleanup_io;
+@@ -1319,7 +1319,7 @@ struct task_struct * __cpuinit fork_idle(int cpu)
+ 	struct pt_regs regs;
  
- 	if (pid != &init_struct_pid) {
--		pid = alloc_pid(p->nsproxy->pid_ns);
-+		pid = alloc_pid(p->nsproxy->pid_ns, target_pids);
- 		if (IS_ERR(pid)) {
- 			retval = PTR_ERR(pid);
- 			goto bad_fork_cleanup_io;
-diff --git a/kernel/pid.c b/kernel/pid.c
-index 29cf119..10a6b3a 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -280,21 +280,28 @@ void free_pid(struct pid *pid)
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
+ 	task = copy_process(CLONE_VM, 0, idle_regs(&regs), 0, NULL,
+-			    &init_struct_pid, 0);
++			    &init_struct_pid, NULL, 0);
+ 	if (!IS_ERR(task))
+ 		init_idle(task, cpu);
  
--struct pid *alloc_pid(struct pid_namespace *ns)
-+struct pid *alloc_pid(struct pid_namespace *ns, pid_t *target_pids)
- {
- 	struct pid *pid;
- 	enum pid_type type;
- 	int i, nr;
- 	struct pid_namespace *tmp;
- 	struct upid *upid;
-+	int tpid;
+@@ -1342,6 +1342,7 @@ long do_fork(unsigned long clone_flags,
+ 	struct task_struct *p;
+ 	int trace = 0;
+ 	long nr;
++	pid_t *target_pids = NULL;
  
- 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
--	if (!pid)
-+	if (!pid) {
-+		pid = ERR_PTR(-ENOMEM);
- 		goto out;
-+	}
+ 	/*
+ 	 * Do some preliminary argument and permissions checking before we
+@@ -1382,7 +1383,7 @@ long do_fork(unsigned long clone_flags,
+ 		trace = tracehook_prepare_clone(clone_flags);
  
- 	tmp = ns;
- 	for (i = ns->level; i >= 0; i--) {
--		nr = alloc_pidmap(tmp, 0);
-+		tpid = 0;
-+		if (target_pids)
-+			tpid = target_pids[i];
-+
-+		nr = alloc_pidmap(tmp, tpid);
- 		if (nr < 0)
- 			goto out_free;
- 
+ 	p = copy_process(clone_flags, stack_start, regs, stack_size,
+-			 child_tidptr, NULL, trace);
++			 child_tidptr, NULL, target_pids, trace);
+ 	/*
+ 	 * Do this prior waking up the new thread - the thread pointer
+ 	 * might get invalid after that point, if the thread exits quickly.
 -- 
 1.6.0.4
 
