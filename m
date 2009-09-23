@@ -1,117 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbZIWOBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZIWOCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752897AbZIWOBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 10:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZIWOBS
+	id S1752984AbZIWOCM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 10:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZIWOCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 10:01:18 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:52118 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbZIWOBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 10:01:17 -0400
-Message-ID: <4ABA2A0B.1010103@redhat.com>
-Date: Wed, 23 Sep 2009 17:00:43 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: Arnaldo Carvalho de Melo <acme@redhat.com>, rostedt@goodmis.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Wed, 23 Sep 2009 10:02:11 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:37749 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbZIWOCI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 10:02:08 -0400
+Date: Wed, 23 Sep 2009 10:00:58 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [patch] Re: [perf] Finding uninstalled modules Was Re: mailing
- list for trace users
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com>	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>	 <4AB8BA37.4010305@redhat.com> <20090922201746.GH5216@ghostprotocols.net>	 <4AB9DCC8.5050603@redhat.com> <1253697658.11461.36.camel@marge.simson.net>	 <4AB9F08E.1020106@redhat.com> <1253705515.7835.41.camel@marge.simson.net>	 <4ABA1B75.7040900@redhat.com>  <4ABA1E3B.40800@redhat.com> <1253713800.7816.15.camel@marge.simson.net>
-In-Reply-To: <1253713800.7816.15.camel@marge.simson.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20090923140058.GA2794@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Wu Fengguang <fengguang.wu@intel.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	"Li, Shaohua" <shaohua.li@intel.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+	"jens.axboe@oracle.com" <jens.axboe@oracle.com>
+References: <1253608335.8439.283.camel@twins>
+ <20090922155259.GL10825@think>
+ <20090923002220.GA6382@localhost>
+ <20090922175452.d66400dd.akpm@linux-foundation.org>
+ <20090923011758.GC6382@localhost>
+ <20090922182832.28e7f73a.akpm@linux-foundation.org>
+ <20090923014500.GA11076@localhost>
+ <20090922185941.1118e011.akpm@linux-foundation.org>
+ <20090923022622.GB11918@localhost>
+ <20090922193622.42c00012.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922193622.42c00012.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt013.oracle.com [141.146.116.22]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4ABA2A1E.0103:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23/2009 04:50 PM, Mike Galbraith wrote:
-> On Wed, 2009-09-23 at 16:10 +0300, Avi Kivity wrote:
->    
->> On 09/23/2009 03:58 PM, Avi Kivity wrote:On 09/23/2009 03:58 PM, Avi
->> Kivity wrote:
->>      
->>> Not for me.  'perf report', for example, shows
->>>
->>>      63.08%  qemu-system-x86
->>> [kernel]                                              [k] packet_exit
->>>       4.71%  qemu-system-x86
->>> [kernel]                                              [k] hpet_next_event
->>>       4.38%             init
->>> [kernel]                                              [k]
->>> mwait_idle_with_hints
->>>
->>> While 'perf top' still shows vmx_vcpu_run.
->>>
->>>        
->> strace says:
->>
->>      getcwd("/home/avi/kvm/linux-2.6"..., 4096) = 24
->>      ...
->>      [no chdir]
->>      ...
->>      open("kernel/arch/x86/kvm/kvm-intel.ko", O_RDONLY) = -1 ENOENT (No
->> such file or directory)
->>      
-> *blink*
->
->    
->> That "kernel/" looks like it was meant for /lib/modules, not a kernel
->> tree.  If I run 'perf report' from /lib/modules/2.6.31 I see vmx_vcpu_run.
->>      
-> So I need what's in your modules.dep to figure out where the rest of the
-> path went.
->
->    
+On Tue, Sep 22, 2009 at 07:36:22PM -0700, Andrew Morton wrote:
+> On Wed, 23 Sep 2009 10:26:22 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > On Wed, Sep 23, 2009 at 09:59:41AM +0800, Andrew Morton wrote:
+> > > On Wed, 23 Sep 2009 09:45:00 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > 
+> > > > On Wed, Sep 23, 2009 at 09:28:32AM +0800, Andrew Morton wrote:
+> > > > > On Wed, 23 Sep 2009 09:17:58 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > > > 
+> > > > > > On Wed, Sep 23, 2009 at 08:54:52AM +0800, Andrew Morton wrote:
+> > > > > > > On Wed, 23 Sep 2009 08:22:20 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > > > > > 
+> > > > > > > > Jens' per-bdi writeback has another improvement. In 2.6.31, when
+> > > > > > > > superblocks A and B both have 100000 dirty pages, it will first
+> > > > > > > > exhaust A's 100000 dirty pages before going on to sync B's.
+> > > > > > > 
+> > > > > > > That would only be true if someone broke 2.6.31.  Did they?
+> > > > > > > 
+> > > > > > > SYSCALL_DEFINE0(sync)
+> > > > > > > {
+> > > > > > > 	wakeup_pdflush(0);
+> > > > > > > 	sync_filesystems(0);
+> > > > > > > 	sync_filesystems(1);
+> > > > > > > 	if (unlikely(laptop_mode))
+> > > > > > > 		laptop_sync_completion();
+> > > > > > > 	return 0;
+> > > > > > > }
+> > > > > > > 
+> > > > > > > the sync_filesystems(0) is supposed to non-blockingly start IO against
+> > > > > > > all devices.  It used to do that correctly.  But people mucked with it
+> > > > > > > so perhaps it no longer does.
+> > > > > > 
+> > > > > > I'm referring to writeback_inodes(). Each invocation of which (to sync
+> > > > > > 4MB) will do the same iteration over superblocks A => B => C ... So if
+> > > > > > A has dirty pages, it will always be served first.
+> > > > > > 
+> > > > > > So if wbc->bdi == NULL (which is true for kupdate/background sync), it
+> > > > > > will have to first exhaust A before going on to B and C.
+> > > > > 
+> > > > > But that works OK.  We fill the first device's queue, then it gets
+> > > > > congested and sync_sb_inodes() does nothing and we advance to the next
+> > > > > queue.
+> > > > 
+> > > > So in common cases "exhaust" is a bit exaggerated, but A does receive
+> > > > much more opportunity than B. Computation resources for IO submission
+> > > > are unbalanced for A, and there are pointless overheads in rechecking A.
+> > > 
+> > > That's unquantified handwaving.  One CPU can do a *lot* of IO.
+> > 
+> > Yes.. I had the impression that the writeback submission can be pretty slow.
+> > It should be because of the congestion_wait. Now that it is removed,
+> > things are going faster when queue is not full.
+> 
+> What?  The wait is short.  The design intent there is that we repoll
+> all previously-congested queues well before they start to run empty.
 
-Mine says:
+The congestion code was the big reason I got behind Jens' patches.  When
+working on btrfs I tried to tune the existing congestion based setup to
+scale well.  What we had before is basically a poll interface hiding
+behind a queue flag and a wait.  
 
-   kernel/arch/x86/kvm/kvm.ko:
-   kernel/arch/x86/kvm/kvm-intel.ko: kernel/arch/x86/kvm/kvm.ko
+The only place that actually honors the congestion flag is pdflush.
+It's trivial to get pdflush backed up and make it sit down without
+making any progress because once the queue congests, pdflush goes away.
 
-Which is reasonable for /lib/modules/2.6.31, not for a source directory.
+Nothing stops other procs from keeping the queue congested forever.
+This can only be fixed by making everyone wait for congestion, at which
+point we might as well wait for requests.
 
-> /lib/modules/2.6.32-tip-smp/kernel/arch/x86/kvm/kvm-intel.ko
->
-> static int mod_dso__load_module_paths(struct mod_dso *self)
-> {
->          struct utsname uts;
->          int count = 0, len;
->          char *line = NULL;
->          FILE *file;
->          char *path;
->          size_t n;
->
->          if (uname(&uts)<  0)
->                  goto out_failure;
->
->          len = strlen("/lib/modules/");
->          len += strlen(uts.release);
->          len += strlen("/modules.dep");
->
->          path = calloc(1, len);
->    
+Here are some graphs comparing 2.6.31 and 2.6.31 with Jens' latest code.
+The workload is two procs doing streaming writes to 32GB files.  I've
+used deadline and bumped nr_requests to 2048, so pdflush should be able
+to do a significant amount of work between congestion cycles.
 
-len + 1
+The hardware is 5 sata drives pushed into an LVM stripe set.
 
->          if (path == NULL)
->                  goto out_failure;
->
->          strcat(path, "/lib/modules/");
->          strcat(path, uts.release);
->          strcat(path, "/modules.dep");
->
->          file = fopen(path, "r");
->
->    
+http://oss.oracle.com/~mason/seekwatcher/bdi-writeback/xfs-streaming-compare.png
+http://oss.oracle.com/~mason/seekwatcher/bdi-writeback/btrfs-streaming-compare.png
 
--- 
-error compiling committee.c: too many arguments to function
+In the mainline graphs, pdflush is actually doing the vast majority of
+the IO thanks to Richard's fix:
+
+http://oss.oracle.com/~mason/seekwatcher/bdi-writeback/xfs-mainline-per-process.png
+
+We can see there are two different pdflush procs hopping in and out
+of the work.  This isn't a huge problem, except that we're also hopping
+between files.
+
+I don't think this is because anyone broke pdflush, I think this is
+because very fast hardware goes from congested to uncongested 
+very quickly, even when we bump nr_requests to 2048 like I did in the
+graphs above.
+
+The pdflush congestion backoffs skip the batching optimizations done by
+the elevator.  pdflush could easily have waited in get_request_wait,
+been given a nice fat batch of requests and then said oh no, the queue
+is congested, I'll just sleep for a while without submitting any more
+IO.
+
+The congestion checks prevent any attempts from the filesystem to write
+a whole extent (or a large portion of an extent) at a time.
+
+The pdflush system tried to be async, but at the end of the day it
+wasn't async enough to effectively drive the hardware.  Threads did get
+tied up in FS locking, metadata reads and get_request_wait.  The end
+result is that not enough time was spent keeping all the drives on the
+box busy.
+
+This isn't handwaving, my harddrive is littered with pdflush patches
+trying to make it scale well, and I just couldn't work it out.
+
+-chris
 
