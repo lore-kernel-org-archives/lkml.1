@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZIWTEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbZIWTEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbZIWTEI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 15:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZIWTEH
+	id S1753266AbZIWTEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 15:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZIWTEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 15:04:07 -0400
-Received: from claw.goop.org ([74.207.240.146]:46560 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752322AbZIWTEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 15:04:07 -0400
-Message-ID: <4ABA7119.6000307@goop.org>
-Date: Wed, 23 Sep 2009 12:03:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Wed, 23 Sep 2009 15:04:49 -0400
+Received: from relay4-v.mail.gandi.net ([217.70.178.78]:40100 "EHLO
+	relay4-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752209AbZIWTEt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 15:04:49 -0400
+Date: Wed, 23 Sep 2009 12:04:28 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 0/4] Josh and Ingo review feedback and
+ bloatwatch RCU
+Message-ID: <20090923190427.GD6763@feather>
+References: <20090922222443.GA3178@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>,
-       Stable Kernel <stable@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] xen: Check NX state before setting up GDT mapping
-References: <4AB7EC1D.5010102@goop.org> <20090923123616.GC19385@elte.hu>
-In-Reply-To: <20090923123616.GC19385@elte.hu>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090922222443.GA3178@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23/09 05:36, Ingo Molnar wrote:
->> +#ifdef CONFIG_X86_64
->> +	/* Work out if we support NX */
->> +	check_efer();
->> +#endif
->> +
->>     
-> btw., this #ifdef could sure be eliminated, right?
->   
+On Tue, Sep 22, 2009 at 03:24:43PM -0700, Paul E. McKenney wrote:
+> This patch set applies two sets of review feedback from Josh Triplett and
+> checkpatch feedback from Ingo Molnar.  It also contains a forward-port
+> of Bloatwatch RCU, courtesy of David Howells.
+> 
+>  b/include/linux/hardirq.h  |   24 ++++
+>  b/include/linux/rcupdate.h |    4 
+>  b/include/linux/rcutiny.h  |  103 ++++++++++++++++++
+>  b/include/linux/rcutree.h  |    1 
+>  b/init/Kconfig             |    9 +
+>  b/init/main.c              |    1 
+>  b/kernel/Makefile          |    1 
+>  b/kernel/rcupdate.c        |    3 
+>  b/kernel/rcutiny.c         |  246 ++++++++++++++++++++++++++++++++++++++++++++-
+>  b/kernel/rcutorture.c      |    4 
+>  b/kernel/rcutree.c         |   29 +++--
+>  b/kernel/rcutree.h         |    6 -
+>  b/kernel/rcutree_plugin.h  |   51 ++++-----
+>  b/kernel/rcutree_trace.c   |   13 +-
+>  include/linux/rcupdate.h   |    6 +
+>  include/linux/rcutree.h    |   12 +-
+>  kernel/rcupdate.c          |    4 
+>  kernel/rcutree.c           |   95 ++++++-----------
+>  kernel/rcutree.h           |   57 ++++++++--
+>  kernel/rcutree_plugin.h    |   24 +++-
+>  20 files changed, 557 insertions(+), 136 deletions(-)
 
-check_efer() is only defined on x86-64 and all its existing callsites
-have a similar #ifdef.  NX setup is an area which could do with a bit of
-hitting with the unification stick.
+For all four patches:
+Acked-by: Josh Triplett <josh@joshtriplett.org>
 
-    J
+- Josh Triplett
