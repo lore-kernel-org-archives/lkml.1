@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbZIWJFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751873AbZIWJEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752357AbZIWJFH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 05:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZIWJFE
+	id S1751873AbZIWJEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 05:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZIWJEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 05:05:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38046 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 05:04:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54075 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752289AbZIWJFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 05:05:01 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: Use asm/generic-hardirq.h
-To: torvalds@osdl.org, akpm@linux-foundation.org, hch@lst.de
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Wed, 23 Sep 2009 10:04:02 +0100
-Message-ID: <20090923090402.21426.1909.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1750803AbZIWJEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 05:04:34 -0400
+Date: Wed, 23 Sep 2009 09:04:07 GMT
+From: tip-bot for Li Hong <lihong.hi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, lihong.hi@gmail.com, hpa@zytor.com,
+       mingo@redhat.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, lihong.hi@gmail.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de
+In-Reply-To: <3a3680030909220300h7cf18849q4d4702b9d4feaa67@mail.gmail.com>
+References: <3a3680030909220300h7cf18849q4d4702b9d4feaa67@mail.gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/urgent] tracing: Fix a comment and a trivial format issue in tracepoint.h
+Message-ID: <tip-8cd09a5984c08dafade74c9c1ab4311af2bf2d24@git.kernel.org>
+Git-Commit-ID: 8cd09a5984c08dafade74c9c1ab4311af2bf2d24
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 09:04:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Hellwig <hch@lst.de>
+Commit-ID:  8cd09a5984c08dafade74c9c1ab4311af2bf2d24
+Gitweb:     http://git.kernel.org/tip/8cd09a5984c08dafade74c9c1ab4311af2bf2d24
+Author:     Li Hong <lihong.hi@gmail.com>
+AuthorDate: Tue, 22 Sep 2009 18:00:44 +0800
+Committer:  Frederic Weisbecker <fweisbec@gmail.com>
+CommitDate: Tue, 22 Sep 2009 23:14:58 +0200
 
-Use asm/generic-hardirq.h to build asm/hardirq.h and also remove the unused
-idle_timestamp field in irq_cpustat whilst we're at it.
+tracing: Fix a comment and a trivial format issue in tracepoint.h
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
+Fix the tracepoint documentation path in tracepoints headers and
+a misaligned tabulation.
+
+Signed-off-by: Li Hong <lihong.hi@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+LKML-Reference: <3a3680030909220300h7cf18849q4d4702b9d4feaa67@mail.gmail.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+
 ---
+ include/linux/tracepoint.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- arch/frv/include/asm/hardirq.h |   17 ++++-------------
- arch/frv/kernel/process.c      |    4 ----
- 2 files changed, 4 insertions(+), 17 deletions(-)
-
-
-diff --git a/arch/frv/include/asm/hardirq.h b/arch/frv/include/asm/hardirq.h
-index fc47515..5fc8b6f 100644
---- a/arch/frv/include/asm/hardirq.h
-+++ b/arch/frv/include/asm/hardirq.h
-@@ -12,24 +12,15 @@
- #ifndef __ASM_HARDIRQ_H
- #define __ASM_HARDIRQ_H
+diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+index 63a3f7a..2aac8a8 100644
+--- a/include/linux/tracepoint.h
++++ b/include/linux/tracepoint.h
+@@ -4,7 +4,7 @@
+ /*
+  * Kernel Tracepoint API.
+  *
+- * See Documentation/tracepoint.txt.
++ * See Documentation/trace/tracepoints.txt.
+  *
+  * (C) Copyright 2008 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+  *
+@@ -36,7 +36,7 @@ struct tracepoint {
+ #ifndef DECLARE_TRACE
  
--#include <linux/threads.h>
--#include <linux/irq.h>
--
--typedef struct {
--	unsigned int __softirq_pending;
--	unsigned long idle_timestamp;
--} ____cacheline_aligned irq_cpustat_t;
--
--#include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
--
--#ifdef CONFIG_SMP
--#error SMP not available on FR-V
--#endif /* CONFIG_SMP */
-+#include <asm/atomic.h>
+ #define TP_PROTO(args...)	args
+-#define TP_ARGS(args...)		args
++#define TP_ARGS(args...)	args
  
- extern atomic_t irq_err_count;
- static inline void ack_bad_irq(int irq)
- {
- 	atomic_inc(&irq_err_count);
- }
-+#define ack_bad_irq ack_bad_irq
-+
-+#include <asm-generic/hardirq.h>
+ #ifdef CONFIG_TRACEPOINTS
  
- #endif
-diff --git a/arch/frv/kernel/process.c b/arch/frv/kernel/process.c
-index 0de50df..9042559 100644
---- a/arch/frv/kernel/process.c
-+++ b/arch/frv/kernel/process.c
-@@ -83,13 +83,9 @@ void (*idle)(void) = core_sleep_idle;
-  */
- void cpu_idle(void)
- {
--	int cpu = smp_processor_id();
--
- 	/* endless idle loop with no priority at all */
- 	while (1) {
- 		while (!need_resched()) {
--			irq_stat[cpu].idle_timestamp = jiffies;
--
- 			check_pgt_cache();
- 
- 			if (!frv_dma_inprogress && idle)
-
