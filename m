@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZIWOQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbZIWOQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbZIWOQL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 10:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZIWOP0
+	id S1753259AbZIWOQt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 10:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZIWOQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 10:15:26 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:58698 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753214AbZIWOPZ (ORCPT
+	Wed, 23 Sep 2009 10:16:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53866 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751685AbZIWOQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 10:15:25 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: James.Bottomley@suse.de
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 5/5] SCSI: scsi_lib, fix potential NULL dereference
-Date: Wed, 23 Sep 2009 16:15:35 +0200
-Message-Id: <1253715335-6723-5-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1253715335-6723-1-git-send-email-jirislaby@gmail.com>
-References: <1253715335-6723-1-git-send-email-jirislaby@gmail.com>
+	Wed, 23 Sep 2009 10:16:47 -0400
+Date: Wed, 23 Sep 2009 10:16:48 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Is nobh code still useful?
+Message-ID: <20090923141648.GA15934@infradead.org>
+References: <20090917135627.GB13660@duck.suse.cz> <4AB30AD1.7010400@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB30AD1.7010400@us.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanse found a potential NULL dereference in scsi_kill_request.
+On Thu, Sep 17, 2009 at 09:21:37PM -0700, Badari Pulavarty wrote:
+> Originally it was supported on ext2. I added support nobh support for  
+> ext3. At that time, the main
+> issue/complaint was that, these bufferheads consume memory from  
+> ZONE_NORMAL causing
+> memory pressure on 32-bit (i386) configurations.
 
-Instead of triggering BUG() in 'if (unlikely(cmd == NULL))' branch,
-the kernel will Oops earlier on cmd dereference.
-
-Move the dereferences after the if.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: James E.J. Bottomley <James.Bottomley@suse.de>
----
- drivers/scsi/scsi_lib.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 5987da8..98f601a 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1359,9 +1359,9 @@ static int scsi_lld_busy(struct request_queue *q)
- static void scsi_kill_request(struct request *req, struct request_queue *q)
- {
- 	struct scsi_cmnd *cmd = req->special;
--	struct scsi_device *sdev = cmd->device;
--	struct scsi_target *starget = scsi_target(sdev);
--	struct Scsi_Host *shost = sdev->host;
-+	struct scsi_device *sdev;
-+	struct scsi_target *starget;
-+	struct Scsi_Host *shost;
- 
- 	blk_start_request(req);
- 
-@@ -1371,6 +1371,9 @@ static void scsi_kill_request(struct request *req, struct request_queue *q)
- 		BUG();
- 	}
- 
-+	sdev = cmd->device;
-+	starget = scsi_target(sdev);
-+	shost = sdev->host;
- 	scsi_init_cmd_errh(cmd);
- 	cmd->result = DID_NO_CONNECT << 16;
- 	atomic_inc(&cmd->device->iorequest_cnt);
--- 
-1.6.4.2
+Yeah, I think that's a tradeof past it's days.  I'm all for nuking it,
+and while we're at it we should also find a better way to integrate the
+mpage bits.  Not using them is pretty dumb, so the default aops should
+really be mpage if possible, else fall back without the need for
+different sets of aops.
 
