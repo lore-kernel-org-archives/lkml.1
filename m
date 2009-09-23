@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZIXAaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZIXAi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbZIXAaB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbZIXA3z
+	id S1754305AbZIXAi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZIXAi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:29:55 -0400
-Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
+	Wed, 23 Sep 2009 20:38:57 -0400
+Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39156 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753069AbZIXA3X (ORCPT
+	with ESMTP id S1753299AbZIXA3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:23 -0400
+	Wed, 23 Sep 2009 20:29:39 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [PATCH v18 15/80] pids 5/7: Add target_pids parameter to copy_process()
-Date: Wed, 23 Sep 2009 19:50:55 -0400
-Message-Id: <1253749920-18673-16-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 16/80] pids 6/7: Define do_fork_with_pids()
+Date: Wed, 23 Sep 2009 19:50:56 -0400
+Message-Id: <1253749920-18673-17-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -29,60 +29,97 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-The new parameter will be used in a follow-on patch when clone_with_pids()
-is implemented.
+do_fork_with_pids() is same as do_fork(), except that it takes an
+additional, 'pid_set', parameter. This parameter, currently unused,
+specifies the set of target pids of the process in each of its pid
+namespaces.
+
+Changelog[v3]:
+	- Fix "long-line" warning from checkpatch.pl
+
+Changelog[v2]:
+	- To facilitate moving architecture-inpdendent code to kernel/fork.c
+	  pass in 'struct target_pid_set __user *' to do_fork_with_pids()
+	  rather than 'pid_t *' (next patch moves the arch-independent
+	  code to kernel/fork.c)
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- kernel/fork.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ include/linux/sched.h |    3 +++
+ include/linux/types.h |    5 +++++
+ kernel/fork.c         |   16 ++++++++++++++--
+ 3 files changed, 22 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 0f1ea4a..2fa783d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2054,6 +2054,9 @@ extern int disallow_signal(int);
+ 
+ extern int do_execve(char *, char __user * __user *, char __user * __user *, struct pt_regs *);
+ extern long do_fork(unsigned long, unsigned long, struct pt_regs *, unsigned long, int __user *, int __user *);
++extern long do_fork_with_pids(unsigned long, unsigned long, struct pt_regs *,
++				unsigned long, int __user *, int __user *,
++				struct target_pid_set __user *pid_set);
+ struct task_struct *fork_idle(int);
+ 
+ extern void set_task_comm(struct task_struct *tsk, char *from);
+diff --git a/include/linux/types.h b/include/linux/types.h
+index c42724f..d9efefe 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -204,6 +204,11 @@ struct ustat {
+ 	char			f_fpack[6];
+ };
+ 
++struct target_pid_set {
++	int num_pids;
++	pid_t *target_pids;
++};
++
+ #endif	/* __KERNEL__ */
+ #endif /*  __ASSEMBLY__ */
+ #endif /* _LINUX_TYPES_H */
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 2811bdb..5156d02 100644
+index 5156d02..59b21db 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
-@@ -935,12 +935,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 					unsigned long stack_size,
- 					int __user *child_tidptr,
- 					struct pid *pid,
-+					pid_t *target_pids,
- 					int trace)
+@@ -1332,12 +1332,13 @@ struct task_struct * __cpuinit fork_idle(int cpu)
+  * It copies the process, and if successful kick-starts
+  * it and waits for it to finish using the VM if required.
+  */
+-long do_fork(unsigned long clone_flags,
++long do_fork_with_pids(unsigned long clone_flags,
+ 	      unsigned long stack_start,
+ 	      struct pt_regs *regs,
+ 	      unsigned long stack_size,
+ 	      int __user *parent_tidptr,
+-	      int __user *child_tidptr)
++	      int __user *child_tidptr,
++	      struct target_pid_set __user *pid_setp)
  {
- 	int retval;
- 	struct task_struct *p;
- 	int cgroup_callbacks_done = 0;
--	pid_t *target_pids = NULL;
- 
- 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
- 		return ERR_PTR(-EINVAL);
-@@ -1319,7 +1319,7 @@ struct task_struct * __cpuinit fork_idle(int cpu)
- 	struct pt_regs regs;
- 
- 	task = copy_process(CLONE_VM, 0, idle_regs(&regs), 0, NULL,
--			    &init_struct_pid, 0);
-+			    &init_struct_pid, NULL, 0);
- 	if (!IS_ERR(task))
- 		init_idle(task, cpu);
- 
-@@ -1342,6 +1342,7 @@ long do_fork(unsigned long clone_flags,
  	struct task_struct *p;
  	int trace = 0;
- 	long nr;
-+	pid_t *target_pids = NULL;
+@@ -1440,6 +1441,17 @@ long do_fork(unsigned long clone_flags,
+ 	return nr;
+ }
  
- 	/*
- 	 * Do some preliminary argument and permissions checking before we
-@@ -1382,7 +1383,7 @@ long do_fork(unsigned long clone_flags,
- 		trace = tracehook_prepare_clone(clone_flags);
- 
- 	p = copy_process(clone_flags, stack_start, regs, stack_size,
--			 child_tidptr, NULL, trace);
-+			 child_tidptr, NULL, target_pids, trace);
- 	/*
- 	 * Do this prior waking up the new thread - the thread pointer
- 	 * might get invalid after that point, if the thread exits quickly.
++long do_fork(unsigned long clone_flags,
++	      unsigned long stack_start,
++	      struct pt_regs *regs,
++	      unsigned long stack_size,
++	      int __user *parent_tidptr,
++	      int __user *child_tidptr)
++{
++	return do_fork_with_pids(clone_flags, stack_start, regs, stack_size,
++			parent_tidptr, child_tidptr, NULL);
++}
++
+ #ifndef ARCH_MIN_MMSTRUCT_ALIGN
+ #define ARCH_MIN_MMSTRUCT_ALIGN 0
+ #endif
 -- 
 1.6.0.4
 
