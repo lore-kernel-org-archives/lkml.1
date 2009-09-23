@@ -1,168 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZIWW6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751629AbZIWXC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752401AbZIWW6u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 18:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZIWW6t
+	id S1751629AbZIWXC5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 19:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZIWXC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 18:58:49 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:37763 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbZIWW6s (ORCPT
+	Wed, 23 Sep 2009 19:02:56 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:39129 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750986AbZIWXCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 18:58:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:cc:
-	content-type:x-system-of-record;
-	b=itot8aX1IpiXXFD8a3trfocmISzhUJYWZAtMbJnKvJzk6/eYp13a5mizDl5N8lntI
-	wusLyUryEAExYhHaq2ixQ==
+	Wed, 23 Sep 2009 19:02:55 -0400
+Date: Thu, 24 Sep 2009 01:02:55 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] Revert "kmod: fix race in usermodehelper code"
+Message-ID: <20090923230255.GA18878@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-Date: Wed, 23 Sep 2009 15:58:47 -0700
-Message-ID: <88cc3e770909231558u5109aca1u1409ba6877a6c8f@mail.gmail.com>
-Subject: jbd/kjournald oops on 2.6.30.1
-From: Abhijit Karmarkar <awk@google.com>
-To: ext3-users@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This reverts commit c02e3f361:
+|Author: Neil Horman <nhorman@tuxdriver.com>
+|Date:   Tue Sep 22 16:43:36 2009 -0700
+|
+|    kmod: fix race in usermodehelper code
+|
+|    The user mode helper code has a race in it.  call_usermodehelper_exec()
+|    takes an allocated subprocess_info structure, which it passes to a
+|    workqueue, and then passes it to a kernel thread which it creates, after
+|    which it calls complete to signal to the caller of
+|    call_usermodehelper_exec() that it can free the subprocess_info struct.
+|
+|    But since we use that structure in the created thread, we can't call
+|    complete from __call_usermodehelper(), which is where we create the kernel
+|    thread.  We need to call complete() from within the kernel thread and then
+|    not use subprocess_info afterward in the case of UMH_WAIT_EXEC.  Tested
+|    successfully by me.
+|
+|    Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+|    Cc: Rusty Russell <rusty@rustcorp.com.au>
+|    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+|    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-I am getting the following Oops on 2.6.30.1 kernel. The bad part is,
-it happens rarely (twice in last 1.5 months) and the system is pretty
-lightly loaded when this happens (no heavy file/disk io).
+The pach is wrong IMHO. UMH_WAIT_EXEC is called with VFORK what ensures
+that the child finishes prior returing back to the parent. No race. The patch
+makes it even worse because it does the thing it claims not do:
+- It calls ->complete() on UMH_WAIT_EXEC
+- the complete() callback may de-allocated subinfo
+As seen in the following call chain:
+|[<c009f904>] (__link_path_walk+0x20/0xeb4) from [<c00a094c>] (path_walk+0x48/0x94)
+|[<c00a094c>] (path_walk+0x48/0x94) from [<c00a0a34>] (do_path_lookup+0x24/0x4c)
+|[<c00a0a34>] (do_path_lookup+0x24/0x4c) from [<c00a158c>] (do_filp_open+0xa4/0x83c)
+|[<c00a158c>] (do_filp_open+0xa4/0x83c) from [<c009ba90>] (open_exec+0x24/0xe0)
+|[<c009ba90>] (open_exec+0x24/0xe0) from [<c009bfa8>] (do_execve+0x7c/0x2e4)
+|[<c009bfa8>] (do_execve+0x7c/0x2e4) from [<c0026a80>] (kernel_execve+0x34/0x80)
+|[<c0026a80>] (kernel_execve+0x34/0x80) from [<c004b514>] (____call_usermodehelper+0x130/0x148)
+|[<c004b514>] (____call_usermodehelper+0x130/0x148) from [<c0024858>] (kernel_thread_exit+0x0/0x8)
 
-Any insights or patches that I can try? (i searched lkml and ext3
-lists but could not find any similar oops/reports).
+And the path pointer was NULL. Good that ARM's kernel_execve() doesn't
+check the pointer for NULL or else I wouldn't notice it.
 
+The only race there might be is with UMH_NO_WAIT but it is too late for
+me to investigate it now. UMH_WAIT_PROC could probably also use VFORK
+and we could save one exec. So the only race I see is with UMH_NO_WAIT
+and recent scheduler changes where the child does not always run first
+might have trigger here something but as I said, it is late....
 
-== Oops ===================
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
-IP: [<ffffffff80373520>] __journal_remove_journal_head+0x10/0x120
-PGD 0
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/class/scsi_host/host0/proc_name
-CPU 0
-Pid: 3834, comm: kjournald Not tainted 2.6.30.1_test #1
-RIP: 0010:[<ffffffff80373520>]  [<ffffffff80373520>]
-__journal_remove_journal_head+0x10/0x120
-RSP: 0018:ffff880c7ee11d80  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000034
-RDX: 0000000000000002 RSI: ffff8804ee82aa20 RDI: ffff8804ee82aa20
-RBP: ffff880c7ee11d90 R08: 0400000000000000 R09: 0000000000000000
-R10: ffffffff803706af R11: 0000000000000000 R12: ffff8808659bc198
-R13: 0000000000000001 R14: ffff880bd435a980 R15: ffff880c7959d000
-FS:  0000000000000000(0000) GS:ffff88006d000000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000008 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process kjournald (pid: 3834, threadinfo ffff880c7ee10000, task
-ffff880c794900c0)
-Stack:
-ffff8804ee82aa20 ffff8808659bc198 ffff880c7ee11db0 ffffffff80374fd4
-ffff880c7ee11db0 ffff8804ee82aa20 ffff880c7ee11e90 ffffffff8037073d
-ffff880c7959d3a8 ffff880c7ee11e48 ffff880c7959d028 ffff880c7959d338
-Call Trace:
-[<ffffffff80374fd4>] journal_remove_journal_head+0x24/0x50
-[<ffffffff8037073d>] journal_commit_transaction+0x41d/0x1150
-[<ffffffff8024f8cc>] ? try_to_del_timer_sync+0x5c/0x70
-[<ffffffff8037498f>] kjournald+0xff/0x270
-[<ffffffff8025c370>] ? autoremove_wake_function+0x0/0x40
-[<ffffffff80374890>] ? kjournald+0x0/0x270
-[<ffffffff8025bf63>] kthread+0x63/0x90
-[<ffffffff8020cffa>] child_rip+0xa/0x20
-[<ffffffff8025bf00>] ? kthread+0x0/0x90
-[<ffffffff8020cff0>] ? child_rip+0x0/0x20
-Code: 1f 44 00 00 48 89 f8 48 8b 3d 7d 0d ca 00 48 89 c6 e8 85 35 f5
-ff c9 c3 0f 1f 00 55 48 89 e5 41 54 53 0f 1f 44 00 00 48 8b 5f 40 <8b>
-4b 08 85 c9 0f 88 f2 00 00 00 f0 ff 47 60 8b 53 08 85 d2 75
-RIP  [<ffffffff80373520>] __journal_remove_journal_head+0x10/0x120
-RSP <ffff880c7ee11d80>
-CR2: 0000000000000008
----[ end trace 2a47799c65258934 ]---
+Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+---
+ kernel/kmod.c |   13 +++++--------
+ 1 files changed, 5 insertions(+), 8 deletions(-)
 
+diff --git a/kernel/kmod.c b/kernel/kmod.c
+index 689d20f..9fcb53a 100644
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -143,7 +143,6 @@ struct subprocess_info {
+ static int ____call_usermodehelper(void *data)
+ {
+ 	struct subprocess_info *sub_info = data;
+-	enum umh_wait wait = sub_info->wait;
+ 	int retval;
+ 
+ 	BUG_ON(atomic_read(&sub_info->cred->usage) != 1);
+@@ -185,14 +184,10 @@ static int ____call_usermodehelper(void *data)
+ 	 */
+ 	set_user_nice(current, 0);
+ 
+-	if (wait == UMH_WAIT_EXEC)
+-		complete(sub_info->complete);
+-
+ 	retval = kernel_execve(sub_info->path, sub_info->argv, sub_info->envp);
+ 
+ 	/* Exec failed? */
+-	if (wait != UMH_WAIT_EXEC)
+-		sub_info->retval = retval;
++	sub_info->retval = retval;
+ 	do_exit(0);
+ }
+ 
+@@ -271,14 +266,16 @@ static void __call_usermodehelper(struct work_struct *work)
+ 
+ 	switch (wait) {
+ 	case UMH_NO_WAIT:
+-	case UMH_WAIT_EXEC:
+ 		break;
+ 
+ 	case UMH_WAIT_PROC:
+ 		if (pid > 0)
+ 			break;
+ 		sub_info->retval = pid;
+-		break;
++		/* FALLTHROUGH */
++
++	case UMH_WAIT_EXEC:
++		complete(sub_info->complete);
+ 	}
+ }
+ 
+-- 
+1.6.4.GIT
 
-
-Looking at the disassembly of journal_remove_head():
-==============
-0xffffffff8037b760 <__journal_remove_journal_head+0>:   push   %rbp
-0xffffffff8037b761 <__journal_remove_journal_head+1>:   mov    %rsp,%rbp
-0xffffffff8037b764 <__journal_remove_journal_head+4>:   push   %r12
-0xffffffff8037b766 <__journal_remove_journal_head+6>:   push   %rbx
-0xffffffff8037b767 <__journal_remove_journal_head+7>:   callq
-0xffffffff8020bcc0 <mcount>
-0xffffffff8037b76c <__journal_remove_journal_head+12>:  mov    0x40(%rdi),%rbx
-0xffffffff8037b770 <__journal_remove_journal_head+16>:  mov
-0x8(%rbx),%r8d     <====== Oops
-0xffffffff8037b774 <__journal_remove_journal_head+20>:  test   %r8d,%r8d
-0xffffffff8037b777 <__journal_remove_journal_head+23>:  js
-0xffffffff8037b86d <__journal_remove_journal_head+269>
-0xffffffff8037b77d <__journal_remove_journal_head+29>:  lock incl 0x60(%rdi)
-0xffffffff8037b781 <__journal_remove_journal_head+33>:  mov    0x8(%rbx),%esi
-0xffffffff8037b784 <__journal_remove_journal_head+36>:  test   %esi,%esi
-0xffffffff8037b786 <__journal_remove_journal_head+38>:  jne
-0xffffffff8037b78f <__journal_remove_journal_head+47>
-0xffffffff8037b788 <__journal_remove_journal_head+40>:  cmpq   $0x0,0x28(%rbx)
-0xffffffff8037b78d <__journal_remove_journal_head+45>:  je
-0xffffffff8037b794 <__journal_remove_journal_head+52>
-.......
-.......
-==============
-
-
-The oops seems be due to NULL journal head while evaluating J_ASSERT_JH() macro:
-==============
-static void __journal_remove_journal_head(struct buffer_head *bh)
-{
-       struct journal_head *jh = bh2jh(bh);
-       J_ASSERT_JH(jh, jh->b_jcount >= 0);  <=== jh is NULL
-       get_bh(bh);
-       if (jh->b_jcount == 0) {
-               if (jh->b_transaction == NULL &&
-....
-=============
-
-Not sure why would that happen (corruption?).
-
-
-Few system details:
-================
-- 64-bit, 2 quad-core (total 8 cores) Xeon, 48GB RAM
-- Stock 2.6.30.1 kernel, *no* modules
-- ext3 file-system (data=ordered mode) used over encrypted (dmcrypt) disks.
-- underlying storage: h/w RAID.
-- ext*/jbd config values:
-
-CONFIG_EXT3_FS=y
-CONFIG_EXT3_DEFAULTS_TO_ORDERED=y
-CONFIG_EXT3_FS_XATTR=y
-# CONFIG_EXT3_FS_POSIX_ACL is not set
-# CONFIG_EXT3_FS_SECURITY is not set
-CONFIG_EXT4_FS=y
-# CONFIG_EXT4DEV_COMPAT is not set
-CONFIG_EXT4_FS_XATTR=y
-CONFIG_EXT4_FS_POSIX_ACL=y
-CONFIG_EXT4_FS_SECURITY=y
-CONFIG_JBD=y
-# CONFIG_JBD_DEBUG is not set
-CONFIG_JBD2=y
-# CONFIG_JBD2_DEBUG is not set
-CONFIG_FS_MBCACHE=y
-# CONFIG_REISERFS_FS is not set
-# CONFIG_JFS_FS is not set
-CONFIG_FS_POSIX_ACL=y
-===================
-
-Let me know if you need any more details. Reproducing this (or finding
-a good test to trigger this) is proving to be difficult :-( It sorta
-oops once in a while ;-)
-
-
-thanks
-abhijit
-
-ps: please Cc: me the replies. I am not subscribed to either of the
-lists -- thanks!
