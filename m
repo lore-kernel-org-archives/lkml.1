@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZIXAdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZIXAnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbZIXAdJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbZIXAdG
+	id S1754463AbZIXAnn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZIXAni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:33:06 -0400
-Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
+	Wed, 23 Sep 2009 20:43:38 -0400
+Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39156 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753996AbZIXAaQ (ORCPT
+	with ESMTP id S1753066AbZIXA3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:30:16 -0400
+	Wed, 23 Sep 2009 20:29:20 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Nathan Lynch <ntl@pobox.com>
-Subject: [PATCH v18 78/80] powerpc: wire up checkpoint and restart syscalls
-Date: Wed, 23 Sep 2009 19:51:58 -0400
-Message-Id: <1253749920-18673-79-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 79/80] powerpc: enable checkpoint support in Kconfig
+Date: Wed, 23 Sep 2009 19:51:59 -0400
+Message-Id: <1253749920-18673-80-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -31,38 +31,23 @@ From: Nathan Lynch <ntl@pobox.com>
 
 Signed-off-by: Nathan Lynch <ntl@pobox.com>
 ---
- arch/powerpc/include/asm/systbl.h |    2 ++
- arch/powerpc/include/asm/unistd.h |    4 +++-
- 2 files changed, 5 insertions(+), 1 deletions(-)
+ arch/powerpc/Kconfig |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 370600c..3d44cf3 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -326,3 +326,5 @@ SYSCALL_SPU(perf_counter_open)
- COMPAT_SYS_SPU(preadv)
- COMPAT_SYS_SPU(pwritev)
- COMPAT_SYS(rt_tgsigqueueinfo)
-+SYSCALL(checkpoint)
-+SYSCALL(restart)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index cef080b..ef41ebb 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -345,10 +345,12 @@
- #define __NR_preadv		320
- #define __NR_pwritev		321
- #define __NR_rt_tgsigqueueinfo	322
-+#define __NR_checkpoint		323
-+#define __NR_restart		324
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d00131c..2ca160e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -26,6 +26,9 @@ config MMU
+ 	bool
+ 	default y
  
- #ifdef __KERNEL__
++config CHECKPOINT_SUPPORT
++	def_bool y
++
+ config GENERIC_CMOS_UPDATE
+ 	def_bool y
  
--#define __NR_syscalls		323
-+#define __NR_syscalls		325
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
 -- 
 1.6.0.4
 
