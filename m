@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbZIWJFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZIWJJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752456AbZIWJFd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 05:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZIWJFc
+	id S1752708AbZIWJJz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 05:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZIWJJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 05:05:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54122 "EHLO hera.kernel.org"
+	Wed, 23 Sep 2009 05:09:54 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34296 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbZIWJFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 05:05:30 -0400
-Date: Wed, 23 Sep 2009 09:04:34 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       mingo@redhat.com, rusty@rustcorp.com.au, torvalds@linux-foundation.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, hch@lst.de, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, torvalds@linux-foundation.org,
-       rusty@rustcorp.com.au, fweisbec@gmail.com, hch@lst.de,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <alpine.LFD.2.01.0909210908020.4950@localhost.localdomain>
-References: <alpine.LFD.2.01.0909210908020.4950@localhost.localdomain>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] modules, tracing: Remove stale struct marker signature from module_layout()
-Message-ID: <tip-115e8a288252ef748f34f8b7c1115c563d702eda@git.kernel.org>
-Git-Commit-ID: 115e8a288252ef748f34f8b7c1115c563d702eda
-X-Mailer: tip-git-log-daemon
+	id S1751202AbZIWJJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 05:09:53 -0400
+Date: Wed, 23 Sep 2009 11:09:55 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Marc Dionne <marc.c.dionne@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: Current git: no keyboard when booting in verbose mode
+In-Reply-To: <6041d2000909221754n2ee1982xe08f938a35358c00@mail.gmail.com>
+Message-ID: <alpine.LRH.2.00.0909231108100.27145@twin.jikos.cz>
+References: <6041d2000909221754n2ee1982xe08f938a35358c00@mail.gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 09:04:35 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  115e8a288252ef748f34f8b7c1115c563d702eda
-Gitweb:     http://git.kernel.org/tip/115e8a288252ef748f34f8b7c1115c563d702eda
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 21 Sep 2009 18:22:11 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 23 Sep 2009 10:34:21 +0200
 
-modules, tracing: Remove stale struct marker signature from module_layout()
+[ adding some CCs ]
 
-Linus reported this new build warning:
+On Tue, 22 Sep 2009, Marc Dionne wrote:
 
-  kernel/module.c:2951: warning: ?struct marker? declared inside parameter list
-  kernel/module.c:2951: warning: its scope is only this definition or declaration, which is probably not what you want
+> I'm having issues with the current kernel in git, and wondering if this 
+> will ring a bell for anyone. The main symptom is that on most boots the 
+> keyboard is not detected - the system gets to the console login prompt 
+> but input is not recognized.  Sometimes (rarely) the keyboard will be ok 
+> at the console, but the keyboard and mouse are non functional once in X. 
 
-Caused by:
+Are both keyboard and mouse in question PS/2?
 
-  fc53776: tracing: Remove markers
+> Other times the system will hang before getting to the console login 
+> prompt.
+> 
+> I made a few attempts to bisect this but with no success - I assume
+> that I'm led astray at some point by a bad kernel that happens to boot
+> normally a few times.
+> 
+> Things to note:
+> - The problem only occurs in verbose mode - if I boot with "quiet"
+>   everything is fine
+> - 2.6.31 has no issues on the same machine
+> - On a failed boot with no keyboard, this line is missing from dmesg:
+>     AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input2
 
-module_layout() is an artificial symbol with 'significant' symbols
-listed in its argument list so that it gets a proper argument types
-signature that modversions can pick up to decide whether a
-module is version-compatible or not. If these dont match then we
-wont even look at a module.
+Could you please provide output from kernel booted with 'i8042.debug' from 
+the failing case?
 
-Remove the stale marker symbol.
+> - Otherwise there are no obvious differences with dmesg from a successful boot.
+> 
+> config is attached
 
-Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <alpine.LFD.2.01.0909210908020.4950@localhost.localdomain>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
-
----
- kernel/module.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/module.c b/kernel/module.c
-index b6ee424..392eb3d 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2947,7 +2947,6 @@ void module_layout(struct module *mod,
- 		   struct modversion_info *ver,
- 		   struct kernel_param *kp,
- 		   struct kernel_symbol *ks,
--		   struct marker *marker,
- 		   struct tracepoint *tp)
- {
- }
