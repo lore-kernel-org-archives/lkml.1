@@ -1,118 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492AbZIWQnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbZIWQlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492AbZIWQnY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 12:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZIWQnV
+	id S1752011AbZIWQlB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 12:41:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZIWQlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 12:43:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36476 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751871AbZIWQnV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 12:43:21 -0400
-Date: Wed, 23 Sep 2009 09:42:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-cc: greg@kroah.org, Lars Ericsson <Lars_Ericsson@telia.com>,
-       David.Woodhouse@intel.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, "'Ivo van Doorn'" <ivdoorn@gmail.com>
-Subject: Re: [patch -stable] firware_class oops: fix firmware_loading_store
- locking
-In-Reply-To: <20090921133223.GA13038@gambetta>
-Message-ID: <alpine.LFD.2.01.0909230936320.3303@localhost.localdomain>
-References: <20090916205717.GB12117@gambetta> <8A019019C4474E589B9EC14F451C0579@gotws1589> <20090921133223.GA13038@gambetta>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 23 Sep 2009 12:41:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59041 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751463AbZIWQlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 12:41:00 -0400
+Message-ID: <4ABA5004.7050903@redhat.com>
+Date: Wed, 23 Sep 2009 09:42:44 -0700
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [GIT PULL] tracing/kprobes: Kprobes core/tracing/profiling	updates
+References: <1253648302-5771-1-git-send-email-fweisbec@gmail.com> <20090923105252.GA32176@elte.hu>
+In-Reply-To: <20090923105252.GA32176@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 21 Sep 2009, Frederik Deweerdt wrote:
-<
-> I'd rather wait someone picks it up for mainline inclusion. I've added
-> your {Reported,Tested}-by tags.
+Ingo Molnar wrote:
 > 
-> The bug its vanilla 2.6.31, and should be considered for -stable inclusion.
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> Regards,
-> Frederik
+>> Hi Ingo,
+>>
+>> Kprobes has been nicely improved lately. The x86 instruction decoder 
+>> has been fixed to support cross builds and mmx instruction set, 
+>> besides of a lot of various kprobes core fixes.
+>>
+>> The tracing part has evolved too, we can define human names for 
+>> arguments and custom subsystem names for dynamic tracepoints.
+>>
+>> And also kprobes profiling and raw dynamic tracepoint samples are now 
+>> supported through perf. Looks like most of the kernel parts are now in 
+>> place for a perf support. Things are going to be focused on a perf 
+>> kprobes tool to exploit that.
 > 
-> ----
-> 
-> The code introduced by commit 6e03a201bbe8137487f340d26aa662110e324b20 leads
-> to a potential null deref. The following patch adds the proper locking
-> around the accesses to fw_priv->fw.
-> See http://bugzilla.kernel.org/show_bug.cgi?id=14185 for a full bug report.
+> Nice progress. What's the expected timeline of exhaustive tools/perf/ 
+> support?
 
-I don't think this is correct.
+Hi Ingo,
 
-I think you should protect the FW_STATUS_LOADING bit too, shouldn't you?
+That's under reviewing, I'll post it as soon as possible. :-)
+Now I'm considering about it's interface.
+In the 1st release, I'll use -P "probe-and-arg-definition" option
+which I suggested perviously, but it is also possible to use
+-p "event" -a "arg" option which Frederic suggested.
 
-As it is, it does this:
+Thank you,
 
-	if (test_bit(FW_STATUS_LOADING, &fw_priv->status)) {
-		mutex_lock(&fw_lock);
-		...
-		clear_bit(FW_STATUS_LOADING, &fw_priv->status);
-		mutex_unlock(&fw_lock);
-		break;
-	}
+-- 
+Masami Hiramatsu
 
-and if this code can race (which it obviously can, since your addition of 
-fw_lock mutex matters), then I think it can race on that FW_STATUS_LOADING 
-bit too. No?
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-So my gut feel is that the whole damn function should be protected by the 
-mutex_lock thing. IOW, the patch would be something like the appended.
+e-mail: mhiramat@redhat.com
 
-UNTESTED. Somebody needs to test this, verify, and send it back to me.
-
-Am I missing something?
-
-		Linus
-
----
- drivers/base/firmware_class.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 7376367..1b803df 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -150,13 +150,12 @@ static ssize_t firmware_loading_store(struct device *dev,
- 	int loading = simple_strtol(buf, NULL, 10);
- 	int i;
- 
-+	mutex_lock(&fw_lock);
- 	switch (loading) {
- 	case 1:
--		mutex_lock(&fw_lock);
--		if (!fw_priv->fw) {
--			mutex_unlock(&fw_lock);
-+		if (!fw_priv->fw)
- 			break;
--		}
-+
- 		vfree(fw_priv->fw->data);
- 		fw_priv->fw->data = NULL;
- 		for (i = 0; i < fw_priv->nr_pages; i++)
-@@ -167,7 +166,6 @@ static ssize_t firmware_loading_store(struct device *dev,
- 		fw_priv->nr_pages = 0;
- 		fw_priv->fw->size = 0;
- 		set_bit(FW_STATUS_LOADING, &fw_priv->status);
--		mutex_unlock(&fw_lock);
- 		break;
- 	case 0:
- 		if (test_bit(FW_STATUS_LOADING, &fw_priv->status)) {
-@@ -195,6 +193,7 @@ static ssize_t firmware_loading_store(struct device *dev,
- 		fw_load_abort(fw_priv);
- 		break;
- 	}
-+	mutex_unlock(&fw_lock);
- 
- 	return count;
- }
