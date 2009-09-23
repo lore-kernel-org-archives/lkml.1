@@ -1,348 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZIWR6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbZIWN4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbZIWR6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 13:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbZIWR6p
+	id S1751731AbZIWN4q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 09:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZIWN4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 13:58:45 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:46538 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752225AbZIWR6o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 13:58:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=jWWmjmZNcbmNhHBEE3CErBWfBAUEPQ1L/9JIQ6m3em9qi8/mi0TFgVLS4eSgbo93ri
-         LIeHk0CS1KdnjLib9IKLTAQVv5T9CTZs6gRCD9ARxuXYnNlMdM2tPl08Gqy5G0Nw4dW3
-         Oi3ZQUHbvuhduElLXWPhVTEqRF6J/kENbm+Ec=
-Message-ID: <4ABA61D1.80703@gmail.com>
-Date: Wed, 23 Sep 2009 13:58:41 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Wed, 23 Sep 2009 09:56:45 -0400
+Received: from smtp.ispras.ru ([83.149.198.201]:60342 "EHLO smtp.ispras.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751179AbZIWN4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 09:56:44 -0400
+Content-Disposition: inline
+From: iceberg <strakh@ispras.ru>
+Organization: ISP RAS
+To: James.Bottomley@hansenpartnership.com, eric@andante.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi_lib.c: sleeping function called from invalid context
+Date: Wed, 23 Sep 2009 17:58:47 +0000
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com> <4AB10B67.2050108@redhat.com> <4AB13B09.5040308@gmail.com> <4AB151D7.10402@redhat.com> <4AB1A8FD.2010805@gmail.com> <20090921214312.GJ7182@ovro.caltech.edu> <4AB89C48.4020903@redhat.com> <4ABA3005.60905@gmail.com> <4ABA32AF.50602@redhat.com> <4ABA3A73.5090508@gmail.com>
-In-Reply-To: <4ABA3A73.5090508@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2960FB4A219017B9F4183E21"
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909231758.47612.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2960FB4A219017B9F4183E21
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Driver scsi_lib.c might sleep in atomic context, because it calls 
+scsi_device_put under spin_lock_irqsave.
+drivers/scsi/scsi_lib.c:356:
+	spin_lock_irqsave(shost->host_lock, flags);
+	scsi_device_put(sdev);
+Path to might_sleep macro from scsi_device_put:
+1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111 
+2. put_device calls kobject_put at ./drivers/base/core.c:1038 
+3. kobject_put calls kref_put at ./lib/kobject.c
+4. kref_put may call callback function kobject_release at ./lib/kref.c if 
+refcount becomes zero, which might_sleep because it calls user event. Details:
+	4.1 kobject_cleanup calls kobject_uevent at ./lib/kobject.c:555
+	4.2 kobject_uevent calls kobject_uevent_env at  ./lib/kobject_uevent.c:282
+	4.3 kobject_uevent_env calls call_usermodehelper_exec at 
+./include/linux/kmod.h:83
+	4.4 call_usermodehelper_exec calls wait_for_completion at 
+./kernel/kmod.c:481
+	4.5 wait_for_completion calls wait_for_common at ./kernel/sched.c:5710
+	4.5 wait_for_common calls might_sleep at ./kernels/sched.c:5692
 
-Gregory Haskins wrote:
-> Avi Kivity wrote:
->> On 09/23/2009 05:26 PM, Gregory Haskins wrote:
->>>  =20
->>>>> Yes, I'm having to create my own bus model, a-la lguest, virtio-pci=
-,
->>>>> and
->>>>> virtio-s390. It isn't especially easy. I can steal lots of code fro=
-m
->>>>> the
->>>>> lguest bus model, but sometimes it is good to generalize, especiall=
-y
->>>>> after the fourth implemention or so. I think this is what GHaskins
->>>>> tried
->>>>> to do.
->>>>>
->>>>>       =20
->>>> Yes.  vbus is more finely layered so there is less code duplication.=
+Found by Linux Driver Verification project.
 
->>>>     =20
->>> To clarify, Ira was correct in stating this generalizing some of thes=
-e
->>> components was one of the goals for the vbus project: IOW vbus finely=
+Delete wrong sleeping function calls.
 
->>> layers and defines what's below virtio, not replaces it.
->>>
->>> You can think of a virtio-stack like this:
->>>
->>> --------------------------
->>> | virtio-net
->>> --------------------------
->>> | virtio-ring
->>> --------------------------
->>> | virtio-bus
->>> --------------------------
->>> | ? undefined ?
->>> --------------------------
->>>
->>> IOW: The way I see it, virtio is a device interface model only.  The
->>> rest of it is filled in by the virtio-transport and some kind of
->>> back-end.
->>>
->>> So today, we can complete the "? undefined ?" block like this for KVM=
-:
->>>
->>> --------------------------
->>> | virtio-pci
->>> --------------------------
->>>               |
->>> --------------------------
->>> | kvm.ko
->>> --------------------------
->>> | qemu
->>> --------------------------
->>> | tuntap
->>> --------------------------
->>>
->>> In this case, kvm.ko and tuntap are providing plumbing, and qemu is
->>> providing a backend device model (pci-based, etc).
->>>
->>> You can, of course, plug a different stack in (such as virtio-lguest,=
+Signed-off-by: Alexander Strakh <strakh@ispras.ru>
 
->>> virtio-ira, etc) but you are more or less on your own to recreate man=
-y
->>> of the various facilities contained in that stack (such as things
->>> provided by QEMU, like discovery/hotswap/addressing), as Ira is
->>> discovering.
->>>
->>> Vbus tries to commoditize more components in the stack (like the bus
->>> model and backend-device model) so they don't need to be redesigned e=
-ach
->>> time we solve this "virtio-transport" problem.  IOW: stop the
->>> proliferation of the need for pci-bus, lguest-bus, foo-bus underneath=
+---
+diff --git a/./a/drivers/scsi/scsi_lib.c b/./b/drivers/scsi/scsi_lib.c
+index f3c4089..a8f8e2f 100644
+--- a/./a/drivers/scsi/scsi_lib.c
++++ b/./b/drivers/scsi/scsi_lib.c
+@@ -353,9 +353,9 @@ static void scsi_single_lun_run(struct scsi_device 
+*current_sdev)
+ 
+ 		spin_unlock_irqrestore(shost->host_lock, flags);
+ 		blk_run_queue(sdev->request_queue);
+-		spin_lock_irqsave(shost->host_lock, flags);
+ 	
+-		scsi_device_put(sdev);
++		scsi_device_put(sdev);	
++		spin_lock_irqsave(shost->host_lock, flags);
+ 	}
+  out:
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
 
->>> virtio.  Instead, we can then focus on the value add on top, like the=
-
->>> models themselves or the simple glue between them.
->>>
->>> So now you might have something like
->>>
->>> --------------------------
->>> | virtio-vbus
->>> --------------------------
->>> | vbus-proxy
->>> --------------------------
->>> | kvm-guest-connector
->>> --------------------------
->>>               |
->>> --------------------------
->>> | kvm.ko
->>> --------------------------
->>> | kvm-host-connector.ko
->>> --------------------------
->>> | vbus.ko
->>> --------------------------
->>> | virtio-net-backend.ko
->>> --------------------------
->>>
->>> so now we don't need to worry about the bus-model or the device-model=
-
->>> framework.  We only need to implement the connector, etc.  This is ha=
-ndy
->>> when you find yourself in an environment that doesn't support PCI (su=
-ch
->>> as Ira's rig, or userspace containers), or when you want to add featu=
-res
->>> that PCI doesn't have (such as fluid event channels for things like I=
-PC
->>> services, or priortizable interrupts, etc).
->>>   =20
->> Well, vbus does more, for example it tunnels interrupts instead of
->> exposing them 1:1 on the native interface if it exists.
->=20
-> As I've previously explained, that trait is a function of the
-> kvm-connector I've chosen to implement, not of the overall design of vb=
-us.
->=20
-> The reason why my kvm-connector is designed that way is because my earl=
-y
-> testing/benchmarking shows one of the issues in KVM performance is the
-> ratio of exits per IO operation are fairly high, especially as your
-> scale io-load.  Therefore, the connector achieves a substantial
-> reduction in that ratio by treating "interrupts" to the same kind of
-> benefits that NAPI brought to general networking: That is, we enqueue
-> "interrupt" messages into a lockless ring and only hit the IDT for the
-> first occurrence.  Subsequent interrupts are injected in a
-> parallel/lockless manner, without hitting the IDT nor incurring an extr=
-a
-> EOI.  This pays dividends as the IO rate increases, which is when the
-> guest needs the most help.
->=20
-> OTOH, it is entirely possible to design the connector such that we
-> maintain a 1:1 ratio of signals to traditional IDT interrupts.  It is
-> also possible to design a connector which surfaces as something else,
-> such as PCI devices (by terminating the connector in QEMU and utilizing=
-
-> its PCI emulation facilities), which would naturally employ 1:1 mapping=
-=2E
->=20
-> So if 1:1 mapping is a critical feature (I would argue to the contrary)=
-,
-> vbus can support it.
->=20
->> It also pulls parts of the device model into the host kernel.
->=20
-> That is the point.  Most of it needs to be there for performance.
-
-To clarify this point:
-
-There are various aspects about designing high-performance virtual
-devices such as providing the shortest paths possible between the
-physical resources and the consumers.  Conversely, we also need to
-ensure that we meet proper isolation/protection guarantees at the same
-time.  What this means is there are various aspects to any
-high-performance PV design that require to be placed in-kernel to
-maximize the performance yet properly isolate the guest.
-
-For instance, you are required to have your signal-path (interrupts and
-hypercalls), your memory-path (gpa translation), and
-addressing/isolation model in-kernel to maximize performance.
-
-Vbus accomplishes its in-kernel isolation model by providing a
-"container" concept, where objects are placed into this container by
-userspace.  The host kernel enforces isolation/protection by using a
-namespace to identify objects that is only relevant within a specific
-container's context (namely, a "u32 dev-id").  The guest addresses the
-objects by its dev-id, and the kernel ensures that the guest can't
-access objects outside of its dev-id namespace.
-
-All that is required is a way to transport a message with a "devid"
-attribute as an address (such as DEVCALL(devid)) and the framework
-provides the rest of the decode+execute function.
-
-Contrast this to vhost+virtio-pci (called simply "vhost" from here).
-It is not immune to requiring in-kernel addressing support either, but
-rather it just does it differently (and its not as you might expect via
-qemu).
-
-Vhost relies on QEMU to render PCI objects to the guest, which the guest
-assigns resources (such as BARs, interrupts, etc).  A PCI-BAR in this
-example may represent a PIO address for triggering some operation in the
-device-model's fast-path.  For it to have meaning in the fast-path, KVM
-has to have in-kernel knowledge of what a PIO-exit is, and what to do
-with it (this is where pio-bus and ioeventfd come in).  The programming
-of the PIO-exit and the ioeventfd are likewise controlled by some
-userspace management entity (i.e. qemu).   The PIO address and value
-tuple form the address, and the ioeventfd framework within KVM provide
-the decode+execute function.
-
-This idea seemingly works fine, mind you, but it rides on top of a *lot*
-of stuff including but not limited to: the guests pci stack, the qemu
-pci emulation, kvm pio support, and ioeventfd.  When you get into
-situations where you don't have PCI or even KVM underneath you (e.g. a
-userspace container, Ira's rig, etc) trying to recreate all of that PCI
-infrastructure for the sake of using PCI is, IMO, a lot of overhead for
-little gain.
-
-All you really need is a simple decode+execute mechanism, and a way to
-program it from userspace control.  vbus tries to do just that:
-commoditize it so all you need is the transport of the control messages
-(like DEVCALL()), but the decode+execute itself is reuseable, even
-across various environments (like KVM or Iras rig).
-
-And we face similar situations with the signal-path and memory-path
-components...but lets take a look at the slow-path side.
-
-
->  And what doesn't need to be there for performance can either be:
->=20
-> a) skipped at the discretion of the connector/device-model designer
->=20
-> OR
->=20
-> b) included because its trivially small subset of the model (e.g. a
-> mac-addr attribute) and its nice to have a cohesive solution instead of=
-
-> requiring a separate binary blob that can get out of sync, etc.
->=20
-> The example Ive provided to date (venet on kvm) utilizes (b), but it
-> certainly doesn't have to.  Therefore, I don't think vbus as a whole ca=
-n
-> be judged on this one point.
-
-
-For a given model, we have a grouping of operations for fast path and
-slow path.  Fast path would be things like we just talked about
-(signal-path, memory-path, addressing model).  Slow path would be things
-like device discovery (and hotswap), config-space, etc.
-
-And your argument, I believe, is that vbus allows both to be implemented
-in the kernel (though to reiterate, its optional) and is therefore a bad
-design, so lets discuss that.
-
-I believe the assertion is that things like config-space are best left
-to userspace, and we should only relegate fast-path duties to the
-kernel.  The problem is that, in my experience, a good deal of
-config-space actually influences the fast-path and thus needs to
-interact with the fast-path mechanism eventually anyway.  Whats left
-over that doesn't fall into this category may cheaply ride on existing
-plumbing, so its not like we created something new or unnatural just to
-support this subclass of config-space.
-
-For example: take an attribute like the mac-address assigned to a NIC.
-This clearly doesn't need to be in-kernel and could go either way (such
-as a PCI config-space register).
-
-As another example: consider an option bit that enables a new feature
-that affects the fast-path, like RXBUF merging.  If we use the split
-model where config space is handled by userspace and fast-path is
-in-kernel, the userspace component is only going to act as a proxy.
-I.e. it will pass the option down to the kernel eventually.  Therefore,
-there is little gain in trying to split this type of slow-path out to
-userspace.  In fact, its more work.
-
-vbus addresses this observation by providing a very simple (yet
-hopefully powerful) model of providing two basic verbs to a device:
-
-dev->call()
-dev->shm()
-
-It makes no distinction of slow or fast-path type operations, per se.
-Just a mechanism for synchronous or asynchronous communication.  It is
-expected that a given component will build "config-space" primarily from
-the synchronous ->call() interface if it requires one.  However, it gets
-this for free since we need ->call() for fast-path too (like the
-rt-scheduler device, etc).
-
-So I can then use ->call to perform a fast-path scheduler update (has to
-go in-kernel for performance), an "enable rxbuf-merge" function (has to
-end-up in-kernel eventually), or a "macquery" (doesn't need to be
-in-kernel).
-
-My choice was to support that third operation in-kernel as well, because
-its way more complicated to do it another way that it is to simply
-export a sysfs attribute to set it.  Userspace is still completely in
-control..it sets the value.  It just doesnt have to write plumbing to
-make it accessible.  The basic vbus model inherently provides this.
-
-Thats enough for now.  We can talk about discovery/hotswap at a later tim=
-e.
-
-Kind Regards,
--Greg
-
-
---------------enig2960FB4A219017B9F4183E21
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkq6YdEACgkQP5K2CMvXmqGZBQCghw6prAw9k8PjmGtKYVpsNUt9
-WOcAn0bSahCftRGmgimravnt/fqFYUEM
-=J665
------END PGP SIGNATURE-----
-
---------------enig2960FB4A219017B9F4183E21--
