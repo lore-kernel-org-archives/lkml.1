@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZIWSxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZIWTCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752770AbZIWSxs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 14:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZIWSxq
+	id S1753106AbZIWTCx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 15:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZIWTCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 14:53:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59929 "EHLO mx3.mail.elte.hu"
+	Wed, 23 Sep 2009 15:02:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43897 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751982AbZIWSxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 14:53:45 -0400
-Date: Wed, 23 Sep 2009 20:53:33 +0200
+	id S1750752AbZIWTCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 15:02:51 -0400
+Date: Wed, 23 Sep 2009 21:02:39 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@linux.intel.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX 2/2] x86, mce, inject: Make injected mce valid only
-	during faked handler call
-Message-ID: <20090923185333.GA24251@elte.hu>
-References: <1253601358.15717.758.camel@yhuang-dev.sh.intel.com> <20090922152347.GB31702@elte.hu> <1253697228.15717.952.camel@yhuang-dev.sh.intel.com>
+To: Jason Wessel <jason.wessel@windriver.com>, Len Brown <lenb@kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [origin tree boot hang] [PATCH] Revert "early_printk: Allow
+	morethan one early console"
+Message-ID: <20090923190239.GC24251@elte.hu>
+References: <20090923135539.GA6542@kroah.com> <20090923173709.GA18056@elte.hu> <4ABA6182.1000106@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253697228.15717.952.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <4ABA6182.1000106@windriver.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,264 +36,77 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Huang Ying <ying.huang@intel.com> wrote:
+* Jason Wessel <jason.wessel@windriver.com> wrote:
 
-> On Tue, 2009-09-22 at 23:23 +0800, Ingo Molnar wrote: 
-> > * Huang Ying <ying.huang@intel.com> wrote:
-> > 
-> > > In current implementation, injected mce is valid from MCE is injected 
-> > > to MCE is processed by faked handler call. It is possible for it to be 
-> > > consumed by real machine_check_poll. This may confuse real system 
-> > > error and mce test suite.
-> > > 
-> > > To fix this, this patch introduces another flag MCJ_VALID to indacate 
-> > > the MCE entry is valid for injector but not for handler, while 
-> > > mce.finished is used to indicate the MCE entry is valid for handler. 
-> > > mce.finished is enabled only during faked MCE handler call and 
-> > > protected by IRQ disabling. This make it impossible for real 
-> > > machine_check_poll to consume it.
-> > > 
-> > > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> > 
-> > here's a fixed up changelog for that, please use it for subsequent 
-> > submissions:
-> > 
-> >  In the current implementation, injected MCE is valid from the point
-> >  the MCE is injected to the point the MCE is processed by the faked
-> >  handler call.
-> > 
-> >  This has an undesired side-effect: it is possible for it to be
-> >  consumed by real machine_check_poll. This may confuse a real system
-> >  error and may confuse the mce test suite.
-> > 
-> >  To fix this, this patch introduces another flag MCJ_VALID to
-> >  indicate that the MCE entry is valid for injector but not for the
-> >  handler. Another flag, mce.finished is used to indicate the MCE
-> >  entry is valid for the handler.
-> > 
-> >  mce.finished is enabled only during faked MCE handler call and
-> >  protected by IRQ disabling. This make it impossible for real
-> >  machine_check_poll to consume it.
+> Ingo Molnar wrote:
+> >>       early_printk: Allow more than one early console
+> >>     
+> >
+> > this patch broke things pretty badly on x86, with pretty much any 
+> > config, as long as the early console is used - which most of my 
+> > test-systems do :-(
+> >   
 > 
-> Thank you. I will use this. Sorry for my poor English. 
+> Ingo,
 > 
-> > > ---
-> > >  arch/x86/include/asm/mce.h              |   17 +++++++++++------
-> > >  arch/x86/kernel/cpu/mcheck/mce-inject.c |   23 ++++++++++++++++-------
-> > >  2 files changed, 27 insertions(+), 13 deletions(-)
-> > > 
-> > > --- a/arch/x86/include/asm/mce.h
-> > > +++ b/arch/x86/include/asm/mce.h
-> > > @@ -38,13 +38,18 @@
-> > >  #define MCM_ADDR_MEM	 3	/* memory address */
-> > >  #define MCM_ADDR_GENERIC 7	/* generic */
-> > >  
-> > > -#define MCJ_CTX_MASK		3
-> > > +#define _MCJ_NMI_BROADCAST	2    /* do NMI broadcasting */
-> > > +#define _MCJ_EXCEPTION		3    /* raise as exception */
-> > > +#define _MCJ_VALID		4    /* entry is valid for injector */
-> > > +
-> > > +#define MCJ_CTX_MASK		0x03
-> > >  #define MCJ_CTX(flags)		((flags) & MCJ_CTX_MASK)
-> > > -#define MCJ_CTX_RANDOM		0    /* inject context: random */
-> > > -#define MCJ_CTX_PROCESS		1    /* inject context: process */
-> > > -#define MCJ_CTX_IRQ		2    /* inject context: IRQ */
-> > > -#define MCJ_NMI_BROADCAST	4    /* do NMI broadcasting */
-> > > -#define MCJ_EXCEPTION		8    /* raise as exception */
-> > > +#define MCJ_CTX_RANDOM		0x00    /* inject context: random */
-> > > +#define MCJ_CTX_PROCESS		0x01    /* inject context: process */
-> > > +#define MCJ_CTX_IRQ		0x02    /* inject context: IRQ */
-> > > +#define MCJ_NMI_BROADCAST	(1 << _MCJ_NMI_BROADCAST)
-> > > +#define MCJ_EXCEPTION		(1 << _MCJ_EXCEPTION)
-> > > +#define MCJ_VALID		(1 << _MCJ_VALID)
-> > 
-> > This is ugly and fragile. MCJ_VALID and _MCJ_VALID are both integers and 
-> > just a single unremarkable character of a typo away from doing the wrong 
-> > thing.
-> > 
-> > Please use the standard kernel convention to distinguish to name bits 
-> > and masks:
-> > 
-> >   MCJ_VALID_BIT
-> >   MCJ_VALID_MASK
-> 
-> OK. I will change this.
-> 
-> > That makes it far less likely to typo them - and it also makes the end 
-> > result far more readable.
-> > 
-> > Furthermore, please use better names for these constants.
-> > 
-> > For example MJC_VALID is a misnomer: it indicates that the message is 
-> > 'valid'. While in reality it wants to say that the message is 
-> > 'artificial' and should not be handled by a real #MC event.
-> > 
-> > Also, what does MCJ mean? It has absolutely zero first-glance meaning, 
-> > which is not good.
-> 
-> MCJ_ stands for "MCe inJect", this is not a good abbreviate, maybe
-> MCE_INJ_ is better.
-> 
-> About MCJ_VALID, what about MCE_INJ_LOADED?
-> 
-> > >  /* Fields are zero when not available */
-> > >  struct mce {
-> > > --- a/arch/x86/kernel/cpu/mcheck/mce-inject.c
-> > > +++ b/arch/x86/kernel/cpu/mcheck/mce-inject.c
-> > > @@ -32,16 +32,16 @@ static void inject_mce(struct mce *m)
-> > >  
-> > >  	/* Make sure noone reads partially written injectm */
-> > >  	i->finished = 0;
-> > > +	clear_bit(_MCJ_VALID, (unsigned long *)&i->inject_flags);
-> > 
-> > Most of arch/x86/kernel/cpu/mcheck/mce-inject.c is rather ugly. 
-> > mce->inject_flag is u8 due to a silly ABI and (unsigned long *)
-> > casts now litter the code.
-> 
-> mce->inject_flag is u8, because we do not need many flags. In
-> fact, /dev/mcelog is extensible as for error record (struct mce) size.
-> It is possible to make mce->inject_flag larger, just not necessary.
-> 
-> > What we want instead is a cleaner design for MCE injection.
-> > 
-> > A cleaner, more workable approach would be to create clean function call 
-> > interfaces for low level hardware that we extract MCE information from. 
-> > Incidentally, such a clean abstraction is mostly what is needed for 
-> > adding generic events as well - so the two go hand in hand.
-> > 
-> > So for example, right now machine_check_poll() does the following, in a 
-> > nutshell:
-> > 
-> >  - reads the global status
-> >  - in a loop:
-> >    - reads the bank status
-> >    - [optional] reads misc
-> >    - [optional] reads addr
-> >    - logs the event
-> >    - writes status
-> > 
-> > the current injector logic is incomplete because it does not allow the 
-> > proper simulation of all aspects of this loop - for example multiple, 
-> > different events pending are not supported.
-> > 
-> > The reason is a bug in its design: it has been shoe-horned into the 
-> > limited concept of write()-ing to /dev/mcelog and building something 
-> > from there - while in reality an MCE message is not demux-able in the 
-> > multi-message scenario.
-> > 
-> > A cleaner structure of this code would be:
-> > 
-> >  - reads the global status
-> >  - in a loop:
-> >    - reads the bank status
-> >    - [optional] reads misc
-> >    - [optional] reads addr
-> >    - lowlevel_mce_event(gstatus, status, misc, addr);
-> >    - writes status
-> > 
-> > And then hooking up the injector with lowlevel_mce_event(), not by 
-> > trying to shoehorn it into at the MSR level via mce_rdmsr().
-> > 
-> > I.e. first minimally extract raw hardware info - then pass that to a mid 
-> > level function. The injector can then interface into this mid level 
-> > function.
-> > 
-> > Note, there wouldnt be need for the 'injectm' mess either - which caused 
-> > this bug to begin with. The injector injects into the mid level function 
-> > - which from that point on does not care whether it's an injected 
-> > message or not. (_maybe_ pass along a status flag that directs the 
-> > mid-level function to for example not panic the system - but otherwise 
-> > dont do this kind of messy injectm driven global state logic.)
-> > 
-> > A _real_ injector would work at the hardware level anyway, or could 
-> > perhaps be done as a KVM extension to simulate the MCE MSR environment 
-> > much more fully - there's no way to simulate all aspects of MCEs and 
-> > doing it at the rdmsr level here with simulated state from an injected 
-> > struct mce is pretty limiting and incomplete.
-> 
-> So the error record processing logic should be in 
-> lowlevel_mce_event()? If so, one issue of this solution is that 
-> sometimes we need look at all events before deciding what to do. For 
-> example, there is one corrected error, one recoverable error and one 
-> fatal error in error banks, we should go panic directly instead of 
-> trying to recover firstly.
+> Can you send me the boot args and kernel config you are using?  I'd 
+> like to figure out which part was at fault and fix it up.
 
-Correct - and the way the current code does it is absolutely messy. It 
-mixes the 'have to panic' logic with the message construction logic and 
-does a loop over all banks to see whether there's a panic message there 
-- missing the crutial fact that if we are going to panic there's no 
-message to deliver ...
+will do. Will take some time though - trying to track down a new boot 
+crash as well:
 
-The other thing it misses is that MCE conditions are fundamentally 
-asynchronous. The MCE message might have a propagation delay to begin 
-with - plus there's the corrected messages that we poll. And even 
-assuming totally instant MCE propagation a new bank condition might pop 
-up with a new error right while we are processing an exception.
+acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+initcall acpiphp_init+0x0/0x83 returned -19 after 16410 usecs
+calling  ibm_acpiphp_init+0x0/0x190 @ 1
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000003
+IP: [<ffffffff82b07130>] ibm_find_acpi_device+0x5c/0xf5
+PGD 0 
+Oops: 0002 [#1] SMP DEBUG_PAGEALLOC
+last sysfs file: 
+CPU 0 
+Pid: 1, comm: swapper Not tainted 2.6.31-tip #16786 System Product Name
+RIP: 0010:[<ffffffff82b07130>]  [<ffffffff82b07130>] ibm_find_acpi_device+0x5c/0xf5
+RSP: 0018:ffff88003f2d1d60  EFLAGS: 00010246
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+RDX: ffff88003f2d1d68 RSI: 00000000000001e4 RDI: 0000000000000000
+RBP: ffff88003f2d1d90 R08: 0000000000000001 R09: ffffffff824b645b
+R10: 000000002d0ef63b R11: ffff88003f2d1a80 R12: ffff88003fa780d0
+R13: ffffffff83940dc8 R14: 0000000000000001 R15: ffffffff83942e10
+FS:  0000000000000000(0000) GS:ffff880005800000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000000003 CR3: 0000000001001000 CR4: 00000000000006b0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process swapper (pid: 1, threadinfo ffff88003f2d0000, task ffff88003f2c8000)
+Stack:
+ ffff88003f2c8000 ffff88003cfbb690 000000002d0ef63b 0000000000000000
+<0> 0000000000000000 ffff88003fa780d0 ffff88003f2d1e10 ffffffff8156b6b6
+<0> 0000000000000001 0000000100000000 0000000000000000 ffffffff83940dc8
+Call Trace:
+ [<ffffffff8156b6b6>] acpi_ns_walk_namespace+0x11d/0x234
+ [<ffffffff82b070d4>] ? ibm_find_acpi_device+0x0/0xf5
+ [<ffffffff8157b159>] ? acpi_ut_acquire_mutex+0xd9/0x12e
+ [<ffffffff82b070d4>] ? ibm_find_acpi_device+0x0/0xf5
+ [<ffffffff81566dfa>] acpi_walk_namespace+0x105/0x162
+ [<ffffffff81d067bf>] ? acpi_pm_read+0xd/0x3e
+ [<ffffffff82b06f44>] ? ibm_acpiphp_init+0x0/0x190
+ [<ffffffff82b06fa8>] ibm_acpiphp_init+0x64/0x190
+ [<ffffffff810090b4>] do_one_initcall+0x82/0x1a6
+ [<ffffffff810edecc>] ? init_irq_proc+0x77/0x9a
+ [<ffffffff82ad8975>] do_basic_setup+0x5e/0x87
+ [<ffffffff82ad8a26>] kernel_init+0x88/0xe2
+ [<ffffffff8103ddfa>] child_rip+0xa/0x20
+ [<ffffffff8103d7bc>] ? restore_args+0x0/0x30
+ [<ffffffff82ad899e>] ? kernel_init+0x0/0xe2
+ [<ffffffff8103ddf0>] ? child_rip+0x0/0x20
+Code: 48 c7 c2 c0 7b 0b 82 48 c7 c6 95 39 4a 82 48 c7 c7 1a 3c 4a 82 31 c0 e8 02 84 4b ff 31 c0 e9 82 00 00 00 48 8b 45 d8 48 8b 40 30 <c6> 40 03 00 48 8b 45 d8 83 78 18 00 74 5f f6 40 0d 04 74 59 48 
+RIP  [<ffffffff82b07130>] ibm_find_acpi_device+0x5c/0xf5
+ RSP <ffff88003f2d1d60>
+CR2: 0000000000000003
+---[ end trace 5a5d197966b56a2e ]---
+Kernel panic - not syncing: Fatal exception
+Pid: 1, comm: swapper Tainted: G      D    2.6.31-tip #16786
 
-So the whole logic in do_machine_check() is misguided from the get go.
+/me looks in the general direction of Len ;-)
 
-> For supporting injecting multiple MCE on one cpu with injectm, we have 
-> plan to do this. May need more inject flags to make this works.
-
-Fixing the code can remove limitations.
-
-> All in all, I think current MCE handling and injecting design just 
-> works. And it is quite simple. I think your design and current design 
-> is different mainly on flavor. Do you think so?
-
-No, i dont.
-
-It should all be done and coded cleanly first and foremost. Would you be 
-willing to help out with that?
-
-The very first step must be to clean up the data structures. 'struct 
-mce' is a misnomer and one big layering violation. It can contain bank 
-state, message to user-space, message from user-space and injection 
-state - and it also contains global state, and even configuration state. 
-It's sometimes named 'm', sometimes 'a', sometimes 'msg' - it is one big 
-mess.
-
-Instead there should be clearly named structures with one, well-defined 
-purpose per structure. Such as:
-
- struct cpu_mce_state {
-	u64	global_status;
-	u64	global_ctrl;
-	u64	capabilities;
- };
-
- struct mce_error_state {
-	u64	status;
-	u64	misc;
-	u64	addr;
-	u64	ip;
-	u64	cs;
- };
-
-etc. - and then work from such a simple and clear core of abstractions.
-
-The whole do_machine_check() bank reading code should be restructured to 
-be a 'retry until all banks are clear' loop - to allow for asynchronous 
-events to be recognized during the pass. Especially if an action that 
-has to be taken takes some time to do, we will act properly.
-
-The hardware itself will redo the MCE in that case as well - but it's 
-better to recognize this in the main event loop already.
-
-Furthermore, such a loop would allow the clean prioritization of banks, 
-by separating out an extra function for that purpose:
-
-	for (;;) {
-		bank_id = get_highest_prio_bank();
-		if (bank_nr < 0)
-			break;
-
-		process_bank_event(bank_id);
-	}
-
-The current code is clearly buggy as it incorrectly assumes that no new 
-events may arrive while we are processing events.
-
-Ok?
- 	
 	Ingo
