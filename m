@@ -1,148 +1,1222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbZIWBsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbZIWBw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753894AbZIWBsK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 21:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbZIWBsJ
+	id S1753831AbZIWBw6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 21:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZIWBw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 21:48:09 -0400
-Received: from mga14.intel.com ([143.182.124.37]:2527 "EHLO mga14.intel.com"
+	Tue, 22 Sep 2009 21:52:58 -0400
+Received: from mga11.intel.com ([192.55.52.93]:26859 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753612AbZIWBsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 21:48:08 -0400
+	id S1752966AbZIWBwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 21:52:55 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,434,1249282800"; 
-   d="scan'208";a="190580394"
-Date: Wed, 23 Sep 2009 09:48:02 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+   d="scan'208";a="495994909"
+Subject: Re: regression in page writeback
+From: Shaohua Li <shaohua.li@intel.com>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Ronald Moesbergen <intercommit@gmail.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>
-Message-ID: <20090923014802.GA11491@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       Chris Mason <chris.mason@oracle.com>
+In-Reply-To: <20090922133904.GA9967@localhost>
+References: <20090922054913.GA27260@sli10-desk.sh.intel.com>
+	 <20090922104915.GA1649@localhost>
+	 <20090922115015.GB6175@sli10-desk.sh.intel.com>
+	 <20090922133904.GA9967@localhost>
+Content-Type: multipart/mixed; boundary="=-8leRd+hTKoAf5pBv8pxY"
+Date: Wed, 23 Sep 2009 09:52:55 +0800
+Message-Id: <1253670775.11656.3.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-Reply-To: 
-In-Reply-To: <20090922135838.33ebe36b.akpm@linux-foundation.org>
 
-On Wed, Sep 23, 2009 at 04:58:38AM +0800, Andrew Morton wrote:
-> On Fri, 29 May 2009 14:35:55 +0900
-> Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
-> 
-> > I added blk_run_backing_dev on page_cache_async_readahead
-> > so readahead I/O is unpluged to improve throughput on 
-> > especially RAID environment. 
-> 
-> I still haven't sent this upstream.  It's unclear to me that we've
-> decided that it merits merging?
+--=-8leRd+hTKoAf5pBv8pxY
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Yes, if I remember it right, the performance gain is later confirmed
-by Ronald's independent testing on his RAID. (Ronald CC-ed)
+On Tue, 2009-09-22 at 21:39 +0800, Wu, Fengguang wrote:
+> On Tue, Sep 22, 2009 at 07:50:15PM +0800, Li, Shaohua wrote:
+> > On Tue, Sep 22, 2009 at 06:49:15PM +0800, Wu, Fengguang wrote:
+> > > Shaohua,
+> > > 
+> > > On Tue, Sep 22, 2009 at 01:49:13PM +0800, Li, Shaohua wrote:
+> > > > Hi,
+> > > > Commit d7831a0bdf06b9f722b947bb0c205ff7d77cebd8 causes disk io regression
+> > > > in my test.
+> > > > My system has 12 disks, each disk has two partitions. System runs fio sequence
+> > > > write on all partitions, each partion has 8 jobs.
+> > > > 2.6.31-rc1, fio gives 460m/s disk io
+> > > > 2.6.31-rc2, fio gives about 400m/s disk io. Revert the patch, speed back to
+> > > > 460m/s
+> > > > 
+> > > > Under latest git: fio gives 450m/s disk io; If reverting the patch, the speed
+> > > > is 484m/s.
+> > > > 
+> > > > With the patch, fio reports less io merge and more interrupts. My naive
+> > > > analysis is the patch makes balance_dirty_pages_ratelimited_nr() limits
+> > > > write chunk to 8 pages and then soon go to sleep in balance_dirty_pages(),
+> > > > because most time the bdi_nr_reclaimable < bdi_thresh, and so when write
+> > > > the pages out, the chunk is 8 pages long instead of 4M long. Without the patch,
+> > > > thread can write 8 pages and then move some pages to writeback, and then
+> > > > continue doing write. The patch seems to break this.
+> > > 
+> > > Do you have trace/numbers for above descriptions?
+> > No. Just guess, because there is less io merge. And watch each bdi's states,
+> > bdi_nr_reclaimable < bdi_thresh seems always true.
+> 
+> Ah OK.
+> 
+> > > > Unfortunatelly I can't figure out a fix for this issue, hopefully
+> > > > you have more ideas.
+> > > 
+> > > Attached is a very verbose writeback debug patch, hope it helps and
+> > > won't disturb the workload a lot :)
+> > Hmm, the log buf will get overflowed soon, there is > 400m/s io. I tried
+> > to produce this issue in a system with two disks, but fail. Anyway, I'll try
+> > it out tomorrow.
+> 
+> Thank you~  I'd recommend to use netconsole or serial line, and stop
+> local klogd because the write of log messages could add noises. 
+attached is a short log. I'll try to get a full log after finish latest
+git test.
+bdi_nr_reclaimable is always less than bdi_thresh in the log. because
+when bdi_nr_reclaimable + bdi_nr_writeback > bdi_thresh, background
+writeback is already started, so bdi_nr_writeback should be > 0.
 
-Thanks,
-Fengguang
+--=-8leRd+hTKoAf5pBv8pxY
+Content-Disposition: attachment; filename="msg2"
+Content-Type: text/plain; name="msg2"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 
-> 
-> 
-> From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> 
-> I added blk_run_backing_dev on page_cache_async_readahead so readahead I/O
-> is unpluged to improve throughput on especially RAID environment.
-> 
-> The normal case is, if page N become uptodate at time T(N), then T(N) <=
-> T(N+1) holds.  With RAID (and NFS to some degree), there is no strict
-> ordering, the data arrival time depends on runtime status of individual
-> disks, which breaks that formula.  So in do_generic_file_read(), just
-> after submitting the async readahead IO request, the current page may well
-> be uptodate, so the page won't be locked, and the block device won't be
-> implicitly unplugged:
-> 
->                if (PageReadahead(page))
->                         page_cache_async_readahead()
->                 if (!PageUptodate(page))
->                                 goto page_not_up_to_date;
->                 //...
-> page_not_up_to_date:
->                 lock_page_killable(page);
-> 
-> Therefore explicit unplugging can help.
-> 
-> Following is the test result with dd.
-> 
-> #dd if=testdir/testfile of=/dev/null bs=16384
-> 
-> -2.6.30-rc6
-> 1048576+0 records in
-> 1048576+0 records out
-> 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
-> 
-> -2.6.30-rc6-patched
-> 1048576+0 records in
-> 1048576+0 records out
-> 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-> 
-> (7Disks RAID-0 Array)
-> 
-> -2.6.30-rc6
-> 1054976+0 records in
-> 1054976+0 records out
-> 17284726784 bytes (17 GB) copied, 212.233 seconds, 81.4 MB/s
-> 
-> -2.6.30-rc6-patched
-> 1054976+0 records out
-> 17284726784 bytes (17 GB) copied, 198.878 seconds, 86.9 MB/s
-> 
-> (7Disks RAID-5 Array)
-> 
-> The patch was found to improve performance with the SCST scsi target
-> driver.  See
-> http://sourceforge.net/mailarchive/forum.php?thread_name=a0272b440906030714g67eabc5k8f847fb1e538cc62%40mail.gmail.com&forum_name=scst-devel
-> 
-> [akpm@linux-foundation.org: unbust comment layout]
-> [akpm@linux-foundation.org: "fix" CONFIG_BLOCK=n]
-> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> Acked-by: Wu Fengguang <fengguang.wu@intel.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Tested-by: Ronald <intercommit@gmail.com>
-> Cc: Bart Van Assche <bart.vanassche@gmail.com>
-> Cc: Vladislav Bolkhovitin <vst@vlnb.net>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  mm/readahead.c |   12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> diff -puN mm/readahead.c~readahead-add-blk_run_backing_dev mm/readahead.c
-> --- a/mm/readahead.c~readahead-add-blk_run_backing_dev
-> +++ a/mm/readahead.c
-> @@ -547,5 +547,17 @@ page_cache_async_readahead(struct addres
->  
->  	/* do read-ahead */
->  	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-> +
-> +#ifdef CONFIG_BLOCK
-> +	/*
-> +	 * Normally the current page is !uptodate and lock_page() will be
-> +	 * immediately called to implicitly unplug the device. However this
-> +	 * is not always true for RAID conifgurations, where data arrives
-> +	 * not strictly in their submission order. In this case we need to
-> +	 * explicitly kick off the IO.
-> +	 */
-> +	if (PageUptodate(page))
-> +		blk_run_backing_dev(mapping->backing_dev_info, NULL);
-> +#endif
->  }
->  EXPORT_SYMBOL_GPL(page_cache_async_readahead);
-> _
-> 
+0, bdi_thresh=23810, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27860, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26626, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145141, dirty_thresh=290283
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=599 n=-6696602
+bdi_nr_reclaimable=21040, bdi_thresh=24479, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=20480, bdi_thresh=23802, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24906, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27862, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=20480, bdi_thresh=23809, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24903, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24907, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145141, dirty_thresh=290283
+global dirty=246756 writeback=43800 nfs=0 flags=C_ towrite=1018 skipped=0
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24481, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27850, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24493, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21320, bdi_thresh=24944, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21320, bdi_thresh=24940, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24493, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27864, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145141, dirty_thresh=290283
+redirty_tail +435: inode 174623
+bdi_nr_reclaimable=21480, bdi_thresh=24894, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24900, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27862, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27855, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24484, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21320, bdi_thresh=24943, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24907, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=20480, bdi_thresh=23793, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24479, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=20480, bdi_thresh=23802, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27862, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15240, bdi_thresh=16825, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24491, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21320, bdi_thresh=24942, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26625, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27860, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24904, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21320, bdi_thresh=24946, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24906, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=22840, bdi_thresh=26418, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=20480, bdi_thresh=23809, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24907, background_thresh=145141, dirty_thresh=290283
+redirty_tail +435: inode 4784181
+bdi_nr_reclaimable=21480, bdi_thresh=24902, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15240, bdi_thresh=16826, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21320, bdi_thresh=24944, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24495, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23920, bdi_thresh=27413, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27863, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26618, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24492, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24905, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24903, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24903, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145141, dirty_thresh=290283
+redirty_tail +435: inode 3474323
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24864, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27863, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=20480, bdi_thresh=23811, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21480, bdi_thresh=24864, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=22840, bdi_thresh=26425, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15240, bdi_thresh=16826, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21040, bdi_thresh=24496, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=21320, bdi_thresh=24945, background_thresh=145141, dirty_thresh=290283
+requeue_io +527: inode 0
+bdi_nr_reclaimable=15640, bdi_thresh=19034, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=23080, bdi_thresh=26626, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=24160, bdi_thresh=27861, background_thresh=145141, dirty_thresh=290283
+requeue_io +527: inode 0
+bdi_nr_reclaimable=23920, bdi_thresh=27427, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145141, dirty_thresh=290283
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=22840, bdi_thresh=26424, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=21040, bdi_thresh=24489, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=21320, bdi_thresh=24906, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145150, dirty_thresh=290301
+redirty_tail +502: inode 12415
+bdi_nr_reclaimable=24160, bdi_thresh=27861, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=21320, bdi_thresh=24905, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145150, dirty_thresh=290301
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145159, dirty_thresh=290319
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145159, dirty_thresh=290319
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145159, dirty_thresh=290319
+bdi_nr_reclaimable=21640, bdi_thresh=24923, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24919, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24921, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24918, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24905, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23812, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24495, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18250, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24919, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24496, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26414, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24919, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27418, background_thresh=145168, dirty_thresh=290337
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=10090 n=-6621688
+bdi_nr_reclaimable=23080, bdi_thresh=26624, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16826, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145168, dirty_thresh=290337
+global dirty=246847 writeback=43800 nfs=0 flags=C_ towrite=1023 skipped=0
+bdi_nr_reclaimable=21320, bdi_thresh=24900, background_thresh=145168, dirty_thresh=290337
+redirty_tail +435: inode 174623
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+redirty_tail +435: inode 4784181
+redirty_tail +435: inode 3474323
+requeue_io +527: inode 0
+requeue_io +527: inode 0
+redirty_tail +502: inode 12396
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=10090 n=-6621689
+bdi_nr_reclaimable=24160, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24900, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16826, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26624, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23812, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24919, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27427, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16827, background_thresh=145168, dirty_thresh=290337
+global dirty=246847 writeback=43800 nfs=0 flags=C_ towrite=1023 skipped=0
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24910, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23811, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24904, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24900, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24923, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24916, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27810, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24495, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18248, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24481, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23804, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24486, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23795, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26625, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24493, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24923, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24483, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24494, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16826, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26418, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27815, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24920, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24906, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24920, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24922, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24495, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23811, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26618, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27413, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24904, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16827, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24498, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24902, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24497, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24918, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24921, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24920, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23813, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26414, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26626, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18249, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24919, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18248, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18248, background_thresh=145168, dirty_thresh=290337
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=599 n=-6696603
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24905, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24918, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26424, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19034, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24923, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24906, background_thresh=145168, dirty_thresh=290337
+global dirty=246847 writeback=43800 nfs=0 flags=C_ towrite=1023 skipped=0
+bdi_nr_reclaimable=21040, bdi_thresh=24491, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18250, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18248, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24905, background_thresh=145168, dirty_thresh=290337
+requeue_io +527: inode 0
+bdi_nr_reclaimable=15880, bdi_thresh=18248, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+requeue_io +527: inode 0
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24495, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24919, background_thresh=145168, dirty_thresh=290337
+redirty_tail +502: inode 12533
+bdi_nr_reclaimable=21040, bdi_thresh=24496, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27418, background_thresh=145168, dirty_thresh=290337
+redirty_tail +435: inode 174623
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+redirty_tail +435: inode 4784181
+redirty_tail +435: inode 3474323
+requeue_io +527: inode 0
+requeue_io +527: inode 0
+redirty_tail +502: inode 13474
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=10090 n=-6621691
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=599 n=-6696603
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19034, background_thresh=145168, dirty_thresh=290337
+global dirty=246847 writeback=43709 nfs=0 flags=C_ towrite=1024 skipped=0
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+global dirty=246847 writeback=43709 nfs=0 flags=C_ towrite=1022 skipped=0
+bdi_nr_reclaimable=21640, bdi_thresh=24920, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24489, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24926, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24929, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26624, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23810, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24904, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23811, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24480, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24900, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23803, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23794, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24485, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24933, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18248, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24933, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24920, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24926, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24932, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24900, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24492, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24904, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26625, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24920, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24480, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23794, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24485, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23803, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24933, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18248, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18247, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24903, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24926, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27810, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24933, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24900, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24900, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24930, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24493, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24481, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24930, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24864, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24863, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24918, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24924, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24860, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18243, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26625, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24931, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24478, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23792, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23801, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27810, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24491, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23809, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24918, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24863, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24924, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24860, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24483, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24930, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24864, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27815, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24928, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24480, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24931, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24492, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24864, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26418, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24492, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24866, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18243, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23808, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26618, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23791, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27810, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23800, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24863, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24160, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24941, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24477, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24927, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24481, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23807, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26625, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27810, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24933, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23790, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23799, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24863, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24476, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26618, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24927, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24864, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24866, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23806, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24940, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24860, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24489, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24940, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24488, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24478, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27815, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24939, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24937, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24935, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27413, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24492, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26418, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24937, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23808, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24937, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24936, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24938, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24864, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26414, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18243, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24862, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26626, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24936, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26624, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19034, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24935, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18246, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24927, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24481, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24863, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27810, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24933, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24864, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26625, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23799, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+requeue_io +527: inode 0
+bdi_nr_reclaimable=21640, bdi_thresh=24940, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24860, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23807, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24476, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23790, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27815, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24478, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16822, background_thresh=145168, dirty_thresh=290337
+requeue_io +527: inode 0
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24939, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24940, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24937, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24488, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24866, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145168, dirty_thresh=290337
+redirty_tail +502: inode 13925
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26418, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24489, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24935, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23805, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23798, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24932, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26424, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26624, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24938, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24475, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23789, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24479, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18243, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24943, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18243, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24947, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24947, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27810, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24942, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26625, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24476, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18240, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23805, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24490, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24944, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24943, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24826, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19034, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26618, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24488, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27413, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27815, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24489, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26414, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24944, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24944, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24945, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23806, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24491, background_thresh=145168, dirty_thresh=290337
+redirty_tail +435: inode 174623
+bdi_nr_reclaimable=20480, bdi_thresh=23804, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26626, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27427, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24947, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18245, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24826, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145168, dirty_thresh=290337
+redirty_tail +435: inode 4784181
+bdi_nr_reclaimable=21040, bdi_thresh=24484, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24483, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18243, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24823, background_thresh=145168, dirty_thresh=290337
+redirty_tail +442: inode 3474323
+bdi_nr_reclaimable=21040, bdi_thresh=24488, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24943, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24820, background_thresh=145168, dirty_thresh=290337
+requeue_io +527: inode 0
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27418, background_thresh=145168, dirty_thresh=290337
+redirty_tail +502: inode 14004
+bdi_nr_reclaimable=24200, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24934, background_thresh=145168, dirty_thresh=290337
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=599 n=-6696607
+bdi_nr_reclaimable=21320, bdi_thresh=24780, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24481, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27427, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23803, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24489, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24782, background_thresh=145168, dirty_thresh=290337
+global dirty=247029 writeback=43527 nfs=0 flags=CM towrite=1020 skipped=0
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24783, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26418, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24940, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24485, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23796, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=19720, bdi_thresh=23425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23803, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24472, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16820, background_thresh=145168, dirty_thresh=290337
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=10090 n=-6621691
+bdi_nr_reclaimable=24200, bdi_thresh=27820, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24477, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23787, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26625, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24781, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24947, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24474, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24946, background_thresh=145168, dirty_thresh=290337
+global dirty=247029 writeback=43527 nfs=0 flags=C_ towrite=1024 skipped=0
+bdi_nr_reclaimable=15240, bdi_thresh=16819, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24484, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24942, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24785, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23804, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24944, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18239, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21320, bdi_thresh=24826, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27810, background_thresh=145168, dirty_thresh=290337
+redirty_tail +435: inode 174623
+bdi_nr_reclaimable=15240, bdi_thresh=16819, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24486, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24486, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26618, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26425, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21040, bdi_thresh=24488, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24943, background_thresh=145168, dirty_thresh=290337
+redirty_tail +435: inode 4784181
+bdi_nr_reclaimable=23920, bdi_thresh=27413, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24945, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27815, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15880, bdi_thresh=18240, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24944, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15240, bdi_thresh=16821, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21240, bdi_thresh=24825, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=20480, bdi_thresh=23804, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145168, dirty_thresh=290337
+redirty_tail +442: inode 3474323
+bdi_nr_reclaimable=23080, bdi_thresh=26626, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=21640, bdi_thresh=24902, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145168, dirty_thresh=290337
+bdi_nr_reclaimable=15640, bdi_thresh=19034, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18243, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24907, background_thresh=145177, dirty_thresh=290355
+requeue_io +527: inode 0
+bdi_nr_reclaimable=21040, bdi_thresh=24483, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18244, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24904, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21080, bdi_thresh=24785, background_thresh=145177, dirty_thresh=290355
+redirty_tail +502: inode 14023
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15240, bdi_thresh=16820, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18243, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24786, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26424, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18240, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24783, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24903, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24907, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24488, background_thresh=145177, dirty_thresh=290355
+redirty_tail +435: inode 21
+bdi_nr_reclaimable=21000, bdi_thresh=24823, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26624, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24903, background_thresh=145177, dirty_thresh=290355
+redirty_tail +435: inode 174623
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27418, background_thresh=145177, dirty_thresh=290355
+redirty_tail +435: inode 4784181
+bdi_nr_reclaimable=22840, bdi_thresh=26414, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145177, dirty_thresh=290355
+redirty_tail +435: inode 3474323
+requeue_io +527: inode 0
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15240, bdi_thresh=16819, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24904, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24824, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27821, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24487, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145177, dirty_thresh=290355
+redirty_tail +502: inode 14042
+bdi_nr_reclaimable=21640, bdi_thresh=24905, background_thresh=145177, dirty_thresh=290355
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=599 n=-6696985
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24823, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24486, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24867, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19034, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15240, bdi_thresh=16820, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24485, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24860, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27820, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26611, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=20480, bdi_thresh=23801, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24480, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24854, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19026, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24823, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26615, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27412, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24488, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24471, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26620, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15240, bdi_thresh=16818, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24822, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27822, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15240, bdi_thresh=16819, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=20480, bdi_thresh=23794, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24820, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24476, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24487, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=20480, bdi_thresh=23785, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27820, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27422, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24867, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26424, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27824, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24820, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27427, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26626, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27416, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24866, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19031, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15240, bdi_thresh=16818, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24867, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27425, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27821, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=20480, bdi_thresh=23802, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18239, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18238, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18240, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24473, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27810, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18240, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24864, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24485, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145177, dirty_thresh=290355
+mm/page-writeback.c 762 background_writeout: comm=pdflush pid=10090 n=-6621693
+bdi_nr_reclaimable=21040, bdi_thresh=24482, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24483, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18239, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26418, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24786, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=20480, bdi_thresh=23800, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27823, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24862, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15240, bdi_thresh=16817, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19027, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18239, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26425, background_thresh=145177, dirty_thresh=290355
+global dirty=246665 writeback=43800 nfs=0 flags=C_ towrite=1022 skipped=0
+bdi_nr_reclaimable=21000, bdi_thresh=24784, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26422, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24785, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26618, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24480, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21040, bdi_thresh=24484, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26621, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24863, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15240, bdi_thresh=16819, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24863, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19033, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21640, bdi_thresh=24864, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27815, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27426, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=24200, bdi_thresh=27821, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26423, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27413, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26420, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24785, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18238, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26626, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27423, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=20480, bdi_thresh=23802, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26421, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21440, bdi_thresh=24864, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18239, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27421, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19030, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18241, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18240, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21360, bdi_thresh=24862, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21360, bdi_thresh=24903, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23920, bdi_thresh=27418, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=22840, bdi_thresh=26414, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21320, bdi_thresh=24865, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=23080, bdi_thresh=26624, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15640, bdi_thresh=19032, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=15880, bdi_thresh=18242, background_thresh=145177, dirty_thresh=290355
+global dirty=246301 writeback=44164 nfs=0 flags=C_ towrite=646 skipped=0
+bdi_nr_reclaimable=15240, bdi_thresh=16818, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=19720, bdi_thresh=23385, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24786, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21280, bdi_thresh=24863, background_thresh=145177, dirty_thresh=290355
+redirty_tail +435: inode 174623
+bdi_nr_reclaimable=21000, bdi_thresh=24785, background_thresh=145177, dirty_thresh=290355
+bdi_nr_reclaimable=21000, bdi_thresh=24783, background_thresh=145177, dirty_thresh=290355
+redirty_tail +435: inode 4784181
+redirty_tail +435: inode 3474323
+requeue_io +527: inode 0
+redirty_tail +502: inode 14061
+bdi_nr_reclaimable=23080, bdi_thresh=26623, background_thresh=145177, dirty_thresh=290355
+redirty_tail +442: inode 27
+redirty_tail +435: inode 174623
+redirty_tail +435: inode 4784181
+redirty_tail +435: inode 3474323
+requeue_io +527: inode 0
+redirty_tail +502: inode 14096
+
+--=-8leRd+hTKoAf5pBv8pxY--
+
