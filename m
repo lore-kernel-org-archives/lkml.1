@@ -1,41 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751275AbZIWEOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751508AbZIWEhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751275AbZIWEOz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 00:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZIWEOz
+	id S1751508AbZIWEhp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 00:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZIWEhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 00:14:55 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:46004 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbZIWEOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 00:14:54 -0400
-X-Bogosity: Ham, spamicity=0.000798
-Message-ID: <4AB9A0D6.1090004@crca.org.au>
-Date: Wed, 23 Sep 2009 14:15:18 +1000
-From: Nigel Cunningham <ncunningham@crca.org.au>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Wed, 23 Sep 2009 00:37:45 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:5365 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbZIWEho (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 00:37:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=k+c7Lxjh/mEypQQLid8jkY4TXVFHYMUYa4nK+91mtQySMlKKY+ByqnqSkr9mTrSogu
+         DnoJMrCcmbQ1eKskd6UttRg5EWRujBL2hJtrYV9wVBnUtqjSb5ecX0xUTr/DsSHGRi2C
+         hy6UsZ7NGODwbt48V2kb6lYhsLQh92bPKCvw4=
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: No more bits in vm_area_struct's vm_flags.
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Wed, 23 Sep 2009 12:37:48 +0800
+Message-ID: <505766fa0909222137q217be3d0x8fc12ab467833666@mail.gmail.com>
+Subject: Linux guest domain with two vnets bound to the same vswitch 
+	experiences hung in bootup (sun_netraT5220)
+From: hyl <heyongli@gmail.com>
+To: sparclinux@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all.
+console output:
 
-With the addition of the VM_MERGEABLE flag to vm_flags post-2.6.31, the
-last bit in vm_flags has been used.
+e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+e1000e: Copyright (c) 1999-2008 Intel Corporation.
+e1000e: Copyright (c) 1999-2008 Intel Corporation.
+sunvnet.c:v1.0 (June 25, 2007)
+sunvnet.c:v1.0 (June 25, 2007)
+eth0: Sun LDOM vnet 00:14:4f:f9:68:e0:t
+e0
+eth0: PORT ( remote-mac 00:14:4f:fa:03:81 switch-port )
+eth0: PORT ( remote-mac 00:14:4f:fa:03:81 switch-port )
+eth0: PORT ( remote-mac 00:14:4f:f9:84:06 )
+eth0: PORT ( remote-mac 00:14:4f:f9:84:06 )
+eth0: PORT ( remote-mac 00:14:4f:f9:9a:40 )
+eth0: PORT ( remote-mac 00:14:4f:f9:9a:40 )
+eth0: PORT ( remote-mac 00:14:4f:f8:c5:7b )
+eth0: PORT ( remote-mac 00:14:4f:f8:c5:7b )
+eth1: Sun LDOM vnet 00:14:4f:f8:c5:7b:t
+7b
+eth1: PORT ( remote-mac 00:14:4f:fa:03:81 switch-port )
+eth1: PORT ( remote-mac 00:14:4f:fa:03:81 switch-port )
+eth1: PORT ( remote-mac 00:14:4f:f9:84:06 )
+eth1: PORT ( remote-mac 00:14:4f:f9:84:06 )
+eth1: PORT ( remote-mac 00:14:4f:f9:9a:40 )
+eth1: PORT ( remote-mac 00:14:4f:f9:9a:40 )
+eth1: PORT ( remote-mac 00:14:4f:f9:68:e0 )
+eth1: PORT ( remote-mac 00:14:4f:f9:68:e0 )
 
-I have some code in TuxOnIce that needs a bit too (explicitly mark the
-VMA as needing to be atomically copied, for GEM objects), and am not
-sure what the canonical way to proceed is. Should a new unsigned long be
-added? The difficulty I see with that is that my flag was used in
-shmem_file_setup's flags parameter (drm_gem_object_alloc), so that
-function would need an extra parameter too..
+two vnets bound to the same vswitch, then hang,
+ldm add-vnet vnet0 primary-vsw1 dom1
+ldm add-vnet vnet1 primary-vsw1 ldom1
 
-Regards,
+If 'eth1' and 'eth2' are bound to different vswitches, everything is fine.
 
-Nigel
+
+Yongli He
