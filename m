@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752235AbZIWLhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbZIWLlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752235AbZIWLhh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 07:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbZIWLhg
+	id S1752246AbZIWLlr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 07:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZIWLlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 07:37:36 -0400
-Received: from sh.osrg.net ([192.16.179.4]:48968 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751092AbZIWLhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 07:37:36 -0400
-Date: Wed, 23 Sep 2009 20:36:32 +0900
-To: lmb@suse.de
-Cc: fujita.tomonori@lab.ntt.co.jp, lars.ellenberg@linbit.com,
-       arjan@infradead.org, jens.axboe@oracle.com, neilb@suse.de,
-       hch@infradead.org, James.Bottomley@suse.de,
-       linux-kernel@vger.kernel.org, drbd-dev@lists.linbit.com,
-       akpm@linux-foundation.org, bart.vanassche@gmail.com, davej@redhat.com,
-       gregkh@suse.de, kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
-       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
-       philipp.reisner@linbit.com, sam@ravnborg.org, Mauelshagen@redhat.com
-Subject: Re: [GIT PULL] DRBD for 2.6.32
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090922062034.GE22732@suse.de>
-References: <20090921165321.GJ8072@barkeeper1-xen.linbit>
-	<20090922072617U.fujita.tomonori@lab.ntt.co.jp>
-	<20090922062034.GE22732@suse.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090923203531C.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 23 Sep 2009 20:36:34 +0900 (JST)
+	Wed, 23 Sep 2009 07:41:46 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:23403 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbZIWLlq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 07:41:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pwgNkhjAEfcyhuchSaNKqqK3Pk5cjWecM0BFlTxWKpKR+TXz7LOcxxDpbSTV5cMOG2
+         IQ/BTRNFYbTYnRgXblYCfJAln7D3tz15xFOXqcU/kIgeBL5DRMS6pdCZ+9T6Q7BzP2NP
+         +9yEg8z9BdkSRsEY+FCJPqfWCxA0+LG4Rsh84=
+MIME-Version: 1.0
+In-Reply-To: <20090923104244.GB23941@elte.hu>
+References: <20090922212453.GB6062@nowhere> <20090923073253.GA18022@elte.hu>
+	 <20090923074028.GA3078@elte.hu>
+	 <aa79d98a0909230044q3548cf0bjda62e05e0400edd6@mail.gmail.com>
+	 <aa79d98a0909230148j47232382oe28c6d88eef181c4@mail.gmail.com>
+	 <7863dc4c0909230215u2fed3edciec84f93f24d3ae1@mail.gmail.com>
+	 <20090923092024.GA29323@elte.hu>
+	 <aa79d98a0909230248j22f05047n34e0ee97382f573f@mail.gmail.com>
+	 <7863dc4c0909230306x3bc60775rc503919df83087ed@mail.gmail.com>
+	 <20090923104244.GB23941@elte.hu>
+Date: Wed, 23 Sep 2009 12:41:49 +0100
+X-Google-Sender-Auth: 8a1284d09cb3b1df
+Message-ID: <7863dc4c0909230441p49b7440bu9de9f786fee9c4bd@mail.gmail.com>
+Subject: Re: perf sched record hangs machine
+From: Chris Malley <mail@chrismalley.co.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009 08:20:34 +0200
-Lars Marowsky-Bree <lmb@suse.de> wrote:
+2009/9/23 Ingo Molnar <mingo@elte.hu>:
+>
+> * Chris Malley <mail@chrismalley.co.uk> wrote:
+>
+>> Applied Peter's patch, doesn't seem to have fixed the problem:
+>>
+>> [  246.408893] BUG: unable to handle kernel paging request at ffffb300
+>> [  246.408939] IP: [<c011b0bd>] default_send_IPI_self+0x1d/0x50
+>
+> could you please send the full bootlog, up to the crash?
+>
+> Thanks,
+>
+>        Ingo
+>
 
-> On 2009-09-22T07:27:21, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > > If it happens, once that happens, that _will_ be an ABI break.
-> > 
-> > You misunderstand the raid unification.
-> > 
-> > We will not unify the kernel<->userspace configuration interface
-> > because we can't break the kernel<->userspace ABI.
-> 
-> I disagree here. Who says we can't over time, and with due notice?
-> 
-> For sure, the new ABI needs to co-exist with the old ones for a while,
-> until it is proven and fully complete, but then, why can't the old one
-> be marked as depreciated and phased out over 1-2 years time?
+Sure, but I'm just rebuilding from clean first in case the change
+wasn't picked up for some reason, because I don't see how it can get
+to default_send_IPI_self() in my configuration...
 
-Let me know If you find a Linux storage developer who say, "Yeah, we
-can remove the md ABI over 1-2 years time after the raid unification".
-
-Seems that you have a very different idea from other kernel developers
-about the stable ABI.
-
-
-> > We plan to unify the multiple device frameworks, but the unified
-> > framework must support the all existing ABIs.
-> > 
-> > So adding another 'drbd' ABI hurts us.
-> 
-> Even that doesn't really apply, I think. If the new framework is
-> powerful enough and a super-set of everything that came before, the shim
-> layer will be somewhat annoying, but harmless code.
-
-Improving the existing framework is a proper approach.
+Chris
