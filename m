@@ -1,73 +1,492 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZIWBUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753674AbZIWB0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbZIWBUR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 21:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZIWBUQ
+	id S1753674AbZIWB0p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 21:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZIWB0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 21:20:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54067 "EHLO hera.kernel.org"
+	Tue, 22 Sep 2009 21:26:44 -0400
+Received: from mga02.intel.com ([134.134.136.20]:16551 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbZIWBUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 21:20:14 -0400
-Message-ID: <4AB97776.3070906@kernel.org>
-Date: Wed, 23 Sep 2009 10:18:46 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Axel Birndt <towerlexa@gmx.de>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <greg@kroah.com>,
-       Robert Hancock <hancockr@shaw.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-pci@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Daniel Ritz <daniel.ritz@gmx.ch>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 3/3 pci#linux-next] pccard: configure CLS on attach
-References: <4A4EE3E9.7090205@kernel.org> <20090917103131.55eca691@jbarnes-g45> <4AB88C28.8070602@kernel.org> <4AB8A0A2.3010300@gmx.de>
-In-Reply-To: <4AB8A0A2.3010300@gmx.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753534AbZIWB0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 21:26:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,434,1249282800"; 
+   d="scan'208";a="552919497"
+Subject: Re: [RFC] [PATCH 2/2] ACPI: introduce ACPI ALS device driver
+From: Zhang Rui <rui.zhang@intel.com>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Jean Delvare <khali@linux-fr.org>,
+       "alan@linux.intel.com" <alan@linux.intel.com>,
+       "Cory T. Tusar" <ctusar@videon-central.com>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <4AB8C945.8050309@cam.ac.uk>
+References: <1253590777.15763.22.camel@rzhang-dt>
+	 <4AB8C945.8050309@cam.ac.uk>
+Content-Type: text/plain
+Date: Wed, 23 Sep 2009 09:26:32 +0800
+Message-Id: <1253669192.15763.39.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 01:18:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Axel.
-
-Axel Birndt wrote:
-> Tejun Heo schrieb:
->> For non hotplug PCI devices, the system firmware usually configures
->> CLS correctly.  For pccard devices system firmware can't do it and
->> Linux PCI layer doesn't do it either.  Unfortunately this leads to
->> poor performance for certain devices (sata_sil).  Unless MWI, which
->> requires separate configuration, is to be used, CLS doesn't affect
->> correctness, so the configuration should be harmless.
->>
->> This patch makes pci_set_cacheline_size() always built and export it
->> and make pccard call it during attach.
->>
->> Please note that some other PCI hotplug drivers (shpchp and pciehp)
->> also configure CLS on hotplug.
+On Tue, 2009-09-22 at 20:55 +0800, Jonathan Cameron wrote:
+> Note I have no familiarity at all with the acpi side of things!
+> Other than a few queries, this looks fine to me.
 > 
-> i would like to ask, when this patch is usable for normal guy's, like me.
-> could you tell me in which kernel release or in which bugfix this will
-> be implemented?
-> 
-> currently i'am using Kubuntu 8.04 with all current released bugfixes and
-> kernel updates...
+> Jonathan
+> > ACPI spec defines ACPI Ambient Light Sensor device (hid ACPI0008),
+> > which provides a standard interface by which the OS may query properties
+> > of the ambient light environment the system is currently operating in,
+> > as well as the ability to detect meaningful changes in these values when
+> > the environment changes.
+> > 
+> > This patch introduces the ACPI ALS device driver.
+> > 
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  Documentation/acpi/debug.txt |    1 
+> >  MAINTAINERS                  |    7 +
+> >  drivers/acpi/Kconfig         |    9 +
+> >  drivers/acpi/Makefile        |    1 
+> >  drivers/acpi/als.c           |  223 +++++++++++++++++++++++++++++++++++++++++++
+> >  drivers/acpi/debug.c         |    1 
+> >  include/acpi/acpi_drivers.h  |    1 
+> >  7 files changed, 243 insertions(+)
+> > 
+> > Index: linux-2.6/drivers/acpi/als.c
+> > +
+> > +/* --------------------------------------------------------------------------
+> > +				 Driver Model
+> > +   -------------------------------------------------------------------------- */
+> > +
+> > +static void acpi_als_notify(struct acpi_device *device, u32 event)
+> > +{
+> > +	struct acpi_als *als = acpi_driver_data(device);
+> > +
+> > +	if (!als)
+> > +		return;
+> > +
+> > +	switch (event) {
+> > +	case ACPI_ALS_NOTIFY_ILLUMINANCE:
+> > +		acpi_als_get_illuminance(als);
+> > +		break;
+> > +	case ACPI_ALS_NOTIFY_COLOR_TEMP:
+> > +		/*
+> > +		 *  TODO:
+> > +		 *  re-evalute the color temperature and chromaticity
+> > +		 */
+> > +		break;
+> > +	case ACPI_ALS_NOTIFY_RESPONSE:
+> > +		/*
+> > +		 * TODO:
+> > +		 * update the Ambient Light Illuminance to
+> > +		 * Display Luminance Adjustment Mappings
+> > +		 */
+> > +		break;
+> > +	default:
+> > +		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> > +				  "Unsupported event [0x%x]\n", event));
+> > +	}
+> > +	acpi_bus_generate_proc_event(device, event, (u32) als->illuminance);
+> > +	acpi_bus_generate_netlink_event(device->pnp.device_class,
+> > +					dev_name(&device->dev), event,
+> > +					(u32) als->illuminance);
+> > +}
+> > +
+> > +static int acpi_als_add(struct acpi_device *device)
+> > +{
+> > +	int result;
+> Are there any plausible race conditions associated with doing the allocation this way?
 
-This patch is rather dangerous and should sit out for a while in
-linux-next and then -rc.  In mainline, I think it will appear in
-2.6.33.  Distros may choose to backport them but I don't think they'll
-do it before the change at least lands on -rc which is at least 3+
-months away.  It's also possible for distros to backport it but enable
-it only if certain kernel parameter is set but you'll have to ask each
-distro whether they're willing to do such thing.
+well, theoretically, yes.
+simultaneous add calls may happen in hotplug case, but I don't think an
+ACPI ALS device supports hotplug.
 
-Thanks.
+> This variable may need some protection. (I'm guessing acpi may prevent simultaneous
+> add calls?)
 
--- 
-tejun
+
+> > +	static int als_id;
+> > +	char name[10];
+> > +	struct acpi_als *als;
+> > +
+> > +	if (unlikely(als_id >= 10)) {
+> > +		printk(KERN_WARNING PREFIX "Too many ALS device found\n");
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	als = kzalloc(sizeof(struct acpi_als), GFP_KERNEL);
+> > +	if (!als)
+> > +		return -ENOMEM;
+> > +
+> > +	als->device = device;
+> > +	strcpy(acpi_device_name(device), ACPI_ALS_DEVICE_NAME);
+> > +	strcpy(acpi_device_class(device), ACPI_ALS_CLASS);
+> > +	device->driver_data = als;
+> > +
+> > +	result = acpi_als_get_illuminance(als);
+> > +	if (result)
+> > +		goto end;
+> > +
+> > +	sprintf(name, "acpi_als%d", als_id++);
+> > +	als->classdev = als_device_register(&device->dev, name);
+> > +	if (IS_ERR(als->classdev)) {
+> > +		result = PTR_ERR(als->classdev);
+> > +		goto end;
+> > +	}
+> > +
+> > +	result = device_create_file(als->classdev, &dev_attr_illuminance);
+> > +	if (result)
+> > +		als_device_unregister(als->classdev);
+> > +
+> > +end:
+> > +	if (result)
+> If it fails, do you want to decrement als_id (for consistency sake if nothing else)?
+
+sounds good.
+
+refreshed patch attached.
+
+
+ACPI spec defines ACPI Ambient Light Sensor device (hid ACPI0008),
+which provides a standard interface by which the OS may query properties
+of the ambient light environment the system is currently operating in,
+as well as the ability to detect meaningful changes in these values when
+the environment changes.
+
+This patch introduces the ACPI ALS device driver.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ Documentation/acpi/debug.txt |    1 
+ MAINTAINERS                  |    7 +
+ drivers/acpi/Kconfig         |    9 +
+ drivers/acpi/Makefile        |    1 
+ drivers/acpi/als.c           |  226 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/debug.c         |    1 
+ include/acpi/acpi_drivers.h  |    1 
+ 7 files changed, 246 insertions(+)
+
+Index: linux-2.6/drivers/acpi/als.c
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/acpi/als.c
+@@ -0,0 +1,226 @@
++/*
++ *  als.c - ACPI Ambient Light Sensor Driver
++ *
++ *  Copyright (C) 2009 Intel Corp
++ *  Copyright (C) 2009 Zhang Rui <rui.zhang@intel.com>
++ *
++ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/als_sys.h>
++#include <acpi/acpi_bus.h>
++#include <acpi/acpi_drivers.h>
++
++#define PREFIX "ACPI: "
++
++#define ACPI_ALS_CLASS			"als"
++#define ACPI_ALS_DEVICE_NAME		"Ambient Light Sensor"
++#define ACPI_ALS_NOTIFY_ILLUMINANCE	0x80
++#define ACPI_ALS_NOTIFY_COLOR_TEMP	0x81
++#define ACPI_ALS_NOTIFY_RESPONSE	0x82
++
++#define _COMPONENT		ACPI_ALS_COMPONENT
++ACPI_MODULE_NAME("als");
++
++MODULE_AUTHOR("Zhang Rui");
++MODULE_DESCRIPTION("ACPI Ambient Light Sensor Driver");
++MODULE_LICENSE("GPL");
++
++static int acpi_als_add(struct acpi_device *device);
++static int acpi_als_remove(struct acpi_device *device, int type);
++static void acpi_als_notify(struct acpi_device *device, u32 event);
++
++static const struct acpi_device_id als_device_ids[] = {
++	{"ACPI0008", 0},
++	{"", 0},
++};
++
++MODULE_DEVICE_TABLE(acpi, als_device_ids);
++
++static struct acpi_driver acpi_als_driver = {
++	.name = "als",
++	.class = ACPI_ALS_CLASS,
++	.ids = als_device_ids,
++	.ops = {
++		.add = acpi_als_add,
++		.remove = acpi_als_remove,
++		.notify = acpi_als_notify,
++		},
++};
++
++struct acpi_als {
++	struct acpi_device *device;
++	struct device *classdev;	/* pointer to als sysfs/class device */
++	int illuminance;
++};
++
++/* --------------------------------------------------------------------------
++		Ambient Light Sensor device Management
++   -------------------------------------------------------------------------- */
++
++/*
++ * acpi_als_get_illuminance - get the current ambient light illuminance
++ */
++static int acpi_als_get_illuminance(struct acpi_als *als)
++{
++	acpi_status status;
++	unsigned long long illuminance;
++
++	status =
++	    acpi_evaluate_integer(als->device->handle, "_ALI", NULL,
++				  &illuminance);
++	if (ACPI_FAILURE(status)) {
++		ACPI_EXCEPTION((AE_INFO, status,
++				"Error reading ALS illuminance"));
++		return -ENOENT;
++	}
++	als->illuminance = illuminance;
++	return 0;
++}
++
++
++/* --------------------------------------------------------------------------
++				sysfs I/F
++   -------------------------------------------------------------------------- */
++static int
++illuminance_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct acpi_device *device = to_acpi_device(dev->parent);
++	struct acpi_als *als = acpi_driver_data(device);
++	int result;
++
++	result = acpi_als_get_illuminance(als);
++	if (result)
++		return result;
++
++	if (als->illuminance < -1)
++		return -EINVAL;
++
++	return sprintf(buf, "%d\n", als->illuminance);
++}
++
++DEVICE_ATTR(illuminance, 0444, illuminance_show, NULL);
++
++/* --------------------------------------------------------------------------
++				 Driver Model
++   -------------------------------------------------------------------------- */
++
++static void acpi_als_notify(struct acpi_device *device, u32 event)
++{
++	struct acpi_als *als = acpi_driver_data(device);
++
++	if (!als)
++		return;
++
++	switch (event) {
++	case ACPI_ALS_NOTIFY_ILLUMINANCE:
++		acpi_als_get_illuminance(als);
++		break;
++	case ACPI_ALS_NOTIFY_COLOR_TEMP:
++		/*
++		 *  TODO:
++		 *  re-evalute the color temperature and chromaticity
++		 */
++		break;
++	case ACPI_ALS_NOTIFY_RESPONSE:
++		/*
++		 * TODO:
++		 * update the Ambient Light Illuminance to
++		 * Display Luminance Adjustment Mappings
++		 */
++		break;
++	default:
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
++				  "Unsupported event [0x%x]\n", event));
++	}
++	acpi_bus_generate_proc_event(device, event, (u32) als->illuminance);
++	acpi_bus_generate_netlink_event(device->pnp.device_class,
++					dev_name(&device->dev), event,
++					(u32) als->illuminance);
++}
++
++static int acpi_als_add(struct acpi_device *device)
++{
++	int result;
++	static int als_id;
++	char name[10];
++	struct acpi_als *als;
++
++	if (unlikely(als_id >= 10)) {
++		printk(KERN_WARNING PREFIX "Too many ALS devices found\n");
++		return -ENODEV;
++	}
++
++	als = kzalloc(sizeof(struct acpi_als), GFP_KERNEL);
++	if (!als)
++		return -ENOMEM;
++
++	als->device = device;
++	strcpy(acpi_device_name(device), ACPI_ALS_DEVICE_NAME);
++	strcpy(acpi_device_class(device), ACPI_ALS_CLASS);
++	device->driver_data = als;
++
++	result = acpi_als_get_illuminance(als);
++	if (result)
++		goto end;
++
++	sprintf(name, "acpi_als%d", als_id);
++	als->classdev = als_device_register(&device->dev, name);
++	if (IS_ERR(als->classdev)) {
++		result = PTR_ERR(als->classdev);
++		goto end;
++	}
++
++	result = device_create_file(als->classdev, &dev_attr_illuminance);
++	if (result)
++		als_device_unregister(als->classdev);
++
++end:
++	if (result)
++		kfree(als);
++	else
++		als_id++;
++
++	return result;
++}
++
++static int acpi_als_remove(struct acpi_device *device, int type)
++{
++	struct acpi_als *als = acpi_driver_data(device);
++
++	als_device_unregister(als->classdev);
++	kfree(als);
++	return 0;
++}
++
++static int __init acpi_als_init(void)
++{
++	return acpi_bus_register_driver(&acpi_als_driver);
++}
++
++static void __exit acpi_als_exit(void)
++{
++	acpi_bus_unregister_driver(&acpi_als_driver);
++}
++
++module_init(acpi_als_init);
++module_exit(acpi_als_exit);
+Index: linux-2.6/drivers/acpi/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/acpi/Kconfig
++++ linux-2.6/drivers/acpi/Kconfig
+@@ -333,4 +333,13 @@ config ACPI_SBS
+ 	  To compile this driver as a module, choose M here:
+ 	  the modules will be called sbs and sbshc.
+ 
++config ACPI_ALS
++	tristate "Ambient Light Sensor driver"
++	select ALS
++	help
++	  This driver supports the ACPI Ambient Light Sensor.
++
++	  To compile this driver as a module, choose M here:
++	  the module will be called als.
++
+ endif	# ACPI
+Index: linux-2.6/drivers/acpi/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/acpi/Makefile
++++ linux-2.6/drivers/acpi/Makefile
+@@ -56,6 +56,7 @@ obj-$(CONFIG_ACPI_HOTPLUG_MEMORY) += acp
+ obj-$(CONFIG_ACPI_BATTERY)	+= battery.o
+ obj-$(CONFIG_ACPI_SBS)		+= sbshc.o
+ obj-$(CONFIG_ACPI_SBS)		+= sbs.o
++obj-$(CONFIG_ACPI_ALS)		+= als.o
+ 
+ # processor has its own "processor." module_param namespace
+ processor-y			:= processor_core.o processor_throttling.o
+Index: linux-2.6/Documentation/acpi/debug.txt
+===================================================================
+--- linux-2.6.orig/Documentation/acpi/debug.txt
++++ linux-2.6/Documentation/acpi/debug.txt
+@@ -63,6 +63,7 @@ shows the supported mask values, current
+     ACPI_MEMORY_DEVICE_COMPONENT    0x08000000
+     ACPI_VIDEO_COMPONENT            0x10000000
+     ACPI_PROCESSOR_COMPONENT        0x20000000
++    ACPI_ALS_COMPONENT              0x40000000
+ 
+ debug_level
+ -----------
+Index: linux-2.6/drivers/acpi/debug.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/debug.c
++++ linux-2.6/drivers/acpi/debug.c
+@@ -53,6 +53,7 @@ static const struct acpi_dlayer acpi_deb
+ 	ACPI_DEBUG_INIT(ACPI_MEMORY_DEVICE_COMPONENT),
+ 	ACPI_DEBUG_INIT(ACPI_VIDEO_COMPONENT),
+ 	ACPI_DEBUG_INIT(ACPI_PROCESSOR_COMPONENT),
++	ACPI_DEBUG_INIT(ACPI_ALS_COMPONENT),
+ };
+ 
+ static const struct acpi_dlevel acpi_debug_levels[] = {
+Index: linux-2.6/include/acpi/acpi_drivers.h
+===================================================================
+--- linux-2.6.orig/include/acpi/acpi_drivers.h
++++ linux-2.6/include/acpi/acpi_drivers.h
+@@ -49,6 +49,7 @@
+ #define ACPI_MEMORY_DEVICE_COMPONENT	0x08000000
+ #define ACPI_VIDEO_COMPONENT		0x10000000
+ #define ACPI_PROCESSOR_COMPONENT	0x20000000
++#define ACPI_ALS_COMPONENT		0x40000000
+ 
+ /*
+  * _HID definitions
+Index: linux-2.6/MAINTAINERS
+===================================================================
+--- linux-2.6.orig/MAINTAINERS
++++ linux-2.6/MAINTAINERS
+@@ -234,6 +234,13 @@ F:	drivers/acpi/
+ F:	drivers/pnp/pnpacpi/
+ F:	include/linux/acpi.h
+ 
++ACPI AMBIENT LIGHT SENSOR DRIVER
++M:	Zhang Rui <rui.zhang@intel.com>
++L:	linux-acpi@vger.kernel.org
++W:	http://www.lesswatts.org/projects/acpi/
++S:	Supported
++F:	drivers/acpi/als.c
++
+ ACPI BATTERY DRIVERS
+ M:	Alexey Starikovskiy <astarikovskiy@suse.de>
+ L:	linux-acpi@vger.kernel.org
+
+
