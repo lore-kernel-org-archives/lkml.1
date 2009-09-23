@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbZIWBBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZIWBDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbZIWBBr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 21:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbZIWBBq
+	id S1753730AbZIWBDq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 21:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZIWBDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 21:01:46 -0400
-Received: from mail.perches.com ([173.55.12.10]:1135 "EHLO mail.perches.com"
+	Tue, 22 Sep 2009 21:03:45 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:34481 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753598AbZIWBBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 21:01:46 -0400
-Subject: Re: checkpatch as a tool (was Re: [RFC][PATCH] SCHED_EDF
- scheduling class)
-From: Joe Perches <joe@perches.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <1253667103.25689.35.camel@desktop>
-References: <1253615424.20345.76.camel@Palantir>
-	 <1253625878.6575.34.camel@desktop> <1253628061.20345.173.camel@Palantir>
-	 <1253637721.18939.3.camel@laptop>  <20090922191117.GB24542@elte.hu>
-	 <1253667103.25689.35.camel@desktop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Sep 2009 18:01:48 -0700
-Message-Id: <1253667708.30020.134.camel@Joe-Laptop.home>
+	id S1753598AbZIWBDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 21:03:45 -0400
+Date: Tue, 22 Sep 2009 22:03:10 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: [GIT PATCHES for 2.6.32] V4L/DVB fixes
+Message-ID: <20090922220310.233e1854@pedra.chehab.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-22 at 17:51 -0700, Daniel Walker wrote:
-> I'll stop sending those
-> emails if it's actually negative , but I don't think it is..
+Linus,
 
-Hi Daniel.
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
 
-I think it'd be more helpful if instead of merely sending
-a "hah! checkpatch failure!" email you send the submitter
-a gentler nudge and a fixed patch.
+For 4 build fix patches:
 
-cheers, Joe
+   - saa7134: fix build;
+   - dvbdev: Remove an annoying/uneeded warning that happens when 
+     DVB_CORE is disabled but some V4L drivers are enabled;
+   - dib0700: not building CONFIG_DVB_TUNER_DIB0070 breaks compilation;
+   - staging/go7007: Revert compatibility code added at the wrong place 
+     preventing compilation.
 
+Cheers,
+Mauro.
 
+---
+
+ drivers/media/dvb/dvb-core/dvbdev.h        |    5 ++---
+ drivers/media/dvb/dvb-usb/Kconfig          |    2 +-
+ drivers/media/video/saa7164/saa7164-api.c  |    8 ++++----
+ drivers/media/video/saa7164/saa7164-cmd.c  |    2 +-
+ drivers/media/video/saa7164/saa7164-core.c |    6 +++---
+ drivers/media/video/saa7164/saa7164.h      |    4 ++--
+ drivers/staging/go7007/Makefile            |    5 -----
+ 7 files changed, 13 insertions(+), 19 deletions(-)
+
+Ingo Molnar (1):
+      media: video: Fix build in saa7164
+
+Mauro Carvalho Chehab (3):
+      V4L/DVB (13037): go7007: Revert compatibility code added at the wrong place
+      V4L/DVB (13038): dvbdev: Remove an anoying/uneeded warning
+      V4L/DVB (13039): dib0700: not building CONFIG_DVB_TUNER_DIB0070 breaks compilation
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
