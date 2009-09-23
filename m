@@ -1,68 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751555AbZIWPKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbZIWPKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751555AbZIWPKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 11:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbZIWPKL
+	id S1752461AbZIWPKr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 11:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZIWPKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 11:10:11 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:63702 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbZIWPKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 11:10:10 -0400
-Message-ID: <4ABA3A37.2070108@redhat.com>
-Date: Wed, 23 Sep 2009 18:09:43 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 23 Sep 2009 11:10:46 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:26762 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbZIWPKo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 11:10:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=VTsOUZuGto9cBiN8vhSfx5E56+kR4lvnfPVVTfyUyIrds7B8066+3ykJwkQbE2EimJ
+         9WYI18YRBIWXqbWID+o54ydy7xUdrebadT0AtdlrvG7cP+YXuRLeudLC0cuzpokQm9w/
+         SkXI0F3iCOnMYUDUr+DSUcHO/LUqEkQbklAPA=
+Message-ID: <4ABA3A73.5090508@gmail.com>
+Date: Wed, 23 Sep 2009 11:10:43 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: Arnaldo Carvalho de Melo <acme@redhat.com>, rostedt@goodmis.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [patch] Re: [perf] Finding uninstalled modules Was Re: mailing
- list for trace users
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com>	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>	 <4AB8BA37.4010305@redhat.com> <20090922201746.GH5216@ghostprotocols.net>	 <4AB9DCC8.5050603@redhat.com> <1253697658.11461.36.camel@marge.simson.net>	 <4AB9F08E.1020106@redhat.com> <1253705515.7835.41.camel@marge.simson.net>	 <4ABA1B75.7040900@redhat.com>  <4ABA1E3B.40800@redhat.com>	 <1253713800.7816.15.camel@marge.simson.net>  <4ABA2A0B.1010103@redhat.com>	 <1253714972.7816.23.camel@marge.simson.net>  <4ABA3321.9090503@redhat.com>	 <1253717548.7816.34.camel@marge.simson.net>  <4ABA3732.3040907@redhat.com> <1253718323.7816.42.camel@marge.simson.net>
-In-Reply-To: <1253718323.7816.42.camel@marge.simson.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Avi Kivity <avi@redhat.com>
+CC: "Ira W. Snyder" <iws@ovro.caltech.edu>,
+       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com> <4AB10B67.2050108@redhat.com> <4AB13B09.5040308@gmail.com> <4AB151D7.10402@redhat.com> <4AB1A8FD.2010805@gmail.com> <20090921214312.GJ7182@ovro.caltech.edu> <4AB89C48.4020903@redhat.com> <4ABA3005.60905@gmail.com> <4ABA32AF.50602@redhat.com>
+In-Reply-To: <4ABA32AF.50602@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig5B75B8792B906F18C2BBDA7B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23/2009 06:05 PM, Mike Galbraith wrote:
->
->> Well, you don't need to do anything to open a file from cwd: that's the
->> default.  You need to actively prepend /lib/modules/blah to get it to
->> load from the correct location.  What I don't understand is why it is
->> only hitting me (esp. as it used to work).
->>      
-> If your modules.dep, always was missing the /lib/modules/blah bit, it
-> never worked for you.  I wrote the thing with the rash assumption that
-> it always contained full path like mine does :)
->
->    
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig5B75B8792B906F18C2BBDA7B
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Ah, changed there, I missed that part earlier, sorry.  So it's probably 
-a change in modules.dep generation instead of tools/perf.
+Avi Kivity wrote:
+> On 09/23/2009 05:26 PM, Gregory Haskins wrote:
+>>
+>>  =20
+>>>> Yes, I'm having to create my own bus model, a-la lguest, virtio-pci,=
 
-> So, I just need to check whether it's full path or not, prepend or take
-> the path as is, and hope there aren't several other ways to get screwed
-> up by modules.dep content.
->    
+>>>> and
+>>>> virtio-s390. It isn't especially easy. I can steal lots of code from=
 
-Maybe we should fix that then (though I prefer relative paths myself).
+>>>> the
+>>>> lguest bus model, but sometimes it is good to generalize, especially=
 
-> Too bad the kernel doesn't store the path in /sys/modules/bla/path.
-> That would be nicer than rummaging around in a mutable file.
->    
+>>>> after the fourth implemention or so. I think this is what GHaskins
+>>>> tried
+>>>> to do.
+>>>>
+>>>>       =20
+>>> Yes.  vbus is more finely layered so there is less code duplication.
+>>>     =20
+>> To clarify, Ira was correct in stating this generalizing some of these=
 
-But then you rely on a running kernel.  Be nice to be able to ship 
-perf.data.
+>> components was one of the goals for the vbus project: IOW vbus finely
+>> layers and defines what's below virtio, not replaces it.
+>>
+>> You can think of a virtio-stack like this:
+>>
+>> --------------------------
+>> | virtio-net
+>> --------------------------
+>> | virtio-ring
+>> --------------------------
+>> | virtio-bus
+>> --------------------------
+>> | ? undefined ?
+>> --------------------------
+>>
+>> IOW: The way I see it, virtio is a device interface model only.  The
+>> rest of it is filled in by the virtio-transport and some kind of
+>> back-end.
+>>
+>> So today, we can complete the "? undefined ?" block like this for KVM:=
 
--- 
+>>
+>> --------------------------
+>> | virtio-pci
+>> --------------------------
+>>               |
+>> --------------------------
+>> | kvm.ko
+>> --------------------------
+>> | qemu
+>> --------------------------
+>> | tuntap
+>> --------------------------
+>>
+>> In this case, kvm.ko and tuntap are providing plumbing, and qemu is
+>> providing a backend device model (pci-based, etc).
+>>
+>> You can, of course, plug a different stack in (such as virtio-lguest,
+>> virtio-ira, etc) but you are more or less on your own to recreate many=
 
-error compiling committee.c: too many arguments to function
+>> of the various facilities contained in that stack (such as things
+>> provided by QEMU, like discovery/hotswap/addressing), as Ira is
+>> discovering.
+>>
+>> Vbus tries to commoditize more components in the stack (like the bus
+>> model and backend-device model) so they don't need to be redesigned ea=
+ch
+>> time we solve this "virtio-transport" problem.  IOW: stop the
+>> proliferation of the need for pci-bus, lguest-bus, foo-bus underneath
+>> virtio.  Instead, we can then focus on the value add on top, like the
+>> models themselves or the simple glue between them.
+>>
+>> So now you might have something like
+>>
+>> --------------------------
+>> | virtio-vbus
+>> --------------------------
+>> | vbus-proxy
+>> --------------------------
+>> | kvm-guest-connector
+>> --------------------------
+>>               |
+>> --------------------------
+>> | kvm.ko
+>> --------------------------
+>> | kvm-host-connector.ko
+>> --------------------------
+>> | vbus.ko
+>> --------------------------
+>> | virtio-net-backend.ko
+>> --------------------------
+>>
+>> so now we don't need to worry about the bus-model or the device-model
+>> framework.  We only need to implement the connector, etc.  This is han=
+dy
+>> when you find yourself in an environment that doesn't support PCI (suc=
+h
+>> as Ira's rig, or userspace containers), or when you want to add featur=
+es
+>> that PCI doesn't have (such as fluid event channels for things like IP=
+C
+>> services, or priortizable interrupts, etc).
+>>   =20
+>=20
+> Well, vbus does more, for example it tunnels interrupts instead of
+> exposing them 1:1 on the native interface if it exists.
 
+As I've previously explained, that trait is a function of the
+kvm-connector I've chosen to implement, not of the overall design of vbus=
+=2E
+
+The reason why my kvm-connector is designed that way is because my early
+testing/benchmarking shows one of the issues in KVM performance is the
+ratio of exits per IO operation are fairly high, especially as your
+scale io-load.  Therefore, the connector achieves a substantial
+reduction in that ratio by treating "interrupts" to the same kind of
+benefits that NAPI brought to general networking: That is, we enqueue
+"interrupt" messages into a lockless ring and only hit the IDT for the
+first occurrence.  Subsequent interrupts are injected in a
+parallel/lockless manner, without hitting the IDT nor incurring an extra
+EOI.  This pays dividends as the IO rate increases, which is when the
+guest needs the most help.
+
+OTOH, it is entirely possible to design the connector such that we
+maintain a 1:1 ratio of signals to traditional IDT interrupts.  It is
+also possible to design a connector which surfaces as something else,
+such as PCI devices (by terminating the connector in QEMU and utilizing
+its PCI emulation facilities), which would naturally employ 1:1 mapping.
+
+So if 1:1 mapping is a critical feature (I would argue to the contrary),
+vbus can support it.
+
+> It also pulls parts of the device model into the host kernel.
+
+That is the point.  Most of it needs to be there for performance.  And
+what doesn't need to be there for performance can either be:
+
+a) skipped at the discretion of the connector/device-model designer
+
+OR
+
+b) included because its trivially small subset of the model (e.g. a
+mac-addr attribute) and its nice to have a cohesive solution instead of
+requiring a separate binary blob that can get out of sync, etc.
+
+The example Ive provided to date (venet on kvm) utilizes (b), but it
+certainly doesn't have to.  Therefore, I don't think vbus as a whole can
+be judged on this one point.
+
+>=20
+>>> The virtio layering was more or less dictated by Xen which doesn't ha=
+ve
+>>> shared memory (it uses grant references instead).  As a matter of fac=
+t
+>>> lguest, kvm/pci, and kvm/s390 all have shared memory, as you do, so t=
+hat
+>>> part is duplicated.  It's probably possible to add a virtio-shmem.ko
+>>> library that people who do have shared memory can reuse.
+>>>     =20
+>> Note that I do not believe the Xen folk use virtio, so while I can
+>> appreciate the foresight that went into that particular aspect of the
+>> design of the virtio model, I am not sure if its a realistic constrain=
+t.
+>>   =20
+>=20
+> Since a virtio goal was to reduce virtual device driver proliferation,
+> it was necessary to accommodate Xen.
+
+Fair enough, but I don't think the Xen community will ever use it.
+
+To your point, a vbus goal was to reduce the bus-model and
+backend-device-model proliferation for environments served by Linux as
+the host.  This naturally complements virtio's driver non-proliferation
+goal, but probably excludes Xen for reasons beyond the lack of shmem
+(since it has its own non-linux hypervisor kernel).
+
+In any case, I've already stated that we simply make the virtio-shmem
+(vbus-proxy-device) facility optionally defined, and unavailable on
+non-shmem based architectures to work around that issue.
+
+The alternative is that we abstract the shmem concept further (ala
+->add_buf() from the virtqueue world) but it is probably pointless to
+try to accommodate shared-memory if you don't really have it, and no-one
+will likely use it.
+
+Kind Regards,
+-Greg
+
+
+--------------enig5B75B8792B906F18C2BBDA7B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkq6OnMACgkQP5K2CMvXmqFK7gCfRr08U1PGhr8SulFvwY5YQJnO
+APoAn0k3pmKeK+oy9y4Bbyw3OXcjdLt9
+=xUnP
+-----END PGP SIGNATURE-----
+
+--------------enig5B75B8792B906F18C2BBDA7B--
