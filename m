@@ -1,71 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbZIWMud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbZIWMxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbZIWMud (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 08:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbZIWMub
+	id S1751731AbZIWMxt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 08:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZIWMxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 08:50:31 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:56164 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbZIWMua (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 08:50:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=B7htspIhLDxE5LrBL/HLyEP7JhlurSgrhGd5y+CQ9b5OSGq7XNGWng34cZtGFfCzAj
-         tnN90tYoC/D3MKUbCXCz20w8liOHrXs7Azvdb2KVy5r+c6gJr34qbz5n9taIW8TTA3+9
-         4BlIKbonxXbCPll6sdNvayfhw2yoeh+RPm/DE=
+	Wed, 23 Sep 2009 08:53:49 -0400
+Received: from mga03.intel.com ([143.182.124.21]:31008 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751151AbZIWMxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 08:53:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,438,1249282800"; 
+   d="scan'208";a="190737880"
+Date: Wed, 23 Sep 2009 20:53:38 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jan Kara <jack@suse.cz>,
+       "Theodore Ts'o" <tytso@mit.edu>, Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/6] writeback: balance_dirty_pages() shall write more
+	than dirtied pages
+Message-ID: <20090923125338.GA32347@localhost>
+References: <20090923123337.990689487@intel.com> <20090923124027.456325340@intel.com> <20090923124529.GA26263@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <63386a3d0909230533o7ab835ecubc8d074fea97642f@mail.gmail.com>
-References: <1253615424.20345.76.camel@Palantir>
-	 <63386a3d0909230533o7ab835ecubc8d074fea97642f@mail.gmail.com>
-Date: Wed, 23 Sep 2009 14:50:31 +0200
-Message-ID: <63386a3d0909230550p2443ff14me39bf8c964abfd5d@mail.gmail.com>
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Raistlin <raistlin@linux.it>
-Cc: Peter Zijlstra <peterz@infradead.org>, claudio@evidence.eu.com,
-       michael@evidence.eu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090923124529.GA26263@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/23 Linus Walleij <linus.ml.walleij@gmail.com>:
+On Wed, Sep 23, 2009 at 08:45:29PM +0800, Christoph Hellwig wrote:
+> On Wed, Sep 23, 2009 at 08:33:39PM +0800, Wu Fengguang wrote:
+> > Some filesystem may choose to write much more than ratelimit_pages
+> > before calling balance_dirty_pages_ratelimited_nr(). So it is safer to
+> > determine number to write based on real number of dirtied pages.
+> > 
+> > The increased write_chunk may make the dirtier more bumpy.  This is
+> > filesystem writers' duty not to dirty too much at a time without
+> > checking the ratelimit.
+> 
+> For some reason the filesystems tricking around
+> balance_dirty_pages_ratelimited's semantics seem to get much better
+> buffered write performance.
 
-> In file included from /home/linus/src/linux-trees/linux-2.6/kernel/sched.c:1856:
-> /home/linus/src/linux-trees/linux-2.6/kernel/sched_edf.c: In function
-> 'pick_next_task_edf':
-> /home/linus/src/linux-trees/linux-2.6/kernel/sched_edf.c:435: error:
-> implicit declaration of function 'hrtick_enabled'
+Yes, I would expect enlarged ratelimit numbers to benefit performance.
 
-Nah, no complex explanations... it's just compiled out but still used,
-here's another patch:
+> Are you sure this is not going to destroy that benefit?  (But yes,
+> we should make sure it behaves the same for all filesystems)
 
-diff --git a/kernel/sched_edf.c b/kernel/sched_edf.c
-index cdec433..198ad6b 100644
---- a/kernel/sched_edf.c
-+++ b/kernel/sched_edf.c
-@@ -431,9 +431,11 @@ struct task_struct *pick_next_task_edf(struct rq *rq)
-        BUG_ON(!edf_se);
+If filesystem chooses to use a larger ratelimit number, then this
+patch will also enlarge the write chunk size (which is now computed
+based on the enlarged ratelimit number), which I believe will be
+beneficial, too.
 
-        p = edf_task_of(edf_se);
--       p->se.exec_start = rq->clock;
-+       p->se.exec_start = rq->clock
-+#ifdef CONFIG_SCHED_HRTICK
-        if (hrtick_enabled(rq))
-                start_hrtick_edf(rq, p);
-+#endif
+Thanks,
+Fengguang
 
-        return p;
- }
-
-Yours,
-Linus Walleij
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  mm/page-writeback.c |   13 +++++++------
+> >  1 file changed, 7 insertions(+), 6 deletions(-)
+> > 
+> > --- linux.orig/mm/page-writeback.c	2009-09-23 16:31:46.000000000 +0800
+> > +++ linux/mm/page-writeback.c	2009-09-23 16:33:19.000000000 +0800
+> > @@ -44,12 +44,12 @@ static long ratelimit_pages = 32;
+> >  /*
+> >   * When balance_dirty_pages decides that the caller needs to perform some
+> >   * non-background writeback, this is how many pages it will attempt to write.
+> > - * It should be somewhat larger than RATELIMIT_PAGES to ensure that reasonably
+> > + * It should be somewhat larger than dirtied pages to ensure that reasonably
+> >   * large amounts of I/O are submitted.
+> >   */
+> > -static inline long sync_writeback_pages(void)
+> > +static inline long sync_writeback_pages(unsigned long dirtied)
+> >  {
+> > -	return ratelimit_pages + ratelimit_pages / 2;
+> > +	return dirtied + dirtied / 2;
+> >  }
+> >  
+> >  /* The following parameters are exported via /proc/sys/vm */
+> > @@ -476,7 +476,8 @@ get_dirty_limits(unsigned long *pbackgro
+> >   * If we're over `background_thresh' then pdflush is woken to perform some
+> >   * writeout.
+> >   */
+> > -static void balance_dirty_pages(struct address_space *mapping)
+> > +static void balance_dirty_pages(struct address_space *mapping,
+> > +				unsigned long write_chunk)
+> >  {
+> >  	long nr_reclaimable, bdi_nr_reclaimable;
+> >  	long nr_writeback, bdi_nr_writeback;
+> > @@ -484,7 +485,6 @@ static void balance_dirty_pages(struct a
+> >  	unsigned long dirty_thresh;
+> >  	unsigned long bdi_thresh;
+> >  	unsigned long pages_written = 0;
+> > -	unsigned long write_chunk = sync_writeback_pages();
+> >  	unsigned long pause = 1;
+> >  
+> >  	struct backing_dev_info *bdi = mapping->backing_dev_info;
+> > @@ -640,9 +640,10 @@ void balance_dirty_pages_ratelimited_nr(
+> >  	p =  &__get_cpu_var(bdp_ratelimits);
+> >  	*p += nr_pages_dirtied;
+> >  	if (unlikely(*p >= ratelimit)) {
+> > +		ratelimit = sync_writeback_pages(*p);
+> >  		*p = 0;
+> >  		preempt_enable();
+> > -		balance_dirty_pages(mapping);
+> > +		balance_dirty_pages(mapping, ratelimit);
+> >  		return;
+> >  	}
+> >  	preempt_enable();
+> > 
+> > 
+> ---end quoted text---
