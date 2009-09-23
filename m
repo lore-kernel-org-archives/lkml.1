@@ -1,473 +1,771 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbZIWFHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZIWFLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753013AbZIWFHQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 01:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZIWFHO
+	id S1752525AbZIWFLH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 01:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbZIWFLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 01:07:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60390 "EHLO hera.kernel.org"
+	Wed, 23 Sep 2009 01:11:06 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:33271 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752711AbZIWFHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 01:07:08 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [PATCH 5/5] percpu: kill legacy percpu allocator
-Date: Wed, 23 Sep 2009 14:06:22 +0900
-Message-Id: <1253682382-24740-6-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1253682382-24740-1-git-send-email-tj@kernel.org>
-References: <1253682382-24740-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 05:06:36 +0000 (UTC)
+	id S1751482AbZIWFLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 01:11:04 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH v2] mfd: ADP5520 Multifunction LCD Backlight and Keypad Input Device Driver
+Date: Wed, 23 Sep 2009 01:11:04 -0400
+Message-Id: <1253682664-27040-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc1
+In-Reply-To: <1253212036-29445-1-git-send-email-vapier@gentoo.org>
+References: <1253212036-29445-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With ia64 converted, there's no arch left which still uses legacy
-percpu allocator.  Kill it.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>
+Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
+
+Subdevs:
+LCD Backlight   : drivers/video/backlight/adp5520_bl
+LEDs            : drivers/led/leds-adp5520
+GPIO            : drivers/gpio/adp5520-gpio (ADP5520 only)
+Keys            : drivers/input/keyboard/adp5520-keys (ADP5520 only)
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- include/linux/percpu.h |   24 -------
- kernel/module.c        |  150 ----------------------------------------
- mm/Makefile            |    4 -
- mm/allocpercpu.c       |  177 ------------------------------------------------
- mm/percpu.c            |    2 -
- 5 files changed, 0 insertions(+), 357 deletions(-)
- delete mode 100644 mm/allocpercpu.c
+v2
+	- fix return type of irq handler
+	- fix unbalanced paren in BL_CTRL_VAL() macro
 
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 878836c..5baf5b8 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -34,8 +34,6 @@
+ drivers/mfd/Kconfig         |   10 ++
+ drivers/mfd/Makefile        |    1 +
+ drivers/mfd/adp5520.c       |  371 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/adp5520.h |  303 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 685 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mfd/adp5520.c
+ create mode 100644 include/linux/mfd/adp5520.h
+
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 570be13..34e8595 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -160,6 +160,16 @@ config PMIC_DA903X
+ 	  individual components like LCD backlight, voltage regulators,
+ 	  LEDs and battery-charger under the corresponding menus.
  
- #ifdef CONFIG_SMP
- 
--#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
--
- /* minimum unit size, also is the maximum supported allocation size */
- #define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(64 << 10)
- 
-@@ -130,28 +128,6 @@ extern int __init pcpu_page_first_chunk(size_t reserved_size,
- #define per_cpu_ptr(ptr, cpu)	SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
- 
- extern void *__alloc_reserved_percpu(size_t size, size_t align);
--
--#else /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
--
--struct percpu_data {
--	void *ptrs[1];
--};
--
--/* pointer disguising messes up the kmemleak objects tracking */
--#ifndef CONFIG_DEBUG_KMEMLEAK
--#define __percpu_disguise(pdata) (struct percpu_data *)~(unsigned long)(pdata)
--#else
--#define __percpu_disguise(pdata) (struct percpu_data *)(pdata)
--#endif
--
--#define per_cpu_ptr(ptr, cpu)						\
--({									\
--        struct percpu_data *__p = __percpu_disguise(ptr);		\
--        (__typeof__(ptr))__p->ptrs[(cpu)];				\
--})
--
--#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
--
- extern void *__alloc_percpu(size_t size, size_t align);
- extern void free_percpu(void *__pdata);
- 
-diff --git a/kernel/module.c b/kernel/module.c
-index e6bc4b2..7fd81d8 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -370,8 +370,6 @@ EXPORT_SYMBOL_GPL(find_module);
- 
- #ifdef CONFIG_SMP
- 
--#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
--
- static void *percpu_modalloc(unsigned long size, unsigned long align,
- 			     const char *name)
- {
-@@ -395,154 +393,6 @@ static void percpu_modfree(void *freeme)
- 	free_percpu(freeme);
- }
- 
--#else /* ... CONFIG_HAVE_LEGACY_PER_CPU_AREA */
--
--/* Number of blocks used and allocated. */
--static unsigned int pcpu_num_used, pcpu_num_allocated;
--/* Size of each block.  -ve means used. */
--static int *pcpu_size;
--
--static int split_block(unsigned int i, unsigned short size)
--{
--	/* Reallocation required? */
--	if (pcpu_num_used + 1 > pcpu_num_allocated) {
--		int *new;
--
--		new = krealloc(pcpu_size, sizeof(new[0])*pcpu_num_allocated*2,
--			       GFP_KERNEL);
--		if (!new)
--			return 0;
--
--		pcpu_num_allocated *= 2;
--		pcpu_size = new;
--	}
--
--	/* Insert a new subblock */
--	memmove(&pcpu_size[i+1], &pcpu_size[i],
--		sizeof(pcpu_size[0]) * (pcpu_num_used - i));
--	pcpu_num_used++;
--
--	pcpu_size[i+1] -= size;
--	pcpu_size[i] = size;
--	return 1;
--}
--
--static inline unsigned int block_size(int val)
--{
--	if (val < 0)
--		return -val;
--	return val;
--}
--
--static void *percpu_modalloc(unsigned long size, unsigned long align,
--			     const char *name)
--{
--	unsigned long extra;
--	unsigned int i;
--	void *ptr;
--	int cpu;
--
--	if (align > PAGE_SIZE) {
--		printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
--		       name, align, PAGE_SIZE);
--		align = PAGE_SIZE;
--	}
--
--	ptr = __per_cpu_start;
--	for (i = 0; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
--		/* Extra for alignment requirement. */
--		extra = ALIGN((unsigned long)ptr, align) - (unsigned long)ptr;
--		BUG_ON(i == 0 && extra != 0);
--
--		if (pcpu_size[i] < 0 || pcpu_size[i] < extra + size)
--			continue;
--
--		/* Transfer extra to previous block. */
--		if (pcpu_size[i-1] < 0)
--			pcpu_size[i-1] -= extra;
--		else
--			pcpu_size[i-1] += extra;
--		pcpu_size[i] -= extra;
--		ptr += extra;
--
--		/* Split block if warranted */
--		if (pcpu_size[i] - size > sizeof(unsigned long))
--			if (!split_block(i, size))
--				return NULL;
--
--		/* add the per-cpu scanning areas */
--		for_each_possible_cpu(cpu)
--			kmemleak_alloc(ptr + per_cpu_offset(cpu), size, 0,
--				       GFP_KERNEL);
--
--		/* Mark allocated */
--		pcpu_size[i] = -pcpu_size[i];
--		return ptr;
--	}
--
--	printk(KERN_WARNING "Could not allocate %lu bytes percpu data\n",
--	       size);
--	return NULL;
--}
--
--static void percpu_modfree(void *freeme)
--{
--	unsigned int i;
--	void *ptr = __per_cpu_start + block_size(pcpu_size[0]);
--	int cpu;
--
--	/* First entry is core kernel percpu data. */
--	for (i = 1; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
--		if (ptr == freeme) {
--			pcpu_size[i] = -pcpu_size[i];
--			goto free;
--		}
--	}
--	BUG();
--
-- free:
--	/* remove the per-cpu scanning areas */
--	for_each_possible_cpu(cpu)
--		kmemleak_free(freeme + per_cpu_offset(cpu));
--
--	/* Merge with previous? */
--	if (pcpu_size[i-1] >= 0) {
--		pcpu_size[i-1] += pcpu_size[i];
--		pcpu_num_used--;
--		memmove(&pcpu_size[i], &pcpu_size[i+1],
--			(pcpu_num_used - i) * sizeof(pcpu_size[0]));
--		i--;
--	}
--	/* Merge with next? */
--	if (i+1 < pcpu_num_used && pcpu_size[i+1] >= 0) {
--		pcpu_size[i] += pcpu_size[i+1];
--		pcpu_num_used--;
--		memmove(&pcpu_size[i+1], &pcpu_size[i+2],
--			(pcpu_num_used - (i+1)) * sizeof(pcpu_size[0]));
--	}
--}
--
--static int percpu_modinit(void)
--{
--	pcpu_num_used = 2;
--	pcpu_num_allocated = 2;
--	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
--			    GFP_KERNEL);
--	/* Static in-kernel percpu data (used). */
--	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
--	/* Free room. */
--	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
--	if (pcpu_size[1] < 0) {
--		printk(KERN_ERR "No per-cpu room for modules.\n");
--		pcpu_num_used = 1;
--	}
--
--	return 0;
--}
--__initcall(percpu_modinit);
--
--#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
--
- static unsigned int find_pcpusec(Elf_Ehdr *hdr,
- 				 Elf_Shdr *sechdrs,
- 				 const char *secstrings)
-diff --git a/mm/Makefile b/mm/Makefile
-index 728a9fd..3230eb5 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -34,11 +34,7 @@ obj-$(CONFIG_FAILSLAB) += failslab.o
- obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
- obj-$(CONFIG_FS_XIP) += filemap_xip.o
- obj-$(CONFIG_MIGRATION) += migrate.o
--ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- obj-$(CONFIG_SMP) += percpu.o
--else
--obj-$(CONFIG_SMP) += allocpercpu.o
--endif
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
- obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
-diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
-deleted file mode 100644
-index df34cea..0000000
---- a/mm/allocpercpu.c
-+++ /dev/null
-@@ -1,177 +0,0 @@
--/*
-- * linux/mm/allocpercpu.c
-- *
-- * Separated from slab.c August 11, 2006 Christoph Lameter
-- */
--#include <linux/mm.h>
--#include <linux/module.h>
--#include <linux/bootmem.h>
--#include <asm/sections.h>
--
--#ifndef cache_line_size
--#define cache_line_size()	L1_CACHE_BYTES
--#endif
--
--/**
-- * percpu_depopulate - depopulate per-cpu data for given cpu
-- * @__pdata: per-cpu data to depopulate
-- * @cpu: depopulate per-cpu data for this cpu
-- *
-- * Depopulating per-cpu data for a cpu going offline would be a typical
-- * use case. You need to register a cpu hotplug handler for that purpose.
-- */
--static void percpu_depopulate(void *__pdata, int cpu)
--{
--	struct percpu_data *pdata = __percpu_disguise(__pdata);
--
--	kfree(pdata->ptrs[cpu]);
--	pdata->ptrs[cpu] = NULL;
--}
--
--/**
-- * percpu_depopulate_mask - depopulate per-cpu data for some cpu's
-- * @__pdata: per-cpu data to depopulate
-- * @mask: depopulate per-cpu data for cpu's selected through mask bits
-- */
--static void __percpu_depopulate_mask(void *__pdata, const cpumask_t *mask)
--{
--	int cpu;
--	for_each_cpu_mask_nr(cpu, *mask)
--		percpu_depopulate(__pdata, cpu);
--}
--
--#define percpu_depopulate_mask(__pdata, mask) \
--	__percpu_depopulate_mask((__pdata), &(mask))
--
--/**
-- * percpu_populate - populate per-cpu data for given cpu
-- * @__pdata: per-cpu data to populate further
-- * @size: size of per-cpu object
-- * @gfp: may sleep or not etc.
-- * @cpu: populate per-data for this cpu
-- *
-- * Populating per-cpu data for a cpu coming online would be a typical
-- * use case. You need to register a cpu hotplug handler for that purpose.
-- * Per-cpu object is populated with zeroed buffer.
-- */
--static void *percpu_populate(void *__pdata, size_t size, gfp_t gfp, int cpu)
--{
--	struct percpu_data *pdata = __percpu_disguise(__pdata);
--	int node = cpu_to_node(cpu);
--
--	/*
--	 * We should make sure each CPU gets private memory.
--	 */
--	size = roundup(size, cache_line_size());
--
--	BUG_ON(pdata->ptrs[cpu]);
--	if (node_online(node))
--		pdata->ptrs[cpu] = kmalloc_node(size, gfp|__GFP_ZERO, node);
--	else
--		pdata->ptrs[cpu] = kzalloc(size, gfp);
--	return pdata->ptrs[cpu];
--}
--
--/**
-- * percpu_populate_mask - populate per-cpu data for more cpu's
-- * @__pdata: per-cpu data to populate further
-- * @size: size of per-cpu object
-- * @gfp: may sleep or not etc.
-- * @mask: populate per-cpu data for cpu's selected through mask bits
-- *
-- * Per-cpu objects are populated with zeroed buffers.
-- */
--static int __percpu_populate_mask(void *__pdata, size_t size, gfp_t gfp,
--				  cpumask_t *mask)
--{
--	cpumask_t populated;
--	int cpu;
--
--	cpus_clear(populated);
--	for_each_cpu_mask_nr(cpu, *mask)
--		if (unlikely(!percpu_populate(__pdata, size, gfp, cpu))) {
--			__percpu_depopulate_mask(__pdata, &populated);
--			return -ENOMEM;
--		} else
--			cpu_set(cpu, populated);
--	return 0;
--}
--
--#define percpu_populate_mask(__pdata, size, gfp, mask) \
--	__percpu_populate_mask((__pdata), (size), (gfp), &(mask))
--
--/**
-- * alloc_percpu - initial setup of per-cpu data
-- * @size: size of per-cpu object
-- * @align: alignment
-- *
-- * Allocate dynamic percpu area.  Percpu objects are populated with
-- * zeroed buffers.
-- */
--void *__alloc_percpu(size_t size, size_t align)
--{
--	/*
--	 * We allocate whole cache lines to avoid false sharing
--	 */
--	size_t sz = roundup(nr_cpu_ids * sizeof(void *), cache_line_size());
--	void *pdata = kzalloc(sz, GFP_KERNEL);
--	void *__pdata = __percpu_disguise(pdata);
--
--	/*
--	 * Can't easily make larger alignment work with kmalloc.  WARN
--	 * on it.  Larger alignment should only be used for module
--	 * percpu sections on SMP for which this path isn't used.
--	 */
--	WARN_ON_ONCE(align > SMP_CACHE_BYTES);
--
--	if (unlikely(!pdata))
--		return NULL;
--	if (likely(!__percpu_populate_mask(__pdata, size, GFP_KERNEL,
--					   &cpu_possible_map)))
--		return __pdata;
--	kfree(pdata);
--	return NULL;
--}
--EXPORT_SYMBOL_GPL(__alloc_percpu);
--
--/**
-- * free_percpu - final cleanup of per-cpu data
-- * @__pdata: object to clean up
-- *
-- * We simply clean up any per-cpu object left. No need for the client to
-- * track and specify through a bis mask which per-cpu objects are to free.
-- */
--void free_percpu(void *__pdata)
--{
--	if (unlikely(!__pdata))
--		return;
--	__percpu_depopulate_mask(__pdata, cpu_possible_mask);
--	kfree(__percpu_disguise(__pdata));
--}
--EXPORT_SYMBOL_GPL(free_percpu);
--
--/*
-- * Generic percpu area setup.
-- */
--#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
--unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
--
--EXPORT_SYMBOL(__per_cpu_offset);
--
--void __init setup_per_cpu_areas(void)
--{
--	unsigned long size, i;
--	char *ptr;
--	unsigned long nr_possible_cpus = num_possible_cpus();
--
--	/* Copy section for each CPU (we discard the original) */
--	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
--	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
--
--	for_each_possible_cpu(i) {
--		__per_cpu_offset[i] = ptr - __per_cpu_start;
--		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
--		ptr += size;
--	}
--}
--#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 43d8cac..adbc5a4 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -46,8 +46,6 @@
-  *
-  * To use this allocator, arch code should do the followings.
-  *
-- * - drop CONFIG_HAVE_LEGACY_PER_CPU_AREA
-- *
-  * - define __addr_to_pcpu_ptr() and __pcpu_ptr_to_addr() to translate
-  *   regular address to percpu pointer and back if they need to be
-  *   different from the default
++config PMIC_ADP5520
++	bool "Analog Devices ADP5520/01 MFD PMIC Core Support"
++	depends on I2C=y
++	help
++	  Say yes here to add support for Analog Devices AD5520 and ADP5501,
++	  Multifunction Power Management IC. This includes
++	  the I2C driver and the core APIs _only_, you have to select
++	  individual components like LCD backlight, LEDs, GPIOs and Kepad
++	  under the corresponding menus.
++
+ config MFD_WM8400
+ 	tristate "Support Wolfson Microelectronics WM8400"
+ 	select MFD_CORE
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index f3b277b..a42248e 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -50,3 +50,4 @@ obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
+ obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
+ obj-$(CONFIG_AB3100_CORE)	+= ab3100-core.o
+ obj-$(CONFIG_AB3100_OTP)	+= ab3100-otp.o
++obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
+diff --git a/drivers/mfd/adp5520.c b/drivers/mfd/adp5520.c
+new file mode 100644
+index 0000000..1083626
+--- /dev/null
++++ b/drivers/mfd/adp5520.c
+@@ -0,0 +1,371 @@
++/*
++ * Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
++ * LCD Backlight: drivers/video/backlight/adp5520_bl
++ * LEDs		: drivers/led/leds-adp5520
++ * GPIO		: drivers/gpio/adp5520-gpio (ADP5520 only)
++ * Keys		: drivers/input/keyboard/adp5520-keys (ADP5520 only)
++ *
++ * Copyright 2009 Analog Devices Inc.
++ *
++ * Derived from da903x:
++ * Copyright (C) 2008 Compulab, Ltd.
++ * 	Mike Rapoport <mike@compulab.co.il>
++ *
++ * Copyright (C) 2006-2008 Marvell International Ltd.
++ * 	Eric Miao <eric.miao@marvell.com>
++ *
++ * Licensed under the GPL-2 or later.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++#include <linux/workqueue.h>
++#include <linux/i2c.h>
++
++#include <linux/mfd/adp5520.h>
++
++struct adp5520_chip {
++	struct i2c_client *client;
++	struct device *dev;
++	struct mutex lock;
++	struct work_struct irq_work;
++	struct blocking_notifier_head notifier_list;
++	int irq;
++};
++
++static int __adp5520_read(struct i2c_client *client,
++				int reg, uint8_t *val)
++{
++	int ret;
++
++	ret = i2c_smbus_read_byte_data(client, reg);
++	if (ret < 0) {
++		dev_err(&client->dev, "failed reading at 0x%02x\n", reg);
++		return ret;
++	}
++
++	*val = (uint8_t)ret;
++	return 0;
++}
++
++static int __adp5520_write(struct i2c_client *client,
++				 int reg, uint8_t val)
++{
++	int ret;
++
++	ret = i2c_smbus_write_byte_data(client, reg, val);
++	if (ret < 0) {
++		dev_err(&client->dev, "failed writing 0x%02x to 0x%02x\n",
++				val, reg);
++		return ret;
++	}
++	return 0;
++}
++
++int __adp5520_ack_bits(struct i2c_client *client, int reg, uint8_t bit_mask)
++{
++	struct adp5520_chip *chip = i2c_get_clientdata(client);
++	uint8_t reg_val;
++	int ret;
++
++	mutex_lock(&chip->lock);
++
++	ret = __adp5520_read(client, reg, &reg_val);
++
++	if (!ret) {
++		reg_val |= bit_mask;
++		ret = __adp5520_write(client, reg, reg_val);
++	}
++
++	mutex_unlock(&chip->lock);
++	return ret;
++}
++
++int adp5520_write(struct device *dev, int reg, uint8_t val)
++{
++	return __adp5520_write(to_i2c_client(dev), reg, val);
++}
++EXPORT_SYMBOL_GPL(adp5520_write);
++
++int adp5520_read(struct device *dev, int reg, uint8_t *val)
++{
++	return __adp5520_read(to_i2c_client(dev), reg, val);
++}
++EXPORT_SYMBOL_GPL(adp5520_read);
++
++int adp5520_set_bits(struct device *dev, int reg, uint8_t bit_mask)
++{
++	struct adp5520_chip *chip = dev_get_drvdata(dev);
++	uint8_t reg_val;
++	int ret;
++
++	mutex_lock(&chip->lock);
++
++	ret = __adp5520_read(chip->client, reg, &reg_val);
++
++	if (!ret && ((reg_val & bit_mask) == 0)) {
++		reg_val |= bit_mask;
++		ret = __adp5520_write(chip->client, reg, reg_val);
++	}
++
++	mutex_unlock(&chip->lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(adp5520_set_bits);
++
++int adp5520_clr_bits(struct device *dev, int reg, uint8_t bit_mask)
++{
++	struct adp5520_chip *chip = dev_get_drvdata(dev);
++	uint8_t reg_val;
++	int ret;
++
++	mutex_lock(&chip->lock);
++
++	ret = __adp5520_read(chip->client, reg, &reg_val);
++
++	if (!ret && (reg_val & bit_mask)) {
++		reg_val &= ~bit_mask;
++		ret = __adp5520_write(chip->client, reg, reg_val);
++	}
++
++	mutex_unlock(&chip->lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(adp5520_clr_bits);
++
++int adp5520_register_notifier(struct device *dev, struct notifier_block *nb,
++				unsigned int events)
++{
++	struct adp5520_chip *chip = dev_get_drvdata(dev);
++
++	if (chip->irq) {
++		adp5520_set_bits(chip->dev, INTERRUPT_ENABLE,
++			events & (KP_IEN | KR_IEN | OVP_IEN | CMPR_IEN));
++
++		return blocking_notifier_chain_register(&chip->notifier_list,
++			 nb);
++	}
++
++	return -ENODEV;
++}
++EXPORT_SYMBOL_GPL(adp5520_register_notifier);
++
++int adp5520_unregister_notifier(struct device *dev, struct notifier_block *nb,
++				unsigned int events)
++{
++	struct adp5520_chip *chip = dev_get_drvdata(dev);
++
++	adp5520_clr_bits(chip->dev, INTERRUPT_ENABLE,
++		events & (KP_IEN | KR_IEN | OVP_IEN | CMPR_IEN));
++
++	return blocking_notifier_chain_unregister(&chip->notifier_list, nb);
++}
++EXPORT_SYMBOL_GPL(adp5520_unregister_notifier);
++
++static void adp5520_irq_work(struct work_struct *work)
++{
++	struct adp5520_chip *chip =
++		container_of(work, struct adp5520_chip, irq_work);
++	unsigned int events;
++	uint8_t reg_val;
++	int ret;
++
++	ret = __adp5520_read(chip->client, MODE_STATUS, &reg_val);
++	if (ret)
++		goto out;
++
++	events =  reg_val & (OVP_INT | CMPR_INT | GPI_INT | KR_INT | KP_INT);
++
++	blocking_notifier_call_chain(&chip->notifier_list, events, NULL);
++	/* ACK, Sticky bits are W1C */
++	__adp5520_ack_bits(chip->client, MODE_STATUS, events);
++
++out:
++	enable_irq(chip->client->irq);
++}
++
++static irqreturn_t adp5520_irq_handler(int irq, void *data)
++{
++	struct adp5520_chip *chip = data;
++
++	disable_irq_nosync(irq);
++	schedule_work(&chip->irq_work);
++
++	return IRQ_HANDLED;
++}
++
++static int __remove_subdev(struct device *dev, void *unused)
++{
++	platform_device_unregister(to_platform_device(dev));
++	return 0;
++}
++
++static int adp5520_remove_subdevs(struct adp5520_chip *chip)
++{
++	return device_for_each_child(chip->dev, NULL, __remove_subdev);
++}
++
++static int __devinit adp5520_add_subdevs(struct adp5520_chip *chip,
++					struct adp5520_platform_data *pdata)
++{
++	struct adp5520_subdev_info *subdev;
++	struct platform_device *pdev;
++	int i, ret = 0;
++
++	for (i = 0; i < pdata->num_subdevs; i++) {
++		subdev = &pdata->subdevs[i];
++
++		pdev = platform_device_alloc(subdev->name, subdev->id);
++
++		pdev->dev.parent = chip->dev;
++		pdev->dev.platform_data = subdev->platform_data;
++
++		ret = platform_device_add(pdev);
++		if (ret)
++			goto failed;
++	}
++	return 0;
++
++failed:
++	adp5520_remove_subdevs(chip);
++	return ret;
++}
++
++static int __devinit adp5520_probe(struct i2c_client *client,
++					const struct i2c_device_id *id)
++{
++	struct adp5520_platform_data *pdata = client->dev.platform_data;
++	struct adp5520_chip *chip;
++	int ret;
++
++	if (!i2c_check_functionality(client->adapter,
++					I2C_FUNC_SMBUS_BYTE_DATA)) {
++		dev_err(&client->dev, "SMBUS Word Data not Supported\n");
++		return -EIO;
++	}
++
++	if (pdata == NULL) {
++		dev_err(&client->dev, "missing platform data\n");
++		return -ENODEV;
++	}
++
++	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
++	if (!chip)
++		return -ENOMEM;
++
++	i2c_set_clientdata(client, chip);
++	chip->client = client;
++
++	chip->dev = &client->dev;
++	chip->irq = client->irq;
++	mutex_init(&chip->lock);
++
++	if (chip->irq) {
++		INIT_WORK(&chip->irq_work, adp5520_irq_work);
++		BLOCKING_INIT_NOTIFIER_HEAD(&chip->notifier_list);
++
++		ret = request_irq(chip->irq, adp5520_irq_handler,
++				IRQF_DISABLED | IRQF_TRIGGER_LOW,
++				"adp5520", chip);
++		if (ret) {
++			dev_err(&client->dev, "failed to request irq %d\n",
++					chip->irq);
++			goto out_free_chip;
++		}
++	}
++
++	ret = adp5520_write(chip->dev, MODE_STATUS, nSTNBY);
++	if (ret) {
++		dev_err(&client->dev, "failed to write\n");
++		goto out_free_irq;
++	}
++
++	ret = adp5520_add_subdevs(chip, pdata);
++
++	if (!ret)
++		return ret;
++
++out_free_irq:
++	if (chip->irq)
++		free_irq(chip->irq, chip);
++
++out_free_chip:
++	i2c_set_clientdata(client, NULL);
++	kfree(chip);
++
++	return ret;
++}
++
++static int __devexit adp5520_remove(struct i2c_client *client)
++{
++	struct adp5520_chip *chip = dev_get_drvdata(&client->dev);
++
++	if (chip->irq)
++		free_irq(chip->irq, chip);
++
++	adp5520_remove_subdevs(chip);
++	adp5520_write(chip->dev, MODE_STATUS, 0);
++	i2c_set_clientdata(client, NULL);
++	kfree(chip);
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int adp5520_suspend(struct i2c_client *client,
++				 pm_message_t state)
++{
++	struct adp5520_chip *chip = dev_get_drvdata(&client->dev);
++
++	adp5520_clr_bits(chip->dev, MODE_STATUS, nSTNBY);
++	return 0;
++}
++
++static int adp5520_resume(struct i2c_client *client)
++{
++	struct adp5520_chip *chip = dev_get_drvdata(&client->dev);
++
++	adp5520_set_bits(chip->dev, MODE_STATUS, nSTNBY);
++	return 0;
++}
++#else
++#define adp5520_suspend	NULL
++#define adp5520_resume	NULL
++#endif
++
++static const struct i2c_device_id adp5520_id[] = {
++	{ "pmic-adp5520", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, adp5520_id);
++
++static struct i2c_driver adp5520_driver = {
++	.driver = {
++		.name	= "adp5520",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= adp5520_probe,
++	.remove		= __devexit_p(adp5520_remove),
++	.suspend	= adp5520_suspend,
++	.resume		= adp5520_resume,
++	.id_table 	= adp5520_id,
++};
++
++static int __init adp5520_init(void)
++{
++	return i2c_add_driver(&adp5520_driver);
++}
++module_init(adp5520_init);
++
++static void __exit adp5520_exit(void)
++{
++	i2c_del_driver(&adp5520_driver);
++}
++module_exit(adp5520_exit);
++
++MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
++MODULE_DESCRIPTION("ADP5520(01) PMIC-MFD Driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/mfd/adp5520.h b/include/linux/mfd/adp5520.h
+new file mode 100644
+index 0000000..fffa1db
+--- /dev/null
++++ b/include/linux/mfd/adp5520.h
+@@ -0,0 +1,303 @@
++/*
++ * Definitions and platfrom data for Analog Devices
++ * ADP5520/ADP5501 MFD PMICs (Backlight, LED, GPIO and Keys)
++ *
++ * Copyright 2009 Analog Devices Inc.
++ *
++ * Licensed under the GPL-2 or later.
++ */
++
++
++#ifndef __LINUX_MFD_ADP5520_H
++#define __LINUX_MFD_ADP5520_H
++
++#define ID_ADP5520		5520
++#define ID_ADP5501		5501
++
++/*
++ * ADP5520/ADP5501 Register Map
++ */
++
++#define MODE_STATUS 		0x00
++#define INTERRUPT_ENABLE 	0x01
++#define BL_CONTROL 		0x02
++#define BL_TIME 		0x03
++#define BL_FADE 		0x04
++#define DAYLIGHT_MAX 		0x05
++#define DAYLIGHT_DIM 		0x06
++#define OFFICE_MAX 		0x07
++#define OFFICE_DIM 		0x08
++#define DARK_MAX 		0x09
++#define DARK_DIM 		0x0A
++#define BL_VALUE 		0x0B
++#define ALS_CMPR_CFG 		0x0C
++#define L2_TRIP 		0x0D
++#define L2_HYS 			0x0E
++#define L3_TRIP 		0x0F
++#define L3_HYS 			0x10
++#define LED_CONTROL 		0x11
++#define LED_TIME 		0x12
++#define LED_FADE 		0x13
++#define LED1_CURRENT 		0x14
++#define LED2_CURRENT 		0x15
++#define LED3_CURRENT 		0x16
++
++/*
++ * ADP5520 Register Map
++ */
++
++#define GPIO_CFG_1 		0x17
++#define GPIO_CFG_2 		0x18
++#define GPIO_IN 		0x19
++#define GPIO_OUT 		0x1A
++#define GPIO_INT_EN 		0x1B
++#define GPIO_INT_STAT 		0x1C
++#define GPIO_INT_LVL 		0x1D
++#define GPIO_DEBOUNCE 		0x1E
++#define GPIO_PULLUP 		0x1F
++#define KP_INT_STAT_1 		0x20
++#define KP_INT_STAT_2 		0x21
++#define KR_INT_STAT_1 		0x22
++#define KR_INT_STAT_2 		0x23
++#define KEY_STAT_1 		0x24
++#define KEY_STAT_2 		0x25
++
++/*
++ * MODE_STATUS bits
++ */
++
++#define nSTNBY		(1 << 7)
++#define BL_EN           (1 << 6)
++#define DIM_EN          (1 << 5)
++#define OVP_INT         (1 << 4)
++#define CMPR_INT        (1 << 3)
++#define GPI_INT         (1 << 2)
++#define KR_INT          (1 << 1)
++#define KP_INT          (1 << 0)
++
++/*
++ * INTERRUPT_ENABLE bits
++ */
++
++#define AUTO_LD_EN      (1 << 4)
++#define CMPR_IEN        (1 << 3)
++#define OVP_IEN         (1 << 2)
++#define KR_IEN          (1 << 1)
++#define KP_IEN          (1 << 0)
++
++/*
++ * BL_CONTROL bits
++ */
++
++#define BL_LVL          ((x) << 5)
++#define BL_LAW          ((x) << 4)
++#define BL_AUTO_ADJ     (1 << 3)
++#define OVP_EN          (1 << 2)
++#define FOVR            (1 << 1)
++#define KP_BL_EN        (1 << 0)
++
++/*
++ * ALS_CMPR_CFG bits
++ */
++
++#define L3_OUT		(1 << 3)
++#define L2_OUT		(1 << 2)
++#define L3_EN		(1 << 1)
++
++#define ADP5020_MAX_BRIGHTNESS	0x7F
++
++#define FADE_VAL(in, out)	((0xF & (in)) | ((0xF & (out)) << 4))
++#define BL_CTRL_VAL(law, auto)	(((1 & (auto)) << 3) | ((0x3 & (law)) << 4))
++#define ALS_CMPR_CFG_VAL(filt, l3_en)	(((0x7 & filt) << 5) | l3_en)
++
++/*
++ * LEDs subdevice bits and masks
++ */
++
++#define ADP5520_01_MAXLEDS 3
++
++#define FLAG_LED_MASK 		0x3
++#define FLAG_OFFT_SHIFT 	8
++#define FLAG_OFFT_MASK 		0x3
++
++#define R3_MODE		(1 << 5)
++#define C3_MODE		(1 << 4)
++#define LED_LAW		(1 << 3)
++#define LED3_EN		(1 << 2)
++#define LED2_EN		(1 << 1)
++#define LED1_EN		(1 << 0)
++
++/*
++ * GPIO subdevice bits and masks
++ */
++
++#define ADP5520_MAXGPIOS	8
++
++#define GPIO_C3		(1 << 7)	/* LED2 or GPIO7 aka C3 */
++#define GPIO_C2		(1 << 6)
++#define GPIO_C1		(1 << 5)
++#define GPIO_C0		(1 << 4)
++#define GPIO_R3		(1 << 3)	/* LED3 or GPIO3 aka R3 */
++#define GPIO_R2		(1 << 2)
++#define GPIO_R1		(1 << 1)
++#define GPIO_R0		(1 << 0)
++
++struct adp5520_gpio_platfrom_data {
++	unsigned gpio_start;
++	u8 gpio_en_mask;
++	u8 gpio_pullup_mask;
++};
++
++/*
++ * Keypad subdevice bits and masks
++ */
++
++#define ADP5520_MAXKEYS	16
++
++#define COL_C3 		(1 << 7)	/* LED2 or GPIO7 aka C3 */
++#define COL_C2		(1 << 6)
++#define COL_C1		(1 << 5)
++#define COL_C0		(1 << 4)
++#define ROW_R3		(1 << 3)	/* LED3 or GPIO3 aka R3 */
++#define ROW_R2		(1 << 2)
++#define ROW_R1		(1 << 1)
++#define ROW_R0		(1 << 0)
++
++#define KEY(row, col) (col + row * 4)
++#define ADP5520_KEYMAPSIZE	ADP5520_MAXKEYS
++
++struct adp5520_keys_platfrom_data {
++	int rows_en_mask;		/* Number of rows */
++	int cols_en_mask;		/* Number of columns */
++	const unsigned short *keymap;	/* Pointer to keymap */
++	unsigned short keymapsize;	/* Keymap size */
++	unsigned repeat:1;		/* Enable key repeat */
++};
++
++
++/*
++ * LEDs subdevice platfrom data
++ */
++
++#define FLAG_ID_ADP5520_LED1_ADP5501_LED0 	1	/* ADP5520 PIN ILED */
++#define FLAG_ID_ADP5520_LED2_ADP5501_LED1 	2	/* ADP5520 PIN C3 */
++#define FLAG_ID_ADP5520_LED3_ADP5501_LED2 	3	/* ADP5520 PIN R3 */
++
++#define LED_DIS_BLINK	(0 << FLAG_OFFT_SHIFT)
++#define LED_OFFT_600ms	(1 << FLAG_OFFT_SHIFT)
++#define LED_OFFT_800ms	(2 << FLAG_OFFT_SHIFT)
++#define LED_OFFT_1200ms	(3 << FLAG_OFFT_SHIFT)
++
++#define LED_ONT_200ms	0
++#define LED_ONT_600ms	1
++#define LED_ONT_800ms	2
++#define LED_ONT_1200ms	3
++
++struct adp5520_leds_platfrom_data {
++	int num_leds;
++	struct led_info	*leds;
++	u8 fade_in;		/* Backlight Fade-In Timer */
++	u8 fade_out;		/* Backlight Fade-Out Timer */
++	u8 led_on_time;
++};
++
++/*
++ * Backlight subdevice platfrom data
++ */
++
++#define FADE_T_DIS	0	/* Fade Timer Disabled */
++#define FADE_T_300ms	1	/* 0.3 Sec */
++#define FADE_T_600ms	2
++#define FADE_T_900ms	3
++#define FADE_T_1200ms	4
++#define FADE_T_1500ms	5
++#define FADE_T_1800ms	6
++#define FADE_T_2100ms	7
++#define FADE_T_2400ms	8
++#define FADE_T_2700ms	9
++#define FADE_T_3000ms	10
++#define FADE_T_3500ms	11
++#define FADE_T_4000ms	12
++#define FADE_T_4500ms	13
++#define FADE_T_5000ms	14
++#define FADE_T_5500ms	15	/* 5.5 Sec */
++
++#define BL_LAW_LINEAR 	0
++#define BL_LAW_SQUARE 	1
++#define BL_LAW_CUBIC1 	2
++#define BL_LAW_CUBIC2 	3
++
++#define BL_AMBL_FILT_80ms 	0	/* Light sensor filter time */
++#define BL_AMBL_FILT_160ms 	1
++#define BL_AMBL_FILT_320ms 	2
++#define BL_AMBL_FILT_640ms 	3
++#define BL_AMBL_FILT_1280ms 	4
++#define BL_AMBL_FILT_2560ms 	5
++#define BL_AMBL_FILT_5120ms 	6
++#define BL_AMBL_FILT_10240ms 	7	/* 10.24 sec */
++
++	/*
++	 * Blacklight current 0..30mA
++	 */
++#define BL_CUR_mA(I)		((I * 127) / 30)
++
++	/*
++	 * L2 comparator current 0..1000uA
++	 */
++#define L2_COMP_CURR_uA(I)	((I * 255) / 1000)
++
++	/*
++	 * L3 comparator current 0..127uA
++	 */
++#define L3_COMP_CURR_uA(I)	((I * 255) / 127)
++
++struct adp5520_backlight_platfrom_data {
++	u8 fade_in;		/* Backlight Fade-In Timer */
++	u8 fade_out;		/* Backlight Fade-Out Timer */
++	u8 fade_led_law;	/* fade-on/fade-off transfer characteristic */
++
++	u8 en_ambl_sens;	/* 1 = enable ambient light sensor */
++	u8 abml_filt;		/* Light sensor filter time */
++	u8 l1_daylight_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l1_daylight_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l2_office_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l2_office_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l3_dark_max;		/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l3_dark_dim;		/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l2_trip;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1000 uA */
++	u8 l2_hyst;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1000 uA */
++	u8 l3_trip;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 127 uA */
++	u8 l3_hyst;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 127 uA */
++};
++
++/*
++ * MFD chip platfrom data
++ */
++
++struct adp5520_subdev_info {
++	int		id;
++	const char	*name;
++	void		*platform_data;
++};
++
++struct adp5520_platform_data {
++	int num_subdevs;
++	struct adp5520_subdev_info *subdevs;
++};
++
++/*
++ * MFD chip functions
++ */
++
++extern int adp5520_read(struct device *dev, int reg, uint8_t *val);
++extern int adp5520_write(struct device *dev, int reg, u8 val);
++extern int adp5520_clr_bits(struct device *dev, int reg, uint8_t bit_mask);
++extern int adp5520_set_bits(struct device *dev, int reg, uint8_t bit_mask);
++
++extern int adp5520_register_notifier(struct device *dev,
++		 struct notifier_block *nb, unsigned int events);
++
++extern int adp5520_unregister_notifier(struct device *dev,
++		struct notifier_block *nb, unsigned int events);
++
++#endif /* __LINUX_MFD_ADP5520_H */
 -- 
-1.6.4.2
+1.6.5.rc1
 
