@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbZIXAjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbZIXAf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754317AbZIXAjG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZIXAjD
+	id S1754177AbZIXAf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZIXAfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:39:03 -0400
+	Wed, 23 Sep 2009 20:35:55 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39153 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbZIXA3j (ORCPT
+	with ESMTP id S1753336AbZIXA36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:39 -0400
+	Wed, 23 Sep 2009 20:29:58 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -17,9 +17,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>
-Subject: [PATCH v18 52/80] c/r: support share-memory sysv-ipc
-Date: Wed, 23 Sep 2009 19:51:32 -0400
-Message-Id: <1253749920-18673-53-git-send-email-orenl@librato.com>
+Subject: [PATCH v18 53/80] c/r: support message-queues sysv-ipc
+Date: Wed, 23 Sep 2009 19:51:33 -0400
+Message-Id: <1253749920-18673-54-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -27,369 +27,113 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Checkpoint of sysvipc shared memory is performed in two steps: first,
-the entire ipc namespace is dumped as a whole by iterating through all
-shm objects and dumping the contents of each one. The shmem inode is
-registered in the objhash. Second, for each vma that refers to ipc
-shared memory we find the inode in the objhash, and save the objref.
+Checkpoint of sysvipc message-queues is performed by iterating through
+all 'msq' objects and dumping the contents of each one. The message
+queued on each 'msq' are dumped with that object.
 
-(If we find a new inode, that indicates that the ipc namespace is not
-entirely frozen and someone must have manipulated it since step 1).
+Message of a specific queue get written one by one. The queue lock
+cannot be held while dumping them, but the loop must be protected from
+someone (who ?) writing or reading. To do that we grab the lock, then
+hijack the entire chain of messages from the queue, drop the lock,
+and then safely dump them in a loop. Finally, with the lock held, we
+re-attach the chain while verifying that there isn't other (new) data
+on that queue.
 
-Handling of shm objects that have been deleted (via IPC_RMID) is left
-to a later patch in this series.
+Writing the message contents themselves is straight forward. The code
+is similar to that in ipc/msgutil.c, the main difference being that
+we deal with kernel memory and not user memory.
 
-Changelog[v18]:
-  - Collect files used by shm objects
-  - Use file instead of inode as shared object during checkpoint
 Changelog[v17]:
+  - Allocate security context for msg_msg
   - Restore objects in the right namespace
-  - Properly initialize ctx->deferqueue
-  - Fix compilation with CONFIG_CHECKPOINT=n
+  - Don't unlock ipc before freeing
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/checkpoint.c          |    5 +
- checkpoint/memory.c              |   28 ++++-
- checkpoint/restart.c             |    5 +
- checkpoint/sys.c                 |    7 +
- include/linux/checkpoint.h       |   10 ++
- include/linux/checkpoint_hdr.h   |   19 +++-
- include/linux/checkpoint_types.h |    1 +
- include/linux/shm.h              |   15 ++
- ipc/Makefile                     |    2 +-
- ipc/checkpoint.c                 |   25 +++-
- ipc/checkpoint_shm.c             |  277 ++++++++++++++++++++++++++++++++++++++
- ipc/shm.c                        |   84 +++++++++++-
- ipc/util.h                       |    9 ++
- kernel/nsproxy.c                 |    8 +
- mm/shmem.c                       |    2 +-
- 15 files changed, 482 insertions(+), 15 deletions(-)
- create mode 100644 ipc/checkpoint_shm.c
+ include/linux/checkpoint_hdr.h |   20 +++
+ ipc/Makefile                   |    3 +-
+ ipc/checkpoint.c               |    2 +-
+ ipc/checkpoint_msg.c           |  364 ++++++++++++++++++++++++++++++++++++++++
+ ipc/msg.c                      |   10 +-
+ ipc/msgutil.c                  |    8 -
+ ipc/util.h                     |   13 ++
+ 7 files changed, 403 insertions(+), 17 deletions(-)
+ create mode 100644 ipc/checkpoint_msg.c
 
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index e35c5a8..27eec5c 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -24,6 +24,7 @@
- #include <linux/utsname.h>
- #include <linux/magic.h>
- #include <linux/hrtimer.h>
-+#include <linux/deferqueue.h>
- #include <linux/checkpoint.h>
- #include <linux/checkpoint_hdr.h>
- 
-@@ -793,6 +794,10 @@ long do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
- 	if (ret < 0)
- 		goto out;
- 
-+	ret = deferqueue_run(ctx->deferqueue);  /* run deferred work */
-+	if (ret < 0)
-+		goto out;
-+
- 	/* verify that all objects were indeed visited */
- 	if (!ckpt_obj_visited(ctx)) {
- 		ckpt_write_err(ctx, "E", "leak: unvisited", -EBUSY);
-diff --git a/checkpoint/memory.c b/checkpoint/memory.c
-index f765993..0da948f 100644
---- a/checkpoint/memory.c
-+++ b/checkpoint/memory.c
-@@ -20,6 +20,7 @@
- #include <linux/mman.h>
- #include <linux/pagemap.h>
- #include <linux/mm_types.h>
-+#include <linux/shm.h>
- #include <linux/proc_fs.h>
- #include <linux/swap.h>
- #include <linux/checkpoint.h>
-@@ -459,9 +460,9 @@ static int vma_dump_pages(struct ckpt_ctx *ctx, int total)
-  * virtual addresses into ctx->pgarr_list page-array chain. Then dump
-  * the addresses, followed by the page contents.
-  */
--static int checkpoint_memory_contents(struct ckpt_ctx *ctx,
--				      struct vm_area_struct *vma,
--				      struct inode *inode)
-+int checkpoint_memory_contents(struct ckpt_ctx *ctx,
-+			       struct vm_area_struct *vma,
-+			       struct inode *inode)
- {
- 	struct ckpt_hdr_pgarr *h;
- 	unsigned long addr, end;
-@@ -1084,6 +1085,13 @@ static int anon_private_restore(struct ckpt_ctx *ctx,
- 	return private_vma_restore(ctx, mm, NULL, h);
- }
- 
-+static int bad_vma_restore(struct ckpt_ctx *ctx,
-+			   struct mm_struct *mm,
-+			   struct ckpt_hdr_vma *h)
-+{
-+	return -EINVAL;
-+}
-+
- /* callbacks to restore vma per its type: */
- struct restore_vma_ops {
- 	char *vma_name;
-@@ -1136,6 +1144,20 @@ static struct restore_vma_ops restore_vma_ops[] = {
- 		.vma_type = CKPT_VMA_SHM_FILE,
- 		.restore = filemap_restore,
- 	},
-+	/* sysvipc shared */
-+	{
-+		.vma_name = "IPC SHARED",
-+		.vma_type = CKPT_VMA_SHM_IPC,
-+		/* ipc inode itself is restore by restore_ipc_ns()... */
-+		.restore = bad_vma_restore,
-+
-+	},
-+	/* sysvipc shared (skip) */
-+	{
-+		.vma_name = "IPC SHARED (skip)",
-+		.vma_type = CKPT_VMA_SHM_IPC_SKIP,
-+		.restore = ipcshm_restore,
-+	},
- };
- 
- /**
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index e48ad68..53a759a 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -21,6 +21,7 @@
- #include <linux/utsname.h>
- #include <asm/syscall.h>
- #include <linux/elf.h>
-+#include <linux/deferqueue.h>
- #include <linux/checkpoint.h>
- #include <linux/checkpoint_hdr.h>
- 
-@@ -881,6 +882,10 @@ static int do_restore_coord(struct ckpt_ctx *ctx, pid_t pid)
- 			goto out;
- 	}
- 
-+	ret = deferqueue_run(ctx->deferqueue);  /* run deferred work */
-+	if (ret < 0)
-+		goto out;
-+
- 	ret = restore_read_tail(ctx);
- 	if (ret < 0)
- 		goto out;
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-index 1c98eee..d6a1650 100644
---- a/checkpoint/sys.c
-+++ b/checkpoint/sys.c
-@@ -21,6 +21,7 @@
- #include <linux/uaccess.h>
- #include <linux/capability.h>
- #include <linux/checkpoint.h>
-+#include <linux/deferqueue.h>
- 
- /*
-  * ckpt_unpriv_allowed - sysctl controlled, do not allow checkpoints or
-@@ -191,6 +192,9 @@ static void ckpt_ctx_free(struct ckpt_ctx *ctx)
- {
- 	BUG_ON(atomic_read(&ctx->refcount));
- 
-+	if (ctx->deferqueue)
-+		deferqueue_destroy(ctx->deferqueue);
-+
- 	if (ctx->files_deferq)
- 		deferqueue_destroy(ctx->files_deferq);
- 
-@@ -243,6 +247,9 @@ static struct ckpt_ctx *ckpt_ctx_alloc(int fd, unsigned long uflags,
- 	err = -ENOMEM;
- 	if (ckpt_obj_hash_alloc(ctx) < 0)
- 		goto err;
-+	ctx->deferqueue = deferqueue_create();
-+	if (!ctx->deferqueue)
-+		goto err;
- 
- 	ctx->files_deferq = deferqueue_create();
- 	if (!ctx->files_deferq)
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index c8501b8..4c1c13e 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -158,9 +158,16 @@ extern void *restore_uts_ns(struct ckpt_ctx *ctx);
- #ifdef CONFIG_SYSVIPC
- extern int checkpoint_ipc_ns(struct ckpt_ctx *ctx, void *ptr);
- extern void *restore_ipc_ns(struct ckpt_ctx *ctx);
-+extern int ckpt_collect_ipc_ns(struct ckpt_ctx *ctx,
-+			       struct ipc_namespace *ipc_ns);
- #else
- #define checkpoint_ipc_ns  checkpoint_bad
- #define restore_ipc_ns  restore_bad
-+static inline int ckpt_collect_ipc_ns(struct ckpt_ctx *ctx,
-+				      struct ipc_namespace *ipc_ns)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_SYSVIPC */
- 
- /* file table */
-@@ -215,6 +222,9 @@ extern unsigned long generic_vma_restore(struct mm_struct *mm,
- extern int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
- 			       struct file *file, struct ckpt_hdr_vma *h);
- 
-+extern int checkpoint_memory_contents(struct ckpt_ctx *ctx,
-+				      struct vm_area_struct *vma,
-+				      struct inode *inode);
- extern int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode);
- 
- 
 diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index 1ecec60..a4cf7a9 100644
+index a4cf7a9..93b6aed 100644
 --- a/include/linux/checkpoint_hdr.h
 +++ b/include/linux/checkpoint_hdr.h
-@@ -314,7 +314,9 @@ enum vma_type {
- 	CKPT_VMA_SHM_ANON,	/* shared anonymous */
- 	CKPT_VMA_SHM_ANON_SKIP,	/* shared anonymous (skip contents) */
- 	CKPT_VMA_SHM_FILE,	/* shared mapped file, only msync */
--	CKPT_VMA_MAX
-+	CKPT_VMA_SHM_IPC,	/* shared sysvipc */
-+	CKPT_VMA_SHM_IPC_SKIP,	/* shared sysvipc (skip contents) */
-+	CKPT_VMA_MAX,
- };
+@@ -78,6 +78,7 @@ enum {
+ 	CKPT_HDR_IPC = 501,
+ 	CKPT_HDR_IPC_SHM,
+ 	CKPT_HDR_IPC_MSG,
++	CKPT_HDR_IPC_MSG_MSG,
+ 	CKPT_HDR_IPC_SEM,
  
- /* vma descriptor */
-@@ -364,6 +366,7 @@ struct ckpt_hdr_ipc {
+ 	CKPT_HDR_TAIL = 9001,
+@@ -392,6 +393,25 @@ struct ckpt_hdr_ipc_shm {
+ 	__u32 objref;
  } __attribute__((aligned(8)));
  
- struct ckpt_hdr_ipc_perms {
-+	struct ckpt_hdr h;
- 	__s32 id;
- 	__u32 key;
- 	__u32 uid;
-@@ -375,6 +378,20 @@ struct ckpt_hdr_ipc_perms {
- 	__u64 seq;
- } __attribute__((aligned(8)));
- 
-+struct ckpt_hdr_ipc_shm {
++struct ckpt_hdr_ipc_msg {
 +	struct ckpt_hdr h;
 +	struct ckpt_hdr_ipc_perms perms;
-+	__u64 shm_segsz;
-+	__u64 shm_atim;
-+	__u64 shm_dtim;
-+	__u64 shm_ctim;
-+	__s32 shm_cprid;
-+	__s32 shm_lprid;
-+	__u32 mlock_uid;
-+	__u32 flags;
-+	__u32 objref;
++	__u64 q_stime;
++	__u64 q_rtime;
++	__u64 q_ctime;
++	__u64 q_cbytes;
++	__u64 q_qnum;
++	__u64 q_qbytes;
++	__s32 q_lspid;
++	__s32 q_lrpid;
++} __attribute__((aligned(8)));
++
++struct ckpt_hdr_ipc_msg_msg {
++	struct ckpt_hdr h;
++	__s32 m_type;
++	__u32 m_ts;
 +} __attribute__((aligned(8)));
 +
  
  #define CKPT_TST_OVERFLOW_16(a, b) \
  	((sizeof(a) > sizeof(b)) && ((a) > SHORT_MAX))
-diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
-index 7e6051f..9632aa4 100644
---- a/include/linux/checkpoint_types.h
-+++ b/include/linux/checkpoint_types.h
-@@ -48,6 +48,7 @@ struct ckpt_ctx {
- 	atomic_t refcount;
- 
- 	struct ckpt_obj_hash *obj_hash;	/* repository for shared objects */
-+	struct deferqueue_head *deferqueue;	/* deferred c/r work */
- 	struct deferqueue_head *files_deferq;	/* deferred file-table work */
- 
- 	struct path fs_mnt;     /* container root (FIXME) */
-diff --git a/include/linux/shm.h b/include/linux/shm.h
-index eca6235..94ac1a7 100644
---- a/include/linux/shm.h
-+++ b/include/linux/shm.h
-@@ -118,6 +118,21 @@ static inline int is_file_shm_hugepages(struct file *file)
- }
- #endif
- 
-+struct ipc_namespace;
-+extern int shmctl_down(struct ipc_namespace *ns, int shmid, int cmd,
-+		       struct shmid_ds __user *buf, int version);
-+
-+#ifdef CONFIG_CHECKPOINT
-+#ifdef CONFIG_SYSVIPC
-+struct ckpt_ctx;
-+struct ckpt_hdr_vma;
-+extern int ipcshm_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
-+			  struct ckpt_hdr_vma *h);
-+#else
-+#define ipcshm_restore NULL
-+#endif
-+#endif
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _LINUX_SHM_H_ */
 diff --git a/ipc/Makefile b/ipc/Makefile
-index b747127..db4b076 100644
+index db4b076..71a257f 100644
 --- a/ipc/Makefile
 +++ b/ipc/Makefile
-@@ -9,4 +9,4 @@ obj_mq-$(CONFIG_COMPAT) += compat_mq.o
+@@ -9,4 +9,5 @@ obj_mq-$(CONFIG_COMPAT) += compat_mq.o
  obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
  obj-$(CONFIG_IPC_NS) += namespace.o
  obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
--obj-$(CONFIG_SYSVIPC_CHECKPOINT) += checkpoint.o
-+obj-$(CONFIG_SYSVIPC_CHECKPOINT) += checkpoint.o checkpoint_shm.o
+-obj-$(CONFIG_SYSVIPC_CHECKPOINT) += checkpoint.o checkpoint_shm.o
++obj-$(CONFIG_SYSVIPC_CHECKPOINT) += checkpoint.o \
++		checkpoint_shm.o checkpoint_msg.o
 diff --git a/ipc/checkpoint.c b/ipc/checkpoint.c
-index 4eb1a97..b360861 100644
+index b360861..588ed37 100644
 --- a/ipc/checkpoint.c
 +++ b/ipc/checkpoint.c
-@@ -113,9 +113,9 @@ static int do_checkpoint_ipc_ns(struct ckpt_ctx *ctx,
- 	if (ret < 0)
- 		return ret;
+@@ -115,11 +115,11 @@ static int do_checkpoint_ipc_ns(struct ckpt_ctx *ctx,
  
--#if 0 /* NEXT FEW PATCHES */
  	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_SHM_IDS,
  				 CKPT_HDR_IPC_SHM, checkpoint_ipc_shm);
-+#if 0 /* NEXT FEW PATCHES */
+-#if 0 /* NEXT FEW PATCHES */
  	if (ret < 0)
  		return ret;
  	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_MSG_IDS,
-@@ -134,6 +134,27 @@ int checkpoint_ipc_ns(struct ckpt_ctx *ctx, void *ptr)
- }
- 
- /**************************************************************************
-+ * Collect
-+ */
-+
-+int ckpt_collect_ipc_ns(struct ckpt_ctx *ctx, struct ipc_namespace *ipc_ns)
-+{
-+	struct ipc_ids *ipc_ids;
-+	int ret;
-+
-+	/*
-+	 * Each shm object holds a reference to a file pointer, so
-+	 * collect them. Nothing to do for msg and sem.
-+	 */
-+	ipc_ids = &ipc_ns->ids[IPC_SHM_IDS];
-+	down_read(&ipc_ids->rw_mutex);
-+	ret = idr_for_each(&ipc_ids->ipcs_idr, ckpt_collect_ipc_shm, ctx);
-+	up_read(&ipc_ids->rw_mutex);
-+
-+	return ret;
-+}
-+
-+/**************************************************************************
-  * Restart
-  */
- 
-@@ -286,9 +307,9 @@ static struct ipc_namespace *do_restore_ipc_ns(struct ckpt_ctx *ctx)
- 	get_ipc_ns(ipc_ns);
- #endif
- 
--#if 0 /* NEXT FEW PATCHES */
- 	ret = restore_ipc_any(ctx, ipc_ns, IPC_SHM_IDS,
- 			      CKPT_HDR_IPC_SHM, restore_ipc_shm);
+ 				 CKPT_HDR_IPC_MSG, checkpoint_ipc_msg);
 +#if 0 /* NEXT FEW PATCHES */
  	if (ret < 0)
- 		goto out;
- 	ret = restore_ipc_any(ctx, ipc_ns, IPC_MSG_IDS,
-diff --git a/ipc/checkpoint_shm.c b/ipc/checkpoint_shm.c
+ 		return ret;
+ 	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_SEM_IDS,
+diff --git a/ipc/checkpoint_msg.c b/ipc/checkpoint_msg.c
 new file mode 100644
-index 0000000..826e430
+index 0000000..b933c19
 --- /dev/null
-+++ b/ipc/checkpoint_shm.c
-@@ -0,0 +1,277 @@
++++ b/ipc/checkpoint_msg.c
+@@ -0,0 +1,364 @@
 +/*
-+ *  Checkpoint/restart - dump state of sysvipc shm
++ *  Checkpoint/restart - dump state of sysvipc msg
 + *
 + *  Copyright (C) 2009 Oren Laadan
 + *
@@ -402,18 +146,14 @@ index 0000000..826e430
 +#define CKPT_DFLAG  CKPT_DIPC
 +
 +#include <linux/mm.h>
-+#include <linux/shm.h>
-+#include <linux/shmem_fs.h>
-+#include <linux/hugetlb.h>
++#include <linux/msg.h>
 +#include <linux/rwsem.h>
 +#include <linux/sched.h>
-+#include <linux/file.h>
 +#include <linux/syscalls.h>
 +#include <linux/nsproxy.h>
++#include <linux/security.h>
 +#include <linux/ipc_namespace.h>
-+#include <linux/deferqueue.h>
 +
-+#include <linux/msg.h>	/* needed for util.h that uses 'struct msg_msg' */
 +#include "util.h"
 +
 +#include <linux/checkpoint.h>
@@ -423,169 +163,282 @@ index 0000000..826e430
 + * ipc checkpoint
 + */
 +
-+static int fill_ipc_shm_hdr(struct ckpt_ctx *ctx,
-+			    struct ckpt_hdr_ipc_shm *h,
-+			    struct shmid_kernel *shp)
++static int fill_ipc_msg_hdr(struct ckpt_ctx *ctx,
++			    struct ckpt_hdr_ipc_msg *h,
++			    struct msg_queue *msq)
 +{
 +	int ret = 0;
 +
-+	ipc_lock_by_ptr(&shp->shm_perm);
++	ipc_lock_by_ptr(&msq->q_perm);
 +
-+	ret = checkpoint_fill_ipc_perms(&h->perms, &shp->shm_perm);
++	ret = checkpoint_fill_ipc_perms(&h->perms, &msq->q_perm);
 +	if (ret < 0)
 +		goto unlock;
 +
-+	h->shm_segsz = shp->shm_segsz;
-+	h->shm_atim = shp->shm_atim;
-+	h->shm_dtim = shp->shm_dtim;
-+	h->shm_ctim = shp->shm_ctim;
-+	h->shm_cprid = shp->shm_cprid;
-+	h->shm_lprid = shp->shm_lprid;
-+
-+	if (shp->mlock_user)
-+		h->mlock_uid = shp->mlock_user->uid;
-+	else
-+		h->mlock_uid = (unsigned int) -1;
-+
-+	h->flags = 0;
-+	/* check if shm was setup with SHM_NORESERVE */
-+	if (SHMEM_I(shp->shm_file->f_dentry->d_inode)->flags & VM_NORESERVE)
-+		h->flags |= SHM_NORESERVE;
-+	/* check if shm was setup with SHM_HUGETLB (unsupported yet) */
-+	if (is_file_hugepages(shp->shm_file)) {
-+		pr_warning("c/r: unsupported SHM_HUGETLB\n");
-+		ret = -ENOSYS;
-+	}
++	h->q_stime = msq->q_stime;
++	h->q_rtime = msq->q_rtime;
++	h->q_ctime = msq->q_ctime;
++	h->q_cbytes = msq->q_cbytes;
++	h->q_qnum = msq->q_qnum;
++	h->q_qbytes = msq->q_qbytes;
++	h->q_lspid = msq->q_lspid;
++	h->q_lrpid = msq->q_lrpid;
 +
 + unlock:
-+	ipc_unlock(&shp->shm_perm);
-+	ckpt_debug("shm: cprid %d lprid %d segsz %lld mlock %d\n",
-+		 h->shm_cprid, h->shm_lprid, h->shm_segsz, h->mlock_uid);
++	ipc_unlock(&msq->q_perm);
++	ckpt_debug("msg: lspid %d rspid %d qnum %lld qbytes %lld\n",
++		 h->q_lspid, h->q_lrpid, h->q_qnum, h->q_qbytes);
 +
 +	return ret;
 +}
 +
-+int checkpoint_ipc_shm(int id, void *p, void *data)
++static int checkpoint_msg_contents(struct ckpt_ctx *ctx, struct msg_msg *msg)
 +{
-+	struct ckpt_hdr_ipc_shm *h;
-+	struct ckpt_ctx *ctx = (struct ckpt_ctx *) data;
-+	struct kern_ipc_perm *perm = (struct kern_ipc_perm *) p;
-+	struct shmid_kernel *shp;
-+	struct inode *inode;
-+	int first, objref;
++	struct ckpt_hdr_ipc_msg_msg *h;
++	struct msg_msgseg *seg;
++	int total, len;
 +	int ret;
 +
-+	shp = container_of(perm, struct shmid_kernel, shm_perm);
-+	inode = shp->shm_file->f_dentry->d_inode;
-+
-+	/* we collected the file but we don't checkpoint it per-se */
-+	ret = ckpt_obj_visit(ctx, shp->shm_file, CKPT_OBJ_FILE);
-+	if (ret < 0)
-+		return ret;
-+
-+	objref = ckpt_obj_lookup_add(ctx, inode, CKPT_OBJ_INODE, &first);
-+	if (objref < 0)
-+		return objref;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_IPC_SHM);
++	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_IPC_MSG_MSG);
 +	if (!h)
 +		return -ENOMEM;
 +
-+	ret = fill_ipc_shm_hdr(ctx, h, shp);
++	h->m_type = msg->m_type;
++	h->m_ts = msg->m_ts;
++
++	ret = ckpt_write_obj(ctx, &h->h);
++	ckpt_hdr_put(ctx, h);
++	if (ret < 0)
++		return ret;
++
++	total = msg->m_ts;
++	len = min(total, (int) DATALEN_MSG);
++	ret = ckpt_write_buffer(ctx, (msg + 1), len);
++	if (ret < 0)
++		return ret;
++
++	seg = msg->next;
++	total -= len;
++
++	while (total) {
++		len = min(total, (int) DATALEN_SEG);
++		ret = ckpt_write_buffer(ctx, (seg + 1), len);
++		if (ret < 0)
++			break;
++		seg = seg->next;
++		total -= len;
++	}
++
++	return ret;
++}
++
++static int checkpoint_msg_queue(struct ckpt_ctx *ctx, struct msg_queue *msq)
++{
++	struct list_head messages;
++	struct msg_msg *msg;
++	int ret = -EBUSY;
++
++	/*
++	 * Scanning the msq requires the lock, but then we can't write
++	 * data out from inside. Instead, we grab the lock, remove all
++	 * messages to our own list, drop the lock, write the messages,
++	 * and finally re-attach the them to the msq with the lock taken.
++	 */
++	ipc_lock_by_ptr(&msq->q_perm);
++	if (!list_empty(&msq->q_receivers))
++		goto unlock;
++	if (!list_empty(&msq->q_senders))
++		goto unlock;
++	if (list_empty(&msq->q_messages))
++		goto unlock;
++	/* temporarily take out all messages */
++	INIT_LIST_HEAD(&messages);
++	list_splice_init(&msq->q_messages, &messages);
++ unlock:
++	ipc_unlock(&msq->q_perm);
++
++	list_for_each_entry(msg, &messages, m_list) {
++		ret = checkpoint_msg_contents(ctx, msg);
++		if (ret < 0)
++			break;
++	}
++
++	/* put all the messages back in */
++	ipc_lock_by_ptr(&msq->q_perm);
++	list_splice(&messages, &msq->q_messages);
++	ipc_unlock(&msq->q_perm);
++
++	return ret;
++}
++
++int checkpoint_ipc_msg(int id, void *p, void *data)
++{
++	struct ckpt_hdr_ipc_msg *h;
++	struct ckpt_ctx *ctx = (struct ckpt_ctx *) data;
++	struct kern_ipc_perm *perm = (struct kern_ipc_perm *) p;
++	struct msg_queue *msq;
++	int ret;
++
++	msq = container_of(perm, struct msg_queue, q_perm);
++
++	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_IPC_MSG);
++	if (!h)
++		return -ENOMEM;
++
++	ret = fill_ipc_msg_hdr(ctx, h, msq);
 +	if (ret < 0)
 +		goto out;
-+
-+	h->objref = objref;
-+	ckpt_debug("shm: objref %d\n", h->objref);
 +
 +	ret = ckpt_write_obj(ctx, &h->h);
 +	if (ret < 0)
 +		goto out;
 +
-+	ret = checkpoint_memory_contents(ctx, NULL, inode);
++	if (h->q_qnum)
++		ret = checkpoint_msg_queue(ctx, msq);
 + out:
 +	ckpt_hdr_put(ctx, h);
 +	return ret;
 +}
 +
-+/************************************************************************
-++ * ipc collect
-++ */
-+int ckpt_collect_ipc_shm(int id, void *p, void *data)
-+{
-+	struct ckpt_ctx *ctx = (struct ckpt_ctx *) data;
-+	struct kern_ipc_perm *perm = (struct kern_ipc_perm *) p;
-+	struct shmid_kernel *shp;
-+
-+	shp = container_of(perm, struct shmid_kernel, shm_perm);
-+	return ckpt_collect_file(ctx, shp->shm_file);
-+}
 +
 +/************************************************************************
 + * ipc restart
 + */
 +
-+struct dq_ipcshm_del {
-+	/*
-+	 * XXX: always keep ->ipcns first so that put_ipc_ns() can
-+	 * be safely provided as the dtor for this deferqueue object
-+	 */
-+	struct ipc_namespace *ipcns;
-+	int id;
-+};
-+
-+static int ipc_shm_delete(void *data)
++static int load_ipc_msg_hdr(struct ckpt_ctx *ctx,
++			    struct ckpt_hdr_ipc_msg *h,
++			    struct msg_queue *msq)
 +{
-+	struct dq_ipcshm_del *dq = (struct dq_ipcshm_del *) data;
-+	mm_segment_t old_fs;
-+	int ret;
++	int ret = 0;
 +
-+	old_fs = get_fs();
-+	set_fs(get_ds());
-+	ret = shmctl_down(dq->ipcns, dq->id, IPC_RMID, NULL, 0);
-+	set_fs(old_fs);
-+
-+	put_ipc_ns(dq->ipcns);
-+	return ret;
-+}
-+
-+static int load_ipc_shm_hdr(struct ckpt_ctx *ctx,
-+			    struct ckpt_hdr_ipc_shm *h,
-+			    struct shmid_kernel *shp)
-+{
-+	int ret;
-+
-+	ret = restore_load_ipc_perms(&h->perms, &shp->shm_perm);
++	ret = restore_load_ipc_perms(&h->perms, &msq->q_perm);
 +	if (ret < 0)
 +		return ret;
 +
-+	ckpt_debug("shm: cprid %d lprid %d segsz %lld mlock %d\n",
-+		 h->shm_cprid, h->shm_lprid, h->shm_segsz, h->mlock_uid);
++	ckpt_debug("msq: lspid %d lrpid %d qnum %lld qbytes %lld\n",
++		 h->q_lspid, h->q_lrpid, h->q_qnum, h->q_qbytes);
 +
-+	if (h->shm_cprid < 0 || h->shm_lprid < 0)
++	if (h->q_lspid < 0 || h->q_lrpid < 0)
 +		return -EINVAL;
 +
-+	shp->shm_segsz = h->shm_segsz;
-+	shp->shm_atim = h->shm_atim;
-+	shp->shm_dtim = h->shm_dtim;
-+	shp->shm_ctim = h->shm_ctim;
-+	shp->shm_cprid = h->shm_cprid;
-+	shp->shm_lprid = h->shm_lprid;
++	msq->q_stime = h->q_stime;
++	msq->q_rtime = h->q_rtime;
++	msq->q_ctime = h->q_ctime;
++	msq->q_lspid = h->q_lspid;
++	msq->q_lrpid = h->q_lrpid;
 +
 +	return 0;
 +}
 +
-+int restore_ipc_shm(struct ckpt_ctx *ctx, struct ipc_namespace *ns)
++static struct msg_msg *restore_msg_contents_one(struct ckpt_ctx *ctx, int *clen)
 +{
-+	struct ckpt_hdr_ipc_shm *h;
-+	struct kern_ipc_perm *perms;
-+	struct shmid_kernel *shp;
-+	struct ipc_ids *shm_ids = &ns->ids[IPC_SHM_IDS];
-+	struct file *file;
-+	int shmflag;
++	struct ckpt_hdr_ipc_msg_msg *h;
++	struct msg_msg *msg = NULL;
++	struct msg_msgseg *seg, **pseg;
++	int total, len;
 +	int ret;
 +
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_IPC_SHM);
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_IPC_MSG_MSG);
++	if (IS_ERR(h))
++		return (struct msg_msg *) h;
++
++	ret = -EINVAL;
++	if (h->m_type < 1)
++		goto out;
++	if (h->m_ts > current->nsproxy->ipc_ns->msg_ctlmax)
++		goto out;
++
++	total = h->m_ts;
++	len = min(total, (int) DATALEN_MSG);
++	msg = kmalloc(sizeof(*msg) + len, GFP_KERNEL);
++	if (!msg) {
++		ret = -ENOMEM;
++		goto out;
++	}
++	msg->next = NULL;
++	pseg = &msg->next;
++
++	ret = _ckpt_read_buffer(ctx, (msg + 1), len);
++	if (ret < 0)
++		goto out;
++
++	total -= len;
++	while (total) {
++		len = min(total, (int) DATALEN_SEG);
++		seg = kmalloc(sizeof(*seg) + len, GFP_KERNEL);
++		if (!seg) {
++			ret = -ENOMEM;
++			goto out;
++		}
++		seg->next = NULL;
++		*pseg = seg;
++		pseg = &seg->next;
++
++		ret = _ckpt_read_buffer(ctx, (seg + 1), len);
++		if (ret < 0)
++			goto out;
++		total -= len;
++	}
++
++	msg->m_type = h->m_type;
++	msg->m_ts = h->m_ts;
++	*clen = h->m_ts;
++	ret = security_msg_msg_alloc(msg);
++ out:
++	if (ret < 0 && msg) {
++		free_msg(msg);
++		msg = ERR_PTR(ret);
++	}
++	ckpt_hdr_put(ctx, h);
++	return msg;
++}
++
++static inline void free_msg_list(struct list_head *queue)
++{
++	struct msg_msg *msg, *tmp;
++
++	list_for_each_entry_safe(msg, tmp, queue, m_list)
++		free_msg(msg);
++}
++
++static int restore_msg_contents(struct ckpt_ctx *ctx, struct list_head *queue,
++				unsigned long qnum, unsigned long *cbytes)
++{
++	struct msg_msg *msg;
++	int clen = 0;
++	int ret = 0;
++
++	INIT_LIST_HEAD(queue);
++
++	*cbytes = 0;
++	while (qnum--) {
++		msg = restore_msg_contents_one(ctx, &clen);
++		if (IS_ERR(msg))
++			goto fail;
++		list_add_tail(&msg->m_list, queue);
++		*cbytes += clen;
++	}
++	return 0;
++ fail:
++	ret = PTR_ERR(msg);
++	free_msg_list(queue);
++	return ret;
++}
++
++int restore_ipc_msg(struct ckpt_ctx *ctx, struct ipc_namespace *ns)
++{
++	struct ckpt_hdr_ipc_msg *h;
++	struct kern_ipc_perm *perms;
++	struct msg_queue *msq;
++	struct ipc_ids *msg_ids = &ns->ids[IPC_MSG_IDS];
++	struct list_head messages;
++	unsigned long cbytes;
++	int msgflag;
++	int ret;
++
++	INIT_LIST_HEAD(&messages);
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_IPC_MSG);
 +	if (IS_ERR(h))
 +		return PTR_ERR(h);
 +
@@ -593,269 +446,159 @@ index 0000000..826e430
 +	if (h->perms.id < 0)
 +		goto out;
 +
-+#define CKPT_SHMFL_MASK  (SHM_NORESERVE | SHM_HUGETLB)
-+	if (h->flags & ~CKPT_SHMFL_MASK)
-+		goto out;
-+
-+	ret = -ENOSYS;
-+	if (h->mlock_uid != (unsigned int) -1)	/* FIXME: support SHM_LOCK */
-+		goto out;
-+	if (h->flags & SHM_HUGETLB)	/* FIXME: support SHM_HUGETLB */
-+		goto out;
-+
-+	/*
-+	 * SHM_DEST means that the shm is to be deleted after creation.
-+	 * However, deleting before it's actually attached is quite silly.
-+	 * Instead, we defer this task to until restart has succeeded.
-+	 */
-+	if (h->perms.mode & SHM_DEST) {
-+		struct dq_ipcshm_del dq;
-+
-+		/* to not confuse the rest of the code */
-+		h->perms.mode &= ~SHM_DEST;
-+
-+		dq.id = h->perms.id;
-+		dq.ipcns = ns;
-+		get_ipc_ns(dq.ipcns);
-+
-+		/* XXX can safely use put_ipc_ns() as dtor, see above */
-+		ret = deferqueue_add(ctx->deferqueue, &dq, sizeof(dq),
-+				     (deferqueue_func_t) ipc_shm_delete,
-+				     (deferqueue_func_t) put_ipc_ns);
-+		if (ret < 0)
-+			goto out;
-+	}
-+
-+	shmflag = h->flags | h->perms.mode | IPC_CREAT | IPC_EXCL;
-+	ckpt_debug("shm: do_shmget size %lld flag %#x id %d\n",
-+		 h->shm_segsz, shmflag, h->perms.id);
-+	ret = do_shmget(ns, h->perms.key, h->shm_segsz, shmflag, h->perms.id);
-+	ckpt_debug("shm: do_shmget ret %d\n", ret);
++	/* read queued messages into temporary queue */
++	ret = restore_msg_contents(ctx, &messages, h->q_qnum, &cbytes);
 +	if (ret < 0)
 +		goto out;
 +
-+	down_write(&shm_ids->rw_mutex);
++	ret = -EINVAL;
++	if (h->q_cbytes != cbytes)
++		goto out;
++
++	/* restore the message queue */
++	msgflag = h->perms.mode | IPC_CREAT | IPC_EXCL;
++	ckpt_debug("msg: do_msgget key %d flag %#x id %d\n",
++		 h->perms.key, msgflag, h->perms.id);
++	ret = do_msgget(ns, h->perms.key, msgflag, h->perms.id);
++	ckpt_debug("msg: do_msgget ret %d\n", ret);
++	if (ret < 0)
++		goto out;
++
++	down_write(&msg_ids->rw_mutex);
 +
 +	/* we are the sole owners/users of this ipc_ns, it can't go away */
-+	perms = ipc_lock(shm_ids, h->perms.id);
-+	BUG_ON(IS_ERR(perms));  /* ipc_ns is private to us */
++	perms = ipc_lock(msg_ids, h->perms.id);
++	BUG_ON(IS_ERR(perms));	/* ipc_ns is private to us */
 +
-+	shp = container_of(perms, struct shmid_kernel, shm_perm);
-+	file = shp->shm_file;
-+	get_file(file);
++	msq = container_of(perms, struct msg_queue, q_perm);
++	BUG_ON(!list_empty(&msq->q_messages));	/* ipc_ns is private to us */
 +
-+	ret = load_ipc_shm_hdr(ctx, h, shp);
-+	if (ret < 0)
-+		goto mutex;
++	/* attach queued messages we read before */
++	list_splice_init(&messages, &msq->q_messages);
 +
-+	/* deposit in objhash and read contents in */
-+	ret = ckpt_obj_insert(ctx, file, h->objref, CKPT_OBJ_FILE);
-+	if (ret < 0)
-+		goto mutex;
-+	ret = restore_memory_contents(ctx, file->f_dentry->d_inode);
-+ mutex:
-+	fput(file);
++	/* adjust msq and namespace statistics */
++	atomic_add(h->q_cbytes, &ns->msg_bytes);
++	atomic_add(h->q_qnum, &ns->msg_hdrs);
++	msq->q_cbytes = h->q_cbytes;
++	msq->q_qbytes = h->q_qbytes;
++	msq->q_qnum = h->q_qnum;
++
++	ret = load_ipc_msg_hdr(ctx, h, msq);
++
 +	if (ret < 0) {
-+		ckpt_debug("shm: need to remove (%d)\n", ret);
-+		do_shm_rmid(ns, perms);
++		ckpt_debug("msq: need to remove (%d)\n", ret);
++		freeque(ns, perms);
 +	} else
 +		ipc_unlock(perms);
-+	up_write(&shm_ids->rw_mutex);
++	up_write(&msg_ids->rw_mutex);
 + out:
++	free_msg_list(&messages);  /* no-op if all ok, else cleanup msgs */
 +	ckpt_hdr_put(ctx, h);
 +	return ret;
 +}
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 749dd57..26f9253 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -40,6 +40,7 @@
- #include <linux/mount.h>
- #include <linux/ipc_namespace.h>
- #include <linux/ima.h>
-+#include <linux/checkpoint.h>
+diff --git a/ipc/msg.c b/ipc/msg.c
+index 1db7c45..3559d53 100644
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -72,7 +72,6 @@ struct msg_sender {
  
- #include <asm/uaccess.h>
+ #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
  
-@@ -305,6 +306,74 @@ int is_file_shm_hugepages(struct file *file)
- 	return ret;
+-static void freeque(struct ipc_namespace *, struct kern_ipc_perm *);
+ static int newque(struct ipc_namespace *, struct ipc_params *, int);
+ #ifdef CONFIG_PROC_FS
+ static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
+@@ -278,7 +277,7 @@ static void expunge_all(struct msg_queue *msq, int res)
+  * msg_ids.rw_mutex (writer) and the spinlock for this message queue are held
+  * before freeque() is called. msg_ids.rw_mutex remains locked on exit.
+  */
+-static void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
++void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
+ {
+ 	struct list_head *tmp;
+ 	struct msg_queue *msq = container_of(ipcp, struct msg_queue, q_perm);
+@@ -311,14 +310,11 @@ static inline int msg_security(struct kern_ipc_perm *ipcp, int msgflg)
+ 	return security_msg_queue_associate(msq, msgflg);
  }
  
-+#ifdef CONFIG_CHECKPOINT
-+static int ipcshm_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
-+{
-+	int ino_objref;
-+	int first;
-+
-+	ino_objref = ckpt_obj_lookup_add(ctx, vma->vm_file->f_dentry->d_inode,
-+				       CKPT_OBJ_INODE, &first);
-+	if (ino_objref < 0)
-+		return ino_objref;
-+
-+	/*
-+	 * This shouldn't happen, because all IPC regions should have
-+	 * been already dumped by now via ipc namespaces; It means
-+	 * the ipc_ns has been modified recently during checkpoint.
-+	 */
-+	if (first)
-+		return -EBUSY;
-+
-+	return generic_vma_checkpoint(ctx, vma, CKPT_VMA_SHM_IPC_SKIP,
-+				      0, ino_objref);
-+}
-+
-+int ipcshm_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
-+		   struct ckpt_hdr_vma *h)
-+{
-+	struct file *file;
-+	int shmid, shmflg = 0;
-+	mm_segment_t old_fs;
-+	unsigned long start;
-+	unsigned long addr;
-+	int ret;
-+
-+	if (!h->ino_objref)
-+		return -EINVAL;
-+	/* FIX: verify the vm_flags too */
-+
-+	file = ckpt_obj_fetch(ctx, h->ino_objref, CKPT_OBJ_FILE);
-+	if (IS_ERR(file))
-+		PTR_ERR(file);
-+
-+	shmid = file->f_dentry->d_inode->i_ino;
-+
-+	if (!(h->vm_flags & VM_WRITE))
-+		shmflg |= SHM_RDONLY;
-+
-+	/*
-+	 * FIX: do_shmat() has limited interface: all-or-nothing
-+	 * mapping. If the vma, however, reflects a partial mapping
-+	 * then we need to modify that function to accomplish the
-+	 * desired outcome.  Partial mapping can exist due to the user
-+	 * call shmat() and then unmapping part of the region.
-+	 * Currently, we at least detect this and call it a foul play.
-+	 */
-+	if (((h->vm_end - h->vm_start) != h->ino_size) || h->vm_pgoff)
-+		return -ENOSYS;
-+
-+	old_fs = get_fs();
-+	set_fs(get_ds());
-+	start = h->vm_start;
-+	ret = do_shmat(shmid, (char __user *) start, shmflg, &addr);
-+	set_fs(old_fs);
-+
-+	BUG_ON(ret >= 0 && addr != h->vm_start);
-+	return ret;
-+}
-+#endif
-+
- static const struct file_operations shm_file_operations = {
- 	.mmap		= shm_mmap,
- 	.fsync		= shm_fsync,
-@@ -320,6 +389,9 @@ static struct vm_operations_struct shm_vm_ops = {
- 	.set_policy = shm_set_policy,
- 	.get_policy = shm_get_policy,
- #endif
-+#if defined(CONFIG_CHECKPOINT)
-+	.checkpoint = ipcshm_checkpoint,
-+#endif
- };
- 
- /**
-@@ -447,14 +519,12 @@ static inline int shm_more_checks(struct kern_ipc_perm *ipcp,
- 	return 0;
- }
- 
--int do_shmget(key_t key, size_t size, int shmflg, int req_id)
-+int do_shmget(struct ipc_namespace *ns, key_t key, size_t size,
-+	      int shmflg, int req_id)
+-int do_msgget(key_t key, int msgflg, int req_id)
++int do_msgget(struct ipc_namespace *ns, key_t key, int msgflg, int req_id)
  {
 -	struct ipc_namespace *ns;
- 	struct ipc_ops shm_ops;
- 	struct ipc_params shm_params;
+ 	struct ipc_ops msg_ops;
+ 	struct ipc_params msg_params;
  
 -	ns = current->nsproxy->ipc_ns;
 -
- 	shm_ops.getnew = newseg;
- 	shm_ops.associate = shm_security;
- 	shm_ops.more_checks = shm_more_checks;
-@@ -468,7 +538,7 @@ int do_shmget(key_t key, size_t size, int shmflg, int req_id)
+ 	msg_ops.getnew = newque;
+ 	msg_ops.associate = msg_security;
+ 	msg_ops.more_checks = NULL;
+@@ -331,7 +327,7 @@ int do_msgget(key_t key, int msgflg, int req_id)
  
- SYSCALL_DEFINE3(shmget, key_t, key, size_t, size, int, shmflg)
+ SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
  {
--	return do_shmget(key, size, shmflg, -1);
-+	return do_shmget(current->nsproxy->ipc_ns, key, size, shmflg, -1);
+-	return do_msgget(key, msgflg, -1);
++	return do_msgget(current->nsproxy->ipc_ns, key, msgflg, -1);
  }
  
- static inline unsigned long copy_shmid_to_user(void __user *buf, struct shmid64_ds *in, int version)
-@@ -599,8 +669,8 @@ static void shm_get_stat(struct ipc_namespace *ns, unsigned long *rss,
-  * to be held in write mode.
-  * NOTE: no locks must be held, the rw_mutex is taken inside this function.
-  */
--static int shmctl_down(struct ipc_namespace *ns, int shmid, int cmd,
--		       struct shmid_ds __user *buf, int version)
-+int shmctl_down(struct ipc_namespace *ns, int shmid, int cmd,
-+		struct shmid_ds __user *buf, int version)
+ static inline unsigned long
+diff --git a/ipc/msgutil.c b/ipc/msgutil.c
+index f095ee2..e119243 100644
+--- a/ipc/msgutil.c
++++ b/ipc/msgutil.c
+@@ -36,14 +36,6 @@ struct ipc_namespace init_ipc_ns = {
+ 
+ atomic_t nr_ipc_ns = ATOMIC_INIT(1);
+ 
+-struct msg_msgseg {
+-	struct msg_msgseg* next;
+-	/* the next part of the message follows immediately */
+-};
+-
+-#define DATALEN_MSG	(PAGE_SIZE-sizeof(struct msg_msg))
+-#define DATALEN_SEG	(PAGE_SIZE-sizeof(struct msg_msgseg))
+-
+ struct msg_msg *load_msg(const void __user *src, int len)
  {
- 	struct kern_ipc_perm *ipcp;
- 	struct shmid64_ds shmid64;
+ 	struct msg_msg *msg;
 diff --git a/ipc/util.h b/ipc/util.h
-index 8ae1f8e..e0007dc 100644
+index e0007dc..8a223f0 100644
 --- a/ipc/util.h
 +++ b/ipc/util.h
-@@ -178,11 +178,20 @@ void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
+@@ -141,6 +141,14 @@ extern void free_msg(struct msg_msg *msg);
+ extern struct msg_msg *load_msg(const void __user *src, int len);
+ extern int store_msg(void __user *dest, struct msg_msg *msg, int len);
  
- struct ipc_namespace *create_ipc_ns(void);
++struct msg_msgseg {
++	struct msg_msgseg *next;
++	/* the next part of the message follows immediately */
++};
++
++#define DATALEN_MSG	(PAGE_SIZE-sizeof(struct msg_msg))
++#define DATALEN_SEG	(PAGE_SIZE-sizeof(struct msg_msgseg))
++
+ extern void recompute_msgmni(struct ipc_namespace *);
  
-+int do_shmget(struct ipc_namespace *ns, key_t key, size_t size, int shmflg,
-+	      int req_id);
-+void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp);
-+
-+
+ static inline int ipc_buildid(int id, int seq)
+@@ -182,6 +190,8 @@ int do_shmget(struct ipc_namespace *ns, key_t key, size_t size, int shmflg,
+ 	      int req_id);
+ void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp);
+ 
++int do_msgget(struct ipc_namespace *ns, key_t key, int msgflg, int req_id);
++void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp);
+ 
  #ifdef CONFIG_CHECKPOINT
  extern int checkpoint_fill_ipc_perms(struct ckpt_hdr_ipc_perms *h,
- 				     struct kern_ipc_perm *perm);
- extern int restore_load_ipc_perms(struct ckpt_hdr_ipc_perms *h,
- 				  struct kern_ipc_perm *perm);
+@@ -192,6 +202,9 @@ extern int restore_load_ipc_perms(struct ckpt_hdr_ipc_perms *h,
+ extern int ckpt_collect_ipc_shm(int id, void *p, void *data);
+ extern int checkpoint_ipc_shm(int id, void *p, void *data);
+ extern int restore_ipc_shm(struct ckpt_ctx *ctx, struct ipc_namespace *ns);
 +
-+extern int ckpt_collect_ipc_shm(int id, void *p, void *data);
-+extern int checkpoint_ipc_shm(int id, void *p, void *data);
-+extern int restore_ipc_shm(struct ckpt_ctx *ctx, struct ipc_namespace *ns);
++extern int checkpoint_ipc_msg(int id, void *p, void *data);
++extern int restore_ipc_msg(struct ckpt_ctx *ctx, struct ipc_namespace *ns);
  #endif
  
  #endif
-diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-index fddc724..e7aaa00 100644
---- a/kernel/nsproxy.c
-+++ b/kernel/nsproxy.c
-@@ -249,6 +249,14 @@ int ckpt_collect_ns(struct ckpt_ctx *ctx, struct task_struct *t)
- 	if (ret < 0)
- 		goto out;
- 	ret = ckpt_obj_collect(ctx, nsproxy->ipc_ns, CKPT_OBJ_IPC_NS);
-+	if (ret < 0)
-+		goto out;
-+	/*
-+	 * ipc_ns (shm) may keep references to files: if this is the
-+	 * first time we see this ipc_ns (ret > 0), proceed inside.
-+	 */
-+	if (ret)
-+		ret = ckpt_collect_ipc_ns(ctx, nsproxy->ipc_ns);
- 
- 	/* TODO: collect other namespaces here */
-  out:
-diff --git a/mm/shmem.c b/mm/shmem.c
-index d1e348f..2cfff8d 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -2387,7 +2387,7 @@ static int shmem_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
- {
- 	enum vma_type vma_type;
- 	int ino_objref;
--	int first;
-+	int first, ret;
- 
- 	/* should be private anonymous ... verify that this is the case */
- 	if (vma->vm_flags & CKPT_VMA_NOT_SUPPORTED) {
 -- 
 1.6.0.4
 
