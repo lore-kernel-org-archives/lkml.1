@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbZIWKmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbZIWKmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751881AbZIWKmL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 06:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZIWKmK
+	id S1751930AbZIWKmt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 06:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZIWKmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 06:42:10 -0400
-Received: from cmpxchg.org ([85.214.51.133]:52618 "EHLO cmpxchg.org"
+	Wed, 23 Sep 2009 06:42:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53412 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751386AbZIWKmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 06:42:09 -0400
-Date: Wed, 23 Sep 2009 12:41:51 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [RFC Patch] kbuild: remove -Wdeclaration-after-statement
-Message-ID: <20090923104151.GA22262@cmpxchg.org>
-References: <20090923094034.23512.90809.sendpatchset@localhost.localdomain>
-Mime-Version: 1.0
+	id S1751451AbZIWKms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 06:42:48 -0400
+Date: Wed, 23 Sep 2009 12:42:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Malley <mail@chrismalley.co.uk>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: perf sched record hangs machine
+Message-ID: <20090923104244.GB23941@elte.hu>
+References: <20090922212453.GB6062@nowhere> <1253686585.7695.84.camel@twins> <20090923073253.GA18022@elte.hu> <20090923074028.GA3078@elte.hu> <aa79d98a0909230044q3548cf0bjda62e05e0400edd6@mail.gmail.com> <aa79d98a0909230148j47232382oe28c6d88eef181c4@mail.gmail.com> <7863dc4c0909230215u2fed3edciec84f93f24d3ae1@mail.gmail.com> <20090923092024.GA29323@elte.hu> <aa79d98a0909230248j22f05047n34e0ee97382f573f@mail.gmail.com> <7863dc4c0909230306x3bc60775rc503919df83087ed@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090923094034.23512.90809.sendpatchset@localhost.localdomain>
+In-Reply-To: <7863dc4c0909230306x3bc60775rc503919df83087ed@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Wed, Sep 23, 2009 at 05:38:01AM -0400, Amerigo Wang wrote:
+* Chris Malley <mail@chrismalley.co.uk> wrote:
+
+> Applied Peter's patch, doesn't seem to have fixed the problem:
 > 
-> I got lots of "ISO C90 forbids mixed declarations and code" warnings
-> during compile today's kernel.
+> [  246.408893] BUG: unable to handle kernel paging request at ffffb300
+> [  246.408939] IP: [<c011b0bd>] default_send_IPI_self+0x1d/0x50
 
-Yeah, see http://lkml.org/lkml/2009/9/22/585 .
+could you please send the full bootlog, up to the crash?
 
-> I think we can remove the gcc option '-Wdeclaration-after-statement'
-> now, since we already have C99 for 10 years. :)
+Thanks,
 
-It's still ugly and uncommon to have variable declarations appear
-randomly in block bodies, please keep the warning.
-
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> 
-> ---
-> diff --git a/Makefile b/Makefile
-> index 433493a..038bda2 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -559,9 +559,6 @@ endif
->  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
->  CHECKFLAGS     += $(NOSTDINC_FLAGS)
->  
-> -# warn about C99 declaration after statement
-> -KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
-> -
->  # disable pointer signed / unsigned warnings in gcc 4.0
->  KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
-
-	Hannes
+	Ingo
