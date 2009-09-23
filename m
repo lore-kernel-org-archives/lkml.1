@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbZIWNrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbZIWNuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751685AbZIWNrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 09:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZIWNrk
+	id S1751801AbZIWNuD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 09:50:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZIWNuC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 09:47:40 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46017 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751541AbZIWNrk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 09:47:40 -0400
-Date: Wed, 23 Sep 2009 09:46:37 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Hirokazu Takata <takata@linux-m32r.org>
-cc: torvalds@linux-foundation.org, linux-m32r@ml.linux-m32r.org,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [GIT PULL] m32r: Cleanup linker script
-In-Reply-To: <swfk4zqnyv7.wl%takata@linux-m32r.org>
-Message-ID: <alpine.DEB.1.10.0909230021320.15822@dr-wily.mit.edu>
-References: <swfljk6ooe0.wl%takata@linux-m32r.org> <swfk4zqnyv7.wl%takata@linux-m32r.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Wed, 23 Sep 2009 09:50:02 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46614 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751620AbZIWNuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 09:50:01 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18NTL0AcXQNgJs51rCpSbVPKWgCP/ykxZpxrk8r6H
+	AzF1YSDZCijzCT
+Subject: Re: [patch] Re: [perf] Finding uninstalled modules Was Re: mailing
+ list for trace users
+From: Mike Galbraith <efault@gmx.de>
+To: Avi Kivity <avi@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, rostedt@goodmis.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <4ABA1E3B.40800@redhat.com>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>
+	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>
+	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>
+	 <4AB8BA37.4010305@redhat.com> <20090922201746.GH5216@ghostprotocols.net>
+	 <4AB9DCC8.5050603@redhat.com> <1253697658.11461.36.camel@marge.simson.net>
+	 <4AB9F08E.1020106@redhat.com> <1253705515.7835.41.camel@marge.simson.net>
+	 <4ABA1B75.7040900@redhat.com>  <4ABA1E3B.40800@redhat.com>
+Content-Type: text/plain
+Date: Wed, 23 Sep 2009 15:50:00 +0200
+Message-Id: <1253713800.7816.15.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.52
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009, Hirokazu Takata wrote:
-
-> Hi, Linus,
+On Wed, 2009-09-23 at 16:10 +0300, Avi Kivity wrote:
+> On 09/23/2009 03:58 PM, Avi Kivity wrote:On 09/23/2009 03:58 PM, Avi 
+> Kivity wrote:
+> > Not for me.  'perf report', for example, shows
+> >
+> >     63.08%  qemu-system-x86  
+> > [kernel]                                              [k] packet_exit
+> >      4.71%  qemu-system-x86  
+> > [kernel]                                              [k] hpet_next_event
+> >      4.38%             init  
+> > [kernel]                                              [k] 
+> > mwait_idle_with_hints
+> >
+> > While 'perf top' still shows vmx_vcpu_run.
+> >
 > 
-> Sorry, there was a cross in the post.
+> strace says:
 > 
-> I was not conscious of Sam's acknowledgement mail.  And a newer patchset
-> has been sent by Tim Abbott on Sep. 22, 2009 - 10:23:21 EST.
-> 
-> > [PATCH 00/13] Linker script cleanup patches for various architectures
-> 
-> The newer patchset includes updates for not only m32r but also
-> parisc, xtenza, h8300, mn10300 and um.
-> 
-> What do I deal with such a cross architectural patchset?
+>     getcwd("/home/avi/kvm/linux-2.6"..., 4096) = 24
+>     ...
+>     [no chdir]
+>     ...
+>     open("kernel/arch/x86/kvm/kvm-intel.ko", O_RDONLY) = -1 ENOENT (No 
+> such file or directory)
 
-Sorry for the miscommunication.
+*blink*
 
-My patchset is just 5 orthogonal patchsets included together; there's no 
-dependence between the various architectures.  These were just the subset 
-of the architecture linker script cleanups that were ready to be merged at 
-that time.
+> That "kernel/" looks like it was meant for /lib/modules, not a kernel 
+> tree.  If I run 'perf report' from /lib/modules/2.6.31 I see vmx_vcpu_run.
 
-The 6 m32r patches I sent to Linus are exactly the same as what's in your 
-pull request, so it doesn't matter which one gets merged.
+So I need what's in your modules.dep to figure out where the rest of the
+path went.
 
-	-Tim Abbott
+/lib/modules/2.6.32-tip-smp/kernel/arch/x86/kvm/kvm-intel.ko
+
+static int mod_dso__load_module_paths(struct mod_dso *self)
+{
+        struct utsname uts;
+        int count = 0, len;
+        char *line = NULL;
+        FILE *file;
+        char *path;
+        size_t n;
+
+        if (uname(&uts) < 0)
+                goto out_failure;
+
+        len = strlen("/lib/modules/");
+        len += strlen(uts.release);
+        len += strlen("/modules.dep");
+
+        path = calloc(1, len);
+        if (path == NULL)
+                goto out_failure;
+
+        strcat(path, "/lib/modules/");
+        strcat(path, uts.release);
+        strcat(path, "/modules.dep");
+
+        file = fopen(path, "r");
+
+
