@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZIWUAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbZIWUEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZIWUAX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 16:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZIWUAW
+	id S1753925AbZIWUEn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 16:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbZIWUEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 16:00:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52787 "EHLO mx3.mail.elte.hu"
+	Wed, 23 Sep 2009 16:04:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52971 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753665AbZIWUAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 16:00:21 -0400
-Date: Wed, 23 Sep 2009 21:59:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: John Kacur <jkacur@gmail.com>
-Cc: David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, a.p.zijlstra@chello.nl,
-       fweisbec@gmail.com, acme@redhat.com, mhiramat@redhat.com,
-       postmaster@vger.kernel.org
-Subject: Re: mailing list for trace users
-Message-ID: <20090923195955.GC19358@elte.hu>
-References: <1253132182.20020.242.camel@gandalf.stny.rr.com> <20090922.153201.225375909.davem@davemloft.net> <20090923114725.GB4132@elte.hu> <20090923.111444.247045711.davem@davemloft.net> <20090923193020.GA20934@elte.hu> <520f0cf10909231240g11f5cafei5cbb4ed494eba76d@mail.gmail.com> <520f0cf10909231242r598b0bebtf99c8bea9690d11f@mail.gmail.com>
+	id S1753686AbZIWUEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 16:04:42 -0400
+Date: Wed, 23 Sep 2009 22:04:44 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Matt LaPlante <kernel1@cyberdogtech.com>
+Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org
+Subject: Re: [Patch] trivial: fix a URL in hpet.txt
+In-Reply-To: <20090923090434.3010588f.kernel1@cyberdogtech.com>
+Message-ID: <alpine.LSU.2.00.0909232204340.10090@wotan.suse.de>
+References: <20090923100627.23628.96394.sendpatchset@localhost.localdomain> <20090923090434.3010588f.kernel1@cyberdogtech.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <520f0cf10909231242r598b0bebtf99c8bea9690d11f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 23 Sep 2009, Matt LaPlante wrote:
 
-* John Kacur <jkacur@gmail.com> wrote:
-
-> > Yikes - Ingo, I don't want to spawn a long thread here about what to 
-> > call the list, but as a native English speaker, I think that 
-> > "linux-trace-users" sounds much nicer than "linux-tracing-users".
-> >
-> > Perhaps, trace is an adjective describing the kind of users, in any 
-> > case, it doesn't sound like "one trace" - so, could we go this one? 
-> > (if you insist on linux-tracing then you have to drop the word 
-> > "users")
-> >
-> > John
-> >
+> > 
+> > That URL is out of date. Update it.
+> > 
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: Randy Dunlap <rdunlap@xenotime.net>
+> > Cc: Matt LaPlante <kernel1@cyberdogtech.com>
+> > Cc: Jiri Kosina <jkosina@suse.cz>
+> > Signed-off-by: WANG Cong <amwang@redhat.com>
+> > 
 > 
-> That's funny, boast about my credentials as a native English speaker, 
-> and then make a mistake.
-> 
-> s/go this one/go with this one
+> Acked-by: Matt LaPlante <kernel@cyberdogtech.com>
 
-I hope you are right about linux-trace-users sounding better to native 
-speakers than linux-tracing-users - because it sure sounds awful to me
-:-)
+Applied to trivial tree, thanks.
 
-Any other English native speakers with an opinion one way or another? 
-
-	Ingo
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
