@@ -1,185 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751742AbZIWKHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751729AbZIWKNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751742AbZIWKHK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 06:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbZIWKHF
+	id S1751729AbZIWKNT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 06:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbZIWKNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 06:07:05 -0400
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:45586 "EHLO
-	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751598AbZIWKHB (ORCPT
+	Wed, 23 Sep 2009 06:13:18 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:54515 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbZIWKNS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 06:07:01 -0400
-From: Brian Rogers <brian@xyzw.org>
-To: stable@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       Brian Rogers <brian@xyzw.org>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [PATCH 2/2] saa7134: ir-kbd-i2c init data needs a persistent object
-Date: Wed, 23 Sep 2009 03:05:03 -0700
-Message-Id: <1253700303-15172-2-git-send-email-brian@xyzw.org>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1253700303-15172-1-git-send-email-brian@xyzw.org>
-References: <1253700303-15172-1-git-send-email-brian@xyzw.org>
+	Wed, 23 Sep 2009 06:13:18 -0400
+X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Sep 2009 06:13:17 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=QZGkjVkgW7NpDCluFlmYHrsCWQ04ldCaa6TdZfGgPuqiPxR7gj0xfQqOD3lBK+kf10
+         kiXahr7S+s2mjTrFNz8STnft4e5xqOnaBYPKNpH89LFyYltLUtLVad9V6r567LUnjOJp
+         2JozfsqthG+vgiws75UhsxzrhaqLde3WqQXEY=
+MIME-Version: 1.0
+In-Reply-To: <aa79d98a0909230248j22f05047n34e0ee97382f573f@mail.gmail.com>
+References: <7863dc4c0909221409v7893bfd3o4b590d5951a233ba@mail.gmail.com>
+	 <20090922212453.GB6062@nowhere> <1253686585.7695.84.camel@twins>
+	 <20090923073253.GA18022@elte.hu> <20090923074028.GA3078@elte.hu>
+	 <aa79d98a0909230044q3548cf0bjda62e05e0400edd6@mail.gmail.com>
+	 <aa79d98a0909230148j47232382oe28c6d88eef181c4@mail.gmail.com>
+	 <7863dc4c0909230215u2fed3edciec84f93f24d3ae1@mail.gmail.com>
+	 <20090923092024.GA29323@elte.hu>
+	 <aa79d98a0909230248j22f05047n34e0ee97382f573f@mail.gmail.com>
+Date: Wed, 23 Sep 2009 11:06:06 +0100
+X-Google-Sender-Auth: e47d94571a684ac0
+Message-ID: <7863dc4c0909230306x3bc60775rc503919df83087ed@mail.gmail.com>
+Subject: Re: perf sched record hangs machine
+From: Chris Malley <mail@chrismalley.co.uk>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 7aedd5ec87686c557d48584d69ad880c11a0984d upstream.
+2009/9/23 Cyrill Gorcunov <gorcunov@gmail.com>:
+> On 9/23/09, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> Would still be important to fix the crash - there are boxes where lapics
+>> are disabled permanently and cannot be re-enabled. (plus most people
+>> dont touch their defaults and dont add funky boot options - so crashing
+>> is not an option)
+>>
+>
+> Ingo, Chris, could you try Peter's patch? It seems like what we need.
+>
+> (Peter, self-ipi shouldn't be separated from others ipi, yes it  may
+> not issue any cycle on fsb, but iirc it uses the same logic as other
+> ipi use)
+>
 
-Tested on MSI TV@nywhere Plus.
+Applied Peter's patch, doesn't seem to have fixed the problem:
 
-Original commit message:
-
-ir-kbd-i2c's ir_probe() function can be called much later (i.e. at
-ir-kbd-i2c module load), than the lifetime of a struct IR_i2c_init_data
-allocated off of the stack in cx18_i2c_new_ir() at registration time.
-Make sure we pass a pointer to a persistent IR_i2c_init_data object at
-i2c registration time.
-
-Thanks to Brian Rogers, Dustin Mitchell, Andy Walls and Jean Delvare to
-rise this question.
-
-Before this patch, if ir-kbd-i2c were probed after SAA7134, trash data
-were used.
-
-Compile tested only, but the patch is identical to em28xx one. So, it
-should work properly.
-
-Original-patch-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-[brian@xyzw.org: backported for 2.6.31]
-Signed-off-by: Brian Rogers <brian@xyzw.org>
----
- drivers/media/video/saa7134/saa7134-input.c |   56 +++++++++++++--------------
- drivers/media/video/saa7134/saa7134.h       |    4 ++
- 2 files changed, 31 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/media/video/saa7134/saa7134-input.c b/drivers/media/video/saa7134/saa7134-input.c
-index 6e219c2..69e48ce 100644
---- a/drivers/media/video/saa7134/saa7134-input.c
-+++ b/drivers/media/video/saa7134/saa7134-input.c
-@@ -684,8 +684,6 @@ void saa7134_input_fini(struct saa7134_dev *dev)
- 
- void saa7134_probe_i2c_ir(struct saa7134_dev *dev)
- {
--	struct i2c_board_info info;
--	struct IR_i2c_init_data init_data;
- 	const unsigned short addr_list[] = {
- 		0x7a, 0x47, 0x71, 0x2d,
- 		I2C_CLIENT_END
-@@ -705,32 +703,32 @@ void saa7134_probe_i2c_ir(struct saa7134_dev *dev)
- 		return;
- 	}
- 
--	memset(&info, 0, sizeof(struct i2c_board_info));
--	memset(&init_data, 0, sizeof(struct IR_i2c_init_data));
--	strlcpy(info.type, "ir_video", I2C_NAME_SIZE);
-+	memset(&dev->info, 0, sizeof(dev->info));
-+	memset(&dev->init_data, 0, sizeof(dev->init_data));
-+	strlcpy(dev->info.type, "ir_video", I2C_NAME_SIZE);
- 
- 	switch (dev->board) {
- 	case SAA7134_BOARD_PINNACLE_PCTV_110i:
- 	case SAA7134_BOARD_PINNACLE_PCTV_310i:
--		init_data.name = "Pinnacle PCTV";
-+		dev->init_data.name = "Pinnacle PCTV";
- 		if (pinnacle_remote == 0) {
--			init_data.get_key = get_key_pinnacle_color;
--			init_data.ir_codes = ir_codes_pinnacle_color;
-+			dev->init_data.get_key = get_key_pinnacle_color;
-+			dev->init_data.ir_codes = ir_codes_pinnacle_color;
- 		} else {
--			init_data.get_key = get_key_pinnacle_grey;
--			init_data.ir_codes = ir_codes_pinnacle_grey;
-+			dev->init_data.get_key = get_key_pinnacle_grey;
-+			dev->init_data.ir_codes = ir_codes_pinnacle_grey;
- 		}
- 		break;
- 	case SAA7134_BOARD_UPMOST_PURPLE_TV:
--		init_data.name = "Purple TV";
--		init_data.get_key = get_key_purpletv;
--		init_data.ir_codes = ir_codes_purpletv;
-+		dev->init_data.name = "Purple TV";
-+		dev->init_data.get_key = get_key_purpletv;
-+		dev->init_data.ir_codes = ir_codes_purpletv;
- 		break;
- 	case SAA7134_BOARD_MSI_TVATANYWHERE_PLUS:
--		init_data.name = "MSI TV@nywhere Plus";
--		init_data.get_key = get_key_msi_tvanywhere_plus;
--		init_data.ir_codes = ir_codes_msi_tvanywhere_plus;
--		info.addr = 0x30;
-+		dev->init_data.name = "MSI TV@nywhere Plus";
-+		dev->init_data.get_key = get_key_msi_tvanywhere_plus;
-+		dev->init_data.ir_codes = ir_codes_msi_tvanywhere_plus;
-+		dev->info.addr = 0x30;
- 		/* MSI TV@nywhere Plus controller doesn't seem to
- 		   respond to probes unless we read something from
- 		   an existing device. Weird...
-@@ -741,9 +739,9 @@ void saa7134_probe_i2c_ir(struct saa7134_dev *dev)
- 			(1 == rc) ? "yes" : "no");
- 		break;
- 	case SAA7134_BOARD_HAUPPAUGE_HVR1110:
--		init_data.name = "HVR 1110";
--		init_data.get_key = get_key_hvr1110;
--		init_data.ir_codes = ir_codes_hauppauge_new;
-+		dev->init_data.name = "HVR 1110";
-+		dev->init_data.get_key = get_key_hvr1110;
-+		dev->init_data.ir_codes = ir_codes_hauppauge_new;
- 		break;
- 	case SAA7134_BOARD_BEHOLD_607FM_MK3:
- 	case SAA7134_BOARD_BEHOLD_607FM_MK5:
-@@ -757,26 +755,26 @@ void saa7134_probe_i2c_ir(struct saa7134_dev *dev)
- 	case SAA7134_BOARD_BEHOLD_M63:
- 	case SAA7134_BOARD_BEHOLD_M6_EXTRA:
- 	case SAA7134_BOARD_BEHOLD_H6:
--		init_data.name = "BeholdTV";
--		init_data.get_key = get_key_beholdm6xx;
--		init_data.ir_codes = ir_codes_behold;
-+		dev->init_data.name = "BeholdTV";
-+		dev->init_data.get_key = get_key_beholdm6xx;
-+		dev->init_data.ir_codes = ir_codes_behold;
- 		break;
- 	case SAA7134_BOARD_AVERMEDIA_CARDBUS_501:
- 	case SAA7134_BOARD_AVERMEDIA_CARDBUS_506:
--		info.addr = 0x40;
-+		dev->info.addr = 0x40;
- 		break;
- 	}
- 
--	if (init_data.name)
--		info.platform_data = &init_data;
-+	if (dev->init_data.name)
-+		dev->info.platform_data = &dev->init_data;
- 	/* No need to probe if address is known */
--	if (info.addr) {
--		i2c_new_device(&dev->i2c_adap, &info);
-+	if (dev->info.addr) {
-+		i2c_new_device(&dev->i2c_adap, &dev->info);
- 		return;
- 	}
- 
- 	/* Address not known, fallback to probing */
--	i2c_new_probed_device(&dev->i2c_adap, &info, addr_list);
-+	i2c_new_probed_device(&dev->i2c_adap, &dev->info, addr_list);
- }
- 
- static int saa7134_rc5_irq(struct saa7134_dev *dev)
-diff --git a/drivers/media/video/saa7134/saa7134.h b/drivers/media/video/saa7134/saa7134.h
-index fb564f1..4d85f5c 100644
---- a/drivers/media/video/saa7134/saa7134.h
-+++ b/drivers/media/video/saa7134/saa7134.h
-@@ -584,6 +584,10 @@ struct saa7134_dev {
- 	int                        nosignal;
- 	unsigned int               insuspend;
- 
-+	/* I2C keyboard data */
-+	struct i2c_board_info      info;
-+	struct IR_i2c_init_data    init_data;
-+
- 	/* SAA7134_MPEG_* */
- 	struct saa7134_ts          ts;
- 	struct saa7134_dmaqueue    ts_q;
--- 
-1.6.3.3
-
+[  246.408893] BUG: unable to handle kernel paging request at ffffb300
+[  246.408939] IP: [<c011b0bd>] default_send_IPI_self+0x1d/0x50
+[  246.408961] *pde = 0073f067 *pte = 00000000
+[  246.408985] Oops: 0000 [#1] SMP
+[  246.408996] last sysfs file:
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+[  246.409007] Modules linked in: netconsole configfs binfmt_misc
+snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm
+snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event
+snd_seq snd_timer snd_seq_device ipw2200 libipw snd dcdbas cfg80211
+intel_agp video soundcore sr_mod lib80211 output joydev pcspkr
+snd_page_alloc agpgart usb_storage usbhid ohci1394 tg3 ieee1394
+[  246.409112]
+[  246.409121] Pid: 4188, comm: firefox Not tainted
+(2.6.31-cjm-07092-g819307a #4) Latitude D400
+[  246.409126] EIP: 0060:[<c011b0bd>] EFLAGS: 00010046 CPU: 0
+[  246.409131] EIP is at default_send_IPI_self+0x1d/0x50
+[  246.409135] EAX: fffff000 EBX: 000000ec ECX: 00000800 EDX: ffffb300
+[  246.409140] ESI: f16cdc64 EDI: 00000000 EBP: f16cdc00 ESP: f16cdbfc
+[  246.409144]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[  246.409150] Process firefox (pid: 4188, ti=f16cc000 task=f1465aa0
+task.ti=f16cc000)
+[  246.409154] Stack:
+[  246.409158]  f16c3e14 f16cdc08 c010e3b4 f16cdc28 c01b9751 f1602024
+f1602020 00115838
+[  246.409179] <0> 00000000 f1602000 f16c2c00 f16cdc38 c01b981a
+f16cdc64 f16cdc84 f16cdc98
+[  246.409199] <0> c01ba690 f16c2c00 00000001 c030963e ffffffff
+ffffffff 00000000 00000001
+[  246.409223] Call Trace:
+[  246.409234]  [<c010e3b4>] ? set_perf_event_pending+0x14/0x20
+[  246.409244]  [<c01b9751>] ? perf_output_unlock+0x121/0x1a0
+[  246.409249]  [<c01b981a>] ? perf_output_end+0x4a/0x70
+[  246.409255]  [<c01ba690>] ? __perf_event_overflow+0x240/0x2f0
+[  246.409264]  [<c030963e>] ? atomic64_cmpxchg+0x1e/0x30
+[  246.409270]  [<c01ba8f4>] ? perf_swevent_ctx_event+0x1b4/0x1c0
+[  246.409276]  [<c01ba773>] ? perf_swevent_ctx_event+0x33/0x1c0
+[  246.409281]  [<c01ba9a7>] ? do_perf_sw_event+0xa7/0x160
+[  246.409286]  [<c01baae2>] ? perf_tp_event+0x82/0xa0
+[  246.409296]  [<c012e9c6>] ? ftrace_profile_sched_stat_runtime+0xe6/0x120
+[  246.409301]  [<c012e8e0>] ? ftrace_profile_sched_stat_runtime+0x0/0x120
+[  246.409307]  [<c013c85a>] ? update_curr+0x18a/0x230
+[  246.409313]  [<c013e965>] ? enqueue_entity+0x15/0x460
+[  246.409319]  [<c0132447>] ? task_rq_lock+0x47/0x80
+[  246.409324]  [<c013f2d1>] ? enqueue_task_fair+0x31/0x70
+[  246.409331]  [<c012acad>] ? enqueue_task+0x6d/0x90
+[  246.409336]  [<c012ae50>] ? activate_task+0x20/0x30
+[  246.409343]  [<c013beeb>] ? try_to_wake_up+0x1fb/0x2f0
+[  246.409351]  [<c015ef50>] ? hrtimer_wakeup+0x0/0x20
+[  246.409357]  [<c013c00f>] ? wake_up_process+0xf/0x20
+[  246.409365]  [<c015ef68>] ? hrtimer_wakeup+0x18/0x20
+[  246.409370]  [<c015efdc>] ? __run_hrtimer+0x6c/0xc0
+[  246.409379]  [<c04e748a>] ? _spin_lock+0x3a/0x40
+[  246.409384]  [<c015f2f5>] ? hrtimer_interrupt+0x185/0x230
+[  246.409391]  [<c010564c>] ? timer_interrupt+0x3c/0x50
+[  246.409402]  [<c0199bd0>] ? handle_IRQ_event+0x50/0x140
+[  246.409407]  [<c04e7335>] ? _spin_unlock_irqrestore+0x55/0x60
+[  246.409413]  [<c019bfa4>] ? handle_level_irq+0x64/0xf0
+[  246.409418]  [<c019bfae>] ? handle_level_irq+0x6e/0xf0
+[  246.409423]  [<c01050da>] ? handle_irq+0x1a/0x30
+[  246.409428]  [<c0104896>] ? do_IRQ+0x46/0xc0
+[  246.409437]  [<c016f3cc>] ? trace_hardirqs_on_caller+0x12c/0x170
+[  246.409442]  [<c010372e>] ? common_interrupt+0x2e/0x34
+[  246.409448] Code: 0f 44 c1 89 02 5b 5d c3 8d b6 00 00 00 00 55 89
+e5 53 89 c3 a1 5c de 68 c0 8b 48 20 eb 02 f3 90 a1 c8 10 69 c0 8d 90
+00 c3 ff ff <8b> 80 00 c3 ff ff f6 c4 10 75 e8 89 c8 81 c9 00 04 04 00
+0d 00
+[  246.409591] EIP: [<c011b0bd>] default_send_IPI_self+0x1d/0x50
+SS:ESP 0068:f16cdbfc
+[  246.409601] CR2: 00000000ffffb300
+[  246.409609] ---[ end trace 237505c339f73345 ]---
+[  246.409616] Kernel panic - not syncing: Fatal exception in interrupt
+[  246.409623] Pid: 4188, comm: firefox Tainted: G      D
+2.6.31-cjm-07092-g819307a #4
+[  246.409627] Call Trace:
+[  246.409633]  [<c04e3eb5>] ? printk+0x18/0x1b
+[  246.409638]  [<c04e3de0>] panic+0x43/0x100
+[  246.409643]  [<c04e8569>] oops_end+0xb9/0xc0
+[  246.409648]  [<c0124d66>] no_context+0xb6/0x150
+[  246.409653]  [<c0124e63>] __bad_area_nosemaphore+0x63/0x180
+[  246.409659]  [<c016fb13>] ? __lock_acquire+0x193/0x1240
+[  246.409664]  [<c016fb13>] ? __lock_acquire+0x193/0x1240
+[  246.409670]  [<c016fb13>] ? __lock_acquire+0x193/0x1240
+[  246.409675]  [<c016fb13>] ? __lock_acquire+0x193/0x1240
+[  246.409680]  [<c0124f92>] bad_area_nosemaphore+0x12/0x20
+[  246.409687]  [<c04e9b4c>] do_page_fault+0x31c/0x3c0
+[  246.409692]  [<c04e9830>] ? do_page_fault+0x0/0x3c0
+[  246.409697]  [<c04e79d3>] error_code+0x6b/0x70
+[  246.409703]  [<c016007b>] ? down_write_trylock+0x1b/0x50
+[  246.409708]  [<c04e9830>] ? do_page_fault+0x0/0x3c0
+[  246.409714]  [<c011b0bd>] ? default_send_IPI_self+0x1d/0x50
+[  246.409720]  [<c010e3b4>] set_perf_event_pending+0x14/0x20
+[  246.409725]  [<c01b9751>] perf_output_unlock+0x121/0x1a0
+[  246.409732]  [<c01b981a>] perf_output_end+0x4a/0x70
