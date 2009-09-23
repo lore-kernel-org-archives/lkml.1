@@ -1,160 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbZIWKbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbZIWKlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbZIWKbG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 06:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZIWKbF
+	id S1751657AbZIWKlM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 06:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZIWKlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 06:31:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:56956 "EHLO mga03.intel.com"
+	Wed, 23 Sep 2009 06:41:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38271 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbZIWKbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 06:31:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,438,1249282800"; 
-   d="scan'208";a="190700559"
-Date: Wed, 23 Sep 2009 18:30:55 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Richard Kennedy <richard@rsk.demon.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: regression in page writeback
-Message-ID: <20090923103055.GA15291@localhost>
-References: <20090922155259.GL10825@think> <20090923002220.GA6382@localhost> <20090922175452.d66400dd.akpm@linux-foundation.org> <20090923011758.GC6382@localhost> <20090922182832.28e7f73a.akpm@linux-foundation.org> <20090923014500.GA11076@localhost> <20090922185941.1118e011.akpm@linux-foundation.org> <1253697598.2277.13.camel@castor> <1253697811.7695.127.camel@twins> <20090923093753.GA4579@localhost>
+	id S1751182AbZIWKlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 06:41:11 -0400
+Date: Wed, 23 Sep 2009 12:41:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Chris Malley <mail@chrismalley.co.uk>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: perf sched record hangs machine
+Message-ID: <20090923104100.GA23941@elte.hu>
+References: <7863dc4c0909221409v7893bfd3o4b590d5951a233ba@mail.gmail.com> <20090922212453.GB6062@nowhere> <1253686585.7695.84.camel@twins> <20090923073253.GA18022@elte.hu> <20090923074028.GA3078@elte.hu> <aa79d98a0909230044q3548cf0bjda62e05e0400edd6@mail.gmail.com> <aa79d98a0909230148j47232382oe28c6d88eef181c4@mail.gmail.com> <7863dc4c0909230215u2fed3edciec84f93f24d3ae1@mail.gmail.com> <20090923092024.GA29323@elte.hu> <aa79d98a0909230248j22f05047n34e0ee97382f573f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090923093753.GA4579@localhost>
+In-Reply-To: <aa79d98a0909230248j22f05047n34e0ee97382f573f@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 05:37:53PM +0800, Wu Fengguang wrote:
-> On Wed, Sep 23, 2009 at 05:23:31PM +0800, Peter Zijlstra wrote:
-> > On Wed, 2009-09-23 at 10:19 +0100, Richard Kennedy wrote:
-> > > 
-> > > I am concerned that the background writeout no longer stops when it
-> > > reaches the background threshold, as balance_dirty_pages requests all
-> > > dirty pages to be written. No doubt this is good for large linear writes
-> > > but what about more random write workloads? 
-> > 
-> > I've not had time to look over the current code, but write-out not
-> > stopping on reaching background threshold is a definite bug and needs to
-> > get fixed.
+
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+
+> On 9/23/09, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Chris Malley <mail@chrismalley.co.uk> wrote:
+> >
+> >> 2009/9/23 Cyrill Gorcunov <gorcunov@gmail.com>:
+> >> >
+> >> > Btw, meanwhile Chris may try to pass lapic boot-option in attempt to
+> >> > reenable apic via msr registers. Also (iirc) i feel we may be hiding
+> >> > errors if complete noop apic would be used since i belive we need to
+> >> > check out under which condition a particular operation is called and
+> >> > when apic is disabled it's mean we're switched to UP mode and
+> >> > inter-cpu interrupts are under suspicion too. Will take a look during
+> >> > ~6 hours ;)
+> >> >
+> >>
+> >> Hi Cyrill
+> >>
+> >> Heh, yes that just occurred to me as well.  With the lapic boot option
+> >> I can't reproduce the problem, and get a good recording every time.
+> >> Don't know why the BIOS had disabled it (can't see any specific
+> >> option).
+> >
+> > Would still be important to fix the crash - there are boxes where lapics
+> > are disabled permanently and cannot be re-enabled. (plus most people
+> > dont touch their defaults and dont add funky boot options - so crashing
+> > is not an option)
+> >
 > 
-> Yes, 2.6.31 code stops writeback when background threshold is reached.
-> But new behavior in latest git is to writeback all pages.
-> 
-> The code only checks over_bground_thresh() for kupdate works:
-> 
->                 if (args->for_kupdate && args->nr_pages <= 0 &&
->                     !over_bground_thresh())
->                         break;
-> 
-> However the background work started by balance_dirty_pages() won't check
-> over_bground_thresh(). So it will move all dirty pages.
-> 
-> I think it's very weird to check over_bground_thresh() for kupdate
-> instead of background work. Jens must intended for the latter case.
+> Ingo, Chris, could you try Peter's patch? It seems like what we need.
 
-Here is the patch to fix it. Tested to work OK. This is an RFC.
+It should fix the problem, but also the underlying uncleanliness should 
+be fixed as well. We need an apic_none driver template with safe 
+methods. Then all the scattered 'is the lapic enabled' open-coded checks 
+of global flags can be removed.
 
-Thanks,
-Fengguang
----
-writeback: stop background writeback when below background threshold
-
-Treat bdi_start_writeback(0) as a special request to do background write,
-and stop such work when we are below the background dirty threshold.
-
-Also simplify the (nr_pages <= 0) checks. Since we already pass in
-nr_pages=LONG_MAX for WB_SYNC_ALL and background writes, we don't
-need to worry about it being decreased to zero.
-
-Reported-by: Richard Kennedy <richard@rsk.demon.co.uk>
-CC: Jan Kara <jack@suse.cz>
-CC: Jens Axboe <jens.axboe@oracle.com> 
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl> 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/fs-writeback.c   |   28 +++++++++++++++++-----------
- mm/page-writeback.c |    6 +++---
- 2 files changed, 20 insertions(+), 14 deletions(-)
-
---- linux.orig/fs/fs-writeback.c	2009-09-23 17:47:23.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-09-23 18:13:36.000000000 +0800
-@@ -41,8 +41,9 @@ struct wb_writeback_args {
- 	long nr_pages;
- 	struct super_block *sb;
- 	enum writeback_sync_modes sync_mode;
--	int for_kupdate;
--	int range_cyclic;
-+	int for_kupdate:1;
-+	int range_cyclic:1;
-+	int for_background:1;
- };
- 
- /*
-@@ -260,6 +261,15 @@ void bdi_start_writeback(struct backing_
- 		.range_cyclic	= 1,
- 	};
- 
-+	/*
-+	 * We treat @nr_pages=0 as the special case to do background writeback,
-+	 * ie. to sync pages until the background dirty threshold is reached.
-+	 */
-+	if (!nr_pages) {
-+		args.nr_pages = LONG_MAX;
-+		args.for_background = 1;
-+	}
-+
- 	bdi_alloc_queue_work(bdi, &args);
- }
- 
-@@ -723,20 +733,16 @@ static long wb_writeback(struct bdi_writ
- 
- 	for (;;) {
- 		/*
--		 * Don't flush anything for non-integrity writeback where
--		 * no nr_pages was given
-+		 * Stop writeback when nr_pages has been consumed
- 		 */
--		if (!args->for_kupdate && args->nr_pages <= 0 &&
--		     args->sync_mode == WB_SYNC_NONE)
-+		if (args->nr_pages <= 0)
- 			break;
- 
- 		/*
--		 * If no specific pages were given and this is just a
--		 * periodic background writeout and we are below the
--		 * background dirty threshold, don't do anything
-+		 * For background writeout, stop when we are below the
-+		 * background dirty threshold
- 		 */
--		if (args->for_kupdate && args->nr_pages <= 0 &&
--		    !over_bground_thresh())
-+		if (args->for_background && !over_bground_thresh())
- 			break;
- 
- 		wbc.more_io = 0;
---- linux.orig/mm/page-writeback.c	2009-09-23 17:45:58.000000000 +0800
-+++ linux/mm/page-writeback.c	2009-09-23 17:47:17.000000000 +0800
-@@ -589,10 +589,10 @@ static void balance_dirty_pages(struct a
- 	 * background_thresh, to keep the amount of dirty memory low.
- 	 */
- 	if ((laptop_mode && pages_written) ||
--	    (!laptop_mode && ((nr_writeback = global_page_state(NR_FILE_DIRTY)
--					  + global_page_state(NR_UNSTABLE_NFS))
-+	    (!laptop_mode && ((global_page_state(NR_FILE_DIRTY)
-+			       + global_page_state(NR_UNSTABLE_NFS))
- 					  > background_thresh)))
--		bdi_start_writeback(bdi, nr_writeback);
-+		bdi_start_writeback(bdi, 0);
- }
- 
- void set_page_dirty_balance(struct page *page, int page_mkwrite)
+	Ingo
