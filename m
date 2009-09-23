@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZIWX0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbZIWX2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbZIWX0L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 19:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbZIWX0I
+	id S1752279AbZIWX2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 19:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZIWX2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 19:26:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37898 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751849AbZIWX0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 19:26:07 -0400
-Message-ID: <4ABAAE81.3010104@kernel.org>
-Date: Thu, 24 Sep 2009 08:25:53 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Wed, 23 Sep 2009 19:28:32 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:61307 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbZIWX2c convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 19:28:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=amU79HkgvPRkrKNoiZTxcOvy/DDD5iv2mv6BsoS8kuxdG3S9AQYLQ5IgxJneZsrjj5
+         rrOO46CQWR73XefGdHC5Nz43ol7EtvJ3HV9oPb8cuH2QAoUOYMiG5VN0VadqdE8AtgVy
+         iR695fDC06C6d2zYLzzbQbPfkD3jWTEYFJM3k=
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: Re: 2.6.31-07068-g43c1266 Early boot exception
-References: <1253560490.2934.42.camel@localhost>	 <4AB7D349.4000802@zytor.com> <1253566046.2773.10.camel@localhost>	 <4AB89417.7090005@kernel.org> <1253648186.2766.5.camel@localhost>	 <4AB9B7B7.30200@kernel.org> <1253697550.3434.1.camel@localhost> <4AB9E925.8010502@kernel.org> <4ABA42D4.9070308@zytor.com>
-In-Reply-To: <4ABA42D4.9070308@zytor.com>
-X-Enigmail-Version: 0.95.7
+In-Reply-To: <200909231723.31786.bjorn.helgaas@hp.com>
+References: <200909161715.24376.bjorn.helgaas@hp.com>
+	 <200909211520.56800.bjorn.helgaas@hp.com>
+	 <4AB95F41.1070500@lwfinger.net>
+	 <200909231723.31786.bjorn.helgaas@hp.com>
+Date: Wed, 23 Sep 2009 16:28:35 -0700
+Message-ID: <86802c440909231628t6b35aae4u706c0c35590bc0d3@mail.gmail.com>
+Subject: Re: fixing "pci=use_crs"
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>, Gary Hade <garyhade@us.ibm.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 23:25:56 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Tejun Heo wrote:
->> Tony Vroon wrote:
->>> On Wed, 2009-09-23 at 14:52 +0900, Tejun Heo wrote:
->>>> Can you please do l on the above rip - ffffffff81598250?
->>> I was unable to:
->>> (gdb) l *ffffffff81598250
->>> No symbol "ffffffff81598250" in current context.
->>
->> Ah... you should have done l *0xffffffff81598250.
->>
-> 
-> A better way to do this is:
-> 
-> addr2line -e vmlinux 0xffffffff81598250
-> 
-> No need to involve gdb.
+On Wed, Sep 23, 2009 at 4:23 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-Neat.  I usually keep gdb open as a calculator w/ C syntax, so I've
-never looked for other stuff but this is much better for bug
-reporters.  Thanks.
+>
+> P.S.  Yinghai, you posted some patches earlier dealing with "only one
+> HT chain."  You apparently have some insight into what's going on here,
+> but unfortunately, the changelogs mean absolutely nothing to me.  Can
+> you give me any clues?
 
--- 
-tejun
+which commit?
+
+normally we only need to have split root resource into several pieces
+when we have two HT chains or other io chains...
+
+YH
