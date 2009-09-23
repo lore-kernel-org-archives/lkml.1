@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbZIWMUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbZIWMXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752679AbZIWMUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 08:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZIWMUo
+	id S1752672AbZIWMXI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 08:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZIWMXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 08:20:44 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:27775 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbZIWMUo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 08:20:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=m9oTvtrNVYmaIjq4TVGqlsn6wvllI1sVNx7ALY86FQvV3wJNbmQCtjnZwhY9Lo9H1U
-         j2mpDTNGagrSUqlFye8LdksWKXnsebWpq7llpXyrUzNVTF8kO1DRggmRaI2dAVJDJhoH
-         3atagh/gIWtHOGvoFUXn+m8EiibpbRJaJ4qgM=
+	Wed, 23 Sep 2009 08:23:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48456 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751059AbZIWMXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 08:23:06 -0400
+Date: Wed, 23 Sep 2009 14:22:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joe Perches <joe@perches.com>
+Cc: Daniel Walker <dwalker@fifo99.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: checkpatch as a tool (was Re: [RFC][PATCH] SCHED_EDF
+	scheduling class)
+Message-ID: <20090923122256.GA6390@elte.hu>
+References: <1253615424.20345.76.camel@Palantir> <1253625878.6575.34.camel@desktop> <1253628061.20345.173.camel@Palantir> <1253637721.18939.3.camel@laptop> <20090922191117.GB24542@elte.hu> <1253667103.25689.35.camel@desktop> <1253667708.30020.134.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-In-Reply-To: <20090923114258.GA4132@elte.hu>
-References: <20090923073253.GA18022@elte.hu>
-	 <aa79d98a0909230044q3548cf0bjda62e05e0400edd6@mail.gmail.com>
-	 <aa79d98a0909230148j47232382oe28c6d88eef181c4@mail.gmail.com>
-	 <7863dc4c0909230215u2fed3edciec84f93f24d3ae1@mail.gmail.com>
-	 <20090923092024.GA29323@elte.hu>
-	 <aa79d98a0909230248j22f05047n34e0ee97382f573f@mail.gmail.com>
-	 <7863dc4c0909230306x3bc60775rc503919df83087ed@mail.gmail.com>
-	 <20090923104244.GB23941@elte.hu>
-	 <7863dc4c0909230441p49b7440bu9de9f786fee9c4bd@mail.gmail.com>
-	 <20090923114258.GA4132@elte.hu>
-Date: Wed, 23 Sep 2009 13:20:47 +0100
-X-Google-Sender-Auth: 9b2774a72aebcb85
-Message-ID: <7863dc4c0909230520o8338114uf63b9d5e6f4b6c4e@mail.gmail.com>
-Subject: Re: perf sched record hangs machine
-From: Chris Malley <mail@chrismalley.co.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253667708.30020.134.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/23 Ingo Molnar <mingo@elte.hu>:
->
-> * Chris Malley <mail@chrismalley.co.uk> wrote:
->
->> 2009/9/23 Ingo Molnar <mingo@elte.hu>:
->> >
->> > * Chris Malley <mail@chrismalley.co.uk> wrote:
->> >
->> >> Applied Peter's patch, doesn't seem to have fixed the problem:
->> >>
->> >> [ ?246.408893] BUG: unable to handle kernel paging request at ffffb300
->> >> [ ?246.408939] IP: [<c011b0bd>] default_send_IPI_self+0x1d/0x50
->> >
->> > could you please send the full bootlog, up to the crash?
->> >
->> > Thanks,
->> >
->> > ? ? ? ?Ingo
->> >
->>
->> Sure, but I'm just rebuilding from clean first in case the change
->> wasn't picked up for some reason, because I don't see how it can get
->> to default_send_IPI_self() in my configuration...
->
-> yeah - i have that thinking too - according to your earlier boot
-> messages x86_pmu.apic must be 0 and that codepath shouldnt trigger.
->
->        Ingo
->
 
-Yep, my bad.  The build process had helpfully appended a -dirty tag to
-the kernel version which I hadn't noticed.
+* Joe Perches <joe@perches.com> wrote:
 
-I can't make it hang any more, so the fix looks good to me, thanks everyone.
+> On Tue, 2009-09-22 at 17:51 -0700, Daniel Walker wrote:
+> > I'll stop sending those
+> > emails if it's actually negative , but I don't think it is..
+> 
+> Hi Daniel.
+> 
+> I think it'd be more helpful if instead of merely sending
+> a "hah! checkpatch failure!" email you send the submitter
+> a gentler nudge and a fixed patch.
 
-Chris
+He should consider not sending them at all. It's up to maintainers and 
+the developers involved with that code whether the small details that 
+checkpatch flags are important or not at a given point in the patch 
+cycle.
+
+For example i use checkpatch all the time and i think it's a fantastic 
+tool, still i dont want another nuisance layer on lkml interfering with 
+the patch flow.
+
+If a patch gets so far in the patch cycle that i'm thinking about 
+merging it, i might fix the checkpatch failures myself (often they are 
+trivial), and i might warn frequent contributors about repeat patterns 
+of small uncleanlinesses - or i might bounce the patch back to the 
+contributor. I also ignore certain classes of checkpatch warnings.
+
+What Daniel is doing is basically a semi-mandatory checkpatch layer on 
+lkml and that's both a distraction and harmful as well. We dont need a 
+"checkpatch police" on lkml. We want an open, reasonable, human driven 
+patch process with very little buerocracy and no buerocrats.
+
+	Ingo
