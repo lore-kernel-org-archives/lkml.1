@@ -1,81 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZIWBcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZIWBlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbZIWBcn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 21:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbZIWBcn
+	id S1753863AbZIWBlO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 21:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZIWBlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 21:32:43 -0400
-Received: from mga03.intel.com ([143.182.124.21]:25922 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752966AbZIWBcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 21:32:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,434,1249282800"; 
-   d="scan'208";a="190576594"
-Date: Wed, 23 Sep 2009 09:32:36 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: regression in page writeback
-Message-ID: <20090923013236.GA10885@localhost>
-References: <1253601612.8439.274.camel@twins> <20090922080505.GB9192@localhost> <1253606965.8439.281.camel@twins> <20090922082427.GA24888@localhost> <1253608335.8439.283.camel@twins> <20090922155259.GL10825@think> <20090923002220.GA6382@localhost> <20090922175452.d66400dd.akpm@linux-foundation.org> <20090923011758.GC6382@localhost> <20090922182832.28e7f73a.akpm@linux-foundation.org>
+	Tue, 22 Sep 2009 21:41:13 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62054 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753593AbZIWBlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 21:41:13 -0400
+Message-ID: <4AB97CB6.4000004@cn.fujitsu.com>
+Date: Wed, 23 Sep 2009 09:41:10 +0800
+From: Shan Wei <shanwei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090922182832.28e7f73a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Miller <davem@davemloft.net>
+CC: dfeng@redhat.com, kaber@trash.net, yoshfuji@linux-ipv6.org,
+       jmorris@namei.org, pekkas@netcore.fi, kuznet@ms2.inr.ac.ru,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] ipv4: fix do_ip_setsockopt optlen check for IP_MULTICAST_IF
+References: <1253164784-15789-1-git-send-email-dfeng@redhat.com>	<4AB1FE2A.1060906@cn.fujitsu.com> <20090922.133819.173686372.davem@davemloft.net>
+In-Reply-To: <20090922.133819.173686372.davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 09:28:32AM +0800, Andrew Morton wrote:
-> On Wed, 23 Sep 2009 09:17:58 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+David Miller wrote, at 09/23/2009 04:38 AM:
+> From: Shan Wei <shanwei@cn.fujitsu.com>
+> Date: Thu, 17 Sep 2009 17:15:22 +0800
 > 
-> > On Wed, Sep 23, 2009 at 08:54:52AM +0800, Andrew Morton wrote:
-> > > On Wed, 23 Sep 2009 08:22:20 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > 
-> > > > Jens' per-bdi writeback has another improvement. In 2.6.31, when
-> > > > superblocks A and B both have 100000 dirty pages, it will first
-> > > > exhaust A's 100000 dirty pages before going on to sync B's.
-> > > 
-> > > That would only be true if someone broke 2.6.31.  Did they?
-> > > 
-> > > SYSCALL_DEFINE0(sync)
-> > > {
-> > > 	wakeup_pdflush(0);
-> > > 	sync_filesystems(0);
-> > > 	sync_filesystems(1);
-> > > 	if (unlikely(laptop_mode))
-> > > 		laptop_sync_completion();
-> > > 	return 0;
-> > > }
-> > > 
-> > > the sync_filesystems(0) is supposed to non-blockingly start IO against
-> > > all devices.  It used to do that correctly.  But people mucked with it
-> > > so perhaps it no longer does.
-> > 
-> > I'm referring to writeback_inodes(). Each invocation of which (to sync
-> > 4MB) will do the same iteration over superblocks A => B => C ... So if
-> > A has dirty pages, it will always be served first.
-> > 
-> > So if wbc->bdi == NULL (which is true for kupdate/background sync), it
-> > will have to first exhaust A before going on to B and C.
+>> Xiaotian Feng wrote, at 09/17/2009 01:19 PM:
+>>> Due to man page of setsockopt, if optlen is not valid, kernel should return
+>>> -EINVAL. But a simple testcase as following, errno is 0, which means setsockopt
+>>> is successful.
+>>>
+>>>         addr.s_addr = inet_addr("192.1.2.3");
+>>>         setsockopt(s, IPPROTO_IP, IP_MULTICAST_IF, &addr, 1);
+>>> 	printf("errno is %d\n", errno);
+>>>
+>>> This patch fixes the optlen check part, with the patch, we got errno EINVAL.
+>>>
+>> I also think it's a bug, the freebsd also does the optlen check. 
+>> But the style should be coincident with other option: firstly check the
+>> availability of optlen, then copy option value from user and deal with it.   
+>>
+>> How about this one:
 > 
-> But that works OK.  We fill the first device's queue, then it gets
-> congested and sync_sb_inodes() does nothing and we advance to the next
-> queue.
+> This definitely is better and cleaner, but please don't post such
+> things without proper signoffs and commit messages because now
+> I have to ask you to do that instead of me just applying your
+> patch :-/
 > 
-> If a device has more than a queue's worth of dirty data then we'll
-> probably leave some of that dirty memory un-queued, so there's some
-> lack of concurrency in that situation.
 
-Yes, exactly if block device is not fast enough. In that case
-balance_dirty_pages() may also kick in with non-NULL bdi.
+I'm so sorry about that. The whole patch is below.
 
-Thanks,
-Fengguang
+[PATCH BUGFIX] ipv4: check optlen for IP_MULTICAST_IF option
+
+Due to man page of setsockopt, if optlen is not valid, kernel should return
+-EINVAL. But a simple testcase as following, errno is 0, which means setsockopt
+is successful.
+	addr.s_addr = inet_addr("192.1.2.3");
+	setsockopt(s, IPPROTO_IP, IP_MULTICAST_IF, &addr, 1);
+	printf("errno is %d\n", errno);
+
+Xiaotian Feng(dfeng@redhat.com) caught the bug. We fix it firstly checking
+the availability of optlen and then dealing with the logic like other options. 
+
+
+Reported-by: Xiaotian Feng <dfeng@redhat.com> 
+Signed-off-by: Shan Wei <shanwei@cn.fujitsu.com>
+Acked-by: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+---
+ net/ipv4/ip_sockglue.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/net/ipv4/ip_sockglue.c b/net/ipv4/ip_sockglue.c
+index fc7993e..5a06935 100644
+--- a/net/ipv4/ip_sockglue.c
++++ b/net/ipv4/ip_sockglue.c
+@@ -611,6 +611,9 @@ static int do_ip_setsockopt(struct sock *sk, int level,
+ 		 *	Check the arguments are allowable
+ 		 */
+ 
++		if (optlen < sizeof(struct in_addr))
++			goto e_inval;
++
+ 		err = -EFAULT;
+ 		if (optlen >= sizeof(struct ip_mreqn)) {
+ 			if (copy_from_user(&mreq, optval, sizeof(mreq)))
+-- 
+1.6.0.4
