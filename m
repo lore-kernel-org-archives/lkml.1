@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbZIWHTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbZIWHT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298AbZIWHTH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 03:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZIWHTH
+	id S1754320AbZIWHT7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 03:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbZIWHT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 03:19:07 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:59387 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754120AbZIWHTG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 03:19:06 -0400
-From: Anuj Aggarwal <anuj.aggarwal@ti.com>
-To: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Anuj Aggarwal <anuj.aggarwal@ti.com>
-Subject: [PATCH] SDMA: Fixing bug in omap_dma_set_global_params()
-Date: Wed, 23 Sep 2009 12:49:06 +0530
-Message-Id: <1253690346-17865-1-git-send-email-anuj.aggarwal@ti.com>
-X-Mailer: git-send-email 1.6.2.4
+	Wed, 23 Sep 2009 03:19:58 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:58983 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754226AbZIWHT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 03:19:57 -0400
+Date: Wed, 23 Sep 2009 09:19:58 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       Eric B Munson <ebmunson@us.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Dave Airlie <airlied@linux.ie>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: v2.6.31-7381-g7fa0772: new build warnings: kmemcheck,
+ __deprecated, hugetlb, radeon
+Message-ID: <20090923091958.6a0f9d58@hyperion.delvare>
+In-Reply-To: <4AB8FC88.8020608@s5r6.in-berlin.de>
+References: <4AB8FC88.8020608@s5r6.in-berlin.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Argument tparams was not being used to program
-global register GCR.HI_THREAD_RESERVED. This patch fixes the same.
+Hi Stefan,
 
-Signed-off-by: Anuj Aggarwal <anuj.aggarwal@ti.com>
+On Tue, 22 Sep 2009 18:34:16 +0200, Stefan Richter wrote:
+> Latest git compiles with extreme noise:
+> 
+> In file included from include/net/inet_connection_sock.h:23,
+>                   from include/linux/tcp.h:178,
+>                   from include/linux/ipv6.h:215,
+>                   from include/net/ipv6.h:16,
+>                   from include/linux/sunrpc/clnt.h:25,
+>                   from include/linux/nfs_fs.h:52,
+>                   from kernel/sysctl.c:48:
+> include/net/inet_sock.h: In function 'inet_reqsk_alloc':
+> include/net/inet_sock.h:208: warning: ISO C90 forbids mixed declarations 
+> and code
+> 
+> Vegard, this is obviously caused by commit 
+> 45e3ff82708c65c895d5c5882aff17ecf62a80b5.
+
+Actually not, it's caused by commit
+181f7c5dd3832763bdf2756b6d2d8a49bdf12791
+(kmemcheck: add missing braces to do-while in kmemcheck_annotate_bitfield)
+
+And the fix would be:
+
+From: Jean Delvare <khali@linux-fr.org>
+Subject: Fix build warning in kmemcheck_annotate_bitfield
+
+Fix the following build warning:
+
+include/net/inet_sock.h: In function 'inet_reqsk_alloc':
+include/net/inet_sock.h:208: warning: ISO C90 forbids mixed declarations 
+and code
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 ---
- arch/arm/plat-omap/dma.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ include/linux/kmemcheck.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/plat-omap/dma.c b/arch/arm/plat-omap/dma.c
-index bf08634..7a7b6df 100644
---- a/arch/arm/plat-omap/dma.c
-+++ b/arch/arm/plat-omap/dma.c
-@@ -829,10 +829,10 @@ EXPORT_SYMBOL(omap_free_dma);
-  *
-  * @param arb_rate
-  * @param max_fifo_depth
-- * @param tparams - Number of thereads to reserve : DMA_THREAD_RESERVE_NORM
-- * 						    DMA_THREAD_RESERVE_ONET
-- * 						    DMA_THREAD_RESERVE_TWOT
-- * 						    DMA_THREAD_RESERVE_THREET
-+ * @param tparams - Number of threads to reserve : DMA_THREAD_RESERVE_NORM
-+ * 						   DMA_THREAD_RESERVE_ONET
-+ * 						   DMA_THREAD_RESERVE_TWOT
-+ * 						   DMA_THREAD_RESERVE_THREET
-  */
- void
- omap_dma_set_global_params(int arb_rate, int max_fifo_depth, int tparams)
-@@ -847,8 +847,9 @@ omap_dma_set_global_params(int arb_rate, int max_fifo_depth, int tparams)
- 	if (arb_rate == 0)
- 		arb_rate = 1;
+--- linux-2.6.32-pre.orig/include/linux/kmemcheck.h	2009-09-23 08:19:34.000000000 +0200
++++ linux-2.6.32-pre/include/linux/kmemcheck.h	2009-09-23 09:05:30.000000000 +0200
+@@ -145,10 +145,12 @@ static inline bool kmemcheck_is_obj_init
  
--	reg = (arb_rate & 0xff) << 16;
--	reg |= (0xff & max_fifo_depth);
-+	reg = 0xff & max_fifo_depth;
-+	reg |= (0x3 & tparams) << 12;
-+	reg |= (arb_rate & 0xff) << 16;
- 
- 	dma_write(reg, GCR);
- }
+ #define kmemcheck_annotate_bitfield(ptr, name)				\
+ 	do {								\
++		int _n;							\
++									\
+ 		if (!ptr)						\
+ 			break;						\
+ 									\
+-		int _n = (long) &((ptr)->name##_end)			\
++		_n = (long) &((ptr)->name##_end)			\
+ 			- (long) &((ptr)->name##_begin);		\
+ 		BUILD_BUG_ON(_n < 0);					\
+ 									\
+
 -- 
-1.6.2.4
-
+Jean Delvare
