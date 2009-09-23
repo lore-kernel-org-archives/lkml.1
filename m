@@ -1,287 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZIWRip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbZIWRi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbZIWRip (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 13:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZIWRip
+	id S1752831AbZIWRi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 13:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbZIWRi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 13:38:45 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39094 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751932AbZIWRio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 13:38:44 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH v2] bfin-otp: add writing support
-Date: Wed, 23 Sep 2009 13:38:46 -0400
-Message-Id: <1253727526-12785-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.rc1
-In-Reply-To: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
-References: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
+	Wed, 23 Sep 2009 13:38:57 -0400
+Received: from [195.41.46.235] ([195.41.46.235]:47698 "EHLO pfepa.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751767AbZIWRi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 13:38:56 -0400
+Date: Wed, 23 Sep 2009 19:38:54 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, linux-modules@vger.org
+Subject: Re: [PATCH 2/4] kbuild: sort the list of symbols exported by the
+	kernel (__ksymtab)
+Message-ID: <20090923173854.GA32419@merkur.ravnborg.org>
+References: <1253626718-18887-1-git-send-email-alan-jenkins@tuffmail.co.uk> <1253626718-18887-3-git-send-email-alan-jenkins@tuffmail.co.uk> <20090922144819.GB29949@merkur.ravnborg.org> <4AB8E887.1020507@tuffmail.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB8E887.1020507@tuffmail.co.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The on-chip OTP may be written at runtime, so enable support for it in the
-driver.  However, since writing should really be done only on development
-systems, don't bend over backwards to make sure the simple software lock
-is per-fd -- per-device is OK.
+On Tue, Sep 22, 2009 at 04:08:55PM +0100, Alan Jenkins wrote:
+> Sam Ravnborg wrote:
+> > On Tue, Sep 22, 2009 at 02:38:36PM +0100, Alan Jenkins wrote:
+> >   
+> >> modpost of vmlinux.o now extracts the ksymtab sections and outputs
+> >> sorted versions of them as .tmp_exports.c.  These sorted sections
+> >> are linked into vmlinux and the original unsorted sections are
+> >> discarded.
+> >>
+> >> This will allow modules to be loaded faster, resolving symbols using
+> >> binary search, without any increase in the memory needed for the
+> >> symbol tables.
+> >>
+> >> This does not affect the building of modules, so hopefully it won't
+> >> affect compile times too much.
+> >>     
+> >
+> > I do not quite follow you here.
+> >
+> > With your patch:
+> >
+> > For vmlinux we define our symbols in sections
+> > named *_sorted - but they are not sorted.
+> >
+> > We than create a small .c file that uses the original sections names
+> > which is what is used in the final vmlinux.
+> >   
+> 
+> Actually it's intended to work the other way round.
+> 
+> EXPORT_SYMBOL() generates symbols in __ksymtab as usual.  These get as
+> far as vmlinux.o before I start changing anything.
+> 
+> My .c file then uses __EXPORT_SYMBOL_SORTED() to generate symbols in
+> __ksymtab_sorted (or __ksymtab_gpl_sorted etc.), based on the symbols in
+> vmlinux.o.  So the _sorted sections _are_ sorted.
+> 
+> Finally, I changed the vmlinux linker script to effectively rename
+> __ksymtab_sorted and discard the original unsorted __ksymtab.
+> 
+> I hope that clears that up.
+> 
+> > Could we replace the content of these sections rather than playing
+> > games with the names?
+> >
+> > 	Sam
+> >   
+> 
+> Thinking about it, I guess I could avoid using new section names.  I
+> could change the vmlinux linker script to discard all __ksymtab
+> sections, _except_ those which came from the file .tmp_exports.o.  (And
+> maybe rename .tmp_exports.o to .tmp_sorted_exports.o to make it more
+> obvious).
+> 
+> That would avoid the need to add separate __EXPORT_SYMBOL_NAME() and
+> __EXPORT_SYMBOL_SORTED().  OTOH, it means the linker script uses more
+> features and is more tightly coupled to the build system.  I.e. the
+> script references a specific file.
+> 
+> I prefer my original method, but I can change it if you disagree :-).
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
-v2
-	- switch to unlocked ioctl as pointed out by Jiri Slaby
+One of the problems you hit is that we use the same linker script for
+all the links we do of the kernel image.
+I had a patchset that pulled out the final link from the top-level
+Makefile and made it a simple shell script.
+I should give that another go which would then be a good basis for
+this patchset and a simplied final linking.
 
- drivers/char/bfin-otp.c |  173 +++++++++++++++++++++++++++++++++++------------
- 1 files changed, 129 insertions(+), 44 deletions(-)
-
-diff --git a/drivers/char/bfin-otp.c b/drivers/char/bfin-otp.c
-index 0a01329..e3dd24b 100644
---- a/drivers/char/bfin-otp.c
-+++ b/drivers/char/bfin-otp.c
-@@ -1,8 +1,7 @@
- /*
-  * Blackfin On-Chip OTP Memory Interface
-- *  Supports BF52x/BF54x
-  *
-- * Copyright 2007-2008 Analog Devices Inc.
-+ * Copyright 2007-2009 Analog Devices Inc.
-  *
-  * Enter bugs at http://blackfin.uclinux.org/
-  *
-@@ -17,8 +16,10 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/types.h>
-+#include <mtd/mtd-abi.h>
- 
- #include <asm/blackfin.h>
-+#include <asm/bfrom.h>
- #include <asm/uaccess.h>
- 
- #define stamp(fmt, args...) pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
-@@ -30,39 +31,6 @@
- 
- static DEFINE_MUTEX(bfin_otp_lock);
- 
--/* OTP Boot ROM functions */
--#define _BOOTROM_OTP_COMMAND           0xEF000018
--#define _BOOTROM_OTP_READ              0xEF00001A
--#define _BOOTROM_OTP_WRITE             0xEF00001C
--
--static u32 (* const otp_command)(u32 command, u32 value) = (void *)_BOOTROM_OTP_COMMAND;
--static u32 (* const otp_read)(u32 page, u32 flags, u64 *page_content) = (void *)_BOOTROM_OTP_READ;
--static u32 (* const otp_write)(u32 page, u32 flags, u64 *page_content) = (void *)_BOOTROM_OTP_WRITE;
--
--/* otp_command(): defines for "command" */
--#define OTP_INIT             0x00000001
--#define OTP_CLOSE            0x00000002
--
--/* otp_{read,write}(): defines for "flags" */
--#define OTP_LOWER_HALF       0x00000000 /* select upper/lower 64-bit half (bit 0) */
--#define OTP_UPPER_HALF       0x00000001
--#define OTP_NO_ECC           0x00000010 /* do not use ECC */
--#define OTP_LOCK             0x00000020 /* sets page protection bit for page */
--#define OTP_ACCESS_READ      0x00001000
--#define OTP_ACCESS_READWRITE 0x00002000
--
--/* Return values for all functions */
--#define OTP_SUCCESS          0x00000000
--#define OTP_MASTER_ERROR     0x001
--#define OTP_WRITE_ERROR      0x003
--#define OTP_READ_ERROR       0x005
--#define OTP_ACC_VIO_ERROR    0x009
--#define OTP_DATA_MULT_ERROR  0x011
--#define OTP_ECC_MULT_ERROR   0x021
--#define OTP_PREV_WR_ERROR    0x041
--#define OTP_DATA_SB_WARN     0x100
--#define OTP_ECC_SB_WARN      0x200
--
- /**
-  *	bfin_otp_read - Read OTP pages
-  *
-@@ -86,9 +54,11 @@ static ssize_t bfin_otp_read(struct file *file, char __user *buff, size_t count,
- 	page = *pos / (sizeof(u64) * 2);
- 	while (bytes_done < count) {
- 		flags = (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
--		stamp("processing page %i (%s)", page, (flags == OTP_UPPER_HALF ? "upper" : "lower"));
--		ret = otp_read(page, flags, &content);
-+		stamp("processing page %i (0x%x:%s)", page, flags,
-+			(flags & OTP_UPPER_HALF ? "upper" : "lower"));
-+		ret = bfrom_OtpRead(page, flags, &content);
- 		if (ret & OTP_MASTER_ERROR) {
-+			stamp("error from otp: 0x%x", ret);
- 			bytes_done = -EIO;
- 			break;
- 		}
-@@ -96,7 +66,7 @@ static ssize_t bfin_otp_read(struct file *file, char __user *buff, size_t count,
- 			bytes_done = -EFAULT;
- 			break;
- 		}
--		if (flags == OTP_UPPER_HALF)
-+		if (flags & OTP_UPPER_HALF)
- 			++page;
- 		bytes_done += sizeof(content);
- 		*pos += sizeof(content);
-@@ -108,14 +78,53 @@ static ssize_t bfin_otp_read(struct file *file, char __user *buff, size_t count,
- }
- 
- #ifdef CONFIG_BFIN_OTP_WRITE_ENABLE
-+static bool allow_writes;
-+
-+/**
-+ *	bfin_otp_init_timing - setup OTP timing parameters
-+ *
-+ *	Required before doing any write operation.  Algorithms from HRM.
-+ */
-+static u32 bfin_otp_init_timing(void)
-+{
-+	u32 tp1, tp2, tp3, timing;
-+
-+	tp1 = get_sclk() / 1000000;
-+	tp2 = (2 * get_sclk() / 10000000) << 8;
-+	tp3 = (0x1401) << 15;
-+	timing = tp1 | tp2 | tp3;
-+	if (bfrom_OtpCommand(OTP_INIT, timing))
-+		return 0;
-+
-+	return timing;
-+}
-+
-+/**
-+ *	bfin_otp_deinit_timing - set timings to only allow reads
-+ *
-+ *	Should be called after all writes are done.
-+ */
-+static void bfin_otp_deinit_timing(u32 timing)
-+{
-+	/* mask bits [31:15] so that any attempts to write fail */
-+	bfrom_OtpCommand(OTP_CLOSE, 0);
-+	bfrom_OtpCommand(OTP_INIT, timing & ~(-1 << 15));
-+	bfrom_OtpCommand(OTP_CLOSE, 0);
-+}
-+
- /**
-- *	bfin_otp_write - Write OTP pages
-+ *	bfin_otp_write - write OTP pages
-  *
-  *	All writes must be in half page chunks (half page == 64 bits).
-  */
- static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t count, loff_t *pos)
- {
--	stampit();
-+	ssize_t bytes_done;
-+	u32 timing, page, base_flags, flags, ret;
-+	u64 content;
-+
-+	if (!allow_writes)
-+		return -EACCES;
- 
- 	if (count % sizeof(u64))
- 		return -EMSGSIZE;
-@@ -123,20 +132,96 @@ static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t
- 	if (mutex_lock_interruptible(&bfin_otp_lock))
- 		return -ERESTARTSYS;
- 
--	/* need otp_init() documentation before this can be implemented */
-+	stampit();
-+
-+	timing = bfin_otp_init_timing();
-+	if (timing == 0) {
-+		mutex_unlock(&bfin_otp_lock);
-+		return -EIO;
-+	}
-+
-+	base_flags = OTP_CHECK_FOR_PREV_WRITE;
-+
-+	bytes_done = 0;
-+	page = *pos / (sizeof(u64) * 2);
-+	while (bytes_done < count) {
-+		flags = base_flags | (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
-+		stamp("processing page %i (0x%x:%s) from %p", page, flags,
-+			(flags & OTP_UPPER_HALF ? "upper" : "lower"), buff + bytes_done);
-+		if (copy_from_user(&content, buff + bytes_done, sizeof(content))) {
-+			bytes_done = -EFAULT;
-+			break;
-+		}
-+		ret = bfrom_OtpWrite(page, flags, &content);
-+		if (ret & OTP_MASTER_ERROR) {
-+			stamp("error from otp: 0x%x", ret);
-+			bytes_done = -EIO;
-+			break;
-+		}
-+		if (flags & OTP_UPPER_HALF)
-+			++page;
-+		bytes_done += sizeof(content);
-+		*pos += sizeof(content);
-+	}
-+
-+	bfin_otp_deinit_timing(timing);
- 
- 	mutex_unlock(&bfin_otp_lock);
- 
-+	return bytes_done;
-+}
-+
-+static long bfin_otp_ioctl(struct file *filp, unsigned cmd, unsigned long arg)
-+{
-+	stampit();
-+
-+	switch (cmd) {
-+	case OTPLOCK: {
-+		u32 timing;
-+		int ret = -EIO;
-+
-+		if (!allow_writes)
-+			return -EACCES;
-+
-+		if (mutex_lock_interruptible(&bfin_otp_lock))
-+			return -ERESTARTSYS;
-+
-+		timing = bfin_otp_init_timing();
-+		if (timing) {
-+			u32 otp_result = bfrom_OtpWrite(arg, OTP_LOCK, NULL);
-+			stamp("locking page %lu resulted in 0x%x", arg, otp_result);
-+			if (!(otp_result & OTP_MASTER_ERROR))
-+				ret = 0;
-+
-+			bfin_otp_deinit_timing(timing);
-+		}
-+
-+		mutex_unlock(&bfin_otp_lock);
-+
-+		return ret;
-+	}
-+
-+	case MEMLOCK:
-+		allow_writes = false;
-+		return 0;
-+
-+	case MEMUNLOCK:
-+		allow_writes = true;
-+		return 0;
-+	}
-+
- 	return -EINVAL;
- }
- #else
- # define bfin_otp_write NULL
-+# define bfin_otp_ioctl NULL
- #endif
- 
- static struct file_operations bfin_otp_fops = {
--	.owner    = THIS_MODULE,
--	.read     = bfin_otp_read,
--	.write    = bfin_otp_write,
-+	.owner          = THIS_MODULE,
-+	.unlocked_ioctl = bfin_otp_ioctl,
-+	.read           = bfin_otp_read,
-+	.write          = bfin_otp_write,
- };
- 
- static struct miscdevice bfin_otp_misc_device = {
--- 
-1.6.5.rc1
-
+	Sam
