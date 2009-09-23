@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbZIWX56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbZIWX6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871AbZIWX56 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 19:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZIWX54
+	id S1751882AbZIWX6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 19:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZIWX55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 19:57:56 -0400
+	Wed, 23 Sep 2009 19:57:57 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:34745 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751354AbZIWX54 (ORCPT
+	with ESMTP id S1751387AbZIWX54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 23 Sep 2009 19:57:56 -0400
 X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Sep 2009 19:57:55 EDT
@@ -17,12 +17,10 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>,
-       Matt Helsley <matthltc@us.ibm.com>, Paul Menage <menage@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Cedric Le Goater <legoater@free.fr>
-Subject: [PATCH v18 08/80] cgroup freezer: interface to freeze a cgroup from within the kernel
-Date: Wed, 23 Sep 2009 19:50:48 -0400
-Message-Id: <1253749920-18673-9-git-send-email-orenl@librato.com>
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: [PATCH v18 09/80] Namespaces submenu
+Date: Wed, 23 Sep 2009 19:50:49 -0400
+Message-Id: <1253749920-18673-10-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -30,80 +28,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add public interface to freeze a cgroup freezer given a task that
-belongs to that cgroup:  cgroup_freezer_make_frozen(task)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
 
-Freezing the root cgroup is not permitted. Freezing the cgroup to
-which current process belong is also not permitted.
+Let's not steal too much space in the 'General Setup' menu.
+Take a cue from the cgroups code and create a submenu.
 
-This will be used for restart(2) to be able to leave the restarted
-processes in a frozen state, instead of resuming execution.
+This can go upstream now.
 
-This is useful for debugging, if the user would like to attach a
-debugger to the restarted task(s).
-
-It is also useful if the restart procedure would like to perform
-additional setup once the tasks are restored but before they are
-allowed to proceed execution.
-
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-CC: Matt Helsley <matthltc@us.ibm.com>
-Cc: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Cedric Le Goater <legoater@free.fr>
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+Acked-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- include/linux/freezer.h |    1 +
- kernel/cgroup_freezer.c |   27 +++++++++++++++++++++++++++
- 2 files changed, 28 insertions(+), 0 deletions(-)
+ init/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 3d32641..0cb22cb 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -68,6 +68,7 @@ extern int cgroup_freezing_or_frozen(struct task_struct *task);
- extern int in_same_cgroup_freezer(struct task_struct *p, struct task_struct *q);
- extern int cgroup_freezer_begin_checkpoint(struct task_struct *task);
- extern void cgroup_freezer_end_checkpoint(struct task_struct *task);
-+extern int cgroup_freezer_make_frozen(struct task_struct *task);
- #else /* !CONFIG_CGROUP_FREEZER */
- static inline int cgroup_freezing_or_frozen(struct task_struct *task)
- {
-diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-index 87dfbfb..7925850 100644
---- a/kernel/cgroup_freezer.c
-+++ b/kernel/cgroup_freezer.c
-@@ -466,4 +466,31 @@ void cgroup_freezer_end_checkpoint(struct task_struct *task)
- 	 */
- 	WARN_ON(freezer_checkpointing(task, CGROUP_FROZEN) != CGROUP_CHECKPOINTING);
- }
-+
-+int cgroup_freezer_make_frozen(struct task_struct *task)
-+{
-+	struct freezer *freezer;
-+	struct cgroup_subsys_state *css;
-+	int ret = -ENODEV;
-+
-+	task_lock(task);
-+	css = task_subsys_state(task, freezer_subsys_id);
-+	css_get(css); /* make sure freezer doesn't go away */
-+	freezer = container_of(css, struct freezer, css);
-+	task_unlock(task);
-+
-+	/* Never freeze the root cgroup */
-+	if (!test_bit(CSS_ROOT, &css->flags) &&
-+	    cgroup_lock_live_group(css->cgroup)) {
-+		/* do not freeze outselves, ei ?! */
-+		if (css != task_subsys_state(current, freezer_subsys_id))
-+			ret = freezer_change_state(css->cgroup, CGROUP_FROZEN);
-+		else
-+			ret = -EPERM;
-+		cgroup_unlock();
-+	}
-+
-+	css_put(css);
-+	return ret;
-+}
- #endif /* CONFIG_CHECKPOINT */
+diff --git a/init/Kconfig b/init/Kconfig
+index 3f7e609..46ee2c8 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -664,7 +664,7 @@ config RELAY
+ 
+ 	  If unsure, say N.
+ 
+-config NAMESPACES
++menuconfig NAMESPACES
+ 	bool "Namespaces support" if EMBEDDED
+ 	default !EMBEDDED
+ 	help
 -- 
 1.6.0.4
 
