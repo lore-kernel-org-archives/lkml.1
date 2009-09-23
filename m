@@ -1,36 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZIWV7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZIWWAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbZIWV7F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 17:59:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZIWV7E
+	id S1752463AbZIWWAY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 18:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZIWWAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 17:59:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52215 "EHLO
+	Wed, 23 Sep 2009 18:00:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52252 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbZIWV7C (ORCPT
+	with ESMTP id S1752318AbZIWWAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 17:59:02 -0400
-Date: Wed, 23 Sep 2009 17:58:50 -0400
-From: "hch@infradead.org" <hch@infradead.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: "hch@infradead.org" <hch@infradead.org>,
-       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Jamie Lokier <jamie@shareable.org>, Eric Paris <eparis@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "alan@linux.intel.com" <alan@linux.intel.com>
-Subject: Re: fanotify as syscalls
-Message-ID: <20090923215850.GA30818@infradead.org>
-References: <20090912094110.GB24709@ioremap.net> <200909221731.34717.agruen@suse.de> <alpine.DEB.2.00.0909220836200.10460@makko.or.mcafeemobile.com> <200909230939.34003.tvrtko.ursulin@sophos.com> <20090923112018.GA2946@infradead.org> <alpine.DEB.2.00.0909230827100.21515@makko.or.mcafeemobile.com>
+	Wed, 23 Sep 2009 18:00:21 -0400
+Date: Wed, 23 Sep 2009 18:00:22 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       linux-modules@vger.org
+Subject: Re: [PATCH 3/4] module: unexport each_symbol()
+Message-ID: <20090923220022.GB30818@infradead.org>
+References: <1253626718-18887-1-git-send-email-alan-jenkins@tuffmail.co.uk> <1253626718-18887-4-git-send-email-alan-jenkins@tuffmail.co.uk> <alpine.DEB.1.10.0909231112490.15822@dr-wily.mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0909230827100.21515@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0909231112490.15822@dr-wily.mit.edu>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -38,16 +30,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 08:35:18AM -0700, Davide Libenzi wrote:
-> The fear is that this becomes a trojan horse (no pun intended) for more 
-> and more hooks and "stuff", driven by we-really-need-this-too and 
-> we-really-need-that-too. And once something it's in, it's harder to say no, 
-> under the pressure of offering a "limited solution".
-> This ws the reason I threw the syscall tracing thing in, so they have a 
-> low level generic hook, and they cam knock themselves out in their module 
-> (might need a few exports, but that's about it).
+On Wed, Sep 23, 2009 at 01:29:43PM -0400, Tim Abbott wrote:
+> While Ksplice is not in-tree yet, Ksplice is a user of each_symbol (and in 
+> fact was the reason why each_symbol was originally exported).  Is it easy 
+> to modify your patch series so that you don't have to remove each_symbol?
 
-Replacing idiotify with a saner interface is a good goal.  I just don't
-think we should take the stakes of the snake oil industry too serious in
-it.
+We don't keep symbols for out of tree junk around.
 
