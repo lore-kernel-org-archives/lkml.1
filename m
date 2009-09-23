@@ -1,20 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZIWCuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZIWC4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbZIWCuJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Sep 2009 22:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbZIWCuJ
+	id S1754019AbZIWC4h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Sep 2009 22:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZIWC4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Sep 2009 22:50:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:53070 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753678AbZIWCuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Sep 2009 22:50:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,435,1249282800"; 
-   d="scan'208";a="190595389"
-Date: Wed, 23 Sep 2009 10:49:58 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
+	Tue, 22 Sep 2009 22:56:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46038 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753785AbZIWC4g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Sep 2009 22:56:36 -0400
+Date: Tue, 22 Sep 2009 19:56:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
 Cc: Chris Mason <chris.mason@oracle.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        "Li, Shaohua" <shaohua.li@intel.com>,
@@ -22,111 +20,38 @@ Cc: Chris Mason <chris.mason@oracle.com>,
        "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
        "jens.axboe@oracle.com" <jens.axboe@oracle.com>
 Subject: Re: regression in page writeback
-Message-ID: <20090923024958.GA13205@localhost>
-References: <1253608335.8439.283.camel@twins> <20090922155259.GL10825@think> <20090923002220.GA6382@localhost> <20090922175452.d66400dd.akpm@linux-foundation.org> <20090923011758.GC6382@localhost> <20090922182832.28e7f73a.akpm@linux-foundation.org> <20090923014500.GA11076@localhost> <20090922185941.1118e011.akpm@linux-foundation.org> <20090923022622.GB11918@localhost> <20090922193622.42c00012.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090922193622.42c00012.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <20090922195605.a9a7aca8.akpm@linux-foundation.org>
+In-Reply-To: <20090923024958.GA13205@localhost>
+References: <1253608335.8439.283.camel@twins>
+	<20090922155259.GL10825@think>
+	<20090923002220.GA6382@localhost>
+	<20090922175452.d66400dd.akpm@linux-foundation.org>
+	<20090923011758.GC6382@localhost>
+	<20090922182832.28e7f73a.akpm@linux-foundation.org>
+	<20090923014500.GA11076@localhost>
+	<20090922185941.1118e011.akpm@linux-foundation.org>
+	<20090923022622.GB11918@localhost>
+	<20090922193622.42c00012.akpm@linux-foundation.org>
+	<20090923024958.GA13205@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 10:36:22AM +0800, Andrew Morton wrote:
-> On Wed, 23 Sep 2009 10:26:22 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Wed, 23 Sep 2009 10:49:58 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
+
+> > After the sleep we repoll all queues.
 > 
-> > On Wed, Sep 23, 2009 at 09:59:41AM +0800, Andrew Morton wrote:
-> > > On Wed, 23 Sep 2009 09:45:00 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > 
-> > > > On Wed, Sep 23, 2009 at 09:28:32AM +0800, Andrew Morton wrote:
-> > > > > On Wed, 23 Sep 2009 09:17:58 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > > > 
-> > > > > > On Wed, Sep 23, 2009 at 08:54:52AM +0800, Andrew Morton wrote:
-> > > > > > > On Wed, 23 Sep 2009 08:22:20 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > > > > > 
-> > > > > > > > Jens' per-bdi writeback has another improvement. In 2.6.31, when
-> > > > > > > > superblocks A and B both have 100000 dirty pages, it will first
-> > > > > > > > exhaust A's 100000 dirty pages before going on to sync B's.
-> > > > > > > 
-> > > > > > > That would only be true if someone broke 2.6.31.  Did they?
-> > > > > > > 
-> > > > > > > SYSCALL_DEFINE0(sync)
-> > > > > > > {
-> > > > > > > 	wakeup_pdflush(0);
-> > > > > > > 	sync_filesystems(0);
-> > > > > > > 	sync_filesystems(1);
-> > > > > > > 	if (unlikely(laptop_mode))
-> > > > > > > 		laptop_sync_completion();
-> > > > > > > 	return 0;
-> > > > > > > }
-> > > > > > > 
-> > > > > > > the sync_filesystems(0) is supposed to non-blockingly start IO against
-> > > > > > > all devices.  It used to do that correctly.  But people mucked with it
-> > > > > > > so perhaps it no longer does.
-> > > > > > 
-> > > > > > I'm referring to writeback_inodes(). Each invocation of which (to sync
-> > > > > > 4MB) will do the same iteration over superblocks A => B => C ... So if
-> > > > > > A has dirty pages, it will always be served first.
-> > > > > > 
-> > > > > > So if wbc->bdi == NULL (which is true for kupdate/background sync), it
-> > > > > > will have to first exhaust A before going on to B and C.
-> > > > > 
-> > > > > But that works OK.  We fill the first device's queue, then it gets
-> > > > > congested and sync_sb_inodes() does nothing and we advance to the next
-> > > > > queue.
-> > > > 
-> > > > So in common cases "exhaust" is a bit exaggerated, but A does receive
-> > > > much more opportunity than B. Computation resources for IO submission
-> > > > are unbalanced for A, and there are pointless overheads in rechecking A.
-> > > 
-> > > That's unquantified handwaving.  One CPU can do a *lot* of IO.
-> > 
-> > Yes.. I had the impression that the writeback submission can be pretty slow.
-> > It should be because of the congestion_wait. Now that it is removed,
-> > things are going faster when queue is not full.
-> 
-> What?  The wait is short.  The design intent there is that we repoll
-> all previously-congested queues well before they start to run empty.
+> I mean, it is not always necessary. Only when _all_ superblocks cannot
+> writeback their inodes (eg. all in congestion), we should wait.
 
-When queue is not congested (in which case congestion_wait is not
-necessary), the congestion_wait() degrades io submission speed to near
-io completion speed.
+Well.  The code will still submit MAX_WRITEBACK_PAGES pages to _some_
+queue in that situation.
 
-> > > > > If a device has more than a queue's worth of dirty data then we'll
-> > > > > probably leave some of that dirty memory un-queued, so there's some
-> > > > > lack of concurrency in that situation.
-> > > > 
-> > > > Good insight.
-> > > 
-> > > It was wrong.  See the other email.
-> > 
-> > No your first insight is correct. Because the (unnecessary) teeny
-> > sleeps is independent of the A=>B=>C traversing order. Only queue
-> > congestion could help skip A.
-> 
-> The sleeps are completely necessary!  Otherwise we end up busywaiting.
-> 
-> After the sleep we repoll all queues.
+But yup, maybe that's a bug!  Sounds easy to fix.  It doesn't justify
+rewriting the whole world and then saying "look, the new code is faster
+than the old code which had a bug which I knew about but didn't fix".
 
-I mean, it is not always necessary. Only when _all_ superblocks cannot
-writeback their inodes (eg. all in congestion), we should wait.
-
-Just before Jens' work, I had patch to convert
-
--                       if (wbc.encountered_congestion || wbc.more_io)
--                               congestion_wait(WRITE, HZ/10);
--                       else
--                               break;
-
-to
-
-+       if (wbc->encountered_congestion && wbc->nr_to_write == MAX_WRITEBACK_PAGES)
-+               congestion_wait(WRITE, HZ/10);
-
-Note that wbc->encountered_congestion only means "at least one bdi
-encountered congestion". We may still make progress in other bdis
-hence should not sleep.
-
-Thanks,
-Fengguang
