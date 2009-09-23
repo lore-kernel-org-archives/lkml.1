@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbZIWHLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbZIWHTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbZIWHLu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 03:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZIWHLt
+	id S1754352AbZIWHTY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 03:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZIWHTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 03:11:49 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:42574 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754192AbZIWHLt (ORCPT
+	Wed, 23 Sep 2009 03:19:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40471 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754327AbZIWHTW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 03:11:49 -0400
-Date: Wed, 23 Sep 2009 09:11:52 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Philipp Reisner <philipp.reisner@linbit.com>, drbd-dev@lists.linbit.com,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: linux-next: block tree build failure
-Message-ID: <20090923071152.GA8000@barkeeper1-xen.linbit>
-Mail-Followup-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Philipp Reisner <philipp.reisner@linbit.com>,
-	drbd-dev@lists.linbit.com, Christoph Hellwig <hch@lst.de>
-References: <20090923145100.1917fdd8.sfr@canb.auug.org.au>
+	Wed, 23 Sep 2009 03:19:22 -0400
+Date: Wed, 23 Sep 2009 09:18:57 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Jean Delvare <khali@linux-fr.org>,
+       "alan@linux.intel.com" <alan@linux.intel.com>,
+       Len Brown <lenb@kernel.org>,
+       "Cory T. Tusar" <ctusar@videon-central.com>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>
+Subject: Re: [RFC] [PATCH 1/2] introduce ALS sysfs class
+Message-ID: <20090923071857.GC8565@elf.ucw.cz>
+References: <1253590755.15763.21.camel@rzhang-dt> <4AB8C62F.5020605@cam.ac.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090923145100.1917fdd8.sfr@canb.auug.org.au>
+In-Reply-To: <4AB8C62F.5020605@cam.ac.uk>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 02:51:00PM +1000, Stephen Rothwell wrote:
-> Hi Jens,
+On Tue 2009-09-22 13:42:23, Jonathan Cameron wrote:
+> Zhang Rui wrote:
+> > Hi, Jonathan,
+> > 
+> > this is the refresh ALS sysfs class driver.
+> > I just introduced one sysfs attribute "illuminance", because
+> > I didn't catch the exact meaning of the others like "???infrared".
+> > So it would be great if you can generate an incremental patch
+> > to introduce the other optional attributes needed, and update
+> > the documentation as well. :)
+> Will do, though may just leave it out of first pass of drivers
+> (as it may be controversial and it would be nice to get something
+> in place before the arguments begin!)
 > 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/block/drbd/drbd_tracing.c:29:26: error: linux/marker.h: No such file or directory
-> 
-> Caused by commit 95eaef1cbc63f73df4ff8559dd66b1d29b462535 ("Replaced our
-> own tracing stuff with Linux's tracepoints") from the block/drbd trees
-> interacting with commit fc5377668c3d808e1d53c4aee152c836f55c3490
-> ("tracing: Remove markers") from Linus' tree.
-> 
-> I have no idea what the correct thing to do is here, so I have reverted
-> the merge of the drbd tree into the block tree and will have to drop the
-> drbd tree for today.
+> All looks nice and clean. The only real question is whether
+> we want to standardize naming of devices under sysfs (like hwmon does)
+> or allow the individual drivers to do the naming?
 
-We'll have a look.
-A quick fix should be to just disable CONFIG_DRBD_TRACE.
+Allow the drivers to do the naming. Having useless name like "als0",
+with als0/name telling me what the driver is is bad.
+								Pavel
 
 -- 
-: Lars Ellenberg
-: LINBIT | Your Way to High Availability
-: DRBD/HA support and consulting http://www.linbit.com
-
-DRBD® and LINBIT® are registered trademarks of LINBIT, Austria.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
