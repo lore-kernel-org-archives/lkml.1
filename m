@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbZIXA3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZIXAj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753109AbZIXA3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZIXA3l
+	id S1754209AbZIXAj3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbZIXAj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:29:41 -0400
+	Wed, 23 Sep 2009 20:39:26 -0400
 Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39156 "EHLO
 	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006AbZIXA3T (ORCPT
+	with ESMTP id S1753276AbZIXA3i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:19 -0400
+	Wed, 23 Sep 2009 20:29:38 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [PATCH v18 17/80] pids 7/7: Define clone_with_pids syscall
-Date: Wed, 23 Sep 2009 19:50:57 -0400
-Message-Id: <1253749920-18673-18-git-send-email-orenl@librato.com>
+       Oren Laadan <orenl@librato.com>, Oren Laadan <orenl@cs.columbia.edu>,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: [PATCH v18 18/80] c/r: create syscalls: sys_checkpoint, sys_restart
+Date: Wed, 23 Sep 2009 19:50:58 -0400
+Message-Id: <1253749920-18673-19-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 References: <1253749920-18673-1-git-send-email-orenl@librato.com>
@@ -27,306 +28,237 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Create trivial sys_checkpoint and sys_restore system calls. They will
+enable to checkpoint and restart an entire container, to and from a
+checkpoint image file descriptor.
 
-Container restart requires that a task have the same pid it had when it was
-checkpointed. When containers are nested the tasks within the containers
-exist in multiple pid namespaces and hence have multiple pids to specify
-during restart.
+The syscalls take a pid, a file descriptor (for the image file) and
+flags as arguments. The pid identifies the top-most (root) task in the
+process tree, e.g. the container init: for sys_checkpoint the first
+argument identifies the pid of the target container/subtree; for
+sys_restart it will identify the pid of restarting root task.
 
-clone_with_pids(), intended for use during restart, is the same as clone(),
-except that it takes a 'target_pid_set' paramter. This parameter lets caller
-choose specific pid numbers for the child process, in the process's active
-and ancestor pid namespaces. (Descendant pid namespaces in general don't
-matter since processes don't have pids in them anyway, but see comments
-in copy_target_pids() regarding CLONE_NEWPID).
+A checkpoint, much like a process coredump, dumps the state of multiple
+processes at once, including the state of the container. The checkpoint
+image is written to (and read from) the file descriptor directly from
+the kernel. This way the data is generated and then pushed out naturally
+as resources and tasks are scanned to save their state. This is the
+approach taken by, e.g., Zap and OpenVZ.
 
-Unlike clone(), clone_with_pids() needs CAP_SYS_ADMIN, at least for now, to
-prevent unprivileged processes from misusing this interface.
+By using a return value and not a file descriptor, we can distinguish
+between a return from checkpoint, a return from restart (in case of a
+checkpoint that includes self, i.e. a task checkpointing its own
+container, or itself), and an error condition, in a manner analogous
+to a fork() call.
 
-Call clone_with_pids as follows:
+We don't use copy_from_user()/copy_to_user() because it requires
+holding the entire image in user space, and does not make sense for
+restart.  Also, we don't use a pipe, pseudo-fs file and the like,
+because they work by generating data on demand as the user pulls it
+(unless the entire image is buffered in the kernel) and would require
+more complex logic.  They also would significantly complicate
+checkpoint that includes self.
 
-	pid_t pids[] = { 0, 77, 99 };
-	struct target_pid_set pid_set;
+Changelog[v18]:
+  - [John Dykstra] Fix no-dot-config-targets pattern in linux/Makefile
+Changelog[v17]:
+  - Move checkpoint closer to namespaces (kconfig)
+  - Kill "Enable" in c/r config option
+Changelog[v16]:
+  - Change sys_restart() first argument to be 'pid_t pid'
+Changelog[v14]:
+  - Change CONFIG_CHEKCPOINT_RESTART to CONFIG_CHECKPOINT (Ingo)
+  - Remove line 'def_bool n' (default is already 'n')
+  - Add CHECKPOINT_SUPPORT in Kconfig (Nathan Lynch)
+Changelog[v5]:
+  - Config is 'def_bool n' by default
 
-	pid_set.num_pids = sizeof(pids) / sizeof(int);
-	pid_set.target_pids = &pids;
-
-	syscall(__NR_clone_with_pids, flags, stack, NULL, NULL, NULL, &pid_set);
-
-If a target-pid is 0, the kernel continues to assign a pid for the process in
-that namespace. In the above example, pids[0] is 0, meaning the kernel will
-assign next available pid to the process in init_pid_ns. But kernel will assign
-pid 77 in the child pid namespace 1 and pid 99 in pid namespace 2. If either
-77 or 99 are taken, the system call fails with -EBUSY.
-
-If 'pid_set.num_pids' exceeds the current nesting level of pid namespaces,
-the system call fails with -EINVAL.
-
-Its mostly an exploratory patch seeking feedback on the interface.
-
-NOTE:
-	Compared to clone(), clone_with_pids() needs to pass in two more
-	pieces of information:
-
-		- number of pids in the set
-		- user buffer containing the list of pids.
-
-	But since clone() already takes 5 parameters, use a 'struct
-	target_pid_set'.
-
-TODO:
-	- Gently tested.
-	- May need additional sanity checks in do_fork_with_pids().
-
-Changelog[v3]:
-	- (Oren Laadan) Allow CLONE_NEWPID flag (by allocating an extra pid
-	  in the target_pids[] list and setting it 0. See copy_target_pids()).
-	- (Oren Laadan) Specified target pids should apply only to youngest
-	  pid-namespaces (see copy_target_pids())
-	- (Matt Helsley) Update patch description.
-
-Changelog[v2]:
-	- Remove unnecessary printk and add a note to callers of
-	  copy_target_pids() to free target_pids.
-	- (Serge Hallyn) Mention CAP_SYS_ADMIN restriction in patch description.
-	- (Oren Laadan) Add checks for 'num_pids < 0' (return -EINVAL) and
-	  'num_pids == 0' (fall back to normal clone()).
-	- Move arch-independent code (sanity checks and copy-in of target-pids)
-	  into kernel/fork.c and simplify sys_clone_with_pids()
-
-Changelog[v1]:
-	- Fixed some compile errors (had fixed these errors earlier in my
-	  git tree but had not refreshed patches before emailing them)
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
- arch/x86/include/asm/syscalls.h    |    2 +
- arch/x86/include/asm/unistd_32.h   |    1 +
- arch/x86/kernel/entry_32.S         |    1 +
- arch/x86/kernel/process_32.c       |   21 +++++++
- arch/x86/kernel/syscall_table_32.S |    1 +
- kernel/fork.c                      |  108 +++++++++++++++++++++++++++++++++++-
- 6 files changed, 133 insertions(+), 1 deletions(-)
+ Makefile                           |    2 +-
+ arch/x86/Kconfig                   |    4 +++
+ arch/x86/include/asm/unistd_32.h   |    2 +
+ arch/x86/kernel/syscall_table_32.S |    2 +
+ checkpoint/Kconfig                 |   14 ++++++++++++
+ checkpoint/Makefile                |    5 ++++
+ checkpoint/sys.c                   |   41 ++++++++++++++++++++++++++++++++++++
+ include/linux/syscalls.h           |    2 +
+ init/Kconfig                       |    2 +
+ kernel/sys_ni.c                    |    4 +++
+ 10 files changed, 77 insertions(+), 1 deletions(-)
+ create mode 100644 checkpoint/Kconfig
+ create mode 100644 checkpoint/Makefile
+ create mode 100644 checkpoint/sys.c
 
-diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
-index 372b76e..df3c4a8 100644
---- a/arch/x86/include/asm/syscalls.h
-+++ b/arch/x86/include/asm/syscalls.h
-@@ -40,6 +40,8 @@ long sys_iopl(struct pt_regs *);
+diff --git a/Makefile b/Makefile
+index 60de4ef..fe45658 100644
+--- a/Makefile
++++ b/Makefile
+@@ -401,7 +401,7 @@ endif
+ # of make so .config is not included in this case either (for *config).
  
- /* kernel/process_32.c */
- int sys_clone(struct pt_regs *);
-+int sys_clone_with_pids(struct pt_regs *);
-+int sys_vfork(struct pt_regs *);
- int sys_execve(struct pt_regs *);
+ no-dot-config-targets := clean mrproper distclean \
+-			 cscope TAGS tags help %docs check% \
++			 cscope TAGS tags help %docs checkstack \
+ 			 include/linux/version.h headers_% \
+ 			 kernelrelease kernelversion
  
- /* kernel/signal.c */
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 13ffa5d..5776452 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -86,6 +86,10 @@ config STACKTRACE_SUPPORT
+ config HAVE_LATENCYTOP_SUPPORT
+ 	def_bool y
+ 
++config CHECKPOINT_SUPPORT
++	bool
++	default y if X86_32
++
+ config FAST_CMPXCHG_LOCAL
+ 	bool
+ 	default y
 diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
-index 732a307..f65b750 100644
+index f65b750..c25971b 100644
 --- a/arch/x86/include/asm/unistd_32.h
 +++ b/arch/x86/include/asm/unistd_32.h
-@@ -342,6 +342,7 @@
- #define __NR_pwritev		334
+@@ -343,6 +343,8 @@
  #define __NR_rt_tgsigqueueinfo	335
  #define __NR_perf_counter_open	336
-+#define __NR_clone_with_pids	337
+ #define __NR_clone_with_pids	337
++#define __NR_checkpoint		338
++#define __NR_restart		339
  
  #ifdef __KERNEL__
  
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index c097e7d..c7bd1f6 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -718,6 +718,7 @@ ptregs_##name: \
- PTREGSCALL(iopl)
- PTREGSCALL(fork)
- PTREGSCALL(clone)
-+PTREGSCALL(clone_with_pids)
- PTREGSCALL(vfork)
- PTREGSCALL(execve)
- PTREGSCALL(sigaltstack)
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 59f4524..9965c06 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -443,6 +443,27 @@ int sys_clone(struct pt_regs *regs)
- 	return do_fork(clone_flags, newsp, regs, 0, parent_tidptr, child_tidptr);
- }
- 
-+int sys_clone_with_pids(struct pt_regs *regs)
-+{
-+	unsigned long clone_flags;
-+	unsigned long newsp;
-+	int __user *parent_tidptr;
-+	int __user *child_tidptr;
-+	void __user *upid_setp;
-+
-+	clone_flags = regs->bx;
-+	newsp = regs->cx;
-+	parent_tidptr = (int __user *)regs->dx;
-+	child_tidptr = (int __user *)regs->di;
-+	upid_setp = (void __user *)regs->bp;
-+
-+	if (!newsp)
-+		newsp = regs->sp;
-+
-+	return do_fork_with_pids(clone_flags, newsp, regs, 0, parent_tidptr,
-+			child_tidptr, upid_setp);
-+}
-+
- /*
-  * sys_execve() executes a new program.
-  */
 diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index d51321d..879e5ec 100644
+index 879e5ec..4741554 100644
 --- a/arch/x86/kernel/syscall_table_32.S
 +++ b/arch/x86/kernel/syscall_table_32.S
-@@ -336,3 +336,4 @@ ENTRY(sys_call_table)
- 	.long sys_pwritev
+@@ -337,3 +337,5 @@ ENTRY(sys_call_table)
  	.long sys_rt_tgsigqueueinfo	/* 335 */
  	.long sys_perf_counter_open
-+	.long ptregs_clone_with_pids
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 59b21db..f5a0cef 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1327,6 +1327,97 @@ struct task_struct * __cpuinit fork_idle(int cpu)
- }
- 
- /*
-+ * If user specified any 'target-pids' in @upid_setp, copy them from
-+ * user and return a pointer to a local copy of the list of pids. The
-+ * caller must free the list, when they are done using it.
+ 	.long ptregs_clone_with_pids
++	.long sys_checkpoint
++	.long sys_restart
+diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
+new file mode 100644
+index 0000000..ef7d406
+--- /dev/null
++++ b/checkpoint/Kconfig
+@@ -0,0 +1,14 @@
++# Architectures should define CHECKPOINT_SUPPORT when they have
++# implemented the hooks for processor state etc. needed by the
++# core checkpoint/restart code.
++
++config CHECKPOINT
++	bool "Checkpoint/restart (EXPERIMENTAL)"
++	depends on CHECKPOINT_SUPPORT && EXPERIMENTAL
++	help
++	  Application checkpoint/restart is the ability to save the
++	  state of a running application so that it can later resume
++	  its execution from the time at which it was checkpointed.
++
++	  Turning this option on will enable checkpoint and restart
++	  functionality in the kernel.
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+new file mode 100644
+index 0000000..8a32c6f
+--- /dev/null
++++ b/checkpoint/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for linux checkpoint/restart.
++#
++
++obj-$(CONFIG_CHECKPOINT) += sys.o
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+new file mode 100644
+index 0000000..79936cc
+--- /dev/null
++++ b/checkpoint/sys.c
+@@ -0,0 +1,41 @@
++/*
++ *  Generic container checkpoint-restart
 + *
-+ * If user did not specify any target pids, return NULL (caller should
-+ * treat this like normal clone).
++ *  Copyright (C) 2008-2009 Oren Laadan
 + *
-+ * On any errors, return the error code
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
 + */
-+static pid_t *copy_target_pids(void __user *upid_setp)
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/syscalls.h>
++
++/**
++ * sys_checkpoint - checkpoint a container
++ * @pid: pid of the container init(1) process
++ * @fd: file to which dump the checkpoint image
++ * @flags: checkpoint operation flags
++ *
++ * Returns positive identifier on success, 0 when returning from restart
++ * or negative value on error
++ */
++SYSCALL_DEFINE3(checkpoint, pid_t, pid, int, fd, unsigned long, flags)
 +{
-+	int j;
-+	int rc;
-+	int size;
-+	int unum_pids;		/* # of pids specified by user */
-+	int knum_pids;		/* # of pids needed in kernel */
-+	pid_t *target_pids;
-+	struct target_pid_set pid_set;
-+
-+	if (!upid_setp)
-+		return NULL;
-+
-+	rc = copy_from_user(&pid_set, upid_setp, sizeof(pid_set));
-+	if (rc)
-+		return ERR_PTR(-EFAULT);
-+
-+	unum_pids = pid_set.num_pids;
-+	knum_pids = task_pid(current)->level + 1;
-+
-+	if (!unum_pids)
-+		return NULL;
-+
-+	if (unum_pids < 0 || unum_pids > knum_pids)
-+		return ERR_PTR(-EINVAL);
-+
-+	/*
-+	 * To keep alloc_pid() simple, allocate an extra pid_t in target_pids[]
-+	 * and set it to 0. This last entry in target_pids[] corresponds to the
-+	 * (yet-to-be-created) descendant pid-namespace if CLONE_NEWPID was
-+	 * specified. If CLONE_NEWPID was not specified, this last entry will
-+	 * simply be ignored.
-+	 */
-+	target_pids = kzalloc((knum_pids + 1) * sizeof(pid_t), GFP_KERNEL);
-+	if (!target_pids)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/*
-+	 * A process running in a level 2 pid namespace has three pid namespaces
-+	 * and hence three pid numbers. If this process is checkpointed,
-+	 * information about these three namespaces are saved. We refer to these
-+	 * namespaces as 'known namespaces'.
-+	 *
-+	 * If this checkpointed process is however restarted in a level 3 pid
-+	 * namespace, the restarted process has an extra ancestor pid namespace
-+	 * (i.e 'unknown namespace') and 'knum_pids' exceeds 'unum_pids'.
-+	 *
-+	 * During restart, the process requests specific pids for its 'known
-+	 * namespaces' and lets kernel assign pids to its 'unknown namespaces'.
-+	 *
-+	 * Since the requested-pids correspond to 'known namespaces' and since
-+	 * 'known-namespaces' are younger than (i.e descendants of) 'unknown-
-+	 * namespaces', copy requested pids to the back-end of target_pids[]
-+	 * (i.e before the last entry for CLONE_NEWPID mentioned above).
-+	 * Any entries in target_pids[] not corresponding to a requested pid
-+	 * will be set to zero and kernel assigns a pid in those namespaces.
-+	 *
-+	 * NOTE: The order of pids in target_pids[] is oldest pid namespace to
-+	 * 	 youngest (target_pids[0] corresponds to init_pid_ns). i.e.
-+	 * 	 the order is:
-+	 *
-+	 * 		- pids for 'unknown-namespaces' (if any)
-+	 * 		- pids for 'known-namespaces' (requested pids)
-+	 * 		- 0 in the last entry (for CLONE_NEWPID).
-+	 */
-+	j = knum_pids - unum_pids;
-+	size = unum_pids * sizeof(pid_t);
-+
-+	rc = copy_from_user(&target_pids[j], pid_set.target_pids, size);
-+	if (rc) {
-+		rc = -EFAULT;
-+		goto out_free;
-+	}
-+
-+	return target_pids;
-+
-+out_free:
-+	kfree(target_pids);
-+	return ERR_PTR(rc);
++	return -ENOSYS;
 +}
 +
-+/*
-  *  Ok, this is the main fork-routine.
-  *
-  * It copies the process, and if successful kick-starts
-@@ -1343,7 +1434,7 @@ long do_fork_with_pids(unsigned long clone_flags,
- 	struct task_struct *p;
- 	int trace = 0;
- 	long nr;
--	pid_t *target_pids = NULL;
-+	pid_t *target_pids;
++/**
++ * sys_restart - restart a container
++ * @pid: pid of task root (in coordinator's namespace), or 0
++ * @fd: file from which read the checkpoint image
++ * @flags: restart operation flags
++ *
++ * Returns negative value on error, or otherwise returns in the realm
++ * of the original checkpoint
++ */
++SYSCALL_DEFINE3(restart, pid_t, pid, int, fd, unsigned long, flags)
++{
++	return -ENOSYS;
++}
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 80de700..33bce6e 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -754,6 +754,8 @@ asmlinkage long sys_pselect6(int, fd_set __user *, fd_set __user *,
+ asmlinkage long sys_ppoll(struct pollfd __user *, unsigned int,
+ 			  struct timespec __user *, const sigset_t __user *,
+ 			  size_t);
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
++asmlinkage long sys_restart(pid_t pid, int fd, unsigned long flags);
  
- 	/*
- 	 * Do some preliminary argument and permissions checking before we
-@@ -1377,6 +1468,17 @@ long do_fork_with_pids(unsigned long clone_flags,
- 		}
- 	}
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
  
-+	target_pids = copy_target_pids(pid_setp);
-+
-+	if (target_pids) {
-+		if (IS_ERR(target_pids))
-+			return PTR_ERR(target_pids);
-+
-+		nr = -EPERM;
-+		if (!capable(CAP_SYS_ADMIN))
-+			goto out_free;
-+	}
-+
- 	/*
- 	 * When called from kernel_thread, don't do user tracing stuff.
- 	 */
-@@ -1438,6 +1540,10 @@ long do_fork_with_pids(unsigned long clone_flags,
- 	} else {
- 		nr = PTR_ERR(p);
- 	}
-+
-+out_free:
-+	kfree(target_pids);
-+
- 	return nr;
- }
+diff --git a/init/Kconfig b/init/Kconfig
+index 46ee2c8..46329b9 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -715,6 +715,8 @@ config NET_NS
+ 	  Allow user space to create what appear to be multiple instances
+ 	  of the network stack.
  
++source "checkpoint/Kconfig"
++
+ config BLK_DEV_INITRD
+ 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+ 	depends on BROKEN || !FRV
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index 68320f6..32f3f26 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -178,3 +178,7 @@ cond_syscall(sys_eventfd2);
+ 
+ /* performance counters: */
+ cond_syscall(sys_perf_counter_open);
++
++/* checkpoint/restart */
++cond_syscall(sys_checkpoint);
++cond_syscall(sys_restart);
 -- 
 1.6.0.4
 
