@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbZIWO7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751648AbZIWPDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751930AbZIWO7a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 10:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZIWO73
+	id S1751648AbZIWPDv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 11:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZIWPDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 10:59:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:62563 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751059AbZIWO73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 10:59:29 -0400
-Message-ID: <4ABA37A5.4000806@redhat.com>
-Date: Wed, 23 Sep 2009 17:58:45 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 23 Sep 2009 11:03:50 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:34303 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbZIWPDu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 11:03:50 -0400
+Date: Wed, 23 Sep 2009 17:03:27 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] fs: change sys_truncate/sys_ftruncate length parameter type
+Message-ID: <20090923150326.GB23595@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jonathan Corbet <corbet@lwn.net>,
-       Raistlin <raistlin@linux.it>, Peter Zijlstra <peterz@infradead.org>,
-       claudio@evidence.eu.com, michael@evidence.eu.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-References: <1253615424.20345.76.camel@Palantir>	 <1253625878.6575.34.camel@desktop> <20090922173916.257dff1d@tpl.lwn.net>	 <1253663739.4317.12.camel@desktop> <20090922180611.7a47adcc@tpl.lwn.net>	 <1253666423.25689.30.camel@desktop> <4ABA0AA6.3010408@redhat.com>	 <20090923122530.GB6390@elte.hu> <1253717459.20648.39.camel@desktop>
-In-Reply-To: <1253717459.20648.39.camel@desktop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23/2009 05:50 PM, Daniel Walker wrote:
-> On Wed, 2009-09-23 at 14:25 +0200, Ingo Molnar wrote:
->    
->> * Avi Kivity<avi@redhat.com>  wrote:
->>
->>      
->>>> discouraging contributions is more something that happens when you
->>>> get the responses I got earlier in this thread..
->>>>          
->>> That's probably intentional.  Whitespace fixes have their place but
->>> not at this stage in a patch's lifecycle.
->>>        
->> Exactly. What might make sense is to scan linux-next for new commits
->> that show serious cleanliness trouble - and send fix patches to the
->> parties involved. That's a real effort and brings the code forward.
->>      
-> Often times when a patch is at youngest that when you want to catch
-> these issues .. This EDF patch will likely get submitted more than
-> twice. If you catch all the minor problems first you will not be dealing
-> with them later when it comes time to include the code.
->    
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Not true, you want to address the major issues first.  What's the point 
-of fixing whitespace if the whole approach is rejected? if it has to 
-undergo a rewrite? (not an opinion on EDF btw, just as an example)
+For both system calls user space passes a signed long length parameter,
+while the kernel side takes an unsigned long parameter and converts it
+later to signed long again.
+As far as I can see there is no point in doing the unsigned -> signed
+conversion.
+But it has led to bugs in compat wrappers see e.g.
+dd90bbd5 "powerpc: Add compat_sys_truncate".
+The s390 compat wrappers for these two system calls are broken as well
+since they also perform zero extension instead of sign extension for
+the length parameter.
 
-> In this case the author is not totally aware of how to submit this
-> code.. I don't think it's at all inappropriate to comment on that. His
-> next submission will likely be much cleaner and nicer. It may even speed
-> up the inclusion process since he'll be more easily able to submit the
-> code (with practice and comments from us).
->    
+In addition if hpa comes up with an automated way of generating
+compat wrappers it would generate wrong ones for these two cases.
 
-Give people some credit.
+So change the length parameter from unsigned long to long.
 
--- 
-error compiling committee.c: too many arguments to function
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ fs/open.c                |    7 +++----
+ include/linux/syscalls.h |    5 ++---
+ 2 files changed, 5 insertions(+), 7 deletions(-)
 
+Index: linux-2.6/fs/open.c
+===================================================================
+--- linux-2.6.orig/fs/open.c
++++ linux-2.6/fs/open.c
+@@ -290,10 +290,9 @@ out:
+ 	return error;
+ }
+ 
+-SYSCALL_DEFINE2(truncate, const char __user *, path, unsigned long, length)
++SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
+ {
+-	/* on 32-bit boxen it will cut the range 2^31--2^32-1 off */
+-	return do_sys_truncate(path, (long)length);
++	return do_sys_truncate(path, length);
+ }
+ 
+ static long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
+@@ -342,7 +341,7 @@ out:
+ 	return error;
+ }
+ 
+-SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
++SYSCALL_DEFINE2(ftruncate, unsigned int, fd, long, length)
+ {
+ 	long ret = do_sys_ftruncate(fd, length, 1);
+ 	/* avoid REGPARM breakage on x86: */
+Index: linux-2.6/include/linux/syscalls.h
+===================================================================
+--- linux-2.6.orig/include/linux/syscalls.h
++++ linux-2.6/include/linux/syscalls.h
+@@ -460,9 +460,8 @@ asmlinkage long sys_mount(char __user *d
+ 				void __user *data);
+ asmlinkage long sys_umount(char __user *name, int flags);
+ asmlinkage long sys_oldumount(char __user *name);
+-asmlinkage long sys_truncate(const char __user *path,
+-				unsigned long length);
+-asmlinkage long sys_ftruncate(unsigned int fd, unsigned long length);
++asmlinkage long sys_truncate(const char __user *path, long length);
++asmlinkage long sys_ftruncate(unsigned int fd, long length);
+ asmlinkage long sys_stat(char __user *filename,
+ 			struct __old_kernel_stat __user *statbuf);
+ asmlinkage long sys_statfs(const char __user * path,
