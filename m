@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751618AbZIWEvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbZIWEvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751618AbZIWEvG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 00:51:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZIWEvF
+	id S1751685AbZIWEvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 00:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZIWEvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 00:51:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35716 "EHLO smtps.tip.net.au"
+	Wed, 23 Sep 2009 00:51:47 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:41010 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751251AbZIWEvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 00:51:04 -0400
-Date: Wed, 23 Sep 2009 14:51:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Philipp Reisner <philipp.reisner@linbit.com>, <drbd-dev@linbit.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Christoph Hellwig <hch@lst.de>
-Subject: linux-next: block tree build failure
-Message-Id: <20090923145100.1917fdd8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__23_Sep_2009_14_51_00_+1000_md+gh/kdb37K7X/P"
+	id S1751253AbZIWEvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 00:51:46 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] asm-generic/gpio.h: pull in linux/kernel.h for might_sleep()
+Date: Wed, 23 Sep 2009 00:51:49 -0400
+Message-Id: <1253681509-24799-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__23_Sep_2009_14_51_00_+1000_md+gh/kdb37K7X/P
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The asm-generic/gpio.h header uses the might_sleep() macro but doesn't
+include the header for it, so any source code that might include
+linux/gpio.h before linux/kernel.h can easily lead to a build failure.
 
-Hi Jens,
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ include/asm-generic/gpio.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index d6c379d..634ec64 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_GENERIC_GPIO_H
+ #define _ASM_GENERIC_GPIO_H
+ 
++#include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/errno.h>
+ 
+-- 
+1.6.5.rc1
 
-drivers/block/drbd/drbd_tracing.c:29:26: error: linux/marker.h: No such fil=
-e or directory
-
-Caused by commit 95eaef1cbc63f73df4ff8559dd66b1d29b462535 ("Replaced our
-own tracing stuff with Linux's tracepoints") from the block/drbd trees
-interacting with commit fc5377668c3d808e1d53c4aee152c836f55c3490
-("tracing: Remove markers") from Linus' tree.
-
-I have no idea what the correct thing to do is here, so I have reverted
-the merge of the drbd tree into the block tree and will have to drop the
-drbd tree for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__23_Sep_2009_14_51_00_+1000_md+gh/kdb37K7X/P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkq5qTQACgkQjjKRsyhoI8yIogCfQaEM3VhhBSBedoMUWkUR078q
-taUAnRAveRPQbl6/T0bYS22PKHQA0USY
-=QxaM
------END PGP SIGNATURE-----
-
---Signature=_Wed__23_Sep_2009_14_51_00_+1000_md+gh/kdb37K7X/P--
