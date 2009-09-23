@@ -1,54 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752983AbZIWOCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbZIWOBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752983AbZIWOCI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 10:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbZIWOCG
+	id S1752978AbZIWOBp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 10:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZIWOBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 10:02:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44143 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752935AbZIWOCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 10:02:05 -0400
-Message-ID: <4ABA2A3A.6020308@kernel.org>
-Date: Wed, 23 Sep 2009 23:01:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Wed, 23 Sep 2009 10:01:45 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:42436 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbZIWOBo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 10:01:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=Bd6+YkKJVUbaXBI1PTB1RFvVWuh0DM4CY699VAvDjLE6JZ5EyGEp7mKpRUvYxtgQdT
+         FAUObGWEub+ZuCI9/jx220engFnPc6X+5ftnVnp5fGkDfGC/5+n6I7mCoonYO0lVhE33
+         UAfMi72NqMmVKG0ke0sFFSipdJrw6uUhmagx8=
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu areas
- for other cpus
-References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-3-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0909221856050.9410@V090114053VZO-1> <4AB983B6.6050203@kernel.org> <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1>
-In-Reply-To: <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1>
-X-Enigmail-Version: 0.95.7
+Date: Wed, 23 Sep 2009 20:01:47 +0600
+Message-ID: <b9df5fa10909230701u128fbec2x78bb433e3a2f42b@mail.gmail.com>
+Subject: [PATCH] hwmon: Fix spurious section mismatch warning in sht15.c
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: lm-sensors@lm-sensors.org, LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 23 Sep 2009 14:01:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Fix spurious section mismatch warnings, caused due to reference from
+variable sht_drivers to
+ __devinit/__devexit functions sht15_probe()/remove().
 
-Christoph Lameter wrote:
-> You did not answer my question.
+ We were warned by the following warnings:
 
-Hmmm...
+  LD      drivers/hwmon/built-in.o
+WARNING: drivers/hwmon/built-in.o(.data+0x264a0): Section mismatch in
+reference from the variable sht_drivers to the function
+.devinit.text:sht15_probe()
+The variable sht_drivers references
+the function __devinit sht15_probe()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
 
-> The local percpu variables are accessed via a static per cpu
-> virtual mapping. You cannot place per cpu variables outside of that
-> virtual address range of PERCPU_PAGE_SIZE.
-> 
-> What happens if the percpu allocator allocates more data than available in
-> the reserved area?
+WARNING: drivers/hwmon/built-in.o(.data+0x264a4): Section mismatch in
+reference from the variable sht_drivers to the function
+.devexit.text:sht15_remove()
+The variable sht_drivers references
+the function __devexit sht15_remove()
+If the reference is valid then annotate the
+variable with __exit* (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
 
-I still don't understand your question.  Static percpu variables are
-always allocated from the first chunk inside that PERCPU_PAGE_SIZE
-area.  Dynamic allocations can go outside of that but they don't need
-any special handling.  What problems are you seeing?
+WARNING: drivers/hwmon/built-in.o(.data+0x264f0): Section mismatch in
+reference from the variable sht_drivers to the function
+.devinit.text:sht15_probe()
+The variable sht_drivers references
+the function __devinit sht15_probe()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
 
--- 
-tejun
+WARNING: drivers/hwmon/built-in.o(.data+0x264f4): Section mismatch in
+reference from the variable sht_drivers to the function
+.devexit.text:sht15_remove()
+The variable sht_drivers references
+the function __devexit sht15_remove()
+If the reference is valid then annotate the
+variable with __exit* (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+
+WARNING: drivers/hwmon/built-in.o(.data+0x26540): Section mismatch in
+reference from the variable sht_drivers to the function
+.devinit.text:sht15_probe()
+The variable sht_drivers references
+the function __devinit sht15_probe()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+
+WARNING: drivers/hwmon/built-in.o(.data+0x26544): Section mismatch in
+reference from the variable sht_drivers to the function
+.devexit.text:sht15_remove()
+The variable sht_drivers references
+the function __devexit sht15_remove()
+If the reference is valid then annotate the
+variable with __exit* (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+
+WARNING: drivers/hwmon/built-in.o(.data+0x26590): Section mismatch in
+reference from the variable sht_drivers to the function
+.devinit.text:sht15_probe()
+The variable sht_drivers references
+the function __devinit sht15_probe()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+
+-------
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+
+--- linus/drivers/hwmon/sht15.c	2009-09-22 16:28:07.000000000 +0600
++++ rakib/drivers/hwmon/sht15.c	2009-09-23 14:47:48.000000000 +0600
+@@ -619,8 +619,12 @@ static int __devexit sht15_remove(struct
+ 	return 0;
+ }
+
+-
+-static struct platform_driver sht_drivers[] = {
++/*
++ * sht_drivers simultaneously refers to __devinit and __devexit function
++ * which causes spurious section mismatch warning. So use __refdata to
++ * get rid from this.
++ */
++static struct platform_driver __refdata sht_drivers[] = {
+ 	{
+ 		.driver = {
+ 			.name = "sht10",
