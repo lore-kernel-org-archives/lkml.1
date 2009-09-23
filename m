@@ -1,771 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZIWFLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbZIWFPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZIWFLH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 01:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbZIWFLG
+	id S1752811AbZIWFPS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 01:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZIWFPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 01:11:06 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:33271 "EHLO smtp.gentoo.org"
+	Wed, 23 Sep 2009 01:15:16 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:34861 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751482AbZIWFLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 01:11:04 -0400
+	id S1751593AbZIWFPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 01:15:15 -0400
 From: Mike Frysinger <vapier@gentoo.org>
-To: Samuel Ortiz <sameo@linux.intel.com>
+To: linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
        Michael Hennerich <michael.hennerich@analog.com>,
        Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH v2] mfd: ADP5520 Multifunction LCD Backlight and Keypad Input Device Driver
-Date: Wed, 23 Sep 2009 01:11:04 -0400
-Message-Id: <1253682664-27040-1-git-send-email-vapier@gentoo.org>
+Subject: [PATCH v2] input/keyboard: new driver for ADP5520 MFD PMICs
+Date: Wed, 23 Sep 2009 01:15:16 -0400
+Message-Id: <1253682916-27387-1-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.5.rc1
-In-Reply-To: <1253212036-29445-1-git-send-email-vapier@gentoo.org>
-References: <1253212036-29445-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1253211850-29309-1-git-send-email-vapier@gentoo.org>
+References: <1253211850-29309-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Michael Hennerich <michael.hennerich@analog.com>
 
-Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
-
-Subdevs:
-LCD Backlight   : drivers/video/backlight/adp5520_bl
-LEDs            : drivers/led/leds-adp5520
-GPIO            : drivers/gpio/adp5520-gpio (ADP5520 only)
-Keys            : drivers/input/keyboard/adp5520-keys (ADP5520 only)
-
 Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
+this patch requires:
+	[PATCH] mfd: ADP5520 Multifunction LCD Backlight and Keypad Input Device Driver
+
 v2
-	- fix return type of irq handler
-	- fix unbalanced paren in BL_CTRL_VAL() macro
+	- address feedback from Dmitry
 
- drivers/mfd/Kconfig         |   10 ++
- drivers/mfd/Makefile        |    1 +
- drivers/mfd/adp5520.c       |  371 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/adp5520.h |  303 +++++++++++++++++++++++++++++++++++
- 4 files changed, 685 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mfd/adp5520.c
- create mode 100644 include/linux/mfd/adp5520.h
+ drivers/input/keyboard/Kconfig        |   10 ++
+ drivers/input/keyboard/Makefile       |    1 +
+ drivers/input/keyboard/adp5520-keys.c |  220 +++++++++++++++++++++++++++++++++
+ 3 files changed, 231 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/keyboard/adp5520-keys.c
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 570be13..34e8595 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -160,6 +160,16 @@ config PMIC_DA903X
- 	  individual components like LCD backlight, voltage regulators,
- 	  LEDs and battery-charger under the corresponding menus.
+diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
+index e0bfcd7..53c9561 100644
+--- a/drivers/input/keyboard/Kconfig
++++ b/drivers/input/keyboard/Kconfig
+@@ -392,4 +392,14 @@ config KEYBOARD_ADP5588
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called adp5588-keys.
  
-+config PMIC_ADP5520
-+	bool "Analog Devices ADP5520/01 MFD PMIC Core Support"
-+	depends on I2C=y
++config KEYBOARD_ADP5520
++	tristate "Keypad Support for ADP5520 PMIC"
++	depends on PMIC_ADP5520
 +	help
-+	  Say yes here to add support for Analog Devices AD5520 and ADP5501,
-+	  Multifunction Power Management IC. This includes
-+	  the I2C driver and the core APIs _only_, you have to select
-+	  individual components like LCD backlight, LEDs, GPIOs and Kepad
-+	  under the corresponding menus.
++	  This option enables support for the keypad scan matrix
++	  on Analog Devices ADP5520 PMICs.
 +
- config MFD_WM8400
- 	tristate "Support Wolfson Microelectronics WM8400"
- 	select MFD_CORE
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index f3b277b..a42248e 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -50,3 +50,4 @@ obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
- obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
- obj-$(CONFIG_AB3100_CORE)	+= ab3100-core.o
- obj-$(CONFIG_AB3100_OTP)	+= ab3100-otp.o
-+obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
-diff --git a/drivers/mfd/adp5520.c b/drivers/mfd/adp5520.c
++	  To compile this driver as a module, choose M here: the module will
++	  be called adp5520-keys.
++
+ endif
+diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
+index 72082a4..c541489 100644
+--- a/drivers/input/keyboard/Makefile
++++ b/drivers/input/keyboard/Makefile
+@@ -5,6 +5,7 @@
+ # Each configuration option enables a list of files.
+ 
+ obj-$(CONFIG_KEYBOARD_AAED2000)		+= aaed2000_kbd.o
++obj-$(CONFIG_KEYBOARD_ADP5520)		+= adp5520-keys.o
+ obj-$(CONFIG_KEYBOARD_ADP5588)		+= adp5588-keys.o
+ obj-$(CONFIG_KEYBOARD_AMIGA)		+= amikbd.o
+ obj-$(CONFIG_KEYBOARD_ATARI)		+= atakbd.o
+diff --git a/drivers/input/keyboard/adp5520-keys.c b/drivers/input/keyboard/adp5520-keys.c
 new file mode 100644
-index 0000000..1083626
+index 0000000..1860d30
 --- /dev/null
-+++ b/drivers/mfd/adp5520.c
-@@ -0,0 +1,371 @@
++++ b/drivers/input/keyboard/adp5520-keys.c
+@@ -0,0 +1,220 @@
 +/*
-+ * Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
-+ * LCD Backlight: drivers/video/backlight/adp5520_bl
-+ * LEDs		: drivers/led/leds-adp5520
-+ * GPIO		: drivers/gpio/adp5520-gpio (ADP5520 only)
-+ * Keys		: drivers/input/keyboard/adp5520-keys (ADP5520 only)
++ * Keypad driver for Analog Devices ADP5520 MFD PMICs
 + *
 + * Copyright 2009 Analog Devices Inc.
-+ *
-+ * Derived from da903x:
-+ * Copyright (C) 2008 Compulab, Ltd.
-+ * 	Mike Rapoport <mike@compulab.co.il>
-+ *
-+ * Copyright (C) 2006-2008 Marvell International Ltd.
-+ * 	Eric Miao <eric.miao@marvell.com>
 + *
 + * Licensed under the GPL-2 or later.
 + */
 +
-+#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/platform_device.h>
++#include <linux/kernel.h>
 +#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/workqueue.h>
-+#include <linux/i2c.h>
-+
++#include <linux/platform_device.h>
++#include <linux/input.h>
 +#include <linux/mfd/adp5520.h>
 +
-+struct adp5520_chip {
-+	struct i2c_client *client;
-+	struct device *dev;
-+	struct mutex lock;
-+	struct work_struct irq_work;
-+	struct blocking_notifier_head notifier_list;
-+	int irq;
++struct adp5520_keys {
++	struct input_dev *input;
++	struct notifier_block notifier;
++	struct device *master;
++	unsigned short keycode[ADP5520_KEYMAPSIZE];
 +};
 +
-+static int __adp5520_read(struct i2c_client *client,
-+				int reg, uint8_t *val)
++static void adp5520_keys_report_event(struct adp5520_keys *dev,
++					unsigned short keymask, int value)
 +{
-+	int ret;
++	int i;
 +
-+	ret = i2c_smbus_read_byte_data(client, reg);
-+	if (ret < 0) {
-+		dev_err(&client->dev, "failed reading at 0x%02x\n", reg);
-+		return ret;
++	for (i = 0; i < ADP5520_MAXKEYS; i++)
++		if (keymask & (1 << i))
++			input_report_key(dev->input, dev->keycode[i], value);
++
++	input_sync(dev->input);
++}
++
++static int adp5520_keys_notifier(struct notifier_block *nb,
++				 unsigned long event, void *data)
++{
++	struct adp5520_keys *dev;
++	uint8_t reg_val_low, reg_val_high;
++	unsigned short keymask;
++
++	dev = container_of(nb, struct adp5520_keys, notifier);
++
++	if (event & KP_INT) {
++		adp5520_read(dev->master, KP_INT_STAT_1, &reg_val_low);
++		adp5520_read(dev->master, KP_INT_STAT_2, &reg_val_high);
++
++		keymask = (reg_val_high << 8) | reg_val_low;
++		/* Read twice to clear */
++		adp5520_read(dev->master, KP_INT_STAT_1, &reg_val_low);
++		adp5520_read(dev->master, KP_INT_STAT_2, &reg_val_high);
++		keymask |= (reg_val_high << 8) | reg_val_low;
++		adp5520_keys_report_event(dev, keymask, 1);
 +	}
 +
-+	*val = (uint8_t)ret;
++	if (event & KR_INT) {
++		adp5520_read(dev->master, KR_INT_STAT_1, &reg_val_low);
++		adp5520_read(dev->master, KR_INT_STAT_2, &reg_val_high);
++
++		keymask = (reg_val_high << 8) | reg_val_low;
++		/* Read twice to clear */
++		adp5520_read(dev->master, KR_INT_STAT_1, &reg_val_low);
++		adp5520_read(dev->master, KR_INT_STAT_2, &reg_val_high);
++		keymask |= (reg_val_high << 8) | reg_val_low;
++		adp5520_keys_report_event(dev, keymask, 0);
++	}
++
 +	return 0;
 +}
 +
-+static int __adp5520_write(struct i2c_client *client,
-+				 int reg, uint8_t val)
++static int __devinit adp5520_keys_probe(struct platform_device *pdev)
 +{
-+	int ret;
++	struct adp5520_keys_platfrom_data *pdata = pdev->dev.platform_data;
++	struct input_dev *input;
++	struct adp5520_keys *dev;
++	int ret, i;
++	unsigned char en_mask, ctl_mask = 0;
 +
-+	ret = i2c_smbus_write_byte_data(client, reg, val);
-+	if (ret < 0) {
-+		dev_err(&client->dev, "failed writing 0x%02x to 0x%02x\n",
-+				val, reg);
-+		return ret;
-+	}
-+	return 0;
-+}
-+
-+int __adp5520_ack_bits(struct i2c_client *client, int reg, uint8_t bit_mask)
-+{
-+	struct adp5520_chip *chip = i2c_get_clientdata(client);
-+	uint8_t reg_val;
-+	int ret;
-+
-+	mutex_lock(&chip->lock);
-+
-+	ret = __adp5520_read(client, reg, &reg_val);
-+
-+	if (!ret) {
-+		reg_val |= bit_mask;
-+		ret = __adp5520_write(client, reg, reg_val);
-+	}
-+
-+	mutex_unlock(&chip->lock);
-+	return ret;
-+}
-+
-+int adp5520_write(struct device *dev, int reg, uint8_t val)
-+{
-+	return __adp5520_write(to_i2c_client(dev), reg, val);
-+}
-+EXPORT_SYMBOL_GPL(adp5520_write);
-+
-+int adp5520_read(struct device *dev, int reg, uint8_t *val)
-+{
-+	return __adp5520_read(to_i2c_client(dev), reg, val);
-+}
-+EXPORT_SYMBOL_GPL(adp5520_read);
-+
-+int adp5520_set_bits(struct device *dev, int reg, uint8_t bit_mask)
-+{
-+	struct adp5520_chip *chip = dev_get_drvdata(dev);
-+	uint8_t reg_val;
-+	int ret;
-+
-+	mutex_lock(&chip->lock);
-+
-+	ret = __adp5520_read(chip->client, reg, &reg_val);
-+
-+	if (!ret && ((reg_val & bit_mask) == 0)) {
-+		reg_val |= bit_mask;
-+		ret = __adp5520_write(chip->client, reg, reg_val);
-+	}
-+
-+	mutex_unlock(&chip->lock);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(adp5520_set_bits);
-+
-+int adp5520_clr_bits(struct device *dev, int reg, uint8_t bit_mask)
-+{
-+	struct adp5520_chip *chip = dev_get_drvdata(dev);
-+	uint8_t reg_val;
-+	int ret;
-+
-+	mutex_lock(&chip->lock);
-+
-+	ret = __adp5520_read(chip->client, reg, &reg_val);
-+
-+	if (!ret && (reg_val & bit_mask)) {
-+		reg_val &= ~bit_mask;
-+		ret = __adp5520_write(chip->client, reg, reg_val);
-+	}
-+
-+	mutex_unlock(&chip->lock);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(adp5520_clr_bits);
-+
-+int adp5520_register_notifier(struct device *dev, struct notifier_block *nb,
-+				unsigned int events)
-+{
-+	struct adp5520_chip *chip = dev_get_drvdata(dev);
-+
-+	if (chip->irq) {
-+		adp5520_set_bits(chip->dev, INTERRUPT_ENABLE,
-+			events & (KP_IEN | KR_IEN | OVP_IEN | CMPR_IEN));
-+
-+		return blocking_notifier_chain_register(&chip->notifier_list,
-+			 nb);
-+	}
-+
-+	return -ENODEV;
-+}
-+EXPORT_SYMBOL_GPL(adp5520_register_notifier);
-+
-+int adp5520_unregister_notifier(struct device *dev, struct notifier_block *nb,
-+				unsigned int events)
-+{
-+	struct adp5520_chip *chip = dev_get_drvdata(dev);
-+
-+	adp5520_clr_bits(chip->dev, INTERRUPT_ENABLE,
-+		events & (KP_IEN | KR_IEN | OVP_IEN | CMPR_IEN));
-+
-+	return blocking_notifier_chain_unregister(&chip->notifier_list, nb);
-+}
-+EXPORT_SYMBOL_GPL(adp5520_unregister_notifier);
-+
-+static void adp5520_irq_work(struct work_struct *work)
-+{
-+	struct adp5520_chip *chip =
-+		container_of(work, struct adp5520_chip, irq_work);
-+	unsigned int events;
-+	uint8_t reg_val;
-+	int ret;
-+
-+	ret = __adp5520_read(chip->client, MODE_STATUS, &reg_val);
-+	if (ret)
-+		goto out;
-+
-+	events =  reg_val & (OVP_INT | CMPR_INT | GPI_INT | KR_INT | KP_INT);
-+
-+	blocking_notifier_call_chain(&chip->notifier_list, events, NULL);
-+	/* ACK, Sticky bits are W1C */
-+	__adp5520_ack_bits(chip->client, MODE_STATUS, events);
-+
-+out:
-+	enable_irq(chip->client->irq);
-+}
-+
-+static irqreturn_t adp5520_irq_handler(int irq, void *data)
-+{
-+	struct adp5520_chip *chip = data;
-+
-+	disable_irq_nosync(irq);
-+	schedule_work(&chip->irq_work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int __remove_subdev(struct device *dev, void *unused)
-+{
-+	platform_device_unregister(to_platform_device(dev));
-+	return 0;
-+}
-+
-+static int adp5520_remove_subdevs(struct adp5520_chip *chip)
-+{
-+	return device_for_each_child(chip->dev, NULL, __remove_subdev);
-+}
-+
-+static int __devinit adp5520_add_subdevs(struct adp5520_chip *chip,
-+					struct adp5520_platform_data *pdata)
-+{
-+	struct adp5520_subdev_info *subdev;
-+	struct platform_device *pdev;
-+	int i, ret = 0;
-+
-+	for (i = 0; i < pdata->num_subdevs; i++) {
-+		subdev = &pdata->subdevs[i];
-+
-+		pdev = platform_device_alloc(subdev->name, subdev->id);
-+
-+		pdev->dev.parent = chip->dev;
-+		pdev->dev.platform_data = subdev->platform_data;
-+
-+		ret = platform_device_add(pdev);
-+		if (ret)
-+			goto failed;
-+	}
-+	return 0;
-+
-+failed:
-+	adp5520_remove_subdevs(chip);
-+	return ret;
-+}
-+
-+static int __devinit adp5520_probe(struct i2c_client *client,
-+					const struct i2c_device_id *id)
-+{
-+	struct adp5520_platform_data *pdata = client->dev.platform_data;
-+	struct adp5520_chip *chip;
-+	int ret;
-+
-+	if (!i2c_check_functionality(client->adapter,
-+					I2C_FUNC_SMBUS_BYTE_DATA)) {
-+		dev_err(&client->dev, "SMBUS Word Data not Supported\n");
-+		return -EIO;
++	if (pdev->id != ID_ADP5520) {
++		dev_err(&pdev->dev, "only ADP5520 supports Keypad\n");
++		return -EINVAL;
 +	}
 +
 +	if (pdata == NULL) {
-+		dev_err(&client->dev, "missing platform data\n");
-+		return -ENODEV;
++		dev_err(&pdev->dev, "missing platform data\n");
++		return -EINVAL;
 +	}
 +
-+	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-+	if (!chip)
++	if (!(pdata->rows_en_mask && pdata->cols_en_mask))
++		return -EINVAL;
++
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (dev == NULL) {
++		dev_err(&pdev->dev, "failed to alloc memory\n");
 +		return -ENOMEM;
-+
-+	i2c_set_clientdata(client, chip);
-+	chip->client = client;
-+
-+	chip->dev = &client->dev;
-+	chip->irq = client->irq;
-+	mutex_init(&chip->lock);
-+
-+	if (chip->irq) {
-+		INIT_WORK(&chip->irq_work, adp5520_irq_work);
-+		BLOCKING_INIT_NOTIFIER_HEAD(&chip->notifier_list);
-+
-+		ret = request_irq(chip->irq, adp5520_irq_handler,
-+				IRQF_DISABLED | IRQF_TRIGGER_LOW,
-+				"adp5520", chip);
-+		if (ret) {
-+			dev_err(&client->dev, "failed to request irq %d\n",
-+					chip->irq);
-+			goto out_free_chip;
-+		}
 +	}
 +
-+	ret = adp5520_write(chip->dev, MODE_STATUS, nSTNBY);
++	input = input_allocate_device();
++	if (!input) {
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	dev->master = pdev->dev.parent;
++	dev->input = input;
++
++	input->name = pdev->name;
++	input->phys = "adp5520-keys/input0";
++	input->dev.parent = &pdev->dev;
++
++	input_set_drvdata(input, dev);
++
++	input->id.bustype = BUS_I2C;
++	input->id.vendor = 0x0001;
++	input->id.product = 0x5520;
++	input->id.version = 0x0001;
++
++	input->keycodesize = sizeof(dev->keycode[0]);
++	input->keycodemax = pdata->keymapsize;
++	input->keycode = dev->keycode;
++
++	memcpy(dev->keycode, pdata->keymap,
++		pdata->keymapsize * input->keycodesize);
++
++	/* setup input device */
++	__set_bit(EV_KEY, input->evbit);
++
++	if (pdata->repeat)
++		__set_bit(EV_REP, input->evbit);
++
++	for (i = 0; i < input->keycodemax; i++)
++		__set_bit(dev->keycode[i], input->keybit);
++	__clear_bit(KEY_RESERVED, input->keybit);
++
++	ret = input_register_device(input);
 +	if (ret) {
-+		dev_err(&client->dev, "failed to write\n");
-+		goto out_free_irq;
++		dev_err(&pdev->dev, "unable to register input device\n");
++		goto err;
 +	}
 +
-+	ret = adp5520_add_subdevs(chip, pdata);
++	en_mask = pdata->rows_en_mask | pdata->cols_en_mask;
 +
-+	if (!ret)
-+		return ret;
++	ret = adp5520_set_bits(dev->master, GPIO_CFG_1, en_mask);
 +
-+out_free_irq:
-+	if (chip->irq)
-+		free_irq(chip->irq, chip);
++	if (en_mask & COL_C3)
++		ctl_mask |= C3_MODE;
 +
-+out_free_chip:
-+	i2c_set_clientdata(client, NULL);
-+	kfree(chip);
++	if (en_mask & ROW_R3)
++		ctl_mask |= R3_MODE;
 +
++	if (ctl_mask)
++		ret |= adp5520_set_bits(dev->master, LED_CONTROL,
++			ctl_mask);
++
++	ret |= adp5520_set_bits(dev->master, GPIO_PULLUP,
++		pdata->rows_en_mask);
++
++	if (ret) {
++		dev_err(&pdev->dev, "failed to write\n");
++		ret = -EIO;
++		goto err1;
++	}
++
++	dev->notifier.notifier_call = adp5520_keys_notifier;
++	ret = adp5520_register_notifier(dev->master, &dev->notifier,
++			KP_IEN | KR_IEN);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register notifier\n");
++		goto err1;
++	}
++
++	platform_set_drvdata(pdev, dev);
++	return 0;
++
++err1:
++	input_unregister_device(input);
++	input = NULL;
++err:
++	input_free_device(input);
++	kfree(dev);
 +	return ret;
 +}
 +
-+static int __devexit adp5520_remove(struct i2c_client *client)
++static int __devexit adp5520_keys_remove(struct platform_device *pdev)
 +{
-+	struct adp5520_chip *chip = dev_get_drvdata(&client->dev);
++	struct adp5520_keys *dev = platform_get_drvdata(pdev);
 +
-+	if (chip->irq)
-+		free_irq(chip->irq, chip);
++	adp5520_unregister_notifier(dev->master, &dev->notifier,
++				KP_IEN | KR_IEN);
 +
-+	adp5520_remove_subdevs(chip);
-+	adp5520_write(chip->dev, MODE_STATUS, 0);
-+	i2c_set_clientdata(client, NULL);
-+	kfree(chip);
++	input_unregister_device(dev->input);
++	kfree(dev);
 +	return 0;
 +}
 +
-+#ifdef CONFIG_PM
-+static int adp5520_suspend(struct i2c_client *client,
-+				 pm_message_t state)
-+{
-+	struct adp5520_chip *chip = dev_get_drvdata(&client->dev);
-+
-+	adp5520_clr_bits(chip->dev, MODE_STATUS, nSTNBY);
-+	return 0;
-+}
-+
-+static int adp5520_resume(struct i2c_client *client)
-+{
-+	struct adp5520_chip *chip = dev_get_drvdata(&client->dev);
-+
-+	adp5520_set_bits(chip->dev, MODE_STATUS, nSTNBY);
-+	return 0;
-+}
-+#else
-+#define adp5520_suspend	NULL
-+#define adp5520_resume	NULL
-+#endif
-+
-+static const struct i2c_device_id adp5520_id[] = {
-+	{ "pmic-adp5520", 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, adp5520_id);
-+
-+static struct i2c_driver adp5520_driver = {
-+	.driver = {
-+		.name	= "adp5520",
++static struct platform_driver adp5520_keys_driver = {
++	.driver	= {
++		.name	= "adp5520-keys",
 +		.owner	= THIS_MODULE,
 +	},
-+	.probe		= adp5520_probe,
-+	.remove		= __devexit_p(adp5520_remove),
-+	.suspend	= adp5520_suspend,
-+	.resume		= adp5520_resume,
-+	.id_table 	= adp5520_id,
++	.probe		= adp5520_keys_probe,
++	.remove		= __devexit_p(adp5520_keys_remove),
 +};
 +
-+static int __init adp5520_init(void)
++static int __init adp5520_keys_init(void)
 +{
-+	return i2c_add_driver(&adp5520_driver);
++	return platform_driver_register(&adp5520_keys_driver);
 +}
-+module_init(adp5520_init);
++module_init(adp5520_keys_init);
 +
-+static void __exit adp5520_exit(void)
++static void __exit adp5520_keys_exit(void)
 +{
-+	i2c_del_driver(&adp5520_driver);
++	platform_driver_unregister(&adp5520_keys_driver);
 +}
-+module_exit(adp5520_exit);
++module_exit(adp5520_keys_exit);
 +
 +MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
-+MODULE_DESCRIPTION("ADP5520(01) PMIC-MFD Driver");
++MODULE_DESCRIPTION("Keys ADP5520 Driver");
 +MODULE_LICENSE("GPL");
-diff --git a/include/linux/mfd/adp5520.h b/include/linux/mfd/adp5520.h
-new file mode 100644
-index 0000000..fffa1db
---- /dev/null
-+++ b/include/linux/mfd/adp5520.h
-@@ -0,0 +1,303 @@
-+/*
-+ * Definitions and platfrom data for Analog Devices
-+ * ADP5520/ADP5501 MFD PMICs (Backlight, LED, GPIO and Keys)
-+ *
-+ * Copyright 2009 Analog Devices Inc.
-+ *
-+ * Licensed under the GPL-2 or later.
-+ */
-+
-+
-+#ifndef __LINUX_MFD_ADP5520_H
-+#define __LINUX_MFD_ADP5520_H
-+
-+#define ID_ADP5520		5520
-+#define ID_ADP5501		5501
-+
-+/*
-+ * ADP5520/ADP5501 Register Map
-+ */
-+
-+#define MODE_STATUS 		0x00
-+#define INTERRUPT_ENABLE 	0x01
-+#define BL_CONTROL 		0x02
-+#define BL_TIME 		0x03
-+#define BL_FADE 		0x04
-+#define DAYLIGHT_MAX 		0x05
-+#define DAYLIGHT_DIM 		0x06
-+#define OFFICE_MAX 		0x07
-+#define OFFICE_DIM 		0x08
-+#define DARK_MAX 		0x09
-+#define DARK_DIM 		0x0A
-+#define BL_VALUE 		0x0B
-+#define ALS_CMPR_CFG 		0x0C
-+#define L2_TRIP 		0x0D
-+#define L2_HYS 			0x0E
-+#define L3_TRIP 		0x0F
-+#define L3_HYS 			0x10
-+#define LED_CONTROL 		0x11
-+#define LED_TIME 		0x12
-+#define LED_FADE 		0x13
-+#define LED1_CURRENT 		0x14
-+#define LED2_CURRENT 		0x15
-+#define LED3_CURRENT 		0x16
-+
-+/*
-+ * ADP5520 Register Map
-+ */
-+
-+#define GPIO_CFG_1 		0x17
-+#define GPIO_CFG_2 		0x18
-+#define GPIO_IN 		0x19
-+#define GPIO_OUT 		0x1A
-+#define GPIO_INT_EN 		0x1B
-+#define GPIO_INT_STAT 		0x1C
-+#define GPIO_INT_LVL 		0x1D
-+#define GPIO_DEBOUNCE 		0x1E
-+#define GPIO_PULLUP 		0x1F
-+#define KP_INT_STAT_1 		0x20
-+#define KP_INT_STAT_2 		0x21
-+#define KR_INT_STAT_1 		0x22
-+#define KR_INT_STAT_2 		0x23
-+#define KEY_STAT_1 		0x24
-+#define KEY_STAT_2 		0x25
-+
-+/*
-+ * MODE_STATUS bits
-+ */
-+
-+#define nSTNBY		(1 << 7)
-+#define BL_EN           (1 << 6)
-+#define DIM_EN          (1 << 5)
-+#define OVP_INT         (1 << 4)
-+#define CMPR_INT        (1 << 3)
-+#define GPI_INT         (1 << 2)
-+#define KR_INT          (1 << 1)
-+#define KP_INT          (1 << 0)
-+
-+/*
-+ * INTERRUPT_ENABLE bits
-+ */
-+
-+#define AUTO_LD_EN      (1 << 4)
-+#define CMPR_IEN        (1 << 3)
-+#define OVP_IEN         (1 << 2)
-+#define KR_IEN          (1 << 1)
-+#define KP_IEN          (1 << 0)
-+
-+/*
-+ * BL_CONTROL bits
-+ */
-+
-+#define BL_LVL          ((x) << 5)
-+#define BL_LAW          ((x) << 4)
-+#define BL_AUTO_ADJ     (1 << 3)
-+#define OVP_EN          (1 << 2)
-+#define FOVR            (1 << 1)
-+#define KP_BL_EN        (1 << 0)
-+
-+/*
-+ * ALS_CMPR_CFG bits
-+ */
-+
-+#define L3_OUT		(1 << 3)
-+#define L2_OUT		(1 << 2)
-+#define L3_EN		(1 << 1)
-+
-+#define ADP5020_MAX_BRIGHTNESS	0x7F
-+
-+#define FADE_VAL(in, out)	((0xF & (in)) | ((0xF & (out)) << 4))
-+#define BL_CTRL_VAL(law, auto)	(((1 & (auto)) << 3) | ((0x3 & (law)) << 4))
-+#define ALS_CMPR_CFG_VAL(filt, l3_en)	(((0x7 & filt) << 5) | l3_en)
-+
-+/*
-+ * LEDs subdevice bits and masks
-+ */
-+
-+#define ADP5520_01_MAXLEDS 3
-+
-+#define FLAG_LED_MASK 		0x3
-+#define FLAG_OFFT_SHIFT 	8
-+#define FLAG_OFFT_MASK 		0x3
-+
-+#define R3_MODE		(1 << 5)
-+#define C3_MODE		(1 << 4)
-+#define LED_LAW		(1 << 3)
-+#define LED3_EN		(1 << 2)
-+#define LED2_EN		(1 << 1)
-+#define LED1_EN		(1 << 0)
-+
-+/*
-+ * GPIO subdevice bits and masks
-+ */
-+
-+#define ADP5520_MAXGPIOS	8
-+
-+#define GPIO_C3		(1 << 7)	/* LED2 or GPIO7 aka C3 */
-+#define GPIO_C2		(1 << 6)
-+#define GPIO_C1		(1 << 5)
-+#define GPIO_C0		(1 << 4)
-+#define GPIO_R3		(1 << 3)	/* LED3 or GPIO3 aka R3 */
-+#define GPIO_R2		(1 << 2)
-+#define GPIO_R1		(1 << 1)
-+#define GPIO_R0		(1 << 0)
-+
-+struct adp5520_gpio_platfrom_data {
-+	unsigned gpio_start;
-+	u8 gpio_en_mask;
-+	u8 gpio_pullup_mask;
-+};
-+
-+/*
-+ * Keypad subdevice bits and masks
-+ */
-+
-+#define ADP5520_MAXKEYS	16
-+
-+#define COL_C3 		(1 << 7)	/* LED2 or GPIO7 aka C3 */
-+#define COL_C2		(1 << 6)
-+#define COL_C1		(1 << 5)
-+#define COL_C0		(1 << 4)
-+#define ROW_R3		(1 << 3)	/* LED3 or GPIO3 aka R3 */
-+#define ROW_R2		(1 << 2)
-+#define ROW_R1		(1 << 1)
-+#define ROW_R0		(1 << 0)
-+
-+#define KEY(row, col) (col + row * 4)
-+#define ADP5520_KEYMAPSIZE	ADP5520_MAXKEYS
-+
-+struct adp5520_keys_platfrom_data {
-+	int rows_en_mask;		/* Number of rows */
-+	int cols_en_mask;		/* Number of columns */
-+	const unsigned short *keymap;	/* Pointer to keymap */
-+	unsigned short keymapsize;	/* Keymap size */
-+	unsigned repeat:1;		/* Enable key repeat */
-+};
-+
-+
-+/*
-+ * LEDs subdevice platfrom data
-+ */
-+
-+#define FLAG_ID_ADP5520_LED1_ADP5501_LED0 	1	/* ADP5520 PIN ILED */
-+#define FLAG_ID_ADP5520_LED2_ADP5501_LED1 	2	/* ADP5520 PIN C3 */
-+#define FLAG_ID_ADP5520_LED3_ADP5501_LED2 	3	/* ADP5520 PIN R3 */
-+
-+#define LED_DIS_BLINK	(0 << FLAG_OFFT_SHIFT)
-+#define LED_OFFT_600ms	(1 << FLAG_OFFT_SHIFT)
-+#define LED_OFFT_800ms	(2 << FLAG_OFFT_SHIFT)
-+#define LED_OFFT_1200ms	(3 << FLAG_OFFT_SHIFT)
-+
-+#define LED_ONT_200ms	0
-+#define LED_ONT_600ms	1
-+#define LED_ONT_800ms	2
-+#define LED_ONT_1200ms	3
-+
-+struct adp5520_leds_platfrom_data {
-+	int num_leds;
-+	struct led_info	*leds;
-+	u8 fade_in;		/* Backlight Fade-In Timer */
-+	u8 fade_out;		/* Backlight Fade-Out Timer */
-+	u8 led_on_time;
-+};
-+
-+/*
-+ * Backlight subdevice platfrom data
-+ */
-+
-+#define FADE_T_DIS	0	/* Fade Timer Disabled */
-+#define FADE_T_300ms	1	/* 0.3 Sec */
-+#define FADE_T_600ms	2
-+#define FADE_T_900ms	3
-+#define FADE_T_1200ms	4
-+#define FADE_T_1500ms	5
-+#define FADE_T_1800ms	6
-+#define FADE_T_2100ms	7
-+#define FADE_T_2400ms	8
-+#define FADE_T_2700ms	9
-+#define FADE_T_3000ms	10
-+#define FADE_T_3500ms	11
-+#define FADE_T_4000ms	12
-+#define FADE_T_4500ms	13
-+#define FADE_T_5000ms	14
-+#define FADE_T_5500ms	15	/* 5.5 Sec */
-+
-+#define BL_LAW_LINEAR 	0
-+#define BL_LAW_SQUARE 	1
-+#define BL_LAW_CUBIC1 	2
-+#define BL_LAW_CUBIC2 	3
-+
-+#define BL_AMBL_FILT_80ms 	0	/* Light sensor filter time */
-+#define BL_AMBL_FILT_160ms 	1
-+#define BL_AMBL_FILT_320ms 	2
-+#define BL_AMBL_FILT_640ms 	3
-+#define BL_AMBL_FILT_1280ms 	4
-+#define BL_AMBL_FILT_2560ms 	5
-+#define BL_AMBL_FILT_5120ms 	6
-+#define BL_AMBL_FILT_10240ms 	7	/* 10.24 sec */
-+
-+	/*
-+	 * Blacklight current 0..30mA
-+	 */
-+#define BL_CUR_mA(I)		((I * 127) / 30)
-+
-+	/*
-+	 * L2 comparator current 0..1000uA
-+	 */
-+#define L2_COMP_CURR_uA(I)	((I * 255) / 1000)
-+
-+	/*
-+	 * L3 comparator current 0..127uA
-+	 */
-+#define L3_COMP_CURR_uA(I)	((I * 255) / 127)
-+
-+struct adp5520_backlight_platfrom_data {
-+	u8 fade_in;		/* Backlight Fade-In Timer */
-+	u8 fade_out;		/* Backlight Fade-Out Timer */
-+	u8 fade_led_law;	/* fade-on/fade-off transfer characteristic */
-+
-+	u8 en_ambl_sens;	/* 1 = enable ambient light sensor */
-+	u8 abml_filt;		/* Light sensor filter time */
-+	u8 l1_daylight_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
-+	u8 l1_daylight_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
-+	u8 l2_office_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
-+	u8 l2_office_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
-+	u8 l3_dark_max;		/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
-+	u8 l3_dark_dim;		/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
-+	u8 l2_trip;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1000 uA */
-+	u8 l2_hyst;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1000 uA */
-+	u8 l3_trip;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 127 uA */
-+	u8 l3_hyst;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 127 uA */
-+};
-+
-+/*
-+ * MFD chip platfrom data
-+ */
-+
-+struct adp5520_subdev_info {
-+	int		id;
-+	const char	*name;
-+	void		*platform_data;
-+};
-+
-+struct adp5520_platform_data {
-+	int num_subdevs;
-+	struct adp5520_subdev_info *subdevs;
-+};
-+
-+/*
-+ * MFD chip functions
-+ */
-+
-+extern int adp5520_read(struct device *dev, int reg, uint8_t *val);
-+extern int adp5520_write(struct device *dev, int reg, u8 val);
-+extern int adp5520_clr_bits(struct device *dev, int reg, uint8_t bit_mask);
-+extern int adp5520_set_bits(struct device *dev, int reg, uint8_t bit_mask);
-+
-+extern int adp5520_register_notifier(struct device *dev,
-+		 struct notifier_block *nb, unsigned int events);
-+
-+extern int adp5520_unregister_notifier(struct device *dev,
-+		struct notifier_block *nb, unsigned int events);
-+
-+#endif /* __LINUX_MFD_ADP5520_H */
++MODULE_ALIAS("platform:adp5520-keys");
 -- 
 1.6.5.rc1
 
