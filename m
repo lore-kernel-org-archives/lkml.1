@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751732AbZIWNtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbZIWNrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751732AbZIWNtI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 09:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZIWNtH
+	id S1751685AbZIWNrl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 09:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZIWNrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 09:49:07 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:48928 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751541AbZIWNtG (ORCPT
+	Wed, 23 Sep 2009 09:47:40 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46017 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751541AbZIWNrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 09:49:06 -0400
-Date: Wed, 23 Sep 2009 09:44:33 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Tejun Heo <tj@kernel.org>
-cc: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu
- areas for other cpus
-In-Reply-To: <4AB983B6.6050203@kernel.org>
-Message-ID: <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1>
-References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-3-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0909221856050.9410@V090114053VZO-1> <4AB983B6.6050203@kernel.org>
+	Wed, 23 Sep 2009 09:47:40 -0400
+Date: Wed, 23 Sep 2009 09:46:37 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Hirokazu Takata <takata@linux-m32r.org>
+cc: torvalds@linux-foundation.org, linux-m32r@ml.linux-m32r.org,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [GIT PULL] m32r: Cleanup linker script
+In-Reply-To: <swfk4zqnyv7.wl%takata@linux-m32r.org>
+Message-ID: <alpine.DEB.1.10.0909230021320.15822@dr-wily.mit.edu>
+References: <swfljk6ooe0.wl%takata@linux-m32r.org> <swfk4zqnyv7.wl%takata@linux-m32r.org>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009, Tejun Heo wrote:
+On Wed, 23 Sep 2009, Hirokazu Takata wrote:
 
-> On ia64, the first chunk is fixed at PERCPU_PAGE_SIZE.  It's something
-> hardwired into the page fault logic and the linker script.  Build will
-> fail if the static + reserved area goes over PERCPU_PAGE_SIZE and in
-> that case ia64 will need to update the special case page fault logic
-> and increase PERCPU_PAGE_SIZE.  The area reserved above is interim
-> per-cpu area for cpu0 which is used between head.S and proper percpu
-> area setup and will be ditched once initialization is complete.
+> Hi, Linus,
+> 
+> Sorry, there was a cross in the post.
+> 
+> I was not conscious of Sam's acknowledgement mail.  And a newer patchset
+> has been sent by Tim Abbott on Sep. 22, 2009 - 10:23:21 EST.
+> 
+> > [PATCH 00/13] Linker script cleanup patches for various architectures
+> 
+> The newer patchset includes updates for not only m32r but also
+> parisc, xtenza, h8300, mn10300 and um.
+> 
+> What do I deal with such a cross architectural patchset?
 
-You did not answer my question.
+Sorry for the miscommunication.
 
-The local percpu variables are accessed via a static per cpu
-virtual mapping. You cannot place per cpu variables outside of that
-virtual address range of PERCPU_PAGE_SIZE.
+My patchset is just 5 orthogonal patchsets included together; there's no 
+dependence between the various architectures.  These were just the subset 
+of the architecture linker script cleanups that were ready to be merged at 
+that time.
 
-What happens if the percpu allocator allocates more data than available in
-the reserved area?
+The 6 m32r patches I sent to Linus are exactly the same as what's in your 
+pull request, so it doesn't matter which one gets merged.
 
+	-Tim Abbott
