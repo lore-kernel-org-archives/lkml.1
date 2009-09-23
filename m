@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZIWGiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZIWGjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbZIWGiY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 02:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZIWGiX
+	id S1754186AbZIWGjK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 02:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZIWGjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 02:38:23 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48266 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754009AbZIWGiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 02:38:23 -0400
-Date: Wed, 23 Sep 2009 16:38:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jan Beulich <JBeulich@novell.com>,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: linux-next: manual merge of the usb tree with Linus' tree
-Message-Id: <20090923163817.44bcebb8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	Wed, 23 Sep 2009 02:39:09 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:38992 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753793AbZIWGjJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 02:39:09 -0400
+Subject: Re: v2.6.31-7381-g7fa0772: new build warnings: kmemcheck,
+ __deprecated, hugetlb, radeon
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       Eric B Munson <ebmunson@us.ibm.com>, Dave Airlie <airlied@linux.ie>
+In-Reply-To: <4AB8FC88.8020608@s5r6.in-berlin.de>
+References: <4AB8FC88.8020608@s5r6.in-berlin.de>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-TyIC4eT/qHOJahbYnw2K"
+Date: Wed, 23 Sep 2009 08:39:08 +0200
+Message-Id: <1253687948.4458.20.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__23_Sep_2009_16_38_17_+1000_WpdwWgg0dAT3me5q"
+X-Mailer: Evolution 2.27.92 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__23_Sep_2009_16_38_17_+1000_WpdwWgg0dAT3me5q
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-TyIC4eT/qHOJahbYnw2K
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Greg,
+On Tue, 2009-09-22 at 18:34 +0200, Stefan Richter wrote:
 
-Today's linux-next merge of the usb tree got a conflict in
-arch/x86/kernel/early_printk.c between commit
-414128bd33fef3242747154dfa444970bc5caf4c ("x86: Increase timeout for EHCI
-debug port reset completion in early printk") from Linus' tree and commit
-bd965307ef6b7a56219f8883d5038f6573a94f6e ("USB: ehci,dbgp,early_printk:
-split ehci debug driver from early_printk.c") from the usb tree.
+> This one is older:
+>=20
+>    CC      net/ethernet/eth.o
+> [...kmemcheck noise from inet_sock.h:208, and then...:]
+> net/ethernet/eth.c: At top level:
+> net/ethernet/eth.c:402: warning: 'print_mac' is deprecated (declared at=20
+> net/ethernet/eth.c:398)
+> net/ethernet/eth.c:402: warning: 'print_mac' is deprecated (declared at=20
+> net/ethernet/eth.c:398)
+>=20
+> Obviously added by b5eb0589937eae2d58fca17fa45ed44152e772ed.
+> Johannes, can't the __deprecated logic be suppressed when print_mac is=20
+> used in EXPORT_SYMBOL?
 
-The latter moved the code that the former modified.  A later USB patch
-used an even longer loop delay.
+Not easily. But then we've already removed it completely by now afaik.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+johannes
 
---Signature=_Wed__23_Sep_2009_16_38_17_+1000_WpdwWgg0dAT3me5q
-Content-Type: application/pgp-signature
+--=-TyIC4eT/qHOJahbYnw2K
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkq5wlkACgkQjjKRsyhoI8wdtQCfZ3bZXLFENqu27HOlwlb4cfZQ
-vT0An32K63mky/leiybLDUeXs1/p7JIk
-=k1BN
+iQIcBAABAgAGBQJKucKIAAoJEODzc/N7+QmaUrMP/A8ZHp03cvh9DNgr8kwiCXQj
+iOmdUtvb7L4vAZtiHeprZhB4CafSKSVTeTX+ULmW74fB9egT9yIqi08IaL+rpaEp
+jth56Ml5twBmmuicG4rqvIaEqZ62eC8VhAxDmzhhJ44RjzuRg/sPB65GbSlU5hrI
+TnYYN5E7c5wLN7tZpbXjj3OOTs0JAxWO7YIg6ZU9aYNlST0LhME6IyG17VFG661x
+XAM7nuAjhCdkZXBu3rD6DBCDE6w8rowdVV2k9QGp0WsDNPW2FDdMOeOHMbhGeEyu
+7rg5Kz9HQc29/bL0abKYqFpgkbX1nKHHTsRymDzyh1Eha6ZHgOBJ5PYoFzw+DR+9
+UijjO0EAJY2FkLK69Lwo9pX+nHLURXzK/alI5hbKsEat6dTwF4jda8K59soYa/bO
+wfxJPm7pb5/O4Ss0r3xbb5ThHPoDQcy78uH/CFyei6Bup6+0qKEXBZloEdTqEumW
+ZwYjNaPjfl6/62AZZA8QQM+Du5rxZpL3xUXcHvtbYjkfwhsiSpAHHQ/u8cE8cPsV
+O9O1W6rN75NxaIui+KBpgpetWQTj+IWKNsVQy5nEFzw9g6Pzt9sXiuobpIpegAq2
+jB78X3VoH6ieahg48T5Wb5IkKoxWYsTEu4iV9Iz09ySQlc6yWGYma+MDOJxLzcbi
+5NHxMZxYneyxvBAJjfZt
+=YuAT
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__23_Sep_2009_16_38_17_+1000_WpdwWgg0dAT3me5q--
+--=-TyIC4eT/qHOJahbYnw2K--
+
