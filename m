@@ -1,77 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbZIWShD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbZIWSmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbZIWShD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 14:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZIWShA
+	id S1753190AbZIWSmI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 14:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZIWSmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 14:37:00 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:50802 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751710AbZIWSg7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 14:36:59 -0400
-Date: Wed, 23 Sep 2009 14:36:06 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
+	Wed, 23 Sep 2009 14:42:06 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:62193 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750783AbZIWSmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 14:42:05 -0400
+X-IronPort-AV: E=Sophos;i="4.44,439,1249282800"; 
+   d="scan'208";a="248083699"
+Subject: [GIT PULL] Please pull the following NFS client cleanups and
+ bugfixes...
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 01/13] Optimize the ordering of sections in
- RW_DATA_SECTION.
-In-Reply-To: <alpine.LFD.2.01.0909231126300.3303@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0909231430190.26798@dr-wily.mit.edu>
-References: <1253629347-23119-1-git-send-email-tabbott@ksplice.com> <1253629347-23119-2-git-send-email-tabbott@ksplice.com> <alpine.LFD.2.01.0909231126300.3303@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       dhowells@redhat.com, randy.dunlap@oracle.com,
+       Benny Halevy <bhalevy@panasas.com>,
+       "Mr. Charles Edward Lever" <Chuck.Lever@oracle.com>,
+       Neil Brown <neilb@suse.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Wed, 23 Sep 2009 14:40:58 -0400
+Message-Id: <1253731259.3014.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-OriginalArrivalTime: 23 Sep 2009 18:41:41.0887 (UTC) FILETIME=[7E2BF8F0:01CA3C7D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009, Linus Torvalds wrote:
+Hi Linus,
 
-> 
-> Umm. As a commit message this sucks. What's so optimized about this?
+Please pull from the "bugfixes" branch of the repository at
 
-Yeah, it does.  Sorry about that.  
+   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git bugfixes
 
-This patch sorts the sections by alignment requirements, which should pack 
-them essentially optimally.  The old RW_DATA_SECTION had INIT_TASK_DATA 
-(which was more-than-PAGE_SIZE-aligned), followed by a bunch of small 
-alignment stuff, followed by more PAGE_SIZE-aligned stuff, so you wasted 
-memory in the middle of .data re-aligning back up to PAGE_SIZE.
+This will update the following files through the appended changesets.
 
-	-Tim Abbott
+  Cheers,
+    Trond
 
-> On Tue, 22 Sep 2009, Tim Abbott wrote:
-> >
-> > Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-> > Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-> > ---
-> >  include/asm-generic/vmlinux.lds.h |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> > index 29ca8f5..b6e818f 100644
-> > --- a/include/asm-generic/vmlinux.lds.h
-> > +++ b/include/asm-generic/vmlinux.lds.h
-> > @@ -721,12 +721,12 @@
-> >  	. = ALIGN(PAGE_SIZE);						\
-> >  	.data : AT(ADDR(.data) - LOAD_OFFSET) {				\
-> >  		INIT_TASK_DATA(inittask)				\
-> > +		NOSAVE_DATA						\
-> > +		PAGE_ALIGNED_DATA(pagealigned)				\
-> >  		CACHELINE_ALIGNED_DATA(cacheline)			\
-> >  		READ_MOSTLY_DATA(cacheline)				\
-> >  		DATA_DATA						\
-> >  		CONSTRUCTORS						\
-> > -		NOSAVE_DATA						\
-> > -		PAGE_ALIGNED_DATA(pagealigned)				\
-> >  	}
-> >  
-> >  #define INIT_TEXT_SECTION(inittext_align)				\
-> > -- 
-> > 1.6.3.3
-> > 
-> 
+----
+ fs/nfs/client.c            |   13 ++++++--
+ fs/nfs/fscache.c           |   25 ++++++++++++--
+ fs/nfs/fscache.h           |    6 ++-
+ fs/nfs/super.c             |   76 +++++++++++++++++++++++---------------------
+ include/linux/sunrpc/xdr.h |    5 ++-
+ net/sunrpc/rpc_pipe.c      |    3 +-
+ net/sunrpc/xprtsock.c      |    9 +++++
+ 7 files changed, 89 insertions(+), 48 deletions(-)
+
+commit 2df54806389205d76bc3d1ce8a10cc14889ddec9
+Author: David Howells <dhowells@redhat.com>
+Date:   Wed Sep 23 14:36:39 2009 -0400
+
+    NFS: Propagate 'fsc' mount option through automounts
+    
+    Propagate the NFS 'fsc' mount option through NFS automounts of various types.
+    
+    This is now required as commit:
+    
+    	commit c02d7adf8c5429727a98bad1d039bccad4c61c50
+    	Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+    	Date:   Mon Jun 22 15:09:14 2009 -0400
+    
+    	NFSv4: Replace nfs4_path_walk() with VFS path lookup in a private namespace
+    
+    uses VFS-driven automounting to reach all submounts barring the root, thus
+    preventing fscaching from being enabled on any submount other than the root.
+    
+    This patch gets around that by propagating the NFS_OPTION_FSCACHE flag across
+    automounts.  If a uniquifier is supplied to a mount then this is propagated to
+    all automounts of that mount too.
+    
+    Signed-off-by: David Howells <dhowells@redhat.com>
+    [Trond: Fixed up the definition of nfs_fscache_get_super_cookie for the
+            case of #undef CONFIG_NFS_FSCACHE]
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 4111d4fde6aa04a2e42c43d0e74593e6144b0f0f
+Author: Randy Dunlap <randy.dunlap@oracle.com>
+Date:   Wed Sep 23 14:36:38 2009 -0400
+
+    sunrpc/rpc_pipe: fix kernel-doc notation
+    
+    Fix kernel-doc notation (& warnings) in sunrpc/rpc_pipe.c.
+    
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 97363c6a4f93a20380b4a9e11f35e27fed68a517
+Author: Benny Halevy <bhalevy@panasas.com>
+Date:   Wed Sep 23 14:36:38 2009 -0400
+
+    sunrpc: xdr_xcode_hyper helpers cannot presume 64-bit alignment
+    
+    Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 9423a08ad5773d0a7612d434700561dc8346b6d6
+Author: Chuck Lever <chuck.lever@oracle.com>
+Date:   Wed Sep 23 14:36:38 2009 -0400
+
+    NFS: Add nfs_alloc_parsed_mount_data
+    
+    Allocating nfs_parsed_mount_data and setting up the defaults is nearly
+    the same for both nfs and nfs4 mounts.
+    
+    Both paths seem to use nfs_validate_transport_protocol(), so setting a
+    default value for nfs_server.protocol ought to be unnecessary.
+    
+    Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 61d0a8e6a8049cea246ee7ec19b042d4ff1f6ef6
+Author: Neil Brown <neilb@suse.de>
+Date:   Wed Sep 23 14:36:37 2009 -0400
+
+    NFS/RPC: fix problems with reestablish_timeout and related code.
+    
+    
+    [[resending with correct cc:  - "vfs.kernel.org" just isn't right!]]
+    
+    xprt->reestablish_timeout is used to cause TCP connection attempts to
+    back off if the connection fails so as not to hammer the network,
+    but to still allow immediate connections when there is no reason to
+    believe there is a problem.
+    
+    It is not used for the first connection (when transport->sock is NULL)
+    but only on reconnects.
+    
+    It is currently set:
+    
+     a/ to 0 when xs_tcp_state_change finds a state of TCP_FIN_WAIT1
+        on the assumption that the client has closed the connection
+        so the reconnect should be immediate when needed.
+     b/ to at least XS_TCP_INIT_REEST_TO when xs_tcp_state_change
+        detects TCP_CLOSING or TCP_CLOSE_WAIT on the assumption that the
+        server closed the connection so a small delay at least is
+        required.
+     c/ as above when xs_tcp_state_change detects TCP_SYN_SENT, so that
+        it is never 0 while a connection has been attempted, else
+        the doubling will produce 0 and there will be no backoff.
+     d/ to double is value (up to a limit) when delaying a connection,
+        thus providing exponential backoff and
+     e/ to XS_TCP_INIT_REEST_TO in xs_setup_tcp as simple initialisation.
+    
+    So you can see it is highly dependant on xs_tcp_state_change being
+    called as expected.  However experimental evidence shows that
+    xs_tcp_state_change does not see all state changes.
+    ("rpcdebug -m rpc trans" can help show what actually happens).
+    
+    Results show:
+     TCP_ESTABLISHED is reported when a connection is made.  TCP_SYN_SENT
+     is never reported, so rule 'c' above is never effective.
+    
+     When the server closes the connection, TCP_CLOSE_WAIT and
+     TCP_LAST_ACK *might* be reported, and TCP_CLOSE is always
+     reported.  This rule 'b' above will sometimes be effective, but
+     not reliably.
+    
+     When the client closes the connection, it used to result in
+     TCP_FIN_WAIT1, TCP_FIN_WAIT2, TCP_CLOSE.  However since commit
+     f75e674 (SUNRPC: Fix the problem of EADDRNOTAVAIL syslog floods on
+     reconnect) we don't see *any* events on client-close.  I think this
+     is because xs_restore_old_callbacks is called to disconnect
+     xs_tcp_state_change before the socket is closed.
+     In any case, rule 'a' no longer applies.
+    
+    So all that is left are rule d, which successfully doubles the
+    timeout which is never rest, and rule e which initialises the timeout.
+    
+    Even if the rules worked as expected, there would be a problem because
+    a successful connection does not reset the timeout, so a sequence
+    of events where the server closes the connection (e.g. during failover
+    testing) will cause longer and longer timeouts with no good reason.
+    
+    This patch:
+    
+     - sets reestablish_timeout to 0 in xs_close thus effecting rule 'a'
+     - sets it to 0 in xs_tcp_data_ready to ensure that a successful
+       connection resets the timeout
+     - sets it to at least XS_TCP_INIT_REEST_TO after it is doubled,
+       thus effecting rule c
+    
+    I have not reimplemented rule b and the new version of rule c
+    seems sufficient.
+    
+    I suspect other code in xs_tcp_data_ready needs to be revised as well.
+    For example I don't think connect_cookie is being incremented as often
+    as it should be.
+    
+    Signed-off-by: NeilBrown <neilb@suse.de>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 8a6e5deb8a8caa810fef2c525f5dbea2cfe04a47
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Wed Sep 23 14:36:37 2009 -0400
+
+    NFS: Get rid of the NFS_MOUNT_VER3 and NFS_MOUNT_TCP flags
+    
+    Keep it in the case of the legacy binary mount interface, but purge it from
+    the nfs_server structure.
+    
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
