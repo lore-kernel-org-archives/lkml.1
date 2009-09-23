@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZIWJJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090AbZIWJPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752708AbZIWJJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 05:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZIWJJy
+	id S1753090AbZIWJPQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 05:15:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZIWJPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 05:09:54 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34296 "EHLO mx1.suse.de"
+	Wed, 23 Sep 2009 05:15:13 -0400
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:49050 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbZIWJJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 05:09:53 -0400
-Date: Wed, 23 Sep 2009 11:09:55 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Marc Dionne <marc.c.dionne@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: Current git: no keyboard when booting in verbose mode
-In-Reply-To: <6041d2000909221754n2ee1982xe08f938a35358c00@mail.gmail.com>
-Message-ID: <alpine.LRH.2.00.0909231108100.27145@twin.jikos.cz>
-References: <6041d2000909221754n2ee1982xe08f938a35358c00@mail.gmail.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1752886AbZIWJPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 05:15:10 -0400
+Date: Wed, 23 Sep 2009 10:11:21 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Florian Fainelli <florian@openwrt.org>, Maxime Bizon <mbizon@freebox.fr>,
+       linux-mips <linux-mips@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] MIPS: includecheck fix: bcm63xx, board_bcm963xx.c
+Message-ID: <20090923091121.GA5457@linux-mips.org>
+References: <1253626037.3784.13.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253626037.3784.13.camel@ht.satnam>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 22, 2009 at 06:57:17PM +0530, Jaswinder Singh Rajput wrote:
 
-[ adding some CCs ]
-
-On Tue, 22 Sep 2009, Marc Dionne wrote:
-
-> I'm having issues with the current kernel in git, and wondering if this 
-> will ring a bell for anyone. The main symptom is that on most boots the 
-> keyboard is not detected - the system gets to the console login prompt 
-> but input is not recognized.  Sometimes (rarely) the keyboard will be ok 
-> at the console, but the keyboard and mouse are non functional once in X. 
-
-Are both keyboard and mouse in question PS/2?
-
-> Other times the system will hang before getting to the console login 
-> prompt.
+> fix the following 'make includecheck' warning:
 > 
-> I made a few attempts to bisect this but with no success - I assume
-> that I'm led astray at some point by a bad kernel that happens to boot
-> normally a few times.
+>   arch/mips/bcm63xx/boards/board_bcm963xx.c: bcm63xx_board.h is included more than once.
 > 
-> Things to note:
-> - The problem only occurs in verbose mode - if I boot with "quiet"
->   everything is fine
-> - 2.6.31 has no issues on the same machine
-> - On a failed boot with no keyboard, this line is missing from dmesg:
->     AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input2
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Could you please provide output from kernel booted with 'i8042.debug' from 
-the failing case?
+I've already merged a patch which didn't yet make it to kernel.org for this
+issue a few days ago.
 
-> - Otherwise there are no obvious differences with dmesg from a successful boot.
-> 
-> config is attached
+Thanks anyway!
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+  Ralf
