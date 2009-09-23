@@ -1,120 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbZIWMxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751611AbZIWM6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751731AbZIWMxt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 08:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZIWMxt
+	id S1751611AbZIWM6x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 08:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZIWM6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 08:53:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:31008 "EHLO mga03.intel.com"
+	Wed, 23 Sep 2009 08:58:53 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:60703 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751151AbZIWMxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 08:53:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,438,1249282800"; 
-   d="scan'208";a="190737880"
-Date: Wed, 23 Sep 2009 20:53:38 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jan Kara <jack@suse.cz>,
-       "Theodore Ts'o" <tytso@mit.edu>, Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/6] writeback: balance_dirty_pages() shall write more
-	than dirtied pages
-Message-ID: <20090923125338.GA32347@localhost>
-References: <20090923123337.990689487@intel.com> <20090923124027.456325340@intel.com> <20090923124529.GA26263@infradead.org>
+	id S1751275AbZIWM6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 08:58:52 -0400
+Message-ID: <4ABA1B75.7040900@redhat.com>
+Date: Wed, 23 Sep 2009 15:58:29 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090923124529.GA26263@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mike Galbraith <efault@gmx.de>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>, rostedt@goodmis.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [patch] Re: [perf] Finding uninstalled modules Was Re: mailing
+ list for trace users
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com>	 <4AB89520.2050900@redhat.com> <1253618894.13917.18.camel@marge.simson.net>	 <4AB8B65F.7030602@redhat.com> <1253620041.13917.24.camel@marge.simson.net>	 <4AB8BA37.4010305@redhat.com> <20090922201746.GH5216@ghostprotocols.net>	 <4AB9DCC8.5050603@redhat.com> <1253697658.11461.36.camel@marge.simson.net>	 <4AB9F08E.1020106@redhat.com> <1253705515.7835.41.camel@marge.simson.net>
+In-Reply-To: <1253705515.7835.41.camel@marge.simson.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 08:45:29PM +0800, Christoph Hellwig wrote:
-> On Wed, Sep 23, 2009 at 08:33:39PM +0800, Wu Fengguang wrote:
-> > Some filesystem may choose to write much more than ratelimit_pages
-> > before calling balance_dirty_pages_ratelimited_nr(). So it is safer to
-> > determine number to write based on real number of dirtied pages.
-> > 
-> > The increased write_chunk may make the dirtier more bumpy.  This is
-> > filesystem writers' duty not to dirty too much at a time without
-> > checking the ratelimit.
-> 
-> For some reason the filesystems tricking around
-> balance_dirty_pages_ratelimited's semantics seem to get much better
-> buffered write performance.
+On 09/23/2009 02:31 PM, Mike Galbraith wrote:
+>
+> You can't annotate module symbols without -m.  If you don't provide -k,
+> annotate will look for vmlinux in cwd.  If there's one there, it'll
+> silently parse it.  For a module symbol, no -m means no symbol.
+>
+> marge:/root/tmp # perf annotate -v -v -m ext3_mark_iloc_dirty 2>&1| grep ext3_mark_iloc_dirty
+> new symbol: ffffffffa005f8cf [0000dead]: ext3_mark_iloc_dirty   [ext3], hist: (nil), obj_start: (nil)
+>   ffffffffa005f8cf-ffffffffa005fc20 ext3_mark_iloc_dirty [ext3]
+>   Error: symbol 'ext3_mark_iloc_dirty' not present amongst the samples.
+>
+> With -k -m it works here.
+>
+>    
 
-Yes, I would expect enlarged ratelimit numbers to benefit performance.
 
-> Are you sure this is not going to destroy that benefit?  (But yes,
-> we should make sure it behaves the same for all filesystems)
+Not for me.  'perf report', for example, shows
 
-If filesystem chooses to use a larger ratelimit number, then this
-patch will also enlarge the write chunk size (which is now computed
-based on the enlarged ratelimit number), which I believe will be
-beneficial, too.
+     63.08%  qemu-system-x86  
+[kernel]                                              [k] packet_exit
+      4.71%  qemu-system-x86  
+[kernel]                                              [k] hpet_next_event
+      4.38%             init  
+[kernel]                                              [k] 
+mwait_idle_with_hints
 
-Thanks,
-Fengguang
+While 'perf top' still shows vmx_vcpu_run.
 
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  mm/page-writeback.c |   13 +++++++------
-> >  1 file changed, 7 insertions(+), 6 deletions(-)
-> > 
-> > --- linux.orig/mm/page-writeback.c	2009-09-23 16:31:46.000000000 +0800
-> > +++ linux/mm/page-writeback.c	2009-09-23 16:33:19.000000000 +0800
-> > @@ -44,12 +44,12 @@ static long ratelimit_pages = 32;
-> >  /*
-> >   * When balance_dirty_pages decides that the caller needs to perform some
-> >   * non-background writeback, this is how many pages it will attempt to write.
-> > - * It should be somewhat larger than RATELIMIT_PAGES to ensure that reasonably
-> > + * It should be somewhat larger than dirtied pages to ensure that reasonably
-> >   * large amounts of I/O are submitted.
-> >   */
-> > -static inline long sync_writeback_pages(void)
-> > +static inline long sync_writeback_pages(unsigned long dirtied)
-> >  {
-> > -	return ratelimit_pages + ratelimit_pages / 2;
-> > +	return dirtied + dirtied / 2;
-> >  }
-> >  
-> >  /* The following parameters are exported via /proc/sys/vm */
-> > @@ -476,7 +476,8 @@ get_dirty_limits(unsigned long *pbackgro
-> >   * If we're over `background_thresh' then pdflush is woken to perform some
-> >   * writeout.
-> >   */
-> > -static void balance_dirty_pages(struct address_space *mapping)
-> > +static void balance_dirty_pages(struct address_space *mapping,
-> > +				unsigned long write_chunk)
-> >  {
-> >  	long nr_reclaimable, bdi_nr_reclaimable;
-> >  	long nr_writeback, bdi_nr_writeback;
-> > @@ -484,7 +485,6 @@ static void balance_dirty_pages(struct a
-> >  	unsigned long dirty_thresh;
-> >  	unsigned long bdi_thresh;
-> >  	unsigned long pages_written = 0;
-> > -	unsigned long write_chunk = sync_writeback_pages();
-> >  	unsigned long pause = 1;
-> >  
-> >  	struct backing_dev_info *bdi = mapping->backing_dev_info;
-> > @@ -640,9 +640,10 @@ void balance_dirty_pages_ratelimited_nr(
-> >  	p =  &__get_cpu_var(bdp_ratelimits);
-> >  	*p += nr_pages_dirtied;
-> >  	if (unlikely(*p >= ratelimit)) {
-> > +		ratelimit = sync_writeback_pages(*p);
-> >  		*p = 0;
-> >  		preempt_enable();
-> > -		balance_dirty_pages(mapping);
-> > +		balance_dirty_pages(mapping, ratelimit);
-> >  		return;
-> >  	}
-> >  	preempt_enable();
-> > 
-> > 
-> ---end quoted text---
+-- 
+error compiling committee.c: too many arguments to function
+
