@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbZIWHgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbZIWHjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754481AbZIWHgj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 03:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZIWHgi
+	id S1754466AbZIWHjg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 03:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbZIWHjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 03:36:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46338 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbZIWHgh (ORCPT
+	Wed, 23 Sep 2009 03:39:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48700 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754257AbZIWHjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 03:36:37 -0400
-Date: Wed, 23 Sep 2009 09:36:07 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Greg KH <greg@kroah.com>, San Mehat <san@android.com>,
-       Iliyan Malchev <ibm@android.com>, Brian Swetland <swetland@google.com>,
-       devel@driverdev.osuosl.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] STAGING: includecheck fix: dream, smd_rpcrouter.c
-Message-ID: <20090923073607.GE8565@elf.ucw.cz>
-References: <1253631149.3784.29.camel@ht.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253631149.3784.29.camel@ht.satnam>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 23 Sep 2009 03:39:35 -0400
+Date: Wed, 23 Sep 2009 00:39:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, david@hardeman.nu,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
+Subject: Re: [origin tree build failure] [PATCH] input: Fix build failures
+ caused by Kconfig Winbond WPCD376I Consumer IR hardware driver Kconfig
+ entry
+Message-Id: <20090923003918.505db5b4.akpm@linux-foundation.org>
+In-Reply-To: <20090923072444.GA27150@elte.hu>
+References: <20090923072444.GA27150@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-09-22 20:22:29, Jaswinder Singh Rajput wrote:
-> 
-> fix the following 'make includecheck' warning:
-> 
->   drivers/staging/dream/smd/smd_rpcrouter.c: asm/byteorder.h is included more than once.
-> 
-> And <asm/uaccess.h> is not required if we include <linux/uaccess.h>
-> as it will be automatically included from <linux/uaccess.h>
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+On Wed, 23 Sep 2009 09:24:44 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+> ( ob-sidenote: Andrew, i did not find the patch for commit 16af5bb on 
+>   lkml and it's now upstream. It would be highly useful if you Cc:-ed 
+>   lkml with submitted patches like all maintainers do, so that patterns 
+>   can be grepped for and discussions can be continued quickly instead of 
+>   created anew. It would also significantly increase the S/N ratio of 
+>   lkml. Thanks! )
 
+I did that a couple of times a few years back and vger had a heart
+attack.  I could cc the lower-subscriber-count mm-commits but that
+wouldn't help much.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+16af5bb doesn't exist btw - you want e258b80e691f1f3ae83a60aa80eaf7322bd55ec4.
