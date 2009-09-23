@@ -1,84 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751555AbZIWOgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214AbZIWOjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751555AbZIWOgl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 10:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbZIWOgk
+	id S1752214AbZIWOjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 10:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZIWOjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 10:36:40 -0400
-Received: from nskntmtas06p.mx.bigpond.com ([61.9.168.152]:31749 "EHLO
-	nskntmtas06p.mx.bigpond.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751232AbZIWOgk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 10:36:40 -0400
-Message-ID: <4ABA3279.3050703@bigpond.net.au>
-Date: Thu, 24 Sep 2009 00:36:41 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
+	Wed, 23 Sep 2009 10:39:16 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10808 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbZIWOjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 10:39:15 -0400
+Message-ID: <4ABA32AF.50602@redhat.com>
+Date: Wed, 23 Sep 2009 17:37:35 +0300
+From: Avi Kivity <avi@redhat.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sched: Am I missing something?
-References: <4AB77E21.6020805@bigpond.net.au> <1253541183.8439.168.camel@twins>
-In-Reply-To: <1253541183.8439.168.camel@twins>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: "Ira W. Snyder" <iws@ovro.caltech.edu>,
+       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com> <4AB10B67.2050108@redhat.com> <4AB13B09.5040308@gmail.com> <4AB151D7.10402@redhat.com> <4AB1A8FD.2010805@gmail.com> <20090921214312.GJ7182@ovro.caltech.edu> <4AB89C48.4020903@redhat.com> <4ABA3005.60905@gmail.com>
+In-Reply-To: <4ABA3005.60905@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at nskntotgx01p.mx.bigpond.com from [124.185.86.236] using ID pwil3058@bigpond.net.au at Wed, 23 Sep 2009 14:36:41 +0000
-X-RPD-ScanID: Class unknown; VirusThreatLevel unknown, RefID str=0001.0A150205.4ABA327A.006B,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21/09/09 23:53, Peter Zijlstra wrote:
-> On Mon, 2009-09-21 at 23:22 +1000, Peter Williams wrote:
->> Or is the line:
->>
->> 	p->prio = effective_prio(p);
->>
->> in wake_up_new_task() an expensive no op.
->>
->> As far as I can tell from reading the code, it will always be the case
->> that EITHER rt_prio(p->prio) is true OR p->prio == p->normal_prio when
->> this call is made and, in either case, the value of p->prio will be
->> unchanged.  In addition, when this call is made p->normal_prio is
->> already equal to to normal_prio(p), so the side effects of the function
->> (setting p->normal_prio) are also unnecessary.
+On 09/23/2009 05:26 PM, Gregory Haskins wrote:
+>
+>    
+>>> Yes, I'm having to create my own bus model, a-la lguest, virtio-pci, and
+>>> virtio-s390. It isn't especially easy. I can steal lots of code from the
+>>> lguest bus model, but sometimes it is good to generalize, especially
+>>> after the fourth implemention or so. I think this is what GHaskins tried
+>>> to do.
+>>>
+>>>        
+>> Yes.  vbus is more finely layered so there is less code duplication.
+>>      
+> To clarify, Ira was correct in stating this generalizing some of these
+> components was one of the goals for the vbus project: IOW vbus finely
+> layers and defines what's below virtio, not replaces it.
+>
+> You can think of a virtio-stack like this:
+>
+> --------------------------
+> | virtio-net
+> --------------------------
+> | virtio-ring
+> --------------------------
+> | virtio-bus
+> --------------------------
+> | ? undefined ?
+> --------------------------
+>
+> IOW: The way I see it, virtio is a device interface model only.  The
+> rest of it is filled in by the virtio-transport and some kind of back-end.
+>
+> So today, we can complete the "? undefined ?" block like this for KVM:
+>
+> --------------------------
+> | virtio-pci
+> --------------------------
+>               |
+> --------------------------
+> | kvm.ko
+> --------------------------
+> | qemu
+> --------------------------
+> | tuntap
+> --------------------------
+>
+> In this case, kvm.ko and tuntap are providing plumbing, and qemu is
+> providing a backend device model (pci-based, etc).
+>
+> You can, of course, plug a different stack in (such as virtio-lguest,
+> virtio-ira, etc) but you are more or less on your own to recreate many
+> of the various facilities contained in that stack (such as things
+> provided by QEMU, like discovery/hotswap/addressing), as Ira is discovering.
+>
+> Vbus tries to commoditize more components in the stack (like the bus
+> model and backend-device model) so they don't need to be redesigned each
+> time we solve this "virtio-transport" problem.  IOW: stop the
+> proliferation of the need for pci-bus, lguest-bus, foo-bus underneath
+> virtio.  Instead, we can then focus on the value add on top, like the
+> models themselves or the simple glue between them.
+>
+> So now you might have something like
+>
+> --------------------------
+> | virtio-vbus
+> --------------------------
+> | vbus-proxy
+> --------------------------
+> | kvm-guest-connector
+> --------------------------
+>               |
+> --------------------------
+> | kvm.ko
+> --------------------------
+> | kvm-host-connector.ko
+> --------------------------
+> | vbus.ko
+> --------------------------
+> | virtio-net-backend.ko
+> --------------------------
+>
+> so now we don't need to worry about the bus-model or the device-model
+> framework.  We only need to implement the connector, etc.  This is handy
+> when you find yourself in an environment that doesn't support PCI (such
+> as Ira's rig, or userspace containers), or when you want to add features
+> that PCI doesn't have (such as fluid event channels for things like IPC
+> services, or priortizable interrupts, etc).
+>    
 
-The recent sched_reset_on_fork changes to sched_fork() invalidate my 
-statement (above) about p->normal_prio as they do not set it to the 
-correct value (in all cases).  But it now means that the only useful 
-work done by the above line in wake_up_new_task() is the side effect of 
-setting p->normal_prio.  I think it would be better if it was set 
-properly in sched_fork().  I'll send a patch tomorrow.
+Well, vbus does more, for example it tunnels interrupts instead of 
+exposing them 1:1 on the native interface if it exists.  It also pulls 
+parts of the device model into the host kernel.
 
->>
->> Am I correct or have I missed something?
->
-> Yuck @ all that prio code..
->
-> I think you're right,  sched_fork() resets the prio, so poking at it in
-> wake_up_new_task() seems superfluous.
->
-> I've been meaning to re-write most of the PI code one of these days, but
-> so far I've not had time to.
->
-> My initial goal is to replace plist with a rb-tree and fix some of the
-> boost paths to be inside the scheduler. That is, we currently have the
-> fun situation that we boost a lock owner, which becomes runnable, gets
-> pushed to another cpu, then current blocks and reschedules, leaving this
-> cpu to again sort out work.
->
-> It would be much easier if we'd first dequeue current, then boost and
-> then select the owner. Saves a bit of bouncing around.
->
-> The rb-tree is needed for things like PI on CFS (yes, you can do a form
-> of PI on proportional schedulers), and we're going to look at doing a
-> full sporadic task model deadline scheduler, which needs both deadline
-> inheritance and bandwidth inheritance.
+>> The virtio layering was more or less dictated by Xen which doesn't have
+>> shared memory (it uses grant references instead).  As a matter of fact
+>> lguest, kvm/pci, and kvm/s390 all have shared memory, as you do, so that
+>> part is duplicated.  It's probably possible to add a virtio-shmem.ko
+>> library that people who do have shared memory can reuse.
+>>      
+> Note that I do not believe the Xen folk use virtio, so while I can
+> appreciate the foresight that went into that particular aspect of the
+> design of the virtio model, I am not sure if its a realistic constraint.
+>    
 
-Peter
+Since a virtio goal was to reduce virtual device driver proliferation, 
+it was necessary to accommodate Xen.
+
 -- 
-Peter Williams                                   pwil3058@bigpond.net.au
+error compiling committee.c: too many arguments to function
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
