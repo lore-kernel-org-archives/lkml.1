@@ -1,100 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbZIWT53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZIWUIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbZIWT53 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 15:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbZIWT52
+	id S1753992AbZIWUIL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 16:08:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZIWUII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 15:57:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:29771 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 16:08:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37200 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753334AbZIWT52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 15:57:28 -0400
-From: Izik Eidus <ieidus@redhat.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       hugh.dickins@tiscali.co.uk, aarcange@redhat.com,
-       Izik Eidus <ieidus@redhat.com>
-Subject: [PATCH] ksm: change default values to better fit into mainline kernel
-Date: Wed, 23 Sep 2009 23:05:47 +0300
-Message-Id: <1253736347-3779-1-git-send-email-ieidus@redhat.com>
+	id S1753964AbZIWUII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 16:08:08 -0400
+Date: Wed, 23 Sep 2009 22:07:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       a.p.zijlstra@chello.nl, fweisbec@gmail.com, acme@redhat.com,
+       tglx@linutronix.de, postmaster@vger.kernel.org
+Subject: Re: mailing list for trace users
+Message-ID: <20090923200747.GA2169@elte.hu>
+References: <1253132182.20020.242.camel@gandalf.stny.rr.com> <20090922.153201.225375909.davem@davemloft.net> <20090923114725.GB4132@elte.hu> <4ABA50C2.6080607@redhat.com> <20090923170033.GA7410@elte.hu> <4ABA63C9.9060708@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ABA63C9.9060708@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that ksm is in mainline it is better to change the default values
-to better fit to most of the users.
 
-This patch change the ksm default values to be:
-ksm_thread_pages_to_scan = 100 (instead of 200)
-ksm_thread_sleep_millisecs = 20 (like before)
-ksm_run = KSM_RUN_STOP (instead of KSM_RUN_MERGE - meaning ksm is
-                        disabled by default)
-ksm_max_kernel_pages = nr_free_buffer_pages / 4 (instead of 2046)
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-The important aspect of this patch is: it disable ksm by default, and set
-the number of the kernel_pages that can be allocated to be a reasonable
-number.
+> Ingo Molnar wrote:
+> >>>>> What are people's thoughts about creating a linux-trace-users mailing
+> >>>>> list on vger.kernel.org?
+> >>>>
+> >>>> I've created this list.
+> >>>
+> >>> Could you please also create the linux-perf-users list, for perf events 
+> >>> and the perf tool related user questions? (We have asked for this before 
+> >>> but must have gotten lost somewhere)
+> >>
+> >> I thought perf users also talk on the linux tracing list.
+> > 
+> > No, there's a lot of non-tracing aspects of performance events. It does 
+> > profiling, counting, latency analysis, etc.
+> 
+> So, will it include topics about oprofile,readprof too?
 
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
----
- mm/ksm.c |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
+Both oprofile and readprof are obsolete.
 
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 37cc373..f7edac3 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -30,6 +30,7 @@
- #include <linux/slab.h>
- #include <linux/rbtree.h>
- #include <linux/mmu_notifier.h>
-+#include <linux/swap.h>
- #include <linux/ksm.h>
- 
- #include <asm/tlbflush.h>
-@@ -162,10 +163,10 @@ static unsigned long ksm_pages_unshared;
- static unsigned long ksm_rmap_items;
- 
- /* Limit on the number of unswappable pages used */
--static unsigned long ksm_max_kernel_pages = 2000;
-+static unsigned long ksm_max_kernel_pages;
- 
- /* Number of pages ksmd should scan in one batch */
--static unsigned int ksm_thread_pages_to_scan = 200;
-+static unsigned int ksm_thread_pages_to_scan = 100;
- 
- /* Milliseconds ksmd should sleep between batches */
- static unsigned int ksm_thread_sleep_millisecs = 20;
-@@ -173,7 +174,7 @@ static unsigned int ksm_thread_sleep_millisecs = 20;
- #define KSM_RUN_STOP	0
- #define KSM_RUN_MERGE	1
- #define KSM_RUN_UNMERGE	2
--static unsigned int ksm_run = KSM_RUN_MERGE;
-+static unsigned int ksm_run = KSM_RUN_STOP;
- 
- static DECLARE_WAIT_QUEUE_HEAD(ksm_thread_wait);
- static DEFINE_MUTEX(ksm_thread_mutex);
-@@ -183,6 +184,11 @@ static DEFINE_SPINLOCK(ksm_mmlist_lock);
- 		sizeof(struct __struct), __alignof__(struct __struct),\
- 		(__flags), NULL)
- 
-+static void __init ksm_init_max_kernel_pages(void)
-+{
-+	ksm_max_kernel_pages = nr_free_buffer_pages() / 4;
-+}
-+
- static int __init ksm_slab_init(void)
- {
- 	rmap_item_cache = KSM_KMEM_CACHE(rmap_item, 0);
-@@ -1667,6 +1673,8 @@ static int __init ksm_init(void)
- 	struct task_struct *ksm_thread;
- 	int err;
- 
-+	ksm_init_max_kernel_pages();
-+
- 	err = ksm_slab_init();
- 	if (err)
- 		goto out;
--- 
-1.5.6.5
+> >> What will linux-tracing-users cover, only ftrace?
+> > 
+> > It would cover whenever users want to talk about tracing.
+> 
+> Hmm, in that case, on which list should I ask 'how can I
+> use perf-trace?' and 'how can I use perf-record'? :-)
+> Maybe I'm just a bit confusing ...
 
+Which list do you use if you want to ask about why a networked app 
+schedules too much? lkml or netdev? Both if you want to reach everyone 
+who is interested.
+
+Note, perf trace is one out of 9 'perf' sub-commands. I dont think it's 
+appropriate to name the list after that one subcommand ...
+
+For your question i'd suggest to Cc: both. It might be relevant to the 
+tracing engine, or it might be a perf events or perf tool detail.
+
+	Ingo
