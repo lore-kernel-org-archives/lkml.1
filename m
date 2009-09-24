@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZIXWjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbZIXWmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbZIXWjx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZIXWjw
+	id S1752686AbZIXWmY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbZIXWmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:39:52 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:52634 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752633AbZIXWjv (ORCPT
+	Thu, 24 Sep 2009 18:42:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40234 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751812AbZIXWmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:39:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=SV0ZIhJXN0tLrw3D6rGdXuGDFhu0mKAwIFNGG3JYCg6ih3H3ro8iMsSU64vKcbQmmB
-         5ne+qG2usBnX9AHTArKR3G/hu1Np854qZOC5RBpP4LYCNmF0yzLOju6wcDnvzs267JZx
-         0nDEPrW6L9Z2nJ2+NhNvHfp9lliw0hEMP37Xk=
-Message-ID: <4ABBF538.3080409@gmail.com>
-Date: Thu, 24 Sep 2009 15:39:52 -0700
-From: Bruce Jones <brucej97223@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: gregkh@suse.de
-CC: forensixs@gmx.de, mithlesh@linsyssoft.com, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: comedi: cleanup formatting in drivers/vmk80xx.c
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 Sep 2009 18:42:23 -0400
+Date: Thu, 24 Sep 2009 15:41:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oren Laadan <orenl@librato.com>
+Cc: torvalds@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, serue@us.ibm.com, mingo@elte.hu,
+       xemul@openvz.org, orenl@librato.com
+Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
+Message-Id: <20090924154139.2a7dd5ec.akpm@linux-foundation.org>
+In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
+References: <1253749920-18673-1-git-send-email-orenl@librato.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up formatting of a struct initializer, as per the
-standard conventions.
+On Wed, 23 Sep 2009 19:50:40 -0400
+Oren Laadan <orenl@librato.com> wrote:
 
-Signed-off-by: Bruce Jones <brucej@linux.com>
----
- drivers/staging/comedi/drivers/vmk80xx.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+> Q: How useful is this code as it stands in real-world usage?
+> A: The application can be single- or multi-processes and threads. It
+>    handles open files (regular files/directories on most file systems,
+>    pipes, fifos, af_unix sockets, /dev/{null,zero,random,urandom} and
+>    pseudo-terminals. It supports shared memory. sysv IPC (except undo
+>    of sempahores). It's suitable for many types of batch jobs as well
+>    as some interactive jobs. (Note: it is assumed that the fs view is
+>    available at restart).
 
-diff --git a/drivers/staging/comedi/drivers/vmk80xx.c b/drivers/staging/comedi/drivers/vmk80xx.c
-index c335040..c34a0b9 100644
---- a/drivers/staging/comedi/drivers/vmk80xx.c
-+++ b/drivers/staging/comedi/drivers/vmk80xx.c
-@@ -76,18 +76,18 @@ enum {
- };
- 
- static struct usb_device_id vmk80xx_id_table[] = {
--	{USB_DEVICE(0x10cf, 0x5500),.driver_info = DEVICE_VMK8055},
--	{USB_DEVICE(0x10cf, 0x5501),.driver_info = DEVICE_VMK8055},
--	{USB_DEVICE(0x10cf, 0x5502),.driver_info = DEVICE_VMK8055},
--	{USB_DEVICE(0x10cf, 0x5503),.driver_info = DEVICE_VMK8055},
--	{USB_DEVICE(0x10cf, 0x8061),.driver_info = DEVICE_VMK8061},
--	{USB_DEVICE(0x10cf, 0x8062),.driver_info = DEVICE_VMK8061},
--	{USB_DEVICE(0x10cf, 0x8063),.driver_info = DEVICE_VMK8061},
--	{USB_DEVICE(0x10cf, 0x8064),.driver_info = DEVICE_VMK8061},
--	{USB_DEVICE(0x10cf, 0x8065),.driver_info = DEVICE_VMK8061},
--	{USB_DEVICE(0x10cf, 0x8066),.driver_info = DEVICE_VMK8061},
--	{USB_DEVICE(0x10cf, 0x8067),.driver_info = DEVICE_VMK8061},
--	{USB_DEVICE(0x10cf, 0x8068),.driver_info = DEVICE_VMK8061},
-+	{USB_DEVICE(0x10cf, 0x5500), .driver_info = DEVICE_VMK8055},
-+	{USB_DEVICE(0x10cf, 0x5501), .driver_info = DEVICE_VMK8055},
-+	{USB_DEVICE(0x10cf, 0x5502), .driver_info = DEVICE_VMK8055},
-+	{USB_DEVICE(0x10cf, 0x5503), .driver_info = DEVICE_VMK8055},
-+	{USB_DEVICE(0x10cf, 0x8061), .driver_info = DEVICE_VMK8061},
-+	{USB_DEVICE(0x10cf, 0x8062), .driver_info = DEVICE_VMK8061},
-+	{USB_DEVICE(0x10cf, 0x8063), .driver_info = DEVICE_VMK8061},
-+	{USB_DEVICE(0x10cf, 0x8064), .driver_info = DEVICE_VMK8061},
-+	{USB_DEVICE(0x10cf, 0x8065), .driver_info = DEVICE_VMK8061},
-+	{USB_DEVICE(0x10cf, 0x8066), .driver_info = DEVICE_VMK8061},
-+	{USB_DEVICE(0x10cf, 0x8067), .driver_info = DEVICE_VMK8061},
-+	{USB_DEVICE(0x10cf, 0x8068), .driver_info = DEVICE_VMK8061},
- 	{}			/* terminating entry */
- };
- 
--- 
-1.6.5.rc2
+That's encouraging.
+
+> Q: What can it checkpoint and restart ?
+> A: A (single threaded) process can checkpoint itself, aka "self"
+>    checkpoint, if it calls the new system calls. Otherise, for an
+>    "external" checkpoint, the caller must first freeze the target
+>    processes. One can either checkpoint an entire container (and
+>    we make best effort to ensure that the result is self-contained),
+>    or merely a subtree of a process hierarchy.
+
+What is "best effort"?  Will the operation appear to have succeeded,
+only it didn't?
+
+IOW, how reliable and robust is code at detecting that it was unable to
+successfully generate a restartable image?
+
+> Q: What about namespaces ?
+> A: Currrently, UTS and IPC namespaces are restored. They demonstrate
+>    how namespaces are handled. More to come.
+
+Will this new code muck up the kernel?
+
+> Q: What additional work needs to be done to it?
+> A: Fill in the gory details following the examples so far. Current WIP
+>    includes inet sockets, event-poll, and early work on inotify, mount
+>    namespace and mount-points, pseudo file systems
+
+Will this new code muck up the kernel, or will it be clean?
+
+> and x86_64 support.
+
+eh?  You mean the code doesn't work on x86_64 at present?
+
+
+What is the story on migration?  Moving the process(es) to a different
+machine?
+
