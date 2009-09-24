@@ -1,102 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751602AbZIXWBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751728AbZIXWCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751602AbZIXWBe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZIXWBe
+	id S1751728AbZIXWCf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZIXWCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:01:34 -0400
-Received: from mail-px0-f189.google.com ([209.85.216.189]:42623 "EHLO
+	Thu, 24 Sep 2009 18:02:35 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:56692 "EHLO
 	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241AbZIXWBd (ORCPT
+	with ESMTP id S1751018AbZIXWCe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:01:33 -0400
+	Thu, 24 Sep 2009 18:02:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=bQeY4PPRqH7GmpHtC4Jdfr8VLNwgbVTYpluDYD7GkqxltKd+zhpircyv3MIMd6OlkP
-         FJSKUR201+1uYqWVqOjVs9rbA18l9DSGplGkpkmFM43LTDCgMzmE0laB+1Vn11Sq9+IO
-         YvnonRuiK+UWRmzcIIx6RUJF9KWgCf1hTi0Mo=
-Message-ID: <4ABBEC3F.7020300@gmail.com>
-Date: Thu, 24 Sep 2009 15:01:35 -0700
+        b=JdOG+w+7zDT5yae+LCH++AarWuVzlsGa8DXe6vIQNRYm+bpNPzgqidQdSpxCnHAeTo
+         TRwc+yIxGytPlElUZi01pVEc+kk2E1mvE0he6N6ENazUVGrk2h9xJPNak9jmGKcDKw/4
+         vdIovy9oyo4ZUMZe8DF2OGgNw0moi9MajQF/s=
+Message-ID: <4ABBEC7C.3050406@gmail.com>
+Date: Thu, 24 Sep 2009 15:02:36 -0700
 From: Bruce Jones <brucej97223@gmail.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
 To: gregkh@suse.de
 CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] staging: comedi: fix formatting errors in drivers/ni_atmio16d.c
+Subject: [PATCH 3/4] staging: comedi: fix formatting errors in drivers/nt_atmio16d.c
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix improper use of braces in drivers/staging/comedi/drivers/ni_atmio16d.c
+Turn spaces into tabs to keep scripts/checkpatch.pl happy.  The
+actual changes here are in a comment, so the script is just
+being silly.
 
 Signed-off-by: Bruce Jones <brucej@linux.com>
 ---
- drivers/staging/comedi/drivers/ni_atmio16d.c |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
+ drivers/staging/comedi/drivers/ni_atmio16d.c |   26 +++++++++++++-------------
+ 1 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/staging/comedi/drivers/ni_atmio16d.c b/drivers/staging/comedi/drivers/ni_atmio16d.c
-index 1e35ed6..d76663f 100644
+index d76663f..c8876dc 100644
 --- a/drivers/staging/comedi/drivers/ni_atmio16d.c
 +++ b/drivers/staging/comedi/drivers/ni_atmio16d.c
-@@ -586,9 +586,8 @@ static int atmio16d_ai_insn_read(struct comedi_device *dev,
- 				/* read the data now */
- 				data[i] = inw(dev->iobase + AD_FIFO_REG);
- 				/* change to two's complement if need be */
--				if (devpriv->adc_coding == adc_2comp) {
-+				if (devpriv->adc_coding == adc_2comp)
- 					data[i] ^= 0x800;
--				}
- 				break;
- 			}
- 			if (status & STAT_AD_OVERFLOW) {
-@@ -618,10 +617,8 @@ static int atmio16d_ao_insn_read(struct comedi_device *dev,
- 	printk("atmio16d_ao_insn_read\n");
- #endif
+@@ -700,29 +700,29 @@ static int atmio16d_dio_insn_config(struct comedi_device *dev,
+ /*
+    options[0] - I/O port
+    options[1] - MIO irq
+-                0 == no irq
+-                N == irq N {3,4,5,6,7,9,10,11,12,14,15}
++		0 == no irq
++		N == irq N {3,4,5,6,7,9,10,11,12,14,15}
+    options[2] - DIO irq
+-                0 == no irq
+-                N == irq N {3,4,5,6,7,9}
++		0 == no irq
++		N == irq N {3,4,5,6,7,9}
+    options[3] - DMA1 channel
+-                0 == no DMA
+-                N == DMA N {5,6,7}
++		0 == no DMA
++		N == DMA N {5,6,7}
+    options[4] - DMA2 channel
+-                0 == no DMA
+-                N == DMA N {5,6,7}
++		0 == no DMA
++		N == DMA N {5,6,7}
  
--	for (i = 0; i < insn->n; i++) {
-+	for (i = 0; i < insn->n; i++)
- 		data[i] = devpriv->ao_readback[CR_CHAN(insn->chanspec)];
--	}
--
- 	return i;
- }
+    options[5] - a/d mux
+-   	0=differential, 1=single
++	0=differential, 1=single
+    options[6] - a/d range
+-   	0=bipolar10, 1=bipolar5, 2=unipolar10
++	0=bipolar10, 1=bipolar5, 2=unipolar10
  
-@@ -642,15 +639,13 @@ static int atmio16d_ao_insn_write(struct comedi_device *dev,
- 		d = data[i];
- 		switch (chan) {
- 		case 0:
--			if (devpriv->dac0_coding == dac_2comp) {
-+			if (devpriv->dac0_coding == dac_2comp)
- 				d ^= 0x800;
--			}
- 			outw(d, dev->iobase + DAC0_REG);
- 			break;
- 		case 1:
--			if (devpriv->dac1_coding == dac_2comp) {
-+			if (devpriv->dac1_coding == dac_2comp)
- 				d ^= 0x800;
--			}
- 			outw(d, dev->iobase + DAC1_REG);
- 			break;
- 		default:
-@@ -855,11 +850,10 @@ static int atmio16d_attach(struct comedi_device *dev,
+    options[7] - dac0 range
+-   	0=bipolar, 1=unipolar
++	0=bipolar, 1=unipolar
+    options[8] - dac0 reference
+-    0=internal, 1=external
++	0=internal, 1=external
+    options[9] - dac0 coding
+-   	0=2's comp, 1=straight binary
++	0=2's comp, 1=straight binary
  
- 	/* 8255 subdevice */
- 	s++;
--	if (boardtype->has_8255) {
-+	if (boardtype->has_8255)
- 		subdev_8255_init(dev, s, NULL, dev->iobase);
--	} else {
-+	else
- 		s->type = COMEDI_SUBD_UNUSED;
--	}
- 
- /* don't yet know how to deal with counter/timers */
- #if 0
+    options[10] - dac1 range
+    options[11] - dac1 reference
 -- 
 1.6.5.rc2
