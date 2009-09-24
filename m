@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZIXTtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZIXTti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZIXTtP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZIXTtO
+	id S1754201AbZIXTti (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZIXTth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:49:14 -0400
-Received: from araneidae.co.uk ([62.3.233.233]:59569 "EHLO
-	venus.araneidae.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752570AbZIXTtN (ORCPT
+	Thu, 24 Sep 2009 15:49:37 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:54837 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbZIXTtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:49:13 -0400
-Date: Thu, 24 Sep 2009 20:49:10 +0100 (BST)
-From: Michael Abbott <michael@araneidae.co.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Johan van Baarlen <jf@vanbaarlen.demon.nl>, stable@kernel.org
-Subject: Re: [GIT PULL] cputime tree
-In-Reply-To: <20090924095106.62294617.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0909242047280.7033@venus.araneidae.co.uk>
-References: <20090924133136.7b7c834e@mschwide.boeblingen.de.ibm.com> <20090924095106.62294617.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 24 Sep 2009 15:49:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=dW5x4jNUGH/7t7sUB/bC+NiowtMZWmCQ10DKZfPIqWYEg6jdQ/cmQmUXPNe6Vrqmfa
+         eo1o6Ui9fRsuIgJoXJQp4ADDZqWwmw582mLMup+ICC3ulavL2n0onEHmIs7YTTK+23Gy
+         WwGPdIKqKvlAwVIsv5LBXxLjjqLhBbiVtuK88=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: [GIT PULL v2] bkl tracepoints + filter regex support
+Date: Thu, 24 Sep 2009 21:49:30 +0200
+Message-Id: <1253821775-8618-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Sep 2009, Andrew Morton wrote:
-> On Thu, 24 Sep 2009 13:31:36 +0200 Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> 
-> > Hi Linus,
-> > 
-> > with git commit 79741dd "idle cputime accounting" the semantic
-> > of the stime field of the idle processes has changed. It used to
-> > contain the amount of time the idle process has been scheduled.
-> > Since git commit 79741dd is contains the cpu time spent in the
-> > system by the idle process.
-> > 
-> > This change broke the output of second field of /proc/uptime. On
-> > systems without VIRT_CPU_ACCOUNTING the field is always zero.
-> > The legacy output of the field is the amount of time the idle
-> > process has been scheduled on cpu #0. It is good enough to
-> > calculate the load on an uni-processor system, it is useless
-> > on a multi-processor. To restore the legacy behaviour and give
-> > meaning to the multi-processor case the best we could come up
-> > with is to add the idle time over all cpus. That fixes uni-
-> > processors systems and gives a defined semantic on smp.
-> > 
-> > So please pull from 'cputime' branch of
-> > 
-> > 	git://git390.marist.edu/pub/scm/linux-2.6.git cputime
-> > 
-> > to receive the following updates:
-> > 
-> > Michael Abbott (1):
-> >       Fix idle time field in /proc/uptime
-> > 
-> >  fs/proc/uptime.c |    7 ++++++-
-> >  1 files changed, 6 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
-> > index 0c10a0b..766b1d4 100644
-> > --- a/fs/proc/uptime.c
-> > +++ b/fs/proc/uptime.c
-> > @@ -4,13 +4,18 @@
-> >  #include <linux/sched.h>
-> >  #include <linux/seq_file.h>
-> >  #include <linux/time.h>
-> > +#include <linux/kernel_stat.h>
-> >  #include <asm/cputime.h>
-> >  
-> >  static int uptime_proc_show(struct seq_file *m, void *v)
-> >  {
-> >  	struct timespec uptime;
-> >  	struct timespec idle;
-> > -	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
-> > +	int i;
-> > +	cputime_t idletime = cputime_zero;
-> > +
-> > +	for_each_possible_cpu(i)
-> > +		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
-> >  
-> >  	do_posix_clock_monotonic_gettime(&uptime);
-> >  	monotonic_to_bootbased(&uptime);
-> 
-> This is a regression fix, iirc?  One which is applicable for several 
-> 2.6.x kernel versions?
+Ingo,
 
-Yes indeed, all since the regression was introduced I think around about 
-.28 (though I seem to remember having to tweak the code a little when 
-rebasing it forward).
+This is new iteration of the bkl tracepoints + filter
+regex support. It addresses the reviews that were posted
+in the previous RFC version.
+
+Please pull from:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/core
+
+Thanks;
+Frederic.
+
+Frederic Weisbecker (5):
+      tracing/bkl: Add bkl ftrace events
+      tracing/filters: Cleanup useless headers
+      tracing/event: Cleanup the useless dentry variable
+      tracing/filters: Provide basic regex support
+      tracing/filters: Unify the regex parsing helpers
+
+ include/linux/smp_lock.h           |   19 ++++-
+ include/trace/events/bkl.h         |   61 ++++++++++++++
+ kernel/trace/ftrace.c              |   64 +--------------
+ kernel/trace/trace.h               |   36 ++++++--
+ kernel/trace/trace_events.c        |   23 +++---
+ kernel/trace/trace_events_filter.c |  155 +++++++++++++++++++++++++++++++----
+ lib/kernel_lock.c                  |   11 ++-
+ 7 files changed, 262 insertions(+), 107 deletions(-)
+ create mode 100644 include/trace/events/bkl.h
