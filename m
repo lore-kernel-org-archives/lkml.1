@@ -1,403 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZIXL5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbZIXL4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbZIXL5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 07:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZIXL5d
+	id S1752548AbZIXL4v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 07:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZIXL4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 07:57:33 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:22787 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752334AbZIXL4p (ORCPT
+	Thu, 24 Sep 2009 07:56:49 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:26222 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752412AbZIXL4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 07:56:45 -0400
+	Thu, 24 Sep 2009 07:56:39 -0400
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: [PATCH 05/19] OMAP: Add support for VRFB rotation engine
-Date: Thu, 24 Sep 2009 14:56:10 +0300
-Message-Id: <1253793384-31158-6-git-send-email-tomi.valkeinen@nokia.com>
+Subject: [PATCH 06/19] OMAP: DSS2: Documentation for DSS2
+Date: Thu, 24 Sep 2009 14:56:11 +0300
+Message-Id: <1253793384-31158-7-git-send-email-tomi.valkeinen@nokia.com>
 X-Mailer: git-send-email 1.6.4
-In-Reply-To: <1253793384-31158-5-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1253793384-31158-6-git-send-email-tomi.valkeinen@nokia.com>
 References: <1253793384-31158-1-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-2-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-3-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-4-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-5-git-send-email-tomi.valkeinen@nokia.com>
-X-OriginalArrivalTime: 24 Sep 2009 11:56:35.0546 (UTC) FILETIME=[10E06BA0:01CA3D0E]
+ <1253793384-31158-6-git-send-email-tomi.valkeinen@nokia.com>
+X-OriginalArrivalTime: 24 Sep 2009 11:56:36.0874 (UTC) FILETIME=[11AB0EA0:01CA3D0E]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-VRFB rotation engine is a block in OMAP2/3 that offers 12 independent
-contexts that can be used for framebuffer rotation.
-
-Each context has a backend area of real memory, where it stores the
-pixels in undisclosed format. This memory is offered to users via 4
-virtual memory areas, which see the same memory area in different
-rotation angles (0, 90, 180 and 270 degrees).
-
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- arch/arm/plat-omap/include/mach/vrfb.h |   46 ++++++
- drivers/video/omap2/Kconfig            |    3 +
- drivers/video/omap2/Makefile           |    1 +
- drivers/video/omap2/vrfb.c             |  277 ++++++++++++++++++++++++++++++++
- 4 files changed, 327 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/plat-omap/include/mach/vrfb.h
- create mode 100644 drivers/video/omap2/vrfb.c
+ Documentation/arm/OMAP/DSS |  317 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 317 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/arm/OMAP/DSS
 
-diff --git a/arch/arm/plat-omap/include/mach/vrfb.h b/arch/arm/plat-omap/include/mach/vrfb.h
+diff --git a/Documentation/arm/OMAP/DSS b/Documentation/arm/OMAP/DSS
 new file mode 100644
-index 0000000..8790612
+index 0000000..0af0e9e
 --- /dev/null
-+++ b/arch/arm/plat-omap/include/mach/vrfb.h
-@@ -0,0 +1,46 @@
-+/*
-+ * VRFB Rotation Engine
-+ *
-+ * Copyright (C) 2009 Nokia Corporation
-+ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+ */
++++ b/Documentation/arm/OMAP/DSS
+@@ -0,0 +1,317 @@
++OMAP2/3 Display Subsystem
++-------------------------
 +
-+#ifndef __OMAP_VRFB_H__
-+#define __OMAP_VRFB_H__
++This is an almost total rewrite of the OMAP FB driver in drivers/video/omap
++(let's call it DSS1). The main differences between DSS1 and DSS2 are DSI,
++TV-out and multiple display support, but there are lots of small improvements
++also.
 +
-+#define OMAP_VRFB_LINE_LEN 2048
++The DSS2 driver (omapdss module) is in arch/arm/plat-omap/dss/, and the FB,
++panel and controller drivers are in drivers/video/omap2/. DSS1 and DSS2 live
++currently side by side, you can choose which one to use.
 +
-+struct vrfb {
-+	u8 context;
-+	void __iomem *vaddr[4];
-+	unsigned long paddr[4];
-+	u16 xoffset;
-+	u16 yoffset;
-+	u8 bytespp;
-+};
++Features
++--------
 +
-+extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
-+extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
-+extern void omap_vrfb_suspend_ctx(struct vrfb *vrfb);
-+extern void omap_vrfb_resume_ctx(struct vrfb *vrfb);
-+extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
-+		u8 bytespp);
-+extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
-+		u16 width, u16 height,
-+		unsigned bytespp, bool yuv_mode);
-+extern void omap_vrfb_restore_context(void);
++Working and tested features include:
 +
-+#endif /* __VRFB_H */
-diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
-index 7a6c4c9..ac8b650 100644
---- a/drivers/video/omap2/Kconfig
-+++ b/drivers/video/omap2/Kconfig
-@@ -1,2 +1,5 @@
- config OMAP2_VRAM
- 	bool
++- MIPI DPI (parallel) output
++- MIPI DSI output in command mode
++- MIPI DBI (RFBI) output
++- SDI output
++- TV output
++- All pieces can be compiled as a module or inside kernel
++- Use DISPC to update any of the outputs
++- Use CPU to update RFBI or DSI output
++- OMAP DISPC planes
++- RGB16, RGB24 packed, RGB24 unpacked
++- YUV2, UYVY
++- Scaling
++- Adjusting DSS FCK to find a good pixel clock
++- Use DSI DPLL to create DSS FCK
 +
-+config OMAP2_VRFB
-+	bool
-diff --git a/drivers/video/omap2/Makefile b/drivers/video/omap2/Makefile
-index 7fdf7bd..aa3751b 100644
---- a/drivers/video/omap2/Makefile
-+++ b/drivers/video/omap2/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_OMAP2_VRAM) += vram.o
-+obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
-diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
-new file mode 100644
-index 0000000..8726689
---- /dev/null
-+++ b/drivers/video/omap2/vrfb.c
-@@ -0,0 +1,277 @@
-+/*
-+ * VRFB Rotation Engine
-+ *
-+ * Copyright (C) 2009 Nokia Corporation
-+ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+ */
++Tested boards include:
++- OMAP3 SDP board
++- Beagle board
++- N810
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/ioport.h>
-+#include <linux/io.h>
-+#include <linux/bitops.h>
-+#include <linux/mutex.h>
++omapdss driver
++--------------
 +
-+#include <mach/io.h>
-+#include <mach/vrfb.h>
-+#include <mach/sdrc.h>
-+/*#define DEBUG*/
++The DSS driver does not itself have any support for Linux framebuffer, V4L or
++such like the current ones, but it has an internal kernel API that upper level
++drivers can use.
 +
-+#ifdef DEBUG
-+#define DBG(format, ...) pr_debug("VRFB: " format, ## __VA_ARGS__)
-+#else
-+#define DBG(format, ...)
-+#endif
++The DSS driver models OMAP's overlays, overlay managers and displays in a
++flexible way to enable non-common multi-display configuration. In addition to
++modelling the hardware overlays, omapdss supports virtual overlays and overlay
++managers. These can be used when updating a display with CPU or system DMA.
 +
-+#define SMS_ROT_VIRT_BASE(context, rot) \
-+	(((context >= 4) ? 0xD0000000 : 0x70000000) \
-+	 + (0x4000000 * (context)) \
-+	 + (0x1000000 * (rot)))
++Panel and controller drivers
++----------------------------
 +
-+#define OMAP_VRFB_SIZE			(2048 * 2048 * 4)
++The drivers implement panel or controller specific functionality and are not
++usually visible to users except through omapfb driver.  They register
++themselves to the DSS driver.
 +
-+#define VRFB_PAGE_WIDTH_EXP	5 /* Assuming SDRAM pagesize= 1024 */
-+#define VRFB_PAGE_HEIGHT_EXP	5 /* 1024 = 2^5 * 2^5 */
-+#define VRFB_PAGE_WIDTH		(1 << VRFB_PAGE_WIDTH_EXP)
-+#define VRFB_PAGE_HEIGHT	(1 << VRFB_PAGE_HEIGHT_EXP)
-+#define SMS_IMAGEHEIGHT_OFFSET	16
-+#define SMS_IMAGEWIDTH_OFFSET	0
-+#define SMS_PH_OFFSET		8
-+#define SMS_PW_OFFSET		4
-+#define SMS_PS_OFFSET		0
++omapfb driver
++-------------
 +
-+#define VRFB_NUM_CTXS 12
-+/* bitmap of reserved contexts */
-+static unsigned long ctx_map;
-+/* bitmap of contexts for which we have to keep the HW context valid */
-+static unsigned long ctx_map_active;
++The omapfb driver implements arbitrary number of standard linux framebuffers.
++These framebuffers can be routed flexibly to any overlays, thus allowing very
++dynamic display architecture.
 +
-+static DEFINE_MUTEX(ctx_lock);
++The driver exports some omapfb specific ioctls, which are compatible with the
++ioctls in the old driver.
 +
-+/*
-+ * Access to this happens from client drivers or the PM core after wake-up.
-+ * For the first case we require locking at the driver level, for the second
-+ * we don't need locking, since no drivers will run until after the wake-up
-+ * has finished.
-+ */
-+static struct {
-+	u32 physical_ba;
-+	u32 control;
-+	u32 size;
-+} vrfb_hw_context[VRFB_NUM_CTXS];
++The rest of the non standard features are exported via sysfs. Whether the final
++implementation will use sysfs, or ioctls, is still open.
 +
-+static inline void restore_hw_context(int ctx)
-+{
-+	omap2_sms_write_rot_control(vrfb_hw_context[ctx].control, ctx);
-+	omap2_sms_write_rot_size(vrfb_hw_context[ctx].size, ctx);
-+	omap2_sms_write_rot_physical_ba(vrfb_hw_context[ctx].physical_ba, ctx);
-+}
++V4L2 drivers
++------------
 +
-+void omap_vrfb_restore_context(void)
-+{
-+	int i;
-+	unsigned long map = ctx_map_active;
++V4L2 is being implemented in TI.
 +
-+	for (i = ffs(map); i; i = ffs(map)) {
-+		/* i=1..32 */
-+		i--;
-+		map &= ~(1 << i);
-+		restore_hw_context(i);
-+	}
-+}
++From omapdss point of view the V4L2 drivers should be similar to framebuffer
++driver.
 +
-+void omap_vrfb_adjust_size(u16 *width, u16 *height,
-+		u8 bytespp)
-+{
-+	*width = ALIGN(*width * bytespp, VRFB_PAGE_WIDTH) / bytespp;
-+	*height = ALIGN(*height, VRFB_PAGE_HEIGHT);
-+}
-+EXPORT_SYMBOL(omap_vrfb_adjust_size);
++Architecture
++--------------------
 +
-+void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
-+		u16 width, u16 height,
-+		unsigned bytespp, bool yuv_mode)
-+{
-+	unsigned pixel_size_exp;
-+	u16 vrfb_width;
-+	u16 vrfb_height;
-+	u8 ctx = vrfb->context;
-+	u32 size;
-+	u32 control;
++Some clarification what the different components do:
 +
-+	DBG("omapfb_set_vrfb(%d, %lx, %dx%d, %d)\n", ctx, paddr,
-+			width, height, color_mode);
++    - Framebuffer is a memory area inside OMAP's SRAM/SDRAM that contains the
++      pixel data for the image. Framebuffer has width and height and color
++      depth.
++    - Overlay defines where the pixels are read from and where they go on the
++      screen. The overlay may be smaller than framebuffer, thus displaying only
++      part of the framebuffer. The position of the overlay may be changed if
++      the overlay is smaller than the display.
++    - Overlay manager combines the overlays in to one image and feeds them to
++      display.
++    - Display is the actual physical display device.
 +
-+	/* For YUV2 and UYVY modes VRFB needs to handle pixels a bit
-+	 * differently. See TRM. */
-+	if (yuv_mode) {
-+		bytespp *= 2;
-+		width /= 2;
-+	}
++A framebuffer can be connected to multiple overlays to show the same pixel data
++on all of the overlays. Note that in this case the overlay input sizes must be
++the same, but, in case of video overlays, the output size can be different. Any
++framebuffer can be connected to any overlay.
 +
-+	if (bytespp == 4)
-+		pixel_size_exp = 2;
-+	else if (bytespp == 2)
-+		pixel_size_exp = 1;
-+	else
-+		BUG();
++An overlay can be connected to one overlay manager. Also DISPC overlays can be
++connected only to DISPC overlay managers, and virtual overlays can be only
++connected to virtual overlays.
 +
-+	vrfb_width = ALIGN(width * bytespp, VRFB_PAGE_WIDTH) / bytespp;
-+	vrfb_height = ALIGN(height, VRFB_PAGE_HEIGHT);
++An overlay manager can be connected to one display. There are certain
++restrictions which kinds of displays an overlay manager can be connected:
 +
-+	DBG("vrfb w %u, h %u bytespp %d\n", vrfb_width, vrfb_height, bytespp);
++    - DISPC TV overlay manager can be only connected to TV display.
++    - Virtual overlay managers can only be connected to DBI or DSI displays.
++    - DISPC LCD overlay manager can be connected to all displays, except TV
++      display.
 +
-+	size  = vrfb_width << SMS_IMAGEWIDTH_OFFSET;
-+	size |= vrfb_height << SMS_IMAGEHEIGHT_OFFSET;
++Sysfs
++-----
++The sysfs interface is mainly used for testing. I don't think sysfs
++interface is the best for this in the final version, but I don't quite know
++what would be the best interfaces for these things.
 +
-+	control  = pixel_size_exp << SMS_PS_OFFSET;
-+	control |= VRFB_PAGE_WIDTH_EXP  << SMS_PW_OFFSET;
-+	control |= VRFB_PAGE_HEIGHT_EXP << SMS_PH_OFFSET;
++The sysfs interface is divided to two parts: DSS and FB.
 +
-+	vrfb_hw_context[ctx].physical_ba = paddr;
-+	vrfb_hw_context[ctx].size = size;
-+	vrfb_hw_context[ctx].control = control;
++/sys/class/graphics/fb? directory:
++mirror		0=off, 1=on
++rotate		Rotation 0-3 for 0, 90, 180, 270 degrees
++rotate_type	0 = DMA rotation, 1 = VRFB rotation
++overlays	List of overlay numbers to which framebuffer pixels go
++phys_addr	Physical address of the framebuffer
++virt_addr	Virtual address of the framebuffer
++size		Size of the framebuffer
 +
-+	omap2_sms_write_rot_physical_ba(paddr, ctx);
-+	omap2_sms_write_rot_size(size, ctx);
-+	omap2_sms_write_rot_control(control, ctx);
++/sys/devices/platform/omapdss/overlay? directory:
++enabled		0=off, 1=on
++input_size	width,height (ie. the framebuffer size)
++manager		Destination overlay manager name
++name
++output_size	width,height
++position	x,y
++screen_width	width
++global_alpha   	global alpha 0-255 0=transparent 255=opaque
 +
-+	DBG("vrfb offset pixels %d, %d\n",
-+			vrfb_width - width, vrfb_height - height);
++/sys/devices/platform/omapdss/manager? directory:
++display				Destination display
++name
++alpha_blending_enabled		0=off, 1=on
++trans_key_enabled		0=off, 1=on
++trans_key_type			gfx-destination, video-source
++trans_key_value			transparency color key (RGB24)
++default_color			default background color (RGB24)
 +
-+	vrfb->xoffset = vrfb_width - width;
-+	vrfb->yoffset = vrfb_height - height;
-+	vrfb->bytespp = bytespp;
-+}
-+EXPORT_SYMBOL(omap_vrfb_setup);
++/sys/devices/platform/omapdss/display? directory:
++ctrl_name	Controller name
++mirror		0=off, 1=on
++update_mode	0=off, 1=auto, 2=manual
++enabled		0=off, 1=on
++name
++rotate		Rotation 0-3 for 0, 90, 180, 270 degrees
++timings		Display timings (pixclock,xres/hfp/hbp/hsw,yres/vfp/vbp/vsw)
++		When writing, two special timings are accepted for tv-out:
++		"pal" and "ntsc"
++panel_name
++tear_elim	Tearing elimination 0=off, 1=on
 +
-+void omap_vrfb_release_ctx(struct vrfb *vrfb)
-+{
-+	int rot;
-+	int ctx = vrfb->context;
++There are also some debugfs files at <debugfs>/omapdss/ which show information
++about clocks and registers.
 +
-+	if (ctx == 0xff)
-+		return;
++Examples
++--------
 +
-+	DBG("release ctx %d\n", ctx);
++The following definitions have been made for the examples below:
 +
-+	mutex_lock(&ctx_lock);
++ovl0=/sys/devices/platform/omapdss/overlay0
++ovl1=/sys/devices/platform/omapdss/overlay1
++ovl2=/sys/devices/platform/omapdss/overlay2
 +
-+	BUG_ON(!(ctx_map & (1 << ctx)));
++mgr0=/sys/devices/platform/omapdss/manager0
++mgr1=/sys/devices/platform/omapdss/manager1
 +
-+	clear_bit(ctx, &ctx_map_active);
-+	clear_bit(ctx, &ctx_map);
++lcd=/sys/devices/platform/omapdss/display0
++dvi=/sys/devices/platform/omapdss/display1
++tv=/sys/devices/platform/omapdss/display2
 +
-+	for (rot = 0; rot < 4; ++rot) {
-+		if (vrfb->paddr[rot]) {
-+			release_mem_region(vrfb->paddr[rot], OMAP_VRFB_SIZE);
-+			vrfb->paddr[rot] = 0;
-+		}
-+	}
++fb0=/sys/class/graphics/fb0
++fb1=/sys/class/graphics/fb1
++fb2=/sys/class/graphics/fb2
 +
-+	vrfb->context = 0xff;
++Default setup on OMAP3 SDP
++--------------------------
 +
-+	mutex_unlock(&ctx_lock);
-+}
-+EXPORT_SYMBOL(omap_vrfb_release_ctx);
++Here's the default setup on OMAP3 SDP board. All planes go to LCD. DVI
++and TV-out are not in use. The columns from left to right are:
++framebuffers, overlays, overlay managers, displays. Framebuffers are
++handled by omapfb, and the rest by the DSS.
 +
-+int omap_vrfb_request_ctx(struct vrfb *vrfb)
-+{
-+	int rot;
-+	u32 paddr;
-+	u8 ctx;
-+	int r;
++FB0 --- GFX  -\            DVI
++FB1 --- VID1 --+- LCD ---- LCD
++FB2 --- VID2 -/   TV ----- TV
 +
-+	DBG("request ctx\n");
++Example: Switch from LCD to DVI
++----------------------
 +
-+	mutex_lock(&ctx_lock);
++w=`cat $dvi/timings | cut -d "," -f 2 | cut -d "/" -f 1`
++h=`cat $dvi/timings | cut -d "," -f 3 | cut -d "/" -f 1`
 +
-+	for (ctx = 0; ctx < VRFB_NUM_CTXS; ++ctx)
-+		if ((ctx_map & (1 << ctx)) == 0)
-+			break;
++echo "0" > $lcd/enabled
++echo "" > $mgr0/display
++fbset -fb /dev/fb0 -xres $w -yres $h -vxres $w -vyres $h
++# at this point you have to switch the dvi/lcd dip-switch from the omap board
++echo "dvi" > $mgr0/display
++echo "1" > $dvi/enabled
 +
-+	if (ctx == VRFB_NUM_CTXS) {
-+		pr_err("vrfb: no free contexts\n");
-+		r = -EBUSY;
-+		goto out;
-+	}
++After this the configuration looks like:
 +
-+	DBG("found free ctx %d\n", ctx);
++FB0 --- GFX  -\         -- DVI
++FB1 --- VID1 --+- LCD -/   LCD
++FB2 --- VID2 -/   TV ----- TV
 +
-+	set_bit(ctx, &ctx_map);
-+	WARN_ON(ctx_map_active & (1 << ctx));
-+	set_bit(ctx, &ctx_map_active);
++Example: Clone GFX overlay to LCD and TV
++-------------------------------
 +
-+	memset(vrfb, 0, sizeof(*vrfb));
++w=`cat $tv/timings | cut -d "," -f 2 | cut -d "/" -f 1`
++h=`cat $tv/timings | cut -d "," -f 3 | cut -d "/" -f 1`
 +
-+	vrfb->context = ctx;
++echo "0" > $ovl0/enabled
++echo "0" > $ovl1/enabled
 +
-+	for (rot = 0; rot < 4; ++rot) {
-+		paddr = SMS_ROT_VIRT_BASE(ctx, rot);
-+		if (!request_mem_region(paddr, OMAP_VRFB_SIZE, "vrfb")) {
-+			pr_err("vrfb: failed to reserve VRFB "
-+					"area for ctx %d, rotation %d\n",
-+					ctx, rot * 90);
-+			omap_vrfb_release_ctx(vrfb);
-+			r = -ENOMEM;
-+			goto out;
-+		}
++echo "" > $fb1/overlays
++echo "0,1" > $fb0/overlays
 +
-+		vrfb->paddr[rot] = paddr;
++echo "$w,$h" > $ovl1/output_size
++echo "tv" > $ovl1/manager
 +
-+		DBG("VRFB %d/%d: %lx\n", ctx, rot*90, vrfb->paddr[rot]);
-+	}
++echo "1" > $ovl0/enabled
++echo "1" > $ovl1/enabled
 +
-+	r = 0;
-+out:
-+	mutex_unlock(&ctx_lock);
-+	return r;
-+}
-+EXPORT_SYMBOL(omap_vrfb_request_ctx);
++echo "1" > $tv/enabled
 +
-+void omap_vrfb_suspend_ctx(struct vrfb *vrfb)
-+{
-+	DBG("suspend ctx %d\n", vrfb->context);
-+	mutex_lock(&ctx_lock);
++After this the configuration looks like (only relevant parts shown):
 +
-+	BUG_ON(vrfb->context >= VRFB_NUM_CTXS);
-+	BUG_ON(!((1 << vrfb->context) & ctx_map_active));
++FB0 +-- GFX  ---- LCD ---- LCD
++     \- VID1 ---- TV  ---- TV
 +
-+	clear_bit(vrfb->context, &ctx_map_active);
-+	mutex_unlock(&ctx_lock);
-+}
-+EXPORT_SYMBOL(omap_vrfb_suspend_ctx);
++Misc notes
++----------
 +
-+void omap_vrfb_resume_ctx(struct vrfb *vrfb)
-+{
-+	DBG("resume ctx %d\n", vrfb->context);
-+	mutex_lock(&ctx_lock);
++OMAP FB allocates the framebuffer memory using the OMAP VRAM allocator.
 +
-+	BUG_ON(vrfb->context >= VRFB_NUM_CTXS);
-+	BUG_ON((1 << vrfb->context) & ctx_map_active);
++Using DSI DPLL to generate pixel clock it is possible produce the pixel clock
++of 86.5MHz (max possible), and with that you get 1280x1024@57 output from DVI.
 +
-+	/*
-+	 * omap_vrfb_restore_context is normally called by the core domain
-+	 * save / restore logic, but since this VRFB context was suspended
-+	 * those calls didn't actually restore the context and now we might
-+	 * have an invalid context. Do an explicit restore here.
-+	 */
-+	restore_hw_context(vrfb->context);
-+	set_bit(vrfb->context, &ctx_map_active);
-+	mutex_unlock(&ctx_lock);
-+}
-+EXPORT_SYMBOL(omap_vrfb_resume_ctx);
++Rotation and mirroring currently only supports RGB565 and RGB8888 modes. VRFB
++does not support mirroring.
++
++VRFB rotation requires much more memory than non-rotated framebuffer, so you
++probably need to increase your vram setting before using VRFB rotation. Also,
++many applications may not work with VRFB if they do not pay attention to all
++framebuffer parameters.
++
++Kernel boot arguments
++---------------------
++
++vram=<size>
++	- Amount of total VRAM to preallocate. For example, "10M". omapfb
++	  allocates memory for framebuffers from VRAM.
++
++omapfb.mode=<display>:<mode>[,...]
++	- Default video mode for specified displays. For example,
++	  "dvi:800x400MR-24@60".  See drivers/video/modedb.c.
++	  There are also two special modes: "pal" and "ntsc" that
++	  can be used to tv out.
++
++omapfb.vram=<fbnum>:<size>[@<physaddr>][,...]
++	- VRAM allocated for a framebuffer. Normally omapfb allocates vram
++	  depending on the display size. With this you can manually allocate
++	  more or define the physical address of each framebuffer. For example,
++	  "1:4M" to allocate 4M for fb1.
++
++omapfb.debug=<y|n>
++	- Enable debug printing. You have to have OMAPFB debug support enabled
++	  in kernel config.
++
++omapfb.test=<y|n>
++	- Draw test pattern to framebuffer whenever framebuffer settings change.
++	  You need to have OMAPFB debug support enabled in kernel config.
++
++omapfb.vrfb=<y|n>
++	- Use VRFB rotation for all framebuffers.
++
++omapfb.rotate=<angle>
++	- Default rotation applied to all framebuffers.
++	  0 - 0 degree rotation
++	  1 - 90 degree rotation
++	  2 - 180 degree rotation
++	  3 - 270 degree rotation
++
++omapfb.mirror=<y|n>
++	- Default mirror for all framebuffers. Only works with DMA rotation.
++
++omapdss.def_disp=<display>
++	- Name of default display, to which all overlays will be connected.
++	  Common examples are "lcd" or "tv".
++
++omapdss.debug=<y|n>
++	- Enable debug printing. You have to have DSS debug support enabled in
++	  kernel config.
++
++TODO
++----
++
++DSS locking
++
++Error checking
++- Lots of checks are missing or implemented just as BUG()
++
++System DMA update for DSI
++- Can be used for RGB16 and RGB24P modes. Probably not for RGB24U (how
++  to skip the empty byte?)
++
++OMAP1 support
++- Not sure if needed
 +
 -- 
 1.6.4
