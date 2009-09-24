@@ -1,128 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZIXHOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZIXHRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbZIXHOZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 03:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZIXHOY
+	id S1752743AbZIXHRP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 03:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbZIXHRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 03:14:24 -0400
-Received: from mga03.intel.com ([143.182.124.21]:15898 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752388AbZIXHOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 03:14:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,444,1249282800"; 
-   d="scan'208";a="191101249"
-Date: Thu, 24 Sep 2009 15:14:15 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Li, Shaohua" <shaohua.li@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC] page-writeback: move indoes from one superblock together
-Message-ID: <20090924071415.GA20808@localhost>
-References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com>
+	Thu, 24 Sep 2009 03:17:14 -0400
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:49543 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752599AbZIXHRN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 03:17:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qRMGPJOQ902dzOVp2KitgrhT3Q5V+mK9p/KGCZIZJlN4Slftu3KVSgTKLUuHEtGIDy
+         feEjOfZj/oe8IRaNDqgedkzjgZGolME+iV/0iSbp/Y6aqO1ESwtd+dCTGHeyrNdMIIF9
+         7DikuDyJVQBxkhbInv8nREzhvcevexGTw/SLI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253775260.10618.10.camel@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090922180356.GJ14890@atomide.com>
+References: <51076.192.168.10.88.1253639068.squirrel@dbdmail.itg.ti.com>
+	 <20090922180356.GJ14890@atomide.com>
+Date: Thu, 24 Sep 2009 12:47:16 +0530
+Message-ID: <d6a0f7aa0909240017o3b201848j87bafeebebd048c2@mail.gmail.com>
+Subject: Re: [PATCH 1/3] OMAP UART: Adding support for omap-serial driver.
+From: Govindraj <govindraj.ti@gmail.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
-> __mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
-> several partitions, writeback might keep spindle moving between partitions.
-> To reduce the move, better write big chunk of one partition and then move to
-> another. Inodes from one fs usually are in one partion, so idealy move indoes
-> from one fs together should reduce spindle move. This patch tries to address
-> this. Before per-bdi writeback is added, the behavior is write indoes
-> from one fs first and then another, so the patch restores previous behavior.
-> The loop in the patch is a bit ugly, should we add a dirty list for each
-> superblock in bdi_writeback?
-> 
-> Test in a two partition disk with attached fio script shows about 3% ~ 6%
-> improvement.
+On Tue, Sep 22, 2009 at 11:33 PM, Tony Lindgren <tony@atomide.com> wrote:
+> * Govindraj.R <govindraj.raja@ti.com> [090922 10:06]:
+>> From: Govindraj R <govindraj.raja@ti.com>
+>>
+>> This patch adds support for OMAP3430-HIGH SPEED UART Controller.
+>
+> Why do you have the same subject anad description is the same for all of them?
+>
+>> --- a/drivers/serial/Kconfig
+>> +++ b/drivers/serial/Kconfig
+>> @@ -1359,6 +1359,98 @@ config SERIAL_OF_PLATFORM
+>>         Currently, only 8250 compatible ports are supported, but
+>>         others can easily be added.
+>>
+>> +config SERIAL_OMAP
+>> +     bool "OMAP serial port support"
+>> +     depends on ARM && ARCH_OMAP
+>> +     select SERIAL_CORE
+>> +     help
+>> +     If you have a machine based on an Texas Instruments OMAP CPU you
+>> +     can enable its onboard serial ports by enabling this option.
+>> +
+>> +config SERIAL_OMAP_CONSOLE
+>> +     bool "Console on OMAP serial port"
+>> +     depends on SERIAL_OMAP
+>> +     select SERIAL_CORE_CONSOLE
+>> +     help
+>> +     If you have enabled the serial port on the Texas Instruments OMAP
+>> +     CPU you can make it the console by answering Y to this option.
+>> +
+>> +     Even if you say Y here, the currently visible virtual console
+>> +     (/dev/tty0) will still be used as the system console by default, but
+>> +     you can alter that using a kernel command line option such as
+>> +     "console=ttyS0". (Try "man bootparam" or see the documentation of
+>> +     your boot loader (lilo or loadlin) about how to pass options to the
+>> +     kernel at boot time.)
+>> +
+>> +config SERIAL_OMAP_DMA_UART1
+>> +     bool "UART1 DMA support"
+>> +     depends on SERIAL_OMAP
+>> +     help
+>> +     If you have enabled the serial port on the Texas Instruments OMAP
+>> +     CPU you can enable the DMA transfer on UART 1 by answering
+>> +      to this option.
+>> +
+>
+> Didn't I already comment these options should be passed in platform_data
+> from board-*.c files?
+>
 
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+Will resend PATCH v1 incorporating SERIAL_OMAP_UARTx_RXDMA_BUFSIZE
+and SERIAL_OMAP_UARTx_RXDMA_BUFSIZE values into platform data and will
+clean up in Kconfig.
 
-Good idea! The optimization looks good to me, it addresses one
-weakness of per-bdi writeback.
+Thanks for your review comments.
 
-But one problem is, Jan Kara and me are planning to remove b_io and
-hence this move_expired_inodes() function. Not sure how to do this
-optimization without b_io.
-
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> 
-> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> index 8e1e5e1..fc87730 100644
-> --- a/fs/fs-writeback.c
-> +++ b/fs/fs-writeback.c
-> @@ -324,13 +324,29 @@ static void move_expired_inodes(struct list_head *delaying_queue,
->  			       struct list_head *dispatch_queue,
->  				unsigned long *older_than_this)
->  {
-> +	LIST_HEAD(tmp);
-> +	struct list_head *pos, *node;
-> +	struct super_block *sb;
-> +	struct inode *inode;
-> +
->  	while (!list_empty(delaying_queue)) {
-> -		struct inode *inode = list_entry(delaying_queue->prev,
-> -						struct inode, i_list);
-> +		inode = list_entry(delaying_queue->prev, struct inode, i_list);
->  		if (older_than_this &&
->  		    inode_dirtied_after(inode, *older_than_this))
->  			break;
-> -		list_move(&inode->i_list, dispatch_queue);
-> +		list_move(&inode->i_list, &tmp);
-> +	}
-> +
-> +	/* Move indoes from one superblock together */
-> +	while (!list_empty(&tmp)) {
-> +		inode = list_entry(tmp.prev, struct inode, i_list);
-> +		sb = inode->i_sb;
-> +		list_for_each_prev_safe(pos, node, &tmp) {
-
-We are in spin lock, so not necessary to use the safe version?
-
-> +			struct inode *inode = list_entry(pos,
-
-Could just reuse inode.
-
-Thanks,
-Fengguang
-
-> +				struct inode, i_list);
-> +			if (inode->i_sb == sb)
-> +				list_move(&inode->i_list, dispatch_queue);
-> +		}
->  	}
->  }
->  
-> 
-
-Content-Description: newfio
-> [global]
-> runtime=120
-> ioscheduler=cfq
-> size=2G
-> ioengine=sync
-> rw=write
-> file_service_type=random:256
-> overwrite=1
-> 
-> [sdb1]
-> directory=/mnt/b1
-> nrfiles=10
-> numjobs=4
-> 
-> [sdb2]
-> directory=/mnt/b2
-> nrfiles=10
-> numjobs=4
-
+---
+Regards,
+Govindraj.R
