@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbZIXT1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbZIXT0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbZIXT1I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:27:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZIXT1G
+	id S1753929AbZIXT0c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZIXT03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:27:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:15262 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 15:26:29 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9569 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753953AbZIXT0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:26:35 -0400
+	id S1751837AbZIXT02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:26:28 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
@@ -21,315 +21,234 @@ Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
        jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
        riel@redhat.com
-Subject: [PATCH 02/28] io-controller: Core of the elevator fair queuing
-Date: Thu, 24 Sep 2009 15:25:06 -0400
-Message-Id: <1253820332-10246-3-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 03/28] io-controller: Keep a cache of recently expired queues
+Date: Thu, 24 Sep 2009 15:25:07 -0400
+Message-Id: <1253820332-10246-4-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o This is core of the io scheduler implemented at elevator layer. This is a mix
-  of cpu CFS scheduler and CFQ IO scheduler. Some of the bits from CFS have
-  to be derived so that we can support hierarchical scheduling. Without
-  cgroups or with-in group, we should essentially get same behavior as CFQ.
+o Currently once a queue uses its slice and it is empty, we remove it from the
+  service tree and when a new request comes in it is queued at the end of tree.
+  It works as long as there are only queue or only groups at same level but if
+  there is a mix of queue and group, there can be fairness issue. For example,
+  consider following case.
 
-o This patch only shows non-hierarchical bits. Hierarhical code comes in later
-  patches.
+			root
+			/ \
+		       T1  G1
+			    |
+			    T2
 
-o This code is the building base of introducing fair queuing logic in common
-  elevator layer so that it can be used by all the four IO schedulers.
+ T1 and T2 are two tasks with prio 0 and 7 respectively and G1 is the group
+ with weight 900.
 
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
-Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
-Signed-off-by: Nauman Rafique <nauman@google.com>
+ Task T1 prio 0 is mapped to weight 900 and it will get slice length of 180ms
+ and then queue will expire and will be put after G1. (Note, in case of reader
+ most liekly next request will come after queue expiry hence queue will be
+ deleted and once the request comes in again, it will added to tree fresh. A
+ fresh queue is added at the end of the tree. So it will be put after G1.).
+
+ Now G1 will get to run (effectivly T2 will run), T2 has prio 7, which will
+ map to weight 200 and get slice length of 40ms and will expire after that. Now
+ G1 will a new vtime which is effectively charge of 40ms.
+
+ Now to get fairness G1 should run more but instead T1 will be running as we
+ gave it a vtime, same as G1.
+
+ The core issue here is that for readers, when slice expires, queue is empty
+ and not backlogged hence it gets deleted from the tree. Because CFQ only
+ operates in flat mode, it did a smart thing and did not keep a track of
+ history. Instead it provides slice lenghts according to prio and if in one
+ round of dispatch one gets fairness it is fine, otherwise upon queue expiry
+ you will be placed at the end of service tree.
+
+ This does not work in hierarchical setups where group's slice lenght is
+ determined not by group' weight but by the weight of the queue which will
+ run under the group.
+
+ Hence we need to keep track of histroy and assign a new vtime based on disk
+ time used by the current queue at the time of expiry.
+
+ But here io scheduler is little different from CFS that at the time of expiry
+ most of the time reader's queue is empty. So one will end up deleting it from
+ the service tree and next request comes with-in 1 ms and it gets into the tree
+ again like a new process.
+
+ So we need to keep track of process io queue's vdisktime, even it after got
+ deleted from io scheduler's service tree and use that same vdisktime if that
+ queue gets backlogged again. But trusting a ioq's vdisktime is bad because
+ it can lead to issues if a service tree min_vtime wrap around takes place
+ between two requests of the queue. (Agreed that it can be not that easy to
+ hit but it is possible).
+
+ Hence, keep a cache of io queues serviced recently and when a queue gets
+ backlogged, if it is found in cache, use that vdisktime otherwise assign
+ a new vdisktime. This cache of io queues (idle tree), is basically the idea
+ implemented by BFQ guys. I had gotten rid of idle trees in V9 and now I am
+ bringing it back. (Now I understand it better. :-)).
+
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 Acked-by: Rik van Riel <riel@redhat.com>
 ---
- block/Makefile      |    2 +-
- block/elevator-fq.c |  406 +++++++++++++++++++++++++++++++++++++++++++++++++++
- block/elevator-fq.h |  148 +++++++++++++++++++
- 3 files changed, 555 insertions(+), 1 deletions(-)
- create mode 100644 block/elevator-fq.c
- create mode 100644 block/elevator-fq.h
+ block/elevator-fq.c |  188 ++++++++++++++++++++++++++++++++++++++++++++++-----
+ block/elevator-fq.h |    7 ++
+ 2 files changed, 179 insertions(+), 16 deletions(-)
 
-diff --git a/block/Makefile b/block/Makefile
-index 6c54ed0..19ff1e8 100644
---- a/block/Makefile
-+++ b/block/Makefile
-@@ -5,7 +5,7 @@
- obj-$(CONFIG_BLOCK) := elevator.o blk-core.o blk-tag.o blk-sysfs.o \
- 			blk-barrier.o blk-settings.o blk-ioc.o blk-map.o \
- 			blk-exec.o blk-merge.o blk-softirq.o blk-timeout.o \
--			ioctl.o genhd.o scsi_ioctl.o
-+			ioctl.o genhd.o scsi_ioctl.o elevator-fq.o
- 
- obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
- obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
 diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-new file mode 100644
-index 0000000..d98fa42
---- /dev/null
+index d98fa42..8343397 100644
+--- a/block/elevator-fq.c
 +++ b/block/elevator-fq.c
-@@ -0,0 +1,406 @@
-+/*
-+ * elevator fair queuing Layer.
-+ *
-+ * Based on ideas and code from CFQ, CFS and BFQ:
-+ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-+ *
-+ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-+ *		      Paolo Valente <paolo.valente@unimore.it>
-+ *
-+ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-+ * 	              Nauman Rafique <nauman@google.com>
-+ */
+@@ -21,6 +21,8 @@
+ #define ELV_SLICE_SCALE		(500)
+ #define ELV_SERVICE_SHIFT	20
+ 
++static void check_idle_tree_release(struct io_service_tree *st);
 +
-+#include <linux/blkdev.h>
-+#include "elevator-fq.h"
-+
-+/*
-+ * offset from end of service tree
-+ */
-+#define ELV_IDLE_DELAY		(HZ / 5)
-+#define ELV_SLICE_SCALE		(500)
-+#define ELV_SERVICE_SHIFT	20
-+
-+static inline struct io_queue *ioq_of(struct io_entity *entity)
+ static inline struct io_queue *ioq_of(struct io_entity *entity)
+ {
+ 	if (entity->my_sd == NULL)
+@@ -78,6 +80,11 @@ elv_prio_to_slice(struct elv_fq_data *efqd, struct io_queue *ioq)
+ 	return elv_weight_slice(efqd, elv_ioq_sync(ioq), ioq->entity.weight);
+ }
+ 
++static inline int vdisktime_gt(u64 a, u64 b)
 +{
-+	if (entity->my_sd == NULL)
-+		return container_of(entity, struct io_queue, entity);
-+	return NULL;
++	return (s64)(a - b) > 0;
 +}
 +
-+static inline int io_entity_class_rt(struct io_entity *entity)
-+{
-+	return entity->ioprio_class == IOPRIO_CLASS_RT;
-+}
+ static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
+ {
+ 	s64 delta = (s64)(vdisktime - min_vdisktime);
+@@ -114,6 +121,7 @@ static void update_min_vdisktime(struct io_service_tree *st)
+ 	}
+ 
+ 	st->min_vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
++	check_idle_tree_release(st);
+ }
+ 
+ static inline struct io_entity *parent_entity(struct io_entity *entity)
+@@ -167,27 +175,46 @@ static void place_entity(struct io_service_tree *st, struct io_entity *entity,
+ 	struct rb_node *parent;
+ 	struct io_entity *entry;
+ 	int nr_active = st->nr_active - 1;
++	struct io_queue *ioq = ioq_of(entity);
++	int sync = 1;
 +
-+static inline int io_entity_class_idle(struct io_entity *entity)
-+{
-+	return entity->ioprio_class == IOPRIO_CLASS_IDLE;
-+}
++	if (ioq)
++		sync = elv_ioq_sync(ioq);
 +
-+static inline s64
-+entity_key(struct io_service_tree *st, struct io_entity *entity)
-+{
-+	return entity->vdisktime - st->min_vdisktime;
-+}
-+
-+static inline u64
-+elv_delta(u64 service, unsigned int numerator_wt, unsigned int denominator_wt)
-+{
-+	if (numerator_wt != denominator_wt) {
-+		service = service * numerator_wt;
-+		do_div(service, denominator_wt);
++	if (add_front || !nr_active) {
++		vdisktime = st->min_vdisktime;
++		goto done;
 +	}
 +
-+	return service;
-+}
-+
-+static inline u64 elv_delta_fair(unsigned long delta, struct io_entity *entity)
-+{
-+	u64 d = delta << ELV_SERVICE_SHIFT;
-+
-+	return elv_delta(d, IO_WEIGHT_DEFAULT, entity->weight);
-+}
-+
-+static inline int
-+elv_weight_slice(struct elv_fq_data *efqd, int sync, unsigned int weight)
-+{
-+	const int base_slice = efqd->elv_slice[sync];
-+
-+	WARN_ON(weight > IO_WEIGHT_MAX);
-+
-+	return elv_delta(base_slice, weight, IO_WEIGHT_DEFAULT);
-+}
-+
-+static inline int
-+elv_prio_to_slice(struct elv_fq_data *efqd, struct io_queue *ioq)
-+{
-+	return elv_weight_slice(efqd, elv_ioq_sync(ioq), ioq->entity.weight);
-+}
-+
-+static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
-+{
-+	s64 delta = (s64)(vdisktime - min_vdisktime);
-+	if (delta > 0)
-+		min_vdisktime = vdisktime;
-+
-+	return min_vdisktime;
-+}
-+
-+static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
-+{
-+	s64 delta = (s64)(vdisktime - min_vdisktime);
-+	if (delta < 0)
-+		min_vdisktime = vdisktime;
-+
-+	return min_vdisktime;
-+}
-+
-+static void update_min_vdisktime(struct io_service_tree *st)
-+{
-+	u64 vdisktime;
-+
-+	if (st->active_entity)
-+		vdisktime = st->active_entity->vdisktime;
-+
-+	if (st->rb_leftmost) {
-+		struct io_entity *entity = rb_entry(st->rb_leftmost,
-+						struct io_entity, rb_node);
-+
-+		if (!st->active_entity)
-+			vdisktime = entity->vdisktime;
-+		else
-+			vdisktime = min_vdisktime(vdisktime, entity->vdisktime);
++	if (sync && entity->vdisktime
++	    && vdisktime_gt(entity->vdisktime, st->min_vdisktime)) {
++		/* vdisktime still in future. Use old vdisktime */
++		vdisktime = entity->vdisktime;
++		goto done;
 +	}
-+
-+	st->min_vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
-+}
-+
-+static inline struct io_entity *parent_entity(struct io_entity *entity)
-+{
-+	return entity->parent;
-+}
-+
-+static inline struct io_group *iog_of(struct io_entity *entity)
-+{
-+	if (entity->my_sd)
-+		return container_of(entity, struct io_group, entity);
-+	return NULL;
-+}
-+
-+static inline struct elv_fq_data *efqd_of(struct io_entity *entity)
-+{
-+	return ioq_of(entity)->efqd;
-+}
-+
-+static inline struct io_sched_data *
-+io_entity_sched_data(struct io_entity *entity)
-+{
-+	struct elv_fq_data *efqd = efqd_of(entity);
-+
-+	return &efqd->root_group->sched_data;
-+}
-+
-+static inline void
-+init_io_entity_service_tree(struct io_entity *entity, struct io_entity *parent)
-+{
-+	struct io_group *parent_iog = iog_of(parent);
-+	unsigned short idx = entity->ioprio_class - 1;
-+
-+	BUG_ON(idx >= IO_IOPRIO_CLASSES);
-+
-+	entity->st = &parent_iog->sched_data.service_tree[idx];
-+}
-+
-+static void
-+entity_served(struct io_entity *entity, unsigned long served,
-+		unsigned long queue_charge, unsigned long nr_sectors)
-+{
-+	entity->vdisktime += elv_delta_fair(queue_charge, entity);
-+	update_min_vdisktime(entity->st);
-+}
-+
-+static void place_entity(struct io_service_tree *st, struct io_entity *entity,
-+				int add_front)
-+{
-+	u64 vdisktime = st->min_vdisktime;
-+	struct rb_node *parent;
-+	struct io_entity *entry;
-+	int nr_active = st->nr_active - 1;
-+
+ 
+ 	/*
+-	 * Currently put entity at the end of last entity. This probably will
+-	 * require adjustments as we move along
++	 * Effectively a new queue. Assign sync queue a lower vdisktime so
++	 * we can achieve better latencies for small file readers. For async
++	 * queues, put them at the end of the existing queue.
++	 * Group entities are always considered sync.
+ 	 */
+-	if (io_entity_class_idle(entity)) {
+-		vdisktime = elv_delta_fair(ELV_IDLE_DELAY, entity);
+-		parent = rb_last(&st->active);
+-		if (parent) {
+-			entry = rb_entry(parent, struct io_entity, rb_node);
+-			vdisktime += entry->vdisktime;
+-		}
+-	} else if (!add_front && nr_active) {
+-		parent = rb_last(&st->active);
+-		if (parent) {
+-			entry = rb_entry(parent, struct io_entity, rb_node);
+-			vdisktime = entry->vdisktime;
+-		}
+-	} else
++	if (sync) {
+ 		vdisktime = st->min_vdisktime;
++		goto done;
++	}
+ 
 +	/*
-+	 * Currently put entity at the end of last entity. This probably will
-+	 * require adjustments as we move along
++	 * Put entity at the end of the tree. Effectively async queues use
++	 * this path.
 +	 */
-+	if (io_entity_class_idle(entity)) {
-+		vdisktime = elv_delta_fair(ELV_IDLE_DELAY, entity);
-+		parent = rb_last(&st->active);
-+		if (parent) {
-+			entry = rb_entry(parent, struct io_entity, rb_node);
-+			vdisktime += entry->vdisktime;
-+		}
-+	} else if (!add_front && nr_active) {
-+		parent = rb_last(&st->active);
-+		if (parent) {
-+			entry = rb_entry(parent, struct io_entity, rb_node);
-+			vdisktime = entry->vdisktime;
-+		}
++	parent = rb_last(&st->active);
++	if (parent) {
++		entry = rb_entry(parent, struct io_entity, rb_node);
++		vdisktime = entry->vdisktime;
 +	} else
 +		vdisktime = st->min_vdisktime;
++done:
+ 	entity->vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
+ }
+ 
+@@ -200,6 +227,122 @@ static inline void io_entity_update_prio(struct io_entity *entity)
+ 		 */
+ 		init_io_entity_service_tree(entity, parent_entity(entity));
+ 		entity->ioprio_changed = 0;
 +
-+	entity->vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
-+}
-+
-+static inline void io_entity_update_prio(struct io_entity *entity)
-+{
-+	if (unlikely(entity->ioprio_changed)) {
 +		/*
-+		 * Re-initialize the service tree as ioprio class of the
-+		 * entity might have changed.
++		 * Assign this entity a fresh vdisktime instead of using
++		 * previous one as prio class will lead to service tree
++		 * change and this vdisktime will not be valid on new
++		 * service tree.
++		 *
++		 * TODO: Handle the case of only prio change.
 +		 */
-+		init_io_entity_service_tree(entity, parent_entity(entity));
-+		entity->ioprio_changed = 0;
++		entity->vdisktime = 0;
 +	}
 +}
 +
 +static void
-+__dequeue_io_entity(struct io_service_tree *st, struct io_entity *entity)
++__dequeue_io_entity_idle(struct io_service_tree *st, struct io_entity *entity)
 +{
-+	/*
-+	 * This can happen when during put_prev_io_entity, we detect that ioprio
-+	 * of the queue has changed and decide to dequeue_entity() and requeue
-+	 * back. In this case entity is on service tree but has already been
-+	 * removed from rb tree.
-+	 */
-+	if (RB_EMPTY_NODE(&entity->rb_node))
-+		return;
-+
-+	if (st->rb_leftmost == &entity->rb_node) {
++	if (st->rb_leftmost_idle == &entity->rb_node) {
 +		struct rb_node *next_node;
 +
 +		next_node = rb_next(&entity->rb_node);
-+		st->rb_leftmost = next_node;
++		st->rb_leftmost_idle = next_node;
 +	}
 +
-+	rb_erase(&entity->rb_node, &st->active);
++	rb_erase(&entity->rb_node, &st->idle);
 +	RB_CLEAR_NODE(&entity->rb_node);
 +}
 +
-+static void dequeue_io_entity(struct io_entity *entity)
++static void dequeue_io_entity_idle(struct io_entity *entity)
 +{
-+	struct io_service_tree *st = entity->st;
-+	struct io_sched_data *sd = io_entity_sched_data(entity);
++	struct io_queue *ioq = ioq_of(entity);
 +
-+	__dequeue_io_entity(st, entity);
-+	entity->on_st = 0;
-+	st->nr_active--;
-+	sd->nr_active--;
++	__dequeue_io_entity_idle(entity->st, entity);
++	entity->on_idle_st = 0;
++	if (ioq)
++		elv_put_ioq(ioq);
 +}
 +
 +static void
-+__enqueue_io_entity(struct io_service_tree *st, struct io_entity *entity,
-+			int add_front)
++__enqueue_io_entity_idle(struct io_service_tree *st, struct io_entity *entity)
 +{
-+	struct rb_node **node = &st->active.rb_node;
++	struct rb_node **node = &st->idle.rb_node;
 +	struct rb_node *parent = NULL;
 +	struct io_entity *entry;
-+	s64 key = entity_key(st, entity);
 +	int leftmost = 1;
 +
 +	while (*node != NULL) {
 +		parent = *node;
 +		entry = rb_entry(parent, struct io_entity, rb_node);
 +
-+		if (key < entity_key(st, entry) ||
-+			(add_front && (key == entity_key(st, entry)))) {
++		if (vdisktime_gt(entry->vdisktime, entity->vdisktime))
 +			node = &parent->rb_left;
-+		} else {
++		else {
 +			node = &parent->rb_right;
 +			leftmost = 0;
 +		}
@@ -340,299 +259,118 @@ index 0000000..d98fa42
 +	 * used)
 +	 */
 +	if (leftmost)
-+		st->rb_leftmost = &entity->rb_node;
++		st->rb_leftmost_idle = &entity->rb_node;
 +
 +	rb_link_node(&entity->rb_node, parent, node);
-+	rb_insert_color(&entity->rb_node, &st->active);
++	rb_insert_color(&entity->rb_node, &st->idle);
 +}
 +
-+static void enqueue_io_entity(struct io_entity *entity)
++static void enqueue_io_entity_idle(struct io_entity *entity)
 +{
-+	struct io_service_tree *st;
-+	struct io_sched_data *sd = io_entity_sched_data(entity);
++	struct io_queue *ioq = ioq_of(entity);
++	struct io_group *parent_iog;
 +
-+	io_entity_update_prio(entity);
-+	st = entity->st;
-+	st->nr_active++;
-+	sd->nr_active++;
-+	entity->on_st = 1;
-+	place_entity(st, entity, 0);
-+	__enqueue_io_entity(st, entity, 0);
-+}
++	/*
++	 * Don't put an entity on idle tree if it has been marked for deletion.
++	 * We are not expecting more io from this entity. No need to cache it
++	 */
 +
-+static struct io_entity *__lookup_next_io_entity(struct io_service_tree *st)
-+{
-+	struct rb_node *left = st->rb_leftmost;
-+
-+	if (!left)
-+		return NULL;
-+
-+	return rb_entry(left, struct io_entity, rb_node);
-+}
-+
-+static struct io_entity *lookup_next_io_entity(struct io_sched_data *sd)
-+{
-+	struct io_service_tree *st = sd->service_tree;
-+	struct io_entity *entity = NULL;
-+	int i;
-+
-+	BUG_ON(sd->active_entity != NULL);
-+
-+	if (!sd->nr_active)
-+		return NULL;
-+
-+	for (i = 0; i < IO_IOPRIO_CLASSES; i++, st++) {
-+		entity = __lookup_next_io_entity(st);
-+		if (entity) {
-+			__dequeue_io_entity(st, entity);
-+			st->active_entity = entity;
-+			sd->active_entity = entity;
-+			break;
-+		}
-+	}
-+
-+	return entity;
-+}
-+
-+static void requeue_io_entity(struct io_entity *entity, int add_front)
-+{
-+	struct io_service_tree *st = entity->st;
-+	struct io_entity *next_entity;
-+
-+	if (add_front) {
-+		next_entity = __lookup_next_io_entity(st);
-+		/*
-+		 * This is to emulate cfq like functionality where preemption
-+		 * can happen with-in same class, like sync queue preempting
-+		 * async queue.
-+		 *
-+		 * This feature is also used by cfq close cooperator
-+		 * functionlity where cfq selects a queue out of order to run
-+		 * next based on close cooperator.
-+		 */
-+		if (next_entity && next_entity == entity)
-+			return;
-+	}
-+
-+	__dequeue_io_entity(st, entity);
-+	place_entity(st, entity, add_front);
-+	__enqueue_io_entity(st, entity, add_front);
-+}
-+
-+/* Requeue and ioq which is already on the tree */
-+static void requeue_ioq(struct io_queue *ioq, int add_front)
-+{
-+	requeue_io_entity(&ioq->entity, add_front);
-+}
-+
-+static void put_prev_io_entity(struct io_entity *entity)
-+{
-+	struct io_service_tree *st = entity->st;
-+	struct io_sched_data *sd = io_entity_sched_data(entity);
-+
-+	st->active_entity = NULL;
-+	sd->active_entity = NULL;
-+
-+	if (unlikely(entity->ioprio_changed)) {
-+		dequeue_io_entity(entity);
-+		enqueue_io_entity(entity);
-+	} else
-+		__enqueue_io_entity(st, entity, 0);
-+}
-+
-+/* Put curr ioq back into rb tree. */
-+static void put_prev_ioq(struct io_queue *ioq)
-+{
-+	struct io_entity *entity = &ioq->entity;
-+
-+	put_prev_io_entity(entity);
-+}
-+
-+static void dequeue_ioq(struct io_queue *ioq)
-+{
-+	struct io_entity *entity = &ioq->entity;
-+
-+	dequeue_io_entity(entity);
-+	elv_put_ioq(ioq);
-+	return;
-+}
-+
-+/* Put a new queue on to the tree */
-+static void enqueue_ioq(struct io_queue *ioq)
-+{
-+	struct io_entity *entity = &ioq->entity;
-+
-+	elv_get_ioq(ioq);
-+	enqueue_io_entity(entity);
-+}
-+
-+static inline void
-+init_io_entity_parent(struct io_entity *entity, struct io_entity *parent)
-+{
-+	entity->parent = parent;
-+	init_io_entity_service_tree(entity, parent);
-+}
-+
-+void elv_put_ioq(struct io_queue *ioq)
-+{
-+	BUG_ON(atomic_read(&ioq->ref) <= 0);
-+	if (!atomic_dec_and_test(&ioq->ref))
++	if (entity->exiting)
 +		return;
++
++	/*
++	 * If parent group is exiting, don't put on idle tree. May be task got
++	 * moved to a different cgroup and original cgroup got deleted
++	 */
++	parent_iog = iog_of(parent_entity(entity));
++	if (parent_iog->entity.exiting)
++		return;
++
++	if (ioq)
++		elv_get_ioq(ioq);
++	__enqueue_io_entity_idle(entity->st, entity);
++	entity->on_idle_st = 1;
 +}
++
++static void check_idle_tree_release(struct io_service_tree *st)
++{
++	struct io_entity *leftmost;
++
++	if (!st->rb_leftmost_idle)
++		return;
++
++	leftmost = rb_entry(st->rb_leftmost_idle, struct io_entity, rb_node);
++
++	if (vdisktime_gt(st->min_vdisktime, leftmost->vdisktime))
++		dequeue_io_entity_idle(leftmost);
++}
++
++static void flush_idle_tree(struct io_service_tree *st)
++{
++	struct io_entity *entity;
++
++	while (st->rb_leftmost_idle) {
++		entity = rb_entry(st->rb_leftmost_idle, struct io_entity,
++					rb_node);
++		dequeue_io_entity_idle(entity);
+ 	}
+ }
+ 
+@@ -235,6 +378,9 @@ static void dequeue_io_entity(struct io_entity *entity)
+ 	entity->on_st = 0;
+ 	st->nr_active--;
+ 	sd->nr_active--;
++
++	if (vdisktime_gt(entity->vdisktime, st->min_vdisktime))
++		enqueue_io_entity_idle(entity);
+ }
+ 
+ static void
+@@ -276,6 +422,16 @@ static void enqueue_io_entity(struct io_entity *entity)
+ 	struct io_service_tree *st;
+ 	struct io_sched_data *sd = io_entity_sched_data(entity);
+ 
++	if (entity->on_idle_st)
++		dequeue_io_entity_idle(entity);
++	else
++		/*
++		 * This entity was not in idle tree cache. Zero out vdisktime
++		 * so that we don't rely on old vdisktime instead assign a
++		 * fresh one.
++		 */
++		entity->vdisktime = 0;
++
+ 	io_entity_update_prio(entity);
+ 	st = entity->st;
+ 	st->nr_active++;
 diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-new file mode 100644
-index 0000000..868e035
---- /dev/null
+index 868e035..ee46a47 100644
+--- a/block/elevator-fq.h
 +++ b/block/elevator-fq.h
-@@ -0,0 +1,148 @@
-+/*
-+ * elevator fair queuing Layer. Data structures and common functions prototypes.
-+ *
-+ * Based on ideas and code from CFQ, CFS and BFQ:
-+ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-+ *
-+ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-+ *		      Paolo Valente <paolo.valente@unimore.it>
-+ *
-+ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-+ * 	              Nauman Rafique <nauman@google.com>
-+ */
+@@ -28,6 +28,10 @@ struct io_service_tree {
+ 	u64 min_vdisktime;
+ 	struct rb_node *rb_leftmost;
+ 	unsigned int nr_active;
 +
-+#ifdef CONFIG_BLOCK
-+#include <linux/blkdev.h>
-+
-+#ifndef _ELV_SCHED_H
-+#define _ELV_SCHED_H
-+
-+#define IO_WEIGHT_MIN		100
-+#define IO_WEIGHT_MAX		1000
-+#define IO_WEIGHT_DEFAULT	500
-+#define IO_IOPRIO_CLASSES	3
-+
-+struct io_service_tree {
-+	struct rb_root active;
-+	struct io_entity *active_entity;
-+	u64 min_vdisktime;
-+	struct rb_node *rb_leftmost;
-+	unsigned int nr_active;
-+};
-+
-+struct io_sched_data {
-+	struct io_entity *active_entity;
-+	int nr_active;
-+	struct io_service_tree service_tree[IO_IOPRIO_CLASSES];
-+};
-+
-+struct io_entity {
-+	struct rb_node rb_node;
-+	int on_st;
-+	u64 vdisktime;
-+	unsigned int weight;
-+	struct io_entity *parent;
-+
-+	struct io_sched_data *my_sd;
-+	struct io_service_tree *st;
-+
-+	unsigned short ioprio, ioprio_class;
-+	int ioprio_changed;
-+};
-+
-+/*
-+ * A common structure representing the io queue where requests are actually
-+ * queued.
-+ */
-+struct io_queue {
-+	struct io_entity entity;
-+	atomic_t ref;
-+	unsigned int flags;
-+
-+	/* Pointer to generic elevator fair queuing data structure */
-+	struct elv_fq_data *efqd;
-+};
-+
-+struct io_group {
-+	struct io_entity entity;
-+	struct io_sched_data sched_data;
-+};
-+
-+struct elv_fq_data {
-+	struct io_group *root_group;
-+
-+	/* Base slice length for sync and async queues */
-+	unsigned int elv_slice[2];
-+};
-+
-+/* Some shared queue flag manipulation functions among elevators */
-+
-+enum elv_queue_state_flags {
-+	ELV_QUEUE_FLAG_sync,              /* synchronous queue */
-+};
-+
-+#define ELV_IO_QUEUE_FLAG_FNS(name)					\
-+static inline void elv_mark_ioq_##name(struct io_queue *ioq)		\
-+{                                                                       \
-+	(ioq)->flags |= (1 << ELV_QUEUE_FLAG_##name);			\
-+}                                                                       \
-+static inline void elv_clear_ioq_##name(struct io_queue *ioq)		\
-+{                                                                       \
-+	(ioq)->flags &= ~(1 << ELV_QUEUE_FLAG_##name);			\
-+}                                                                       \
-+static inline int elv_ioq_##name(struct io_queue *ioq)         		\
-+{                                                                       \
-+	return ((ioq)->flags & (1 << ELV_QUEUE_FLAG_##name)) != 0;	\
-+}
-+
-+ELV_IO_QUEUE_FLAG_FNS(sync)
-+
-+static inline void elv_get_ioq(struct io_queue *ioq)
-+{
-+	atomic_inc(&ioq->ref);
-+}
-+
-+static inline unsigned int elv_ioprio_to_weight(int ioprio)
-+{
-+	WARN_ON(ioprio < 0 || ioprio >= IOPRIO_BE_NR);
-+	/* Map prio 7 - 0 to weights 200 to 900 */
-+	return IO_WEIGHT_DEFAULT + (IO_WEIGHT_DEFAULT/5 * (4 - ioprio));
-+}
-+
-+static inline void elv_ioq_set_ioprio(struct io_queue *ioq, int ioprio)
-+{
-+	ioq->entity.ioprio = ioprio;
-+	ioq->entity.weight = elv_ioprio_to_weight(ioprio);
-+	ioq->entity.ioprio_changed = 1;
-+}
-+
-+static inline void elv_ioq_set_ioprio_class(struct io_queue *ioq,
-+						int ioprio_class)
-+{
-+	ioq->entity.ioprio_class = ioprio_class;
-+	ioq->entity.ioprio_changed = 1;
-+}
-+
-+static inline int elv_ioq_class_idle(struct io_queue *ioq)
-+{
-+	return ioq->entity.ioprio_class == IOPRIO_CLASS_IDLE;
-+}
-+
-+static inline int elv_ioq_class_rt(struct io_queue *ioq)
-+{
-+	return ioq->entity.ioprio_class == IOPRIO_CLASS_RT;
-+}
-+
-+static inline int elv_ioq_ioprio_class(struct io_queue *ioq)
-+{
-+	return ioq->entity.ioprio_class;
-+}
-+
-+static inline int elv_ioq_ioprio(struct io_queue *ioq)
-+{
-+	return ioq->entity.ioprio;
-+}
-+
-+extern void elv_put_ioq(struct io_queue *ioq);
-+#endif /* _ELV_SCHED_H */
-+#endif /* CONFIG_BLOCK */
++	/* A cache of io entities which were served and expired */
++	struct rb_root idle;
++	struct rb_node *rb_leftmost_idle;
+ };
+ 
+ struct io_sched_data {
+@@ -39,9 +43,12 @@ struct io_sched_data {
+ struct io_entity {
+ 	struct rb_node rb_node;
+ 	int on_st;
++	int on_idle_st;
+ 	u64 vdisktime;
+ 	unsigned int weight;
+ 	struct io_entity *parent;
++	/* This io entity (queue or group) has been marked for deletion */
++	unsigned int exiting;
+ 
+ 	struct io_sched_data *my_sd;
+ 	struct io_service_tree *st;
 -- 
 1.6.0.6
 
