@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbZIXOho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbZIXOhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753041AbZIXOho (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 10:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbZIXOhm
+	id S1752914AbZIXOhP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 10:37:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZIXOhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 10:37:42 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33348 "EHLO
+	Thu, 24 Sep 2009 10:37:10 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33193 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752969AbZIXOhU (ORCPT
+	by vger.kernel.org with ESMTP id S1752875AbZIXOhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 10:37:20 -0400
+	Thu, 24 Sep 2009 10:37:08 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH v2 05/11] um: Clean up linker script using standard macros.
-Date: Thu, 24 Sep 2009 10:36:20 -0400
-Message-Id: <1253802986-8132-6-git-send-email-tabbott@ksplice.com>
+       Yoshinori Sato <ysato@users.sourceforge.jp>
+Subject: [PATCH v2 06/11] h8300: Cleanup linker script using new linker script macros.
+Date: Thu, 24 Sep 2009 10:36:21 -0400
+Message-Id: <1253802986-8132-7-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
 References: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
@@ -29,153 +28,75 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: user-mode-linux-devel@lists.sourceforge.net
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/um/include/asm/common.lds.S |   29 ++++++-----------------------
- arch/um/kernel/dyn.lds.S         |    9 ++-------
- arch/um/kernel/uml.lds.S         |   26 ++++++--------------------
- 3 files changed, 14 insertions(+), 50 deletions(-)
+ arch/h8300/kernel/vmlinux.lds.S |   25 +++++++------------------
+ 1 files changed, 7 insertions(+), 18 deletions(-)
 
-diff --git a/arch/um/include/asm/common.lds.S b/arch/um/include/asm/common.lds.S
-index 37ecc55..ac55b9e 100644
---- a/arch/um/include/asm/common.lds.S
-+++ b/arch/um/include/asm/common.lds.S
-@@ -16,11 +16,7 @@
+diff --git a/arch/h8300/kernel/vmlinux.lds.S b/arch/h8300/kernel/vmlinux.lds.S
+index 662b02e..b9e2490 100644
+--- a/arch/h8300/kernel/vmlinux.lds.S
++++ b/arch/h8300/kernel/vmlinux.lds.S
+@@ -1,5 +1,6 @@
+ #define VMLINUX_SYMBOL(_sym_) _##_sym_
+ #include <asm-generic/vmlinux.lds.h>
++#include <asm/page.h>
  
-   . = ALIGN(4096);
-   .note : { *(.note.*) }
--  __ex_table : {
--	__start___ex_table = .;
--	*(__ex_table)
--	__stop___ex_table = .;
--  }
-+  EXCEPTION_TABLE(0)
+ /* target memory map */
+ #ifdef CONFIG_H8300H_GENERIC
+@@ -79,11 +80,8 @@ SECTIONS
+ 	SCHED_TEXT
+ 	LOCK_TEXT
+ 	__etext = . ;
+-	. = ALIGN(16);          /* Exception table              */
+-	___start___ex_table = .;
+-		*(__ex_table)
+-	___stop___ex_table = .;
+ 	}
++	EXCEPTION_TABLE(16)
  
-   BUG_TABLE
+ 	RODATA
+ #if defined(CONFIG_ROMKERNEL)
+@@ -100,8 +98,7 @@ SECTIONS
+ 	__sdata = . ;
+ 	___data_start = . ;
  
-@@ -43,28 +39,17 @@
-   }
- 	
-   .init.setup : {
--	__setup_start = .;
--	*(.init.setup)
--	__setup_end = .;
-+	INIT_SETUP(0)
-   }
- 
--  . = ALIGN(32);
--  .data.percpu : {
--	__per_cpu_start = . ;
--	*(.data.percpu)
--	__per_cpu_end = . ;
--  }
-+  PERCPU(32)
- 	
-   .initcall.init : {
--	__initcall_start = .;
--	INITCALLS
--	__initcall_end = .;
+-	. = ALIGN(0x2000) ;
+-		*(.data.init_task)
++	INIT_TASK_DATA(0x2000)
+ 	. = ALIGN(0x4) ;
+ 		DATA_DATA
+ 	. = ALIGN(0x4) ;
+@@ -114,24 +111,16 @@ SECTIONS
+ 	__einittext = .; 
+ 		INIT_DATA
+ 	. = ALIGN(0x4) ;
++	INIT_SETUP(0x4)
+ 	___setup_start = .;
+ 		*(.init.setup)
+ 	. = ALIGN(0x4) ;
+ 	___setup_end = .;
+-	___initcall_start = .;
+-		INITCALLS
+-	___initcall_end = .;
+-	___con_initcall_start = .;
+-		*(.con_initcall.init)
+-	___con_initcall_end = .;
 +	INIT_CALLS
-   }
- 
-   .con_initcall.init : {
--	__con_initcall_start = .;
--	*(.con_initcall.init)
--	__con_initcall_end = .;
 +	CON_INITCALL
-   }
- 
-   .uml.initcall.init : {
-@@ -118,8 +103,6 @@
- 
-    . = ALIGN(4096);
-   .init.ramfs : {
--	__initramfs_start = .;
--	*(.init.ramfs)
--	__initramfs_end = .;
+ 		EXIT_TEXT
+ 		EXIT_DATA
+-#if defined(CONFIG_BLK_DEV_INITRD)
+-		. = ALIGN(4);
+-	___initramfs_start = .;
+-  		*(.init.ramfs)
+-  	___initramfs_end = .;
+-#endif
 +	INIT_RAM_FS
-   }
- 
-diff --git a/arch/um/kernel/dyn.lds.S b/arch/um/kernel/dyn.lds.S
-index 715a188..7fcad58 100644
---- a/arch/um/kernel/dyn.lds.S
-+++ b/arch/um/kernel/dyn.lds.S
-@@ -16,11 +16,7 @@ SECTIONS
-   _text = .;
-   _stext = .;
-   __init_begin = .;
--  .init.text : {
--	_sinittext = .;
--	INIT_TEXT
--	_einittext = .;
--  }
-+  INIT_TEXT_SECTION(PAGE_SIZE)
- 
-   . = ALIGN(PAGE_SIZE);
- 
-@@ -96,8 +92,7 @@ SECTIONS
-   .init_array     : { *(.init_array) }
-   .fini_array     : { *(.fini_array) }
-   .data           : {
--    . = ALIGN(KERNEL_STACK_SIZE);		/* init_task */
--    *(.data.init_task)
-+    INIT_TASK_DATA(KERNEL_STACK_SIZE)
-     . = ALIGN(KERNEL_STACK_SIZE);
-     *(.data.init_irqstack)
-     DATA_DATA
-diff --git a/arch/um/kernel/uml.lds.S b/arch/um/kernel/uml.lds.S
-index 2ebd397..e7a6cca 100644
---- a/arch/um/kernel/uml.lds.S
-+++ b/arch/um/kernel/uml.lds.S
-@@ -22,11 +22,7 @@ SECTIONS
-   _text = .;
-   _stext = .;
-   __init_begin = .;
--  .init.text : {
--	_sinittext = .;
--	INIT_TEXT
--	_einittext = .;
--  }
-+  INIT_TEXT_SECTION(PAGE_SIZE)
-   . = ALIGN(PAGE_SIZE);
- 
-   .text      :
-@@ -52,8 +48,7 @@ SECTIONS
-   init.data : { INIT_DATA }
-   .data    :
-   {
--    . = ALIGN(KERNEL_STACK_SIZE);		/* init_task */
--    *(.data.init_task)
-+    INIT_TASK_DATA(KERNEL_STACK_SIZE)
-     . = ALIGN(KERNEL_STACK_SIZE);
-     *(.data.init_irqstack)
-     DATA_DATA
-@@ -81,19 +76,10 @@ SECTIONS
-   _edata  =  .;
-   PROVIDE (edata = .);
-   . = ALIGN(PAGE_SIZE);
--  .sbss      :
--  {
--   __bss_start = .;
--   PROVIDE(_bss_start = .);
--   *(.sbss)
--   *(.scommon)
--  }
--  .bss       :
--  {
--   *(.dynbss)
--   *(.bss)
--   *(COMMON)
--  }
-+  __bss_start = .;
-+  PROVIDE(_bss_start = .);
-+  SBSS(0)
-+  BSS(0)
-   _end = .;
-   PROVIDE (end = .);
- 
+ 	. = ALIGN(0x4) ;
+ 	___init_end = .;
+ 	__edata = . ;
 -- 
 1.6.3.3
 
