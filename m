@@ -1,156 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZIXAlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbZIXABa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754388AbZIXAlJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZIXAlH
+	id S1752797AbZIXABa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZIXAB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:41:07 -0400
-Received: from smtp231.iad.emailsrvr.com ([207.97.245.231]:39156 "EHLO
-	smtp231.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbZIXA3b (ORCPT
+	Wed, 23 Sep 2009 20:01:28 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:42645 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752609AbZIXAB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:29:31 -0400
-From: Oren Laadan <orenl@librato.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Nathan Lynch <ntl@pobox.com>
-Subject: [PATCH v18 80/80] powerpc: clone_with_pids implementation
-Date: Wed, 23 Sep 2009 19:52:00 -0400
-Message-Id: <1253749920-18673-81-git-send-email-orenl@librato.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
-References: <1253749920-18673-1-git-send-email-orenl@librato.com>
+	Wed, 23 Sep 2009 20:01:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEACNTukqrR7PE/2dsb2JhbAC+a4hPAY9uBYQb
+X-IronPort-AV: E=Sophos;i="4.44,441,1249257600"; 
+   d="scan'208";a="394836698"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Woodhouse <David.Woodhouse@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] intel-iommu: Make "Unknown DMAR structure" message more informative
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 23 Sep 2009 17:01:29 -0700
+Message-ID: <adafxad2oti.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 24 Sep 2009 00:01:30.0202 (UTC) FILETIME=[2B4C7BA0:01CA3CAA]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nathan Lynch <ntl@pobox.com>
+We might as well print the type of the DMAR structure we don't know how
+to handle when skipping it.  Then someone getting this message has a
+chance of telling whether the structure is just bogus, or if there
+really is something valid that the kernel doesn't know how to handle.
 
-Mostly copy-paste from existing clone code.
-
-(may want to hold off applying this until the ongoing clone_with_pids
-discussion is resolved.)
-
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
 ---
- arch/powerpc/include/asm/syscalls.h |    4 ++++
- arch/powerpc/include/asm/systbl.h   |    1 +
- arch/powerpc/include/asm/unistd.h   |    3 ++-
- arch/powerpc/kernel/entry_32.S      |    8 ++++++++
- arch/powerpc/kernel/entry_64.S      |    5 +++++
- arch/powerpc/kernel/process.c       |   20 +++++++++++++++++++-
- 6 files changed, 39 insertions(+), 2 deletions(-)
+ drivers/pci/dmar.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index eb8eb40..25dfe8b 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -24,6 +24,10 @@ asmlinkage int sys_execve(unsigned long a0, unsigned long a1,
- asmlinkage int sys_clone(unsigned long clone_flags, unsigned long usp,
- 		int __user *parent_tidp, void __user *child_threadptr,
- 		int __user *child_tidp, int p6, struct pt_regs *regs);
-+asmlinkage int sys_clone_with_pids(unsigned long clone_flags,
-+		unsigned long usp, int __user *parent_tidp,
-+		void __user *child_threadptr, int __user *child_tidp,
-+		void __user *upid_setp, struct pt_regs *regs);
- asmlinkage int sys_fork(unsigned long p1, unsigned long p2,
- 		unsigned long p3, unsigned long p4, unsigned long p5,
- 		unsigned long p6, struct pt_regs *regs);
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 3d44cf3..e3c0b96 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -328,3 +328,4 @@ COMPAT_SYS_SPU(pwritev)
- COMPAT_SYS(rt_tgsigqueueinfo)
- SYSCALL(checkpoint)
- SYSCALL(restart)
-+PPC_SYS(clone_with_pids)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index ef41ebb..c54db8b 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -347,10 +347,11 @@
- #define __NR_rt_tgsigqueueinfo	322
- #define __NR_checkpoint		323
- #define __NR_restart		324
-+#define __NR_clone_with_pids	325
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		325
-+#define __NR_syscalls		326
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 3cadba6..081dd36 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -586,6 +586,14 @@ ppc_clone:
- 	stw	r0,_TRAP(r1)		/* register set saved */
- 	b	sys_clone
- 
-+	.globl	ppc_clone_with_pids
-+ppc_clone_with_pids:
-+	SAVE_NVGPRS(r1)
-+	lwz	r0,_TRAP(r1)
-+	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
-+	stw	r0,_TRAP(r1)		/* register set saved */
-+	b	sys_clone_with_pids
-+
- 	.globl	ppc_swapcontext
- ppc_swapcontext:
- 	SAVE_NVGPRS(r1)
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 43e0734..39fa316 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -320,6 +320,11 @@ _GLOBAL(ppc_clone)
- 	bl	.sys_clone
- 	b	syscall_exit
- 
-+_GLOBAL(ppc_clone_with_pids)
-+	bl	.save_nvgprs
-+	bl	.sys_clone_with_pids
-+	b	syscall_exit
-+
- _GLOBAL(ppc32_swapcontext)
- 	bl	.save_nvgprs
- 	bl	.compat_sys_swapcontext
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 892a9f2..7bf21cc 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -895,7 +895,25 @@ int sys_clone(unsigned long clone_flags, unsigned long usp,
- 		child_tidp = TRUNC_PTR(child_tidp);
- 	}
- #endif
-- 	return do_fork(clone_flags, usp, regs, 0, parent_tidp, child_tidp);
-+	return do_fork(clone_flags, usp, regs, 0, parent_tidp, child_tidp);
-+}
-+
-+int sys_clone_with_pids(unsigned long clone_flags, unsigned long usp,
-+	      int __user *parent_tidp, void __user *child_threadptr,
-+	      int __user *child_tidp, void __user *upid_setp,
-+	      struct pt_regs *regs)
-+{
-+	CHECK_FULL_REGS(regs);
-+	if (usp == 0)
-+		usp = regs->gpr[1];
-+#ifdef CONFIG_PPC64
-+	if (test_thread_flag(TIF_32BIT)) {
-+		parent_tidp = TRUNC_PTR(parent_tidp);
-+		child_tidp = TRUNC_PTR(child_tidp);
-+	}
-+#endif
-+	return do_fork_with_pids(clone_flags, usp, regs, 0,
-+				 parent_tidp, child_tidp, upid_setp);
- }
- 
- int sys_fork(unsigned long p1, unsigned long p2, unsigned long p3,
--- 
-1.6.0.4
-
+diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+index 14bbaa1..d199bca 100644
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -461,7 +461,8 @@ parse_dmar_table(void)
+ 			break;
+ 		default:
+ 			printk(KERN_WARNING PREFIX
+-				"Unknown DMAR structure type\n");
++				"Unknown DMAR structure type %d\n",
++				entry_header->type);
+ 			ret = 0; /* for forward compatibility */
+ 			break;
+ 		}
