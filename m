@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbZIXDHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZIXDL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752656AbZIXDHc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 23:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZIXDHa
+	id S1752664AbZIXDL6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 23:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZIXDLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 23:07:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:6946 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbZIXDH2 (ORCPT
+	Wed, 23 Sep 2009 23:11:55 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:62080 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbZIXDLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 23:07:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=EHZZnRwERu0n0L+WSzZcUvWlCsdvV1k4HOM0iaMOgQ8sqxgsrFfawx+Z1oaX/C6f3W
-         MzkHkJrQo3HM7lGe80YVF3cbtwmC+7L1aEKyKrfN83kb96AvEpNYFkeY7AfBkEhaVPGi
-         4AFhTyom6XSzKSkSnqPRwo08uvxgdVmB9Mcrs=
-Message-ID: <4ABAE271.80309@gmail.com>
-Date: Wed, 23 Sep 2009 21:07:29 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
+	Wed, 23 Sep 2009 23:11:55 -0400
+Message-ID: <4ABAE340.7010403@vflare.org>
+Date: Thu, 24 Sep 2009 08:40:56 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: whansard@sbcglobal.net
-CC: linux-kernel@vger.kernel.org
-Subject: Re: disk speed regression kernel 2.6.29 and after
-References: <4ABA0FDA.9090707@sbcglobal.net>
-In-Reply-To: <4ABA0FDA.9090707@sbcglobal.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH RFC 1/2] Add notifiers for various swap events
+References: <1253540040-24860-1-git-send-email-ngupta@vflare.org> <20090924104708.4f54ce4e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090924104708.4f54ce4e.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23/2009 06:08 AM, will wrote:
-> I had been using an old 2.6.22 kernel on my machine, and I often backup
-> one partition of my main hard drive to a partition on a second hard
-> drive. The main hard drive is sata 640 gigs, and the second is a pata
-> 320 gig. copying this partition from one drive to the other with dd
-> takes about 3 minutes and 30 seconds. When I installed kernel 2.6.30,
-> and 2.6.31, the time took 9 minutes and 20 seconds. I decided to go to
-> the trouble of compiling all the kernels between, and kernels
-> 2.6.22-2.6.28 all do the operation in about 3 minutes and 30 seconds.
-> 2.6.29- newer all take about 9 minutes and 20 seconds. The partition is
-> 16 gigs. each drive seems to be as fast as before otherwise, it's just
-> much slower copying from one drive to another, which I do very often.
-> This is an nforce 3 based motherboard, amd southbridge, i think, with 4
-> gigs of ram, athlon 64x2. 32 bit kernel. has anyone heard of this problem?
-> I currently have 3 hard drives hooked up.
-> a 200 gig on a promise controller,
-> a 320 gig on the amd pata?
-> a 640 sata on the nv i think.
-> The motherboard is a Asrock-AM2NF3-VSTA
-> copying this partition with dd or cat or schily's dd between any of these 3
-> different hard drives takes different times depending on the speed of
-> the drive with
-> kernels 2.6.22-2.6.28, but takes about 9 minutes and 30 seconds on any
-> of the drives
-> with the kernels 2.6.29 and after.
-> Please cc me with any followups or anything. thanks.
+On 09/24/2009 07:17 AM, KAMEZAWA Hiroyuki wrote:
+> On Mon, 21 Sep 2009 19:03:59 +0530
+> Nitin Gupta <ngupta@vflare.org> wrote:
+> 
+>> Add notifiers for following swap events:
+>>  - Swapon
+>>  - Swapoff
+>>  - When a swap slot is freed
+>>
+>> This is required for ramzswap module which implements RAM based block
+>> devices to be used as swap disks. These devices require a notification
+>> on these events to function properly (as shown in patch 2/2).
+>>
+>> Currently, I'm not sure if any of these event notifiers have any other
+>> users. However, adding ramzswap specific hooks instead of this generic
+>> approach resulted in a bad/hacky code.
+>>
+> Hmm ? if it's not necessary to make ramzswap as module, for-ramzswap-only
+> code is much easier to read..
+>
 
-Can you post the dmesg output from bootup on both the good and bad kernels?
+The patches posted earlier (v3 patches) inserts special hooks for swap slot
+free event only. In this version, the callback is set when we get first R/W request.
+Actually ramzswap needs callback for swapon/swapoff too but I just didn't do it.
+
+Then Pekka posted test patch that allows setting this callback during swapon
+itself. Looking that all these patches, I realized its already too messy even
+if we just make everything ramzswap specific.
+Just FYI, Pekka's test patch:
+http://patchwork.kernel.org/patch/48472/
+
+Then I added this generic notifier interface which, compared to earlier version,
+looks much cleaner. The code to add these notifiers is also very small.
+ 
+> 
+> 
+>> For SWAP_EVENT_SLOT_FREE, callbacks are made under swap_lock. Currently, this
+>> is not a problem since ramzswap is the only user and the callback it registers
+>> can be safely made under this lock. However, if this event finds more users,
+>> we might have to work on reducing contention on this lock.
+>>
+>> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+>>
+> 
+> In general, notifier chain codes allowed to return NOTIFY_BAD.
+> But this patch just assumes all chains should return NOTIFY_OK or
+> just ignore return code.
+> 
+> That's not good as generic interface, I think.
+
+
+What action we can take here if the notifier_call_chain() returns an error (apart
+from maybe printing an error)? Perhaps we can add a warning in case of swapon/off
+events but not in case of swap slot free event which is called under swap_lock.
+
+
+
+Thanks,
+Nitin
