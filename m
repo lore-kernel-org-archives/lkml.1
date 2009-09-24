@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbZIXSVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbZIXSXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbZIXSVt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 14:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZIXSVt
+	id S1753189AbZIXSXB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 14:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZIXSW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 14:21:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:12017 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752370AbZIXSVs (ORCPT
+	Thu, 24 Sep 2009 14:22:59 -0400
+Received: from mailbackup.inode.at ([213.229.60.24]:59755 "EHLO
+	mailbackup.inode.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460AbZIXSW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 14:21:48 -0400
-Subject: Re: [PATCH] regulator: add driver for MAX8660/8661
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090924180727.GA6408@pengutronix.de>
-References: <1253798645-9493-1-git-send-email-w.sang@pengutronix.de>
-	 <20090924173904.GA9082@sirena.org.uk>
-	 <20090924180727.GA6408@pengutronix.de>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 19:21:46 +0100
-Message-Id: <1253816506.11624.889.camel@vega>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 24 Sep 2009 14:22:58 -0400
+Message-ID: <4ABBB8C2.2080901@sbg.ac.at>
+Date: Thu, 24 Sep 2009 20:21:54 +0200
+From: Alexander Huemer <alexander.huemer@sbg.ac.at>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090826)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: alexander.huemer@sbg.ac.at
+Subject: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-24 at 20:07 +0200, Wolfram Sang wrote:
-> > > +	if (MAX8660_DCDC_MIN_UV + selector * MAX8660_DCDC_STEP > max_uV)
-> > > +		return -EINVAL;
-> > 
-> > Not important but using list_voltage() here would be a little nicer.
-> 
-> Well, uhm, yeah :)
-> 
-> > > +static struct regulator_ops max8660_dcdc_ops = {
-> > > +	.is_enabled = max8660_dcdc_is_enabled,
-> > > +	.list_voltage = max8660_dcdc_list,
-> > > +	.set_voltage = max8660_dcdc_set,
-> > > +	.get_voltage = max8660_dcdc_get,
-> > > +	/* no set_mode() & friends: forced PWM does not save any power */
-> > 
-> > Forced PWM is normally a power loss - the benefit it gives is the
-> > ability to respond to sudden spikes in load without voltage droops.  The
-> > power benefit from not having it enabled is usually only apparent at
-> > lower loads.
-> 
-> Understood. Well, as this chip automatically switches PWM on/off depending on
-> the load (formula is in the datasheet), it seems to me that the forced-PWM mode
-> is mainly used for systems which prefer low-noise on the signal. So, the above
-> comment could just be dropped. Liam, could you do this, or shall I resend?
+the problem appears under heavy system load and slows down the system to
+unusable speed.
+kernels before .30 were not affected.
+irqpoll does not change behavior.
 
-Would be easier for me if you could resend. Mark and I are at LPC today
-so not really in a position to code (or even answers mails quickly).
+error message from .31:
 
-Thanks
+    [157152.418524] irq 23: nobody cared (try booting with the "irqpoll"
+    option)
+    [157152.418530] Pid: 1359, comm: cc1plus Tainted: G        W 
+    2.6.31-gentoo-blackbit #2
+    [157152.418532] Call Trace:
+    [157152.418534]  <IRQ>  [<ffffffff81066e3f>] ?
+    __report_bad_irq+0x30/0x7d
+    [157152.418544]  [<ffffffff81066f93>] ? note_interrupt+0x107/0x170
+    [157152.418547]  [<ffffffff81067580>] ? handle_fasteoi_irq+0x8a/0xaa
+    [157152.418551]  [<ffffffff8100d1cf>] ? handle_irq+0x17/0x1d
+    [157152.418554]  [<ffffffff8100c84b>] ? do_IRQ+0x54/0xb2
+    [157152.418558]  [<ffffffff8100b6d3>] ? ret_from_intr+0x0/0xa
+    [157152.418559]  <EOI>
+    [157152.418560] handlers:
+    [157152.418562] [<ffffffff813d2a6f>] (ahci_interrupt+0x0/0x426)
+    [157152.418566] Disabling IRQ #23
 
-Liam
 
+bios of the machine is up to date,
+i tried all related bios settings, no change.
+
+kernel config for .31     http://xx.vu/~ahuemer/config_ahuemer_20090923.gz
+lspci -vxxx               http://xx.vu/~ahuemer/lspci_ahuemer_20090923
+lsusb -v                  http://xx.vu/~ahuemer/lsusb_ahuemer_20090923
+/proc/interrupts         
+http://xx.vu/~ahuemer/proc_interrupts_ahuemer_20090923
+thread in gentoo forums  
+http://forums.gentoo.org/viewtopic-t-780725-start-0.html
+
+please tell me what additional info is needed.
+please CC me on replies, i am not subscribed.
+
+-alex
