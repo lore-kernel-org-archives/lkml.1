@@ -1,65 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbZIXQIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZIXQJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752900AbZIXQIK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 12:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZIXQIJ
+	id S1753106AbZIXQJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 12:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbZIXQJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 12:08:09 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:43293 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752622AbZIXQII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 12:08:08 -0400
-Message-ID: <4ABB9964.7050104@evidence.eu.com>
-Date: Thu, 24 Sep 2009 18:08:04 +0200
-From: Claudio Scordino <claudio@evidence.eu.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 24 Sep 2009 12:09:58 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:36694 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbZIXQJ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 12:09:57 -0400
+Date: Thu, 24 Sep 2009 09:10:01 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Ian Kent <raven@themaw.net>
+cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>, Andreas Dilger <adilger@sun.com>,
+       Yehuda Saheh <yehuda@newdream.net>, Jim Garlick <garlick@llnl.gov>
+Subject: Re: [RFC PATCH 00/11] autofs4 - update autofs4 to deal with VFS
+ locking change
+In-Reply-To: <20090924082036.22151.85151.stgit@zeus.themaw.net>
+Message-ID: <Pine.LNX.4.64.0909240835390.25940@cobra.newdream.net>
+References: <20090924082036.22151.85151.stgit@zeus.themaw.net>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Raistlin <raistlin@linux.it>, michael@evidence.eu.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-References: <1253615424.20345.76.camel@Palantir>	 <4AB8BBEF.2040604@evidence.eu.com> <1253623106.4452.9.camel@laptop>
-In-Reply-To: <1253623106.4452.9.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra ha scritto:
-> On Tue, 2009-09-22 at 13:58 +0200, Claudio Scordino wrote:
->>> This implementation is part of a FP7 European project called ACTORS,
->>> and financially supported by the European commission
->>> (see http://www.actors-project.eu).
->>>
->>> The involved partners (which include Ericsson Research, Evidence Srl,
->>> AKAtech) strongly believe that a general-purpose operating system like
->>> Linux should provide a standard real-time scheduling policy (like the
->>> one implemented in this patch) still allowing to schedule non-real-time
->>> tasks in the usual way.
->> Hi Peter, hi all,
->>
->>       note that the request of having an EDF scheduling class integrated 
->> in the mainline kernel does not come from academy, but comes from industry.
+On Thu, 24 Sep 2009, Ian Kent wrote:
+
+> A change to the VFS path walk locking is needed to resolve an issue
+> identified by Sage Weil. This locking change requires significant
+> changes to the autofs4 module to allow it to callback to userspace
+> without introducing a deadlock.
 > 
-> Yeah, I know, there's lots of interest in having a deadline scheduler.
+> To cope with the change the autofs4 module needs to redirect mount
+> requests from ->d_revalidate() to ->lookup() if the directory
+> inode mutex is held when a callback needs to be done. Note that we
+> cannot redirect these requests when the mutex is not held because,
+> to function correctly, the mutex must be held over both revalidate
+> and lookup.
 > 
-> One of the things we'll have to look at is removing all the EDF
-> assumptions from it.
+> Of the patches in the series most are cleanups and refactoring done
+> to keep the real change in "autofs4 - always use lookup for lookup"
+> as clean as possible. Unfortuneately, there is still quite a bit
+> left in it.
 > 
-> I think we'll be wanting to do something like s/EDF/DEADLINE/
-> s/edf/deadline/ etc. on the code base to begin with.
+> Also, I need confirmation that the patch that changes the VFS path
+> walk locking is in fact correct, or at least like for like to what
+> will be submitted. I had some difficulty with the original patches
+> that were paosted. The patch in question below is "vfs: make
+> real_lookup do dentry revalidation with i_mutex held".
 
-This is easy: we can give it whatever name you want :)
+It looks identical to be the original two folded into one patch.  I'll 
+repost those two now, freshened against Linus' tree.  The first has just 
+the functional change, and the cleanup is in the second (as per 
+Christoph's review).
 
-Are you suggesting to use "SCHED_DEADLINE" ?
+> I've done quite a bit of fairly heavy stress testing of the patch
+> series and they (finally) hold up to it. Although I have also
+> managed to uncover a locking bug in the user space daemon as a
+> result, ;)
 
-Cheers,
+I'm glad some other good has come of it.  Thanks, Ian, for carrying this 
+through!
 
-                 Claudio
+sage
 
+ 
+> 
+> ---
+> 
+> Ian Kent (10):
+>       autofs4 - always use lookup for lookup
+>       autofs4 - rename dentry to expiring in autofs4_lookup_expiring()
+>       autofs4 - rename dentry to active in autofs4_lookup_active()
+>       autofs4 - eliminate d_unhashed in path walk checks
+>       autofs4 - cleanup active and expire lookup
+>       autofs4 - renamer unhashed to active in autofs4_lookup()
+>       autofs4 - use autofs_info for pending flag
+>       autofs4 - use macro for need mount check
+>       autofs4 - use macros for expiring list
+>       autofs4 - use macros for active list handling
+> 
+> Sage Weil (1):
+>       Subject: [PATCH] vfs: make real_lookup do dentry revalidation with i_mutex held
+> 
+> 
+>  fs/autofs4/autofs_i.h |   38 +++
+>  fs/autofs4/expire.c   |    8 -
+>  fs/autofs4/inode.c    |    2 
+>  fs/autofs4/root.c     |  616 ++++++++++++++++++++++++++++++++-----------------
+>  fs/namei.c            |   58 ++---
+>  5 files changed, 480 insertions(+), 242 deletions(-)
+> 
+> -- 
+> Ian
+> 
+> 
