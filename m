@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbZIXIbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450AbZIXIWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752711AbZIXIbg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 04:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZIXIbb
+	id S1752450AbZIXIWP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 04:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZIXIWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 04:31:31 -0400
-Received: from outbound.icp-qv1-irony-out5.iinet.net.au ([203.59.1.108]:8813
-	"EHLO outbound.icp-qv1-irony-out5.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752403AbZIXIbZ (ORCPT
+	Thu, 24 Sep 2009 04:22:14 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:36167
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752144AbZIXIWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 04:31:25 -0400
+	Thu, 24 Sep 2009 04:22:13 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAIPJukrLO0En/2dsb2JhbADWMIQbBYI9
+X-IronPort-Anti-Spam-Result: ApoEAMvIukrLO0En/2dsb2JhbADWL4QbBYFYZQ
 X-IronPort-AV: E=Sophos;i="4.44,444,1249228800"; 
-   d="scan'208";a="39448930"
+   d="scan'208";a="505927071"
 From: Ian Kent <raven@themaw.net>
-Subject: [RFC PATCH 01/11] Subject: [PATCH] vfs: make real_lookup do dentry
-	revalidation with i_mutex held
+Subject: [RFC PATCH 02/11] autofs4 - use macros for active list handling
 To: Sage Weil <sage@newdream.net>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
        Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
        Andreas Dilger <adilger@sun.com>, Yehuda Saheh <yehuda@newdream.net>,
        Jim Garlick <garlick@llnl.gov>
-Date: Thu, 24 Sep 2009 16:21:25 +0800
-Message-ID: <20090924082125.22151.94452.stgit@zeus.themaw.net>
+Date: Thu, 24 Sep 2009 16:21:32 +0800
+Message-ID: <20090924082132.22151.6924.stgit@zeus.themaw.net>
 In-Reply-To: <20090924082036.22151.85151.stgit@zeus.themaw.net>
 References: <20090924082036.22151.85151.stgit@zeus.themaw.net>
 User-Agent: StGIT/0.14.3
@@ -35,123 +34,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sage Weil <sage@newdream.net>
+Define some simple macro functions for adding and deleting entries
+on the active (and unhashed) dentry list.
 
-real_lookup() is called by do_lookup() if dentry revalidation fails.  If
-the cache is re-populated while waiting for i_mutex, it may find that
-a d_lookup() subsequently succeeds (see the "Uhhuh! Nasty case" comment).
-
-Previously, real_lookup() would drop i_mutex and do_revalidate() again. If
-revalidate failed _again_, however, it would give up with -ENOENT.  The
-problem here that network file systems may be invalidating dentries via
-server callbacks, e.g. due to concurrent access from another client, and
--ENOENT is frequently the wrong answer.
-
-This problem has been seen with both Lustre and Ceph.  It seems possible
-to hit this case with NFS as well if the cache lifetime is very short.
-
-Instead, we should do_revalidate() while i_mutex is still held.  If
-revalidation fails, we can move on to a ->lookup() and ensure a correct
-result without worrying about any subsequent races.
-
-Note that do_revalidate() is called with i_mutex held elsewhere.  For
-example, do_filp_open(), lookup_create(), do_unlinkat(), do_rmdir(),
-and possibly others all take the directory i_mutex, and then
-
--> lookup_hash
-        -> __lookup_hash
-                -> cached_lookup
-                        -> do_revalidate
-
-so this does not introduce any new locking rules for d_revalidate
-implementations.
-
-Signed-off-by: Yehuda Sadeh <yehuda@newdream.net>
-Signed-off-by: Sage Weil <sage@newdream.net>
+Signed-off-by: Ian Kent <raven@themaw.net>
 ---
 
- fs/namei.c |   58 +++++++++++++++++++++++++++++++---------------------------
- 1 files changed, 31 insertions(+), 27 deletions(-)
+ fs/autofs4/autofs_i.h |    2 ++
+ fs/autofs4/inode.c    |    1 +
+ fs/autofs4/root.c     |   46 +++++++++++++++++++++++++++++++++++-----------
+ 3 files changed, 38 insertions(+), 11 deletions(-)
 
-diff --git a/fs/namei.c b/fs/namei.c
-index d11f404..d68ea6d 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -477,6 +477,7 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
- {
- 	struct dentry * result;
- 	struct inode *dir = parent->d_inode;
-+	struct dentry *dentry;
+diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+index 8f7cdde..f3cf151 100644
+--- a/fs/autofs4/autofs_i.h
++++ b/fs/autofs4/autofs_i.h
+@@ -75,6 +75,8 @@ struct autofs_info {
+ 	struct completion expire_complete;
  
- 	mutex_lock(&dir->i_mutex);
- 	/*
-@@ -494,38 +495,41 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
- 	 * so doing d_lookup() (with seqlock), instead of lockfree __d_lookup
- 	 */
- 	result = d_lookup(parent, name);
--	if (!result) {
--		struct dentry *dentry;
--
--		/* Don't create child dentry for a dead directory. */
--		result = ERR_PTR(-ENOENT);
--		if (IS_DEADDIR(dir))
--			goto out_unlock;
--
--		dentry = d_alloc(parent, name);
--		result = ERR_PTR(-ENOMEM);
--		if (dentry) {
--			result = dir->i_op->lookup(dir, dentry, nd);
-+	if (result) {
-+		/*
-+		 * The cache was re-populated while we waited on the
-+		 * mutex.  We need to revalidate, this time while
-+		 * holding i_mutex (to avoid another race).
-+		 */
-+		if (result->d_op && result->d_op->d_revalidate) {
-+			result = do_revalidate(result, nd);
- 			if (result)
--				dput(dentry);
--			else
--				result = dentry;
-+				goto out_unlock;
-+			/*
-+			 * The dentry was left behind invalid.  Just
-+			 * do the lookup.
-+			 */
-+		} else {
-+			goto out_unlock;
- 		}
--out_unlock:
--		mutex_unlock(&dir->i_mutex);
--		return result;
- 	}
- 
--	/*
--	 * Uhhuh! Nasty case: the cache was re-populated while
--	 * we waited on the semaphore. Need to revalidate.
--	 */
--	mutex_unlock(&dir->i_mutex);
--	if (result->d_op && result->d_op->d_revalidate) {
--		result = do_revalidate(result, nd);
--		if (!result)
--			result = ERR_PTR(-ENOENT);
-+	/* Don't create child dentry for a dead directory. */
-+	result = ERR_PTR(-ENOENT);
-+	if (IS_DEADDIR(dir))
-+		goto out_unlock;
+ 	struct list_head active;
++	int active_count;
 +
-+	dentry = d_alloc(parent, name);
-+	result = ERR_PTR(-ENOMEM);
-+	if (dentry) {
-+		result = dir->i_op->lookup(dir, dentry, nd);
-+		if (result)
-+			dput(dentry);
-+		else
-+			result = dentry;
- 	}
-+out_unlock:
-+	mutex_unlock(&dir->i_mutex);
- 	return result;
- }
+ 	struct list_head expiring;
  
+ 	struct autofs_sb_info *sbi;
+diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
+index 69c8142..4670a78 100644
+--- a/fs/autofs4/inode.c
++++ b/fs/autofs4/inode.c
+@@ -49,6 +49,7 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
+ 		ino->dentry = NULL;
+ 		ino->size = 0;
+ 		INIT_LIST_HEAD(&ino->active);
++		ino->active_count = 0;
+ 		INIT_LIST_HEAD(&ino->expiring);
+ 		atomic_set(&ino->count, 0);
+ 	}
+diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+index b96a3c5..67d8d96 100644
+--- a/fs/autofs4/root.c
++++ b/fs/autofs4/root.c
+@@ -72,6 +72,38 @@ const struct inode_operations autofs4_dir_inode_operations = {
+ 	.rmdir		= autofs4_dir_rmdir,
+ };
+ 
++static void autofs4_add_active(struct dentry *dentry)
++{
++	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
++	struct autofs_info *ino = autofs4_dentry_ino(dentry);
++	if (ino) {
++		spin_lock(&sbi->lookup_lock);
++		if (!ino->active_count) {
++			if (list_empty(&ino->active))
++				list_add(&ino->active, &sbi->active_list);
++		}
++		ino->active_count++;
++		spin_unlock(&sbi->lookup_lock);
++	}
++	return;
++}
++
++static void autofs4_del_active(struct dentry *dentry)
++{
++	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
++	struct autofs_info *ino = autofs4_dentry_ino(dentry);
++	if (ino) {
++		spin_lock(&sbi->lookup_lock);
++		ino->active_count--;
++		if (!ino->active_count) {
++			if (!list_empty(&ino->active))
++				list_del_init(&ino->active);
++		}
++		spin_unlock(&sbi->lookup_lock);
++	}
++	return;
++}
++
+ static int autofs4_dir_open(struct inode *inode, struct file *file)
+ {
+ 	struct dentry *dentry = file->f_path.dentry;
+@@ -513,9 +545,7 @@ static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, s
+ 		dentry->d_fsdata = ino;
+ 		ino->dentry = dentry;
+ 
+-		spin_lock(&sbi->lookup_lock);
+-		list_add(&ino->active, &sbi->active_list);
+-		spin_unlock(&sbi->lookup_lock);
++		autofs4_add_active(dentry);
+ 
+ 		d_instantiate(dentry, NULL);
+ 	}
+@@ -624,10 +654,7 @@ static int autofs4_dir_symlink(struct inode *dir,
+ 	if (!ino)
+ 		return -ENOMEM;
+ 
+-	spin_lock(&sbi->lookup_lock);
+-	if (!list_empty(&ino->active))
+-		list_del_init(&ino->active);
+-	spin_unlock(&sbi->lookup_lock);
++	autofs4_del_active(dentry);
+ 
+ 	ino->size = strlen(symname);
+ 	cp = kmalloc(ino->size + 1, GFP_KERNEL);
+@@ -775,10 +802,7 @@ static int autofs4_dir_mkdir(struct inode *dir, struct dentry *dentry, int mode)
+ 	if (!ino)
+ 		return -ENOMEM;
+ 
+-	spin_lock(&sbi->lookup_lock);
+-	if (!list_empty(&ino->active))
+-		list_del_init(&ino->active);
+-	spin_unlock(&sbi->lookup_lock);
++	autofs4_del_active(dentry);
+ 
+ 	inode = autofs4_get_inode(dir->i_sb, ino);
+ 	if (!inode) {
 
