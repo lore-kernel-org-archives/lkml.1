@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbZIXIak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbZIXIbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752513AbZIXIak (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 04:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZIXIai
+	id S1752711AbZIXIbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 04:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZIXIbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 04:30:38 -0400
-Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:65301
-	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751932AbZIXIah (ORCPT
+	Thu, 24 Sep 2009 04:31:31 -0400
+Received: from outbound.icp-qv1-irony-out5.iinet.net.au ([203.59.1.108]:8813
+	"EHLO outbound.icp-qv1-irony-out5.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752403AbZIXIbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 04:30:37 -0400
-X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Sep 2009 04:30:36 EDT
+	Thu, 24 Sep 2009 04:31:25 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAMvIukrLO0En/2dsb2JhbADWL4QbBYFYZQ
+X-IronPort-Anti-Spam-Result: ApoEAIPJukrLO0En/2dsb2JhbADWMIQbBYI9
 X-IronPort-AV: E=Sophos;i="4.44,444,1249228800"; 
-   d="scan'208";a="468142520"
+   d="scan'208";a="39448930"
 From: Ian Kent <raven@themaw.net>
-Subject: [RFC PATCH 00/11] autofs4 - update autofs4 to deal with VFS locking
-	change
+Subject: [RFC PATCH 01/11] Subject: [PATCH] vfs: make real_lookup do dentry
+	revalidation with i_mutex held
 To: Sage Weil <sage@newdream.net>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
        Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
        Andreas Dilger <adilger@sun.com>, Yehuda Saheh <yehuda@newdream.net>,
        Jim Garlick <garlick@llnl.gov>
-Date: Thu, 24 Sep 2009 16:21:18 +0800
-Message-ID: <20090924082036.22151.85151.stgit@zeus.themaw.net>
+Date: Thu, 24 Sep 2009 16:21:25 +0800
+Message-ID: <20090924082125.22151.94452.stgit@zeus.themaw.net>
+In-Reply-To: <20090924082036.22151.85151.stgit@zeus.themaw.net>
+References: <20090924082036.22151.85151.stgit@zeus.themaw.net>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -34,58 +35,123 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A change to the VFS path walk locking is needed to resolve an issue
-identified by Sage Weil. This locking change requires significant
-changes to the autofs4 module to allow it to callback to userspace
-without introducing a deadlock.
+From: Sage Weil <sage@newdream.net>
 
-To cope with the change the autofs4 module needs to redirect mount
-requests from ->d_revalidate() to ->lookup() if the directory
-inode mutex is held when a callback needs to be done. Note that we
-cannot redirect these requests when the mutex is not held because,
-to function correctly, the mutex must be held over both revalidate
-and lookup.
+real_lookup() is called by do_lookup() if dentry revalidation fails.  If
+the cache is re-populated while waiting for i_mutex, it may find that
+a d_lookup() subsequently succeeds (see the "Uhhuh! Nasty case" comment).
 
-Of the patches in the series most are cleanups and refactoring done
-to keep the real change in "autofs4 - always use lookup for lookup"
-as clean as possible. Unfortuneately, there is still quite a bit
-left in it.
+Previously, real_lookup() would drop i_mutex and do_revalidate() again. If
+revalidate failed _again_, however, it would give up with -ENOENT.  The
+problem here that network file systems may be invalidating dentries via
+server callbacks, e.g. due to concurrent access from another client, and
+-ENOENT is frequently the wrong answer.
 
-Also, I need confirmation that the patch that changes the VFS path
-walk locking is in fact correct, or at least like for like to what
-will be submitted. I had some difficulty with the original patches
-that were paosted. The patch in question below is "vfs: make
-real_lookup do dentry revalidation with i_mutex held".
+This problem has been seen with both Lustre and Ceph.  It seems possible
+to hit this case with NFS as well if the cache lifetime is very short.
 
-I've done quite a bit of fairly heavy stress testing of the patch
-series and they (finally) hold up to it. Although I have also
-managed to uncover a locking bug in the user space daemon as a
-result, ;)
+Instead, we should do_revalidate() while i_mutex is still held.  If
+revalidation fails, we can move on to a ->lookup() and ensure a correct
+result without worrying about any subsequent races.
 
+Note that do_revalidate() is called with i_mutex held elsewhere.  For
+example, do_filp_open(), lookup_create(), do_unlinkat(), do_rmdir(),
+and possibly others all take the directory i_mutex, and then
+
+-> lookup_hash
+        -> __lookup_hash
+                -> cached_lookup
+                        -> do_revalidate
+
+so this does not introduce any new locking rules for d_revalidate
+implementations.
+
+Signed-off-by: Yehuda Sadeh <yehuda@newdream.net>
+Signed-off-by: Sage Weil <sage@newdream.net>
 ---
 
-Ian Kent (10):
-      autofs4 - always use lookup for lookup
-      autofs4 - rename dentry to expiring in autofs4_lookup_expiring()
-      autofs4 - rename dentry to active in autofs4_lookup_active()
-      autofs4 - eliminate d_unhashed in path walk checks
-      autofs4 - cleanup active and expire lookup
-      autofs4 - renamer unhashed to active in autofs4_lookup()
-      autofs4 - use autofs_info for pending flag
-      autofs4 - use macro for need mount check
-      autofs4 - use macros for expiring list
-      autofs4 - use macros for active list handling
+ fs/namei.c |   58 +++++++++++++++++++++++++++++++---------------------------
+ 1 files changed, 31 insertions(+), 27 deletions(-)
 
-Sage Weil (1):
-      Subject: [PATCH] vfs: make real_lookup do dentry revalidation with i_mutex held
+diff --git a/fs/namei.c b/fs/namei.c
+index d11f404..d68ea6d 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -477,6 +477,7 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
+ {
+ 	struct dentry * result;
+ 	struct inode *dir = parent->d_inode;
++	struct dentry *dentry;
+ 
+ 	mutex_lock(&dir->i_mutex);
+ 	/*
+@@ -494,38 +495,41 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
+ 	 * so doing d_lookup() (with seqlock), instead of lockfree __d_lookup
+ 	 */
+ 	result = d_lookup(parent, name);
+-	if (!result) {
+-		struct dentry *dentry;
+-
+-		/* Don't create child dentry for a dead directory. */
+-		result = ERR_PTR(-ENOENT);
+-		if (IS_DEADDIR(dir))
+-			goto out_unlock;
+-
+-		dentry = d_alloc(parent, name);
+-		result = ERR_PTR(-ENOMEM);
+-		if (dentry) {
+-			result = dir->i_op->lookup(dir, dentry, nd);
++	if (result) {
++		/*
++		 * The cache was re-populated while we waited on the
++		 * mutex.  We need to revalidate, this time while
++		 * holding i_mutex (to avoid another race).
++		 */
++		if (result->d_op && result->d_op->d_revalidate) {
++			result = do_revalidate(result, nd);
+ 			if (result)
+-				dput(dentry);
+-			else
+-				result = dentry;
++				goto out_unlock;
++			/*
++			 * The dentry was left behind invalid.  Just
++			 * do the lookup.
++			 */
++		} else {
++			goto out_unlock;
+ 		}
+-out_unlock:
+-		mutex_unlock(&dir->i_mutex);
+-		return result;
+ 	}
+ 
+-	/*
+-	 * Uhhuh! Nasty case: the cache was re-populated while
+-	 * we waited on the semaphore. Need to revalidate.
+-	 */
+-	mutex_unlock(&dir->i_mutex);
+-	if (result->d_op && result->d_op->d_revalidate) {
+-		result = do_revalidate(result, nd);
+-		if (!result)
+-			result = ERR_PTR(-ENOENT);
++	/* Don't create child dentry for a dead directory. */
++	result = ERR_PTR(-ENOENT);
++	if (IS_DEADDIR(dir))
++		goto out_unlock;
++
++	dentry = d_alloc(parent, name);
++	result = ERR_PTR(-ENOMEM);
++	if (dentry) {
++		result = dir->i_op->lookup(dir, dentry, nd);
++		if (result)
++			dput(dentry);
++		else
++			result = dentry;
+ 	}
++out_unlock:
++	mutex_unlock(&dir->i_mutex);
+ 	return result;
+ }
+ 
 
-
- fs/autofs4/autofs_i.h |   38 +++
- fs/autofs4/expire.c   |    8 -
- fs/autofs4/inode.c    |    2 
- fs/autofs4/root.c     |  616 ++++++++++++++++++++++++++++++++-----------------
- fs/namei.c            |   58 ++---
- 5 files changed, 480 insertions(+), 242 deletions(-)
-
--- 
-Ian
