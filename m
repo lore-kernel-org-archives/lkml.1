@@ -1,91 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbZIXISq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbZIXIak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752379AbZIXISq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 04:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZIXISp
+	id S1752513AbZIXIak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 04:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZIXIai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 04:18:45 -0400
-Received: from ozlabs.org ([203.10.76.45]:56123 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752144AbZIXISn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 04:18:43 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [crash] BUG: unable to handle kernel NULL pointer dereference at (null), last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/local_cpus
-Date: Thu, 24 Sep 2009 17:48:44 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, Yinghai Lu <yinghai@kernel.org>,
-       Tejun Heo <tj@kernel.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20090915132105.2fdd1d45@jbarnes-g45> <20090918075952.GA29026@elte.hu> <alpine.LFD.2.01.0909180755530.4950@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0909180755530.4950@localhost.localdomain>
+	Thu, 24 Sep 2009 04:30:38 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:65301
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751932AbZIXIah (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 04:30:37 -0400
+X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Sep 2009 04:30:36 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAMvIukrLO0En/2dsb2JhbADWL4QbBYFYZQ
+X-IronPort-AV: E=Sophos;i="4.44,444,1249228800"; 
+   d="scan'208";a="468142520"
+From: Ian Kent <raven@themaw.net>
+Subject: [RFC PATCH 00/11] autofs4 - update autofs4 to deal with VFS locking
+	change
+To: Sage Weil <sage@newdream.net>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
+       Andreas Dilger <adilger@sun.com>, Yehuda Saheh <yehuda@newdream.net>,
+       Jim Garlick <garlick@llnl.gov>
+Date: Thu, 24 Sep 2009 16:21:18 +0800
+Message-ID: <20090924082036.22151.85151.stgit@zeus.themaw.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909241748.45629.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Sep 2009 01:08:02 am Linus Torvalds wrote:
-> [ Side note: looking closer, I think our headers are buggy, and I _know_ 
->   they are confusing. The above inline declaration of cpumask_of_node() 
->   seems to be then later overridden in <asm-generic/topology.h> by a 
->   #define! 
-> 
->   And if I read that right, that will also override the debugging 
->   versions that we declared if CONFIG_DEBUG_PER_CPU_MAPS is on. Ingo? 
->   Rusty? Am I missing something?
+A change to the VFS path walk locking is needed to resolve an issue
+identified by Sage Weil. This locking change requires significant
+changes to the autofs4 module to allow it to callback to userspace
+without introducing a deadlock.
 
-What a tangle.
+To cope with the change the autofs4 module needs to redirect mount
+requests from ->d_revalidate() to ->lookup() if the directory
+inode mutex is held when a callback needs to be done. Note that we
+cannot redirect these requests when the mutex is not held because,
+to function correctly, the mutex must be held over both revalidate
+and lookup.
 
-The CONFIG_DEBUG_PER_CPU_MAPS only overrides cpumask_of_node in the NUMA case
-(otherwise, it leaves it alone).
+Of the patches in the series most are cleanups and refactoring done
+to keep the real change in "autofs4 - always use lookup for lookup"
+as clean as possible. Unfortuneately, there is still quite a bit
+left in it.
 
-And asm-generic/topology.h only defines cpumask_of_node in the !NUMA case.
+Also, I need confirmation that the patch that changes the VFS path
+walk locking is in fact correct, or at least like for like to what
+will be submitted. I had some difficulty with the original patches
+that were paosted. The patch in question below is "vfs: make
+real_lookup do dentry revalidation with i_mutex held".
 
-But there's still redundancy.  Ingo...
+I've done quite a bit of fairly heavy stress testing of the patch
+series and they (finally) hold up to it. Although I have also
+managed to uncover a locking bug in the user space daemon as a
+result, ;)
 
-Subject: x86: remove redundant non-NUMA topology functions
-
-arch/x86/include/asm/topology.h declares inline fns cpu_to_node
-and cpumask_of_node for !NUMA, even though they are then declared as macros
-by asm-generic/topology.h, which is #included just below.
-
-The macros (which are the same) end up being used; these functions are
-just confusing.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/x86/include/asm/topology.h |   10 ----------
- 1 file changed, 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -165,21 +165,11 @@ static inline int numa_node_id(void)
- 	return 0;
- }
- 
--static inline int cpu_to_node(int cpu)
--{
--	return 0;
--}
--
- static inline int early_cpu_to_node(int cpu)
- {
- 	return 0;
- }
- 
--static inline const struct cpumask *cpumask_of_node(int node)
--{
--	return cpu_online_mask;
--}
--
- static inline void setup_node_to_cpumask_map(void) { }
- 
- #endif
+Ian Kent (10):
+      autofs4 - always use lookup for lookup
+      autofs4 - rename dentry to expiring in autofs4_lookup_expiring()
+      autofs4 - rename dentry to active in autofs4_lookup_active()
+      autofs4 - eliminate d_unhashed in path walk checks
+      autofs4 - cleanup active and expire lookup
+      autofs4 - renamer unhashed to active in autofs4_lookup()
+      autofs4 - use autofs_info for pending flag
+      autofs4 - use macro for need mount check
+      autofs4 - use macros for expiring list
+      autofs4 - use macros for active list handling
+
+Sage Weil (1):
+      Subject: [PATCH] vfs: make real_lookup do dentry revalidation with i_mutex held
+
+
+ fs/autofs4/autofs_i.h |   38 +++
+ fs/autofs4/expire.c   |    8 -
+ fs/autofs4/inode.c    |    2 
+ fs/autofs4/root.c     |  616 ++++++++++++++++++++++++++++++++-----------------
+ fs/namei.c            |   58 ++---
+ 5 files changed, 480 insertions(+), 242 deletions(-)
+
+-- 
+Ian
