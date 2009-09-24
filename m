@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZIXT0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbZIXT2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbZIXT0t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZIXT0r
+	id S1754402AbZIXT2E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZIXT16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:26:47 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:18496 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 15:27:58 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:18855 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752495AbZIXT0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:26:32 -0400
+	id S1751801AbZIXT0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:26:51 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
@@ -21,924 +21,908 @@ Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
        jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
        riel@redhat.com
-Subject: [PATCH 22/28] io-controller: anticipatory changes for hierarchical fair queuing
-Date: Thu, 24 Sep 2009 15:25:26 -0400
-Message-Id: <1253820332-10246-23-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 23/28] io-controller: blkio_cgroup patches from Ryo to track async bios.
+Date: Thu, 24 Sep 2009 15:25:27 -0400
+Message-Id: <1253820332-10246-24-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes anticipatory scheduler to use queue scheduling code from
-elevator layer.  One can go back to old as by deselecting
-CONFIG_IOSCHED_AS_HIER. Even with CONFIG_IOSCHED_AS_HIER=y, with-out any
-other cgroup created, AS behavior should remain the same as old.
+o blkio_cgroup patches from Ryo to track async bios.
 
-o AS is a single queue ioschduler, that means there is one AS queue per group.
+o This functionality is used to determine the group of async IO from page
+  instead of context of submitting task.
 
-o common layer code select the queue to dispatch from based on fairness, and
-  then AS code selects the request with-in group.
-
-o AS runs reads and writes batches with-in group. So common layer runs timed
-  group queues and with-in group time, AS runs timed batches of reads and
-  writes.
-
-o Note: Previously AS write batch length was adjusted synamically whenever
-  a W->R batch data direction took place and when first request from the
-  read batch completed.
-
-  Now write batch updation takes place when last request from the write
-  batch has finished during W->R transition.
-
-o AS runs its own anticipation logic to anticipate on reads. common layer also
-  does the anticipation on the group if think time of the group is with-in
-  slice_idle.
-
-o Introduced few debugging messages in AS.
-
-o There are cases where in case of AS, excessive queue expiration will take
-  place by elevator fair queuing layer because of few reasons.
-        - AS does not anticipate on a queue if there are no competing requests.
-          So if only a single reader is present in a group, anticipation does
-          not get turn on.
-
-        - elevator layer does not know that As is anticipating hence initiates
-          expiry requests in select_ioq() thinking queue is empty.
-
-        - elevaotr layer tries to aggressively expire last empty queue. This
-          can lead to lof of queue expiry
-
-o This patch now starts ANITC_WAIT_NEXT anticipation if last request in the
-  queue completed and associated io context is eligible to anticipate. Also
-  AS lets elevatory layer know that it is anticipating (elv_ioq_wait_request())
-  This solves above mentioned issues.
-
-Signed-off-by: Nauman Rafique <nauman@google.com>
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 Acked-by: Rik van Riel <riel@redhat.com>
 ---
- block/Kconfig.iosched    |   12 ++
- block/as-iosched.c       |  376 +++++++++++++++++++++++++++++++++++++++++++++-
- block/elevator-fq.c      |  107 ++++++++++++--
- include/linux/elevator.h |    2 +
- 4 files changed, 477 insertions(+), 20 deletions(-)
+ block/blk-ioc.c               |   36 +++---
+ fs/buffer.c                   |    2 +
+ fs/direct-io.c                |    2 +
+ include/linux/biotrack.h      |  100 ++++++++++++++
+ include/linux/cgroup_subsys.h |    6 +
+ include/linux/iocontext.h     |    1 +
+ include/linux/memcontrol.h    |    6 +
+ include/linux/mmzone.h        |    4 +-
+ include/linux/page_cgroup.h   |    5 +-
+ init/Kconfig                  |   16 +++
+ mm/Makefile                   |    4 +-
+ mm/biotrack.c                 |  293 +++++++++++++++++++++++++++++++++++++++++
+ mm/bounce.c                   |    2 +
+ mm/filemap.c                  |    2 +
+ mm/memcontrol.c               |    6 +
+ mm/memory.c                   |    5 +
+ mm/page-writeback.c           |    2 +
+ mm/page_cgroup.c              |   23 ++--
+ mm/swap_state.c               |    2 +
+ 19 files changed, 486 insertions(+), 31 deletions(-)
+ create mode 100644 include/linux/biotrack.h
+ create mode 100644 mm/biotrack.c
 
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index cc87c87..8ab08da 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -45,6 +45,18 @@ config IOSCHED_AS
- 	  deadline I/O scheduler, it can also be slower in some cases
- 	  especially some database loads.
+diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+index 0d56336..890d475 100644
+--- a/block/blk-ioc.c
++++ b/block/blk-ioc.c
+@@ -84,27 +84,31 @@ void exit_io_context(void)
+ 	}
+ }
  
-+config IOSCHED_AS_HIER
-+	bool "Anticipatory Hierarchical Scheduling support"
-+	depends on IOSCHED_AS && CGROUPS
-+	select ELV_FAIR_QUEUING
-+	select GROUP_IOSCHED
-+	default n
-+	---help---
-+	  Enable hierarhical scheduling in anticipatory. In this mode
-+	  anticipatory keeps one IO queue per cgroup instead of a global
-+	  queue. Elevator fair queuing logic ensures fairness among various
-+	  queues.
-+
- config IOSCHED_DEADLINE
- 	tristate "Deadline I/O scheduler"
- 	default y
-diff --git a/block/as-iosched.c b/block/as-iosched.c
-index 6d2468b..fed579f 100644
---- a/block/as-iosched.c
-+++ b/block/as-iosched.c
-@@ -16,6 +16,8 @@
- #include <linux/compiler.h>
- #include <linux/rbtree.h>
- #include <linux/interrupt.h>
-+#include <linux/blktrace_api.h>
-+#include "elevator-fq.h"
- 
- /*
-  * See Documentation/block/as-iosched.txt
-@@ -77,6 +79,7 @@ enum anticipation_status {
- };
- 
- struct as_queue {
-+	struct io_queue *ioq;
- 	/*
- 	 * requests (as_rq s) are present on both sort_list and fifo_list
- 	 */
-@@ -84,10 +87,24 @@ struct as_queue {
- 	struct list_head fifo_list[2];
- 
- 	struct request *next_rq[2];	/* next in sort order */
-+
-+	/*
-+	 * If an as_queue is switched while a batch is running, then we
-+	 * store the time left before current batch will expire
-+	 */
-+	long current_batch_time_left;
-+
-+	/*
-+	 * batch data dir when queue was scheduled out. This will be used
-+	 * to setup ad->batch_data_dir when queue is scheduled in.
-+	 */
-+	int saved_batch_data_dir;
-+
- 	unsigned long last_check_fifo[2];
- 	int write_batch_count;		/* max # of reqs in a write batch */
- 	int current_write_count;	/* how many requests left this batch */
- 	int write_batch_idled;		/* has the write batch gone idle? */
-+	int nr_queued[2];
- };
- 
- struct as_data {
-@@ -123,6 +140,9 @@ struct as_data {
- 	unsigned long fifo_expire[2];
- 	unsigned long batch_expire[2];
- 	unsigned long antic_expire;
-+
-+	/* elevator requested a queue switch. */
-+	int switch_queue;
- };
- 
- /*
-@@ -144,12 +164,259 @@ enum arq_state {
- #define RQ_STATE(rq)	((enum arq_state)(rq)->elevator_private2)
- #define RQ_SET_STATE(rq, state)	((rq)->elevator_private2 = (void *) state)
- 
-+#ifdef CONFIG_DEBUG_GROUP_IOSCHED
-+#define as_log_asq(ad, asq, fmt, args...)				\
-+{									\
-+	blk_add_trace_msg((ad)->q, "as %s " fmt,			\
-+			ioq_to_io_group((asq)->ioq)->path, ##args);	\
-+}
-+#else
-+#define as_log_asq(ad, asq, fmt, args...) \
-+	blk_add_trace_msg((ad)->q, "as " fmt, ##args)
++void init_io_context(struct io_context *ioc)
++{
++	atomic_long_set(&ioc->refcount, 1);
++	atomic_set(&ioc->nr_tasks, 1);
++	spin_lock_init(&ioc->lock);
++	ioc->ioprio_changed = 0;
++	ioc->ioprio = 0;
++#ifdef CONFIG_GROUP_IOSCHED
++	ioc->cgroup_changed = 0;
 +#endif
++	ioc->last_waited = jiffies; /* doesn't matter... */
++	ioc->nr_batch_requests = 0; /* because this is 0 */
++	ioc->aic = NULL;
++	INIT_RADIX_TREE(&ioc->radix_root, GFP_ATOMIC | __GFP_HIGH);
++	INIT_HLIST_HEAD(&ioc->cic_list);
++	ioc->ioc_data = NULL;
++}
 +
-+#define as_log(ad, fmt, args...)        \
-+	blk_add_trace_msg((ad)->q, "as " fmt, ##args)
-+
- static DEFINE_PER_CPU(unsigned long, ioc_count);
- static struct completion *ioc_gone;
- static DEFINE_SPINLOCK(ioc_gone_lock);
+ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+ {
+ 	struct io_context *ret;
  
- static void as_move_to_dispatch(struct as_data *ad, struct request *rq);
- static void as_antic_stop(struct as_data *ad);
-+static inline int as_batch_expired(struct as_data *ad, struct as_queue *asq);
+ 	ret = kmem_cache_alloc_node(iocontext_cachep, gfp_flags, node);
+-	if (ret) {
+-		atomic_long_set(&ret->refcount, 1);
+-		atomic_set(&ret->nr_tasks, 1);
+-		spin_lock_init(&ret->lock);
+-		ret->ioprio_changed = 0;
+-		ret->ioprio = 0;
+-#ifdef CONFIG_GROUP_IOSCHED
+-		ret->cgroup_changed = 0;
+-#endif
+-		ret->last_waited = jiffies; /* doesn't matter... */
+-		ret->nr_batch_requests = 0; /* because this is 0 */
+-		ret->aic = NULL;
+-		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
+-		INIT_HLIST_HEAD(&ret->cic_list);
+-		ret->ioc_data = NULL;
+-	}
++	if (ret)
++		init_io_context(ret);
+ 
+ 	return ret;
+ }
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 28f320f..8efcd82 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -36,6 +36,7 @@
+ #include <linux/buffer_head.h>
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/bio.h>
++#include <linux/biotrack.h>
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+ #include <linux/bitops.h>
+@@ -668,6 +669,7 @@ static void __set_page_dirty(struct page *page,
+ 	if (page->mapping) {	/* Race with truncate? */
+ 		WARN_ON_ONCE(warn && !PageUptodate(page));
+ 		account_page_dirtied(page, mapping);
++		blkio_cgroup_reset_owner_pagedirty(page, current->mm);
+ 		radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+ 	}
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 8b10b87..185ba0a 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -33,6 +33,7 @@
+ #include <linux/err.h>
+ #include <linux/blkdev.h>
+ #include <linux/buffer_head.h>
++#include <linux/biotrack.h>
+ #include <linux/rwsem.h>
+ #include <linux/uio.h>
+ #include <asm/atomic.h>
+@@ -797,6 +798,7 @@ static int do_direct_IO(struct dio *dio)
+ 			ret = PTR_ERR(page);
+ 			goto out;
+ 		}
++		blkio_cgroup_reset_owner(page, current->mm);
+ 
+ 		while (block_in_page < blocks_per_page) {
+ 			unsigned offset_in_page = block_in_page << blkbits;
+diff --git a/include/linux/biotrack.h b/include/linux/biotrack.h
+new file mode 100644
+index 0000000..2b8bb0b
+--- /dev/null
++++ b/include/linux/biotrack.h
+@@ -0,0 +1,100 @@
++#include <linux/cgroup.h>
++#include <linux/mm.h>
++#include <linux/page_cgroup.h>
 +
-+#ifdef CONFIG_IOSCHED_AS_HIER
-+static int as_can_anticipate(struct as_data *ad, struct request *rq);
-+static void as_antic_waitnext(struct as_data *ad);
++#ifndef _LINUX_BIOTRACK_H
++#define _LINUX_BIOTRACK_H
 +
-+static inline void as_mark_active_asq_wait_request(struct as_data *ad)
-+{
-+	struct as_queue *asq = elv_active_sched_queue(ad->q->elevator);
++#ifdef CONFIG_CGROUP_BLKIO
 +
-+	elv_mark_ioq_wait_request(asq->ioq);
-+}
++struct io_context;
++struct block_device;
 +
-+static inline void as_clear_active_asq_wait_request(struct as_data *ad)
-+{
-+	struct as_queue *asq = elv_active_sched_queue(ad->q->elevator);
++struct blkio_cgroup {
++	struct cgroup_subsys_state css;
++	struct io_context *io_context;	/* default io_context */
++/*	struct radix_tree_root io_context_root; per device io_context */
++};
 +
-+	if (asq)
-+		elv_clear_ioq_wait_request(asq->ioq);
-+}
-+
-+static void as_save_batch_context(struct as_data *ad, struct as_queue *asq)
-+{
-+	/* Save batch data dir */
-+	asq->saved_batch_data_dir = ad->batch_data_dir;
-+
-+	if (ad->changed_batch) {
-+		/*
-+		 * In case of force expire, we come here. Batch changeover
-+		 * has been signalled but we are waiting for all the
-+		 * request to finish from previous batch and then start
-+		 * the new batch. Can't wait now. Mark that full batch time
-+		 * needs to be allocated when this queue is scheduled again.
-+		 */
-+		asq->current_batch_time_left =
-+				ad->batch_expire[ad->batch_data_dir];
-+		ad->changed_batch = 0;
-+		goto out;
-+	}
-+
-+	if (ad->new_batch) {
-+		/*
-+		 * We should come here only when new_batch has been set
-+		 * but no read request has been issued or if it is a forced
-+		 * expiry.
-+		 *
-+		 * In both the cases, new batch has not started yet so
-+		 * allocate full batch length for next scheduling opportunity.
-+		 * We don't do write batch size adjustment in hierarchical
-+		 * AS so that should not be an issue.
-+		 */
-+		asq->current_batch_time_left =
-+				ad->batch_expire[ad->batch_data_dir];
-+		ad->new_batch = 0;
-+		goto out;
-+	}
-+
-+	/* Save how much time is left before current batch expires */
-+	if (as_batch_expired(ad, asq))
-+		asq->current_batch_time_left = 0;
-+	else {
-+		asq->current_batch_time_left = ad->current_batch_expires
-+							- jiffies;
-+		BUG_ON((asq->current_batch_time_left) < 0);
-+	}
-+
-+	if (ad->io_context) {
-+		put_io_context(ad->io_context);
-+		ad->io_context = NULL;
-+	}
-+
-+out:
-+	as_log_asq(ad, asq, "save batch: dir=%c time_left=%d changed_batch=%d"
-+			" new_batch=%d, antic_status=%d",
-+			ad->batch_data_dir ? 'R' : 'W',
-+			asq->current_batch_time_left,
-+			ad->changed_batch, ad->new_batch, ad->antic_status);
-+	return;
-+}
-+
-+/*
-+ * FIXME: In original AS, read batch's time account started only after when
-+ * first request had completed (if last batch was a write batch). But here
-+ * we might be rescheduling a read batch right away irrespective of the fact
-+ * of disk cache state.
-+ */
-+static void as_restore_batch_context(struct as_data *ad, struct as_queue *asq)
-+{
-+	/* Adjust the batch expire time */
-+	if (asq->current_batch_time_left)
-+		ad->current_batch_expires = jiffies +
-+						asq->current_batch_time_left;
-+	/* restore asq batch_data_dir info */
-+	ad->batch_data_dir = asq->saved_batch_data_dir;
-+	as_log_asq(ad, asq, "restore batch: dir=%c time=%d reads_q=%d"
-+			" writes_q=%d ad->antic_status=%d",
-+			ad->batch_data_dir ? 'R' : 'W',
-+			asq->current_batch_time_left,
-+			asq->nr_queued[1], asq->nr_queued[0],
-+			ad->antic_status);
-+}
-+
-+/* ioq has been set. */
-+static void as_active_ioq_set(struct request_queue *q, void *sched_queue,
-+				int coop)
-+{
-+	struct as_queue *asq = sched_queue;
-+	struct as_data *ad = q->elevator->elevator_data;
-+
-+	as_restore_batch_context(ad, asq);
-+}
-+
-+/*
-+ * AS does not anticipate on a context if there is no other request pending.
-+ * So if only a single sequential reader was running, AS will not turn on
-+ * anticipation. This function turns on anticipation if an io context has
-+ * think time with-in limits and there are no other requests to dispatch.
++/**
++ * __init_blkio_page_cgroup() - initialize a blkio_page_cgroup
++ * @pc:		page_cgroup of the page
 + *
-+ * With group scheduling, a queue is expired if is empty, does not have a
-+ * request dispatched and we are not idling. In case of this single reader
-+ * we will see a queue expiration after every request completion. Hence turn
-+ * on the anticipation if an io context should ancipate and there are no
-+ * other requests queued in the queue.
++ * Reset the owner ID of a page.
 + */
-+static inline void
-+as_hier_check_start_waitnext(struct request_queue *q, struct as_queue *asq)
++static inline void __init_blkio_page_cgroup(struct page_cgroup *pc)
 +{
-+	struct as_data *ad = q->elevator->elevator_data;
-+
-+	if (!ad->nr_dispatched && !asq->nr_queued[1] && !asq->nr_queued[0] &&
-+	    as_can_anticipate(ad, NULL)) {
-+		as_antic_waitnext(ad);
-+	}
++	pc->blkio_cgroup_id = 0;
 +}
 +
-+/*
-+ * This is a notification from common layer that it wishes to expire this
-+ * io queue. AS decides whether queue can be expired, if yes, it also
-+ * saves the batch context.
++/**
++ * blkio_cgroup_disabled() - check whether blkio_cgroup is disabled
++ *
++ * Returns true if disabled, false if not.
 + */
-+static int as_expire_ioq(struct request_queue *q, void *sched_queue,
-+				int slice_expired, int force)
++static inline bool blkio_cgroup_disabled(void)
 +{
-+	struct as_data *ad = q->elevator->elevator_data;
-+	int status = ad->antic_status;
-+	struct as_queue *asq = sched_queue;
++	if (blkio_cgroup_subsys.disabled)
++		return true;
++	return false;
++}
 +
-+	as_log_asq(ad, asq, "as_expire_ioq slice_expired=%d, force=%d",
-+			slice_expired, force);
++extern void blkio_cgroup_set_owner(struct page *page, struct mm_struct *mm);
++extern void blkio_cgroup_reset_owner(struct page *page, struct mm_struct *mm);
++extern void blkio_cgroup_reset_owner_pagedirty(struct page *page,
++						 struct mm_struct *mm);
++extern void blkio_cgroup_copy_owner(struct page *page, struct page *opage);
 +
-+	/* Forced expiry. We don't have a choice */
-+	if (force) {
-+		as_antic_stop(ad);
-+		/*
-+		 * antic_stop() sets antic_status to FINISHED which signifies
-+		 * that either we timed out or we found a close request but
-+		 * that's not the case here. Start from scratch.
-+		 */
-+		ad->antic_status = ANTIC_OFF;
-+		as_save_batch_context(ad, asq);
-+		ad->switch_queue = 0;
-+		return 1;
-+	}
++extern struct io_context *get_blkio_cgroup_iocontext(struct bio *bio);
++extern unsigned long get_blkio_cgroup_id(struct bio *bio);
++extern struct cgroup *get_cgroup_from_page(struct page *page);
 +
-+	/*
-+	 * We are waiting for requests to finish from last
-+	 * batch. Don't expire the queue now
-+	 */
-+	if (ad->changed_batch)
-+		goto keep_queue;
++#else /* !CONFIG_CGROUP_BLKIO */
 +
-+	/*
-+	 * Wait for all requests from existing batch to finish before we
-+	 * switch the queue. New queue might change the batch direction
-+	 * and this is to be consistent with AS philosophy of not dispatching
-+	 * new requests to underlying drive till requests from requests
-+	 * from previous batch are completed.
-+	 */
-+	if (ad->nr_dispatched)
-+		goto keep_queue;
++struct blkio_cgroup;
 +
-+	/*
-+	 * If AS anticipation is ON, wait for it to finish if queue slice
-+	 * has not expired.
-+	 */
-+	BUG_ON(status == ANTIC_WAIT_REQ);
++static inline void __init_blkio_page_cgroup(struct page_cgroup *pc)
++{
++}
 +
-+	if (status == ANTIC_WAIT_NEXT) {
-+		if (!slice_expired)
-+			goto keep_queue;
-+		/* Slice expired. Stop anticipating. */
-+		as_antic_stop(ad);
-+		ad->antic_status = ANTIC_OFF;
-+	}
++static inline bool blkio_cgroup_disabled(void)
++{
++	return true;
++}
 +
-+	/* We are good to expire the queue. Save batch context */
-+	as_save_batch_context(ad, asq);
-+	ad->switch_queue = 0;
-+	return 1;
++static inline void blkio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
++{
++}
 +
-+keep_queue:
-+	/* Mark that elevator requested for queue switch whenever possible */
-+	ad->switch_queue = 1;
++static inline void blkio_cgroup_reset_owner(struct page *page,
++						struct mm_struct *mm)
++{
++}
++
++static inline void blkio_cgroup_reset_owner_pagedirty(struct page *page,
++						struct mm_struct *mm)
++{
++}
++
++static inline void blkio_cgroup_copy_owner(struct page *page, struct page *opage)
++{
++}
++
++static inline struct io_context *get_blkio_cgroup_iocontext(struct bio *bio)
++{
++	return NULL;
++}
++
++static inline unsigned long get_blkio_cgroup_id(struct bio *bio)
++{
 +	return 0;
 +}
 +
-+static inline void as_check_expire_active_as_queue(struct request_queue *q)
++static inline struct cgroup *get_cgroup_from_page(struct page *page)
 +{
-+	struct as_data *ad = q->elevator->elevator_data;
-+	struct as_queue *asq = elv_active_sched_queue(q->elevator);
-+
-+	/*
-+	 * We anticpated on the queue and timer fired. If queue is empty,
-+	 * expire the queue. This will make sure an idle queue does not
-+	 * remain active for a very long time as later all the idle time
-+	 * can be added to the queue disk usage.
-+	 */
-+	if (asq) {
-+		if (!ad->nr_dispatched && !asq->nr_queued[1] &&
-+		    !asq->nr_queued[0]) {
-+			ad->switch_queue = 0;
-+			elv_ioq_slice_expired(q, asq->ioq);
-+		}
-+	}
++	return NULL;
 +}
 +
-+#else /* CONFIG_IOSCHED_AS_HIER */
-+static inline void as_mark_active_asq_wait_request(struct as_data *ad) {}
-+static inline void as_clear_active_asq_wait_request(struct as_data *ad) {}
-+static inline void
-+as_hier_check_start_waitnext(struct request_queue *q, struct as_queue *asq) {}
-+static inline void as_check_expire_active_as_queue(struct request_queue *q) {}
-+#endif
- 
- /*
-  * IO Context helper functions
-@@ -429,6 +696,8 @@ static void as_antic_waitnext(struct as_data *ad)
- 	mod_timer(&ad->antic_timer, timeout);
- 
- 	ad->antic_status = ANTIC_WAIT_NEXT;
-+	as_mark_active_asq_wait_request(ad);
-+	as_log(ad, "antic_waitnext set");
- }
- 
- /*
-@@ -442,8 +711,10 @@ static void as_antic_waitreq(struct as_data *ad)
- 	if (ad->antic_status == ANTIC_OFF) {
- 		if (!ad->io_context || ad->ioc_finished)
- 			as_antic_waitnext(ad);
--		else
-+		else {
- 			ad->antic_status = ANTIC_WAIT_REQ;
-+			as_log(ad, "antic_waitreq set");
-+		}
- 	}
- }
- 
-@@ -455,9 +726,12 @@ static void as_antic_stop(struct as_data *ad)
- {
- 	int status = ad->antic_status;
- 
-+	as_log(ad, "as_antic_stop antic_status=%d", ad->antic_status);
++#endif /* CONFIG_CGROUP_BLKIO */
 +
- 	if (status == ANTIC_WAIT_REQ || status == ANTIC_WAIT_NEXT) {
- 		if (status == ANTIC_WAIT_NEXT)
- 			del_timer(&ad->antic_timer);
-+		as_clear_active_asq_wait_request(ad);
- 		ad->antic_status = ANTIC_FINISHED;
- 		/* see as_work_handler */
- 		kblockd_schedule_work(ad->q, &ad->antic_work);
-@@ -474,6 +748,7 @@ static void as_antic_timeout(unsigned long data)
- 	unsigned long flags;
++#endif /* _LINUX_BIOTRACK_H */
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index baf544f..78504f3 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -43,6 +43,12 @@ SUBSYS(mem_cgroup)
  
- 	spin_lock_irqsave(q->queue_lock, flags);
-+	as_log(ad, "as_antic_timeout. antic_status=%d", ad->antic_status);
- 	if (ad->antic_status == ANTIC_WAIT_REQ
- 			|| ad->antic_status == ANTIC_WAIT_NEXT) {
- 		struct as_io_context *aic;
-@@ -481,6 +756,8 @@ static void as_antic_timeout(unsigned long data)
- 		aic = ad->io_context->aic;
+ /* */
  
- 		ad->antic_status = ANTIC_FINISHED;
-+		as_clear_active_asq_wait_request(ad);
-+		as_check_expire_active_as_queue(q);
- 		kblockd_schedule_work(q, &ad->antic_work);
- 
- 		if (aic->ttime_samples == 0) {
-@@ -652,6 +929,21 @@ static int as_can_break_anticipation(struct as_data *ad, struct request *rq)
- 	struct io_context *ioc;
- 	struct as_io_context *aic;
- 
-+#ifdef CONFIG_IOSCHED_AS_HIER
-+	/*
-+	 * If the active asq and rq's asq are not same, then one can not
-+	 * break the anticipation. This primarily becomes useful when a
-+	 * request is added to a queue which is not being served currently.
-+	 */
-+	if (rq) {
-+		struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
-+		struct as_queue *curr_asq =
-+				elv_active_sched_queue(ad->q->elevator);
-+
-+		if (asq != curr_asq)
-+			return 0;
-+	}
++#ifdef CONFIG_CGROUP_BLKIO
++SUBSYS(blkio_cgroup)
 +#endif
- 	ioc = ad->io_context;
- 	BUG_ON(!ioc);
- 	spin_lock(&ioc->lock);
-@@ -810,16 +1102,21 @@ static void as_update_rq(struct as_data *ad, struct request *rq)
- /*
-  * Gathers timings and resizes the write batch automatically
++
++/* */
++
+ #ifdef CONFIG_CGROUP_DEVICE
+ SUBSYS(devices)
+ #endif
+diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
+index b343594..1baa6c1 100644
+--- a/include/linux/iocontext.h
++++ b/include/linux/iocontext.h
+@@ -109,6 +109,7 @@ int put_io_context(struct io_context *ioc);
+ void exit_io_context(void);
+ struct io_context *get_io_context(gfp_t gfp_flags, int node);
+ struct io_context *alloc_io_context(gfp_t gfp_flags, int node);
++void init_io_context(struct io_context *ioc);
+ void copy_io_context(struct io_context **pdst, struct io_context **psrc);
+ #else
+ static inline void exit_io_context(void)
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index e46a073..eb45fe9 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -37,6 +37,8 @@ struct mm_struct;
+  * (Of course, if memcg does memory allocation in future, GFP_KERNEL is sane.)
   */
--static void update_write_batch(struct as_data *ad)
-+static void update_write_batch(struct as_data *ad, struct request *rq)
+ 
++extern void __init_mem_page_cgroup(struct page_cgroup *pc);
++
+ extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask);
+ /* for swap handling */
+@@ -121,6 +123,10 @@ void mem_cgroup_update_mapped_file_stat(struct page *page, int val);
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct mem_cgroup;
+ 
++static inline void __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++}
++
+ static inline int mem_cgroup_newpage_charge(struct page *page,
+ 					struct mm_struct *mm, gfp_t gfp_mask)
  {
- 	unsigned long batch = ad->batch_expire[BLK_RW_ASYNC];
- 	long write_time;
--	struct as_queue *asq = elv_get_sched_queue(ad->q, NULL);
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 8895985..c9d1ed4 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -605,7 +605,7 @@ typedef struct pglist_data {
+ 	int nr_zones;
+ #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
+ 	struct page *node_mem_map;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ 	struct page_cgroup *node_page_cgroup;
+ #endif
+ #endif
+@@ -956,7 +956,7 @@ struct mem_section {
  
- 	write_time = (jiffies - ad->current_batch_expires) + batch;
- 	if (write_time < 0)
- 		write_time = 0;
- 
-+	as_log_asq(ad, asq, "upd write: write_time=%d batch=%d"
-+			" write_batch_idled=%d current_write_count=%d",
-+			write_time, batch, asq->write_batch_idled,
-+			asq->current_write_count);
-+
- 	if (write_time > batch && !asq->write_batch_idled) {
- 		if (write_time > batch * 3)
- 			asq->write_batch_count /= 2;
-@@ -834,6 +1131,8 @@ static void update_write_batch(struct as_data *ad)
- 
- 	if (asq->write_batch_count < 1)
- 		asq->write_batch_count = 1;
-+
-+	as_log_asq(ad, asq, "upd write count=%d", asq->write_batch_count);
- }
- 
- /*
-@@ -843,6 +1142,7 @@ static void update_write_batch(struct as_data *ad)
- static void as_completed_request(struct request_queue *q, struct request *rq)
- {
- 	struct as_data *ad = q->elevator->elevator_data;
-+	struct as_queue *asq = elv_get_sched_queue(q, rq);
- 
- 	WARN_ON(!list_empty(&rq->queuelist));
- 
-@@ -851,7 +1151,24 @@ static void as_completed_request(struct request_queue *q, struct request *rq)
- 		goto out;
- 	}
- 
-+	as_log_asq(ad, asq, "complete: reads_q=%d writes_q=%d changed_batch=%d"
-+		" new_batch=%d switch_queue=%d, dir=%c",
-+		asq->nr_queued[1], asq->nr_queued[0], ad->changed_batch,
-+		ad->new_batch, ad->switch_queue,
-+		ad->batch_data_dir ? 'R' : 'W');
-+
- 	if (ad->changed_batch && ad->nr_dispatched == 1) {
-+		/*
-+		 * If this was write batch finishing, adjust the write batch
-+		 * length.
-+		 *
-+		 * Note, write batch length is being calculated upon completion
-+		 * of last write request finished and not completion of first
-+		 * read request finished in the next batch.
-+		 */
-+		if (ad->batch_data_dir == BLK_RW_SYNC)
-+			update_write_batch(ad, rq);
-+
- 		ad->current_batch_expires = jiffies +
- 					ad->batch_expire[ad->batch_data_dir];
- 		kblockd_schedule_work(q, &ad->antic_work);
-@@ -869,7 +1186,6 @@ static void as_completed_request(struct request_queue *q, struct request *rq)
- 	 * and writeback caches
- 	 */
- 	if (ad->new_batch && ad->batch_data_dir == rq_is_sync(rq)) {
--		update_write_batch(ad);
- 		ad->current_batch_expires = jiffies +
- 				ad->batch_expire[BLK_RW_SYNC];
- 		ad->new_batch = 0;
-@@ -884,10 +1200,18 @@ static void as_completed_request(struct request_queue *q, struct request *rq)
- 			 * the next one
- 			 */
- 			as_antic_waitnext(ad);
--		}
-+		} else
-+			as_hier_check_start_waitnext(q, asq);
- 	}
- 
- 	as_put_io_context(rq);
-+
-+	/*
-+	 * If elevator requested a queue switch, kick the queue in the
-+	 * hope that this is right time for switch.
-+	 */
-+	if (ad->switch_queue)
-+		kblockd_schedule_work(q, &ad->antic_work);
- out:
- 	RQ_SET_STATE(rq, AS_RQ_POSTSCHED);
- }
-@@ -908,6 +1232,9 @@ static void as_remove_queued_request(struct request_queue *q,
- 
- 	WARN_ON(RQ_STATE(rq) != AS_RQ_QUEUED);
- 
-+	BUG_ON(asq->nr_queued[data_dir] <= 0);
-+	asq->nr_queued[data_dir]--;
-+
- 	ioc = RQ_IOC(rq);
- 	if (ioc && ioc->aic) {
- 		BUG_ON(!atomic_read(&ioc->aic->nr_queued));
-@@ -1019,6 +1346,8 @@ static void as_move_to_dispatch(struct as_data *ad, struct request *rq)
- 	if (RQ_IOC(rq) && RQ_IOC(rq)->aic)
- 		atomic_inc(&RQ_IOC(rq)->aic->nr_dispatched);
- 	ad->nr_dispatched++;
-+	as_log_asq(ad, asq, "dispatch req dir=%c nr_dispatched = %d",
-+			data_dir ? 'R' : 'W', ad->nr_dispatched);
- }
- 
- /*
-@@ -1066,6 +1395,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 		}
- 		asq->last_check_fifo[BLK_RW_ASYNC] = jiffies;
- 
-+		as_log_asq(ad, asq, "forced dispatch");
- 		return dispatched;
- 	}
- 
-@@ -1078,8 +1408,14 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 	if (!(reads || writes)
- 		|| ad->antic_status == ANTIC_WAIT_REQ
- 		|| ad->antic_status == ANTIC_WAIT_NEXT
--		|| ad->changed_batch)
-+		|| ad->changed_batch) {
-+		as_log_asq(ad, asq, "no dispatch. read_q=%d, writes_q=%d"
-+			" ad->antic_status=%d, changed_batch=%d,"
-+			" switch_queue=%d new_batch=%d", asq->nr_queued[1],
-+			asq->nr_queued[0], ad->antic_status, ad->changed_batch,
-+			ad->switch_queue, ad->new_batch);
- 		return 0;
-+	}
- 
- 	if (!(reads && writes && as_batch_expired(ad, asq))) {
- 		/*
-@@ -1092,6 +1428,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 				goto fifo_expired;
- 
- 			if (as_can_anticipate(ad, rq)) {
-+				as_log_asq(ad, asq, "can_anticipate = 1");
- 				as_antic_waitreq(ad);
- 				return 0;
- 			}
-@@ -1111,6 +1448,8 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 	 * data direction (read / write)
- 	 */
- 
-+	as_log_asq(ad, asq, "select a fresh batch and request");
-+
- 	if (reads) {
- 		BUG_ON(RB_EMPTY_ROOT(&asq->sort_list[BLK_RW_SYNC]));
- 
-@@ -1125,6 +1464,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 			ad->changed_batch = 1;
- 		}
- 		ad->batch_data_dir = BLK_RW_SYNC;
-+		as_log_asq(ad, asq, "new batch dir is sync");
- 		rq = rq_entry_fifo(asq->fifo_list[BLK_RW_SYNC].next);
- 		asq->last_check_fifo[ad->batch_data_dir] = jiffies;
- 		goto dispatch_request;
-@@ -1149,6 +1489,7 @@ dispatch_writes:
- 			ad->new_batch = 0;
- 		}
- 		ad->batch_data_dir = BLK_RW_ASYNC;
-+		as_log_asq(ad, asq, "new batch dir is async");
- 		asq->current_write_count = asq->write_batch_count;
- 		asq->write_batch_idled = 0;
- 		rq = rq_entry_fifo(asq->fifo_list[BLK_RW_ASYNC].next);
-@@ -1184,6 +1525,9 @@ fifo_expired:
- 		ad->changed_batch = 0;
- 	}
- 
-+	if (ad->switch_queue)
-+		return 0;
-+
+ 	/* See declaration of similar field in struct zone */
+ 	unsigned long *pageblock_flags;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
  	/*
- 	 * rq is the selected appropriate request.
- 	 */
-@@ -1207,6 +1551,11 @@ static void as_add_request(struct request_queue *q, struct request *rq)
+ 	 * If !SPARSEMEM, pgdat doesn't have page_cgroup pointer. We use
+ 	 * section. (see memcontrol.h/page_cgroup.h about this.)
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 13f126c..bca6c8a 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -1,7 +1,7 @@
+ #ifndef __LINUX_PAGE_CGROUP_H
+ #define __LINUX_PAGE_CGROUP_H
  
- 	rq->elevator_private = as_get_io_context(q->node);
- 
-+	asq->nr_queued[data_dir]++;
-+	as_log_asq(ad, asq, "add a %c request read_q=%d write_q=%d",
-+			data_dir ? 'R' : 'W', asq->nr_queued[1],
-+			asq->nr_queued[0]);
-+
- 	if (RQ_IOC(rq)) {
- 		as_update_iohist(ad, RQ_IOC(rq)->aic, rq);
- 		atomic_inc(&RQ_IOC(rq)->aic->nr_queued);
-@@ -1358,6 +1707,7 @@ static void *as_alloc_as_queue(struct request_queue *q,
- 
- 	if (asq->write_batch_count < 2)
- 		asq->write_batch_count = 2;
-+	asq->ioq = ioq;
- out:
- 	return asq;
- }
-@@ -1408,6 +1758,7 @@ static void *as_init_queue(struct request_queue *q, struct elevator_queue *eq)
- 	ad->batch_expire[BLK_RW_ASYNC] = default_write_batch_expire;
- 
- 	ad->current_batch_expires = jiffies + ad->batch_expire[BLK_RW_SYNC];
-+	ad->switch_queue = 0;
- 
- 	return ad;
- }
-@@ -1493,6 +1844,11 @@ static struct elv_fs_entry as_attrs[] = {
- 	AS_ATTR(antic_expire),
- 	AS_ATTR(read_batch_expire),
- 	AS_ATTR(write_batch_expire),
-+#ifdef CONFIG_IOSCHED_AS_HIER
-+	ELV_ATTR(fairness),
-+	ELV_ATTR(slice_sync),
-+	ELV_ATTR(group_idle),
-+#endif
- 	__ATTR_NULL
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ #include <linux/bit_spinlock.h>
+ /*
+  * Page Cgroup can be considered as an extended mem_map.
+@@ -14,6 +14,7 @@ struct page_cgroup {
+ 	unsigned long flags;
+ 	struct mem_cgroup *mem_cgroup;
+ 	struct page *page;
++	unsigned long blkio_cgroup_id;
+ 	struct list_head lru;		/* per cgroup LRU list */
  };
  
-@@ -1514,8 +1870,14 @@ static struct elevator_type iosched_as = {
- 		.trim =				as_trim,
- 		.elevator_alloc_sched_queue_fn = as_alloc_as_queue,
- 		.elevator_free_sched_queue_fn = as_free_as_queue,
-+#ifdef CONFIG_IOSCHED_AS_HIER
-+		.elevator_expire_ioq_fn =       as_expire_ioq,
-+		.elevator_active_ioq_set_fn =   as_active_ioq_set,
- 	},
--
-+	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
-+#else
-+	},
-+#endif
- 	.elevator_attrs = as_attrs,
- 	.elevator_name = "anticipatory",
- 	.elevator_owner = THIS_MODULE,
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 04419cf..149a147 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -2096,6 +2096,21 @@ alloc_sched_q:
- 		elv_init_ioq_io_group(ioq, iog);
- 		elv_init_ioq_sched_queue(e, ioq, sched_q);
- 
-+		/*
-+		 * For AS, also mark the group queue idle_window. This will
-+		 * make sure that select_ioq() will not try to expire an
-+		 * AS queue if there are dispatched request from the queue but
-+		 * queue is empty. This gives a chance to asq to anticipate
-+		 * after request completion, otherwise select_ioq() will
-+		 * mark it must_expire and soon asq will be expired.
-+		 *
-+		 * Not doing it for noop and deadline yet as they don't have
-+		 * any anticpation logic and this will slow down queue
-+		 * switching in a NCQ supporting hardware.
-+		 */
-+		if (!strcmp(e->elevator_type->elevator_name, "anticipatory"))
-+			elv_mark_ioq_idle_window(ioq);
-+
- 		elv_io_group_set_ioq(iog, ioq);
- 		elv_mark_ioq_sync(ioq);
- 		elv_get_iog(iog);
-@@ -2387,6 +2402,46 @@ static void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq)
+@@ -83,7 +84,7 @@ static inline void unlock_page_cgroup(struct page_cgroup *pc)
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
  }
  
- /*
-+ * Call iosched to let that elevator wants to expire the queue. This gives
-+ * iosched like AS to say no (if it is in the middle of batch changeover or
-+ * it is anticipating). it also allows iosched to do some house keeping
+-#else /* CONFIG_CGROUP_MEM_RES_CTLR */
++#else /* CONFIG_CGROUP_PAGE */
+ struct page_cgroup;
+ 
+ static inline void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+diff --git a/init/Kconfig b/init/Kconfig
+index afcaa86..54aa85a 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -622,6 +622,22 @@ config GROUP_IOSCHED
+ 
+ endif # CGROUPS
+ 
++config CGROUP_BLKIO
++	bool
++	depends on CGROUPS && BLOCK
++	select MM_OWNER
++	default n
++	---help---
++	  Provides a Resource Controller which enables to track the onwner
++	  of every Block I/O requests.
++	  The information this subsystem provides can be used from any
++	  kind of module such as dm-ioband device mapper modules or
++	  the cfq-scheduler.
++
++config CGROUP_PAGE
++	def_bool y
++	depends on CGROUP_MEM_RES_CTLR || CGROUP_BLKIO
++
+ config MM_OWNER
+ 	bool
+ 
+diff --git a/mm/Makefile b/mm/Makefile
+index 5e0bd64..6208744 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -39,6 +39,8 @@ else
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ endif
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+-obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
++obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
++obj-$(CONFIG_CGROUP_PAGE) += page_cgroup.o
++obj-$(CONFIG_CGROUP_BLKIO) += biotrack.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
+diff --git a/mm/biotrack.c b/mm/biotrack.c
+new file mode 100644
+index 0000000..1da7d1e
+--- /dev/null
++++ b/mm/biotrack.c
+@@ -0,0 +1,293 @@
++/* biotrack.c - Block I/O Tracking
 + *
-+ * if force = 1, it is force dispatch and iosched must clean up its state.
-+ * This is useful when elevator wants to drain iosched and wants to expire
-+ * currnent active queue.
-+ * if slice_expired = 1, ioq slice expired hence elevator fair queuing logic
-+ * wants to switch the queue. iosched should allow that until and unless
-+ * necessary. Currently AS can deny the switch if in the middle of batch switch.
++ * Copyright (C) VA Linux Systems Japan, 2008-2009
++ * Developed by Hirokazu Takahashi <taka@valinux.co.jp>
 + *
-+ * if slice_expired = 0, time slice is still remaining. It is up to the iosched
-+ * whether it wants to wait on this queue or just want to expire it and move
-+ * on to next queue.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
-+static int
-+elv_iosched_expire_ioq(struct request_queue *q, int slice_expired, int force)
-+{
-+	struct elevator_queue *e = q->elevator;
-+	struct io_queue *ioq = elv_active_ioq(q->elevator);
-+	int ret = 1;
 +
-+	if (e->ops->elevator_expire_ioq_fn) {
-+		ret = e->ops->elevator_expire_ioq_fn(q, ioq->sched_queue,
-+							slice_expired, force);
-+		/*
-+		 * AS denied expiration of queue right now. Mark that elevator
-+		 * layer has requested ioscheduler (as) to expire this queue.
-+		 * Now as will try to expire this queue as soon as it can.
-+		 * Now don't try to dispatch from this queue even if we get
-+		 * a new request and if time slice is left. Do expire it once.
-+		 */
-+		if (!ret)
-+			elv_mark_ioq_must_expire(ioq);
-+	}
-+
-+	return ret;
-+}
++#include <linux/module.h>
++#include <linux/smp.h>
++#include <linux/bit_spinlock.h>
++#include <linux/blkdev.h>
++#include <linux/biotrack.h>
++#include <linux/mm_inline.h>
 +
 +/*
-  * Do the accounting. Determine how much service (in terms of time slices)
-  * current queue used and adjust the start, finish time of queue and vtime
-  * of the tree accordingly.
-@@ -2587,16 +2642,18 @@ static int elv_should_preempt(struct request_queue *q, struct io_queue *new_ioq,
- 
- static void elv_preempt_queue(struct request_queue *q, struct io_queue *ioq)
- {
--	elv_log_ioq(q->elevator->efqd, ioq, "preempt");
--	elv_slice_expired(q);
-+	if (elv_iosched_expire_ioq(q, 0, 1)) {
-+		elv_log_ioq(q->elevator->efqd, ioq, "preempt");
-+		elv_slice_expired(q);
- 
--	/*
--	 * Put the new queue at the front of the of the current list,
--	 * so we know that it will be selected next.
--	 */
-+		/*
-+		 * Put the new queue at the front of the of the current list,
-+		 * so we know that it will be selected next.
-+		 */
- 
--	requeue_ioq(ioq, 1);
--	elv_mark_ioq_slice_new(ioq);
-+		requeue_ioq(ioq, 1);
-+		elv_mark_ioq_slice_new(ioq);
-+	}
- }
- 
- void elv_ioq_request_add(struct request_queue *q, struct request *rq)
-@@ -2729,6 +2786,8 @@ static void elv_idle_slice_timer(unsigned long data)
- 			goto out_kick;
- 	}
- expire:
-+	/* Force expire the queue for AS */
-+	elv_iosched_expire_ioq(q, 0, 1);
- 	elv_slice_expired(q);
- out_kick:
- 	elv_schedule_dispatch(q);
-@@ -2819,6 +2878,8 @@ void *elv_select_ioq(struct request_queue *q, int force)
- 	struct io_queue *new_ioq = NULL, *ioq = elv_active_ioq(q->elevator);
- 	struct io_group *iog;
- 	struct elv_fq_data *efqd = q->elevator->efqd;
-+	struct elevator_type *e = q->elevator->elevator_type;
-+	int slice_expired = 0;
- 
- 	if (!elv_nr_busy_ioq(q->elevator))
- 		return NULL;
-@@ -2894,6 +2955,7 @@ void *elv_select_ioq(struct request_queue *q, int force)
- 		 * from queue and is not proportional to group's weight, it
- 		 * harms the fairness of the group.
- 		 */
-+		slice_expired = 1;
- 		if ((elv_iog_should_idle(ioq) || elv_ioq_should_wait_busy(ioq))
- 		     && !elv_iog_wait_busy_done(iog)) {
- 			ioq = NULL;
-@@ -2939,11 +3001,15 @@ void *elv_select_ioq(struct request_queue *q, int force)
- 	}
- 
- expire:
--	if (efqd->fairness && !force && ioq && ioq->dispatched) {
-+	if (efqd->fairness && !force && ioq && ioq->dispatched
-+	    && strcmp(e->elevator_name, "anticipatory")) {
- 		/*
- 		 * If there are request dispatched from this queue, don't
- 		 * dispatch requests from new queue till all the requests from
- 		 * this queue have completed.
-+		 *
-+		 * Anticipatory does not allow queue switch until requests
-+		 * from previous queue have finished.
- 		 */
- 		elv_log_ioq(efqd, ioq, "select: wait for requests to finish"
- 				" disp=%lu", ioq->dispatched);
-@@ -2951,7 +3017,14 @@ expire:
- 		goto keep_queue;
- 	}
- 
--	elv_slice_expired(q);
-+	if (elv_iosched_expire_ioq(q, slice_expired, force))
-+		elv_slice_expired(q);
-+	else
-+		/*
-+		 * Not making ioq = NULL, as AS can deny queue expiration and
-+		 * continue to dispatch from same queue
-+		 */
-+		goto keep_queue;
- new_queue:
- 	ioq = elv_set_active_ioq(q, new_ioq);
- keep_queue:
-@@ -3044,8 +3117,15 @@ check_expire_last_empty_queue(struct request_queue *q, struct io_queue *ioq)
- 	if (ioq_is_idling(ioq))
- 		return;
- 
--	elv_log_ioq(efqd, ioq, "expire last empty queue");
--	elv_slice_expired(q);
++ * The block I/O tracking mechanism is implemented on the cgroup memory
++ * controller framework. It helps to find the the owner of an I/O request
++ * because every I/O request has a target page and the owner of the page
++ * can be easily determined on the framework.
++ */
++
++/* Return the blkio_cgroup that associates with a cgroup. */
++static inline struct blkio_cgroup *cgroup_blkio(struct cgroup *cgrp)
++{
++	return container_of(cgroup_subsys_state(cgrp, blkio_cgroup_subsys_id),
++					struct blkio_cgroup, css);
++}
++
++/* Return the blkio_cgroup that associates with a process. */
++static inline struct blkio_cgroup *blkio_cgroup_from_task(struct task_struct *p)
++{
++	return container_of(task_subsys_state(p, blkio_cgroup_subsys_id),
++					struct blkio_cgroup, css);
++}
++
++static struct io_context default_blkio_io_context;
++static struct blkio_cgroup default_blkio_cgroup = {
++	.io_context	= &default_blkio_io_context,
++};
++
++/**
++ * blkio_cgroup_set_owner() - set the owner ID of a page.
++ * @page:	the page we want to tag
++ * @mm:		the mm_struct of a page owner
++ *
++ * Make a given page have the blkio-cgroup ID of the owner of this page.
++ */
++void blkio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
++{
++	struct blkio_cgroup *biog;
++	struct page_cgroup *pc;
++
++	if (blkio_cgroup_disabled())
++		return;
++	pc = lookup_page_cgroup(page);
++	if (unlikely(!pc))
++		return;
++
++	pc->blkio_cgroup_id = 0;	/* 0: default blkio_cgroup id */
++	if (!mm)
++		return;
 +	/*
-+	 * If IO scheduler denies expiration here, it is up to io scheduler
-+	 * to expire the queue when possible. Otherwise all the idle time
-+	 * will be charged to the queue when queue finally expires.
++	 * Locking "pc" isn't necessary here since the current process is
++	 * the only one that can access the members related to blkio_cgroup.
 +	 */
-+	if (elv_iosched_expire_ioq(q, 0, 0)) {
-+		elv_log_ioq(efqd, ioq, "expire last empty queue");
-+		elv_slice_expired(q);
++	rcu_read_lock();
++	biog = blkio_cgroup_from_task(rcu_dereference(mm->owner));
++	if (unlikely(!biog))
++		goto out;
++	/*
++	 * css_get(&bio->css) isn't called to increment the reference
++	 * count of this blkio_cgroup "biog" so pc->blkio_cgroup_id
++	 * might turn invalid even if this page is still active.
++	 * This approach is chosen to minimize the overhead.
++	 */
++	pc->blkio_cgroup_id = css_id(&biog->css);
++out:
++	rcu_read_unlock();
++}
++
++/**
++ * blkio_cgroup_reset_owner() - reset the owner ID of a page
++ * @page:	the page we want to tag
++ * @mm:		the mm_struct of a page owner
++ *
++ * Change the owner of a given page if necessary.
++ */
++void blkio_cgroup_reset_owner(struct page *page, struct mm_struct *mm)
++{
++	/*
++	 * A little trick:
++	 * Just call blkio_cgroup_set_owner() for pages which are already
++	 * active since the blkio_cgroup_id member of page_cgroup can be
++	 * updated without any locks. This is because an integer type of
++	 * variable can be set a new value at once on modern cpus.
++	 */
++	blkio_cgroup_set_owner(page, mm);
++}
++
++/**
++ * blkio_cgroup_reset_owner_pagedirty() - reset the owner ID of a pagecache page
++ * @page:	the page we want to tag
++ * @mm:		the mm_struct of a page owner
++ *
++ * Change the owner of a given page if the page is in the pagecache.
++ */
++void blkio_cgroup_reset_owner_pagedirty(struct page *page, struct mm_struct *mm)
++{
++	if (!page_is_file_cache(page))
++		return;
++	if (current->flags & PF_MEMALLOC)
++		return;
++
++	blkio_cgroup_reset_owner(page, mm);
++}
++
++/**
++ * blkio_cgroup_copy_owner() - copy the owner ID of a page into another page
++ * @npage:	the page where we want to copy the owner
++ * @opage:	the page from which we want to copy the ID
++ *
++ * Copy the owner ID of @opage into @npage.
++ */
++void blkio_cgroup_copy_owner(struct page *npage, struct page *opage)
++{
++	struct page_cgroup *npc, *opc;
++
++	if (blkio_cgroup_disabled())
++		return;
++	npc = lookup_page_cgroup(npage);
++	if (unlikely(!npc))
++		return;
++	opc = lookup_page_cgroup(opage);
++	if (unlikely(!opc))
++		return;
++
++	/*
++	 * Do this without any locks. The reason is the same as
++	 * blkio_cgroup_reset_owner().
++	 */
++	npc->blkio_cgroup_id = opc->blkio_cgroup_id;
++}
++
++/* Create a new blkio-cgroup. */
++static struct cgroup_subsys_state *
++blkio_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
++{
++	struct blkio_cgroup *biog;
++	struct io_context *ioc;
++
++	if (!cgrp->parent) {
++		biog = &default_blkio_cgroup;
++		init_io_context(biog->io_context);
++		/* Increment the referrence count not to be released ever. */
++		atomic_long_inc(&biog->io_context->refcount);
++		return &biog->css;
 +	}
- }
++
++	biog = kzalloc(sizeof(*biog), GFP_KERNEL);
++	if (!biog)
++		return ERR_PTR(-ENOMEM);
++	ioc = alloc_io_context(GFP_KERNEL, -1);
++	if (!ioc) {
++		kfree(biog);
++		return ERR_PTR(-ENOMEM);
++	}
++	biog->io_context = ioc;
++	return &biog->css;
++}
++
++/* Delete the blkio-cgroup. */
++static void blkio_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
++{
++	struct blkio_cgroup *biog = cgroup_blkio(cgrp);
++
++	put_io_context(biog->io_context);
++	free_css_id(&blkio_cgroup_subsys, &biog->css);
++	kfree(biog);
++}
++
++/**
++ * get_blkio_cgroup_id() - determine the blkio-cgroup ID
++ * @bio:	the &struct bio which describes the I/O
++ *
++ * Returns the blkio-cgroup ID of a given bio. A return value zero
++ * means that the page associated with the bio belongs to default_blkio_cgroup.
++ */
++unsigned long get_blkio_cgroup_id(struct bio *bio)
++{
++	struct page_cgroup *pc;
++	struct page *page = bio_iovec_idx(bio, 0)->bv_page;
++	unsigned long id = 0;
++
++	pc = lookup_page_cgroup(page);
++	if (pc)
++		id = pc->blkio_cgroup_id;
++	return id;
++}
++
++/**
++ * get_blkio_cgroup_iocontext() - determine the blkio-cgroup iocontext
++ * @bio:	the &struct bio which describe the I/O
++ *
++ * Returns the iocontext of blkio-cgroup that issued a given bio.
++ */
++struct io_context *get_blkio_cgroup_iocontext(struct bio *bio)
++{
++	struct cgroup_subsys_state *css;
++	struct blkio_cgroup *biog;
++	struct io_context *ioc;
++	unsigned long id;
++
++	id = get_blkio_cgroup_id(bio);
++	rcu_read_lock();
++	css = css_lookup(&blkio_cgroup_subsys, id);
++	if (css)
++		biog = container_of(css, struct blkio_cgroup, css);
++	else
++		biog = &default_blkio_cgroup;
++	ioc = biog->io_context;	/* default io_context for this cgroup */
++	atomic_long_inc(&ioc->refcount);
++	rcu_read_unlock();
++	return ioc;
++}
++
++/**
++ * get_cgroup_from_page() - determine the cgroup from a page.
++ * @page:	the page to be tracked
++ *
++ * Returns the cgroup of a given page. A return value zero means that
++ * the page associated with the page belongs to default_blkio_cgroup.
++ *
++ * Note:
++ * This function must be called under rcu_read_lock().
++ */
++struct cgroup *get_cgroup_from_page(struct page *page)
++{
++	struct page_cgroup *pc;
++	struct cgroup_subsys_state *css;
++
++	pc = lookup_page_cgroup(page);
++	if (!pc)
++		return NULL;
++
++	css = css_lookup(&blkio_cgroup_subsys, pc->blkio_cgroup_id);
++	if (!css)
++		return NULL;
++
++	return css->cgroup;
++}
++
++EXPORT_SYMBOL(get_blkio_cgroup_id);
++EXPORT_SYMBOL(get_blkio_cgroup_iocontext);
++EXPORT_SYMBOL(get_cgroup_from_page);
++
++/* Read the ID of the specified blkio cgroup. */
++static u64 blkio_id_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	struct blkio_cgroup *biog = cgroup_blkio(cgrp);
++
++	return (u64)css_id(&biog->css);
++}
++
++static struct cftype blkio_files[] = {
++	{
++		.name = "id",
++		.read_u64 = blkio_id_read,
++	},
++};
++
++static int blkio_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
++{
++	return cgroup_add_files(cgrp, ss, blkio_files,
++					ARRAY_SIZE(blkio_files));
++}
++
++struct cgroup_subsys blkio_cgroup_subsys = {
++	.name		= "blkio",
++	.create		= blkio_cgroup_create,
++	.destroy	= blkio_cgroup_destroy,
++	.populate	= blkio_cgroup_populate,
++	.subsys_id	= blkio_cgroup_subsys_id,
++	.use_id		= 1,
++};
+diff --git a/mm/bounce.c b/mm/bounce.c
+index a2b76a5..7ad8d44 100644
+--- a/mm/bounce.c
++++ b/mm/bounce.c
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/hash.h>
+ #include <linux/highmem.h>
++#include <linux/biotrack.h>
+ #include <asm/tlbflush.h>
  
- /* A request got completed from io_queue. Do the accounting. */
-@@ -3119,7 +3199,8 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
- 				goto done;
+ #include <trace/events/block.h>
+@@ -210,6 +211,7 @@ static void __blk_queue_bounce(struct request_queue *q, struct bio **bio_orig,
+ 		to->bv_len = from->bv_len;
+ 		to->bv_offset = from->bv_offset;
+ 		inc_zone_page_state(to->bv_page, NR_BOUNCE);
++		blkio_cgroup_copy_owner(to->bv_page, page);
  
- 			/* Expire the queue */
--			elv_slice_expired(q);
-+			if (elv_iosched_expire_ioq(q, 1, 0))
-+				elv_slice_expired(q);
- 			goto done;
- 		} else if (!ioq->nr_queued && !elv_close_cooperator(q, ioq)
- 			   && sync && !rq_noidle(rq))
-diff --git a/include/linux/elevator.h b/include/linux/elevator.h
-index 77c1fa5..3d4e31c 100644
---- a/include/linux/elevator.h
-+++ b/include/linux/elevator.h
-@@ -41,6 +41,7 @@ typedef int (elevator_should_preempt_fn) (struct request_queue*, void*,
- 						struct request*);
- typedef struct io_queue* (elevator_close_cooperator_fn) (struct request_queue*,
- 						void*);
-+typedef int (elevator_expire_ioq_fn) (struct request_queue*, void *, int, int);
- #endif
+ 		if (rw == WRITE) {
+ 			char *vto, *vfrom;
+diff --git a/mm/filemap.c b/mm/filemap.c
+index ccea3b6..01c47a1 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -33,6 +33,7 @@
+ #include <linux/cpuset.h>
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ #include <linux/mm_inline.h> /* for page_is_file_cache() */
+ #include "internal.h"
  
- struct elevator_ops
-@@ -79,6 +80,7 @@ struct elevator_ops
- 	elevator_arm_slice_timer_fn *elevator_arm_slice_timer_fn;
- 	elevator_should_preempt_fn *elevator_should_preempt_fn;
- 	elevator_close_cooperator_fn *elevator_close_cooperator_fn;
-+	elevator_expire_ioq_fn  *elevator_expire_ioq_fn;
- #endif
+@@ -464,6 +465,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
+ 					gfp_mask & GFP_RECLAIM_MASK);
+ 	if (error)
+ 		goto out;
++	blkio_cgroup_set_owner(page, current->mm);
+ 
+ 	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
+ 	if (error == 0) {
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index fd4529d..baf4be7 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -129,6 +129,12 @@ struct mem_cgroup_lru_info {
+ 	struct mem_cgroup_per_node *nodeinfo[MAX_NUMNODES];
  };
  
++void __meminit __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++	pc->mem_cgroup = NULL;
++	INIT_LIST_HEAD(&pc->lru);
++}
++
+ /*
+  * The memory controller data structure. The memory controller controls both
+  * page cache and RSS per cgroup. We would eventually like to provide
+diff --git a/mm/memory.c b/mm/memory.c
+index aede2ce..346f368 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -51,6 +51,7 @@
+ #include <linux/init.h>
+ #include <linux/writeback.h>
+ #include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ #include <linux/mmu_notifier.h>
+ #include <linux/kallsyms.h>
+ #include <linux/swapops.h>
+@@ -2116,6 +2117,7 @@ gotten:
+ 		 */
+ 		ptep_clear_flush_notify(vma, address, page_table);
+ 		page_add_new_anon_rmap(new_page, vma, address);
++		blkio_cgroup_set_owner(new_page, mm);
+ 		set_pte_at(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
+ 		if (old_page) {
+@@ -2581,6 +2583,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	flush_icache_page(vma, page);
+ 	set_pte_at(mm, address, page_table, pte);
+ 	page_add_anon_rmap(page, vma, address);
++	blkio_cgroup_reset_owner(page, mm);
+ 	/* It's better to call commit-charge after rmap is established */
+ 	mem_cgroup_commit_charge_swapin(page, ptr);
+ 
+@@ -2645,6 +2648,7 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		goto release;
+ 	inc_mm_counter(mm, anon_rss);
+ 	page_add_new_anon_rmap(page, vma, address);
++	blkio_cgroup_set_owner(page, mm);
+ 	set_pte_at(mm, address, page_table, entry);
+ 
+ 	/* No need to invalidate - it was non-present before */
+@@ -2792,6 +2796,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		if (anon) {
+ 			inc_mm_counter(mm, anon_rss);
+ 			page_add_new_anon_rmap(page, vma, address);
++			blkio_cgroup_set_owner(page, mm);
+ 		} else {
+ 			inc_mm_counter(mm, file_rss);
+ 			page_add_file_rmap(page);
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 81627eb..1df421b 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -23,6 +23,7 @@
+ #include <linux/init.h>
+ #include <linux/backing-dev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/biotrack.h>
+ #include <linux/blkdev.h>
+ #include <linux/mpage.h>
+ #include <linux/rmap.h>
+@@ -1247,6 +1248,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			BUG_ON(mapping2 != mapping);
+ 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+ 			account_page_dirtied(page, mapping);
++			blkio_cgroup_reset_owner_pagedirty(page, current->mm);
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+ 		}
+diff --git a/mm/page_cgroup.c b/mm/page_cgroup.c
+index f22b4eb..29bf26c 100644
+--- a/mm/page_cgroup.c
++++ b/mm/page_cgroup.c
+@@ -9,14 +9,15 @@
+ #include <linux/vmalloc.h>
+ #include <linux/cgroup.h>
+ #include <linux/swapops.h>
++#include <linux/biotrack.h>
+ 
+ static void __meminit
+ __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
+ {
+ 	pc->flags = 0;
+-	pc->mem_cgroup = NULL;
+ 	pc->page = pfn_to_page(pfn);
+-	INIT_LIST_HEAD(&pc->lru);
++	__init_mem_page_cgroup(pc);
++	__init_blkio_page_cgroup(pc);
+ }
+ static unsigned long total_usage;
+ 
+@@ -74,7 +75,7 @@ void __init page_cgroup_init_flatmem(void)
+ 
+ 	int nid, fail;
+ 
+-	if (mem_cgroup_disabled())
++	if (mem_cgroup_disabled() && blkio_cgroup_disabled())
+ 		return;
+ 
+ 	for_each_online_node(nid)  {
+@@ -83,12 +84,13 @@ void __init page_cgroup_init_flatmem(void)
+ 			goto fail;
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you"
+-	" don't want memory cgroups\n");
++	printk(KERN_INFO "please try 'cgroup_disable=memory,blkio' option"
++	" if you don't want memory and blkio cgroups\n");
+ 	return;
+ fail:
+ 	printk(KERN_CRIT "allocation of page_cgroup failed.\n");
+-	printk(KERN_CRIT "please try 'cgroup_disable=memory' boot option\n");
++	printk(KERN_CRIT
++		"please try 'cgroup_disable=memory,blkio' boot option\n");
+ 	panic("Out of memory");
+ }
+ 
+@@ -245,7 +247,7 @@ void __init page_cgroup_init(void)
+ 	unsigned long pfn;
+ 	int fail = 0;
+ 
+-	if (mem_cgroup_disabled())
++	if (mem_cgroup_disabled() && blkio_cgroup_disabled())
+ 		return;
+ 
+ 	for (pfn = 0; !fail && pfn < max_pfn; pfn += PAGES_PER_SECTION) {
+@@ -254,14 +256,15 @@ void __init page_cgroup_init(void)
+ 		fail = init_section_page_cgroup(pfn);
+ 	}
+ 	if (fail) {
+-		printk(KERN_CRIT "try 'cgroup_disable=memory' boot option\n");
++		printk(KERN_CRIT
++			"try 'cgroup_disable=memory,blkio' boot option\n");
+ 		panic("Out of memory");
+ 	} else {
+ 		hotplug_memory_notifier(page_cgroup_callback, 0);
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you don't"
+-	" want memory cgroups\n");
++	printk(KERN_INFO "please try 'cgroup_disable=memory,blkio' option"
++	" if you don't want memory and blkio cgroups\n");
+ }
+ 
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 42cd38e..6eb96f1 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -18,6 +18,7 @@
+ #include <linux/pagevec.h>
+ #include <linux/migrate.h>
+ #include <linux/page_cgroup.h>
++#include <linux/biotrack.h>
+ 
+ #include <asm/pgtable.h>
+ 
+@@ -307,6 +308,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+ 		 */
+ 		__set_page_locked(new_page);
+ 		SetPageSwapBacked(new_page);
++		blkio_cgroup_set_owner(new_page, current->mm);
+ 		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+ 		if (likely(!err)) {
+ 			/*
 -- 
 1.6.0.6
 
