@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751957AbZIXNQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbZIXNRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751957AbZIXNQv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 09:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbZIXNQu
+	id S1752206AbZIXNRA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 09:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZIXNQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 09:16:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56170 "EHLO hera.kernel.org"
+	Thu, 24 Sep 2009 09:16:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56178 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751386AbZIXNQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 09:16:49 -0400
-Subject: [PATCH] PCI: fix htmldocs pci.c
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Tiago Vignatti <tiago.vignatti@nokia.com>,
-       Dave Airlie <airlied@redhat.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-pci <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 18:45:47 +0530
-Message-Id: <1253798147.10654.3.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1752037AbZIXNQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 09:16:57 -0400
+Date: Thu, 24 Sep 2009 13:16:21 GMT
+From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       eric.dumazet@gmail.com, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       eric.dumazet@gmail.com, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4ABB6EB7.7000002@gmail.com>
+References: <4ABB6EB7.7000002@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf tools: Fix buffer allocation
+Message-ID: <tip-a255a9981a8566a1efabec983b7811e937e662d2@git.kernel.org>
+Git-Commit-ID: a255a9981a8566a1efabec983b7811e937e662d2
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 24 Sep 2009 13:16:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  a255a9981a8566a1efabec983b7811e937e662d2
+Gitweb:     http://git.kernel.org/tip/a255a9981a8566a1efabec983b7811e937e662d2
+Author:     Eric Dumazet <eric.dumazet@gmail.com>
+AuthorDate: Thu, 24 Sep 2009 15:05:59 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 24 Sep 2009 15:11:23 +0200
 
-Fix the following htmldocs warnings:
+perf tools: Fix buffer allocation
 
-  Warning(drivers/pci/pci.c:2552): No description found for parameter 'dev'
-  Warning(drivers/pci/pci.c:2552): No description found for parameter 'decode'
-  Warning(drivers/pci/pci.c:2552): No description found for parameter 'command_bits'
-  Warning(drivers/pci/pci.c:2552): No description found for parameter 'change_bridge'
+"perf top" cores dump on my dev machine, if run from a directory
+where vmlinux is present:
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Tiago Vignatti <tiago.vignatti@nokia.com>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
+  *** glibc detected *** malloc(): memory corruption: 0x085670d0 ***
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <4ABB6EB7.7000002@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- drivers/pci/pci.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ tools/perf/util/module.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 6edecff..67288ec 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2542,10 +2542,10 @@ int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type)
+diff --git a/tools/perf/util/module.c b/tools/perf/util/module.c
+index 8f81622..0d8c85d 100644
+--- a/tools/perf/util/module.c
++++ b/tools/perf/util/module.c
+@@ -423,7 +423,7 @@ static int mod_dso__load_module_paths(struct mod_dso *self)
+ 	len += strlen(uts.release);
+ 	len += strlen("/modules.dep");
  
- /**
-  * pci_set_vga_state - set VGA decode state on device and parents if requested
-- * @dev the PCI device
-- * @decode - true = enable decoding, false = disable decoding
-- * @command_bits PCI_COMMAND_IO and/or PCI_COMMAND_MEMORY
-- * @change_bridge - traverse ancestors and change bridges
-+ * @dev: the PCI device
-+ * @decode: true = enable decoding, false = disable decoding
-+ * @command_bits: PCI_COMMAND_IO and/or PCI_COMMAND_MEMORY
-+ * @change_bridge: traverse ancestors and change bridges
-  */
- int pci_set_vga_state(struct pci_dev *dev, bool decode,
- 		      unsigned int command_bits, bool change_bridge)
--- 
-1.6.0.6
-
-
+-	dpath = calloc(1, len);
++	dpath = calloc(1, len + 1);
+ 	if (dpath == NULL)
+ 		return err;
+ 
