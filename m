@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371AbZIXMCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZIXMFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752371AbZIXMCZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 08:02:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZIXMCY
+	id S1752470AbZIXMFx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 08:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZIXMFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 08:02:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50115 "EHLO mx3.mail.elte.hu"
+	Thu, 24 Sep 2009 08:05:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44265 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751949AbZIXMCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 08:02:23 -0400
-Date: Thu, 24 Sep 2009 14:02:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Kirill Smelkov <kirr@mns.spb.ru>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] perf_counter tools: .gitignore += perf*.html
-Message-ID: <20090924120218.GC11013@elte.hu>
-References: <1253790022-10300-1-git-send-email-kirr@mns.spb.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253790022-10300-1-git-send-email-kirr@mns.spb.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.5
-	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751962AbZIXMFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 08:05:51 -0400
+Subject: [PATCH] mtd: nand: fix htmldocs warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: David Woodhouse <David.Woodhouse@intel.com>,
+       Sneha Narnakaje <nsnehaprabha@ti.com>,
+       Sandeep Paulraj <s-paulraj@ti.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-mtd@lists.infradead.org,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 17:34:53 +0530
+Message-Id: <1253793893.5860.23.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Kirill Smelkov <kirr@mns.spb.ru> wrote:
+Fixed following htmldocs warnings:
 
-> I've tried building the docs in tools/perf/Documentation/ , and after
-> that `git status` showed dozen of untracked htmls. Let's ignore them.
-> 
-> Signed-off-by: Kirill Smelkov <kirr@mns.spb.ru>
-> ---
->  tools/perf/.gitignore |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/tools/perf/.gitignore b/tools/perf/.gitignore
-> index d69a759..0854f11 100644
-> --- a/tools/perf/.gitignore
-> +++ b/tools/perf/.gitignore
-> @@ -10,6 +10,7 @@ perf-stat
->  perf-top
->  perf*.1
->  perf*.xml
-> +perf*.html
->  common-cmds.h
->  tags
->  TAGS
+  DOCPROC Documentation/DocBook/mtdnand.xml
+  Warning(drivers/mtd/nand/nand_base.c:769): No description found for parameter 'page'
+  Warning(drivers/mtd/nand/nand_base.c:785): No description found for parameter 'page'
+  Warning(drivers/mtd/nand/nand_base.c:824): No description found for parameter 'page'
+  Warning(drivers/mtd/nand/nand_base.c:947): No description found for parameter 'page'
+  Warning(drivers/mtd/nand/nand_base.c:996): No description found for parameter 'page'
+  Warning(drivers/mtd/nand/nand_base.c:1040): No description found for parameter 'page'
 
-Applied to tip:perf/urgent, thanks!
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: David Woodhouse <David.Woodhouse@intel.com>
+Cc: Sneha Narnakaje <nsnehaprabha@ti.com>
+Cc: Sandeep Paulraj <s-paulraj@ti.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/mtd/nand/nand_base.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Btw., if you want to try the latest tools tree, you can pick it up from:
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index 2211386..2957cc7 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -761,6 +761,7 @@ static int nand_wait(struct mtd_info *mtd, struct nand_chip *chip)
+  * @mtd:	mtd info structure
+  * @chip:	nand chip info structure
+  * @buf:	buffer to store read data
++ * @page:	page number to read
+  *
+  * Not for syndrome calculating ecc controllers, which use a special oob layout
+  */
+@@ -777,6 +778,7 @@ static int nand_read_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
+  * @mtd:	mtd info structure
+  * @chip:	nand chip info structure
+  * @buf:	buffer to store read data
++ * @page:	page number to read
+  *
+  * We need a special oob layout and handling even when OOB isn't used.
+  */
+@@ -818,6 +820,7 @@ static int nand_read_page_raw_syndrome(struct mtd_info *mtd, struct nand_chip *c
+  * @mtd:	mtd info structure
+  * @chip:	nand chip info structure
+  * @buf:	buffer to store read data
++ * @page:	page number to read
+  */
+ static int nand_read_page_swecc(struct mtd_info *mtd, struct nand_chip *chip,
+ 				uint8_t *buf, int page)
+@@ -939,6 +942,7 @@ static int nand_read_subpage(struct mtd_info *mtd, struct nand_chip *chip, uint3
+  * @mtd:	mtd info structure
+  * @chip:	nand chip info structure
+  * @buf:	buffer to store read data
++ * @page:	page number to read
+  *
+  * Not for syndrome calculating ecc controllers which need a special oob layout
+  */
+@@ -983,6 +987,7 @@ static int nand_read_page_hwecc(struct mtd_info *mtd, struct nand_chip *chip,
+  * @mtd:	mtd info structure
+  * @chip:	nand chip info structure
+  * @buf:	buffer to store read data
++ * @page:	page number to read
+  *
+  * Hardware ECC for large page chips, require OOB to be read first.
+  * For this ECC mode, the write_page method is re-used from ECC_HW.
+@@ -1031,6 +1036,7 @@ static int nand_read_page_hwecc_oob_first(struct mtd_info *mtd,
+  * @mtd:	mtd info structure
+  * @chip:	nand chip info structure
+  * @buf:	buffer to store read data
++ * @page:	page number to read
+  *
+  * The hw generator calculates the error syndrome automatically. Therefor
+  * we need a special oob layout and handling.
+-- 
+1.6.0.6
 
-  http://people.redhat.com/mingo/tip.git/README
 
-	Ingo
