@@ -1,123 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbZIXXsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZIXXvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbZIXXsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 19:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZIXXsw
+	id S1752952AbZIXXvK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 19:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbZIXXvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 19:48:52 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34449 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbZIXXsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 19:48:51 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 25 Sep 2009 08:46:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: ngupta@vflare.org
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
-Subject: Re: [PATCH 2/3] virtual block device driver (ramzswap)
-Message-Id: <20090925084630.990a4193.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4ABBA45A.8010305@vflare.org>
-References: <1253595414-2855-1-git-send-email-ngupta@vflare.org>
-	<1253595414-2855-3-git-send-email-ngupta@vflare.org>
-	<20090924141135.833474ad.kamezawa.hiroyu@jp.fujitsu.com>
-	<4ABBA45A.8010305@vflare.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 24 Sep 2009 19:51:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60406 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750992AbZIXXvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 19:51:08 -0400
+Date: Fri, 25 Sep 2009 09:51:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Steve French <smfrench@gmail.com>, <linux-cifs-client@lists.samba.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jeff Layton <jlayton@redhat.com>
+Subject: linux-next: cifs tree build failures
+Message-Id: <20090925095105.b06d77f3.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__25_Sep_2009_09_51_05_+1000_hZWrGBczf+9U3Mmb"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Sep 2009 22:24:50 +0530
-Nitin Gupta <ngupta@vflare.org> wrote:
+--Signature=_Fri__25_Sep_2009_09_51_05_+1000_hZWrGBczf+9U3Mmb
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> On 09/24/2009 10:41 AM, KAMEZAWA Hiroyuki wrote:
-> > On Tue, 22 Sep 2009 10:26:53 +0530
-> > Nitin Gupta <ngupta@vflare.org> wrote:
-> > 
-> > <snip>
-> >> +	if (unlikely(clen > max_zpage_size)) {
-> >> +		if (rzs->backing_swap) {
-> >> +			mutex_unlock(&rzs->lock);
-> >> +			fwd_write_request = 1;
-> >> +			goto out;
-> >> +		}
-> >> +
-> >> +		clen = PAGE_SIZE;
-> >> +		page_store = alloc_page(GFP_NOIO | __GFP_HIGHMEM);
-> > Here, and...
-> > 
-> >> +		if (unlikely(!page_store)) {
-> >> +			mutex_unlock(&rzs->lock);
-> >> +			pr_info("Error allocating memory for incompressible "
-> >> +				"page: %u\n", index);
-> >> +			stat_inc(rzs->stats.failed_writes);
-> >> +			goto out;
-> >> +		}
-> >> +
-> >> +		offset = 0;
-> >> +		rzs_set_flag(rzs, index, RZS_UNCOMPRESSED);
-> >> +		stat_inc(rzs->stats.pages_expand);
-> >> +		rzs->table[index].page = page_store;
-> >> +		src = kmap_atomic(page, KM_USER0);
-> >> +		goto memstore;
-> >> +	}
-> >> +
-> >> +	if (xv_malloc(rzs->mem_pool, clen + sizeof(*zheader),
-> >> +			&rzs->table[index].page, &offset,
-> >> +			GFP_NOIO | __GFP_HIGHMEM)) {
-> > 
-> > Here.
-> >     
-> > Do we need to wait until here for detecting page-allocation-failure ?
-> > Detecting it here means -EIO for end_swap_bio_write()....unhappy
-> > ALERT messages etc..
-> > 
-> > Can't we add a hook to get_swap_page() for preparing this ("do we have
-> > enough pool?") and use only GFP_ATOMIC throughout codes ?
-> > (memory pool for this swap should be big to some extent.)
-> >
-> 
-> Yes, we do need to wait until this step for detecting alloc failure since
-> we don't really know when pool grow will (almost) surely wail.
-> What we can probably do is, hook into OOM notify chain (oom_notify_list)
-> and whenever we get this callback, we can start sending pages directly
-> to backing swap and do not even attempt to do any allocation.
-> 
-> 
-Hmm...then, I never see -EIO ?
+Hi all,
 
->  
-> >>From my user support experience for heavy swap customers,  extra memory allocation for swapping out is just bad...in many cases.
-> > (*) I know GFP_IO works well to some extent.
-> > 
-> 
-> We cannot use GFP_IO here as it can cause a deadlock:
-> ramzswap alloc() --> not enough memory, try to reclaim some --> swap out ...
-> ... some pages to ramzswap --> ramzswap alloc()
-> 
-Ah, sorry. just my mistake. I wanted to write GFP_NOIO.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-Thanks,
--Kame
+fs/cifs/cifsfs.c: In function 'init_cifs':
+fs/cifs/cifsfs.c:1047: error: implicit declaration of function 'unregister_=
+key_type'
 
+Caused by commit 3bc303c254335dbd7c7012cc1760b12f1d5514d3 ("cifs: convert
+oplock breaks to use slow_work facility (try #4)") exposing the call to
+unregister_key_type() even if CONFIG_KEYS is not set.
 
+fs/cifs/file.c: In function 'cifs_open':
+fs/cifs/file.c:401: warning: passing argument 4 of 'cifs_new_fileinfo' from=
+ incompatible pointer type
+fs/cifs/cifsproto.h:94: note: expected 'struct cifsTconInfo *' but argument=
+ is of type 'struct vfsmount *'
+fs/cifs/dir.c:134: error: conflicting types for 'cifs_new_fileinfo'
+fs/cifs/cifsproto.h:94: note: previous declaration of 'cifs_new_fileinfo' w=
+as here
 
-> Thanks,
-> Nitin
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Caused by commit 086f68bd97126618ecb2dcff5f766f3a21722df7 ("cifs:
+eliminate cifs_init_private") which gives a different prototype for
+cifs_new_fileinfo() in fs/cifs/cifsproto.h to the definition in
+fs/cifs/dir.c.
 
+This needs more care ...
+
+I have reverted both those commits for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__25_Sep_2009_09_51_05_+1000_hZWrGBczf+9U3Mmb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkq8BekACgkQjjKRsyhoI8yqxgCfaFPgxlNpe/TleLspBi24dpMX
+wLsAn0ImyG5uBAcIyQD16FRbNCfpjGCS
+=h5E6
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__25_Sep_2009_09_51_05_+1000_hZWrGBczf+9U3Mmb--
