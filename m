@@ -1,83 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbZIXXKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbZIXXSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752373AbZIXXKX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 19:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZIXXKX
+	id S1752520AbZIXXSI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 19:18:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZIXXSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 19:10:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47233 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750992AbZIXXKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 19:10:22 -0400
-Date: Thu, 24 Sep 2009 16:09:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Heffner <mikeh@fesnel.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: HR timers prevent an itimer from generating EINTR?
-Message-Id: <20090924160946.f54aa215.akpm@linux-foundation.org>
-In-Reply-To: <4AA1860B.4030409@fesnel.com>
-References: <4AA1860B.4030409@fesnel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 19:18:07 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39885 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751241AbZIXXSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 19:18:06 -0400
+Date: Thu, 24 Sep 2009 19:17:45 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
+       rostedt@goodmis.org, ak@suse.de, roland@redhat.com, rth@redhat.com,
+       mhiramat@redhat.com
+Message-Id: <cover.1253831945.git.jbaron@redhat.com>
+Subject: [PATCH 0/4] jump label patches
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc's added)
 
-(it's a regression)
+hi,
 
-(it has a testcase!)
+For background, I introduced this patchset in:
+http://marc.info/?l=linux-kernel&m=125200966226921&w=2
 
-On Fri, 04 Sep 2009 17:26:35 -0400
-Mike Heffner <mikeh@fesnel.com> wrote:
+This patchset updates the jump label mechanism to look like:
 
-> Summary:
-> 
-> Mixing HR timers with itimers occasionally hides an EINTR from a 
-> blocking syscall.
-> 
-> 
-> Description:
-> 
-> In my test program I have a High Resolution timer firing every one 
-> second (with SA_RESTART) and I set an itimer (without SA_RESTART) to 
-> fire after three seconds. I then execute a blocking system call (flock 
-> in this case) and expect the three second itimer to interrupt the system 
-> call with EINTR. However, I frequently notice that the itimer will fire 
-> but it will not interrupt the blocking system call. There appears to be 
-> a race between the HR timer firing and the itimer firing. If I offset 
-> the HR timer frequency by a half second, the itimer always interrupts 
-> the system call.
-> 
-> Kernel version:
-> 
-> These kernels both demonstrate the condition:
-> 
-> 2.6.29.6-217.2.16.fc11.x86_64
-> 	and
-> 2.6.30.5-43.fc11.x86_64
-> 
-> 
-> I do not see this condition on:
-> 
-> 2.6.18-53.el5
-> 
-> 
-> Test program:
-> 
-> The following program illustrates this condition:
-> 
-> http://github.com/mheffner/scripts/commits/master/hrtimer_vs_itimer.c
-> 
-> 
-> Is this behavior expected?
-> 
-> 
+#define JUMP_LABEL(tag, label, cond)                                       \
+        do {                                                               \
+                static const char __jlstrtab_##tag[]                       \
+                __used __attribute__((section("__jump_strings")))  = #tag; \
+                asm goto ("1:"                                             \
+                        "jmp %l[" #label "] \n\t"                          \
+                        ".pushsection __jump_table,  \"a\" \n\t"           \
+                        _ASM_PTR "1b, %l[" #label "], %c0, 0 \n\t"         \
+                        ".popsection \n\t"                                 \
+                        : :  "i" (__jlstrtab_##tag) :  : label);           \
+        } while (0)
+
+#endif
+
+
+and usage case is:
+
+#define DECLARE_TRACE(name, proto, args)                                 \
+        extern struct tracepoint __tracepoint_##name;                    \
+        static inline void trace_##name(proto)                           \
+        {                                                                \
+                JUMP_LABEL(name, trace_label, __tracepoint_##name.state);\
+                __DO_TRACE(&__tracepoint_##name,                         \
+                           TP_PROTO(proto), TP_ARGS(args));              \
+trace_label:                                                             \
+                return;                                                  \
+        }                                                                \
+
+
+So the idea now, is that by default we jump over the disabled code. In order to
+enable the 'disabled' code, or tracing, we simply replace the jump with a
+'jump 0'. Thus, we now avoid the issue of not having enough instruction space.
+Thus, in most cases the jump we are patching is an '0xeb' opcode which is
+simply 2 bytes (occasionally its an 0xeb). I have this patchset working nicely
+on x86_64. I'm not sure if we need to recognize additional jump opcodes for
+x86 32-bit....I have not yet tested there. In my x86_64 testing under memory
+pressure I saw about a 30 cycle improvement with this code per tracepoint.
+Additionally, this code reduces the icache bytes from 9 bytes (cmpl; je), to 
+just 2 bytes (jmp).
+
+The patchset makes use of text_poke_fixup() interface introduced by Masami in:
+http://marc.info/?l=linux-kernel&m=125297186224609&w=2.
+
+Thus, that patchset needs to be applied first. Patch is against the latest -tip
+tree.
+
+thanks,
+
+-Jason
+
+
+
+ arch/x86/include/asm/jump_label.h |   27 +++++++++++
+ arch/x86/kernel/Makefile          |    2 +-
+ arch/x86/kernel/jump_label.c      |   94 +++++++++++++++++++++++++++++++++++++
+ include/asm-generic/vmlinux.lds.h |   11 ++++
+ include/linux/jump_label.h        |   71 ++++++++++++++++++++++++++++
+ include/linux/kernel.h            |    1 +
+ include/linux/module.h            |   12 ++++-
+ include/linux/tracepoint.h        |   31 +++++++------
+ kernel/extable.c                  |    2 +-
+ kernel/module.c                   |   31 ++++++++++++
+ kernel/tracepoint.c               |   10 ++++
+ 11 files changed, 275 insertions(+), 17 deletions(-)
+ create mode 100644 arch/x86/include/asm/jump_label.h
+ create mode 100644 arch/x86/kernel/jump_label.c
+ create mode 100644 include/linux/jump_label.h
 
