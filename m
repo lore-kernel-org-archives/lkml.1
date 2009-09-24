@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbZIXPDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZIXPDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752835AbZIXPDd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 11:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbZIXPDc
+	id S1754116AbZIXPDj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZIXPDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 11:03:32 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:39104 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752244AbZIXPDc (ORCPT
+	Thu, 24 Sep 2009 11:03:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35772 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754004AbZIXPDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 11:03:32 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqIEAD4nu0pMROOX/2dsb2JhbACBUtYBhBsF
-Date: Thu, 24 Sep 2009 11:03:33 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [patch 12/12] Tracepoints - Immediate Values
-Message-ID: <20090924150333.GA26389@Krystal>
-References: <20090924132626.485545323@polymtl.ca> <20090924133400.830759403@polymtl.ca> <1253803872.18939.28.camel@laptop>
+	Thu, 24 Sep 2009 11:03:36 -0400
+Subject: Re: [PATCH 02/10] writeback: balance_dirty_pages() shall write
+ more than dirtied pages
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, fengguang.wu@intel.com, shaohua.li@intel.com,
+       chris.mason@oracle.com, jack@suse.cz
+In-Reply-To: <1253803236-20760-3-git-send-email-jens.axboe@oracle.com>
+References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com>
+	 <1253803236-20760-3-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 17:03:34 +0200
+Message-Id: <1253804614.18939.35.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1253803872.18939.28.camel@laptop>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:57:35 up 37 days,  1:47,  2 users,  load average: 0.27, 0.26,
-	0.25
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Thu, 2009-09-24 at 09:26 -0400, Mathieu Desnoyers wrote:
-> > plain text document attachment (tracepoints-immediate-values.patch)
-> > Use immediate values in tracepoints.
+On Thu, 2009-09-24 at 16:40 +0200, Jens Axboe wrote:
+> From: Wu Fengguang <fengguang.wu@intel.com>
 > 
-> I might have missed it, but did both the Intel and AMD cpu folks clear
-> the SMP code rewrite bits?
+> Some filesystem may choose to write much more than ratelimit_pages
+> before calling balance_dirty_pages_ratelimited_nr(). So it is safer to
+> determine number to write based on real number of dirtied pages.
 > 
+> Otherwise it is possible that
+>   loop {
+>     btrfs_file_write():     dirty 1024 pages
+>     balance_dirty_pages():  write up to 48 pages (= ratelimit_pages * 1.5)
+>   }
+> in which the writeback rate cannot keep up with dirty rate, and the
+> dirty pages go all the way beyond dirty_thresh.
+> 
+> The increased write_chunk may make the dirtier more bumpy.
+> So filesystems shall be take care not to dirty too much at
+> a time (eg. > 4MB) without checking the ratelimit.
+> 
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
-SMP handling is performed with stop_machine() in this patchset. Nothing
-fancy here.
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-I've got other patches, not included in this patchset, which implements
-nmi-safe code modification, based on a scheme using breakpoints and
-IPIs, inspired from djprobes. That one might be worth clearing with
-intel/amd devs before merging.
-
-However, doing code patching within stop_machine() is pretty safe, given
-all other CPUs are busy-looping with interrupts off while this happens.
-Ftrace already does this.
-
-Thanks,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
