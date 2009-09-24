@@ -1,36 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbZIXVua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751397AbZIXVwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486AbZIXVua (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 17:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbZIXVua
+	id S1751397AbZIXVwk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 17:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbZIXVwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 17:50:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37917
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751535AbZIXVu3 (ORCPT
+	Thu, 24 Sep 2009 17:52:37 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:13148 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbZIXVwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 17:50:29 -0400
-Date: Thu, 24 Sep 2009 14:50:48 -0700 (PDT)
-Message-Id: <20090924.145048.14726157.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: elendil@planet.nl, whansard@sbcglobal.net, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: disk speed regression kernel 2.6.29 and after
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200909242112.30247.bzolnier@gmail.com>
-References: <200909241934.27472.bzolnier@gmail.com>
-	<200909242011.20032.elendil@planet.nl>
-	<200909242112.30247.bzolnier@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 17:52:36 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAKOGu0qrR7PE/2dsb2JhbAC+OYhTAZAOBYQcgV0
+X-IronPort-AV: E=Sophos;i="4.44,447,1249257600"; 
+   d="scan'208";a="96217511"
+From: Roland Dreier <rdreier@cisco.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [PATCH] ACPI: Kill overly verbose "power state" log messages
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 24 Sep 2009 14:52:36 -0700
+Message-ID: <adapr9gypqz.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 24 Sep 2009 21:52:37.0191 (UTC) FILETIME=[547A6570:01CA3D61]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I was recently lucky enough to get a 64-CPU system.  The processors
+actually have T-states, so my kernel log ends up with 64 lines like:
 
-I'll look closely at this at the next opportunity.
+    ACPI: CPU0 (power states: C1[C1] C2[C3])
 
-Thanks for bringing it to my direct attention.
-:-)
+This is pretty useless clutter because this info is already available
+after boot from both /sys/devices/system/cpu/cpu*/cpuidle/state?/ as
+well as /proc/acpi/processor/CPU*/power.
+
+So just delete the code that prints the throttling states in
+processor_idle.c.
+
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ drivers/acpi/processor_idle.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index cc61a62..706eacf 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1214,13 +1214,6 @@ int __cpuinit acpi_processor_power_init(struct acpi_processor *pr,
+ 		acpi_processor_setup_cpuidle(pr);
+ 		if (cpuidle_register_device(&pr->power.dev))
+ 			return -EIO;
+-
+-		printk(KERN_INFO PREFIX "CPU%d (power states:", pr->id);
+-		for (i = 1; i <= pr->power.count; i++)
+-			if (pr->power.states[i].valid)
+-				printk(" C%d[C%d]", i,
+-				       pr->power.states[i].type);
+-		printk(")\n");
+ 	}
+ #ifdef CONFIG_ACPI_PROCFS
+ 	/* 'power' [R] */
