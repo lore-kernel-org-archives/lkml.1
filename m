@@ -1,112 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbZIXNqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbZIXNrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbZIXNqf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 09:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZIXNqe
+	id S1752264AbZIXNrS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 09:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZIXNrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 09:46:34 -0400
-Received: from mga14.intel.com ([143.182.124.37]:46958 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbZIXNqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 09:46:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,445,1249282800"; 
-   d="scan'208";a="191209870"
-Date: Thu, 24 Sep 2009 21:46:25 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Li, Shaohua" <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [RFC] page-writeback: move indoes from one superblock together
-Message-ID: <20090924134625.GA2507@localhost>
-References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924100136.GA25778@localhost> <20090924123519.GF23126@kernel.dk> <20090924132252.GA696@localhost> <20090924132949.GH23126@kernel.dk>
+	Thu, 24 Sep 2009 09:47:17 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:34235 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750710AbZIXNrQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 09:47:16 -0400
+Message-ID: <4ABB7855.4080409@gmail.com>
+Date: Thu, 24 Sep 2009 15:47:01 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924132949.GH23126@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org
+Subject: Re: [patch] perf timechart: Add a power-only mode
+References: <20090924154013.0675ab71@infradead.org>
+In-Reply-To: <20090924154013.0675ab71@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 24 Sep 2009 15:47:01 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 09:29:50PM +0800, Jens Axboe wrote:
-> On Thu, Sep 24 2009, Wu Fengguang wrote:
-> > On Thu, Sep 24, 2009 at 08:35:19PM +0800, Jens Axboe wrote:
-> > > On Thu, Sep 24 2009, Wu Fengguang wrote:
-> > > > On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
-> > > > > __mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
-> > > > > several partitions, writeback might keep spindle moving between partitions.
-> > > > > To reduce the move, better write big chunk of one partition and then move to
-> > > > > another. Inodes from one fs usually are in one partion, so idealy move indoes
-> > > > > from one fs together should reduce spindle move. This patch tries to address
-> > > > > this. Before per-bdi writeback is added, the behavior is write indoes
-> > > > > from one fs first and then another, so the patch restores previous behavior.
-> > > > > The loop in the patch is a bit ugly, should we add a dirty list for each
-> > > > > superblock in bdi_writeback?
-> > > > > 
-> > > > > Test in a two partition disk with attached fio script shows about 3% ~ 6%
-> > > > > improvement.
-> > > > 
-> > > > A side note: given the noticeable performance gain, I wonder if it
-> > > > deserves to generalize the idea to do whole disk location ordered
-> > > > writeback. That should benefit many small file workloads more than
-> > > > 10%. Because this patch only sorted 2 partitions and inodes in 5s
-> > > > time window, while the below patch will roughly divide the disk into
-> > > > 5 areas and sort inodes in a larger 25s time window.
-> > > > 
-> > > >         http://lkml.org/lkml/2007/8/27/45
-> > > > 
-> > > > Judging from this old patch, the complexity cost would be about 250
-> > > > lines of code (need a rbtree).
-> > > 
-> > > First of all, nice patch, I'll add it to the current tree. I too was
-> > 
-> > You mean Shaohua's patch? It should be a good addition for 2.6.32.
+Arjan van de Ven a écrit :
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: perf timechart: Add a power-only mode
 > 
-> Yes indeed, the parent patch.
+> For doing work on the Linux power management components,
+> I need to make long (30+ seconds) traces. Currently,
+> this then results in a HUGE svg file, with mostly
+> process data that isn't interesting.
 > 
-> > In long term move_expired_inodes() needs some rework.  Because it
-> > could be time consuming to move around all the inodes in a large
-> > system, and thus hold inode_lock() for too long time (and this patch
-> > scales up the locked time).
+> This patch adds a --power-only mode to perf timechart
+> that only outputs the CPU power section of the SVG;
+> this significantly reduces the size of the SVG file,
+> making even 30+ second traces viewable with inkscape.
 > 
-> It does. As mentioned in my reply, for 100 inodes or less, it will still
-> be faster than eg using an rbtree. But the more "reliable" runtime of an
-> rbtree based solution is appealing, though. It's not hugely critical,
-> though.
+> As a minor tweak for the same effect, the minimum text
+> size is decreased; current inkscape cannot zoom in
+> deep enough to show text this small, but it reduces
+> inkscape compute time.
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> 
+> diff --git a/tools/perf/Documentation/perf-timechart.txt b/tools/perf/Documentation/perf-timechart.txt
+> index 1c2ed30..a791009 100644
+> --- a/tools/perf/Documentation/perf-timechart.txt
+> +++ b/tools/perf/Documentation/perf-timechart.txt
+> @@ -31,6 +31,9 @@ OPTIONS
+>  -w::
+>  --width=::
+>          Select the width of the SVG file (default: 1000)
+> +-p::
+> +--power-only::
+> +        Only output the CPU power section of the diagram
+>  
+>  
+>  SEE ALSO
+> diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
+> index 4405681..702d8fe 100644
+> --- a/tools/perf/builtin-timechart.c
+> +++ b/tools/perf/builtin-timechart.c
+> @@ -46,6 +46,8 @@ static u64		turbo_frequency;
+>  
+>  static u64		first_time, last_time;
+>  
+> +static int		power_only;
+> +
+>  
+>  static struct perf_header	*header;
+>  
+> @@ -547,7 +549,7 @@ static void end_sample_processing(void)
+>  	u64 cpu;
+>  	struct power_event *pwr;
+>  
+> -	for (cpu = 0; cpu < numcpus; cpu++) {
+> +	for (cpu = 0; cpu <= numcpus; cpu++) {
 
-Agreed. Desktops are not big worries; servers rarely do many
-partitions per disk.
+hmm, why test is now "cpu <= numcpus" ?
 
-> > So would need to split the list moves into smaller pieces in future,
-> > or to change data structure.
+>  		pwr = malloc(sizeof(struct power_event));
+>  		if (!pwr)
+>  			return;
+> @@ -871,7 +873,7 @@ static int determine_display_tasks(u64 threshold)
+>  		/* no exit marker, task kept running to the end */
+>  		if (p->end_time == 0)
+>  			p->end_time = last_time;
+> -		if (p->total_time >= threshold)
+> +		if (p->total_time >= threshold && !power_only)
+>  			p->display = 1;
+>  
+>  		c = p->all;
+> @@ -882,7 +884,7 @@ static int determine_display_tasks(u64 threshold)
+>  			if (c->start_time == 1)
+>  				c->start_time = first_time;
+>  
+> -			if (c->total_time >= threshold) {
+> +			if (c->total_time >= threshold && !power_only) {
+>  				c->display = 1;
+>  				count++;
+>  			}
+> @@ -1134,6 +1136,8 @@ static const struct option options[] = {
+>  		    "output file name"),
+>  	OPT_INTEGER('w', "width", &svg_page_width,
+>  		    "page width"),
+> +	OPT_BOOLEAN('p', "power-only", &power_only,
+> +		    "output power data only"),
+>  	OPT_END()
+>  };
+>  
+> diff --git a/tools/perf/util/svghelper.c b/tools/perf/util/svghelper.c
+> index a778fd0..856655d 100644
+> --- a/tools/perf/util/svghelper.c
+> +++ b/tools/perf/util/svghelper.c
+> @@ -28,7 +28,7 @@ static u64 turbo_frequency, max_freq;
+>  
+>  int svg_page_width = 1000;
+>  
+> -#define MIN_TEXT_SIZE 0.001
+> +#define MIN_TEXT_SIZE 0.01
+>  
+>  static u64 total_height;
+>  static FILE *svgfile;
+> @@ -217,6 +217,18 @@ static char *cpu_model(void)
+>  		}
+>  		fclose(file);
+>  	}
+> +
+> +	/* CPU type */
+> +	file = fopen("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies", "r");
+
+if this cpu is offline
+
+ /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies: No such file or directory
+
+
+> +	if (file) {
+> +		while (fgets(buf, 255, file)) {
+> +			unsigned int freq;
+> +			freq = strtoull(buf, NULL, 10);
+> +			if (freq > max_freq)
+> +				max_freq = freq;
+> +		}
+> +		fclose(file);
+> +	}
+>  	return cpu_m;
+>  }
+>  
 > 
-> Yes, those are the two options.
 > 
-> > > pondering using an rbtree for sb+dirty_time insertion and extraction.
 
-Note that dirty_time may not be unique, so need some workaround.  And
-the resulted rbtree implementation may not be more efficient than
-several list traversals even for a very large list (as long as
-superblocks numbers are low).
-
-The good side is, once sb+dirty_time rbtree is implemented, it should
-be trivial to switch the key to sb+inode_number (also may not be unique),
-and to do location ordered writeback ;)
-
-Thanks,
-Fengguang
-
-> > FYI Michael Rubin did some work on a rbtree implementation, just
-> > in case you are interested:
-> > 
-> >         http://lkml.org/lkml/2008/1/15/25
-> 
-> Thanks, I'll take a look.
-> 
-> -- 
-> Jens Axboe
