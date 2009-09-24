@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbZIXWmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbZIXWoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686AbZIXWmY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbZIXWmY
+	id S1752712AbZIXWoQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZIXWoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:42:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40234 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751812AbZIXWmX (ORCPT
+	Thu, 24 Sep 2009 18:44:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33035
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751828AbZIXWoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:42:23 -0400
-Date: Thu, 24 Sep 2009 15:41:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oren Laadan <orenl@librato.com>
-Cc: torvalds@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, serue@us.ibm.com, mingo@elte.hu,
-       xemul@openvz.org, orenl@librato.com
-Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
-Message-Id: <20090924154139.2a7dd5ec.akpm@linux-foundation.org>
-In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
-References: <1253749920-18673-1-git-send-email-orenl@librato.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 24 Sep 2009 18:44:15 -0400
+Date: Thu, 24 Sep 2009 15:44:33 -0700 (PDT)
+Message-Id: <20090924.154433.202033577.davem@davemloft.net>
+To: shanwei@cn.fujitsu.com
+Cc: dfeng@redhat.com, kaber@trash.net, yoshfuji@linux-ipv6.org,
+       jmorris@namei.org, pekkas@netcore.fi, kuznet@ms2.inr.ac.ru,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] ipv4: fix do_ip_setsockopt optlen check for
+ IP_MULTICAST_IF
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4AB97CB6.4000004@cn.fujitsu.com>
+References: <4AB1FE2A.1060906@cn.fujitsu.com>
+	<20090922.133819.173686372.davem@davemloft.net>
+	<4AB97CB6.4000004@cn.fujitsu.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009 19:50:40 -0400
-Oren Laadan <orenl@librato.com> wrote:
+From: Shan Wei <shanwei@cn.fujitsu.com>
+Date: Wed, 23 Sep 2009 09:41:10 +0800
 
-> Q: How useful is this code as it stands in real-world usage?
-> A: The application can be single- or multi-processes and threads. It
->    handles open files (regular files/directories on most file systems,
->    pipes, fifos, af_unix sockets, /dev/{null,zero,random,urandom} and
->    pseudo-terminals. It supports shared memory. sysv IPC (except undo
->    of sempahores). It's suitable for many types of batch jobs as well
->    as some interactive jobs. (Note: it is assumed that the fs view is
->    available at restart).
+> [PATCH BUGFIX] ipv4: check optlen for IP_MULTICAST_IF option
+> 
+> Due to man page of setsockopt, if optlen is not valid, kernel should return
+> -EINVAL. But a simple testcase as following, errno is 0, which means setsockopt
+> is successful.
+> 	addr.s_addr = inet_addr("192.1.2.3");
+> 	setsockopt(s, IPPROTO_IP, IP_MULTICAST_IF, &addr, 1);
+> 	printf("errno is %d\n", errno);
+> 
+> Xiaotian Feng(dfeng@redhat.com) caught the bug. We fix it firstly checking
+> the availability of optlen and then dealing with the logic like other options. 
+> 
+> Reported-by: Xiaotian Feng <dfeng@redhat.com> 
+> Signed-off-by: Shan Wei <shanwei@cn.fujitsu.com>
+> Acked-by: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
 
-That's encouraging.
-
-> Q: What can it checkpoint and restart ?
-> A: A (single threaded) process can checkpoint itself, aka "self"
->    checkpoint, if it calls the new system calls. Otherise, for an
->    "external" checkpoint, the caller must first freeze the target
->    processes. One can either checkpoint an entire container (and
->    we make best effort to ensure that the result is self-contained),
->    or merely a subtree of a process hierarchy.
-
-What is "best effort"?  Will the operation appear to have succeeded,
-only it didn't?
-
-IOW, how reliable and robust is code at detecting that it was unable to
-successfully generate a restartable image?
-
-> Q: What about namespaces ?
-> A: Currrently, UTS and IPC namespaces are restored. They demonstrate
->    how namespaces are handled. More to come.
-
-Will this new code muck up the kernel?
-
-> Q: What additional work needs to be done to it?
-> A: Fill in the gory details following the examples so far. Current WIP
->    includes inet sockets, event-poll, and early work on inotify, mount
->    namespace and mount-points, pseudo file systems
-
-Will this new code muck up the kernel, or will it be clean?
-
-> and x86_64 support.
-
-eh?  You mean the code doesn't work on x86_64 at present?
-
-
-What is the story on migration?  Moving the process(es) to a different
-machine?
-
+Applied.
