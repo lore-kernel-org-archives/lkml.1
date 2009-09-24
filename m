@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbZIXPGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbZIXPLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbZIXPGf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 11:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbZIXPGf
+	id S1753453AbZIXPLA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZIXPK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 11:06:35 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45663 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752281AbZIXPGe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 11:06:34 -0400
-Subject: Re: [patch 12/12] Tracepoints - Immediate Values
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-In-Reply-To: <20090924150333.GA26389@Krystal>
-References: <20090924132626.485545323@polymtl.ca>
-	 <20090924133400.830759403@polymtl.ca> <1253803872.18939.28.camel@laptop>
-	 <20090924150333.GA26389@Krystal>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 17:06:19 +0200
-Message-Id: <1253804779.18939.38.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 11:10:59 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:18205 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752322AbZIXPK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 11:10:58 -0400
+Date: Thu, 24 Sep 2009 12:10:49 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Zachary Amsden <zamsden@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH: kvm 2/6] Kill the confusing tsc_ref_khz and ref_freq
+	variables.
+Message-ID: <20090924151049.GB14102@amt.cnet>
+References: <1253762945-5750-1-git-send-email-zamsden@redhat.com> <1253762945-5750-2-git-send-email-zamsden@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253762945-5750-2-git-send-email-zamsden@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-24 at 11:03 -0400, Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Thu, 2009-09-24 at 09:26 -0400, Mathieu Desnoyers wrote:
-> > > plain text document attachment (tracepoints-immediate-values.patch)
-> > > Use immediate values in tracepoints.
-> > 
-> > I might have missed it, but did both the Intel and AMD cpu folks clear
-> > the SMP code rewrite bits?
-> > 
+On Wed, Sep 23, 2009 at 05:29:01PM -1000, Zachary Amsden wrote:
+> They are globals, not clearly protected by any ordering or locking, and
+> vulnerable to various startup races.
 > 
-> SMP handling is performed with stop_machine() in this patchset. Nothing
-> fancy here.
+> Instead, for variable TSC machines, register the cpufreq notifier and get
+> the TSC frequency directly from the cpufreq machinery.  Not only is it
+> always right, it is also perfectly accurate, as no error prone measurement
+> is required.  On such machines, also detect the frequency when bringing
+> a new CPU online; it isn't clear what frequency it will start with, and
+> it may not correspond to the reference.
 > 
-> I've got other patches, not included in this patchset, which implements
-> nmi-safe code modification, based on a scheme using breakpoints and
-> IPIs, inspired from djprobes. That one might be worth clearing with
-> intel/amd devs before merging.
+> Signed-off-by: Zachary Amsden <zamsden@redhat.com>
+> ---
+>  arch/x86/kvm/x86.c |   38 ++++++++++++++++++++++++++++----------
+>  1 files changed, 28 insertions(+), 10 deletions(-)
 > 
-> However, doing code patching within stop_machine() is pretty safe, given
-> all other CPUs are busy-looping with interrupts off while this happens.
-> Ftrace already does this.
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 15d2ace..35082dd 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -650,6 +650,19 @@ static void kvm_set_time_scale(uint32_t tsc_khz, struct pvclock_vcpu_time_info *
+>  
+>  static DEFINE_PER_CPU(unsigned long, cpu_tsc_khz);
+>  
+> +static inline void kvm_get_cpu_khz(int cpu)
+> +{
+> +	unsigned int khz = cpufreq_get(cpu);
 
-Agreed, I missed this relied on stopmachine. No problem then.
-
-It would be good to reduce reliance on stopmachine, so it would be good
-to get some CPU folks looking at your alternative implementation.
-
-Thanks!
+cpufreq_get does down_read, while kvm_arch_hardware_enable is called
+either with a spinlock held or from interrupt context?
 
