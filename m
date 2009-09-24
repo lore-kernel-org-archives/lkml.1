@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbZIXQqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbZIXQwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753055AbZIXQqJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 12:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZIXQqI
+	id S1753123AbZIXQwj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 12:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZIXQwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 12:46:08 -0400
-Received: from dip-colo-pa.panasas.com ([67.152.220.67]:40244 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752866AbZIXQqH (ORCPT
+	Thu, 24 Sep 2009 12:52:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58547 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752693AbZIXQwh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 12:46:07 -0400
-Message-ID: <4ABBA24E.7090709@panasas.com>
-Date: Thu, 24 Sep 2009 19:46:06 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ricardo Labiaga <Ricardo.Labiaga@netapp.com>,
-       Andy Adamson <andros@netapp.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       David Miller <davem@davemloft.net>, linux-nfs@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] net: fix htmldocs sunrpc, clnt.c
-References: <1253794781.5860.29.camel@ht.satnam> <4ABB9C17.3020307@oracle.com>
-In-Reply-To: <4ABB9C17.3020307@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 Sep 2009 12:52:37 -0400
+Date: Thu, 24 Sep 2009 09:51:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michael Abbott <michael@araneidae.co.uk>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       Johan van Baarlen <jf@vanbaarlen.demon.nl>, stable@kernel.org
+Subject: Re: [GIT PULL] cputime tree
+Message-Id: <20090924095106.62294617.akpm@linux-foundation.org>
+In-Reply-To: <20090924133136.7b7c834e@mschwide.boeblingen.de.ibm.com>
+References: <20090924133136.7b7c834e@mschwide.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Sep 2009 16:46:10.0562 (UTC) FILETIME=[85317620:01CA3D36]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep. 24, 2009, 19:19 +0300, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> Jaswinder Singh Rajput wrote:
->>   DOCPROC Documentation/DocBook/networking.xml
->>   Warning(net/sunrpc/clnt.c:647): No description found for parameter 'req'
->>   Warning(net/sunrpc/clnt.c:647): No description found for parameter 'tk_ops'
->>   Warning(net/sunrpc/clnt.c:647): Excess function parameter 'ops' description in 'rpc_run_bc_task'
->>
->> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> 
-> Ack.  Already sent, but possibly lost.
+On Thu, 24 Sep 2009 13:31:36 +0200 Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
 
-Ack.  thanks!
+> Hi Linus,
+> 
+> with git commit 79741dd "idle cputime accounting" the semantic
+> of the stime field of the idle processes has changed. It used to
+> contain the amount of time the idle process has been scheduled.
+> Since git commit 79741dd is contains the cpu time spent in the
+> system by the idle process.
+> 
+> This change broke the output of second field of /proc/uptime. On
+> systems without VIRT_CPU_ACCOUNTING the field is always zero.
+> The legacy output of the field is the amount of time the idle
+> process has been scheduled on cpu #0. It is good enough to
+> calculate the load on an uni-processor system, it is useless
+> on a multi-processor. To restore the legacy behaviour and give
+> meaning to the multi-processor case the best we could come up
+> with is to add the idle time over all cpus. That fixes uni-
+> processors systems and gives a defined semantic on smp.
+> 
+> So please pull from 'cputime' branch of
+> 
+> 	git://git390.marist.edu/pub/scm/linux-2.6.git cputime
+> 
+> to receive the following updates:
+> 
+> Michael Abbott (1):
+>       Fix idle time field in /proc/uptime
+> 
+>  fs/proc/uptime.c |    7 ++++++-
+>  1 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
+> index 0c10a0b..766b1d4 100644
+> --- a/fs/proc/uptime.c
+> +++ b/fs/proc/uptime.c
+> @@ -4,13 +4,18 @@
+>  #include <linux/sched.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/time.h>
+> +#include <linux/kernel_stat.h>
+>  #include <asm/cputime.h>
+>  
+>  static int uptime_proc_show(struct seq_file *m, void *v)
+>  {
+>  	struct timespec uptime;
+>  	struct timespec idle;
+> -	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
+> +	int i;
+> +	cputime_t idletime = cputime_zero;
+> +
+> +	for_each_possible_cpu(i)
+> +		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
+>  
+>  	do_posix_clock_monotonic_gettime(&uptime);
+>  	monotonic_to_bootbased(&uptime);
 
-> 
->> Cc: Ricardo Labiaga <Ricardo.Labiaga@netapp.com>
->> Cc: Benny Halevy <bhalevy@panasas.com>
->> Cc: Andy Adamson <andros@netapp.com>
->> Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
->> Cc: Randy Dunlap <randy.dunlap@oracle.com>
->> Cc: David Miller <davem@davemloft.net>
->> ---
->>  net/sunrpc/clnt.c |    5 +++--
->>  1 files changed, 3 insertions(+), 2 deletions(-)
->>
->> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
->> index a417d5a..38829e2 100644
->> --- a/net/sunrpc/clnt.c
->> +++ b/net/sunrpc/clnt.c
->> @@ -640,10 +640,11 @@ EXPORT_SYMBOL_GPL(rpc_call_async);
->>  /**
->>   * rpc_run_bc_task - Allocate a new RPC task for backchannel use, then run
->>   * rpc_execute against it
->> - * @ops: RPC call ops
->> + * @req: RPC request
->> + * @tk_ops: RPC call ops
->>   */
->>  struct rpc_task *rpc_run_bc_task(struct rpc_rqst *req,
->> -					const struct rpc_call_ops *tk_ops)
->> +				const struct rpc_call_ops *tk_ops)
->>  {
->>  	struct rpc_task *task;
->>  	struct xdr_buf *xbufp = &req->rq_snd_buf;
-> 
+This is a regression fix, iirc?  One which is applicable for several 2.6.x
+kernel versions?
+
