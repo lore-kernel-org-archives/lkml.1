@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZIXPOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbZIXPQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbZIXPOD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 11:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZIXPOC
+	id S1751937AbZIXPQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZIXPQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 11:14:02 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:33167 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751947AbZIXPOB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 11:14:01 -0400
-Message-ID: <4ABB8CB5.9080402@in.ibm.com>
-Date: Thu, 24 Sep 2009 20:43:57 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, greg@kroah.org,
-       Lars Ericsson <Lars_Ericsson@telia.com>, David.Woodhouse@intel.com,
-       linux-kernel@vger.kernel.org, "'Ivo van Doorn'" <ivdoorn@gmail.com>
-Subject: Re: [patch -stable] firware_class oops: fix firmware_loading_store
- locking
-References: <20090916205717.GB12117@gambetta> <8A019019C4474E589B9EC14F451C0579@gotws1589> <20090921133223.GA13038@gambetta> <alpine.LFD.2.01.0909230936320.3303@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0909230936320.3303@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 11:16:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41345 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751693AbZIXPQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 11:16:57 -0400
+Date: Thu, 24 Sep 2009 17:16:58 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: Re: [ANNOUNCE] 2.6.31-rt11
+Message-ID: <20090924151658.GQ18706@bolzano.suse.de>
+References: <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <4de7f8a60909230839j3d6beca8l9a677d38bc3a80d3@mail.gmail.com> <alpine.LFD.2.00.0909230922160.2981@nanos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0909230922160.2981@nanos>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> I don't think this is correct.
->
-> I think you should protect the FW_STATUS_LOADING bit too, shouldn't you?
->
-> As it is, it does this:
->
-> 	if (test_bit(FW_STATUS_LOADING, &fw_priv->status)) {
-> 		mutex_lock(&fw_lock);
-> 		...
-> 		clear_bit(FW_STATUS_LOADING, &fw_priv->status);
-> 		mutex_unlock(&fw_lock);
-> 		break;
-> 	}
->
-> and if this code can race (which it obviously can, since your addition of 
-> fw_lock mutex matters), then I think it can race on that FW_STATUS_LOADING 
-> bit too. No?
->
-> So my gut feel is that the whole damn function should be protected by the 
-> mutex_lock thing. IOW, the patch would be something like the appended.
->
-> UNTESTED. Somebody needs to test this, verify, and send it back to me.
->   
-I did a quick boot test with this patch and didn't find any issues.
+On Wed, Sep 23, Thomas Gleixner wrote:
 
-But that said i haven't been able to recreate the problem reported by Lars,
-so not sure how relevant would be the test results from me.
+> 
+> 
+> On Wed, 23 Sep 2009, Jan Blunck wrote:
+> 
+> > On Sat, Sep 19, 2009 at 12:39 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > We are pleased to announce the next update to our new preempt-rt
+> > > series.
+> > >
+> > >   - disable SPARSE_IRQ, DMAR, IRQ_REMAP for -rt
+> > >
+> > 
+> > Do you have any reports that there is a bug in the SPARSE_IRQ code or
+> > why did you disable it?
+> 
+> Sparse irq is allocating memory in irq/preempt disabled regions which
+> makes preempt debug pretty unhappy. It needs some restructuring of
+> that code. dmar and irqremap have the same problem.
 
-Thanks
--Sachin
+Is this with the patch I sent on Aug 31:
+[PATCH] Allocate memory before disabling memory in irq_to_desc_alloc_node()
 
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+Thanks,
+Jan
