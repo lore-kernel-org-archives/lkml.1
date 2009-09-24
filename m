@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZIXOjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZIXOli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbZIXOjA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 10:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZIXOi7
+	id S1753381AbZIXOli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 10:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZIXOlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 10:38:59 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34314 "EHLO
+	Thu, 24 Sep 2009 10:41:37 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:36037 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753120AbZIXOi7 (ORCPT
+	by vger.kernel.org with ESMTP id S1752999AbZIXOlf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 10:38:59 -0400
+	Thu, 24 Sep 2009 10:41:35 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org,
-       Mike Frysinger <vapier.adi@gmail.com>
-Subject: [PATCH v2 08/11] blackfin: Cleanup linker script using new linker script macros.
-Date: Thu, 24 Sep 2009 10:36:23 -0400
-Message-Id: <1253802986-8132-9-git-send-email-tabbott@ksplice.com>
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 09/11] powerpc: Cleanup linker script using new linker script macros.
+Date: Thu, 24 Sep 2009 10:36:24 -0400
+Message-Id: <1253802986-8132-10-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
 References: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
@@ -29,105 +29,157 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Bryan Wu <cooloney@kernel.org>
-Cc: uclinux-dist-devel@blackfin.uclinux.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
 ---
- arch/blackfin/kernel/vmlinux.lds.S |   56 ++++--------------------------------
- 1 files changed, 6 insertions(+), 50 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S |   69 ++++++++-----------------------------
+ 1 files changed, 15 insertions(+), 54 deletions(-)
 
-diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
-index 21ac7c2..ffd90fb 100644
---- a/arch/blackfin/kernel/vmlinux.lds.S
-+++ b/arch/blackfin/kernel/vmlinux.lds.S
-@@ -96,8 +96,7 @@ SECTIONS
- 	{
- 		__sdata = .;
- 		/* This gets done first, so the glob doesn't suck it in */
--		. = ALIGN(32);
--		*(.data.cacheline_aligned)
-+		CACHELINE_ALIGNED_DATA(32)
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 58da407..f564293 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -6,6 +6,7 @@
+ #include <asm/page.h>
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/cache.h>
++#include <asm/thread_info.h>
  
- #if !L1_DATA_A_LENGTH
- 		. = ALIGN(32);
-@@ -116,12 +115,7 @@ SECTIONS
- 		DATA_DATA
- 		CONSTRUCTORS
+ ENTRY(_stext)
  
--		/* make sure the init_task is aligned to the
--		 * kernel thread size so we can locate the kernel
--		 * stack properly and quickly.
--		 */
--		. = ALIGN(THREAD_SIZE);
--		*(.init_task.data)
-+		INIT_TASK_DATA(THREAD_SIZE)
+@@ -71,12 +72,7 @@ SECTIONS
+ 	/* Read-only data */
+ 	RODATA
  
- 		__edata = .;
- 	}
-@@ -134,39 +128,10 @@ SECTIONS
+-	/* Exception & bug tables */
+-	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+-		__start___ex_table = .;
+-		*(__ex_table)
+-		__stop___ex_table = .;
+-	}
++	EXCEPTION_TABLE(0)
+ 
+ 	NOTES :kernel :notes
+ 
+@@ -93,12 +89,7 @@ SECTIONS
+  */
  	. = ALIGN(PAGE_SIZE);
- 	___init_begin = .;
- 
--	.init.text :
--	{
--		. = ALIGN(PAGE_SIZE);
--		__sinittext = .;
+ 	__init_begin = .;
+-
+-	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-		_sinittext = .;
 -		INIT_TEXT
--		__einittext = .;
--	}
--	.init.data :
--	{
--		. = ALIGN(16);
--		INIT_DATA
--	}
--	.init.setup :
--	{
--		. = ALIGN(16);
--		___setup_start = .;
--		*(.init.setup)
--		___setup_end = .;
--	}
--	.initcall.init :
--	{
--		___initcall_start = .;
--		INITCALLS
--		___initcall_end = .;
--	}
--	.con_initcall.init :
--	{
--		___con_initcall_start = .;
--		*(.con_initcall.init)
--		___con_initcall_end = .;
--	}
-+	INIT_TEXT_SECTION(PAGE_SIZE)
-+	. = ALIGN(16);
-+	INIT_DATA_SECTION(16)
- 	PERCPU(4)
--	SECURITY_INIT
+-		_einittext = .;
+-	} :kernel
++	INIT_TEXT_SECTION(PAGE_SIZE) :kernel
  
- 	/* we have to discard exit text and such at runtime, not link time, to
- 	 * handle embedded cross-section references (alt instructions, bug
-@@ -181,18 +146,9 @@ SECTIONS
- 		EXIT_DATA
+ 	/* .exit.text is discarded at runtime, not link time,
+ 	 * to deal with references from __bug_table
+@@ -122,23 +113,16 @@ SECTIONS
+ #endif
  	}
  
--	.init.ramfs :
--	{
--		. = ALIGN(4);
--		___initramfs_start = .;
--		*(.init.ramfs)
--		. = ALIGN(4);
--		___initramfs_end = .;
--	}
--
- 	__l1_lma_start = .;
+-	. = ALIGN(16);
+ 	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-		__setup_start = .;
+-		*(.init.setup)
+-		__setup_end = .;
++		INIT_SETUP(16)
+ 	}
  
--	.text_l1 L1_CODE_START : AT(LOADADDR(.init.ramfs) + SIZEOF(.init.ramfs))
-+	.text_l1 L1_CODE_START : AT(LOADADDR(.exit.data) + SIZEOF(.exit.data))
- 	{
- 		. = ALIGN(4);
- 		__stext_l1 = .;
+ 	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-		__initcall_start = .;
+-		INITCALLS
+-		__initcall_end = .;
+-		}
++		INIT_CALLS
++	}
+ 
+ 	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-		__con_initcall_start = .;
+-		*(.con_initcall.init)
+-		__con_initcall_end = .;
++		CON_INITCALL
+ 	}
+ 
+ 	SECURITY_INIT
+@@ -169,14 +153,10 @@ SECTIONS
+ 		__stop___fw_ftr_fixup = .;
+ 	}
+ #endif
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	. = ALIGN(PAGE_SIZE);
+ 	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		__initramfs_end = .;
++		INIT_RAM_FS
+ 	}
+-#endif
++
+ 	PERCPU(PAGE_SIZE)
+ 
+ 	. = ALIGN(8);
+@@ -240,36 +220,24 @@ SECTIONS
+ #endif
+ 
+ 	/* The initial task and kernel stack */
+-#ifdef CONFIG_PPC32
+-	. = ALIGN(8192);
+-#else
+-	. = ALIGN(16384);
+-#endif
+ 	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-		*(.data.init_task)
++		INIT_TASK_DATA(THREAD_SIZE)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+-		*(.data.page_aligned)
++		PAGE_ALIGNED_DATA(PAGE_SIZE)
+ 	}
+ 
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
+-		*(.data.cacheline_aligned)
++		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+ 	}
+ 
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+-		*(.data.read_mostly)
++		READ_MOSTLY_DATA(L1_CACHE_BYTES)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+-		__nosave_begin = .;
+-		*(.data.nosave)
+-		. = ALIGN(PAGE_SIZE);
+-		__nosave_end = .;
++		NOSAVE_DATA
+ 	}
+ 
+ 	. = ALIGN(PAGE_SIZE);
+@@ -280,14 +248,7 @@ SECTIONS
+  * And finally the bss
+  */
+ 
+-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+-		__bss_start = .;
+-		*(.sbss) *(.scommon)
+-		*(.dynbss)
+-		*(.bss)
+-		*(COMMON)
+-		__bss_stop = .;
+-	}
++	BSS_SECTION(0, 0, 0)
+ 
+ 	. = ALIGN(PAGE_SIZE);
+ 	_end = . ;
 -- 
 1.6.3.3
 
