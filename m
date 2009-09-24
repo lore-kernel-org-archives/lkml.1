@@ -1,98 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZIXBrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZIXCHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbZIXBrO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 21:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZIXBrM
+	id S1753327AbZIXCHK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 22:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZIXCHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 21:47:12 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:29975 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbZIXBrM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 21:47:12 -0400
-Subject: Re: a patch drop request in -mm
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
+	Wed, 23 Sep 2009 22:07:08 -0400
+Received: from mga02.intel.com ([134.134.136.20]:39228 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753117AbZIXCHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 22:07:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,442,1249282800"; 
+   d="scan'208";a="553273568"
+Subject: Re: [origin tree boot crash] NULL pointer dereference, IP:
+ [<ffffffff82b07130>] ibm_find_acpi_device+0x5c/0xf5
+From: Lin Ming <ming.m.lin@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, bjorn.helgaas@hp.com
+Cc: Len Brown <lenb@kernel.org>, "Moore, Robert" <robert.moore@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-In-Reply-To: <20090924092903.B648.A69D9226@jp.fujitsu.com>
-References: <2f11576a0909210800l639560e4jad6cfc2e7f74538f@mail.gmail.com>
-	 <20090921152219.GQ12726@csn.ul.ie>
-	 <20090924092903.B648.A69D9226@jp.fujitsu.com>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <1253756114.9794.43.camel@minggr.sh.intel.com>
+References: <alpine.LFD.2.00.0909190237560.22030@localhost.localdomain>
+	 <20090923213052.GA6648@elte.hu>
+	 <1253756114.9794.43.camel@minggr.sh.intel.com>
 Content-Type: text/plain
-Organization: HP/LKTT
-Date: Wed, 23 Sep 2009 21:47:12 -0400
-Message-Id: <1253756832.6489.33.camel@useless.americas.hpqcorp.net>
+Date: Thu, 24 Sep 2009 09:58:30 +0800
+Message-Id: <1253757510.9794.55.camel@minggr.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-24 at 09:40 +0900, KOSAKI Motohiro wrote:
-> > On Tue, Sep 22, 2009 at 12:00:51AM +0900, KOSAKI Motohiro wrote:
-> > > Mel,
-> > > 
-> > > Today, my test found following patch makes false-positive warning.
-> > > because, truncate can free the pages
-> > > although the pages are mlock()ed.
-> > > 
-> > > So, I think following patch should be dropped.
-> > > .. or, do you think truncate should clear PG_mlock before free the page?
+On Thu, 2009-09-24 at 09:35 +0800, Lin Ming wrote:
+> On Thu, 2009-09-24 at 05:30 +0800, Ingo Molnar wrote:
+> > > commit 15b8dd53f5ffaf8e2d9095c423f713423f576c0f
+> > > Date:   Mon Jun 29 13:39:29 2009 +0800
+> > >
+> > >     ACPICA: Major update for acpi_get_object_info external interface
 > > 
-> > Is there a reason that truncate cannot clear PG_mlock before freeing the
-> > page?
+> > this one is causing boot crashes in -tip testing:
 > 
-> CC to Lee.
-> IIRC, Lee tried it at first. but after some trouble, he decided change free_hot_cold_page().
-> but unfortunately, I don't recall the reason ;-)
+> Hi,
 > 
-> Lee, Can you recall it?
+> Could you please try below commit at linux-acpi-2.6/release branch.
 
-Well, truncation does call clear_page_mlock() for this purpose.  This
-should always succeed in clearing PG_mlock, altho' I suppose it could be
-set from somewhere else after that?  Looking at the 2.6.31 sources, I
-see that there is a call to page_cache_release() in
-truncate_inode_pages_range() that doesn't have a corresponding
-clear_page_mlock() associated with it.  Perhaps we missed this one, or
-it's been added since w/o munlocking the page. 
+Oh, sorry, commit 718fb0d was already in -tip testing.
 
-If you can eliminate the false positive, I think it would be good to
-keep the warning in place.   There might be other "leaks" of mlocked
-pages that aren't as benign as this.  But, keeping it in -mm until it's
-sorted out sound reasonable to me
+(add Bjorn Helgaas <bjorn.helgaas@hp.com>)
+
+Below patch should fix the crash.
+http://patchwork.kernel.org/patch/49090/ 
+
+Subject: [PATCH v3 01/17] ACPICA: fixup after acpi_get_object_info() change
+
+Commit 15b8dd53f5ffa changed info->hardware_id from a static array to
+a pointer.  If hardware_id is non-NULL, it points to a NULL-terminated
+string, so we don't need to terminate it explicitly.  However, it may
+be NULL; in that case, we *can't* add a NULL terminator.
+
+This causes a NULL pointer dereference oops for devices without _HID.
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Lin Ming <ming.m.lin@intel.com>
+CC: Bob Moore <robert.moore@intel.com>
+CC: Gary Hade <garyhade@us.ibm.com>
+---
+ drivers/pci/hotplug/acpiphp_ibm.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
+index a9d926b..e7be66d 100644
+--- a/drivers/pci/hotplug/acpiphp_ibm.c
++++ b/drivers/pci/hotplug/acpiphp_ibm.c
+@@ -406,7 +406,6 @@ static acpi_status __init ibm_find_acpi_device(acpi_handle handle,
+ 			__func__, status);
+ 		return retval;
+ 	}
+-	info->hardware_id.string[sizeof(info->hardware_id.length) - 1] = '\0';
  
+ 	if (info->current_status && (info->valid & ACPI_VALID_HID) &&
+ 			(!strcmp(info->hardware_id.string, IBM_HARDWARE_ID1) ||
+
+
+---
+Lin Ming
 
 > 
+> commit 718fb0de8ff88f71b3b91a8ee8e42e60c88e5128
+> Author: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Date:   Thu Aug 6 23:18:12 2009 +0000
 > 
-> > > Can I ask your patch intention?
-> > 
-> > Locked pages being freed to the page allocator were considered
-> > unexpected and a counter was in place to determine how often that
-> > situation occurred. However, I considered it unlikely that the counter
-> > would be noticed so the warning was put in place to catch what class of
-> > pages were getting freed locked inappropriately. I think a few anomolies
-> > have been cleared up since. Ultimately, it should have been safe to
-> > delete the check.
+>     ACPI: fix NULL bug for HID/UID string
+>     
+>     acpi_device->pnp.hardware_id and unique_id are now allocated pointers,
+>     replacing the previous arrays.  acpi_device_install_notify_handler()
+>     oopsed on the NULL hid when probing the video device, and perhaps other
+>     uses are vulnerable too.  So initialize those pointers to empty strings
+>     when there is no hid or uid.  Also, free hardware_id and unique_id when
+>     when acpi_device is going to be freed.
+>     
+>     http://bugzilla.kernel.org/show_bug.cgi?id=14096
+>     
+>     Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+>     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+>     Signed-off-by: Len Brown <len.brown@intel.com>
 > 
-> OK. it seems reasonable. so, I only hope no see linus tree output false-positive warnings.
-> Thus, I propse 
-> 
->   - don't merge this patch to linus tree
->   - but, no drop from -mm
->     it be holded in mm until this issue fixed.
->   - I'll working on fixing this issue.
-> 
-> I think this is enough fair.
-> 
-> 
-> Hannes, I'm sorry. I haven't review your patch. I'm too busy now. please gime me more
-> sevaral time.
-> 
-> 
-> 
+> Thanks,
+> Lin Ming
+
 
