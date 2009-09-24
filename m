@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZIXT1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbZIXT3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbZIXT1D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZIXT07
+	id S1753488AbZIXT3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZIXT1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:26:59 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11164 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 15:27:18 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:4875 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753995AbZIXT0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:26:37 -0400
+	id S1753011AbZIXT0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:26:39 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
@@ -21,162 +21,182 @@ Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
        jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
        riel@redhat.com
-Subject: [PATCH 15/28] io-controller: Allow CFQ specific extra preemptions
-Date: Thu, 24 Sep 2009 15:25:19 -0400
-Message-Id: <1253820332-10246-16-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 16/28] io-controller: Wait for requests to complete from last queue before new queue is scheduled
+Date: Thu, 24 Sep 2009 15:25:20 -0400
+Message-Id: <1253820332-10246-17-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o CFQ allows a reader preemting a writer. So far we allow this with-in group
-  but not across groups. But there seems to be following special case where
-  this preemption might make sense.
+o Currently one can dispatch requests from multiple queues to the disk. This
+  is true for hardware which supports queuing. So if a disk support queue
+  depth of 31 it is possible that 20 requests are dispatched from queue 1
+  and then next queue is scheduled in which dispatches more requests.
 
-			root
-			/  \
-		       R   Group
-			     |
-			     W
+o This multiple queue dispatch introduces issues for accurate accounting of
+  disk time consumed by a particular queue. For example, if one async queue
+  is scheduled in, it can dispatch 31 requests to the disk and then it will
+  be expired and a new sync queue might get scheduled in. These 31 requests
+  might take a long time to finish but this time is never accounted to the
+  async queue which dispatched these requests.
 
-  Now here reader should be able to preempt the writer. Think of there are
-  10 groups each running a writer and an admin trying to do "ls" and he
-  experiences suddenly high latencies for ls.
+o This patch introduces the functionality where we wait for all the requests
+  to finish from previous queue before next queue is scheduled in. That way
+  a queue is more accurately accounted for disk time it has consumed. Note
+  this still does not take care of errors introduced by disk write caching.
 
-  Same is true for meta data requests. If there is a meta data request and
-  a reader is running inside a sibling group, preemption will be allowed.
-  Note, following is not allowed.
-			root
-			/  \
-	            group1 group2
-		      |      |
-	              R	     W
+o Because above behavior can result in reduced throughput, this behavior will
+  be enabled only if user sets "fairness" tunable to 1.
 
-  Here reader can't preempt writer.
-
-o Put meta data requesting queues at the front of the service tree. Generally
-  such queues will preempt currently running queue but not in following case.
-			root
-			/  \
-	            group1 group2
-		      |     / \
-	              R1   R3  R2 (meta data)
-
- Here R2 is having a meta data request but it will not preempt R1. We need
- to make sure that R2 gets queued ahead of R3 so taht once group2 gets
- going, we first service R2 and then R3 and not vice versa.
+o This patch helps in achieving more isolation between reads and buffered
+  writes in different cgroups. buffered writes typically utilize full queue
+  depth and then expire the queue. On the contarary, sequential reads
+  typicaly driver queue depth of 1. So despite the fact that writes are
+  using more disk time it is never accounted to write queue because we don't
+  wait for requests to finish after dispatching these. This patch helps
+  do more accurate accounting of disk time, especially for buffered writes
+  hence providing better fairness hence better isolation between two cgroups
+  running read and write workloads.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+Acked-by: Rik van Riel <riel@redhat.com>
 ---
- block/elevator-fq.c |   47 +++++++++++++++++++++++++++++++++++++++++++++--
- block/elevator-fq.h |    3 +++
- 2 files changed, 48 insertions(+), 2 deletions(-)
+ block/cfq-iosched.c |    1 +
+ block/elevator-fq.c |   30 +++++++++++++++++++++++++-----
+ block/elevator-fq.h |   10 +++++++++-
+ 3 files changed, 35 insertions(+), 6 deletions(-)
 
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 878cf76..37a4832 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -2130,6 +2130,7 @@ static struct elv_fs_entry cfq_attrs[] = {
+ 	ELV_ATTR(slice_async),
+ #ifdef CONFIG_GROUP_IOSCHED
+ 	ELV_ATTR(group_idle),
++	ELV_ATTR(fairness),
+ #endif
+ 	__ATTR_NULL
+ };
 diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 25beaf7..8ff8a19 100644
+index 8ff8a19..bac45fe 100644
 --- a/block/elevator-fq.c
 +++ b/block/elevator-fq.c
-@@ -701,6 +701,7 @@ static void enqueue_io_entity(struct io_entity *entity)
- 	struct io_service_tree *st;
- 	struct io_sched_data *sd = io_entity_sched_data(entity);
- 	struct io_queue *ioq = ioq_of(entity);
-+	int add_front = 0;
+@@ -893,6 +893,8 @@ static void elv_ioq_served(struct io_queue *ioq, unsigned long served)
  
- 	if (entity->on_idle_st)
- 		dequeue_io_entity_idle(entity);
-@@ -716,12 +717,22 @@ static void enqueue_io_entity(struct io_entity *entity)
- 	st = entity->st;
- 	st->nr_active++;
- 	sd->nr_active++;
-+
- 	/* Keep a track of how many sync queues are backlogged on this group */
- 	if (ioq && elv_ioq_sync(ioq) && !elv_ioq_class_idle(ioq))
- 		sd->nr_sync++;
- 	entity->on_st = 1;
--	place_entity(st, entity, 0);
--	__enqueue_io_entity(st, entity, 0);
-+
-+	/*
-+	 * If a meta data request is pending in this queue, put this
-+	 * queue at the front so that it gets a chance to run first
-+	 * as soon as the associated group becomes eligbile to run.
-+	 */
-+	if (ioq && ioq->meta_pending)
-+		add_front = 1;
-+
-+	place_entity(st, entity, add_front);
-+	__enqueue_io_entity(st, entity, add_front);
- 	debug_update_stats_enqueue(entity);
- }
+ 	allocated_slice = elv_prio_to_slice(ioq->efqd, ioq);
  
-@@ -2280,6 +2291,31 @@ static int elv_should_preempt(struct request_queue *q, struct io_queue *new_ioq,
- 		return 1;
++	queue_charge = group_charge = served;
++
+ 	/*
+ 	 * We don't want to charge more than allocated slice otherwise this
+ 	 * queue can miss one dispatch round doubling max latencies. On the
+@@ -900,16 +902,15 @@ static void elv_ioq_served(struct io_queue *ioq, unsigned long served)
+ 	 * we stick to CFQ theme of queue loosing its share if it does not
+ 	 * use the slice and moves to the back of service tree (almost).
+ 	 */
+-	queue_charge = allocated_slice;
++	if (!ioq->efqd->fairness)
++		queue_charge = allocated_slice;
  
  	/*
-+	 * Allow some additional preemptions where a reader queue gets
-+	 * backlogged and some writer queue is running under any of the
-+	 * sibling groups.
-+	 *
-+	 * 		     root
-+	 * 		     /  \
-+	 * 		    R  group
-+	 * 			 |
-+	 * 			 W
-+	 */
-+
-+	if (ioq_of(new_entity) == new_ioq  && iog_of(entity)) {
-+		/* Let reader queue preempt writer in sibling group */
-+		if (elv_ioq_sync(new_ioq) && !elv_ioq_sync(active_ioq))
-+			return 1;
+ 	 * Group is charged the real time consumed so that it does not loose
+ 	 * fair share.
+ 	 */
+-	if (served > allocated_slice)
++	if (!ioq->efqd->fairness && group_charge > allocated_slice)
+ 		group_charge = allocated_slice;
+-	else
+-		group_charge = served;
+ 
+ 	entity_served(&ioq->entity, served, queue_charge, group_charge,
+ 			ioq->nr_sectors);
+@@ -951,6 +952,8 @@ SHOW_FUNCTION(elv_slice_sync_show, efqd->elv_slice[1], 1);
+ EXPORT_SYMBOL(elv_slice_sync_show);
+ SHOW_FUNCTION(elv_slice_async_show, efqd->elv_slice[0], 1);
+ EXPORT_SYMBOL(elv_slice_async_show);
++SHOW_FUNCTION(elv_fairness_show, efqd->fairness, 0);
++EXPORT_SYMBOL(elv_fairness_show);
+ #undef SHOW_FUNCTION
+ 
+ #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+@@ -975,6 +978,8 @@ STORE_FUNCTION(elv_slice_sync_store, &efqd->elv_slice[1], 1, UINT_MAX, 1);
+ EXPORT_SYMBOL(elv_slice_sync_store);
+ STORE_FUNCTION(elv_slice_async_store, &efqd->elv_slice[0], 1, UINT_MAX, 1);
+ EXPORT_SYMBOL(elv_slice_async_store);
++STORE_FUNCTION(elv_fairness_store, &efqd->fairness, 0, 1, 0);
++EXPORT_SYMBOL(elv_fairness_store);
+ #undef STORE_FUNCTION
+ 
+ void elv_schedule_dispatch(struct request_queue *q)
+@@ -2687,6 +2692,17 @@ void *elv_select_ioq(struct request_queue *q, int force)
+ 	}
+ 
+ expire:
++	if (efqd->fairness && !force && ioq && ioq->dispatched) {
 +		/*
-+		 * So both queues are sync. Let the new request get disk time if
-+		 * it's a metadata request and the current queue is doing
-+		 * regular IO.
++		 * If there are request dispatched from this queue, don't
++		 * dispatch requests from new queue till all the requests from
++		 * this queue have completed.
 +		 */
-+		if (new_ioq->meta_pending && !active_ioq->meta_pending)
-+			return 1;
++		elv_log_ioq(efqd, ioq, "select: wait for requests to finish"
++				" disp=%lu", ioq->dispatched);
++		ioq = NULL;
++		goto keep_queue;
 +	}
-+
-+	/*
- 	 * If both the queues belong to same group, check with io scheduler
- 	 * if it has additional criterion based on which it wants to
- 	 * preempt existing queue.
-@@ -2335,6 +2371,8 @@ void elv_ioq_request_add(struct request_queue *q, struct request *rq)
- 	BUG_ON(!efqd);
- 	BUG_ON(!ioq);
- 	ioq->nr_queued++;
-+	if (rq_is_meta(rq))
-+		ioq->meta_pending++;
- 	elv_log_ioq(efqd, ioq, "add rq: rq_queued=%d", ioq->nr_queued);
+ 	elv_slice_expired(q);
+ new_queue:
+ 	ioq = elv_set_active_ioq(q, new_ioq);
+@@ -2839,6 +2855,10 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+ 				goto done;
+ 			}
  
- 	if (!elv_ioq_busy(ioq))
-@@ -2669,6 +2707,11 @@ void elv_ioq_request_removed(struct elevator_queue *e, struct request *rq)
- 	ioq = rq->ioq;
- 	BUG_ON(!ioq);
- 	ioq->nr_queued--;
++			/* Wait for requests to finish from this queue */
++			if (efqd->fairness && elv_ioq_nr_dispatched(ioq))
++				goto done;
 +
-+	if (rq_is_meta(rq)) {
-+		WARN_ON(!ioq->meta_pending);
-+		ioq->meta_pending--;
-+	}
- }
- 
- /* A request got dispatched. Do the accounting. */
+ 			/* Expire the queue */
+ 			elv_slice_expired(q);
+ 			goto done;
+@@ -2849,7 +2869,7 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+ 		 * If this is the last queue in the group and we did not
+ 		 * decide to idle on queue, idle on group.
+ 		 */
+-		if (elv_iog_should_idle(ioq) && !ioq->dispatched
++		if (elv_iog_should_idle(ioq) && !elv_ioq_nr_dispatched(ioq)
+ 		    && !ioq_is_idling(ioq)) {
+ 			/*
+ 			 * If queue has used up its slice, wait for the
 diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 2992d93..27ff5c4 100644
+index 27ff5c4..68c6d16 100644
 --- a/block/elevator-fq.h
 +++ b/block/elevator-fq.h
-@@ -100,6 +100,9 @@ struct io_queue {
+@@ -192,6 +192,12 @@ struct elv_fq_data {
  
- 	/* Pointer to io scheduler's queue */
- 	void *sched_queue;
+ 	/* Fallback dummy ioq for extreme OOM conditions */
+ 	struct io_queue oom_ioq;
 +
-+	/* pending metadata requests */
-+	int meta_pending;
++	/*
++	 * If set to 1, waits for all request completions from current
++	 * queue before new queue is scheduled in
++	 */
++	unsigned int fairness;
  };
  
- #ifdef CONFIG_GROUP_IOSCHED /* CONFIG_GROUP_IOSCHED */
+ /* Logging facilities. */
+@@ -451,7 +457,9 @@ extern ssize_t elv_slice_sync_store(struct elevator_queue *q, const char *name,
+ extern ssize_t elv_slice_async_show(struct elevator_queue *q, char *name);
+ extern ssize_t elv_slice_async_store(struct elevator_queue *q, const char *name,
+ 						size_t count);
+-
++extern ssize_t elv_fairness_show(struct elevator_queue *q, char *name);
++extern ssize_t elv_fairness_store(struct elevator_queue *q, const char *name,
++					size_t count);
+ /* Functions used by elevator.c */
+ extern struct elv_fq_data *elv_alloc_fq_data(struct request_queue *q,
+ 					struct elevator_queue *e);
 -- 
 1.6.0.6
 
