@@ -1,136 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZIXIdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZIXIiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbZIXIdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 04:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZIXIdy
+	id S1752661AbZIXIiP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 04:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbZIXIiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 04:33:54 -0400
-Received: from mga14.intel.com ([143.182.124.37]:48218 "EHLO mga14.intel.com"
+	Thu, 24 Sep 2009 04:38:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46521 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbZIXIdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 04:33:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,444,1249282800"; 
-   d="scan'208";a="191123857"
-Date: Thu, 24 Sep 2009 16:33:42 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20090924083342.GA15918@localhost>
-References: <1252425983.7746.120.camel@twins> <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins> <20090908172842.GC2975@think> <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz>
+	id S1752354AbZIXIiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 04:38:13 -0400
+Message-ID: <4ABB2FE3.40608@kernel.org>
+Date: Thu, 24 Sep 2009 17:37:55 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090914111721.GA24075@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu areas
+ for other cpus
+References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-3-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0909221856050.9410@V090114053VZO-1> <4AB983B6.6050203@kernel.org> <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1> <4ABA2A3A.6020308@kernel.org> <alpine.DEB.1.10.0909231315310.4025@V090114053VZO-1> <4ABA9B14.20904@kernel.org> <alpine.DEB.1.10.0909240332130.1488@V090114053VZO-1>
+In-Reply-To: <alpine.DEB.1.10.0909240332130.1488@V090114053VZO-1>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 24 Sep 2009 08:37:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 07:17:21PM +0800, Jan Kara wrote:
-> On Thu 10-09-09 17:49:10, Peter Zijlstra wrote:
-> > On Wed, 2009-09-09 at 16:23 +0200, Jan Kara wrote:
-> > >   Well, what I imagined we could do is:
-> > > Have a per-bdi variable 'pages_written' - that would reflect the amount of
-> > > pages written to the bdi since boot (OK, we'd have to handle overflows but
-> > > that's doable).
-> > > 
-> > > There will be a per-bdi variable 'pages_waited'. When a thread should sleep
-> > > in balance_dirty_pages() because we are over limits, it kicks writeback thread
-> > > and does:
-> > >   to_wait =  max(pages_waited, pages_written) + sync_dirty_pages() (or
-> > > whatever number we decide)
-> > >   pages_waited = to_wait
-> > >   sleep until pages_written reaches to_wait or we drop below dirty limits.
-> > > 
-> > > That will make sure each thread will sleep until writeback threads have done
-> > > their duty for the writing thread.
-> > > 
-> > > If we make sure sleeping threads are properly ordered on the wait queue,
-> > > we could always wakeup just the first one and thus avoid the herding
-> > > effect. When we drop below dirty limits, we would just wakeup the whole
-> > > waitqueue.
-> > > 
-> > > Does this sound reasonable?
-> > 
-> > That seems to go wrong when there's multiple tasks waiting on the same
-> > bdi, you'd count each page for 1/n its weight.
-> > 
-> > Suppose pages_written = 1024, and 4 tasks block and compute their to
-> > wait as pages_written + 256 = 1280, then we'd release all 4 of them
-> > after 256 pages are written, instead of 4*256, which would be
-> > pages_written = 2048.
->   Well, there's some locking needed of course. The intent is to stack
-> demands as they come. So in case pages_written = 1024, pages_waited = 1024
-> we would do:
-> THREAD 1:
+Hello, Christoph.
+
+Christoph Lameter wrote:
+> On Thu, 24 Sep 2009, Tejun Heo wrote:
 > 
-> spin_lock
-> to_wait = 1024 + 256
-> pages_waited = 1280
-> spin_unlock
+>>> How does the new percpu allocator support this? Does it use different
+>>> methods of access for static and dynamic percpu access?
+>> That's only when __ia64_per_cpu_var() macro is used in arch code which
+>> always references static perpcu variable in the kernel image which
+>> falls inside PERCPU_PAGE_SIZE.  For everything else, __my_cpu_offset
+>> is defined as __ia64_per_cpu_var(local_per_cpu_offset) and regular
+>> pointer offsetting is used.
 > 
-> THREAD 2:
+> So this means that address arithmetic needs to be performed for each
+> percpu access. The virtual mapping would allow the calculation of the
+> address at link time. Calculation means that a single atomic instruction
+> for percpu access wont be possible for ia64.
 > 
-> spin_lock
-> to_wait = 1280 + 256
-> pages_waited = 1536
-> spin_unlock
+> I can toss my ia64 percpu optimization patches. No point anymore.
 > 
->   So weight of each page will be kept. The fact that second thread
-> effectively waits until the first thread has its demand satisfied looks
-> strange at the first sight but we don't do better currently and I think
-> it's fine - if they were two writer threads, then soon the thread released
-> first will queue behind the thread still waiting so long term the behavior
-> should be fair.
+> Tony: We could then also drop the virtual per cpu mapping. Its only useful
+> for arch specific code and an alternate method of reference exists.
 
-Yeah, FIFO queuing should be good enough.
+percpu implementation on ia64 has always been like that.  The problem
+with the alternate mapping is that you can't take the pointer to it as
+it would mean different thing depending on which processor you're on
+and the overall generic percpu implementation expects unique addresses
+from percpu access macros.
 
-I'd like to propose one more data structure for evaluation :)
+ia64 currently has been and is the only arch which uses virtual percpu
+mapping.  The one biggest benefit would be accesses to the
+local_per_cpu_offset.  Whether it's beneficial enough to justify the
+complexity, I frankly don't know.
 
-- bdi->throttle_lock
-- bdi->throttle_list    pages to sync for each waiting task, taken from sync_writeback_pages()
-- bdi->throttle_pages   (counted down) pages to sync for the head task, shall be atomic_t
+Andrew once also suggested taking advantage of those overlapping
+virtual mappings for local percpu accesses.  If the generic code
+followed such design, ia64's virtual mappings would definitely be more
+useful, but that means we would need aliased mappings for percpu areas
+and addresses will be different for local and remote accesses.  Also,
+getting it right on machines with virtually mapped caches would be
+very painful.  Given that %gs/fs offesetting is quite efficient on
+x86, I don't think changing the generic mechanism is worthwhile.
 
-In balance_dirty_pages(), it would do
+So, it would be great if we can find a better way to offset addresses
+on ia64.  If not, nothing improves or deteriorates performance-wise
+with the new implementation.
 
-        nr_to_sync = sync_writeback_pages()
-        if (list_empty(bdi->throttle_list))  # I'm the only task
-                bdi->throttle_pages = nr_to_sync
-        append nr_to_sync to bdi->throttle_list
-        kick off background writeback
-        wait
-        remove itself from bdi->throttle_list and wait list
-        set bdi->throttle_pages for new head task (or LONG_MAX)
+Thanks.
 
-In __bdi_writeout_inc(), it would do
-
-        if (--bdi->throttle_pages <= 0)
-                check and wake up head task
-
-In wb_writeback(), it would do
-
-        if (args->for_background && exiting)
-                wake up all throttled tasks
-
-To prevent wake up too many tasks at the same time, it can relax the
-background threshold a bit, so that __bdi_writeout_inc() become the
-only wake up point in normal cases.
-
-        if (args->for_background && !list_empty(bdi->throttle_list) &&
-                over background_thresh - background_thresh / 32)
-                keep write pages;
-
-Thanks,
-Fengguang
-
+-- 
+tejun
