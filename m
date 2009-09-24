@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZIXTRC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbZIXTUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbZIXTRC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:17:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZIXTRA
+	id S1753637AbZIXTUJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZIXTUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:17:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52004 "EHLO mx3.mail.elte.hu"
+	Thu, 24 Sep 2009 15:20:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40225 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbZIXTQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:16:59 -0400
-Date: Thu, 24 Sep 2009 21:16:42 +0200
+	id S1752827AbZIXTUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:20:05 -0400
+Date: Thu, 24 Sep 2009 21:20:02 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jason Baron <jbaron@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Immediate values
-Message-ID: <20090924191642.GA19225@elte.hu>
-References: <20090924123154.GA12907@Krystal> <20090924123428.GA27282@elte.hu> <20090924140228.GA2648@redhat.com> <20090924141600.GA22007@Krystal>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Fr?d?ric Weisbecker <fweisbec@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-perf-users@vger.kernel.org
+Subject: Re: [PATCH] perf tools: Dont use openat()
+Message-ID: <20090924192002.GB19225@elte.hu>
+References: <4ABB6EB7.7000002@gmail.com> <20090924131250.GA15132@elte.hu> <4ABB767D.6080004@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090924141600.GA22007@Krystal>
+In-Reply-To: <4ABB767D.6080004@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,43 +37,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+* Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-> * Jason Baron (jbaron@redhat.com) wrote:
+> Ingo Molnar a ?crit :
+> > * Eric Dumazet <eric.dumazet@gmail.com> wrote:
 > > 
-> > right we've proposed an alternative to the immediate values, which 
-> > I've been calling 'jump label', here:
+> >> Hi Ingo
+> >>
+> >> Here is a patch for perf.
 > > 
-> > http://marc.info/?l=linux-kernel&m=125200966226921&w=2
+> > Applied, thanks Eric!
 > > 
-> > The basic idea is that gcc, 4.5 will have support for an 'asm goto' 
-> > construct which can refer to c code labels. Thus, we can replace a 
-> > nop in the code stream with a 'jmp' instruction to various branch 
-> > targets.
+> >> BTW, use of openat() is a nuisance, since many machines have old glibc
+> >> (RHEL 4 Update 5 -> glibc-2.3.4-2.36 on my dev machine for example)
 > > 
-> > In terms of a comparison between the two, IMO, I think that the 
-> > syntax for the immediate variables can be more readable, since it 
-> > just looks like a conditional expression.
-> > 
-> > The immediate values do a 'mov', 'test' and then a jump, whereas 
-> > jump label can just do a jump. So in this respect, I believe jump 
-> > label can be more optimal. Additinally, if we want to mark sections 
-> > 'cold' so they don't impact the istruction cache, the jump label 
-> > already has the labels for doing so. Obviously, a performance 
-> > comparison would be interesting as well.
+> > We can certainly remove that reliance - wanna send a patch for it?
 > 
-> For branches, I'm convinced that a "static jump" approach will beat 
-> immediate values anytime, because you save the BPB hit completely.
+> Here it is
 > 
-> However, there are other use-cases involving a variable read, and in 
-> that case immediate values are useful. Andi has been bugging me for a 
-> while to re-post this patchset, I'm pretty sure he has precise ideas 
-> about how he would like to use it.
+> Thanks
+> 
+> [PATCH] perf tools: Dont use openat()
+> 
+> openat() is still a young glibc facility, better to not use it
+> in a non performance critical program (perf list)
+> 
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> ---
+>  tools/perf/util/parse-events.c |   49 ++++++++++++-------------------
+>  1 files changed, 20 insertions(+), 29 deletions(-)
 
-It depends on how significant that usecase is.
-
-Tracepoints used to be the biggest use-case for immediate values, and 
-without that the thing becomes rather complex to maintain, for probably 
-very little benefit.
+Applied, thanks Eric! I think it's also significant enough to be pushed 
+to 2.6.32.
 
 	Ingo
