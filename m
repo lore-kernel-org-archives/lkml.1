@@ -1,118 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbZIXSnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbZIXSqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753702AbZIXSnV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 14:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZIXSnT
+	id S1753115AbZIXSqB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 14:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZIXSp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 14:43:19 -0400
-Received: from e24smtp01.br.ibm.com ([32.104.18.85]:54956 "EHLO
-	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbZIXSnO (ORCPT
+	Thu, 24 Sep 2009 14:45:57 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:54270 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZIXSp4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 14:43:14 -0400
-Subject: Re: [PATCH] tpm_tis: TPM_STS_DATA_EXPECT workaround
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Seiji Munetoh <seiji.munetoh@gmail.com>
-Cc: akpm@linux-foundation.org, Daniel Walker <dwalker@fifo99.com>,
-       Andy Isaacson <adi@hexapodia.org>, jmorris@namei.org,
-       len.brown@intel.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
-       tpmdd-devel@lists.sourceforge.net, dds@google.com,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Shahbaz Khan <shaz.linux@gmail.com>
-In-Reply-To: <f02dbbe70909111634q24df8746o8589394f7c30b28@mail.gmail.com>
-References: <1246410255-6839-1-git-send-email-adi@vmware.com>
-	 <1246410255-6839-6-git-send-email-adi@vmware.com>
-	 <20090701110136.576a1d14@lxorguk.ukuu.org.uk>
-	 <1246455920.9140.28.camel@blackbox>	 <20090720182732.GL6370@hexapodia.org>
-	 <1252609714.4837.87.camel@blackbox>	 <1252612471.4837.107.camel@blackbox>
-	 <1252612709.30578.219.camel@desktop>	 <1252613375.4837.121.camel@blackbox>
-	 <f02dbbe70909111634q24df8746o8589394f7c30b28@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 15:43:01 -0300
-Message-Id: <1253817781.8653.3.camel@dyn531367.br.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 14:45:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=km0ThGdGiZ1ZGxZB9pLIaqX2XEdfePHpwVvuJf3l3u4NPHN+VYp0NavTrNlsayys2
+	EBLJC1aU55uLyA9Xpns0g==
+Date: Thu, 24 Sep 2009 11:45:52 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: David Howells <dhowells@redhat.com>
+cc: torvalds@osdl.org, akpm@linux-foundation.org, ebmunson@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HugeTLB: Fix unused variable warning
+In-Reply-To: <20090924100232.19291.70594.stgit@warthog.procyon.org.uk>
+Message-ID: <alpine.DEB.1.00.0909241143400.2673@chino.kir.corp.google.com>
+References: <20090924100232.19291.70594.stgit@warthog.procyon.org.uk>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This was already tested and, given no more comments on it, finally
-reviewed. Can it already be merged?
+On Thu, 24 Sep 2009, David Howells wrote:
 
-Thanks,
-Rajiv
+> Fix an unused variable warning:
+> 
+> 	mm/mmap.c: In function 'do_mmap_pgoff':
+> 	mm/mmap.c:953: warning: unused variable 'user'
+> 
+> by converting the CONFIG_HUGETLBFS=n version of hugetlb_file_setup() into an
+> inline function instead of a macro.
+> 
+> Introduced by:
+> 
+> 	commit 4e52780d41a741fb4861ae1df2413dd816ec11b1
+> 	Author: Eric B Munson <ebmunson@us.ibm.com>
+> 	Date:   Mon Sep 21 17:03:47 2009 -0700
+> 	hugetlb: add MAP_HUGETLB for mmaping pseudo-anonymous huge page regions
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-On Sat, 2009-09-12 at 08:34 +0900, Seiji Munetoh wrote:
-> On Fri, Sep 11, 2009 at 5:09 AM, Rajiv Andrade
-> <srajiv@linux.vnet.ibm.com> wrote:
-> > Some newer Lenovo models are shipped with a TPM that doesn't seem to set the TPM_STS_DATA_EXPECT status bit
-> > when sending it a burst of data, so the code understands it as a failure and doesn't proceed sending the chip
-> > the intended data. In this patch we bypass this bit check in case the itpm module parameter was set.
-> >
-> > This patch is based on Andy Isaacson's one:
-> >
-> > http://marc.info/?l=linux-kernel&m=124650185023495&w=2
-> >
-> > It was heavily discussed how should we deal with identifying the chip in kernel space, but the required
-> > patch to do so was NACK'd:
-> >
-> > http://marc.info/?l=linux-kernel&m=124650186423711&w=2
-> >
-> > This way we let the user choose using this workaround or not based on his
-> > observations on this code behavior when trying to use the TPM.
-> >
-> > Fixed a checkpatch issue present on the previous patch, thanks to Daniel Walker.
-> >
-> > Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-> 
-> As far as I know, only the intel tpm has this PNP issue, so I'm fine with it.
-> 
-> Tested-by: Seiji Munetoh <seiji.munetoh@gmail.com>
-> 
-> > ---
-> > diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-> > index aec1931..c9990db 100644
-> > --- a/drivers/char/tpm/tpm_tis.c
-> > +++ b/drivers/char/tpm/tpm_tis.c
-> > @@ -257,6 +257,10 @@ out:
-> >        return size;
-> >  }
-> >
-> > +static int itpm;
-> > +module_param(itpm, bool, 0444);
-> > +MODULE_PARM_DESC(itpm, "Force iTPM workarounds (found on some Lenovo laptops)");
-> > +
-> >  /*
-> >  * If interrupts are used (signaled by an irq set in the vendor structure)
-> >  * tpm.c can skip polling for the data to be available as the interrupt is
-> > @@ -293,7 +297,7 @@ static int tpm_tis_send(struct tpm_chip *chip, u8 *buf, size_t len)
-> >                wait_for_stat(chip, TPM_STS_VALID, chip->vendor.timeout_c,
-> >                              &chip->vendor.int_queue);
-> >                status = tpm_tis_status(chip);
-> > -               if ((status & TPM_STS_DATA_EXPECT) == 0) {
-> > +               if (!itpm && (status & TPM_STS_DATA_EXPECT) == 0) {
-> >                        rc = -EIO;
-> >                        goto out_err;
-> >                }
-> > @@ -467,6 +471,10 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
-> >                 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
-> >                 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
-> >
-> > +       if (itpm)
-> > +               dev_info(dev, "Intel iTPM workaround enabled\n");
-> > +
-> > +
-> >        /* Figure out the capabilities */
-> >        intfcaps =
-> >            ioread32(chip->vendor.iobase +
-> >
-> >
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Andrew added hugetlb_file_setup-use-c-not-cpp.patch to -mm on Tuesday and 
+it should appear in the next mmotm.
 
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+why macros are always wrong:
+
+mm/mmap.c: In function 'do_mmap_pgoff':
+mm/mmap.c:953: warning: unused variable 'user'
+
+also, move a couple of struct forward-decls outside `#ifdef
+CONFIG_HUGETLB_PAGE' - it's pointless and frequently harmful to make these
+conditional (eg, this patch needed `struct user_struct').
+
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Nishanth Aravamudan <nacc@us.ibm.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Adam Litke <agl@us.ibm.com>
+Cc: Andy Whitcroft <apw@canonical.com>
+Cc: Eric Whitney <eric.whitney@hp.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/hugetlb.h |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff -puN include/linux/hugetlb.h~hugetlb_file_setup-use-c-not-cpp include/linux/hugetlb.h
+--- a/include/linux/hugetlb.h~hugetlb_file_setup-use-c-not-cpp
++++ a/include/linux/hugetlb.h
+@@ -3,15 +3,15 @@
+
+ #include <linux/fs.h>
+
++struct ctl_table;
++struct user_struct;
++
+ #ifdef CONFIG_HUGETLB_PAGE
+
+ #include <linux/mempolicy.h>
+ #include <linux/shm.h>
+ #include <asm/tlbflush.h>
+
+-struct ctl_table;
+-struct user_struct;
+-
+ int PageHuge(struct page *page);
+
+ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+@@ -187,7 +187,11 @@ static inline void set_file_hugepages(st
+
+ #define is_file_hugepages(file)                        0
+ #define set_file_hugepages(file)               BUG()
+-#define hugetlb_file_setup(name,size,acct,user,creat)  ERR_PTR(-ENOSYS)
++static inline struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag,
++                               struct user_struct **user, int creat_flags)
++{
++       return ERR_PTR(-ENOSYS);
++}
+
+ #endif /* !CONFIG_HUGETLBFS */
+ 
