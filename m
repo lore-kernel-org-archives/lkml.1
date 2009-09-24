@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZIXBMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbZIXBKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673AbZIXBMp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 21:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZIXBMo
+	id S1754634AbZIXBKf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 21:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZIXBKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 21:12:44 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59742 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754654AbZIXBMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 21:12:43 -0400
-Message-ID: <4ABAC6F9.9060406@cn.fujitsu.com>
-Date: Thu, 24 Sep 2009 09:10:17 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Wed, 23 Sep 2009 21:10:34 -0400
+Received: from hq-exedge.brocade.com ([66.243.153.83]:38966 "EHLO
+	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753378AbZIXBKd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 21:10:33 -0400
+Date: Wed, 23 Sep 2009 18:10:36 -0700
+From: Jing Huang <huangj@brocade.com>
+Message-ID: <200909240110.n8O1Aam0023605@swe58.brocade.com>
+To: <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 13/14] bfa: Brocade BFA FC SCSI driver (make)
+CC: <kgudipat@brocade.com>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, <rvadivel@brocade.com>,
+       <vravindr@brocade.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH] io-controller: Fix task hanging when there are more	than
- one groups
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com> <20090915033739.GA4054@redhat.com>
-In-Reply-To: <20090915033739.GA4054@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+From: Jing Huang <huangj@brocade.com>
 
-Currently, we just set this flag when anticipating next request.
-So make sure we remove this flag also in this case.
+This patch contains Makefile and Kconfig file for scsi and bfa.
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Signed-off-by: Jing Huang <huangj@brocade.com>
 ---
- block/as-iosched.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ Kconfig      |   10 ++++++++++
+ Makefile     |    1 +
+ bfa/Makefile |   15 +++++++++++++++
+ 3 files changed, 26 insertions(+)
 
-diff --git a/block/as-iosched.c b/block/as-iosched.c
-index 5868e72..7a64232 100644
---- a/block/as-iosched.c
-+++ b/block/as-iosched.c
-@@ -728,9 +728,10 @@ static void as_antic_stop(struct as_data *ad)
- 	as_log(ad, "as_antic_stop antic_status=%d", ad->antic_status);
+diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
+--- orig/drivers/scsi/Kconfig	2009-09-23 15:59:20.000000000 -0700
++++ patch/drivers/scsi/Kconfig	2009-09-23 15:59:15.000000000 -0700
+@@ -1821,6 +1821,16 @@ config SCSI_SRP
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called libsrp.
  
- 	if (status == ANTIC_WAIT_REQ || status == ANTIC_WAIT_NEXT) {
--		if (status == ANTIC_WAIT_NEXT)
-+		if (status == ANTIC_WAIT_NEXT) {
- 			del_timer(&ad->antic_timer);
--		as_clear_active_asq_wait_request(ad);
-+			as_clear_active_asq_wait_request(ad);
-+		}
- 		ad->antic_status = ANTIC_FINISHED;
- 		/* see as_work_handler */
- 		kblockd_schedule_work(ad->q, &ad->antic_work);
--- 
-1.5.4.rc3
-
-
++config SCSI_BFA_FC
++	tristate "Brocade BFA Fibre Channel Support"
++	depends on PCI && SCSI
++	select SCSI_FC_ATTRS
++	help
++	  This bfa driver supports all Brocade PCIe FC/FCOE host adapters.
++
++	  To compile this driver as a module, choose M here. The module will
++	  be called bfa.
++
+ endif # SCSI_LOWLEVEL
+ 
+ source "drivers/scsi/pcmcia/Kconfig"
+diff -urpN orig/drivers/scsi/Makefile patch/drivers/scsi/Makefile
+--- orig/drivers/scsi/Makefile	2009-09-23 15:59:20.000000000 -0700
++++ patch/drivers/scsi/Makefile	2009-09-23 15:59:15.000000000 -0700
+@@ -86,6 +86,7 @@ obj-$(CONFIG_SCSI_QLOGIC_1280)	+= qla128
+ obj-$(CONFIG_SCSI_QLA_FC)	+= qla2xxx/
+ obj-$(CONFIG_SCSI_QLA_ISCSI)	+= qla4xxx/
+ obj-$(CONFIG_SCSI_LPFC)		+= lpfc/
++obj-$(CONFIG_SCSI_BFA_FC)	+= bfa/
+ obj-$(CONFIG_SCSI_PAS16)	+= pas16.o
+ obj-$(CONFIG_SCSI_T128)		+= t128.o
+ obj-$(CONFIG_SCSI_DMX3191D)	+= dmx3191d.o
+diff -urpN orig/drivers/scsi/bfa/Makefile patch/drivers/scsi/bfa/Makefile
+--- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000 -0800
++++ patch/drivers/scsi/bfa/Makefile	2009-09-23 15:59:20.000000000 -0700
+@@ -0,0 +1,15 @@
++obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
++
++bfa-y := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o bfad_fwimg.o
++
++bfa-y += bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_fcxp.o bfa_lps.o
++bfa-y += bfa_hw_cb.o bfa_hw_ct.o bfa_intr.o bfa_timer.o bfa_rport.o 
++bfa-y += bfa_fcport.o bfa_port.o bfa_uf.o bfa_sgpg.o bfa_module.o bfa_ioim.o
++bfa-y += bfa_itnim.o bfa_fcpim.o bfa_tskim.o bfa_log.o bfa_log_module.o
++bfa-y += bfa_csdebug.o bfa_sm.o plog.o
++
++bfa-y += fcbuild.o fabric.o fcpim.o vfapi.o fcptm.o bfa_fcs.o bfa_fcs_port.o 
++bfa-y += bfa_fcs_uf.o bfa_fcs_lport.o fab.o fdmi.o ms.o ns.o scn.o loop.o
++bfa-y += lport_api.o n2n.o rport.o rport_api.o rport_ftrs.o vport.o
++
++ccflags-y := -I$(obj) -I$(obj)/include -I$(obj)/include/cna
