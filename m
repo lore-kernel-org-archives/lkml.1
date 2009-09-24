@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbZIXAez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZIXAkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbZIXAez (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZIXAex
+	id S1754420AbZIXAkn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZIXAkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:34:53 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:63168 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753222AbZIXAev (ORCPT
+	Wed, 23 Sep 2009 20:40:41 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54245 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753260AbZIXAkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:34:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=JIMcxA5zKrferxP++LvkwtGdqkr68654GGmrRS5npnsQ4kmJp+qyvqk5KS3/IGeiWA
-         87/rZ3PZJ99f2tUJfxp0+3vKWekX3GOrOlzzUke6aMJ+XZ8fouv33jr98ZimUXaWsEwq
-         9j1N/TBwR3/hFCkR5tDygUyVqUMDQIeHVeHZY=
+	Wed, 23 Sep 2009 20:40:37 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: a patch drop request in -mm
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+In-Reply-To: <20090921152219.GQ12726@csn.ul.ie>
+References: <2f11576a0909210800l639560e4jad6cfc2e7f74538f@mail.gmail.com> <20090921152219.GQ12726@csn.ul.ie>
+Message-Id: <20090924092903.B648.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <1253615424.20345.76.camel@Palantir>
-References: <1253615424.20345.76.camel@Palantir>
-Date: Thu, 24 Sep 2009 09:34:54 +0900
-Message-ID: <49b7c2350909231734h936f76fq5cdb056ff6144076@mail.gmail.com>
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Raistlin <raistlin@linux.it>
-Cc: Peter Zijlstra <peterz@infradead.org>, claudio@evidence.eu.com,
-       michael@evidence.eu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 24 Sep 2009 09:40:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 7:30 PM, Raistlin <raistlin@linux.it> wrote:
->
-> The project is hosted at the following URL:
->
->  http://www.evidence.eu.com/sched_edf.html
->
-Hi Raistlin,
+> On Tue, Sep 22, 2009 at 12:00:51AM +0900, KOSAKI Motohiro wrote:
+> > Mel,
+> > 
+> > Today, my test found following patch makes false-positive warning.
+> > because, truncate can free the pages
+> > although the pages are mlock()ed.
+> > 
+> > So, I think following patch should be dropped.
+> > .. or, do you think truncate should clear PG_mlock before free the page?
+> 
+> Is there a reason that truncate cannot clear PG_mlock before freeing the
+> page?
 
-Thank you for challenge to support EDF on Linux 2.6 in private.
+CC to Lee.
+IIRC, Lee tried it at first. but after some trouble, he decided change free_hot_cold_page().
+but unfortunately, I don't recall the reason ;-)
 
-You have to modify  git address of schedtool-edf at
-http://www.evidence.eu.com/sched_edf.html correctly.
-
-before) git clone git://feanor.sssup.it/sched-tool-edf.git
-after   ) git clone git://feanor.sssup.it/schedtool-edf.git
-
------ http://www.evidence.eu.com/sched_edf.html
----------------------------------
-Usage with schedtool
-
- To easily test SCHED_EDF you can use our modified version of
-schedtool as explained below.
-For instance, to run a simple yes program with period 100000us and
-budget 25000us, just type the following commands:
-
-git clone git://feanor.sssup.it/sched-tool-edf.git * <-- Here, change
-to schedtool-edf.git
-cd schedtool-edf
-make
-./schedtool -E -d 100000 -b 25000 -a 0 -e yes > /dev/null &
+Lee, Can you recall it?
 
 
+> > Can I ask your patch intention?
+> 
+> Locked pages being freed to the page allocator were considered
+> unexpected and a counter was in place to determine how often that
+> situation occurred. However, I considered it unlikely that the counter
+> would be noticed so the warning was put in place to catch what class of
+> pages were getting freed locked inappropriately. I think a few anomolies
+> have been cleared up since. Ultimately, it should have been safe to
+> delete the check.
 
--- 
-Regards,
-GeunSik Lim ( Samsung Electronics )
-Blog : http://blog.naver.com/invain/
-e-Mail: geunsik.lim@samsung.com
-           leemgs@gmail.com , leemgs1@gmail.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+OK. it seems reasonable. so, I only hope no see linus tree output false-positive warnings.
+Thus, I propse 
+
+  - don't merge this patch to linus tree
+  - but, no drop from -mm
+    it be holded in mm until this issue fixed.
+  - I'll working on fixing this issue.
+
+I think this is enough fair.
+
+
+Hannes, I'm sorry. I haven't review your patch. I'm too busy now. please gime me more
+sevaral time.
+
+
+
