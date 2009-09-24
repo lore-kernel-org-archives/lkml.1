@@ -1,36 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbZIXWEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbZIXWEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752374AbZIXWEs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZIXWEr
+	id S1752346AbZIXWEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZIXWET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:04:47 -0400
-Received: from gimli.pxnet.com ([195.227.45.7]:33626 "EHLO mail.pxnet.com"
+	Thu, 24 Sep 2009 18:04:19 -0400
+Received: from mail.pxnet.com ([195.227.45.7]:52281 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329AbZIXWEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:04:11 -0400
+	id S1752371AbZIXWES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 18:04:18 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: Gigaset & ISDN followup patches
+Subject: [PATCH 5/4] Documentation: correction to isdn/INTERFACE.CAPI
 To: Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>
-CC: Hansjoerg Lipp <hjlipp@web.de>, davem@davemloft.net,
-       i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-ID: <20090924-patch-0.tilman@imap.cc>
-Date: Fri, 25 Sep 2009 00:03:59 +0200 (CEST)
+CC: davem@davemloft.net, i4ldeveloper@listserv.isdn4linux.de,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <20090924-patch-capi-5.tilman@imap.cc>
+In-Reply-To: <20090924-patch-0.tilman@imap.cc>
+References: <20090924-patch-0.tilman@imap.cc>
+Date: Fri, 25 Sep 2009 00:04:09 +0200 (CEST)
 X-Spam-Score: -2.212 () BAYES_00,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karsten,
+Correct the paragraphs describing the _cstruct and _cmstruct types.
+The _cstruct representation is in fact used for some struct
+parameters containing struct subparameters, too.
 
-I'm sending you one followup patch each to the ISDN and Gigaset patch
-series for kernel 2.6.32 I sent on 2009-09-19, fixing issues I found
-after that submission. I've tentatively tacked them on to the end of
-each series as "patch 5/4" and "13/12" but if you prefer I can respin
-patch 1 of the ISDN series and patch 12 of the Gigaset series to
-incorporate the changes.
+Impact: documentation
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+---
+ Documentation/isdn/INTERFACE.CAPI |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-Looking forward to seeing these merged,
-Tilman
+diff --git a/Documentation/isdn/INTERFACE.CAPI b/Documentation/isdn/INTERFACE.CAPI
+index e6bb1a7..5fe8de5 100644
+--- a/Documentation/isdn/INTERFACE.CAPI
++++ b/Documentation/isdn/INTERFACE.CAPI
+@@ -217,18 +217,19 @@ u16         for CAPI parameters of type 'word'
+ 
+ u32         for CAPI parameters of type 'dword'
+ 
+-_cstruct    for CAPI parameters of type 'struct' not containing any
+-	    variably-sized (struct) subparameters (eg. 'Called Party Number')
++_cstruct    for CAPI parameters of type 'struct'
+ 	    The member is a pointer to a buffer containing the parameter in
+ 	    CAPI encoding (length + content). It may also be NULL, which will
+ 	    be taken to represent an empty (zero length) parameter.
++	    Subparameters are stored in encoded form within the content part.
+ 
+-_cmstruct   for CAPI parameters of type 'struct' containing 'struct'
+-	    subparameters ('Additional Info' and 'B Protocol')
++_cmstruct   alternative representation for CAPI parameters of type 'struct'
++	    (used only for the 'Additional Info' and 'B Protocol' parameters)
+ 	    The representation is a single byte containing one of the values:
+-	    CAPI_DEFAULT: the parameter is empty
+-	    CAPI_COMPOSE: the values of the subparameters are stored
+-	    individually in the corresponding _cmsg structure members
++	    CAPI_DEFAULT: The parameter is empty/absent.
++	    CAPI_COMPOSE: The parameter is present.
++	    Subparameter values are stored individually in the corresponding
++	    _cmsg structure members.
+ 
+ Functions capi_cmsg2message() and capi_message2cmsg() are provided to convert
+ messages between their transport encoding described in the CAPI 2.0 standard
+-- 
+1.6.2.1.214.ge986c
 
