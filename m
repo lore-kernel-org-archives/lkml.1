@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZIXTU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbZIXTXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZIXTU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZIXTU2
+	id S1753873AbZIXTXJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbZIXTXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:20:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34902 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752946AbZIXTU1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:20:27 -0400
-Date: Thu, 24 Sep 2009 20:21:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Johan Hovold <jhovold@gmail.com>, "Greg Kroah-Hartman" <gregkh@suse.de>,
-       linux-usb@vger.kernel.org, Alan Cox <alan@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-Message-ID: <20090924202107.4730f2af@lxorguk.ukuu.org.uk>
-In-Reply-To: <200909242103.48562.oliver@neukum.org>
-References: <20090924154023.GA27480@localhost>
-	<200909242103.48562.oliver@neukum.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 15:23:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44971 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753714AbZIXTXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:23:03 -0400
+Date: Thu, 24 Sep 2009 21:22:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, linux@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, a.p.zijlstra@chello.nl,
+       fweisbec@gmail.com, acme@redhat.com, mhiramat@redhat.com,
+       postmaster@vger.kernel.org
+Subject: Re: mailing list for trace users
+Message-ID: <20090924192234.GA30206@elte.hu>
+References: <20090923221059.GB29816@elte.hu> <20090923.154152.193726140.davem@davemloft.net> <20090924111645.GC628@elte.hu> <20090924.115857.234490886.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090924.115857.234490886.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Sep 2009 21:03:47 +0200
-Oliver Neukum <oliver@neukum.org> wrote:
 
-> Am Donnerstag, 24. September 2009 17:40:23 schrieb Johan Hovold:
-> > Is there a reason why this was not fixed in ftdi_sio (and whiteheat?)
-> > along with the other drivers?
+* David Miller <davem@davemloft.net> wrote:
+
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Thu, 24 Sep 2009 13:16:45 +0200
 > 
-> No good reason. They escaped my grep pattern. Mea culpa.
+> > Btw., regardless of your flames against me in the past, i dont think
+> > you dislike perf events all that much anymore.
+> 
+> Indeed, I love 'perf' and if you were here you would be hearing me 
+> recommending it and singing my praises about it on a daily basis to 
+> everyone :-)
 
-ftdi_sio is correct with low_latency set as it uses a work queue to
-process the packets received.
+*Blush* :-)
 
-Alan
+	Ingo
