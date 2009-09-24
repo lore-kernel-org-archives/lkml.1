@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZIXTbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZIXT1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbZIXTbm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbZIXTbl
+	id S1754296AbZIXT1X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbZIXT1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:31:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34983 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 15:27:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:30162 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbZIXTb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:31:27 -0400
+	id S1753912AbZIXT0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:26:39 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
@@ -21,517 +21,175 @@ Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
        jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
        riel@redhat.com
-Subject: [PATCH 18/28] io-conroller: Prepare elevator layer for single queue schedulers
-Date: Thu, 24 Sep 2009 15:25:22 -0400
-Message-Id: <1253820332-10246-19-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 19/28] io-controller: Avoid expiring ioq for single ioq scheduler if only root group
+Date: Thu, 24 Sep 2009 15:25:23 -0400
+Message-Id: <1253820332-10246-20-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elevator layer now has support for hierarchical fair queuing. cfq has
-been migrated to make use of it and now it is time to do groundwork for
-noop, deadline and AS.
+o For io scheduler noop, deadline and AS, we maintain only one ioq per group.
+  If people are using only flat mode where only root group is present, there
+  will be only one ioq. In that case we can avoid queue expiration every
+  100ms (dependent on slice_sync). This patch introduces this optimization.
 
-noop deadline and AS don't maintain separate queues for different processes.
-There is only one single queue. Effectively one can think that in hierarchical
-setup, there will be one queue per cgroup where requests from all the
-processes in the cgroup will be queued.
+o If an ioq is not expired for a long time and suddenly somebody
+  decides to create a group and launch a job there, in that case old ioq
+  queue will be expired with a very high value of slice used and will get
+  a very high disk time. Fix it by marking the queue as "charge_one_slice"
+  and charge the queue only for a single time slice and not for whole
+  of the duration when queue was running.
 
-Generally io scheduler takes care of creating queues. Because there is
-only one queue here, we have modified common layer to take care of queue
-creation and some other functionality. This special casing helps in keeping
-the changes to noop, deadline and AS to the minimum.
+o Introduce the notion of "real_served" and "virtual_served". real time is the
+  actual time queue used and is visible through cgroup interface. virtual_time
+  is the one we actually want to charge the queue for.  If a queue has not
+  been expired for long time, real_time value will probably be high but we
+  charge the queue for only one slice length.
 
-Signed-off-by: Nauman Rafique <nauman@google.com>
 Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-Acked-by: Rik van Riel <riel@redhat.com>
 ---
- block/as-iosched.c       |    2 +-
- block/deadline-iosched.c |    2 +-
- block/elevator-fq.c      |  186 +++++++++++++++++++++++++++++++++++++++++++++-
- block/elevator-fq.h      |   36 +++++++++
- block/elevator.c         |   37 +++++++++-
- block/noop-iosched.c     |    2 +-
- include/linux/elevator.h |   18 ++++-
- 7 files changed, 275 insertions(+), 8 deletions(-)
+ block/elevator-fq.c |   75 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ block/elevator-fq.h |    3 ++
+ 2 files changed, 78 insertions(+), 0 deletions(-)
 
-diff --git a/block/as-iosched.c b/block/as-iosched.c
-index ec6b940..6d2468b 100644
---- a/block/as-iosched.c
-+++ b/block/as-iosched.c
-@@ -1338,7 +1338,7 @@ static int as_may_queue(struct request_queue *q, int rw)
- 
- /* Called with queue lock held */
- static void *as_alloc_as_queue(struct request_queue *q,
--				struct elevator_queue *eq, gfp_t gfp_mask)
-+		struct elevator_queue *eq, gfp_t gfp_mask, struct io_queue *ioq)
- {
- 	struct as_queue *asq;
- 	struct as_data *ad = eq->elevator_data;
-diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
-index 5b017da..6e69ea3 100644
---- a/block/deadline-iosched.c
-+++ b/block/deadline-iosched.c
-@@ -341,7 +341,7 @@ dispatch_request:
- }
- 
- static void *deadline_alloc_deadline_queue(struct request_queue *q,
--				struct elevator_queue *eq, gfp_t gfp_mask)
-+		struct elevator_queue *eq, gfp_t gfp_mask, struct io_queue *ioq)
- {
- 	struct deadline_queue *dq;
- 
 diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index bac45fe..b08a200 100644
+index b08a200..04419cf 100644
 --- a/block/elevator-fq.c
 +++ b/block/elevator-fq.c
-@@ -222,6 +222,9 @@ static inline void set_late_preemption(struct elevator_queue *eq,
- {
- 	struct io_group *new_iog;
+@@ -902,6 +902,19 @@ static void elv_ioq_served(struct io_queue *ioq, unsigned long served)
+ 	queue_charge = group_charge = served;
  
-+	if (elv_iosched_single_ioq(eq))
-+		return;
+ 	/*
++	 * For single ioq schedulers we don't expire the queue if there are
++	 * no other competing groups. It might happen that once a queue has
++	 * not been expired for a long time, suddenly a new group is created
++	 * and IO comes in that new group. In that case, we don't want to
++	 * charge the old queue for whole of the period it was not expired.
++	 */
 +
- 	if (!active_ioq)
- 		return;
- 
-@@ -252,6 +255,9 @@ check_late_preemption(struct elevator_queue *eq, struct io_queue *ioq)
- {
- 	struct io_group *iog = ioq_to_io_group(ioq);
- 
-+	if (elv_iosched_single_ioq(eq))
-+		return;
++	if (elv_ioq_charge_one_slice(ioq) && queue_charge > allocated_slice)
++		queue_charge = group_charge = allocated_slice;
 +
- 	if (!iog->late_preemption)
- 		return;
- 
-@@ -1038,7 +1044,10 @@ int elv_init_ioq(struct elevator_queue *eq, struct io_queue *ioq, pid_t pid,
- 	RB_CLEAR_NODE(&ioq->entity.rb_node);
- 	atomic_set(&ioq->ref, 0);
- 	ioq->efqd = eq->efqd;
--	ioq->pid = pid;
-+	if (elv_iosched_single_ioq(eq))
-+		ioq->pid = 0;
-+	else
-+		ioq->pid = current->pid;
- 
- 	elv_ioq_set_ioprio_class(ioq, IOPRIO_CLASS_BE);
- 	elv_ioq_set_ioprio(ioq, IOPRIO_NORM);
-@@ -1072,6 +1081,12 @@ put_io_group_queues(struct elevator_queue *e, struct io_group *iog)
- 
- 	/* Free up async idle queue */
- 	elv_release_ioq(e, &iog->async_idle_queue);
++	elv_clear_ioq_charge_one_slice(ioq);
 +
-+#ifdef CONFIG_GROUP_IOSCHED
-+	/* Optimization for io schedulers having single ioq */
-+	if (elv_iosched_single_ioq(e))
-+		elv_release_ioq(e, &iog->ioq);
-+#endif
++	/*
+ 	 * We don't want to charge more than allocated slice otherwise this
+ 	 * queue can miss one dispatch round doubling max latencies. On the
+ 	 * other hand we don't want to charge less than allocated slice as
+@@ -2143,6 +2156,37 @@ void elv_reset_request_ioq(struct request_queue *q, struct request *rq)
+ 	}
  }
  
- void *elv_io_group_async_queue_prio(struct io_group *iog, int ioprio_class,
-@@ -1970,6 +1985,164 @@ int elv_io_group_allow_merge(struct request *rq, struct bio *bio)
- 	return (iog == __iog);
- }
- 
-+/* Sets the single ioq associated with the io group. (noop, deadline, AS) */
-+static inline void
-+elv_io_group_set_ioq(struct io_group *iog, struct io_queue *ioq)
++static inline int is_only_root_group(void)
 +{
-+	/* io group reference. Will be dropped when group is destroyed. */
-+	elv_get_ioq(ioq);
-+	iog->ioq = ioq;
++	if (list_empty(&io_root_cgroup.css.cgroup->children))
++		return 1;
++
++	return 0;
 +}
 +
 +/*
-+ * Find/Create the io queue the rq should go in. This is an optimization
-+ * for the io schedulers (noop, deadline and AS) which maintain only single
-+ * io queue per cgroup. In this case common layer can just maintain a
-+ * pointer in group data structure and keeps track of it.
-+ *
-+ * For the io schdulers like cfq, which maintain multiple io queues per
-+ * cgroup, and decide the io queue  of request based on process, this
-+ * function is not invoked.
++ * One can do some optimizations for single ioq scheduler, when one does
++ * not have to expire the queue after every time slice is used. This avoids
++ * some unnecessary overhead, especially in AS where we wait for requests to
++ * finish from last queue before new queue is scheduled in.
 + */
-+int elv_set_request_ioq(struct request_queue *q, struct request *rq,
-+					gfp_t gfp_mask)
++static inline int single_ioq_no_timed_expiry(struct request_queue *q)
 +{
-+	struct elevator_queue *e = q->elevator;
-+	unsigned long flags;
-+	struct io_queue *ioq = NULL, *new_ioq = NULL;
-+	struct io_group *iog;
-+	void *sched_q = NULL, *new_sched_q = NULL;
++	struct elv_fq_data *efqd = q->elevator->efqd;
++	struct io_queue *ioq = elv_active_ioq(q->elevator);
 +
-+	if (!elv_iosched_fair_queuing_enabled(e))
++	if (!elv_iosched_single_ioq(q->elevator))
 +		return 0;
 +
-+	might_sleep_if(gfp_mask & __GFP_WAIT);
-+	spin_lock_irqsave(q->queue_lock, flags);
++	if (!is_only_root_group())
++		return 0;
 +
-+retry:
-+	/* Determine the io group request belongs to */
-+	iog = elv_io_get_io_group(q, 1);
-+	BUG_ON(!iog);
++	if (efqd->busy_queues == 1 && ioq == efqd->root_group->ioq)
++		return 1;
 +
-+	/* Get the iosched queue */
-+	ioq = iog->ioq;
-+	if (!ioq) {
-+		/* io queue and sched_queue needs to be allocated */
-+		BUG_ON(!e->ops->elevator_alloc_sched_queue_fn);
-+
-+		if (new_ioq) {
-+			goto alloc_sched_q;
-+		} else if (gfp_mask & __GFP_WAIT) {
-+			/*
-+			 * Inform the allocator of the fact that we will
-+			 * just repeat this allocation if it fails, to allow
-+			 * the allocator to do whatever it needs to attempt to
-+			 * free memory.
-+			 */
-+			spin_unlock_irq(q->queue_lock);
-+			new_ioq = elv_alloc_ioq(q, gfp_mask | __GFP_NOFAIL
-+							| __GFP_ZERO);
-+			spin_lock_irq(q->queue_lock);
-+			goto retry;
-+		} else {
-+			ioq = elv_alloc_ioq(q, gfp_mask | __GFP_ZERO);
-+			if (!ioq)
-+				goto queue_fail;
-+		}
-+
-+alloc_sched_q:
-+		if (new_sched_q) {
-+			ioq = new_ioq;
-+			new_ioq = NULL;
-+			sched_q = new_sched_q;
-+			new_sched_q = NULL;
-+		} else if (gfp_mask & __GFP_WAIT) {
-+			/*
-+			 * Inform the allocator of the fact that we will
-+			 * just repeat this allocation if it fails, to allow
-+			 * the allocator to do whatever it needs to attempt to
-+			 * free memory.
-+			 */
-+			spin_unlock_irq(q->queue_lock);
-+			/* Call io scheduer to create scheduler queue */
-+			new_sched_q = e->ops->elevator_alloc_sched_queue_fn(q,
-+					e, gfp_mask | __GFP_NOFAIL
-+					| __GFP_ZERO, new_ioq);
-+			spin_lock_irq(q->queue_lock);
-+			goto retry;
-+		} else {
-+			sched_q = e->ops->elevator_alloc_sched_queue_fn(q, e,
-+						gfp_mask | __GFP_ZERO, ioq);
-+			if (!sched_q) {
-+				elv_free_ioq(ioq);
-+				goto queue_fail;
-+			}
-+		}
-+
-+		elv_init_ioq(e, ioq, current->pid, 1);
-+		elv_init_ioq_io_group(ioq, iog);
-+		elv_init_ioq_sched_queue(e, ioq, sched_q);
-+
-+		elv_io_group_set_ioq(iog, ioq);
-+		elv_mark_ioq_sync(ioq);
-+		elv_get_iog(iog);
-+	}
-+
-+	if (new_sched_q)
-+		e->ops->elevator_free_sched_queue_fn(q->elevator, new_sched_q);
-+
-+	if (new_ioq)
-+		elv_free_ioq(new_ioq);
-+
-+	/* Request reference */
-+	elv_get_ioq(ioq);
-+	rq->ioq = ioq;
-+	spin_unlock_irqrestore(q->queue_lock, flags);
 +	return 0;
-+
-+queue_fail:
-+	WARN_ON((gfp_mask & __GFP_WAIT) && !ioq);
-+	elv_schedule_dispatch(q);
-+	spin_unlock_irqrestore(q->queue_lock, flags);
-+	return 1;
-+}
-+
-+/*
-+ * Find out the io queue of current task. Optimization for single ioq
-+ * per io group io schedulers.
-+ */
-+struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
-+{
-+	struct io_group *iog;
-+
-+	/* Determine the io group and io queue of the bio submitting task */
-+	iog = elv_io_get_io_group(q, 0);
-+	if (!iog) {
-+		/* May be task belongs to a cgroup for which io group has
-+		 * not been setup yet. */
-+		return NULL;
-+	}
-+	return iog->ioq;
-+}
-+
-+/*
-+ * This request has been serviced. Clean up ioq info and drop the reference.
-+ * Again this is called only for single queue per cgroup schedulers (noop,
-+ * deadline, AS).
-+ */
-+void elv_reset_request_ioq(struct request_queue *q, struct request *rq)
-+{
-+	struct io_queue *ioq = rq->ioq;
-+
-+	if (!elv_iosched_fair_queuing_enabled(q->elevator))
-+		return;
-+
-+	if (ioq) {
-+		rq->ioq = NULL;
-+		elv_put_ioq(ioq);
-+	}
 +}
 +
  #else /* CONFIG_GROUP_IOSCHED */
  
  static inline unsigned int iog_weight(struct io_group *iog) { return 0; }
-@@ -2265,6 +2438,15 @@ static int elv_should_preempt(struct request_queue *q, struct io_queue *new_ioq,
- 	struct io_entity *entity, *new_entity;
- 	struct io_group *iog = NULL, *new_iog = NULL;
+@@ -2188,6 +2232,17 @@ int elv_iog_should_idle(struct io_queue *ioq) { return 0; }
+ EXPORT_SYMBOL(elv_iog_should_idle);
+ static int elv_ioq_should_wait_busy(struct io_queue *ioq) { return 0; }
+ 
++static inline int is_only_root_group(void)
++{
++	return 1;
++}
++
++/* Never expire the single ioq in flat mode */
++static inline int single_ioq_no_timed_expiry(struct request_queue *q)
++{
++	return 1;
++};
++
+ #endif /* CONFIG_GROUP_IOSCHED */
+ 
+ /*
+@@ -2794,6 +2849,16 @@ void *elv_select_ioq(struct request_queue *q, int force)
+ 		goto expire;
+ 	}
  
 +	/*
-+	 * Currently only CFQ has preemption logic. Other schedulers don't
-+	 * have any notion of preemption across classes or preemption with-in
-+	 * class etc.
++	 * If there is only root group present, don't expire the queue for
++	 * single queue ioschedulers (noop, deadline, AS).
 +	 */
-+	if (elv_iosched_single_ioq(eq))
-+		return 0;
 +
++	if (single_ioq_no_timed_expiry(q)) {
++		elv_mark_ioq_charge_one_slice(ioq);
++		goto keep_queue;
++	}
 +
- 	active_ioq = elv_active_ioq(eq);
- 
- 	if (!active_ioq)
-@@ -2703,6 +2885,7 @@ expire:
+ 	/* We are waiting for this group to become busy before it expires.*/
+ 	if (elv_iog_wait_busy(iog)) {
  		ioq = NULL;
- 		goto keep_queue;
- 	}
-+
- 	elv_slice_expired(q);
- new_queue:
- 	ioq = elv_set_active_ioq(q, new_ioq);
-@@ -2832,6 +3015,7 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+@@ -3015,6 +3080,16 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
  			elv_clear_ioq_slice_new(ioq);
  		}
  
-+
++		/*
++		 * If there is only root group present, don't expire the queue
++		 * for single queue ioschedulers (noop, deadline, AS). It is
++		 * unnecessary overhead.
++		 */
++		if (single_ioq_no_timed_expiry(q)) {
++			elv_mark_ioq_charge_one_slice(ioq);
++			elv_log_ioq(efqd, ioq, "single ioq no timed expiry");
++			goto done;
++		}
+ 
  		/*
  		 * If there are no requests waiting in this queue, and
- 		 * there are other queues ready to issue requests, AND
 diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 68c6d16..e60ceed 100644
+index e60ceed..4114543 100644
 --- a/block/elevator-fq.h
 +++ b/block/elevator-fq.h
-@@ -137,6 +137,9 @@ struct io_group {
- 	char path[128];
- #endif
- 	int late_preemption;
-+
-+	/* Single ioq per group, used for noop, deadline, anticipatory */
-+	struct io_queue *ioq;
+@@ -242,6 +242,8 @@ enum elv_queue_state_flags {
+ 	ELV_QUEUE_FLAG_slice_new,	  /* no requests dispatched in slice */
+ 	ELV_QUEUE_FLAG_sync,              /* synchronous queue */
+ 	ELV_QUEUE_FLAG_must_expire,       /* expire queue even slice is left */
++	ELV_QUEUE_FLAG_charge_one_slice,  /* Charge the queue for only one
++					   * time slice length */
  };
  
- struct io_cgroup {
-@@ -432,6 +435,11 @@ static inline void elv_get_iog(struct io_group *iog)
- 	atomic_inc(&iog->ref);
- }
+ #define ELV_IO_QUEUE_FLAG_FNS(name)					\
+@@ -265,6 +267,7 @@ ELV_IO_QUEUE_FLAG_FNS(idle_window)
+ ELV_IO_QUEUE_FLAG_FNS(slice_new)
+ ELV_IO_QUEUE_FLAG_FNS(sync)
+ ELV_IO_QUEUE_FLAG_FNS(must_expire)
++ELV_IO_QUEUE_FLAG_FNS(charge_one_slice)
  
-+extern int elv_set_request_ioq(struct request_queue *q, struct request *rq,
-+					gfp_t gfp_mask);
-+extern void elv_reset_request_ioq(struct request_queue *q, struct request *rq);
-+extern struct io_queue *elv_lookup_ioq_current(struct request_queue *q);
-+
- #else /* !GROUP_IOSCHED */
+ #ifdef CONFIG_GROUP_IOSCHED
  
- static inline int elv_io_group_allow_merge(struct request *rq, struct bio *bio)
-@@ -449,6 +457,20 @@ elv_io_get_io_group(struct request_queue *q, int create)
- 	return q->elevator->efqd->root_group;
- }
- 
-+static inline int
-+elv_set_request_ioq(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
-+{
-+	return 0;
-+}
-+
-+static inline void
-+elv_reset_request_ioq(struct request_queue *q, struct request *rq) { }
-+
-+static inline struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
-+{
-+	return NULL;
-+}
-+
- #endif /* GROUP_IOSCHED */
- 
- extern ssize_t elv_slice_sync_show(struct elevator_queue *q, char *name);
-@@ -544,6 +566,20 @@ static inline int elv_io_group_allow_merge(struct request *rq, struct bio *bio)
- {
- 	return 1;
- }
-+static inline int
-+elv_set_request_ioq(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
-+{
-+	return 0;
-+}
-+
-+static inline void
-+elv_reset_request_ioq(struct request_queue *q, struct request *rq) { }
-+
-+static inline struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
-+{
-+	return NULL;
-+}
-+
- #endif /* CONFIG_ELV_FAIR_QUEUING */
- #endif /* _ELV_SCHED_H */
- #endif /* CONFIG_BLOCK */
-diff --git a/block/elevator.c b/block/elevator.c
-index 0b7c5a6..bc43edd 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -228,9 +228,17 @@ elevator_alloc_sched_queue(struct request_queue *q, struct elevator_queue *eq)
- {
- 	void *sched_queue = NULL;
- 
-+	/*
-+	 * If fair queuing is enabled, then queue allocation takes place
-+	 * during set_request() functions when request actually comes
-+	 * in.
-+	 */
-+	if (elv_iosched_fair_queuing_enabled(eq))
-+		return NULL;
-+
- 	if (eq->ops->elevator_alloc_sched_queue_fn) {
- 		sched_queue = eq->ops->elevator_alloc_sched_queue_fn(q, eq,
--								GFP_KERNEL);
-+							GFP_KERNEL, NULL);
- 		if (!sched_queue)
- 			return ERR_PTR(-ENOMEM);
- 
-@@ -861,6 +869,13 @@ int elv_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
- {
- 	struct elevator_queue *e = q->elevator;
- 
-+	/*
-+	 * Optimization for noop, deadline and AS which maintain only single
-+	 * ioq per io group
-+	 */
-+	if (elv_iosched_single_ioq(e))
-+		return elv_set_request_ioq(q, rq, gfp_mask);
-+
- 	if (e->ops->elevator_set_req_fn)
- 		return e->ops->elevator_set_req_fn(q, rq, gfp_mask);
- 
-@@ -872,6 +887,15 @@ void elv_put_request(struct request_queue *q, struct request *rq)
- {
- 	struct elevator_queue *e = q->elevator;
- 
-+	/*
-+	 * Optimization for noop, deadline and AS which maintain only single
-+	 * ioq per io group
-+	 */
-+	if (elv_iosched_single_ioq(e)) {
-+		elv_reset_request_ioq(q, rq);
-+		return;
-+	}
-+
- 	if (e->ops->elevator_put_req_fn)
- 		e->ops->elevator_put_req_fn(rq);
- }
-@@ -1256,9 +1280,18 @@ EXPORT_SYMBOL(elv_select_sched_queue);
- 
- /*
-  * Get the io scheduler queue pointer for current task.
-+ *
-+ * If fair queuing is enabled, determine the io group of task and retrieve
-+ * the ioq pointer from that. This is used by only single queue ioschedulers
-+ * for retrieving the queue associated with the group to decide whether the
-+ * new bio can do a front merge or not.
-  */
- void *elv_get_sched_queue_current(struct request_queue *q)
- {
--	return q->elevator->sched_queue;
-+	/* Fair queuing is not enabled. There is only one queue. */
-+	if (!elv_iosched_fair_queuing_enabled(q->elevator))
-+		return q->elevator->sched_queue;
-+
-+	return elv_ioq_sched_queue(elv_lookup_ioq_current(q));
- }
- EXPORT_SYMBOL(elv_get_sched_queue_current);
-diff --git a/block/noop-iosched.c b/block/noop-iosched.c
-index d587832..731dbf2 100644
---- a/block/noop-iosched.c
-+++ b/block/noop-iosched.c
-@@ -62,7 +62,7 @@ noop_latter_request(struct request_queue *q, struct request *rq)
- }
- 
- static void *noop_alloc_noop_queue(struct request_queue *q,
--				struct elevator_queue *eq, gfp_t gfp_mask)
-+		struct elevator_queue *eq, gfp_t gfp_mask, struct io_queue *ioq)
- {
- 	struct noop_queue *nq;
- 
-diff --git a/include/linux/elevator.h b/include/linux/elevator.h
-index 2c6b0c7..77c1fa5 100644
---- a/include/linux/elevator.h
-+++ b/include/linux/elevator.h
-@@ -30,9 +30,9 @@ typedef void (elevator_deactivate_req_fn) (struct request_queue *, struct reques
- typedef void *(elevator_init_fn) (struct request_queue *,
- 					struct elevator_queue *);
- typedef void (elevator_exit_fn) (struct elevator_queue *);
--typedef void* (elevator_alloc_sched_queue_fn) (struct request_queue *q,
--					struct elevator_queue *eq, gfp_t);
- typedef void (elevator_free_sched_queue_fn) (struct elevator_queue*, void *);
-+typedef void* (elevator_alloc_sched_queue_fn) (struct request_queue *q,
-+		struct elevator_queue *eq, gfp_t, struct io_queue *ioq);
- #ifdef CONFIG_ELV_FAIR_QUEUING
- typedef void (elevator_active_ioq_set_fn) (struct request_queue*, void *, int);
- typedef void (elevator_active_ioq_reset_fn) (struct request_queue *, void*);
-@@ -245,17 +245,31 @@ enum {
- /* iosched wants to use fair queuing logic of elevator layer */
- #define	ELV_IOSCHED_NEED_FQ	1
- 
-+/* iosched maintains only single ioq per group.*/
-+#define ELV_IOSCHED_SINGLE_IOQ        2
-+
- static inline int elv_iosched_fair_queuing_enabled(struct elevator_queue *e)
- {
- 	return (e->elevator_type->elevator_features) & ELV_IOSCHED_NEED_FQ;
- }
- 
-+static inline int elv_iosched_single_ioq(struct elevator_queue *e)
-+{
-+	return (e->elevator_type->elevator_features) & ELV_IOSCHED_SINGLE_IOQ;
-+}
-+
- #else /* ELV_IOSCHED_FAIR_QUEUING */
- 
- static inline int elv_iosched_fair_queuing_enabled(struct elevator_queue *e)
- {
- 	return 0;
- }
-+
-+static inline int elv_iosched_single_ioq(struct elevator_queue *e)
-+{
-+	return 0;
-+}
-+
- #endif /* ELV_IOSCHED_FAIR_QUEUING */
- extern void *elv_get_sched_queue(struct request_queue *q, struct request *rq);
- extern void *elv_select_sched_queue(struct request_queue *q, int force);
 -- 
 1.6.0.6
 
