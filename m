@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZIXTpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZIXTtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbZIXTpM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZIXTpL
+	id S1754192AbZIXTtP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZIXTtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:45:11 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:52361 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753503AbZIXTpJ (ORCPT
+	Thu, 24 Sep 2009 15:49:14 -0400
+Received: from araneidae.co.uk ([62.3.233.233]:59569 "EHLO
+	venus.araneidae.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752570AbZIXTtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:45:09 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAN9ou0qrR7O6/2dsb2JhbAC/EohTAZALBYQcgV0
-X-IronPort-AV: E=Sophos;i="4.44,446,1249257600"; 
-   d="scan'208";a="395487484"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 24 Sep 2009 12:45:12 -0700
-Message-ID: <ada7hvo160n.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Thu, 24 Sep 2009 15:49:13 -0400
+Date: Thu, 24 Sep 2009 20:49:10 +0100 (BST)
+From: Michael Abbott <michael@araneidae.co.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       Johan van Baarlen <jf@vanbaarlen.demon.nl>, stable@kernel.org
+Subject: Re: [GIT PULL] cputime tree
+In-Reply-To: <20090924095106.62294617.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0909242047280.7033@venus.araneidae.co.uk>
+References: <20090924133136.7b7c834e@mschwide.boeblingen.de.ibm.com> <20090924095106.62294617.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Sep 2009 19:45:12.0838 (UTC) FILETIME=[8816B260:01CA3D4F]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Thu, 24 Sep 2009, Andrew Morton wrote:
+> On Thu, 24 Sep 2009 13:31:36 +0200 Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> 
+> > Hi Linus,
+> > 
+> > with git commit 79741dd "idle cputime accounting" the semantic
+> > of the stime field of the idle processes has changed. It used to
+> > contain the amount of time the idle process has been scheduled.
+> > Since git commit 79741dd is contains the cpu time spent in the
+> > system by the idle process.
+> > 
+> > This change broke the output of second field of /proc/uptime. On
+> > systems without VIRT_CPU_ACCOUNTING the field is always zero.
+> > The legacy output of the field is the amount of time the idle
+> > process has been scheduled on cpu #0. It is good enough to
+> > calculate the load on an uni-processor system, it is useless
+> > on a multi-processor. To restore the legacy behaviour and give
+> > meaning to the multi-processor case the best we could come up
+> > with is to add the idle time over all cpus. That fixes uni-
+> > processors systems and gives a defined semantic on smp.
+> > 
+> > So please pull from 'cputime' branch of
+> > 
+> > 	git://git390.marist.edu/pub/scm/linux-2.6.git cputime
+> > 
+> > to receive the following updates:
+> > 
+> > Michael Abbott (1):
+> >       Fix idle time field in /proc/uptime
+> > 
+> >  fs/proc/uptime.c |    7 ++++++-
+> >  1 files changed, 6 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
+> > index 0c10a0b..766b1d4 100644
+> > --- a/fs/proc/uptime.c
+> > +++ b/fs/proc/uptime.c
+> > @@ -4,13 +4,18 @@
+> >  #include <linux/sched.h>
+> >  #include <linux/seq_file.h>
+> >  #include <linux/time.h>
+> > +#include <linux/kernel_stat.h>
+> >  #include <asm/cputime.h>
+> >  
+> >  static int uptime_proc_show(struct seq_file *m, void *v)
+> >  {
+> >  	struct timespec uptime;
+> >  	struct timespec idle;
+> > -	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
+> > +	int i;
+> > +	cputime_t idletime = cputime_zero;
+> > +
+> > +	for_each_possible_cpu(i)
+> > +		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
+> >  
+> >  	do_posix_clock_monotonic_gettime(&uptime);
+> >  	monotonic_to_bootbased(&uptime);
+> 
+> This is a regression fix, iirc?  One which is applicable for several 
+> 2.6.x kernel versions?
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-This tree is also available from kernel.org mirrors at:
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-This will get the batch of RDMA/InfiniBand changes for the 2.6.32
-merge window:
-
-The following changes since commit 86d710146fb9975f04c505ec78caa43d227c1018:
-  Linus Torvalds (1):
-        Merge git://git.linux-nfs.org/projects/trondmy/nfs-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-Eli Cohen (1):
-      mlx4_core: Pass cache line size to device FW
-
-Jack Morgenstein (1):
-      IB/mthca: Fix access to freed memory in catastrophic event handling
-
-Julia Lawall (1):
-      RDMA/nes: Remove duplicate .ndo_set_mac_address field initialization
-
-Moni Shoua (1):
-      IPoIB: Don't turn on carrier for a non-active port
-
-Roland Dreier (2):
-      IB/mad: Fix lock-lock-timer deadlock in RMPP code
-      Merge branches 'ipoib', 'mad', 'mlx4', 'mthca' and 'nes' into for-linus
-
- drivers/infiniband/core/mad_rmpp.c             |   17 +++++++++++++----
- drivers/infiniband/hw/mthca/mthca_catas.c      |   11 ++++++++---
- drivers/infiniband/hw/nes/nes_nic.c            |    1 -
- drivers/infiniband/ulp/ipoib/ipoib_multicast.c |    7 +++++++
- drivers/net/mlx4/fw.c                          |    5 +++++
- 5 files changed, 33 insertions(+), 8 deletions(-)
+Yes indeed, all since the regression was introduced I think around about 
+.28 (though I seem to remember having to tweak the code a little when 
+rebasing it forward).
