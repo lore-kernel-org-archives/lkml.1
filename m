@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbZIXPyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZIXP6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbZIXPyf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 11:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZIXPyf
+	id S1753018AbZIXP6c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZIXP6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 11:54:35 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:31646 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752530AbZIXPye (ORCPT
+	Thu, 24 Sep 2009 11:58:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40000 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751282AbZIXP6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 11:54:34 -0400
-Message-ID: <4ABB9627.9040708@oracle.com>
-Date: Thu, 24 Sep 2009 08:54:15 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Tiago Vignatti <tiago.vignatti@nokia.com>,
-       Dave Airlie <airlied@redhat.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-pci <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] PCI: fix htmldocs pci.c
-References: <1253798147.10654.3.camel@ht.satnam>
-In-Reply-To: <1253798147.10654.3.camel@ht.satnam>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 Sep 2009 11:58:31 -0400
+Date: Thu, 24 Sep 2009 16:59:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Jing Huang <huangj@brocade.com>, James.Bottomley@HansenPartnership.com,
+       kgudipat@brocade.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rvadivel@brocade.com, vravindr@brocade.com
+Subject: Re: [PATCH 2/14] bfa: Brocade BFA FC SCSI driver (bfa1)
+Message-ID: <20090924165944.6507432a@lxorguk.ukuu.org.uk>
+In-Reply-To: <1253807042.20648.188.camel@desktop>
+References: <200909240049.n8O0nw3l013437@swe58.brocade.com>
+	<1253807042.20648.188.camel@desktop>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4ABB95E9.014E:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> Fix the following htmldocs warnings:
+> > +       return (*(union bfi_addr_u *) &addr);
+> > +}
 > 
->   Warning(drivers/pci/pci.c:2552): No description found for parameter 'dev'
->   Warning(drivers/pci/pci.c:2552): No description found for parameter 'decode'
->   Warning(drivers/pci/pci.c:2552): No description found for parameter 'command_bits'
->   Warning(drivers/pci/pci.c:2552): No description found for parameter 'change_bridge'
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Have you run checkpatch on this code? It produces many errors due to
+> your "return" usage for one.. The usual style of return is not to use
+> parentheses since it's really not a function ..
 
-Ack, but already sent to Jesse & linux-pci mailing list.
+checkpatch is just a helper tool - and stuff like that using
+brackets to make it clearer is just a trivial matter of style.
 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Tiago Vignatti <tiago.vignatti@nokia.com>
-> Cc: Dave Airlie <airlied@redhat.com>
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/pci/pci.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 6edecff..67288ec 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -2542,10 +2542,10 @@ int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type)
->  
->  /**
->   * pci_set_vga_state - set VGA decode state on device and parents if requested
-> - * @dev the PCI device
-> - * @decode - true = enable decoding, false = disable decoding
-> - * @command_bits PCI_COMMAND_IO and/or PCI_COMMAND_MEMORY
-> - * @change_bridge - traverse ancestors and change bridges
-> + * @dev: the PCI device
-> + * @decode: true = enable decoding, false = disable decoding
-> + * @command_bits: PCI_COMMAND_IO and/or PCI_COMMAND_MEMORY
-> + * @change_bridge: traverse ancestors and change bridges
->   */
->  int pci_set_vga_state(struct pci_dev *dev, bool decode,
->  		      unsigned int command_bits, bool change_bridge)
+> Checkpatch produces many other errors in your code .. If you haven't
+> already evaluated those errors
+
+It would be rather more useful if instead of parroting checkpatch results
+(which people can generate themselves) you concentrated on analysis the
+actual code and structure for any flaws and design details.
+
+Trivia like coding style (unless particularly bad) are something for the
+maintainer just to say "fix those odd bits up and I'll merge it" at the
+*end*.
 
