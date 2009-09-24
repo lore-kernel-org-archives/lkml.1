@@ -1,75 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZIXLdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbZIXLeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125AbZIXLdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 07:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZIXLdw
+	id S1752012AbZIXLeJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 07:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZIXLeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 07:33:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:32997 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752005AbZIXLds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 07:33:48 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 4/4] NOMMU: Ignore mmap() address param as it is a hint
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Date: Thu, 24 Sep 2009 12:33:48 +0100
-Message-ID: <20090924113348.6031.59825.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090924113332.6031.11718.stgit@warthog.procyon.org.uk>
-References: <20090924113332.6031.11718.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 07:34:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56758 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbZIXLeH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 07:34:07 -0400
+Date: Thu, 24 Sep 2009 13:34:24 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com
+Subject: [PATCH] x86, timers: check for pending timers after (device)
+ interrupts
+Message-ID: <20090924133424.702d347e@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ignore the address parameter given to NOMMU mmap() as it is a hint, rather
-than giving an error if it's non-zero.  MAP_FIXED still gets an error.
+>From 33725d4939f457b12d7bc1bcbcc0dfb8b2f5bd48 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Thu, 24 Sep 2009 13:24:16 +0200
+Subject: [PATCH] x86, timers: check for pending timers after (device) interrupts
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+Now that range timers and deferred timers are common, I found a
+problem with these using the "perf timechart" tool.
+
+It turns out that on x86, these two 'opportunistic' timers only
+get checked when another "real" timer happens.
+These opportunistic timers have the objective to save power by
+hitchhiking on other wakeups, as to avoid CPU wakeups by themselves
+as much as possible.
+
+The change in this patch runs this check not only at timer interrupts,
+but at all (device) interrupts. The effect is that
+1) the deferred timers/range timers get delayed less
+   (quality of implementation)
+2) the range timers cause less wakeups by themselves because
+   the percentage of hitchhiking on existing wakeup events goes up.
+
+I've verified the working of the patch using "perf timechart",
+the original exposed bug is gone with this patch.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
+ arch/x86/kernel/irq.c |    2 ++
+ arch/x86/kernel/smp.c |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
- mm/nommu.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-
-diff --git a/mm/nommu.c b/mm/nommu.c
-index bd94b5a..62ac312 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -866,7 +866,7 @@ static int validate_mmap_request(struct file *file,
- 	int ret;
- 
- 	/* do the simple checks first */
--	if (flags & MAP_FIXED || addr) {
-+	if (flags & MAP_FIXED) {
- 		printk(KERN_DEBUG
- 		       "%d: Can't do fixed-address/overlay mmap of RAM\n",
- 		       current->pid);
-@@ -1223,9 +1223,6 @@ unsigned long do_mmap_pgoff(struct file *file,
- 
- 	kenter(",%lx,%lx,%lx,%lx,%lx", addr, len, prot, flags, pgoff);
- 
--	if (!(flags & MAP_FIXED))
--		addr = round_hint_to_min(addr);
--
- 	/* decide whether we should attempt the mapping, and if so what sort of
- 	 * mapping */
- 	ret = validate_mmap_request(file, addr, len, prot, flags, pgoff,
-@@ -1235,6 +1232,9 @@ unsigned long do_mmap_pgoff(struct file *file,
- 		return ret;
+diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+index 74656d1..3912061 100644
+--- a/arch/x86/kernel/irq.c
++++ b/arch/x86/kernel/irq.c
+@@ -244,6 +244,7 @@ unsigned int __irq_entry do_IRQ(struct pt_regs *regs)
+ 				__func__, smp_processor_id(), vector, irq);
  	}
  
-+	/* we ignore the address hint */
-+	addr = 0;
-+
- 	/* we've determined that we can make the mapping, now translate what we
- 	 * now know into VMA flags */
- 	vm_flags = determine_vm_flags(file, prot, flags, capabilities);
++	run_local_timers();
+ 	irq_exit();
+ 
+ 	set_irq_regs(old_regs);
+@@ -268,6 +269,7 @@ void smp_generic_interrupt(struct pt_regs *regs)
+ 	if (generic_interrupt_extension)
+ 		generic_interrupt_extension();
+ 
++	run_local_timers();
+ 	irq_exit();
+ 
+ 	set_irq_regs(old_regs);
+diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
+index ec1de97..d915d95 100644
+--- a/arch/x86/kernel/smp.c
++++ b/arch/x86/kernel/smp.c
+@@ -198,6 +198,7 @@ void smp_reschedule_interrupt(struct pt_regs *regs)
+ {
+ 	ack_APIC_irq();
+ 	inc_irq_stat(irq_resched_count);
++	run_local_timers();
+ 	/*
+ 	 * KVM uses this interrupt to force a cpu out of guest mode
+ 	 */
+-- 
+1.6.0.6
 
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
