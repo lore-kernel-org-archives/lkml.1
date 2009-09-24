@@ -1,83 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752218AbZIXWGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134AbZIXWK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752218AbZIXWGx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZIXWGx
+	id S1752134AbZIXWK4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZIXWKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:06:53 -0400
-Received: from smtp131.iad.emailsrvr.com ([207.97.245.131]:34554 "EHLO
-	smtp131.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbZIXWGw (ORCPT
+	Thu, 24 Sep 2009 18:10:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40273 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751369AbZIXWKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:06:52 -0400
-Message-ID: <4ABBED72.9080901@librato.com>
-Date: Thu, 24 Sep 2009 18:06:42 -0400
-From: Oren Laadan <orenl@librato.com>
-Organization: Librato
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v7][PATCH 0/9] Implement clone2() system call
-References: <20090924165548.GA16586@us.ibm.com> <4ABBAFE5.2000704@librato.com> <20090924201517.GA24786@us.ibm.com>
-In-Reply-To: <20090924201517.GA24786@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 Sep 2009 18:10:55 -0400
+Date: Thu, 24 Sep 2009 15:09:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, graff.yang@gmail.com,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com,
+       penberg@cs.helsinki.fi, lethal@linux-sh.org, mel@csn.ul.ie,
+       gerg@snapgear.com, stable@kernel.org
+Subject: Re: [PATCH] NOMMU: Fix MAP_PRIVATE mmap() of objects where the data
+ can be mapped directly
+Message-Id: <20090924150925.06f4fa23.akpm@linux-foundation.org>
+In-Reply-To: <20090924141310.19746.31678.stgit@warthog.procyon.org.uk>
+References: <20090924141310.19746.31678.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 Sep 2009 15:13:10 +0100
+David Howells <dhowells@redhat.com> wrote:
 
+> Fix MAP_PRIVATE mmap() of files and devices where the data in the backing store
+> might be mapped directly.  Use the BDI_CAP_MAP_DIRECT capability flag to govern
+> whether or not we should be trying to map a file directly.  This can be used to
+> determine whether or not a region has been filled in at the point where we call
+> do_mmap_shared() or do_mmap_private().
+> 
+> The BDI_CAP_MAP_DIRECT capability flag is cleared by validate_mmap_request() if
+> there's any reason we can't use it.  It's also cleared in do_mmap_pgoff() if
+> f_op->get_unmapped_area() fails.
+> 
 
-Sukadev Bhattiprolu wrote:
-> Oren Laadan [orenl@librato.com] wrote:
-> | 
-> | 
-> | Sukadev Bhattiprolu wrote:
-> | > Based on these requirements and constraints, we explored a couple of system
-> | > call interfaces (in earlier versions of this patchset) and currently define
-> | > the system call as:
-> | > 
-> | > 	struct clone_struct {
-> | > 		u64 flags;
-> | > 		u64 child_stack;
-> | > 		u32 nr_pids;
-> | > 		u32 parent_tid;
-> | > 		u32 child_tid;
-> | 
-> | So @parent_tid and @child_tid are pointers to userspace memory and
-> | require 'u64' (and it won't hurt to make @reserved1 a 'u64' as well).
-> 
-> No, as Arnd pointed out, we already pass in a pointer to 'struct clone_struct'
-> and the kernel can use that pointer to copy the parent and child tids.
+The patch seems -stable-worthy but I see no cc:stable here?
 
-In this form, you place a constraints on where userspace may
-place the {parent,child}_tid variable, and require that this
-particular clone_struct remain valid memory in the parent until
-the child terminates.  This may break existing programs that
-use this (threads libraries ?)
+> Note that this fix does the following commit differently:
+> 
+> 	commit a190887b58c32d19c2eee007c5eb8faa970a69ba
+> 	Author: David Howells <dhowells@redhat.com>
+> 	Date:   Sat Sep 5 11:17:07 2009 -0700
+> 	nommu: fix error handling in do_mmap_pgoff()
 
-Oren.
+I don't understand what you're saying here.
 
-> 
-> | 
-> | > 		u32 reserved1;
-> | > 		u64 reserved2;
-> | > 	};
-> | > 
-> | 
-> | Also, for forward/backward compatibility, explicitly state in the
-> | documentation, and enforce in the kernel, that flags which are not
-> | defined must not be set, and that reserved{1,2} must remain 0.
-> 
-> Good idea. Will do.
-> 
-> Thanks,
-> 
-> Sukadev
+> Reported-by: Graff Yang <graff.yang@gmail.com>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Greg Ungerer <gerg@snapgear.com>
+
