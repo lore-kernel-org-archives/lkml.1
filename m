@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbZIXL44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZIXL5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbZIXL44 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 07:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZIXL4x
+	id S1752729AbZIXL5g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 07:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZIXL5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 07:56:53 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:22779 "EHLO
+	Thu, 24 Sep 2009 07:57:33 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:22787 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752428AbZIXL4k (ORCPT
+	with ESMTP id S1752334AbZIXL4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 07:56:40 -0400
+	Thu, 24 Sep 2009 07:56:45 -0400
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: [PATCH 04/19] OMAP: Add VRAM manager
-Date: Thu, 24 Sep 2009 14:56:09 +0300
-Message-Id: <1253793384-31158-5-git-send-email-tomi.valkeinen@nokia.com>
+Subject: [PATCH 05/19] OMAP: Add support for VRFB rotation engine
+Date: Thu, 24 Sep 2009 14:56:10 +0300
+Message-Id: <1253793384-31158-6-git-send-email-tomi.valkeinen@nokia.com>
 X-Mailer: git-send-email 1.6.4
-In-Reply-To: <1253793384-31158-4-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1253793384-31158-5-git-send-email-tomi.valkeinen@nokia.com>
 References: <1253793384-31158-1-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-2-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-3-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-4-git-send-email-tomi.valkeinen@nokia.com>
-X-OriginalArrivalTime: 24 Sep 2009 11:56:34.0264 (UTC) FILETIME=[101CCD80:01CA3D0E]
+ <1253793384-31158-5-git-send-email-tomi.valkeinen@nokia.com>
+X-OriginalArrivalTime: 24 Sep 2009 11:56:35.0546 (UTC) FILETIME=[10E06BA0:01CA3D0E]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a Video RAM manager for OMAP 2 and 3 platforms. VRAM manager is used
-to allocate large continuous blocks of SDRAM or SRAM. The features VRAM
-manager has that are missing from dma_alloc_* functions are:
+VRFB rotation engine is a block in OMAP2/3 that offers 12 independent
+contexts that can be used for framebuffer rotation.
 
-- Support for OMAP2's SRAM
-- Allocate without ioremapping
-- Allocate at defined physical addresses
-- Allows larger VRAM area and larger allocations
-
-The upcoming DSS2 uses VRAM manager.
-
-VRAM area size can be defined in kernel config, board file or with
-kernel boot parameters. Board file definition overrides kernel config,
-and boot parameter overrides kernel config and board file.
+Each context has a backend area of real memory, where it stores the
+pixels in undisclosed format. This memory is offered to users via 4
+virtual memory areas, which see the same memory area in different
+rotation angles (0, 90, 180 and 270 degrees).
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- arch/arm/mach-omap2/io.c               |    2 +
- arch/arm/plat-omap/include/mach/vram.h |   63 +++
- arch/arm/plat-omap/sram.c              |    8 +
- drivers/video/Kconfig                  |    1 +
- drivers/video/Makefile                 |    1 +
- drivers/video/omap2/Kconfig            |    2 +
+ arch/arm/plat-omap/include/mach/vrfb.h |   46 ++++++
+ drivers/video/omap2/Kconfig            |    3 +
  drivers/video/omap2/Makefile           |    1 +
- drivers/video/omap2/vram.c             |  655 ++++++++++++++++++++++++++++++++
- 8 files changed, 733 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/plat-omap/include/mach/vram.h
- create mode 100644 drivers/video/omap2/Kconfig
- create mode 100644 drivers/video/omap2/Makefile
- create mode 100644 drivers/video/omap2/vram.c
+ drivers/video/omap2/vrfb.c             |  277 ++++++++++++++++++++++++++++++++
+ 4 files changed, 327 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/plat-omap/include/mach/vrfb.h
+ create mode 100644 drivers/video/omap2/vrfb.c
 
-diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
-index 4a08ad3..e5dd736 100644
---- a/arch/arm/mach-omap2/io.c
-+++ b/arch/arm/mach-omap2/io.c
-@@ -33,6 +33,7 @@
- #include <mach/sdrc.h>
- #include <mach/gpmc.h>
- #include <mach/serial.h>
-+#include <mach/vram.h>
- 
- #ifndef CONFIG_ARCH_OMAP4	/* FIXME: Remove this once clkdev is ready */
- #include "clock.h"
-@@ -246,6 +247,7 @@ void __init omap2_map_common_io(void)
- 	omap2_check_revision();
- 	omap_sram_init();
- 	omapfb_reserve_sdram();
-+	omap_vram_reserve_sdram();
- }
- 
- /*
-diff --git a/arch/arm/plat-omap/include/mach/vram.h b/arch/arm/plat-omap/include/mach/vram.h
+diff --git a/arch/arm/plat-omap/include/mach/vrfb.h b/arch/arm/plat-omap/include/mach/vrfb.h
 new file mode 100644
-index 0000000..fe72f81
+index 0000000..8790612
 --- /dev/null
-+++ b/arch/arm/plat-omap/include/mach/vram.h
-@@ -0,0 +1,63 @@
++++ b/arch/arm/plat-omap/include/mach/vrfb.h
+@@ -0,0 +1,46 @@
 +/*
-+ * VRAM manager for OMAP
++ * VRFB Rotation Engine
 + *
 + * Copyright (C) 2009 Nokia Corporation
 + * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
@@ -105,122 +73,57 @@ index 0000000..fe72f81
 + * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 + */
 +
-+#ifndef __OMAP_VRAM_H__
-+#define __OMAP_VRAM_H__
++#ifndef __OMAP_VRFB_H__
++#define __OMAP_VRFB_H__
 +
-+#include <linux/autoconf.h>
-+#include <linux/types.h>
++#define OMAP_VRFB_LINE_LEN 2048
 +
-+#define OMAP_VRAM_MEMTYPE_SDRAM		0
-+#define OMAP_VRAM_MEMTYPE_SRAM		1
-+#define OMAP_VRAM_MEMTYPE_MAX		1
++struct vrfb {
++	u8 context;
++	void __iomem *vaddr[4];
++	unsigned long paddr[4];
++	u16 xoffset;
++	u16 yoffset;
++	u8 bytespp;
++};
 +
-+extern int omap_vram_add_region(unsigned long paddr, size_t size);
-+extern int omap_vram_free(unsigned long paddr, size_t size);
-+extern int omap_vram_alloc(int mtype, size_t size, unsigned long *paddr);
-+extern int omap_vram_reserve(unsigned long paddr, size_t size);
-+extern void omap_vram_get_info(unsigned long *vram, unsigned long *free_vram,
-+		unsigned long *largest_free_block);
++extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
++extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
++extern void omap_vrfb_suspend_ctx(struct vrfb *vrfb);
++extern void omap_vrfb_resume_ctx(struct vrfb *vrfb);
++extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
++		u8 bytespp);
++extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
++		u16 width, u16 height,
++		unsigned bytespp, bool yuv_mode);
++extern void omap_vrfb_restore_context(void);
 +
-+#ifdef CONFIG_OMAP2_VRAM
-+extern void omap_vram_set_sdram_vram(u32 size, u32 start);
-+extern void omap_vram_set_sram_vram(u32 size, u32 start);
-+
-+extern void omap_vram_reserve_sdram(void);
-+extern unsigned long omap_vram_reserve_sram(unsigned long sram_pstart,
-+					    unsigned long sram_vstart,
-+					    unsigned long sram_size,
-+					    unsigned long pstart_avail,
-+					    unsigned long size_avail);
-+#else
-+static inline void omap_vram_set_sdram_vram(u32 size, u32 start) { }
-+static inline void omap_vram_set_sram_vram(u32 size, u32 start) { }
-+
-+static inline void omap_vram_reserve_sdram(void) { }
-+static inline unsigned long omap_vram_reserve_sram(unsigned long sram_pstart,
-+					    unsigned long sram_vstart,
-+					    unsigned long sram_size,
-+					    unsigned long pstart_avail,
-+					    unsigned long size_avail)
-+{
-+	return 0;
-+}
-+#endif
-+
-+#endif
-diff --git a/arch/arm/plat-omap/sram.c b/arch/arm/plat-omap/sram.c
-index 925f647..cda311b 100644
---- a/arch/arm/plat-omap/sram.c
-+++ b/arch/arm/plat-omap/sram.c
-@@ -28,6 +28,7 @@
- #include <mach/sram.h>
- #include <mach/board.h>
- #include <mach/cpu.h>
-+#include <mach/vram.h>
- 
- #include <mach/control.h>
- 
-@@ -185,6 +186,13 @@ void __init omap_detect_sram(void)
- 				       omap_sram_start + SRAM_BOOTLOADER_SZ,
- 				       omap_sram_size - SRAM_BOOTLOADER_SZ);
- 	omap_sram_size -= reserved;
-+
-+	reserved = omap_vram_reserve_sram(omap_sram_start, omap_sram_base,
-+			omap_sram_size,
-+			omap_sram_start + SRAM_BOOTLOADER_SZ,
-+			omap_sram_size - SRAM_BOOTLOADER_SZ);
-+	omap_sram_size -= reserved;
-+
- 	omap_sram_ceil = omap_sram_base + omap_sram_size;
- }
- 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 9bbb285..af0448f 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2161,6 +2161,7 @@ config FB_BROADSHEET
- 	  a bridge adapter.
- 
- source "drivers/video/omap/Kconfig"
-+source "drivers/video/omap2/Kconfig"
- 
- source "drivers/video/backlight/Kconfig"
- source "drivers/video/display/Kconfig"
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 80232e1..0f8da33 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -124,6 +124,7 @@ obj-$(CONFIG_FB_SM501)            += sm501fb.o
- obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
- obj-$(CONFIG_FB_SH_MOBILE_LCDC)	  += sh_mobile_lcdcfb.o
- obj-$(CONFIG_FB_OMAP)             += omap/
-+obj-y                             += omap2/
- obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
- obj-$(CONFIG_FB_CARMINE)          += carminefb.o
- obj-$(CONFIG_FB_MB862XX)	  += mb862xx/
++#endif /* __VRFB_H */
 diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
-new file mode 100644
-index 0000000..7a6c4c9
---- /dev/null
+index 7a6c4c9..ac8b650 100644
+--- a/drivers/video/omap2/Kconfig
 +++ b/drivers/video/omap2/Kconfig
-@@ -0,0 +1,2 @@
-+config OMAP2_VRAM
+@@ -1,2 +1,5 @@
+ config OMAP2_VRAM
+ 	bool
++
++config OMAP2_VRFB
 +	bool
 diff --git a/drivers/video/omap2/Makefile b/drivers/video/omap2/Makefile
-new file mode 100644
-index 0000000..7fdf7bd
---- /dev/null
+index 7fdf7bd..aa3751b 100644
+--- a/drivers/video/omap2/Makefile
 +++ b/drivers/video/omap2/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_OMAP2_VRAM) += vram.o
-diff --git a/drivers/video/omap2/vram.c b/drivers/video/omap2/vram.c
+@@ -1 +1,2 @@
+ obj-$(CONFIG_OMAP2_VRAM) += vram.o
++obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
+diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
 new file mode 100644
-index 0000000..634ce23
+index 0000000..8726689
 --- /dev/null
-+++ b/drivers/video/omap2/vram.c
-@@ -0,0 +1,655 @@
++++ b/drivers/video/omap2/vrfb.c
+@@ -0,0 +1,277 @@
 +/*
-+ * VRAM manager for OMAP
++ * VRFB Rotation Engine
 + *
 + * Copyright (C) 2009 Nokia Corporation
 + * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
@@ -239,641 +142,263 @@ index 0000000..634ce23
 + * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 + */
 +
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/ioport.h>
++#include <linux/io.h>
++#include <linux/bitops.h>
++#include <linux/mutex.h>
++
++#include <mach/io.h>
++#include <mach/vrfb.h>
++#include <mach/sdrc.h>
 +/*#define DEBUG*/
 +
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/list.h>
-+#include <linux/seq_file.h>
-+#include <linux/bootmem.h>
-+#include <linux/completion.h>
-+#include <linux/debugfs.h>
-+#include <linux/jiffies.h>
-+#include <linux/module.h>
-+
-+#include <asm/setup.h>
-+
-+#include <mach/sram.h>
-+#include <mach/vram.h>
-+#include <mach/dma.h>
-+
 +#ifdef DEBUG
-+#define DBG(format, ...) pr_debug("VRAM: " format, ## __VA_ARGS__)
++#define DBG(format, ...) pr_debug("VRFB: " format, ## __VA_ARGS__)
 +#else
 +#define DBG(format, ...)
 +#endif
 +
-+#define OMAP2_SRAM_START		0x40200000
-+/* Maximum size, in reality this is smaller if SRAM is partially locked. */
-+#define OMAP2_SRAM_SIZE			0xa0000		/* 640k */
++#define SMS_ROT_VIRT_BASE(context, rot) \
++	(((context >= 4) ? 0xD0000000 : 0x70000000) \
++	 + (0x4000000 * (context)) \
++	 + (0x1000000 * (rot)))
 +
-+/* postponed regions are used to temporarily store region information at boot
-+ * time when we cannot yet allocate the region list */
-+#define MAX_POSTPONED_REGIONS 10
++#define OMAP_VRFB_SIZE			(2048 * 2048 * 4)
 +
-+static bool vram_initialized;
-+static int postponed_cnt;
++#define VRFB_PAGE_WIDTH_EXP	5 /* Assuming SDRAM pagesize= 1024 */
++#define VRFB_PAGE_HEIGHT_EXP	5 /* 1024 = 2^5 * 2^5 */
++#define VRFB_PAGE_WIDTH		(1 << VRFB_PAGE_WIDTH_EXP)
++#define VRFB_PAGE_HEIGHT	(1 << VRFB_PAGE_HEIGHT_EXP)
++#define SMS_IMAGEHEIGHT_OFFSET	16
++#define SMS_IMAGEWIDTH_OFFSET	0
++#define SMS_PH_OFFSET		8
++#define SMS_PW_OFFSET		4
++#define SMS_PS_OFFSET		0
++
++#define VRFB_NUM_CTXS 12
++/* bitmap of reserved contexts */
++static unsigned long ctx_map;
++/* bitmap of contexts for which we have to keep the HW context valid */
++static unsigned long ctx_map_active;
++
++static DEFINE_MUTEX(ctx_lock);
++
++/*
++ * Access to this happens from client drivers or the PM core after wake-up.
++ * For the first case we require locking at the driver level, for the second
++ * we don't need locking, since no drivers will run until after the wake-up
++ * has finished.
++ */
 +static struct {
-+	unsigned long paddr;
-+	size_t size;
-+} postponed_regions[MAX_POSTPONED_REGIONS];
++	u32 physical_ba;
++	u32 control;
++	u32 size;
++} vrfb_hw_context[VRFB_NUM_CTXS];
 +
-+struct vram_alloc {
-+	struct list_head list;
-+	unsigned long paddr;
-+	unsigned pages;
-+};
-+
-+struct vram_region {
-+	struct list_head list;
-+	struct list_head alloc_list;
-+	unsigned long paddr;
-+	unsigned pages;
-+};
-+
-+static DEFINE_MUTEX(region_mutex);
-+static LIST_HEAD(region_list);
-+
-+static inline int region_mem_type(unsigned long paddr)
++static inline void restore_hw_context(int ctx)
 +{
-+	if (paddr >= OMAP2_SRAM_START &&
-+	    paddr < OMAP2_SRAM_START + OMAP2_SRAM_SIZE)
-+		return OMAP_VRAM_MEMTYPE_SRAM;
++	omap2_sms_write_rot_control(vrfb_hw_context[ctx].control, ctx);
++	omap2_sms_write_rot_size(vrfb_hw_context[ctx].size, ctx);
++	omap2_sms_write_rot_physical_ba(vrfb_hw_context[ctx].physical_ba, ctx);
++}
++
++void omap_vrfb_restore_context(void)
++{
++	int i;
++	unsigned long map = ctx_map_active;
++
++	for (i = ffs(map); i; i = ffs(map)) {
++		/* i=1..32 */
++		i--;
++		map &= ~(1 << i);
++		restore_hw_context(i);
++	}
++}
++
++void omap_vrfb_adjust_size(u16 *width, u16 *height,
++		u8 bytespp)
++{
++	*width = ALIGN(*width * bytespp, VRFB_PAGE_WIDTH) / bytespp;
++	*height = ALIGN(*height, VRFB_PAGE_HEIGHT);
++}
++EXPORT_SYMBOL(omap_vrfb_adjust_size);
++
++void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
++		u16 width, u16 height,
++		unsigned bytespp, bool yuv_mode)
++{
++	unsigned pixel_size_exp;
++	u16 vrfb_width;
++	u16 vrfb_height;
++	u8 ctx = vrfb->context;
++	u32 size;
++	u32 control;
++
++	DBG("omapfb_set_vrfb(%d, %lx, %dx%d, %d)\n", ctx, paddr,
++			width, height, color_mode);
++
++	/* For YUV2 and UYVY modes VRFB needs to handle pixels a bit
++	 * differently. See TRM. */
++	if (yuv_mode) {
++		bytespp *= 2;
++		width /= 2;
++	}
++
++	if (bytespp == 4)
++		pixel_size_exp = 2;
++	else if (bytespp == 2)
++		pixel_size_exp = 1;
 +	else
-+		return OMAP_VRAM_MEMTYPE_SDRAM;
++		BUG();
++
++	vrfb_width = ALIGN(width * bytespp, VRFB_PAGE_WIDTH) / bytespp;
++	vrfb_height = ALIGN(height, VRFB_PAGE_HEIGHT);
++
++	DBG("vrfb w %u, h %u bytespp %d\n", vrfb_width, vrfb_height, bytespp);
++
++	size  = vrfb_width << SMS_IMAGEWIDTH_OFFSET;
++	size |= vrfb_height << SMS_IMAGEHEIGHT_OFFSET;
++
++	control  = pixel_size_exp << SMS_PS_OFFSET;
++	control |= VRFB_PAGE_WIDTH_EXP  << SMS_PW_OFFSET;
++	control |= VRFB_PAGE_HEIGHT_EXP << SMS_PH_OFFSET;
++
++	vrfb_hw_context[ctx].physical_ba = paddr;
++	vrfb_hw_context[ctx].size = size;
++	vrfb_hw_context[ctx].control = control;
++
++	omap2_sms_write_rot_physical_ba(paddr, ctx);
++	omap2_sms_write_rot_size(size, ctx);
++	omap2_sms_write_rot_control(control, ctx);
++
++	DBG("vrfb offset pixels %d, %d\n",
++			vrfb_width - width, vrfb_height - height);
++
++	vrfb->xoffset = vrfb_width - width;
++	vrfb->yoffset = vrfb_height - height;
++	vrfb->bytespp = bytespp;
 +}
++EXPORT_SYMBOL(omap_vrfb_setup);
 +
-+static struct vram_region *omap_vram_create_region(unsigned long paddr,
-+		unsigned pages)
++void omap_vrfb_release_ctx(struct vrfb *vrfb)
 +{
-+	struct vram_region *rm;
++	int rot;
++	int ctx = vrfb->context;
 +
-+	rm = kzalloc(sizeof(*rm), GFP_KERNEL);
++	if (ctx == 0xff)
++		return;
 +
-+	if (rm) {
-+		INIT_LIST_HEAD(&rm->alloc_list);
-+		rm->paddr = paddr;
-+		rm->pages = pages;
++	DBG("release ctx %d\n", ctx);
++
++	mutex_lock(&ctx_lock);
++
++	BUG_ON(!(ctx_map & (1 << ctx)));
++
++	clear_bit(ctx, &ctx_map_active);
++	clear_bit(ctx, &ctx_map);
++
++	for (rot = 0; rot < 4; ++rot) {
++		if (vrfb->paddr[rot]) {
++			release_mem_region(vrfb->paddr[rot], OMAP_VRFB_SIZE);
++			vrfb->paddr[rot] = 0;
++		}
 +	}
 +
-+	return rm;
++	vrfb->context = 0xff;
++
++	mutex_unlock(&ctx_lock);
 +}
++EXPORT_SYMBOL(omap_vrfb_release_ctx);
 +
-+#if 0
-+static void omap_vram_free_region(struct vram_region *vr)
++int omap_vrfb_request_ctx(struct vrfb *vrfb)
 +{
-+	list_del(&vr->list);
-+	kfree(vr);
-+}
-+#endif
++	int rot;
++	u32 paddr;
++	u8 ctx;
++	int r;
 +
-+static struct vram_alloc *omap_vram_create_allocation(struct vram_region *vr,
-+		unsigned long paddr, unsigned pages)
-+{
-+	struct vram_alloc *va;
-+	struct vram_alloc *new;
++	DBG("request ctx\n");
 +
-+	new = kzalloc(sizeof(*va), GFP_KERNEL);
++	mutex_lock(&ctx_lock);
 +
-+	if (!new)
-+		return NULL;
-+
-+	new->paddr = paddr;
-+	new->pages = pages;
-+
-+	list_for_each_entry(va, &vr->alloc_list, list) {
-+		if (va->paddr > new->paddr)
++	for (ctx = 0; ctx < VRFB_NUM_CTXS; ++ctx)
++		if ((ctx_map & (1 << ctx)) == 0)
 +			break;
++
++	if (ctx == VRFB_NUM_CTXS) {
++		pr_err("vrfb: no free contexts\n");
++		r = -EBUSY;
++		goto out;
 +	}
 +
-+	list_add_tail(&new->list, &va->list);
++	DBG("found free ctx %d\n", ctx);
 +
-+	return new;
-+}
++	set_bit(ctx, &ctx_map);
++	WARN_ON(ctx_map_active & (1 << ctx));
++	set_bit(ctx, &ctx_map_active);
 +
-+static void omap_vram_free_allocation(struct vram_alloc *va)
-+{
-+	list_del(&va->list);
-+	kfree(va);
-+}
++	memset(vrfb, 0, sizeof(*vrfb));
 +
-+int omap_vram_add_region(unsigned long paddr, size_t size)
-+{
-+	struct vram_region *rm;
-+	unsigned pages;
++	vrfb->context = ctx;
 +
-+	if (vram_initialized) {
-+		DBG("adding region paddr %08lx size %d\n",
-+				paddr, size);
-+
-+		size &= PAGE_MASK;
-+		pages = size >> PAGE_SHIFT;
-+
-+		rm = omap_vram_create_region(paddr, pages);
-+		if (rm == NULL)
-+			return -ENOMEM;
-+
-+		list_add(&rm->list, &region_list);
-+	} else {
-+		if (postponed_cnt == MAX_POSTPONED_REGIONS)
-+			return -ENOMEM;
-+
-+		postponed_regions[postponed_cnt].paddr = paddr;
-+		postponed_regions[postponed_cnt].size = size;
-+
-+		++postponed_cnt;
-+	}
-+	return 0;
-+}
-+
-+int omap_vram_free(unsigned long paddr, size_t size)
-+{
-+	struct vram_region *rm;
-+	struct vram_alloc *alloc;
-+	unsigned start, end;
-+
-+	DBG("free mem paddr %08lx size %d\n", paddr, size);
-+
-+	size = PAGE_ALIGN(size);
-+
-+	mutex_lock(&region_mutex);
-+
-+	list_for_each_entry(rm, &region_list, list) {
-+		list_for_each_entry(alloc, &rm->alloc_list, list) {
-+			start = alloc->paddr;
-+			end = alloc->paddr + (alloc->pages >> PAGE_SHIFT);
-+
-+			if (start >= paddr && end < paddr + size)
-+				goto found;
-+		}
-+	}
-+
-+	mutex_unlock(&region_mutex);
-+	return -EINVAL;
-+
-+found:
-+	omap_vram_free_allocation(alloc);
-+
-+	mutex_unlock(&region_mutex);
-+	return 0;
-+}
-+EXPORT_SYMBOL(omap_vram_free);
-+
-+static int _omap_vram_reserve(unsigned long paddr, unsigned pages)
-+{
-+	struct vram_region *rm;
-+	struct vram_alloc *alloc;
-+	size_t size;
-+
-+	size = pages << PAGE_SHIFT;
-+
-+	list_for_each_entry(rm, &region_list, list) {
-+		unsigned long start, end;
-+
-+		DBG("checking region %lx %d\n", rm->paddr, rm->pages);
-+
-+		if (region_mem_type(rm->paddr) != region_mem_type(paddr))
-+			continue;
-+
-+		start = rm->paddr;
-+		end = start + (rm->pages << PAGE_SHIFT) - 1;
-+		if (start > paddr || end < paddr + size - 1)
-+			continue;
-+
-+		DBG("block ok, checking allocs\n");
-+
-+		list_for_each_entry(alloc, &rm->alloc_list, list) {
-+			end = alloc->paddr - 1;
-+
-+			if (start <= paddr && end >= paddr + size - 1)
-+				goto found;
-+
-+			start = alloc->paddr + (alloc->pages << PAGE_SHIFT);
++	for (rot = 0; rot < 4; ++rot) {
++		paddr = SMS_ROT_VIRT_BASE(ctx, rot);
++		if (!request_mem_region(paddr, OMAP_VRFB_SIZE, "vrfb")) {
++			pr_err("vrfb: failed to reserve VRFB "
++					"area for ctx %d, rotation %d\n",
++					ctx, rot * 90);
++			omap_vrfb_release_ctx(vrfb);
++			r = -ENOMEM;
++			goto out;
 +		}
 +
-+		end = rm->paddr + (rm->pages << PAGE_SHIFT) - 1;
++		vrfb->paddr[rot] = paddr;
 +
-+		if (!(start <= paddr && end >= paddr + size - 1))
-+			continue;
-+found:
-+		DBG("found area start %lx, end %lx\n", start, end);
-+
-+		if (omap_vram_create_allocation(rm, paddr, pages) == NULL)
-+			return -ENOMEM;
-+
-+		return 0;
-+	}
-+
-+	return -ENOMEM;
-+}
-+
-+int omap_vram_reserve(unsigned long paddr, size_t size)
-+{
-+	unsigned pages;
-+	int r;
-+
-+	DBG("reserve mem paddr %08lx size %d\n", paddr, size);
-+
-+	size = PAGE_ALIGN(size);
-+	pages = size >> PAGE_SHIFT;
-+
-+	mutex_lock(&region_mutex);
-+
-+	r = _omap_vram_reserve(paddr, pages);
-+
-+	mutex_unlock(&region_mutex);
-+
-+	return r;
-+}
-+EXPORT_SYMBOL(omap_vram_reserve);
-+
-+static void _omap_vram_dma_cb(int lch, u16 ch_status, void *data)
-+{
-+	struct completion *compl = data;
-+	complete(compl);
-+}
-+
-+static int _omap_vram_clear(u32 paddr, unsigned pages)
-+{
-+	struct completion compl;
-+	unsigned elem_count;
-+	unsigned frame_count;
-+	int r;
-+	int lch;
-+
-+	init_completion(&compl);
-+
-+	r = omap_request_dma(OMAP_DMA_NO_DEVICE, "VRAM DMA",
-+			_omap_vram_dma_cb,
-+			&compl, &lch);
-+	if (r) {
-+		pr_err("VRAM: request_dma failed for memory clear\n");
-+		return -EBUSY;
-+	}
-+
-+	elem_count = pages * PAGE_SIZE / 4;
-+	frame_count = 1;
-+
-+	omap_set_dma_transfer_params(lch, OMAP_DMA_DATA_TYPE_S32,
-+			elem_count, frame_count,
-+			OMAP_DMA_SYNC_ELEMENT,
-+			0, 0);
-+
-+	omap_set_dma_dest_params(lch, 0, OMAP_DMA_AMODE_POST_INC,
-+			paddr, 0, 0);
-+
-+	omap_set_dma_color_mode(lch, OMAP_DMA_CONSTANT_FILL, 0x000000);
-+
-+	omap_start_dma(lch);
-+
-+	if (wait_for_completion_timeout(&compl, msecs_to_jiffies(1000)) == 0) {
-+		omap_stop_dma(lch);
-+		pr_err("VRAM: dma timeout while clearing memory\n");
-+		r = -EIO;
-+		goto err;
++		DBG("VRFB %d/%d: %lx\n", ctx, rot*90, vrfb->paddr[rot]);
 +	}
 +
 +	r = 0;
-+err:
-+	omap_free_dma(lch);
-+
++out:
++	mutex_unlock(&ctx_lock);
 +	return r;
 +}
++EXPORT_SYMBOL(omap_vrfb_request_ctx);
 +
-+static int _omap_vram_alloc(int mtype, unsigned pages, unsigned long *paddr)
++void omap_vrfb_suspend_ctx(struct vrfb *vrfb)
 +{
-+	struct vram_region *rm;
-+	struct vram_alloc *alloc;
++	DBG("suspend ctx %d\n", vrfb->context);
++	mutex_lock(&ctx_lock);
 +
-+	list_for_each_entry(rm, &region_list, list) {
-+		unsigned long start, end;
++	BUG_ON(vrfb->context >= VRFB_NUM_CTXS);
++	BUG_ON(!((1 << vrfb->context) & ctx_map_active));
 +
-+		DBG("checking region %lx %d\n", rm->paddr, rm->pages);
-+
-+		if (region_mem_type(rm->paddr) != mtype)
-+			continue;
-+
-+		start = rm->paddr;
-+
-+		list_for_each_entry(alloc, &rm->alloc_list, list) {
-+			end = alloc->paddr;
-+
-+			if (end - start >= pages << PAGE_SHIFT)
-+				goto found;
-+
-+			start = alloc->paddr + (alloc->pages << PAGE_SHIFT);
-+		}
-+
-+		end = rm->paddr + (rm->pages << PAGE_SHIFT);
-+found:
-+		if (end - start < pages << PAGE_SHIFT)
-+			continue;
-+
-+		DBG("found %lx, end %lx\n", start, end);
-+
-+		alloc = omap_vram_create_allocation(rm, start, pages);
-+		if (alloc == NULL)
-+			return -ENOMEM;
-+
-+		*paddr = start;
-+
-+		_omap_vram_clear(start, pages);
-+
-+		return 0;
-+	}
-+
-+	return -ENOMEM;
++	clear_bit(vrfb->context, &ctx_map_active);
++	mutex_unlock(&ctx_lock);
 +}
++EXPORT_SYMBOL(omap_vrfb_suspend_ctx);
 +
-+int omap_vram_alloc(int mtype, size_t size, unsigned long *paddr)
++void omap_vrfb_resume_ctx(struct vrfb *vrfb)
 +{
-+	unsigned pages;
-+	int r;
++	DBG("resume ctx %d\n", vrfb->context);
++	mutex_lock(&ctx_lock);
 +
-+	BUG_ON(mtype > OMAP_VRAM_MEMTYPE_MAX || !size);
++	BUG_ON(vrfb->context >= VRFB_NUM_CTXS);
++	BUG_ON((1 << vrfb->context) & ctx_map_active);
 +
-+	DBG("alloc mem type %d size %d\n", mtype, size);
-+
-+	size = PAGE_ALIGN(size);
-+	pages = size >> PAGE_SHIFT;
-+
-+	mutex_lock(&region_mutex);
-+
-+	r = _omap_vram_alloc(mtype, pages, paddr);
-+
-+	mutex_unlock(&region_mutex);
-+
-+	return r;
++	/*
++	 * omap_vrfb_restore_context is normally called by the core domain
++	 * save / restore logic, but since this VRFB context was suspended
++	 * those calls didn't actually restore the context and now we might
++	 * have an invalid context. Do an explicit restore here.
++	 */
++	restore_hw_context(vrfb->context);
++	set_bit(vrfb->context, &ctx_map_active);
++	mutex_unlock(&ctx_lock);
 +}
-+EXPORT_SYMBOL(omap_vram_alloc);
++EXPORT_SYMBOL(omap_vrfb_resume_ctx);
 +
-+void omap_vram_get_info(unsigned long *vram,
-+		unsigned long *free_vram,
-+		unsigned long *largest_free_block)
-+{
-+	struct vram_region *vr;
-+	struct vram_alloc *va;
-+
-+	*vram = 0;
-+	*free_vram = 0;
-+	*largest_free_block = 0;
-+
-+	mutex_lock(&region_mutex);
-+
-+	list_for_each_entry(vr, &region_list, list) {
-+		unsigned free;
-+		unsigned long pa;
-+
-+		pa = vr->paddr;
-+		*vram += vr->pages << PAGE_SHIFT;
-+
-+		list_for_each_entry(va, &vr->alloc_list, list) {
-+			free = va->paddr - pa;
-+			*free_vram += free;
-+			if (free > *largest_free_block)
-+				*largest_free_block = free;
-+			pa = va->paddr + (va->pages << PAGE_SHIFT);
-+		}
-+
-+		free = vr->paddr + (vr->pages << PAGE_SHIFT) - pa;
-+		*free_vram += free;
-+		if (free > *largest_free_block)
-+			*largest_free_block = free;
-+	}
-+
-+	mutex_unlock(&region_mutex);
-+}
-+EXPORT_SYMBOL(omap_vram_get_info);
-+
-+#if defined(CONFIG_DEBUG_FS)
-+static int vram_debug_show(struct seq_file *s, void *unused)
-+{
-+	struct vram_region *vr;
-+	struct vram_alloc *va;
-+	unsigned size;
-+
-+	mutex_lock(&region_mutex);
-+
-+	list_for_each_entry(vr, &region_list, list) {
-+		size = vr->pages << PAGE_SHIFT;
-+		seq_printf(s, "%08lx-%08lx (%d bytes)\n",
-+				vr->paddr, vr->paddr + size - 1,
-+				size);
-+
-+		list_for_each_entry(va, &vr->alloc_list, list) {
-+			size = va->pages << PAGE_SHIFT;
-+			seq_printf(s, "    %08lx-%08lx (%d bytes)\n",
-+					va->paddr, va->paddr + size - 1,
-+					size);
-+		}
-+	}
-+
-+	mutex_unlock(&region_mutex);
-+
-+	return 0;
-+}
-+
-+static int vram_debug_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, vram_debug_show, inode->i_private);
-+}
-+
-+static const struct file_operations vram_debug_fops = {
-+	.open           = vram_debug_open,
-+	.read           = seq_read,
-+	.llseek         = seq_lseek,
-+	.release        = single_release,
-+};
-+
-+static int __init omap_vram_create_debugfs(void)
-+{
-+	struct dentry *d;
-+
-+	d = debugfs_create_file("vram", S_IRUGO, NULL,
-+			NULL, &vram_debug_fops);
-+	if (IS_ERR(d))
-+		return PTR_ERR(d);
-+
-+	return 0;
-+}
-+#endif
-+
-+static __init int omap_vram_init(void)
-+{
-+	int i;
-+
-+	vram_initialized = 1;
-+
-+	for (i = 0; i < postponed_cnt; i++)
-+		omap_vram_add_region(postponed_regions[i].paddr,
-+				postponed_regions[i].size);
-+
-+#ifdef CONFIG_DEBUG_FS
-+	if (omap_vram_create_debugfs())
-+		pr_err("VRAM: Failed to create debugfs file\n");
-+#endif
-+
-+	return 0;
-+}
-+
-+arch_initcall(omap_vram_init);
-+
-+/* boottime vram alloc stuff */
-+
-+/* set from board file */
-+static u32 omap_vram_sram_start __initdata;
-+static u32 omap_vram_sram_size __initdata;
-+
-+/* set from board file */
-+static u32 omap_vram_sdram_start __initdata;
-+static u32 omap_vram_sdram_size __initdata;
-+
-+/* set from kernel cmdline */
-+static u32 omap_vram_def_sdram_size __initdata;
-+static u32 omap_vram_def_sdram_start __initdata;
-+
-+static void __init omap_vram_early_vram(char **p)
-+{
-+	omap_vram_def_sdram_size = memparse(*p, p);
-+	if (**p == ',')
-+		omap_vram_def_sdram_start = simple_strtoul((*p) + 1, p, 16);
-+}
-+__early_param("vram=", omap_vram_early_vram);
-+
-+/*
-+ * Called from map_io. We need to call to this early enough so that we
-+ * can reserve the fixed SDRAM regions before VM could get hold of them.
-+ */
-+void __init omap_vram_reserve_sdram(void)
-+{
-+	struct bootmem_data	*bdata;
-+	unsigned long		sdram_start, sdram_size;
-+	u32 paddr;
-+	u32 size = 0;
-+
-+	/* cmdline arg overrides the board file definition */
-+	if (omap_vram_def_sdram_size) {
-+		size = omap_vram_def_sdram_size;
-+		paddr = omap_vram_def_sdram_start;
-+	}
-+
-+	if (!size) {
-+		size = omap_vram_sdram_size;
-+		paddr = omap_vram_sdram_start;
-+	}
-+
-+#ifdef CONFIG_OMAP2_VRAM_SIZE
-+	if (!size) {
-+		size = CONFIG_OMAP2_VRAM_SIZE * 1024 * 1024;
-+		paddr = 0;
-+	}
-+#endif
-+
-+	if (!size)
-+		return;
-+
-+	size = PAGE_ALIGN(size);
-+
-+	bdata = NODE_DATA(0)->bdata;
-+	sdram_start = bdata->node_min_pfn << PAGE_SHIFT;
-+	sdram_size = (bdata->node_low_pfn << PAGE_SHIFT) - sdram_start;
-+
-+	if (paddr) {
-+		if ((paddr & ~PAGE_MASK) || paddr < sdram_start ||
-+				paddr + size > sdram_start + sdram_size) {
-+			pr_err("Illegal SDRAM region for VRAM\n");
-+			return;
-+		}
-+
-+		if (reserve_bootmem(paddr, size, BOOTMEM_EXCLUSIVE) < 0) {
-+			pr_err("FB: failed to reserve VRAM\n");
-+			return;
-+		}
-+	} else {
-+		if (size > sdram_size) {
-+			pr_err("Illegal SDRAM size for VRAM\n");
-+			return;
-+		}
-+
-+		paddr = virt_to_phys(alloc_bootmem_pages(size));
-+		BUG_ON(paddr & ~PAGE_MASK);
-+	}
-+
-+	omap_vram_add_region(paddr, size);
-+
-+	pr_info("Reserving %u bytes SDRAM for VRAM\n", size);
-+}
-+
-+/*
-+ * Called at sram init time, before anything is pushed to the SRAM stack.
-+ * Because of the stack scheme, we will allocate everything from the
-+ * start of the lowest address region to the end of SRAM. This will also
-+ * include padding for page alignment and possible holes between regions.
-+ *
-+ * As opposed to the SDRAM case, we'll also do any dynamic allocations at
-+ * this point, since the driver built as a module would have problem with
-+ * freeing / reallocating the regions.
-+ */
-+unsigned long __init omap_vram_reserve_sram(unsigned long sram_pstart,
-+				  unsigned long sram_vstart,
-+				  unsigned long sram_size,
-+				  unsigned long pstart_avail,
-+				  unsigned long size_avail)
-+{
-+	unsigned long			pend_avail;
-+	unsigned long			reserved;
-+	u32 paddr;
-+	u32 size;
-+
-+	paddr = omap_vram_sram_start;
-+	size = omap_vram_sram_size;
-+
-+	if (!size)
-+		return 0;
-+
-+	reserved = 0;
-+	pend_avail = pstart_avail + size_avail;
-+
-+	if (!paddr) {
-+		/* Dynamic allocation */
-+		if ((size_avail & PAGE_MASK) < size) {
-+			pr_err("Not enough SRAM for VRAM\n");
-+			return 0;
-+		}
-+		size_avail = (size_avail - size) & PAGE_MASK;
-+		paddr = pstart_avail + size_avail;
-+	}
-+
-+	if (paddr < sram_pstart ||
-+			paddr + size > sram_pstart + sram_size) {
-+		pr_err("Illegal SRAM region for VRAM\n");
-+		return 0;
-+	}
-+
-+	/* Reserve everything above the start of the region. */
-+	if (pend_avail - paddr > reserved)
-+		reserved = pend_avail - paddr;
-+	size_avail = pend_avail - reserved - pstart_avail;
-+
-+	omap_vram_add_region(paddr, size);
-+
-+	if (reserved)
-+		pr_info("Reserving %lu bytes SRAM for VRAM\n", reserved);
-+
-+	return reserved;
-+}
-+
-+void __init omap_vram_set_sdram_vram(u32 size, u32 start)
-+{
-+	omap_vram_sdram_start = start;
-+	omap_vram_sdram_size = size;
-+}
-+
-+void __init omap_vram_set_sram_vram(u32 size, u32 start)
-+{
-+	omap_vram_sram_start = start;
-+	omap_vram_sram_size = size;
-+}
 -- 
 1.6.4
 
