@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZIXBlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZIXDx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbZIXBlf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 21:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZIXBld
+	id S1753112AbZIXDx6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 23:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZIXDx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 21:41:33 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47367 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbZIXBld (ORCPT
+	Wed, 23 Sep 2009 23:53:56 -0400
+Received: from trendyhoster06.com ([67.192.128.16]:3516 "EHLO
+	mail.trendyhoster06.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752716AbZIXDxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 21:41:33 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 24 Sep 2009 10:39:19 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nitin Gupta <ngupta@vflare.org>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
-Subject: Re: [PATCH 2/4] send callback when swap slot is freed
-Message-Id: <20090924103919.9397ac87.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1253227412-24342-3-git-send-email-ngupta@vflare.org>
-References: <1253227412-24342-1-git-send-email-ngupta@vflare.org>
-	<1253227412-24342-3-git-send-email-ngupta@vflare.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Sep 2009 23:53:55 -0400
+X-Greylist: delayed 2320 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Sep 2009 23:53:55 EDT
+Message-ID: <20090923203959.iobvsnbzq8occ4ck@webmail.crosslegion.com>
+Date: Wed, 23 Sep 2009 20:39:59 -0500
+From: "DY Tooling (HK) Co., Ltd" <info@dytooling.com>
+Reply-to: info@dytoolling.com
+To: undisclosed-recipients:;
+Subject: Funds Collection Agent Needed
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+X-MXScan-Scan: Scanned by MxScan 1.8.300.0 for 202614-DB9
+X-MXScan-Msgid: A8039FC8B4F44FDCAD84B9C87C3EC35A_
+X-MXScan-Country-Sequence: VENEZUELA->Localhost->Destination
+X-MXScan-AntiVirus: ClamAV 0.94.2 [Clean]
+X-MXScan-AntiSpam: [Disabled for SMTP-OUT(2)]
+X-MXScan-ProcessingTime: 0.016 sec(s)
+X-ME-Bayesian: 0.000000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Sep 2009 04:13:30 +0530
-Nitin Gupta <ngupta@vflare.org> wrote:
+-- 
+DY Tooling (HK) Co., Ltd
+Shenzhen Factory:
+D Building G District, Third Industrial Park, Gonghe Village Shajing Town,
 
-> @@ -585,6 +617,8 @@ static int swap_entry_free(struct swap_info_struct *p,
->  			swap_list.next = p - swap_info;
->  		nr_swap_pages++;
->  		p->inuse_pages--;
-> +		if (p->swap_free_notify_fn)
-> +			p->swap_free_notify_fn(p->bdev, offset);
->  	}
->  	if (!swap_count(count))
->  		mem_cgroup_uncharge_swap(ent);
+Baoan District, Shenzhen, Guangdong Province China
+Fax: +85-230-177486
+info@dytoolling.com
+Web: www.dytoolling.com
 
-A nitpick but I feel I have to explain why mem_cgroup_ucharge_swap() is called
-here. (difference with p->swap_free_notify_fn)
+Dear Agent,
 
-if (!swap_count(count))
+DY Tooling (HK) Co., Ltd is urgently in need of a collection Agency that will
+assist us in the collection of our outstanding debts in some parts of the US
+and Canada.
 
-means "It seems no users for this swap entry but we're not sure there are
-       SwapCache for this entry or not."
+We have gone through your profile and think you might be able to assist us in
+this area. Details will be provided upon request. Please respond quickly as we
+want this resolved urgently.
 
-In mem_cgroup_uncharge_swap(), swap_cgroup is checked and if there is
-a record (which means the SwapCache is not mapped anywhere), swap usage
-is uncharged.
+Sincerely Yours,
 
-This is for race window at freeing swap entry via
-zap_pte_range() => free_swap_and_cache().
-(swap entry is not freed if the page is locked.)
+Mr. Tanaka Wong
+President CEO
+E-Mail : Info@dytoolling.com
+www.dytoolling.com
 
-I'll add some explanation in next series of memcg-cleanup patches.
 
-Thanks,
--Kame
+
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
+
+
 
