@@ -1,115 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbZIXMjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752115AbZIXMuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752659AbZIXMjh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 08:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZIXMjg
+	id S1752115AbZIXMuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 08:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZIXMuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 08:39:36 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:37280 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751832AbZIXMjf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 08:39:35 -0400
-X-Trace: 261992675/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.50.151/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.50.151
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqIEAMsEu0pPRTKX/2dsb2JhbACBUtUEhBsFgks
-X-IronPort-AV: E=Sophos;i="4.44,445,1249254000"; 
-   d="scan'208";a="261992675"
-Date: Thu, 24 Sep 2009 13:39:33 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, davem@redhat.com, aarcange@redhat.com,
-       gleb@redhat.com
-Subject: Re: update_mmu_cache() when write protecting pte.
-In-Reply-To: <20090923232221.1d566a5c@woof.woof>
-Message-ID: <Pine.LNX.4.64.0909241310350.9528@sister.anvils>
-References: <20090923232221.1d566a5c@woof.woof>
+	Thu, 24 Sep 2009 08:50:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48694 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750710AbZIXMuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 08:50:19 -0400
+Message-ID: <4ABB6AF1.10305@kernel.org>
+Date: Thu, 24 Sep 2009 21:49:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Tony Vroon <tony@linx.net>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] percpu: make allocation failures more verbose
+References: <4ABAC2F1.3020302@kernel.org>
+In-Reply-To: <4ABAC2F1.3020302@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 24 Sep 2009 12:49:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added linux-arch to Cc list.
+Warn and dump stack when percpu allocation fails.  percpu allocator is
+still young and unchecked NULL percpu pointer usage can result in
+random memory corruption when combined with the pointer shifting in
+access macros.  Allocation failures should be rare and the warning
+message will be disabled after certain times.
 
-On Wed, 23 Sep 2009, Izik Eidus wrote:
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+Another patch to make things more verbose when things don't go too
+well.
 
-> Hi, Hugh just found out that ksm was not calling to update_mmu_cache()
-> after it set new pte when it changed ptes mapping to point into the new
-> shared-readonly page (ksmpage).
-> 
-> It is understandable that it is a bug and ksm have to call it right
-> after set_pte_at_notify() get called, but the question is: does ksm
-> have to call it only there or should it call it even when it
-> write-protect pte (while not changing the physical address the pte is
-> pointing to).
+Thanks.
 
-I'm currently inclining to the view that it's only necessary to call
-update_mmu_cache() in faulting paths (as cachetlb.txt says), and would
-just be a waste of time and cache to call it from KSM (which, like
-mprotect, has no reason to suppose that the pte will soon be faulted).
+ mm/percpu.c |   20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-Documentation/cachetlb.txt is specific when it says:
-	At the end of every page fault, this routine is invoked...
-But less so when it says:
-	A port may use this information in any way it so chooses.
+Index: work/mm/percpu.c
+===================================================================
+--- work.orig/mm/percpu.c
++++ work/mm/percpu.c
+@@ -1043,7 +1043,9 @@ static struct pcpu_chunk *alloc_pcpu_chu
+  */
+ static void *pcpu_alloc(size_t size, size_t align, bool reserved)
+ {
++	static int warn_limit = 10;
+ 	struct pcpu_chunk *chunk;
++	const char *err;
+ 	int slot, off;
 
-In private mail, I was worrying about how mprotect does not call
-update_mmu_cache, and thinking of the race when mprotect makes a pte
-writable while a write access is coming down through handle_pte_fault:
-such that handle_pte_fault skips its update_mmu_cache: but hadn't
-noticed the "else" there, which will flush_tlb_page to reset the
-condition, so we don't have repeated faults on those architectures
-which are liable to that if the update_mmu_cache() is missed.
+ 	if (unlikely(!size || size > PCPU_MIN_UNIT_SIZE || align > PAGE_SIZE)) {
+@@ -1059,11 +1061,14 @@ static void *pcpu_alloc(size_t size, siz
+ 	if (reserved && pcpu_reserved_chunk) {
+ 		chunk = pcpu_reserved_chunk;
+ 		if (size > chunk->contig_hint ||
+-		    pcpu_extend_area_map(chunk) < 0)
++		    pcpu_extend_area_map(chunk) < 0) {
++			err = "failed to extend area map of reserved chunk";
+ 			goto fail_unlock;
++		}
+ 		off = pcpu_alloc_area(chunk, size, align);
+ 		if (off >= 0)
+ 			goto area_found;
++		err = "alloc from reserved chunk failed";
+ 		goto fail_unlock;
+ 	}
 
-I think now that neither replace_page() nor write_protect_page() should
-update_mmu_cache(); but my mind may change in a few moments time ;)
+@@ -1080,6 +1085,7 @@ restart:
+ 			case 1:
+ 				goto restart;	/* pcpu_lock dropped, restart */
+ 			default:
++				err = "failed to extend area map";
+ 				goto fail_unlock;
+ 			}
 
-Hugh
+@@ -1093,8 +1099,10 @@ restart:
+ 	spin_unlock_irq(&pcpu_lock);
 
-> 
-> I am asking this question because it seems that fork() dont call it...
-> 
-> (below a patch that fix the problem in case we need it just when we
-> change the physical mapping, if we need it even when we write protect
-> the pages, then we need to add another update_mmu_cache()  call)
-> 
-> Thanks.
-> 
-> From 82d27f67a8b20767dc6119422189f73b52168c8d Mon Sep 17 00:00:00 2001
-> From: Izik Eidus <ieidus@redhat.com>
-> Date: Wed, 23 Sep 2009 22:37:34 +0300
-> Subject: [PATCH] ksm: add update_mmu_cache() when changing pte mapping.
-> 
-> This patch add update_mmu_cache() call right after set_pte_at_notify()
-> Without this function ksm is probably broken for powerpc and sparc archs.
-> 
-> (Noticed by Hugh Dickins)
-> 
-> Signed-off-by: Izik Eidus <ieidus@redhat.com>
-> ---
->  mm/ksm.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/mm/ksm.c b/mm/ksm.c
-> index f7edac3..e8d16eb 100644
-> --- a/mm/ksm.c
-> +++ b/mm/ksm.c
-> @@ -719,6 +719,7 @@ static int replace_page(struct vm_area_struct *vma, struct page *oldpage,
->  	flush_cache_page(vma, addr, pte_pfn(*ptep));
->  	ptep_clear_flush(vma, addr, ptep);
->  	set_pte_at_notify(mm, addr, ptep, mk_pte(newpage, prot));
-> +	update_mmu_cache(vma, addr, pte);
->  
->  	page_remove_rmap(oldpage);
->  	put_page(oldpage);
-> -- 
-> 1.5.6.5
+ 	chunk = alloc_pcpu_chunk();
+-	if (!chunk)
++	if (!chunk) {
++		err = "failed to allocate new chunk";
+ 		goto fail_unlock_mutex;
++	}
+
+ 	spin_lock_irq(&pcpu_lock);
+ 	pcpu_chunk_relocate(chunk, -1);
+@@ -1107,6 +1115,7 @@ area_found:
+ 	if (pcpu_populate_chunk(chunk, off, size)) {
+ 		spin_lock_irq(&pcpu_lock);
+ 		pcpu_free_area(chunk, off);
++		err = "failed to populate";
+ 		goto fail_unlock;
+ 	}
+
+@@ -1119,6 +1128,13 @@ fail_unlock:
+ 	spin_unlock_irq(&pcpu_lock);
+ fail_unlock_mutex:
+ 	mutex_unlock(&pcpu_alloc_mutex);
++	if (warn_limit) {
++		pr_warning("PERCPU: allocation failed, size=%zu align=%zu, "
++			   "%s\n", size, align, err);
++		dump_stack();
++		if (!--warn_limit)
++			pr_info("PERCPU: limit reached, disable warning\n");
++	}
+ 	return NULL;
+ }
+
