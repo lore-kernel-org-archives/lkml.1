@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbZIXMAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbZIXMAD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752710AbZIXMAd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 08:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZIXMAa
+	id S1752602AbZIXMAD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 08:00:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZIXMAC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 08:00:30 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:17800 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517AbZIXL4w (ORCPT
+	Thu, 24 Sep 2009 08:00:02 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:26246 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbZIXL4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Sep 2009 07:56:52 -0400
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: [PATCH 14/19] OMAP: DSS2: DSI driver
-Date: Thu, 24 Sep 2009 14:56:19 +0300
-Message-Id: <1253793384-31158-15-git-send-email-tomi.valkeinen@nokia.com>
+Subject: [PATCH 15/19] OMAP: DSS2: omapfb driver
+Date: Thu, 24 Sep 2009 14:56:20 +0300
+Message-Id: <1253793384-31158-16-git-send-email-tomi.valkeinen@nokia.com>
 X-Mailer: git-send-email 1.6.4
-In-Reply-To: <1253793384-31158-14-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1253793384-31158-15-git-send-email-tomi.valkeinen@nokia.com>
 References: <1253793384-31158-1-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-2-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-3-git-send-email-tomi.valkeinen@nokia.com>
@@ -32,31 +32,195 @@ References: <1253793384-31158-1-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-12-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-13-git-send-email-tomi.valkeinen@nokia.com>
  <1253793384-31158-14-git-send-email-tomi.valkeinen@nokia.com>
-X-OriginalArrivalTime: 24 Sep 2009 11:56:47.0186 (UTC) FILETIME=[17D08B20:01CA3D0E]
+ <1253793384-31158-15-git-send-email-tomi.valkeinen@nokia.com>
+X-OriginalArrivalTime: 24 Sep 2009 11:56:48.0467 (UTC) FILETIME=[18940230:01CA3D0E]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DSI (Display Serial Interface) driver implements MIPI DSI interface.
-
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/dss/dsi.c | 3509 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 3509 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/omap2/dss/dsi.c
+ arch/arm/plat-omap/fb.c                   |   39 +-
+ drivers/video/omap/Kconfig                |    5 +-
+ drivers/video/omap2/Kconfig               |    1 +
+ drivers/video/omap2/Makefile              |    1 +
+ drivers/video/omap2/omapfb/Kconfig        |   37 +
+ drivers/video/omap2/omapfb/Makefile       |    2 +
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |  727 ++++++++++
+ drivers/video/omap2/omapfb/omapfb-main.c  | 2137 +++++++++++++++++++++++++++++
+ drivers/video/omap2/omapfb/omapfb-sysfs.c |  507 +++++++
+ drivers/video/omap2/omapfb/omapfb.h       |  146 ++
+ include/linux/omapfb.h                    |   45 +
+ 11 files changed, 3644 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/video/omap2/omapfb/Kconfig
+ create mode 100644 drivers/video/omap2/omapfb/Makefile
+ create mode 100644 drivers/video/omap2/omapfb/omapfb-ioctl.c
+ create mode 100644 drivers/video/omap2/omapfb/omapfb-main.c
+ create mode 100644 drivers/video/omap2/omapfb/omapfb-sysfs.c
+ create mode 100644 drivers/video/omap2/omapfb/omapfb.h
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
+index 40615a6..70fbeae 100644
+--- a/arch/arm/plat-omap/fb.c
++++ b/arch/arm/plat-omap/fb.c
+@@ -327,7 +327,33 @@ static inline int omap_init_fb(void)
+ 
+ arch_initcall(omap_init_fb);
+ 
+-#else
++#elif defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
++
++static u64 omap_fb_dma_mask = ~(u32)0;
++static struct omapfb_platform_data omapfb_config;
++
++static struct platform_device omap_fb_device = {
++	.name		= "omapfb",
++	.id		= -1,
++	.dev = {
++		.dma_mask		= &omap_fb_dma_mask,
++		.coherent_dma_mask	= ~(u32)0,
++		.platform_data		= &omapfb_config,
++	},
++	.num_resources = 0,
++};
++
++void omapfb_set_platform_data(struct omapfb_platform_data *data)
++{
++	omapfb_config = *data;
++}
++
++static inline int omap_init_fb(void)
++{
++	return platform_device_register(&omap_fb_device);
++}
++
++arch_initcall(omap_init_fb);
+ 
+ void omapfb_reserve_sdram(void) {}
+ unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
+@@ -339,5 +365,16 @@ unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
+ 	return 0;
+ }
+ 
++#else
++
++void omapfb_reserve_sdram(void) {}
++unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
++				  unsigned long sram_vstart,
++				  unsigned long sram_size,
++				  unsigned long start_avail,
++				  unsigned long size_avail)
++{
++	return 0;
++}
+ 
+ #endif
+diff --git a/drivers/video/omap/Kconfig b/drivers/video/omap/Kconfig
+index 551e3e9..455c605 100644
+--- a/drivers/video/omap/Kconfig
++++ b/drivers/video/omap/Kconfig
+@@ -1,6 +1,7 @@
+ config FB_OMAP
+ 	tristate "OMAP frame buffer support (EXPERIMENTAL)"
+-	depends on FB && ARCH_OMAP
++	depends on FB && ARCH_OMAP && (OMAP2_DSS = "n")
++
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -72,7 +73,7 @@ config FB_OMAP_LCD_MIPID
+ 
+ config FB_OMAP_BOOTLOADER_INIT
+ 	bool "Check bootloader initialization"
+-	depends on FB_OMAP
++	depends on FB_OMAP || FB_OMAP2
+ 	help
+ 	  Say Y here if you want to enable checking if the bootloader has
+ 	  already initialized the display controller. In this case the
+diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
+index 55b4c42..3e60d7e 100644
+--- a/drivers/video/omap2/Kconfig
++++ b/drivers/video/omap2/Kconfig
+@@ -5,3 +5,4 @@ config OMAP2_VRFB
+ 	bool
+ 
+ source "drivers/video/omap2/dss/Kconfig"
++source "drivers/video/omap2/omapfb/Kconfig"
+diff --git a/drivers/video/omap2/Makefile b/drivers/video/omap2/Makefile
+index ee0644f..3ba6ef5 100644
+--- a/drivers/video/omap2/Makefile
++++ b/drivers/video/omap2/Makefile
+@@ -2,3 +2,4 @@ obj-$(CONFIG_OMAP2_VRAM) += vram.o
+ obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
+ 
+ obj-y += dss/
++obj-y += omapfb/
+diff --git a/drivers/video/omap2/omapfb/Kconfig b/drivers/video/omap2/omapfb/Kconfig
 new file mode 100644
-index 0000000..d43b9ce
+index 0000000..bb694cc
 --- /dev/null
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -0,0 +1,3509 @@
++++ b/drivers/video/omap2/omapfb/Kconfig
+@@ -0,0 +1,37 @@
++menuconfig FB_OMAP2
++        tristate "OMAP2/3 frame buffer support (EXPERIMENTAL)"
++        depends on FB && OMAP2_DSS
++
++	select OMAP2_VRAM
++	select OMAP2_VRFB
++        select FB_CFB_FILLRECT
++        select FB_CFB_COPYAREA
++        select FB_CFB_IMAGEBLIT
++        help
++          Frame buffer driver for OMAP2/3 based boards.
++
++config FB_OMAP2_DEBUG_SUPPORT
++	bool "Debug support for OMAP2/3 FB"
++	default y
++	depends on FB_OMAP2
++	help
++	  Support for debug output. You have to enable the actual printing
++	  with debug module parameter.
++
++config FB_OMAP2_FORCE_AUTO_UPDATE
++	bool "Force main display to automatic update mode"
++	depends on FB_OMAP2
++	help
++	  Forces main display to automatic update mode (if possible),
++	  and also enables tearsync (if possible). By default
++	  displays that support manual update are started in manual
++	  update mode.
++
++config FB_OMAP2_NUM_FBS
++	int "Number of framebuffers"
++	range 1 10
++	default 3
++	depends on FB_OMAP2
++	help
++	  Select the number of framebuffers created. OMAP2/3 has 3 overlays
++	  so normally this would be 3.
+diff --git a/drivers/video/omap2/omapfb/Makefile b/drivers/video/omap2/omapfb/Makefile
+new file mode 100644
+index 0000000..51c2e00
+--- /dev/null
++++ b/drivers/video/omap2/omapfb/Makefile
+@@ -0,0 +1,2 @@
++obj-$(CONFIG_FB_OMAP2) += omapfb.o
++omapfb-y := omapfb-main.o omapfb-sysfs.o omapfb-ioctl.o
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+new file mode 100644
+index 0000000..70fb64e
+--- /dev/null
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -0,0 +1,727 @@
 +/*
-+ * linux/drivers/video/omap2/dss/dsi.c
++ * linux/drivers/video/omap2/omapfb-ioctl.c
 + *
-+ * Copyright (C) 2009 Nokia Corporation
++ * Copyright (C) 2008 Nokia Corporation
 + * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
++ *
++ * Some code and ideas taken from drivers/video/omap/ driver
++ * by Imre Deak.
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
@@ -71,3496 +235,3603 @@ index 0000000..d43b9ce
 + * this program.  If not, see <http://www.gnu.org/licenses/>.
 + */
 +
-+#define DSS_SUBSYS_NAME "DSI"
-+
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/clk.h>
++#include <linux/fb.h>
 +#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/mutex.h>
-+#include <linux/seq_file.h>
++#include <linux/uaccess.h>
 +#include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
-+#include <linux/kthread.h>
-+#include <linux/wait.h>
++#include <linux/mm.h>
++#include <linux/omapfb.h>
++#include <linux/vmalloc.h>
 +
-+#include <mach/board.h>
 +#include <mach/display.h>
-+#include <mach/clock.h>
++#include <mach/vrfb.h>
++#include <mach/vram.h>
 +
-+#include "dss.h"
++#include "omapfb.h"
 +
-+/*#define VERBOSE_IRQ*/
-+
-+#define DSI_BASE		0x4804FC00
-+
-+struct dsi_reg { u16 idx; };
-+
-+#define DSI_REG(idx)		((const struct dsi_reg) { idx })
-+
-+#define DSI_SZ_REGS		SZ_1K
-+/* DSI Protocol Engine */
-+
-+#define DSI_REVISION			DSI_REG(0x0000)
-+#define DSI_SYSCONFIG			DSI_REG(0x0010)
-+#define DSI_SYSSTATUS			DSI_REG(0x0014)
-+#define DSI_IRQSTATUS			DSI_REG(0x0018)
-+#define DSI_IRQENABLE			DSI_REG(0x001C)
-+#define DSI_CTRL			DSI_REG(0x0040)
-+#define DSI_COMPLEXIO_CFG1		DSI_REG(0x0048)
-+#define DSI_COMPLEXIO_IRQ_STATUS	DSI_REG(0x004C)
-+#define DSI_COMPLEXIO_IRQ_ENABLE	DSI_REG(0x0050)
-+#define DSI_CLK_CTRL			DSI_REG(0x0054)
-+#define DSI_TIMING1			DSI_REG(0x0058)
-+#define DSI_TIMING2			DSI_REG(0x005C)
-+#define DSI_VM_TIMING1			DSI_REG(0x0060)
-+#define DSI_VM_TIMING2			DSI_REG(0x0064)
-+#define DSI_VM_TIMING3			DSI_REG(0x0068)
-+#define DSI_CLK_TIMING			DSI_REG(0x006C)
-+#define DSI_TX_FIFO_VC_SIZE		DSI_REG(0x0070)
-+#define DSI_RX_FIFO_VC_SIZE		DSI_REG(0x0074)
-+#define DSI_COMPLEXIO_CFG2		DSI_REG(0x0078)
-+#define DSI_RX_FIFO_VC_FULLNESS		DSI_REG(0x007C)
-+#define DSI_VM_TIMING4			DSI_REG(0x0080)
-+#define DSI_TX_FIFO_VC_EMPTINESS	DSI_REG(0x0084)
-+#define DSI_VM_TIMING5			DSI_REG(0x0088)
-+#define DSI_VM_TIMING6			DSI_REG(0x008C)
-+#define DSI_VM_TIMING7			DSI_REG(0x0090)
-+#define DSI_STOPCLK_TIMING		DSI_REG(0x0094)
-+#define DSI_VC_CTRL(n)			DSI_REG(0x0100 + (n * 0x20))
-+#define DSI_VC_TE(n)			DSI_REG(0x0104 + (n * 0x20))
-+#define DSI_VC_LONG_PACKET_HEADER(n)	DSI_REG(0x0108 + (n * 0x20))
-+#define DSI_VC_LONG_PACKET_PAYLOAD(n)	DSI_REG(0x010C + (n * 0x20))
-+#define DSI_VC_SHORT_PACKET_HEADER(n)	DSI_REG(0x0110 + (n * 0x20))
-+#define DSI_VC_IRQSTATUS(n)		DSI_REG(0x0118 + (n * 0x20))
-+#define DSI_VC_IRQENABLE(n)		DSI_REG(0x011C + (n * 0x20))
-+
-+/* DSIPHY_SCP */
-+
-+#define DSI_DSIPHY_CFG0			DSI_REG(0x200 + 0x0000)
-+#define DSI_DSIPHY_CFG1			DSI_REG(0x200 + 0x0004)
-+#define DSI_DSIPHY_CFG2			DSI_REG(0x200 + 0x0008)
-+#define DSI_DSIPHY_CFG5			DSI_REG(0x200 + 0x0014)
-+
-+/* DSI_PLL_CTRL_SCP */
-+
-+#define DSI_PLL_CONTROL			DSI_REG(0x300 + 0x0000)
-+#define DSI_PLL_STATUS			DSI_REG(0x300 + 0x0004)
-+#define DSI_PLL_GO			DSI_REG(0x300 + 0x0008)
-+#define DSI_PLL_CONFIGURATION1		DSI_REG(0x300 + 0x000C)
-+#define DSI_PLL_CONFIGURATION2		DSI_REG(0x300 + 0x0010)
-+
-+#define REG_GET(idx, start, end) \
-+	FLD_GET(dsi_read_reg(idx), start, end)
-+
-+#define REG_FLD_MOD(idx, val, start, end) \
-+	dsi_write_reg(idx, FLD_MOD(dsi_read_reg(idx), val, start, end))
-+
-+/* Global interrupts */
-+#define DSI_IRQ_VC0		(1 << 0)
-+#define DSI_IRQ_VC1		(1 << 1)
-+#define DSI_IRQ_VC2		(1 << 2)
-+#define DSI_IRQ_VC3		(1 << 3)
-+#define DSI_IRQ_WAKEUP		(1 << 4)
-+#define DSI_IRQ_RESYNC		(1 << 5)
-+#define DSI_IRQ_PLL_LOCK	(1 << 7)
-+#define DSI_IRQ_PLL_UNLOCK	(1 << 8)
-+#define DSI_IRQ_PLL_RECALL	(1 << 9)
-+#define DSI_IRQ_COMPLEXIO_ERR	(1 << 10)
-+#define DSI_IRQ_HS_TX_TIMEOUT	(1 << 14)
-+#define DSI_IRQ_LP_RX_TIMEOUT	(1 << 15)
-+#define DSI_IRQ_TE_TRIGGER	(1 << 16)
-+#define DSI_IRQ_ACK_TRIGGER	(1 << 17)
-+#define DSI_IRQ_SYNC_LOST	(1 << 18)
-+#define DSI_IRQ_LDO_POWER_GOOD	(1 << 19)
-+#define DSI_IRQ_TA_TIMEOUT	(1 << 20)
-+#define DSI_IRQ_ERROR_MASK \
-+	(DSI_IRQ_HS_TX_TIMEOUT | DSI_IRQ_LP_RX_TIMEOUT | DSI_IRQ_SYNC_LOST | \
-+	DSI_IRQ_TA_TIMEOUT)
-+#define DSI_IRQ_CHANNEL_MASK	0xf
-+
-+/* Virtual channel interrupts */
-+#define DSI_VC_IRQ_CS		(1 << 0)
-+#define DSI_VC_IRQ_ECC_CORR	(1 << 1)
-+#define DSI_VC_IRQ_PACKET_SENT	(1 << 2)
-+#define DSI_VC_IRQ_FIFO_TX_OVF	(1 << 3)
-+#define DSI_VC_IRQ_FIFO_RX_OVF	(1 << 4)
-+#define DSI_VC_IRQ_BTA		(1 << 5)
-+#define DSI_VC_IRQ_ECC_NO_CORR	(1 << 6)
-+#define DSI_VC_IRQ_FIFO_TX_UDF	(1 << 7)
-+#define DSI_VC_IRQ_PP_BUSY_CHANGE (1 << 8)
-+#define DSI_VC_IRQ_ERROR_MASK \
-+	(DSI_VC_IRQ_CS | DSI_VC_IRQ_ECC_CORR | DSI_VC_IRQ_FIFO_TX_OVF | \
-+	DSI_VC_IRQ_FIFO_RX_OVF | DSI_VC_IRQ_ECC_NO_CORR | \
-+	DSI_VC_IRQ_FIFO_TX_UDF)
-+
-+/* ComplexIO interrupts */
-+#define DSI_CIO_IRQ_ERRSYNCESC1		(1 << 0)
-+#define DSI_CIO_IRQ_ERRSYNCESC2		(1 << 1)
-+#define DSI_CIO_IRQ_ERRSYNCESC3		(1 << 2)
-+#define DSI_CIO_IRQ_ERRESC1		(1 << 5)
-+#define DSI_CIO_IRQ_ERRESC2		(1 << 6)
-+#define DSI_CIO_IRQ_ERRESC3		(1 << 7)
-+#define DSI_CIO_IRQ_ERRCONTROL1		(1 << 10)
-+#define DSI_CIO_IRQ_ERRCONTROL2		(1 << 11)
-+#define DSI_CIO_IRQ_ERRCONTROL3		(1 << 12)
-+#define DSI_CIO_IRQ_STATEULPS1		(1 << 15)
-+#define DSI_CIO_IRQ_STATEULPS2		(1 << 16)
-+#define DSI_CIO_IRQ_STATEULPS3		(1 << 17)
-+#define DSI_CIO_IRQ_ERRCONTENTIONLP0_1	(1 << 20)
-+#define DSI_CIO_IRQ_ERRCONTENTIONLP1_1	(1 << 21)
-+#define DSI_CIO_IRQ_ERRCONTENTIONLP0_2	(1 << 22)
-+#define DSI_CIO_IRQ_ERRCONTENTIONLP1_2	(1 << 23)
-+#define DSI_CIO_IRQ_ERRCONTENTIONLP0_3	(1 << 24)
-+#define DSI_CIO_IRQ_ERRCONTENTIONLP1_3	(1 << 25)
-+#define DSI_CIO_IRQ_ULPSACTIVENOT_ALL0	(1 << 30)
-+#define DSI_CIO_IRQ_ULPSACTIVENOT_ALL1	(1 << 31)
-+
-+#define DSI_DT_DCS_SHORT_WRITE_0	0x05
-+#define DSI_DT_DCS_SHORT_WRITE_1	0x15
-+#define DSI_DT_DCS_READ			0x06
-+#define DSI_DT_SET_MAX_RET_PKG_SIZE	0x37
-+#define DSI_DT_NULL_PACKET		0x09
-+#define DSI_DT_DCS_LONG_WRITE		0x39
-+
-+#define DSI_DT_RX_ACK_WITH_ERR		0x02
-+#define DSI_DT_RX_DCS_LONG_READ		0x1c
-+#define DSI_DT_RX_SHORT_READ_1		0x21
-+#define DSI_DT_RX_SHORT_READ_2		0x22
-+
-+#define FINT_MAX 2100000
-+#define FINT_MIN 750000
-+#define REGN_MAX (1 << 7)
-+#define REGM_MAX ((1 << 11) - 1)
-+#define REGM3_MAX (1 << 4)
-+#define REGM4_MAX (1 << 4)
-+
-+enum fifo_size {
-+	DSI_FIFO_SIZE_0		= 0,
-+	DSI_FIFO_SIZE_32	= 1,
-+	DSI_FIFO_SIZE_64	= 2,
-+	DSI_FIFO_SIZE_96	= 3,
-+	DSI_FIFO_SIZE_128	= 4,
-+};
-+
-+enum dsi_vc_mode {
-+	DSI_VC_MODE_L4 = 0,
-+	DSI_VC_MODE_VP,
-+};
-+
-+struct dsi_update_region {
-+	bool dirty;
-+	u16 x, y, w, h;
-+	struct omap_dss_device *device;
-+};
-+
-+static struct
++static int omapfb_setup_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
 +{
-+	void __iomem	*base;
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omap_dss_device *display = fb2display(fbi);
++	struct omap_overlay *ovl;
++	struct omap_overlay_info info;
++	int r = 0;
 +
-+	unsigned long	dsi1_pll_fclk;	/* Hz */
-+	unsigned long	dsi2_pll_fclk;	/* Hz */
-+	unsigned long	dsiphy;		/* Hz */
-+	unsigned long	ddr_clk;	/* Hz */
++	DBG("omapfb_setup_plane\n");
 +
-+	struct regulator *vdds_dsi_reg;
-+
-+	struct {
-+		enum dsi_vc_mode mode;
-+		struct omap_dss_device *dssdev;
-+		enum fifo_size fifo_size;
-+		int dest_per;	/* destination peripheral 0-3 */
-+	} vc[4];
-+
-+	struct mutex lock;
-+	struct mutex bus_lock;
-+
-+	unsigned pll_locked;
-+
-+	struct completion bta_completion;
-+
-+	struct task_struct *thread;
-+	wait_queue_head_t waitqueue;
-+
-+	spinlock_t update_lock;
-+	bool framedone_received;
-+	struct dsi_update_region update_region;
-+	struct dsi_update_region active_update_region;
-+	struct completion update_completion;
-+
-+	enum omap_dss_update_mode user_update_mode;
-+	enum omap_dss_update_mode update_mode;
-+	bool te_enabled;
-+	bool use_ext_te;
-+
-+	unsigned long cache_req_pck;
-+	unsigned long cache_clk_freq;
-+	struct dsi_clock_info cache_cinfo;
-+
-+	u32		errors;
-+	spinlock_t	errors_lock;
-+#ifdef DEBUG
-+	ktime_t perf_setup_time;
-+	ktime_t perf_start_time;
-+	ktime_t perf_start_time_auto;
-+	int perf_measure_frames;
-+#endif
-+	int debug_read;
-+	int debug_write;
-+} dsi;
-+
-+#ifdef DEBUG
-+static unsigned int dsi_perf;
-+module_param_named(dsi_perf, dsi_perf, bool, 0644);
-+#endif
-+
-+static inline void dsi_write_reg(const struct dsi_reg idx, u32 val)
-+{
-+	__raw_writel(val, dsi.base + idx.idx);
-+}
-+
-+static inline u32 dsi_read_reg(const struct dsi_reg idx)
-+{
-+	return __raw_readl(dsi.base + idx.idx);
-+}
-+
-+
-+void dsi_save_context(void)
-+{
-+}
-+
-+void dsi_restore_context(void)
-+{
-+}
-+
-+void dsi_bus_lock(void)
-+{
-+	mutex_lock(&dsi.bus_lock);
-+}
-+EXPORT_SYMBOL(dsi_bus_lock);
-+
-+void dsi_bus_unlock(void)
-+{
-+	mutex_unlock(&dsi.bus_lock);
-+}
-+EXPORT_SYMBOL(dsi_bus_unlock);
-+
-+static inline int wait_for_bit_change(const struct dsi_reg idx, int bitnum,
-+		int value)
-+{
-+	int t = 100000;
-+
-+	while (REG_GET(idx, bitnum, bitnum) != value) {
-+		if (--t == 0)
-+			return !value;
++	if (ofbi->num_overlays != 1) {
++		r = -EINVAL;
++		goto out;
 +	}
 +
-+	return value;
-+}
++	/* XXX uses only the first overlay */
++	ovl = ofbi->overlays[0];
 +
-+#ifdef DEBUG
-+static void dsi_perf_mark_setup(void)
-+{
-+	dsi.perf_setup_time = ktime_get();
-+}
-+
-+static void dsi_perf_mark_start(void)
-+{
-+	dsi.perf_start_time = ktime_get();
-+}
-+
-+static void dsi_perf_mark_start_auto(void)
-+{
-+	dsi.perf_measure_frames = 0;
-+	dsi.perf_start_time_auto = ktime_get();
-+}
-+
-+static void dsi_perf_show(const char *name)
-+{
-+	ktime_t t, setup_time, trans_time;
-+	u32 total_bytes;
-+	u32 setup_us, trans_us, total_us;
-+
-+	if (!dsi_perf)
-+		return;
-+
-+	if (dsi.update_mode == OMAP_DSS_UPDATE_DISABLED)
-+		return;
-+
-+	t = ktime_get();
-+
-+	setup_time = ktime_sub(dsi.perf_start_time, dsi.perf_setup_time);
-+	setup_us = (u32)ktime_to_us(setup_time);
-+	if (setup_us == 0)
-+		setup_us = 1;
-+
-+	trans_time = ktime_sub(t, dsi.perf_start_time);
-+	trans_us = (u32)ktime_to_us(trans_time);
-+	if (trans_us == 0)
-+		trans_us = 1;
-+
-+	total_us = setup_us + trans_us;
-+
-+	total_bytes = dsi.active_update_region.w *
-+		dsi.active_update_region.h *
-+		dsi.active_update_region.device->ctrl.pixel_size / 8;
-+
-+	if (dsi.update_mode == OMAP_DSS_UPDATE_AUTO) {
-+		static u32 s_total_trans_us, s_total_setup_us;
-+		static u32 s_min_trans_us = 0xffffffff, s_min_setup_us;
-+		static u32 s_max_trans_us, s_max_setup_us;
-+		const int numframes = 100;
-+		ktime_t total_time_auto;
-+		u32 total_time_auto_us;
-+
-+		dsi.perf_measure_frames++;
-+
-+		if (setup_us < s_min_setup_us)
-+			s_min_setup_us = setup_us;
-+
-+		if (setup_us > s_max_setup_us)
-+			s_max_setup_us = setup_us;
-+
-+		s_total_setup_us += setup_us;
-+
-+		if (trans_us < s_min_trans_us)
-+			s_min_trans_us = trans_us;
-+
-+		if (trans_us > s_max_trans_us)
-+			s_max_trans_us = trans_us;
-+
-+		s_total_trans_us += trans_us;
-+
-+		if (dsi.perf_measure_frames < numframes)
-+			return;
-+
-+		total_time_auto = ktime_sub(t, dsi.perf_start_time_auto);
-+		total_time_auto_us = (u32)ktime_to_us(total_time_auto);
-+
-+		printk(KERN_INFO "DSI(%s): %u fps, setup %u/%u/%u, "
-+				"trans %u/%u/%u\n",
-+				name,
-+				1000 * 1000 * numframes / total_time_auto_us,
-+				s_min_setup_us,
-+				s_max_setup_us,
-+				s_total_setup_us / numframes,
-+				s_min_trans_us,
-+				s_max_trans_us,
-+				s_total_trans_us / numframes);
-+
-+		s_total_setup_us = 0;
-+		s_min_setup_us = 0xffffffff;
-+		s_max_setup_us = 0;
-+		s_total_trans_us = 0;
-+		s_min_trans_us = 0xffffffff;
-+		s_max_trans_us = 0;
-+		dsi_perf_mark_start_auto();
-+	} else {
-+		printk(KERN_INFO "DSI(%s): %u us + %u us = %u us (%uHz), "
-+				"%u bytes, %u kbytes/sec\n",
-+				name,
-+				setup_us,
-+				trans_us,
-+				total_us,
-+				1000*1000 / total_us,
-+				total_bytes,
-+				total_bytes * 1000 / total_us);
-+	}
-+}
-+#else
-+#define dsi_perf_mark_setup()
-+#define dsi_perf_mark_start()
-+#define dsi_perf_mark_start_auto()
-+#define dsi_perf_show(x)
-+#endif
-+
-+static void print_irq_status(u32 status)
-+{
-+#ifndef VERBOSE_IRQ
-+	if ((status & ~DSI_IRQ_CHANNEL_MASK) == 0)
-+		return;
-+#endif
-+	printk(KERN_DEBUG "DSI IRQ: 0x%x: ", status);
-+
-+#define PIS(x) \
-+	if (status & DSI_IRQ_##x) \
-+		printk(#x " ");
-+#ifdef VERBOSE_IRQ
-+	PIS(VC0);
-+	PIS(VC1);
-+	PIS(VC2);
-+	PIS(VC3);
-+#endif
-+	PIS(WAKEUP);
-+	PIS(RESYNC);
-+	PIS(PLL_LOCK);
-+	PIS(PLL_UNLOCK);
-+	PIS(PLL_RECALL);
-+	PIS(COMPLEXIO_ERR);
-+	PIS(HS_TX_TIMEOUT);
-+	PIS(LP_RX_TIMEOUT);
-+	PIS(TE_TRIGGER);
-+	PIS(ACK_TRIGGER);
-+	PIS(SYNC_LOST);
-+	PIS(LDO_POWER_GOOD);
-+	PIS(TA_TIMEOUT);
-+#undef PIS
-+
-+	printk("\n");
-+}
-+
-+static void print_irq_status_vc(int channel, u32 status)
-+{
-+#ifndef VERBOSE_IRQ
-+	if ((status & ~DSI_VC_IRQ_PACKET_SENT) == 0)
-+		return;
-+#endif
-+	printk(KERN_DEBUG "DSI VC(%d) IRQ 0x%x: ", channel, status);
-+
-+#define PIS(x) \
-+	if (status & DSI_VC_IRQ_##x) \
-+		printk(#x " ");
-+	PIS(CS);
-+	PIS(ECC_CORR);
-+#ifdef VERBOSE_IRQ
-+	PIS(PACKET_SENT);
-+#endif
-+	PIS(FIFO_TX_OVF);
-+	PIS(FIFO_RX_OVF);
-+	PIS(BTA);
-+	PIS(ECC_NO_CORR);
-+	PIS(FIFO_TX_UDF);
-+	PIS(PP_BUSY_CHANGE);
-+#undef PIS
-+	printk("\n");
-+}
-+
-+static void print_irq_status_cio(u32 status)
-+{
-+	printk(KERN_DEBUG "DSI CIO IRQ 0x%x: ", status);
-+
-+#define PIS(x) \
-+	if (status & DSI_CIO_IRQ_##x) \
-+		printk(#x " ");
-+	PIS(ERRSYNCESC1);
-+	PIS(ERRSYNCESC2);
-+	PIS(ERRSYNCESC3);
-+	PIS(ERRESC1);
-+	PIS(ERRESC2);
-+	PIS(ERRESC3);
-+	PIS(ERRCONTROL1);
-+	PIS(ERRCONTROL2);
-+	PIS(ERRCONTROL3);
-+	PIS(STATEULPS1);
-+	PIS(STATEULPS2);
-+	PIS(STATEULPS3);
-+	PIS(ERRCONTENTIONLP0_1);
-+	PIS(ERRCONTENTIONLP1_1);
-+	PIS(ERRCONTENTIONLP0_2);
-+	PIS(ERRCONTENTIONLP1_2);
-+	PIS(ERRCONTENTIONLP0_3);
-+	PIS(ERRCONTENTIONLP1_3);
-+	PIS(ULPSACTIVENOT_ALL0);
-+	PIS(ULPSACTIVENOT_ALL1);
-+#undef PIS
-+
-+	printk("\n");
-+}
-+
-+static int debug_irq;
-+
-+/* called from dss */
-+void dsi_irq_handler(void)
-+{
-+	u32 irqstatus, vcstatus, ciostatus;
-+	int i;
-+
-+	irqstatus = dsi_read_reg(DSI_IRQSTATUS);
-+
-+	if (irqstatus & DSI_IRQ_ERROR_MASK) {
-+		DSSERR("DSI error, irqstatus %x\n", irqstatus);
-+		print_irq_status(irqstatus);
-+		spin_lock(&dsi.errors_lock);
-+		dsi.errors |= irqstatus & DSI_IRQ_ERROR_MASK;
-+		spin_unlock(&dsi.errors_lock);
-+	} else if (debug_irq) {
-+		print_irq_status(irqstatus);
++	if (pi->enabled && !ofbi->region.size) {
++		/*
++		 * This plane's memory was freed, can't enable it
++		 * until it's reallocated.
++		 */
++		r = -EINVAL;
++		goto out;
 +	}
 +
-+	for (i = 0; i < 4; ++i) {
-+		if ((irqstatus & (1<<i)) == 0)
-+			continue;
++	ovl->get_overlay_info(ovl, &info);
 +
-+		vcstatus = dsi_read_reg(DSI_VC_IRQSTATUS(i));
++	info.pos_x = pi->pos_x;
++	info.pos_y = pi->pos_y;
++	info.out_width = pi->out_width;
++	info.out_height = pi->out_height;
++	info.enabled = pi->enabled;
 +
-+		if (vcstatus & DSI_VC_IRQ_BTA)
-+			complete(&dsi.bta_completion);
++	r = ovl->set_overlay_info(ovl, &info);
++	if (r)
++		goto out;
 +
-+		if (vcstatus & DSI_VC_IRQ_ERROR_MASK) {
-+			DSSERR("DSI VC(%d) error, vc irqstatus %x\n",
-+				       i, vcstatus);
-+			print_irq_status_vc(i, vcstatus);
-+		} else if (debug_irq) {
-+			print_irq_status_vc(i, vcstatus);
-+		}
-+
-+		dsi_write_reg(DSI_VC_IRQSTATUS(i), vcstatus);
++	if (ovl->manager) {
++		r = ovl->manager->apply(ovl->manager);
++		if (r)
++			goto out;
 +	}
 +
-+	if (irqstatus & DSI_IRQ_COMPLEXIO_ERR) {
-+		ciostatus = dsi_read_reg(DSI_COMPLEXIO_IRQ_STATUS);
++	if (display) {
++		u16 w, h;
 +
-+		dsi_write_reg(DSI_COMPLEXIO_IRQ_STATUS, ciostatus);
++		if (display->sync)
++			display->sync(display);
 +
-+		DSSERR("DSI CIO error, cio irqstatus %x\n", ciostatus);
-+		print_irq_status_cio(ciostatus);
++		display->get_resolution(display, &w, &h);
++
++		if (display->update)
++			display->update(display, 0, 0, w, h);
 +	}
 +
-+	dsi_write_reg(DSI_IRQSTATUS, irqstatus & ~DSI_IRQ_CHANNEL_MASK);
-+}
-+
-+
-+static void _dsi_initialize_irq(void)
-+{
-+	u32 l;
-+	int i;
-+
-+	/* disable all interrupts */
-+	dsi_write_reg(DSI_IRQENABLE, 0);
-+	for (i = 0; i < 4; ++i)
-+		dsi_write_reg(DSI_VC_IRQENABLE(i), 0);
-+	dsi_write_reg(DSI_COMPLEXIO_IRQ_ENABLE, 0);
-+
-+	/* clear interrupt status */
-+	l = dsi_read_reg(DSI_IRQSTATUS);
-+	dsi_write_reg(DSI_IRQSTATUS, l & ~DSI_IRQ_CHANNEL_MASK);
-+
-+	for (i = 0; i < 4; ++i) {
-+		l = dsi_read_reg(DSI_VC_IRQSTATUS(i));
-+		dsi_write_reg(DSI_VC_IRQSTATUS(i), l);
-+	}
-+
-+	l = dsi_read_reg(DSI_COMPLEXIO_IRQ_STATUS);
-+	dsi_write_reg(DSI_COMPLEXIO_IRQ_STATUS, l);
-+
-+	/* enable error irqs */
-+	l = DSI_IRQ_ERROR_MASK;
-+	dsi_write_reg(DSI_IRQENABLE, l);
-+
-+	l = DSI_VC_IRQ_ERROR_MASK;
-+	for (i = 0; i < 4; ++i)
-+		dsi_write_reg(DSI_VC_IRQENABLE(i), l);
-+
-+	/* XXX zonda responds incorrectly, causing control error:
-+	   Exit from LP-ESC mode to LP11 uses wrong transition states on the
-+	   data lines LP0 and LN0. */
-+	dsi_write_reg(DSI_COMPLEXIO_IRQ_ENABLE,
-+			-1 & (~DSI_CIO_IRQ_ERRCONTROL2));
-+}
-+
-+static u32 dsi_get_errors(void)
-+{
-+	unsigned long flags;
-+	u32 e;
-+	spin_lock_irqsave(&dsi.errors_lock, flags);
-+	e = dsi.errors;
-+	dsi.errors = 0;
-+	spin_unlock_irqrestore(&dsi.errors_lock, flags);
-+	return e;
-+}
-+
-+static void dsi_vc_enable_bta_irq(int channel)
-+{
-+	u32 l;
-+
-+	dsi_write_reg(DSI_VC_IRQSTATUS(channel), DSI_VC_IRQ_BTA);
-+
-+	l = dsi_read_reg(DSI_VC_IRQENABLE(channel));
-+	l |= DSI_VC_IRQ_BTA;
-+	dsi_write_reg(DSI_VC_IRQENABLE(channel), l);
-+}
-+
-+static void dsi_vc_disable_bta_irq(int channel)
-+{
-+	u32 l;
-+
-+	l = dsi_read_reg(DSI_VC_IRQENABLE(channel));
-+	l &= ~DSI_VC_IRQ_BTA;
-+	dsi_write_reg(DSI_VC_IRQENABLE(channel), l);
-+}
-+
-+/* DSI func clock. this could also be DSI2_PLL_FCLK */
-+static inline void enable_clocks(bool enable)
-+{
-+	if (enable)
-+		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+	else
-+		dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+}
-+
-+/* source clock for DSI PLL. this could also be PCLKFREE */
-+static inline void dsi_enable_pll_clock(bool enable)
-+{
-+	if (enable)
-+		dss_clk_enable(DSS_CLK_FCK2);
-+	else
-+		dss_clk_disable(DSS_CLK_FCK2);
-+
-+	if (enable && dsi.pll_locked) {
-+		if (wait_for_bit_change(DSI_PLL_STATUS, 1, 1) != 1)
-+			DSSERR("cannot lock PLL when enabling clocks\n");
-+	}
-+}
-+
-+#ifdef DEBUG
-+static void _dsi_print_reset_status(void)
-+{
-+	u32 l;
-+
-+	if (!dss_debug)
-+		return;
-+
-+	/* A dummy read using the SCP interface to any DSIPHY register is
-+	 * required after DSIPHY reset to complete the reset of the DSI complex
-+	 * I/O. */
-+	l = dsi_read_reg(DSI_DSIPHY_CFG5);
-+
-+	printk(KERN_DEBUG "DSI resets: ");
-+
-+	l = dsi_read_reg(DSI_PLL_STATUS);
-+	printk("PLL (%d) ", FLD_GET(l, 0, 0));
-+
-+	l = dsi_read_reg(DSI_COMPLEXIO_CFG1);
-+	printk("CIO (%d) ", FLD_GET(l, 29, 29));
-+
-+	l = dsi_read_reg(DSI_DSIPHY_CFG5);
-+	printk("PHY (%x, %d, %d, %d)\n",
-+			FLD_GET(l, 28, 26),
-+			FLD_GET(l, 29, 29),
-+			FLD_GET(l, 30, 30),
-+			FLD_GET(l, 31, 31));
-+}
-+#else
-+#define _dsi_print_reset_status()
-+#endif
-+
-+static inline int dsi_if_enable(bool enable)
-+{
-+	DSSDBG("dsi_if_enable(%d)\n", enable);
-+
-+	enable = enable ? 1 : 0;
-+	REG_FLD_MOD(DSI_CTRL, enable, 0, 0); /* IF_EN */
-+
-+	if (wait_for_bit_change(DSI_CTRL, 0, enable) != enable) {
-+			DSSERR("Failed to set dsi_if_enable to %d\n", enable);
-+			return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+static unsigned long dsi_fclk_rate(void)
-+{
-+	unsigned long r;
-+
-+	if (dss_get_dsi_clk_source() == 0) {
-+		/* DSI FCLK source is DSS1_ALWON_FCK, which is dss1_fck */
-+		r = dss_clk_get_rate(DSS_CLK_FCK1);
-+	} else {
-+		/* DSI FCLK source is DSI2_PLL_FCLK */
-+		r = dsi.dsi2_pll_fclk;
-+	}
-+
++out:
++	if (r)
++		dev_err(fbdev->dev, "setup_plane failed\n");
 +	return r;
 +}
 +
-+static int dsi_set_lp_clk_divisor(struct omap_dss_device *dssdev)
++static int omapfb_query_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
 +{
-+	unsigned n;
-+	unsigned long dsi_fclk;
-+	unsigned long lp_clk, lp_clk_req;
++	struct omapfb_info *ofbi = FB2OFB(fbi);
 +
-+	dsi_fclk = dsi_fclk_rate();
++	if (ofbi->num_overlays != 1) {
++		memset(pi, 0, sizeof(*pi));
++	} else {
++		struct omap_overlay_info *ovli;
++		struct omap_overlay *ovl;
 +
-+	lp_clk_req = dssdev->phy.dsi.lp_clk_hz;
++		ovl = ofbi->overlays[0];
++		ovli = &ovl->info;
 +
-+	for (n = 1; n < (1 << 13) - 1; ++n) {
-+		lp_clk = dsi_fclk / 2 / n;
-+		if (lp_clk <= lp_clk_req)
-+			break;
++		pi->pos_x = ovli->pos_x;
++		pi->pos_y = ovli->pos_y;
++		pi->enabled = ovli->enabled;
++		pi->channel_out = 0; /* xxx */
++		pi->mirror = 0;
++		pi->out_width = ovli->out_width;
++		pi->out_height = ovli->out_height;
 +	}
-+
-+	if (n == (1 << 13) - 1) {
-+		DSSERR("Failed to find LP_CLK_DIVISOR\n");
-+		return -EINVAL;
-+	}
-+
-+	DSSDBG("LP_CLK_DIV %u, LP_CLK %lu (req %lu)\n", n, lp_clk, lp_clk_req);
-+
-+	REG_FLD_MOD(DSI_CLK_CTRL, n, 12, 0);	/* LP_CLK_DIVISOR */
-+	if (dsi_fclk > 30*1000*1000)
-+		REG_FLD_MOD(DSI_CLK_CTRL, 1, 21, 21); /* LP_RX_SYNCHRO_ENABLE */
 +
 +	return 0;
 +}
 +
-+
-+enum dsi_pll_power_state {
-+	DSI_PLL_POWER_OFF	= 0x0,
-+	DSI_PLL_POWER_ON_HSCLK	= 0x1,
-+	DSI_PLL_POWER_ON_ALL	= 0x2,
-+	DSI_PLL_POWER_ON_DIV	= 0x3,
-+};
-+
-+static int dsi_pll_power(enum dsi_pll_power_state state)
++static int omapfb_setup_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
 +{
-+	int t = 0;
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omapfb2_mem_region *rg;
++	int r, i;
++	size_t size;
 +
-+	REG_FLD_MOD(DSI_CLK_CTRL, state, 31, 30);	/* PLL_PWR_CMD */
++	if (mi->type > OMAPFB_MEMTYPE_MAX)
++		return -EINVAL;
 +
-+	/* PLL_PWR_STATUS */
-+	while (FLD_GET(dsi_read_reg(DSI_CLK_CTRL), 29, 28) != state) {
-+		udelay(1);
-+		if (t++ > 1000) {
-+			DSSERR("Failed to set DSI PLL power mode to %d\n",
-+					state);
-+			return -ENODEV;
++	size = PAGE_ALIGN(mi->size);
++
++	rg = &ofbi->region;
++
++	for (i = 0; i < ofbi->num_overlays; i++) {
++		if (ofbi->overlays[i]->info.enabled)
++			return -EBUSY;
++	}
++
++	if (rg->size != size || rg->type != mi->type) {
++		r = omapfb_realloc_fbmem(fbi, size, mi->type);
++		if (r) {
++			dev_err(fbdev->dev, "realloc fbmem failed\n");
++			return r;
 +		}
 +	}
 +
 +	return 0;
 +}
 +
-+int dsi_pll_calc_pck(bool is_tft, unsigned long req_pck,
-+		struct dsi_clock_info *cinfo)
++static int omapfb_query_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
 +{
-+	struct dsi_clock_info cur, best;
-+	int min_fck_per_pck;
-+	int match = 0;
-+	unsigned long dss_clk_fck2;
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_mem_region *rg;
 +
-+	dss_clk_fck2 = dss_clk_get_rate(DSS_CLK_FCK2);
++	rg = &ofbi->region;
++	memset(mi, 0, sizeof(*mi));
 +
-+	if (req_pck == dsi.cache_req_pck &&
-+			dsi.cache_cinfo.clkin == dss_clk_fck2) {
-+		DSSDBG("DSI clock info found from cache\n");
-+		*cinfo = dsi.cache_cinfo;
++	mi->size = rg->size;
++	mi->type = rg->type;
++
++	return 0;
++}
++
++static int omapfb_update_window(struct fb_info *fbi,
++		u32 x, u32 y, u32 w, u32 h)
++{
++	struct omap_dss_device *display = fb2display(fbi);
++	u16 dw, dh;
++
++	if (!display)
 +		return 0;
-+	}
 +
-+	min_fck_per_pck = CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK;
-+
-+	if (min_fck_per_pck &&
-+		req_pck * min_fck_per_pck > DISPC_MAX_FCK) {
-+		DSSERR("Requested pixel clock not possible with the current "
-+				"OMAP2_DSS_MIN_FCK_PER_PCK setting. Turning "
-+				"the constraint off.\n");
-+		min_fck_per_pck = 0;
-+	}
-+
-+	DSSDBG("dsi_pll_calc\n");
-+
-+retry:
-+	memset(&best, 0, sizeof(best));
-+
-+	memset(&cur, 0, sizeof(cur));
-+	cur.clkin = dss_clk_fck2;
-+	cur.use_dss2_fck = 1;
-+	cur.highfreq = 0;
-+
-+	/* no highfreq: 0.75MHz < Fint = clkin / regn < 2.1MHz */
-+	/* highfreq: 0.75MHz < Fint = clkin / (2*regn) < 2.1MHz */
-+	/* To reduce PLL lock time, keep Fint high (around 2 MHz) */
-+	for (cur.regn = 1; cur.regn < REGN_MAX; ++cur.regn) {
-+		if (cur.highfreq == 0)
-+			cur.fint = cur.clkin / cur.regn;
-+		else
-+			cur.fint = cur.clkin / (2 * cur.regn);
-+
-+		if (cur.fint > FINT_MAX || cur.fint < FINT_MIN)
-+			continue;
-+
-+		/* DSIPHY(MHz) = (2 * regm / regn) * (clkin / (highfreq + 1)) */
-+		for (cur.regm = 1; cur.regm < REGM_MAX; ++cur.regm) {
-+			unsigned long a, b;
-+
-+			a = 2 * cur.regm * (cur.clkin/1000);
-+			b = cur.regn * (cur.highfreq + 1);
-+			cur.dsiphy = a / b * 1000;
-+
-+			if (cur.dsiphy > 1800 * 1000 * 1000)
-+				break;
-+
-+			/* DSI1_PLL_FCLK(MHz) = DSIPHY(MHz) / regm3  < 173MHz */
-+			for (cur.regm3 = 1; cur.regm3 < REGM3_MAX;
-+					++cur.regm3) {
-+				cur.dsi1_pll_fclk = cur.dsiphy / cur.regm3;
-+
-+				/* this will narrow down the search a bit,
-+				 * but still give pixclocks below what was
-+				 * requested */
-+				if (cur.dsi1_pll_fclk  < req_pck)
-+					break;
-+
-+				if (cur.dsi1_pll_fclk > DISPC_MAX_FCK)
-+					continue;
-+
-+				if (min_fck_per_pck &&
-+					cur.dsi1_pll_fclk <
-+						req_pck * min_fck_per_pck)
-+					continue;
-+
-+				match = 1;
-+
-+				find_lck_pck_divs(is_tft, req_pck,
-+						cur.dsi1_pll_fclk,
-+						&cur.lck_div,
-+						&cur.pck_div);
-+
-+				cur.lck = cur.dsi1_pll_fclk / cur.lck_div;
-+				cur.pck = cur.lck / cur.pck_div;
-+
-+				if (abs(cur.pck - req_pck) <
-+						abs(best.pck - req_pck)) {
-+					best = cur;
-+
-+					if (cur.pck == req_pck)
-+						goto found;
-+				}
-+			}
-+		}
-+	}
-+found:
-+	if (!match) {
-+		if (min_fck_per_pck) {
-+			DSSERR("Could not find suitable clock settings.\n"
-+					"Turning FCK/PCK constraint off and"
-+					"trying again.\n");
-+			min_fck_per_pck = 0;
-+			goto retry;
-+		}
-+
-+		DSSERR("Could not find suitable clock settings.\n");
-+
-+		return -EINVAL;
-+	}
-+
-+	/* DSI2_PLL_FCLK (regm4) is not used. Set it to something sane. */
-+	best.regm4 = best.dsiphy / 48000000;
-+	if (best.regm4 > REGM4_MAX)
-+		best.regm4 = REGM4_MAX;
-+	else if (best.regm4 == 0)
-+		best.regm4 = 1;
-+	best.dsi2_pll_fclk = best.dsiphy / best.regm4;
-+
-+	if (cinfo)
-+		*cinfo = best;
-+
-+	dsi.cache_req_pck = req_pck;
-+	dsi.cache_clk_freq = 0;
-+	dsi.cache_cinfo = best;
-+
-+	return 0;
-+}
-+
-+static int dsi_pll_calc_ddrfreq(unsigned long clk_freq,
-+		struct dsi_clock_info *cinfo)
-+{
-+	struct dsi_clock_info cur, best;
-+	const bool use_dss2_fck = 1;
-+	unsigned long datafreq;
-+	unsigned long dss_clk_fck2;
-+
-+	DSSDBG("dsi_pll_calc_ddrfreq\n");
-+
-+	dss_clk_fck2 = dss_clk_get_rate(DSS_CLK_FCK2);
-+
-+	if (clk_freq == dsi.cache_clk_freq &&
-+			dsi.cache_cinfo.clkin == dss_clk_fck2) {
-+		DSSDBG("DSI clock info found from cache\n");
-+		*cinfo = dsi.cache_cinfo;
++	if (w == 0 || h == 0)
 +		return 0;
-+	}
 +
-+	datafreq = clk_freq * 4;
++	display->get_resolution(display, &dw, &dh);
 +
-+	memset(&best, 0, sizeof(best));
-+
-+	memset(&cur, 0, sizeof(cur));
-+	cur.use_dss2_fck = use_dss2_fck;
-+	if (use_dss2_fck) {
-+		cur.clkin = dss_clk_fck2;
-+		cur.highfreq = 0;
-+	} else {
-+		cur.clkin = dispc_pclk_rate();
-+		if (cur.clkin < 32000000)
-+			cur.highfreq = 0;
-+		else
-+			cur.highfreq = 1;
-+	}
-+
-+	/* no highfreq: 0.75MHz < Fint = clkin / regn < 2.1MHz */
-+	/* highfreq: 0.75MHz < Fint = clkin / (2*regn) < 2.1MHz */
-+	/* To reduce PLL lock time, keep Fint high (around 2 MHz) */
-+	for (cur.regn = 1; cur.regn < REGN_MAX; ++cur.regn) {
-+		if (cur.highfreq == 0)
-+			cur.fint = cur.clkin / cur.regn;
-+		else
-+			cur.fint = cur.clkin / (2 * cur.regn);
-+
-+		if (cur.fint > FINT_MAX || cur.fint < FINT_MIN)
-+			continue;
-+
-+		/* DSIPHY(MHz) = (2 * regm / regn) * (clkin / (highfreq + 1)) */
-+		for (cur.regm = 1; cur.regm < REGM_MAX; ++cur.regm) {
-+			unsigned long a, b;
-+
-+			a = 2 * cur.regm * (cur.clkin/1000);
-+			b = cur.regn * (cur.highfreq + 1);
-+			cur.dsiphy = a / b * 1000;
-+
-+			if (cur.dsiphy > 1800 * 1000 * 1000)
-+				break;
-+
-+			if (abs(cur.dsiphy - datafreq) <
-+					abs(best.dsiphy - datafreq)) {
-+				best = cur;
-+				/* DSSDBG("best %ld\n", best.dsiphy); */
-+			}
-+
-+			if (cur.dsiphy == datafreq)
-+				goto found;
-+		}
-+	}
-+found:
-+	/* DSI1_PLL_FCLK (regm3) is not used. Set it to something sane. */
-+	best.regm3 = best.dsiphy / 48000000;
-+	if (best.regm3 > REGM3_MAX)
-+		best.regm3 = REGM3_MAX;
-+	else if (best.regm3 == 0)
-+		best.regm3 = 1;
-+	best.dsi1_pll_fclk = best.dsiphy / best.regm3;
-+
-+	/* DSI2_PLL_FCLK (regm4) is not used. Set it to something sane. */
-+	best.regm4 = best.dsiphy / 48000000;
-+	if (best.regm4 > REGM4_MAX)
-+		best.regm4 = REGM4_MAX;
-+	else if (best.regm4 == 0)
-+		best.regm4 = 1;
-+	best.dsi2_pll_fclk = best.dsiphy / best.regm4;
-+
-+	if (cinfo)
-+		*cinfo = best;
-+
-+	dsi.cache_clk_freq = clk_freq;
-+	dsi.cache_req_pck = 0;
-+	dsi.cache_cinfo = best;
-+
-+	return 0;
-+}
-+
-+int dsi_pll_program(struct dsi_clock_info *cinfo)
-+{
-+	int r = 0;
-+	u32 l;
-+
-+	DSSDBG("dsi_pll_program\n");
-+
-+	dsi.dsiphy = cinfo->dsiphy;
-+	dsi.ddr_clk = dsi.dsiphy / 4;
-+	dsi.dsi1_pll_fclk = cinfo->dsi1_pll_fclk;
-+	dsi.dsi2_pll_fclk = cinfo->dsi2_pll_fclk;
-+
-+	DSSDBG("DSI Fint %ld\n", cinfo->fint);
-+
-+	DSSDBG("clkin (%s) rate %ld, highfreq %d\n",
-+			cinfo->use_dss2_fck ? "dss2_fck" : "pclkfree",
-+			cinfo->clkin,
-+			cinfo->highfreq);
-+
-+	/* DSIPHY == CLKIN4DDR */
-+	DSSDBG("DSIPHY = 2 * %d / %d * %lu / %d = %lu\n",
-+			cinfo->regm,
-+			cinfo->regn,
-+			cinfo->clkin,
-+			cinfo->highfreq + 1,
-+			cinfo->dsiphy);
-+
-+	DSSDBG("Data rate on 1 DSI lane %ld Mbps\n",
-+			dsi.dsiphy / 1000 / 1000 / 2);
-+
-+	DSSDBG("Clock lane freq %ld Hz\n", dsi.ddr_clk);
-+
-+	DSSDBG("regm3 = %d, dsi1_pll_fclk = %lu\n",
-+			cinfo->regm3, cinfo->dsi1_pll_fclk);
-+	DSSDBG("regm4 = %d, dsi2_pll_fclk = %lu\n",
-+			cinfo->regm4, cinfo->dsi2_pll_fclk);
-+
-+	REG_FLD_MOD(DSI_PLL_CONTROL, 0, 0, 0); /* DSI_PLL_AUTOMODE = manual */
-+
-+	l = dsi_read_reg(DSI_PLL_CONFIGURATION1);
-+	l = FLD_MOD(l, 1, 0, 0);		/* DSI_PLL_STOPMODE */
-+	l = FLD_MOD(l, cinfo->regn - 1, 7, 1);	/* DSI_PLL_REGN */
-+	l = FLD_MOD(l, cinfo->regm, 18, 8);	/* DSI_PLL_REGM */
-+	l = FLD_MOD(l, cinfo->regm3 - 1, 22, 19);	/* DSI_CLOCK_DIV */
-+	l = FLD_MOD(l, cinfo->regm4 - 1, 26, 23);	/* DSIPROTO_CLOCK_DIV */
-+	dsi_write_reg(DSI_PLL_CONFIGURATION1, l);
-+
-+	l = dsi_read_reg(DSI_PLL_CONFIGURATION2);
-+	l = FLD_MOD(l, 7, 4, 1);		/* DSI_PLL_FREQSEL */
-+	/* DSI_PLL_CLKSEL */
-+	l = FLD_MOD(l, cinfo->use_dss2_fck ? 0 : 1, 11, 11);
-+	l = FLD_MOD(l, cinfo->highfreq, 12, 12);	/* DSI_PLL_HIGHFREQ */
-+	l = FLD_MOD(l, 1, 13, 13);		/* DSI_PLL_REFEN */
-+	l = FLD_MOD(l, 0, 14, 14);		/* DSIPHY_CLKINEN */
-+	l = FLD_MOD(l, 1, 20, 20);		/* DSI_HSDIVBYPASS */
-+	dsi_write_reg(DSI_PLL_CONFIGURATION2, l);
-+
-+	REG_FLD_MOD(DSI_PLL_GO, 1, 0, 0); /* DSI_PLL_GO */
-+
-+	if (wait_for_bit_change(DSI_PLL_GO, 0, 0) != 0) {
-+		DSSERR("dsi pll go bit not going down.\n");
-+		r = -EIO;
-+		goto err;
-+	}
-+
-+	if (wait_for_bit_change(DSI_PLL_STATUS, 1, 1) != 1) {
-+		DSSERR("cannot lock PLL\n");
-+		r = -EIO;
-+		goto err;
-+	}
-+
-+	dsi.pll_locked = 1;
-+
-+	l = dsi_read_reg(DSI_PLL_CONFIGURATION2);
-+	l = FLD_MOD(l, 0, 0, 0);	/* DSI_PLL_IDLE */
-+	l = FLD_MOD(l, 0, 5, 5);	/* DSI_PLL_PLLLPMODE */
-+	l = FLD_MOD(l, 0, 6, 6);	/* DSI_PLL_LOWCURRSTBY */
-+	l = FLD_MOD(l, 0, 7, 7);	/* DSI_PLL_TIGHTPHASELOCK */
-+	l = FLD_MOD(l, 0, 8, 8);	/* DSI_PLL_DRIFTGUARDEN */
-+	l = FLD_MOD(l, 0, 10, 9);	/* DSI_PLL_LOCKSEL */
-+	l = FLD_MOD(l, 1, 13, 13);	/* DSI_PLL_REFEN */
-+	l = FLD_MOD(l, 1, 14, 14);	/* DSIPHY_CLKINEN */
-+	l = FLD_MOD(l, 0, 15, 15);	/* DSI_BYPASSEN */
-+	l = FLD_MOD(l, 1, 16, 16);	/* DSS_CLOCK_EN */
-+	l = FLD_MOD(l, 0, 17, 17);	/* DSS_CLOCK_PWDN */
-+	l = FLD_MOD(l, 1, 18, 18);	/* DSI_PROTO_CLOCK_EN */
-+	l = FLD_MOD(l, 0, 19, 19);	/* DSI_PROTO_CLOCK_PWDN */
-+	l = FLD_MOD(l, 0, 20, 20);	/* DSI_HSDIVBYPASS */
-+	dsi_write_reg(DSI_PLL_CONFIGURATION2, l);
-+
-+	DSSDBG("PLL config done\n");
-+err:
-+	return r;
-+}
-+
-+int dsi_pll_init(bool enable_hsclk, bool enable_hsdiv)
-+{
-+	int r = 0;
-+	enum dsi_pll_power_state pwstate;
-+	struct dispc_clock_info cinfo;
-+
-+	DSSDBG("PLL init\n");
-+
-+	enable_clocks(1);
-+	dsi_enable_pll_clock(1);
-+
-+	/* XXX this should be calculated depending on the screen size,
-+	 * required framerate and DSI speed.
-+	 * For now 48MHz is enough for 864x480@60 with 360Mbps/lane
-+	 * with two lanes */
-+	r = dispc_calc_clock_div(1, 48 * 1000 * 1000, &cinfo);
-+	if (r)
-+		goto err0;
-+
-+	r = dispc_set_clock_div(&cinfo);
-+	if (r) {
-+		DSSERR("Failed to set basic clocks\n");
-+		goto err0;
-+	}
-+
-+	r = regulator_enable(dsi.vdds_dsi_reg);
-+	if (r)
-+		goto err0;
-+
-+	/* XXX PLL does not come out of reset without this... */
-+	dispc_pck_free_enable(1);
-+
-+	if (wait_for_bit_change(DSI_PLL_STATUS, 0, 1) != 1) {
-+		DSSERR("PLL not coming out of reset.\n");
-+		r = -ENODEV;
-+		goto err1;
-+	}
-+
-+	/* XXX ... but if left on, we get problems when planes do not
-+	 * fill the whole display. No idea about this */
-+	dispc_pck_free_enable(0);
-+
-+	if (enable_hsclk && enable_hsdiv)
-+		pwstate = DSI_PLL_POWER_ON_ALL;
-+	else if (enable_hsclk)
-+		pwstate = DSI_PLL_POWER_ON_HSCLK;
-+	else if (enable_hsdiv)
-+		pwstate = DSI_PLL_POWER_ON_DIV;
-+	else
-+		pwstate = DSI_PLL_POWER_OFF;
-+
-+	r = dsi_pll_power(pwstate);
-+
-+	if (r)
-+		goto err1;
-+
-+	DSSDBG("PLL init done\n");
-+
-+	return 0;
-+err1:
-+	regulator_disable(dsi.vdds_dsi_reg);
-+err0:
-+	enable_clocks(0);
-+	dsi_enable_pll_clock(0);
-+	return r;
-+}
-+
-+void dsi_pll_uninit(void)
-+{
-+	enable_clocks(0);
-+	dsi_enable_pll_clock(0);
-+
-+	dsi.pll_locked = 0;
-+	dsi_pll_power(DSI_PLL_POWER_OFF);
-+	regulator_disable(dsi.vdds_dsi_reg);
-+	DSSDBG("PLL uninit done\n");
-+}
-+
-+unsigned long dsi_get_dsi1_pll_rate(void)
-+{
-+	return dsi.dsi1_pll_fclk;
-+}
-+
-+unsigned long dsi_get_dsi2_pll_rate(void)
-+{
-+	return dsi.dsi2_pll_fclk;
-+}
-+
-+void dsi_dump_clocks(struct seq_file *s)
-+{
-+	int clksel;
-+
-+	enable_clocks(1);
-+
-+	clksel = REG_GET(DSI_PLL_CONFIGURATION2, 11, 11);
-+
-+	seq_printf(s, "- dsi -\n");
-+
-+	seq_printf(s, "dsi fclk source = %s\n",
-+			dss_get_dsi_clk_source() == 0 ?
-+			"dss1_alwon_fclk" : "dsi2_pll_fclk");
-+
-+	seq_printf(s, "dsi pll source = %s\n",
-+			clksel == 0 ?
-+			"dss2_alwon_fclk" : "pclkfree");
-+
-+	seq_printf(s,	"DSIPHY\t\t%lu\nDDR_CLK\t\t%lu\n",
-+			dsi.dsiphy, dsi.ddr_clk);
-+
-+	seq_printf(s,	"dsi1_pll_fck\t%lu (%s)\n"
-+			"dsi2_pll_fck\t%lu (%s)\n",
-+			dsi.dsi1_pll_fclk,
-+			dss_get_dispc_clk_source() == 0 ? "off" : "on",
-+			dsi.dsi2_pll_fclk,
-+			dss_get_dsi_clk_source() == 0 ? "off" : "on");
-+
-+	enable_clocks(0);
-+}
-+
-+void dsi_dump_regs(struct seq_file *s)
-+{
-+#define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, dsi_read_reg(r))
-+
-+	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+
-+	DUMPREG(DSI_REVISION);
-+	DUMPREG(DSI_SYSCONFIG);
-+	DUMPREG(DSI_SYSSTATUS);
-+	DUMPREG(DSI_IRQSTATUS);
-+	DUMPREG(DSI_IRQENABLE);
-+	DUMPREG(DSI_CTRL);
-+	DUMPREG(DSI_COMPLEXIO_CFG1);
-+	DUMPREG(DSI_COMPLEXIO_IRQ_STATUS);
-+	DUMPREG(DSI_COMPLEXIO_IRQ_ENABLE);
-+	DUMPREG(DSI_CLK_CTRL);
-+	DUMPREG(DSI_TIMING1);
-+	DUMPREG(DSI_TIMING2);
-+	DUMPREG(DSI_VM_TIMING1);
-+	DUMPREG(DSI_VM_TIMING2);
-+	DUMPREG(DSI_VM_TIMING3);
-+	DUMPREG(DSI_CLK_TIMING);
-+	DUMPREG(DSI_TX_FIFO_VC_SIZE);
-+	DUMPREG(DSI_RX_FIFO_VC_SIZE);
-+	DUMPREG(DSI_COMPLEXIO_CFG2);
-+	DUMPREG(DSI_RX_FIFO_VC_FULLNESS);
-+	DUMPREG(DSI_VM_TIMING4);
-+	DUMPREG(DSI_TX_FIFO_VC_EMPTINESS);
-+	DUMPREG(DSI_VM_TIMING5);
-+	DUMPREG(DSI_VM_TIMING6);
-+	DUMPREG(DSI_VM_TIMING7);
-+	DUMPREG(DSI_STOPCLK_TIMING);
-+
-+	DUMPREG(DSI_VC_CTRL(0));
-+	DUMPREG(DSI_VC_TE(0));
-+	DUMPREG(DSI_VC_LONG_PACKET_HEADER(0));
-+	DUMPREG(DSI_VC_LONG_PACKET_PAYLOAD(0));
-+	DUMPREG(DSI_VC_SHORT_PACKET_HEADER(0));
-+	DUMPREG(DSI_VC_IRQSTATUS(0));
-+	DUMPREG(DSI_VC_IRQENABLE(0));
-+
-+	DUMPREG(DSI_VC_CTRL(1));
-+	DUMPREG(DSI_VC_TE(1));
-+	DUMPREG(DSI_VC_LONG_PACKET_HEADER(1));
-+	DUMPREG(DSI_VC_LONG_PACKET_PAYLOAD(1));
-+	DUMPREG(DSI_VC_SHORT_PACKET_HEADER(1));
-+	DUMPREG(DSI_VC_IRQSTATUS(1));
-+	DUMPREG(DSI_VC_IRQENABLE(1));
-+
-+	DUMPREG(DSI_VC_CTRL(2));
-+	DUMPREG(DSI_VC_TE(2));
-+	DUMPREG(DSI_VC_LONG_PACKET_HEADER(2));
-+	DUMPREG(DSI_VC_LONG_PACKET_PAYLOAD(2));
-+	DUMPREG(DSI_VC_SHORT_PACKET_HEADER(2));
-+	DUMPREG(DSI_VC_IRQSTATUS(2));
-+	DUMPREG(DSI_VC_IRQENABLE(2));
-+
-+	DUMPREG(DSI_VC_CTRL(3));
-+	DUMPREG(DSI_VC_TE(3));
-+	DUMPREG(DSI_VC_LONG_PACKET_HEADER(3));
-+	DUMPREG(DSI_VC_LONG_PACKET_PAYLOAD(3));
-+	DUMPREG(DSI_VC_SHORT_PACKET_HEADER(3));
-+	DUMPREG(DSI_VC_IRQSTATUS(3));
-+	DUMPREG(DSI_VC_IRQENABLE(3));
-+
-+	DUMPREG(DSI_DSIPHY_CFG0);
-+	DUMPREG(DSI_DSIPHY_CFG1);
-+	DUMPREG(DSI_DSIPHY_CFG2);
-+	DUMPREG(DSI_DSIPHY_CFG5);
-+
-+	DUMPREG(DSI_PLL_CONTROL);
-+	DUMPREG(DSI_PLL_STATUS);
-+	DUMPREG(DSI_PLL_GO);
-+	DUMPREG(DSI_PLL_CONFIGURATION1);
-+	DUMPREG(DSI_PLL_CONFIGURATION2);
-+
-+	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+#undef DUMPREG
-+}
-+
-+enum dsi_complexio_power_state {
-+	DSI_COMPLEXIO_POWER_OFF		= 0x0,
-+	DSI_COMPLEXIO_POWER_ON		= 0x1,
-+	DSI_COMPLEXIO_POWER_ULPS	= 0x2,
-+};
-+
-+static int dsi_complexio_power(enum dsi_complexio_power_state state)
-+{
-+	int t = 0;
-+
-+	/* PWR_CMD */
-+	REG_FLD_MOD(DSI_COMPLEXIO_CFG1, state, 28, 27);
-+
-+	/* PWR_STATUS */
-+	while (FLD_GET(dsi_read_reg(DSI_COMPLEXIO_CFG1), 26, 25) != state) {
-+		udelay(1);
-+		if (t++ > 1000) {
-+			DSSERR("failed to set complexio power state to "
-+					"%d\n", state);
-+			return -ENODEV;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static void dsi_complexio_config(struct omap_dss_device *dssdev)
-+{
-+	u32 r;
-+
-+	int clk_lane   = dssdev->phy.dsi.clk_lane;
-+	int data1_lane = dssdev->phy.dsi.data1_lane;
-+	int data2_lane = dssdev->phy.dsi.data2_lane;
-+	int clk_pol    = dssdev->phy.dsi.clk_pol;
-+	int data1_pol  = dssdev->phy.dsi.data1_pol;
-+	int data2_pol  = dssdev->phy.dsi.data2_pol;
-+
-+	r = dsi_read_reg(DSI_COMPLEXIO_CFG1);
-+	r = FLD_MOD(r, clk_lane, 2, 0);
-+	r = FLD_MOD(r, clk_pol, 3, 3);
-+	r = FLD_MOD(r, data1_lane, 6, 4);
-+	r = FLD_MOD(r, data1_pol, 7, 7);
-+	r = FLD_MOD(r, data2_lane, 10, 8);
-+	r = FLD_MOD(r, data2_pol, 11, 11);
-+	dsi_write_reg(DSI_COMPLEXIO_CFG1, r);
-+
-+	/* The configuration of the DSI complex I/O (number of data lanes,
-+	   position, differential order) should not be changed while
-+	   DSS.DSI_CLK_CRTRL[20] LP_CLK_ENABLE bit is set to 1. In order for
-+	   the hardware to take into account a new configuration of the complex
-+	   I/O (done in DSS.DSI_COMPLEXIO_CFG1 register), it is recommended to
-+	   follow this sequence: First set the DSS.DSI_CTRL[0] IF_EN bit to 1,
-+	   then reset the DSS.DSI_CTRL[0] IF_EN to 0, then set
-+	   DSS.DSI_CLK_CTRL[20] LP_CLK_ENABLE to 1 and finally set again the
-+	   DSS.DSI_CTRL[0] IF_EN bit to 1. If the sequence is not followed, the
-+	   DSI complex I/O configuration is unknown. */
-+
-+	/*
-+	REG_FLD_MOD(DSI_CTRL, 1, 0, 0);
-+	REG_FLD_MOD(DSI_CTRL, 0, 0, 0);
-+	REG_FLD_MOD(DSI_CLK_CTRL, 1, 20, 20);
-+	REG_FLD_MOD(DSI_CTRL, 1, 0, 0);
-+	*/
-+}
-+
-+static inline unsigned ns2ddr(unsigned ns)
-+{
-+	/* convert time in ns to ddr ticks, rounding up */
-+	return (ns * (dsi.ddr_clk/1000/1000) + 999) / 1000;
-+}
-+
-+static inline unsigned ddr2ns(unsigned ddr)
-+{
-+	return ddr * 1000 * 1000 / (dsi.ddr_clk / 1000);
-+}
-+
-+static void dsi_complexio_timings(void)
-+{
-+	u32 r;
-+	u32 ths_prepare, ths_prepare_ths_zero, ths_trail, ths_exit;
-+	u32 tlpx_half, tclk_trail, tclk_zero;
-+	u32 tclk_prepare;
-+
-+	/* calculate timings */
-+
-+	/* 1 * DDR_CLK = 2 * UI */
-+
-+	/* min 40ns + 4*UI	max 85ns + 6*UI */
-+	ths_prepare = ns2ddr(70) + 2;
-+
-+	/* min 145ns + 10*UI */
-+	ths_prepare_ths_zero = ns2ddr(175) + 2;
-+
-+	/* min max(8*UI, 60ns+4*UI) */
-+	ths_trail = ns2ddr(60) + 5;
-+
-+	/* min 100ns */
-+	ths_exit = ns2ddr(145);
-+
-+	/* tlpx min 50n */
-+	tlpx_half = ns2ddr(25);
-+
-+	/* min 60ns */
-+	tclk_trail = ns2ddr(60) + 2;
-+
-+	/* min 38ns, max 95ns */
-+	tclk_prepare = ns2ddr(65);
-+
-+	/* min tclk-prepare + tclk-zero = 300ns */
-+	tclk_zero = ns2ddr(260);
-+
-+	DSSDBG("ths_prepare %u (%uns), ths_prepare_ths_zero %u (%uns)\n",
-+		ths_prepare, ddr2ns(ths_prepare),
-+		ths_prepare_ths_zero, ddr2ns(ths_prepare_ths_zero));
-+	DSSDBG("ths_trail %u (%uns), ths_exit %u (%uns)\n",
-+			ths_trail, ddr2ns(ths_trail),
-+			ths_exit, ddr2ns(ths_exit));
-+
-+	DSSDBG("tlpx_half %u (%uns), tclk_trail %u (%uns), "
-+			"tclk_zero %u (%uns)\n",
-+			tlpx_half, ddr2ns(tlpx_half),
-+			tclk_trail, ddr2ns(tclk_trail),
-+			tclk_zero, ddr2ns(tclk_zero));
-+	DSSDBG("tclk_prepare %u (%uns)\n",
-+			tclk_prepare, ddr2ns(tclk_prepare));
-+
-+	/* program timings */
-+
-+	r = dsi_read_reg(DSI_DSIPHY_CFG0);
-+	r = FLD_MOD(r, ths_prepare, 31, 24);
-+	r = FLD_MOD(r, ths_prepare_ths_zero, 23, 16);
-+	r = FLD_MOD(r, ths_trail, 15, 8);
-+	r = FLD_MOD(r, ths_exit, 7, 0);
-+	dsi_write_reg(DSI_DSIPHY_CFG0, r);
-+
-+	r = dsi_read_reg(DSI_DSIPHY_CFG1);
-+	r = FLD_MOD(r, tlpx_half, 22, 16);
-+	r = FLD_MOD(r, tclk_trail, 15, 8);
-+	r = FLD_MOD(r, tclk_zero, 7, 0);
-+	dsi_write_reg(DSI_DSIPHY_CFG1, r);
-+
-+	r = dsi_read_reg(DSI_DSIPHY_CFG2);
-+	r = FLD_MOD(r, tclk_prepare, 7, 0);
-+	dsi_write_reg(DSI_DSIPHY_CFG2, r);
-+}
-+
-+
-+static int dsi_complexio_init(struct omap_dss_device *dssdev)
-+{
-+	int r = 0;
-+
-+	DSSDBG("dsi_complexio_init\n");
-+
-+	/* CIO_CLK_ICG, enable L3 clk to CIO */
-+	REG_FLD_MOD(DSI_CLK_CTRL, 1, 14, 14);
-+
-+	/* A dummy read using the SCP interface to any DSIPHY register is
-+	 * required after DSIPHY reset to complete the reset of the DSI complex
-+	 * I/O. */
-+	dsi_read_reg(DSI_DSIPHY_CFG5);
-+
-+	if (wait_for_bit_change(DSI_DSIPHY_CFG5, 30, 1) != 1) {
-+		DSSERR("ComplexIO PHY not coming out of reset.\n");
-+		r = -ENODEV;
-+		goto err;
-+	}
-+
-+	dsi_complexio_config(dssdev);
-+
-+	r = dsi_complexio_power(DSI_COMPLEXIO_POWER_ON);
-+
-+	if (r)
-+		goto err;
-+
-+	if (wait_for_bit_change(DSI_COMPLEXIO_CFG1, 29, 1) != 1) {
-+		DSSERR("ComplexIO not coming out of reset.\n");
-+		r = -ENODEV;
-+		goto err;
-+	}
-+
-+	if (wait_for_bit_change(DSI_COMPLEXIO_CFG1, 21, 1) != 1) {
-+		DSSERR("ComplexIO LDO power down.\n");
-+		r = -ENODEV;
-+		goto err;
-+	}
-+
-+	dsi_complexio_timings();
-+
-+	/*
-+	   The configuration of the DSI complex I/O (number of data lanes,
-+	   position, differential order) should not be changed while
-+	   DSS.DSI_CLK_CRTRL[20] LP_CLK_ENABLE bit is set to 1. For the
-+	   hardware to recognize a new configuration of the complex I/O (done
-+	   in DSS.DSI_COMPLEXIO_CFG1 register), it is recommended to follow
-+	   this sequence: First set the DSS.DSI_CTRL[0] IF_EN bit to 1, next
-+	   reset the DSS.DSI_CTRL[0] IF_EN to 0, then set DSS.DSI_CLK_CTRL[20]
-+	   LP_CLK_ENABLE to 1, and finally, set again the DSS.DSI_CTRL[0] IF_EN
-+	   bit to 1. If the sequence is not followed, the DSi complex I/O
-+	   configuration is undetermined.
-+	   */
-+	dsi_if_enable(1);
-+	dsi_if_enable(0);
-+	REG_FLD_MOD(DSI_CLK_CTRL, 1, 20, 20); /* LP_CLK_ENABLE */
-+	dsi_if_enable(1);
-+	dsi_if_enable(0);
-+
-+	DSSDBG("CIO init done\n");
-+err:
-+	return r;
-+}
-+
-+static void dsi_complexio_uninit(void)
-+{
-+	dsi_complexio_power(DSI_COMPLEXIO_POWER_OFF);
-+}
-+
-+static int _dsi_wait_reset(void)
-+{
-+	int i = 0;
-+
-+	while (REG_GET(DSI_SYSSTATUS, 0, 0) == 0) {
-+		if (i++ > 5) {
-+			DSSERR("soft reset failed\n");
-+			return -ENODEV;
-+		}
-+		udelay(1);
-+	}
-+
-+	return 0;
-+}
-+
-+static int _dsi_reset(void)
-+{
-+	/* Soft reset */
-+	REG_FLD_MOD(DSI_SYSCONFIG, 1, 1, 1);
-+	return _dsi_wait_reset();
-+}
-+
-+
-+static void dsi_config_tx_fifo(enum fifo_size size1, enum fifo_size size2,
-+		enum fifo_size size3, enum fifo_size size4)
-+{
-+	u32 r = 0;
-+	int add = 0;
-+	int i;
-+
-+	dsi.vc[0].fifo_size = size1;
-+	dsi.vc[1].fifo_size = size2;
-+	dsi.vc[2].fifo_size = size3;
-+	dsi.vc[3].fifo_size = size4;
-+
-+	for (i = 0; i < 4; i++) {
-+		u8 v;
-+		int size = dsi.vc[i].fifo_size;
-+
-+		if (add + size > 4) {
-+			DSSERR("Illegal FIFO configuration\n");
-+			BUG();
-+		}
-+
-+		v = FLD_VAL(add, 2, 0) | FLD_VAL(size, 7, 4);
-+		r |= v << (8 * i);
-+		/*DSSDBG("TX FIFO vc %d: size %d, add %d\n", i, size, add); */
-+		add += size;
-+	}
-+
-+	dsi_write_reg(DSI_TX_FIFO_VC_SIZE, r);
-+}
-+
-+static void dsi_config_rx_fifo(enum fifo_size size1, enum fifo_size size2,
-+		enum fifo_size size3, enum fifo_size size4)
-+{
-+	u32 r = 0;
-+	int add = 0;
-+	int i;
-+
-+	dsi.vc[0].fifo_size = size1;
-+	dsi.vc[1].fifo_size = size2;
-+	dsi.vc[2].fifo_size = size3;
-+	dsi.vc[3].fifo_size = size4;
-+
-+	for (i = 0; i < 4; i++) {
-+		u8 v;
-+		int size = dsi.vc[i].fifo_size;
-+
-+		if (add + size > 4) {
-+			DSSERR("Illegal FIFO configuration\n");
-+			BUG();
-+		}
-+
-+		v = FLD_VAL(add, 2, 0) | FLD_VAL(size, 7, 4);
-+		r |= v << (8 * i);
-+		/*DSSDBG("RX FIFO vc %d: size %d, add %d\n", i, size, add); */
-+		add += size;
-+	}
-+
-+	dsi_write_reg(DSI_RX_FIFO_VC_SIZE, r);
-+}
-+
-+static int dsi_force_tx_stop_mode_io(void)
-+{
-+	u32 r;
-+
-+	r = dsi_read_reg(DSI_TIMING1);
-+	r = FLD_MOD(r, 1, 15, 15);	/* FORCE_TX_STOP_MODE_IO */
-+	dsi_write_reg(DSI_TIMING1, r);
-+
-+	if (wait_for_bit_change(DSI_TIMING1, 15, 0) != 0) {
-+		DSSERR("TX_STOP bit not going down\n");
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+static void dsi_vc_print_status(int channel)
-+{
-+	u32 r;
-+
-+	r = dsi_read_reg(DSI_VC_CTRL(channel));
-+	DSSDBG("vc %d: TX_FIFO_NOT_EMPTY %d, BTA_EN %d, VC_BUSY %d, "
-+			"TX_FIFO_FULL %d, RX_FIFO_NOT_EMPTY %d, ",
-+			channel,
-+			FLD_GET(r, 5, 5),
-+			FLD_GET(r, 6, 6),
-+			FLD_GET(r, 15, 15),
-+			FLD_GET(r, 16, 16),
-+			FLD_GET(r, 20, 20));
-+
-+	r = dsi_read_reg(DSI_TX_FIFO_VC_EMPTINESS);
-+	DSSDBG("EMPTINESS %d\n", (r >> (8 * channel)) & 0xff);
-+}
-+
-+static int dsi_vc_enable(int channel, bool enable)
-+{
-+	if (dsi.update_mode != OMAP_DSS_UPDATE_AUTO)
-+		DSSDBG("dsi_vc_enable channel %d, enable %d\n",
-+				channel, enable);
-+
-+	enable = enable ? 1 : 0;
-+
-+	REG_FLD_MOD(DSI_VC_CTRL(channel), enable, 0, 0);
-+
-+	if (wait_for_bit_change(DSI_VC_CTRL(channel), 0, enable) != enable) {
-+			DSSERR("Failed to set dsi_vc_enable to %d\n", enable);
-+			return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+static void dsi_vc_initial_config(int channel)
-+{
-+	u32 r;
-+
-+	DSSDBGF("%d", channel);
-+
-+	r = dsi_read_reg(DSI_VC_CTRL(channel));
-+
-+	if (FLD_GET(r, 15, 15)) /* VC_BUSY */
-+		DSSERR("VC(%d) busy when trying to configure it!\n",
-+				channel);
-+
-+	r = FLD_MOD(r, 0, 1, 1); /* SOURCE, 0 = L4 */
-+	r = FLD_MOD(r, 0, 2, 2); /* BTA_SHORT_EN  */
-+	r = FLD_MOD(r, 0, 3, 3); /* BTA_LONG_EN */
-+	r = FLD_MOD(r, 0, 4, 4); /* MODE, 0 = command */
-+	r = FLD_MOD(r, 1, 7, 7); /* CS_TX_EN */
-+	r = FLD_MOD(r, 1, 8, 8); /* ECC_TX_EN */
-+	r = FLD_MOD(r, 0, 9, 9); /* MODE_SPEED, high speed on/off */
-+
-+	r = FLD_MOD(r, 4, 29, 27); /* DMA_RX_REQ_NB = no dma */
-+	r = FLD_MOD(r, 4, 23, 21); /* DMA_TX_REQ_NB = no dma */
-+
-+	dsi_write_reg(DSI_VC_CTRL(channel), r);
-+
-+	dsi.vc[channel].mode = DSI_VC_MODE_L4;
-+}
-+
-+static void dsi_vc_config_l4(int channel)
-+{
-+	if (dsi.vc[channel].mode == DSI_VC_MODE_L4)
-+		return;
-+
-+	DSSDBGF("%d", channel);
-+
-+	dsi_vc_enable(channel, 0);
-+
-+	if (REG_GET(DSI_VC_CTRL(channel), 15, 15)) /* VC_BUSY */
-+		DSSERR("vc(%d) busy when trying to config for L4\n", channel);
-+
-+	REG_FLD_MOD(DSI_VC_CTRL(channel), 0, 1, 1); /* SOURCE, 0 = L4 */
-+
-+	dsi_vc_enable(channel, 1);
-+
-+	dsi.vc[channel].mode = DSI_VC_MODE_L4;
-+}
-+
-+static void dsi_vc_config_vp(int channel)
-+{
-+	if (dsi.vc[channel].mode == DSI_VC_MODE_VP)
-+		return;
-+
-+	DSSDBGF("%d", channel);
-+
-+	dsi_vc_enable(channel, 0);
-+
-+	if (REG_GET(DSI_VC_CTRL(channel), 15, 15)) /* VC_BUSY */
-+		DSSERR("vc(%d) busy when trying to config for VP\n", channel);
-+
-+	REG_FLD_MOD(DSI_VC_CTRL(channel), 1, 1, 1); /* SOURCE, 1 = video port */
-+
-+	dsi_vc_enable(channel, 1);
-+
-+	dsi.vc[channel].mode = DSI_VC_MODE_VP;
-+}
-+
-+
-+static void dsi_vc_enable_hs(int channel, bool enable)
-+{
-+	DSSDBG("dsi_vc_enable_hs(%d, %d)\n", channel, enable);
-+
-+	dsi_vc_enable(channel, 0);
-+	dsi_if_enable(0);
-+
-+	REG_FLD_MOD(DSI_VC_CTRL(channel), enable, 9, 9);
-+
-+	dsi_vc_enable(channel, 1);
-+	dsi_if_enable(1);
-+
-+	dsi_force_tx_stop_mode_io();
-+}
-+
-+static void dsi_vc_flush_long_data(int channel)
-+{
-+	while (REG_GET(DSI_VC_CTRL(channel), 20, 20)) {
-+		u32 val;
-+		val = dsi_read_reg(DSI_VC_SHORT_PACKET_HEADER(channel));
-+		DSSDBG("\t\tb1 %#02x b2 %#02x b3 %#02x b4 %#02x\n",
-+				(val >> 0) & 0xff,
-+				(val >> 8) & 0xff,
-+				(val >> 16) & 0xff,
-+				(val >> 24) & 0xff);
-+	}
-+}
-+
-+static void dsi_show_rx_ack_with_err(u16 err)
-+{
-+	DSSERR("\tACK with ERROR (%#x):\n", err);
-+	if (err & (1 << 0))
-+		DSSERR("\t\tSoT Error\n");
-+	if (err & (1 << 1))
-+		DSSERR("\t\tSoT Sync Error\n");
-+	if (err & (1 << 2))
-+		DSSERR("\t\tEoT Sync Error\n");
-+	if (err & (1 << 3))
-+		DSSERR("\t\tEscape Mode Entry Command Error\n");
-+	if (err & (1 << 4))
-+		DSSERR("\t\tLP Transmit Sync Error\n");
-+	if (err & (1 << 5))
-+		DSSERR("\t\tHS Receive Timeout Error\n");
-+	if (err & (1 << 6))
-+		DSSERR("\t\tFalse Control Error\n");
-+	if (err & (1 << 7))
-+		DSSERR("\t\t(reserved7)\n");
-+	if (err & (1 << 8))
-+		DSSERR("\t\tECC Error, single-bit (corrected)\n");
-+	if (err & (1 << 9))
-+		DSSERR("\t\tECC Error, multi-bit (not corrected)\n");
-+	if (err & (1 << 10))
-+		DSSERR("\t\tChecksum Error\n");
-+	if (err & (1 << 11))
-+		DSSERR("\t\tData type not recognized\n");
-+	if (err & (1 << 12))
-+		DSSERR("\t\tInvalid VC ID\n");
-+	if (err & (1 << 13))
-+		DSSERR("\t\tInvalid Transmission Length\n");
-+	if (err & (1 << 14))
-+		DSSERR("\t\t(reserved14)\n");
-+	if (err & (1 << 15))
-+		DSSERR("\t\tDSI Protocol Violation\n");
-+}
-+
-+static u16 dsi_vc_flush_receive_data(int channel)
-+{
-+	/* RX_FIFO_NOT_EMPTY */
-+	while (REG_GET(DSI_VC_CTRL(channel), 20, 20)) {
-+		u32 val;
-+		u8 dt;
-+		val = dsi_read_reg(DSI_VC_SHORT_PACKET_HEADER(channel));
-+		DSSDBG("\trawval %#08x\n", val);
-+		dt = FLD_GET(val, 5, 0);
-+		if (dt == DSI_DT_RX_ACK_WITH_ERR) {
-+			u16 err = FLD_GET(val, 23, 8);
-+			dsi_show_rx_ack_with_err(err);
-+		} else if (dt == DSI_DT_RX_SHORT_READ_1) {
-+			DSSDBG("\tDCS short response, 1 byte: %#x\n",
-+					FLD_GET(val, 23, 8));
-+		} else if (dt == DSI_DT_RX_SHORT_READ_2) {
-+			DSSDBG("\tDCS short response, 2 byte: %#x\n",
-+					FLD_GET(val, 23, 8));
-+		} else if (dt == DSI_DT_RX_DCS_LONG_READ) {
-+			DSSDBG("\tDCS long response, len %d\n",
-+					FLD_GET(val, 23, 8));
-+			dsi_vc_flush_long_data(channel);
-+		} else {
-+			DSSERR("\tunknown datatype 0x%02x\n", dt);
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int dsi_vc_send_bta(int channel)
-+{
-+	if (dsi.update_mode != OMAP_DSS_UPDATE_AUTO &&
-+			(dsi.debug_write || dsi.debug_read))
-+		DSSDBG("dsi_vc_send_bta %d\n", channel);
-+
-+	WARN_ON(!mutex_is_locked(&dsi.bus_lock));
-+
-+	if (REG_GET(DSI_VC_CTRL(channel), 20, 20)) {	/* RX_FIFO_NOT_EMPTY */
-+		DSSERR("rx fifo not empty when sending BTA, dumping data:\n");
-+		dsi_vc_flush_receive_data(channel);
-+	}
-+
-+	REG_FLD_MOD(DSI_VC_CTRL(channel), 1, 6, 6); /* BTA_EN */
-+
-+	return 0;
-+}
-+
-+int dsi_vc_send_bta_sync(int channel)
-+{
-+	int r = 0;
-+	u32 err;
-+
-+	INIT_COMPLETION(dsi.bta_completion);
-+
-+	dsi_vc_enable_bta_irq(channel);
-+
-+	r = dsi_vc_send_bta(channel);
-+	if (r)
-+		goto err;
-+
-+	if (wait_for_completion_timeout(&dsi.bta_completion,
-+				msecs_to_jiffies(500)) == 0) {
-+		DSSERR("Failed to receive BTA\n");
-+		r = -EIO;
-+		goto err;
-+	}
-+
-+	err = dsi_get_errors();
-+	if (err) {
-+		DSSERR("Error while sending BTA: %x\n", err);
-+		r = -EIO;
-+		goto err;
-+	}
-+err:
-+	dsi_vc_disable_bta_irq(channel);
-+
-+	return r;
-+}
-+EXPORT_SYMBOL(dsi_vc_send_bta_sync);
-+
-+static inline void dsi_vc_write_long_header(int channel, u8 data_type,
-+		u16 len, u8 ecc)
-+{
-+	u32 val;
-+	u8 data_id;
-+
-+	WARN_ON(!mutex_is_locked(&dsi.bus_lock));
-+
-+	/*data_id = data_type | channel << 6; */
-+	data_id = data_type | dsi.vc[channel].dest_per << 6;
-+
-+	val = FLD_VAL(data_id, 7, 0) | FLD_VAL(len, 23, 8) |
-+		FLD_VAL(ecc, 31, 24);
-+
-+	dsi_write_reg(DSI_VC_LONG_PACKET_HEADER(channel), val);
-+}
-+
-+static inline void dsi_vc_write_long_payload(int channel,
-+		u8 b1, u8 b2, u8 b3, u8 b4)
-+{
-+	u32 val;
-+
-+	val = b4 << 24 | b3 << 16 | b2 << 8  | b1 << 0;
-+
-+/*	DSSDBG("\twriting %02x, %02x, %02x, %02x (%#010x)\n",
-+			b1, b2, b3, b4, val); */
-+
-+	dsi_write_reg(DSI_VC_LONG_PACKET_PAYLOAD(channel), val);
-+}
-+
-+static int dsi_vc_send_long(int channel, u8 data_type, u8 *data, u16 len,
-+		u8 ecc)
-+{
-+	/*u32 val; */
-+	int i;
-+	u8 *p;
-+	int r = 0;
-+	u8 b1, b2, b3, b4;
-+
-+	if (dsi.debug_write)
-+		DSSDBG("dsi_vc_send_long, %d bytes\n", len);
-+
-+	/* len + header */
-+	if (dsi.vc[channel].fifo_size * 32 * 4 < len + 4) {
-+		DSSERR("unable to send long packet: packet too long.\n");
++	if (x + w > dw || y + h > dh)
 +		return -EINVAL;
-+	}
 +
-+	dsi_vc_config_l4(channel);
-+
-+	dsi_vc_write_long_header(channel, data_type, len, ecc);
-+
-+	/*dsi_vc_print_status(0); */
-+
-+	p = data;
-+	for (i = 0; i < len >> 2; i++) {
-+		if (dsi.debug_write)
-+			DSSDBG("\tsending full packet %d\n", i);
-+		/*dsi_vc_print_status(0); */
-+
-+		b1 = *p++;
-+		b2 = *p++;
-+		b3 = *p++;
-+		b4 = *p++;
-+
-+		dsi_vc_write_long_payload(channel, b1, b2, b3, b4);
-+	}
-+
-+	i = len % 4;
-+	if (i) {
-+		b1 = 0; b2 = 0; b3 = 0;
-+
-+		if (dsi.debug_write)
-+			DSSDBG("\tsending remainder bytes %d\n", i);
-+
-+		switch (i) {
-+		case 3:
-+			b1 = *p++;
-+			b2 = *p++;
-+			b3 = *p++;
-+			break;
-+		case 2:
-+			b1 = *p++;
-+			b2 = *p++;
-+			break;
-+		case 1:
-+			b1 = *p++;
-+			break;
-+		}
-+
-+		dsi_vc_write_long_payload(channel, b1, b2, b3, 0);
-+	}
-+
-+	return r;
-+}
-+
-+static int dsi_vc_send_short(int channel, u8 data_type, u16 data, u8 ecc)
-+{
-+	u32 r;
-+	u8 data_id;
-+
-+	WARN_ON(!mutex_is_locked(&dsi.bus_lock));
-+
-+	if (dsi.debug_write)
-+		DSSDBG("dsi_vc_send_short(ch%d, dt %#x, b1 %#x, b2 %#x)\n",
-+				channel,
-+				data_type, data & 0xff, (data >> 8) & 0xff);
-+
-+	dsi_vc_config_l4(channel);
-+
-+	if (FLD_GET(dsi_read_reg(DSI_VC_CTRL(channel)), 16, 16)) {
-+		DSSERR("ERROR FIFO FULL, aborting transfer\n");
-+		return -EINVAL;
-+	}
-+
-+	data_id = data_type | channel << 6;
-+
-+	r = (data_id << 0) | (data << 8) | (ecc << 24);
-+
-+	dsi_write_reg(DSI_VC_SHORT_PACKET_HEADER(channel), r);
++	display->update(display, x, y, w, h);
 +
 +	return 0;
 +}
 +
-+int dsi_vc_send_null(int channel)
++static int omapfb_set_update_mode(struct fb_info *fbi,
++				   enum omapfb_update_mode mode)
 +{
-+	u8 nullpkg[] = {0, 0, 0, 0};
-+	return dsi_vc_send_long(0, DSI_DT_NULL_PACKET, nullpkg, 4, 0);
-+}
-+EXPORT_SYMBOL(dsi_vc_send_null);
-+
-+int dsi_vc_dcs_write_nosync(int channel, u8 *data, int len)
-+{
++	struct omap_dss_device *display = fb2display(fbi);
++	enum omap_dss_update_mode um;
 +	int r;
 +
-+	BUG_ON(len == 0);
-+
-+	if (len == 1) {
-+		r = dsi_vc_send_short(channel, DSI_DT_DCS_SHORT_WRITE_0,
-+				data[0], 0);
-+	} else if (len == 2) {
-+		r = dsi_vc_send_short(channel, DSI_DT_DCS_SHORT_WRITE_1,
-+				data[0] | (data[1] << 8), 0);
-+	} else {
-+		/* 0x39 = DCS Long Write */
-+		r = dsi_vc_send_long(channel, DSI_DT_DCS_LONG_WRITE,
-+				data, len, 0);
-+	}
-+
-+	return r;
-+}
-+EXPORT_SYMBOL(dsi_vc_dcs_write_nosync);
-+
-+int dsi_vc_dcs_write(int channel, u8 *data, int len)
-+{
-+	int r;
-+
-+	r = dsi_vc_dcs_write_nosync(channel, data, len);
-+	if (r)
-+		return r;
-+
-+	r = dsi_vc_send_bta_sync(channel);
-+
-+	return r;
-+}
-+EXPORT_SYMBOL(dsi_vc_dcs_write);
-+
-+int dsi_vc_dcs_read(int channel, u8 dcs_cmd, u8 *buf, int buflen)
-+{
-+	u32 val;
-+	u8 dt;
-+	int r;
-+
-+	if (dsi.debug_read)
-+		DSSDBG("dsi_vc_dcs_read(ch%d, dcs_cmd %u)\n", channel, dcs_cmd);
-+
-+	r = dsi_vc_send_short(channel, DSI_DT_DCS_READ, dcs_cmd, 0);
-+	if (r)
-+		return r;
-+
-+	r = dsi_vc_send_bta_sync(channel);
-+	if (r)
-+		return r;
-+
-+	/* RX_FIFO_NOT_EMPTY */
-+	if (REG_GET(DSI_VC_CTRL(channel), 20, 20) == 0) {
-+		DSSERR("RX fifo empty when trying to read.\n");
-+		return -EIO;
-+	}
-+
-+	val = dsi_read_reg(DSI_VC_SHORT_PACKET_HEADER(channel));
-+	if (dsi.debug_read)
-+		DSSDBG("\theader: %08x\n", val);
-+	dt = FLD_GET(val, 5, 0);
-+	if (dt == DSI_DT_RX_ACK_WITH_ERR) {
-+		u16 err = FLD_GET(val, 23, 8);
-+		dsi_show_rx_ack_with_err(err);
-+		return -EIO;
-+
-+	} else if (dt == DSI_DT_RX_SHORT_READ_1) {
-+		u8 data = FLD_GET(val, 15, 8);
-+		if (dsi.debug_read)
-+			DSSDBG("\tDCS short response, 1 byte: %02x\n", data);
-+
-+		if (buflen < 1)
-+			return -EIO;
-+
-+		buf[0] = data;
-+
-+		return 1;
-+	} else if (dt == DSI_DT_RX_SHORT_READ_2) {
-+		u16 data = FLD_GET(val, 23, 8);
-+		if (dsi.debug_read)
-+			DSSDBG("\tDCS short response, 2 byte: %04x\n", data);
-+
-+		if (buflen < 2)
-+			return -EIO;
-+
-+		buf[0] = data & 0xff;
-+		buf[1] = (data >> 8) & 0xff;
-+
-+		return 2;
-+	} else if (dt == DSI_DT_RX_DCS_LONG_READ) {
-+		int w;
-+		int len = FLD_GET(val, 23, 8);
-+		if (dsi.debug_read)
-+			DSSDBG("\tDCS long response, len %d\n", len);
-+
-+		if (len > buflen)
-+			return -EIO;
-+
-+		/* two byte checksum ends the packet, not included in len */
-+		for (w = 0; w < len + 2;) {
-+			int b;
-+			val = dsi_read_reg(DSI_VC_SHORT_PACKET_HEADER(channel));
-+			if (dsi.debug_read)
-+				DSSDBG("\t\t%02x %02x %02x %02x\n",
-+						(val >> 0) & 0xff,
-+						(val >> 8) & 0xff,
-+						(val >> 16) & 0xff,
-+						(val >> 24) & 0xff);
-+
-+			for (b = 0; b < 4; ++b) {
-+				if (w < len)
-+					buf[w] = (val >> (b * 8)) & 0xff;
-+				/* we discard the 2 byte checksum */
-+				++w;
-+			}
-+		}
-+
-+		return len;
-+
-+	} else {
-+		DSSERR("\tunknown datatype 0x%02x\n", dt);
-+		return -EIO;
-+	}
-+}
-+EXPORT_SYMBOL(dsi_vc_dcs_read);
-+
-+
-+int dsi_vc_set_max_rx_packet_size(int channel, u16 len)
-+{
-+	return dsi_vc_send_short(channel, DSI_DT_SET_MAX_RET_PKG_SIZE,
-+			len, 0);
-+}
-+EXPORT_SYMBOL(dsi_vc_set_max_rx_packet_size);
-+
-+
-+static int dsi_set_lp_rx_timeout(int ns, int x4, int x16)
-+{
-+	u32 r;
-+	unsigned long fck;
-+	int ticks;
-+
-+	/* ticks in DSI_FCK */
-+
-+	fck = dsi_fclk_rate();
-+	ticks = (fck / 1000 / 1000) * ns / 1000;
-+
-+	if (ticks > 0x1fff) {
-+		DSSERR("LP_TX_TO too high\n");
++	if (!display || !display->set_update_mode)
 +		return -EINVAL;
-+	}
 +
-+	r = dsi_read_reg(DSI_TIMING2);
-+	r = FLD_MOD(r, 1, 15, 15);	/* LP_RX_TO */
-+	r = FLD_MOD(r, x16, 14, 14);	/* LP_RX_TO_X16 */
-+	r = FLD_MOD(r, x4, 13, 13);	/* LP_RX_TO_X4 */
-+	r = FLD_MOD(r, ticks, 12, 0);	/* LP_RX_COUNTER */
-+	dsi_write_reg(DSI_TIMING2, r);
-+
-+	DSSDBG("LP_RX_TO %ld ns (%#x ticks)\n",
-+			(ticks * (x16 ? 16 : 1) * (x4 ? 4 : 1) * 1000) /
-+			(fck / 1000 / 1000),
-+			ticks);
-+
-+	return 0;
-+}
-+
-+static int dsi_set_ta_timeout(int ns, int x8, int x16)
-+{
-+	u32 r;
-+	unsigned long fck;
-+	int ticks;
-+
-+	/* ticks in DSI_FCK */
-+
-+	fck = dsi_fclk_rate();
-+	ticks = (fck / 1000 / 1000) * ns / 1000;
-+
-+	if (ticks > 0x1fff) {
-+		DSSERR("TA_TO too high\n");
-+		return -EINVAL;
-+	}
-+
-+	r = dsi_read_reg(DSI_TIMING1);
-+	r = FLD_MOD(r, 1, 31, 31);	/* TA_TO */
-+	r = FLD_MOD(r, x16, 30, 30);	/* TA_TO_X16 */
-+	r = FLD_MOD(r, x8, 29, 29);	/* TA_TO_X8 */
-+	r = FLD_MOD(r, ticks, 28, 16);	/* TA_TO_COUNTER */
-+	dsi_write_reg(DSI_TIMING1, r);
-+
-+	DSSDBG("TA_TO %ld ns (%#x ticks)\n",
-+			(ticks * (x16 ? 16 : 1) * (x8 ? 8 : 1) * 1000) /
-+			(fck / 1000 / 1000),
-+			ticks);
-+
-+	return 0;
-+}
-+
-+static int dsi_set_stop_state_counter(int ns, int x4, int x16)
-+{
-+	u32 r;
-+	unsigned long fck;
-+	int ticks;
-+
-+	/* ticks in DSI_FCK */
-+
-+	fck = dsi_fclk_rate();
-+	ticks = (fck / 1000 / 1000) * ns / 1000;
-+
-+	if (ticks > 0x1fff) {
-+		DSSERR("STOP_STATE_COUNTER_IO too high\n");
-+		return -EINVAL;
-+	}
-+
-+	r = dsi_read_reg(DSI_TIMING1);
-+	r = FLD_MOD(r, 1, 15, 15);	/* FORCE_TX_STOP_MODE_IO */
-+	r = FLD_MOD(r, x16, 14, 14);	/* STOP_STATE_X16_IO */
-+	r = FLD_MOD(r, x4, 13, 13);	/* STOP_STATE_X4_IO */
-+	r = FLD_MOD(r, ticks, 12, 0);	/* STOP_STATE_COUNTER_IO */
-+	dsi_write_reg(DSI_TIMING1, r);
-+
-+	DSSDBG("STOP_STATE_COUNTER %ld ns (%#x ticks)\n",
-+			(ticks * (x16 ? 16 : 1) * (x4 ? 4 : 1) * 1000) /
-+			(fck / 1000 / 1000),
-+			ticks);
-+
-+	return 0;
-+}
-+
-+static int dsi_set_hs_tx_timeout(int ns, int x4, int x16)
-+{
-+	u32 r;
-+	unsigned long fck;
-+	int ticks;
-+
-+	/* ticks in TxByteClkHS */
-+
-+	fck = dsi.ddr_clk / 4;
-+	ticks = (fck / 1000 / 1000) * ns / 1000;
-+
-+	if (ticks > 0x1fff) {
-+		DSSERR("HS_TX_TO too high\n");
-+		return -EINVAL;
-+	}
-+
-+	r = dsi_read_reg(DSI_TIMING2);
-+	r = FLD_MOD(r, 1, 31, 31);	/* HS_TX_TO */
-+	r = FLD_MOD(r, x16, 30, 30);	/* HS_TX_TO_X16 */
-+	r = FLD_MOD(r, x4, 29, 29);	/* HS_TX_TO_X8 (4 really) */
-+	r = FLD_MOD(r, ticks, 28, 16);	/* HS_TX_TO_COUNTER */
-+	dsi_write_reg(DSI_TIMING2, r);
-+
-+	DSSDBG("HS_TX_TO %ld ns (%#x ticks)\n",
-+			(ticks * (x16 ? 16 : 1) * (x4 ? 4 : 1) * 1000) /
-+			(fck / 1000 / 1000),
-+			ticks);
-+
-+	return 0;
-+}
-+static int dsi_proto_config(struct omap_dss_device *dssdev)
-+{
-+	u32 r;
-+	int buswidth = 0;
-+	int div;
-+
-+	dsi_config_tx_fifo(DSI_FIFO_SIZE_128,
-+			DSI_FIFO_SIZE_0,
-+			DSI_FIFO_SIZE_0,
-+			DSI_FIFO_SIZE_0);
-+
-+	dsi_config_rx_fifo(DSI_FIFO_SIZE_128,
-+			DSI_FIFO_SIZE_0,
-+			DSI_FIFO_SIZE_0,
-+			DSI_FIFO_SIZE_0);
-+
-+	/* XXX what values for the timeouts? */
-+	dsi_set_stop_state_counter(1000, 0, 0);
-+
-+	dsi_set_ta_timeout(50000, 1, 1);
-+
-+	/* 3000ns * 16 */
-+	dsi_set_lp_rx_timeout(3000, 0, 1);
-+
-+	/* 10000ns * 4 */
-+	dsi_set_hs_tx_timeout(10000, 1, 0);
-+
-+	switch (dssdev->ctrl.pixel_size) {
-+	case 16:
-+		buswidth = 0;
++	switch (mode) {
++	case OMAPFB_UPDATE_DISABLED:
++		um = OMAP_DSS_UPDATE_DISABLED;
 +		break;
-+	case 18:
-+		buswidth = 1;
++
++	case OMAPFB_AUTO_UPDATE:
++		um = OMAP_DSS_UPDATE_AUTO;
 +		break;
-+	case 24:
-+		buswidth = 2;
++
++	case OMAPFB_MANUAL_UPDATE:
++		um = OMAP_DSS_UPDATE_MANUAL;
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	r = display->set_update_mode(display, um);
++
++	return r;
++}
++
++static int omapfb_get_update_mode(struct fb_info *fbi,
++		enum omapfb_update_mode *mode)
++{
++	struct omap_dss_device *display = fb2display(fbi);
++	enum omap_dss_update_mode m;
++
++	if (!display || !display->get_update_mode)
++		return -EINVAL;
++
++	m = display->get_update_mode(display);
++
++	switch (m) {
++	case OMAP_DSS_UPDATE_DISABLED:
++		*mode = OMAPFB_UPDATE_DISABLED;
++		break;
++	case OMAP_DSS_UPDATE_AUTO:
++		*mode = OMAPFB_AUTO_UPDATE;
++		break;
++	case OMAP_DSS_UPDATE_MANUAL:
++		*mode = OMAPFB_MANUAL_UPDATE;
 +		break;
 +	default:
 +		BUG();
 +	}
 +
-+	r = dsi_read_reg(DSI_CTRL);
-+	r = FLD_MOD(r, 1, 1, 1);	/* CS_RX_EN */
-+	r = FLD_MOD(r, 1, 2, 2);	/* ECC_RX_EN */
-+	r = FLD_MOD(r, 1, 3, 3);	/* TX_FIFO_ARBITRATION */
-+
-+	div = dispc_lclk_rate() / dispc_pclk_rate();
-+	r = FLD_MOD(r, div == 2 ? 0 : 1, 4, 4);	/* VP_CLK_RATIO */
-+	r = FLD_MOD(r, buswidth, 7, 6); /* VP_DATA_BUS_WIDTH */
-+	r = FLD_MOD(r, 0, 8, 8);	/* VP_CLK_POL */
-+	r = FLD_MOD(r, 2, 13, 12);	/* LINE_BUFFER, 2 lines */
-+	r = FLD_MOD(r, 1, 14, 14);	/* TRIGGER_RESET_MODE */
-+	r = FLD_MOD(r, 1, 19, 19);	/* EOT_ENABLE */
-+	r = FLD_MOD(r, 1, 24, 24);	/* DCS_CMD_ENABLE */
-+	r = FLD_MOD(r, 0, 25, 25);	/* DCS_CMD_CODE, 1=start, 0=continue */
-+
-+	dsi_write_reg(DSI_CTRL, r);
-+
-+	dsi_vc_initial_config(0);
-+
-+	/* set all vc targets to peripheral 0 */
-+	dsi.vc[0].dest_per = 0;
-+	dsi.vc[1].dest_per = 0;
-+	dsi.vc[2].dest_per = 0;
-+	dsi.vc[3].dest_per = 0;
-+
 +	return 0;
 +}
 +
-+static void dsi_proto_timings(struct omap_dss_device *dssdev)
++/* XXX this color key handling is a hack... */
++static struct omapfb_color_key omapfb_color_keys[2];
++
++static int _omapfb_set_color_key(struct omap_overlay_manager *mgr,
++		struct omapfb_color_key *ck)
 +{
-+	unsigned tlpx, tclk_zero, tclk_prepare, tclk_trail;
-+	unsigned tclk_pre, tclk_post;
-+	unsigned ths_prepare, ths_prepare_ths_zero, ths_zero;
-+	unsigned ths_trail, ths_exit;
-+	unsigned ddr_clk_pre, ddr_clk_post;
-+	unsigned enter_hs_mode_lat, exit_hs_mode_lat;
-+	unsigned ths_eot;
-+	u32 r;
-+
-+	r = dsi_read_reg(DSI_DSIPHY_CFG0);
-+	ths_prepare = FLD_GET(r, 31, 24);
-+	ths_prepare_ths_zero = FLD_GET(r, 23, 16);
-+	ths_zero = ths_prepare_ths_zero - ths_prepare;
-+	ths_trail = FLD_GET(r, 15, 8);
-+	ths_exit = FLD_GET(r, 7, 0);
-+
-+	r = dsi_read_reg(DSI_DSIPHY_CFG1);
-+	tlpx = FLD_GET(r, 22, 16) * 2;
-+	tclk_trail = FLD_GET(r, 15, 8);
-+	tclk_zero = FLD_GET(r, 7, 0);
-+
-+	r = dsi_read_reg(DSI_DSIPHY_CFG2);
-+	tclk_prepare = FLD_GET(r, 7, 0);
-+
-+	/* min 8*UI */
-+	tclk_pre = 20;
-+	/* min 60ns + 52*UI */
-+	tclk_post = ns2ddr(60) + 26;
-+
-+	/* ths_eot is 2 for 2 datalanes and 4 for 1 datalane */
-+	if (dssdev->phy.dsi.data1_lane != 0 &&
-+			dssdev->phy.dsi.data2_lane != 0)
-+		ths_eot = 2;
-+	else
-+		ths_eot = 4;
-+
-+	ddr_clk_pre = DIV_ROUND_UP(tclk_pre + tlpx + tclk_zero + tclk_prepare,
-+			4);
-+	ddr_clk_post = DIV_ROUND_UP(tclk_post + tclk_trail, 4) + ths_eot;
-+
-+	BUG_ON(ddr_clk_pre == 0 || ddr_clk_pre > 255);
-+	BUG_ON(ddr_clk_post == 0 || ddr_clk_post > 255);
-+
-+	r = dsi_read_reg(DSI_CLK_TIMING);
-+	r = FLD_MOD(r, ddr_clk_pre, 15, 8);
-+	r = FLD_MOD(r, ddr_clk_post, 7, 0);
-+	dsi_write_reg(DSI_CLK_TIMING, r);
-+
-+	DSSDBG("ddr_clk_pre %u, ddr_clk_post %u\n",
-+			ddr_clk_pre,
-+			ddr_clk_post);
-+
-+	enter_hs_mode_lat = 1 + DIV_ROUND_UP(tlpx, 4) +
-+		DIV_ROUND_UP(ths_prepare, 4) +
-+		DIV_ROUND_UP(ths_zero + 3, 4);
-+
-+	exit_hs_mode_lat = DIV_ROUND_UP(ths_trail + ths_exit, 4) + 1 + ths_eot;
-+
-+	r = FLD_VAL(enter_hs_mode_lat, 31, 16) |
-+		FLD_VAL(exit_hs_mode_lat, 15, 0);
-+	dsi_write_reg(DSI_VM_TIMING7, r);
-+
-+	DSSDBG("enter_hs_mode_lat %u, exit_hs_mode_lat %u\n",
-+			enter_hs_mode_lat, exit_hs_mode_lat);
-+}
-+
-+
-+#define DSI_DECL_VARS \
-+	int __dsi_cb = 0; u32 __dsi_cv = 0;
-+
-+#define DSI_FLUSH(ch) \
-+	if (__dsi_cb > 0) { \
-+		/*DSSDBG("sending long packet %#010x\n", __dsi_cv);*/ \
-+		dsi_write_reg(DSI_VC_LONG_PACKET_PAYLOAD(ch), __dsi_cv); \
-+		__dsi_cb = __dsi_cv = 0; \
-+	}
-+
-+#define DSI_PUSH(ch, data) \
-+	do { \
-+		__dsi_cv |= (data) << (__dsi_cb * 8); \
-+		/*DSSDBG("cv = %#010x, cb = %d\n", __dsi_cv, __dsi_cb);*/ \
-+		if (++__dsi_cb > 3) \
-+			DSI_FLUSH(ch); \
-+	} while (0)
-+
-+static int dsi_update_screen_l4(struct omap_dss_device *dssdev,
-+			int x, int y, int w, int h)
-+{
-+	/* Note: supports only 24bit colors in 32bit container */
-+	int first = 1;
-+	int fifo_stalls = 0;
-+	int max_dsi_packet_size;
-+	int max_data_per_packet;
-+	int max_pixels_per_packet;
-+	int pixels_left;
-+	int bytespp = dssdev->ctrl.pixel_size / 8;
-+	int scr_width;
-+	u32 __iomem *data;
-+	int start_offset;
-+	int horiz_inc;
-+	int current_x;
-+	struct omap_overlay *ovl;
-+
-+	debug_irq = 0;
-+
-+	DSSDBG("dsi_update_screen_l4 (%d,%d %dx%d)\n",
-+			x, y, w, h);
-+
-+	ovl = dssdev->manager->overlays[0];
-+
-+	if (ovl->info.color_mode != OMAP_DSS_COLOR_RGB24U)
-+		return -EINVAL;
-+
-+	if (dssdev->ctrl.pixel_size != 24)
-+		return -EINVAL;
-+
-+	scr_width = ovl->info.screen_width;
-+	data = ovl->info.vaddr;
-+
-+	start_offset = scr_width * y + x;
-+	horiz_inc = scr_width - w;
-+	current_x = x;
-+
-+	/* We need header(4) + DCSCMD(1) + pixels(numpix*bytespp) bytes
-+	 * in fifo */
-+
-+	/* When using CPU, max long packet size is TX buffer size */
-+	max_dsi_packet_size = dsi.vc[0].fifo_size * 32 * 4;
-+
-+	/* we seem to get better perf if we divide the tx fifo to half,
-+	   and while the other half is being sent, we fill the other half
-+	   max_dsi_packet_size /= 2; */
-+
-+	max_data_per_packet = max_dsi_packet_size - 4 - 1;
-+
-+	max_pixels_per_packet = max_data_per_packet / bytespp;
-+
-+	DSSDBG("max_pixels_per_packet %d\n", max_pixels_per_packet);
-+
-+	pixels_left = w * h;
-+
-+	DSSDBG("total pixels %d\n", pixels_left);
-+
-+	data += start_offset;
-+
-+	while (pixels_left > 0) {
-+		/* 0x2c = write_memory_start */
-+		/* 0x3c = write_memory_continue */
-+		u8 dcs_cmd = first ? 0x2c : 0x3c;
-+		int pixels;
-+		DSI_DECL_VARS;
-+		first = 0;
-+
-+#if 1
-+		/* using fifo not empty */
-+		/* TX_FIFO_NOT_EMPTY */
-+		while (FLD_GET(dsi_read_reg(DSI_VC_CTRL(0)), 5, 5)) {
-+			udelay(1);
-+			fifo_stalls++;
-+			if (fifo_stalls > 0xfffff) {
-+				DSSERR("fifo stalls overflow, pixels left %d\n",
-+						pixels_left);
-+				dsi_if_enable(0);
-+				return -EIO;
-+			}
-+		}
-+#elif 1
-+		/* using fifo emptiness */
-+		while ((REG_GET(DSI_TX_FIFO_VC_EMPTINESS, 7, 0)+1)*4 <
-+				max_dsi_packet_size) {
-+			fifo_stalls++;
-+			if (fifo_stalls > 0xfffff) {
-+				DSSERR("fifo stalls overflow, pixels left %d\n",
-+					       pixels_left);
-+				dsi_if_enable(0);
-+				return -EIO;
-+			}
-+		}
-+#else
-+		while ((REG_GET(DSI_TX_FIFO_VC_EMPTINESS, 7, 0)+1)*4 == 0) {
-+			fifo_stalls++;
-+			if (fifo_stalls > 0xfffff) {
-+				DSSERR("fifo stalls overflow, pixels left %d\n",
-+					       pixels_left);
-+				dsi_if_enable(0);
-+				return -EIO;
-+			}
-+		}
-+#endif
-+		pixels = min(max_pixels_per_packet, pixels_left);
-+
-+		pixels_left -= pixels;
-+
-+		dsi_vc_write_long_header(0, DSI_DT_DCS_LONG_WRITE,
-+				1 + pixels * bytespp, 0);
-+
-+		DSI_PUSH(0, dcs_cmd);
-+
-+		while (pixels-- > 0) {
-+			u32 pix = __raw_readl(data++);
-+
-+			DSI_PUSH(0, (pix >> 16) & 0xff);
-+			DSI_PUSH(0, (pix >> 8) & 0xff);
-+			DSI_PUSH(0, (pix >> 0) & 0xff);
-+
-+			current_x++;
-+			if (current_x == x+w) {
-+				current_x = x;
-+				data += horiz_inc;
-+			}
-+		}
-+
-+		DSI_FLUSH(0);
-+	}
-+
-+	return 0;
-+}
-+
-+static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
-+		u16 x, u16 y, u16 w, u16 h)
-+{
-+	int bytespp = dssdev->ctrl.pixel_size / 8;
-+	int len;
-+	int total_len;
-+	int packet_payload;
-+	int packet_len;
-+	u32 l;
-+	bool use_te_trigger;
-+	const int channel = 0;
-+
-+	use_te_trigger = dsi.te_enabled && !dsi.use_ext_te;
-+
-+	if (dsi.update_mode != OMAP_DSS_UPDATE_AUTO)
-+		DSSDBG("dsi_update_screen_dispc(%d,%d %dx%d)\n",
-+				x, y, w, h);
-+
-+	len = w * h * bytespp;
-+
-+	/* XXX: one packet could be longer, I think? Line buffer is
-+	 * 1024 x 24bits, but we have to put DCS cmd there also.
-+	 * 1023 * 3 should work, but causes strange color effects. */
-+	packet_payload = min(w, (u16)1020) * bytespp;
-+
-+	packet_len = packet_payload + 1;	/* 1 byte for DCS cmd */
-+	total_len = (len / packet_payload) * packet_len;
-+
-+	if (len % packet_payload)
-+		total_len += (len % packet_payload) + 1;
-+
-+	if (0)
-+		dsi_vc_print_status(1);
-+
-+	l = FLD_VAL(total_len, 23, 0); /* TE_SIZE */
-+	dsi_write_reg(DSI_VC_TE(channel), l);
-+
-+	dsi_vc_write_long_header(channel, DSI_DT_DCS_LONG_WRITE, packet_len, 0);
-+
-+	if (use_te_trigger)
-+		l = FLD_MOD(l, 1, 30, 30); /* TE_EN */
-+	else
-+		l = FLD_MOD(l, 1, 31, 31); /* TE_START */
-+	dsi_write_reg(DSI_VC_TE(channel), l);
-+
-+	/* We put SIDLEMODE to no-idle for the duration of the transfer,
-+	 * because DSS interrupts are not capable of waking up the CPU and the
-+	 * framedone interrupt could be delayed for quite a long time. I think
-+	 * the same goes for any DSS interrupts, but for some reason I have not
-+	 * seen the problem anywhere else than here.
-+	 */
-+	dispc_disable_sidle();
-+
-+	dss_start_update(dssdev);
-+
-+	if (use_te_trigger) {
-+		/* disable LP_RX_TO, so that we can receive TE.  Time to wait
-+		 * for TE is longer than the timer allows */
-+		REG_FLD_MOD(DSI_TIMING2, 0, 15, 15); /* LP_RX_TO */
-+
-+		dsi_vc_send_bta(channel);
-+	}
-+}
-+
-+static void dsi_framedone_irq_callback(void *data, u32 mask)
-+{
-+	/* Note: We get FRAMEDONE when DISPC has finished sending pixels and
-+	 * turns itself off. However, DSI still has the pixels in its buffers,
-+	 * and is sending the data.
-+	 */
-+
-+	/* SIDLEMODE back to smart-idle */
-+	dispc_enable_sidle();
-+
-+	dsi.framedone_received = true;
-+	wake_up(&dsi.waitqueue);
-+}
-+
-+static void dsi_set_update_region(struct omap_dss_device *dssdev,
-+		u16 x, u16 y, u16 w, u16 h)
-+{
-+	spin_lock(&dsi.update_lock);
-+	if (dsi.update_region.dirty) {
-+		dsi.update_region.x = min(x, dsi.update_region.x);
-+		dsi.update_region.y = min(y, dsi.update_region.y);
-+		dsi.update_region.w = max(w, dsi.update_region.w);
-+		dsi.update_region.h = max(h, dsi.update_region.h);
-+	} else {
-+		dsi.update_region.x = x;
-+		dsi.update_region.y = y;
-+		dsi.update_region.w = w;
-+		dsi.update_region.h = h;
-+	}
-+
-+	dsi.update_region.device = dssdev;
-+	dsi.update_region.dirty = true;
-+
-+	spin_unlock(&dsi.update_lock);
-+
-+}
-+
-+static void dsi_start_auto_update(struct omap_dss_device *dssdev)
-+{
-+	u16 w, h;
-+	int i;
-+
-+	DSSDBG("starting auto update\n");
-+
-+	/* In automatic mode the overlay settings are applied like on DPI/SDI.
-+	 * Mark the overlays dirty, so that we get the overlays configured, as
-+	 * manual mode has left them in bad shape after config partia planes */
-+	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
-+		struct omap_overlay *ovl;
-+		ovl = omap_dss_get_overlay(i);
-+		if (ovl->manager == dssdev->manager)
-+			ovl->info_dirty = true;
-+	}
-+	dssdev->manager->apply(dssdev->manager);
-+
-+	dssdev->get_resolution(dssdev, &w, &h);
-+
-+	dsi_set_update_region(dssdev, 0, 0, w, h);
-+
-+	dsi_perf_mark_start_auto();
-+
-+	wake_up(&dsi.waitqueue);
-+}
-+
-+static int dsi_set_te(struct omap_dss_device *dssdev, bool enable)
-+{
-+	int r;
-+	r = dssdev->driver->enable_te(dssdev, enable);
-+	/* XXX for some reason, DSI TE breaks if we don't wait here.
-+	 * Panel bug? Needs more studying */
-+	msleep(100);
-+	return r;
-+}
-+
-+static void dsi_handle_framedone(void)
-+{
-+	int r;
-+	const int channel = 0;
-+	bool use_te_trigger;
-+
-+	use_te_trigger = dsi.te_enabled && !dsi.use_ext_te;
-+
-+	if (dsi.update_mode != OMAP_DSS_UPDATE_AUTO)
-+		DSSDBG("FRAMEDONE\n");
-+
-+	if (use_te_trigger) {
-+		/* enable LP_RX_TO again after the TE */
-+		REG_FLD_MOD(DSI_TIMING2, 1, 15, 15); /* LP_RX_TO */
-+	}
-+
-+	/* Send BTA after the frame. We need this for the TE to work, as TE
-+	 * trigger is only sent for BTAs without preceding packet. Thus we need
-+	 * to BTA after the pixel packets so that next BTA will cause TE
-+	 * trigger.
-+	 *
-+	 * This is not needed when TE is not in use, but we do it anyway to
-+	 * make sure that the transfer has been completed. It would be more
-+	 * optimal, but more complex, to wait only just before starting next
-+	 * transfer. */
-+	r = dsi_vc_send_bta_sync(channel);
-+	if (r)
-+		DSSERR("BTA after framedone failed\n");
-+
-+#ifdef CONFIG_OMAP2_DSS_FAKE_VSYNC
-+	dispc_fake_vsync_irq();
-+#endif
-+}
-+
-+static int dsi_update_thread(void *data)
-+{
-+	unsigned long timeout;
-+	struct omap_dss_device *device;
-+	u16 x, y, w, h;
-+
-+	while (1) {
-+		bool sched;
-+
-+		wait_event_interruptible(dsi.waitqueue,
-+				dsi.update_mode == OMAP_DSS_UPDATE_AUTO ||
-+				(dsi.update_mode == OMAP_DSS_UPDATE_MANUAL &&
-+				 dsi.update_region.dirty == true) ||
-+				kthread_should_stop());
-+
-+		if (kthread_should_stop())
-+			break;
-+
-+		dsi_bus_lock();
-+
-+		if (dsi.update_mode == OMAP_DSS_UPDATE_DISABLED ||
-+				kthread_should_stop()) {
-+			dsi_bus_unlock();
-+			break;
-+		}
-+
-+		dsi_perf_mark_setup();
-+
-+		if (dsi.update_region.dirty) {
-+			spin_lock(&dsi.update_lock);
-+			dsi.active_update_region = dsi.update_region;
-+			dsi.update_region.dirty = false;
-+			spin_unlock(&dsi.update_lock);
-+		}
-+
-+		device = dsi.active_update_region.device;
-+		x = dsi.active_update_region.x;
-+		y = dsi.active_update_region.y;
-+		w = dsi.active_update_region.w;
-+		h = dsi.active_update_region.h;
-+
-+		if (device->manager->caps & OMAP_DSS_OVL_MGR_CAP_DISPC) {
-+
-+			if (dsi.update_mode == OMAP_DSS_UPDATE_MANUAL) {
-+				dss_setup_partial_planes(device,
-+						&x, &y, &w, &h);
-+#if 1
-+				/* XXX there seems to be a bug in this driver
-+				 * or OMAP hardware.  Some updates with certain
-+				 * widths and x coordinates fail. These widths
-+				 * are always odd, so "fix" it here for now */
-+				if (w & 1) {
-+					u16 dw, dh;
-+					device->get_resolution(device,
-+							&dw, &dh);
-+					if (x + w == dw)
-+						x &= ~1;
-+					++w;
-+
-+					dss_setup_partial_planes(device,
-+							&x, &y, &w, &h);
-+				}
-+#endif
-+			}
-+
-+			dispc_set_lcd_size(w, h);
-+		}
-+
-+		if (dsi.active_update_region.dirty) {
-+			dsi.active_update_region.dirty = false;
-+			/* XXX TODO we don't need to send the coords, if they
-+			 * are the same that are already programmed to the
-+			 * panel. That should speed up manual update a bit */
-+			device->driver->setup_update(device, x, y, w, h);
-+		}
-+
-+		dsi_perf_mark_start();
-+
-+		if (device->manager->caps & OMAP_DSS_OVL_MGR_CAP_DISPC) {
-+			dsi_vc_config_vp(0);
-+
-+			if (dsi.te_enabled && dsi.use_ext_te)
-+				device->driver->wait_for_te(device);
-+
-+			dsi.framedone_received = false;
-+
-+			dsi_update_screen_dispc(device, x, y, w, h);
-+
-+			/* wait for framedone */
-+			timeout = msecs_to_jiffies(1000);
-+			timeout = wait_event_timeout(dsi.waitqueue,
-+					dsi.framedone_received == true,
-+					timeout);
-+
-+			if (timeout == 0) {
-+				DSSERR("framedone timeout\n");
-+				DSSERR("failed update %d,%d %dx%d\n",
-+						x, y, w, h);
-+
-+				dispc_enable_sidle();
-+				dispc_enable_lcd_out(0);
-+			} else {
-+				dsi_handle_framedone();
-+				dsi_perf_show("DISPC");
-+			}
-+		} else {
-+			dsi_update_screen_l4(device, x, y, w, h);
-+			dsi_perf_show("L4");
-+		}
-+
-+		sched = atomic_read(&dsi.bus_lock.count) < 0;
-+
-+		complete_all(&dsi.update_completion);
-+
-+		dsi_bus_unlock();
-+
-+		/* XXX We need to give others chance to get the bus lock. Is
-+		 * there a better way for this? */
-+		if (dsi.update_mode == OMAP_DSS_UPDATE_AUTO && sched)
-+			schedule_timeout_interruptible(1);
-+	}
-+
-+	DSSDBG("update thread exiting\n");
-+
-+	return 0;
-+}
-+
-+
-+
-+/* Display funcs */
-+
-+static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
-+{
++	struct omap_overlay_manager_info info;
++	enum omap_dss_trans_key_type kt;
 +	int r;
 +
-+	r = omap_dispc_register_isr(dsi_framedone_irq_callback, NULL,
-+			DISPC_IRQ_FRAMEDONE);
-+	if (r) {
-+		DSSERR("can't get FRAMEDONE irq\n");
++	mgr->get_manager_info(mgr, &info);
++
++	if (ck->key_type == OMAPFB_COLOR_KEY_DISABLED) {
++		info.trans_enabled = false;
++		omapfb_color_keys[mgr->id] = *ck;
++
++		r = mgr->set_manager_info(mgr, &info);
++		if (r)
++			return r;
++
++		r = mgr->apply(mgr);
++
 +		return r;
 +	}
 +
-+	dispc_set_lcd_display_type(OMAP_DSS_LCD_DISPLAY_TFT);
-+
-+	dispc_set_parallel_interface_mode(OMAP_DSS_PARALLELMODE_DSI);
-+	dispc_enable_fifohandcheck(1);
-+
-+	dispc_set_tft_data_lines(dssdev->ctrl.pixel_size);
-+
-+	{
-+		struct omap_video_timings timings = {
-+			.hsw		= 1,
-+			.hfp		= 1,
-+			.hbp		= 1,
-+			.vsw		= 1,
-+			.vfp		= 0,
-+			.vbp		= 0,
-+		};
-+
-+		dispc_set_lcd_timings(&timings);
++	switch (ck->key_type) {
++	case OMAPFB_COLOR_KEY_GFX_DST:
++		kt = OMAP_DSS_COLOR_KEY_GFX_DST;
++		break;
++	case OMAPFB_COLOR_KEY_VID_SRC:
++		kt = OMAP_DSS_COLOR_KEY_VID_SRC;
++		break;
++	default:
++		return -EINVAL;
 +	}
 +
-+	return 0;
++	info.default_color = ck->background;
++	info.trans_key = ck->trans_key;
++	info.trans_key_type = kt;
++	info.trans_enabled = true;
++
++	omapfb_color_keys[mgr->id] = *ck;
++
++	r = mgr->set_manager_info(mgr, &info);
++	if (r)
++		return r;
++
++	r = mgr->apply(mgr);
++
++	return r;
 +}
 +
-+static void dsi_display_uninit_dispc(struct omap_dss_device *dssdev)
++static int omapfb_set_color_key(struct fb_info *fbi,
++		struct omapfb_color_key *ck)
 +{
-+	omap_dispc_unregister_isr(dsi_framedone_irq_callback, NULL,
-+			DISPC_IRQ_FRAMEDONE);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	int r;
++	int i;
++	struct omap_overlay_manager *mgr = NULL;
++
++	omapfb_lock(fbdev);
++
++	for (i = 0; i < ofbi->num_overlays; i++) {
++		if (ofbi->overlays[i]->manager) {
++			mgr = ofbi->overlays[i]->manager;
++			break;
++		}
++	}
++
++	if (!mgr) {
++		r = -EINVAL;
++		goto err;
++	}
++
++	r = _omapfb_set_color_key(mgr, ck);
++err:
++	omapfb_unlock(fbdev);
++
++	return r;
 +}
 +
-+static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
++static int omapfb_get_color_key(struct fb_info *fbi,
++		struct omapfb_color_key *ck)
 +{
-+	struct dsi_clock_info cinfo;
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omap_overlay_manager *mgr = NULL;
++	int r = 0;
++	int i;
++
++	omapfb_lock(fbdev);
++
++	for (i = 0; i < ofbi->num_overlays; i++) {
++		if (ofbi->overlays[i]->manager) {
++			mgr = ofbi->overlays[i]->manager;
++			break;
++		}
++	}
++
++	if (!mgr) {
++		r = -EINVAL;
++		goto err;
++	}
++
++	*ck = omapfb_color_keys[mgr->id];
++err:
++	omapfb_unlock(fbdev);
++
++	return r;
++}
++
++static int omapfb_memory_read(struct fb_info *fbi,
++		struct omapfb_memory_read *mr)
++{
++	struct omap_dss_device *display = fb2display(fbi);
++	void *buf;
 +	int r;
 +
-+	_dsi_print_reset_status();
-+
-+	r = dsi_pll_init(1, 0);
-+	if (r)
-+		goto err0;
-+
-+	r = dsi_pll_calc_ddrfreq(dssdev->phy.dsi.ddr_clk_hz, &cinfo);
-+	if (r)
-+		goto err1;
-+
-+	r = dsi_pll_program(&cinfo);
-+	if (r)
-+		goto err1;
-+
-+	DSSDBG("PLL OK\n");
-+
-+	r = dsi_complexio_init(dssdev);
-+	if (r)
-+		goto err1;
-+
-+	_dsi_print_reset_status();
-+
-+	dsi_proto_timings(dssdev);
-+	dsi_set_lp_clk_divisor(dssdev);
-+
-+	if (1)
-+		_dsi_print_reset_status();
-+
-+	r = dsi_proto_config(dssdev);
-+	if (r)
-+		goto err2;
-+
-+	/* enable interface */
-+	dsi_vc_enable(0, 1);
-+	dsi_if_enable(1);
-+	dsi_force_tx_stop_mode_io();
-+
-+	if (dssdev->driver->enable) {
-+		r = dssdev->driver->enable(dssdev);
-+		if (r)
-+			goto err3;
-+	}
-+
-+	/* enable high-speed after initial config */
-+	dsi_vc_enable_hs(0, 1);
-+
-+	return 0;
-+err3:
-+	dsi_if_enable(0);
-+err2:
-+	dsi_complexio_uninit();
-+err1:
-+	dsi_pll_uninit();
-+err0:
-+	return r;
-+}
-+
-+static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev)
-+{
-+	if (dssdev->driver->disable)
-+		dssdev->driver->disable(dssdev);
-+
-+	dsi_complexio_uninit();
-+	dsi_pll_uninit();
-+}
-+
-+static int dsi_core_init(void)
-+{
-+	/* Autoidle */
-+	REG_FLD_MOD(DSI_SYSCONFIG, 1, 0, 0);
-+
-+	/* ENWAKEUP */
-+	REG_FLD_MOD(DSI_SYSCONFIG, 1, 2, 2);
-+
-+	/* SIDLEMODE smart-idle */
-+	REG_FLD_MOD(DSI_SYSCONFIG, 2, 4, 3);
-+
-+	_dsi_initialize_irq();
-+
-+	return 0;
-+}
-+
-+static int dsi_display_enable(struct omap_dss_device *dssdev)
-+{
-+	int r = 0;
-+
-+	DSSDBG("dsi_display_enable\n");
-+
-+	mutex_lock(&dsi.lock);
-+	dsi_bus_lock();
-+
-+	r = omap_dss_start_device(dssdev);
-+	if (r) {
-+		DSSERR("failed to start device\n");
-+		goto err0;
-+	}
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED) {
-+		DSSERR("dssdev already enabled\n");
-+		r = -EINVAL;
-+		goto err1;
-+	}
-+
-+	enable_clocks(1);
-+	dsi_enable_pll_clock(1);
-+
-+	r = _dsi_reset();
-+	if (r)
-+		goto err2;
-+
-+	dsi_core_init();
-+
-+	r = dsi_display_init_dispc(dssdev);
-+	if (r)
-+		goto err2;
-+
-+	r = dsi_display_init_dsi(dssdev);
-+	if (r)
-+		goto err3;
-+
-+	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+
-+	dsi.use_ext_te = dssdev->phy.dsi.ext_te;
-+	r = dsi_set_te(dssdev, dsi.te_enabled);
-+	if (r)
-+		goto err3;
-+
-+	dsi.update_mode = dsi.user_update_mode;
-+	if (dsi.update_mode == OMAP_DSS_UPDATE_AUTO)
-+		dsi_start_auto_update(dssdev);
-+
-+	dsi_bus_unlock();
-+	mutex_unlock(&dsi.lock);
-+
-+	return 0;
-+
-+err3:
-+	dsi_display_uninit_dispc(dssdev);
-+err2:
-+	enable_clocks(0);
-+	dsi_enable_pll_clock(0);
-+err1:
-+	omap_dss_stop_device(dssdev);
-+err0:
-+	dsi_bus_unlock();
-+	mutex_unlock(&dsi.lock);
-+	DSSDBG("dsi_display_enable FAILED\n");
-+	return r;
-+}
-+
-+static void dsi_display_disable(struct omap_dss_device *dssdev)
-+{
-+	DSSDBG("dsi_display_disable\n");
-+
-+	mutex_lock(&dsi.lock);
-+	dsi_bus_lock();
-+
-+	if (dssdev->state == OMAP_DSS_DISPLAY_DISABLED ||
-+			dssdev->state == OMAP_DSS_DISPLAY_SUSPENDED)
-+		goto end;
-+
-+	dsi.update_mode = OMAP_DSS_UPDATE_DISABLED;
-+	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
-+
-+	dsi_display_uninit_dispc(dssdev);
-+
-+	dsi_display_uninit_dsi(dssdev);
-+
-+	enable_clocks(0);
-+	dsi_enable_pll_clock(0);
-+
-+	omap_dss_stop_device(dssdev);
-+end:
-+	dsi_bus_unlock();
-+	mutex_unlock(&dsi.lock);
-+}
-+
-+static int dsi_display_suspend(struct omap_dss_device *dssdev)
-+{
-+	DSSDBG("dsi_display_suspend\n");
-+
-+	mutex_lock(&dsi.lock);
-+	dsi_bus_lock();
-+
-+	if (dssdev->state == OMAP_DSS_DISPLAY_DISABLED ||
-+			dssdev->state == OMAP_DSS_DISPLAY_SUSPENDED)
-+		goto end;
-+
-+	dsi.update_mode = OMAP_DSS_UPDATE_DISABLED;
-+	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
-+
-+	dsi_display_uninit_dispc(dssdev);
-+
-+	dsi_display_uninit_dsi(dssdev);
-+
-+	enable_clocks(0);
-+	dsi_enable_pll_clock(0);
-+end:
-+	dsi_bus_unlock();
-+	mutex_unlock(&dsi.lock);
-+
-+	return 0;
-+}
-+
-+static int dsi_display_resume(struct omap_dss_device *dssdev)
-+{
-+	int r;
-+
-+	DSSDBG("dsi_display_resume\n");
-+
-+	mutex_lock(&dsi.lock);
-+	dsi_bus_lock();
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_SUSPENDED) {
-+		DSSERR("dssdev not suspended\n");
-+		r = -EINVAL;
-+		goto err0;
-+	}
-+
-+	enable_clocks(1);
-+	dsi_enable_pll_clock(1);
-+
-+	r = _dsi_reset();
-+	if (r)
-+		goto err1;
-+
-+	dsi_core_init();
-+
-+	r = dsi_display_init_dispc(dssdev);
-+	if (r)
-+		goto err1;
-+
-+	r = dsi_display_init_dsi(dssdev);
-+	if (r)
-+		goto err2;
-+
-+	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+
-+	r = dsi_set_te(dssdev, dsi.te_enabled);
-+	if (r)
-+		goto err2;
-+
-+	dsi.update_mode = dsi.user_update_mode;
-+	if (dsi.update_mode == OMAP_DSS_UPDATE_AUTO)
-+		dsi_start_auto_update(dssdev);
-+
-+	dsi_bus_unlock();
-+	mutex_unlock(&dsi.lock);
-+
-+	return 0;
-+
-+err2:
-+	dsi_display_uninit_dispc(dssdev);
-+err1:
-+	enable_clocks(0);
-+	dsi_enable_pll_clock(0);
-+err0:
-+	dsi_bus_unlock();
-+	mutex_unlock(&dsi.lock);
-+	DSSDBG("dsi_display_resume FAILED\n");
-+	return r;
-+}
-+
-+static int dsi_display_update(struct omap_dss_device *dssdev,
-+			u16 x, u16 y, u16 w, u16 h)
-+{
-+	int r = 0;
-+	u16 dw, dh;
-+
-+	DSSDBG("dsi_display_update(%d,%d %dx%d)\n", x, y, w, h);
-+
-+	mutex_lock(&dsi.lock);
-+
-+	if (dsi.update_mode != OMAP_DSS_UPDATE_MANUAL)
-+		goto end;
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
-+		goto end;
-+
-+	dssdev->get_resolution(dssdev, &dw, &dh);
-+
-+	if  (x > dw || y > dh)
-+		goto end;
-+
-+	if (x + w > dw)
-+		w = dw - x;
-+
-+	if (y + h > dh)
-+		h = dh - y;
-+
-+	if (w == 0 || h == 0)
-+		goto end;
-+
-+	dsi_set_update_region(dssdev, x, y, w, h);
-+
-+	wake_up(&dsi.waitqueue);
-+
-+end:
-+	mutex_unlock(&dsi.lock);
-+
-+	return r;
-+}
-+
-+static int dsi_display_sync(struct omap_dss_device *dssdev)
-+{
-+	bool wait;
-+
-+	DSSDBG("dsi_display_sync()\n");
-+
-+	mutex_lock(&dsi.lock);
-+	dsi_bus_lock();
-+
-+	if (dsi.update_mode == OMAP_DSS_UPDATE_MANUAL &&
-+			dsi.update_region.dirty) {
-+		INIT_COMPLETION(dsi.update_completion);
-+		wait = true;
-+	} else {
-+		wait = false;
-+	}
-+
-+	dsi_bus_unlock();
-+	mutex_unlock(&dsi.lock);
-+
-+	if (wait)
-+		wait_for_completion_interruptible(&dsi.update_completion);
-+
-+	DSSDBG("dsi_display_sync() done\n");
-+	return 0;
-+}
-+
-+static int dsi_display_set_update_mode(struct omap_dss_device *dssdev,
-+		enum omap_dss_update_mode mode)
-+{
-+	DSSDBGF("%d", mode);
-+
-+	mutex_lock(&dsi.lock);
-+	dsi_bus_lock();
-+
-+	if (dsi.update_mode != mode) {
-+		dsi.user_update_mode = mode;
-+		dsi.update_mode = mode;
-+
-+		if (dssdev->state == OMAP_DSS_DISPLAY_ACTIVE &&
-+				mode == OMAP_DSS_UPDATE_AUTO)
-+			dsi_start_auto_update(dssdev);
-+	}
-+
-+	dsi_bus_unlock();
-+	mutex_unlock(&dsi.lock);
-+
-+	return 0;
-+}
-+
-+static enum omap_dss_update_mode dsi_display_get_update_mode(
-+		struct omap_dss_device *dssdev)
-+{
-+	return dsi.update_mode;
-+}
-+
-+
-+static int dsi_display_enable_te(struct omap_dss_device *dssdev, bool enable)
-+{
-+	int r = 0;
-+
-+	DSSDBGF("%d", enable);
-+
-+	if (!dssdev->driver->enable_te)
++	if (!display || !display->memory_read)
 +		return -ENOENT;
 +
-+	dsi_bus_lock();
++	if (!access_ok(VERIFY_WRITE, mr->buffer, mr->buffer_size))
++		return -EFAULT;
 +
-+	dsi.te_enabled = enable;
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
-+		goto end;
-+
-+	r = dsi_set_te(dssdev, enable);
-+end:
-+	dsi_bus_unlock();
-+
-+	return r;
-+}
-+
-+static int dsi_display_get_te(struct omap_dss_device *dssdev)
-+{
-+	return dsi.te_enabled;
-+}
-+
-+static int dsi_display_set_rotate(struct omap_dss_device *dssdev, u8 rotate)
-+{
-+
-+	DSSDBGF("%d", rotate);
-+
-+	if (!dssdev->driver->set_rotate || !dssdev->driver->get_rotate)
++	if (mr->w * mr->h * 3 > mr->buffer_size)
 +		return -EINVAL;
 +
-+	dsi_bus_lock();
-+	dssdev->driver->set_rotate(dssdev, rotate);
-+	if (dsi.update_mode == OMAP_DSS_UPDATE_AUTO) {
-+		u16 w, h;
-+		/* the display dimensions may have changed, so set a new
-+		 * update region */
-+		dssdev->get_resolution(dssdev, &w, &h);
-+		dsi_set_update_region(dssdev, 0, 0, w, h);
-+	}
-+	dsi_bus_unlock();
-+
-+	return 0;
-+}
-+
-+static u8 dsi_display_get_rotate(struct omap_dss_device *dssdev)
-+{
-+	if (!dssdev->driver->set_rotate || !dssdev->driver->get_rotate)
-+		return 0;
-+
-+	return dssdev->driver->get_rotate(dssdev);
-+}
-+
-+static int dsi_display_set_mirror(struct omap_dss_device *dssdev, bool mirror)
-+{
-+	DSSDBGF("%d", mirror);
-+
-+	if (!dssdev->driver->set_mirror || !dssdev->driver->get_mirror)
-+		return -EINVAL;
-+
-+	dsi_bus_lock();
-+	dssdev->driver->set_mirror(dssdev, mirror);
-+	dsi_bus_unlock();
-+
-+	return 0;
-+}
-+
-+static bool dsi_display_get_mirror(struct omap_dss_device *dssdev)
-+{
-+	if (!dssdev->driver->set_mirror || !dssdev->driver->get_mirror)
-+		return 0;
-+
-+	return dssdev->driver->get_mirror(dssdev);
-+}
-+
-+static int dsi_display_run_test(struct omap_dss_device *dssdev, int test_num)
-+{
-+	int r;
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
-+		return -EIO;
-+
-+	DSSDBGF("%d", test_num);
-+
-+	dsi_bus_lock();
-+
-+	/* run test first in low speed mode */
-+	dsi_vc_enable_hs(0, 0);
-+
-+	if (dssdev->driver->run_test) {
-+		r = dssdev->driver->run_test(dssdev, test_num);
-+		if (r)
-+			goto end;
-+	}
-+
-+	/* then in high speed */
-+	dsi_vc_enable_hs(0, 1);
-+
-+	if (dssdev->driver->run_test) {
-+		r = dssdev->driver->run_test(dssdev, test_num);
-+		if (r)
-+			goto end;
-+	}
-+
-+end:
-+	dsi_vc_enable_hs(0, 1);
-+
-+	dsi_bus_unlock();
-+
-+	return r;
-+}
-+
-+static int dsi_display_memory_read(struct omap_dss_device *dssdev,
-+		void *buf, size_t size,
-+		u16 x, u16 y, u16 w, u16 h)
-+{
-+	int r;
-+
-+	DSSDBGF("");
-+
-+	if (!dssdev->driver->memory_read)
-+		return -EINVAL;
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
-+		return -EIO;
-+
-+	dsi_bus_lock();
-+
-+	r = dssdev->driver->memory_read(dssdev, buf, size,
-+			x, y, w, h);
-+
-+	dsi_bus_unlock();
-+
-+	return r;
-+}
-+
-+void dsi_get_overlay_fifo_thresholds(enum omap_plane plane,
-+		u32 fifo_size, enum omap_burst_size *burst_size,
-+		u32 *fifo_low, u32 *fifo_high)
-+{
-+	unsigned burst_size_bytes;
-+
-+	*burst_size = OMAP_DSS_BURST_16x32;
-+	burst_size_bytes = 16 * 32 / 8;
-+
-+	*fifo_high = fifo_size - burst_size_bytes;
-+	*fifo_low = 0;
-+}
-+
-+int dsi_init_display(struct omap_dss_device *dssdev)
-+{
-+	DSSDBG("DSI init\n");
-+
-+	dssdev->enable = dsi_display_enable;
-+	dssdev->disable = dsi_display_disable;
-+	dssdev->suspend = dsi_display_suspend;
-+	dssdev->resume = dsi_display_resume;
-+	dssdev->update = dsi_display_update;
-+	dssdev->sync = dsi_display_sync;
-+	dssdev->set_update_mode = dsi_display_set_update_mode;
-+	dssdev->get_update_mode = dsi_display_get_update_mode;
-+	dssdev->enable_te = dsi_display_enable_te;
-+	dssdev->get_te = dsi_display_get_te;
-+
-+	dssdev->get_rotate = dsi_display_get_rotate;
-+	dssdev->set_rotate = dsi_display_set_rotate;
-+
-+	dssdev->get_mirror = dsi_display_get_mirror;
-+	dssdev->set_mirror = dsi_display_set_mirror;
-+
-+	dssdev->run_test = dsi_display_run_test;
-+	dssdev->memory_read = dsi_display_memory_read;
-+
-+	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
-+
-+	dsi.vc[0].dssdev = dssdev;
-+	dsi.vc[1].dssdev = dssdev;
-+
-+	return 0;
-+}
-+
-+int dsi_init(struct platform_device *pdev)
-+{
-+	u32 rev;
-+	struct sched_param param = {
-+		.sched_priority = MAX_USER_RT_PRIO-1
-+	};
-+
-+	spin_lock_init(&dsi.errors_lock);
-+	dsi.errors = 0;
-+
-+	/* XXX fail properly */
-+
-+	init_completion(&dsi.bta_completion);
-+	init_completion(&dsi.update_completion);
-+
-+	dsi.thread = kthread_create(dsi_update_thread, NULL, "dsi");
-+	if (IS_ERR(dsi.thread)) {
-+		DSSERR("cannot create kthread\n");
-+		return PTR_ERR(dsi.thread);
-+	}
-+	sched_setscheduler(dsi.thread, SCHED_FIFO, &param);
-+
-+	init_waitqueue_head(&dsi.waitqueue);
-+	spin_lock_init(&dsi.update_lock);
-+
-+	mutex_init(&dsi.lock);
-+	mutex_init(&dsi.bus_lock);
-+
-+	dsi.update_mode = OMAP_DSS_UPDATE_DISABLED;
-+	dsi.user_update_mode = OMAP_DSS_UPDATE_DISABLED;
-+
-+	dsi.base = ioremap(DSI_BASE, DSI_SZ_REGS);
-+	if (!dsi.base) {
-+		DSSERR("can't ioremap DSI\n");
++	buf = vmalloc(mr->buffer_size);
++	if (!buf) {
++		DBG("vmalloc failed\n");
 +		return -ENOMEM;
 +	}
 +
-+	dsi.vdds_dsi_reg = regulator_get(&pdev->dev, "vdds_dsi");
-+	if (IS_ERR(dsi.vdds_dsi_reg)) {
-+		iounmap(dsi.base);
-+		DSSERR("can't get VDDS_DSI regulator\n");
-+		return PTR_ERR(dsi.vdds_dsi_reg);
++	r = display->memory_read(display, buf, mr->buffer_size,
++			mr->x, mr->y, mr->w, mr->h);
++
++	if (r > 0) {
++		if (copy_to_user(mr->buffer, buf, mr->buffer_size))
++			r = -EFAULT;
 +	}
 +
-+	enable_clocks(1);
++	vfree(buf);
 +
-+	rev = dsi_read_reg(DSI_REVISION);
-+	printk(KERN_INFO "OMAP DSI rev %d.%d\n",
-+	       FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
++	return r;
++}
 +
-+	enable_clocks(0);
++static int omapfb_get_ovl_colormode(struct omapfb2_device *fbdev,
++			     struct omapfb_ovl_colormode *mode)
++{
++	int ovl_idx = mode->overlay_idx;
++	int mode_idx = mode->mode_idx;
++	struct omap_overlay *ovl;
++	enum omap_color_mode supported_modes;
++	struct fb_var_screeninfo var;
++	int i;
 +
-+	wake_up_process(dsi.thread);
++	if (ovl_idx >= fbdev->num_overlays)
++		return -ENODEV;
++	ovl = fbdev->overlays[ovl_idx];
++	supported_modes = ovl->supported_modes;
++
++	mode_idx = mode->mode_idx;
++
++	for (i = 0; i < sizeof(supported_modes) * 8; i++) {
++		if (!(supported_modes & (1 << i)))
++			continue;
++		/*
++		 * It's possible that the FB doesn't support a mode
++		 * that is supported by the overlay, so call the
++		 * following here.
++		 */
++		if (dss_mode_to_fb_mode(1 << i, &var) < 0)
++			continue;
++
++		mode_idx--;
++		if (mode_idx < 0)
++			break;
++	}
++
++	if (i == sizeof(supported_modes) * 8)
++		return -ENOENT;
++
++	mode->bits_per_pixel = var.bits_per_pixel;
++	mode->nonstd = var.nonstd;
++	mode->red = var.red;
++	mode->green = var.green;
++	mode->blue = var.blue;
++	mode->transp = var.transp;
 +
 +	return 0;
 +}
 +
-+void dsi_exit(void)
++static int omapfb_wait_for_go(struct fb_info *fbi)
 +{
-+	kthread_stop(dsi.thread);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	int r = 0;
++	int i;
 +
-+	regulator_put(dsi.vdds_dsi_reg);
++	for (i = 0; i < ofbi->num_overlays; ++i) {
++		struct omap_overlay *ovl = ofbi->overlays[i];
++		r = ovl->wait_for_go(ovl);
++		if (r)
++			break;
++	}
 +
-+	iounmap(dsi.base);
-+
-+	DSSDBG("omap_dsi_exit\n");
++	return r;
 +}
 +
++int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omap_dss_device *display = fb2display(fbi);
++
++	union {
++		struct omapfb_update_window_old	uwnd_o;
++		struct omapfb_update_window	uwnd;
++		struct omapfb_plane_info	plane_info;
++		struct omapfb_caps		caps;
++		struct omapfb_mem_info          mem_info;
++		struct omapfb_color_key		color_key;
++		struct omapfb_ovl_colormode	ovl_colormode;
++		enum omapfb_update_mode		update_mode;
++		int test_num;
++		struct omapfb_memory_read	memory_read;
++		struct omapfb_vram_info		vram_info;
++	} p;
++
++	int r = 0;
++
++	switch (cmd) {
++	case OMAPFB_SYNC_GFX:
++		DBG("ioctl SYNC_GFX\n");
++		if (!display || !display->sync) {
++			/* DSS1 never returns an error here, so we neither */
++			/*r = -EINVAL;*/
++			break;
++		}
++
++		r = display->sync(display);
++		break;
++
++	case OMAPFB_UPDATE_WINDOW_OLD:
++		DBG("ioctl UPDATE_WINDOW_OLD\n");
++		if (!display || !display->update) {
++			r = -EINVAL;
++			break;
++		}
++
++		if (copy_from_user(&p.uwnd_o,
++					(void __user *)arg,
++					sizeof(p.uwnd_o))) {
++			r = -EFAULT;
++			break;
++		}
++
++		r = omapfb_update_window(fbi, p.uwnd_o.x, p.uwnd_o.y,
++				p.uwnd_o.width, p.uwnd_o.height);
++		break;
++
++	case OMAPFB_UPDATE_WINDOW:
++		DBG("ioctl UPDATE_WINDOW\n");
++		if (!display || !display->update) {
++			r = -EINVAL;
++			break;
++		}
++
++		if (copy_from_user(&p.uwnd, (void __user *)arg,
++					sizeof(p.uwnd))) {
++			r = -EFAULT;
++			break;
++		}
++
++		r = omapfb_update_window(fbi, p.uwnd.x, p.uwnd.y,
++				p.uwnd.width, p.uwnd.height);
++		break;
++
++	case OMAPFB_SETUP_PLANE:
++		DBG("ioctl SETUP_PLANE\n");
++		if (copy_from_user(&p.plane_info, (void __user *)arg,
++					sizeof(p.plane_info)))
++			r = -EFAULT;
++		else
++			r = omapfb_setup_plane(fbi, &p.plane_info);
++		break;
++
++	case OMAPFB_QUERY_PLANE:
++		DBG("ioctl QUERY_PLANE\n");
++		r = omapfb_query_plane(fbi, &p.plane_info);
++		if (r < 0)
++			break;
++		if (copy_to_user((void __user *)arg, &p.plane_info,
++					sizeof(p.plane_info)))
++			r = -EFAULT;
++		break;
++
++	case OMAPFB_SETUP_MEM:
++		DBG("ioctl SETUP_MEM\n");
++		if (copy_from_user(&p.mem_info, (void __user *)arg,
++					sizeof(p.mem_info)))
++			r = -EFAULT;
++		else
++			r = omapfb_setup_mem(fbi, &p.mem_info);
++		break;
++
++	case OMAPFB_QUERY_MEM:
++		DBG("ioctl QUERY_MEM\n");
++		r = omapfb_query_mem(fbi, &p.mem_info);
++		if (r < 0)
++			break;
++		if (copy_to_user((void __user *)arg, &p.mem_info,
++					sizeof(p.mem_info)))
++			r = -EFAULT;
++		break;
++
++	case OMAPFB_GET_CAPS:
++		DBG("ioctl GET_CAPS\n");
++		if (!display) {
++			r = -EINVAL;
++			break;
++		}
++
++		memset(&p.caps, 0, sizeof(p.caps));
++		p.caps.ctrl = display->caps;
++
++		if (copy_to_user((void __user *)arg, &p.caps, sizeof(p.caps)))
++			r = -EFAULT;
++		break;
++
++	case OMAPFB_GET_OVERLAY_COLORMODE:
++		DBG("ioctl GET_OVERLAY_COLORMODE\n");
++		if (copy_from_user(&p.ovl_colormode, (void __user *)arg,
++				   sizeof(p.ovl_colormode))) {
++			r = -EFAULT;
++			break;
++		}
++		r = omapfb_get_ovl_colormode(fbdev, &p.ovl_colormode);
++		if (r < 0)
++			break;
++		if (copy_to_user((void __user *)arg, &p.ovl_colormode,
++				 sizeof(p.ovl_colormode)))
++			r = -EFAULT;
++		break;
++
++	case OMAPFB_SET_UPDATE_MODE:
++		DBG("ioctl SET_UPDATE_MODE\n");
++		if (get_user(p.update_mode, (int __user *)arg))
++			r = -EFAULT;
++		else
++			r = omapfb_set_update_mode(fbi, p.update_mode);
++		break;
++
++	case OMAPFB_GET_UPDATE_MODE:
++		DBG("ioctl GET_UPDATE_MODE\n");
++		r = omapfb_get_update_mode(fbi, &p.update_mode);
++		if (r)
++			break;
++		if (put_user(p.update_mode,
++					(enum omapfb_update_mode __user *)arg))
++			r = -EFAULT;
++		break;
++
++	case OMAPFB_SET_COLOR_KEY:
++		DBG("ioctl SET_COLOR_KEY\n");
++		if (copy_from_user(&p.color_key, (void __user *)arg,
++				   sizeof(p.color_key)))
++			r = -EFAULT;
++		else
++			r = omapfb_set_color_key(fbi, &p.color_key);
++		break;
++
++	case OMAPFB_GET_COLOR_KEY:
++		DBG("ioctl GET_COLOR_KEY\n");
++		r = omapfb_get_color_key(fbi, &p.color_key);
++		if (r)
++			break;
++		if (copy_to_user((void __user *)arg, &p.color_key,
++				 sizeof(p.color_key)))
++			r = -EFAULT;
++		break;
++
++	case OMAPFB_WAITFORVSYNC:
++		DBG("ioctl WAITFORVSYNC\n");
++		if (!display) {
++			r = -EINVAL;
++			break;
++		}
++
++		r = display->wait_vsync(display);
++		break;
++
++	case OMAPFB_WAITFORGO:
++		DBG("ioctl WAITFORGO\n");
++		if (!display) {
++			r = -EINVAL;
++			break;
++		}
++
++		r = omapfb_wait_for_go(fbi);
++		break;
++
++	/* LCD and CTRL tests do the same thing for backward
++	 * compatibility */
++	case OMAPFB_LCD_TEST:
++		DBG("ioctl LCD_TEST\n");
++		if (get_user(p.test_num, (int __user *)arg)) {
++			r = -EFAULT;
++			break;
++		}
++		if (!display || !display->run_test) {
++			r = -EINVAL;
++			break;
++		}
++
++		r = display->run_test(display, p.test_num);
++
++		break;
++
++	case OMAPFB_CTRL_TEST:
++		DBG("ioctl CTRL_TEST\n");
++		if (get_user(p.test_num, (int __user *)arg)) {
++			r = -EFAULT;
++			break;
++		}
++		if (!display || !display->run_test) {
++			r = -EINVAL;
++			break;
++		}
++
++		r = display->run_test(display, p.test_num);
++
++		break;
++
++	case OMAPFB_MEMORY_READ:
++		DBG("ioctl MEMORY_READ\n");
++
++		if (copy_from_user(&p.memory_read, (void __user *)arg,
++					sizeof(p.memory_read))) {
++			r = -EFAULT;
++			break;
++		}
++
++		r = omapfb_memory_read(fbi, &p.memory_read);
++
++		break;
++
++	case OMAPFB_GET_VRAM_INFO: {
++		unsigned long vram, free, largest;
++
++		DBG("ioctl GET_VRAM_INFO\n");
++
++		omap_vram_get_info(&vram, &free, &largest);
++		p.vram_info.total = vram;
++		p.vram_info.free = free;
++		p.vram_info.largest_free_block = largest;
++
++		if (copy_to_user((void __user *)arg, &p.vram_info,
++					sizeof(p.vram_info)))
++			r = -EFAULT;
++		break;
++	}
++
++	default:
++		dev_err(fbdev->dev, "Unknown ioctl 0x%x\n", cmd);
++		r = -EINVAL;
++	}
++
++	if (r < 0)
++		DBG("ioctl failed: %d\n", r);
++
++	return r;
++}
++
++
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+new file mode 100644
+index 0000000..7f5ec3b
+--- /dev/null
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -0,0 +1,2137 @@
++/*
++ * linux/drivers/video/omap2/omapfb-main.c
++ *
++ * Copyright (C) 2008 Nokia Corporation
++ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
++ *
++ * Some code and ideas taken from drivers/video/omap/ driver
++ * by Imre Deak.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/module.h>
++#include <linux/delay.h>
++#include <linux/fb.h>
++#include <linux/dma-mapping.h>
++#include <linux/vmalloc.h>
++#include <linux/device.h>
++#include <linux/platform_device.h>
++#include <linux/omapfb.h>
++
++#include <mach/display.h>
++#include <mach/vram.h>
++#include <mach/vrfb.h>
++
++#include "omapfb.h"
++
++#define MODULE_NAME     "omapfb"
++
++#define OMAPFB_PLANE_XRES_MIN		8
++#define OMAPFB_PLANE_YRES_MIN		8
++
++static char *def_mode;
++static char *def_vram;
++static int def_vrfb;
++static int def_rotate;
++static int def_mirror;
++
++#ifdef DEBUG
++unsigned int omapfb_debug;
++module_param_named(debug, omapfb_debug, bool, 0644);
++static unsigned int omapfb_test_pattern;
++module_param_named(test, omapfb_test_pattern, bool, 0644);
++#endif
++
++static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi);
++
++#ifdef DEBUG
++static void draw_pixel(struct fb_info *fbi, int x, int y, unsigned color)
++{
++	struct fb_var_screeninfo *var = &fbi->var;
++	struct fb_fix_screeninfo *fix = &fbi->fix;
++	void __iomem *addr = fbi->screen_base;
++	const unsigned bytespp = var->bits_per_pixel >> 3;
++	const unsigned line_len = fix->line_length / bytespp;
++
++	int r = (color >> 16) & 0xff;
++	int g = (color >> 8) & 0xff;
++	int b = (color >> 0) & 0xff;
++
++	if (var->bits_per_pixel == 16) {
++		u16 __iomem *p = (u16 __iomem *)addr;
++		p += y * line_len + x;
++
++		r = r * 32 / 256;
++		g = g * 64 / 256;
++		b = b * 32 / 256;
++
++		__raw_writew((r << 11) | (g << 5) | (b << 0), p);
++	} else if (var->bits_per_pixel == 24) {
++		u8 __iomem *p = (u8 __iomem *)addr;
++		p += (y * line_len + x) * 3;
++
++		__raw_writeb(b, p + 0);
++		__raw_writeb(g, p + 1);
++		__raw_writeb(r, p + 2);
++	} else if (var->bits_per_pixel == 32) {
++		u32 __iomem *p = (u32 __iomem *)addr;
++		p += y * line_len + x;
++		__raw_writel(color, p);
++	}
++}
++
++static void fill_fb(struct fb_info *fbi)
++{
++	struct fb_var_screeninfo *var = &fbi->var;
++	const short w = var->xres_virtual;
++	const short h = var->yres_virtual;
++	void __iomem *addr = fbi->screen_base;
++	int y, x;
++
++	if (!addr)
++		return;
++
++	DBG("fill_fb %dx%d, line_len %d bytes\n", w, h, fbi->fix.line_length);
++
++	for (y = 0; y < h; y++) {
++		for (x = 0; x < w; x++) {
++			if (x < 20 && y < 20)
++				draw_pixel(fbi, x, y, 0xffffff);
++			else if (x < 20 && (y > 20 && y < h - 20))
++				draw_pixel(fbi, x, y, 0xff);
++			else if (y < 20 && (x > 20 && x < w - 20))
++				draw_pixel(fbi, x, y, 0xff00);
++			else if (x > w - 20 && (y > 20 && y < h - 20))
++				draw_pixel(fbi, x, y, 0xff0000);
++			else if (y > h - 20 && (x > 20 && x < w - 20))
++				draw_pixel(fbi, x, y, 0xffff00);
++			else if (x == 20 || x == w - 20 ||
++					y == 20 || y == h - 20)
++				draw_pixel(fbi, x, y, 0xffffff);
++			else if (x == y || w - x == h - y)
++				draw_pixel(fbi, x, y, 0xff00ff);
++			else if (w - x == y || x == h - y)
++				draw_pixel(fbi, x, y, 0x00ffff);
++			else if (x > 20 && y > 20 && x < w - 20 && y < h - 20) {
++				int t = x * 3 / w;
++				unsigned r = 0, g = 0, b = 0;
++				unsigned c;
++				if (var->bits_per_pixel == 16) {
++					if (t == 0)
++						b = (y % 32) * 256 / 32;
++					else if (t == 1)
++						g = (y % 64) * 256 / 64;
++					else if (t == 2)
++						r = (y % 32) * 256 / 32;
++				} else {
++					if (t == 0)
++						b = (y % 256);
++					else if (t == 1)
++						g = (y % 256);
++					else if (t == 2)
++						r = (y % 256);
++				}
++				c = (r << 16) | (g << 8) | (b << 0);
++				draw_pixel(fbi, x, y, c);
++			} else {
++				draw_pixel(fbi, x, y, 0);
++			}
++		}
++	}
++}
++#endif
++
++static unsigned omapfb_get_vrfb_offset(struct omapfb_info *ofbi, int rot)
++{
++	struct vrfb *vrfb = &ofbi->region.vrfb;
++	unsigned offset;
++
++	switch (rot) {
++	case FB_ROTATE_UR:
++		offset = 0;
++		break;
++	case FB_ROTATE_CW:
++		offset = vrfb->yoffset;
++		break;
++	case FB_ROTATE_UD:
++		offset = vrfb->yoffset * OMAP_VRFB_LINE_LEN + vrfb->xoffset;
++		break;
++	case FB_ROTATE_CCW:
++		offset = vrfb->xoffset * OMAP_VRFB_LINE_LEN;
++		break;
++	default:
++		BUG();
++	}
++
++	offset *= vrfb->bytespp;
++
++	return offset;
++}
++
++static u32 omapfb_get_region_rot_paddr(struct omapfb_info *ofbi, int rot)
++{
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB) {
++		return ofbi->region.vrfb.paddr[rot]
++			+ omapfb_get_vrfb_offset(ofbi, rot);
++	} else {
++		return ofbi->region.paddr;
++	}
++}
++
++static u32 omapfb_get_region_paddr(struct omapfb_info *ofbi)
++{
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB)
++		return ofbi->region.vrfb.paddr[0];
++	else
++		return ofbi->region.paddr;
++}
++
++static void __iomem *omapfb_get_region_vaddr(struct omapfb_info *ofbi)
++{
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB)
++		return ofbi->region.vrfb.vaddr[0];
++	else
++		return ofbi->region.vaddr;
++}
++
++static struct omapfb_colormode omapfb_colormodes[] = {
++	{
++		.dssmode = OMAP_DSS_COLOR_UYVY,
++		.bits_per_pixel = 16,
++		.nonstd = OMAPFB_COLOR_YUV422,
++	}, {
++		.dssmode = OMAP_DSS_COLOR_YUV2,
++		.bits_per_pixel = 16,
++		.nonstd = OMAPFB_COLOR_YUY422,
++	}, {
++		.dssmode = OMAP_DSS_COLOR_ARGB16,
++		.bits_per_pixel = 16,
++		.red	= { .length = 4, .offset = 8, .msb_right = 0 },
++		.green	= { .length = 4, .offset = 4, .msb_right = 0 },
++		.blue	= { .length = 4, .offset = 0, .msb_right = 0 },
++		.transp	= { .length = 4, .offset = 12, .msb_right = 0 },
++	}, {
++		.dssmode = OMAP_DSS_COLOR_RGB16,
++		.bits_per_pixel = 16,
++		.red	= { .length = 5, .offset = 11, .msb_right = 0 },
++		.green	= { .length = 6, .offset = 5, .msb_right = 0 },
++		.blue	= { .length = 5, .offset = 0, .msb_right = 0 },
++		.transp	= { .length = 0, .offset = 0, .msb_right = 0 },
++	}, {
++		.dssmode = OMAP_DSS_COLOR_RGB24P,
++		.bits_per_pixel = 24,
++		.red	= { .length = 8, .offset = 16, .msb_right = 0 },
++		.green	= { .length = 8, .offset = 8, .msb_right = 0 },
++		.blue	= { .length = 8, .offset = 0, .msb_right = 0 },
++		.transp	= { .length = 0, .offset = 0, .msb_right = 0 },
++	}, {
++		.dssmode = OMAP_DSS_COLOR_RGB24U,
++		.bits_per_pixel = 32,
++		.red	= { .length = 8, .offset = 16, .msb_right = 0 },
++		.green	= { .length = 8, .offset = 8, .msb_right = 0 },
++		.blue	= { .length = 8, .offset = 0, .msb_right = 0 },
++		.transp	= { .length = 0, .offset = 0, .msb_right = 0 },
++	}, {
++		.dssmode = OMAP_DSS_COLOR_ARGB32,
++		.bits_per_pixel = 32,
++		.red	= { .length = 8, .offset = 16, .msb_right = 0 },
++		.green	= { .length = 8, .offset = 8, .msb_right = 0 },
++		.blue	= { .length = 8, .offset = 0, .msb_right = 0 },
++		.transp	= { .length = 8, .offset = 24, .msb_right = 0 },
++	}, {
++		.dssmode = OMAP_DSS_COLOR_RGBA32,
++		.bits_per_pixel = 32,
++		.red	= { .length = 8, .offset = 24, .msb_right = 0 },
++		.green	= { .length = 8, .offset = 16, .msb_right = 0 },
++		.blue	= { .length = 8, .offset = 8, .msb_right = 0 },
++		.transp	= { .length = 8, .offset = 0, .msb_right = 0 },
++	}, {
++		.dssmode = OMAP_DSS_COLOR_RGBX32,
++		.bits_per_pixel = 32,
++		.red	= { .length = 8, .offset = 24, .msb_right = 0 },
++		.green	= { .length = 8, .offset = 16, .msb_right = 0 },
++		.blue	= { .length = 8, .offset = 8, .msb_right = 0 },
++		.transp	= { .length = 0, .offset = 0, .msb_right = 0 },
++	},
++};
++
++static bool cmp_var_to_colormode(struct fb_var_screeninfo *var,
++		struct omapfb_colormode *color)
++{
++	bool cmp_component(struct fb_bitfield *f1, struct fb_bitfield *f2)
++	{
++		return f1->length == f2->length &&
++			f1->offset == f2->offset &&
++			f1->msb_right == f2->msb_right;
++	}
++
++	if (var->bits_per_pixel == 0 ||
++			var->red.length == 0 ||
++			var->blue.length == 0 ||
++			var->green.length == 0)
++		return 0;
++
++	return var->bits_per_pixel == color->bits_per_pixel &&
++		cmp_component(&var->red, &color->red) &&
++		cmp_component(&var->green, &color->green) &&
++		cmp_component(&var->blue, &color->blue) &&
++		cmp_component(&var->transp, &color->transp);
++}
++
++static void assign_colormode_to_var(struct fb_var_screeninfo *var,
++		struct omapfb_colormode *color)
++{
++	var->bits_per_pixel = color->bits_per_pixel;
++	var->nonstd = color->nonstd;
++	var->red = color->red;
++	var->green = color->green;
++	var->blue = color->blue;
++	var->transp = color->transp;
++}
++
++static enum omap_color_mode fb_mode_to_dss_mode(struct fb_var_screeninfo *var)
++{
++	enum omap_color_mode dssmode;
++	int i;
++
++	/* first match with nonstd field */
++	if (var->nonstd) {
++		for (i = 0; i < ARRAY_SIZE(omapfb_colormodes); ++i) {
++			struct omapfb_colormode *mode = &omapfb_colormodes[i];
++			if (var->nonstd == mode->nonstd) {
++				assign_colormode_to_var(var, mode);
++				return mode->dssmode;
++			}
++		}
++
++		return -EINVAL;
++	}
++
++	/* then try exact match of bpp and colors */
++	for (i = 0; i < ARRAY_SIZE(omapfb_colormodes); ++i) {
++		struct omapfb_colormode *mode = &omapfb_colormodes[i];
++		if (cmp_var_to_colormode(var, mode)) {
++			assign_colormode_to_var(var, mode);
++			return mode->dssmode;
++		}
++	}
++
++	/* match with bpp if user has not filled color fields
++	 * properly */
++	switch (var->bits_per_pixel) {
++	case 1:
++		dssmode = OMAP_DSS_COLOR_CLUT1;
++		break;
++	case 2:
++		dssmode = OMAP_DSS_COLOR_CLUT2;
++		break;
++	case 4:
++		dssmode = OMAP_DSS_COLOR_CLUT4;
++		break;
++	case 8:
++		dssmode = OMAP_DSS_COLOR_CLUT8;
++		break;
++	case 12:
++		dssmode = OMAP_DSS_COLOR_RGB12U;
++		break;
++	case 16:
++		dssmode = OMAP_DSS_COLOR_RGB16;
++		break;
++	case 24:
++		dssmode = OMAP_DSS_COLOR_RGB24P;
++		break;
++	case 32:
++		dssmode = OMAP_DSS_COLOR_RGB24U;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	for (i = 0; i < ARRAY_SIZE(omapfb_colormodes); ++i) {
++		struct omapfb_colormode *mode = &omapfb_colormodes[i];
++		if (dssmode == mode->dssmode) {
++			assign_colormode_to_var(var, mode);
++			return mode->dssmode;
++		}
++	}
++
++	return -EINVAL;
++}
++
++int dss_mode_to_fb_mode(enum omap_color_mode dssmode,
++			struct fb_var_screeninfo *var)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(omapfb_colormodes); ++i) {
++		struct omapfb_colormode *mode = &omapfb_colormodes[i];
++		if (dssmode == mode->dssmode) {
++			assign_colormode_to_var(var, mode);
++			return 0;
++		}
++	}
++	return -ENOENT;
++}
++
++void set_fb_fix(struct fb_info *fbi)
++{
++	struct fb_fix_screeninfo *fix = &fbi->fix;
++	struct fb_var_screeninfo *var = &fbi->var;
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_mem_region *rg = &ofbi->region;
++
++	DBG("set_fb_fix\n");
++
++	/* used by open/write in fbmem.c */
++	fbi->screen_base = (char __iomem *)omapfb_get_region_vaddr(ofbi);
++
++	DBG("changing rotation to %d\n", var->rotate);
++
++	/* used by mmap in fbmem.c */
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB) {
++		switch (var->nonstd) {
++		case OMAPFB_COLOR_YUV422:
++		case OMAPFB_COLOR_YUY422:
++			fix->line_length =
++				(OMAP_VRFB_LINE_LEN * var->bits_per_pixel) >> 2;
++			break;
++		default:
++			fix->line_length =
++				(OMAP_VRFB_LINE_LEN * var->bits_per_pixel) >> 3;
++			break;
++		}
++	} else
++		fix->line_length =
++			(var->xres_virtual * var->bits_per_pixel) >> 3;
++	fix->smem_start = omapfb_get_region_paddr(ofbi);
++	fix->smem_len = rg->size;
++
++	fix->type = FB_TYPE_PACKED_PIXELS;
++
++	if (var->nonstd)
++		fix->visual = FB_VISUAL_PSEUDOCOLOR;
++	else {
++		switch (var->bits_per_pixel) {
++		case 32:
++		case 24:
++		case 16:
++		case 12:
++			fix->visual = FB_VISUAL_TRUECOLOR;
++			/* 12bpp is stored in 16 bits */
++			break;
++		case 1:
++		case 2:
++		case 4:
++		case 8:
++			fix->visual = FB_VISUAL_PSEUDOCOLOR;
++			break;
++		}
++	}
++
++	fix->accel = FB_ACCEL_NONE;
++
++	fix->xpanstep = 1;
++	fix->ypanstep = 1;
++
++	if (rg->size && ofbi->rotation_type == OMAP_DSS_ROT_VRFB) {
++		unsigned bytespp;
++		bool yuv_mode;
++		enum omap_color_mode mode;
++
++		mode = fb_mode_to_dss_mode(var);
++
++		bytespp = var->bits_per_pixel >> 3;
++
++		if (mode == OMAP_DSS_COLOR_YUV2 || mode == OMAP_DSS_COLOR_UYVY)
++			yuv_mode = true;
++		else
++			yuv_mode = false;
++
++		omap_vrfb_setup(&rg->vrfb, rg->paddr,
++				var->xres_virtual,
++				var->yres_virtual,
++				bytespp, yuv_mode);
++	}
++}
++
++/* check new var and possibly modify it to be ok */
++int check_fb_var(struct fb_info *fbi, struct fb_var_screeninfo *var)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omap_dss_device *display = fb2display(fbi);
++	unsigned long max_frame_size;
++	unsigned long line_size;
++	int xres_min, yres_min;
++	int xres_max, yres_max;
++	enum omap_color_mode mode = 0;
++	int i;
++	int bytespp;
++
++	DBG("check_fb_var %d\n", ofbi->id);
++
++	if (ofbi->region.size == 0)
++		return 0;
++
++	mode = fb_mode_to_dss_mode(var);
++	if (mode < 0) {
++		DBG("cannot convert var to omap dss mode\n");
++		return -EINVAL;
++	}
++
++	for (i = 0; i < ofbi->num_overlays; ++i) {
++		if ((ofbi->overlays[i]->supported_modes & mode) == 0) {
++			DBG("invalid mode\n");
++			return -EINVAL;
++		}
++	}
++
++	if (var->rotate < 0 || var->rotate > 3)
++		return -EINVAL;
++
++	xres_min = OMAPFB_PLANE_XRES_MIN;
++	xres_max = 2048;
++	yres_min = OMAPFB_PLANE_YRES_MIN;
++	yres_max = 2048;
++
++	bytespp = var->bits_per_pixel >> 3;
++
++	/* XXX: some applications seem to set virtual res to 0. */
++	if (var->xres_virtual == 0)
++		var->xres_virtual = var->xres;
++
++	if (var->yres_virtual == 0)
++		var->yres_virtual = var->yres;
++
++	if (var->xres_virtual < xres_min || var->yres_virtual < yres_min)
++		return -EINVAL;
++
++	if (var->xres < xres_min)
++		var->xres = xres_min;
++	if (var->yres < yres_min)
++		var->yres = yres_min;
++	if (var->xres > xres_max)
++		var->xres = xres_max;
++	if (var->yres > yres_max)
++		var->yres = yres_max;
++
++	if (var->xres > var->xres_virtual)
++		var->xres = var->xres_virtual;
++	if (var->yres > var->yres_virtual)
++		var->yres = var->yres_virtual;
++
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB)
++		line_size = OMAP_VRFB_LINE_LEN * bytespp;
++	else
++		line_size = var->xres_virtual * bytespp;
++
++	max_frame_size = ofbi->region.size;
++
++	DBG("max frame size %lu, line size %lu\n", max_frame_size, line_size);
++
++	if (line_size * var->yres_virtual > max_frame_size) {
++		DBG("can't fit FB into memory, reducing y\n");
++		var->yres_virtual = max_frame_size / line_size;
++
++		if (var->yres_virtual < yres_min)
++			var->yres_virtual = yres_min;
++
++		if (var->yres > var->yres_virtual)
++			var->yres = var->yres_virtual;
++	}
++
++	if (line_size * var->yres_virtual > max_frame_size) {
++		DBG("can't fit FB into memory, reducing x\n");
++		if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB)
++			return -EINVAL;
++
++		var->xres_virtual = max_frame_size / var->yres_virtual /
++			bytespp;
++
++		if (var->xres_virtual < xres_min)
++			var->xres_virtual = xres_min;
++
++		if (var->xres > var->xres_virtual)
++			var->xres = var->xres_virtual;
++
++		line_size = var->xres_virtual * bytespp;
++	}
++
++	if (line_size * var->yres_virtual > max_frame_size) {
++		DBG("cannot fit FB to memory\n");
++		return -EINVAL;
++	}
++
++	if (var->xres + var->xoffset > var->xres_virtual)
++		var->xoffset = var->xres_virtual - var->xres;
++	if (var->yres + var->yoffset > var->yres_virtual)
++		var->yoffset = var->yres_virtual - var->yres;
++
++	DBG("xres = %d, yres = %d, vxres = %d, vyres = %d\n",
++			var->xres, var->yres,
++			var->xres_virtual, var->yres_virtual);
++
++	var->height             = -1;
++	var->width              = -1;
++	var->grayscale          = 0;
++
++	if (display && display->get_timings) {
++		struct omap_video_timings timings;
++		display->get_timings(display, &timings);
++
++		/* pixclock in ps, the rest in pixclock */
++		var->pixclock = timings.pixel_clock != 0 ?
++			KHZ2PICOS(timings.pixel_clock) :
++			0;
++		var->left_margin = timings.hfp;
++		var->right_margin = timings.hbp;
++		var->upper_margin = timings.vfp;
++		var->lower_margin = timings.vbp;
++		var->hsync_len = timings.hsw;
++		var->vsync_len = timings.vsw;
++	} else {
++		var->pixclock = 0;
++		var->left_margin = 0;
++		var->right_margin = 0;
++		var->upper_margin = 0;
++		var->lower_margin = 0;
++		var->hsync_len = 0;
++		var->vsync_len = 0;
++	}
++
++	/* TODO: get these from panel->config */
++	var->vmode              = FB_VMODE_NONINTERLACED;
++	var->sync               = 0;
++
++	return 0;
++}
++
++/*
++ * ---------------------------------------------------------------------------
++ * fbdev framework callbacks
++ * ---------------------------------------------------------------------------
++ */
++static int omapfb_open(struct fb_info *fbi, int user)
++{
++	return 0;
++}
++
++static int omapfb_release(struct fb_info *fbi, int user)
++{
++#if 0
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omap_dss_device *display = fb2display(fbi);
++
++	DBG("Closing fb with plane index %d\n", ofbi->id);
++
++	omapfb_lock(fbdev);
++
++	if (display && display->get_update_mode && display->update) {
++		/* XXX this update should be removed, I think. But it's
++		 * good for debugging */
++		if (display->get_update_mode(display) ==
++				OMAP_DSS_UPDATE_MANUAL) {
++			u16 w, h;
++
++			if (display->sync)
++				display->sync(display);
++
++			display->get_resolution(display, &w, &h);
++			display->update(display, 0, 0, w, h);
++		}
++	}
++
++	if (display && display->sync)
++		display->sync(display);
++
++	omapfb_unlock(fbdev);
++#endif
++	return 0;
++}
++
++/* setup overlay according to the fb */
++static int omapfb_setup_overlay(struct fb_info *fbi, struct omap_overlay *ovl,
++		u16 posx, u16 posy, u16 outw, u16 outh)
++{
++	int r = 0;
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct fb_var_screeninfo *var = &fbi->var;
++	struct fb_fix_screeninfo *fix = &fbi->fix;
++	enum omap_color_mode mode = 0;
++	int offset;
++	u32 data_start_p;
++	void __iomem *data_start_v;
++	struct omap_overlay_info info;
++	int xres, yres;
++	int screen_width;
++	int mirror;
++	int rotation = var->rotate;
++	int i;
++
++	for (i = 0; i < ofbi->num_overlays; i++) {
++		if (ovl != ofbi->overlays[i])
++			continue;
++
++		rotation = (rotation + ofbi->rotation[i]) % 4;
++		break;
++	}
++
++	DBG("setup_overlay %d, posx %d, posy %d, outw %d, outh %d\n", ofbi->id,
++			posx, posy, outw, outh);
++
++	if (rotation == FB_ROTATE_CW || rotation == FB_ROTATE_CCW) {
++		xres = var->yres;
++		yres = var->xres;
++	} else {
++		xres = var->xres;
++		yres = var->yres;
++	}
++
++	offset = ((var->yoffset * var->xres_virtual +
++				var->xoffset) * var->bits_per_pixel) >> 3;
++
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB) {
++		data_start_p = omapfb_get_region_rot_paddr(ofbi, rotation);
++		data_start_v = NULL;
++	} else {
++		data_start_p = omapfb_get_region_paddr(ofbi);
++		data_start_v = omapfb_get_region_vaddr(ofbi);
++	}
++
++	data_start_p += offset;
++	data_start_v += offset;
++
++	mode = fb_mode_to_dss_mode(var);
++
++	if (mode == -EINVAL) {
++		DBG("fb_mode_to_dss_mode failed");
++		r = -EINVAL;
++		goto err;
++	}
++
++	switch (var->nonstd) {
++	case OMAPFB_COLOR_YUV422:
++	case OMAPFB_COLOR_YUY422:
++		if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB) {
++			screen_width = fix->line_length
++				/ (var->bits_per_pixel >> 2);
++			break;
++		}
++	default:
++		screen_width = fix->line_length / (var->bits_per_pixel >> 3);
++		break;
++	}
++
++	ovl->get_overlay_info(ovl, &info);
++
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB)
++		mirror = 0;
++	else
++		mirror = ofbi->mirror;
++
++	info.paddr = data_start_p;
++	info.vaddr = data_start_v;
++	info.screen_width = screen_width;
++	info.width = xres;
++	info.height = yres;
++	info.color_mode = mode;
++	info.rotation_type = ofbi->rotation_type;
++	info.rotation = rotation;
++	info.mirror = mirror;
++
++	info.pos_x = posx;
++	info.pos_y = posy;
++	info.out_width = outw;
++	info.out_height = outh;
++
++	r = ovl->set_overlay_info(ovl, &info);
++	if (r) {
++		DBG("ovl->setup_overlay_info failed\n");
++		goto err;
++	}
++
++	return 0;
++
++err:
++	DBG("setup_overlay failed\n");
++	return r;
++}
++
++/* apply var to the overlay */
++int omapfb_apply_changes(struct fb_info *fbi, int init)
++{
++	int r = 0;
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct fb_var_screeninfo *var = &fbi->var;
++	struct omap_overlay *ovl;
++	u16 posx, posy;
++	u16 outw, outh;
++	int i;
++
++#ifdef DEBUG
++	if (omapfb_test_pattern)
++		fill_fb(fbi);
++#endif
++
++	for (i = 0; i < ofbi->num_overlays; i++) {
++		ovl = ofbi->overlays[i];
++
++		DBG("apply_changes, fb %d, ovl %d\n", ofbi->id, ovl->id);
++
++		if (ofbi->region.size == 0) {
++			/* the fb is not available. disable the overlay */
++			omapfb_overlay_enable(ovl, 0);
++			if (!init && ovl->manager)
++				ovl->manager->apply(ovl->manager);
++			continue;
++		}
++
++		if (init || (ovl->caps & OMAP_DSS_OVL_CAP_SCALE) == 0) {
++			int rotation = (var->rotate + ofbi->rotation[i]) % 4;
++			if (rotation == FB_ROTATE_CW ||
++					rotation == FB_ROTATE_CCW) {
++				outw = var->yres;
++				outh = var->xres;
++			} else {
++				outw = var->xres;
++				outh = var->yres;
++			}
++		} else {
++			outw = ovl->info.out_width;
++			outh = ovl->info.out_height;
++		}
++
++		if (init) {
++			posx = 0;
++			posy = 0;
++		} else {
++			posx = ovl->info.pos_x;
++			posy = ovl->info.pos_y;
++		}
++
++		r = omapfb_setup_overlay(fbi, ovl, posx, posy, outw, outh);
++		if (r)
++			goto err;
++
++		if (!init && ovl->manager)
++			ovl->manager->apply(ovl->manager);
++	}
++	return 0;
++err:
++	DBG("apply_changes failed\n");
++	return r;
++}
++
++/* checks var and eventually tweaks it to something supported,
++ * DO NOT MODIFY PAR */
++static int omapfb_check_var(struct fb_var_screeninfo *var, struct fb_info *fbi)
++{
++	int r;
++
++	DBG("check_var(%d)\n", FB2OFB(fbi)->id);
++
++	r = check_fb_var(fbi, var);
++
++	return r;
++}
++
++/* set the video mode according to info->var */
++static int omapfb_set_par(struct fb_info *fbi)
++{
++	int r;
++
++	DBG("set_par(%d)\n", FB2OFB(fbi)->id);
++
++	set_fb_fix(fbi);
++	r = omapfb_apply_changes(fbi, 0);
++
++	return r;
++}
++
++static int omapfb_pan_display(struct fb_var_screeninfo *var,
++		struct fb_info *fbi)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	int r = 0;
++
++	DBG("pan_display(%d)\n", ofbi->id);
++
++	if (var->xoffset != fbi->var.xoffset ||
++	    var->yoffset != fbi->var.yoffset) {
++		struct fb_var_screeninfo new_var;
++
++		new_var = fbi->var;
++		new_var.xoffset = var->xoffset;
++		new_var.yoffset = var->yoffset;
++
++		r = check_fb_var(fbi, &new_var);
++
++		if (r == 0) {
++			fbi->var = new_var;
++			set_fb_fix(fbi);
++			r = omapfb_apply_changes(fbi, 0);
++		}
++	}
++
++	return r;
++}
++
++static void mmap_user_open(struct vm_area_struct *vma)
++{
++	struct omapfb_info *ofbi = (struct omapfb_info *)vma->vm_private_data;
++
++	atomic_inc(&ofbi->map_count);
++}
++
++static void mmap_user_close(struct vm_area_struct *vma)
++{
++	struct omapfb_info *ofbi = (struct omapfb_info *)vma->vm_private_data;
++
++	atomic_dec(&ofbi->map_count);
++}
++
++static struct vm_operations_struct mmap_user_ops = {
++	.open = mmap_user_open,
++	.close = mmap_user_close,
++};
++
++static int omapfb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct fb_fix_screeninfo *fix = &fbi->fix;
++	unsigned long off;
++	unsigned long start;
++	u32 len;
++
++	if (vma->vm_end - vma->vm_start == 0)
++		return 0;
++	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
++		return -EINVAL;
++	off = vma->vm_pgoff << PAGE_SHIFT;
++
++	start = omapfb_get_region_paddr(ofbi);
++	len = fix->smem_len;
++	if (off >= len)
++		return -EINVAL;
++	if ((vma->vm_end - vma->vm_start + off) > len)
++		return -EINVAL;
++
++	off += start;
++
++	DBG("user mmap region start %lx, len %d, off %lx\n", start, len, off);
++
++	vma->vm_pgoff = off >> PAGE_SHIFT;
++	vma->vm_flags |= VM_IO | VM_RESERVED;
++	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
++	vma->vm_ops = &mmap_user_ops;
++	vma->vm_private_data = ofbi;
++	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
++			     vma->vm_end - vma->vm_start, vma->vm_page_prot))
++		return -EAGAIN;
++	/* vm_ops.open won't be called for mmap itself. */
++	atomic_inc(&ofbi->map_count);
++	return 0;
++}
++
++/* Store a single color palette entry into a pseudo palette or the hardware
++ * palette if one is available. For now we support only 16bpp and thus store
++ * the entry only to the pseudo palette.
++ */
++static int _setcolreg(struct fb_info *fbi, u_int regno, u_int red, u_int green,
++		u_int blue, u_int transp, int update_hw_pal)
++{
++	/*struct omapfb_info *ofbi = FB2OFB(fbi);*/
++	/*struct omapfb2_device *fbdev = ofbi->fbdev;*/
++	struct fb_var_screeninfo *var = &fbi->var;
++	int r = 0;
++
++	enum omapfb_color_format mode = OMAPFB_COLOR_RGB24U; /* XXX */
++
++	/*switch (plane->color_mode) {*/
++	switch (mode) {
++	case OMAPFB_COLOR_YUV422:
++	case OMAPFB_COLOR_YUV420:
++	case OMAPFB_COLOR_YUY422:
++		r = -EINVAL;
++		break;
++	case OMAPFB_COLOR_CLUT_8BPP:
++	case OMAPFB_COLOR_CLUT_4BPP:
++	case OMAPFB_COLOR_CLUT_2BPP:
++	case OMAPFB_COLOR_CLUT_1BPP:
++		/*
++		   if (fbdev->ctrl->setcolreg)
++		   r = fbdev->ctrl->setcolreg(regno, red, green, blue,
++		   transp, update_hw_pal);
++		   */
++		/* Fallthrough */
++		r = -EINVAL;
++		break;
++	case OMAPFB_COLOR_RGB565:
++	case OMAPFB_COLOR_RGB444:
++	case OMAPFB_COLOR_RGB24P:
++	case OMAPFB_COLOR_RGB24U:
++		if (r != 0)
++			break;
++
++		if (regno < 0) {
++			r = -EINVAL;
++			break;
++		}
++
++		if (regno < 16) {
++			u16 pal;
++			pal = ((red >> (16 - var->red.length)) <<
++					var->red.offset) |
++				((green >> (16 - var->green.length)) <<
++				 var->green.offset) |
++				(blue >> (16 - var->blue.length));
++			((u32 *)(fbi->pseudo_palette))[regno] = pal;
++		}
++		break;
++	default:
++		BUG();
++	}
++	return r;
++}
++
++static int omapfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
++		u_int transp, struct fb_info *info)
++{
++	DBG("setcolreg\n");
++
++	return _setcolreg(info, regno, red, green, blue, transp, 1);
++}
++
++static int omapfb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
++{
++	int count, index, r;
++	u16 *red, *green, *blue, *transp;
++	u16 trans = 0xffff;
++
++	DBG("setcmap\n");
++
++	red     = cmap->red;
++	green   = cmap->green;
++	blue    = cmap->blue;
++	transp  = cmap->transp;
++	index   = cmap->start;
++
++	for (count = 0; count < cmap->len; count++) {
++		if (transp)
++			trans = *transp++;
++		r = _setcolreg(info, index++, *red++, *green++, *blue++, trans,
++				count == cmap->len - 1);
++		if (r != 0)
++			return r;
++	}
++
++	return 0;
++}
++
++static void omapfb_vrfb_suspend_all(struct omapfb2_device *fbdev)
++{
++	int i;
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[i]);
++
++		if (ofbi->region.vrfb.vaddr[0])
++			omap_vrfb_suspend_ctx(&ofbi->region.vrfb);
++	}
++}
++
++static void omapfb_vrfb_resume_all(struct omapfb2_device *fbdev)
++{
++	int i;
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[i]);
++
++		if (ofbi->region.vrfb.vaddr[0])
++			omap_vrfb_resume_ctx(&ofbi->region.vrfb);
++	}
++}
++
++static int omapfb_blank(int blank, struct fb_info *fbi)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omap_dss_device *display = fb2display(fbi);
++	int do_update = 0;
++	int r = 0;
++
++	omapfb_lock(fbdev);
++
++	switch (blank) {
++	case FB_BLANK_UNBLANK:
++		if (display->state != OMAP_DSS_DISPLAY_SUSPENDED)
++			goto exit;
++
++		omapfb_vrfb_resume_all(fbdev);
++
++		if (display->resume)
++			r = display->resume(display);
++
++		if (r == 0 && display->get_update_mode &&
++				display->get_update_mode(display) ==
++				OMAP_DSS_UPDATE_MANUAL)
++			do_update = 1;
++
++		break;
++
++	case FB_BLANK_NORMAL:
++		/* FB_BLANK_NORMAL could be implemented.
++		 * Needs DSS additions. */
++	case FB_BLANK_VSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
++	case FB_BLANK_POWERDOWN:
++		if (display->state != OMAP_DSS_DISPLAY_ACTIVE)
++			goto exit;
++
++		if (display->suspend)
++			r = display->suspend(display);
++
++		omapfb_vrfb_suspend_all(fbdev);
++
++		break;
++
++	default:
++		r = -EINVAL;
++	}
++
++exit:
++	omapfb_unlock(fbdev);
++
++	if (r == 0 && do_update && display->update) {
++		u16 w, h;
++		display->get_resolution(display, &w, &h);
++
++		r = display->update(display, 0, 0, w, h);
++	}
++
++	return r;
++}
++
++#if 0
++/* XXX fb_read and fb_write are needed for VRFB */
++ssize_t omapfb_write(struct fb_info *info, const char __user *buf,
++		size_t count, loff_t *ppos)
++{
++	DBG("omapfb_write %d, %lu\n", count, (unsigned long)*ppos);
++	/* XXX needed for VRFB */
++	return count;
++}
++#endif
++
++static struct fb_ops omapfb_ops = {
++	.owner          = THIS_MODULE,
++	.fb_open        = omapfb_open,
++	.fb_release     = omapfb_release,
++	.fb_fillrect    = cfb_fillrect,
++	.fb_copyarea    = cfb_copyarea,
++	.fb_imageblit   = cfb_imageblit,
++	.fb_blank       = omapfb_blank,
++	.fb_ioctl       = omapfb_ioctl,
++	.fb_check_var   = omapfb_check_var,
++	.fb_set_par     = omapfb_set_par,
++	.fb_pan_display = omapfb_pan_display,
++	.fb_mmap	= omapfb_mmap,
++	.fb_setcolreg	= omapfb_setcolreg,
++	.fb_setcmap	= omapfb_setcmap,
++	/*.fb_write	= omapfb_write,*/
++};
++
++static void omapfb_free_fbmem(struct fb_info *fbi)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omapfb2_mem_region *rg;
++
++	rg = &ofbi->region;
++
++	if (rg->paddr)
++		if (omap_vram_free(rg->paddr, rg->size))
++			dev_err(fbdev->dev, "VRAM FREE failed\n");
++
++	if (rg->vaddr)
++		iounmap(rg->vaddr);
++
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB) {
++		/* unmap the 0 angle rotation */
++		if (rg->vrfb.vaddr[0]) {
++			iounmap(rg->vrfb.vaddr[0]);
++			omap_vrfb_release_ctx(&rg->vrfb);
++		}
++	}
++
++	rg->vaddr = NULL;
++	rg->paddr = 0;
++	rg->alloc = 0;
++	rg->size = 0;
++}
++
++static void clear_fb_info(struct fb_info *fbi)
++{
++	memset(&fbi->var, 0, sizeof(fbi->var));
++	memset(&fbi->fix, 0, sizeof(fbi->fix));
++	strlcpy(fbi->fix.id, MODULE_NAME, sizeof(fbi->fix.id));
++}
++
++static int omapfb_free_all_fbmem(struct omapfb2_device *fbdev)
++{
++	int i;
++
++	DBG("free all fbmem\n");
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		struct fb_info *fbi = fbdev->fbs[i];
++		omapfb_free_fbmem(fbi);
++		clear_fb_info(fbi);
++	}
++
++	return 0;
++}
++
++static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
++		unsigned long paddr)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omapfb2_mem_region *rg;
++	void __iomem *vaddr;
++	int r;
++
++	rg = &ofbi->region;
++	memset(rg, 0, sizeof(*rg));
++
++	size = PAGE_ALIGN(size);
++
++	if (!paddr) {
++		DBG("allocating %lu bytes for fb %d\n", size, ofbi->id);
++		r = omap_vram_alloc(OMAP_VRAM_MEMTYPE_SDRAM, size, &paddr);
++	} else {
++		DBG("reserving %lu bytes at %lx for fb %d\n", size, paddr,
++				ofbi->id);
++		r = omap_vram_reserve(paddr, size);
++	}
++
++	if (r) {
++		dev_err(fbdev->dev, "failed to allocate framebuffer\n");
++		return -ENOMEM;
++	}
++
++	if (ofbi->rotation_type != OMAP_DSS_ROT_VRFB) {
++		vaddr = ioremap_wc(paddr, size);
++
++		if (!vaddr) {
++			dev_err(fbdev->dev, "failed to ioremap framebuffer\n");
++			omap_vram_free(paddr, size);
++			return -ENOMEM;
++		}
++
++		DBG("allocated VRAM paddr %lx, vaddr %p\n", paddr, vaddr);
++	} else {
++		void __iomem *va;
++
++		r = omap_vrfb_request_ctx(&rg->vrfb);
++		if (r) {
++			dev_err(fbdev->dev, "vrfb create ctx failed\n");
++			return r;
++		}
++
++		/* only ioremap the 0 angle view */
++		va = ioremap_wc(rg->vrfb.paddr[0], size);
++
++		if (!va) {
++			printk(KERN_ERR "vrfb: ioremap failed\n");
++			omap_vrfb_release_ctx(&rg->vrfb);
++			return -ENOMEM;
++		}
++
++		DBG("ioremapped vrfb area 0 to %p\n", va);
++
++		rg->vrfb.vaddr[0] = va;
++
++		vaddr = NULL;
++	}
++
++	rg->paddr = paddr;
++	rg->vaddr = vaddr;
++	rg->size = size;
++	rg->alloc = 1;
++
++	return 0;
++}
++
++/* allocate fbmem using display resolution as reference */
++static int omapfb_alloc_fbmem_display(struct fb_info *fbi, unsigned long size,
++		unsigned long paddr)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omap_dss_device *display;
++	int bytespp;
++
++	display =  fb2display(fbi);
++
++	if (!display)
++		return 0;
++
++	switch (display->get_recommended_bpp(display)) {
++	case 16:
++		bytespp = 2;
++		break;
++	case 24:
++		bytespp = 4;
++		break;
++	default:
++		bytespp = 4;
++		break;
++	}
++
++	if (!size) {
++		u16 w, h;
++
++		display->get_resolution(display, &w, &h);
++
++		if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB) {
++#ifdef DEBUG
++			int oldw = w, oldh = h;
++#endif
++
++			omap_vrfb_adjust_size(&w, &h, bytespp);
++
++			/* Because we change the resolution of the 0 degree
++			 * view, we need to alloc max(w, h) for height */
++			h = max(w, h);
++			w = OMAP_VRFB_LINE_LEN;
++
++			DBG("adjusting fb mem size for VRFB, %dx%d -> %dx%d\n",
++					oldw, oldh, w, h);
++		}
++
++		size = w * h * bytespp;
++	}
++
++	if (!size)
++		return 0;
++
++	return omapfb_alloc_fbmem(fbi, size, paddr);
++}
++
++static enum omap_color_mode fb_format_to_dss_mode(enum omapfb_color_format fmt)
++{
++	enum omap_color_mode mode;
++
++	switch (fmt) {
++	case OMAPFB_COLOR_RGB565:
++		mode = OMAP_DSS_COLOR_RGB16;
++		break;
++	case OMAPFB_COLOR_YUV422:
++		mode = OMAP_DSS_COLOR_YUV2;
++		break;
++	case OMAPFB_COLOR_CLUT_8BPP:
++		mode = OMAP_DSS_COLOR_CLUT8;
++		break;
++	case OMAPFB_COLOR_CLUT_4BPP:
++		mode = OMAP_DSS_COLOR_CLUT4;
++		break;
++	case OMAPFB_COLOR_CLUT_2BPP:
++		mode = OMAP_DSS_COLOR_CLUT2;
++		break;
++	case OMAPFB_COLOR_CLUT_1BPP:
++		mode = OMAP_DSS_COLOR_CLUT1;
++		break;
++	case OMAPFB_COLOR_RGB444:
++		mode = OMAP_DSS_COLOR_RGB12U;
++		break;
++	case OMAPFB_COLOR_YUY422:
++		mode = OMAP_DSS_COLOR_UYVY;
++		break;
++	case OMAPFB_COLOR_ARGB16:
++		mode = OMAP_DSS_COLOR_ARGB16;
++		break;
++	case OMAPFB_COLOR_RGB24U:
++		mode = OMAP_DSS_COLOR_RGB24U;
++		break;
++	case OMAPFB_COLOR_RGB24P:
++		mode = OMAP_DSS_COLOR_RGB24P;
++		break;
++	case OMAPFB_COLOR_ARGB32:
++		mode = OMAP_DSS_COLOR_ARGB32;
++		break;
++	case OMAPFB_COLOR_RGBA32:
++		mode = OMAP_DSS_COLOR_RGBA32;
++		break;
++	case OMAPFB_COLOR_RGBX32:
++		mode = OMAP_DSS_COLOR_RGBX32;
++		break;
++	default:
++		mode = -EINVAL;
++	}
++
++	return mode;
++}
++
++static int omapfb_parse_vram_param(const char *param, int max_entries,
++		unsigned long *sizes, unsigned long *paddrs)
++{
++	int fbnum;
++	unsigned long size;
++	unsigned long paddr = 0;
++	char *p, *start;
++
++	start = (char *)param;
++
++	while (1) {
++		p = start;
++
++		fbnum = simple_strtoul(p, &p, 10);
++
++		if (p == param)
++			return -EINVAL;
++
++		if (*p != ':')
++			return -EINVAL;
++
++		if (fbnum >= max_entries)
++			return -EINVAL;
++
++		size = memparse(p + 1, &p);
++
++		if (!size)
++			return -EINVAL;
++
++		paddr = 0;
++
++		if (*p == '@') {
++			paddr = simple_strtoul(p + 1, &p, 16);
++
++			if (!paddr)
++				return -EINVAL;
++
++		}
++
++		paddrs[fbnum] = paddr;
++		sizes[fbnum] = size;
++
++		if (*p == 0)
++			break;
++
++		if (*p != ',')
++			return -EINVAL;
++
++		++p;
++
++		start = p;
++	}
++
++	return 0;
++}
++
++static int omapfb_allocate_all_fbs(struct omapfb2_device *fbdev)
++{
++	int i, r;
++	unsigned long vram_sizes[10];
++	unsigned long vram_paddrs[10];
++
++	memset(&vram_sizes, 0, sizeof(vram_sizes));
++	memset(&vram_paddrs, 0, sizeof(vram_paddrs));
++
++	if (def_vram &&	omapfb_parse_vram_param(def_vram, 10,
++				vram_sizes, vram_paddrs)) {
++		dev_err(fbdev->dev, "failed to parse vram parameter\n");
++
++		memset(&vram_sizes, 0, sizeof(vram_sizes));
++		memset(&vram_paddrs, 0, sizeof(vram_paddrs));
++	}
++
++	if (fbdev->dev->platform_data) {
++		struct omapfb_platform_data *opd;
++		opd = fbdev->dev->platform_data;
++		for (i = 0; i < opd->mem_desc.region_cnt; ++i) {
++			if (!vram_sizes[i]) {
++				unsigned long size;
++				unsigned long paddr;
++
++				size = opd->mem_desc.region[i].size;
++				paddr = opd->mem_desc.region[i].paddr;
++
++				vram_sizes[i] = size;
++				vram_paddrs[i] = paddr;
++			}
++		}
++	}
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		/* allocate memory automatically only for fb0, or if
++		 * excplicitly defined with vram or plat data option */
++		if (i == 0 || vram_sizes[i] != 0) {
++			r = omapfb_alloc_fbmem_display(fbdev->fbs[i],
++					vram_sizes[i], vram_paddrs[i]);
++
++			if (r)
++				return r;
++		}
++	}
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[i]);
++		struct omapfb2_mem_region *rg;
++		rg = &ofbi->region;
++
++		DBG("region%d phys %08x virt %p size=%lu\n",
++				i,
++				rg->paddr,
++				rg->vaddr,
++				rg->size);
++	}
++
++	return 0;
++}
++
++int omapfb_realloc_fbmem(struct fb_info *fbi, unsigned long size, int type)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omap_dss_device *display = fb2display(fbi);
++	struct omapfb2_mem_region *rg = &ofbi->region;
++	unsigned long old_size = rg->size;
++	unsigned long old_paddr = rg->paddr;
++	int old_type = rg->type;
++	int r;
++
++	if (type > OMAPFB_MEMTYPE_MAX)
++		return -EINVAL;
++
++	size = PAGE_ALIGN(size);
++
++	if (old_size == size && old_type == type)
++		return 0;
++
++	if (display && display->sync)
++			display->sync(display);
++
++	omapfb_free_fbmem(fbi);
++
++	if (size == 0) {
++		clear_fb_info(fbi);
++		return 0;
++	}
++
++	r = omapfb_alloc_fbmem(fbi, size, 0);
++
++	if (r) {
++		if (old_size)
++			omapfb_alloc_fbmem(fbi, old_size, old_paddr);
++
++		if (rg->size == 0)
++			clear_fb_info(fbi);
++
++		return r;
++	}
++
++	if (old_size == size)
++		return 0;
++
++	if (old_size == 0) {
++		DBG("initializing fb %d\n", ofbi->id);
++		r = omapfb_fb_init(fbdev, fbi);
++		if (r) {
++			DBG("omapfb_fb_init failed\n");
++			goto err;
++		}
++		r = omapfb_apply_changes(fbi, 1);
++		if (r) {
++			DBG("omapfb_apply_changes failed\n");
++			goto err;
++		}
++	} else {
++		struct fb_var_screeninfo new_var;
++		memcpy(&new_var, &fbi->var, sizeof(new_var));
++		r = check_fb_var(fbi, &new_var);
++		if (r)
++			goto err;
++		memcpy(&fbi->var, &new_var, sizeof(fbi->var));
++		set_fb_fix(fbi);
++	}
++
++	return 0;
++err:
++	omapfb_free_fbmem(fbi);
++	clear_fb_info(fbi);
++	return r;
++}
++
++/* initialize fb_info, var, fix to something sane based on the display */
++static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi)
++{
++	struct fb_var_screeninfo *var = &fbi->var;
++	struct omap_dss_device *display = fb2display(fbi);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	int r = 0;
++
++	fbi->fbops = &omapfb_ops;
++	fbi->flags = FBINFO_FLAG_DEFAULT;
++	fbi->pseudo_palette = fbdev->pseudo_palette;
++
++	if (ofbi->region.size == 0) {
++		clear_fb_info(fbi);
++		return 0;
++	}
++
++	var->nonstd = 0;
++	var->bits_per_pixel = 0;
++
++	var->rotate = def_rotate;
++
++	/*
++	 * Check if there is a default color format set in the board file,
++	 * and use this format instead the default deducted from the
++	 * display bpp.
++	 */
++	if (fbdev->dev->platform_data) {
++		struct omapfb_platform_data *opd;
++		int id = ofbi->id;
++
++		opd = fbdev->dev->platform_data;
++		if (opd->mem_desc.region[id].format_used) {
++			enum omap_color_mode mode;
++			enum omapfb_color_format format;
++
++			format = opd->mem_desc.region[id].format;
++			mode = fb_format_to_dss_mode(format);
++			if (mode < 0) {
++				r = mode;
++				goto err;
++			}
++			r = dss_mode_to_fb_mode(mode, var);
++			if (r < 0)
++				goto err;
++		}
++	}
++
++	if (display) {
++		u16 w, h;
++		int rotation = (var->rotate + ofbi->rotation[0]) % 4;
++
++		display->get_resolution(display, &w, &h);
++
++		if (rotation == FB_ROTATE_CW ||
++				rotation == FB_ROTATE_CCW) {
++			var->xres = h;
++			var->yres = w;
++		} else {
++			var->xres = w;
++			var->yres = h;
++		}
++
++		var->xres_virtual = var->xres;
++		var->yres_virtual = var->yres;
++
++		if (!var->bits_per_pixel) {
++			switch (display->get_recommended_bpp(display)) {
++			case 16:
++				var->bits_per_pixel = 16;
++				break;
++			case 24:
++				var->bits_per_pixel = 32;
++				break;
++			default:
++				dev_err(fbdev->dev, "illegal display "
++						"bpp\n");
++				return -EINVAL;
++			}
++		}
++	} else {
++		/* if there's no display, let's just guess some basic values */
++		var->xres = 320;
++		var->yres = 240;
++		var->xres_virtual = var->xres;
++		var->yres_virtual = var->yres;
++		if (!var->bits_per_pixel)
++			var->bits_per_pixel = 16;
++	}
++
++	r = check_fb_var(fbi, var);
++	if (r)
++		goto err;
++
++	set_fb_fix(fbi);
++
++	r = fb_alloc_cmap(&fbi->cmap, 256, 0);
++	if (r)
++		dev_err(fbdev->dev, "unable to allocate color map memory\n");
++
++err:
++	return r;
++}
++
++static void fbinfo_cleanup(struct omapfb2_device *fbdev, struct fb_info *fbi)
++{
++	fb_dealloc_cmap(&fbi->cmap);
++}
++
++
++static void omapfb_free_resources(struct omapfb2_device *fbdev)
++{
++	int i;
++
++	DBG("free_resources\n");
++
++	if (fbdev == NULL)
++		return;
++
++	for (i = 0; i < fbdev->num_fbs; i++)
++		unregister_framebuffer(fbdev->fbs[i]);
++
++	/* free the reserved fbmem */
++	omapfb_free_all_fbmem(fbdev);
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		fbinfo_cleanup(fbdev, fbdev->fbs[i]);
++		framebuffer_release(fbdev->fbs[i]);
++	}
++
++	for (i = 0; i < fbdev->num_displays; i++) {
++		if (fbdev->displays[i]->state != OMAP_DSS_DISPLAY_DISABLED)
++			fbdev->displays[i]->disable(fbdev->displays[i]);
++
++		omap_dss_put_device(fbdev->displays[i]);
++	}
++
++	dev_set_drvdata(fbdev->dev, NULL);
++	kfree(fbdev);
++}
++
++static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
++{
++	int r, i;
++
++	fbdev->num_fbs = 0;
++
++	DBG("create %d framebuffers\n",	CONFIG_FB_OMAP2_NUM_FBS);
++
++	/* allocate fb_infos */
++	for (i = 0; i < CONFIG_FB_OMAP2_NUM_FBS; i++) {
++		struct fb_info *fbi;
++		struct omapfb_info *ofbi;
++
++		fbi = framebuffer_alloc(sizeof(struct omapfb_info),
++				fbdev->dev);
++
++		if (fbi == NULL) {
++			dev_err(fbdev->dev,
++				"unable to allocate memory for plane info\n");
++			return -ENOMEM;
++		}
++
++		clear_fb_info(fbi);
++
++		fbdev->fbs[i] = fbi;
++
++		ofbi = FB2OFB(fbi);
++		ofbi->fbdev = fbdev;
++		ofbi->id = i;
++
++		/* assign these early, so that fb alloc can use them */
++		ofbi->rotation_type = def_vrfb ? OMAP_DSS_ROT_VRFB :
++			OMAP_DSS_ROT_DMA;
++		ofbi->mirror = def_mirror;
++
++		fbdev->num_fbs++;
++	}
++
++	DBG("fb_infos allocated\n");
++
++	/* assign overlays for the fbs */
++	for (i = 0; i < min(fbdev->num_fbs, fbdev->num_overlays); i++) {
++		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[i]);
++
++		ofbi->overlays[0] = fbdev->overlays[i];
++		ofbi->num_overlays = 1;
++	}
++
++	/* allocate fb memories */
++	r = omapfb_allocate_all_fbs(fbdev);
++	if (r) {
++		dev_err(fbdev->dev, "failed to allocate fbmem\n");
++		return r;
++	}
++
++	DBG("fbmems allocated\n");
++
++	/* setup fb_infos */
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		r = omapfb_fb_init(fbdev, fbdev->fbs[i]);
++		if (r) {
++			dev_err(fbdev->dev, "failed to setup fb_info\n");
++			return r;
++		}
++	}
++
++	DBG("fb_infos initialized\n");
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		r = register_framebuffer(fbdev->fbs[i]);
++		if (r != 0) {
++			dev_err(fbdev->dev,
++				"registering framebuffer %d failed\n", i);
++			return r;
++		}
++	}
++
++	DBG("framebuffers registered\n");
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		r = omapfb_apply_changes(fbdev->fbs[i], 1);
++		if (r) {
++			dev_err(fbdev->dev, "failed to change mode\n");
++			return r;
++		}
++	}
++
++	DBG("create sysfs for fbs\n");
++	r = omapfb_create_sysfs(fbdev);
++	if (r) {
++		dev_err(fbdev->dev, "failed to create sysfs entries\n");
++		return r;
++	}
++
++	/* Enable fb0 */
++	if (fbdev->num_fbs > 0) {
++		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[0]);
++
++		if (ofbi->num_overlays > 0) {
++			struct omap_overlay *ovl = ofbi->overlays[0];
++
++			r = omapfb_overlay_enable(ovl, 1);
++
++			if (r) {
++				dev_err(fbdev->dev,
++						"failed to enable overlay\n");
++				return r;
++			}
++		}
++	}
++
++	DBG("create_framebuffers done\n");
++
++	return 0;
++}
++
++static int omapfb_mode_to_timings(const char *mode_str,
++		struct omap_video_timings *timings, u8 *bpp)
++{
++	struct fb_info fbi;
++	struct fb_var_screeninfo var;
++	struct fb_ops fbops;
++	int r;
++
++#ifdef CONFIG_OMAP2_DSS_VENC
++	if (strcmp(mode_str, "pal") == 0) {
++		*timings = omap_dss_pal_timings;
++		*bpp = 0;
++		return 0;
++	} else if (strcmp(mode_str, "ntsc") == 0) {
++		*timings = omap_dss_ntsc_timings;
++		*bpp = 0;
++		return 0;
++	}
++#endif
++
++	/* this is quite a hack, but I wanted to use the modedb and for
++	 * that we need fb_info and var, so we create dummy ones */
++
++	memset(&fbi, 0, sizeof(fbi));
++	memset(&var, 0, sizeof(var));
++	memset(&fbops, 0, sizeof(fbops));
++	fbi.fbops = &fbops;
++
++	r = fb_find_mode(&var, &fbi, mode_str, NULL, 0, NULL, 24);
++
++	if (r != 0) {
++		timings->pixel_clock = PICOS2KHZ(var.pixclock);
++		timings->hfp = var.left_margin;
++		timings->hbp = var.right_margin;
++		timings->vfp = var.upper_margin;
++		timings->vbp = var.lower_margin;
++		timings->hsw = var.hsync_len;
++		timings->vsw = var.vsync_len;
++		timings->x_res = var.xres;
++		timings->y_res = var.yres;
++
++		switch (var.bits_per_pixel) {
++		case 16:
++			*bpp = 16;
++			break;
++		case 24:
++		case 32:
++		default:
++			*bpp = 24;
++			break;
++		}
++
++		return 0;
++	} else {
++		return -EINVAL;
++	}
++}
++
++static int omapfb_set_def_mode(struct omap_dss_device *display, char *mode_str)
++{
++	int r;
++	u8 bpp;
++	struct omap_video_timings timings;
++
++	r = omapfb_mode_to_timings(mode_str, &timings, &bpp);
++	if (r)
++		return r;
++
++	display->panel.recommended_bpp = bpp;
++
++	if (!display->check_timings || !display->set_timings)
++		return -EINVAL;
++
++	r = display->check_timings(display, &timings);
++	if (r)
++		return r;
++
++	display->set_timings(display, &timings);
++
++	return 0;
++}
++
++static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
++{
++	char *str, *options, *this_opt;
++	int r = 0;
++
++	str = kmalloc(strlen(def_mode) + 1, GFP_KERNEL);
++	strcpy(str, def_mode);
++	options = str;
++
++	while (!r && (this_opt = strsep(&options, ",")) != NULL) {
++		char *p, *display_str, *mode_str;
++		struct omap_dss_device *display;
++		int i;
++
++		p = strchr(this_opt, ':');
++		if (!p) {
++			r = -EINVAL;
++			break;
++		}
++
++		*p = 0;
++		display_str = this_opt;
++		mode_str = p + 1;
++
++		display = NULL;
++		for (i = 0; i < fbdev->num_displays; ++i) {
++			if (strcmp(fbdev->displays[i]->name,
++						display_str) == 0) {
++				display = fbdev->displays[i];
++				break;
++			}
++		}
++
++		if (!display) {
++			r = -EINVAL;
++			break;
++		}
++
++		r = omapfb_set_def_mode(display, mode_str);
++		if (r)
++			break;
++	}
++
++	kfree(str);
++
++	return r;
++}
++
++static int omapfb_probe(struct platform_device *pdev)
++{
++	struct omapfb2_device *fbdev = NULL;
++	int r = 0;
++	int i;
++	struct omap_overlay *ovl;
++	struct omap_dss_device *def_display;
++	struct omap_dss_device *dssdev;
++
++	DBG("omapfb_probe\n");
++
++	if (pdev->num_resources != 0) {
++		dev_err(&pdev->dev, "probed for an unknown device\n");
++		r = -ENODEV;
++		goto err0;
++	}
++
++	fbdev = kzalloc(sizeof(struct omapfb2_device), GFP_KERNEL);
++	if (fbdev == NULL) {
++		r = -ENOMEM;
++		goto err0;
++	}
++
++	mutex_init(&fbdev->mtx);
++
++	fbdev->dev = &pdev->dev;
++	platform_set_drvdata(pdev, fbdev);
++
++	fbdev->num_displays = 0;
++	dssdev = NULL;
++	for_each_dss_dev(dssdev) {
++		omap_dss_get_device(dssdev);
++		fbdev->displays[fbdev->num_displays++] = dssdev;
++	}
++
++	if (fbdev->num_displays == 0) {
++		dev_err(&pdev->dev, "no displays\n");
++		r = -EINVAL;
++		goto cleanup;
++	}
++
++	fbdev->num_overlays = omap_dss_get_num_overlays();
++	for (i = 0; i < fbdev->num_overlays; i++)
++		fbdev->overlays[i] = omap_dss_get_overlay(i);
++
++	fbdev->num_managers = omap_dss_get_num_overlay_managers();
++	for (i = 0; i < fbdev->num_managers; i++)
++		fbdev->managers[i] = omap_dss_get_overlay_manager(i);
++
++	if (def_mode && strlen(def_mode) > 0) {
++		if (omapfb_parse_def_modes(fbdev))
++			dev_warn(&pdev->dev, "cannot parse default modes\n");
++	}
++
++	r = omapfb_create_framebuffers(fbdev);
++	if (r)
++		goto cleanup;
++
++	for (i = 0; i < fbdev->num_managers; i++) {
++		struct omap_overlay_manager *mgr;
++		mgr = fbdev->managers[i];
++		r = mgr->apply(mgr);
++		if (r)
++			dev_warn(fbdev->dev, "failed to apply dispc config\n");
++	}
++
++	DBG("mgr->apply'ed\n");
++
++	/* gfx overlay should be the default one. find a display
++	 * connected to that, and use it as default display */
++	ovl = omap_dss_get_overlay(0);
++	if (ovl->manager && ovl->manager->device) {
++		def_display = ovl->manager->device;
++	} else {
++		dev_warn(&pdev->dev, "cannot find default display\n");
++		def_display = NULL;
++	}
++
++	if (def_display) {
++		u16 w, h;
++		r = def_display->enable(def_display);
++		if (r)
++			dev_warn(fbdev->dev, "Failed to enable display '%s'\n",
++					def_display->name);
++
++		/* set the update mode */
++		if (def_display->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE) {
++#ifdef CONFIG_FB_OMAP2_FORCE_AUTO_UPDATE
++			if (def_display->enable_te)
++				def_display->enable_te(def_display, 1);
++			if (def_display->set_update_mode)
++				def_display->set_update_mode(def_display,
++						OMAP_DSS_UPDATE_AUTO);
++#else /* MANUAL_UPDATE */
++			if (def_display->enable_te)
++				def_display->enable_te(def_display, 0);
++			if (def_display->set_update_mode)
++				def_display->set_update_mode(def_display,
++						OMAP_DSS_UPDATE_MANUAL);
++
++			def_display->get_resolution(def_display, &w, &h);
++			def_display->update(def_display, 0, 0, w, h);
++#endif
++		} else {
++			if (def_display->set_update_mode)
++				def_display->set_update_mode(def_display,
++						OMAP_DSS_UPDATE_AUTO);
++		}
++	}
++
++	return 0;
++
++cleanup:
++	omapfb_free_resources(fbdev);
++err0:
++	dev_err(&pdev->dev, "failed to setup omapfb\n");
++	return r;
++}
++
++static int omapfb_remove(struct platform_device *pdev)
++{
++	struct omapfb2_device *fbdev = platform_get_drvdata(pdev);
++
++	/* FIXME: wait till completion of pending events */
++
++	omapfb_remove_sysfs(fbdev);
++
++	omapfb_free_resources(fbdev);
++
++	return 0;
++}
++
++static struct platform_driver omapfb_driver = {
++	.probe          = omapfb_probe,
++	.remove         = omapfb_remove,
++	.driver         = {
++		.name   = "omapfb",
++		.owner  = THIS_MODULE,
++	},
++};
++
++static int __init omapfb_init(void)
++{
++	DBG("omapfb_init\n");
++
++	if (platform_driver_register(&omapfb_driver)) {
++		printk(KERN_ERR "failed to register omapfb driver\n");
++		return -ENODEV;
++	}
++
++	return 0;
++}
++
++static void __exit omapfb_exit(void)
++{
++	DBG("omapfb_exit\n");
++	platform_driver_unregister(&omapfb_driver);
++}
++
++module_param_named(mode, def_mode, charp, 0);
++module_param_named(vram, def_vram, charp, 0);
++module_param_named(rotate, def_rotate, int, 0);
++module_param_named(vrfb, def_vrfb, bool, 0);
++module_param_named(mirror, def_mirror, bool, 0);
++
++/* late_initcall to let panel/ctrl drivers loaded first.
++ * I guess better option would be a more dynamic approach,
++ * so that omapfb reacts to new panels when they are loaded */
++late_initcall(omapfb_init);
++/*module_init(omapfb_init);*/
++module_exit(omapfb_exit);
++
++MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@nokia.com>");
++MODULE_DESCRIPTION("OMAP2/3 Framebuffer");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/video/omap2/omapfb/omapfb-sysfs.c b/drivers/video/omap2/omapfb/omapfb-sysfs.c
+new file mode 100644
+index 0000000..ef30e0e
+--- /dev/null
++++ b/drivers/video/omap2/omapfb/omapfb-sysfs.c
+@@ -0,0 +1,507 @@
++/*
++ * linux/drivers/video/omap2/omapfb-sysfs.c
++ *
++ * Copyright (C) 2008 Nokia Corporation
++ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
++ *
++ * Some code and ideas taken from drivers/video/omap/ driver
++ * by Imre Deak.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/fb.h>
++#include <linux/sysfs.h>
++#include <linux/device.h>
++#include <linux/uaccess.h>
++#include <linux/platform_device.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/omapfb.h>
++
++#include <mach/display.h>
++#include <mach/vrfb.h>
++
++#include "omapfb.h"
++
++static ssize_t show_rotate_type(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", ofbi->rotation_type);
++}
++
++static ssize_t store_rotate_type(struct device *dev,
++		struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	enum omap_dss_rotation_type rot_type;
++	int r;
++
++	rot_type = simple_strtoul(buf, NULL, 0);
++
++	if (rot_type != OMAP_DSS_ROT_DMA && rot_type != OMAP_DSS_ROT_VRFB)
++		return -EINVAL;
++
++	lock_fb_info(fbi);
++
++	r = 0;
++	if (rot_type == ofbi->rotation_type)
++		goto out;
++
++	if (ofbi->region.size) {
++		r = -EBUSY;
++		goto out;
++	}
++
++	ofbi->rotation_type = rot_type;
++
++	/*
++	 * Since the VRAM for this FB is not allocated at the moment we don't
++	 * need to do any further parameter checking at this point.
++	 */
++out:
++	unlock_fb_info(fbi);
++
++	return r ? r : count;
++}
++
++
++static ssize_t show_mirror(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", ofbi->mirror);
++}
++
++static ssize_t store_mirror(struct device *dev,
++		struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	bool mirror;
++	int r;
++	struct fb_var_screeninfo new_var;
++
++	mirror = simple_strtoul(buf, NULL, 0);
++
++	if (mirror != 0 && mirror != 1)
++		return -EINVAL;
++
++	lock_fb_info(fbi);
++
++	ofbi->mirror = mirror;
++
++	memcpy(&new_var, &fbi->var, sizeof(new_var));
++	r = check_fb_var(fbi, &new_var);
++	if (r)
++		goto out;
++	memcpy(&fbi->var, &new_var, sizeof(fbi->var));
++
++	set_fb_fix(fbi);
++
++	r = omapfb_apply_changes(fbi, 0);
++	if (r)
++		goto out;
++
++	r = count;
++out:
++	unlock_fb_info(fbi);
++
++	return r;
++}
++
++static ssize_t show_overlays(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	ssize_t l = 0;
++	int t;
++
++	omapfb_lock(fbdev);
++	lock_fb_info(fbi);
++
++	for (t = 0; t < ofbi->num_overlays; t++) {
++		struct omap_overlay *ovl = ofbi->overlays[t];
++		int ovlnum;
++
++		for (ovlnum = 0; ovlnum < fbdev->num_overlays; ++ovlnum)
++			if (ovl == fbdev->overlays[ovlnum])
++				break;
++
++		l += snprintf(buf + l, PAGE_SIZE - l, "%s%d",
++				t == 0 ? "" : ",", ovlnum);
++	}
++
++	l += snprintf(buf + l, PAGE_SIZE - l, "\n");
++
++	unlock_fb_info(fbi);
++	omapfb_unlock(fbdev);
++
++	return l;
++}
++
++static struct omapfb_info *get_overlay_fb(struct omapfb2_device *fbdev,
++		struct omap_overlay *ovl)
++{
++	int i, t;
++
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[i]);
++
++		for (t = 0; t < ofbi->num_overlays; t++) {
++			if (ofbi->overlays[t] == ovl)
++				return ofbi;
++		}
++	}
++
++	return NULL;
++}
++
++static ssize_t store_overlays(struct device *dev, struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omap_overlay *ovls[OMAPFB_MAX_OVL_PER_FB];
++	struct omap_overlay *ovl;
++	int num_ovls, r, i;
++	int len;
++	bool added = false;
++
++	num_ovls = 0;
++
++	len = strlen(buf);
++	if (buf[len - 1] == '\n')
++		len = len - 1;
++
++	omapfb_lock(fbdev);
++	lock_fb_info(fbi);
++
++	if (len > 0) {
++		char *p = (char *)buf;
++		int ovlnum;
++
++		while (p < buf + len) {
++			int found;
++			if (num_ovls == OMAPFB_MAX_OVL_PER_FB) {
++				r = -EINVAL;
++				goto out;
++			}
++
++			ovlnum = simple_strtoul(p, &p, 0);
++			if (ovlnum > fbdev->num_overlays) {
++				r = -EINVAL;
++				goto out;
++			}
++
++			found = 0;
++			for (i = 0; i < num_ovls; ++i) {
++				if (ovls[i] == fbdev->overlays[ovlnum]) {
++					found = 1;
++					break;
++				}
++			}
++
++			if (!found)
++				ovls[num_ovls++] = fbdev->overlays[ovlnum];
++
++			p++;
++		}
++	}
++
++	for (i = 0; i < num_ovls; ++i) {
++		struct omapfb_info *ofbi2 = get_overlay_fb(fbdev, ovls[i]);
++		if (ofbi2 && ofbi2 != ofbi) {
++			dev_err(fbdev->dev, "overlay already in use\n");
++			r = -EINVAL;
++			goto out;
++		}
++	}
++
++	/* detach unused overlays */
++	for (i = 0; i < ofbi->num_overlays; ++i) {
++		int t, found;
++
++		ovl = ofbi->overlays[i];
++
++		found = 0;
++
++		for (t = 0; t < num_ovls; ++t) {
++			if (ovl == ovls[t]) {
++				found = 1;
++				break;
++			}
++		}
++
++		if (found)
++			continue;
++
++		DBG("detaching %d\n", ofbi->overlays[i]->id);
++
++		omapfb_overlay_enable(ovl, 0);
++
++		if (ovl->manager)
++			ovl->manager->apply(ovl->manager);
++
++		for (t = i + 1; t < ofbi->num_overlays; t++) {
++			ofbi->rotation[t-1] = ofbi->rotation[t];
++			ofbi->overlays[t-1] = ofbi->overlays[t];
++		}
++
++		ofbi->num_overlays--;
++		i--;
++	}
++
++	for (i = 0; i < num_ovls; ++i) {
++		int t, found;
++
++		ovl = ovls[i];
++
++		found = 0;
++
++		for (t = 0; t < ofbi->num_overlays; ++t) {
++			if (ovl == ofbi->overlays[t]) {
++				found = 1;
++				break;
++			}
++		}
++
++		if (found)
++			continue;
++		ofbi->rotation[ofbi->num_overlays] = 0;
++		ofbi->overlays[ofbi->num_overlays++] = ovl;
++
++		added = true;
++	}
++
++	if (added) {
++		r = omapfb_apply_changes(fbi, 0);
++		if (r)
++			goto out;
++	}
++
++	r = count;
++out:
++	unlock_fb_info(fbi);
++	omapfb_unlock(fbdev);
++
++	return r;
++}
++
++static ssize_t show_overlays_rotate(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	ssize_t l = 0;
++	int t;
++
++	lock_fb_info(fbi);
++
++	for (t = 0; t < ofbi->num_overlays; t++) {
++		l += snprintf(buf + l, PAGE_SIZE - l, "%s%d",
++				t == 0 ? "" : ",", ofbi->rotation[t]);
++	}
++
++	l += snprintf(buf + l, PAGE_SIZE - l, "\n");
++
++	unlock_fb_info(fbi);
++
++	return l;
++}
++
++static ssize_t store_overlays_rotate(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	int num_ovls = 0, r, i;
++	int len;
++	bool changed = false;
++	u8 rotation[OMAPFB_MAX_OVL_PER_FB];
++
++	len = strlen(buf);
++	if (buf[len - 1] == '\n')
++		len = len - 1;
++
++	lock_fb_info(fbi);
++
++	if (len > 0) {
++		char *p = (char *)buf;
++
++		while (p < buf + len) {
++			int rot;
++
++			if (num_ovls == ofbi->num_overlays) {
++				r = -EINVAL;
++				goto out;
++			}
++
++			rot = simple_strtoul(p, &p, 0);
++			if (rot < 0 || rot > 3) {
++				r = -EINVAL;
++				goto out;
++			}
++
++			if (ofbi->rotation[num_ovls] != rot)
++				changed = true;
++
++			rotation[num_ovls++] = rot;
++
++			p++;
++		}
++	}
++
++	if (num_ovls != ofbi->num_overlays) {
++		r = -EINVAL;
++		goto out;
++	}
++
++	if (changed) {
++		for (i = 0; i < num_ovls; ++i)
++			ofbi->rotation[i] = rotation[i];
++
++		r = omapfb_apply_changes(fbi, 0);
++		if (r)
++			goto out;
++
++		/* FIXME error handling? */
++	}
++
++	r = count;
++out:
++	unlock_fb_info(fbi);
++
++	return r;
++}
++
++static ssize_t show_size(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++
++	return snprintf(buf, PAGE_SIZE, "%lu\n", ofbi->region.size);
++}
++
++static ssize_t store_size(struct device *dev, struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	unsigned long size;
++	int r;
++	int i;
++
++	size = PAGE_ALIGN(simple_strtoul(buf, NULL, 0));
++
++	lock_fb_info(fbi);
++
++	for (i = 0; i < ofbi->num_overlays; i++) {
++		if (ofbi->overlays[i]->info.enabled) {
++			r = -EBUSY;
++			goto out;
++		}
++	}
++
++	if (size != ofbi->region.size) {
++		r = omapfb_realloc_fbmem(fbi, size, ofbi->region.type);
++		if (r) {
++			dev_err(dev, "realloc fbmem failed\n");
++			goto out;
++		}
++	}
++
++	r = count;
++out:
++	unlock_fb_info(fbi);
++
++	return r;
++}
++
++static ssize_t show_phys(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++
++	return snprintf(buf, PAGE_SIZE, "%0x\n", ofbi->region.paddr);
++}
++
++static ssize_t show_virt(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fbi = dev_get_drvdata(dev);
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++
++	return snprintf(buf, PAGE_SIZE, "%p\n", ofbi->region.vaddr);
++}
++
++static struct device_attribute omapfb_attrs[] = {
++	__ATTR(rotate_type, S_IRUGO | S_IWUSR, show_rotate_type,
++			store_rotate_type),
++	__ATTR(mirror, S_IRUGO | S_IWUSR, show_mirror, store_mirror),
++	__ATTR(size, S_IRUGO | S_IWUSR, show_size, store_size),
++	__ATTR(overlays, S_IRUGO | S_IWUSR, show_overlays, store_overlays),
++	__ATTR(overlays_rotate, S_IRUGO | S_IWUSR, show_overlays_rotate,
++			store_overlays_rotate),
++	__ATTR(phys_addr, S_IRUGO, show_phys, NULL),
++	__ATTR(virt_addr, S_IRUGO, show_virt, NULL),
++};
++
++int omapfb_create_sysfs(struct omapfb2_device *fbdev)
++{
++	int i;
++	int r;
++
++	DBG("create sysfs for fbs\n");
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		int t;
++		for (t = 0; t < ARRAY_SIZE(omapfb_attrs); t++) {
++			r = device_create_file(fbdev->fbs[i]->dev,
++					&omapfb_attrs[t]);
++
++			if (r) {
++				dev_err(fbdev->dev, "failed to create sysfs "
++						"file\n");
++				return r;
++			}
++		}
++	}
++
++	return 0;
++}
++
++void omapfb_remove_sysfs(struct omapfb2_device *fbdev)
++{
++	int i, t;
++
++	DBG("remove sysfs for fbs\n");
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		for (t = 0; t < ARRAY_SIZE(omapfb_attrs); t++)
++			device_remove_file(fbdev->fbs[i]->dev,
++					&omapfb_attrs[t]);
++	}
++}
++
+diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
+new file mode 100644
+index 0000000..d9ee986
+--- /dev/null
++++ b/drivers/video/omap2/omapfb/omapfb.h
+@@ -0,0 +1,146 @@
++/*
++ * linux/drivers/video/omap2/omapfb.h
++ *
++ * Copyright (C) 2008 Nokia Corporation
++ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
++ *
++ * Some code and ideas taken from drivers/video/omap/ driver
++ * by Imre Deak.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#ifndef __DRIVERS_VIDEO_OMAP2_OMAPFB_H__
++#define __DRIVERS_VIDEO_OMAP2_OMAPFB_H__
++
++#ifdef CONFIG_FB_OMAP2_DEBUG_SUPPORT
++#define DEBUG
++#endif
++
++#include <mach/display.h>
++
++#ifdef DEBUG
++extern unsigned int omapfb_debug;
++#define DBG(format, ...) \
++	if (omapfb_debug) \
++		printk(KERN_DEBUG "OMAPFB: " format, ## __VA_ARGS__)
++#else
++#define DBG(format, ...)
++#endif
++
++#define FB2OFB(fb_info) ((struct omapfb_info *)(fb_info->par))
++
++/* max number of overlays to which a framebuffer data can be direct */
++#define OMAPFB_MAX_OVL_PER_FB 3
++
++struct omapfb2_mem_region {
++	u32		paddr;
++	void __iomem	*vaddr;
++	struct vrfb	vrfb;
++	unsigned long	size;
++	u8		type;		/* OMAPFB_PLANE_MEM_* */
++	bool		alloc;		/* allocated by the driver */
++	bool		map;		/* kernel mapped by the driver */
++};
++
++/* appended to fb_info */
++struct omapfb_info {
++	int id;
++	struct omapfb2_mem_region region;
++	atomic_t map_count;
++	int num_overlays;
++	struct omap_overlay *overlays[OMAPFB_MAX_OVL_PER_FB];
++	struct omapfb2_device *fbdev;
++	enum omap_dss_rotation_type rotation_type;
++	u8 rotation[OMAPFB_MAX_OVL_PER_FB];
++	bool mirror;
++};
++
++struct omapfb2_device {
++	struct device *dev;
++	struct mutex  mtx;
++
++	u32 pseudo_palette[17];
++
++	int state;
++
++	unsigned num_fbs;
++	struct fb_info *fbs[10];
++
++	unsigned num_displays;
++	struct omap_dss_device *displays[10];
++	unsigned num_overlays;
++	struct omap_overlay *overlays[10];
++	unsigned num_managers;
++	struct omap_overlay_manager *managers[10];
++};
++
++struct omapfb_colormode {
++	enum omap_color_mode dssmode;
++	u32 bits_per_pixel;
++	u32 nonstd;
++	struct fb_bitfield red;
++	struct fb_bitfield green;
++	struct fb_bitfield blue;
++	struct fb_bitfield transp;
++};
++
++void set_fb_fix(struct fb_info *fbi);
++int check_fb_var(struct fb_info *fbi, struct fb_var_screeninfo *var);
++int omapfb_realloc_fbmem(struct fb_info *fbi, unsigned long size, int type);
++int omapfb_apply_changes(struct fb_info *fbi, int init);
++
++int omapfb_create_sysfs(struct omapfb2_device *fbdev);
++void omapfb_remove_sysfs(struct omapfb2_device *fbdev);
++
++int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg);
++
++int dss_mode_to_fb_mode(enum omap_color_mode dssmode,
++			struct fb_var_screeninfo *var);
++
++/* find the display connected to this fb, if any */
++static inline struct omap_dss_device *fb2display(struct fb_info *fbi)
++{
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	int i;
++
++	/* XXX: returns the display connected to first attached overlay */
++	for (i = 0; i < ofbi->num_overlays; i++) {
++		if (ofbi->overlays[i]->manager)
++			return ofbi->overlays[i]->manager->device;
++	}
++
++	return NULL;
++}
++
++static inline void omapfb_lock(struct omapfb2_device *fbdev)
++{
++	mutex_lock(&fbdev->mtx);
++}
++
++static inline void omapfb_unlock(struct omapfb2_device *fbdev)
++{
++	mutex_unlock(&fbdev->mtx);
++}
++
++static inline int omapfb_overlay_enable(struct omap_overlay *ovl,
++		int enable)
++{
++	struct omap_overlay_info info;
++
++	ovl->get_overlay_info(ovl, &info);
++	info.enabled = enable;
++	return ovl->set_overlay_info(ovl, &info);
++}
++
++#endif
+diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
+index a3611d3..52e0987 100644
+--- a/include/linux/omapfb.h
++++ b/include/linux/omapfb.h
+@@ -24,6 +24,7 @@
+ #ifndef __LINUX_OMAPFB_H__
+ #define __LINUX_OMAPFB_H__
+ 
++#include <linux/fb.h>
+ #include <linux/ioctl.h>
+ #include <linux/types.h>
+ 
+@@ -50,6 +51,11 @@
+ #define OMAPFB_UPDATE_WINDOW	OMAP_IOW(54, struct omapfb_update_window)
+ #define OMAPFB_SETUP_MEM	OMAP_IOW(55, struct omapfb_mem_info)
+ #define OMAPFB_QUERY_MEM	OMAP_IOW(56, struct omapfb_mem_info)
++#define OMAPFB_WAITFORVSYNC	OMAP_IO(57)
++#define OMAPFB_MEMORY_READ	OMAP_IOR(58, struct omapfb_memory_read)
++#define OMAPFB_GET_OVERLAY_COLORMODE OMAP_IOR(59, struct omapfb_ovl_colormode)
++#define OMAPFB_WAITFORGO	OMAP_IO(60)
++#define OMAPFB_GET_VRAM_INFO	OMAP_IOR(61, struct omapfb_vram_info)
+ 
+ #define OMAPFB_CAPS_GENERIC_MASK	0x00000fff
+ #define OMAPFB_CAPS_LCDC_MASK		0x00fff000
+@@ -87,6 +93,13 @@ enum omapfb_color_format {
+ 	OMAPFB_COLOR_CLUT_1BPP,
+ 	OMAPFB_COLOR_RGB444,
+ 	OMAPFB_COLOR_YUY422,
++
++	OMAPFB_COLOR_ARGB16,
++	OMAPFB_COLOR_RGB24U,	/* RGB24, 32-bit container */
++	OMAPFB_COLOR_RGB24P,	/* RGB24, 24-bit container */
++	OMAPFB_COLOR_ARGB32,
++	OMAPFB_COLOR_RGBA32,
++	OMAPFB_COLOR_RGBX32,
+ };
+ 
+ struct omapfb_update_window {
+@@ -158,6 +171,33 @@ enum omapfb_update_mode {
+ 	OMAPFB_MANUAL_UPDATE
+ };
+ 
++struct omapfb_memory_read {
++	__u16 x;
++	__u16 y;
++	__u16 w;
++	__u16 h;
++	size_t buffer_size;
++	void __user *buffer;
++};
++
++struct omapfb_ovl_colormode {
++	__u8 overlay_idx;
++	__u8 mode_idx;
++	__u32 bits_per_pixel;
++	__u32 nonstd;
++	struct fb_bitfield red;
++	struct fb_bitfield green;
++	struct fb_bitfield blue;
++	struct fb_bitfield transp;
++};
++
++struct omapfb_vram_info {
++	__u32 total;
++	__u32 free;
++	__u32 largest_free_block;
++	__u32 reserved[5];
++};
++
+ #ifdef __KERNEL__
+ 
+ #include <mach/board.h>
+@@ -173,6 +213,11 @@ struct omapfb_mem_region {
+ 	void __iomem	*vaddr;
+ 	unsigned long	size;
+ 	u8		type;		/* OMAPFB_PLANE_MEM_* */
++	enum omapfb_color_format format;/* OMAPFB_COLOR_* */
++	unsigned	format_used:1;	/* Must be set when format is set.
++					 * Needed b/c of the badly chosen 0
++					 * base for OMAPFB_COLOR_* values
++					 */
+ 	unsigned	alloc:1;	/* allocated by the driver */
+ 	unsigned	map:1;		/* kernel mapped by the driver */
+ };
 -- 
 1.6.4
 
