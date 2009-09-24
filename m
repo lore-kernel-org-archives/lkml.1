@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134AbZIXWK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbZIXWSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752134AbZIXWK4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZIXWKz
+	id S1752512AbZIXWSr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbZIXWSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:10:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40273 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751369AbZIXWKz (ORCPT
+	Thu, 24 Sep 2009 18:18:46 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42768 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752422AbZIXWSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:10:55 -0400
-Date: Thu, 24 Sep 2009 15:09:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@linux-foundation.org, graff.yang@gmail.com,
-       linux-kernel@vger.kernel.org, dhowells@redhat.com,
-       penberg@cs.helsinki.fi, lethal@linux-sh.org, mel@csn.ul.ie,
-       gerg@snapgear.com, stable@kernel.org
-Subject: Re: [PATCH] NOMMU: Fix MAP_PRIVATE mmap() of objects where the data
- can be mapped directly
-Message-Id: <20090924150925.06f4fa23.akpm@linux-foundation.org>
-In-Reply-To: <20090924141310.19746.31678.stgit@warthog.procyon.org.uk>
-References: <20090924141310.19746.31678.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 18:18:46 -0400
+X-Sasl-enc: mvBV8WZBZ1GyKIA2/q957F8kjLHyu0HrJCel1jjXn8it 1253830729
+Message-ID: <4ABBF03C.1070309@imap.cc>
+Date: Fri, 25 Sep 2009 00:18:36 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
+Subject: Re: Linux 2.6.27.35
+References: <20090924173758.GA17077@kroah.com>
+In-Reply-To: <20090924173758.GA17077@kroah.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCB223F9E9CE10BDB00E7D18A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Sep 2009 15:13:10 +0100
-David Howells <dhowells@redhat.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCB223F9E9CE10BDB00E7D18A
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Fix MAP_PRIVATE mmap() of files and devices where the data in the backing store
-> might be mapped directly.  Use the BDI_CAP_MAP_DIRECT capability flag to govern
-> whether or not we should be trying to map a file directly.  This can be used to
-> determine whether or not a region has been filled in at the point where we call
-> do_mmap_shared() or do_mmap_private().
-> 
-> The BDI_CAP_MAP_DIRECT capability flag is cleared by validate_mmap_request() if
-> there's any reason we can't use it.  It's also cleared in do_mmap_pgoff() if
-> f_op->get_unmapped_area() fails.
-> 
+Greg,
 
-The patch seems -stable-worthy but I see no cc:stable here?
+I notice the mismerge of mainline commit
+170ebf85160dd128e1c4206cc197cce7d1424705
+"bas_gigaset: correctly allocate USB interrupt transfer buffer"
+into 2.6.27-stable isn't fixed in this release yet. Is that just
+a timing problem, or do you still need anything from me?
 
-> Note that this fix does the following commit differently:
-> 
-> 	commit a190887b58c32d19c2eee007c5eb8faa970a69ba
-> 	Author: David Howells <dhowells@redhat.com>
-> 	Date:   Sat Sep 5 11:17:07 2009 -0700
-> 	nommu: fix error handling in do_mmap_pgoff()
+Thanks,
+Tilman
 
-I don't understand what you're saying here.
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
-> Reported-by: Graff Yang <graff.yang@gmail.com>
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Greg Ungerer <gerg@snapgear.com>
 
+--------------enigCB223F9E9CE10BDB00E7D18A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFKu/BEQ3+did9BuFsRAu+EAJwMYIY0ByCmKEOC/ESL3mOJSAiRMQCdHaTV
+F6t3MSCEDh5FEPk0S5atmVU=
+=MNM0
+-----END PGP SIGNATURE-----
+
+--------------enigCB223F9E9CE10BDB00E7D18A--
