@@ -1,189 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbZIXPfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZIXPi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbZIXPfg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 11:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZIXPff
+	id S1752631AbZIXPi0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZIXPi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 11:35:35 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:39671 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751613AbZIXPff (ORCPT
+	Thu, 24 Sep 2009 11:38:26 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53066 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbZIXPiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 11:35:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqIEAN8su0pMROOX/2dsb2JhbACBUtV4hBsF
-Date: Thu, 24 Sep 2009 11:35:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: Sam Ravnborg <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 10.2/12] Fix Immediate Values x86_64 support old gcc
-Message-ID: <20090924153536.GB29580@Krystal>
-References: <20090924132626.485545323@polymtl.ca> <20090924133400.512675657@polymtl.ca>
+	Thu, 24 Sep 2009 11:38:25 -0400
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+From: Peter Zijlstra <peterz@infradead.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+In-Reply-To: <20090924083342.GA15918@localhost>
+References: <1252425983.7746.120.camel@twins> <20090908162936.GA2975@think>
+	 <1252428983.7746.140.camel@twins> <20090908172842.GC2975@think>
+	 <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins>
+	 <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz>
+	 <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz>
+	 <20090924083342.GA15918@localhost>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 17:38:16 +0200
+Message-Id: <1253806696.18939.40.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090924133400.512675657@polymtl.ca>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 11:33:57 up 37 days,  2:23,  3 users,  load average: 1.30, 0.67,
-	0.48
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GCC < 4, on x86_64, does not accept symbol+offset operands for "i" constraints
-asm statements. Fallback on a memory read in lieue of immediate value if this
-compiler is detected.
+On Thu, 2009-09-24 at 16:33 +0800, Wu Fengguang wrote:
 
-Changelog :
-- USE_IMMEDIATE must now be used in lieue of CONFIG_IMMEDIATE in Makefiles and
-  in C code.
-- Every architecture implementing immediate values must declare USE_IMMEDIATE
-  in their Makefile.
-- Tab -> spaces in Makefiles.
+> Yeah, FIFO queuing should be good enough.
+> 
+> I'd like to propose one more data structure for evaluation :)
+> 
+> - bdi->throttle_lock
+> - bdi->throttle_list    pages to sync for each waiting task, taken from sync_writeback_pages()
+> - bdi->throttle_pages   (counted down) pages to sync for the head task, shall be atomic_t
+> 
+> In balance_dirty_pages(), it would do
+> 
+>         nr_to_sync = sync_writeback_pages()
+>         if (list_empty(bdi->throttle_list))  # I'm the only task
+>                 bdi->throttle_pages = nr_to_sync
+>         append nr_to_sync to bdi->throttle_list
+>         kick off background writeback
+>         wait
+>         remove itself from bdi->throttle_list and wait list
+>         set bdi->throttle_pages for new head task (or LONG_MAX)
+> 
+> In __bdi_writeout_inc(), it would do
+> 
+>         if (--bdi->throttle_pages <= 0)
+>                 check and wake up head task
+> 
+> In wb_writeback(), it would do
+> 
+>         if (args->for_background && exiting)
+>                 wake up all throttled tasks
+> 
+> To prevent wake up too many tasks at the same time, it can relax the
+> background threshold a bit, so that __bdi_writeout_inc() become the
+> only wake up point in normal cases.
+> 
+>         if (args->for_background && !list_empty(bdi->throttle_list) &&
+>                 over background_thresh - background_thresh / 32)
+>                 keep write pages;
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>
-CC: Paul Mackerras <paulus@samba.org>
----
- Makefile                  |    5 +++++
- arch/powerpc/Makefile     |    2 ++
- arch/x86/Makefile         |    5 +++++
- include/linux/immediate.h |    2 +-
- include/linux/module.h    |    2 +-
- kernel/Makefile           |    2 +-
- kernel/module.c           |    6 +++---
- 7 files changed, 18 insertions(+), 6 deletions(-)
-
-Index: linux.trees.git/arch/x86/Makefile
-===================================================================
---- linux.trees.git.orig/arch/x86/Makefile	2009-09-24 08:52:41.000000000 -0400
-+++ linux.trees.git/arch/x86/Makefile	2009-09-24 10:53:59.000000000 -0400
-@@ -41,6 +41,7 @@ ifeq ($(CONFIG_X86_32),y)
- 
-         # temporary until string.h is fixed
-         KBUILD_CFLAGS += -ffreestanding
-+        export USE_IMMEDIATE := $(CONFIG_IMMEDIATE)
- else
-         BITS := 64
-         UTS_MACHINE := x86_64
-@@ -70,6 +71,10 @@ else
-         # this works around some issues with generating unwind tables in older gccs
-         # newer gccs do it by default
-         KBUILD_CFLAGS += -maccumulate-outgoing-args
-+
-+        # x86_64 gcc 3.x has problems with passing symbol+offset in
-+        # asm "i" constraint.
-+        export USE_IMMEDIATE := $(call cc-ifversion, -ge, 0400, $(CONFIG_IMMEDIATE))
- endif
- 
- ifdef CONFIG_CC_STACKPROTECTOR
-Index: linux.trees.git/include/linux/immediate.h
-===================================================================
---- linux.trees.git.orig/include/linux/immediate.h	2009-09-24 10:53:51.000000000 -0400
-+++ linux.trees.git/include/linux/immediate.h	2009-09-24 10:53:59.000000000 -0400
-@@ -10,7 +10,7 @@
-  * See the file COPYING for more details.
-  */
- 
--#ifdef CONFIG_IMMEDIATE
-+#ifdef USE_IMMEDIATE
- 
- struct __imv {
- 	unsigned long var;	/* Pointer to the identifier variable of the
-Index: linux.trees.git/kernel/Makefile
-===================================================================
---- linux.trees.git.orig/kernel/Makefile	2009-09-24 09:20:19.000000000 -0400
-+++ linux.trees.git/kernel/Makefile	2009-09-24 10:55:09.000000000 -0400
-@@ -88,7 +88,7 @@ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
- obj-$(CONFIG_TRACEPOINTS) += tracepoint.o
--obj-$(CONFIG_IMMEDIATE) += immediate.o
-+obj-$(USE_IMMEDIATE) += immediate.o
- obj-$(CONFIG_LATENCYTOP) += latencytop.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace/
- obj-$(CONFIG_TRACING) += trace/
-Index: linux.trees.git/arch/powerpc/Makefile
-===================================================================
---- linux.trees.git.orig/arch/powerpc/Makefile	2009-09-24 08:52:40.000000000 -0400
-+++ linux.trees.git/arch/powerpc/Makefile	2009-09-24 10:53:59.000000000 -0400
-@@ -96,6 +96,8 @@ else
- LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
- endif
- 
-+export USE_IMMEDIATE := $(CONFIG_IMMEDIATE)
-+
- ifeq ($(CONFIG_TUNE_CELL),y)
- 	KBUILD_CFLAGS += $(call cc-option,-mtune=cell)
- endif
-Index: linux.trees.git/Makefile
-===================================================================
---- linux.trees.git.orig/Makefile	2009-09-24 08:52:38.000000000 -0400
-+++ linux.trees.git/Makefile	2009-09-24 10:53:59.000000000 -0400
-@@ -550,6 +550,11 @@ ifdef CONFIG_FUNCTION_TRACER
- KBUILD_CFLAGS	+= -pg
- endif
- 
-+# arch Makefile detects if the compiler permits use of immediate values
-+ifdef USE_IMMEDIATE
-+KBUILD_CFLAGS	+= -DUSE_IMMEDIATE
-+endif
-+
- # We trigger additional mismatches with less inlining
- ifdef CONFIG_DEBUG_SECTION_MISMATCH
- KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
-Index: linux.trees.git/kernel/module.c
-===================================================================
---- linux.trees.git.orig/kernel/module.c	2009-09-24 09:20:37.000000000 -0400
-+++ linux.trees.git/kernel/module.c	2009-09-24 10:53:59.000000000 -0400
-@@ -2237,7 +2237,7 @@ static noinline struct module *load_modu
- 	mod->ctors = section_objs(hdr, sechdrs, secstrings, ".ctors",
- 				  sizeof(*mod->ctors), &mod->num_ctors);
- #endif
--#ifdef CONFIG_IMMEDIATE
-+#ifdef USE_IMMEDIATE
- 	mod->immediate = section_objs(hdr, sechdrs, secstrings, "__imv",
- 					sizeof(*mod->immediate),
- 					&mod->num_immediate);
-@@ -2491,7 +2491,7 @@ SYSCALL_DEFINE3(init_module, void __user
- 	mutex_lock(&module_mutex);
- 	/* Drop initial reference. */
- 	module_put(mod);
--#ifdef CONFIG_IMMEDIATE
-+#ifdef USE_IMMEDIATE
- 	imv_unref(mod->immediate, mod->immediate + mod->num_immediate,
- 		mod->module_init, mod->init_size);
- #endif
-@@ -3011,7 +3011,7 @@ int module_get_iter_tracepoints(struct t
- }
- #endif
- 
--#ifdef CONFIG_IMMEDIATE
-+#ifdef USE_IMMEDIATE
- /**
-  * _module_imv_update - update all immediate values in the kernel
-  *
-Index: linux.trees.git/include/linux/module.h
-===================================================================
---- linux.trees.git.orig/include/linux/module.h	2009-09-24 10:53:51.000000000 -0400
-+++ linux.trees.git/include/linux/module.h	2009-09-24 10:53:59.000000000 -0400
-@@ -660,7 +660,7 @@ static inline int module_get_iter_tracep
- 
- #endif /* CONFIG_MODULES */
- 
--#if defined(CONFIG_MODULES) && defined(CONFIG_IMMEDIATE)
-+#if defined(CONFIG_MODULES) && defined(USE_IMMEDIATE)
- extern void _module_imv_update(void);
- extern void module_imv_update(void);
- #else
+Right, something like that ought to work well, or at least sounds like
+worth a try ;-)
 
