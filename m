@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbZIXTUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZIXTU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753637AbZIXTUJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZIXTUH
+	id S1753869AbZIXTU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZIXTU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:20:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40225 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbZIXTUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:20:05 -0400
-Date: Thu, 24 Sep 2009 21:20:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Fr?d?ric Weisbecker <fweisbec@gmail.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-perf-users@vger.kernel.org
-Subject: Re: [PATCH] perf tools: Dont use openat()
-Message-ID: <20090924192002.GB19225@elte.hu>
-References: <4ABB6EB7.7000002@gmail.com> <20090924131250.GA15132@elte.hu> <4ABB767D.6080004@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ABB767D.6080004@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 24 Sep 2009 15:20:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34902 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752946AbZIXTU1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:20:27 -0400
+Date: Thu, 24 Sep 2009 20:21:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Johan Hovold <jhovold@gmail.com>, "Greg Kroah-Hartman" <gregkh@suse.de>,
+       linux-usb@vger.kernel.org, Alan Cox <alan@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+Message-ID: <20090924202107.4730f2af@lxorguk.ukuu.org.uk>
+In-Reply-To: <200909242103.48562.oliver@neukum.org>
+References: <20090924154023.GA27480@localhost>
+	<200909242103.48562.oliver@neukum.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 Sep 2009 21:03:47 +0200
+Oliver Neukum <oliver@neukum.org> wrote:
 
-* Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> Am Donnerstag, 24. September 2009 17:40:23 schrieb Johan Hovold:
+> > Is there a reason why this was not fixed in ftdi_sio (and whiteheat?)
+> > along with the other drivers?
+> 
+> No good reason. They escaped my grep pattern. Mea culpa.
 
-> Ingo Molnar a ?crit :
-> > * Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> > 
-> >> Hi Ingo
-> >>
-> >> Here is a patch for perf.
-> > 
-> > Applied, thanks Eric!
-> > 
-> >> BTW, use of openat() is a nuisance, since many machines have old glibc
-> >> (RHEL 4 Update 5 -> glibc-2.3.4-2.36 on my dev machine for example)
-> > 
-> > We can certainly remove that reliance - wanna send a patch for it?
-> 
-> Here it is
-> 
-> Thanks
-> 
-> [PATCH] perf tools: Dont use openat()
-> 
-> openat() is still a young glibc facility, better to not use it
-> in a non performance critical program (perf list)
-> 
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-> ---
->  tools/perf/util/parse-events.c |   49 ++++++++++++-------------------
->  1 files changed, 20 insertions(+), 29 deletions(-)
+ftdi_sio is correct with low_latency set as it uses a work queue to
+process the packets received.
 
-Applied, thanks Eric! I think it's also significant enough to be pushed 
-to 2.6.32.
-
-	Ingo
+Alan
