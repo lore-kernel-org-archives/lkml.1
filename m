@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbZIXIt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZIXIth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbZIXIt3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 04:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZIXIt1
+	id S1752743AbZIXIth (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 04:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZIXIt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 04:49:27 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:48649 "EHLO
+	Thu, 24 Sep 2009 04:49:28 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:56885 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbZIXIt0 (ORCPT
+	with ESMTP id S1751932AbZIXIt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 04:49:26 -0400
+	Thu, 24 Sep 2009 04:49:27 -0400
 From: "Kirill A. Shutemov" <kirill@shutemov.name>
 To: linux-arm-kernel@lists.infradead.org,
        Russell King <linux@arm.linux.org.uk>
@@ -17,854 +17,103 @@ Cc: linux-kernel@vger.kernel.org,
        Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
        Koskinen Aaro <aaro.koskinen@nokia.com>,
        "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: [PATCH v5 1/2] ARM: Pass IFSR register to do_PrefetchAbort()
-Date: Thu, 24 Sep 2009 11:49:19 +0300
-Message-Id: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
+Subject: [PATCH v5 2/2] ARM: Proper prefetch abort handling on ARMv6 and ARMv7
+Date: Thu, 24 Sep 2009 11:49:20 +0300
+Message-Id: <e9c1f398415c4a7a09d942cd1ef832d9d9dbb5e8.1253781660.git.kirill@shutemov.name>
 X-Mailer: git-send-email 1.6.4.4
+In-Reply-To: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
+References: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
+In-Reply-To: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
+References: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instruction fault status register, IFSR, was introduced on ARMv6 to
-provide status information about the last insturction fault. It
-needed for proper prefetch abort handling.
+Currently, on ARMv6 and ARMv7, if an application tries to execute
+code (or garbage) on non-executable page it hangs. It caused by
+incorrect prefetch abort handling. Now every prefetch abort
+processes as a translation fault.
 
-Now we have three prefetch abort model:
+To fix this we have to analyze instruction fault status register
+to figure out reason why we've got the abort and process it
+accordingly.
 
-  * legacy - for CPUs before ARMv6. They doesn't provide neither
-    IFSR nor IFAR. We simulate IFSR with section translation fault
-    status for them to generalize code;
-  * ARMv6 - provides IFSR, but not IFAR;
-  * ARMv7 - provides both IFSR and IFAR.
+To make IFSR different from DFSR we set bit 31 which is reserved in
+both IFSR and DFSR.
+
+This patch also tries to protect from future hangs on unexpected
+exceptions. An application will be killed if unexpected exception
+type was received.
 
 Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
 ---
- arch/arm/include/asm/glue.h    |   26 ++++++++++++++----
- arch/arm/kernel/entry-armv.S   |   18 ++++--------
- arch/arm/kernel/entry-common.S |    7 -----
- arch/arm/mm/Kconfig            |   57 +++++++++++++++++++++-------------------
- arch/arm/mm/Makefile           |    4 +++
- arch/arm/mm/fault.c            |    2 +-
- arch/arm/mm/pabort-legacy.S    |   19 +++++++++++++
- arch/arm/mm/pabort-v6.S        |   19 +++++++++++++
- arch/arm/mm/pabort-v7.S        |   20 ++++++++++++++
- arch/arm/mm/proc-arm1020.S     |    2 +-
- arch/arm/mm/proc-arm1020e.S    |    2 +-
- arch/arm/mm/proc-arm1022.S     |    2 +-
- arch/arm/mm/proc-arm1026.S     |    2 +-
- arch/arm/mm/proc-arm6_7.S      |    4 +-
- arch/arm/mm/proc-arm720.S      |    2 +-
- arch/arm/mm/proc-arm740.S      |    2 +-
- arch/arm/mm/proc-arm7tdmi.S    |    2 +-
- arch/arm/mm/proc-arm920.S      |    2 +-
- arch/arm/mm/proc-arm922.S      |    2 +-
- arch/arm/mm/proc-arm925.S      |    2 +-
- arch/arm/mm/proc-arm926.S      |    2 +-
- arch/arm/mm/proc-arm940.S      |    2 +-
- arch/arm/mm/proc-arm946.S      |    2 +-
- arch/arm/mm/proc-arm9tdmi.S    |    2 +-
- arch/arm/mm/proc-fa526.S       |    2 +-
- arch/arm/mm/proc-feroceon.S    |    2 +-
- arch/arm/mm/proc-mohawk.S      |    2 +-
- arch/arm/mm/proc-sa110.S       |    2 +-
- arch/arm/mm/proc-sa1100.S      |    2 +-
- arch/arm/mm/proc-v6.S          |    2 +-
- arch/arm/mm/proc-v7.S          |    2 +-
- arch/arm/mm/proc-xsc3.S        |    2 +-
- arch/arm/mm/proc-xscale.S      |    2 +-
- 33 files changed, 144 insertions(+), 78 deletions(-)
- create mode 100644 arch/arm/mm/pabort-legacy.S
- create mode 100644 arch/arm/mm/pabort-v6.S
- create mode 100644 arch/arm/mm/pabort-v7.S
+ arch/arm/mm/fault.c |   51 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 50 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/include/asm/glue.h b/arch/arm/include/asm/glue.h
-index a0e39d5..234a3fc 100644
---- a/arch/arm/include/asm/glue.h
-+++ b/arch/arm/include/asm/glue.h
-@@ -120,25 +120,39 @@
- #endif
- 
- /*
-- * Prefetch abort handler.  If the CPU has an IFAR use that, otherwise
-- * use the address of the aborted instruction
-+ *	Prefetch Abort Model
-+ *	================
-+ *
-+ *	We have the following to choose from:
-+ *	  legacy	- no IFSR, no IFAR
-+ *	  v6		- ARMv6: IFSR, no IFAR
-+ *	  v7		- ARMv7: IFSR and IFAR
-  */
-+
- #undef CPU_PABORT_HANDLER
- #undef MULTI_PABORT
- 
--#ifdef CONFIG_CPU_PABRT_IFAR
-+#ifdef CONFIG_CPU_PABRT_LEGACY
-+# ifdef CPU_PABORT_HANDLER
-+#  define MULTI_PABORT 1
-+# else
-+#  define CPU_PABORT_HANDLER legacy_pabort
-+# endif
-+#endif
-+
-+#ifdef CONFIG_CPU_PABRT_V6
- # ifdef CPU_PABORT_HANDLER
- #  define MULTI_PABORT 1
- # else
--#  define CPU_PABORT_HANDLER(reg, insn)	mrc p15, 0, reg, cr6, cr0, 2
-+#  define CPU_PABORT_HANDLER v6_pabort
- # endif
- #endif
- 
--#ifdef CONFIG_CPU_PABRT_NOIFAR
-+#ifdef CONFIG_CPU_PABRT_V7
- # ifdef CPU_PABORT_HANDLER
- #  define MULTI_PABORT 1
- # else
--#  define CPU_PABORT_HANDLER(reg, insn)	mov reg, insn
-+#  define CPU_PABORT_HANDLER v7_pabort
- # endif
- #endif
- 
-diff --git a/arch/arm/kernel/entry-armv.S b/arch/arm/kernel/entry-armv.S
-index 0a2ba51..322410b 100644
---- a/arch/arm/kernel/entry-armv.S
-+++ b/arch/arm/kernel/entry-armv.S
-@@ -311,22 +311,16 @@ __pabt_svc:
- 	tst	r3, #PSR_I_BIT
- 	biceq	r9, r9, #PSR_I_BIT
- 
--	@
--	@ set args, then call main handler
--	@
--	@  r0 - address of faulting instruction
--	@  r1 - pointer to registers on stack
--	@
--#ifdef MULTI_PABORT
- 	mov	r0, r2			@ pass address of aborted instruction.
-+#ifdef MULTI_PABORT
- 	ldr	r4, .LCprocfns
- 	mov	lr, pc
- 	ldr	pc, [r4, #PROCESSOR_PABT_FUNC]
- #else
--	CPU_PABORT_HANDLER(r0, r2)
-+	bl	CPU_PABORT_HANDLER
- #endif
- 	msr	cpsr_c, r9			@ Maybe enable interrupts
--	mov	r1, sp				@ regs
-+	mov	r2, sp				@ regs
- 	bl	do_PrefetchAbort		@ call abort handler
- 
- 	@
-@@ -701,16 +695,16 @@ ENDPROC(__und_usr_unknown)
- __pabt_usr:
- 	usr_entry
- 
--#ifdef MULTI_PABORT
- 	mov	r0, r2			@ pass address of aborted instruction.
-+#ifdef MULTI_PABORT
- 	ldr	r4, .LCprocfns
- 	mov	lr, pc
- 	ldr	pc, [r4, #PROCESSOR_PABT_FUNC]
- #else
--	CPU_PABORT_HANDLER(r0, r2)
-+	bl	CPU_PABORT_HANDLER
- #endif
- 	enable_irq				@ Enable interrupts
--	mov	r1, sp				@ regs
-+	mov	r2, sp				@ regs
- 	bl	do_PrefetchAbort		@ call abort handler
-  UNWIND(.fnend		)
- 	/* fall through */
-diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
-index 807cfeb..725431e 100644
---- a/arch/arm/kernel/entry-common.S
-+++ b/arch/arm/kernel/entry-common.S
-@@ -425,13 +425,6 @@ sys_mmap2:
- #endif
- ENDPROC(sys_mmap2)
- 
--ENTRY(pabort_ifar)
--		mrc	p15, 0, r0, cr6, cr0, 2
--ENTRY(pabort_noifar)
--		mov	pc, lr
--ENDPROC(pabort_ifar)
--ENDPROC(pabort_noifar)
--
- #ifdef CONFIG_OABI_COMPAT
- 
- /*
-diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index 8d43e58..e993140 100644
---- a/arch/arm/mm/Kconfig
-+++ b/arch/arm/mm/Kconfig
-@@ -17,7 +17,7 @@ config CPU_ARM610
- 	select CPU_CP15_MMU
- 	select CPU_COPY_V3 if MMU
- 	select CPU_TLB_V3 if MMU
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	help
- 	  The ARM610 is the successor to the ARM3 processor
- 	  and was produced by VLSI Technology Inc.
-@@ -31,7 +31,7 @@ config CPU_ARM7TDMI
- 	depends on !MMU
- 	select CPU_32v4T
- 	select CPU_ABRT_LV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4
- 	help
- 	  A 32-bit RISC microprocessor based on the ARM7 processor core
-@@ -49,7 +49,7 @@ config CPU_ARM710
- 	select CPU_CP15_MMU
- 	select CPU_COPY_V3 if MMU
- 	select CPU_TLB_V3 if MMU
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	help
- 	  A 32-bit RISC microprocessor based on the ARM7 processor core
- 	  designed by Advanced RISC Machines Ltd. The ARM710 is the
-@@ -64,7 +64,7 @@ config CPU_ARM720T
- 	bool "Support ARM720T processor" if ARCH_INTEGRATOR
- 	select CPU_32v4T
- 	select CPU_ABRT_LV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
-@@ -83,7 +83,7 @@ config CPU_ARM740T
- 	depends on !MMU
- 	select CPU_32v4T
- 	select CPU_ABRT_LV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V3	# although the core is v4t
- 	select CPU_CP15_MPU
- 	help
-@@ -100,7 +100,7 @@ config CPU_ARM9TDMI
- 	depends on !MMU
- 	select CPU_32v4T
- 	select CPU_ABRT_NOMMU
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4
- 	help
- 	  A 32-bit RISC microprocessor based on the ARM9 processor core
-@@ -114,7 +114,7 @@ config CPU_ARM920T
- 	bool "Support ARM920T processor" if ARCH_INTEGRATOR
- 	select CPU_32v4T
- 	select CPU_ABRT_EV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4WT
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
-@@ -135,7 +135,7 @@ config CPU_ARM922T
- 	bool "Support ARM922T processor" if ARCH_INTEGRATOR
- 	select CPU_32v4T
- 	select CPU_ABRT_EV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4WT
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
-@@ -154,7 +154,7 @@ config CPU_ARM925T
-  	bool "Support ARM925T processor" if ARCH_OMAP1
- 	select CPU_32v4T
- 	select CPU_ABRT_EV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4WT
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
-@@ -173,7 +173,7 @@ config CPU_ARM926T
- 	bool "Support ARM926T processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB
- 	select CPU_32v5
- 	select CPU_ABRT_EV5TJ
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
- 	select CPU_COPY_V4WB if MMU
-@@ -191,7 +191,7 @@ config CPU_FA526
- 	bool
- 	select CPU_32v4
- 	select CPU_ABRT_EV4
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
- 	select CPU_CACHE_FA
-@@ -210,7 +210,7 @@ config CPU_ARM940T
- 	depends on !MMU
- 	select CPU_32v4T
- 	select CPU_ABRT_NOMMU
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MPU
- 	help
-@@ -228,7 +228,7 @@ config CPU_ARM946E
- 	depends on !MMU
- 	select CPU_32v5
- 	select CPU_ABRT_NOMMU
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MPU
- 	help
-@@ -244,7 +244,7 @@ config CPU_ARM1020
- 	bool "Support ARM1020T (rev 0) processor" if ARCH_INTEGRATOR
- 	select CPU_32v5
- 	select CPU_ABRT_EV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4WT
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
-@@ -262,7 +262,7 @@ config CPU_ARM1020E
- 	bool "Support ARM1020E processor" if ARCH_INTEGRATOR
- 	select CPU_32v5
- 	select CPU_ABRT_EV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4WT
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
-@@ -275,7 +275,7 @@ config CPU_ARM1022
- 	bool "Support ARM1022E processor" if ARCH_INTEGRATOR
- 	select CPU_32v5
- 	select CPU_ABRT_EV4T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
- 	select CPU_COPY_V4WB if MMU # can probably do better
-@@ -293,7 +293,7 @@ config CPU_ARM1026
- 	bool "Support ARM1026EJ-S processor" if ARCH_INTEGRATOR
- 	select CPU_32v5
- 	select CPU_ABRT_EV5T # But need Jazelle, but EV5TJ ignores bit 10
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
- 	select CPU_COPY_V4WB if MMU # can probably do better
-@@ -311,7 +311,7 @@ config CPU_SA110
- 	select CPU_32v3 if ARCH_RPC
- 	select CPU_32v4 if !ARCH_RPC
- 	select CPU_ABRT_EV4
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4WB
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
-@@ -331,7 +331,7 @@ config CPU_SA1100
- 	bool
- 	select CPU_32v4
- 	select CPU_ABRT_EV4
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_V4WB
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
-@@ -342,7 +342,7 @@ config CPU_XSCALE
- 	bool
- 	select CPU_32v5
- 	select CPU_ABRT_EV5T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
- 	select CPU_TLB_V4WBI if MMU
-@@ -352,7 +352,7 @@ config CPU_XSC3
- 	bool
- 	select CPU_32v5
- 	select CPU_ABRT_EV5T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
- 	select CPU_TLB_V4WBI if MMU
-@@ -363,7 +363,7 @@ config CPU_MOHAWK
- 	bool
- 	select CPU_32v5
- 	select CPU_ABRT_EV5T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
- 	select CPU_TLB_V4WBI if MMU
-@@ -374,7 +374,7 @@ config CPU_FEROCEON
- 	bool
- 	select CPU_32v5
- 	select CPU_ABRT_EV5T
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_LEGACY
- 	select CPU_CACHE_VIVT
- 	select CPU_CP15_MMU
- 	select CPU_COPY_FEROCEON if MMU
-@@ -394,7 +394,7 @@ config CPU_V6
- 	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX
- 	select CPU_32v6
- 	select CPU_ABRT_EV6
--	select CPU_PABRT_NOIFAR
-+	select CPU_PABRT_V6
- 	select CPU_CACHE_V6
- 	select CPU_CACHE_VIPT
- 	select CPU_CP15_MMU
-@@ -420,7 +420,7 @@ config CPU_V7
- 	select CPU_32v6K
- 	select CPU_32v7
- 	select CPU_ABRT_EV7
--	select CPU_PABRT_IFAR
-+	select CPU_PABRT_V7
- 	select CPU_CACHE_V7
- 	select CPU_CACHE_VIPT
- 	select CPU_CP15_MMU
-@@ -482,10 +482,13 @@ config CPU_ABRT_EV6
- config CPU_ABRT_EV7
- 	bool
- 
--config CPU_PABRT_IFAR
-+config CPU_PABRT_LEGACY
- 	bool
- 
--config CPU_PABRT_NOIFAR
-+config CPU_PABRT_V6
-+	bool
-+
-+config CPU_PABRT_V7
- 	bool
- 
- # The cache model
-diff --git a/arch/arm/mm/Makefile b/arch/arm/mm/Makefile
-index 63e3f6d..055cb2a 100644
---- a/arch/arm/mm/Makefile
-+++ b/arch/arm/mm/Makefile
-@@ -27,6 +27,10 @@ obj-$(CONFIG_CPU_ABRT_EV5TJ)	+= abort-ev5tj.o
- obj-$(CONFIG_CPU_ABRT_EV6)	+= abort-ev6.o
- obj-$(CONFIG_CPU_ABRT_EV7)	+= abort-ev7.o
- 
-+obj-$(CONFIG_CPU_PABRT_LEGACY)	+= pabort-legacy.o
-+obj-$(CONFIG_CPU_PABRT_V6)	+= pabort-v6.o
-+obj-$(CONFIG_CPU_PABRT_V7)	+= pabort-v7.o
-+
- obj-$(CONFIG_CPU_CACHE_V3)	+= cache-v3.o
- obj-$(CONFIG_CPU_CACHE_V4)	+= cache-v4.o
- obj-$(CONFIG_CPU_CACHE_V4WT)	+= cache-v4wt.o
 diff --git a/arch/arm/mm/fault.c b/arch/arm/mm/fault.c
-index 379f785..fd2375f 100644
+index fd2375f..ae0e25f 100644
 --- a/arch/arm/mm/fault.c
 +++ b/arch/arm/mm/fault.c
-@@ -520,7 +520,7 @@ do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
+@@ -519,9 +519,58 @@ do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
+ 	arm_notify_die("", regs, &info, fsr, 0);
  }
  
++
++static struct fsr_info ifsr_info[] = {
++	{ do_bad,		SIGBUS,  0,		"unknown 0"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 1"			   },
++	{ do_bad,		SIGBUS,  0,		"debug event"			   },
++	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"section access flag fault"	   },
++	{ do_bad,		SIGBUS,  0,		"unknown 4"			   },
++	{ do_translation_fault,	SIGSEGV, SEGV_MAPERR,	"section translation fault"	   },
++	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"page access flag fault"	   },
++	{ do_page_fault,	SIGSEGV, SEGV_MAPERR,	"page translation fault"	   },
++	{ do_bad,		SIGBUS,	 0,		"external abort on non-linefetch"  },
++	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"section domain fault"		   },
++	{ do_bad,		SIGBUS,  0,		"unknown 10"			   },
++	{ do_bad,		SIGSEGV, SEGV_ACCERR,	"page domain fault"		   },
++	{ do_bad,		SIGBUS,	 0,		"external abort on translation"	   },
++	{ do_sect_fault,	SIGSEGV, SEGV_ACCERR,	"section permission fault"	   },
++	{ do_bad,		SIGBUS,	 0,		"external abort on translation"	   },
++	{ do_page_fault,	SIGSEGV, SEGV_ACCERR,	"page permission fault"		   },
++	{ do_bad,		SIGBUS,  0,		"unknown 16"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 17"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 18"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 19"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 20"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 21"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 22"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 23"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 24"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 25"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 26"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 27"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 28"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 29"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 30"			   },
++	{ do_bad,		SIGBUS,  0,		"unknown 31"			   },
++};
++
  asmlinkage void __exception
--do_PrefetchAbort(unsigned long addr, struct pt_regs *regs)
-+do_PrefetchAbort(unsigned long addr, unsigned int ifsr, struct pt_regs *regs)
+ do_PrefetchAbort(unsigned long addr, unsigned int ifsr, struct pt_regs *regs)
  {
- 	do_translation_fault(addr, FSR_LNX_PF, regs);
+-	do_translation_fault(addr, FSR_LNX_PF, regs);
++	const struct fsr_info *inf = ifsr_info + fsr_fs(ifsr);
++	struct siginfo info;
++
++	if (!inf->fn(addr, ifsr | FSR_LNX_PF, regs))
++		return;
++
++	printk(KERN_ALERT "Unhandled prefetch abort: %s (0x%03x) at 0x%08lx\n",
++		inf->name, ifsr, addr);
++
++	info.si_signo = inf->sig;
++	info.si_errno = 0;
++	info.si_code  = inf->code;
++	info.si_addr  = (void __user *)addr;
++	arm_notify_die("", regs, &info, ifsr, 0);
  }
-diff --git a/arch/arm/mm/pabort-legacy.S b/arch/arm/mm/pabort-legacy.S
-new file mode 100644
-index 0000000..87970eb
---- /dev/null
-+++ b/arch/arm/mm/pabort-legacy.S
-@@ -0,0 +1,19 @@
-+#include <linux/linkage.h>
-+#include <asm/assembler.h>
-+
-+/*
-+ * Function: legacy_pabort
-+ *
-+ * Params  : r0 = address of aborted instruction
-+ *
-+ * Returns : r0 = address of abort
-+ *	   : r1 = Simulated IFSR with section translation fault status
-+ *
-+ * Purpose : obtain information about current prefetch abort.
-+ */
-+
-+	.align	5
-+ENTRY(legacy_pabort)
-+	mov	r1, #5
-+	mov	pc, lr
-+ENDPROC(legacy_pabort)
-diff --git a/arch/arm/mm/pabort-v6.S b/arch/arm/mm/pabort-v6.S
-new file mode 100644
-index 0000000..06e3d1e
---- /dev/null
-+++ b/arch/arm/mm/pabort-v6.S
-@@ -0,0 +1,19 @@
-+#include <linux/linkage.h>
-+#include <asm/assembler.h>
-+
-+/*
-+ * Function: v6_pabort
-+ *
-+ * Params  : r0 = address of aborted instruction
-+ *
-+ * Returns : r0 = address of abort
-+ *	   : r1 = IFSR
-+ *
-+ * Purpose : obtain information about current prefetch abort.
-+ */
-+
-+	.align	5
-+ENTRY(v6_pabort)
-+	mrc	p15, 0, r1, c5, c0, 1		@ get IFSR
-+	mov	pc, lr
-+ENDPROC(v6_pabort)
-diff --git a/arch/arm/mm/pabort-v7.S b/arch/arm/mm/pabort-v7.S
-new file mode 100644
-index 0000000..a8b3b30
---- /dev/null
-+++ b/arch/arm/mm/pabort-v7.S
-@@ -0,0 +1,20 @@
-+#include <linux/linkage.h>
-+#include <asm/assembler.h>
-+
-+/*
-+ * Function: v6_pabort
-+ *
-+ * Params  : r0 = address of aborted instruction
-+ *
-+ * Returns : r0 = address of abort
-+ *	   : r1 = IFSR
-+ *
-+ * Purpose : obtain information about current prefetch abort.
-+ */
-+
-+	.align	5
-+ENTRY(v7_pabort)
-+	mrc	p15, 0, r0, c6, c0, 2		@ get IFAR
-+	mrc	p15, 0, r1, c5, c0, 1		@ get IFSR
-+	mov	pc, lr
-+ENDPROC(v7_pabort)
-diff --git a/arch/arm/mm/proc-arm1020.S b/arch/arm/mm/proc-arm1020.S
-index b5551bf..d9fb4b9 100644
---- a/arch/arm/mm/proc-arm1020.S
-+++ b/arch/arm/mm/proc-arm1020.S
-@@ -449,7 +449,7 @@ arm1020_crval:
- 	.type	arm1020_processor_functions, #object
- arm1020_processor_functions:
- 	.word	v4t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm1020_proc_init
- 	.word	cpu_arm1020_proc_fin
- 	.word	cpu_arm1020_reset
-diff --git a/arch/arm/mm/proc-arm1020e.S b/arch/arm/mm/proc-arm1020e.S
-index 8bc6740..7453b75 100644
---- a/arch/arm/mm/proc-arm1020e.S
-+++ b/arch/arm/mm/proc-arm1020e.S
-@@ -430,7 +430,7 @@ arm1020e_crval:
- 	.type	arm1020e_processor_functions, #object
- arm1020e_processor_functions:
- 	.word	v4t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm1020e_proc_init
- 	.word	cpu_arm1020e_proc_fin
- 	.word	cpu_arm1020e_reset
-diff --git a/arch/arm/mm/proc-arm1022.S b/arch/arm/mm/proc-arm1022.S
-index 2cd03e6..8eb72d7 100644
---- a/arch/arm/mm/proc-arm1022.S
-+++ b/arch/arm/mm/proc-arm1022.S
-@@ -413,7 +413,7 @@ arm1022_crval:
- 	.type	arm1022_processor_functions, #object
- arm1022_processor_functions:
- 	.word	v4t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm1022_proc_init
- 	.word	cpu_arm1022_proc_fin
- 	.word	cpu_arm1022_reset
-diff --git a/arch/arm/mm/proc-arm1026.S b/arch/arm/mm/proc-arm1026.S
-index ad961a8..3b59f0d 100644
---- a/arch/arm/mm/proc-arm1026.S
-+++ b/arch/arm/mm/proc-arm1026.S
-@@ -408,7 +408,7 @@ arm1026_crval:
- 	.type	arm1026_processor_functions, #object
- arm1026_processor_functions:
- 	.word	v5t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm1026_proc_init
- 	.word	cpu_arm1026_proc_fin
- 	.word	cpu_arm1026_reset
-diff --git a/arch/arm/mm/proc-arm6_7.S b/arch/arm/mm/proc-arm6_7.S
-index 80d6e1d..3f9cd3d 100644
---- a/arch/arm/mm/proc-arm6_7.S
-+++ b/arch/arm/mm/proc-arm6_7.S
-@@ -278,7 +278,7 @@ __arm7_setup:	mov	r0, #0
- 		.type	arm6_processor_functions, #object
- ENTRY(arm6_processor_functions)
- 		.word	cpu_arm6_data_abort
--		.word	pabort_noifar
-+		.word	legacy_pabort
- 		.word	cpu_arm6_proc_init
- 		.word	cpu_arm6_proc_fin
- 		.word	cpu_arm6_reset
-@@ -295,7 +295,7 @@ ENTRY(arm6_processor_functions)
- 		.type	arm7_processor_functions, #object
- ENTRY(arm7_processor_functions)
- 		.word	cpu_arm7_data_abort
--		.word	pabort_noifar
-+		.word	legacy_pabort
- 		.word	cpu_arm7_proc_init
- 		.word	cpu_arm7_proc_fin
- 		.word	cpu_arm7_reset
-diff --git a/arch/arm/mm/proc-arm720.S b/arch/arm/mm/proc-arm720.S
-index 85ae186..0b62de2 100644
---- a/arch/arm/mm/proc-arm720.S
-+++ b/arch/arm/mm/proc-arm720.S
-@@ -181,7 +181,7 @@ arm720_crval:
- 		.type	arm720_processor_functions, #object
- ENTRY(arm720_processor_functions)
- 		.word	v4t_late_abort
--		.word	pabort_noifar
-+		.word	legacy_pabort
- 		.word	cpu_arm720_proc_init
- 		.word	cpu_arm720_proc_fin
- 		.word	cpu_arm720_reset
-diff --git a/arch/arm/mm/proc-arm740.S b/arch/arm/mm/proc-arm740.S
-index 4f95bee..01860cd 100644
---- a/arch/arm/mm/proc-arm740.S
-+++ b/arch/arm/mm/proc-arm740.S
-@@ -126,7 +126,7 @@ __arm740_setup:
- 	.type	arm740_processor_functions, #object
- ENTRY(arm740_processor_functions)
- 	.word	v4t_late_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm740_proc_init
- 	.word	cpu_arm740_proc_fin
- 	.word	cpu_arm740_reset
-diff --git a/arch/arm/mm/proc-arm7tdmi.S b/arch/arm/mm/proc-arm7tdmi.S
-index 93e05fa..1201b98 100644
---- a/arch/arm/mm/proc-arm7tdmi.S
-+++ b/arch/arm/mm/proc-arm7tdmi.S
-@@ -64,7 +64,7 @@ __arm7tdmi_setup:
- 		.type	arm7tdmi_processor_functions, #object
- ENTRY(arm7tdmi_processor_functions)
- 		.word	v4t_late_abort
--		.word	pabort_noifar
-+		.word	legacy_pabort
- 		.word	cpu_arm7tdmi_proc_init
- 		.word	cpu_arm7tdmi_proc_fin
- 		.word	cpu_arm7tdmi_reset
-diff --git a/arch/arm/mm/proc-arm920.S b/arch/arm/mm/proc-arm920.S
-index 914d688..2b7c197 100644
---- a/arch/arm/mm/proc-arm920.S
-+++ b/arch/arm/mm/proc-arm920.S
-@@ -395,7 +395,7 @@ arm920_crval:
- 	.type	arm920_processor_functions, #object
- arm920_processor_functions:
- 	.word	v4t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm920_proc_init
- 	.word	cpu_arm920_proc_fin
- 	.word	cpu_arm920_reset
-diff --git a/arch/arm/mm/proc-arm922.S b/arch/arm/mm/proc-arm922.S
-index 51c9c98..06a1aa4 100644
---- a/arch/arm/mm/proc-arm922.S
-+++ b/arch/arm/mm/proc-arm922.S
-@@ -399,7 +399,7 @@ arm922_crval:
- 	.type	arm922_processor_functions, #object
- arm922_processor_functions:
- 	.word	v4t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm922_proc_init
- 	.word	cpu_arm922_proc_fin
- 	.word	cpu_arm922_reset
-diff --git a/arch/arm/mm/proc-arm925.S b/arch/arm/mm/proc-arm925.S
-index 2724526..cb53435 100644
---- a/arch/arm/mm/proc-arm925.S
-+++ b/arch/arm/mm/proc-arm925.S
-@@ -462,7 +462,7 @@ arm925_crval:
- 	.type	arm925_processor_functions, #object
- arm925_processor_functions:
- 	.word	v4t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm925_proc_init
- 	.word	cpu_arm925_proc_fin
- 	.word	cpu_arm925_reset
-diff --git a/arch/arm/mm/proc-arm926.S b/arch/arm/mm/proc-arm926.S
-index 5446693..1c48487 100644
---- a/arch/arm/mm/proc-arm926.S
-+++ b/arch/arm/mm/proc-arm926.S
-@@ -415,7 +415,7 @@ arm926_crval:
- 	.type	arm926_processor_functions, #object
- arm926_processor_functions:
- 	.word	v5tj_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm926_proc_init
- 	.word	cpu_arm926_proc_fin
- 	.word	cpu_arm926_reset
-diff --git a/arch/arm/mm/proc-arm940.S b/arch/arm/mm/proc-arm940.S
-index f595117..5b0f846 100644
---- a/arch/arm/mm/proc-arm940.S
-+++ b/arch/arm/mm/proc-arm940.S
-@@ -322,7 +322,7 @@ __arm940_setup:
- 	.type	arm940_processor_functions, #object
- ENTRY(arm940_processor_functions)
- 	.word	nommu_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm940_proc_init
- 	.word	cpu_arm940_proc_fin
- 	.word	cpu_arm940_reset
-diff --git a/arch/arm/mm/proc-arm946.S b/arch/arm/mm/proc-arm946.S
-index e03f6ff..40c0449 100644
---- a/arch/arm/mm/proc-arm946.S
-+++ b/arch/arm/mm/proc-arm946.S
-@@ -377,7 +377,7 @@ __arm946_setup:
- 	.type	arm946_processor_functions, #object
- ENTRY(arm946_processor_functions)
- 	.word	nommu_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_arm946_proc_init
- 	.word	cpu_arm946_proc_fin
- 	.word	cpu_arm946_reset
-diff --git a/arch/arm/mm/proc-arm9tdmi.S b/arch/arm/mm/proc-arm9tdmi.S
-index be6c11d..28545c2 100644
---- a/arch/arm/mm/proc-arm9tdmi.S
-+++ b/arch/arm/mm/proc-arm9tdmi.S
-@@ -64,7 +64,7 @@ __arm9tdmi_setup:
- 		.type	arm9tdmi_processor_functions, #object
- ENTRY(arm9tdmi_processor_functions)
- 		.word	nommu_early_abort
--		.word	pabort_noifar
-+		.word	legacy_pabort
- 		.word	cpu_arm9tdmi_proc_init
- 		.word	cpu_arm9tdmi_proc_fin
- 		.word	cpu_arm9tdmi_reset
-diff --git a/arch/arm/mm/proc-fa526.S b/arch/arm/mm/proc-fa526.S
-index 08b8a95..08f5ac2 100644
---- a/arch/arm/mm/proc-fa526.S
-+++ b/arch/arm/mm/proc-fa526.S
-@@ -191,7 +191,7 @@ fa526_cr1_set:
- 	.type	fa526_processor_functions, #object
- fa526_processor_functions:
- 	.word	v4_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_fa526_proc_init
- 	.word	cpu_fa526_proc_fin
- 	.word	cpu_fa526_reset
-diff --git a/arch/arm/mm/proc-feroceon.S b/arch/arm/mm/proc-feroceon.S
-index 0fe1f8f..d0d7795 100644
---- a/arch/arm/mm/proc-feroceon.S
-+++ b/arch/arm/mm/proc-feroceon.S
-@@ -499,7 +499,7 @@ feroceon_crval:
- 	.type	feroceon_processor_functions, #object
- feroceon_processor_functions:
- 	.word	v5t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_feroceon_proc_init
- 	.word	cpu_feroceon_proc_fin
- 	.word	cpu_feroceon_reset
-diff --git a/arch/arm/mm/proc-mohawk.S b/arch/arm/mm/proc-mohawk.S
-index 540f507..52b5fd7 100644
---- a/arch/arm/mm/proc-mohawk.S
-+++ b/arch/arm/mm/proc-mohawk.S
-@@ -359,7 +359,7 @@ mohawk_crval:
- 	.type	mohawk_processor_functions, #object
- mohawk_processor_functions:
- 	.word	v5t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_mohawk_proc_init
- 	.word	cpu_mohawk_proc_fin
- 	.word	cpu_mohawk_reset
-diff --git a/arch/arm/mm/proc-sa110.S b/arch/arm/mm/proc-sa110.S
-index 90a7e52..7b706b3 100644
---- a/arch/arm/mm/proc-sa110.S
-+++ b/arch/arm/mm/proc-sa110.S
-@@ -199,7 +199,7 @@ sa110_crval:
- 	.type	sa110_processor_functions, #object
- ENTRY(sa110_processor_functions)
- 	.word	v4_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_sa110_proc_init
- 	.word	cpu_sa110_proc_fin
- 	.word	cpu_sa110_reset
-diff --git a/arch/arm/mm/proc-sa1100.S b/arch/arm/mm/proc-sa1100.S
-index 451e2d9..ee77002 100644
---- a/arch/arm/mm/proc-sa1100.S
-+++ b/arch/arm/mm/proc-sa1100.S
-@@ -214,7 +214,7 @@ sa1100_crval:
- 	.type	sa1100_processor_functions, #object
- ENTRY(sa1100_processor_functions)
- 	.word	v4_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_sa1100_proc_init
- 	.word	cpu_sa1100_proc_fin
- 	.word	cpu_sa1100_reset
-diff --git a/arch/arm/mm/proc-v6.S b/arch/arm/mm/proc-v6.S
-index 524ddae..194737d 100644
---- a/arch/arm/mm/proc-v6.S
-+++ b/arch/arm/mm/proc-v6.S
-@@ -191,7 +191,7 @@ v6_crval:
- 	.type	v6_processor_functions, #object
- ENTRY(v6_processor_functions)
- 	.word	v6_early_abort
--	.word	pabort_noifar
-+	.word	v6_pabort
- 	.word	cpu_v6_proc_init
- 	.word	cpu_v6_proc_fin
- 	.word	cpu_v6_reset
-diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
-index f3fa1c3..23ebcf6 100644
---- a/arch/arm/mm/proc-v7.S
-+++ b/arch/arm/mm/proc-v7.S
-@@ -295,7 +295,7 @@ __v7_setup_stack:
- 	.type	v7_processor_functions, #object
- ENTRY(v7_processor_functions)
- 	.word	v7_early_abort
--	.word	pabort_ifar
-+	.word	v7_pabort
- 	.word	cpu_v7_proc_init
- 	.word	cpu_v7_proc_fin
- 	.word	cpu_v7_reset
-diff --git a/arch/arm/mm/proc-xsc3.S b/arch/arm/mm/proc-xsc3.S
-index 33515c2..2028f37 100644
---- a/arch/arm/mm/proc-xsc3.S
-+++ b/arch/arm/mm/proc-xsc3.S
-@@ -428,7 +428,7 @@ xsc3_crval:
- 	.type	xsc3_processor_functions, #object
- ENTRY(xsc3_processor_functions)
- 	.word	v5t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_xsc3_proc_init
- 	.word	cpu_xsc3_proc_fin
- 	.word	cpu_xsc3_reset
-diff --git a/arch/arm/mm/proc-xscale.S b/arch/arm/mm/proc-xscale.S
-index 4233942..f056c28 100644
---- a/arch/arm/mm/proc-xscale.S
-+++ b/arch/arm/mm/proc-xscale.S
-@@ -511,7 +511,7 @@ xscale_crval:
- 	.type	xscale_processor_functions, #object
- ENTRY(xscale_processor_functions)
- 	.word	v5t_early_abort
--	.word	pabort_noifar
-+	.word	legacy_pabort
- 	.word	cpu_xscale_proc_init
- 	.word	cpu_xscale_proc_fin
- 	.word	cpu_xscale_reset
+ 
 -- 
 1.6.4.4
 
