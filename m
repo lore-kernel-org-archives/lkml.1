@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZIXIiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbZIXIkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752661AbZIXIiP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 04:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbZIXIiO
+	id S1752717AbZIXIkt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 04:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZIXIkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 04:38:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46521 "EHLO hera.kernel.org"
+	Thu, 24 Sep 2009 04:40:47 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50034 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752354AbZIXIiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 04:38:13 -0400
-Message-ID: <4ABB2FE3.40608@kernel.org>
-Date: Thu, 24 Sep 2009 17:37:55 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu areas
- for other cpus
-References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-3-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0909221856050.9410@V090114053VZO-1> <4AB983B6.6050203@kernel.org> <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1> <4ABA2A3A.6020308@kernel.org> <alpine.DEB.1.10.0909231315310.4025@V090114053VZO-1> <4ABA9B14.20904@kernel.org> <alpine.DEB.1.10.0909240332130.1488@V090114053VZO-1>
-In-Reply-To: <alpine.DEB.1.10.0909240332130.1488@V090114053VZO-1>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752155AbZIXIkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 04:40:46 -0400
+Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+In-Reply-To: <1253778667.7695.130.camel@twins>
+References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
+	 <1251869611.7547.38.camel@twins>  <1253753307.7103.356.camel@pasglop>
+	 <1253778667.7695.130.camel@twins>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 18:38:27 +1000
+Message-Id: <1253781508.7103.437.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 24 Sep 2009 08:37:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Christoph.
-
-Christoph Lameter wrote:
-> On Thu, 24 Sep 2009, Tejun Heo wrote:
+On Thu, 2009-09-24 at 09:51 +0200, Peter Zijlstra wrote:
+> > I don't quite follow your logic here. This is useful for more than just
+> > hypervisors. For example, take the HV out of the picture for a moment
+> > and imagine that the HW has the ability to offline CPU in various power
+> > levels, with varying latencies to bring them back.
 > 
->>> How does the new percpu allocator support this? Does it use different
->>> methods of access for static and dynamic percpu access?
->> That's only when __ia64_per_cpu_var() macro is used in arch code which
->> always references static perpcu variable in the kernel image which
->> falls inside PERCPU_PAGE_SIZE.  For everything else, __my_cpu_offset
->> is defined as __ia64_per_cpu_var(local_per_cpu_offset) and regular
->> pointer offsetting is used.
-> 
-> So this means that address arithmetic needs to be performed for each
-> percpu access. The virtual mapping would allow the calculation of the
-> address at link time. Calculation means that a single atomic instruction
-> for percpu access wont be possible for ia64.
-> 
-> I can toss my ia64 percpu optimization patches. No point anymore.
-> 
-> Tony: We could then also drop the virtual per cpu mapping. Its only useful
-> for arch specific code and an alternate method of reference exists.
+> cpu-hotplug is an utter slow path, anybody saying latency and hotplug in
+> the same sentence doesn't seem to grasp either or both concepts.
 
-percpu implementation on ia64 has always been like that.  The problem
-with the alternate mapping is that you can't take the pointer to it as
-it would mean different thing depending on which processor you're on
-and the overall generic percpu implementation expects unique addresses
-from percpu access macros.
+Let's forget about latency then. Let's imagine I want to set a CPU
+offline to save power, vs. setting it offline -and- opening the back
+door of the machine to actually physically replace it :-)
 
-ia64 currently has been and is the only arch which uses virtual percpu
-mapping.  The one biggest benefit would be accesses to the
-local_per_cpu_offset.  Whether it's beneficial enough to justify the
-complexity, I frankly don't know.
+In any case, I don't see the added feature as being problematic, and
+not such a "layering violation" as you seem to imply it is. It's a
+convenient way to atomically take the CPU out -and- convey some
+information about the "intent" to the hypervisor, and I really fail
+to see why you have so strong objections about it.
 
-Andrew once also suggested taking advantage of those overlapping
-virtual mappings for local percpu accesses.  If the generic code
-followed such design, ia64's virtual mappings would definitely be more
-useful, but that means we would need aliased mappings for percpu areas
-and addresses will be different for local and remote accesses.  Also,
-getting it right on machines with virtually mapped caches would be
-very painful.  Given that %gs/fs offesetting is quite efficient on
-x86, I don't think changing the generic mechanism is worthwhile.
+Ben.
 
-So, it would be great if we can find a better way to offset addresses
-on ia64.  If not, nothing improves or deteriorates performance-wise
-with the new implementation.
 
-Thanks.
-
--- 
-tejun
