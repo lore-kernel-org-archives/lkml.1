@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZIXQCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZIXQDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbZIXQCk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 12:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZIXQCj
+	id S1753226AbZIXQDH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 12:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZIXQDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 12:02:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49922 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 12:03:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38744 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752722AbZIXQCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 12:02:37 -0400
-Date: Thu, 24 Sep 2009 18:02:18 +0200 (CEST)
+	id S1753088AbZIXQDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 12:03:03 -0400
+Date: Thu, 24 Sep 2009 18:02:49 +0200 (CEST)
 From: John Kacur <jkacur@redhat.com>
 X-X-Sender: jkacur@localhost.localdomain
 To: mingo@elte.hu, Peter Zijlstra <a.p.zijlstra@chello.nl>
 cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org
-Subject: [PATCH 2/3]Protect-header-files-with-a-consistent-style
-Message-ID: <alpine.LFD.2.00.0909241756530.11383@localhost.localdomain>
+Subject: [PATCH 3/3]Create util/sort.[ch] and use it
+Message-ID: <alpine.LFD.2.00.0909241758390.11383@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -23,457 +23,1001 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 94f8831a545f7137cccf6609e47381cf843c6e16 Mon Sep 17 00:00:00 2001
+>From e5b829d38cdbb0523abec9e61ba1cb544567a3ea Mon Sep 17 00:00:00 2001
 From: John Kacur <jkacur@redhat.com>
-Date: Wed, 23 Sep 2009 21:17:57 +0200
-Subject: [PATCH] Protect header files with a consistent style.
+Date: Thu, 24 Sep 2009 17:36:56 +0200
+Subject: [PATCH] Create util/sort.[ch]
 
+Create util/sort.[ch] and move common functionality for builtin-report.c
+and builtin-annotate.c there, and make use of it.
 ---
- tools/perf/util/cache.h         |    6 +++---
- tools/perf/util/callchain.h     |    2 +-
- tools/perf/util/color.h         |    6 +++---
- tools/perf/util/debug.h         |    4 ++++
- tools/perf/util/event.h         |    3 ++-
- tools/perf/util/exec_cmd.h      |    6 +++---
- tools/perf/util/header.h        |    6 +++---
- tools/perf/util/help.h          |    6 +++---
- tools/perf/util/levenshtein.h   |    6 +++---
- tools/perf/util/module.h        |    6 +++---
- tools/perf/util/parse-events.h  |    6 +++---
- tools/perf/util/parse-options.h |    6 +++---
- tools/perf/util/quote.h         |    6 +++---
- tools/perf/util/run-command.h   |    6 +++---
- tools/perf/util/sigchain.h      |    6 +++---
- tools/perf/util/strbuf.h        |    6 +++---
- tools/perf/util/string.h        |    6 +++---
- tools/perf/util/strlist.h       |    6 +++---
- tools/perf/util/svghelper.h     |    6 +++---
- tools/perf/util/symbol.h        |    6 +++---
- tools/perf/util/thread.h        |    5 +++++
- tools/perf/util/trace-event.h   |    6 +++---
- tools/perf/util/types.h         |    6 +++---
- tools/perf/util/values.h        |    6 +++---
- 24 files changed, 72 insertions(+), 62 deletions(-)
+ tools/perf/Makefile           |    2 +
+ tools/perf/builtin-annotate.c |  211 +---------------------------
+ tools/perf/builtin-report.c   |  307 +----------------------------------------
+ tools/perf/util/sort.c        |  268 +++++++++++++++++++++++++++++++++++
+ tools/perf/util/sort.h        |   93 +++++++++++++
+ 5 files changed, 373 insertions(+), 508 deletions(-)
+ create mode 100644 tools/perf/util/sort.c
+ create mode 100644 tools/perf/util/sort.h
 
-diff --git a/tools/perf/util/cache.h b/tools/perf/util/cache.h
-index 6f8ea9d..f26172c 100644
---- a/tools/perf/util/cache.h
-+++ b/tools/perf/util/cache.h
-@@ -1,5 +1,5 @@
--#ifndef CACHE_H
--#define CACHE_H
-+#ifndef __PERF_CACHE_H
-+#define __PERF_CACHE_H
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index b5f1953..0a9e5ae 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -339,6 +339,7 @@ LIB_H += util/symbol.h
+ LIB_H += util/module.h
+ LIB_H += util/color.h
+ LIB_H += util/values.h
++LIB_H += util/sort.h
  
- #include "util.h"
- #include "strbuf.h"
-@@ -117,4 +117,4 @@ extern char *perf_pathdup(const char *fmt, ...)
+ LIB_OBJS += util/abspath.o
+ LIB_OBJS += util/alias.o
+@@ -374,6 +375,7 @@ LIB_OBJS += util/trace-event-parse.o
+ LIB_OBJS += util/trace-event-read.o
+ LIB_OBJS += util/trace-event-info.o
+ LIB_OBJS += util/svghelper.o
++LIB_OBJS += util/sort.o
  
- extern size_t strlcpy(char *dest, const char *src, size_t size);
+ BUILTIN_OBJS += builtin-annotate.o
+ BUILTIN_OBJS += builtin-help.o
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index a330873..059c565 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -22,12 +22,10 @@
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"
+ #include "util/thread.h"
++#include "util/sort.h"
  
--#endif /* CACHE_H */
-+#endif /* __PERF_CACHE_H */
-diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
-index 43cf3ea..ad4626d 100644
---- a/tools/perf/util/callchain.h
-+++ b/tools/perf/util/callchain.h
-@@ -58,4 +58,4 @@ static inline u64 cumul_hits(struct callchain_node *node)
- int register_callchain_param(struct callchain_param *param);
- void append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 		  struct symbol **syms);
--#endif
-+#endif	/* __PERF_CALLCHAIN_H */
-diff --git a/tools/perf/util/color.h b/tools/perf/util/color.h
-index 58d5975..24e8809 100644
---- a/tools/perf/util/color.h
-+++ b/tools/perf/util/color.h
-@@ -1,5 +1,5 @@
--#ifndef COLOR_H
--#define COLOR_H
-+#ifndef __PERF_COLOR_H
-+#define __PERF_COLOR_H
+ static char		const *input_name = "perf.data";
  
- /* "\033[1;38;5;2xx;48;5;2xxm\0" is 23 bytes */
- #define COLOR_MAXLEN 24
-@@ -39,4 +39,4 @@ int color_fwrite_lines(FILE *fp, const char *color, size_t count, const char *bu
- int percent_color_fprintf(FILE *fp, const char *fmt, double percent);
- const char *get_percent_color(double percent);
+-static char		default_sort_order[] = "comm,symbol";
+-static char		*sort_order = default_sort_order;
+-
+ static int		force;
+ static int		input;
+ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+@@ -55,207 +53,6 @@ struct sym_ext {
  
--#endif /* COLOR_H */
-+#endif /* __PERF_COLOR_H */
-diff --git a/tools/perf/util/debug.h b/tools/perf/util/debug.h
-index 437eea5..02d1fa1 100644
---- a/tools/perf/util/debug.h
-+++ b/tools/perf/util/debug.h
-@@ -1,4 +1,6 @@
- /* For debugging general purposes */
-+#ifndef __PERF_DEBUG_H
-+#define __PERF_DEBUG_H
+ static struct rb_root hist;
  
- extern int verbose;
- extern int dump_trace;
-@@ -6,3 +8,5 @@ extern int dump_trace;
- int eprintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
- int dump_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
- void trace_event(event_t *event);
+-struct hist_entry {
+-	struct rb_node	 rb_node;
+-
+-	struct thread	 *thread;
+-	struct map	 *map;
+-	struct dso	 *dso;
+-	struct symbol	 *sym;
+-	u64	 ip;
+-	char		 level;
+-
+-	uint32_t	 count;
+-};
+-
+-/*
+- * configurable sorting bits
+- */
+-
+-struct sort_entry {
+-	struct list_head list;
+-
+-	const char *header;
+-
+-	int64_t (*cmp)(struct hist_entry *, struct hist_entry *);
+-	int64_t (*collapse)(struct hist_entry *, struct hist_entry *);
+-	size_t	(*print)(FILE *fp, struct hist_entry *);
+-};
+-
+-static int64_t cmp_null(void *l, void *r)
+-{
+-	if (!l && !r)
+-		return 0;
+-	else if (!l)
+-		return -1;
+-	else
+-		return 1;
+-}
+-
+-/* --sort pid */
+-
+-static int64_t
+-sort__thread_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	return right->thread->pid - left->thread->pid;
+-}
+-
+-static size_t
+-sort__thread_print(FILE *fp, struct hist_entry *self)
+-{
+-	return fprintf(fp, "%16s:%5d", self->thread->comm ?: "", self->thread->pid);
+-}
+-
+-static struct sort_entry sort_thread = {
+-	.header = "         Command:  Pid",
+-	.cmp	= sort__thread_cmp,
+-	.print	= sort__thread_print,
+-};
+-
+-/* --sort comm */
+-
+-static int64_t
+-sort__comm_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	return right->thread->pid - left->thread->pid;
+-}
+-
+-static int64_t
+-sort__comm_collapse(struct hist_entry *left, struct hist_entry *right)
+-{
+-	char *comm_l = left->thread->comm;
+-	char *comm_r = right->thread->comm;
+-
+-	if (!comm_l || !comm_r)
+-		return cmp_null(comm_l, comm_r);
+-
+-	return strcmp(comm_l, comm_r);
+-}
+-
+-static size_t
+-sort__comm_print(FILE *fp, struct hist_entry *self)
+-{
+-	return fprintf(fp, "%16s", self->thread->comm);
+-}
+-
+-static struct sort_entry sort_comm = {
+-	.header		= "         Command",
+-	.cmp		= sort__comm_cmp,
+-	.collapse	= sort__comm_collapse,
+-	.print		= sort__comm_print,
+-};
+-
+-/* --sort dso */
+-
+-static int64_t
+-sort__dso_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	struct dso *dso_l = left->dso;
+-	struct dso *dso_r = right->dso;
+-
+-	if (!dso_l || !dso_r)
+-		return cmp_null(dso_l, dso_r);
+-
+-	return strcmp(dso_l->name, dso_r->name);
+-}
+-
+-static size_t
+-sort__dso_print(FILE *fp, struct hist_entry *self)
+-{
+-	if (self->dso)
+-		return fprintf(fp, "%-25s", self->dso->name);
+-
+-	return fprintf(fp, "%016llx         ", (u64)self->ip);
+-}
+-
+-static struct sort_entry sort_dso = {
+-	.header = "Shared Object            ",
+-	.cmp	= sort__dso_cmp,
+-	.print	= sort__dso_print,
+-};
+-
+-/* --sort symbol */
+-
+-static int64_t
+-sort__sym_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	u64 ip_l, ip_r;
+-
+-	if (left->sym == right->sym)
+-		return 0;
+-
+-	ip_l = left->sym ? left->sym->start : left->ip;
+-	ip_r = right->sym ? right->sym->start : right->ip;
+-
+-	return (int64_t)(ip_r - ip_l);
+-}
+-
+-static size_t
+-sort__sym_print(FILE *fp, struct hist_entry *self)
+-{
+-	size_t ret = 0;
+-
+-	if (verbose)
+-		ret += fprintf(fp, "%#018llx  ", (u64)self->ip);
+-
+-	if (self->sym) {
+-		ret += fprintf(fp, "[%c] %s",
+-			self->dso == kernel_dso ? 'k' : '.', self->sym->name);
+-	} else {
+-		ret += fprintf(fp, "%#016llx", (u64)self->ip);
+-	}
+-
+-	return ret;
+-}
+-
+-static struct sort_entry sort_sym = {
+-	.header = "Symbol",
+-	.cmp	= sort__sym_cmp,
+-	.print	= sort__sym_print,
+-};
+-
+-static int sort__need_collapse = 0;
+-
+-struct sort_dimension {
+-	const char		*name;
+-	struct sort_entry	*entry;
+-	int			taken;
+-};
+-
+-static struct sort_dimension sort_dimensions[] = {
+-	{ .name = "pid",	.entry = &sort_thread,	},
+-	{ .name = "comm",	.entry = &sort_comm,	},
+-	{ .name = "dso",	.entry = &sort_dso,	},
+-	{ .name = "symbol",	.entry = &sort_sym,	},
+-};
+-
+-static LIST_HEAD(hist_entry__sort_list);
+-
+-static int sort_dimension__add(char *tok)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(sort_dimensions); i++) {
+-		struct sort_dimension *sd = &sort_dimensions[i];
+-
+-		if (sd->taken)
+-			continue;
+-
+-		if (strncasecmp(tok, sd->name, strlen(tok)))
+-			continue;
+-
+-		if (sd->entry->collapse)
+-			sort__need_collapse = 1;
+-
+-		list_add_tail(&sd->entry->list, &hist_entry__sort_list);
+-		sd->taken = 1;
+-
+-		return 0;
+-	}
+-
+-	return -ESRCH;
+-}
+-
+ static int64_t
+ hist_entry__cmp(struct hist_entry *left, struct hist_entry *right)
+ {
+@@ -1137,5 +934,11 @@ int cmd_annotate(int argc, const char **argv, const char *prefix __used)
+ 
+ 	setup_pager();
+ 
++	if (field_sep && *field_sep == '.') {
++		fputs("'.' is the only non valid --field-separator argument\n",
++				stderr);
++		exit(129);
++	}
 +
-+#endif	/* __PERF_DEBUG_H */
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index 2c9c26d..c31a5da 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -1,5 +1,6 @@
- #ifndef __PERF_RECORD_H
- #define __PERF_RECORD_H
-+
- #include "../perf.h"
- #include "util.h"
- #include <linux/list.h>
-@@ -101,4 +102,4 @@ struct map *map__clone(struct map *self);
- int map__overlap(struct map *l, struct map *r);
- size_t map__fprintf(struct map *self, FILE *fp);
+ 	return __cmd_annotate();
+ }
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 19669c2..7b43504 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -27,15 +27,13 @@
+ #include "util/parse-events.h"
  
--#endif
-+#endif /* __PERF_RECORD_H */
-diff --git a/tools/perf/util/exec_cmd.h b/tools/perf/util/exec_cmd.h
-index effe25e..31647ac 100644
---- a/tools/perf/util/exec_cmd.h
-+++ b/tools/perf/util/exec_cmd.h
-@@ -1,5 +1,5 @@
--#ifndef PERF_EXEC_CMD_H
--#define PERF_EXEC_CMD_H
-+#ifndef __PERF_EXEC_CMD_H
-+#define __PERF_EXEC_CMD_H
+ #include "util/thread.h"
++#include "util/sort.h"
  
- extern void perf_set_argv_exec_path(const char *exec_path);
- extern const char *perf_extract_argv0_path(const char *path);
-@@ -10,4 +10,4 @@ extern int execv_perf_cmd(const char **argv); /* NULL terminated */
- extern int execl_perf_cmd(const char *cmd, ...);
- extern const char *system_path(const char *path);
+ static char		const *input_name = "perf.data";
  
--#endif /* PERF_EXEC_CMD_H */
-+#endif /* __PERF_EXEC_CMD_H */
-diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
-index a0761bc..a2916b6 100644
---- a/tools/perf/util/header.h
-+++ b/tools/perf/util/header.h
-@@ -1,5 +1,5 @@
--#ifndef _PERF_HEADER_H
--#define _PERF_HEADER_H
-+#ifndef __PERF_HEADER_H
-+#define __PERF_HEADER_H
+-static char		default_sort_order[] = "comm,dso,symbol";
+-static char		*sort_order = default_sort_order;
+ static char		*dso_list_str, *comm_list_str, *sym_list_str,
+ 			*col_width_list_str;
+ static struct strlist	*dso_list, *comm_list, *sym_list;
+-static char		*field_sep;
  
- #include "../../../include/linux/perf_event.h"
- #include <sys/types.h>
-@@ -44,4 +44,4 @@ perf_header__find_attr(u64 id, struct perf_header *header);
+ static int		force;
+ static int		input;
+@@ -53,10 +51,6 @@ static char		*pretty_printing_style = default_pretty_printing_style;
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
  
- struct perf_header *perf_header__new(void);
+-static char		default_parent_pattern[] = "^sys_|^do_page_fault";
+-static char		*parent_pattern = default_parent_pattern;
+-static regex_t		parent_regex;
+-
+ static int		exclude_other = 1;
  
--#endif /* _PERF_HEADER_H */
-+#endif /* __PERF_HEADER_H */
-diff --git a/tools/perf/util/help.h b/tools/perf/util/help.h
-index 7128783..7f5c6de 100644
---- a/tools/perf/util/help.h
-+++ b/tools/perf/util/help.h
-@@ -1,5 +1,5 @@
--#ifndef HELP_H
--#define HELP_H
-+#ifndef __PERF_HELP_H
-+#define __PERF_HELP_H
+ static char		callchain_default_opt[] = "fractal,0.5";
+@@ -80,304 +74,8 @@ struct callchain_param	callchain_param = {
  
- struct cmdnames {
- 	size_t alloc;
-@@ -26,4 +26,4 @@ int is_in_cmdlist(struct cmdnames *c, const char *s);
- void list_commands(const char *title, struct cmdnames *main_cmds,
- 		   struct cmdnames *other_cmds);
+ static u64		sample_type;
  
--#endif /* HELP_H */
-+#endif /* __PERF_HELP_H */
-diff --git a/tools/perf/util/levenshtein.h b/tools/perf/util/levenshtein.h
-index 0173abe..b0fcb6d 100644
---- a/tools/perf/util/levenshtein.h
-+++ b/tools/perf/util/levenshtein.h
-@@ -1,8 +1,8 @@
--#ifndef LEVENSHTEIN_H
--#define LEVENSHTEIN_H
-+#ifndef __PERF_LEVENSHTEIN_H
-+#define __PERF_LEVENSHTEIN_H
+-static int repsep_fprintf(FILE *fp, const char *fmt, ...)
+-{
+-	int n;
+-	va_list ap;
+-
+-	va_start(ap, fmt);
+-	if (!field_sep)
+-		n = vfprintf(fp, fmt, ap);
+-	else {
+-		char *bf = NULL;
+-		n = vasprintf(&bf, fmt, ap);
+-		if (n > 0) {
+-			char *sep = bf;
+-
+-			while (1) {
+-				sep = strchr(sep, *field_sep);
+-				if (sep == NULL)
+-					break;
+-				*sep = '.';
+-			}
+-		}
+-		fputs(bf, fp);
+-		free(bf);
+-	}
+-	va_end(ap);
+-	return n;
+-}
+-
+-static unsigned int dsos__col_width,
+-		    comms__col_width,
+-		    threads__col_width;
+-
+-/*
+- * histogram, sorted on item, collects counts
+- */
+-
+ static struct rb_root hist;
  
- int levenshtein(const char *string1, const char *string2,
- 	int swap_penalty, int substition_penalty,
- 	int insertion_penalty, int deletion_penalty);
- 
--#endif
-+#endif /* __PERF_LEVENSHTEIN_H */
-diff --git a/tools/perf/util/module.h b/tools/perf/util/module.h
-index 8a592ef..098e041 100644
---- a/tools/perf/util/module.h
-+++ b/tools/perf/util/module.h
-@@ -1,5 +1,5 @@
--#ifndef _PERF_MODULE_
--#define _PERF_MODULE_ 1
-+#ifndef __PERF_MODULE_
-+#define __PERF_MODULE_ 1
- 
- #include <linux/types.h>
- #include "../types.h"
-@@ -50,4 +50,4 @@ size_t mod_dso__fprintf(struct mod_dso *self, FILE *fp);
- struct module *mod_dso__find_module(struct mod_dso *self, const char *name);
- int mod_dso__load_modules(struct mod_dso *dso);
- 
--#endif /* _PERF_MODULE_ */
-+#endif /* __PERF_MODULE_ */
-diff --git a/tools/perf/util/parse-events.h b/tools/perf/util/parse-events.h
-index 30c6081..8626a43 100644
---- a/tools/perf/util/parse-events.h
-+++ b/tools/perf/util/parse-events.h
-@@ -1,5 +1,5 @@
--#ifndef _PARSE_EVENTS_H
--#define _PARSE_EVENTS_H
-+#ifndef __PERF_PARSE_EVENTS_H
-+#define __PERF_PARSE_EVENTS_H
- /*
-  * Parse symbolic events/counts passed in as options:
-  */
-@@ -31,4 +31,4 @@ extern char debugfs_path[];
- extern int valid_debugfs_mount(const char *debugfs);
- 
- 
--#endif /* _PARSE_EVENTS_H */
-+#endif /* __PERF_PARSE_EVENTS_H */
-diff --git a/tools/perf/util/parse-options.h b/tools/perf/util/parse-options.h
-index 2ee248f..948805a 100644
---- a/tools/perf/util/parse-options.h
-+++ b/tools/perf/util/parse-options.h
-@@ -1,5 +1,5 @@
--#ifndef PARSE_OPTIONS_H
--#define PARSE_OPTIONS_H
-+#ifndef __PERF_PARSE_OPTIONS_H
-+#define __PERF_PARSE_OPTIONS_H
- 
- enum parse_opt_type {
- 	/* special types */
-@@ -174,4 +174,4 @@ extern int parse_opt_verbosity_cb(const struct option *, const char *, int);
- 
- extern const char *parse_options_fix_filename(const char *prefix, const char *file);
- 
--#endif
-+#endif /* __PERF_PARSE_OPTIONS_H */
-diff --git a/tools/perf/util/quote.h b/tools/perf/util/quote.h
-index a5454a1..b6a0197 100644
---- a/tools/perf/util/quote.h
-+++ b/tools/perf/util/quote.h
-@@ -1,5 +1,5 @@
--#ifndef QUOTE_H
--#define QUOTE_H
-+#ifndef __PERF_QUOTE_H
-+#define __PERF_QUOTE_H
- 
- #include <stddef.h>
- #include <stdio.h>
-@@ -65,4 +65,4 @@ extern void perl_quote_print(FILE *stream, const char *src);
- extern void python_quote_print(FILE *stream, const char *src);
- extern void tcl_quote_print(FILE *stream, const char *src);
- 
--#endif
-+#endif /* __PERF_QUOTE_H */
-diff --git a/tools/perf/util/run-command.h b/tools/perf/util/run-command.h
-index cc1837d..d790287 100644
---- a/tools/perf/util/run-command.h
-+++ b/tools/perf/util/run-command.h
-@@ -1,5 +1,5 @@
--#ifndef RUN_COMMAND_H
--#define RUN_COMMAND_H
-+#ifndef __PERF_RUN_COMMAND_H
-+#define __PERF_RUN_COMMAND_H
- 
- enum {
- 	ERR_RUN_COMMAND_FORK = 10000,
-@@ -85,4 +85,4 @@ struct async {
- int start_async(struct async *async);
- int finish_async(struct async *async);
- 
--#endif
-+#endif /* __PERF_RUN_COMMAND_H */
-diff --git a/tools/perf/util/sigchain.h b/tools/perf/util/sigchain.h
-index 618083b..1a53c11 100644
---- a/tools/perf/util/sigchain.h
-+++ b/tools/perf/util/sigchain.h
-@@ -1,5 +1,5 @@
--#ifndef SIGCHAIN_H
--#define SIGCHAIN_H
-+#ifndef __PERF_SIGCHAIN_H
-+#define __PERF_SIGCHAIN_H
- 
- typedef void (*sigchain_fun)(int);
- 
-@@ -8,4 +8,4 @@ int sigchain_pop(int sig);
- 
- void sigchain_push_common(sigchain_fun f);
- 
--#endif /* SIGCHAIN_H */
-+#endif /* __PERF_SIGCHAIN_H */
-diff --git a/tools/perf/util/strbuf.h b/tools/perf/util/strbuf.h
-index d2aa86c..a3d121d 100644
---- a/tools/perf/util/strbuf.h
-+++ b/tools/perf/util/strbuf.h
-@@ -1,5 +1,5 @@
--#ifndef STRBUF_H
--#define STRBUF_H
-+#ifndef __PERF_STRBUF_H
-+#define __PERF_STRBUF_H
- 
- /*
-  * Strbuf's can be use in many ways: as a byte array, or to store arbitrary
-@@ -134,4 +134,4 @@ extern int launch_editor(const char *path, struct strbuf *buffer, const char *co
- extern int strbuf_branchname(struct strbuf *sb, const char *name);
- extern int strbuf_check_branch_ref(struct strbuf *sb, const char *name);
- 
--#endif /* STRBUF_H */
-+#endif /* __PERF_STRBUF_H */
-diff --git a/tools/perf/util/string.h b/tools/perf/util/string.h
-index bf39dfa..15c8274 100644
---- a/tools/perf/util/string.h
-+++ b/tools/perf/util/string.h
-@@ -1,5 +1,5 @@
--#ifndef _PERF_STRING_H_
--#define _PERF_STRING_H_
-+#ifndef __PERF_STRING_H_
-+#define __PERF_STRING_H_
- 
- #include "types.h"
- 
-@@ -8,4 +8,4 @@ int hex2u64(const char *ptr, u64 *val);
- #define _STR(x) #x
- #define STR(x) _STR(x)
- 
--#endif
-+#endif /* __PERF_STRING_H */
-diff --git a/tools/perf/util/strlist.h b/tools/perf/util/strlist.h
-index 921818e..cb46593 100644
---- a/tools/perf/util/strlist.h
-+++ b/tools/perf/util/strlist.h
-@@ -1,5 +1,5 @@
--#ifndef STRLIST_H_
--#define STRLIST_H_
-+#ifndef __PERF_STRLIST_H
-+#define __PERF_STRLIST_H
- 
- #include <linux/rbtree.h>
- #include <stdbool.h>
-@@ -36,4 +36,4 @@ static inline unsigned int strlist__nr_entries(const struct strlist *self)
+-struct hist_entry {
+-	struct rb_node		rb_node;
+-
+-	struct thread		*thread;
+-	struct map		*map;
+-	struct dso		*dso;
+-	struct symbol		*sym;
+-	struct symbol		*parent;
+-	u64			ip;
+-	char			level;
+-	struct callchain_node	callchain;
+-	struct rb_root		sorted_chain;
+-
+-	u64			count;
+-};
+-
+-/*
+- * configurable sorting bits
+- */
+-
+-struct sort_entry {
+-	struct list_head list;
+-
+-	const char *header;
+-
+-	int64_t (*cmp)(struct hist_entry *, struct hist_entry *);
+-	int64_t (*collapse)(struct hist_entry *, struct hist_entry *);
+-	size_t	(*print)(FILE *fp, struct hist_entry *, unsigned int width);
+-	unsigned int *width;
+-	bool	elide;
+-};
+-
+-static int64_t cmp_null(void *l, void *r)
+-{
+-	if (!l && !r)
+-		return 0;
+-	else if (!l)
+-		return -1;
+-	else
+-		return 1;
+-}
+-
+-/* --sort pid */
+-
+-static int64_t
+-sort__thread_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	return right->thread->pid - left->thread->pid;
+-}
+-
+-static size_t
+-sort__thread_print(FILE *fp, struct hist_entry *self, unsigned int width)
+-{
+-	return repsep_fprintf(fp, "%*s:%5d", width - 6,
+-			      self->thread->comm ?: "", self->thread->pid);
+-}
+-
+-static struct sort_entry sort_thread = {
+-	.header = "Command:  Pid",
+-	.cmp	= sort__thread_cmp,
+-	.print	= sort__thread_print,
+-	.width	= &threads__col_width,
+-};
+-
+-/* --sort comm */
+-
+-static int64_t
+-sort__comm_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	return right->thread->pid - left->thread->pid;
+-}
+-
+-static int64_t
+-sort__comm_collapse(struct hist_entry *left, struct hist_entry *right)
+-{
+-	char *comm_l = left->thread->comm;
+-	char *comm_r = right->thread->comm;
+-
+-	if (!comm_l || !comm_r)
+-		return cmp_null(comm_l, comm_r);
+-
+-	return strcmp(comm_l, comm_r);
+-}
+-
+-static size_t
+-sort__comm_print(FILE *fp, struct hist_entry *self, unsigned int width)
+-{
+-	return repsep_fprintf(fp, "%*s", width, self->thread->comm);
+-}
+-
+-static struct sort_entry sort_comm = {
+-	.header		= "Command",
+-	.cmp		= sort__comm_cmp,
+-	.collapse	= sort__comm_collapse,
+-	.print		= sort__comm_print,
+-	.width		= &comms__col_width,
+-};
+-
+-/* --sort dso */
+-
+-static int64_t
+-sort__dso_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	struct dso *dso_l = left->dso;
+-	struct dso *dso_r = right->dso;
+-
+-	if (!dso_l || !dso_r)
+-		return cmp_null(dso_l, dso_r);
+-
+-	return strcmp(dso_l->name, dso_r->name);
+-}
+-
+-static size_t
+-sort__dso_print(FILE *fp, struct hist_entry *self, unsigned int width)
+-{
+-	if (self->dso)
+-		return repsep_fprintf(fp, "%-*s", width, self->dso->name);
+-
+-	return repsep_fprintf(fp, "%*llx", width, (u64)self->ip);
+-}
+-
+-static struct sort_entry sort_dso = {
+-	.header = "Shared Object",
+-	.cmp	= sort__dso_cmp,
+-	.print	= sort__dso_print,
+-	.width	= &dsos__col_width,
+-};
+-
+-/* --sort symbol */
+-
+-static int64_t
+-sort__sym_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	u64 ip_l, ip_r;
+-
+-	if (left->sym == right->sym)
+-		return 0;
+-
+-	ip_l = left->sym ? left->sym->start : left->ip;
+-	ip_r = right->sym ? right->sym->start : right->ip;
+-
+-	return (int64_t)(ip_r - ip_l);
+-}
+-
+-static size_t
+-sort__sym_print(FILE *fp, struct hist_entry *self, unsigned int width __used)
+-{
+-	size_t ret = 0;
+-
+-	if (verbose)
+-		ret += repsep_fprintf(fp, "%#018llx %c ", (u64)self->ip,
+-				      dso__symtab_origin(self->dso));
+-
+-	ret += repsep_fprintf(fp, "[%c] ", self->level);
+-	if (self->sym) {
+-		ret += repsep_fprintf(fp, "%s", self->sym->name);
+-
+-		if (self->sym->module)
+-			ret += repsep_fprintf(fp, "\t[%s]",
+-					     self->sym->module->name);
+-	} else {
+-		ret += repsep_fprintf(fp, "%#016llx", (u64)self->ip);
+-	}
+-
+-	return ret;
+-}
+-
+-static struct sort_entry sort_sym = {
+-	.header = "Symbol",
+-	.cmp	= sort__sym_cmp,
+-	.print	= sort__sym_print,
+-};
+-
+-/* --sort parent */
+-
+-static int64_t
+-sort__parent_cmp(struct hist_entry *left, struct hist_entry *right)
+-{
+-	struct symbol *sym_l = left->parent;
+-	struct symbol *sym_r = right->parent;
+-
+-	if (!sym_l || !sym_r)
+-		return cmp_null(sym_l, sym_r);
+-
+-	return strcmp(sym_l->name, sym_r->name);
+-}
+-
+-static size_t
+-sort__parent_print(FILE *fp, struct hist_entry *self, unsigned int width)
+-{
+-	return repsep_fprintf(fp, "%-*s", width,
+-			      self->parent ? self->parent->name : "[other]");
+-}
+-
+-static unsigned int parent_symbol__col_width;
+-
+-static struct sort_entry sort_parent = {
+-	.header = "Parent symbol",
+-	.cmp	= sort__parent_cmp,
+-	.print	= sort__parent_print,
+-	.width	= &parent_symbol__col_width,
+-};
+-
+-static int sort__need_collapse = 0;
+-static int sort__has_parent = 0;
+-
+-struct sort_dimension {
+-	const char		*name;
+-	struct sort_entry	*entry;
+-	int			taken;
+-};
+-
+-static struct sort_dimension sort_dimensions[] = {
+-	{ .name = "pid",	.entry = &sort_thread,	},
+-	{ .name = "comm",	.entry = &sort_comm,	},
+-	{ .name = "dso",	.entry = &sort_dso,	},
+-	{ .name = "symbol",	.entry = &sort_sym,	},
+-	{ .name = "parent",	.entry = &sort_parent,	},
+-};
+-
+-static LIST_HEAD(hist_entry__sort_list);
+-
+-static int sort_dimension__add(const char *tok)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(sort_dimensions); i++) {
+-		struct sort_dimension *sd = &sort_dimensions[i];
+-
+-		if (sd->taken)
+-			continue;
+-
+-		if (strncasecmp(tok, sd->name, strlen(tok)))
+-			continue;
+-
+-		if (sd->entry->collapse)
+-			sort__need_collapse = 1;
+-
+-		if (sd->entry == &sort_parent) {
+-			int ret = regcomp(&parent_regex, parent_pattern, REG_EXTENDED);
+-			if (ret) {
+-				char err[BUFSIZ];
+-
+-				regerror(ret, &parent_regex, err, sizeof(err));
+-				fprintf(stderr, "Invalid regex: %s\n%s",
+-					parent_pattern, err);
+-				exit(-1);
+-			}
+-			sort__has_parent = 1;
+-		}
+-
+-		list_add_tail(&sd->entry->list, &hist_entry__sort_list);
+-		sd->taken = 1;
+-
+-		return 0;
+-	}
+-
+-	return -ESRCH;
+-}
+-
+ static int64_t
+ hist_entry__cmp(struct hist_entry *left, struct hist_entry *right)
+ {
+@@ -1606,7 +1304,8 @@ setup:
+ 	return 0;
  }
  
- int strlist__parse_list(struct strlist *self, const char *s);
--#endif /* STRLIST_H_ */
-+#endif /* __PERF_STRLIST_H */
-diff --git a/tools/perf/util/svghelper.h b/tools/perf/util/svghelper.h
-index cd93195..e078198 100644
---- a/tools/perf/util/svghelper.h
-+++ b/tools/perf/util/svghelper.h
-@@ -1,5 +1,5 @@
--#ifndef _INCLUDE_GUARD_SVG_HELPER_
--#define _INCLUDE_GUARD_SVG_HELPER_
-+#ifndef __PERF_SVGHELPER_H
-+#define __PERF_SVGHELPER_H
- 
- #include "types.h"
- 
-@@ -25,4 +25,4 @@ extern void svg_close(void);
- 
- extern int svg_page_width;
- 
--#endif
-+#endif /* __PERF_SVGHELPER_H */
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 6e84907..ee164f6 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -1,5 +1,5 @@
--#ifndef _PERF_SYMBOL_
--#define _PERF_SYMBOL_ 1
-+#ifndef __PERF_SYMBOL
-+#define __PERF_SYMBOL 1
- 
- #include <linux/types.h>
- #include "types.h"
-@@ -89,4 +89,4 @@ extern struct dso *vdso;
- extern struct dso *hypervisor_dso;
- extern const char *vmlinux_name;
- extern int   modules;
--#endif /* _PERF_SYMBOL_ */
-+#endif /* __PERF_SYMBOL */
-diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
-index 32aea3c..693ed1e 100644
---- a/tools/perf/util/thread.h
-+++ b/tools/perf/util/thread.h
-@@ -1,3 +1,6 @@
-+#ifndef __PERF_THREAD_H
-+#define __PERF_THREAD_H
+-static const char * const report_usage[] = {
++//static const char * const report_usage[] = {
++const char * const report_usage[] = {
+ 	"perf report [<options>] <command>",
+ 	NULL
+ };
+diff --git a/tools/perf/util/sort.c b/tools/perf/util/sort.c
+new file mode 100644
+index 0000000..50e75ab
+--- /dev/null
++++ b/tools/perf/util/sort.c
+@@ -0,0 +1,268 @@
++#include "sort.h"
 +
- #include <linux/rbtree.h>
- #include <linux/list.h>
- #include <unistd.h>
-@@ -20,3 +23,5 @@ void thread__insert_map(struct thread *self, struct map *map);
- int thread__fork(struct thread *self, struct thread *parent);
- struct map *thread__find_map(struct thread *self, u64 ip);
- size_t threads__fprintf(FILE *fp, struct rb_root *threads);
++regex_t		parent_regex;
++char		default_parent_pattern[] = "^sys_|^do_page_fault";
++char		*parent_pattern = default_parent_pattern;
++char		default_sort_order[] = "comm,dso,symbol";
++char		*sort_order = default_sort_order;
++int sort__need_collapse = 0;
++int sort__has_parent = 0;
 +
-+#endif	/* __PERF_THREAD_H */
-diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-index 693f815..162c3e6 100644
---- a/tools/perf/util/trace-event.h
-+++ b/tools/perf/util/trace-event.h
-@@ -1,5 +1,5 @@
--#ifndef _TRACE_EVENTS_H
--#define _TRACE_EVENTS_H
-+#ifndef __PERF_TRACE_EVENTS_H
-+#define __PERF_TRACE_EVENTS_H
- 
- #include "parse-events.h"
- 
-@@ -242,4 +242,4 @@ void *raw_field_ptr(struct event *event, const char *name, void *data);
- 
- void read_tracing_data(struct perf_event_attr *pattrs, int nb_events);
- 
--#endif /* _TRACE_EVENTS_H */
-+#endif /* __PERF_TRACE_EVENTS_H */
-diff --git a/tools/perf/util/types.h b/tools/perf/util/types.h
-index 5e75f90..7d6b833 100644
---- a/tools/perf/util/types.h
-+++ b/tools/perf/util/types.h
-@@ -1,5 +1,5 @@
--#ifndef _PERF_TYPES_H
--#define _PERF_TYPES_H
-+#ifndef __PERF_TYPES_H
-+#define __PERF_TYPES_H
- 
- /*
-  * We define u64 as unsigned long long for every architecture
-@@ -14,4 +14,4 @@ typedef signed short	   s16;
- typedef unsigned char	   u8;
- typedef signed char	   s8;
- 
--#endif /* _PERF_TYPES_H */
-+#endif /* __PERF_TYPES_H */
-diff --git a/tools/perf/util/values.h b/tools/perf/util/values.h
-index cadf8cf..2fa967e 100644
---- a/tools/perf/util/values.h
-+++ b/tools/perf/util/values.h
-@@ -1,5 +1,5 @@
--#ifndef _PERF_VALUES_H
--#define _PERF_VALUES_H
-+#ifndef __PERF_VALUES_H
-+#define __PERF_VALUES_H
- 
- #include "types.h"
- 
-@@ -24,4 +24,4 @@ void perf_read_values_add_value(struct perf_read_values *values,
- void perf_read_values_display(FILE *fp, struct perf_read_values *values,
- 			      int raw);
- 
--#endif /* _PERF_VALUES_H */
-+#endif /* __PERF_VALUES_H */
++unsigned int dsos__col_width;
++unsigned int comms__col_width;
++unsigned int threads__col_width;
++static unsigned int parent_symbol__col_width;
++char * field_sep;
++
++LIST_HEAD(hist_entry__sort_list);
++
++struct sort_entry sort_thread = {
++	.header = "Command:  Pid",
++	.cmp	= sort__thread_cmp,
++	.print	= sort__thread_print,
++	.width	= &threads__col_width,
++};
++
++struct sort_entry sort_comm = {
++	.header		= "Command",
++	.cmp		= sort__comm_cmp,
++	.collapse	= sort__comm_collapse,
++	.print		= sort__comm_print,
++	.width		= &comms__col_width,
++};
++
++struct sort_entry sort_dso = {
++	.header = "Shared Object",
++	.cmp	= sort__dso_cmp,
++	.print	= sort__dso_print,
++	.width	= &dsos__col_width,
++};
++
++struct sort_entry sort_sym = {
++	.header = "Symbol",
++	.cmp	= sort__sym_cmp,
++	.print	= sort__sym_print,
++};
++
++struct sort_entry sort_parent = {
++	.header = "Parent symbol",
++	.cmp	= sort__parent_cmp,
++	.print	= sort__parent_print,
++	.width	= &parent_symbol__col_width,
++};
++
++struct sort_dimension {
++	const char		*name;
++	struct sort_entry	*entry;
++	int			taken;
++};
++
++static struct sort_dimension sort_dimensions[] = {
++	{ .name = "pid",	.entry = &sort_thread,	},
++	{ .name = "comm",	.entry = &sort_comm,	},
++	{ .name = "dso",	.entry = &sort_dso,	},
++	{ .name = "symbol",	.entry = &sort_sym,	},
++	{ .name = "parent",	.entry = &sort_parent,	},
++};
++
++int64_t cmp_null(void *l, void *r)
++{
++	if (!l && !r)
++		return 0;
++	else if (!l)
++		return -1;
++	else
++		return 1;
++}
++
++/* --sort pid */
++
++int64_t
++sort__thread_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	return right->thread->pid - left->thread->pid;
++}
++
++int repsep_fprintf(FILE *fp, const char *fmt, ...)
++{
++	int n;
++	va_list ap;
++
++	va_start(ap, fmt);
++	if (!field_sep)
++		n = vfprintf(fp, fmt, ap);
++	else {
++		char *bf = NULL;
++		n = vasprintf(&bf, fmt, ap);
++		if (n > 0) {
++			char *sep = bf;
++
++			while (1) {
++				sep = strchr(sep, *field_sep);
++				if (sep == NULL)
++					break;
++				*sep = '.';
++			}
++		}
++		fputs(bf, fp);
++		free(bf);
++	}
++	va_end(ap);
++	return n;
++}
++
++size_t
++sort__thread_print(FILE *fp, struct hist_entry *self, unsigned int width)
++{
++	return repsep_fprintf(fp, "%*s:%5d", width - 6,
++			      self->thread->comm ?: "", self->thread->pid);
++}
++
++size_t
++sort__comm_print(FILE *fp, struct hist_entry *self, unsigned int width)
++{
++	return repsep_fprintf(fp, "%*s", width, self->thread->comm);
++}
++
++/* --sort dso */
++
++int64_t
++sort__dso_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	struct dso *dso_l = left->dso;
++	struct dso *dso_r = right->dso;
++
++	if (!dso_l || !dso_r)
++		return cmp_null(dso_l, dso_r);
++
++	return strcmp(dso_l->name, dso_r->name);
++}
++
++size_t
++sort__dso_print(FILE *fp, struct hist_entry *self, unsigned int width)
++{
++	if (self->dso)
++		return repsep_fprintf(fp, "%-*s", width, self->dso->name);
++
++	return repsep_fprintf(fp, "%*llx", width, (u64)self->ip);
++}
++
++/* --sort symbol */
++
++int64_t
++sort__sym_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	u64 ip_l, ip_r;
++
++	if (left->sym == right->sym)
++		return 0;
++
++	ip_l = left->sym ? left->sym->start : left->ip;
++	ip_r = right->sym ? right->sym->start : right->ip;
++
++	return (int64_t)(ip_r - ip_l);
++}
++
++
++size_t
++sort__sym_print(FILE *fp, struct hist_entry *self, unsigned int width __used)
++{
++	size_t ret = 0;
++
++	if (verbose)
++		ret += repsep_fprintf(fp, "%#018llx %c ", (u64)self->ip,
++				      dso__symtab_origin(self->dso));
++
++	ret += repsep_fprintf(fp, "[%c] ", self->level);
++	if (self->sym) {
++		ret += repsep_fprintf(fp, "%s", self->sym->name);
++
++		if (self->sym->module)
++			ret += repsep_fprintf(fp, "\t[%s]",
++					     self->sym->module->name);
++	} else {
++		ret += repsep_fprintf(fp, "%#016llx", (u64)self->ip);
++	}
++
++	return ret;
++}
++
++/* --sort comm */
++
++int64_t
++sort__comm_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	return right->thread->pid - left->thread->pid;
++}
++
++int64_t
++sort__comm_collapse(struct hist_entry *left, struct hist_entry *right)
++{
++	char *comm_l = left->thread->comm;
++	char *comm_r = right->thread->comm;
++
++	if (!comm_l || !comm_r)
++		return cmp_null(comm_l, comm_r);
++
++	return strcmp(comm_l, comm_r);
++}
++
++/* --sort parent */
++
++int64_t
++sort__parent_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	struct symbol *sym_l = left->parent;
++	struct symbol *sym_r = right->parent;
++
++	if (!sym_l || !sym_r)
++		return cmp_null(sym_l, sym_r);
++
++	return strcmp(sym_l->name, sym_r->name);
++}
++
++size_t
++sort__parent_print(FILE *fp, struct hist_entry *self, unsigned int width)
++{
++	return repsep_fprintf(fp, "%-*s", width,
++			      self->parent ? self->parent->name : "[other]");
++}
++
++int sort_dimension__add(const char *tok)
++{
++	unsigned int i;
++
++	for (i = 0; i < ARRAY_SIZE(sort_dimensions); i++) {
++		struct sort_dimension *sd = &sort_dimensions[i];
++
++		if (sd->taken)
++			continue;
++
++		if (strncasecmp(tok, sd->name, strlen(tok)))
++			continue;
++
++		if (sd->entry->collapse)
++			sort__need_collapse = 1;
++
++		if (sd->entry == &sort_parent) {
++			int ret = regcomp(&parent_regex, parent_pattern, REG_EXTENDED);
++			if (ret) {
++				char err[BUFSIZ];
++
++				regerror(ret, &parent_regex, err, sizeof(err));
++				fprintf(stderr, "Invalid regex: %s\n%s",
++					parent_pattern, err);
++				exit(-1);
++			}
++			sort__has_parent = 1;
++		}
++
++		list_add_tail(&sd->entry->list, &hist_entry__sort_list);
++		sd->taken = 1;
++
++		return 0;
++	}
++
++	return -ESRCH;
++}
++
+diff --git a/tools/perf/util/sort.h b/tools/perf/util/sort.h
+new file mode 100644
+index 0000000..4684fd6
+--- /dev/null
++++ b/tools/perf/util/sort.h
+@@ -0,0 +1,93 @@
++#ifndef __PERF_SORT_H
++#define __PERF_SORT_H
++#include "../builtin.h"
++
++#include "util.h"
++
++#include "color.h"
++#include <linux/list.h>
++#include "cache.h"
++#include <linux/rbtree.h>
++#include "symbol.h"
++#include "string.h"
++#include "callchain.h"
++#include "strlist.h"
++#include "values.h"
++
++#include "../perf.h"
++#include "debug.h"
++#include "header.h"
++
++#include "parse-options.h"
++#include "parse-events.h"
++
++#include "thread.h"
++#include "sort.h"
++
++extern regex_t parent_regex;
++extern char *sort_order;
++extern char default_parent_pattern[];
++extern char *parent_pattern;
++extern char default_sort_order[];
++extern int sort__need_collapse;
++extern int sort__has_parent;
++extern char *field_sep;
++extern struct sort_entry sort_comm;
++extern struct sort_entry sort_dso;
++extern struct sort_entry sort_sym;
++extern struct sort_entry sort_parent;
++extern unsigned int dsos__col_width;
++extern unsigned int comms__col_width;
++extern unsigned int threads__col_width;
++
++struct hist_entry {
++	struct rb_node		rb_node;
++
++	struct thread		*thread;
++	struct map		*map;
++	struct dso		*dso;
++	struct symbol		*sym;
++	struct symbol		*parent;
++	u64			ip;
++	char			level;
++	struct callchain_node	callchain;
++	struct rb_root		sorted_chain;
++
++	u64			count;
++};
++
++/*
++ * configurable sorting bits
++ */
++
++struct sort_entry {
++	struct list_head list;
++
++	const char *header;
++
++	int64_t (*cmp)(struct hist_entry *, struct hist_entry *);
++	int64_t (*collapse)(struct hist_entry *, struct hist_entry *);
++	size_t	(*print)(FILE *fp, struct hist_entry *, unsigned int width);
++	unsigned int *width;
++	bool	elide;
++};
++
++extern struct sort_entry sort_thread;
++extern struct list_head hist_entry__sort_list;
++
++extern int repsep_fprintf(FILE *fp, const char *fmt, ...);
++extern size_t sort__thread_print(FILE *, struct hist_entry *, unsigned int);
++extern size_t sort__comm_print(FILE *, struct hist_entry *, unsigned int);
++extern size_t sort__dso_print(FILE *, struct hist_entry *, unsigned int);
++extern size_t sort__sym_print(FILE *, struct hist_entry *, unsigned int __used);
++extern int64_t cmp_null(void *, void *);
++extern int64_t sort__thread_cmp(struct hist_entry *, struct hist_entry *);
++extern int64_t sort__comm_cmp(struct hist_entry *, struct hist_entry *);
++extern int64_t sort__comm_collapse(struct hist_entry *, struct hist_entry *);
++extern int64_t sort__dso_cmp(struct hist_entry *, struct hist_entry *);
++extern int64_t sort__sym_cmp(struct hist_entry *, struct hist_entry *);
++extern int64_t sort__parent_cmp(struct hist_entry *, struct hist_entry *);
++extern size_t sort__parent_print(FILE *, struct hist_entry *, unsigned int);
++extern int sort_dimension__add(const char *);
++
++#endif	/* __PERF_SORT_H */
 -- 
 1.6.0.6
 
