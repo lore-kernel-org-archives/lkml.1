@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZIXQSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZIXQTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbZIXQSr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 12:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZIXQSq
+	id S1753316AbZIXQTo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 12:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZIXQTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 12:18:46 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:61204 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751512AbZIXQSq (ORCPT
+	Thu, 24 Sep 2009 12:19:43 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:25211 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752535AbZIXQTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 12:18:46 -0400
-X-Trace: 262080838/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.36.147/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.36.147
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqIEAJc4u0pPRSST/2dsb2JhbACBUtYrhBsFgks
-X-IronPort-AV: E=Sophos;i="4.44,446,1249254000"; 
-   d="scan'208";a="262080838"
-Date: Thu, 24 Sep 2009 17:18:44 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, aarcange@redhat.com
-Subject: Re: [PATCH] ksm: change default values to better fit into mainline
- kernel
-In-Reply-To: <4ABB99FE.3060105@redhat.com>
-Message-ID: <Pine.LNX.4.64.0909241715260.19324@sister.anvils>
-References: <1253736347-3779-1-git-send-email-ieidus@redhat.com>
- <Pine.LNX.4.64.0909241644110.16561@sister.anvils> <4ABB99FE.3060105@redhat.com>
+	Thu, 24 Sep 2009 12:19:42 -0400
+Message-ID: <4ABB9C17.3020307@oracle.com>
+Date: Thu, 24 Sep 2009 09:19:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ricardo Labiaga <Ricardo.Labiaga@netapp.com>,
+       Benny Halevy <bhalevy@panasas.com>, Andy Adamson <andros@netapp.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       David Miller <davem@davemloft.net>, linux-nfs@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] net: fix htmldocs sunrpc, clnt.c
+References: <1253794781.5860.29.camel@ht.satnam>
+In-Reply-To: <1253794781.5860.29.camel@ht.satnam>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4ABB9BDB.002E:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Sep 2009, Izik Eidus wrote:
-> On 09/24/2009 06:52 PM, Hugh Dickins wrote:
-> > You rather caught me by surprise with this one, Izik: I was thinking
-> > more rc7 than rc1 for switching it off;
+Jaswinder Singh Rajput wrote:
+>   DOCPROC Documentation/DocBook/networking.xml
+>   Warning(net/sunrpc/clnt.c:647): No description found for parameter 'req'
+>   Warning(net/sunrpc/clnt.c:647): No description found for parameter 'tk_ops'
+>   Warning(net/sunrpc/clnt.c:647): Excess function parameter 'ops' description in 'rpc_run_bc_task'
 > 
-> I thought that after the merge window -> only fixes can get in, but I guess I
-> was wrong...
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Linus much prefers new features in rc1, though sometimes allowed in rc2;
-from then on it should be mainly bugfixing, yes, but lots of work does
-go in then, and tweaks to defaults, additions to documentation, etc,
-are perfectly acceptable.
+Ack.  Already sent, but possibly lost.
 
-Hugh
+> Cc: Ricardo Labiaga <Ricardo.Labiaga@netapp.com>
+> Cc: Benny Halevy <bhalevy@panasas.com>
+> Cc: Andy Adamson <andros@netapp.com>
+> Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: David Miller <davem@davemloft.net>
+> ---
+>  net/sunrpc/clnt.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+> index a417d5a..38829e2 100644
+> --- a/net/sunrpc/clnt.c
+> +++ b/net/sunrpc/clnt.c
+> @@ -640,10 +640,11 @@ EXPORT_SYMBOL_GPL(rpc_call_async);
+>  /**
+>   * rpc_run_bc_task - Allocate a new RPC task for backchannel use, then run
+>   * rpc_execute against it
+> - * @ops: RPC call ops
+> + * @req: RPC request
+> + * @tk_ops: RPC call ops
+>   */
+>  struct rpc_task *rpc_run_bc_task(struct rpc_rqst *req,
+> -					const struct rpc_call_ops *tk_ops)
+> +				const struct rpc_call_ops *tk_ops)
+>  {
+>  	struct rpc_task *task;
+>  	struct xdr_buf *xbufp = &req->rq_snd_buf;
+
