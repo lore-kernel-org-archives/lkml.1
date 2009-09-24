@@ -1,104 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751319AbZIXV6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbZIXV7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751319AbZIXV6O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 17:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZIXV6N
+	id S1751551AbZIXV7x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 17:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZIXV7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 17:58:13 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:58015 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751105AbZIXV6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 17:58:12 -0400
-Message-ID: <4ABBEBBF.9080400@redhat.com>
-Date: Thu, 24 Sep 2009 14:59:27 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 24 Sep 2009 17:59:52 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:62792 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbZIXV7w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 17:59:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=osl9a+DPmOhKQbO5UlvPB+/zV61j0Af9PHy2Q3itK5v0KRRYhvgXGF7+vildKwiFFh
+         EqISpGKInKc1E3CygnDCLYCfmibdmbdJfjb2RNUn8ybSpvsw08uqZqyZ6/8OSWr/XTFq
+         ePilns3E/lD4g/LX1NP4ua96hZh5RaBpsccvY=
+Message-ID: <4ABBEBD8.8040809@gmail.com>
+Date: Thu, 24 Sep 2009 14:59:52 -0700
+From: Bruce Jones <brucej97223@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Peter Zijlstra <peterz@infradead.org>, anil.s.keshavamurthy@intel.com,
-       Jason Yeh <jason.yeh@amd.com>, Robert Richter <robert.richter@amd.com>,
-       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [RFC patch] Immediate Values - x86 Optimization NMI and MCE support
-References: <20090924132626.485545323@polymtl.ca> <20090924133400.830759403@polymtl.ca> <1253803872.18939.28.camel@laptop> <20090924150333.GA26389@Krystal> <1253804779.18939.38.camel@laptop> <20090924160118.GA28846@Krystal>
-In-Reply-To: <20090924160118.GA28846@Krystal>
+To: gregkh@suse.de
+CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] staging: comedi: fix formating errors in drivers/ni_atmio16d.c
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> [Ingo: this patch is for RFC only. Do not merge.]
-> 
-> * Peter Zijlstra (peterz@infradead.org) wrote:
->> On Thu, 2009-09-24 at 11:03 -0400, Mathieu Desnoyers wrote:
->>> * Peter Zijlstra (peterz@infradead.org) wrote:
->>>> On Thu, 2009-09-24 at 09:26 -0400, Mathieu Desnoyers wrote:
->>>>> plain text document attachment (tracepoints-immediate-values.patch)
->>>>> Use immediate values in tracepoints.
->>>>
->>>> I might have missed it, but did both the Intel and AMD cpu folks clear
->>>> the SMP code rewrite bits?
->>>>
->>>
->>> SMP handling is performed with stop_machine() in this patchset. Nothing
->>> fancy here.
->>>
->>> I've got other patches, not included in this patchset, which implements
->>> nmi-safe code modification, based on a scheme using breakpoints and
->>> IPIs, inspired from djprobes. That one might be worth clearing with
->>> intel/amd devs before merging.
->>>
->>> However, doing code patching within stop_machine() is pretty safe, given
->>> all other CPUs are busy-looping with interrupts off while this happens.
->>> Ftrace already does this.
->>
->> Agreed, I missed this relied on stopmachine. No problem then.
->>
->> It would be good to reduce reliance on stopmachine, so it would be good
->> to get some CPU folks looking at your alternative implementation.
->>
->> Thanks!
->>
-> 
-> Sure, here is the patch applying on top of the immediate values
-> patchset. It implements the breakpoint-based instruction patching
-> scheme. I just provide this one for review. There is a following patch
-> which makes the immediate values infrastructure use this arch-specific
-> file, which I'll leave out for now.
+Correct formatting errors - in this case line length and spaces before
+parens.
 
-Mathieu, could you check my previous patch?
-http://lkml.org/lkml/2009/9/14/551
+Signed-off-by: Bruce Jones <brucej@linux.com>
+---
+ drivers/staging/comedi/drivers/ni_atmio16d.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-I think we can share some code and ideas about generic XMC:-).
-But since it seems that the imv requires a dedicated method,
-I don't think we can share the code entirely. :-)
-
-> +#include <asm/cacheflush.h>
-> +
-> +#define BREAKPOINT_INSTRUCTION  0xcc
-> +#define BREAKPOINT_INS_LEN	1
-> +#define NR_NOPS			10
-
-Why don't you reuse macros in asm/include/kprobes.h? :)
-
-Thank you,
-
+diff --git a/drivers/staging/comedi/drivers/ni_atmio16d.c b/drivers/staging/comedi/drivers/ni_atmio16d.c
+index 901833d..1e35ed6 100644
+--- a/drivers/staging/comedi/drivers/ni_atmio16d.c
++++ b/drivers/staging/comedi/drivers/ni_atmio16d.c
+@@ -200,8 +200,8 @@ struct atmio16d_private {
+ 	enum { dac_2comp, dac_straight } dac0_coding, dac1_coding;
+ 	const struct comedi_lrange *ao_range_type_list[2];
+ 	unsigned int ao_readback[2];
+-	unsigned int com_reg_1_state;	/* current state of command register 1 */
+-	unsigned int com_reg_2_state;	/* current state of command register 2 */
++	unsigned int com_reg_1_state; /* current state of command register 1 */
++	unsigned int com_reg_2_state; /* current state of command register 2 */
+ };
+ 
+ static void reset_counters(struct comedi_device *dev)
+@@ -324,7 +324,7 @@ static int atmio16d_ai_cmdtest(struct comedi_device *dev,
+ 	if (err)
+ 		return 1;
+ 
+-	/* step 2: make sure trigger sources are unique and mutually compatible */
++	/* step 2: make sure trigger sources are unique & mutually compatible */
+ 	/* note that mutual compatiblity is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_FOLLOW &&
+ 	    cmd->scan_begin_src != TRIG_EXT &&
+@@ -436,10 +436,10 @@ static int atmio16d_ai_cmd(struct comedi_device *dev,
+ 	} else if (cmd->convert_arg < 655360000) {
+ 		base_clock = CLOCK_100_KHZ;
+ 		timer = cmd->convert_arg / 10000;
+-	} else if (cmd->convert_arg <= 0xffffffff /* 6553600000 */ ) {
++	} else if (cmd->convert_arg <= 0xffffffff /* 6553600000 */) {
+ 		base_clock = CLOCK_10_KHZ;
+ 		timer = cmd->convert_arg / 100000;
+-	} else if (cmd->convert_arg <= 0xffffffff /* 65536000000 */ ) {
++	} else if (cmd->convert_arg <= 0xffffffff /* 65536000000 */) {
+ 		base_clock = CLOCK_1_KHZ;
+ 		timer = cmd->convert_arg / 1000000;
+ 	}
+@@ -504,10 +504,10 @@ static int atmio16d_ai_cmd(struct comedi_device *dev,
+ 		} else if (cmd->scan_begin_arg < 655360000) {
+ 			base_clock = CLOCK_100_KHZ;
+ 			timer = cmd->scan_begin_arg / 10000;
+-		} else if (cmd->scan_begin_arg < 0xffffffff /* 6553600000 */ ) {
++		} else if (cmd->scan_begin_arg < 0xffffffff /* 6553600000 */) {
+ 			base_clock = CLOCK_10_KHZ;
+ 			timer = cmd->scan_begin_arg / 100000;
+-		} else if (cmd->scan_begin_arg < 0xffffffff /* 65536000000 */ ) {
++		} else if (cmd->scan_begin_arg < 0xffffffff /* 65536000000 */) {
+ 			base_clock = CLOCK_1_KHZ;
+ 			timer = cmd->scan_begin_arg / 1000000;
+ 		}
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+1.6.5.rc2
