@@ -1,333 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZIXHTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751786AbZIXH32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbZIXHTM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 03:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZIXHTJ
+	id S1751786AbZIXH32 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 03:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZIXH31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 03:19:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19714 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751057AbZIXHTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 03:19:07 -0400
-Message-ID: <4ABB1D44.5000007@redhat.com>
-Date: Thu, 24 Sep 2009 10:18:28 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com> <4AB10B67.2050108@redhat.com> <4AB13B09.5040308@gmail.com> <4AB151D7.10402@redhat.com> <4AB1A8FD.2010805@gmail.com> <20090921214312.GJ7182@ovro.caltech.edu> <4AB89C48.4020903@redhat.com> <4ABA3005.60905@gmail.com> <4ABA32AF.50602@redhat.com> <4ABA3A73.5090508@gmail.com> <4ABA61D1.80703@gmail.com> <4ABA78DC.7070604@redhat.com> <4ABA8FDC.5010008@gmail.com>
-In-Reply-To: <4ABA8FDC.5010008@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 24 Sep 2009 03:29:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38838 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751062AbZIXH30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 03:29:26 -0400
+Date: Thu, 24 Sep 2009 09:29:35 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "Li, Shaohua" <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC] page-writeback: move indoes from one superblock together
+Message-ID: <20090924092935.428d42ae@infradead.org>
+In-Reply-To: <20090924071415.GA20808@localhost>
+References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com>
+	<20090924071415.GA20808@localhost>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/24/2009 12:15 AM, Gregory Haskins wrote:
->
->>> There are various aspects about designing high-performance virtual
->>> devices such as providing the shortest paths possible between the
->>> physical resources and the consumers.  Conversely, we also need to
->>> ensure that we meet proper isolation/protection guarantees at the same
->>> time.  What this means is there are various aspects to any
->>> high-performance PV design that require to be placed in-kernel to
->>> maximize the performance yet properly isolate the guest.
->>>
->>> For instance, you are required to have your signal-path (interrupts and
->>> hypercalls), your memory-path (gpa translation), and
->>> addressing/isolation model in-kernel to maximize performance.
->>>
->>>        
->> Exactly.  That's what vhost puts into the kernel and nothing more.
->>      
-> Actually, no.  Generally, _KVM_ puts those things into the kernel, and
-> vhost consumes them.  Without KVM (or something equivalent), vhost is
-> incomplete.  One of my goals with vbus is to generalize the "something
-> equivalent" part here.
->    
+On Thu, 24 Sep 2009 15:14:15 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-I don't really see how vhost and vbus are different here.  vhost expects 
-signalling to happen through a couple of eventfds and requires someone 
-to supply them and implement kernel support (if needed).  vbus requires 
-someone to write a connector to provide the signalling implementation.  
-Neither will work out-of-the-box when implementing virtio-net over 
-falling dominos, for example.
+> On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
+> > __mark_inode_dirty adds inode to wb dirty list in random order. If
+> > a disk has several partitions, writeback might keep spindle moving
+> > between partitions. To reduce the move, better write big chunk of
+> > one partition and then move to another. Inodes from one fs usually
+> > are in one partion, so idealy move indoes from one fs together
+> > should reduce spindle move. This patch tries to address this.
+> > Before per-bdi writeback is added, the behavior is write indoes
+> > from one fs first and then another, so the patch restores previous
+> > behavior. The loop in the patch is a bit ugly, should we add a
+> > dirty list for each superblock in bdi_writeback?
+> > 
+> > Test in a two partition disk with attached fio script shows about
+> > 3% ~ 6% improvement.
+> 
+> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> 
+> Good idea! The optimization looks good to me, it addresses one
+> weakness of per-bdi writeback.
+> 
+> But one problem is, Jan Kara and me are planning to remove b_io and
+> hence this move_expired_inodes() function. Not sure how to do this
+> optimization without b_io.
+> 
+> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > 
+> > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> > index 8e1e5e1..fc87730 100644
+> > --- a/fs/fs-writeback.c
+> > +++ b/fs/fs-writeback.c
+> > @@ -324,13 +324,29 @@ static void move_expired_inodes(struct
+> > list_head *delaying_queue, struct list_head *dispatch_queue,
+> >  				unsigned long *older_than_this)
+> >  {
+> > +	LIST_HEAD(tmp);
+> > +	struct list_head *pos, *node;
+> > +	struct super_block *sb;
+> > +	struct inode *inode;
+> > +
+> >  	while (!list_empty(delaying_queue)) {
+> > -		struct inode *inode =
+> > list_entry(delaying_queue->prev,
+> > -						struct inode,
+> > i_list);
+> > +		inode = list_entry(delaying_queue->prev, struct
+> > inode, i_list); if (older_than_this &&
+> >  		    inode_dirtied_after(inode, *older_than_this))
+> >  			break;
+> > -		list_move(&inode->i_list, dispatch_queue);
+> > +		list_move(&inode->i_list, &tmp);
+> > +	}
+> > +
+> > +	/* Move indoes from one superblock together */
+> > +	while (!list_empty(&tmp)) {
+> > +		inode = list_entry(tmp.prev, struct inode, i_list);
+> > +		sb = inode->i_sb;
+> > +		list_for_each_prev_safe(pos, node, &tmp) {
+> 
+> We are in spin lock, so not necessary to use the safe version?
+> 
 
->>> Vbus accomplishes its in-kernel isolation model by providing a
->>> "container" concept, where objects are placed into this container by
->>> userspace.  The host kernel enforces isolation/protection by using a
->>> namespace to identify objects that is only relevant within a specific
->>> container's context (namely, a "u32 dev-id").  The guest addresses the
->>> objects by its dev-id, and the kernel ensures that the guest can't
->>> access objects outside of its dev-id namespace.
->>>
->>>        
->> vhost manages to accomplish this without any kernel support.
->>      
-> No, vhost manages to accomplish this because of KVMs kernel support
-> (ioeventfd, etc).   Without a KVM-like in-kernel support, vhost is a
-> merely a kind of "tuntap"-like clone signalled by eventfds.
->    
+safe is needed for list walks that remove entries from the list
+has nothing to do with locking ;-)
 
-Without a vbus-connector-falling-dominos, vbus-venet can't do anything 
-either.  Both vhost and vbus need an interface, vhost's is just narrower 
-since it doesn't do configuration or enumeration.
-
-> This goes directly to my rebuttal of your claim that vbus places too
-> much in the kernel.  I state that, one way or the other, address decode
-> and isolation _must_ be in the kernel for performance.  Vbus does this
-> with a devid/container scheme.  vhost+virtio-pci+kvm does it with
-> pci+pio+ioeventfd.
->    
-
-vbus doesn't do kvm guest address decoding for the fast path.  It's 
-still done by ioeventfd.
-
->>   The guest
->> simply has not access to any vhost resources other than the guest->host
->> doorbell, which is handed to the guest outside vhost (so it's somebody
->> else's problem, in userspace).
->>      
-> You mean _controlled_ by userspace, right?  Obviously, the other side of
-> the kernel still needs to be programmed (ioeventfd, etc).  Otherwise,
-> vhost would be pointless: e.g. just use vanilla tuntap if you don't need
-> fast in-kernel decoding.
->    
-
-Yes (though for something like level-triggered interrupts we're probably 
-keeping it in userspace, enjoying the benefits of vhost data path while 
-paying more for signalling).
-
->>> All that is required is a way to transport a message with a "devid"
->>> attribute as an address (such as DEVCALL(devid)) and the framework
->>> provides the rest of the decode+execute function.
->>>
->>>        
->> vhost avoids that.
->>      
-> No, it doesn't avoid it.  It just doesn't specify how its done, and
-> relies on something else to do it on its behalf.
->    
-
-That someone else can be in userspace, apart from the actual fast path.
-
-> Conversely, vbus specifies how its done, but not how to transport the
-> verb "across the wire".  That is the role of the vbus-connector abstraction.
->    
-
-So again, vbus does everything in the kernel (since it's so easy and 
-cheap) but expects a vbus-connector.  vhost does configuration in 
-userspace (since it's so clunky and fragile) but expects a couple of 
-eventfds.
-
->>> Contrast this to vhost+virtio-pci (called simply "vhost" from here).
->>>
->>>        
->> It's the wrong name.  vhost implements only the data path.
->>      
-> Understood, but vhost+virtio-pci is what I am contrasting, and I use
-> "vhost" for short from that point on because I am too lazy to type the
-> whole name over and over ;)
->    
-
-If you #define A A+B+C don't expect intelligent conversation afterwards.
-
->>> It is not immune to requiring in-kernel addressing support either, but
->>> rather it just does it differently (and its not as you might expect via
->>> qemu).
->>>
->>> Vhost relies on QEMU to render PCI objects to the guest, which the guest
->>> assigns resources (such as BARs, interrupts, etc).
->>>        
->> vhost does not rely on qemu.  It relies on its user to handle
->> configuration.  In one important case it's qemu+pci.  It could just as
->> well be the lguest launcher.
->>      
-> I meant vhost=vhost+virtio-pci here.  Sorry for the confusion.
->
-> The point I am making specifically is that vhost in general relies on
-> other in-kernel components to function.  I.e. It cannot function without
-> having something like the PCI model to build an IO namespace.  That
-> namespace (in this case, pio addresses+data tuples) are used for the
-> in-kernel addressing function under KVM + virtio-pci.
->
-> The case of the lguest launcher is a good one to highlight.  Yes, you
-> can presumably also use lguest with vhost, if the requisite facilities
-> are exposed to lguest-bus, and some eventfd based thing like ioeventfd
-> is written for the host (if it doesnt exist already).
->
-> And when the next virt design "foo" comes out, it can make a "foo-bus"
-> model, and implement foo-eventfd on the backend, etc, etc.
->    
-
-It's exactly the same with vbus needing additional connectors for 
-additional transports.
-
-> Ira can make ira-bus, and ira-eventfd, etc, etc.
->
-> Each iteration will invariably introduce duplicated parts of the stack.
->    
-
-Invariably?  Use libraries (virtio-shmem.ko, libvhost.so).
-
-
->> For the N+1th time, no.  vhost is perfectly usable without pci.  Can we
->> stop raising and debunking this point?
->>      
-> Again, I understand vhost is decoupled from PCI, and I don't mean to
-> imply anything different.  I use PCI as an example here because a) its
-> the only working example of vhost today (to my knowledge), and b) you
-> have stated in the past that PCI is the only "right" way here, to
-> paraphrase.  Perhaps you no longer feel that way, so I apologize if you
-> feel you already recanted your position on PCI and I missed it.
->    
-
-For kvm/x86 pci definitely remains king.  I was talking about the two 
-lguest users and Ira.
-
-> I digress.  My point here isn't PCI.  The point here is the missing
-> component for when PCI is not present.  The component that is partially
-> satisfied by vbus's devid addressing scheme.  If you are going to use
-> vhost, and you don't have PCI, you've gotta build something to replace it.
->    
-
-Yes, that's why people have keyboards.  They'll write that glue code if 
-they need it.  If it turns out to be a hit an people start having virtio 
-transport module writing parties, they'll figure out a way to share code.
-
->>> All you really need is a simple decode+execute mechanism, and a way to
->>> program it from userspace control.  vbus tries to do just that:
->>> commoditize it so all you need is the transport of the control messages
->>> (like DEVCALL()), but the decode+execute itself is reuseable, even
->>> across various environments (like KVM or Iras rig).
->>>
->>>        
->> If you think it should be "commodotized", write libvhostconfig.so.
->>      
-> I know you are probably being facetious here, but what do you propose
-> for the parts that must be in-kernel?
->    
-
-On the guest side, virtio-shmem.ko can unify the ring access.  It 
-probably makes sense even today.  On the host side I eventfd is the 
-kernel interface and libvhostconfig.so can provide the configuration 
-when an existing ABI is not imposed.
-
->>> And your argument, I believe, is that vbus allows both to be implemented
->>> in the kernel (though to reiterate, its optional) and is therefore a bad
->>> design, so lets discuss that.
->>>
->>> I believe the assertion is that things like config-space are best left
->>> to userspace, and we should only relegate fast-path duties to the
->>> kernel.  The problem is that, in my experience, a good deal of
->>> config-space actually influences the fast-path and thus needs to
->>> interact with the fast-path mechanism eventually anyway.
->>> Whats left
->>> over that doesn't fall into this category may cheaply ride on existing
->>> plumbing, so its not like we created something new or unnatural just to
->>> support this subclass of config-space.
->>>
->>>        
->> Flexibility is reduced, because changing code in the kernel is more
->> expensive than in userspace, and kernel/user interfaces aren't typically
->> as wide as pure userspace interfaces.  Security is reduced, since a bug
->> in the kernel affects the host, while a bug in userspace affects just on
->> guest.
->>      
-> For a mac-address attribute?  Thats all we are really talking about
-> here.  These points you raise, while true of any kernel code I suppose,
-> are a bit of a stretch in this context.
->    
-
-Look at the virtio-net feature negotiation.  There's a lot more there 
-than the MAC address, and it's going to grow.
-
->> Example: feature negotiation.  If it happens in userspace, it's easy to
->> limit what features we expose to the guest.
->>      
-> Its not any harder in the kernel.  I do this today.
->
-> And when you are done negotiating said features, you will generally have
-> to turn around and program the feature into the backend anyway (e.g.
-> ioctl() to vhost module).  Now you have to maintain some knowledge of
-> that particular feature and how to program it in two places.
->    
-
-No, you can leave it enabled unconditionally in vhost (the guest won't 
-use what it doesn't know about).
-
-> Conversely, I am eliminating the (unnecessary) middleman by letting the
-> feature negotiating take place directly between the two entities that
-> will consume it.
->    
-
-The middleman is necessary, if you want to support live migration, or to 
-restrict a guest to a subset of your features.
-
->>   If it happens in the
->> kernel, we need to add an interface to let the kernel know which
->> features it should expose to the guest.
->>      
-> You need this already either way for both models anyway.  As an added
-> bonus, vbus has generalized that interface using sysfs attributes, so
-> all models are handled in a similar and community accepted way.
->    
-
-vhost doesn't need it since userspace takes care of it.
-
->>   We also need to add an
->> interface to let userspace know which features were negotiated, if we
->> want to implement live migration.  Something fairly trivial bloats rapidly.
->>      
-> Can you elaborate on the requirements for live-migration?  Wouldnt an
-> opaque save/restore model work here? (e.g. why does userspace need to be
-> able to interpret the in-kernel state, just pass it along as a blob to
-> the new instance).
->    
-
-A blob would work, if you commit to forward and backward compatibility 
-in the kernel side (i.e. an older kernel must be able to accept a blob 
-from a newer one).  I don't like blobs though, they tie you to the 
-implemenetation.
-
->> As you can see above, userspace needs to be involved in this, and the
->> number of interfaces required is smaller if it's in userspace:
->>      
-> Actually, no.  My experience has been the opposite.  Anytime I sat down
-> and tried to satisfy your request to move things to the userspace,
-> things got ugly and duplicative really quick.  I suspect part of the
-> reason you may think its easier because you already have part of
-> virtio-net in userspace and its surrounding support, but that is not the
-> case moving forward for new device types.
->    
-
-I can't comment on your experience, but we'll definitely build on 
-existing code for new device types.
-
->> you only
->> need to know which features the kernel supports (they can be enabled
->> unconditionally, just not exposed).
->>
->> Further, some devices are perfectly happy to be implemented in
->> userspace, so we need userspace configuration support anyway.  Why
->> reimplement it in the kernel?
->>      
-> Thats fine.  vbus is targetted for high-performance IO.  So if you have
-> a robust userspace (like KVM+QEMU) and low-performance constraints (say,
-> for a console or something), put it in userspace and vbus is not
-> involved.  I don't care.
->    
-
-So now the hypothetical non-pci hypervisor needs to support two busses.
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
