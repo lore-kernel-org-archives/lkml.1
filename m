@@ -1,61 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561AbZIXWVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZIXW2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752561AbZIXWVZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbZIXWVY
+	id S1752541AbZIXW2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZIXW2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:21:24 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:54403 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbZIXWVX (ORCPT
+	Thu, 24 Sep 2009 18:28:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58170 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751377AbZIXW2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:21:23 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Oren Laadan <orenl@librato.com>
-Subject: Re: [RFC][v7][PATCH 0/9] Implement clone2() system call
-Date: Fri, 25 Sep 2009 00:21:03 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-10-generic; KDE/4.3.1; x86_64; ; )
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-References: <20090924165548.GA16586@us.ibm.com> <20090924201517.GA24786@us.ibm.com> <4ABBED72.9080901@librato.com>
-In-Reply-To: <4ABBED72.9080901@librato.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 24 Sep 2009 18:28:31 -0400
+Date: Thu, 24 Sep 2009 15:26:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linux@rainbow-software.org
+Cc: bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org, john stultz <johnstul@us.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, stable@kernel.org,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [Bugme-new] [Bug 14222] New: Hibernation oopses for the 2nd
+ time with 2.6.31 (won't fit the screen)
+Message-Id: <20090924152628.b4d2dd49.akpm@linux-foundation.org>
+In-Reply-To: <bug-14222-10286@http.bugzilla.kernel.org/>
+References: <bug-14222-10286@http.bugzilla.kernel.org/>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909250021.03535.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+wR+KJIqD83dXAy8j2vScWtwU/mQz7EGOPWx8
- c7Uzb95igVpxW/OhQOeORCLfAHhqxYSgY45ZSkMFL8T9jqpOGH
- dLQfzTML9TP9lXRQPO21Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 September 2009, Oren Laadan wrote:
-> In this form, you place a constraints on where userspace may
-> place the {parent,child}_tid variable, and require that this
-> particular clone_struct remain valid memory in the parent until
-> the child terminates.  This may break existing programs that
-> use this (threads libraries ?)
+On Thu, 24 Sep 2009 14:07:09 GMT
+bugzilla-daemon@bugzilla.kernel.org wrote:
 
-No existing program uses sys_clone2, and the kernel function
-may well differ from the user space calling conventions, which
-are not bound by the six-argument limitation.
+> http://bugzilla.kernel.org/show_bug.cgi?id=14222
+> 
+>            Summary: Hibernation oopses for the 2nd time with 2.6.31 (won't
+>                     fit the screen)
+>            Product: Timers
+>            Version: 2.5
+>     Kernel Version: 2.6.31
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Other
+>         AssignedTo: johnstul@us.ibm.com
+>         ReportedBy: linux@rainbow-software.org
+>         Regression: Yes
 
-So a clone2 library call could set up the structure with the
-arguments to the real syscall, call into the kernel and
-copy the output data back into the pointers it was given by
-the user.
+It's a 2.6.21 regression.
 
-	Arnd <><
+> 
+> Hibernation worked great with 2.6.30 - I had over a month of uptime (it never 
+> worked so well before - always crashed after some time). But in 2.6.31, it's 
+> broken again - and completely. The first hibernation works but it always 
+> crashes on the second one.
+> 
+> The oops won't fit the screen, even 1280x1024 is not enough.
+> 
+> I bisected it and found this:
+
+Thanks for bisecting it.
+
+> c7121843685de2bf7f3afd3ae1d6a146010bf1fc is first bad commit
+> commit c7121843685de2bf7f3afd3ae1d6a146010bf1fc
+> Author: Magnus Damm <magnus.damm@gmail.com>
+> Date: __ Tue Jul 28 14:09:55 2009 -0700
+> 
+> __ __ clocksource: Save mult_orig in clocksource_disable()
+> 
+> __ __ To fix the common case where ->enable() does not set up
+> __ __ mult, make sure mult_orig is saved in mult on disable.
+> 
+> __ __ Also add comments to explain why we do this.
+> 
+> __ __ Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> __ __ Cc: johnstul@us.ibm.com
+> __ __ Cc: lethal@linux-sh.org
+> __ __ Cc: akpm@linux-foundation.org
+> __ __ LKML-Reference: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
+> __ __ Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> :040000 040000 c965062bc79af46cdb3522fc7ab1cc81d2f84de3
+> 26616c88a8128b25fd15c3da39ac6251cd9723b6 M __ __ __include
+> 
+> Reverting this commit fixes the problem.
+
+OK, I cc'ed everyone.
+
+Guys, is reverting this patch the best approach?
+
+It might be for 2.6.31.x but not for 2.6.32, perhaps?
