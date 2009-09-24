@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752690AbZIXOg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZIXOjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752690AbZIXOg6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 10:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZIXOg5
+	id S1753132AbZIXOjA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 10:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZIXOi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 10:36:57 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33042 "EHLO
+	Thu, 24 Sep 2009 10:38:59 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34314 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751512AbZIXOg4 (ORCPT
+	by vger.kernel.org with ESMTP id S1753120AbZIXOi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 10:36:56 -0400
+	Thu, 24 Sep 2009 10:38:59 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH v2 07/11] mn10300: Clean up linker script using higher-level macros.
-Date: Thu, 24 Sep 2009 10:36:22 -0400
-Message-Id: <1253802986-8132-8-git-send-email-tabbott@ksplice.com>
+       Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
+       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org,
+       Mike Frysinger <vapier.adi@gmail.com>
+Subject: [PATCH v2 08/11] blackfin: Cleanup linker script using new linker script macros.
+Date: Thu, 24 Sep 2009 10:36:23 -0400
+Message-Id: <1253802986-8132-9-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
 References: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
@@ -27,76 +29,105 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Bryan Wu <cooloney@kernel.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
 ---
- arch/mn10300/kernel/vmlinux.lds.S |   40 +++---------------------------------
- 1 files changed, 4 insertions(+), 36 deletions(-)
+ arch/blackfin/kernel/vmlinux.lds.S |   56 ++++--------------------------------
+ 1 files changed, 6 insertions(+), 50 deletions(-)
 
-diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
-index 76f41bd..10549dc 100644
---- a/arch/mn10300/kernel/vmlinux.lds.S
-+++ b/arch/mn10300/kernel/vmlinux.lds.S
-@@ -44,24 +44,8 @@ SECTIONS
-   RO_DATA(PAGE_SIZE)
+diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
+index 21ac7c2..ffd90fb 100644
+--- a/arch/blackfin/kernel/vmlinux.lds.S
++++ b/arch/blackfin/kernel/vmlinux.lds.S
+@@ -96,8 +96,7 @@ SECTIONS
+ 	{
+ 		__sdata = .;
+ 		/* This gets done first, so the glob doesn't suck it in */
+-		. = ALIGN(32);
+-		*(.data.cacheline_aligned)
++		CACHELINE_ALIGNED_DATA(32)
  
-   /* writeable */
--  .data : {			/* Data */
--	DATA_DATA
--	CONSTRUCTORS
+ #if !L1_DATA_A_LENGTH
+ 		. = ALIGN(32);
+@@ -116,12 +115,7 @@ SECTIONS
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 
+-		/* make sure the init_task is aligned to the
+-		 * kernel thread size so we can locate the kernel
+-		 * stack properly and quickly.
+-		 */
+-		. = ALIGN(THREAD_SIZE);
+-		*(.init_task.data)
++		INIT_TASK_DATA(THREAD_SIZE)
+ 
+ 		__edata = .;
+ 	}
+@@ -134,39 +128,10 @@ SECTIONS
+ 	. = ALIGN(PAGE_SIZE);
+ 	___init_begin = .;
+ 
+-	.init.text :
+-	{
+-		. = ALIGN(PAGE_SIZE);
+-		__sinittext = .;
+-		INIT_TEXT
+-		__einittext = .;
+-	}
+-	.init.data :
+-	{
+-		. = ALIGN(16);
+-		INIT_DATA
+-	}
+-	.init.setup :
+-	{
+-		. = ALIGN(16);
+-		___setup_start = .;
+-		*(.init.setup)
+-		___setup_end = .;
+-	}
+-	.initcall.init :
+-	{
+-		___initcall_start = .;
+-		INITCALLS
+-		___initcall_end = .;
+-	}
+-	.con_initcall.init :
+-	{
+-		___con_initcall_start = .;
+-		*(.con_initcall.init)
+-		___con_initcall_end = .;
+-	}
++	INIT_TEXT_SECTION(PAGE_SIZE)
++	. = ALIGN(16);
++	INIT_DATA_SECTION(16)
+ 	PERCPU(4)
+-	SECURITY_INIT
+ 
+ 	/* we have to discard exit text and such at runtime, not link time, to
+ 	 * handle embedded cross-section references (alt instructions, bug
+@@ -181,18 +146,9 @@ SECTIONS
+ 		EXIT_DATA
+ 	}
+ 
+-	.init.ramfs :
+-	{
+-		. = ALIGN(4);
+-		___initramfs_start = .;
+-		*(.init.ramfs)
+-		. = ALIGN(4);
+-		___initramfs_end = .;
 -	}
 -
--  .data_nosave : { NOSAVE_DATA; }
--
--  .data.page_aligned : { PAGE_ALIGNED_DATA(PAGE_SIZE); }
--  .data.cacheline_aligned : { CACHELINE_ALIGNED_DATA(32); }
--
--  /* rarely changed data like cpu maps */
--  . = ALIGN(32);
--  .data.read_mostly : AT(ADDR(.data.read_mostly)) {
--	READ_MOSTLY_DATA(32);
--	_edata = .;		/* End of data section */
--  }
--
--  .data.init_task : { INIT_TASK_DATA(THREAD_SIZE); }
-+  RW_DATA_SECTION(32, PAGE_SIZE, THREAD_SIZE)
-+  _edata = .;
+ 	__l1_lma_start = .;
  
-   /* might get freed after init */
-   . = ALIGN(PAGE_SIZE);
-@@ -74,22 +58,8 @@ SECTIONS
-   /* will be freed after init */
-   . = ALIGN(PAGE_SIZE);		/* Init code and data */
-   __init_begin = .;
--  .init.text : {
--	_sinittext = .;
--	INIT_TEXT;
--	_einittext = .;
--  }
--  .init.data : { INIT_DATA; }
--  .setup.init : { INIT_SETUP(16); }
--
--  __initcall_start = .;
--  .initcall.init : {
--	INITCALLS
--  }
--  __initcall_end = .;
--  .con_initcall.init : { CON_INITCALL; }
--
--  SECURITY_INIT
-+  INIT_TEXT_SECTION(PAGE_SIZE)
-+  INIT_DATA_SECTION(16)
-   . = ALIGN(4);
-   __alt_instructions = .;
-   .altinstructions : { *(.altinstructions) }
-@@ -100,8 +70,6 @@ SECTIONS
- 	.exit.text : { EXIT_TEXT; }
- 	.exit.data : { EXIT_DATA; }
- 
--  .init.ramfs : { INIT_RAM_FS; }
--
-   PERCPU(32)
-   . = ALIGN(PAGE_SIZE);
-   __init_end = .;
+-	.text_l1 L1_CODE_START : AT(LOADADDR(.init.ramfs) + SIZEOF(.init.ramfs))
++	.text_l1 L1_CODE_START : AT(LOADADDR(.exit.data) + SIZEOF(.exit.data))
+ 	{
+ 		. = ALIGN(4);
+ 		__stext_l1 = .;
 -- 
 1.6.3.3
 
