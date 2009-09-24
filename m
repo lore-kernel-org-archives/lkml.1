@@ -1,116 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbZIXGyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbZIXHGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752286AbZIXGyX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 02:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZIXGyV
+	id S1752566AbZIXHGw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 03:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZIXHGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 02:54:21 -0400
-Received: from mga02.intel.com ([134.134.136.20]:24771 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751816AbZIXGyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 02:54:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,444,1249282800"; 
-   d="scan'208";a="451211214"
-Subject: [RFC] page-writeback: move indoes from one superblock together
-From: Shaohua Li <shaohua.li@intel.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Wu, Fengguang" <fengguang.wu@intel.com>,
-       Chris Mason <chris.mason@oracle.com>
-Content-Type: multipart/mixed; boundary="=-0Hp2fY4vZvzFvq5IqZad"
-Date: Thu, 24 Sep 2009 14:54:20 +0800
-Message-Id: <1253775260.10618.10.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 24 Sep 2009 03:06:50 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:34895 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751947AbZIXHGu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 03:06:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=jCWJzxLo4IgjVRr/Ib1235nh8Iw/UsCh7gizEeFTwU30tbeKTPVOB0V9b/3JLx8TEd
+         mjgOVdH2H2zCQSpadm/0jZ6PuReM8cPN++HZELfDRsvQW2SmBI9clRNKQcqLtu5rJ9dn
+         xVIEZUDdy4nPeSvAx0M5vxM0AOqwF5lR2jCzU=
+MIME-Version: 1.0
+Date: Thu, 24 Sep 2009 15:06:54 +0800
+Message-ID: <3877989d0909240006r1db0607etb8d2857c1e165316@mail.gmail.com>
+Subject: [RFC PATCH] delete unnecessary wbinvd while entering C3 for Intel CPU
+From: Luming Yu <luming.yu@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Len Brown <lenb@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Content-Type: multipart/mixed; boundary=005045017f2cf5c58704744d7912
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--005045017f2cf5c58704744d7912
+Content-Type: text/plain; charset=UTF-8
 
---=-0Hp2fY4vZvzFvq5IqZad
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Hi there,
 
-__mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
-several partitions, writeback might keep spindle moving between partitions.
-To reduce the move, better write big chunk of one partition and then move to
-another. Inodes from one fs usually are in one partion, so idealy move indoes
-from one fs together should reduce spindle move. This patch tries to address
-this. Before per-bdi writeback is added, the behavior is write indoes
-from one fs first and then another, so the patch restores previous behavior.
-The loop in the patch is a bit ugly, should we add a dirty list for each
-superblock in bdi_writeback?
+I came across acpi_idle_enter_simple, noticed wbinvd
+is an unnecessary overhead for all Intel MP CPUs that
+support C3 share cache. And caches should not be
+flushed by software while entering C3 type state.
 
-Test in a two partition disk with attached fio script shows about 3% ~ 6%
-improvement.
+Please review. If make sense, please apply.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 8e1e5e1..fc87730 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -324,13 +324,29 @@ static void move_expired_inodes(struct list_head *delaying_queue,
- 			       struct list_head *dispatch_queue,
- 				unsigned long *older_than_this)
- {
-+	LIST_HEAD(tmp);
-+	struct list_head *pos, *node;
-+	struct super_block *sb;
-+	struct inode *inode;
-+
- 	while (!list_empty(delaying_queue)) {
--		struct inode *inode = list_entry(delaying_queue->prev,
--						struct inode, i_list);
-+		inode = list_entry(delaying_queue->prev, struct inode, i_list);
- 		if (older_than_this &&
- 		    inode_dirtied_after(inode, *older_than_this))
- 			break;
--		list_move(&inode->i_list, dispatch_queue);
-+		list_move(&inode->i_list, &tmp);
-+	}
-+
-+	/* Move indoes from one superblock together */
-+	while (!list_empty(&tmp)) {
-+		inode = list_entry(tmp.prev, struct inode, i_list);
-+		sb = inode->i_sb;
-+		list_for_each_prev_safe(pos, node, &tmp) {
-+			struct inode *inode = list_entry(pos,
-+				struct inode, i_list);
-+			if (inode->i_sb == sb)
-+				list_move(&inode->i_list, dispatch_queue);
-+		}
- 	}
- }
- 
+Ps. The patch is enclosed in attachment. The inlined one
+is c&p of it for reading.
 
 
---=-0Hp2fY4vZvzFvq5IqZad
-Content-Disposition: attachment; filename="newfio"
-Content-Type: text/plain; name="newfio"; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Thanks,
+Luming
 
-[global]
-runtime=120
-ioscheduler=cfq
-size=2G
-ioengine=sync
-rw=write
-file_service_type=random:256
-overwrite=1
+Signed-off-by: Yu Luming <luming.yu@intel.com>
 
-[sdb1]
-directory=/mnt/b1
-nrfiles=10
-numjobs=4
+ processor_idle.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-[sdb2]
-directory=/mnt/b2
-nrfiles=10
-numjobs=4
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 66393d5..4a2355b 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -894,10 +894,6 @@ static int acpi_idle_enter_simple(struct
+cpuidle_device *dev,
+ 	 * access HPET !
+ 	 */
+ 	lapic_timer_state_broadcast(pr, cx, 1);
+-
+-	if (cx->type == ACPI_STATE_C3)
+-		ACPI_FLUSH_CPU_CACHE();
+-
+ 	kt1 = ktime_get_real();
+ 	/* Tell the scheduler that we are going deep-idle: */
+ 	sched_clock_idle_sleep_event();
 
---=-0Hp2fY4vZvzFvq5IqZad--
+--005045017f2cf5c58704744d7912
+Content-Type: application/octet-stream; name="11.patch"
+Content-Disposition: attachment; filename="11.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fzz64ujd0
 
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvYWNwaS9wcm9jZXNzb3JfaWRsZS5jIGIvZHJpdmVycy9hY3Bp
+L3Byb2Nlc3Nvcl9pZGxlLmMKaW5kZXggNjYzOTNkNS4uNGEyMzU1YiAxMDA2NDQKLS0tIGEvZHJp
+dmVycy9hY3BpL3Byb2Nlc3Nvcl9pZGxlLmMKKysrIGIvZHJpdmVycy9hY3BpL3Byb2Nlc3Nvcl9p
+ZGxlLmMKQEAgLTg5NCwxMCArODk0LDYgQEAgc3RhdGljIGludCBhY3BpX2lkbGVfZW50ZXJfc2lt
+cGxlKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LAogCSAqIGFjY2VzcyBIUEVUICEKIAkgKi8K
+IAlsYXBpY190aW1lcl9zdGF0ZV9icm9hZGNhc3QocHIsIGN4LCAxKTsKLQotCWlmIChjeC0+dHlw
+ZSA9PSBBQ1BJX1NUQVRFX0MzKQotCQlBQ1BJX0ZMVVNIX0NQVV9DQUNIRSgpOwotCiAJa3QxID0g
+a3RpbWVfZ2V0X3JlYWwoKTsKIAkvKiBUZWxsIHRoZSBzY2hlZHVsZXIgdGhhdCB3ZSBhcmUgZ29p
+bmcgZGVlcC1pZGxlOiAqLwogCXNjaGVkX2Nsb2NrX2lkbGVfc2xlZXBfZXZlbnQoKTsK
+--005045017f2cf5c58704744d7912--
