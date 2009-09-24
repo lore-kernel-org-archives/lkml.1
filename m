@@ -1,115 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZIXCHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZIXCDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbZIXCHK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 22:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZIXCHI
+	id S1753280AbZIXCDY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 22:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZIXCDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 22:07:08 -0400
-Received: from mga02.intel.com ([134.134.136.20]:39228 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753117AbZIXCHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 22:07:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,442,1249282800"; 
-   d="scan'208";a="553273568"
-Subject: Re: [origin tree boot crash] NULL pointer dereference, IP:
- [<ffffffff82b07130>] ibm_find_acpi_device+0x5c/0xf5
-From: Lin Ming <ming.m.lin@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, bjorn.helgaas@hp.com
-Cc: Len Brown <lenb@kernel.org>, "Moore, Robert" <robert.moore@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <1253756114.9794.43.camel@minggr.sh.intel.com>
-References: <alpine.LFD.2.00.0909190237560.22030@localhost.localdomain>
-	 <20090923213052.GA6648@elte.hu>
-	 <1253756114.9794.43.camel@minggr.sh.intel.com>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 09:58:30 +0800
-Message-Id: <1253757510.9794.55.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Sep 2009 22:03:23 -0400
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:47694 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbZIXCDW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 22:03:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=xnR/pt5Uuh7+JZXkNdMO/3/NDB0eRsIzaSZPeyUV1BmCnQ6ltqXVRh4k+/IAFX0Up0
+         M+PDExnKHjUX1VIb/enyHFe+Wb00z1rf+lKViayHxyaD7dqBEF9EaTDzHufPcPDrrWla
+         12RW4XxeFXuUAJU3EVy7bj8E8QqWSHke5fZXk=
+MIME-Version: 1.0
+In-Reply-To: <505766fa0909230040m13e3dc34x2ceb83848767d825@mail.gmail.com>
+References: <505766fa0909222137q217be3d0x8fc12ab467833666@mail.gmail.com>
+	 <505766fa0909230040m13e3dc34x2ceb83848767d825@mail.gmail.com>
+Date: Thu, 24 Sep 2009 10:03:25 +0800
+Message-ID: <505766fa0909231903t2fe2f7b6y26d2681d6d38ef0e@mail.gmail.com>
+Subject: Re: Linux guest domain with two vnets bound to the same vswitch 
+	experiences hung in bootup (sun_netraT5220)
+From: hyl <heyongli@gmail.com>
+To: sparclinux@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-24 at 09:35 +0800, Lin Ming wrote:
-> On Thu, 2009-09-24 at 05:30 +0800, Ingo Molnar wrote:
-> > > commit 15b8dd53f5ffaf8e2d9095c423f713423f576c0f
-> > > Date:   Mon Jun 29 13:39:29 2009 +0800
-> > >
-> > >     ACPICA: Major update for acpi_get_object_info external interface
-> > 
-> > this one is causing boot crashes in -tip testing:
-> 
-> Hi,
-> 
-> Could you please try below commit at linux-acpi-2.6/release branch.
+>From 57b549e5e4dfc8b34d66bbad7f4297a1bc81a43d Mon Sep 17 00:00:00 2001
+From: Yongli He <heyongli@gmail.com>
+Date: Thu, 24 Sep 2009 10:00:04 +0800
+Subject: [PATCH] Sun ldom vnet driver dead lock
 
-Oh, sorry, commit 718fb0d was already in -tip testing.
+if 2 vnet attach to same vswitch, ldom will report
+2 same irq then lead to dead lock on the lp->lock
+or the vio->lock
 
-(add Bjorn Helgaas <bjorn.helgaas@hp.com>)
+static irqreturn_t ldc_rx(int irq, void *dev_id){
+...
+out:
+	spin_unlock_irqrestore(&lp->lock, flags);
+           << here run with out any lock
+	send_events(lp, event_mask);
+           >> vnet evetn process will dead lock on
+           >> lp->lock or the vio->lock
 
-Below patch should fix the crash.
-http://patchwork.kernel.org/patch/49090/ 
-
-Subject: [PATCH v3 01/17] ACPICA: fixup after acpi_get_object_info() change
-
-Commit 15b8dd53f5ffa changed info->hardware_id from a static array to
-a pointer.  If hardware_id is non-NULL, it points to a NULL-terminated
-string, so we don't need to terminate it explicitly.  However, it may
-be NULL; in that case, we *can't* add a NULL terminator.
-
-This causes a NULL pointer dereference oops for devices without _HID.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Lin Ming <ming.m.lin@intel.com>
-CC: Bob Moore <robert.moore@intel.com>
-CC: Gary Hade <garyhade@us.ibm.com>
+Signed-off-by: Yongli He <heyongli@gmail.com>
 ---
- drivers/pci/hotplug/acpiphp_ibm.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ arch/sparc/include/asm/ldc.h |    1 +
+ arch/sparc64/kernel/ldc.c    |    4 ++++
+ drivers/net/sunvnet.c        |    2 ++
+ 3 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
-index a9d926b..e7be66d 100644
---- a/drivers/pci/hotplug/acpiphp_ibm.c
-+++ b/drivers/pci/hotplug/acpiphp_ibm.c
-@@ -406,7 +406,6 @@ static acpi_status __init ibm_find_acpi_device(acpi_handle handle,
- 			__func__, status);
- 		return retval;
+diff --git a/arch/sparc/include/asm/ldc.h b/arch/sparc/include/asm/ldc.h
+index bdb524a..dd2b30f 100644
+--- a/arch/sparc/include/asm/ldc.h
++++ b/arch/sparc/include/asm/ldc.h
+@@ -20,6 +20,7 @@ extern void ldom_power_off(void);
+  */
+ struct ldc_channel_config {
+ 	void (*event)(void *arg, int event);
++	spinlock_t *serial_lock;
+
+ 	u32			mtu;
+ 	unsigned int		rx_irq;
+diff --git a/arch/sparc64/kernel/ldc.c b/arch/sparc64/kernel/ldc.c
+index a6b75cd..72b9501 100644
+--- a/arch/sparc64/kernel/ldc.c
++++ b/arch/sparc64/kernel/ldc.c
+@@ -892,9 +892,13 @@ handshake_complete:
  	}
--	info->hardware_id.string[sizeof(info->hardware_id.length) - 1] = '\0';
- 
- 	if (info->current_status && (info->valid & ACPI_VALID_HID) &&
- 			(!strcmp(info->hardware_id.string, IBM_HARDWARE_ID1) ||
 
+ out:
++	if(lp->cfg.serial_lock)
++		spin_lock_irqsave(lp->cfg.serial_lock, flags);
+ 	spin_unlock_irqrestore(&lp->lock, flags);
 
----
-Lin Ming
+ 	send_events(lp, event_mask);
++	if(lp->cfg.serial_lock)
++        	spin_unlock_irqrestore(lp->cfg.serial_lock, flags);
 
-> 
-> commit 718fb0de8ff88f71b3b91a8ee8e42e60c88e5128
-> Author: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Date:   Thu Aug 6 23:18:12 2009 +0000
-> 
->     ACPI: fix NULL bug for HID/UID string
->     
->     acpi_device->pnp.hardware_id and unique_id are now allocated pointers,
->     replacing the previous arrays.  acpi_device_install_notify_handler()
->     oopsed on the NULL hid when probing the video device, and perhaps other
->     uses are vulnerable too.  So initialize those pointers to empty strings
->     when there is no hid or uid.  Also, free hardware_id and unique_id when
->     when acpi_device is going to be freed.
->     
->     http://bugzilla.kernel.org/show_bug.cgi?id=14096
->     
->     Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
->     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
->     Signed-off-by: Len Brown <len.brown@intel.com>
-> 
-> Thanks,
-> Lin Ming
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/net/sunvnet.c b/drivers/net/sunvnet.c
+index 6415ce1..e58f9da 100644
+--- a/drivers/net/sunvnet.c
++++ b/drivers/net/sunvnet.c
+@@ -1117,11 +1117,13 @@ static struct vnet * __devinit
+vnet_find_parent(struct mdesc_handle *hp,
 
+ 	return vnet_find_or_create(local_mac);
+ }
++static spinlock_t event_lock=__SPIN_LOCK_UNLOCKED("vnet_event");
 
+ static struct ldc_channel_config vnet_ldc_cfg = {
+ 	.event		= vnet_event,
+ 	.mtu		= 64,
+ 	.mode		= LDC_MODE_UNRELIABLE,
++	.serial_lock	= &event_lock,
+ };
+
+ static struct vio_driver_ops vnet_vio_ops = {
+-- 
+1.5.5.1.dirty
