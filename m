@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbZIXLcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbZIXLdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbZIXLcm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 07:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZIXLcl
+	id S1751955AbZIXLdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 07:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbZIXLdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 07:32:41 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:52619 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbZIXLck (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 07:32:40 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-In-Reply-To: <1253781508.7103.437.camel@pasglop>
-References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
-	 <1251869611.7547.38.camel@twins>  <1253753307.7103.356.camel@pasglop>
-	 <1253778667.7695.130.camel@twins>  <1253781508.7103.437.camel@pasglop>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 13:33:07 +0200
-Message-Id: <1253791987.7695.153.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 24 Sep 2009 07:33:38 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:44705 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751386AbZIXLdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 07:33:37 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/4] NOMMU: Fallback for is_vmalloc_or_module_addr() should be
+	inline
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Date: Thu, 24 Sep 2009 12:33:32 +0100
+Message-ID: <20090924113332.6031.11718.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-24 at 18:38 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-09-24 at 09:51 +0200, Peter Zijlstra wrote:
-> > > I don't quite follow your logic here. This is useful for more than just
-> > > hypervisors. For example, take the HV out of the picture for a moment
-> > > and imagine that the HW has the ability to offline CPU in various power
-> > > levels, with varying latencies to bring them back.
-> > 
-> > cpu-hotplug is an utter slow path, anybody saying latency and hotplug in
-> > the same sentence doesn't seem to grasp either or both concepts.
-> 
-> Let's forget about latency then. Let's imagine I want to set a CPU
-> offline to save power, vs. setting it offline -and- opening the back
-> door of the machine to actually physically replace it :-)
+The NOMMU fallback for is_vmalloc_or_module_addr() should be static inline,
+not just static, in linux/mm.h.
 
-If the hardware is capable of physical hotplug, then surely powering the
-socket down saves most power and is the preferred mode?
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-> In any case, I don't see the added feature as being problematic, and
-> not such a "layering violation" as you seem to imply it is. It's a
-> convenient way to atomically take the CPU out -and- convey some
-> information about the "intent" to the hypervisor, and I really fail
-> to see why you have so strong objections about it.
-
-Ignorance on my part probably :-)
-
-I'm simply not seeing a use case for it, except for the virt case, which
-I think we should bug the virt interface with and not the cpu-hotplug
-interface.
+ include/linux/mm.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index b6eae5e..23e7fd6 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -288,7 +288,7 @@ static inline int is_vmalloc_addr(const void *x)
+ #ifdef CONFIG_MMU
+ extern int is_vmalloc_or_module_addr(const void *x);
+ #else
+-static int is_vmalloc_or_module_addr(const void *x)
++static inline int is_vmalloc_or_module_addr(const void *x)
+ {
+ 	return 0;
+ }
 
