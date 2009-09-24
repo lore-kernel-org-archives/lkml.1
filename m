@@ -1,66 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZIXRdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbZIXRkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752704AbZIXRdM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 13:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZIXRdL
+	id S1753002AbZIXRkY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 13:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZIXRkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 13:33:11 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:54883 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbZIXRdK (ORCPT
+	Thu, 24 Sep 2009 13:40:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51688 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751613AbZIXRkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 13:33:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=mU+ZuGjMQmyXUT26RoiZhgO4Oa+SCRb/TDOya9bBuoe0vilITOhjRpsDJ5X7Y2qbEn
-         VmeqywTweaGwddhC8REfAL6muF0h3A+8RQj+e5SO+6MrZ2cxYo77jwxVFawhi0mSc6ao
-         gvaLiE8vxDlLa7TEujhoJPtBO1Tx848MPYAQo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: whansard@sbcglobal.net
-Subject: Re: disk speed regression kernel 2.6.29 and after
-Date: Thu, 24 Sep 2009 19:34:27 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-07381-g7fa0772-dirty; KDE/4.3.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <4ABA0FDA.9090707@sbcglobal.net> <200909241426.49947.bzolnier@gmail.com> <20090924112645.dc97dd07.whansard@sbcglobal.net>
-In-Reply-To: <20090924112645.dc97dd07.whansard@sbcglobal.net>
+	Thu, 24 Sep 2009 13:40:21 -0400
+Date: Thu, 24 Sep 2009 10:37:58 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Cc: lwn@lwn.net
+Subject: Linux 2.6.27.35
+Message-ID: <20090924173758.GA17077@kroah.com>
 MIME-Version: 1.0
-Message-Id: <200909241934.27472.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 September 2009 18:26:45 Will wrote:
-> On Thu, 24 Sep 2009 14:26:49 +0200
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> 
-> > 
-> > 
-> > I don't see how could commit 295f00 be the guilty one here.  I'm suspecting
-> > that bisection went wrong at some point (easy to verify by checking if commit
-> > 295f00^1 is also bad).
-> > 
-> > PS Will, it would be useful to try libata first and possibly rule out PATA out
-> > of the picture completely.
-> 
-> Disabling "ATA/ATAPI/MFM/RLL"  restored my performance completely, with the
-> newer kernels. I'll just have to get used my other hard drives being sdb . . ..
-> Thanks guys.  The copy takes right at 3m30s now.
-> I made a change to dd years ago to make it default to 1 meg block size and to show
-> me the "Megs copied" on screen, so I can watch how fast dd is going.  With the 
-> older atapi drivers, this copy would be fast, but jerky and halting. With kernel
-> 2.6.29 and after the halts were more frequent and longer, dragging the copy out
-> to over 9 minutes in this case.  With only the libata enabled, the "megs copied"
-> is very smooth, with no halting, though still right at 3m30s.
-> If you need me to test anything for the sake of the older drivers, I can.
-> Thanks again for the help.
+I'm announcing the release of the 2.6.27.35 kernel.  All users of the
+2.6.27 kernel series are very strongly encouraged to upgrade.
 
-I'm glad to hear that the issue is fixed for you.
+I'll also be replying to this message with a copy of the patch between
+2.6.27.34 and 2.6.27.35
 
-Regarding additional pursue of the root cause, I think that it is not worth
-the effort currently since there were no other reports about similar problems
-and libata is a better solution on most modern systems anyway.
+The updated 2.6.27.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
+
+thanks,
+
+greg k-h
+
+------------
+
+ Makefile                                  |    2 
+ arch/powerpc/include/asm/mmu-hash64.h     |    2 
+ arch/powerpc/kernel/lparcfg.c             |    3 +
+ arch/powerpc/kernel/rtas.c                |    7 ++-
+ arch/powerpc/mm/slb.c                     |   16 +++++--
+ arch/powerpc/platforms/pseries/reconfig.c |    9 +++-
+ drivers/ata/libata-core.c                 |    8 +++
+ drivers/char/tpm/tpm_tis.c                |   12 ++---
+ drivers/ps3/ps3stor_lib.c                 |   65 ++++++++++++++++++++++++++++--
+ fs/binfmt_elf.c                           |   28 ++++++------
+ fs/nfsd/nfs3proc.c                        |    5 +-
+ fs/nfsd/nfs4proc.c                        |    7 ++-
+ fs/nfsd/nfsproc.c                         |    3 -
+ fs/nfsd/vfs.c                             |   11 ++---
+ fs/udf/lowlevel.c                         |    7 ++-
+ include/linux/nfsd/nfsd.h                 |    2 
+ sound/pci/cs46xx/cs46xx_lib.h             |    2 
+ sound/pci/oxygen/oxygen_io.c              |   11 -----
+ 18 files changed, 146 insertions(+), 54 deletions(-)
+
+Brian King (1):
+      powerpc/pseries: Fix to handle slb resize across migration
+
+Clemens Ladisch (1):
+      sound: oxygen: work around MCE when changing volume
+
+David Shaw (1):
+      Short write in nfsd becomes a full write to the client
+
+Geoff Levand (1):
+      powerpc/ps3: Workaround for flash memory I/O error
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.27.35
+
+Jan Kara (1):
+      udf: Use device size when drive reported bogus number of written blocks
+
+Jason Gunthorpe (1):
+      TPM: Fixup boot probe timeout for tpm_tis driver
+
+Roland McGrath (1):
+      binfmt_elf: fix PT_INTERP bss handling
+
+Sophie Hamilton (1):
+      ALSA: cs46xx - Fix minimum period size
+
+Tejun Heo (1):
+      libata: fix off-by-one error in ata_tf_read_block()
+
+Wei Yongjun (1):
+      nfsd: fix hung up of nfs client while sync write data to nfs server
+
