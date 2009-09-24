@@ -1,105 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751816AbZIXKiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751726AbZIXKjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751816AbZIXKiB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 06:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZIXKh4
+	id S1751726AbZIXKjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 06:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbZIXKjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 06:37:56 -0400
-Received: from cmpxchg.org ([85.214.51.133]:40667 "EHLO cmpxchg.org"
+	Thu, 24 Sep 2009 06:39:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38355 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751386AbZIXKhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 06:37:55 -0400
-Date: Thu, 24 Sep 2009 12:37:18 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: a patch drop request in -mm
-Message-ID: <20090924103718.GA8316@cmpxchg.org>
-References: <2f11576a0909210800l639560e4jad6cfc2e7f74538f@mail.gmail.com> <20090921152219.GQ12726@csn.ul.ie> <20090924092903.B648.A69D9226@jp.fujitsu.com> <20090924090923.GA8800@csn.ul.ie>
+	id S1751241AbZIXKjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 06:39:09 -0400
+Subject: [PATCH] blackfin: includecheck fix: mach-bf548, ezkit.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Mike Frysinger <vapier@gentoo.org>,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 16:08:09 +0530
+Message-Id: <1253788689.5860.2.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924090923.GA8800@csn.ul.ie>
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Thu, Sep 24, 2009 at 10:09:23AM +0100, Mel Gorman wrote:
-> On Thu, Sep 24, 2009 at 09:40:34AM +0900, KOSAKI Motohiro wrote:
-> > > On Tue, Sep 22, 2009 at 12:00:51AM +0900, KOSAKI Motohiro wrote:
-> > > > Mel,
-> > > > 
-> > > > Today, my test found following patch makes false-positive warning.
-> > > > because, truncate can free the pages
-> > > > although the pages are mlock()ed.
-> > > > 
-> > > > So, I think following patch should be dropped.
-> > > > .. or, do you think truncate should clear PG_mlock before free the page?
-> > > 
-> > > Is there a reason that truncate cannot clear PG_mlock before freeing the
-> > > page?
-> > 
-> > CC to Lee.
-> > IIRC, Lee tried it at first. but after some trouble, he decided change free_hot_cold_page().
-> > but unfortunately, I don't recall the reason ;-)
-> > 
-> > Lee, Can you recall it?
-> > 
-> > 
-> > > > Can I ask your patch intention?
-> > > 
-> > > Locked pages being freed to the page allocator were considered
-> > > unexpected and a counter was in place to determine how often that
-> > > situation occurred. However, I considered it unlikely that the counter
-> > > would be noticed so the warning was put in place to catch what class of
-> > > pages were getting freed locked inappropriately. I think a few anomolies
-> > > have been cleared up since. Ultimately, it should have been safe to
-> > > delete the check.
-> > 
-> > OK. it seems reasonable. so, I only hope no see linus tree output false-positive warnings.
-> > Thus, I propse 
-> > 
-> >   - don't merge this patch to linus tree
-> >   - but, no drop from -mm
-> >     it be holded in mm until this issue fixed.
-> >   - I'll working on fixing this issue.
-> > 
-> > I think this is enough fair.
-> > 
-> 
-> I'm afraid I'm just about to run out the door and will be offline until
-> Tuesday at the very least. I haven't had the chance to review the patch.
-> However, I have no problem with this patch not being merged to Linus's tree
-> if it remains in -mm to catch this and other false positives.
-> 
-> > Hannes, I'm sorry. I haven't review your patch. I'm too busy now. please gime me more
-> > sevaral time.
-> > 
-> 
-> It'll be Tuesday at the very earliest before I get a chance to review.
+fix the following 'make includecheck' warning:
 
-Hugh already pointed out its defects, so the patch as it stands is not
-usable.
+  arch/blackfin/mach-bf548/boards/ezkit.c: linux/input.h is included more than once.
 
-The problem, if I understood it correctly, is that truncation munlocks
-page cache pages but we also unmap (and free) their private COWs,
-which can still be mlocked.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Mike Frysinger <vapier@gentoo.org>
+Cc: Michael Hennerich <michael.hennerich@analog.com>
+---
+ arch/blackfin/mach-bf548/boards/ezkit.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-So my patch moved the munlocking from truncation to unmap code to make
-sure we catch the cows, but for nonlinear unmapping we also want
-non-linear munlocking, where my patch is broken.
+diff --git a/arch/blackfin/mach-bf548/boards/ezkit.c b/arch/blackfin/mach-bf548/boards/ezkit.c
+index c66f380..383a18c 100644
+--- a/arch/blackfin/mach-bf548/boards/ezkit.c
++++ b/arch/blackfin/mach-bf548/boards/ezkit.c
+@@ -208,7 +208,6 @@ static struct platform_device bfin_rotary_device = {
+ #endif
+ 
+ #if defined(CONFIG_INPUT_ADXL34X) || defined(CONFIG_INPUT_ADXL34X_MODULE)
+-#include <linux/input.h>
+ #include <linux/spi/adxl34x.h>
+ static const struct adxl34x_platform_data adxl34x_info = {
+ 	.x_axis_offset = 0,
+-- 
+1.6.0.6
 
-Perhaps we can do page-wise munlocking in zap_pte_range(), where
-zap_details are taken into account.  Hopefully, I will have time on
-the weekend to look further into it.
 
-Thanks,
-	Hannes
