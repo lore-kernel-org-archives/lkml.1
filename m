@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZIXSLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZIXSOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbZIXSLU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 14:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZIXSLS
+	id S1753565AbZIXSOJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 14:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZIXSOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 14:11:18 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:51863 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752970AbZIXSLR (ORCPT
+	Thu, 24 Sep 2009 14:14:07 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:41457 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752886AbZIXSOF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 14:11:17 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: disk speed regression kernel 2.6.29 and after
-Date: Thu, 24 Sep 2009 20:11:18 +0200
-User-Agent: KMail/1.9.9
-Cc: whansard@sbcglobal.net, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, David Miller <davem@davemloft.net>
-References: <4ABA0FDA.9090707@sbcglobal.net> <200909241426.49947.bzolnier@gmail.com> <20090924112645.dc97dd07.whansard@sbcglobal.net> <20090924112645.dc97dd07.whansard@sbcglobal.net> <200909241934.27472.bzolnier@gmail.com>
-In-reply-To: <200909241934.27472.bzolnier@gmail.com>
+	Thu, 24 Sep 2009 14:14:05 -0400
+Date: Thu, 24 Sep 2009 11:13:59 -0700
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>
+Message-ID: <20090924181357.GB9082@sirena.org.uk>
+References: <1253798645-9493-1-git-send-email-w.sang@pengutronix.de>
+ <20090924173904.GA9082@sirena.org.uk>
+ <20090924180727.GA6408@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909242011.20032.elendil@planet.nl>
-X-OriginalArrivalTime: 24 Sep 2009 18:11:20.0421 (UTC) FILETIME=[6AE81150:01CA3D42]
+In-Reply-To: <20090924180727.GA6408@pengutronix.de>
+X-Cookie: Excellent day to have a rotten day.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 72.254.11.239
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH] regulator: add driver for MAX8660/8661
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> Regarding additional pursue of the root cause, I think that it is not
-> worth the effort currently since there were no other reports about
-> similar problems and libata is a better solution on most modern systems
-> anyway. 
+On Thu, Sep 24, 2009 at 08:07:27PM +0200, Wolfram Sang wrote:
 
-I'm surprised at this, especially if the commit Will bisected it to [1] is 
-the culprit. That is a change in generic ide code and could thus very well 
-affect other users too.
+> > Forced PWM is normally a power loss - the benefit it gives is the
+> > ability to respond to sudden spikes in load without voltage droops.  The
+> > power benefit from not having it enabled is usually only apparent at
+> > lower loads.
 
-This is a clear regression and IMHO, if it is confirmed that that commit is 
-the cause of the regression, it should be fixed. And if not, it could 
-still be worthwhile to track down which commit is the cause.
+> Understood. Well, as this chip automatically switches PWM on/off depending on
+> the load (formula is in the datasheet), it seems to me that the forced-PWM mode
+> is mainly used for systems which prefer low-noise on the signal. So, the above
+> comment could just be dropped. Liam, could you do this, or shall I resend?
 
-As for the lack of other reports, that could very well simply be because:
-1) there are not that many users of IDE drivers anymore
-2) most users don't really consciously watch their disk speed
+I don't think I've ever seen a regulator that didn't try to scale up so
+that under high load they end up as running in forced PWM mode.
 
-As long as the IDE code is in mainline, I don't see why regressions should 
-be ignored. Adding the ide list and David to CC for other opinions.
-
-Cheers,
-FJP
-
-[1] http://lkml.org/lkml/2009/9/23/550
+The ability to force is there mainly in case the load transients are so
+sudden in a systemm that the pulse skipping ends up not responding
+quickly enough.  There's also a marginal power saving from not doing the
+checks if the load is always high but that's not the common case for the
+uses we tend to see in Linux.
