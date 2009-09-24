@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752233AbZIXLvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbZIXLv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752233AbZIXLvl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 07:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZIXLvj
+	id S1752320AbZIXLv6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 07:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZIXLv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 07:51:39 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:34342 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbZIXLvj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 07:51:39 -0400
-Date: Thu, 24 Sep 2009 05:51:38 -0600
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, rientjes@google.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HugeTLB: Fix unused variable warning
-Message-ID: <20090924115138.GA7136@us.ibm.com>
-References: <20090924100232.19291.70594.stgit@warthog.procyon.org.uk>
+	Thu, 24 Sep 2009 07:51:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51321 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752115AbZIXLv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 07:51:56 -0400
+Date: Thu, 24 Sep 2009 13:51:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, hpa@zytor.com,
+       tglx@linutronix.de, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, a.p.zijlstra@chello.nl,
+       fweisbec@gmail.com, acme@redhat.com, mhiramat@redhat.com,
+       postmaster@vger.kernel.org
+Subject: Re: mailing list for trace users
+Message-ID: <20090924115138.GA15960@elte.hu>
+References: <20090923114725.GB4132@elte.hu> <20090923.111444.247045711.davem@davemloft.net> <20090923193020.GA20934@elte.hu> <20090923.154739.43527595.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090924100232.19291.70594.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090923.154739.43527595.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---Qxx1br4bt0+wmkIi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* David Miller <davem@davemloft.net> wrote:
 
-On Thu, 24 Sep 2009, David Howells wrote:
+> I have created linux-perf-users@vger.kernel.org
 
-> Fix an unused variable warning:
->=20
-> 	mm/mmap.c: In function 'do_mmap_pgoff':
-> 	mm/mmap.c:953: warning: unused variable 'user'
->=20
-> by converting the CONFIG_HUGETLBFS=3Dn version of hugetlb_file_setup() in=
-to an
-> inline function instead of a macro.
->=20
-> Introduced by:
->=20
-> 	commit 4e52780d41a741fb4861ae1df2413dd816ec11b1
-> 	Author: Eric B Munson <ebmunson@us.ibm.com>
-> 	Date:   Mon Sep 21 17:03:47 2009 -0700
-> 	hugetlb: add MAP_HUGETLB for mmaping pseudo-anonymous huge page regions
->=20
-> Signed-off-by: David Howells <dhowells@redhat.com>
+Thanks a lot David!
 
-Acked-by: Eric B Munson <ebmunson@us.ibm.com>
-
---Qxx1br4bt0+wmkIi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkq7XUoACgkQsnv9E83jkzr3bgCgtodtSjx/+aJBl7VqyIZwByrJ
-JgMAoOionyk73oBmBZdc/iWndzUCkhmD
-=hWda
------END PGP SIGNATURE-----
-
---Qxx1br4bt0+wmkIi--
+	Ingo
