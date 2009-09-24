@@ -1,152 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZIXHoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751634AbZIXJyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125AbZIXHoe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 03:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZIXHob
+	id S1751634AbZIXJyu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 05:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZIXJys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 03:44:31 -0400
-Received: from mga03.intel.com ([143.182.124.21]:44640 "EHLO mga03.intel.com"
+	Thu, 24 Sep 2009 05:54:48 -0400
+Received: from smtp.cs.aau.dk ([130.225.194.6]:46292 "EHLO smtp.cs.aau.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751508AbZIXHoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 03:44:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,444,1249282800"; 
-   d="scan'208";a="191109552"
-Date: Thu, 24 Sep 2009 15:44:31 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: "Wu, Fengguang" <fengguang.wu@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [RFC] page-writeback: move indoes from one superblock together
-Message-ID: <20090924074431.GA22396@sli10-desk.sh.intel.com>
-References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924071415.GA20808@localhost>
+	id S1751338AbZIXJys convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 05:54:48 -0400
+X-Greylist: delayed 7791 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Sep 2009 05:54:47 EDT
+Message-ID: <20090924094447.16137esujpct2bfz@webmail.cs.aau.dk>
+Date: Thu, 24 Sep 2009 09:44:47 +0200
+From: odie@cs.aau.dk
+To: whansard@sbcglobal.net, "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Cc: "Robert Hancock" <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       "Elias Oltmanns" <eo@nebensachen.de>
+Subject: Re: disk speed regression kernel 2.6.29 and after
+References: <4ABA0FDA.9090707@sbcglobal.net> <4ABAE271.80309@gmail.com>
+	<20090923233505.a567667b.whansard@sbcglobal.net>
+In-Reply-To: <20090923233505.a567667b.whansard@sbcglobal.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-In-Reply-To: <20090924071415.GA20808@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 03:14:15PM +0800, Wu, Fengguang wrote:
-> On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
-> > __mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
-> > several partitions, writeback might keep spindle moving between partitions.
-> > To reduce the move, better write big chunk of one partition and then move to
-> > another. Inodes from one fs usually are in one partion, so idealy move indoes
-> > from one fs together should reduce spindle move. This patch tries to address
-> > this. Before per-bdi writeback is added, the behavior is write indoes
-> > from one fs first and then another, so the patch restores previous behavior.
-> > The loop in the patch is a bit ugly, should we add a dirty list for each
-> > superblock in bdi_writeback?
-> > 
-> > Test in a two partition disk with attached fio script shows about 3% ~ 6%
-> > improvement.
-> 
-> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-> 
-> Good idea! The optimization looks good to me, it addresses one
-> weakness of per-bdi writeback.
-> 
-> But one problem is, Jan Kara and me are planning to remove b_io and
-> hence this move_expired_inodes() function. Not sure how to do this
-> optimization without b_io.
-> 
-> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > 
-> > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> > index 8e1e5e1..fc87730 100644
-> > --- a/fs/fs-writeback.c
-> > +++ b/fs/fs-writeback.c
-> > @@ -324,13 +324,29 @@ static void move_expired_inodes(struct list_head *delaying_queue,
-> >  			       struct list_head *dispatch_queue,
-> >  				unsigned long *older_than_this)
-> >  {
-> > +	LIST_HEAD(tmp);
-> > +	struct list_head *pos, *node;
-> > +	struct super_block *sb;
-> > +	struct inode *inode;
-> > +
-> >  	while (!list_empty(delaying_queue)) {
-> > -		struct inode *inode = list_entry(delaying_queue->prev,
-> > -						struct inode, i_list);
-> > +		inode = list_entry(delaying_queue->prev, struct inode, i_list);
-> >  		if (older_than_this &&
-> >  		    inode_dirtied_after(inode, *older_than_this))
-> >  			break;
-> > -		list_move(&inode->i_list, dispatch_queue);
-> > +		list_move(&inode->i_list, &tmp);
-> > +	}
-> > +
-> > +	/* Move indoes from one superblock together */
-> > +	while (!list_empty(&tmp)) {
-> > +		inode = list_entry(tmp.prev, struct inode, i_list);
-> > +		sb = inode->i_sb;
-> > +		list_for_each_prev_safe(pos, node, &tmp) {
-> 
-> We are in spin lock, so not necessary to use the safe version?
-it's to protect list delete.
- 
-> > +			struct inode *inode = list_entry(pos,
-> 
-> Could just reuse inode.
-oops, forgot to remove it when moveing inode to global.
+(Bart, a commit by you might be involved here, please see below.)
+
+>> I had been using an old 2.6.22 kernel on my machine, and I often backup
+>> one partition of my main hard drive to a partition on a second hard
+>> drive. The main hard drive is sata 640 gigs, and the second is a pata
+>> 320 gig. copying this partition from one drive to the other with dd
+>> takes about 3 minutes and 30 seconds. When I installed kernel 2.6.30,
+>> and 2.6.31, the time took 9 minutes and 20 seconds. I decided to go to
+>> the trouble of compiling all the kernels between, and kernels
+>> 2.6.22-2.6.28 all do the operation in about 3 minutes and 30 seconds.
+>> 2.6.29- newer all take about 9 minutes and 20 seconds. The partition is
+>> 16 gigs. each drive seems to be as fast as before otherwise, it's just
+>> much slower copying from one drive to another, which I do very often.
+>> This is an nforce 3 based motherboard, amd southbridge, i think, with 4
+>> gigs of ram, athlon 64x2. 32 bit kernel. has anyone heard of this problem?
+>> I currently have 3 hard drives hooked up.
+>> a 200 gig on a promise controller,
+>> a 320 gig on the amd pata?
+>> a 640 sata on the nv i think.
+>> The motherboard is a Asrock-AM2NF3-VSTA
+>> copying this partition with dd or cat or schily's dd between any of these 3
+>> different hard drives takes different times depending on the speed of
+>> the drive with
+>> kernels 2.6.22-2.6.28, but takes about 9 minutes and 30 seconds on any
+>> of the drives
+>> with the kernels 2.6.29 and after.
+
+>> Can you post the dmesg output from bootup on both the good and bad kernels?
+
+So, the good and bad below are a result of a git bisect run?
+
+And did you notice these warnings?
+
+> good
+> Linux version 2.6.28-04985-gebdab07 (root@Wil.com) (gcc version  
+> 4.4.1 (GCC) ) #14 SMP Wed Sep 23 21:12:50 CDT 2009
+[...]
+
+> Freeing unused kernel memory: 284k freed
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: sda5: warning: vs-500: unknown uniqueness -107167201[18060  
+> 33348 0xf6c5325c UNKNOWN] not found
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: sda5: warning: vs-500: unknown uniqueness -107167201[18060  
+> 113891 0xf6c55758 UNKNOWN] not found
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: sda5: warning: vs-500: unknown uniqueness  
+> -107167201[117144 365484 0xf6c56188 UNKNOWN] not found
+
+Hmm, this looks like a reiserfs problem that was present for a while between
+2.6.28 and 2.6.29-rc1 [1]. You'd probably like to run fsck.
+
+> ip_tables: (C) 2000-2006 Netfilter Core Team
+> hdb: UDMA/33 mode selected
+> ------------[ cut here ]------------
+> WARNING: at fs/sysfs/dir.c:462 sysfs_add_one+0x3c/0x50()
+> Hardware name: To Be Filled By O.E.M.
+> sysfs: duplicate filename 'audio' can not be created
+> Modules linked in: sound(+) ipt_LOG ip_tables x_tables
+> Pid: 1666, comm: modprobe Not tainted 2.6.28-04985-gebdab07 #14
+> Call Trace:
+>  [<c01406b2>] warn_slowpath+0x82/0xc0
+>  [<c050a8fe>] schedule+0x21e/0x780
+>  [<c012eb77>] xapic_wait_icr_idle+0x17/0x20
+>  [<c035ca84>] idr_get_empty_slot+0xe4/0x260
+>  [<c035cc79>] ida_get_new_above+0x79/0x1b0
+>  [<c01cfcd0>] sysfs_ilookup_test+0x0/0x10
+>  [<c01cfff1>] sysfs_find_dirent+0x21/0x30
+>  [<c01d012d>] __sysfs_add_one+0x1d/0xe0
+>  [<c019e8a6>] ilookup5+0x36/0x40
+>  [<c01d022c>] sysfs_add_one+0x3c/0x50
+>  [<c01d07d8>] create_dir+0x48/0x90
+>  [<c01d0849>] sysfs_create_dir+0x29/0x40
+>  [<c035d75f>] kobject_get+0xf/0x20
+>  [<c035d853>] kobject_add_internal+0x83/0x1d0
+>  [<c035da2a>] kobject_set_name_vargs+0x3a/0x50
+>  [<c035da5e>] kobject_add_varg+0x1e/0x60
+>  [<c035dafd>] kobject_add+0x2d/0x60
+>  [<c035d75f>] kobject_get+0xf/0x20
+>  [<c03c9a0a>] device_add+0xca/0x600
+>  [<c035d515>] kobject_init+0x25/0xa0
+>  [<c03c9fdb>] device_create_vargs+0x8b/0xd0
+>  [<c03ca04b>] device_create+0x2b/0x30
+>  [<f85ff0a5>] oss_init+0xa5/0x149 [sound]
+>  [<c0101123>] do_one_initcall+0x33/0x170
+>  [<f85ff000>] oss_init+0x0/0x149 [sound]
+>  [<c016345b>] sys_init_module+0x8b/0x1b0
+>  [<c018b688>] sys_close+0x58/0x90
+>  [<c011c26e>] syscall_call+0x7/0xb
+> ---[ end trace c45370bb6aa94452 ]---
+> kobject_add_internal failed for audio with -EEXIST, don't try to  
+> register things with the same name in the same directory.
+> Pid: 1666, comm: modprobe Tainted: G        W  2.6.28-04985-gebdab07 #14
+> Call Trace:
+>  [<c035d902>] kobject_add_internal+0x132/0x1d0
+>  [<c035dafd>] kobject_add+0x2d/0x60
+>  [<c035d75f>] kobject_get+0xf/0x20
+>  [<c03c9a0a>] device_add+0xca/0x600
+>  [<c035d515>] kobject_init+0x25/0xa0
+>  [<c03c9fdb>] device_create_vargs+0x8b/0xd0
+>  [<c03ca04b>] device_create+0x2b/0x30
+>  [<f85ff0a5>] oss_init+0xa5/0x149 [sound]
+>  [<c0101123>] do_one_initcall+0x33/0x170
+>  [<f85ff000>] oss_init+0x0/0x149 [sound]
+>  [<c016345b>] sys_init_module+0x8b/0x1b0
+>  [<c018b688>] sys_close+0x58/0x90
+>  [<c011c26e>] syscall_call+0x7/0xb
+> hdc: UDMA/33 mode selected
+> Driver 'sr' needs updating - please use bus_type methods
+> hdd: UDMA/66 mode selected
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: warning: vs-500: unknown uniqueness -1071672013
+> ReiserFS: sda5: warning: vs-500: unknown uniqueness  
+> -107167201[117144 365494 0xf6ca87d8 UNKNOWN] not found
+> w83627ehf: Found W83627EHG chip at 0x290
+> warning: process `update' used the obsolete bdflush system call
+> Fix your initscripts?
+> warning: process `update' used the obsolete bdflush system call
+> Fix your initscripts?
+
+These warnings are a consequence of the problem above I believe. I don't
+know whether they have affected your bisect run, you should really apply
+the patch in [1] and rerun the tests.
+
+>
+> bad
+>
+> Linux version 2.6.28-04986-g295f000 (root@Wil.com) (gcc version  
+> 4.4.1 (GCC) ) #13 SMP Wed Sep 23 21:08:03 CDT 2009
+
+So if your bisect is correct, then 295f000
+(ide: don't execute the next queued command from the hard-IRQ context (v2))
+is faulty.
+
+Bart, any ideas or would you like a rerun with the reiserfs patch in place
+by Will?
+
+[1] http://lkml.org/lkml/2009/1/12/471
 
 
-__mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
-several partitions, writeback might keep spindle moving between partitions.
-To reduce the move, better write big chunk of one partition and then move to
-another. Inodes from one fs usually are in one partion, so idealy move indoes
-from one fs together should reduce spindle move. This patch tries to address
-this. Before per-bdi writeback is added, the behavior is write indoes
-from one fs first and then another, so the patch restores previous behavior.
-The loop in the patch is a bit ugly, should we add a dirty list for each
-superblock in bdi_writeback?
+Simon Holm Thøgersen
 
-Test in a two partition disk with attached fio script shows about 3% ~ 6%
-improvement.
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 8e1e5e1..303a1c5 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -324,13 +324,28 @@ static void move_expired_inodes(struct list_head *delaying_queue,
- 			       struct list_head *dispatch_queue,
- 				unsigned long *older_than_this)
- {
-+	LIST_HEAD(tmp);
-+	struct list_head *pos, *node;
-+	struct super_block *sb;
-+	struct inode *inode;
-+
- 	while (!list_empty(delaying_queue)) {
--		struct inode *inode = list_entry(delaying_queue->prev,
--						struct inode, i_list);
-+		inode = list_entry(delaying_queue->prev, struct inode, i_list);
- 		if (older_than_this &&
- 		    inode_dirtied_after(inode, *older_than_this))
- 			break;
--		list_move(&inode->i_list, dispatch_queue);
-+		list_move(&inode->i_list, &tmp);
-+	}
-+
-+	/* Move indoes from one superblock together */
-+	while (!list_empty(&tmp)) {
-+		inode = list_entry(tmp.prev, struct inode, i_list);
-+		sb = inode->i_sb;
-+		list_for_each_prev_safe(pos, node, &tmp) {
-+			inode = list_entry(pos, struct inode, i_list);
-+			if (inode->i_sb == sb)
-+				list_move(&inode->i_list, dispatch_queue);
-+		}
- 	}
- }
- 
