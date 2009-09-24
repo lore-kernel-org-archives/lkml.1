@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbZIXRCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZIXRDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753883AbZIXRCm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 13:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZIXRCk
+	id S1754006AbZIXRDP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 13:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbZIXRDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 13:02:40 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:50931 "EHLO e1.ny.us.ibm.com"
+	Thu, 24 Sep 2009 13:03:13 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:51173 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753863AbZIXRCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 13:02:39 -0400
-Date: Thu, 24 Sep 2009 10:01:54 -0700
+	id S1753927AbZIXRDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 13:03:11 -0400
+Date: Thu, 24 Sep 2009 10:02:15 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
@@ -20,8 +20,8 @@ Cc: Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
        hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
        peterz@infradead.org,
        Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
-Subject: [RFC][v7][PATCH 5/9]: Add target_pids parameter to alloc_pid()
-Message-ID: <20090924170154.GE16989@us.ibm.com>
+Subject: [RFC][v7][PATCH 6/9]: Add target_pids parameter to copy_process()
+Message-ID: <20090924170215.GF16989@us.ibm.com>
 References: <20090924165548.GA16586@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,83 +35,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Subject: [RFC][v7][PATCH 5/9]: Add target_pids parameter to alloc_pid()
+Subject: [RFC][v7][PATCH 6/9]: Add target_pids parameter to copy_process()
 
-This parameter is currently NULL, but will be used in a follow-on patch.
+Add a 'target_pids' parameter to copy_process().  The new parameter will be
+used in a follow-on patch when clone_with_pids() is implemented.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- include/linux/pid.h |    2 +-
- kernel/fork.c       |    3 ++-
- kernel/pid.c        |    9 +++++++--
- 3 files changed, 10 insertions(+), 4 deletions(-)
+ kernel/fork.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/include/linux/pid.h
-===================================================================
---- linux-2.6.orig/include/linux/pid.h	2009-09-10 10:19:20.000000000 -0700
-+++ linux-2.6/include/linux/pid.h	2009-09-10 10:29:10.000000000 -0700
-@@ -119,7 +119,7 @@ extern struct pid *find_get_pid(int nr);
- extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
- int next_pidmap(struct pid_namespace *pid_ns, int last);
- 
--extern struct pid *alloc_pid(struct pid_namespace *ns);
-+extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *target_pids);
- extern void free_pid(struct pid *pid);
- 
- /*
 Index: linux-2.6/kernel/fork.c
 ===================================================================
---- linux-2.6.orig/kernel/fork.c	2009-09-10 10:19:20.000000000 -0700
-+++ linux-2.6/kernel/fork.c	2009-09-10 10:29:10.000000000 -0700
-@@ -940,6 +940,7 @@ static struct task_struct *copy_process(
+--- linux-2.6.orig/kernel/fork.c	2009-09-10 10:29:10.000000000 -0700
++++ linux-2.6/kernel/fork.c	2009-09-10 10:29:13.000000000 -0700
+@@ -935,12 +935,12 @@ static struct task_struct *copy_process(
+ 					unsigned long stack_size,
+ 					int __user *child_tidptr,
+ 					struct pid *pid,
++					pid_t *target_pids,
+ 					int trace)
+ {
  	int retval;
  	struct task_struct *p;
  	int cgroup_callbacks_done = 0;
-+	pid_t *target_pids = NULL;
+-	pid_t *target_pids = NULL;
  
  	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
  		return ERR_PTR(-EINVAL);
-@@ -1110,7 +1111,7 @@ static struct task_struct *copy_process(
- 		goto bad_fork_cleanup_io;
+@@ -1319,7 +1319,7 @@ struct task_struct * __cpuinit fork_idle
+ 	struct pt_regs regs;
  
- 	if (pid != &init_struct_pid) {
--		pid = alloc_pid(p->nsproxy->pid_ns);
-+		pid = alloc_pid(p->nsproxy->pid_ns, target_pids);
- 		if (IS_ERR(pid)) {
- 			retval = PTR_ERR(pid);
- 			goto bad_fork_cleanup_io;
-Index: linux-2.6/kernel/pid.c
-===================================================================
---- linux-2.6.orig/kernel/pid.c	2009-09-10 10:23:27.000000000 -0700
-+++ linux-2.6/kernel/pid.c	2009-09-10 10:29:10.000000000 -0700
-@@ -272,13 +272,14 @@ void free_pid(struct pid *pid)
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
+ 	task = copy_process(CLONE_VM, 0, idle_regs(&regs), 0, NULL,
+-			    &init_struct_pid, 0);
++			    &init_struct_pid, NULL, 0);
+ 	if (!IS_ERR(task))
+ 		init_idle(task, cpu);
  
--struct pid *alloc_pid(struct pid_namespace *ns)
-+struct pid *alloc_pid(struct pid_namespace *ns, pid_t *target_pids)
- {
- 	struct pid *pid;
- 	enum pid_type type;
- 	int i, nr;
- 	struct pid_namespace *tmp;
- 	struct upid *upid;
-+	int tpid;
+@@ -1342,6 +1342,7 @@ long do_fork(unsigned long clone_flags,
+ 	struct task_struct *p;
+ 	int trace = 0;
+ 	long nr;
++	pid_t *target_pids = NULL;
  
- 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
- 	if (!pid) {
-@@ -288,7 +289,11 @@ struct pid *alloc_pid(struct pid_namespa
+ 	/*
+ 	 * Do some preliminary argument and permissions checking before we
+@@ -1382,7 +1383,7 @@ long do_fork(unsigned long clone_flags,
+ 		trace = tracehook_prepare_clone(clone_flags);
  
- 	tmp = ns;
- 	for (i = ns->level; i >= 0; i--) {
--		nr = alloc_pidmap(tmp, 0);
-+		tpid = 0;
-+		if (target_pids)
-+			tpid = target_pids[i];
-+
-+		nr = alloc_pidmap(tmp, tpid);
- 		if (nr < 0)
- 			goto out_free;
- 
+ 	p = copy_process(clone_flags, stack_start, regs, stack_size,
+-			 child_tidptr, NULL, trace);
++			 child_tidptr, NULL, target_pids, trace);
+ 	/*
+ 	 * Do this prior waking up the new thread - the thread pointer
+ 	 * might get invalid after that point, if the thread exits quickly.
