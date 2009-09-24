@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZIXT1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZIXT0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbZIXT1U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbZIXT1Q
+	id S1754073AbZIXT0o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZIXT0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:27:16 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19877 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 15:26:41 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57022 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753996AbZIXT0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:26:38 -0400
+	id S1753935AbZIXT0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:26:33 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
@@ -21,75 +21,208 @@ Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
        jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
        riel@redhat.com
-Subject: [PATCH 10/28] io-controller: Export disk time used and nr sectors dipatched through cgroups
-Date: Thu, 24 Sep 2009 15:25:14 -0400
-Message-Id: <1253820332-10246-11-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 11/28] io-controller: Debug hierarchical IO scheduling
+Date: Thu, 24 Sep 2009 15:25:15 -0400
+Message-Id: <1253820332-10246-12-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o This patch exports some statistics through cgroup interface. Two of the
-  statistics currently exported are actual disk time assigned to the cgroup
-  and actual number of sectors dispatched to disk on behalf of this cgroup.
+o Littile debugging aid for hierarchical IO scheduling.
+
+o Enabled under CONFIG_DEBUG_GROUP_IOSCHED
+
+o Currently it outputs more debug messages in blktrace output which helps
+  a great deal in debugging in hierarchical setup. It also creates additional
+  cgroup interfaces io.disk_queue and io.disk_dequeue to output some more
+  debugging data.
 
 Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 Acked-by: Rik van Riel <riel@redhat.com>
 ---
- block/elevator-fq.c |   76 +++++++++++++++++++++++++++++++++++++++++++++++++++
- block/elevator-fq.h |   10 +++++++
- 2 files changed, 86 insertions(+), 0 deletions(-)
+ block/Kconfig.iosched |    8 +++
+ block/elevator-fq.c   |  168 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ block/elevator-fq.h   |   29 +++++++++
+ 3 files changed, 202 insertions(+), 3 deletions(-)
 
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index a91a807..a7d0bf8 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -90,6 +90,14 @@ config DEFAULT_IOSCHED
+ 	default "cfq" if DEFAULT_CFQ
+ 	default "noop" if DEFAULT_NOOP
+ 
++config DEBUG_GROUP_IOSCHED
++	bool "Debug Hierarchical Scheduling support"
++	depends on CGROUPS && GROUP_IOSCHED
++	default n
++	---help---
++	  Enable some debugging hooks for hierarchical scheduling support.
++	  Currently it just outputs more information in blktrace output.
++
+ endmenu
+ 
+ endif
 diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index d59ac50..a57ca9d 100644
+index a57ca9d..6020406 100644
 --- a/block/elevator-fq.c
 +++ b/block/elevator-fq.c
-@@ -13,6 +13,7 @@
+@@ -259,6 +259,91 @@ init_io_entity_service_tree(struct io_entity *entity, struct io_entity *parent)
+ 	entity->st = &parent_iog->sched_data.service_tree[idx];
+ }
  
- #include <linux/blkdev.h>
- #include <linux/blktrace_api.h>
-+#include <linux/seq_file.h>
- #include "elevator-fq.h"
- 
- const int elv_slice_sync = HZ / 10;
-@@ -267,6 +268,8 @@ static void entity_served(struct io_entity *entity, unsigned long served,
- 	for_each_entity(entity) {
- 		entity->vdisktime += elv_delta_fair(charge, entity);
- 		update_min_vdisktime(entity->st);
-+		entity->total_time += served;
-+		entity->total_sectors += nr_sectors;
- 		/* Group charge can be different from queue charge */
- 		charge = group_charge;
- 	}
-@@ -1035,6 +1038,66 @@ STORE_FUNCTION(weight, IO_WEIGHT_MIN, IO_WEIGHT_MAX);
- STORE_FUNCTION(ioprio_class, IOPRIO_CLASS_RT, IOPRIO_CLASS_IDLE);
- #undef STORE_FUNCTION
- 
-+static int io_cgroup_disk_time_read(struct cgroup *cgroup,
-+				struct cftype *cftype, struct seq_file *m)
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++static void io_group_path(struct io_group *iog)
 +{
-+	struct io_cgroup *iocg;
-+	struct io_group *iog;
++	unsigned short id = iog->iocg_id;
++	struct cgroup_subsys_state *css;
++
++	rcu_read_lock();
++
++	if (!id)
++		goto out;
++
++	css = css_lookup(&io_subsys, id);
++	if (!css)
++		goto out;
++
++	if (!css_tryget(css))
++		goto out;
++
++	cgroup_path(css->cgroup, iog->path, sizeof(iog->path));
++
++	css_put(css);
++
++	rcu_read_unlock();
++	return;
++out:
++	rcu_read_unlock();
++	iog->path[0] = '\0';
++	return;
++}
++
++static inline void debug_update_stats_enqueue(struct io_entity *entity)
++{
++	struct io_group *iog = iog_of(entity);
++
++	if (iog) {
++		struct elv_fq_data *efqd;
++
++		/*
++		 * Keep track of how many times a group has been added
++		 * to active tree.
++		 */
++		iog->queue++;
++
++		rcu_read_lock();
++		efqd = rcu_dereference(iog->key);
++		if (efqd)
++			elv_log_iog(efqd, iog, "add group weight=%u",
++					iog->entity.weight);
++		rcu_read_unlock();
++	}
++}
++
++static inline void debug_update_stats_dequeue(struct io_entity *entity)
++{
++	struct io_group *iog = iog_of(entity);
++
++	if (iog) {
++		struct elv_fq_data *efqd;
++
++		iog->dequeue++;
++		rcu_read_lock();
++		efqd = rcu_dereference(iog->key);
++		if (efqd)
++			elv_log_iog(efqd, iog, "del group weight=%u",
++					iog->entity.weight);
++		rcu_read_unlock();
++	}
++}
++
++static inline void print_ioq_service_stats(struct io_queue *ioq)
++{
++	struct io_group *iog = ioq_to_io_group(ioq);
++
++	elv_log_ioq(ioq->efqd, ioq, "service: QTt=%lu QTs=%lu GTt=%lu GTs=%lu",
++			ioq->entity.total_time, ioq->entity.total_sectors,
++			iog->entity.total_time, iog->entity.total_sectors);
++}
++
++#else /* DEBUG_GROUP_IOSCHED */
++static inline void io_group_path(struct io_group *iog) {}
++static inline void print_ioq_service_stats(struct io_queue *ioq) {}
++static inline void debug_update_stats_enqueue(struct io_entity *entity) {}
++static inline void debug_update_stats_dequeue(struct io_entity *entity) {}
++#endif /* DEBUG_GROUP_IOSCHED */
++
+ static void entity_served(struct io_entity *entity, unsigned long served,
+ 		unsigned long queue_charge, unsigned long group_charge,
+ 		unsigned long nr_sectors)
+@@ -485,6 +570,7 @@ static void dequeue_io_entity(struct io_entity *entity)
+ 	entity->on_st = 0;
+ 	st->nr_active--;
+ 	sd->nr_active--;
++	debug_update_stats_dequeue(entity);
+ 
+ 	if (vdisktime_gt(entity->vdisktime, st->min_vdisktime))
+ 		enqueue_io_entity_idle(entity);
+@@ -546,6 +632,7 @@ static void enqueue_io_entity(struct io_entity *entity)
+ 	entity->on_st = 1;
+ 	place_entity(st, entity, 0);
+ 	__enqueue_io_entity(st, entity, 0);
++	debug_update_stats_enqueue(entity);
+ }
+ 
+ static struct io_entity *__lookup_next_io_entity(struct io_service_tree *st)
+@@ -725,6 +812,9 @@ static void elv_ioq_served(struct io_queue *ioq, unsigned long served)
+ 
+ 	entity_served(&ioq->entity, served, queue_charge, group_charge,
+ 			ioq->nr_sectors);
++	elv_log_ioq(ioq->efqd, ioq, "ioq served: QSt=%lu QSs=%lu qued=%lu",
++			served, ioq->nr_sectors, ioq->nr_queued);
++	print_ioq_service_stats(ioq);
+ }
+ 
+ /*
+@@ -978,7 +1068,6 @@ io_cgroup_lookup_group(struct io_cgroup *iocg, void *key)
+ 	return NULL;
+ }
+ 
+-
+ #define SHOW_FUNCTION(__VAR)						\
+ static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,		\
+ 				       struct cftype *cftype)		\
+@@ -1098,6 +1187,64 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
++			struct cftype *cftype, struct seq_file *m)
++{
++	struct io_cgroup *iocg = NULL;
++	struct io_group *iog = NULL;
 +	struct hlist_node *n;
 +
 +	if (!cgroup_lock_live_group(cgroup))
 +		return -ENODEV;
 +
 +	iocg = cgroup_to_io_cgroup(cgroup);
-+
 +	rcu_read_lock();
++	/* Loop through all the io groups and print statistics */
 +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
 +		/*
 +		 * There might be groups which are not functional and
 +		 * waiting to be reclaimed upon cgoup deletion.
 +		 */
-+		if (iog->key) {
++		if (iog->key)
 +			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
-+					MINOR(iog->dev),
-+					iog->entity.total_time);
-+		}
++					MINOR(iog->dev), iog->queue);
 +	}
 +	rcu_read_unlock();
 +	cgroup_unlock();
@@ -97,101 +230,153 @@ index d59ac50..a57ca9d 100644
 +	return 0;
 +}
 +
-+static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
-+				struct cftype *cftype, struct seq_file *m)
++static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
++			struct cftype *cftype, struct seq_file *m)
 +{
-+	struct io_cgroup *iocg;
-+	struct io_group *iog;
++	struct io_cgroup *iocg = NULL;
++	struct io_group *iog = NULL;
 +	struct hlist_node *n;
 +
 +	if (!cgroup_lock_live_group(cgroup))
 +		return -ENODEV;
 +
 +	iocg = cgroup_to_io_cgroup(cgroup);
-+
-+	rcu_read_lock();
++	spin_lock_irq(&iocg->lock);
++	/* Loop through all the io groups and print statistics */
 +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
 +		/*
 +		 * There might be groups which are not functional and
 +		 * waiting to be reclaimed upon cgoup deletion.
 +		 */
-+		if (iog->key) {
++		if (iog->key)
 +			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
-+					MINOR(iog->dev),
-+					iog->entity.total_sectors);
-+		}
++					MINOR(iog->dev), iog->dequeue);
 +	}
-+	rcu_read_unlock();
++	spin_unlock_irq(&iocg->lock);
 +	cgroup_unlock();
 +
 +	return 0;
 +}
++#endif
 +
  struct cftype io_files[] = {
  	{
  		.name = "weight",
-@@ -1046,6 +1109,14 @@ struct cftype io_files[] = {
- 		.read_u64 = io_cgroup_ioprio_class_read,
- 		.write_u64 = io_cgroup_ioprio_class_write,
+@@ -1117,6 +1264,16 @@ struct cftype io_files[] = {
+ 		.name = "disk_sectors",
+ 		.read_seq_string = io_cgroup_disk_sectors_read,
  	},
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
 +	{
-+		.name = "disk_time",
-+		.read_seq_string = io_cgroup_disk_time_read,
++		.name = "disk_queue",
++		.read_seq_string = io_cgroup_disk_queue_read,
 +	},
 +	{
-+		.name = "disk_sectors",
-+		.read_seq_string = io_cgroup_disk_sectors_read,
++		.name = "disk_dequeue",
++		.read_seq_string = io_cgroup_disk_dequeue_read,
 +	},
++#endif
  };
  
  static int iocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-@@ -1137,6 +1208,8 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
- 	struct io_cgroup *iocg;
- 	struct io_group *iog, *leaf = NULL, *prev = NULL;
- 	gfp_t flags = GFP_ATOMIC |  __GFP_ZERO;
-+	unsigned int major, minor;
-+	struct backing_dev_info *bdi = &q->backing_dev_info;
+@@ -1244,6 +1401,7 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+ 		 * or cgroup deletion path depending on who is exiting first.
+ 		 */
+ 		elv_get_iog(iog);
++		io_group_path(iog);
  
- 	for (; cgroup != NULL; cgroup = cgroup->parent) {
- 		iocg = cgroup_to_io_cgroup(cgroup);
-@@ -1157,6 +1230,9 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+ 		if (leaf == NULL) {
+ 			leaf = iog;
+@@ -1426,6 +1584,7 @@ static struct io_group *io_alloc_root_group(struct request_queue *q,
+ 	hlist_add_head_rcu(&iog->group_node, &iocg->group_data);
+ 	iog->iocg_id = css_id(&iocg->css);
+ 	spin_unlock_irq(&iocg->lock);
++	io_group_path(iog);
  
- 		iog->iocg_id = css_id(&iocg->css);
+ 	return iog;
+ }
+@@ -1739,6 +1898,7 @@ __elv_set_active_ioq(struct elv_fq_data *efqd, struct io_queue *ioq, int coop)
+ 				efqd->busy_queues, ioq->entity.ioprio_class,
+ 				ioq->entity.ioprio, ioq->entity.weight,
+ 				iog_weight(iog), ioq->nr_queued);
++		print_ioq_service_stats(ioq);
  
-+		sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
-+		iog->dev = MKDEV(major, minor);
-+
- 		io_group_init_entity(iocg, iog);
+ 		ioq->slice_start = ioq->slice_end = 0;
+ 		ioq->dispatch_start = jiffies;
+@@ -1803,10 +1963,11 @@ static void elv_add_ioq_busy(struct elv_fq_data *efqd, struct io_queue *ioq)
+ {
+ 	BUG_ON(elv_ioq_busy(ioq));
+ 	BUG_ON(ioq == efqd->active_queue);
+-	elv_log_ioq(efqd, ioq, "add to busy");
+ 	enqueue_ioq(ioq);
+ 	elv_mark_ioq_busy(ioq);
+ 	efqd->busy_queues++;
++	elv_log_ioq(efqd, ioq, "add to busy: qued=%d", ioq->nr_queued);
++	print_ioq_service_stats(ioq);
+ }
  
- 		atomic_set(&iog->ref, 0);
+ static void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq)
+@@ -1815,7 +1976,8 @@ static void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq)
+ 
+ 	BUG_ON(!elv_ioq_busy(ioq));
+ 	BUG_ON(ioq->nr_queued);
+-	elv_log_ioq(efqd, ioq, "del from busy");
++	elv_log_ioq(efqd, ioq, "del from busy: qued=%d", ioq->nr_queued);
++	print_ioq_service_stats(ioq);
+ 	elv_clear_ioq_busy(ioq);
+ 	BUG_ON(efqd->busy_queues == 0);
+ 	efqd->busy_queues--;
 diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 769798b..256f71a 100644
+index 256f71a..2ea746b 100644
 --- a/block/elevator-fq.h
 +++ b/block/elevator-fq.h
-@@ -60,6 +60,13 @@ struct io_entity {
+@@ -121,6 +121,16 @@ struct io_group {
  
- 	unsigned short ioprio, ioprio_class;
- 	int ioprio_changed;
+ 	/* The device MKDEV(major, minor), this group has been created for */
+ 	dev_t	dev;
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++	/* How many times this group has been added to active tree */
++	unsigned long queue;
 +
-+	/*
-+	 * Keep track of total service received by this entity. Keep the
-+	 * stats both for time slices and number of sectors dispatched
-+	 */
-+	unsigned long total_time;
-+	unsigned long total_sectors;
- };
- 
- /*
-@@ -111,6 +118,9 @@ struct io_group {
- 	struct io_queue *async_idle_queue;
- 	void *key;
- 	struct rcu_head rcu_head;
++	/* How many times this group has been removed from active tree */
++	unsigned long dequeue;
 +
-+	/* The device MKDEV(major, minor), this group has been created for */
-+	dev_t	dev;
++	/* Store cgroup path */
++	char path[128];
++#endif
  };
  
  struct io_cgroup {
+@@ -177,10 +187,29 @@ struct elv_fq_data {
+ };
+ 
+ /* Logging facilities. */
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++#define elv_log_ioq(efqd, ioq, fmt, args...) \
++{								\
++	blk_add_trace_msg((efqd)->queue, "elv%d%c %s " fmt, (ioq)->pid,	\
++			elv_ioq_sync(ioq) ? 'S' : 'A', \
++			ioq_to_io_group(ioq)->path, ##args); \
++}
++
++#define elv_log_iog(efqd, iog, fmt, args...) \
++{                                                                      \
++	blk_add_trace_msg((efqd)->queue, "elv %s " fmt, (iog)->path, ##args); \
++}
++
++#else
+ #define elv_log_ioq(efqd, ioq, fmt, args...) \
+ 	blk_add_trace_msg((efqd)->queue, "elv%d%c " fmt, (ioq)->pid,	\
+ 				elv_ioq_sync(ioq) ? 'S' : 'A', ##args)
+ 
++#define elv_log_iog(efqd, iog, fmt, args...) \
++	blk_add_trace_msg((efqd)->queue, "elv " fmt, ##args)
++
++#endif
++
+ #define elv_log(efqd, fmt, args...) \
+ 	blk_add_trace_msg((efqd)->queue, "elv " fmt, ##args)
+ 
 -- 
 1.6.0.6
 
