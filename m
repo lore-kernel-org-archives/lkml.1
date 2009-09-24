@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbZIXQwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbZIXQx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753123AbZIXQwj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 12:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZIXQwi
+	id S1753157AbZIXQx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 12:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZIXQx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 12:52:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58547 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752693AbZIXQwh (ORCPT
+	Thu, 24 Sep 2009 12:53:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53122 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbZIXQx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 12:52:37 -0400
-Date: Thu, 24 Sep 2009 09:51:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Johan van Baarlen <jf@vanbaarlen.demon.nl>, stable@kernel.org
-Subject: Re: [GIT PULL] cputime tree
-Message-Id: <20090924095106.62294617.akpm@linux-foundation.org>
-In-Reply-To: <20090924133136.7b7c834e@mschwide.boeblingen.de.ibm.com>
-References: <20090924133136.7b7c834e@mschwide.boeblingen.de.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 24 Sep 2009 12:53:26 -0400
+Message-ID: <4ABBA3DD.2040403@zytor.com>
+Date: Thu, 24 Sep 2009 09:52:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Jason Baron <jbaron@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Immediate values
+References: <20090924123154.GA12907@Krystal> <20090924123428.GA27282@elte.hu> <20090924140228.GA2648@redhat.com> <4ABB7F58.5030508@zytor.com> <20090924153900.GB2648@redhat.com>
+In-Reply-To: <20090924153900.GB2648@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Sep 2009 13:31:36 +0200 Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+Jason Baron wrote:
+> 
+> that's right. The optimal solution doesn't require the the NOP5 at all,
+> and I've been playing around with an implementation that doesn't have
+> it. The problem I've been running into is that sometimes the compiler
+> will put in a short jump - '0xeb', with a 1 byte offset, but the jump
+> target is further away. Thus, I need to either ensure the target is
+> close, or somehow force a longer jump '0xe9' into the code so I always
+> have the space. The other advantage of not including the nop is easier
+> support for all x86 implementations, since I'm not sure a 5 byte atomic
+> nop is always available, whereas a jump is always atomic. I'm pretty
+> sure we can come up with a patch that avoids the nop...I'll keep working
+> on it.
+> 
 
-> Hi Linus,
-> 
-> with git commit 79741dd "idle cputime accounting" the semantic
-> of the stime field of the idle processes has changed. It used to
-> contain the amount of time the idle process has been scheduled.
-> Since git commit 79741dd is contains the cpu time spent in the
-> system by the idle process.
-> 
-> This change broke the output of second field of /proc/uptime. On
-> systems without VIRT_CPU_ACCOUNTING the field is always zero.
-> The legacy output of the field is the amount of time the idle
-> process has been scheduled on cpu #0. It is good enough to
-> calculate the load on an uni-processor system, it is useless
-> on a multi-processor. To restore the legacy behaviour and give
-> meaning to the multi-processor case the best we could come up
-> with is to add the idle time over all cpus. That fixes uni-
-> processors systems and gives a defined semantic on smp.
-> 
-> So please pull from 'cputime' branch of
-> 
-> 	git://git390.marist.edu/pub/scm/linux-2.6.git cputime
-> 
-> to receive the following updates:
-> 
-> Michael Abbott (1):
->       Fix idle time field in /proc/uptime
-> 
->  fs/proc/uptime.c |    7 ++++++-
->  1 files changed, 6 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
-> index 0c10a0b..766b1d4 100644
-> --- a/fs/proc/uptime.c
-> +++ b/fs/proc/uptime.c
-> @@ -4,13 +4,18 @@
->  #include <linux/sched.h>
->  #include <linux/seq_file.h>
->  #include <linux/time.h>
-> +#include <linux/kernel_stat.h>
->  #include <asm/cputime.h>
->  
->  static int uptime_proc_show(struct seq_file *m, void *v)
->  {
->  	struct timespec uptime;
->  	struct timespec idle;
-> -	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
-> +	int i;
-> +	cputime_t idletime = cputime_zero;
-> +
-> +	for_each_possible_cpu(i)
-> +		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
->  
->  	do_posix_clock_monotonic_gettime(&uptime);
->  	monotonic_to_bootbased(&uptime);
+Unfortunately gas doesn't have any equivalent of the NASM "strict" 
+operand modifier, which would be ideal here.  The following *seems* to 
+work on binutils-2.18.50.0.9-8.fc10.x86_64 at least:
 
-This is a regression fix, iirc?  One which is applicable for several 2.6.x
-kernel versions?
+	.byte 0xe9
+	.long %0-1f
+1:
+
+	-hpa
 
