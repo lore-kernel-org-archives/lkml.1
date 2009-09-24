@@ -1,283 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZIXXSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZIXXSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbZIXXSm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 19:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZIXXSW
+	id S1752809AbZIXXSX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 19:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZIXXSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 19:18:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45965 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 19:18:20 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:7222 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752661AbZIXXSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 19:18:18 -0400
-Date: Thu, 24 Sep 2009 19:17:53 -0400
+	id S1752613AbZIXXSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 19:18:17 -0400
+Date: Thu, 24 Sep 2009 19:17:56 -0400
 From: Jason Baron <jbaron@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
        rostedt@goodmis.org, ak@suse.de, roland@redhat.com, rth@redhat.com,
        mhiramat@redhat.com
-Message-Id: <98c4c0b11300ac3b7de3acb2096f8f34184b1457.1253831946.git.jbaron@redhat.com>
+Message-Id: <169a7c0645cfe4700425e9beaf0265062b93cc15.1253831946.git.jbaron@redhat.com>
 In-Reply-To: <cover.1253831945.git.jbaron@redhat.com>
 References: <cover.1253831945.git.jbaron@redhat.com>
-Subject: [PATCH 2/4] jump label - base patch
+Subject: [PATCH 3/4] jump label - add module support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Base jump label patch which creates macros for jump patching. This feature is
-dependent on gcc version >= 4.5
+
+Add module support to jump label patching.
 
 Signed-off-by: Jason Baron <jbaron@redhat.com>
 ---
- arch/x86/include/asm/jump_label.h |   27 +++++++++++
- arch/x86/kernel/Makefile          |    2 +-
- arch/x86/kernel/jump_label.c      |   92 +++++++++++++++++++++++++++++++++++++
- include/asm-generic/vmlinux.lds.h |   11 ++++
- include/linux/jump_label.h        |   53 +++++++++++++++++++++
- 5 files changed, 184 insertions(+), 1 deletions(-)
- create mode 100644 arch/x86/include/asm/jump_label.h
- create mode 100644 arch/x86/kernel/jump_label.c
- create mode 100644 include/linux/jump_label.h
+ arch/x86/kernel/jump_label.c |    4 +++-
+ include/linux/jump_label.h   |   34 ++++++++++++++++++++++++++--------
+ include/linux/module.h       |   12 +++++++++++-
+ kernel/module.c              |   31 +++++++++++++++++++++++++++++++
+ 4 files changed, 71 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/jump_label.h b/arch/x86/include/asm/jump_label.h
-new file mode 100644
-index 0000000..21a7b79
---- /dev/null
-+++ b/arch/x86/include/asm/jump_label.h
-@@ -0,0 +1,27 @@
-+#ifndef _ASM_X86_JUMP_LABEL_H
-+#define _ASM_X86_JUMP_LABEL_H
-+
-+#include <asm/nops.h>
-+
-+#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
-+#define __HAVE_ARCH_JUMP_LABEL
-+#endif
-+
-+#ifdef __HAVE_ARCH_JUMP_LABEL
-+
-+#define JUMP_LABEL(tag, label, cond)                                       \
-+	do {								   \
-+		static const char __jlstrtab_##tag[]                       \
-+		__used __attribute__((section("__jump_strings")))  = #tag; \
-+		asm goto ("1:"						   \
-+			"jmp %l[" #label "] \n\t"		           \
-+			".pushsection __jump_table,  \"a\" \n\t"	   \
-+			_ASM_PTR "1b, %l[" #label "], %c0, 0 \n\t"	   \
-+			".popsection \n\t"				   \
-+			: :  "i" (__jlstrtab_##tag) :  : label);	   \
-+	} while (0)
-+
-+#endif
-+
-+#endif
-+
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 91d4189..b6b3e42 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -32,7 +32,7 @@ GCOV_PROFILE_paravirt.o		:= n
- obj-y			:= process_$(BITS).o signal.o entry_$(BITS).o
- obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
- obj-y			+= time.o ioport.o ldt.o dumpstack.o
--obj-y			+= setup.o x86_init.o i8259.o irqinit.o
-+obj-y			+= setup.o x86_init.o i8259.o irqinit.o jump_label.o
- obj-$(CONFIG_X86_VISWS)	+= visws_quirks.o
- obj-$(CONFIG_X86_32)	+= probe_roms_32.o
- obj-$(CONFIG_X86_32)	+= sys_i386_32.o i386_ksyms_32.o
 diff --git a/arch/x86/kernel/jump_label.c b/arch/x86/kernel/jump_label.c
-new file mode 100644
-index 0000000..207947d
---- /dev/null
+index 207947d..d057c3f 100644
+--- a/arch/x86/kernel/jump_label.c
 +++ b/arch/x86/kernel/jump_label.c
-@@ -0,0 +1,92 @@
-+#include <linux/jump_label.h>
-+#include <linux/memory.h>
-+#include <linux/kprobes.h>
-+#include <linux/uaccess.h>
-+
-+#ifdef __HAVE_ARCH_JUMP_LABEL
-+
-+extern struct jump_entry __start___jump_table[];
-+extern struct jump_entry __stop___jump_table[];
-+
-+DEFINE_MUTEX(jump_label_mutex);
-+
-+union jump_code_union {
-+	char code[RELATIVEJUMP_SIZE];
-+	struct {
-+		char jump;
-+		int offset;
-+	} __attribute__((packed));
-+};
-+
-+void jump_label_transform(struct jump_entry *entry, enum jump_label_type type)
-+{
-+	union jump_code_union code;
-+	long jump_length;
-+	unsigned char opcode;
-+	size_t opcode_length;
-+
-+	if (entry->type == UNKOWN_JUMP) {
-+		if (probe_kernel_read(&opcode, (void *)entry->code, 1))
-+			BUG();
-+
-+		if (opcode == 0xe9)
-+			entry->type = LONG_JUMP;
-+		else if (opcode == 0xeb)
-+			entry->type = SHORT_JUMP;
-+		else
-+			BUG();
-+	}
-+
-+	if (entry->type == LONG_JUMP)
-+		opcode_length = 5;
-+	else
-+		opcode_length = 2;
-+
-+	if (type == JUMP_LABEL_ENABLE) {
-+		if (entry->type == SHORT_JUMP) {
-+			code.code[0] = 0xeb;
-+			code.code[1] = 0;
-+		} else {
-+			code.code[0] = 0xe9;
-+			code.offset = 0;
-+		}
-+	} else {
-+		jump_length = entry->target - (entry->code + opcode_length);
-+		if (entry->type == SHORT_JUMP) {
-+			if ((jump_length > 127 || jump_length < -128)) {
-+				BUG();
-+			}
-+			code.code[0] = 0xeb;
-+			code.code[1] = (char)jump_length;
-+		} else {
-+			if ((jump_length > INT_MAX || jump_length < INT_MIN)) {
-+				BUG();
-+			}
-+			code.code[0] = 0xe9;
-+			code.offset = jump_length;
-+		}
-+	}
-+
-+	mutex_lock(&text_mutex);
-+	text_poke_fixup((void *)entry->code, &code,
-+			opcode_length, (void *)entry->code + opcode_length);
-+	mutex_unlock(&text_mutex);
-+}
-+
-+int jump_label_update(const char *name, enum jump_label_type type)
-+{
-+	struct jump_entry *iter;
-+	
-+	mutex_lock(&jump_label_mutex);
-+	for (iter = __start___jump_table; iter < __stop___jump_table; iter++) {
-+		if (!strcmp(name, iter->name)) {
-+			if (!(system_state == SYSTEM_RUNNING &&
-+					(init_kernel_text(iter->code))))
-+				jump_label_transform(iter, type);
-+		}
-+	}
-+	mutex_unlock(&jump_label_mutex);
-+	return 0;
-+}
-+
-+#endif
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index e7eae37..d2f38e2 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -213,6 +213,7 @@
- 		*(__vermagic)		/* Kernel version magic */	\
- 		*(__markers_strings)	/* Markers: strings */		\
- 		*(__tracepoints_strings)/* Tracepoints: strings */	\
-+		*(__jump_strings)/* Jump: strings */	\
- 	}								\
- 									\
- 	.rodata1          : AT(ADDR(.rodata1) - LOAD_OFFSET) {		\
-@@ -220,6 +221,8 @@
- 	}								\
- 									\
- 	BUG_TABLE							\
-+	JUMP_TABLE							\
-+									\
- 									\
- 	/* PCI quirks */						\
- 	.pci_fixup        : AT(ADDR(.pci_fixup) - LOAD_OFFSET) {	\
-@@ -564,6 +567,14 @@
- #define BUG_TABLE
- #endif
+@@ -2,6 +2,7 @@
+ #include <linux/memory.h>
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
++#include <linux/module.h>
  
-+#define JUMP_TABLE							\
-+	. = ALIGN(8);							\
-+	__jump_table : AT(ADDR(__jump_table) - LOAD_OFFSET) {		\
-+		VMLINUX_SYMBOL(__start___jump_table) = .;		\
-+		*(__jump_table)						\
-+		VMLINUX_SYMBOL(__stop___jump_table) = .;			\
-+	}
-+
- #ifdef CONFIG_PM_TRACE
- #define TRACEDATA							\
- 	. = ALIGN(4);							\
+ #ifdef __HAVE_ARCH_JUMP_LABEL
+ 
+@@ -73,7 +74,7 @@ void jump_label_transform(struct jump_entry *entry, enum jump_label_type type)
+ 	mutex_unlock(&text_mutex);
+ }
+ 
+-int jump_label_update(const char *name, enum jump_label_type type)
++int jump_label_update(const char *name, enum jump_label_type type, int module_lock)
+ {
+ 	struct jump_entry *iter;
+ 	
+@@ -85,6 +86,7 @@ int jump_label_update(const char *name, enum jump_label_type type)
+ 				jump_label_transform(iter, type);
+ 		}
+ 	}
++	jump_label_update_modules(name, type, module_lock);
+ 	mutex_unlock(&jump_label_mutex);
+ 	return 0;
+ }
 diff --git a/include/linux/jump_label.h b/include/linux/jump_label.h
-new file mode 100644
-index 0000000..eb0a4ef
---- /dev/null
+index eb0a4ef..1033d35 100644
+--- a/include/linux/jump_label.h
 +++ b/include/linux/jump_label.h
-@@ -0,0 +1,53 @@
-+#ifndef _LINUX_JUMP_LABEL_H
-+#define _LINUX_JUMP_LABEL_H
+@@ -23,13 +23,22 @@ enum jump_label_instruction {
+ 
+ #ifdef __HAVE_ARCH_JUMP_LABEL
+ 
+-extern int jump_label_update(const char *name, enum jump_label_type type);
++extern int jump_label_update(const char *name, enum jump_label_type type,
++			     int module_lock);
++extern void jump_label_transform(struct jump_entry *entry,
++				 enum jump_label_type type);
+ 
+-#define enable_jump_label(name) \
+-	jump_label_update(name, JUMP_LABEL_ENABLE);
++#define enable_jump_label_locked(name) \
++	jump_label_update(name, JUMP_LABEL_ENABLE, 1);
+ 
+-#define disable_jump_label(name) \
+-	jump_label_update(name, JUMP_LABEL_DISABLE);
++#define disable_jump_label_locked(name) \
++	jump_label_update(name, JUMP_LABEL_DISABLE, 1);
 +
-+#include <asm/jump_label.h>
++#define enable_jump_label_unlocked(name) \
++	jump_label_update(name, JUMP_LABEL_ENABLE, 0);
 +
-+struct jump_entry {
-+	unsigned long code;
-+	unsigned long target;
-+	char *name;
-+	unsigned long type;
-+};
++#define disable_jump_label_unlocked(name) \
++	jump_label_update(name, JUMP_LABEL_DISABLE, 0);
+ 
+ #else
+ 
+@@ -37,13 +46,22 @@ extern int jump_label_update(const char *name, enum jump_label_type type);
+ 	if (likely(!cond))			\
+ 		goto label;
+ 
+-static inline int enable_jump_label(const char *name, enum jump_label_type type)
++static inline int enable_jump_label_locked(const char *name)
++{
++	return 0;
++}
 +
-+enum jump_label_type {
-+	JUMP_LABEL_ENABLE,
-+	JUMP_LABEL_DISABLE
-+};
++static inline int disable_jump_label_locked(const char *name)
++{
++	return 0;
++}
 +
-+enum jump_label_instruction {
-+	UNKOWN_JUMP,
-+	SHORT_JUMP,
-+	LONG_JUMP
-+};
++static inline int enable_jump_label_unlocked(const char *name)
+ {
+ 	return 0;
+ }
+ 
+-static inline int disable_jump_label(const char *name,
+-				     enum jump_label_type type)
++static inline int disable_jump_label_unlocked(const char *name)
+ {
+ 	return 0;
+ }
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 86863cd..911f5c9 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -17,6 +17,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/marker.h>
+ #include <linux/tracepoint.h>
++#include <linux/jump_label.h>
+ 
+ #include <asm/local.h>
+ #include <asm/module.h>
+@@ -353,7 +354,10 @@ struct module
+ 	struct tracepoint *tracepoints;
+ 	unsigned int num_tracepoints;
+ #endif
+-
++#ifdef __HAVE_ARCH_JUMP_LABEL
++	struct jump_entry *jump_entries;
++	unsigned int num_jump_entries;
++#endif
+ #ifdef CONFIG_TRACING
+ 	const char **trace_bprintk_fmt_start;
+ 	unsigned int num_trace_bprintk_fmt;
+@@ -557,6 +561,7 @@ extern void module_update_markers(void);
+ 
+ extern void module_update_tracepoints(void);
+ extern int module_get_iter_tracepoints(struct tracepoint_iter *iter);
++extern void jump_label_update_modules(const char *name, enum jump_label_type type, int module_lock);
+ 
+ #else /* !CONFIG_MODULES... */
+ #define EXPORT_SYMBOL(sym)
+@@ -682,6 +687,11 @@ static inline int module_get_iter_tracepoints(struct tracepoint_iter *iter)
+ 	return 0;
+ }
+ 
++static inline void jump_label_update_modules(const char *name, enum jump_label_type type, int module_lock)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_MODULES */
+ 
+ struct device_driver;
+diff --git a/kernel/module.c b/kernel/module.c
+index 46580ed..01c2343 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -54,6 +54,7 @@
+ #include <linux/async.h>
+ #include <linux/percpu.h>
+ #include <linux/kmemleak.h>
++#include <linux/jump_label.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/module.h>
+@@ -2247,6 +2248,12 @@ static noinline struct module *load_module(void __user *umod,
+ 					sizeof(*mod->tracepoints),
+ 					&mod->num_tracepoints);
+ #endif
++#ifdef __HAVE_ARCH_JUMP_LABEL
++	mod->jump_entries = section_objs(hdr, sechdrs, secstrings,
++					"__jump_table",
++					sizeof(*mod->jump_entries),
++					&mod->num_jump_entries);
++#endif
+ #ifdef CONFIG_EVENT_TRACING
+ 	mod->trace_events = section_objs(hdr, sechdrs, secstrings,
+ 					 "_ftrace_events",
+@@ -3017,4 +3024,28 @@ int module_get_iter_tracepoints(struct tracepoint_iter *iter)
+ 	mutex_unlock(&module_mutex);
+ 	return found;
+ }
++
++#endif
 +
 +#ifdef __HAVE_ARCH_JUMP_LABEL
 +
-+extern int jump_label_update(const char *name, enum jump_label_type type);
-+
-+#define enable_jump_label(name) \
-+	jump_label_update(name, JUMP_LABEL_ENABLE);
-+
-+#define disable_jump_label(name) \
-+	jump_label_update(name, JUMP_LABEL_DISABLE);
-+
-+#else
-+
-+#define JUMP_LABEL(tag, label, cond)		\
-+	if (likely(!cond))			\
-+		goto label;
-+
-+static inline int enable_jump_label(const char *name, enum jump_label_type type)
++void jump_label_update_modules(const char *name, enum jump_label_type type, int module_lock)
 +{
-+	return 0;
++	struct module *iter_mod;
++	struct jump_entry *entry;
++
++	if (!module_lock)
++		mutex_lock(&module_mutex);
++	list_for_each_entry(iter_mod, &modules, list) {
++		for(entry = iter_mod->jump_entries;
++		    entry < iter_mod->jump_entries + iter_mod->num_jump_entries;
++		    entry++) {
++				if (!strcmp(name, entry->name))
++					jump_label_transform(entry, type);
++		}
++	}
++	if (!module_lock)
++		mutex_unlock(&module_mutex);
 +}
 +
-+static inline int disable_jump_label(const char *name,
-+				     enum jump_label_type type)
-+{
-+	return 0;
-+}
-+
-+#endif
-+
-+#endif
+ #endif
 -- 
 1.6.2.5
 
