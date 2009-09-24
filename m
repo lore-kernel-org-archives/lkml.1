@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbZIXWey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZIXWjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752656AbZIXWey (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZIXWex
+	id S1752707AbZIXWjx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZIXWjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:34:53 -0400
-Received: from mail001.aei.ca ([206.123.6.130]:60651 "EHLO mail001.aei.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752585AbZIXWew convert rfc822-to-8bit (ORCPT
+	Thu, 24 Sep 2009 18:39:52 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:52634 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbZIXWjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:34:52 -0400
-From: Ed Tomlinson <edt@aei.ca>
-To: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-Subject: Strange .31 freeze - ata related
-Date: Thu, 24 Sep 2009 18:34:53 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31.1-ejt-crc; KDE/4.2.4; x86_64; ; )
-Cc: linux-ide@vger.kernel.org
+	Thu, 24 Sep 2009 18:39:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=SV0ZIhJXN0tLrw3D6rGdXuGDFhu0mKAwIFNGG3JYCg6ih3H3ro8iMsSU64vKcbQmmB
+         5ne+qG2usBnX9AHTArKR3G/hu1Np854qZOC5RBpP4LYCNmF0yzLOju6wcDnvzs267JZx
+         0nDEPrW6L9Z2nJ2+NhNvHfp9lliw0hEMP37Xk=
+Message-ID: <4ABBF538.3080409@gmail.com>
+Date: Thu, 24 Sep 2009 15:39:52 -0700
+From: Bruce Jones <brucej97223@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200909241834.53852.edt@aei.ca>
+To: gregkh@suse.de
+CC: forensixs@gmx.de, mithlesh@linsyssoft.com, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: comedi: cleanup formatting in drivers/vmk80xx.c
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Clean up formatting of a struct initializer, as per the
+standard conventions.
 
-I just had a strange freeze with 2.6.31.1-rc1.  Looking at the console log from startup I see that ata4 & ata5 have nothing connected.
-Later while working the box stalled.  Checking the serial console I say messages from ata4 & ata5...  There really is nothing plugged
-into the connectors.  Any ideas on what might have happened?
+Signed-off-by: Bruce Jones <brucej@linux.com>
+---
+ drivers/staging/comedi/drivers/vmk80xx.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
-Thanks
-Ed
-
->From startup:
-
-[    2.138060] ata4: SATA link down (SStatus 0 SControl 300)
-[    2.138064] ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[    2.138417] ata5: SATA link down (SStatus 0 SControl 300)
-[    2.138818] ata3.00: ATA-8: WDC WD10EADS-00L5B1, 01.01A01, max UDMA/133
-[    2.138820] ata3.00: 1953525168 sectors, multi 16: LBA48 NCQ (depth 31/32)
-[    2.140637] ata3.00: configured for UDMA/133
-[    2.142441] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[    2.153147] ata2.00: ATA-7: WDC WD3200KS-00PFB0, 21.00M21, max UDMA/133
-[    2.153150] ata2.00: 625142448 sectors, multi 16: LBA48 NCQ (depth 1)
-[    2.153878] ata2.00: configured for UDMA/133
-[    2.198790] ata6: SATA link down (SStatus 0 SControl 300)
-[    2.545040] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-[    2.556880] ata1.00: ATA-7: Maxtor 6L250S0, BACE1G10, max UDMA/133
-[    2.566684] ata1.00: 490234752 sectors, multi 0: LBA48 NCQ (depth 31/32)
-[    2.580221] ata1.00: configured for UDMA/133
-
-Last messages before it stalled:
-
-[49844.950401] ata4: exception Emask 0x73 SAct 0x0 SErr 0xffffffff action 0xe frozen
-[49844.950630] ata5: exception Emask 0x73 SAct 0x0 SErr 0xffffffff action 0xe frozen
-[49844.950677] ata5: irq_stat 0xffffffff, unknown FIS 00000000 00000000 00000000 00000000, host bus
-[49844.950725] ata5: SError: { RecovData RecovComm UnrecovData Persist Proto HostInt PHYRdyChg PHYInt CommWake 10B8B Dispar BadCRC
-[49844.950863] ata5: hard resett
+diff --git a/drivers/staging/comedi/drivers/vmk80xx.c b/drivers/staging/comedi/drivers/vmk80xx.c
+index c335040..c34a0b9 100644
+--- a/drivers/staging/comedi/drivers/vmk80xx.c
++++ b/drivers/staging/comedi/drivers/vmk80xx.c
+@@ -76,18 +76,18 @@ enum {
+ };
+ 
+ static struct usb_device_id vmk80xx_id_table[] = {
+-	{USB_DEVICE(0x10cf, 0x5500),.driver_info = DEVICE_VMK8055},
+-	{USB_DEVICE(0x10cf, 0x5501),.driver_info = DEVICE_VMK8055},
+-	{USB_DEVICE(0x10cf, 0x5502),.driver_info = DEVICE_VMK8055},
+-	{USB_DEVICE(0x10cf, 0x5503),.driver_info = DEVICE_VMK8055},
+-	{USB_DEVICE(0x10cf, 0x8061),.driver_info = DEVICE_VMK8061},
+-	{USB_DEVICE(0x10cf, 0x8062),.driver_info = DEVICE_VMK8061},
+-	{USB_DEVICE(0x10cf, 0x8063),.driver_info = DEVICE_VMK8061},
+-	{USB_DEVICE(0x10cf, 0x8064),.driver_info = DEVICE_VMK8061},
+-	{USB_DEVICE(0x10cf, 0x8065),.driver_info = DEVICE_VMK8061},
+-	{USB_DEVICE(0x10cf, 0x8066),.driver_info = DEVICE_VMK8061},
+-	{USB_DEVICE(0x10cf, 0x8067),.driver_info = DEVICE_VMK8061},
+-	{USB_DEVICE(0x10cf, 0x8068),.driver_info = DEVICE_VMK8061},
++	{USB_DEVICE(0x10cf, 0x5500), .driver_info = DEVICE_VMK8055},
++	{USB_DEVICE(0x10cf, 0x5501), .driver_info = DEVICE_VMK8055},
++	{USB_DEVICE(0x10cf, 0x5502), .driver_info = DEVICE_VMK8055},
++	{USB_DEVICE(0x10cf, 0x5503), .driver_info = DEVICE_VMK8055},
++	{USB_DEVICE(0x10cf, 0x8061), .driver_info = DEVICE_VMK8061},
++	{USB_DEVICE(0x10cf, 0x8062), .driver_info = DEVICE_VMK8061},
++	{USB_DEVICE(0x10cf, 0x8063), .driver_info = DEVICE_VMK8061},
++	{USB_DEVICE(0x10cf, 0x8064), .driver_info = DEVICE_VMK8061},
++	{USB_DEVICE(0x10cf, 0x8065), .driver_info = DEVICE_VMK8061},
++	{USB_DEVICE(0x10cf, 0x8066), .driver_info = DEVICE_VMK8061},
++	{USB_DEVICE(0x10cf, 0x8067), .driver_info = DEVICE_VMK8061},
++	{USB_DEVICE(0x10cf, 0x8068), .driver_info = DEVICE_VMK8061},
+ 	{}			/* terminating entry */
+ };
+ 
+-- 
+1.6.5.rc2
