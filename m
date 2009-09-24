@@ -1,79 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZIXTOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbZIXTPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbZIXTOI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZIXTOF
+	id S1753794AbZIXTPa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZIXTP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:14:05 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:58986 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006AbZIXTOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:14:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEANxhu0qrR7O6/2dsb2JhbAC/MIhTAZALBYQc
-X-IronPort-AV: E=Sophos;i="4.44,446,1249257600"; 
-   d="scan'208";a="395465384"
-From: Roland Dreier <rdreier@cisco.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] intel-iommu: Decode (and ignore) RHSA entries
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 24 Sep 2009 12:14:00 -0700
-Message-ID: <adafxac17gn.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Thu, 24 Sep 2009 15:15:29 -0400
+Received: from mx09.lb01.inode.at ([62.99.145.9]:58462 "EHLO mx.inode.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753599AbZIXTP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:15:28 -0400
+X-Greylist: delayed 3210 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Sep 2009 15:15:27 EDT
+Message-ID: <4ABBC54E.6090209@sbg.ac.at>
+Date: Thu, 24 Sep 2009 21:15:26 +0200
+From: Alexander Huemer <alexander.huemer@sbg.ac.at>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090826)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Sep 2009 19:14:01.0306 (UTC) FILETIME=[2C9193A0:01CA3D4B]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: David Daney <ddaney@caviumnetworks.com>
+CC: linux-kernel@vger.kernel.org, alexander.huemer@sbg.ac.at
+Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
+References: <4ABBB8C2.2080901@sbg.ac.at> <4ABBBB01.1050600@caviumnetworks.com>
+In-Reply-To: <4ABBBB01.1050600@caviumnetworks.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I recently got a system where the DMAR table included a couple of RHSA
-(remapping hardware static affinity) entries.  Rather than printing a
-message about an "Unknown DMAR structure," it would probably be more
-useful to dump the RHSA structure (as other DMAR structures are dumped).
+David Daney wrote:
+> Alexander Huemer wrote:
+>> the problem appears under heavy system load and slows down the system to
+>> unusable speed.
+>> kernels before .30 were not affected.
+>> irqpoll does not change behavior.
+>>
+>> error message from .31:
+>>
+>>     [157152.418524] irq 23: nobody cared (try booting with the "irqpoll"
+>>     option)
+>>     [157152.418530] Pid: 1359, comm: cc1plus Tainted: G        W 
+>
+> Right here is the problem  ->         ^^^^^^^^
+>
+> Haven't you read all the threads about the evil of C++.  This is just
+> one more example of the why we shouldn't be using it. :-)
+>
+> David Daney
+>
+>>     2.6.31-gentoo-blackbit #2
+>>     [157152.418532] Call Trace:
+>>     [157152.418534]  <IRQ>  [<ffffffff81066e3f>] ?
+>>     __report_bad_irq+0x30/0x7d
+>>     [157152.418544]  [<ffffffff81066f93>] ? note_interrupt+0x107/0x170
+>>     [157152.418547]  [<ffffffff81067580>] ? handle_fasteoi_irq+0x8a/0xaa
+>>     [157152.418551]  [<ffffffff8100d1cf>] ? handle_irq+0x17/0x1d
+>>     [157152.418554]  [<ffffffff8100c84b>] ? do_IRQ+0x54/0xb2
+>>     [157152.418558]  [<ffffffff8100b6d3>] ? ret_from_intr+0x0/0xa
+>>     [157152.418559]  <EOI>
+>>     [157152.418560] handlers:
+>>     [157152.418562] [<ffffffff813d2a6f>] (ahci_interrupt+0x0/0x426)
+>>     [157152.418566] Disabling IRQ #23
+>>
+>>
+>> bios of the machine is up to date,
+>> i tried all related bios settings, no change.
+>>
+>> kernel config for .31    
+>> http://xx.vu/~ahuemer/config_ahuemer_20090923.gz
+>> lspci -vxxx               http://xx.vu/~ahuemer/lspci_ahuemer_20090923
+>> lsusb -v                  http://xx.vu/~ahuemer/lsusb_ahuemer_20090923
+>> /proc/interrupts        
+>> http://xx.vu/~ahuemer/proc_interrupts_ahuemer_20090923
+>> thread in gentoo forums 
+>> http://forums.gentoo.org/viewtopic-t-780725-start-0.html
+>>
+>> please tell me what additional info is needed.
+>> please CC me on replies, i am not subscribed.
+>>
+>> -alex
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+thanks for your quick answer, david.
+so, this isn't a kernel issue at all ?
+imho a user process shouldn't be able to cause such a situation.
+what can i do against that phenomenon ?
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
- drivers/pci/dmar.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index 14bbaa1..b233163 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -354,6 +354,7 @@ dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
- 	struct acpi_dmar_hardware_unit *drhd;
- 	struct acpi_dmar_reserved_memory *rmrr;
- 	struct acpi_dmar_atsr *atsr;
-+	struct acpi_dmar_rhsa *rhsa;
- 
- 	switch (header->type) {
- 	case ACPI_DMAR_TYPE_HARDWARE_UNIT:
-@@ -375,6 +376,12 @@ dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
- 		atsr = container_of(header, struct acpi_dmar_atsr, header);
- 		printk(KERN_INFO PREFIX "ATSR flags: %#x\n", atsr->flags);
- 		break;
-+	case ACPI_DMAR_HARDWARE_AFFINITY:
-+		rhsa = container_of(header, struct acpi_dmar_rhsa, header);
-+		printk(KERN_INFO PREFIX "RHSA base: %#016Lx proximity domain: %#x\n",
-+		       (unsigned long long)rhsa->base_address,
-+		       rhsa->proximity_domain);
-+		break;
- 	}
- }
- 
-@@ -459,6 +466,9 @@ parse_dmar_table(void)
- 			ret = dmar_parse_one_atsr(entry_header);
- #endif
- 			break;
-+		case ACPI_DMAR_HARDWARE_AFFINITY:
-+			/* We don't do anything with RHSA (yet?) */
-+			break;
- 		default:
- 			printk(KERN_WARNING PREFIX
- 				"Unknown DMAR structure type\n");
+-alex
