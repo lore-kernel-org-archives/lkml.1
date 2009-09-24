@@ -1,107 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZIXUIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZIXUPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753599AbZIXUIh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 16:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZIXUIg
+	id S1753260AbZIXUPU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 16:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbZIXUPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 16:08:36 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:43935 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbZIXUIf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 16:08:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=xHw1HkxehRSZlG/ELFhW4FLy9aXpSgaZM5XL+iopJtRkAyAH9mpfnwn97xZf7FCU6E
-         lOeW0rA6ZRA69THe6NevicZw0fy11lXeQThQIYVWjItiwRcyTY/QcgvrfcBiTIUfAzMU
-         S0WAVhdp0NM0LXTvfAET1L9mjm5dIe22/q/80=
-Message-ID: <4ABBD18A.70208@gmail.com>
-Date: Thu, 24 Sep 2009 22:07:38 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Thu, 24 Sep 2009 16:15:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41127 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752928AbZIXUPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 16:15:19 -0400
+Date: Thu, 24 Sep 2009 22:15:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [GIT PULL v2] bkl tracepoints + filter regex support
+Message-ID: <20090924201509.GA26573@elte.hu>
+References: <1253821775-8618-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: David Miller <davem@davemloft.net>, albcamus@gmail.com,
-       parag.lkml@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net: Fix sock_wfree() race
-References: <4AA64A11.7090804@gmail.com>	<4AA6DF7B.7060105@gmail.com>	<20090911.114337.150207703.davem@davemloft.net> <20090911.125242.244008840.davem@davemloft.net> <4ABA262F.9040407@gmail.com>
-In-Reply-To: <4ABA262F.9040407@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253821775-8618-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote, On 09/23/2009 03:44 PM:
 
-...
-> Here is the patch for reference :
-> 
-> [PATCH] net: Fix sock_wfree() race
-> 
-> Commit 2b85a34e911bf483c27cfdd124aeb1605145dc80
-> (net: No more expensive sock_hold()/sock_put() on each tx)
-> opens a window in sock_wfree() where another cpu
-> might free the socket we are working on.
-> 
-> A fix is to call sk->sk_write_space(sk) while still
-> holding a reference on sk.
-> 
-> 
-> Reported-by: Jike Song <albcamus@gmail.com>
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-> ---
->  net/core/sock.c |   19 ++++++++++++-------
->  1 files changed, 12 insertions(+), 7 deletions(-)
-> 
-> diff --git a/net/core/sock.c b/net/core/sock.c
-> index 30d5446..e1f034e 100644
-> --- a/net/core/sock.c
-> +++ b/net/core/sock.c
-> @@ -1228,17 +1228,22 @@ void __init sk_init(void)
->  void sock_wfree(struct sk_buff *skb)
->  {
->  	struct sock *sk = skb->sk;
-> -	int res;
-> +	unsigned int len = skb->truesize;
->  
-> -	/* In case it might be waiting for more memory. */
-> -	res = atomic_sub_return(skb->truesize, &sk->sk_wmem_alloc);
-> -	if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE))
-> +	if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE)) {
-> +		/*
-> +		 * Keep a reference on sk_wmem_alloc, this will be released
-> +		 * after sk_write_space() call
-> +		 */
-> +		atomic_sub(len - 1, &sk->sk_wmem_alloc);
->  		sk->sk_write_space(sk);
-> +		len = 1;
-> +	}
->  	/*
-> -	 * if sk_wmem_alloc reached 0, we are last user and should
-> -	 * free this sock, as sk_free() call could not do it.
-> +	 * if sk_wmem_alloc reaches 0, we must finish what sk_free()
-> +	 * could not do because of in-flight packets
->  	 */
-> -	if (res == 0)
-> +	if (atomic_sub_return(len, &sk->sk_wmem_alloc) == 0)
->  		__sk_free(sk);
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-
-Probably atomic_sub_and_test() is more popular for this.
-
-Jarek P.
-
->  }
->  EXPORT_SYMBOL(sock_wfree);
+> Ingo,
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> This is new iteration of the bkl tracepoints + filter
+> regex support. It addresses the reviews that were posted
+> in the previous RFC version.
 > 
+> Please pull from:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> 	tracing/core
+> 
+> Thanks;
+> Frederic.
+> 
+> Frederic Weisbecker (5):
+>       tracing/bkl: Add bkl ftrace events
+>       tracing/filters: Cleanup useless headers
+>       tracing/event: Cleanup the useless dentry variable
+>       tracing/filters: Provide basic regex support
+>       tracing/filters: Unify the regex parsing helpers
+> 
+>  include/linux/smp_lock.h           |   19 ++++-
+>  include/trace/events/bkl.h         |   61 ++++++++++++++
+>  kernel/trace/ftrace.c              |   64 +--------------
+>  kernel/trace/trace.h               |   36 ++++++--
+>  kernel/trace/trace_events.c        |   23 +++---
+>  kernel/trace/trace_events_filter.c |  155 +++++++++++++++++++++++++++++++----
+>  lib/kernel_lock.c                  |   11 ++-
+>  7 files changed, 262 insertions(+), 107 deletions(-)
+>  create mode 100644 include/trace/events/bkl.h
 
+Pulled, thanks a lot Frederic! These bits look very useful.
 
+It would be perf-ect now to complete the filters-via-perf-events changes 
+Li Zefan is working on ;-)
+
+	Ingo
