@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZIXR5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbZIXPx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbZIXR5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 13:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZIXR51
+	id S1752969AbZIXPx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZIXPx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 13:57:27 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:39050 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbZIXR5Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 13:57:24 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAENQu0qrR7PD/2dsb2JhbAC/RIhTAZAGBYQc
-X-IronPort-AV: E=Sophos;i="4.44,446,1249257600"; 
-   d="scan'208";a="395430299"
-From: Roland Dreier <rdreier@cisco.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [git pull] VFS pile 1 - misc bits
-References: <20090924143242.GO14381@ZenIV.linux.org.uk>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 24 Sep 2009 10:57:27 -0700
-In-Reply-To: <20090924143242.GO14381@ZenIV.linux.org.uk> (Al Viro's message of
-	"Thu, 24 Sep 2009 15:32:42 +0100")
-Message-ID: <ada4oqs2pko.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Sep 2009 17:57:27.0676 (UTC) FILETIME=[7A8D43C0:01CA3D40]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Thu, 24 Sep 2009 11:53:58 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45724 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751932AbZIXPx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 11:53:58 -0400
+Date: Thu, 24 Sep 2009 19:57:32 +0200
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] itimers: fix racy writes to cpu_itimer fields
+Message-ID: <20090924195732.384bea26@dhcp-lab-109.englab.brq.redhat.com>
+In-Reply-To: <1253803687.18939.26.camel@laptop>
+References: <1253802903-979-1-git-send-email-sgruszka@redhat.com>
+	<1253803687.18939.26.camel@laptop>
+Organization: RedHat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch in <http://lkml.org/lkml/2009/7/14/309> (add lockdep
-annotation to s_vfs_rename_mutex to avoid lockdep spew with rename on
-ecryptfs) seems to have been dropped -- or maybe it is just down in the
-queue somewhere.  I did see Andrew send it to you again a week or so
-back.
+On Thu, 24 Sep 2009 16:48:07 +0200
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Thanks,
-  Roland
+> On Thu, 2009-09-24 at 16:35 +0200, Stanislaw Gruszka wrote:
+> > incr_error and error fields of struct cpu_itimer are used when calculating
+> > next timer tick in check_cpu_itimers() and should not be modified without
+> > tsk->sighand->siglock taken.
+> 
+> Won't it be all-round much better to convert these things to hrtimers
+> instead of adding more and more fuzz on top to make them deal with
+> jiffies?
+
+Perhaps it would, but I don't know how to do it :{ . Especially how to
+precisely account user time. The only idea I have is make something like 
+microstate accounting (http://lwn.net/Articles/127296/), but this patch
+and whole idea was rejected long time ago. 
+
+Stanislaw
