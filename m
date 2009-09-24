@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297AbZIXNRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbZIXNXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752297AbZIXNRh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 09:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZIXNRg
+	id S1752258AbZIXNXG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 09:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZIXNXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 09:17:36 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52851 "EHLO kernel.dk"
+	Thu, 24 Sep 2009 09:23:05 -0400
+Received: from mga03.intel.com ([143.182.124.21]:53588 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbZIXNRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 09:17:35 -0400
-Date: Thu, 24 Sep 2009 15:17:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
+	id S1751775AbZIXNXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 09:23:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,445,1249282800"; 
+   d="scan'208";a="191202767"
+Date: Thu, 24 Sep 2009 21:22:52 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Li, Shaohua" <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+       Chris Mason <chris.mason@oracle.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Jan Kara <jack@suse.cz>
 Subject: Re: [RFC] page-writeback: move indoes from one superblock together
-Message-ID: <20090924131738.GG23126@kernel.dk>
-References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924071415.GA20808@localhost> <20090924074431.GA22396@sli10-desk.sh.intel.com>
+Message-ID: <20090924132252.GA696@localhost>
+References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924100136.GA25778@localhost> <20090924123519.GF23126@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090924074431.GA22396@sli10-desk.sh.intel.com>
+In-Reply-To: <20090924123519.GF23126@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Could just reuse inode.
-> oops, forgot to remove it when moveing inode to global.
+On Thu, Sep 24, 2009 at 08:35:19PM +0800, Jens Axboe wrote:
+> On Thu, Sep 24 2009, Wu Fengguang wrote:
+> > On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
+> > > __mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
+> > > several partitions, writeback might keep spindle moving between partitions.
+> > > To reduce the move, better write big chunk of one partition and then move to
+> > > another. Inodes from one fs usually are in one partion, so idealy move indoes
+> > > from one fs together should reduce spindle move. This patch tries to address
+> > > this. Before per-bdi writeback is added, the behavior is write indoes
+> > > from one fs first and then another, so the patch restores previous behavior.
+> > > The loop in the patch is a bit ugly, should we add a dirty list for each
+> > > superblock in bdi_writeback?
+> > > 
+> > > Test in a two partition disk with attached fio script shows about 3% ~ 6%
+> > > improvement.
+> > 
+> > A side note: given the noticeable performance gain, I wonder if it
+> > deserves to generalize the idea to do whole disk location ordered
+> > writeback. That should benefit many small file workloads more than
+> > 10%. Because this patch only sorted 2 partitions and inodes in 5s
+> > time window, while the below patch will roughly divide the disk into
+> > 5 areas and sort inodes in a larger 25s time window.
+> > 
+> >         http://lkml.org/lkml/2007/8/27/45
+> > 
+> > Judging from this old patch, the complexity cost would be about 250
+> > lines of code (need a rbtree).
+> 
+> First of all, nice patch, I'll add it to the current tree. I too was
 
-This is the one I merged. I added the below as wel, we don't need to
-reiterate the list if we only moved inodes from a single super block.
+You mean Shaohua's patch? It should be a good addition for 2.6.32.
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index b27406d..225c731 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -336,17 +336,27 @@ static void move_expired_inodes(struct list_head *delaying_queue,
- {
- 	LIST_HEAD(tmp);
- 	struct list_head *pos, *node;
--	struct super_block *sb;
-+	struct super_block *sb = NULL;
- 	struct inode *inode;
-+	int do_sb_sort = 0;
- 
- 	while (!list_empty(delaying_queue)) {
- 		inode = list_entry(delaying_queue->prev, struct inode, i_list);
- 		if (older_than_this &&
- 		    inode_dirtied_after(inode, *older_than_this))
- 			break;
-+		if (sb && sb != inode->i_sb)
-+			do_sb_sort = 1;
-+		sb = inode->i_sb;
- 		list_move(&inode->i_list, &tmp);
- 	}
- 
-+	/* just one sb in list, splice to dispatch_queue and we're done */
-+	if (!do_sb_sort) {
-+		list_splice(&tmp, dispatch_queue);
-+		return;
-+	}
-+
- 	/* Move inodes from one superblock together */
- 	while (!list_empty(&tmp)) {
- 		inode = list_entry(tmp.prev, struct inode, i_list);
+In long term move_expired_inodes() needs some rework.  Because it
+could be time consuming to move around all the inodes in a large
+system, and thus hold inode_lock() for too long time (and this patch
+scales up the locked time).
 
--- 
-Jens Axboe
+So would need to split the list moves into smaller pieces in future,
+or to change data structure.
+
+> pondering using an rbtree for sb+dirty_time insertion and extraction.
+
+FYI Michael Rubin did some work on a rbtree implementation, just
+in case you are interested:
+
+        http://lkml.org/lkml/2008/1/15/25
+
+> But for 100 inodes or less, I bet that just doing the re-sort in
+> writeback time ends up being cheaper on the CPU cycle side.
+
+Yeah.
+
+Thanks,
+Fengguang
 
