@@ -1,91 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbZIXSEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZIXSHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558AbZIXSEj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 14:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbZIXSEh
+	id S1753549AbZIXSHg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 14:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZIXSHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 14:04:37 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:62210 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763AbZIXSEg (ORCPT
+	Thu, 24 Sep 2009 14:07:33 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:60168 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753252AbZIXSHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 14:04:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=lE4XB2ViOGfJSM+bFhUTdVjhCN/zVhk3XKGRkLKQ66d7RxzRw982v+2sLomeqwCFsr
-         o70J4LHOx60/Y6DZA4j25xA3ng87tdXf+srgAEKIXy1oH419gDo1PDkHkq5SV55Fay5M
-         3G8LBsX9ujy0cDxw3Hl0Wa7By1Yne/8SaIR9c=
-Message-ID: <4ABBB4B2.7050404@gmail.com>
-Date: Thu, 24 Sep 2009 14:04:34 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 24 Sep 2009 14:07:30 -0400
+Message-ID: <4ABBB4D5.5070506@oracle.com>
+Date: Thu, 24 Sep 2009 11:05:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <4AB0A070.1050400@redhat.com> <4AB0CFA5.6040104@gmail.com> <4AB0E2A2.3080409@redhat.com> <4AB0F1EF.5050102@gmail.com> <4AB10B67.2050108@redhat.com> <4AB13B09.5040308@gmail.com> <4AB151D7.10402@redhat.com> <4AB1A8FD.2010805@gmail.com> <20090921214312.GJ7182@ovro.caltech.edu> <4AB89C48.4020903@redhat.com> <4ABA3005.60905@gmail.com> <4ABA32AF.50602@redhat.com> <4ABA3A73.5090508@gmail.com> <4ABA61D1.80703@gmail.com> <4ABA78DC.7070604@redhat.com> <4ABB27B9.4050904@redhat.com>
-In-Reply-To: <4ABB27B9.4050904@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigDE5D73E043EEC9B7281C9F0D"
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
+       peterz@infradead.org,
+       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
+Subject: Re: [RFC][v7][PATCH 9/9]: Document clone2() syscall
+References: <20090924165548.GA16586@us.ibm.com> <20090924170331.GI16989@us.ibm.com>
+In-Reply-To: <20090924170331.GI16989@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt014.oracle.com [141.146.116.23]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4ABBB4A7.0098:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigDE5D73E043EEC9B7281C9F0D
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Sukadev Bhattiprolu wrote:
+> 
+> Subject: [RFC][v7][PATCH 9/9]: Document clone2() syscall
+> 
+> This gives a brief overview of the clone2() system call.  We should
+> eventually describe more details in existing clone(2) man page or in
+> a new man page.
 
-Avi Kivity wrote:
-> On 09/23/2009 10:37 PM, Avi Kivity wrote:
->>
->> Example: feature negotiation.  If it happens in userspace, it's easy
->> to limit what features we expose to the guest.  If it happens in the
->> kernel, we need to add an interface to let the kernel know which
->> features it should expose to the guest.  We also need to add an
->> interface to let userspace know which features were negotiated, if we
->> want to implement live migration.  Something fairly trivial bloats
->> rapidly.
->=20
-> btw, we have this issue with kvm reporting cpuid bits to the guest.=20
-> Instead of letting kvm talk directly to the hardware and the guest, kvm=
+Hi,
 
-> gets the cpuid bits from the hardware, strips away features it doesn't
-> support, exposes that to userspace, and expects userspace to program th=
-e
-> cpuid bits it wants to expose to the guest (which may be different than=
+We have a separate mailing list (linux-api@vger.kernel.org)
+where new kernel APIs are (or were?) meant to be discussed/checked/tested.
 
-> what kvm exposed to userspace, and different from guest to guest).
->=20
+Maybe Michael Kerrisk would care (or would have cared?) about this.
 
-This issue doesn't exist in the model I am referring to, as these are
-all virtual-devices anyway.  See my last reply
+I don't see linux-api@vger.kernel.org listed in MAINTAINERS,
+but it is referred to in Documentation/HOWTO and Documentation/SubmitChecklist.
+Does it need to be listed in MAINTAINERS?
+(oh, you didn't read Documentation/SubmitChecklist ??)
 
--Greg
+Anyway, please cc: linux-api@vger.kernel.org on future patches like this
+series.
 
 
---------------enigDE5D73E043EEC9B7281C9F0D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> Changelog[v7]:
+> 	- Rename clone_with_pids() to clone2()
+> 	- Changes to reflect new prototype of clone2() (using clone_struct).
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@vnet.linux.ibm.com>
+> ---
+>  Documentation/clone2 |   85 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 85 insertions(+)
+> 
+> Index: linux-2.6/Documentation/clone2
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/Documentation/clone2	2009-09-18 18:48:00.000000000 -0700
+> @@ -0,0 +1,85 @@
+> +
+> +struct clone_struct {
+> +	u64 flags;
+> +	u64 child_stack;
+> +	u32 nr_pids;
+> +	u32 parent_tid;
+> +	u32 child_tid;
+> +	u32 reserved1;
+> +	u64 reserved2;
+> +};
+> +
+> +clone2(struct clone_struct * __user clone_args, pid_t * __user pids)
+> +
+> +	In addition to doing everything that clone() system call does,
+> +	the clone2() system call:
+> +
+> +		- allows additional clone flags (all 32 bits in the flags
+> +		  parameter to clone() are in use)
+> +
+> +		- allows user to specify a pid for the child process in its
+> +		  active and ancestor pid name spaces.
+> +
+> +	This system call is meant to be used when restarting an application
+> +	from a checkpoint.  Such restart requires that the processes in the
+> +	application have the same pids they had when the application was
+> +	checkpointed. When containers are nested, the processes within the
+> +	containers exist in multiple pid namespaces and hence have multiple
+> +	pids to specify during restart.
+> +
+> +	The @pids defines the set of pids that should be assigned to the child
+> +	process in its active and ancestor pid name spaces. The descendant pid
+> +	namespaces do not matter since a process does not have a pid in
+> +	descendant namespaces, unless the process is in a new pid namespace
+> +	in which case the process is a container-init (and must have the pid 1
+> +	in that namespace).
+> +
+> +	See CLONE_NEWPID section of clone(2) man page for details about pid
+> +	namespaces.
+> +
+> +	The order pids in @pids corresponds to the nesting order of pid-
+> +	namespaces, with @pids[0] corresponding to the init_pid_ns.
+> +
+> +	If a pid in the @pids list is 0, the kernel will assign the next
+> +	available pid in the pid namespace, for the process.
+> +
+> +	If a pid in the @pids list is non-zero, the kernel tries to assign
+> +	the specified pid in that namespace.  If that pid is already in use
+> +	by another process, the system call fails with -EBUSY.
+> +
+> +	On success, the system call returns the pid of the child process in
+> +	the parent's active pid namespace.
+> +
+> +	On failure, clone2() returns -1 and sets 'errno' to one of following
+> +	values (the child process is not created).
+> +
+> +	EPERM	Caller does not have the SYS_ADMIN privilege needed to excute
+> +		this call.
+> +
+> +	EINVAL	The number of pids specified in 'clone_args.nr_pids' exceeds
+> +		the current nesting level of parent process
+> +
+> +	EBUSY	A requested pid is in use by another process in that name space.
+> +
+> +Example:
+> +
+> +	pid_t pids[] = { 77, 99 };
+> +	struct clone_struct cs;
+> +
+> +	cs.flags = (u64) SIGCHLD;
+> +	cs.child_stack = (u64) setup_child_stack();
+> +	cs.nr_pids = 2;
+> +	cs.parent_tid = 0;
+> +	cs.child_tid = 0;
+> +
+> +	rc = syscall(__NR_clone2, &cs, pids);
+> +
+> +	if (rc < 0) {
+> +		perror("clone2()");
+> +		exit(1);
+> +	} else if (rc) {
+> +		/* Parent */
+> +	} else {
+> +		/* Child */
+> +	}
+> +
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkq7tLIACgkQP5K2CMvXmqFsrACfdMqWfjhbcD0aRdM1iWka41vU
-lDkAmwWgvAoZNTrMhDRgJ/UlEl0f4Mpo
-=5LFr
------END PGP SIGNATURE-----
-
---------------enigDE5D73E043EEC9B7281C9F0D--
