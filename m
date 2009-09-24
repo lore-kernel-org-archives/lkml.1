@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbZIXTXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbZIXTYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbZIXTXJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbZIXTXF
+	id S1753798AbZIXTYn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbZIXTYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:23:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44971 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753714AbZIXTXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:23:03 -0400
-Date: Thu, 24 Sep 2009 21:22:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, linux@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       mathieu.desnoyers@polymtl.ca, a.p.zijlstra@chello.nl,
-       fweisbec@gmail.com, acme@redhat.com, mhiramat@redhat.com,
-       postmaster@vger.kernel.org
-Subject: Re: mailing list for trace users
-Message-ID: <20090924192234.GA30206@elte.hu>
-References: <20090923221059.GB29816@elte.hu> <20090923.154152.193726140.davem@davemloft.net> <20090924111645.GC628@elte.hu> <20090924.115857.234490886.davem@davemloft.net>
+	Thu, 24 Sep 2009 15:24:40 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:49549 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753222AbZIXTYj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:24:39 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Alexander Huemer <alexander.huemer@sbg.ac.at>
+Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
+Date: Thu, 24 Sep 2009 21:24:40 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <4ABBB8C2.2080901@sbg.ac.at>
+In-reply-To: <4ABBB8C2.2080901@sbg.ac.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090924.115857.234490886.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200909242124.42187.elendil@planet.nl>
+X-OriginalArrivalTime: 24 Sep 2009 19:24:42.0868 (UTC) FILETIME=[AAF82B40:01CA3D4C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adding linux-ide to CC.
 
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Thu, 24 Sep 2009 13:16:45 +0200
+Alexander Huemer wrote:
+> the problem appears under heavy system load and slows down the system to
+> unusable speed.
+> kernels before .30 were not affected.
+> irqpoll does not change behavior.
 > 
-> > Btw., regardless of your flames against me in the past, i dont think
-> > you dislike perf events all that much anymore.
+> error message from .31:
+>  [157152.418524] irq 23: nobody cared (try booting with the "irqpoll" option)
+>  [157152.418530] Pid: 1359, comm: cc1plus Tainted: G        W  2.6.31-gentoo-blackbit #2
+>  [157152.418532] Call Trace:
+>  [157152.418534]  <IRQ>  [<ffffffff81066e3f>] ?  __report_bad_irq+0x30/0x7d
+>  [157152.418544]  [<ffffffff81066f93>] ? note_interrupt+0x107/0x170
+>  [157152.418547]  [<ffffffff81067580>] ? handle_fasteoi_irq+0x8a/0xaa
+>  [157152.418551]  [<ffffffff8100d1cf>] ? handle_irq+0x17/0x1d
+>  [157152.418554]  [<ffffffff8100c84b>] ? do_IRQ+0x54/0xb2
+>  [157152.418558]  [<ffffffff8100b6d3>] ? ret_from_intr+0x0/0xa
+>  [157152.418559]  <EOI>
+>  [157152.418560] handlers:
+>  [157152.418562] [<ffffffff813d2a6f>] (ahci_interrupt+0x0/0x426)
+>  [157152.418566] Disabling IRQ #23
+>
+> bios of the machine is up to date,
+> i tried all related bios settings, no change.
 > 
-> Indeed, I love 'perf' and if you were here you would be hearing me 
-> recommending it and singing my praises about it on a daily basis to 
-> everyone :-)
+> kernel config for .31   http://xx.vu/~ahuemer/config_ahuemer_20090923.gz
+> lspci -vxxx             http://xx.vu/~ahuemer/lspci_ahuemer_20090923
+> lsusb -v                http://xx.vu/~ahuemer/lsusb_ahuemer_20090923
+> /proc/interrupts        http://xx.vu/~ahuemer/proc_interrupts_ahuemer_20090923
+> thread in gentoo forums http://forums.gentoo.org/viewtopic-t-780725-start-0.html
+> 
+> please tell me what additional info is needed.
 
-*Blush* :-)
+A full dmesg (or kernel log) starting from a clean boot up to the error
+could be useful.
 
-	Ingo
+If no others reply and the issue can be reproduced reliably, running a
+git bisect between v2.6.29 and v2.6.30 to trace the cause of the regression
+could be an option.
+
+Cheers,
+FJP
