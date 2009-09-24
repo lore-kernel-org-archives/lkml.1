@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZIXRzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbZIXR5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbZIXRzu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 13:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZIXRzt
+	id S1753162AbZIXR5Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 13:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZIXR5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 13:55:49 -0400
-Received: from fifo99.com ([67.223.236.141]:49891 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbZIXRzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 13:55:48 -0400
-Subject: RE: [PATCH 2/14] bfa: Brocade BFA FC SCSI driver (bfa1)
-From: Daniel Walker <dwalker@fifo99.com>
-To: Jing Huang <huangj@Brocade.COM>
-Cc: "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       Krishna Gudipati <kgudipat@Brocade.COM>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Ramkumar Vadivelu <rvadivel@Brocade.COM>,
-       Vinodh Ravindran <vravindr@Brocade.COM>
-In-Reply-To: <B0A7AF226B49A14897036E9B3A68CFFECB1AB0F77D@HQ-EXCH-7.corp.brocade.com>
-References: <200909240049.n8O0nw3l013437@swe58.brocade.com>
-	 <1253807042.20648.188.camel@desktop>
-	 <B0A7AF226B49A14897036E9B3A68CFFECB1AB0F77D@HQ-EXCH-7.corp.brocade.com>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 10:55:34 -0700
-Message-Id: <1253814934.20648.262.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Sep 2009 13:57:22 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:33753 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZIXR5V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 13:57:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=A8S+1Ogn2DjZMJzRKgn56aAWaHYOlRy7WWaWqAzPp4t15venVoHPMWqTJ/zxlVG6QP
+         9yYHkuj1DlXyd3Rz5HwUMHr9hcEHvWTAvO0/gnrK0IirEuMavXdbWcfCEA4cZeqgAO5u
+         AeWMCtBYHsrKFf8119INZX0UnZdSxYkbAMTxg=
+Date: Thu, 24 Sep 2009 21:57:20 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
+       peterz@infradead.org,
+       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
+Subject: Re: [RFC][v7][PATCH 0/9] Implement clone2() system call
+Message-ID: <20090924175542.GA27678@x200>
+References: <20090924165548.GA16586@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090924165548.GA16586@us.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-24 at 10:38 -0700, Jing Huang wrote:
-> > On Wed, 2009-09-23 at 17:49 -0700, Jing Huang wrote:
-> > > +
-> > > +       return (*(union bfi_addr_u *) &addr);
-> > > +}
-> > 
-> > Have you run checkpatch on this code? It produces many errors due to
-> > your "return" usage for one.. The usual style of return is not to use
-> > parentheses since it's really not a function ..
-> > 
-> > The line I quoted above gives the following error,
-> > 
-> > ERROR: return is not a function, parentheses are not required
-> > #266: FILE: drivers/scsi/bfa/bfa_cb_ioim_macros.h:132:
-> > +       return (*(union bfi_addr_u *) &addr);
-> > 
-> > First of all I'd consider making your code consistent with respect to
-> > the return statements .. I noticed that you sometimes use the
-> > parentheses sometimes not .. Since it's more with Linux style I'd just
-> > remove all the extra parentheses..
-> > 
-> > Checkpatch produces many other errors in your code .. If you haven't
-> > already evaluated those errors, I'd do go through each patch and review
-> > the errors (and the warnings) that it produces since checkpatch can give
-> > you a fairly mechanical view into how well your code matches the Linux
-> > coding style. The less the output from checkpatch the better ..
-> > 
-> > Daniel
-> > 
-> 
-> Hi Daniel, 
-> 
-> I did run checkpatch.pl and it didn't report any ERROR or WARNING. Do you use any specific flags?
+I don't like this even more.
 
-No nothing special .. I run it in the following way,
+Pid namespaces are hierarchical _and_ anonymous, so simply
+set of numbers doesn't describe the final object.
 
-./scripts/checkpatch.pl this-is-the-test.patch
+struct pid isn't special, it's just another invariant if you like
+as far as C/R is concerned, but system call is made special wrt pids.
 
-or
-
-cat this-is-the-test.patch | ./scripts/checkpatch.pl -
-
-how did you run it? Usually it will report something like the following
-if it finds nothing,
-
-total: 0 errors, 0 warnings, XXX lines checked
-
-Your patch has no obvious style problems and is ready for submission.
-
-
-
-Daniel
-
+What will be in an image? I hope "struct kstate_image_pid" with several
+numbers and with references to such object from other places, so it
+seems natural to do alloc_pid() with needed numbers and that attach new
+shiny pid to where needed. But this clone_pid is only for task_struct's pids.
