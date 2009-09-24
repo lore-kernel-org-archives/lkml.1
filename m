@@ -1,321 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbZIXTb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbZIXTZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754292AbZIXTb3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbZIXTb0
+	id S1753803AbZIXTZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZIXTZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:31:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:13216 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 15:25:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55161 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbZIXTbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:31:23 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
-       jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       riel@redhat.com
-Subject: [PATCH 07/28] io-controller: cgroup related changes for hierarchical group support
-Date: Thu, 24 Sep 2009 15:25:11 -0400
-Message-Id: <1253820332-10246-8-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	id S1751801AbZIXTZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 15:25:43 -0400
+Date: Thu, 24 Sep 2009 19:25:12 GMT
+From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
+Cc: linux-kernel@vger.kernel.org, drepper@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, eric.dumazet@gmail.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, drepper@redhat.com,
+       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4ABB767D.6080004@gmail.com>
+References: <4ABB767D.6080004@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf tools: Dont use openat()
+Message-ID: <tip-725b13685c61168f71825b3fb67d96d2d7aa3b0f@git.kernel.org>
+Git-Commit-ID: 725b13685c61168f71825b3fb67d96d2d7aa3b0f
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 24 Sep 2009 19:25:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o This patch introduces some of the cgroup related code for io controller.
+Commit-ID:  725b13685c61168f71825b3fb67d96d2d7aa3b0f
+Gitweb:     http://git.kernel.org/tip/725b13685c61168f71825b3fb67d96d2d7aa3b0f
+Author:     Eric Dumazet <eric.dumazet@gmail.com>
+AuthorDate: Thu, 24 Sep 2009 15:39:09 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 24 Sep 2009 21:20:08 +0200
 
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
-Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
-Signed-off-by: Nauman Rafique <nauman@google.com>
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-Acked-by: Rik van Riel <riel@redhat.com>
+perf tools: Dont use openat()
+
+openat() is still a young glibc facility, better to not use it in a
+non performance critical program (perf list)
+
+Many machines have older glibc (RHEL 4 Update 5 -> glibc-2.3.4-2.36
+on my dev machine for example).
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ulrich Drepper <drepper@redhat.com>
+LKML-Reference: <4ABB767D.6080004@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- block/blk-ioc.c               |    3 +
- block/elevator-fq.c           |  169 ++++++++++++++++++++++++++++++++++++++++-
- block/elevator-fq.h           |   14 ++++
- include/linux/cgroup_subsys.h |    6 ++
- include/linux/iocontext.h     |    5 +
- 5 files changed, 196 insertions(+), 1 deletions(-)
+ tools/perf/util/parse-events.c |   49 ++++++++++++++++-----------------------
+ 1 files changed, 20 insertions(+), 29 deletions(-)
 
-diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-index d4ed600..0d56336 100644
---- a/block/blk-ioc.c
-+++ b/block/blk-ioc.c
-@@ -95,6 +95,9 @@ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
- 		spin_lock_init(&ret->lock);
- 		ret->ioprio_changed = 0;
- 		ret->ioprio = 0;
-+#ifdef CONFIG_GROUP_IOSCHED
-+		ret->cgroup_changed = 0;
-+#endif
- 		ret->last_waited = jiffies; /* doesn't matter... */
- 		ret->nr_batch_requests = 0; /* because this is 0 */
- 		ret->aic = NULL;
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 0e3d58c..0c060a6 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -265,7 +265,7 @@ static void entity_served(struct io_entity *entity, unsigned long served,
- 	unsigned long charge = queue_charge;
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 13ab4b8..87c424d 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -165,33 +165,31 @@ struct tracepoint_path *tracepoint_id_to_path(u64 config)
+ 	DIR *sys_dir, *evt_dir;
+ 	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
+ 	char id_buf[4];
+-	int sys_dir_fd, fd;
++	int fd;
+ 	u64 id;
+ 	char evt_path[MAXPATHLEN];
++	char dir_path[MAXPATHLEN];
  
- 	for_each_entity(entity) {
--		entity->vdisktime += elv_delta_fair(queue_charge, entity);
-+		entity->vdisktime += elv_delta_fair(charge, entity);
- 		update_min_vdisktime(entity->st);
- 		/* Group charge can be different from queue charge */
- 		charge = group_charge;
-@@ -920,6 +920,173 @@ EXPORT_SYMBOL(elv_io_group_set_async_queue);
+ 	if (valid_debugfs_mount(debugfs_path))
+ 		return NULL;
  
- #ifdef CONFIG_GROUP_IOSCHED
+ 	sys_dir = opendir(debugfs_path);
+ 	if (!sys_dir)
+-		goto cleanup;
+-	sys_dir_fd = dirfd(sys_dir);
++		return NULL;
  
-+struct io_cgroup io_root_cgroup = {
-+	.weight = IO_WEIGHT_DEFAULT,
-+	.ioprio_class = IOPRIO_CLASS_BE,
-+};
+ 	for_each_subsystem(sys_dir, sys_dirent, sys_next) {
+-		int dfd = openat(sys_dir_fd, sys_dirent.d_name,
+-				 O_RDONLY|O_DIRECTORY), evt_dir_fd;
+-		if (dfd == -1)
+-			continue;
+-		evt_dir = fdopendir(dfd);
+-		if (!evt_dir) {
+-			close(dfd);
 +
-+static struct io_cgroup *cgroup_to_io_cgroup(struct cgroup *cgroup)
-+{
-+	return container_of(cgroup_subsys_state(cgroup, io_subsys_id),
-+			    struct io_cgroup, css);
-+}
++		snprintf(dir_path, MAXPATHLEN, "%s/%s", debugfs_path,
++			 sys_dirent.d_name);
++		evt_dir = opendir(dir_path);
++		if (!evt_dir)
+ 			continue;
+-		}
+-		evt_dir_fd = dirfd(evt_dir);
 +
-+#define SHOW_FUNCTION(__VAR)						\
-+static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,		\
-+				       struct cftype *cftype)		\
-+{									\
-+	struct io_cgroup *iocg;					\
-+	u64 ret;							\
-+									\
-+	if (!cgroup_lock_live_group(cgroup))				\
-+		return -ENODEV;						\
-+									\
-+	iocg = cgroup_to_io_cgroup(cgroup);				\
-+	spin_lock_irq(&iocg->lock);					\
-+	ret = iocg->__VAR;						\
-+	spin_unlock_irq(&iocg->lock);					\
-+									\
-+	cgroup_unlock();						\
-+									\
-+	return ret;							\
-+}
+ 		for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next) {
+-			snprintf(evt_path, MAXPATHLEN, "%s/id",
 +
-+SHOW_FUNCTION(weight);
-+SHOW_FUNCTION(ioprio_class);
-+#undef SHOW_FUNCTION
-+
-+#define STORE_FUNCTION(__VAR, __MIN, __MAX)				\
-+static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
-+					struct cftype *cftype,		\
-+					u64 val)			\
-+{									\
-+	struct io_cgroup *iocg;					\
-+	struct io_group *iog;						\
-+	struct hlist_node *n;						\
-+									\
-+	if (val < (__MIN) || val > (__MAX))				\
-+		return -EINVAL;						\
-+									\
-+	if (!cgroup_lock_live_group(cgroup))				\
-+		return -ENODEV;						\
-+									\
-+	iocg = cgroup_to_io_cgroup(cgroup);				\
-+									\
-+	spin_lock_irq(&iocg->lock);					\
-+	iocg->__VAR = (unsigned long)val;				\
-+	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {	\
-+		iog->entity.__VAR = (unsigned long)val;		\
-+		smp_wmb();						\
-+		iog->entity.ioprio_changed = 1;				\
-+	}								\
-+	spin_unlock_irq(&iocg->lock);					\
-+									\
-+	cgroup_unlock();						\
-+									\
-+	return 0;							\
-+}
-+
-+STORE_FUNCTION(weight, IO_WEIGHT_MIN, IO_WEIGHT_MAX);
-+STORE_FUNCTION(ioprio_class, IOPRIO_CLASS_RT, IOPRIO_CLASS_IDLE);
-+#undef STORE_FUNCTION
-+
-+struct cftype io_files[] = {
-+	{
-+		.name = "weight",
-+		.read_u64 = io_cgroup_weight_read,
-+		.write_u64 = io_cgroup_weight_write,
-+	},
-+	{
-+		.name = "ioprio_class",
-+		.read_u64 = io_cgroup_ioprio_class_read,
-+		.write_u64 = io_cgroup_ioprio_class_write,
-+	},
-+};
-+
-+static int iocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-+{
-+	return cgroup_add_files(cgroup, subsys, io_files, ARRAY_SIZE(io_files));
-+}
-+
-+static struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
-+						struct cgroup *cgroup)
-+{
-+	struct io_cgroup *iocg;
-+
-+	if (cgroup->parent != NULL) {
-+		iocg = kzalloc(sizeof(*iocg), GFP_KERNEL);
-+		if (iocg == NULL)
-+			return ERR_PTR(-ENOMEM);
-+	} else
-+		iocg = &io_root_cgroup;
-+
-+	spin_lock_init(&iocg->lock);
-+	INIT_HLIST_HEAD(&iocg->group_data);
-+	iocg->weight = IO_WEIGHT_DEFAULT;
-+	iocg->ioprio_class = IOPRIO_CLASS_BE;
-+
-+	return &iocg->css;
-+}
-+
-+/*
-+ * We cannot support shared io contexts, as we have no mean to support
-+ * two tasks with the same ioc in two different groups without major rework
-+ * of the main cic data structures.  By now we allow a task to change
-+ * its cgroup only if it's the only owner of its ioc; the drawback of this
-+ * behavior is that a group containing a task that forked using CLONE_IO
-+ * will not be destroyed until the tasks sharing the ioc die.
-+ */
-+static int iocg_can_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
-+			    struct task_struct *tsk)
-+{
-+	struct io_context *ioc;
-+	int ret = 0;
-+
-+	/* task_lock() is needed to avoid races with exit_io_context() */
-+	task_lock(tsk);
-+	ioc = tsk->io_context;
-+	if (ioc != NULL && atomic_read(&ioc->nr_tasks) > 1)
-+		/*
-+		 * ioc == NULL means that the task is either too young or
-+		 * exiting: if it has still no ioc the ioc can't be shared,
-+		 * if the task is exiting the attach will fail anyway, no
-+		 * matter what we return here.
-+		 */
-+		ret = -EINVAL;
-+	task_unlock(tsk);
-+
-+	return ret;
-+}
-+
-+static void iocg_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
-+			 struct cgroup *prev, struct task_struct *tsk)
-+{
-+	struct io_context *ioc;
-+
-+	task_lock(tsk);
-+	ioc = tsk->io_context;
-+	if (ioc != NULL)
-+		ioc->cgroup_changed = 1;
-+	task_unlock(tsk);
-+}
-+
-+static void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-+{
-+
-+	/* Implemented in later patch */
-+}
-+
-+struct cgroup_subsys io_subsys = {
-+	.name = "io",
-+	.create = iocg_create,
-+	.can_attach = iocg_can_attach,
-+	.attach = iocg_attach,
-+	.destroy = iocg_destroy,
-+	.populate = iocg_populate,
-+	.subsys_id = io_subsys_id,
-+	.use_id = 1,
-+};
-+
- static void io_free_root_group(struct elevator_queue *e)
++			snprintf(evt_path, MAXPATHLEN, "%s/%s/id", dir_path,
+ 				 evt_dirent.d_name);
+-			fd = openat(evt_dir_fd, evt_path, O_RDONLY);
++			fd = open(evt_path, O_RDONLY);
+ 			if (fd < 0)
+ 				continue;
+ 			if (read(fd, id_buf, sizeof(id_buf)) < 0) {
+@@ -225,7 +223,6 @@ struct tracepoint_path *tracepoint_id_to_path(u64 config)
+ 		closedir(evt_dir);
+ 	}
+ 
+-cleanup:
+ 	closedir(sys_dir);
+ 	return NULL;
+ }
+@@ -761,28 +758,24 @@ static void print_tracepoint_events(void)
  {
- 	struct io_group *iog = e->efqd->root_group;
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 068f240..f343841 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -13,6 +13,7 @@
+ 	DIR *sys_dir, *evt_dir;
+ 	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
+-	int sys_dir_fd;
+ 	char evt_path[MAXPATHLEN];
++	char dir_path[MAXPATHLEN];
  
- #ifdef CONFIG_BLOCK
- #include <linux/blkdev.h>
-+#include <linux/cgroup.h>
+ 	if (valid_debugfs_mount(debugfs_path))
+ 		return;
  
- #ifndef _ELV_SCHED_H
- #define _ELV_SCHED_H
-@@ -98,6 +99,8 @@ struct io_group {
- 	struct io_entity entity;
- 	atomic_t ref;
- 	struct io_sched_data sched_data;
-+	struct hlist_node group_node;
-+	unsigned short iocg_id;
- 	/*
- 	 * async queue for each priority case for RT and BE class.
- 	 * Used only for cfq.
-@@ -108,6 +111,17 @@ struct io_group {
- 	void *key;
- };
+ 	sys_dir = opendir(debugfs_path);
+ 	if (!sys_dir)
+-		goto cleanup;
+-	sys_dir_fd = dirfd(sys_dir);
++		return;
  
-+struct io_cgroup {
-+	struct cgroup_subsys_state css;
+ 	for_each_subsystem(sys_dir, sys_dirent, sys_next) {
+-		int dfd = openat(sys_dir_fd, sys_dirent.d_name,
+-				 O_RDONLY|O_DIRECTORY), evt_dir_fd;
+-		if (dfd == -1)
+-			continue;
+-		evt_dir = fdopendir(dfd);
+-		if (!evt_dir) {
+-			close(dfd);
 +
-+	unsigned int weight;
-+	unsigned short ioprio_class;
++		snprintf(dir_path, MAXPATHLEN, "%s/%s", debugfs_path,
++			 sys_dirent.d_name);
++		evt_dir = opendir(dir_path);
++		if (!evt_dir)
+ 			continue;
+-		}
+-		evt_dir_fd = dirfd(evt_dir);
 +
-+	spinlock_t lock;
-+	struct hlist_head group_data;
-+};
-+
-+
- #else /* CONFIG_GROUP_IOSCHED */
+ 		for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next) {
+ 			snprintf(evt_path, MAXPATHLEN, "%s:%s",
+ 				 sys_dirent.d_name, evt_dirent.d_name);
+@@ -791,8 +784,6 @@ static void print_tracepoint_events(void)
+ 		}
+ 		closedir(evt_dir);
+ 	}
+-
+-cleanup:
+ 	closedir(sys_dir);
+ }
  
- struct io_group {
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index 9c8d31b..baf544f 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -60,3 +60,9 @@ SUBSYS(net_cls)
- #endif
- 
- /* */
-+
-+#ifdef CONFIG_GROUP_IOSCHED
-+SUBSYS(io)
-+#endif
-+
-+/* */
-diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-index 4da4a75..b343594 100644
---- a/include/linux/iocontext.h
-+++ b/include/linux/iocontext.h
-@@ -73,6 +73,11 @@ struct io_context {
- 	unsigned short ioprio;
- 	unsigned short ioprio_changed;
- 
-+#ifdef CONFIG_GROUP_IOSCHED
-+	/* If task changes the cgroup, elevator processes it asynchronously */
-+	unsigned short cgroup_changed;
-+#endif
-+
- 	/*
- 	 * For request batching
- 	 */
--- 
-1.6.0.6
-
