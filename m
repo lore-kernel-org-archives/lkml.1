@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbZIXPQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbZIXPS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751937AbZIXPQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 11:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZIXPQ6
+	id S1752679AbZIXPS7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbZIXPS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 11:16:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41345 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693AbZIXPQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 11:16:57 -0400
-Date: Thu, 24 Sep 2009 17:16:58 +0200
-From: Jan Blunck <jblunck@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rt11
-Message-ID: <20090924151658.GQ18706@bolzano.suse.de>
-References: <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <4de7f8a60909230839j3d6beca8l9a677d38bc3a80d3@mail.gmail.com> <alpine.LFD.2.00.0909230922160.2981@nanos>
+	Thu, 24 Sep 2009 11:18:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37290 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbZIXPS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 11:18:58 -0400
+Subject: Re: [PATCH 03/10] writeback: stop background writeback when below
+ background threshold
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, fengguang.wu@intel.com, shaohua.li@intel.com,
+       chris.mason@oracle.com, jack@suse.cz
+In-Reply-To: <1253804615.18939.36.camel@laptop>
+References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com>
+	 <1253803236-20760-4-git-send-email-jens.axboe@oracle.com>
+	 <1253804615.18939.36.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 17:18:56 +0200
+Message-Id: <1253805536.18939.39.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.0909230922160.2981@nanos>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, Thomas Gleixner wrote:
-
-> 
-> 
-> On Wed, 23 Sep 2009, Jan Blunck wrote:
-> 
-> > On Sat, Sep 19, 2009 at 12:39 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > We are pleased to announce the next update to our new preempt-rt
-> > > series.
-> > >
-> > >   - disable SPARSE_IRQ, DMAR, IRQ_REMAP for -rt
-> > >
+On Thu, 2009-09-24 at 17:03 +0200, Peter Zijlstra wrote:
+> On Thu, 2009-09-24 at 16:40 +0200, Jens Axboe wrote:
+> > From: Wu Fengguang <fengguang.wu@intel.com>
 > > 
-> > Do you have any reports that there is a bug in the SPARSE_IRQ code or
-> > why did you disable it?
+> > Treat bdi_start_writeback(0) as a special request to do background write,
+> > and stop such work when we are below the background dirty threshold.
+> > 
+> > Also simplify the (nr_pages <= 0) checks. Since we already pass in
+> > nr_pages=LONG_MAX for WB_SYNC_ALL and background writes, we don't
+> > need to worry about it being decreased to zero.
+> > 
+> > Reported-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > CC: Jan Kara <jack@suse.cz>
+> > CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > ---
 > 
-> Sparse irq is allocating memory in irq/preempt disabled regions which
-> makes preempt debug pretty unhappy. It needs some restructuring of
-> that code. dmar and irqremap have the same problem.
+> > @@ -720,20 +730,16 @@ static long wb_writeback(struct bdi_writeback *wb,
+> >  
+> >  	for (;;) {
+> >  		/*
+> > +		 * Stop writeback when nr_pages has been consumed
+> >  		 */
+> > +		if (args->nr_pages <= 0)
+> >  			break;
+> >  
+> >  		/*
+> > +		 * For background writeout, stop when we are below the
+> > +		 * background dirty threshold
+> >  		 */
+> > +		if (args->for_background && !over_bground_thresh())
+> >  			break;
+> 
+> 
+> What I'm not getting is why this is conditional on for_background(),
+> shouldn't we always stop writeback when below the background threshold?
 
-Is this with the patch I sent on Aug 31:
-[PATCH] Allocate memory before disabling memory in irq_to_desc_alloc_node()
+Ah, that would be for things like sync, which need to write out
+everything, right?
 
-Thanks,
-Jan
+
+
