@@ -1,125 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbZIXP0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZIXP3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752409AbZIXP0x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 11:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZIXP0w
+	id S1752516AbZIXP3y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZIXP3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 11:26:52 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:42881 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbZIXP0w (ORCPT
+	Thu, 24 Sep 2009 11:29:54 -0400
+Received: from mtagate3.de.ibm.com ([195.212.17.163]:42263 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbZIXP3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 11:26:52 -0400
-Date: Thu, 24 Sep 2009 15:26:53 +0000
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, greg@kroah.org,
-       Lars Ericsson <Lars_Ericsson@telia.com>, David.Woodhouse@intel.com,
-       sachinp@in.ibm.com, linux-kernel@vger.kernel.org,
-       "'Ivo van Doorn'" <ivdoorn@gmail.com>
-Subject: Re: [patch -stable] firware_class oops: fix firmware_loading_store
-	locking
-Message-ID: <20090924152653.GA19966@gambetta>
-References: <20090916205717.GB12117@gambetta> <8A019019C4474E589B9EC14F451C0579@gotws1589> <20090921133223.GA13038@gambetta> <alpine.LFD.2.01.0909230936320.3303@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909230936320.3303@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 24 Sep 2009 11:29:53 -0400
+Date: Thu, 24 Sep 2009 17:29:52 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Michal Schmidt <mschmidt@redhat.com>
+Cc: Xiaotian Feng <xtfeng@gmail.com>, linux-kernel@vger.kernel.org,
+       John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: sleeping function called from invalid context at
+ kernel/mutex.c:280
+Message-ID: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
+In-Reply-To: <20090924153319.0fa902d3@leela>
+References: <7b6bb4a50909230227h50cccb0enb02d42664dd61872@mail.gmail.com>
+	<20090924153319.0fa902d3@leela>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 09:42:41AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 21 Sep 2009, Frederik Deweerdt wrote:
-> <
-> > I'd rather wait someone picks it up for mainline inclusion. I've added
-> > your {Reported,Tested}-by tags.
-> > 
-> > The bug its vanilla 2.6.31, and should be considered for -stable inclusion.
-> > 
-> > Regards,
-> > Frederik
-> > 
-> > ----
-> > 
-> > The code introduced by commit 6e03a201bbe8137487f340d26aa662110e324b20 leads
-> > to a potential null deref. The following patch adds the proper locking
-> > around the accesses to fw_priv->fw.
-> > See http://bugzilla.kernel.org/show_bug.cgi?id=14185 for a full bug report.
-> 
-> I don't think this is correct.
-> 
-> I think you should protect the FW_STATUS_LOADING bit too, shouldn't you?
-> 
-> As it is, it does this:
-> 
-> 	if (test_bit(FW_STATUS_LOADING, &fw_priv->status)) {
-> 		mutex_lock(&fw_lock);
-> 		...
-> 		clear_bit(FW_STATUS_LOADING, &fw_priv->status);
-> 		mutex_unlock(&fw_lock);
-> 		break;
-> 	}
-> 
-> and if this code can race (which it obviously can, since your addition of 
-> fw_lock mutex matters), then I think it can race on that FW_STATUS_LOADING 
-> bit too. No?
-> 
-> So my gut feel is that the whole damn function should be protected by the 
-> mutex_lock thing. IOW, the patch would be something like the appended.
-> 
-> UNTESTED. Somebody needs to test this, verify, and send it back to me.
-> 
-> Am I missing something?
-You're right, the status must be protected too, but we would want to
-keep the check on fw_priv->fw not being NULL (patch follows).
+On Thu, 24 Sep 2009 15:33:19 +0200
+Michal Schmidt <mschmidt@redhat.com> wrote:
 
-I cannot reproduce the bug here, Lars could you please have a look ?
+> Dne Wed, 23 Sep 2009 17:27:08 +0800 Xiaotian Feng napsal(a):
+> > Hi,
+> > 
+> >     I got following messages when I resume from suspend with 2.6.31.
+> > Is there anything wrong? Thanks.
+> > 
+> > BUG: sleeping function called from invalid context at
+> > kernel/mutex.c:280 in_atomic(): 0, irqs_disabled(): 1, pid: 2473,
+> > name: pm-suspend 2 locks held by pm-suspend/2473:
+> >  #0:  (&buffer->mutex){......}, at: [<ffffffff8115ab13>]
+> > sysfs_write_file+0x3c/0x137
+> >  #1:  (pm_mutex){......}, at: [<ffffffff810865b5>]
+> > enter_state+0x39/0x130 Pid: 2473, comm: pm-suspend Not tainted 2.6.31
+> > #1 Call Trace:
+> >  [<ffffffff810792f0>] ? __debug_show_held_locks+0x22/0x24
+> >  [<ffffffff8104a2ef>] __might_sleep+0x107/0x10b
+> >  [<ffffffff8141fca9>] mutex_lock_nested+0x25/0x43
+> >  [<ffffffff81073537>] clocksource_resume+0x1c/0x60
+> >  [<ffffffff81072902>] timekeeping_resume+0x1e/0x1c8
+> >  [<ffffffff812aee62>] __sysdev_resume+0x25/0xcf
+> >  [<ffffffff812aef79>] sysdev_resume+0x6d/0xae
+> >  [<ffffffff810864f8>] suspend_devices_and_enter+0x12b/0x1af
+> >  [<ffffffff8108665b>] enter_state+0xdf/0x130
+> >  [<ffffffff81085dc3>] state_store+0xb6/0xd3
+> >  [<ffffffff81204c73>] kobj_attr_store+0x17/0x19
+> >  [<ffffffff8115abd2>] sysfs_write_file+0xfb/0x137
+> >  [<ffffffff811057d2>] vfs_write+0xae/0x10b
+> >  [<ffffffff81208392>] ? __up_read+0x1a/0x7f
+> >  [<ffffffff811058ef>] sys_write+0x4a/0x6e
+> >  [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
+> 
+> I've just noticed the same in the latest git.
+> sysdev_resume() runs with IRQs disabled, but clocksource_resume() uses
+> a mutex. Hmm, in 2.6.30 it used to be spinlock. This was changed to
+> mutex by:
+> 
+> commit 75c5158f70c065b9704b924503d96e8297838f79
+> Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Date:   Fri Aug 14 15:47:30 2009 +0200
+> 
+>     timekeeping: Update clocksource with stop_machine
+>     
+>     update_wall_time calls change_clocksource HZ times per second to
+>     check if a new clock source is available. In close to 100% of all
+>     calls there is no new clock. Replace the tick based check by an
+>     update done with stop_machine.
 
-Regards,
-Frederik
+Hmm, the spinlock to mutex conversion is necessary to make it possible
+to use stop_machine to install the new clocksource. At the same time
+clocksource_resume is called early in the resume cycle with interrupts
+disabled and may not take a mutex. Question is: does it have to? There
+shouldn't be any processes running that can change the list of
+installed clocksources. Can you test if this patch fixes the problem?
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 7376367..21ac040 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -150,13 +150,15 @@ static ssize_t firmware_loading_store(struct device *dev,
- 	int loading = simple_strtol(buf, NULL, 10);
- 	int i;
+--
+Subject: [PATCH] clocksource: resume clocksource without taking the clocksource mutex
+
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
+git commit 75c5158f70c065b9 converted the clocksource spinlock to a
+mutex. This causes the following BUG:
+
+BUG: sleeping function called from invalid context at
+kernel/mutex.c:280 in_atomic(): 0, irqs_disabled(): 1, pid: 2473,
+name: pm-suspend 2 locks held by pm-suspend/2473:
+ #0:  (&buffer->mutex){......}, at: [<ffffffff8115ab13>]
+sysfs_write_file+0x3c/0x137
+ #1:  (pm_mutex){......}, at: [<ffffffff810865b5>]
+enter_state+0x39/0x130 Pid: 2473, comm: pm-suspend Not tainted 2.6.31
+#1 Call Trace:
+ [<ffffffff810792f0>] ? __debug_show_held_locks+0x22/0x24
+ [<ffffffff8104a2ef>] __might_sleep+0x107/0x10b
+ [<ffffffff8141fca9>] mutex_lock_nested+0x25/0x43
+ [<ffffffff81073537>] clocksource_resume+0x1c/0x60
+ [<ffffffff81072902>] timekeeping_resume+0x1e/0x1c8
+ [<ffffffff812aee62>] __sysdev_resume+0x25/0xcf
+ [<ffffffff812aef79>] sysdev_resume+0x6d/0xae
+ [<ffffffff810864f8>] suspend_devices_and_enter+0x12b/0x1af
+ [<ffffffff8108665b>] enter_state+0xdf/0x130
+ [<ffffffff81085dc3>] state_store+0xb6/0xd3
+ [<ffffffff81204c73>] kobj_attr_store+0x17/0x19
+ [<ffffffff8115abd2>] sysfs_write_file+0xfb/0x137
+ [<ffffffff811057d2>] vfs_write+0xae/0x10b
+ [<ffffffff81208392>] ? __up_read+0x1a/0x7f
+ [<ffffffff811058ef>] sys_write+0x4a/0x6e
+ [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
+
+clocksource_resume is called early in the resume process, there
+is only one cpu, no processes are running and the interrupts are
+disabled. It is therefore possible to resume the clocksources
+without taking the clocksource mutex.
+
+Reported-by: Xiaotian Feng <xtfeng@gmail.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ kernel/time/clocksource.c |    4 ----
+ 1 file changed, 4 deletions(-)
+
+diff -urpN linux-2.6/kernel/time/clocksource.c linux-2.6-clocksource/kernel/time/clocksource.c
+--- linux-2.6/kernel/time/clocksource.c	2009-09-19 10:16:49.000000000 +0200
++++ linux-2.6-clocksource/kernel/time/clocksource.c	2009-09-24 17:09:09.000000000 +0200
+@@ -394,15 +394,11 @@ void clocksource_resume(void)
+ {
+ 	struct clocksource *cs;
  
-+
-+	mutex_lock(&fw_lock);
-+	if (!fw_priv->fw) {
-+		mutex_unlock(&fw_lock);
-+		return -ENODEV;
-+	}
-+
- 	switch (loading) {
- 	case 1:
--		mutex_lock(&fw_lock);
--		if (!fw_priv->fw) {
--			mutex_unlock(&fw_lock);
--			break;
--		}
- 		vfree(fw_priv->fw->data);
- 		fw_priv->fw->data = NULL;
- 		for (i = 0; i < fw_priv->nr_pages; i++)
-@@ -167,7 +169,6 @@ static ssize_t firmware_loading_store(struct device *dev,
- 		fw_priv->nr_pages = 0;
- 		fw_priv->fw->size = 0;
- 		set_bit(FW_STATUS_LOADING, &fw_priv->status);
--		mutex_unlock(&fw_lock);
- 		break;
- 	case 0:
- 		if (test_bit(FW_STATUS_LOADING, &fw_priv->status)) {
-@@ -195,6 +196,7 @@ static ssize_t firmware_loading_store(struct device *dev,
- 		fw_load_abort(fw_priv);
- 		break;
- 	}
-+	mutex_unlock(&fw_lock);
+-	mutex_lock(&clocksource_mutex);
+-
+ 	list_for_each_entry(cs, &clocksource_list, list)
+ 		if (cs->resume)
+ 			cs->resume();
  
- 	return count;
+ 	clocksource_resume_watchdog();
+-
+-	mutex_unlock(&clocksource_mutex);
  }
+ 
+ /**
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
