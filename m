@@ -1,232 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbZIXOna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753683AbZIXOnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbZIXOna (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 10:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZIXOn3
+	id S1753683AbZIXOnV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 10:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbZIXOnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 10:43:29 -0400
+	Thu, 24 Sep 2009 10:43:18 -0400
 Received: from smtp.polymtl.ca ([132.207.4.11]:48240 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753665AbZIXOnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 10:43:20 -0400
-Message-Id: <20090924133400.673442330@polymtl.ca>
+	id S1753646AbZIXOnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 10:43:15 -0400
+Message-Id: <20090924133400.830759403@polymtl.ca>
 References: <20090924132626.485545323@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Sep 2009 09:26:37 -0400
+Date: Thu, 24 Sep 2009 09:26:38 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>, Adrian Bunk <bunk@stusta.de>,
-       Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
-       akpm@osdl.org
-Subject: [patch 11/12] Scheduler Profiling - Use Immediate Values
-Content-Disposition: inline; filename=scheduler-profiling-use-immediate-values.patch
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [patch 12/12] Tracepoints - Immediate Values
+Content-Disposition: inline; filename=tracepoints-immediate-values.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu, 24 Sep 2009 14:07:33 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use immediate values with lower d-cache hit in optimized version as a
-condition for scheduler profiling call.
-
-Changelog :
-- Use imv_* instead of immediate_*.
-- Follow the white rabbit : kvm_main.c which becomes x86.c.
+Use immediate values in tracepoints.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Adrian Bunk <bunk@stusta.de>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: mingo@elte.hu
-CC: akpm@osdl.org
+CC: 'Peter Zijlstra' <peterz@infradead.org>
+CC: "Frank Ch. Eigler" <fche@redhat.com>
+CC: 'Ingo Molnar' <mingo@elte.hu>
+CC: 'Hideo AOKI' <haoki@redhat.com>
+CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
+CC: 'Steven Rostedt' <rostedt@goodmis.org>
 ---
- arch/x86/kvm/x86.c      |    2 +-
- include/linux/profile.h |    5 +++--
- kernel/ksysfs.c         |    4 ++--
- kernel/profile.c        |   22 +++++++++++-----------
- kernel/sched_fair.c     |    7 ++-----
- 5 files changed, 19 insertions(+), 21 deletions(-)
+ include/linux/tracepoint.h |   33 +++++++++++++++++++++++++++------
+ kernel/tracepoint.c        |   14 +++++++++-----
+ 2 files changed, 36 insertions(+), 11 deletions(-)
 
-Index: linux.trees.git/kernel/profile.c
+Index: linux.trees.git/include/linux/tracepoint.h
 ===================================================================
---- linux.trees.git.orig/kernel/profile.c	2009-09-24 08:52:55.000000000 -0400
-+++ linux.trees.git/kernel/profile.c	2009-09-24 09:03:02.000000000 -0400
-@@ -42,8 +42,8 @@ static int (*timer_hook)(struct pt_regs 
- static atomic_t *prof_buffer;
- static unsigned long prof_len, prof_shift;
+--- linux.trees.git.orig/include/linux/tracepoint.h	2009-09-24 08:52:55.000000000 -0400
++++ linux.trees.git/include/linux/tracepoint.h	2009-09-24 09:05:29.000000000 -0400
+@@ -14,6 +14,7 @@
+  * See the file COPYING for more details.
+  */
  
--int prof_on __read_mostly;
--EXPORT_SYMBOL_GPL(prof_on);
-+DEFINE_IMV(char, prof_on) __read_mostly;
-+EXPORT_IMV_SYMBOL_GPL(prof_on);
++#include <linux/immediate.h>
+ #include <linux/types.h>
+ #include <linux/rcupdate.h>
  
- static cpumask_var_t prof_cpu_mask;
- #ifdef CONFIG_SMP
-@@ -61,7 +61,7 @@ int profile_setup(char *str)
+@@ -22,7 +23,7 @@ struct tracepoint;
  
- 	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
- #ifdef CONFIG_SCHEDSTATS
--		prof_on = SLEEP_PROFILING;
-+		imv_set(prof_on, SLEEP_PROFILING);
- 		if (str[strlen(sleepstr)] == ',')
- 			str += strlen(sleepstr) + 1;
- 		if (get_option(&str, &par))
-@@ -74,7 +74,7 @@ int profile_setup(char *str)
- 			"kernel sleep profiling requires CONFIG_SCHEDSTATS\n");
- #endif /* CONFIG_SCHEDSTATS */
- 	} else if (!strncmp(str, schedstr, strlen(schedstr))) {
--		prof_on = SCHED_PROFILING;
-+		imv_set(prof_on, SCHED_PROFILING);
- 		if (str[strlen(schedstr)] == ',')
- 			str += strlen(schedstr) + 1;
- 		if (get_option(&str, &par))
-@@ -83,7 +83,7 @@ int profile_setup(char *str)
- 			"kernel schedule profiling enabled (shift: %ld)\n",
- 			prof_shift);
- 	} else if (!strncmp(str, kvmstr, strlen(kvmstr))) {
--		prof_on = KVM_PROFILING;
-+		imv_set(prof_on, KVM_PROFILING);
- 		if (str[strlen(kvmstr)] == ',')
- 			str += strlen(kvmstr) + 1;
- 		if (get_option(&str, &par))
-@@ -93,7 +93,7 @@ int profile_setup(char *str)
- 			prof_shift);
- 	} else if (get_option(&str, &par)) {
- 		prof_shift = par;
--		prof_on = CPU_PROFILING;
-+		imv_set(prof_on, CPU_PROFILING);
- 		printk(KERN_INFO "kernel profiling enabled (shift: %ld)\n",
- 			prof_shift);
- 	}
-@@ -105,7 +105,7 @@ __setup("profile=", profile_setup);
- int __ref profile_init(void)
- {
- 	int buffer_bytes;
--	if (!prof_on)
-+	if (!_imv_read(prof_on))
- 		return 0;
+ struct tracepoint {
+ 	const char *name;		/* Tracepoint name */
+-	int state;			/* State. */
++	DEFINE_IMV(char, state);	/* State. */
+ 	void (*regfunc)(void);
+ 	void (*unregfunc)(void);
+ 	void **funcs;
+@@ -58,18 +59,38 @@ struct tracepoint {
+ 		rcu_read_unlock_sched_notrace();			\
+ 	} while (0)
  
- 	/* only text is profiled */
-@@ -309,7 +309,7 @@ void profile_hits(int type, void *__pc, 
- 	int i, j, cpu;
- 	struct profile_hit *hits;
++#define __CHECK_TRACE(name, generic, proto, args)			\
++	do {								\
++		if (!generic) {						\
++			if (unlikely(imv_read(__tracepoint_##name.state))) \
++				__DO_TRACE(&__tracepoint_##name,	\
++					TP_PROTO(proto), TP_ARGS(args));\
++		} else {						\
++			if (unlikely(_imv_read(__tracepoint_##name.state))) \
++				__DO_TRACE(&__tracepoint_##name,	\
++					TP_PROTO(proto), TP_ARGS(args));\
++		}							\
++	} while (0)
++
+ /*
+  * Make sure the alignment of the structure in the __tracepoints section will
+  * not add unwanted padding between the beginning of the section and the
+  * structure. Force alignment to the same alignment as the section start.
++ *
++ * The "generic" argument, passed to the declared __trace_##name inline
++ * function controls which tracepoint enabling mechanism must be used.
++ * If generic is true, a variable read is used.
++ * If generic is false, immediate values are used.
+  */
+ #define DECLARE_TRACE(name, proto, args)				\
+ 	extern struct tracepoint __tracepoint_##name;			\
+ 	static inline void trace_##name(proto)				\
+ 	{								\
+-		if (unlikely(__tracepoint_##name.state))		\
+-			__DO_TRACE(&__tracepoint_##name,		\
+-				TP_PROTO(proto), TP_ARGS(args));	\
++		__CHECK_TRACE(name, 0, TP_PROTO(proto), TP_ARGS(args));	\
++	}								\
++	static inline void _trace_##name(proto)				\
++	{								\
++		__CHECK_TRACE(name, 1, TP_PROTO(proto), TP_ARGS(args));	\
+ 	}								\
+ 	static inline int register_trace_##name(void (*probe)(proto))	\
+ 	{								\
+@@ -101,10 +122,10 @@ extern void tracepoint_update_probe_rang
  
--	if (prof_on != type || !prof_buffer)
-+	if (!prof_buffer)
- 		return;
- 	pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
- 	i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
-@@ -421,7 +421,7 @@ void profile_hits(int type, void *__pc, 
- {
- 	unsigned long pc;
- 
--	if (prof_on != type || !prof_buffer)
-+	if (!prof_buffer)
- 		return;
- 	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
- 	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
-@@ -585,7 +585,7 @@ static int create_hash_tables(void)
- 	}
- 	return 0;
- out_cleanup:
--	prof_on = 0;
-+	imv_set(prof_on, 0);
- 	smp_mb();
- 	on_each_cpu(profile_nop, NULL, 1);
- 	for_each_online_cpu(cpu) {
-@@ -612,7 +612,7 @@ int __ref create_proc_profile(void) /* f
- {
- 	struct proc_dir_entry *entry;
- 
--	if (!prof_on)
-+	if (!_imv_read(prof_on))
- 		return 0;
- 	if (create_hash_tables())
- 		return -ENOMEM;
-Index: linux.trees.git/include/linux/profile.h
+ #else /* !CONFIG_TRACEPOINTS */
+ #define DECLARE_TRACE(name, proto, args)				\
+-	static inline void _do_trace_##name(struct tracepoint *tp, proto) \
+-	{ }								\
+ 	static inline void trace_##name(proto)				\
+ 	{ }								\
++	static inline void _trace_##name(proto)				\
++	{ }								\
+ 	static inline int register_trace_##name(void (*probe)(proto))	\
+ 	{								\
+ 		return -ENOSYS;						\
+Index: linux.trees.git/kernel/tracepoint.c
 ===================================================================
---- linux.trees.git.orig/include/linux/profile.h	2008-10-30 20:22:52.000000000 -0400
-+++ linux.trees.git/include/linux/profile.h	2009-09-24 09:03:02.000000000 -0400
-@@ -5,6 +5,7 @@
- #include <linux/init.h>
- #include <linux/cpumask.h>
- #include <linux/cache.h>
+--- linux.trees.git.orig/kernel/tracepoint.c	2009-09-24 08:52:55.000000000 -0400
++++ linux.trees.git/kernel/tracepoint.c	2009-09-24 09:11:13.000000000 -0400
+@@ -25,6 +25,7 @@
+ #include <linux/err.h>
+ #include <linux/slab.h>
+ #include <linux/sched.h>
 +#include <linux/immediate.h>
  
- #include <asm/errno.h>
+ extern struct tracepoint __start___tracepoints[];
+ extern struct tracepoint __stop___tracepoints[];
+@@ -243,9 +244,9 @@ static void set_tracepoint(struct tracep
+ {
+ 	WARN_ON(strcmp((*entry)->name, elem->name) != 0);
  
-@@ -38,7 +39,7 @@ enum profile_type {
+-	if (elem->regfunc && !elem->state && active)
++	if (elem->regfunc && !_imv_read(elem->state) && active)
+ 		elem->regfunc();
+-	else if (elem->unregfunc && elem->state && !active)
++	else if (elem->unregfunc && _imv_read(elem->state) && !active)
+ 		elem->unregfunc();
  
- #ifdef CONFIG_PROFILING
- 
--extern int prof_on __read_mostly;
-+DECLARE_IMV(char, prof_on) __read_mostly;
- 
- /* init basic kernel profiler */
- int profile_init(void);
-@@ -58,7 +59,7 @@ static inline void profile_hit(int type,
  	/*
- 	 * Speedup for the common (no profiling enabled) case:
+@@ -256,7 +257,7 @@ static void set_tracepoint(struct tracep
+ 	 * is used.
  	 */
--	if (unlikely(prof_on == type))
-+	if (unlikely(imv_read(prof_on) == type))
- 		profile_hits(type, ip, 1);
+ 	rcu_assign_pointer(elem->funcs, (*entry)->funcs);
+-	elem->state = active;
++	elem->state__imv = active;
  }
  
-Index: linux.trees.git/kernel/sched_fair.c
-===================================================================
---- linux.trees.git.orig/kernel/sched_fair.c	2009-09-24 08:52:55.000000000 -0400
-+++ linux.trees.git/kernel/sched_fair.c	2009-09-24 09:03:56.000000000 -0400
-@@ -672,11 +672,8 @@ static void enqueue_sleeper(struct cfs_r
- 			 * 20 to get a milliseconds-range estimation of the
- 			 * amount of time that the task spent sleeping:
- 			 */
--			if (unlikely(prof_on == SLEEP_PROFILING)) {
--				profile_hits(SLEEP_PROFILING,
--						(void *)get_wchan(tsk),
--						delta >> 20);
--			}
-+			profile_hits(SLEEP_PROFILING, (void *)get_wchan(tsk),
-+				     delta >> 20);
- 			account_scheduler_latency(tsk, delta >> 10, 0);
- 		}
- 	}
-Index: linux.trees.git/arch/x86/kvm/x86.c
-===================================================================
---- linux.trees.git.orig/arch/x86/kvm/x86.c	2009-09-24 08:52:42.000000000 -0400
-+++ linux.trees.git/arch/x86/kvm/x86.c	2009-09-24 09:03:02.000000000 -0400
-@@ -3672,7 +3672,7 @@ static int vcpu_enter_guest(struct kvm_v
- 	/*
- 	 * Profile KVM exit RIPs:
- 	 */
--	if (unlikely(prof_on == KVM_PROFILING)) {
-+	if (unlikely(imv_read(prof_on) == KVM_PROFILING)) {
- 		unsigned long rip = kvm_rip_read(vcpu);
- 		profile_hit(KVM_PROFILING, (void *)rip);
- 	}
-Index: linux.trees.git/kernel/ksysfs.c
-===================================================================
---- linux.trees.git.orig/kernel/ksysfs.c	2009-03-06 13:29:01.000000000 -0500
-+++ linux.trees.git/kernel/ksysfs.c	2009-09-24 09:03:02.000000000 -0400
-@@ -58,7 +58,7 @@ KERNEL_ATTR_RW(uevent_helper);
- static ssize_t profiling_show(struct kobject *kobj,
- 				  struct kobj_attribute *attr, char *buf)
+ /*
+@@ -267,10 +268,10 @@ static void set_tracepoint(struct tracep
+  */
+ static void disable_tracepoint(struct tracepoint *elem)
  {
--	return sprintf(buf, "%d\n", prof_on);
-+	return sprintf(buf, "%d\n", _imv_read(prof_on));
- }
- static ssize_t profiling_store(struct kobject *kobj,
- 				   struct kobj_attribute *attr,
-@@ -66,7 +66,7 @@ static ssize_t profiling_store(struct ko
- {
- 	int ret;
+-	if (elem->unregfunc && elem->state)
++	if (elem->unregfunc && _imv_read(elem->state))
+ 		elem->unregfunc();
  
--	if (prof_on)
-+	if (_imv_read(prof_on))
- 		return -EEXIST;
- 	/*
- 	 * This eventually calls into get_option() which
+-	elem->state = 0;
++	elem->state__imv = 0;
+ 	rcu_assign_pointer(elem->funcs, NULL);
+ }
+ 
+@@ -313,6 +314,9 @@ static void tracepoint_update_probes(voi
+ 		__stop___tracepoints);
+ 	/* tracepoints in modules. */
+ 	module_update_tracepoints();
++	/* Update immediate values */
++	core_imv_update();
++	module_imv_update();
+ }
+ 
+ static void *tracepoint_add_probe(const char *name, void *probe)
 
 -- 
 Mathieu Desnoyers
