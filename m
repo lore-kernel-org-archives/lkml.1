@@ -1,125 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751749AbZIXKCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbZIXKCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751749AbZIXKCT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 06:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZIXKCQ
+	id S1751838AbZIXKCq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 06:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZIXKCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 06:02:16 -0400
-Received: from mga14.intel.com ([143.182.124.37]:47855 "EHLO mga14.intel.com"
+	Thu, 24 Sep 2009 06:02:43 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:17821 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbZIXKCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 06:02:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,444,1249282800"; 
-   d="scan'208";a="191146723"
-Date: Thu, 24 Sep 2009 18:01:36 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Li, Shaohua" <shaohua.li@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>, linux-fsdevel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [RFC] page-writeback: move indoes from one superblock together
-Message-ID: <20090924100136.GA25778@localhost>
-References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com>
+	id S1751206AbZIXKCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 06:02:42 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] HugeTLB: Fix unused variable warning
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: ebmunson@us.ibm.com, rientjes@google.com, dhowells@redhat.com,
+       linux-kernel@vger.kernel.org
+Date: Thu, 24 Sep 2009 11:02:32 +0100
+Message-ID: <20090924100232.19291.70594.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253775260.10618.10.camel@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
-> __mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
-> several partitions, writeback might keep spindle moving between partitions.
-> To reduce the move, better write big chunk of one partition and then move to
-> another. Inodes from one fs usually are in one partion, so idealy move indoes
-> from one fs together should reduce spindle move. This patch tries to address
-> this. Before per-bdi writeback is added, the behavior is write indoes
-> from one fs first and then another, so the patch restores previous behavior.
-> The loop in the patch is a bit ugly, should we add a dirty list for each
-> superblock in bdi_writeback?
-> 
-> Test in a two partition disk with attached fio script shows about 3% ~ 6%
-> improvement.
+Fix an unused variable warning:
 
-A side note: given the noticeable performance gain, I wonder if it
-deserves to generalize the idea to do whole disk location ordered
-writeback. That should benefit many small file workloads more than
-10%. Because this patch only sorted 2 partitions and inodes in 5s
-time window, while the below patch will roughly divide the disk into
-5 areas and sort inodes in a larger 25s time window.
+	mm/mmap.c: In function 'do_mmap_pgoff':
+	mm/mmap.c:953: warning: unused variable 'user'
 
-        http://lkml.org/lkml/2007/8/27/45
+by converting the CONFIG_HUGETLBFS=n version of hugetlb_file_setup() into an
+inline function instead of a macro.
 
-Judging from this old patch, the complexity cost would be about 250
-lines of code (need a rbtree).
+Introduced by:
 
-Thanks,
-Fengguang
+	commit 4e52780d41a741fb4861ae1df2413dd816ec11b1
+	Author: Eric B Munson <ebmunson@us.ibm.com>
+	Date:   Mon Sep 21 17:03:47 2009 -0700
+	hugetlb: add MAP_HUGETLB for mmaping pseudo-anonymous huge page regions
 
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> 
-> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> index 8e1e5e1..fc87730 100644
-> --- a/fs/fs-writeback.c
-> +++ b/fs/fs-writeback.c
-> @@ -324,13 +324,29 @@ static void move_expired_inodes(struct list_head *delaying_queue,
->  			       struct list_head *dispatch_queue,
->  				unsigned long *older_than_this)
->  {
-> +	LIST_HEAD(tmp);
-> +	struct list_head *pos, *node;
-> +	struct super_block *sb;
-> +	struct inode *inode;
-> +
->  	while (!list_empty(delaying_queue)) {
-> -		struct inode *inode = list_entry(delaying_queue->prev,
-> -						struct inode, i_list);
-> +		inode = list_entry(delaying_queue->prev, struct inode, i_list);
->  		if (older_than_this &&
->  		    inode_dirtied_after(inode, *older_than_this))
->  			break;
-> -		list_move(&inode->i_list, dispatch_queue);
-> +		list_move(&inode->i_list, &tmp);
-> +	}
-> +
-> +	/* Move indoes from one superblock together */
-> +	while (!list_empty(&tmp)) {
-> +		inode = list_entry(tmp.prev, struct inode, i_list);
-> +		sb = inode->i_sb;
-> +		list_for_each_prev_safe(pos, node, &tmp) {
-> +			struct inode *inode = list_entry(pos,
-> +				struct inode, i_list);
-> +			if (inode->i_sb == sb)
-> +				list_move(&inode->i_list, dispatch_queue);
-> +		}
->  	}
->  }
->  
-> 
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Content-Description: newfio
-> [global]
-> runtime=120
-> ioscheduler=cfq
-> size=2G
-> ioengine=sync
-> rw=write
-> file_service_type=random:256
-> overwrite=1
-> 
-> [sdb1]
-> directory=/mnt/b1
-> nrfiles=10
-> numjobs=4
-> 
-> [sdb2]
-> directory=/mnt/b2
-> nrfiles=10
-> numjobs=4
+ include/linux/hugetlb.h |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 176e7ee..c5d3111 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -3,6 +3,8 @@
+ 
+ #include <linux/fs.h>
+ 
++struct user_struct;
++
+ #ifdef CONFIG_HUGETLB_PAGE
+ 
+ #include <linux/mempolicy.h>
+@@ -10,7 +12,6 @@
+ #include <asm/tlbflush.h>
+ 
+ struct ctl_table;
+-struct user_struct;
+ 
+ int PageHuge(struct page *page);
+ 
+@@ -187,7 +188,13 @@ static inline void set_file_hugepages(struct file *file)
+ 
+ #define is_file_hugepages(file)			0
+ #define set_file_hugepages(file)		BUG()
+-#define hugetlb_file_setup(name,size,acct,user,creat)	ERR_PTR(-ENOSYS)
++
++static inline
++struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag,
++				struct user_struct **user, int creat_flags)
++{
++ 	return ERR_PTR(-ENOSYS);
++}
+ 
+ #endif /* !CONFIG_HUGETLBFS */
+ 
 
