@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbZIXNh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbZIXNj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752654AbZIXNh3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 09:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZIXNh2
+	id S1752606AbZIXNj1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 09:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbZIXNj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 09:37:28 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:51912 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175AbZIXNh1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 09:37:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=HUco4QvZK7A4IpdNs16PMI3vWn+kpAHOfLFR3NB7w55NQwTW5o1UenSNNfOHZM3/ka
-         RP4tB8QHEBP2PlYA8SyUxnTXI2r4nn2CVNc8XvQUaLaceNq1Qc4+0BUZOb9QafQeQz+T
-         Qw0dWZD5Rd2Yqn2F40XKbhRQDIP8XPafNh4C8=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH next] cciss: fix build when !PROC_FS
-Date: Thu, 24 Sep 2009 17:37:19 +0400
-Message-Id: <1253799439-7206-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.5.rc1
+	Thu, 24 Sep 2009 09:39:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53766 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752105AbZIXNj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 09:39:26 -0400
+Subject: [PATCH] sched: fix htmldocs sched.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 19:08:50 +0530
+Message-Id: <1253799530.10654.7.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix these build errors when CONFIG_PROC_FS is not set:
-drivers/block/cciss.c: In function 'cciss_show_raid_level':
-drivers/block/cciss.c:623: error: 'RAID_UNKNOWN' undeclared (first use in this function)
-drivers/block/cciss.c:626: error: 'raid_label' undeclared (first use in this function)
-drivers/block/cciss.c: In function 'cciss_geometry_inquiry':
-drivers/block/cciss.c:2696: error: 'RAID_UNKNOWN' undeclared (first use in this function)
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+fix the following htmldocs warnings:
+
+  Warning(kernel/sched.c:685): No description found for parameter 'cpu'
+  Warning(kernel/sched.c:3676): No description found for parameter 'sd'
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/block/cciss.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ kernel/sched.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 4d879b7..78852b1 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -256,6 +256,11 @@ static inline void removeQ(CommandList_struct *c)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 2f76e06..f0d1375 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -676,6 +676,7 @@ inline void update_rq_clock(struct rq *rq)
  
- #include "cciss_scsi.c"		/* For SCSI tape support */
+ /**
+  * runqueue_is_locked
++ * @cpu: the processor in question.
+  *
+  * Returns true if the current cpu runqueue is locked.
+  * This interface allows printk to be called with the runqueue lock
+@@ -3658,6 +3659,7 @@ static void update_group_power(struct sched_domain *sd, int cpu)
  
-+static const char *raid_label[] = { "0", "4", "1(1+0)", "5", "5+1", "ADG",
-+	"UNKNOWN"
-+};
-+#define RAID_UNKNOWN (sizeof(raid_label) / sizeof(raid_label[0])-1)
-+
- #ifdef CONFIG_PROC_FS
- 
- /*
-@@ -264,10 +269,6 @@ static inline void removeQ(CommandList_struct *c)
- #define ENG_GIG 1000000000
- #define ENG_GIG_FACTOR (ENG_GIG/512)
- #define ENGAGE_SCSI	"engage scsi"
--static const char *raid_label[] = { "0", "4", "1(1+0)", "5", "5+1", "ADG",
--	"UNKNOWN"
--};
--#define RAID_UNKNOWN (sizeof(raid_label) / sizeof(raid_label[0])-1)
- 
- static struct proc_dir_entry *proc_cciss;
- 
+ /**
+  * update_sg_lb_stats - Update sched_group's statistics for load balancing.
++ * @sd: The sched_domain whose statistics are to be updated.
+  * @group: sched_group whose statistics are to be updated.
+  * @this_cpu: Cpu for which load balance is currently performed.
+  * @idle: Idle status of this_cpu
 -- 
-1.6.5.rc1
+1.6.0.6
+
 
