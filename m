@@ -1,73 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZIXDbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZIXDcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbZIXDbX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 23:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZIXDbV
+	id S1752936AbZIXDcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 23:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZIXDcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 23:31:21 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:30990 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 23:32:19 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:17240 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbZIXDbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 23:31:20 -0400
+	id S1752712AbZIXDbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 23:31:22 -0400
 From: Zachary Amsden <zamsden@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Zachary Amsden <zamsden@redhat.com>,
        Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [PATCH: kvm 1/6] Code motion.  Separate timer intialization into an indepedent function.
-Date: Wed, 23 Sep 2009 17:29:00 -1000
-Message-Id: <1253762945-5750-1-git-send-email-zamsden@redhat.com>
+Subject: [PATCH: kvm 2/6] Kill the confusing tsc_ref_khz and ref_freq variables.
+Date: Wed, 23 Sep 2009 17:29:01 -1000
+Message-Id: <1253762945-5750-2-git-send-email-zamsden@redhat.com>
+In-Reply-To: <1253762945-5750-1-git-send-email-zamsden@redhat.com>
+References: <1253762945-5750-1-git-send-email-zamsden@redhat.com>
 Organization: Frobozz Magic Timekeeping Company
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+They are globals, not clearly protected by any ordering or locking, and
+vulnerable to various startup races.
+
+Instead, for variable TSC machines, register the cpufreq notifier and get
+the TSC frequency directly from the cpufreq machinery.  Not only is it
+always right, it is also perfectly accurate, as no error prone measurement
+is required.  On such machines, also detect the frequency when bringing
+a new CPU online; it isn't clear what frequency it will start with, and
+it may not correspond to the reference.
+
 Signed-off-by: Zachary Amsden <zamsden@redhat.com>
 ---
- arch/x86/kvm/x86.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+ arch/x86/kvm/x86.c |   38 ++++++++++++++++++++++++++++----------
+ 1 files changed, 28 insertions(+), 10 deletions(-)
 
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index fedac9d..15d2ace 100644
+index 15d2ace..35082dd 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -3116,9 +3116,22 @@ static struct notifier_block kvmclock_cpufreq_notifier_block = {
-         .notifier_call  = kvmclock_cpufreq_notifier
- };
+@@ -650,6 +650,19 @@ static void kvm_set_time_scale(uint32_t tsc_khz, struct pvclock_vcpu_time_info *
  
-+static void kvm_timer_init(void)
+ static DEFINE_PER_CPU(unsigned long, cpu_tsc_khz);
+ 
++static inline void kvm_get_cpu_khz(int cpu)
 +{
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu)
-+		per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
-+	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
-+		tsc_khz_ref = tsc_khz;
-+		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
-+					  CPUFREQ_TRANSITION_NOTIFIER);
++	unsigned int khz = cpufreq_get(cpu);
++	if (khz <= 0) {
++		static int warn = 0;
++		if (warn++ < 10)
++			printk(KERN_ERR "kvm: could not get frequency for CPU "
++				        "%d.  Timers may be inaccurate\n", cpu);
++		khz = tsc_khz;
 +	}
++	per_cpu(cpu_tsc_khz, cpu) = khz;
 +}
 +
- int kvm_arch_init(void *opaque)
+ static void kvm_write_guest_time(struct kvm_vcpu *v)
  {
--	int r, cpu;
-+	int r;
- 	struct kvm_x86_ops *ops = (struct kvm_x86_ops *)opaque;
+ 	struct timespec ts;
+@@ -3061,9 +3074,6 @@ static void bounce_off(void *info)
+ 	/* nothing */
+ }
  
- 	if (kvm_x86_ops) {
-@@ -3150,13 +3163,7 @@ int kvm_arch_init(void *opaque)
- 	kvm_mmu_set_mask_ptes(PT_USER_MASK, PT_ACCESSED_MASK,
- 			PT_DIRTY_MASK, PT64_NX_MASK, 0);
+-static unsigned int  ref_freq;
+-static unsigned long tsc_khz_ref;
+-
+ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 				     void *data)
+ {
+@@ -3071,15 +3081,15 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+ 	struct kvm *kvm;
+ 	struct kvm_vcpu *vcpu;
+ 	int i, send_ipi = 0;
+-
+-	if (!ref_freq)
+-		ref_freq = freq->old;
++	unsigned long old_khz;
+ 
+ 	if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
+ 		return 0;
+ 	if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
+ 		return 0;
+-	per_cpu(cpu_tsc_khz, freq->cpu) = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
++	old_khz = per_cpu(cpu_tsc_khz, freq->cpu);
++	per_cpu(cpu_tsc_khz, freq->cpu) = cpufreq_scale(old_khz, freq->old,
++							freq->new);
+ 
+ 	spin_lock(&kvm_lock);
+ 	list_for_each_entry(kvm, &vm_list, vm_list) {
+@@ -3120,12 +3130,18 @@ static void kvm_timer_init(void)
+ {
+ 	int cpu;
  
 -	for_each_possible_cpu(cpu)
 -		per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
--	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
+ 	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
 -		tsc_khz_ref = tsc_khz;
--		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
--					  CPUFREQ_TRANSITION_NOTIFIER);
--	}
-+	kvm_timer_init();
+ 		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
+ 					  CPUFREQ_TRANSITION_NOTIFIER);
++		for_each_online_cpu(cpu)
++			kvm_get_cpu_khz(cpu);
++	} else {
++		for_each_possible_cpu(cpu)
++			per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
++	}
++	for_each_possible_cpu(cpu) {
++		printk(KERN_DEBUG "kvm: cpu %d = %ld khz\n",
++			cpu, per_cpu(cpu_tsc_khz, cpu));
+ 	}
+ }
  
- 	return 0;
+@@ -4698,6 +4714,8 @@ int kvm_arch_vcpu_reset(struct kvm_vcpu *vcpu)
+ 
+ int kvm_arch_hardware_enable(void *garbage)
+ {
++	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
++		kvm_get_cpu_khz(raw_smp_processor_id());
+ 	return kvm_x86_ops->hardware_enable(garbage);
+ }
  
 -- 
 1.6.4.4
