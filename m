@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZIXTLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZIXTOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbZIXTLw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 15:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZIXTLv
+	id S1753800AbZIXTOI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 15:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZIXTOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 15:11:51 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:50937 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753767AbZIXTLu (ORCPT
+	Thu, 24 Sep 2009 15:14:05 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:58986 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753006AbZIXTOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 15:11:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=XK1/ja7s/EAAR3shsP22ZMY0y/9u9B5DlXHJeeA1Q0CiLWCA4MPc5CYGmQzwzHcvBK
-         1l8x9GpQojw4k8Gs0nUDX5oJPXERpnlHijRc17bL63+8w+2MWkjqt3MI6xngOCtNMOKL
-         cfb9CwD/EsKvHGdEMmuOwBv5Q4qfKWP8F7HwU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: disk speed regression kernel 2.6.29 and after
-Date: Thu, 24 Sep 2009 21:12:30 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-07381-g7fa0772-dirty; KDE/4.3.1; i686; ; )
-Cc: whansard@sbcglobal.net, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, David Miller <davem@davemloft.net>
-References: <4ABA0FDA.9090707@sbcglobal.net> <200909241934.27472.bzolnier@gmail.com> <200909242011.20032.elendil@planet.nl>
-In-Reply-To: <200909242011.20032.elendil@planet.nl>
+	Thu, 24 Sep 2009 15:14:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANxhu0qrR7O6/2dsb2JhbAC/MIhTAZALBYQc
+X-IronPort-AV: E=Sophos;i="4.44,446,1249257600"; 
+   d="scan'208";a="395465384"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Woodhouse <David.Woodhouse@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] intel-iommu: Decode (and ignore) RHSA entries
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 24 Sep 2009 12:14:00 -0700
+Message-ID: <adafxac17gn.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Message-Id: <200909242112.30247.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 24 Sep 2009 19:14:01.0306 (UTC) FILETIME=[2C9193A0:01CA3D4B]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 September 2009 20:11:18 Frans Pop wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > Regarding additional pursue of the root cause, I think that it is not
-> > worth the effort currently since there were no other reports about
-> > similar problems and libata is a better solution on most modern systems
-> > anyway. 
-> 
-> I'm surprised at this, especially if the commit Will bisected it to [1] is 
-> the culprit. That is a change in generic ide code and could thus very well 
-> affect other users too.
-> 
-> This is a clear regression and IMHO, if it is confirmed that that commit is 
-> the cause of the regression, it should be fixed. And if not, it could 
-> still be worthwhile to track down which commit is the cause.
+I recently got a system where the DMAR table included a couple of RHSA
+(remapping hardware static affinity) entries.  Rather than printing a
+message about an "Unknown DMAR structure," it would probably be more
+useful to dump the RHSA structure (as other DMAR structures are dumped).
 
-If somebody would like to do it please go ahead.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ drivers/pci/dmar.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-Unfortunately I have absolutely no time to work on IDE anymore as I have
-moved on other projects so unless the issue have no known solution/workaround
-(this one has such) I'm rather reluctant to pick it up as there is a plenty
-of more higher-prio kernel wide issues (including things like mm regressions)
-to fix.
-
-> As for the lack of other reports, that could very well simply be because:
-> 1) there are not that many users of IDE drivers anymore
-> 2) most users don't really consciously watch their disk speed
-
-or more likely:
-
-3) the issue is highly configuration dependent and not worth the hassle
-   given the known solution/workaround
-
-> As long as the IDE code is in mainline, I don't see why regressions should 
-> be ignored. Adding the ide list and David to CC for other opinions.
-
-BTW Please always Cc: David first on all IDE issues as he is the main IDE
-slave now and the transition period is long over.
+diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+index 14bbaa1..b233163 100644
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -354,6 +354,7 @@ dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
+ 	struct acpi_dmar_hardware_unit *drhd;
+ 	struct acpi_dmar_reserved_memory *rmrr;
+ 	struct acpi_dmar_atsr *atsr;
++	struct acpi_dmar_rhsa *rhsa;
+ 
+ 	switch (header->type) {
+ 	case ACPI_DMAR_TYPE_HARDWARE_UNIT:
+@@ -375,6 +376,12 @@ dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
+ 		atsr = container_of(header, struct acpi_dmar_atsr, header);
+ 		printk(KERN_INFO PREFIX "ATSR flags: %#x\n", atsr->flags);
+ 		break;
++	case ACPI_DMAR_HARDWARE_AFFINITY:
++		rhsa = container_of(header, struct acpi_dmar_rhsa, header);
++		printk(KERN_INFO PREFIX "RHSA base: %#016Lx proximity domain: %#x\n",
++		       (unsigned long long)rhsa->base_address,
++		       rhsa->proximity_domain);
++		break;
+ 	}
+ }
+ 
+@@ -459,6 +466,9 @@ parse_dmar_table(void)
+ 			ret = dmar_parse_one_atsr(entry_header);
+ #endif
+ 			break;
++		case ACPI_DMAR_HARDWARE_AFFINITY:
++			/* We don't do anything with RHSA (yet?) */
++			break;
+ 		default:
+ 			printk(KERN_WARNING PREFIX
+ 				"Unknown DMAR structure type\n");
