@@ -1,65 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbZIXMfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbZIXMjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753013AbZIXMfV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 08:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZIXMfS
+	id S1752659AbZIXMjh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 08:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZIXMjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 08:35:18 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45188 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752486AbZIXMfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 08:35:16 -0400
-Date: Thu, 24 Sep 2009 14:35:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "Li, Shaohua" <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>, linux-fsdevel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [RFC] page-writeback: move indoes from one superblock together
-Message-ID: <20090924123519.GF23126@kernel.dk>
-References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924100136.GA25778@localhost>
+	Thu, 24 Sep 2009 08:39:36 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:37280 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751832AbZIXMjf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 08:39:35 -0400
+X-Trace: 261992675/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.50.151/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.50.151
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqIEAMsEu0pPRTKX/2dsb2JhbACBUtUEhBsFgks
+X-IronPort-AV: E=Sophos;i="4.44,445,1249254000"; 
+   d="scan'208";a="261992675"
+Date: Thu, 24 Sep 2009 13:39:33 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Izik Eidus <ieidus@redhat.com>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, davem@redhat.com, aarcange@redhat.com,
+       gleb@redhat.com
+Subject: Re: update_mmu_cache() when write protecting pte.
+In-Reply-To: <20090923232221.1d566a5c@woof.woof>
+Message-ID: <Pine.LNX.4.64.0909241310350.9528@sister.anvils>
+References: <20090923232221.1d566a5c@woof.woof>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924100136.GA25778@localhost>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24 2009, Wu Fengguang wrote:
-> On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
-> > __mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
-> > several partitions, writeback might keep spindle moving between partitions.
-> > To reduce the move, better write big chunk of one partition and then move to
-> > another. Inodes from one fs usually are in one partion, so idealy move indoes
-> > from one fs together should reduce spindle move. This patch tries to address
-> > this. Before per-bdi writeback is added, the behavior is write indoes
-> > from one fs first and then another, so the patch restores previous behavior.
-> > The loop in the patch is a bit ugly, should we add a dirty list for each
-> > superblock in bdi_writeback?
-> > 
-> > Test in a two partition disk with attached fio script shows about 3% ~ 6%
-> > improvement.
-> 
-> A side note: given the noticeable performance gain, I wonder if it
-> deserves to generalize the idea to do whole disk location ordered
-> writeback. That should benefit many small file workloads more than
-> 10%. Because this patch only sorted 2 partitions and inodes in 5s
-> time window, while the below patch will roughly divide the disk into
-> 5 areas and sort inodes in a larger 25s time window.
-> 
->         http://lkml.org/lkml/2007/8/27/45
-> 
-> Judging from this old patch, the complexity cost would be about 250
-> lines of code (need a rbtree).
+Added linux-arch to Cc list.
 
-First of all, nice patch, I'll add it to the current tree. I too was
-pondering using an rbtree for sb+dirty_time insertion and extraction.
-But for 100 inodes or less, I bet that just doing the re-sort in
-writeback time ends up being cheaper on the CPU cycle side.
+On Wed, 23 Sep 2009, Izik Eidus wrote:
 
--- 
-Jens Axboe
+> Hi, Hugh just found out that ksm was not calling to update_mmu_cache()
+> after it set new pte when it changed ptes mapping to point into the new
+> shared-readonly page (ksmpage).
+> 
+> It is understandable that it is a bug and ksm have to call it right
+> after set_pte_at_notify() get called, but the question is: does ksm
+> have to call it only there or should it call it even when it
+> write-protect pte (while not changing the physical address the pte is
+> pointing to).
 
+I'm currently inclining to the view that it's only necessary to call
+update_mmu_cache() in faulting paths (as cachetlb.txt says), and would
+just be a waste of time and cache to call it from KSM (which, like
+mprotect, has no reason to suppose that the pte will soon be faulted).
+
+Documentation/cachetlb.txt is specific when it says:
+	At the end of every page fault, this routine is invoked...
+But less so when it says:
+	A port may use this information in any way it so chooses.
+
+In private mail, I was worrying about how mprotect does not call
+update_mmu_cache, and thinking of the race when mprotect makes a pte
+writable while a write access is coming down through handle_pte_fault:
+such that handle_pte_fault skips its update_mmu_cache: but hadn't
+noticed the "else" there, which will flush_tlb_page to reset the
+condition, so we don't have repeated faults on those architectures
+which are liable to that if the update_mmu_cache() is missed.
+
+I think now that neither replace_page() nor write_protect_page() should
+update_mmu_cache(); but my mind may change in a few moments time ;)
+
+Hugh
+
+> 
+> I am asking this question because it seems that fork() dont call it...
+> 
+> (below a patch that fix the problem in case we need it just when we
+> change the physical mapping, if we need it even when we write protect
+> the pages, then we need to add another update_mmu_cache()  call)
+> 
+> Thanks.
+> 
+> From 82d27f67a8b20767dc6119422189f73b52168c8d Mon Sep 17 00:00:00 2001
+> From: Izik Eidus <ieidus@redhat.com>
+> Date: Wed, 23 Sep 2009 22:37:34 +0300
+> Subject: [PATCH] ksm: add update_mmu_cache() when changing pte mapping.
+> 
+> This patch add update_mmu_cache() call right after set_pte_at_notify()
+> Without this function ksm is probably broken for powerpc and sparc archs.
+> 
+> (Noticed by Hugh Dickins)
+> 
+> Signed-off-by: Izik Eidus <ieidus@redhat.com>
+> ---
+>  mm/ksm.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/ksm.c b/mm/ksm.c
+> index f7edac3..e8d16eb 100644
+> --- a/mm/ksm.c
+> +++ b/mm/ksm.c
+> @@ -719,6 +719,7 @@ static int replace_page(struct vm_area_struct *vma, struct page *oldpage,
+>  	flush_cache_page(vma, addr, pte_pfn(*ptep));
+>  	ptep_clear_flush(vma, addr, ptep);
+>  	set_pte_at_notify(mm, addr, ptep, mk_pte(newpage, prot));
+> +	update_mmu_cache(vma, addr, pte);
+>  
+>  	page_remove_rmap(oldpage);
+>  	put_page(oldpage);
+> -- 
+> 1.5.6.5
