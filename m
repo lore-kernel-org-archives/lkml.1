@@ -1,91 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZIXGrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbZIXG6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbZIXGrM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 02:47:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZIXGrK
+	id S1752406AbZIXG6B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 02:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZIXG6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 02:47:10 -0400
-Received: from nskntmtas01p.mx.bigpond.com ([61.9.168.137]:49563 "EHLO
-	nskntmtas01p.mx.bigpond.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751676AbZIXGrK (ORCPT
+	Thu, 24 Sep 2009 02:58:00 -0400
+Received: from web8404.mail.in.yahoo.com ([202.43.219.152]:37097 "HELO
+	web8404.mail.in.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751134AbZIXG6A convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 02:47:10 -0400
-Content-Type: text/plain; charset="us-ascii"
+	Thu, 24 Sep 2009 02:58:00 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Sep 2009 02:57:59 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.in;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=nsw5Yhyz2hBb31nSogFh8pzcjdxDXiS1U1ubQwzwh6HnbCX5qZh+Aage0S1KiqgtxS8+Mv0Xd4UGzgABTnBgQgHM/qEcud6cJJVPUYhTnJhP8YkZkZgJ/cDec9XPoQj2TntWVP7xvbVS4nmJTYNCAI91ZWl2h/72ZLN6pIJU9ik=;
+Message-ID: <179773.9311.qm@web8404.mail.in.yahoo.com>
+X-YMail-OSG: OKuNjjYVM1l6zc3l.JX1_WL_WbE9pvpL426CnXsN0vKm_VHP5dUA0YiTHA4prGeVDBL_QbAyHOlrEXOAzowYjuWAQTQjYoQJ7cYYjMMYPzJ50vBypPKPMsTMRvhm9cNXHExZxfMCRtKmQAsPk8zqZexQ4gmqPJOyN3o1dIoOeURJTSj.B7GLBcPj89HLcGDKbv_acjbA.8MSKai0mjzHnX0KWHrZshBB_ODjWsriHqAPEzyVQexEOSCKmgeadKv8D9eIFEm96b_vKdgvsPcNqgQ-
+X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.347.2
+Date: Wed, 23 Sep 2009 23:51:19 -0700 (PDT)
+From: KV Pavuram <kvpavuram@yahoo.co.in>
+Subject: Socket vs File descriptor
+To: linux-kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH] sched: Set correct normal_prio and prio values in sched_fork()
-X-Mercurial-Node: f8f46736fd4e7f090ac020785602b46a86a583ae
-Message-Id: <f8f46736fd4e7f090ac0.1253774830@mudlark.pw.nest>
-User-Agent: Mercurial-patchbomb/1.3
-Date: Thu, 24 Sep 2009 06:47:10 -0000
-From: Peter Williams <pwil3058@bigpond.net.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing <linux-kernel@vger.kernel.org>
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at nskntotgx02p.mx.bigpond.com from [121.222.72.47] using ID pwil3058@bigpond.net.au at Thu, 24 Sep 2009 06:47:11 +0000
-X-RPD-ScanID: Class unknown; VirusThreatLevel unknown, RefID str=0001.0A150204.4ABB15EF.013E,ss=1,fgs=0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-normal_prio should be updated if policy changes from RT to SCHED_MORMAL
-or if static_prio/nice is changed.  Some paths through sched_fork()
-ignore this requirement and may result in normal_prio having an invalid
-value.
+Hi,
 
-Fixing this issue allows the call to effective_prio() in
-wake_up_new_task() to be removed.
+Is there any  ioctl call to determine if a given descriptor is a file descriptor or a socket descriptor.
 
-Signed-off-by: Peter Williams <pwil3058@bigpond.net.au>
+Similarly, is there a way to find out a socket descriptor type ie.e if it is SOCK_STREAM, or SOCK_DGRAM type.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2515,22 +2515,17 @@ void sched_fork(struct task_struct *p, i
- 	__sched_fork(p);
- 
- 	/*
--	 * Make sure we do not leak PI boosting priority to the child.
--	 */
--	p->prio = current->normal_prio;
--
--	/*
- 	 * Revert to default priority/policy on fork if requested.
- 	 */
- 	if (unlikely(p->sched_reset_on_fork)) {
--		if (p->policy == SCHED_FIFO || p->policy == SCHED_RR)
-+		if (p->policy == SCHED_FIFO || p->policy == SCHED_RR) {
- 			p->policy = SCHED_NORMAL;
--
--		if (p->normal_prio < DEFAULT_PRIO)
--			p->prio = DEFAULT_PRIO;
-+			p->normal_prio = p->static_prio;
-+		}
- 
- 		if (PRIO_TO_NICE(p->static_prio) < 0) {
- 			p->static_prio = NICE_TO_PRIO(0);
-+			p->normal_prio = p->static_prio;
- 			set_load_weight(p);
- 		}
- 
-@@ -2541,6 +2536,11 @@ void sched_fork(struct task_struct *p, i
- 		p->sched_reset_on_fork = 0;
- 	}
- 
-+	/*
-+	 * Make sure we do not leak PI boosting priority to the child.
-+	 */
-+	p->prio = current->normal_prio;
-+
- 	if (!rt_prio(p->prio))
- 		p->sched_class = &fair_sched_class;
- 
-@@ -2581,8 +2581,6 @@ void wake_up_new_task(struct task_struct
- 	BUG_ON(p->state != TASK_RUNNING);
- 	update_rq_clock(rq);
- 
--	p->prio = effective_prio(p);
--
- 	if (!p->sched_class->task_new || !current->se.on_rq) {
- 		activate_task(rq, p, 0);
- 	} else {
+Thanks
+Pav
+
+
+      See the Web&#39;s breaking stories, chosen by people like you. Check out Yahoo! Buzz. http://in.buzz.yahoo.com/
