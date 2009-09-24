@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbZIXQ0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbZIXQ0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753140AbZIXQ0E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 12:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbZIXQ0E
+	id S1753255AbZIXQ0o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 12:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbZIXQ0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 12:26:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39839 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbZIXQ0C (ORCPT
+	Thu, 24 Sep 2009 12:26:43 -0400
+Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:46473 "HELO
+	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751732AbZIXQ0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 12:26:02 -0400
-Subject: Re: [PATCH 03/10] writeback: stop background writeback when below
- background threshold
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, fengguang.wu@intel.com, shaohua.li@intel.com,
-       chris.mason@oracle.com, jack@suse.cz
-In-Reply-To: <20090924161357.GL23126@kernel.dk>
-References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com>
-	 <1253803236-20760-4-git-send-email-jens.axboe@oracle.com>
-	 <1253804615.18939.36.camel@laptop> <1253805536.18939.39.camel@laptop>
-	 <20090924161357.GL23126@kernel.dk>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 18:26:00 +0200
-Message-Id: <1253809560.18939.69.camel@laptop>
+	Thu, 24 Sep 2009 12:26:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Date:From:To:Subject:Message-Id:In-Reply-To:References:Reply-To:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding;
+  b=Nkt6Lbwh/jBmUFDLFv5mn5J+WPJyZAZq3/Zl2Myz2eC2QfS4zj5BfQKo3TAQImu7SGS6kbt3x5XG1kBWfHqeVg0duoZ2W4C4oOT0WCPZd0RHwV0GB6M2CcNhApDRI8CNXbYcSQB851lrKPRBuSA0Z8kNjN0XTMUD7ZTaSvpN/5c=  ;
+X-YMail-OSG: b8Bt7BoVM1nm2Z1fEyjpytps0SNRRXi1k7wnkGxhfRJzIfVptOyTIpMt6.Q3mPAXkfCY_uLUle5fFWOOgRAPJqIfMlyzTPpCu2Yx6sa9Ac.WCP7WUq6k3ECUgwamS3cl6dvgHiqRME58aQfn4WNypJ0ySX8ccULhLkueNMQz6V02eFQOLUHTSRRsAsUkrvsUVzymrOb.QGeO.53ZEyg1qssvdqN3CWAAEnZBlYKVMJd8J7u_2D84ivQ0.74dmPzjpPsd1cfCZ4UsRwSj0ZYttvnAMOiGRvdQaTpM0mEx8_0Z.9Lnh8EZ9dGfCSB7rUev1VEkKqTcdEBjBxi12H.L
+X-Yahoo-Newman-Property: ymail-3
+Date: Thu, 24 Sep 2009 11:26:45 -0500
+From: Will <whansard@sbcglobal.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: disk speed regression kernel 2.6.29 and after
+Message-Id: <20090924112645.dc97dd07.whansard@sbcglobal.net>
+In-Reply-To: <200909241426.49947.bzolnier@gmail.com>
+References: <4ABA0FDA.9090707@sbcglobal.net>
+	<20090923233505.a567667b.whansard@sbcglobal.net>
+	<20090924094447.16137esujpct2bfz@webmail.cs.aau.dk>
+	<200909241426.49947.bzolnier@gmail.com>
+Reply-To: whansard@sbcglobal.net
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.13; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-24 at 18:13 +0200, Jens Axboe wrote:
+On Thu, 24 Sep 2009 14:26:49 +0200
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> > > >  	for (;;) {
-> > > >  		/*
-> > > > +		 * Stop writeback when nr_pages has been consumed
-> > > >  		 */
-> > > > +		if (args->nr_pages <= 0)
-> > > >  			break;
-> > > >  
-> > > >  		/*
-> > > > +		 * For background writeout, stop when we are below the
-> > > > +		 * background dirty threshold
-> > > >  		 */
-> > > > +		if (args->for_background && !over_bground_thresh())
-> > > >  			break;
-> > > 
-> > > 
-> > > What I'm not getting is why this is conditional on for_background(),
-> > > shouldn't we always stop writeback when below the background threshold?
-> > 
-> > Ah, that would be for things like sync, which need to write out
-> > everything, right?
 > 
-> Yes, wb_writeback() handles any kind of writeback. The definition of our
-> background writeout is to stop when we are no longer over the background
-> writeout threshold.
+> 
+> I don't see how could commit 295f00 be the guilty one here.  I'm suspecting
+> that bisection went wrong at some point (easy to verify by checking if commit
+> 295f00^1 is also bad).
+> 
+> PS Will, it would be useful to try libata first and possibly rule out PATA out
+> of the picture completely.
 
-Right, ok
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
+Disabling "ATA/ATAPI/MFM/RLL"  restored my performance completely, with the
+newer kernels. I'll just have to get used my other hard drives being sdb . . ..
+Thanks guys.  The copy takes right at 3m30s now.
+I made a change to dd years ago to make it default to 1 meg block size and to show
+me the "Megs copied" on screen, so I can watch how fast dd is going.  With the 
+older atapi drivers, this copy would be fast, but jerky and halting. With kernel
+2.6.29 and after the halts were more frequent and longer, dragging the copy out
+to over 9 minutes in this case.  With only the libata enabled, the "megs copied"
+is very smooth, with no halting, though still right at 3m30s.
+If you need me to test anything for the sake of the older drivers, I can.
+Thanks again for the help.
