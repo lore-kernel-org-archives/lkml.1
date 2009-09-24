@@ -1,93 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZIXN3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbZIXN2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbZIXN3s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 09:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZIXN3r
+	id S1752491AbZIXN2m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 09:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZIXN2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 09:29:47 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:37879 "EHLO kernel.dk"
+	Thu, 24 Sep 2009 09:28:41 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23773 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884AbZIXN3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 09:29:46 -0400
-Date: Thu, 24 Sep 2009 15:29:50 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "Li, Shaohua" <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [RFC] page-writeback: move indoes from one superblock together
-Message-ID: <20090924132949.GH23126@kernel.dk>
-References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924100136.GA25778@localhost> <20090924123519.GF23126@kernel.dk> <20090924132252.GA696@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924132252.GA696@localhost>
+	id S1751386AbZIXN2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 09:28:40 -0400
+Date: Thu, 24 Sep 2009 15:33:19 +0200
+From: Michal Schmidt <mschmidt@redhat.com>
+To: Xiaotian Feng <xtfeng@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: BUG: sleeping function called from invalid context at 
+ kernel/mutex.c:280
+Message-ID: <20090924153319.0fa902d3@leela>
+In-Reply-To: <7b6bb4a50909230227h50cccb0enb02d42664dd61872@mail.gmail.com>
+References: <7b6bb4a50909230227h50cccb0enb02d42664dd61872@mail.gmail.com>
+Organization: Red Hat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24 2009, Wu Fengguang wrote:
-> On Thu, Sep 24, 2009 at 08:35:19PM +0800, Jens Axboe wrote:
-> > On Thu, Sep 24 2009, Wu Fengguang wrote:
-> > > On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
-> > > > __mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
-> > > > several partitions, writeback might keep spindle moving between partitions.
-> > > > To reduce the move, better write big chunk of one partition and then move to
-> > > > another. Inodes from one fs usually are in one partion, so idealy move indoes
-> > > > from one fs together should reduce spindle move. This patch tries to address
-> > > > this. Before per-bdi writeback is added, the behavior is write indoes
-> > > > from one fs first and then another, so the patch restores previous behavior.
-> > > > The loop in the patch is a bit ugly, should we add a dirty list for each
-> > > > superblock in bdi_writeback?
-> > > > 
-> > > > Test in a two partition disk with attached fio script shows about 3% ~ 6%
-> > > > improvement.
-> > > 
-> > > A side note: given the noticeable performance gain, I wonder if it
-> > > deserves to generalize the idea to do whole disk location ordered
-> > > writeback. That should benefit many small file workloads more than
-> > > 10%. Because this patch only sorted 2 partitions and inodes in 5s
-> > > time window, while the below patch will roughly divide the disk into
-> > > 5 areas and sort inodes in a larger 25s time window.
-> > > 
-> > >         http://lkml.org/lkml/2007/8/27/45
-> > > 
-> > > Judging from this old patch, the complexity cost would be about 250
-> > > lines of code (need a rbtree).
-> > 
-> > First of all, nice patch, I'll add it to the current tree. I too was
+Dne Wed, 23 Sep 2009 17:27:08 +0800 Xiaotian Feng napsal(a):
+> Hi,
 > 
-> You mean Shaohua's patch? It should be a good addition for 2.6.32.
-
-Yes indeed, the parent patch.
-
-> In long term move_expired_inodes() needs some rework.  Because it
-> could be time consuming to move around all the inodes in a large
-> system, and thus hold inode_lock() for too long time (and this patch
-> scales up the locked time).
-
-It does. As mentioned in my reply, for 100 inodes or less, it will still
-be faster than eg using an rbtree. But the more "reliable" runtime of an
-rbtree based solution is appealing, though. It's not hugely critical,
-though.
-
-> So would need to split the list moves into smaller pieces in future,
-> or to change data structure.
-
-Yes, those are the two options.
-
-> > pondering using an rbtree for sb+dirty_time insertion and extraction.
+>     I got following messages when I resume from suspend with 2.6.31.
+> Is there anything wrong? Thanks.
 > 
-> FYI Michael Rubin did some work on a rbtree implementation, just
-> in case you are interested:
+> BUG: sleeping function called from invalid context at
+> kernel/mutex.c:280 in_atomic(): 0, irqs_disabled(): 1, pid: 2473,
+> name: pm-suspend 2 locks held by pm-suspend/2473:
+>  #0:  (&buffer->mutex){......}, at: [<ffffffff8115ab13>]
+> sysfs_write_file+0x3c/0x137
+>  #1:  (pm_mutex){......}, at: [<ffffffff810865b5>]
+> enter_state+0x39/0x130 Pid: 2473, comm: pm-suspend Not tainted 2.6.31
+> #1 Call Trace:
+>  [<ffffffff810792f0>] ? __debug_show_held_locks+0x22/0x24
+>  [<ffffffff8104a2ef>] __might_sleep+0x107/0x10b
+>  [<ffffffff8141fca9>] mutex_lock_nested+0x25/0x43
+>  [<ffffffff81073537>] clocksource_resume+0x1c/0x60
+>  [<ffffffff81072902>] timekeeping_resume+0x1e/0x1c8
+>  [<ffffffff812aee62>] __sysdev_resume+0x25/0xcf
+>  [<ffffffff812aef79>] sysdev_resume+0x6d/0xae
+>  [<ffffffff810864f8>] suspend_devices_and_enter+0x12b/0x1af
+>  [<ffffffff8108665b>] enter_state+0xdf/0x130
+>  [<ffffffff81085dc3>] state_store+0xb6/0xd3
+>  [<ffffffff81204c73>] kobj_attr_store+0x17/0x19
+>  [<ffffffff8115abd2>] sysfs_write_file+0xfb/0x137
+>  [<ffffffff811057d2>] vfs_write+0xae/0x10b
+>  [<ffffffff81208392>] ? __up_read+0x1a/0x7f
+>  [<ffffffff811058ef>] sys_write+0x4a/0x6e
+>  [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
 > 
->         http://lkml.org/lkml/2008/1/15/25
+> Regards
+> Xiaotian
 
-Thanks, I'll take a look.
+I've just noticed the same in the latest git.
+sysdev_resume() runs with IRQs disabled, but clocksource_resume() uses
+a mutex. Hmm, in 2.6.30 it used to be spinlock. This was changed to
+mutex by:
 
--- 
-Jens Axboe
+commit 75c5158f70c065b9704b924503d96e8297838f79
+Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Date:   Fri Aug 14 15:47:30 2009 +0200
 
+    timekeeping: Update clocksource with stop_machine
+    
+    update_wall_time calls change_clocksource HZ times per second to
+    check if a new clock source is available. In close to 100% of all
+    calls there is no new clock. Replace the tick based check by an
+    update done with stop_machine.
+
+Michal
