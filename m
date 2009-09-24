@@ -1,33 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZIXJXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbZIXJXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbZIXJXj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 05:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZIXJXi
+	id S1752852AbZIXJXb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 05:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZIXJXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 05:23:38 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:49071 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752643AbZIXJXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 05:23:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=c0p2Ena9jnEp90ApEC298wenvvFKRl7+3g9z29AF2M7GseIQA38rWj/xuogsl7Hj71
-         eFLqPKj3DOkU6r4EdQsOuikQ2SWUGaKP0XGQuz2Rbf9CSCGoWRFgznYMUyH+fxlkXwPP
-         YGhhUGeXWawt94ayVZOOli8dQHg1WwTD/h9m4=
-MIME-Version: 1.0
-From: Pascal Terjan <pterjan@gmail.com>
-Date: Thu, 24 Sep 2009 11:23:17 +0200
-Message-ID: <e8ca35370909240223w6574a06dr8b32def058640aa6@mail.gmail.com>
-Subject: go7007 does not build in linus HEAD
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 Sep 2009 05:23:30 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52601 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752554AbZIXJX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 05:23:29 -0400
+Date: Thu, 24 Sep 2009 19:23:25 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Stefani Seibold <stefani@seibold.net>
+Subject: Re: linux-next: manual merge of the tip tree with Linus' tree
+Message-Id: <20090924192325.e3416226.sfr@canb.auug.org.au>
+In-Reply-To: <20090924083309.GA14270@elte.hu>
+References: <20090924140738.3b8ab138.sfr@canb.auug.org.au>
+	<20090924083309.GA14270@elte.hu>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__24_Sep_2009_19_23_25_+1000_Cm+0K7N/+L9vMGyW"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  CC [M]  drivers/staging/go7007/s2250-board.o
-drivers/staging/go7007/s2250-board.c:24:26: error: s2250-loader.h: No
-such file or directory
+--Signature=_Thu__24_Sep_2009_19_23_25_+1000_Cm+0K7N/+L9vMGyW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Ingo,
+
+On Thu, 24 Sep 2009 10:33:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> Thanks - that's how i fixed it up yesterday, and it tested fine. Have=20
+> just pushed out this resolution, so the conflict should disappear from=20
+> linux-next tomorrow.
+
+OK, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__24_Sep_2009_19_23_25_+1000_Cm+0K7N/+L9vMGyW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkq7Oo0ACgkQjjKRsyhoI8xHcwCffDHlCIHemwz9Knn8f7KxA94J
+Q0MAoLoEw2wf68W54colOZNP/NP8k226
+=OU1e
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__24_Sep_2009_19_23_25_+1000_Cm+0K7N/+L9vMGyW--
