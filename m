@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbZIXWvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752352AbZIXW5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752760AbZIXWvF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZIXWvE
+	id S1752352AbZIXW5a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZIXW5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:51:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49668
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752264AbZIXWvD (ORCPT
+	Thu, 24 Sep 2009 18:57:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43589 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751541AbZIXW53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:51:03 -0400
-Date: Thu, 24 Sep 2009 15:51:22 -0700 (PDT)
-Message-Id: <20090924.155122.170781221.davem@davemloft.net>
-To: tj@kernel.org
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, mingo@elte.hu, hpa@zytor.com
-Subject: Re: [PATCH 2/3] sparc64: implement page mapping percpu first chunk
- allocator
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4ABB6C80.20109@kernel.org>
-References: <4ABB6C3A.8070109@kernel.org>
-	<4ABB6C80.20109@kernel.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 24 Sep 2009 18:57:29 -0400
+Date: Thu, 24 Sep 2009 15:56:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: iceberg <strakh@ispras.ru>
+Cc: James.Bottomley@hansenpartnership.com, eric@andante.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi_lib.c: sleeping function called from invalid
+ context
+Message-Id: <20090924155604.4299aa0a.akpm@linux-foundation.org>
+In-Reply-To: <200909231758.47612.strakh@ispras.ru>
+References: <200909231758.47612.strakh@ispras.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tejun Heo <tj@kernel.org>
-Date: Thu, 24 Sep 2009 21:56:32 +0900
+On Wed, 23 Sep 2009 17:58:47 +0000
+iceberg <strakh@ispras.ru> wrote:
 
-> Implement page mapping percpu first chunk allocator as a fallback to
-> the embedding allocator.  The next patch will make the embedding
-> allocator check distances between units to determine whether it fits
-> within the vmalloc area so that this fallback can be used on such
-> cases.
+> Driver scsi_lib.c might sleep in atomic context, because it calls 
+> scsi_device_put under spin_lock_irqsave.
+> drivers/scsi/scsi_lib.c:356:
+> 	spin_lock_irqsave(shost->host_lock, flags);
+> 	scsi_device_put(sdev);
+> Path to might_sleep macro from scsi_device_put:
+> 1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111 
+> 2. put_device calls kobject_put at ./drivers/base/core.c:1038 
+> 3. kobject_put calls kref_put at ./lib/kobject.c
+> 4. kref_put may call callback function kobject_release at ./lib/kref.c if 
+> refcount becomes zero, which might_sleep because it calls user event. Details:
+> 	4.1 kobject_cleanup calls kobject_uevent at ./lib/kobject.c:555
+> 	4.2 kobject_uevent calls kobject_uevent_env at  ./lib/kobject_uevent.c:282
+> 	4.3 kobject_uevent_env calls call_usermodehelper_exec at 
+> ./include/linux/kmod.h:83
+> 	4.4 call_usermodehelper_exec calls wait_for_completion at 
+> ./kernel/kmod.c:481
+> 	4.5 wait_for_completion calls wait_for_common at ./kernel/sched.c:5710
+> 	4.5 wait_for_common calls might_sleep at ./kernels/sched.c:5692
 > 
-> sparc64 currently has relatively small vmalloc area which makes it
-> impossible to create any dynamic chunks on certain configurations
-> leading to percpu allocation failures.  This and the next patch should
-> allow those configurations to keep working until proper solution is
-> found.
+> Found by Linux Driver Verification project.
 > 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Delete wrong sleeping function calls.
+> 
+> Signed-off-by: Alexander Strakh <strakh@ispras.ru>
+> 
 > ---
-> David, can you please ack this after reviewing?
+> diff --git a/./a/drivers/scsi/scsi_lib.c b/./b/drivers/scsi/scsi_lib.c
+> index f3c4089..a8f8e2f 100644
+> --- a/./a/drivers/scsi/scsi_lib.c
+> +++ b/./b/drivers/scsi/scsi_lib.c
+> @@ -353,9 +353,9 @@ static void scsi_single_lun_run(struct scsi_device 
+> *current_sdev)
+>  
+>  		spin_unlock_irqrestore(shost->host_lock, flags);
+>  		blk_run_queue(sdev->request_queue);
+> -		spin_lock_irqsave(shost->host_lock, flags);
+>  	
+> -		scsi_device_put(sdev);
+> +		scsi_device_put(sdev);	
+> +		spin_lock_irqsave(shost->host_lock, flags);
+>  	}
+>   out:
+>  	spin_unlock_irqrestore(shost->host_lock, flags);
+> 
 
-This looks fine to me:
+Well this is strange.  afacit all the code to which you refer is
+ancient, so why did this bug just pop up now?
 
-Acked-by: David S. Miller <davem@davemloft.net>
+
