@@ -1,144 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZIXEHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZIXE2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbZIXEHl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 00:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZIXEHk
+	id S1752984AbZIXE2G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 00:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZIXE2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 00:07:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55052 "EHLO smtps.tip.net.au"
+	Thu, 24 Sep 2009 00:28:04 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51746 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbZIXEHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 00:07:39 -0400
-Date: Thu, 24 Sep 2009 14:07:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Stefani Seibold <stefani@seibold.net>
-Subject: linux-next: manual merge of the tip tree with Linus' tree
-Message-Id: <20090924140738.3b8ab138.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751241AbZIXE2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 00:28:03 -0400
+From: Neil Brown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 24 Sep 2009 14:29:04 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19130.62864.703262.698625@notabene.brown>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: PULL REQUEST - md updates for 2.6.32
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-Today's linux-next merge of the tip tree got a conflict in
-fs/proc/array.c between commit d899bf7b55f503ba7d3d07ed27c3a37e270fa7db
-("procfs: provide stack information for threads") from Linus' tree and
-commit d01d4827858cdc2e1c437c87ab65ec0a00fd40f8 ("sched: Always show
-Cpus_allowed field in /proc/<pid>/status") from the tip tree.
+Hi Linus, 
+ it seems you missed my earlier PULL request .. or maybe you foresaw
+ that it wasn't completed and waited for a couple of extra patches...
 
-Just overlapping additions.  I fixed it up (see below) and can cay the
-fix for a while. This appears to be fixed the same way in tip:master.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+ In any case, please pull from my md tree as below.
+ Most of the changes are for support for offloading the RAID6
+ calculations into dedicated hardware, hence the crypto/async_tx
+ and drives/dma changes.
 
-diff --cc fs/proc/array.c
-index 0c6bc60,762aea9..0000000
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@@ -322,87 -321,16 +322,97 @@@ static inline void task_context_switch_
-  			p->nivcsw);
-  }
-  
- +struct stack_stats {
- +	struct vm_area_struct *vma;
- +	unsigned long	startpage;
- +	unsigned long	usage;
- +};
- +
- +static int stack_usage_pte_range(pmd_t *pmd, unsigned long addr,
- +				unsigned long end, struct mm_walk *walk)
- +{
- +	struct stack_stats *ss = walk->private;
- +	struct vm_area_struct *vma = ss->vma;
- +	pte_t *pte, ptent;
- +	spinlock_t *ptl;
- +	int ret = 0;
- +
- +	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
- +	for (; addr != end; pte++, addr += PAGE_SIZE) {
- +		ptent = *pte;
- +
- +#ifdef CONFIG_STACK_GROWSUP
- +		if (pte_present(ptent) || is_swap_pte(ptent))
- +			ss->usage = addr - ss->startpage + PAGE_SIZE;
- +#else
- +		if (pte_present(ptent) || is_swap_pte(ptent)) {
- +			ss->usage = ss->startpage - addr + PAGE_SIZE;
- +			pte++;
- +			ret = 1;
- +			break;
- +		}
- +#endif
- +	}
- +	pte_unmap_unlock(pte - 1, ptl);
- +	cond_resched();
- +	return ret;
- +}
- +
- +static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
- +				struct task_struct *task)
- +{
- +	struct stack_stats ss;
- +	struct mm_walk stack_walk = {
- +		.pmd_entry = stack_usage_pte_range,
- +		.mm = vma->vm_mm,
- +		.private = &ss,
- +	};
- +
- +	if (!vma->vm_mm || is_vm_hugetlb_page(vma))
- +		return 0;
- +
- +	ss.vma = vma;
- +	ss.startpage = task->stack_start & PAGE_MASK;
- +	ss.usage = 0;
- +
- +#ifdef CONFIG_STACK_GROWSUP
- +	walk_page_range(KSTK_ESP(task) & PAGE_MASK, vma->vm_end,
- +		&stack_walk);
- +#else
- +	walk_page_range(vma->vm_start, (KSTK_ESP(task) & PAGE_MASK) + PAGE_SIZE,
- +		&stack_walk);
- +#endif
- +	return ss.usage;
- +}
- +
- +static inline void task_show_stack_usage(struct seq_file *m,
- +						struct task_struct *task)
- +{
- +	struct vm_area_struct	*vma;
- +	struct mm_struct	*mm = get_task_mm(task);
- +
- +	if (mm) {
- +		down_read(&mm->mmap_sem);
- +		vma = find_vma(mm, task->stack_start);
- +		if (vma)
- +			seq_printf(m, "Stack usage:\t%lu kB\n",
- +				get_stack_usage_in_bytes(vma, task) >> 10);
- +
- +		up_read(&mm->mmap_sem);
- +		mmput(mm);
- +	}
- +}
- +
-+ static void task_cpus_allowed(struct seq_file *m, struct task_struct *task)
-+ {
-+ 	seq_printf(m, "Cpus_allowed:\t");
-+ 	seq_cpumask(m, &task->cpus_allowed);
-+ 	seq_printf(m, "\n");
-+ 	seq_printf(m, "Cpus_allowed_list:\t");
-+ 	seq_cpumask_list(m, &task->cpus_allowed);
-+ 	seq_printf(m, "\n");
-+ }
-+ 
-  int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
-  			struct pid *pid, struct task_struct *task)
-  {
+ There are also a few unrelated and fairly minor improves to other
+ parts of md.
+
+Thanks,
+NeilBrown
+
+
+
+The following changes since commit 7fa07729e439a6184bd824746d06a49cca553f15:
+  Linus Torvalds (1):
+        Merge branch 'perf-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+
+are available in the git repository at:
+
+  git://neil.brown.name/md/ for-linus
+
+Andrew Morton (1):
+      drivers/dma/ioat/dma_v2.c: fix warnings
+
+Atsushi Nemoto (1):
+      dmaengine: Move all map_sg/unmap_sg for slave channel to its client
+
+Dan Williams (83):
+      Merge branch 'dmaengine' into async-tx-raid6
+      async_tx: rename zero_sum to val
+      async_tx: kill ASYNC_TX_DEP_ACK flag
+      async_tx: structify submission arguments, add scribble
+      async_xor: permit callers to pass in a 'dma/page scribble' region
+      md/raid6: release spare page at ->stop()
+      ioat: move to drivers/dma/ioat/
+      md/raid6: move the spare page to a percpu allocation
+      md/raid5,6: add percpu scribble region for buffer lists
+      async_tx: add sum check flags
+      async_tx: kill needless module_{init|exit}
+      async_tx: remove walk of tx->parent chain in dma_wait_for_async_tx
+      async_tx: add support for asynchronous GF multiplication
+      async_tx: add support for asynchronous RAID6 recovery operations
+      dmatest: add pq support
+      async_tx: raid6 recovery self test
+      iop-adma: cleanup iop_adma_run_tx_complete_actions
+      iop-adma: fix lockdep false positive
+      iop-adma: P+Q support for iop13xx adma engines
+      iop-adma: P+Q self test
+      md/raid5: factor out mark_uptodate from ops_complete_compute5
+      md/raid6: asynchronous raid6 operations
+      md/raid6: asynchronous handle_parity_check6
+      md/raid456: distribute raid processing over multiple cores
+      Merge commit 'v2.6.31-rc1' into dmaengine
+      ioat: move definitions to dma.h
+      ioat: convert ioat_probe to pcim/devm
+      ioat: cleanup some long deref chains and 80 column collisions
+      ioat: kill function prototype ifdef guards
+      ioat: split ioat_dma_probe into core/version-specific routines
+      ioat: fix type mismatch for ->dmacount
+      ioat: define descriptor control bit-field
+      ioat1: move descriptor allocation from submit to prep
+      ioat: fix self test interrupts
+      ioat: prepare the code for ioat[12]_dma_chan split
+      ioat2,3: convert to a true ring buffer
+      ioat1: kill unused unmap parameters
+      ioat: add some dev_dbg() calls
+      ioat: cleanup completion status reads
+      ioat: ignore reserved bits for chancnt and xfercap
+      ioat: preserve chanctrl bits when re-arming interrupts
+      ioat: ___devinit annotate the initialization paths
+      ioat1: trim ioat_dma_desc_sw
+      ioat: switch watchdog and reset handler from workqueue to timer
+      ioat2,3: dynamically resize descriptor ring
+      net_dma: poll for a descriptor after allocation failure
+      Merge branch 'md-raid6-accel' into ioat3.2
+      dmaengine: add fence support
+      dmaengine, async_tx: add a "no channel switch" allocator
+      dmaengine: cleanup unused transaction types
+      dmaengine, async_tx: support alignment checks
+      ioat2+: add fence support
+      ioat3: hardware version 3.2 register / descriptor definitions
+      ioat3: split ioat3 support to its own file, add memset
+      ioat: add 'ioat' sysfs attributes
+      ioat3: enable dca for completion writes
+      ioat3: xor support
+      ioat3: xor self test
+      ioat3: pq support
+      ioat3: support xor via pq descriptors
+      ioat3: interrupt descriptor support
+      ioat3: segregate raid engines
+      Merge branch 'ioat' into dmaengine
+      dw_dmac: implement a private tx_list
+      fsldma: implement a private tx_list
+      iop-adma: implement a private tx_list
+      ioat: implement a private tx_list
+      mv_xor: implement a private tx_list
+      at_hdmac: implement a private tx_list
+      txx9dmac: implement a private tx_list
+      dmaengine: kill tx_list
+      ioat2,3: cacheline align software descriptor allocations
+      Merge branch 'iop-raid6' into async-tx-next
+      Merge branch 'dmaengine' into async-tx-next
+      Merge commit 'md/for-linus' into async-tx-next
+      async_tx: remove HIGHMEM64G restriction
+      ioat: driver version 4.0
+      md/raid6: eliminate BUG_ON with side effect
+      md/raid6: cleanup ops_run_compute6_2
+      ioat2: clarify ring size limits
+      raid6test: fix stack overflow
+      ioat3: fix uninitialized var warnings
+      async_tx/raid6: add missing dma_unmap calls to the async fail case
+
+Dmitry Monakhov (1):
+      md: raid-1/10: fix RW bits manipulation
+
+Ira Snyder (2):
+      fsldma: split apart external pause and request count features
+      fsldma: Add DMA_SLAVE support
+
+Maciej Sosnowski (1):
+      dca: registering requesters in multiple dca domains
+
+NeilBrown (6):
+      md: remove sparse waring "symbol xxx shadows an earlier one"
+      md: remove sparse warnings about lock context.
+      md: Improve name of threads created by md_register_thread
+      md: report device as congested when suspended
+      md: remove unnecessary memset from multipath.
+      Merge branch 'next' of git://git.kernel.org/.../djbw/async_tx into for-linus
+
+Nobuhiro Iwamatsu (1):
+      dmaengine: sh: Add Support SuperH DMA Engine driver
+
+Roland Dreier (2):
+      Add MODULE_DEVICE_TABLE() so ioatdma module is autoloaded
+      I/OAT: Convert to PCI_VDEVICE()
+
+Stephen Hemminger (1):
+      dca: module load should not be an error message
+
+Tom Picard (1):
+      ioat3: ioat3.2 pci ids for Jasper Forest
+
+Yuri Tikhonov (5):
+      md/raid5,6: common schedule_reconstruction for raid5/6
+      md/raid6: asynchronous handle_stripe_fill6
+      md/raid6: asynchronous handle_stripe_dirtying6
+      md/raid6: asynchronous handle_stripe6
+      md/raid6: remove synchronous infrastructure
+
+ Documentation/crypto/async-tx-api.txt              |   75 +-
+ arch/arm/include/asm/hardware/iop3xx-adma.h        |   81 +-
+ arch/arm/include/asm/hardware/iop_adma.h           |    3 +
+ arch/arm/mach-iop13xx/include/mach/adma.h          |  119 ++-
+ arch/arm/mach-iop13xx/setup.c                      |   17 +-
+ arch/arm/plat-iop/adma.c                           |    4 +-
+ arch/powerpc/include/asm/fsldma.h                  |  136 ++
+ arch/sh/drivers/dma/Kconfig                        |   12 +-
+ arch/sh/drivers/dma/Makefile                       |    3 +-
+ arch/sh/include/asm/dma-sh.h                       |   13 +
+ crypto/async_tx/Kconfig                            |    9 +
+ crypto/async_tx/Makefile                           |    3 +
+ crypto/async_tx/async_memcpy.c                     |   44 +-
+ crypto/async_tx/async_memset.c                     |   43 +-
+ crypto/async_tx/async_pq.c                         |  395 +++++
+ crypto/async_tx/async_raid6_recov.c                |  468 ++++++
+ crypto/async_tx/async_tx.c                         |   87 +-
+ crypto/async_tx/async_xor.c                        |  207 ++--
+ crypto/async_tx/raid6test.c                        |  240 +++
+ drivers/dca/dca-core.c                             |  124 ++-
+ drivers/dma/Kconfig                                |   14 +-
+ drivers/dma/Makefile                               |    4 +-
+ drivers/dma/at_hdmac.c                             |   60 +-
+ drivers/dma/at_hdmac_regs.h                        |    1 +
+ drivers/dma/dmaengine.c                            |   94 +-
+ drivers/dma/dmatest.c                              |   40 +
+ drivers/dma/dw_dmac.c                              |   50 +-
+ drivers/dma/dw_dmac_regs.h                         |    1 +
+ drivers/dma/fsldma.c                               |  288 +++-
+ drivers/dma/fsldma.h                               |    4 +-
+ drivers/dma/ioat.c                                 |  202 ---
+ drivers/dma/ioat/Makefile                          |    2 +
+ drivers/dma/{ioat_dca.c => ioat/dca.c}             |   13 +-
+ drivers/dma/ioat/dma.c                             | 1238 ++++++++++++++
+ drivers/dma/ioat/dma.h                             |  337 ++++
+ drivers/dma/ioat/dma_v2.c                          |  871 ++++++++++
+ drivers/dma/ioat/dma_v2.h                          |  190 +++
+ drivers/dma/ioat/dma_v3.c                          | 1223 ++++++++++++++
+ drivers/dma/ioat/hw.h                              |  215 +++
+ drivers/dma/ioat/pci.c                             |  210 +++
+ .../dma/{ioatdma_registers.h => ioat/registers.h}  |   54 +-
+ drivers/dma/ioat_dma.c                             | 1741 --------------------
+ drivers/dma/ioatdma.h                              |  165 --
+ drivers/dma/ioatdma_hw.h                           |   70 -
+ drivers/dma/iop-adma.c                             |  491 +++++-
+ drivers/dma/iovlock.c                              |   10 +
+ drivers/dma/mv_xor.c                               |    7 +-
+ drivers/dma/mv_xor.h                               |    4 +-
+ drivers/dma/shdma.c                                |  786 +++++++++
+ drivers/dma/shdma.h                                |   64 +
+ drivers/dma/txx9dmac.c                             |   24 +-
+ drivers/dma/txx9dmac.h                             |    1 +
+ drivers/idle/i7300_idle.c                          |   20 +-
+ drivers/md/Kconfig                                 |   26 +
+ drivers/md/bitmap.c                                |    5 +-
+ drivers/md/linear.c                                |    3 +
+ drivers/md/md.c                                    |   25 +-
+ drivers/md/md.h                                    |    1 +
+ drivers/md/multipath.c                             |    6 +-
+ drivers/md/raid0.c                                 |    8 +-
+ drivers/md/raid1.c                                 |   15 +-
+ drivers/md/raid10.c                                |   12 +-
+ drivers/md/raid5.c                                 | 1493 +++++++++++-------
+ drivers/md/raid5.h                                 |   28 +-
+ drivers/mmc/host/atmel-mci.c                       |    9 +-
+ include/linux/async_tx.h                           |  129 ++-
+ include/linux/dca.h                                |   11 +-
+ include/linux/dmaengine.h                          |  179 ++-
+ include/linux/pci_ids.h                            |   10 +
+ 69 files changed, 9199 insertions(+), 3338 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/fsldma.h
+ create mode 100644 crypto/async_tx/async_pq.c
+ create mode 100644 crypto/async_tx/async_raid6_recov.c
+ create mode 100644 crypto/async_tx/raid6test.c
+ delete mode 100644 drivers/dma/ioat.c
+ create mode 100644 drivers/dma/ioat/Makefile
+ rename drivers/dma/{ioat_dca.c => ioat/dca.c} (98%)
+ create mode 100644 drivers/dma/ioat/dma.c
+ create mode 100644 drivers/dma/ioat/dma.h
+ create mode 100644 drivers/dma/ioat/dma_v2.c
+ create mode 100644 drivers/dma/ioat/dma_v2.h
+ create mode 100644 drivers/dma/ioat/dma_v3.c
+ create mode 100644 drivers/dma/ioat/hw.h
+ create mode 100644 drivers/dma/ioat/pci.c
+ rename drivers/dma/{ioatdma_registers.h => ioat/registers.h} (84%)
+ delete mode 100644 drivers/dma/ioat_dma.c
+ delete mode 100644 drivers/dma/ioatdma.h
+ delete mode 100644 drivers/dma/ioatdma_hw.h
+ create mode 100644 drivers/dma/shdma.c
+ create mode 100644 drivers/dma/shdma.h
