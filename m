@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbZIXOoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZIXOkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753831AbZIXOoy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 10:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZIXOkg
+	id S1753232AbZIXOkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 10:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZIXOkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 10:40:36 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:44106 "EHLO kernel.dk"
+	Thu, 24 Sep 2009 10:40:37 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:44115 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752566AbZIXOkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752591AbZIXOkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Sep 2009 10:40:35 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: fengguang.wu@intel.com, shaohua.li@intel.com, chris.mason@oracle.com,
        jack@suse.cz, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 01/10] fs: Fix busyloop in wb_writeback()
-Date: Thu, 24 Sep 2009 16:40:27 +0200
-Message-Id: <1253803236-20760-2-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 02/10] writeback: balance_dirty_pages() shall write more than dirtied pages
+Date: Thu, 24 Sep 2009 16:40:28 +0200
+Message-Id: <1253803236-20760-3-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.3.3.385.g60647
 In-Reply-To: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com>
 References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com>
@@ -23,59 +23,83 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kara <jack@suse.cz>
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-If all inodes are under writeback (e.g. in case when there's only one inode
-with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
-to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
-waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
-write anything.
+Some filesystem may choose to write much more than ratelimit_pages
+before calling balance_dirty_pages_ratelimited_nr(). So it is safer to
+determine number to write based on real number of dirtied pages.
 
-CC: Wu Fengguang <fengguang.wu@intel.com>
-Signed-off-by: Jan Kara <jack@suse.cz>
+Otherwise it is possible that
+  loop {
+    btrfs_file_write():     dirty 1024 pages
+    balance_dirty_pages():  write up to 48 pages (= ratelimit_pages * 1.5)
+  }
+in which the writeback rate cannot keep up with dirty rate, and the
+dirty pages go all the way beyond dirty_thresh.
+
+The increased write_chunk may make the dirtier more bumpy.
+So filesystems shall be take care not to dirty too much at
+a time (eg. > 4MB) without checking the ratelimit.
+
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/fs-writeback.c |   19 ++++++++++++++++++-
- 1 files changed, 18 insertions(+), 1 deletions(-)
+ mm/page-writeback.c |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 8e1e5e1..c59d673 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -706,6 +706,7 @@ static long wb_writeback(struct bdi_writeback *wb,
- 	};
- 	unsigned long oldest_jif;
- 	long wrote = 0;
-+	struct inode *inode;
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 5f378dd..cbd4cba 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -44,12 +44,15 @@ static long ratelimit_pages = 32;
+ /*
+  * When balance_dirty_pages decides that the caller needs to perform some
+  * non-background writeback, this is how many pages it will attempt to write.
+- * It should be somewhat larger than RATELIMIT_PAGES to ensure that reasonably
++ * It should be somewhat larger than dirtied pages to ensure that reasonably
+  * large amounts of I/O are submitted.
+  */
+-static inline long sync_writeback_pages(void)
++static inline long sync_writeback_pages(unsigned long dirtied)
+ {
+-	return ratelimit_pages + ratelimit_pages / 2;
++	if (dirtied < ratelimit_pages)
++		dirtied = ratelimit_pages;
++
++	return dirtied + dirtied / 2;
+ }
  
- 	if (wbc.for_kupdate) {
- 		wbc.older_than_this = &oldest_jif;
-@@ -747,8 +748,24 @@ static long wb_writeback(struct bdi_writeback *wb,
- 		 * If we ran out of stuff to write, bail unless more_io got set
- 		 */
- 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
--			if (wbc.more_io && !wbc.for_kupdate)
-+			if (wbc.more_io && !wbc.for_kupdate) {
-+				if (wbc.nr_to_write < MAX_WRITEBACK_PAGES)
-+					continue;
-+				/*
-+				 * Nothing written. Wait for some inode to
-+				 * become available for writeback. Otherwise
-+				 * we'll just busyloop.
-+				 */
-+				spin_lock(&inode_lock);
-+				if (!list_empty(&wb->b_more_io))  {
-+					inode = list_entry(
-+							wb->b_more_io.prev,
-+							struct inode, i_list);
-+					inode_wait_for_writeback(inode);
-+				}
-+				spin_unlock(&inode_lock);
- 				continue;
-+			}
- 			break;
- 		}
+ /* The following parameters are exported via /proc/sys/vm */
+@@ -477,7 +480,8 @@ get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
+  * If we're over `background_thresh' then pdflush is woken to perform some
+  * writeout.
+  */
+-static void balance_dirty_pages(struct address_space *mapping)
++static void balance_dirty_pages(struct address_space *mapping,
++				unsigned long write_chunk)
+ {
+ 	long nr_reclaimable, bdi_nr_reclaimable;
+ 	long nr_writeback, bdi_nr_writeback;
+@@ -485,7 +489,6 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 	unsigned long dirty_thresh;
+ 	unsigned long bdi_thresh;
+ 	unsigned long pages_written = 0;
+-	unsigned long write_chunk = sync_writeback_pages();
+ 	unsigned long pause = 1;
+ 
+ 	struct backing_dev_info *bdi = mapping->backing_dev_info;
+@@ -640,9 +643,10 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+ 	p =  &__get_cpu_var(bdp_ratelimits);
+ 	*p += nr_pages_dirtied;
+ 	if (unlikely(*p >= ratelimit)) {
++		ratelimit = sync_writeback_pages(*p);
+ 		*p = 0;
+ 		preempt_enable();
+-		balance_dirty_pages(mapping);
++		balance_dirty_pages(mapping, ratelimit);
+ 		return;
  	}
+ 	preempt_enable();
 -- 
 1.6.4.1.207.g68ea
 
