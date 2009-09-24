@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZIXAkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZIXAl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbZIXAkn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZIXAkl
+	id S1754489AbZIXAl4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbZIXAlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:40:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54245 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753260AbZIXAkh (ORCPT
+	Wed, 23 Sep 2009 20:41:52 -0400
+Received: from hq-exedge.brocade.com ([66.243.153.82]:30947 "EHLO
+	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752779AbZIXAlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:40:37 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: a patch drop request in -mm
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-In-Reply-To: <20090921152219.GQ12726@csn.ul.ie>
-References: <2f11576a0909210800l639560e4jad6cfc2e7f74538f@mail.gmail.com> <20090921152219.GQ12726@csn.ul.ie>
-Message-Id: <20090924092903.B648.A69D9226@jp.fujitsu.com>
+	Wed, 23 Sep 2009 20:41:49 -0400
+Date: Wed, 23 Sep 2009 17:41:52 -0700
+From: Jing Huang <huangj@brocade.com>
+Message-ID: <200909240041.n8O0fq0j019952@blc-10-6.brocade.com>
+To: <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 0/14] bfa: Brocade BFA FC SCSI driver (overview)
+CC: <kgudipat@brocade.com>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, <rvadivel@brocade.com>,
+       <vravindr@brocade.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 24 Sep 2009 09:40:34 +0900 (JST)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Sep 22, 2009 at 12:00:51AM +0900, KOSAKI Motohiro wrote:
-> > Mel,
-> > 
-> > Today, my test found following patch makes false-positive warning.
-> > because, truncate can free the pages
-> > although the pages are mlock()ed.
-> > 
-> > So, I think following patch should be dropped.
-> > .. or, do you think truncate should clear PG_mlock before free the page?
-> 
-> Is there a reason that truncate cannot clear PG_mlock before freeing the
-> page?
+From: Jing Huang <huangj@brocade.com>
 
-CC to Lee.
-IIRC, Lee tried it at first. but after some trouble, he decided change free_hot_cold_page().
-but unfortunately, I don't recall the reason ;-)
+Incorporated code review comments from Andrew Morton and Brian King. Please
+consider this patch set for next kernel update.
 
-Lee, Can you recall it?
+Patches are generated and tested in 2.6.31 kernel.
 
+[PATCH 1/14]: SCSI LLD driver code, module init/exit, PCI and SCSI host entry
+points, interrupt handler, and sysfs interface etc. 
 
-> > Can I ask your patch intention?
-> 
-> Locked pages being freed to the page allocator were considered
-> unexpected and a counter was in place to determine how often that
-> situation occurred. However, I considered it unlikely that the counter
-> would be noticed so the warning was put in place to catch what class of
-> pages were getting freed locked inappropriately. I think a few anomolies
-> have been cleared up since. Ultimately, it should have been safe to
-> delete the check.
+[PATCH 2/14]: Hardware/FW access code. part-1
 
-OK. it seems reasonable. so, I only hope no see linus tree output false-positive warnings.
-Thus, I propse 
+[PATCH 3/14]: Hardware/FW access code. part-2
 
-  - don't merge this patch to linus tree
-  - but, no drop from -mm
-    it be holded in mm until this issue fixed.
-  - I'll working on fixing this issue.
+[PATCH 4/14]: Hardware/FW access code. part-3
 
-I think this is enough fair.
+[PATCH 5/14]: Hardware/FW access code. part-4
 
+[PATCH 6/14]: FC state machines. part-1
 
-Hannes, I'm sorry. I haven't review your patch. I'm too busy now. please gime me more
-sevaral time.
+[PATCH 7/14]: FC state machines. part-2
 
+[PATCH 8/14]: FC state machines. part-3
 
+[PATCH 9/14]: FC state machines. part-3
 
+[PATCH 10/14]: Common header files shared by linux driver,
+hardware/FW access code, FC state machines. part-1
+
+[PATCH 11/14]: Common header files shared by linux driver,
+hardware/FW access code, FC state machines. part-2
+
+[PATCH 12/14]: Common header files shared by linux driver,
+hardware/FW access code, FC state machines. part-3
+
+[PATCH 13/14]: Updated Kconfig and Makefile for driver/scsi, and Makefile
+for bfa driver 
+
+[PATCH 14/14]: Updated MAINTAINER file.
+
+Signed-off-by: Jing Huang <huangj@brocade.com>
+---
