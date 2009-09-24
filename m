@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbZIXNRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297AbZIXNRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbZIXNRA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 09:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZIXNQ7
+	id S1752297AbZIXNRh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 09:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZIXNRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 09:16:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56178 "EHLO hera.kernel.org"
+	Thu, 24 Sep 2009 09:17:36 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52851 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752037AbZIXNQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 09:16:57 -0400
-Date: Thu, 24 Sep 2009 13:16:21 GMT
-From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       eric.dumazet@gmail.com, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eric.dumazet@gmail.com, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <4ABB6EB7.7000002@gmail.com>
-References: <4ABB6EB7.7000002@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf tools: Fix buffer allocation
-Message-ID: <tip-a255a9981a8566a1efabec983b7811e937e662d2@git.kernel.org>
-Git-Commit-ID: a255a9981a8566a1efabec983b7811e937e662d2
-X-Mailer: tip-git-log-daemon
+	id S1751018AbZIXNRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 09:17:35 -0400
+Date: Thu, 24 Sep 2009 15:17:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [RFC] page-writeback: move indoes from one superblock together
+Message-ID: <20090924131738.GG23126@kernel.dk>
+References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924071415.GA20808@localhost> <20090924074431.GA22396@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 24 Sep 2009 13:16:35 +0000 (UTC)
+In-Reply-To: <20090924074431.GA22396@sli10-desk.sh.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a255a9981a8566a1efabec983b7811e937e662d2
-Gitweb:     http://git.kernel.org/tip/a255a9981a8566a1efabec983b7811e937e662d2
-Author:     Eric Dumazet <eric.dumazet@gmail.com>
-AuthorDate: Thu, 24 Sep 2009 15:05:59 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 24 Sep 2009 15:11:23 +0200
+> > Could just reuse inode.
+> oops, forgot to remove it when moveing inode to global.
 
-perf tools: Fix buffer allocation
+This is the one I merged. I added the below as wel, we don't need to
+reiterate the list if we only moved inodes from a single super block.
 
-"perf top" cores dump on my dev machine, if run from a directory
-where vmlinux is present:
-
-  *** glibc detected *** malloc(): memory corruption: 0x085670d0 ***
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: <stable@kernel.org>
-LKML-Reference: <4ABB6EB7.7000002@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- tools/perf/util/module.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/util/module.c b/tools/perf/util/module.c
-index 8f81622..0d8c85d 100644
---- a/tools/perf/util/module.c
-+++ b/tools/perf/util/module.c
-@@ -423,7 +423,7 @@ static int mod_dso__load_module_paths(struct mod_dso *self)
- 	len += strlen(uts.release);
- 	len += strlen("/modules.dep");
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index b27406d..225c731 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -336,17 +336,27 @@ static void move_expired_inodes(struct list_head *delaying_queue,
+ {
+ 	LIST_HEAD(tmp);
+ 	struct list_head *pos, *node;
+-	struct super_block *sb;
++	struct super_block *sb = NULL;
+ 	struct inode *inode;
++	int do_sb_sort = 0;
  
--	dpath = calloc(1, len);
-+	dpath = calloc(1, len + 1);
- 	if (dpath == NULL)
- 		return err;
+ 	while (!list_empty(delaying_queue)) {
+ 		inode = list_entry(delaying_queue->prev, struct inode, i_list);
+ 		if (older_than_this &&
+ 		    inode_dirtied_after(inode, *older_than_this))
+ 			break;
++		if (sb && sb != inode->i_sb)
++			do_sb_sort = 1;
++		sb = inode->i_sb;
+ 		list_move(&inode->i_list, &tmp);
+ 	}
  
++	/* just one sb in list, splice to dispatch_queue and we're done */
++	if (!do_sb_sort) {
++		list_splice(&tmp, dispatch_queue);
++		return;
++	}
++
+ 	/* Move inodes from one superblock together */
+ 	while (!list_empty(&tmp)) {
+ 		inode = list_entry(tmp.prev, struct inode, i_list);
+
+-- 
+Jens Axboe
+
