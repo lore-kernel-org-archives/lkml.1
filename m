@@ -1,121 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbZIXXS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZIXXVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751832AbZIXXS3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 19:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZIXXS1
+	id S1752591AbZIXXVi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 19:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZIXXVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 19:18:27 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49832 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752807AbZIXXS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 19:18:26 -0400
-Date: Thu, 24 Sep 2009 19:18:00 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
-       rostedt@goodmis.org, ak@suse.de, roland@redhat.com, rth@redhat.com,
-       mhiramat@redhat.com
-Message-Id: <812eba02291a0bc933073ed429a9a0a60cf88f28.1253831946.git.jbaron@redhat.com>
-In-Reply-To: <cover.1253831945.git.jbaron@redhat.com>
-References: <cover.1253831945.git.jbaron@redhat.com>
-Subject: [PATCH 4/4] jump label - tracepoint implementation
+	Thu, 24 Sep 2009 19:21:37 -0400
+Received: from smtp201.iad.emailsrvr.com ([207.97.245.201]:45970 "EHLO
+	smtp201.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbZIXXVh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 19:21:37 -0400
+Message-ID: <4ABBFE77.30402@librato.com>
+Date: Thu, 24 Sep 2009 19:19:19 -0400
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v7][PATCH 0/9] Implement clone2() system call
+References: <20090924165548.GA16586@us.ibm.com> <20090924201517.GA24786@us.ibm.com> <4ABBED72.9080901@librato.com> <200909250021.03535.arnd@arndb.de>
+In-Reply-To: <200909250021.03535.arnd@arndb.de>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Implement tracepoints if conditional on top of jump labels.
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
----
- include/linux/tracepoint.h |   31 +++++++++++++++++--------------
- kernel/tracepoint.c        |   10 ++++++++++
- 2 files changed, 27 insertions(+), 14 deletions(-)
+Arnd Bergmann wrote:
+> On Friday 25 September 2009, Oren Laadan wrote:
+>> In this form, you place a constraints on where userspace may
+>> place the {parent,child}_tid variable, and require that this
+>> particular clone_struct remain valid memory in the parent until
+>> the child terminates.  This may break existing programs that
+>> use this (threads libraries ?)
+> 
+> No existing program uses sys_clone2, and the kernel function
+> may well differ from the user space calling conventions, which
+> are not bound by the six-argument limitation.
+> 
+> So a clone2 library call could set up the structure with the
+> arguments to the real syscall, call into the kernel and
+> copy the output data back into the pointers it was given by
+> the user.
 
-diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-index 63a3f7a..e7e2910 100644
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -16,6 +16,7 @@
- 
- #include <linux/types.h>
- #include <linux/rcupdate.h>
-+#include <linux/jump_label.h>
- 
- struct module;
- struct tracepoint;
-@@ -63,20 +64,22 @@ struct tracepoint {
-  * not add unwanted padding between the beginning of the section and the
-  * structure. Force alignment to the same alignment as the section start.
-  */
--#define DECLARE_TRACE(name, proto, args)				\
--	extern struct tracepoint __tracepoint_##name;			\
--	static inline void trace_##name(proto)				\
--	{								\
--		if (unlikely(__tracepoint_##name.state))		\
--			__DO_TRACE(&__tracepoint_##name,		\
--				TP_PROTO(proto), TP_ARGS(args));	\
--	}								\
--	static inline int register_trace_##name(void (*probe)(proto))	\
--	{								\
--		return tracepoint_probe_register(#name, (void *)probe);	\
--	}								\
--	static inline int unregister_trace_##name(void (*probe)(proto))	\
--	{								\
-+#define DECLARE_TRACE(name, proto, args)				 \
-+	extern struct tracepoint __tracepoint_##name;			 \
-+	static inline void trace_##name(proto)				 \
-+	{								 \
-+		JUMP_LABEL(name, trace_label, __tracepoint_##name.state);\
-+		__DO_TRACE(&__tracepoint_##name,			 \
-+			   TP_PROTO(proto), TP_ARGS(args));		 \
-+trace_label:								 \
-+		return;							 \
-+	}								 \
-+	static inline int register_trace_##name(void (*probe)(proto))	 \
-+	{								 \
-+		return tracepoint_probe_register(#name, (void *)probe);	 \
-+	}								 \
-+	static inline int unregister_trace_##name(void (*probe)(proto))	 \
-+	{								 \
- 		return tracepoint_probe_unregister(#name, (void *)probe);\
- 	}
- 
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 9489a0a..e06bce8 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -25,6 +25,7 @@
- #include <linux/err.h>
- #include <linux/slab.h>
- #include <linux/sched.h>
-+#include <linux/jump_label.h>
- 
- extern struct tracepoint __start___tracepoints[];
- extern struct tracepoint __stop___tracepoints[];
-@@ -256,6 +257,12 @@ static void set_tracepoint(struct tracepoint_entry **entry,
- 	 * is used.
- 	 */
- 	rcu_assign_pointer(elem->funcs, (*entry)->funcs);
-+
-+	if (!elem->state && active) {
-+		enable_jump_label_locked(elem->name);
-+	} else if (elem->state && !active)
-+		disable_jump_label_locked(elem->name);
-+
- 	elem->state = active;
- }
- 
-@@ -270,6 +277,9 @@ static void disable_tracepoint(struct tracepoint *elem)
- 	if (elem->unregfunc && elem->state)
- 		elem->unregfunc();
- 
-+	if (elem->state)
-+		disable_jump_label_locked(elem->name);
-+
- 	elem->state = 0;
- 	rcu_assign_pointer(elem->funcs, NULL);
- }
--- 
-1.6.2.5
+That may work well for parent_tid, however child_tid is also
+kept on the task_struct and written to when the child exits,
+and there is no explicit user-space wrapper on that.
+
+Also, I may be mistaken, but I thought that the idea of these
+was that the kernel writes them to user space, so other threads
+may see them quickly, _before_ the parent returns to userspace;
+otherwise, the parent (at the library) could himself copy the
+return value.
+
+Oren.
 
