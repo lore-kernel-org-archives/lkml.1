@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090AbZIXDbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbZIXDbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753090AbZIXDbg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 23:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZIXDbe
+	id S1753155AbZIXDbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 23:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZIXDbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 23:31:34 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:58791 "EHLO mx1.redhat.com"
+	Wed, 23 Sep 2009 23:31:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59210 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbZIXDb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 23:31:29 -0400
+	id S1752631AbZIXDbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 23:31:31 -0400
 From: Zachary Amsden <zamsden@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Zachary Amsden <zamsden@redhat.com>,
        Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [PATCH: kvm 5/6] Don't unconditionally clear cpu_khz_tsc in hardware_enable.
-Date: Wed, 23 Sep 2009 17:29:04 -1000
-Message-Id: <1253762945-5750-5-git-send-email-zamsden@redhat.com>
-In-Reply-To: <1253762945-5750-4-git-send-email-zamsden@redhat.com>
+Subject: [PATCH: kvm 6/6] Math is hard; let's do some cooking.
+Date: Wed, 23 Sep 2009 17:29:05 -1000
+Message-Id: <1253762945-5750-6-git-send-email-zamsden@redhat.com>
+In-Reply-To: <1253762945-5750-5-git-send-email-zamsden@redhat.com>
 References: <1253762945-5750-1-git-send-email-zamsden@redhat.com>
  <1253762945-5750-2-git-send-email-zamsden@redhat.com>
  <1253762945-5750-3-git-send-email-zamsden@redhat.com>
  <1253762945-5750-4-git-send-email-zamsden@redhat.com>
+ <1253762945-5750-5-git-send-email-zamsden@redhat.com>
 Organization: Frobozz Magic Timekeeping Company
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the non-hotplug case, this TSC speed should be available; instead, clear
-cpu_khz_tsc when bringing down a CPU so it is recomputed at the next bringup.
+CPU frequency change callback provides new TSC frequency for us, and in the
+same units (kHz), so there is no reason to do any math.
 
 Signed-off-by: Zachary Amsden <zamsden@redhat.com>
 ---
- arch/x86/kvm/x86.c |   12 +++++-------
- 1 files changed, 5 insertions(+), 7 deletions(-)
+ arch/x86/kvm/x86.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 38ba4a6..f1470ce 100644
+index f1470ce..c849f8f 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -4721,18 +4721,16 @@ int kvm_arch_cpu_hotadd(int cpu)
+@@ -3083,15 +3083,12 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+ 	struct kvm *kvm;
+ 	struct kvm_vcpu *vcpu;
+ 	int i, send_ipi = 0;
+-	unsigned long old_khz;
  
- void kvm_arch_cpu_hotremove(int cpu)
- {
-+	/*
-+	 * Reset TSC khz to zero so it is recomputed on bringup
-+	 */
-+	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
-+		per_cpu(cpu_tsc_khz, cpu) = 0;
- 	kvm_x86_ops->cpu_hotremove(cpu);
- }
+ 	if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
+ 		return 0;
+ 	if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
+ 		return 0;
+-	old_khz = per_cpu(cpu_tsc_khz, freq->cpu);
+-	per_cpu(cpu_tsc_khz, freq->cpu) = cpufreq_scale(old_khz, freq->old,
+-							freq->new);
++	per_cpu(cpu_tsc_khz, freq->cpu) = freq->new;
  
- int kvm_arch_hardware_enable(void *garbage)
- {
--	/*
--	 * Notifier callback chain may not have called cpufreq code
--	 * yet, thus we must reset TSC khz to zero and recompute it
--	 * before entering.
--	 */
--	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
--		per_cpu(cpu_tsc_khz, raw_smp_processor_id()) = 0;
- 	return kvm_x86_ops->hardware_enable(garbage);
- }
- 
+ 	spin_lock(&kvm_lock);
+ 	list_for_each_entry(kvm, &vm_list, vm_list) {
 -- 
 1.6.4.4
 
