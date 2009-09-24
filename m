@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbZIXUQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbZIXUTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbZIXUQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 16:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbZIXUQ0
+	id S1753120AbZIXUTy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 16:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbZIXUTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 16:16:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52880 "EHLO mx3.mail.elte.hu"
+	Thu, 24 Sep 2009 16:19:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48788 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753100AbZIXUQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 16:16:26 -0400
-Date: Thu, 24 Sep 2009 22:16:22 +0200
+	id S1752430AbZIXUTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 16:19:53 -0400
+Date: Thu, 24 Sep 2009 22:19:43 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL v2] bkl tracepoints + filter regex support
-Message-ID: <20090924201622.GA15459@elte.hu>
-References: <1253821775-8618-1-git-send-email-fweisbec@gmail.com> <20090924201509.GA26573@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Stanislaw Gruszka <sgruszka@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] itimers: fix racy writes to cpu_itimer fields
+Message-ID: <20090924201943.GA19969@elte.hu>
+References: <1253802903-979-1-git-send-email-sgruszka@redhat.com> <1253803687.18939.26.camel@laptop> <20090924195732.384bea26@dhcp-lab-109.englab.brq.redhat.com> <1253815467.18939.168.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090924201509.GA26573@elte.hu>
+In-Reply-To: <1253815467.18939.168.camel@laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,48 +35,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
+> On Thu, 2009-09-24 at 19:57 +0200, Stanislaw Gruszka wrote:
+> > On Thu, 24 Sep 2009 16:48:07 +0200
+> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > On Thu, 2009-09-24 at 16:35 +0200, Stanislaw Gruszka wrote:
+> > > > incr_error and error fields of struct cpu_itimer are used when calculating
+> > > > next timer tick in check_cpu_itimers() and should not be modified without
+> > > > tsk->sighand->siglock taken.
+> > > 
+> > > Won't it be all-round much better to convert these things to hrtimers
+> > > instead of adding more and more fuzz on top to make them deal with
+> > > jiffies?
+> > 
+> > Perhaps it would, but I don't know how to do it :{ . Especially how to
+> > precisely account user time. The only idea I have is make something like 
+> > microstate accounting (http://lwn.net/Articles/127296/), but this patch
+> > and whole idea was rejected long time ago. 
 > 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> That patch does look a little painful indeed.
 > 
-> > Ingo,
-> > 
-> > This is new iteration of the bkl tracepoints + filter
-> > regex support. It addresses the reviews that were posted
-> > in the previous RFC version.
-> > 
-> > Please pull from:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> > 	tracing/core
-> > 
-> > Thanks;
-> > Frederic.
-> > 
-> > Frederic Weisbecker (5):
-> >       tracing/bkl: Add bkl ftrace events
-> >       tracing/filters: Cleanup useless headers
-> >       tracing/event: Cleanup the useless dentry variable
-> >       tracing/filters: Provide basic regex support
-> >       tracing/filters: Unify the regex parsing helpers
-> > 
-> >  include/linux/smp_lock.h           |   19 ++++-
-> >  include/trace/events/bkl.h         |   61 ++++++++++++++
-> >  kernel/trace/ftrace.c              |   64 +--------------
-> >  kernel/trace/trace.h               |   36 ++++++--
-> >  kernel/trace/trace_events.c        |   23 +++---
-> >  kernel/trace/trace_events_filter.c |  155 +++++++++++++++++++++++++++++++----
-> >  lib/kernel_lock.c                  |   11 ++-
-> >  7 files changed, 262 insertions(+), 107 deletions(-)
-> >  create mode 100644 include/trace/events/bkl.h
+> I was more thinking about about looking if an itimer was to expire less
+> than 1 tick away on either sched-in or the tick.
 > 
-> Pulled, thanks a lot Frederic! These bits look very useful.
+> When we find it is indeed less than 1 tick away, program an hrtimer for
+> that cpu to expire at the required moment, see hrtick_start().
 > 
-> It would be perf-ect now to complete the filters-via-perf-events changes 
-> Li Zefan is working on ;-)
+> If we happen to de-schedule the task before the timer fires, we clear
+> the hrtimer again (or let it pend and ignore the fire), see
+> hrtick_clear().
+> 
+> [ there is no reason to rely on the tick though, we can program the 
+> hrtimer on sched in to expire on at the right moment, and do so on 
+> each schedule for as long as an itimer is active - re-setting whatever 
+> pending timer the cpu still had. ]
 
-There's one thing Peter noticed: this is not C syntax anymore. It would 
-be really nice to keep filter expressions a subset of C.
+we should think about the simplest approach: switching itimers to 
+hrtimers.
 
 	Ingo
