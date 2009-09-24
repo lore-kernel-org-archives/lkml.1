@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZIXAl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZIXAom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbZIXAl4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Sep 2009 20:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbZIXAlw
+	id S1753236AbZIXAom (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Sep 2009 20:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZIXAol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Sep 2009 20:41:52 -0400
-Received: from hq-exedge.brocade.com ([66.243.153.82]:30947 "EHLO
-	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779AbZIXAlt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Sep 2009 20:41:49 -0400
-Date: Wed, 23 Sep 2009 17:41:52 -0700
-From: Jing Huang <huangj@brocade.com>
-Message-ID: <200909240041.n8O0fq0j019952@blc-10-6.brocade.com>
-To: <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 0/14] bfa: Brocade BFA FC SCSI driver (overview)
-CC: <kgudipat@brocade.com>, <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>, <rvadivel@brocade.com>,
-       <vravindr@brocade.com>
+	Wed, 23 Sep 2009 20:44:41 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63533 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752825AbZIXAok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Sep 2009 20:44:40 -0400
+Message-ID: <4ABAC0A7.3050307@cn.fujitsu.com>
+Date: Thu, 24 Sep 2009 08:43:19 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Paul Menage <menage@google.com>
+CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Update documentation of cgroups tasks and procs files
+References: <20090924001249.4783.91619.stgit@menage.mtv.corp.google.com>
+In-Reply-To: <20090924001249.4783.91619.stgit@menage.mtv.corp.google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jing Huang <huangj@brocade.com>
+Paul Menage wrote:
+> Update documentation of cgroups tasks and procs files
+> 
+> Document the cgroup.procs file.
+> 
+> Clarify the semantics of the cgroup.procs and tasks files.  Although
+> the current cgroup.procs interface returns a sorted and uniqified list
+> of pids, potential future performance enhancements could result in
+> those properties being removed - explicitly document this aspect of
+> the API.
+> 
+> There are no existing users of cgroup.procs, so compatibility isn't an
+> issue.  There are users of the "tasks" file, but none that would
+> appear to break in the event of the sorted property being broken. The
+> standard "libcpuset" explicitly sorts the results of reading from the
+> tasks file, and "libcg" and other users don't appear to care about
+> ordering.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
 
-Incorporated code review comments from Andrew Morton and Brian King. Please
-consider this patch set for next kernel update.
-
-Patches are generated and tested in 2.6.31 kernel.
-
-[PATCH 1/14]: SCSI LLD driver code, module init/exit, PCI and SCSI host entry
-points, interrupt handler, and sysfs interface etc. 
-
-[PATCH 2/14]: Hardware/FW access code. part-1
-
-[PATCH 3/14]: Hardware/FW access code. part-2
-
-[PATCH 4/14]: Hardware/FW access code. part-3
-
-[PATCH 5/14]: Hardware/FW access code. part-4
-
-[PATCH 6/14]: FC state machines. part-1
-
-[PATCH 7/14]: FC state machines. part-2
-
-[PATCH 8/14]: FC state machines. part-3
-
-[PATCH 9/14]: FC state machines. part-3
-
-[PATCH 10/14]: Common header files shared by linux driver,
-hardware/FW access code, FC state machines. part-1
-
-[PATCH 11/14]: Common header files shared by linux driver,
-hardware/FW access code, FC state machines. part-2
-
-[PATCH 12/14]: Common header files shared by linux driver,
-hardware/FW access code, FC state machines. part-3
-
-[PATCH 13/14]: Updated Kconfig and Makefile for driver/scsi, and Makefile
-for bfa driver 
-
-[PATCH 14/14]: Updated MAINTAINER file.
-
-Signed-off-by: Jing Huang <huangj@brocade.com>
----
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
