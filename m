@@ -1,77 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753045AbZIXRi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbZIXRke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753045AbZIXRi4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 13:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZIXRiy
+	id S1753217AbZIXRke (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 13:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbZIXRkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 13:38:54 -0400
-Received: from hq-exedge.brocade.com ([66.243.153.82]:38389 "EHLO
-	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbZIXRix convert rfc822-to-8bit (ORCPT
+	Thu, 24 Sep 2009 13:40:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51707 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753127AbZIXRka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 13:38:53 -0400
-From: Jing Huang <huangj@Brocade.COM>
-To: Daniel Walker <dwalker@fifo99.com>
-CC: "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       Krishna Gudipati <kgudipat@Brocade.COM>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Ramkumar Vadivelu <rvadivel@Brocade.COM>,
-       Vinodh Ravindran <vravindr@Brocade.COM>
-Date: Thu, 24 Sep 2009 10:38:53 -0700
-Subject: RE: [PATCH 2/14] bfa: Brocade BFA FC SCSI driver (bfa1)
-Thread-Topic: [PATCH 2/14] bfa: Brocade BFA FC SCSI driver (bfa1)
-Thread-Index: Aco9LeNSxe6uLJJIRsObI5MmoYGmrQAD78Yg
-Message-ID: <B0A7AF226B49A14897036E9B3A68CFFECB1AB0F77D@HQ-EXCH-7.corp.brocade.com>
-References: <200909240049.n8O0nw3l013437@swe58.brocade.com>
- <1253807042.20648.188.camel@desktop>
-In-Reply-To: <1253807042.20648.188.camel@desktop>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 24 Sep 2009 13:40:30 -0400
+Date: Thu, 24 Sep 2009 10:39:00 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Cc: lwn@lwn.net
+Subject: Linux 2.6.30.8
+Message-ID: <20090924173900.GC17077@kroah.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2009-09-23 at 17:49 -0700, Jing Huang wrote:
-> > +
-> > +       return (*(union bfi_addr_u *) &addr);
-> > +}
-> 
-> Have you run checkpatch on this code? It produces many errors due to
-> your "return" usage for one.. The usual style of return is not to use
-> parentheses since it's really not a function ..
-> 
-> The line I quoted above gives the following error,
-> 
-> ERROR: return is not a function, parentheses are not required
-> #266: FILE: drivers/scsi/bfa/bfa_cb_ioim_macros.h:132:
-> +       return (*(union bfi_addr_u *) &addr);
-> 
-> First of all I'd consider making your code consistent with respect to
-> the return statements .. I noticed that you sometimes use the
-> parentheses sometimes not .. Since it's more with Linux style I'd just
-> remove all the extra parentheses..
-> 
-> Checkpatch produces many other errors in your code .. If you haven't
-> already evaluated those errors, I'd do go through each patch and review
-> the errors (and the warnings) that it produces since checkpatch can give
-> you a fairly mechanical view into how well your code matches the Linux
-> coding style. The less the output from checkpatch the better ..
-> 
-> Daniel
-> 
+I'm announcing the release of the 2.6.30.8 kernel.  All users of the
+2.6.30 kernel series are very strongly encouraged to upgrade.
 
-Hi Daniel, 
+I'll also be replying to this message with a copy of the patch between
+2.6.30.7 and 2.6.30.8
 
-I did run checkpatch.pl and it didn't report any ERROR or WARNING. Do you use any specific flags?
+The updated 2.6.30.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.30.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.30.y.git;a=summary
 
-Thanks
+thanks,
 
-Jing
+greg k-h
+
+------------
+
+ Makefile                                  |    2 
+ arch/arm/mm/highmem.c                     |    8 +++
+ arch/powerpc/include/asm/mmu-hash64.h     |    2 
+ arch/powerpc/kernel/lparcfg.c             |    3 +
+ arch/powerpc/kernel/rtas.c                |    7 ++-
+ arch/powerpc/mm/slb.c                     |   16 +++++--
+ arch/powerpc/platforms/pseries/reconfig.c |    9 +++-
+ arch/x86/include/asm/processor.h          |   12 +++++
+ arch/x86/include/asm/stackprotector.h     |    4 -
+ arch/x86/include/asm/system.h             |    2 
+ arch/x86/kernel/apic/es7000_32.c          |    2 
+ arch/x86/kernel/cpu/common.c              |    2 
+ arch/x86/kernel/head_32.S                 |    1 
+ arch/x86/mm/pageattr.c                    |    8 +++
+ drivers/ata/libata-core.c                 |    8 +++
+ drivers/block/virtio_blk.c                |    3 +
+ drivers/char/agp/intel-agp.c              |    9 ----
+ drivers/char/tpm/tpm_tis.c                |   12 ++---
+ drivers/input/joydev.c                    |   66 ++++++++++++++++++------------
+ drivers/media/video/em28xx/em28xx-cards.c |    3 +
+ drivers/net/mlx4/eq.c                     |   42 -------------------
+ drivers/net/mlx4/main.c                   |    9 ++--
+ drivers/net/mlx4/mlx4.h                   |    7 ---
+ drivers/net/wireless/ath5k/base.c         |    2 
+ drivers/pci/quirks.c                      |    3 +
+ drivers/ps3/ps3stor_lib.c                 |   65 ++++++++++++++++++++++++++++-
+ drivers/scsi/sg.c                         |    2 
+ fs/binfmt_elf.c                           |   28 ++++++------
+ fs/udf/lowlevel.c                         |    7 ++-
+ ipc/shm.c                                 |    2 
+ net/wireless/scan.c                       |    2 
+ sound/pci/cs46xx/cs46xx_lib.h             |    2 
+ sound/pci/oxygen/oxygen_io.c              |   11 -----
+ sound/soc/codecs/wm8350.c                 |    2 
+ 34 files changed, 222 insertions(+), 141 deletions(-)
+
+Bob Copeland (2):
+      ath5k: write PCU registers on initial reset
+      cfg80211: fix looping soft lockup in find_ie()
+
+Brian King (1):
+      powerpc/pseries: Fix to handle slb resize across migration
+
+Christoph Hellwig (1):
+      virtio_blk: don't bounce highmem requests
+
+Clemens Ladisch (1):
+      sound: oxygen: work around MCE when changing volume
+
+Franklin Meng (1):
+      V4L: em28xx: set up tda9887_conf in em28xx_card_setup()
+
+Geoff Levand (1):
+      powerpc/ps3: Workaround for flash memory I/O error
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.30.8
+
+Hugh Dickins (1):
+      fix undefined reference to user_shm_unlock
+
+Jack Steiner (1):
+      x86, pat: Fix cacheflush address in change_page_attr_set_clr()
+
+Jan Kara (1):
+      udf: Use device size when drive reported bogus number of written blocks
+
+Jason Gunthorpe (1):
+      TPM: Fixup boot probe timeout for tpm_tis driver
+
+Jean Delvare (1):
+      PCI: Unhide the SMBus on the Compaq Evo D510 USDT
+
+Jeremy Fitzhardinge (1):
+      x86/i386: Make sure stack-protector segment base is cache aligned
+
+Mark Brown (1):
+      ASoC: Fix WM835x Out4 capture enumeration
+
+Michal Schmidt (1):
+      sg: fix oops in the error path in sg_build_indirect()
+
+Nicolas Pitre (1):
+      ARM: 5691/1: fix cache aliasing issues between kmap() and kmap_atomic() with highmem
+
+Roel Kluin (1):
+      x86: Fix x86_model test in es7000_apic_is_cluster()
+
+Roland Dreier (1):
+      mlx4_core: Allocate and map sufficient ICM memory for EQ context
+
+Roland McGrath (1):
+      binfmt_elf: fix PT_INTERP bss handling
+
+Sophie Hamilton (1):
+      ALSA: cs46xx - Fix minimum period size
+
+Stephen Kitt (1):
+      Input: joydev - decouple axis and button map ioctls from input constants
+
+Tejun Heo (2):
+      PCI: apply nv_msi_ht_cap_quirk on resume too
+      libata: fix off-by-one error in ata_tf_read_block()
+
+Zhenyu Wang (1):
+      agp/intel: remove restore in resume
+
