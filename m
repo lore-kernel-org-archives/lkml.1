@@ -1,77 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752186AbZIXLla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZIXLtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752186AbZIXLla (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 07:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZIXLl3
+	id S1752203AbZIXLtX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 07:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZIXLtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 07:41:29 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58976 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbZIXLl3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 07:41:29 -0400
-Date: Thu, 24 Sep 2009 13:41:23 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
-Message-ID: <20090924134123.4acd1adf@infradead.org>
-In-Reply-To: <1253791987.7695.153.camel@twins>
-References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
-	<1251869611.7547.38.camel@twins>
-	<1253753307.7103.356.camel@pasglop>
-	<1253778667.7695.130.camel@twins>
-	<1253781508.7103.437.camel@pasglop>
-	<1253791987.7695.153.camel@twins>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 24 Sep 2009 07:49:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48508 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751676AbZIXLtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 07:49:21 -0400
+Date: Thu, 24 Sep 2009 11:48:52 GMT
+From: tip-bot for Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, jason.wessel@windriver.com,
+       lenb@kernel.org, akpm@linux-foundation.org, gregkh@suse.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lenb@kernel.org, akpm@linux-foundation.org, jason.wessel@windriver.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4ABAAB89.1080407@windriver.com>
+References: <4ABAAB89.1080407@windriver.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: early_printk: Protect against using the same device twice
+Message-ID: <tip-429a6e5e2c1fbe5d805aad123efbdb5f0c14769f@git.kernel.org>
+Git-Commit-ID: 429a6e5e2c1fbe5d805aad123efbdb5f0c14769f
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 24 Sep 2009 11:48:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Sep 2009 13:33:07 +0200
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+Commit-ID:  429a6e5e2c1fbe5d805aad123efbdb5f0c14769f
+Gitweb:     http://git.kernel.org/tip/429a6e5e2c1fbe5d805aad123efbdb5f0c14769f
+Author:     Jason Wessel <jason.wessel@windriver.com>
+AuthorDate: Wed, 23 Sep 2009 18:13:13 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 24 Sep 2009 13:01:13 +0200
 
-> On Thu, 2009-09-24 at 18:38 +1000, Benjamin Herrenschmidt wrote:
-> > On Thu, 2009-09-24 at 09:51 +0200, Peter Zijlstra wrote:
-> > > > I don't quite follow your logic here. This is useful for more
-> > > > than just hypervisors. For example, take the HV out of the
-> > > > picture for a moment and imagine that the HW has the ability to
-> > > > offline CPU in various power levels, with varying latencies to
-> > > > bring them back.
-> > > 
-> > > cpu-hotplug is an utter slow path, anybody saying latency and
-> > > hotplug in the same sentence doesn't seem to grasp either or both
-> > > concepts.
-> > 
-> > Let's forget about latency then. Let's imagine I want to set a CPU
-> > offline to save power, vs. setting it offline -and- opening the back
-> > door of the machine to actually physically replace it :-)
-> 
-> If the hardware is capable of physical hotplug, then surely powering
-> the socket down saves most power and is the preferred mode?
+x86: early_printk: Protect against using the same device twice
 
-btw just to take away a perception that generally powering down sockets
-help; it does not help for all cpus. Some cpus are so efficient in idle
-that the incremental gain one would get by "offlining" a core is just
-not worth it
-(in fact, in x86, it's the same thing)
+If you use the kernel argument:
 
-I obviously can't speak for p-series cpus, just wanted to point out
-that there is no universal truth about "offlining saves power".
+  earlyprintk=serial,ttyS0,115200
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+This will cause a recursive hang printing the same line
+again and again:
+
+ BIOS-e820: 000000003fff3000 - 0000000040000000 (ACPI data)
+ BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+ BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+bootconsole [earlyser0] enabled
+Linux version 2.6.31-07863-gb64ada6 (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #16789 SMP Wed Sep 23 21:09:43 CEST 2009
+Linux version 2.6.31-07863-gb64ada6 (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #16789 SMP Wed Sep 23 21:09:43 CEST 2009
+Linux version 2.6.31-07863-gb64ada6 (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #16789 SMP Wed Sep 23 21:09:43 CEST 2009
+Linux version 2.6.31-07863-gb64ada6 (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #16789 SMP Wed Sep 23 21:09:43 CEST 2009
+Linux version 2.6.31-07863-gb64ada6 (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #16789 SMP Wed Sep 23 21:09:43 CEST 2009
+
+Instead warn the end user that they specified the device
+a second time, and ignore that second console.
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <4ABAAB89.1080407@windriver.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/early_printk.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
+index 2acfd3f..41fd965 100644
+--- a/arch/x86/kernel/early_printk.c
++++ b/arch/x86/kernel/early_printk.c
+@@ -178,6 +178,11 @@ asmlinkage void early_printk(const char *fmt, ...)
+ 
+ static inline void early_console_register(struct console *con, int keep_early)
+ {
++	if (early_console->index != -1) {
++		printk(KERN_CRIT "ERROR: earlyprintk= %s already used\n",
++		       con->name);
++		return;
++	}
+ 	early_console = con;
+ 	if (keep_early)
+ 		early_console->flags &= ~CON_BOOT;
