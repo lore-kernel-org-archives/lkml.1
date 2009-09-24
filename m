@@ -1,167 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbZIXWDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZIXWEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751892AbZIXWDg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZIXWDf
+	id S1752217AbZIXWEM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 18:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZIXWEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:03:35 -0400
-Received: from mail-px0-f189.google.com ([209.85.216.189]:48696 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZIXWDe (ORCPT
+	Thu, 24 Sep 2009 18:04:11 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38196 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352AbZIXWEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:03:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=LlCJIfVlavIywNWfAk+RXhGqurJL6DWFAiypM0+3qEivEGmfL83iSxSp1Dnl7nsW0A
-         bkF0AzhSjiLS0WgVkzmkWA8ms4NbG4N58hl+BjEUbaJ1AeOiynJdNVkvD5Gvv2j5fWOi
-         YRSQx6nLJ5RPNnPF/5izDttvlPxZiE3+lljyk=
-Message-ID: <4ABBECB8.5040207@gmail.com>
-Date: Thu, 24 Sep 2009 15:03:36 -0700
-From: Bruce Jones <brucej97223@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: gregkh@suse.de
-CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
+	Thu, 24 Sep 2009 18:04:09 -0400
+Date: Thu, 24 Sep 2009 15:03:50 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Gary Hade <garyhade@us.ibm.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] staging: comedi: fix formating in drivers/ni_atmio16d.c
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: fixing "pci=use_crs"
+Message-ID: <20090924220350.GA7321@us.ibm.com>
+References: <200909161715.24376.bjorn.helgaas@hp.com> <200909211520.56800.bjorn.helgaas@hp.com> <4AB95F41.1070500@lwfinger.net> <200909231723.31786.bjorn.helgaas@hp.com> <86802c440909231628t6b35aae4u706c0c35590bc0d3@mail.gmail.com> <1253762502.12653.4.camel@dc7800.home> <86802c440909232142p3e5d4974g51eb519d5d0ef58e@mail.gmail.com> <1253798658.14132.9.camel@dc7800.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253798658.14132.9.camel@dc7800.home>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix improper use of printks in this driver.  Most are
-debug messages under a DEBUG #ifdef, a few are info/warnings
-that should get logged for driver error conditions.
+On Thu, Sep 24, 2009 at 07:24:18AM -0600, Bjorn Helgaas wrote:
+> On Wed, 2009-09-23 at 21:42 -0700, Yinghai Lu wrote:
+> > On Wed, Sep 23, 2009 at 8:21 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > > On Wed, 2009-09-23 at 16:28 -0700, Yinghai Lu wrote:
+> > >> On Wed, Sep 23, 2009 at 4:23 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > >
+> > >> > P.S.  Yinghai, you posted some patches earlier dealing with "only one
+> > >> > HT chain."  You apparently have some insight into what's going on here,
+> > >> > but unfortunately, the changelogs mean absolutely nothing to me.  Can
+> > >> > you give me any clues?
+> > >>
+> > >> which commit?
+> > >>
+> > >> normally we only need to have split root resource into several pieces
+> > >> when we have two HT chains or other io chains...
+> > >
+> > > I meant the patches here:
+> > >  http://lkml.org/lkml/2009/6/24/557
+> > >
+> > > My opinion is that ACPI is there to give us an abstract description of
+> > > the machine, and we shouldn't have to introduce knowledge like "this
+> > > machine has two HT chains" or add checks in amd_bus.c about
+> > > "pci_root_num <= 1".
+> > >
+> > > But maybe if I knew what an HT chain was and why you think it affects
+> > > the description returned by _CRS, it would give me a clue about how to
+> > > deal with this in a generic way.
+> > 
+> > we could use _CRS, but lots of BIOS just provide messed up resources
+> > in _CRS to OS.
+> 
+> We do have to assume there are BIOS defects here, but in most cases, I
+> look for Linux deficiencies first.  I'm assuming (without real evidence)
+> that Windows does look at the _CRS, so the worst BIOS defects should be
+> weeded out by Windows testing.
+> 
+> > for example, the HW conf register does have mmio high range there, but
+> > _CRS doesn't report them.
+> 
+> On Larry's box, _CRS reports *more* ranges than Linux was prepared for.
+> This would be a bug in the other direction, where _CRS reports *less*
+> than it should.
+> 
+> > thought we can use whilelist to use _CRS for them.
+> 
+> I'm opposed to a whitelist for this issue because it means we have to
+> continually update the whitelist for new, correctly working machines.
+> If we can't figure out anything better, we could use a date-based
+> blacklist (ignore _CRS for all machines older than today).
 
-Signed-off-by: Bruce Jones <brucej@linux.com>
----
- drivers/staging/comedi/drivers/ni_atmio16d.c |   30 +++++++++++++------------
- 1 files changed, 16 insertions(+), 14 deletions(-)
+Unless someone has a strong need other than PCI hot-add for
+root bridge _CRS to be used by default, would it possibly make
+sense (at least as a first cut) to limit the default use of
+_CRS to only those root bridges that (1) are located above
+PCI hotplug capable slots and (2) have _CRS that returns a
+quantity of ranges that will not overrun the current fixed
+size resource arrays?
 
-diff --git a/drivers/staging/comedi/drivers/ni_atmio16d.c b/drivers/staging/comedi/drivers/ni_atmio16d.c
-index c8876dc..3af879a 100644
---- a/drivers/staging/comedi/drivers/ni_atmio16d.c
-+++ b/drivers/staging/comedi/drivers/ni_atmio16d.c
-@@ -279,7 +279,9 @@ static irqreturn_t atmio16d_interrupt(int irq, void *d)
- 	struct comedi_device *dev = d;
- 	struct comedi_subdevice *s = dev->subdevices + 0;
- 
--/* printk("atmio16d_interrupt!\n"); */
-+#ifdef DEBUG1
-+	printk(KERN_DEBUG "atmio16d_interrupt!\n");
-+#endif
- 
- 	comedi_buf_put(s->async, inw(dev->iobase + AD_FIFO_REG));
- 
-@@ -293,7 +295,7 @@ static int atmio16d_ai_cmdtest(struct comedi_device *dev,
- {
- 	int err = 0, tmp;
- #ifdef DEBUG1
--	printk("atmio16d_ai_cmdtest\n");
-+	printk(KERN_DEBUG "atmio16d_ai_cmdtest\n");
- #endif
- 	/* make sure triggers are valid */
- 	tmp = cmd->start_src;
-@@ -397,7 +399,7 @@ static int atmio16d_ai_cmd(struct comedi_device *dev,
- 	unsigned int sample_count, tmp, chan, gain;
- 	int i;
- #ifdef DEBUG1
--	printk("atmio16d_ai_cmd\n");
-+	printk(KERN_DEBUG "atmio16d_ai_cmd\n");
- #endif
- 	/* This is slowly becoming a working command interface. *
- 	 * It is still uber-experimental */
-@@ -559,7 +561,7 @@ static int atmio16d_ai_insn_read(struct comedi_device *dev,
- 	int status;
- 
- #ifdef DEBUG1
--	printk("atmio16d_ai_insn_read\n");
-+	printk(KERN_DEBUG "atmio16d_ai_insn_read\n");
- #endif
- 	chan = CR_CHAN(insn->chanspec);
- 	gain = CR_RANGE(insn->chanspec);
-@@ -580,7 +582,7 @@ static int atmio16d_ai_insn_read(struct comedi_device *dev,
- 			/* check conversion status */
- 			status = inw(dev->iobase + STAT_REG);
- #ifdef DEBUG1
--			printk("status=%x\n", status);
-+			printk(KERN_DEBUG "status=%x\n", status);
- #endif
- 			if (status & STAT_AD_CONVAVAIL) {
- 				/* read the data now */
-@@ -591,7 +593,7 @@ static int atmio16d_ai_insn_read(struct comedi_device *dev,
- 				break;
- 			}
- 			if (status & STAT_AD_OVERFLOW) {
--				printk("atmio16d: a/d FIFO overflow\n");
-+				printk(KERN_INFO "atmio16d: a/d FIFO overflow\n");
- 				outw(0, dev->iobase + AD_CLEAR_REG);
- 
- 				return -ETIME;
-@@ -599,7 +601,7 @@ static int atmio16d_ai_insn_read(struct comedi_device *dev,
- 		}
- 		/* end waiting, now check if it timed out */
- 		if (t == ATMIO16D_TIMEOUT) {
--			printk("atmio16d: timeout\n");
-+			printk(KERN_INFO "atmio16d: timeout\n");
- 
- 			return -ETIME;
- 		}
-@@ -614,7 +616,7 @@ static int atmio16d_ao_insn_read(struct comedi_device *dev,
- {
- 	int i;
- #ifdef DEBUG1
--	printk("atmio16d_ao_insn_read\n");
-+	printk(KERN_DEBUG "atmio16d_ao_insn_read\n");
- #endif
- 
- 	for (i = 0; i < insn->n; i++)
-@@ -630,7 +632,7 @@ static int atmio16d_ao_insn_write(struct comedi_device *dev,
- 	int chan;
- 	int d;
- #ifdef DEBUG1
--	printk("atmio16d_ao_insn_write\n");
-+	printk(KERN_DEBUG "atmio16d_ao_insn_write\n");
- #endif
- 
- 	chan = CR_CHAN(insn->chanspec);
-@@ -740,7 +742,7 @@ static int atmio16d_attach(struct comedi_device *dev,
- 
- 	/* make sure the address range is free and allocate it */
- 	iobase = it->options[0];
--	printk("comedi%d: atmio16d: 0x%04lx ", dev->minor, iobase);
-+	printk(KERN_INFO "comedi%d: atmio16d: 0x%04lx ", dev->minor, iobase);
- 	if (!request_region(iobase, ATMIO16D_SIZE, "ni_atmio16d")) {
- 		printk("I/O port conflict\n");
- 		return -EIO;
-@@ -767,13 +769,13 @@ static int atmio16d_attach(struct comedi_device *dev,
- 
- 		ret = request_irq(irq, atmio16d_interrupt, 0, "atmio16d", dev);
- 		if (ret < 0) {
--			printk("failed to allocate irq %u\n", irq);
-+			printk(KERN_INFO "failed to allocate irq %u\n", irq);
- 			return ret;
- 		}
- 		dev->irq = irq;
--		printk("( irq = %u )\n", irq);
-+		printk(KERN_INFO "( irq = %u )\n", irq);
- 	} else {
--		printk("( no irq )");
-+		printk(KERN_INFO "( no irq )");
- 	}
- 
- 	/* set device options */
-@@ -870,7 +872,7 @@ static int atmio16d_attach(struct comedi_device *dev,
- 
- static int atmio16d_detach(struct comedi_device *dev)
- {
--	printk("comedi%d: atmio16d: remove\n", dev->minor);
-+	printk(KERN_INFO "comedi%d: atmio16d: remove\n", dev->minor);
- 
- 	if (dev->subdevices && boardtype->has_8255)
- 		subdev_8255_cleanup(dev, dev->subdevices + 3);
+Gary
+
 -- 
-1.6.5.rc2
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
