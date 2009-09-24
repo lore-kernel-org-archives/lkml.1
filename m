@@ -1,139 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbZIXQLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZIXQIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753259AbZIXQLA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 12:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZIXQK7
+	id S1753177AbZIXQIx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 12:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZIXQIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 12:10:59 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:36710 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbZIXQK5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 12:10:57 -0400
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: viro@ZenIV.linux.org.uk, hch@infradead.org, adilger@sun.com,
-       yehuda@newdream.net, garlick@llnl.gov, raven@themaw.net,
-       Sage Weil <sage@newdream.net>
-Subject: [PATCH] vfs: clean up real_lookup
-Date: Thu, 24 Sep 2009 09:11:00 -0700
-Message-Id: <1253808660-20473-2-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1253808660-20473-1-git-send-email-sage@newdream.net>
-References: <1253808660-20473-1-git-send-email-sage@newdream.net>
+	Thu, 24 Sep 2009 12:08:53 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:60413 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752633AbZIXQIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 12:08:52 -0400
+Date: Thu, 24 Sep 2009 18:13:19 +0200
+From: Michal Schmidt <mschmidt@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Xiaotian Feng <xtfeng@gmail.com>, linux-kernel@vger.kernel.org,
+       John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: sleeping function called from invalid context at
+ kernel/mutex.c:280
+Message-ID: <20090924181319.17ed46c9@leela>
+In-Reply-To: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
+References: <7b6bb4a50909230227h50cccb0enb02d42664dd61872@mail.gmail.com>
+	<20090924153319.0fa902d3@leela>
+	<20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
+Organization: Red Hat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Get rid of the goto by flipping the if (!result) over.  Make the
-comments a bit more descriptive.  Fix a few kernel style problems.
-No functional changes.
+Dne Thu, 24 Sep 2009 17:29:52 +0200 Martin Schwidefsky napsal(a):
+> On Thu, 24 Sep 2009 15:33:19 +0200
+> Michal Schmidt <mschmidt@redhat.com> wrote:
+> > I've just noticed the same in the latest git.
+> > sysdev_resume() runs with IRQs disabled, but clocksource_resume()
+> > uses a mutex. Hmm, in 2.6.30 it used to be spinlock. This was
+> > changed to mutex by:
+> > 
+> > commit 75c5158f70c065b9704b924503d96e8297838f79
+> > Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > Date:   Fri Aug 14 15:47:30 2009 +0200
+> > 
+> >     timekeeping: Update clocksource with stop_machine
+> >     
+> >     update_wall_time calls change_clocksource HZ times per second to
+> >     check if a new clock source is available. In close to 100% of
+> > all calls there is no new clock. Replace the tick based check by an
+> >     update done with stop_machine.
+> 
+> Hmm, the spinlock to mutex conversion is necessary to make it possible
+> to use stop_machine to install the new clocksource. At the same time
+> clocksource_resume is called early in the resume cycle with interrupts
+> disabled and may not take a mutex. Question is: does it have to? There
+> shouldn't be any processes running that can change the list of
+> installed clocksources. Can you test if this patch fixes the problem?
+> 
+> --
+> Subject: [PATCH] clocksource: resume clocksource without taking the
+> clocksource mutex
+> 
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> git commit 75c5158f70c065b9 converted the clocksource spinlock to a
+> mutex. This causes the following BUG:
+> 
+> BUG: sleeping function called from invalid context at
+> kernel/mutex.c:280 in_atomic(): 0, irqs_disabled(): 1, pid: 2473,
+> name: pm-suspend 2 locks held by pm-suspend/2473:
+>  #0:  (&buffer->mutex){......}, at: [<ffffffff8115ab13>]
+> sysfs_write_file+0x3c/0x137
+>  #1:  (pm_mutex){......}, at: [<ffffffff810865b5>]
+> enter_state+0x39/0x130 Pid: 2473, comm: pm-suspend Not tainted 2.6.31
+> #1 Call Trace:
+>  [<ffffffff810792f0>] ? __debug_show_held_locks+0x22/0x24
+>  [<ffffffff8104a2ef>] __might_sleep+0x107/0x10b
+>  [<ffffffff8141fca9>] mutex_lock_nested+0x25/0x43
+>  [<ffffffff81073537>] clocksource_resume+0x1c/0x60
+>  [<ffffffff81072902>] timekeeping_resume+0x1e/0x1c8
+>  [<ffffffff812aee62>] __sysdev_resume+0x25/0xcf
+>  [<ffffffff812aef79>] sysdev_resume+0x6d/0xae
+>  [<ffffffff810864f8>] suspend_devices_and_enter+0x12b/0x1af
+>  [<ffffffff8108665b>] enter_state+0xdf/0x130
+>  [<ffffffff81085dc3>] state_store+0xb6/0xd3
+>  [<ffffffff81204c73>] kobj_attr_store+0x17/0x19
+>  [<ffffffff8115abd2>] sysfs_write_file+0xfb/0x137
+>  [<ffffffff811057d2>] vfs_write+0xae/0x10b
+>  [<ffffffff81208392>] ? __up_read+0x1a/0x7f
+>  [<ffffffff811058ef>] sys_write+0x4a/0x6e
+>  [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
+> 
+> clocksource_resume is called early in the resume process, there
+> is only one cpu, no processes are running and the interrupts are
+> disabled. It is therefore possible to resume the clocksources
+> without taking the clocksource mutex.
+> 
+> Reported-by: Xiaotian Feng <xtfeng@gmail.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-CC: Ian Kent <raven@themaw.net>
-CC: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Yehuda Sadeh <yehuda@newdream.net>
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- fs/namei.c |   65 +++++++++++++++++++++++++++++++----------------------------
- 1 files changed, 34 insertions(+), 31 deletions(-)
-
-diff --git a/fs/namei.c b/fs/namei.c
-index f74ddb3..6770dde 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -469,19 +469,20 @@ ok:
-  * This is called when everything else fails, and we actually have
-  * to go to the low-level filesystem to find out what we should do..
-  *
-- * We get the directory semaphore, and after getting that we also
-+ * We get the directory mutex, and after getting that we also
-  * make sure that nobody added the entry to the dcache in the meantime..
-  * SMP-safe
-  */
--static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, struct nameidata *nd)
-+static struct dentry *real_lookup(struct dentry *parent, struct qstr *name,
-+				  struct nameidata *nd)
- {
--	struct dentry * result;
-+	struct dentry *result, *dentry;
- 	struct inode *dir = parent->d_inode;
- 
- 	mutex_lock(&dir->i_mutex);
- 	/*
- 	 * First re-do the cached lookup just in case it was created
--	 * while we waited for the directory semaphore..
-+	 * while we waited for the directory mutex.
- 	 *
- 	 * FIXME! This could use version numbering or similar to
- 	 * avoid unnecessary cache lookups.
-@@ -494,38 +495,40 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
- 	 * so doing d_lookup() (with seqlock), instead of lockfree __d_lookup
- 	 */
- 	result = d_lookup(parent, name);
--	if (!result) {
--		struct dentry *dentry;
--
--do_the_lookup:
--		/* Don't create child dentry for a dead directory. */
--		result = ERR_PTR(-ENOENT);
--		if (IS_DEADDIR(dir))
--			goto out_unlock;
--
--		dentry = d_alloc(parent, name);
--		result = ERR_PTR(-ENOMEM);
--		if (dentry) {
--			result = dir->i_op->lookup(dir, dentry, nd);
-+	if (result) {
-+		/*
-+		 * The cache was re-populated while we waited on the
-+		 * mutex.  We need to revalidate, this time while
-+		 * holding i_mutex (to avoid another race).
-+		 */
-+		if (result->d_op && result->d_op->d_revalidate) {
-+			result = do_revalidate(result, nd);
- 			if (result)
--				dput(dentry);
--			else
--				result = dentry;
-+				goto out_unlock;
-+			/*
-+			 * The dentry was left behind invalid.  Just
-+			 * do the lookup.
-+			 */
-+		} else {
-+			goto out_unlock;
- 		}
--out_unlock:
--		mutex_unlock(&dir->i_mutex);
--		return result;
- 	}
- 
--	/*
--	 * Uhhuh! Nasty case: the cache was re-populated while
--	 * we waited on the semaphore. Need to revalidate.
--	 */
--	if (result->d_op && result->d_op->d_revalidate) {
--		result = do_revalidate(result, nd);
--		if (!result)
--			goto do_the_lookup;
-+	/* Don't create child dentry for a dead directory. */
-+	result = ERR_PTR(-ENOENT);
-+	if (IS_DEADDIR(dir))
-+		goto out_unlock;
-+
-+	dentry = d_alloc(parent, name);
-+	result = ERR_PTR(-ENOMEM);
-+	if (dentry) {
-+		result = dir->i_op->lookup(dir, dentry, nd);
-+		if (result)
-+			dput(dentry);
-+		else
-+			result = dentry;
- 	}
-+out_unlock:
- 	mutex_unlock(&dir->i_mutex);
- 	return result;
- }
--- 
-1.5.6.5
-
+Yes, this fixes the problem.
+Tested-by: Michal Schmidt <mschmidt@redhat.com>
