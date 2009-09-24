@@ -1,106 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751824AbZIXJiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751749AbZIXKCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751824AbZIXJiv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 05:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZIXJin
+	id S1751749AbZIXKCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 06:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZIXKCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 05:38:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55190 "EHLO mx3.mail.elte.hu"
+	Thu, 24 Sep 2009 06:02:16 -0400
+Received: from mga14.intel.com ([143.182.124.37]:47855 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751720AbZIXJii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 05:38:38 -0400
-Date: Thu, 24 Sep 2009 11:38:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] x86: Reduce verbosity of "PAT enabled" kernel
-	message
-Message-ID: <20090924093800.GA23158@elte.hu>
-References: <adavdj92sso.fsf@cisco.com> <adar5tx2s9d.fsf@cisco.com>
+	id S1751018AbZIXKCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 06:02:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,444,1249282800"; 
+   d="scan'208";a="191146723"
+Date: Thu, 24 Sep 2009 18:01:36 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Li, Shaohua" <shaohua.li@intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>, linux-fsdevel@vger.kernel.org,
+       Jan Kara <jack@suse.cz>
+Subject: Re: [RFC] page-writeback: move indoes from one superblock together
+Message-ID: <20090924100136.GA25778@localhost>
+References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <adar5tx2s9d.fsf@cisco.com>
+In-Reply-To: <1253775260.10618.10.camel@sli10-desk.sh.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Roland Dreier <rdreier@cisco.com> wrote:
-
-> By the way, there is further work to be done in this direction... 
-> these were the easy ones (that save me 127 lines of dmesg :).
-
-thanks Roland - i've applied them to tip:x86/urgent, for v2.6.32 merge.
-
-Feel free to send more such patches, they are nice improvements.
-
-> The philosophy should probably be things that we would want to see to 
-> debug crashes at boot should go into the kernel log -- that makes it 
-> easy for users to grab the output and send it on for debugging.  If we 
-> can move other stuff somewhere that users can grab easily after boot, 
-> then that's probably worth it.
+On Thu, Sep 24, 2009 at 02:54:20PM +0800, Li, Shaohua wrote:
+> __mark_inode_dirty adds inode to wb dirty list in random order. If a disk has
+> several partitions, writeback might keep spindle moving between partitions.
+> To reduce the move, better write big chunk of one partition and then move to
+> another. Inodes from one fs usually are in one partion, so idealy move indoes
+> from one fs together should reduce spindle move. This patch tries to address
+> this. Before per-bdi writeback is added, the behavior is write indoes
+> from one fs first and then another, so the patch restores previous behavior.
+> The loop in the patch is a bit ugly, should we add a dirty list for each
+> superblock in bdi_writeback?
 > 
-> I think the next things to look at are:
-> 
-> * secondary CPU booting:
-> 
->      Calibrating delay using timer specific routine.. xxxx BogoMIPS (lpj=xxxx)
->      CPU: Physical Processor ID: 2
->      CPU: Processor Core ID: 0
->      CPU: L1 I cache: xxxx, L1 D cache: xxxx
->      CPU: L2 cache: xxxx
->      CPU: L3 cache: xxxx
->      CPU 1/0x40 -> Node 0
->      mce: CPU supports xxxx MCE banks
->      CPU1: Thermal monitoring enabled (TM1)
->      CPU 1 MCA banks ....
-> 
->   where all 64 CPUs are exactly the same -- I guess checking for
->   non-homogenous systems might be kind of complicated but we really
->   shouldn't print all this for every CPU when they all match the boot
->   CPU precisely.
+> Test in a two partition disk with attached fio script shows about 3% ~ 6%
+> improvement.
 
-Agreed.
+A side note: given the noticeable performance gain, I wonder if it
+deserves to generalize the idea to do whole disk location ordered
+writeback. That should benefit many small file workloads more than
+10%. Because this patch only sorted 2 partitions and inodes in 5s
+time window, while the below patch will roughly divide the disk into
+5 areas and sort inodes in a larger 25s time window.
 
-> 
-> * scheduler domain stuff:
-> 
->      CPU0 attaching sched-domain:
->       domain 0: span 0,32 level SIBLING
->        groups: 0 (cpu_power = xxxx) 32 (cpu_power = xxxx)
->        domain 1: span 0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60 level MC
->         groups: 0,32 (cpu_power = xxxx) 4,36 (cpu_power = xxxx) 8,40 (cpu_power = xxxx) 12,44 (cpu_power = xxxx) 16,48 (cpu_power = xxxx) 20,52 (cpu_power = xxxx) 24,56 (cpu_power = xxxx) 28,60 (cpu_power = xxxx)
->         domain 2: span 0-63 level CPU
->          groups: 0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60 (cpu_power = xxxx) 1,5,9,13,17,21,25,29,33,37,41,45,49,53,57,61 (cpu_power = xxxx) 2,6,10,14,18,22,26,30,34,38,42,46,50,54,58,62 (cpu_power = xxxx) 3,7,11,15,19,23,27,31,35,39,43,47,51,55,59,63 (cpu_power = xxxx)
-> 
->   not sure what the best way to present this is but 64 copies of this
->   output do consume a lot of log buffer space!
+        http://lkml.org/lkml/2007/8/27/45
 
-Just turn it off after the first instance and give it a sched=debug boot 
-parameter perhaps - that's enough.
-
-> * misc stuff, where we get 64 copies of a single message, eg
-> 
->      Switched to high resolution mode on CPU 0
-> 
->      ACPI: Processor [CPU0] (supports 8 throttling states)
->      processor LNXCPU:01: registered as cooling_device1
-
-Yeah. The switched-to message could be eliminated altogether.
+Judging from this old patch, the complexity cost would be about 250
+lines of code (need a rbtree).
 
 Thanks,
+Fengguang
 
-	Ingo
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 8e1e5e1..fc87730 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -324,13 +324,29 @@ static void move_expired_inodes(struct list_head *delaying_queue,
+>  			       struct list_head *dispatch_queue,
+>  				unsigned long *older_than_this)
+>  {
+> +	LIST_HEAD(tmp);
+> +	struct list_head *pos, *node;
+> +	struct super_block *sb;
+> +	struct inode *inode;
+> +
+>  	while (!list_empty(delaying_queue)) {
+> -		struct inode *inode = list_entry(delaying_queue->prev,
+> -						struct inode, i_list);
+> +		inode = list_entry(delaying_queue->prev, struct inode, i_list);
+>  		if (older_than_this &&
+>  		    inode_dirtied_after(inode, *older_than_this))
+>  			break;
+> -		list_move(&inode->i_list, dispatch_queue);
+> +		list_move(&inode->i_list, &tmp);
+> +	}
+> +
+> +	/* Move indoes from one superblock together */
+> +	while (!list_empty(&tmp)) {
+> +		inode = list_entry(tmp.prev, struct inode, i_list);
+> +		sb = inode->i_sb;
+> +		list_for_each_prev_safe(pos, node, &tmp) {
+> +			struct inode *inode = list_entry(pos,
+> +				struct inode, i_list);
+> +			if (inode->i_sb == sb)
+> +				list_move(&inode->i_list, dispatch_queue);
+> +		}
+>  	}
+>  }
+>  
+> 
+
+Content-Description: newfio
+> [global]
+> runtime=120
+> ioscheduler=cfq
+> size=2G
+> ioengine=sync
+> rw=write
+> file_service_type=random:256
+> overwrite=1
+> 
+> [sdb1]
+> directory=/mnt/b1
+> nrfiles=10
+> numjobs=4
+> 
+> [sdb2]
+> directory=/mnt/b2
+> nrfiles=10
+> numjobs=4
+
