@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752352AbZIXW5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752370AbZIXXHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752352AbZIXW5a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 18:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZIXW5a
+	id S1752370AbZIXXHU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 19:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZIXXHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 18:57:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43589 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751541AbZIXW53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 18:57:29 -0400
-Date: Thu, 24 Sep 2009 15:56:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: iceberg <strakh@ispras.ru>
-Cc: James.Bottomley@hansenpartnership.com, eric@andante.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi_lib.c: sleeping function called from invalid
- context
-Message-Id: <20090924155604.4299aa0a.akpm@linux-foundation.org>
-In-Reply-To: <200909231758.47612.strakh@ispras.ru>
-References: <200909231758.47612.strakh@ispras.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 24 Sep 2009 19:07:20 -0400
+Received: from mail.perches.com ([173.55.12.10]:1186 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751585AbZIXXHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 19:07:19 -0400
+Subject: [PATCH V2] MAINTAINERS: Update Kernel Janitors after mismerge
+From: Joe Perches <joe@perches.com>
+To: akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
+       Markus Heidelberg <markus.heidelberg@web.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200909242142.n8OLgm6x026791@imap1.linux-foundation.org>
+References: <200909242142.n8OLgm6x026791@imap1.linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 24 Sep 2009 16:07:22 -0700
+Message-Id: <1253833642.1806.92.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009 17:58:47 +0000
-iceberg <strakh@ispras.ru> wrote:
+On Thu, 2009-09-24 at 14:42 -0700, akpm@linux-foundation.org wrote:
+> The patch titled
+>      MAINTAINERS: JANITORS status set to Odd Fixes
+> Subject: MAINTAINERS: JANITORS status set to Odd Fixes
+> It was mistakenly reset to MAINTAINED after a fuzzy merge
 
-> Driver scsi_lib.c might sleep in atomic context, because it calls 
-> scsi_device_put under spin_lock_irqsave.
-> drivers/scsi/scsi_lib.c:356:
-> 	spin_lock_irqsave(shost->host_lock, flags);
-> 	scsi_device_put(sdev);
-> Path to might_sleep macro from scsi_device_put:
-> 1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111 
-> 2. put_device calls kobject_put at ./drivers/base/core.c:1038 
-> 3. kobject_put calls kref_put at ./lib/kobject.c
-> 4. kref_put may call callback function kobject_release at ./lib/kref.c if 
-> refcount becomes zero, which might_sleep because it calls user event. Details:
-> 	4.1 kobject_cleanup calls kobject_uevent at ./lib/kobject.c:555
-> 	4.2 kobject_uevent calls kobject_uevent_env at  ./lib/kobject_uevent.c:282
-> 	4.3 kobject_uevent_env calls call_usermodehelper_exec at 
-> ./include/linux/kmod.h:83
-> 	4.4 call_usermodehelper_exec calls wait_for_completion at 
-> ./kernel/kmod.c:481
-> 	4.5 wait_for_completion calls wait_for_common at ./kernel/sched.c:5710
-> 	4.5 wait_for_common calls might_sleep at ./kernels/sched.c:5692
-> 
-> Found by Linux Driver Verification project.
-> 
-> Delete wrong sleeping function calls.
-> 
-> Signed-off-by: Alexander Strakh <strakh@ispras.ru>
-> 
-> ---
-> diff --git a/./a/drivers/scsi/scsi_lib.c b/./b/drivers/scsi/scsi_lib.c
-> index f3c4089..a8f8e2f 100644
-> --- a/./a/drivers/scsi/scsi_lib.c
-> +++ b/./b/drivers/scsi/scsi_lib.c
-> @@ -353,9 +353,9 @@ static void scsi_single_lun_run(struct scsi_device 
-> *current_sdev)
->  
->  		spin_unlock_irqrestore(shost->host_lock, flags);
->  		blk_run_queue(sdev->request_queue);
-> -		spin_lock_irqsave(shost->host_lock, flags);
->  	
-> -		scsi_device_put(sdev);
-> +		scsi_device_put(sdev);	
-> +		spin_lock_irqsave(shost->host_lock, flags);
->  	}
->   out:
->  	spin_unlock_irqrestore(shost->host_lock, flags);
-> 
+This is a better patch.
+It fixes the mismerge of the W: URL and the S: status fields.
 
-Well this is strange.  afacit all the code to which you refer is
-ancient, so why did this bug just pop up now?
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0aa0776..ba70091 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2954,8 +2954,8 @@ F:	scripts/Makefile.*
+ 
+ KERNEL JANITORS
+ L:	kernel-janitors@vger.kernel.org
+-W:	http://www.kerneljanitors.org/
+-S:	Maintained
++W:	http://janitor.kernelnewbies.org/
++S:	Odd Fixes
+ 
+ KERNEL NFSD, SUNRPC, AND LOCKD SERVERS
+ M:	"J. Bruce Fields" <bfields@fieldses.org>
 
 
