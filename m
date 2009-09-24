@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZIXSOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZIXSVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZIXSOJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 14:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZIXSOH
+	id S1753327AbZIXSVI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 14:21:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZIXSVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 14:14:07 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:41457 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbZIXSOF (ORCPT
+	Thu, 24 Sep 2009 14:21:05 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:33542 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890AbZIXSVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 14:14:05 -0400
-Date: Thu, 24 Sep 2009 11:13:59 -0700
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>
-Message-ID: <20090924181357.GB9082@sirena.org.uk>
-References: <1253798645-9493-1-git-send-email-w.sang@pengutronix.de>
- <20090924173904.GA9082@sirena.org.uk>
- <20090924180727.GA6408@pengutronix.de>
+	Thu, 24 Sep 2009 14:21:03 -0400
+Message-ID: <4ABBB88A.5000200@linux.vnet.ibm.com>
+Date: Thu, 24 Sep 2009 23:50:58 +0530
+From: Rishikesh <risrajak@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924180727.GA6408@pengutronix.de>
-X-Cookie: Excellent day to have a rotten day.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 72.254.11.239
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH] regulator: add driver for MAX8660/8661
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+To: Dan Smith <danms@us.ibm.com>
+CC: Oren Laadan <orenl@librato.com>, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
+References: <1253749920-18673-1-git-send-email-orenl@librato.com> <4ABB6EB6.2040204@linux.vnet.ibm.com> <878wg41f65.fsf@caffeine.danplanet.com>
+In-Reply-To: <878wg41f65.fsf@caffeine.danplanet.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 08:07:27PM +0200, Wolfram Sang wrote:
+Dan Smith wrote:
+> R> I am getting following build error while compiling linux-cr kernel.
+>
+> With CONFIG_CHECKPOINT=n, right?
+>
+> R> 76569 net/unix/af_unix.c:528: error: ‘unix_collect’ undeclared here (not 
+> R> in a function)
+>
+> Try the patch below.
+>   
 
-> > Forced PWM is normally a power loss - the benefit it gives is the
-> > ability to respond to sudden spikes in load without voltage droops.  The
-> > power benefit from not having it enabled is usually only apparent at
-> > lower loads.
+Yes attached patch solves the prob. Thanks Dan.
 
-> Understood. Well, as this chip automatically switches PWM on/off depending on
-> the load (formula is in the datasheet), it seems to me that the forced-PWM mode
-> is mainly used for systems which prefer low-noise on the signal. So, the above
-> comment could just be dropped. Liam, could you do this, or shall I resend?
-
-I don't think I've ever seen a regulator that didn't try to scale up so
-that under high load they end up as running in forced PWM mode.
-
-The ability to force is there mainly in case the load transients are so
-sudden in a systemm that the pulse skipping ends up not responding
-quickly enough.  There's also a marginal power saving from not doing the
-checks if the load is always high but that's not the common case for the
-uses we tend to see in Linux.
