@@ -1,171 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbZIXPw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbZIXPwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752978AbZIXPw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 11:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZIXPw0
+	id S1753058AbZIXPwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 11:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZIXPwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 11:52:26 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:37004 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752752AbZIXPwZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 11:52:25 -0400
-X-Trace: 266089073/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.36.147/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.36.147
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqIEAEMyu0pPRSST/2dsb2JhbACBUtYChBsFgks
-X-IronPort-AV: E=Sophos;i="4.44,446,1249254000"; 
-   d="scan'208";a="266089073"
-Date: Thu, 24 Sep 2009 16:52:09 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, aarcange@redhat.com
-Subject: Re: [PATCH] ksm: change default values to better fit into mainline
- kernel
-In-Reply-To: <1253736347-3779-1-git-send-email-ieidus@redhat.com>
-Message-ID: <Pine.LNX.4.64.0909241644110.16561@sister.anvils>
-References: <1253736347-3779-1-git-send-email-ieidus@redhat.com>
+	Thu, 24 Sep 2009 11:52:42 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:11197 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752839AbZIXPwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 11:52:41 -0400
+Date: Thu, 24 Sep 2009 12:52:24 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Zachary Amsden <zamsden@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH: kvm 3/6] Fix hotadd of CPUs for KVM.
+Message-ID: <20090924155224.GC14102@amt.cnet>
+References: <1253762945-5750-1-git-send-email-zamsden@redhat.com> <1253762945-5750-2-git-send-email-zamsden@redhat.com> <1253762945-5750-3-git-send-email-zamsden@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253762945-5750-3-git-send-email-zamsden@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Sep 2009, Izik Eidus wrote:
-> Now that ksm is in mainline it is better to change the default values
-> to better fit to most of the users.
+On Wed, Sep 23, 2009 at 05:29:02PM -1000, Zachary Amsden wrote:
+> Both VMX and SVM require per-cpu memory allocation, which is done at module
+> init time, for only online cpus.  When bringing a new CPU online, we must
+> also allocate this structure.  The method chosen to implement this is to
+> make the CPU online notifier available via a call to the arch code.  This
+> allows memory allocation to be done smoothly, without any need to allocate
+> extra structures.
 > 
-> This patch change the ksm default values to be:
-> ksm_thread_pages_to_scan = 100 (instead of 200)
-> ksm_thread_sleep_millisecs = 20 (like before)
-> ksm_run = KSM_RUN_STOP (instead of KSM_RUN_MERGE - meaning ksm is
->                         disabled by default)
-> ksm_max_kernel_pages = nr_free_buffer_pages / 4 (instead of 2046)
+> Note: CPU up notifiers may call KVM callback before calling cpufreq callbacks.
+> This would causes the CPU frequency not to be detected (and it is not always
+> clear on non-constant TSC platforms what the bringup TSC rate will be, so the
+> guess of using tsc_khz could be wrong).  So, we clear the rate to zero in such
+> a case and add logic to query it upon entry.
 > 
-> The important aspect of this patch is: it disable ksm by default, and set
-> the number of the kernel_pages that can be allocated to be a reasonable
-> number.
+> Signed-off-by: Zachary Amsden <zamsden@redhat.com>
+> ---
+>  arch/x86/include/asm/kvm_host.h |    2 ++
+>  arch/x86/kvm/svm.c              |   15 +++++++++++++--
+>  arch/x86/kvm/vmx.c              |   17 +++++++++++++++++
+>  arch/x86/kvm/x86.c              |   14 +++++++++++++-
+>  include/linux/kvm_host.h        |    6 ++++++
+>  virt/kvm/kvm_main.c             |    3 ++-
+>  6 files changed, 53 insertions(+), 4 deletions(-)
 > 
-> Signed-off-by: Izik Eidus <ieidus@redhat.com>
+> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+> index 299cc1b..b7dd14b 100644
+> --- a/arch/x86/include/asm/kvm_host.h
+> +++ b/arch/x86/include/asm/kvm_host.h
+> @@ -459,6 +459,7 @@ struct descriptor_table {
+>  struct kvm_x86_ops {
+>  	int (*cpu_has_kvm_support)(void);          /* __init */
+>  	int (*disabled_by_bios)(void);             /* __init */
+> +	int (*cpu_hotadd)(int cpu);
+>  	int (*hardware_enable)(void *dummy);
+>  	void (*hardware_disable)(void *dummy);
+>  	void (*check_processor_compatibility)(void *rtn);
+> @@ -791,6 +792,7 @@ asmlinkage void kvm_handle_fault_on_reboot(void);
+>  	_ASM_PTR " 666b, 667b \n\t" \
+>  	".popsection"
+>  
+> +#define KVM_ARCH_WANT_HOTPLUG_NOTIFIER
+>  #define KVM_ARCH_WANT_MMU_NOTIFIER
+>  int kvm_unmap_hva(struct kvm *kvm, unsigned long hva);
+>  int kvm_age_hva(struct kvm *kvm, unsigned long hva);
+> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> index 9a4daca..8f99d0c 100644
+> --- a/arch/x86/kvm/svm.c
+> +++ b/arch/x86/kvm/svm.c
+> @@ -330,13 +330,13 @@ static int svm_hardware_enable(void *garbage)
+>  		return -EBUSY;
+>  
+>  	if (!has_svm()) {
+> -		printk(KERN_ERR "svm_cpu_init: err EOPNOTSUPP on %d\n", me);
+> +		printk(KERN_ERR "svm_hardware_enable: err EOPNOTSUPP on %d\n", me);
+>  		return -EINVAL;
+>  	}
+>  	svm_data = per_cpu(svm_data, me);
+>  
+>  	if (!svm_data) {
+> -		printk(KERN_ERR "svm_cpu_init: svm_data is NULL on %d\n",
+> +		printk(KERN_ERR "svm_hardware_enable: svm_data is NULL on %d\n",
+>  		       me);
+>  		return -EINVAL;
+>  	}
+> @@ -394,6 +394,16 @@ err_1:
+>  
+>  }
+>  
+> +static __cpuinit int svm_cpu_hotadd(int cpu)
+> +{
+> +	struct svm_cpu_data *svm_data = per_cpu(svm_data, cpu);
+> +
+> +	if (svm_data)
+> +		return 0;
+> +
+> +	return svm_cpu_init(cpu);
+> +}
+> +
+>  static void set_msr_interception(u32 *msrpm, unsigned msr,
+>  				 int read, int write)
+>  {
+> @@ -2858,6 +2868,7 @@ static struct kvm_x86_ops svm_x86_ops = {
+>  	.hardware_setup = svm_hardware_setup,
+>  	.hardware_unsetup = svm_hardware_unsetup,
+>  	.check_processor_compatibility = svm_check_processor_compat,
+> +	.cpu_hotadd = svm_cpu_hotadd,
+>  	.hardware_enable = svm_hardware_enable,
+>  	.hardware_disable = svm_hardware_disable,
+>  	.cpu_has_accelerated_tpr = svm_cpu_has_accelerated_tpr,
+> diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+> index 3fe0d42..b8a8428 100644
+> --- a/arch/x86/kvm/vmx.c
+> +++ b/arch/x86/kvm/vmx.c
+> @@ -1408,6 +1408,22 @@ static __exit void hardware_unsetup(void)
+>  	free_kvm_area();
+>  }
+>  
+> +static __cpuinit int vmx_cpu_hotadd(int cpu)
+> +{
+> +	struct vmcs *vmcs;
+> +
+> +	if (per_cpu(vmxarea, cpu))
+> +		return 0;
+> +
+> +	vmcs = alloc_vmcs_cpu(cpu);
+> +	if (!vmcs) 
+> +		return -ENOMEM;
+> +
+> +	per_cpu(vmxarea, cpu) = vmcs;
+> +
+> +	return 0;
+> +}
 
-You rather caught me by surprise with this one, Izik: I was thinking
-more rc7 than rc1 for switching it off; but no problem, you're probably
-right to get people into the habit of understanding it's off even when
-they choose CONFIG_KSM=y.
+Have to free in __cpuexit?
 
-There's several reasons why I couldn't Ack your patch, but I see Andrew
-is already sending it on to Linus, so here's another to go on top of it:
-
-
-[PATCH] ksm: more on default values
-
-Adjust the max_kernel_pages default to a quarter of totalram_pages,
-instead of nr_free_buffer_pages() / 4: the KSM pages themselves come
-from highmem, and even on a 16GB PAE machine, 4GB of KSM pages would
-only be pinning 32MB of lowmem with their rmap_items, so no need for
-the more obscure calculation (nor for its own special init function).
-
-There is no way for the user to switch KSM on if CONFIG_SYSFS
-is not enabled, so in that case default run to KSM_RUN_MERGE.
-
-Update KSM Documentation and Kconfig to reflect the new defaults.
-
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
-
- Documentation/vm/ksm.txt |   13 +++++++------
- mm/Kconfig               |    4 +++-
- mm/ksm.c                 |   10 ++++------
- 3 files changed, 14 insertions(+), 13 deletions(-)
-
---- 2.6.31-git+izik/Documentation/vm/ksm.txt	2009-09-23 16:05:43.000000000 +0100
-+++ linux/Documentation/vm/ksm.txt	2009-09-24 16:07:16.000000000 +0100
-@@ -52,15 +52,15 @@ The KSM daemon is controlled by sysfs fi
- readable by all but writable only by root:
- 
- max_kernel_pages - set to maximum number of kernel pages that KSM may use
--                   e.g. "echo 2000 > /sys/kernel/mm/ksm/max_kernel_pages"
-+                   e.g. "echo 100000 > /sys/kernel/mm/ksm/max_kernel_pages"
-                    Value 0 imposes no limit on the kernel pages KSM may use;
-                    but note that any process using MADV_MERGEABLE can cause
-                    KSM to allocate these pages, unswappable until it exits.
--                   Default: 2000 (chosen for demonstration purposes)
-+                   Default: quarter of memory (chosen to not pin too much)
- 
- pages_to_scan    - how many present pages to scan before ksmd goes to sleep
--                   e.g. "echo 200 > /sys/kernel/mm/ksm/pages_to_scan"
--                   Default: 200 (chosen for demonstration purposes)
-+                   e.g. "echo 100 > /sys/kernel/mm/ksm/pages_to_scan"
-+                   Default: 100 (chosen for demonstration purposes)
- 
- sleep_millisecs  - how many milliseconds ksmd should sleep before next scan
-                    e.g. "echo 20 > /sys/kernel/mm/ksm/sleep_millisecs"
-@@ -70,7 +70,8 @@ run              - set 0 to stop ksmd fr
-                    set 1 to run ksmd e.g. "echo 1 > /sys/kernel/mm/ksm/run",
-                    set 2 to stop ksmd and unmerge all pages currently merged,
-                          but leave mergeable areas registered for next run
--                   Default: 1 (for immediate use by apps which register)
-+                   Default: 0 (must be changed to 1 to activate KSM,
-+                               except if CONFIG_SYSFS is disabled)
- 
- The effectiveness of KSM and MADV_MERGEABLE is shown in /sys/kernel/mm/ksm/:
- 
-@@ -86,4 +87,4 @@ pages_volatile embraces several differen
- proportion there would also indicate poor use of madvise MADV_MERGEABLE.
- 
- Izik Eidus,
--Hugh Dickins, 30 July 2009
-+Hugh Dickins, 24 Sept 2009
---- 2.6.31-git+izik/mm/Kconfig	2009-09-23 16:05:56.000000000 +0100
-+++ linux/mm/Kconfig	2009-09-24 16:07:16.000000000 +0100
-@@ -224,7 +224,9 @@ config KSM
- 	  the many instances by a single resident page with that content, so
- 	  saving memory until one or another app needs to modify the content.
- 	  Recommended for use with KVM, or with other duplicative applications.
--	  See Documentation/vm/ksm.txt for more information.
-+	  See Documentation/vm/ksm.txt for more information: KSM is inactive
-+	  until a program has madvised that an area is MADV_MERGEABLE, and
-+	  root has set /sys/kernel/mm/ksm/run to 1 (if CONFIG_SYSFS is set).
- 
- config DEFAULT_MMAP_MIN_ADDR
-         int "Low address space to protect from user allocation"
---- 2.6.31-git+izik/mm/ksm.c	2009-09-24 16:15:26.000000000 +0100
-+++ linux/mm/ksm.c	2009-09-24 16:07:16.000000000 +0100
-@@ -184,11 +184,6 @@ static DEFINE_SPINLOCK(ksm_mmlist_lock);
- 		sizeof(struct __struct), __alignof__(struct __struct),\
- 		(__flags), NULL)
- 
--static void __init ksm_init_max_kernel_pages(void)
--{
--	ksm_max_kernel_pages = nr_free_buffer_pages() / 4;
--}
--
- static int __init ksm_slab_init(void)
- {
- 	rmap_item_cache = KSM_KMEM_CACHE(rmap_item, 0);
-@@ -1673,7 +1668,7 @@ static int __init ksm_init(void)
- 	struct task_struct *ksm_thread;
- 	int err;
- 
--	ksm_init_max_kernel_pages();
-+	ksm_max_kernel_pages = totalram_pages / 4;
- 
- 	err = ksm_slab_init();
- 	if (err)
-@@ -1697,6 +1692,9 @@ static int __init ksm_init(void)
- 		kthread_stop(ksm_thread);
- 		goto out_free2;
- 	}
-+#else
-+	ksm_run = KSM_RUN_MERGE;	/* no way for user to start it */
-+
- #endif /* CONFIG_SYSFS */
- 
- 	return 0;
+Is it too wasteful to allocate statically with DEFINE_PER_CPU_PAGE_ALIGNED?
