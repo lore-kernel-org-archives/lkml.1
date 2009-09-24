@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbZIXLbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbZIXLcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871AbZIXLbi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 07:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZIXLbh
+	id S1751913AbZIXLcm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 07:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZIXLcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 07:31:37 -0400
-Received: from mtagate6.de.ibm.com ([195.212.17.166]:54384 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbZIXLbg (ORCPT
+	Thu, 24 Sep 2009 07:32:41 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:52619 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZIXLck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 07:31:36 -0400
-Date: Thu, 24 Sep 2009 13:31:36 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Johan van Baarlen <jf@vanbaarlen.demon.nl>
-Subject: [GIT PULL] cputime tree
-Message-ID: <20090924133136.7b7c834e@mschwide.boeblingen.de.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	Thu, 24 Sep 2009 07:32:40 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+In-Reply-To: <1253781508.7103.437.camel@pasglop>
+References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
+	 <1251869611.7547.38.camel@twins>  <1253753307.7103.356.camel@pasglop>
+	 <1253778667.7695.130.camel@twins>  <1253781508.7103.437.camel@pasglop>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 13:33:07 +0200
+Message-Id: <1253791987.7695.153.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 2009-09-24 at 18:38 +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2009-09-24 at 09:51 +0200, Peter Zijlstra wrote:
+> > > I don't quite follow your logic here. This is useful for more than just
+> > > hypervisors. For example, take the HV out of the picture for a moment
+> > > and imagine that the HW has the ability to offline CPU in various power
+> > > levels, with varying latencies to bring them back.
+> > 
+> > cpu-hotplug is an utter slow path, anybody saying latency and hotplug in
+> > the same sentence doesn't seem to grasp either or both concepts.
+> 
+> Let's forget about latency then. Let's imagine I want to set a CPU
+> offline to save power, vs. setting it offline -and- opening the back
+> door of the machine to actually physically replace it :-)
 
-with git commit 79741dd "idle cputime accounting" the semantic
-of the stime field of the idle processes has changed. It used to
-contain the amount of time the idle process has been scheduled.
-Since git commit 79741dd is contains the cpu time spent in the
-system by the idle process.
+If the hardware is capable of physical hotplug, then surely powering the
+socket down saves most power and is the preferred mode?
 
-This change broke the output of second field of /proc/uptime. On
-systems without VIRT_CPU_ACCOUNTING the field is always zero.
-The legacy output of the field is the amount of time the idle
-process has been scheduled on cpu #0. It is good enough to
-calculate the load on an uni-processor system, it is useless
-on a multi-processor. To restore the legacy behaviour and give
-meaning to the multi-processor case the best we could come up
-with is to add the idle time over all cpus. That fixes uni-
-processors systems and gives a defined semantic on smp.
+> In any case, I don't see the added feature as being problematic, and
+> not such a "layering violation" as you seem to imply it is. It's a
+> convenient way to atomically take the CPU out -and- convey some
+> information about the "intent" to the hypervisor, and I really fail
+> to see why you have so strong objections about it.
 
-So please pull from 'cputime' branch of
+Ignorance on my part probably :-)
 
-	git://git390.marist.edu/pub/scm/linux-2.6.git cputime
+I'm simply not seeing a use case for it, except for the virt case, which
+I think we should bug the virt interface with and not the cpu-hotplug
+interface.
 
-to receive the following updates:
 
-Michael Abbott (1):
-      Fix idle time field in /proc/uptime
 
- fs/proc/uptime.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
-index 0c10a0b..766b1d4 100644
---- a/fs/proc/uptime.c
-+++ b/fs/proc/uptime.c
-@@ -4,13 +4,18 @@
- #include <linux/sched.h>
- #include <linux/seq_file.h>
- #include <linux/time.h>
-+#include <linux/kernel_stat.h>
- #include <asm/cputime.h>
- 
- static int uptime_proc_show(struct seq_file *m, void *v)
- {
- 	struct timespec uptime;
- 	struct timespec idle;
--	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
-+	int i;
-+	cputime_t idletime = cputime_zero;
-+
-+	for_each_possible_cpu(i)
-+		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
- 
- 	do_posix_clock_monotonic_gettime(&uptime);
- 	monotonic_to_bootbased(&uptime);
