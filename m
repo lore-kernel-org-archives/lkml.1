@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbZIYRVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751957AbZIYRXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752011AbZIYRVH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 13:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZIYRVG
+	id S1751957AbZIYRXw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 13:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZIYRXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 13:21:06 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51097 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbZIYRVG (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 13:21:06 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, Andreas Gruenbacher <agruen@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: new O_NODE open flag
-In-Reply-To: Your message of "Fri, 25 Sep 2009 13:37:47 BST."
-             <20090925123747.GA31228@gallifrey>
-From: Valdis.Kletnieks@vt.edu
-References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu>
-            <20090925123747.GA31228@gallifrey>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1253899252_2918P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Sep 2009 13:20:52 -0400
-Message-ID: <9988.1253899252@turing-police.cc.vt.edu>
+	Fri, 25 Sep 2009 13:23:52 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:47318 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbZIYRXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 13:23:51 -0400
+Date: Fri, 25 Sep 2009 10:23:43 -0700
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>
+Message-ID: <20090925172341.GC4568@sirena.org.uk>
+References: <1253816506.11624.889.camel@vega>
+ <1253864366-25459-1-git-send-email-w.sang@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253864366-25459-1-git-send-email-w.sang@pengutronix.de>
+X-Cookie: Never give an inch!
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 72.254.95.120
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH V2] regulator: add driver for MAX8660/8661
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1253899252_2918P
-Content-Type: text/plain; charset=us-ascii
+On Fri, Sep 25, 2009 at 09:39:26AM +0200, Wolfram Sang wrote:
+> Tested with a MX25-based custom board.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 
-On Fri, 25 Sep 2009 13:37:47 BST, "Dr. David Alan Gilbert" said:
-
-> Given an fd opened in this way is it possible to reopen it normally and
-> be guarenteed to get the same object?
-
-It's not possible even without this flag. Consider:
-
-        fd1 = open("/tmp/foo",flags);
-        rc = rename("/tmp/foo","/tmp/bar");
-        fd2 = open("/tmp/foo",flags);
-
-Or were you asking if *absent that sort of tomfoolery* if it would work?
-
---==_Exmh_1253899252_2918P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKvPv0cC3lWbTT17ARAvs2AJ9yrHE+Uw5kwTEe7b9pBZZMwNvOjgCg4gGu
-5P25hI/VFnTiK/NOMkhOWVc=
-=Vfdk
------END PGP SIGNATURE-----
-
---==_Exmh_1253899252_2918P--
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
