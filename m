@@ -1,150 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbZIYOfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbZIYOkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752855AbZIYOfU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 10:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbZIYOfT
+	id S1752887AbZIYOkj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 10:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZIYOkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 10:35:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:12136 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752649AbZIYOfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 10:35:18 -0400
-Date: Fri, 25 Sep 2009 10:33:37 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20090925143337.GA15007@redhat.com>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <20090924143315.781cd0ac.akpm@linux-foundation.org> <20090925050429.GB12555@redhat.com> <20090925.180724.104041942.ryov@valinux.co.jp>
+	Fri, 25 Sep 2009 10:40:39 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:34340
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752421AbZIYOki convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 10:40:38 -0400
+X-SpamScore: -18
+X-BigFish: VPS-18(z34a4jz1432R98dN179dN873fizz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KQJ7FF-02-ENS-02
+X-M-MSG: 
+Date: Fri, 25 Sep 2009 16:40:38 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 17/63] edac_mce: Add an interface driver to report mce
+ errors via edac
+Message-ID: <20090925144037.GA16340@aftab>
+References: <20090924192727.212ce46f@pedra.chehab.org>
+ <20090925094855.GA29551@aftab>
+ <20090925091130.14135879@pedra.chehab.org>
+ <20090925135626.GA8145@aftab>
+ <20090925160501.03a0f37d@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090925.180724.104041942.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090925160501.03a0f37d@infradead.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 25 Sep 2009 14:40:21.0865 (UTC) FILETIME=[1C3B7590:01CA3DEE]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 06:07:24PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek,
-> 
-> Vivek Goyal <vgoyal@redhat.com> wrote:
-> > Higher level solutions are not keeping track of time slices. Time slices will
-> > be allocated by CFQ which does not have any idea about grouping. Higher
-> > level controller just keeps track of size of IO done at group level and
-> > then run either a leaky bucket or token bucket algorithm.
+On Fri, Sep 25, 2009 at 04:05:01PM +0200, Arjan van de Ven wrote:
+> On Fri, 25 Sep 2009 15:56:26 +0200
+> > > 1) edac_mce is not a module (see patch 18). So, just calling a
+> > > routine on edac_mce should be safe, even at NMI;
 > > 
-> > IO throttling is a max BW controller, so it will not even care about what is
-> > happening in other group. It will just be concerned with rate of IO in one
-> > particular group and if we exceed specified limit, throttle it. So until and
-> > unless sequential reader group hits it max bw limit, it will keep sending
-> > reads down to CFQ, and CFQ will happily assign 100ms slices to readers.
-> > 
-> > dm-ioband will not try to choke the high throughput sequential reader group
-> > for the slow random reader group because that would just kill the throughput
-> > of rotational media. Every sequential reader will run for few ms and then 
-> > be throttled and this goes on. Disk will soon be seek bound.
+> > no, I mean the ->check_error member - it could call into a module if
+> > i7core_edac is compiled as such.
 > 
-> Because dm-ioband provides faireness in terms of how many IO requests
-> are issued or how many bytes are transferred, so this behaviour is to
-> be expected. Do you think fairness in terms of IO requests and size is
-> not fair?
-> 
+> calling modular code from NMI is not a fatal event though.
 
-Hi Ryo,
+No, not really. However, I remember Andi raising a stability concern one
+time whether it'd be such a good idea to allow modules to hook into MCE
+critical path when the system is already unstable and about to panic.
 
-Fairness in terms of size of IO or number of requests is probably not the
-best thing to do on rotational media where seek latencies are significant.
+Therefore, we might want to decode critical MCEs in core kernel code and
+non-critical later, at a more appropriate time (aka in modules).
 
-It probably should work just well on media with very low seek latencies
-like SSD.
+Hmm?
 
-So on rotational media, either you will not provide fairness to random 
-readers because they are too slow or you will choke the sequential readers
-in other group and also bring down the overall disk throughput.
+-- 
+Regards/Gruss,
+Boris.
 
-If you don't decide to choke/throttle sequential reader group for the sake
-of random reader in other group then you will not have a good control
-on random reader latencies. Because now IO scheduler sees the IO from both
-sequential reader as well as random reader and sequential readers have not
-been throttled. So the dispatch pattern/time slices will again look like..
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-	SR1 SR2 SR3 SR4 SR5 RR.....
-
-	instead  of
-
-	SR1 RR SR2 RR SR3 RR SR4 RR ....
- 
-SR --> sequential reader,  RR --> random reader
-
-> > > >   Buffering at higher layer can delay read requests for more than slice idle
-> > > >   period of CFQ (default 8 ms). That means, it is possible that we are waiting
-> > > >   for a request from the queue but it is buffered at higher layer and then idle
-> > > >   timer will fire. It means that queue will losse its share at the same time
-> > > >   overall throughput will be impacted as we lost those 8 ms.
-> > > 
-> > > That sounds like a bug.
-> > > 
-> > 
-> > Actually this probably is a limitation of higher level controller. It most
-> > likely is sitting so high in IO stack that it has no idea what underlying
-> > IO scheduler is and what are IO scheduler's policies. So it can't keep up
-> > with IO scheduler's policies. Secondly, it might be a low weight group and
-> > tokens might not be available fast enough to release the request.
-> >
-> > > >   Read Vs Write
-> > > >   -------------
-> > > >   Writes can overwhelm readers hence second level controller FIFO release
-> > > >   will run into issue here. If there is a single queue maintained then reads
-> > > >   will suffer large latencies. If there separate queues for reads and writes
-> > > >   then it will be hard to decide in what ratio to dispatch reads and writes as
-> > > >   it is IO scheduler's decision to decide when and how much read/write to
-> > > >   dispatch. This is another place where higher level controller will not be in
-> > > >   sync with lower level io scheduler and can change the effective policies of
-> > > >   underlying io scheduler.
-> > > 
-> > > The IO schedulers already take care of read-vs-write and already take
-> > > care of preventing large writes-starve-reads latencies (or at least,
-> > > they're supposed to).
-> > 
-> > True. Actually this is a limitation of higher level controller. A higher
-> > level controller will most likely implement some of kind of queuing/buffering
-> > mechanism where it will buffer requeuests when it decides to throttle the
-> > group. Now once a fair number read and requests are buffered, and if
-> > controller is ready to dispatch some requests from the group, which
-> > requests/bio should it dispatch? reads first or writes first or reads and
-> > writes in certain ratio?
-> 
-> The write-starve-reads on dm-ioband, that you pointed out before, was
-> not caused by FIFO release, it was caused by IO flow control in
-> dm-ioband. When I turned off the flow control, then the read
-> throughput was quite improved.
-
-What was flow control doing?
-
-> 
-> Now I'm considering separating dm-ioband's internal queue into sync
-> and async and giving a certain priority of dispatch to async IOs.
-
-Even if you maintain separate queues for sync and async, in what ratio will
-you dispatch reads and writes to underlying layer once fresh tokens become
-available to the group and you decide to unthrottle the group.
-
-Whatever policy you adopt for read and write dispatch, it might not match
-with policy of underlying IO scheduler because every IO scheduler seems to
-have its own way of determining how reads and writes should be dispatched.
-
-Now somebody might start complaining that my job inside the group is not
-getting same reader/writer ratio as it was getting outside the group.
-
-Thanks
-Vivek
