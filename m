@@ -1,105 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbZIYCt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZIYCxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753243AbZIYCt2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 22:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZIYCt1
+	id S1753257AbZIYCxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 22:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZIYCxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 22:49:27 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50486 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbZIYCt0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 22:49:26 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4ABC2F87.7070001@jp.fujitsu.com>
-Date: Fri, 25 Sep 2009 11:48:39 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 24 Sep 2009 22:53:17 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38530 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752696AbZIYCxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 22:53:16 -0400
+Date: Fri, 25 Sep 2009 04:48:48 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Heffner <mikeh@fesnel.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: HR timers prevent an itimer from generating EINTR?
+Message-ID: <20090925024848.GA20855@redhat.com>
+References: <4AA1860B.4030409@fesnel.com> <20090924160946.f54aa215.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-CC: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 00/63] i7core_edac and edac_mce
-References: <20090924192821.7fcffc80@pedra.chehab.org>
-In-Reply-To: <20090924192821.7fcffc80@pedra.chehab.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090924160946.f54aa215.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> The content of this patch series is at:
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/i7core.git for_linus
-> 
-> The first submission were done on Sept, 5 but weren't reviewed until 
-> yesterday. 
-> 
-> It is not yet a pull request. It is just the last version, after the 
-> last review.
-> 
-> My intention is to submit likely tomorrow a git pull request if 
-> everything is ok and hoping that Linus will still accept it for 2.6.32.
-> 
-> This time I'm sending the it as a patch series for better review. The complete
-> patchset is being sent to EDAC ML (bluesmoke-devel@lists.sourceforge.net).
-> 
-> Only this email and two others of this series is c/c at LKML. If more people is
-> interested on reviewing it, you can always look at -git and/or bluesmoke archives.
-> 
-> The two patches c/c at LKML are:
-> - the one that touches at PCI, for probing buses 254 and 255 - since, by
->   default, ACPI bios doesn't announce those buses with MCU registers;
-> - edac_mce glue driver, that add two hooks on mce that are called only if a
->   driver is registered for receiving mce log events. This is needed in order to
->   get corrected error reports at the EDAC driver.
-> 
-> Cheers,
-> Mauro
+On 09/24, Andrew Morton wrote:
+>
+> (cc's added)
 
-Interesting, but yes, definitely it needs more reviews.
+add Roland.
 
-Thanks,
-H.Seto
+> (it's a regression)
+
+Not sure...
+
+> On Fri, 04 Sep 2009 17:26:35 -0400
+> Mike Heffner <mikeh@fesnel.com> wrote:
+>
+> > Summary:
+> >
+> > Mixing HR timers with itimers occasionally hides an EINTR from a
+> > blocking syscall.
+> >
+> >
+> > Description:
+> >
+> > In my test program I have a High Resolution timer firing every one
+> > second (with SA_RESTART) and I set an itimer (without SA_RESTART) to
+> > fire after three seconds. I then execute a blocking system call (flock
+> > in this case) and expect the three second itimer to interrupt the system
+> > call with EINTR. However, I frequently notice that the itimer will fire
+> > but it will not interrupt the blocking system call. There appears to be
+> > a race between the HR timer firing and the itimer firing. If I offset
+> > the HR timer frequency by a half second, the itimer always interrupts
+> > the system call.
+> >
+> > Kernel version:
+> >
+> > These kernels both demonstrate the condition:
+> >
+> > 2.6.29.6-217.2.16.fc11.x86_64
+> > 	and
+> > 2.6.30.5-43.fc11.x86_64
+> >
+> >
+> > I do not see this condition on:
+> >
+> > 2.6.18-53.el5
+
+This is strange.
+
+> > The following program illustrates this condition:
+> >
+> > http://github.com/mheffner/scripts/commits/master/hrtimer_vs_itimer.c
+
+I didn't try this test-case, but afaics everything is clear, please
+see below.
+
+> > Is this behavior expected?
+
+I don't know ;)
+
+Well, I'd say this is expected. I mean, I am not surprized. But I can't
+"prove" this is correct.
+
+OK, I wrote the simple test-case to simplify the explanation. The child
+instals the same handler for SIGHUP < SIGINT < SIGQUIT, but SIGINT doesn't
+use SA_RESTART.
+
+The test-case:
+
+	static void sigh(int sig)
+	{
+		printf("SIG: %d\n", sig);
+	}
+
+	int main(void)
+	{
+		int pid;
+
+		if (!(pid = fork())) {
+			struct sigaction sa = { .sa_handler = sigh };
+
+			sa.sa_flags = SA_RESTART;
+			assert(0 == sigaction(SIGHUP, &sa, NULL));
+
+			sa.sa_flags = 0;
+			assert(0 == sigaction(SIGINT, &sa, NULL));
+
+			sa.sa_flags = SA_RESTART;
+			assert(0 == sigaction(SIGQUIT, &sa, NULL));
+
+			printf("block...\n");
+			getchar();		// any restartable syscall
+			printf("exit\n");
+
+			return 0;
+		}
+
+		sleep(1);
+		printf("it shouldn't exit\n");
+		kill(pid, SIGHUP); kill(pid, SIGINT);
+
+		sleep(1);
+		printf("now it should exit!\n");
+		kill(pid, SIGINT); kill(pid, SIGQUIT);
+
+		wait(NULL);
+
+		return 0;
+	}
+
+The output:
+
+	block...
+	it shouldn't exit
+	SIG: 2
+	SIG: 1
+	now it should exit!
+	SIG: 3
+	SIG: 2
+	exit
+
+So. The child sleeps in getchar().
+
+The parent sends SIGHUP + SIGINT. The child recievese both signals and
+restarts the syscall, despite the fact the hanlder for SIGINT has not
+SA_RESTART flag.
+
+What happens is:
+
+	syscall returns -ERESTARTSYS
+
+	SIGHUP < SIGINT, the child dequeues SIGHUP first.
+
+	handle_signal() notices -ERESTARTSYS and does:
+			
+		regs->ax = regs->orig_ax;
+		regs->ip -= 2;
+
+Before the child returns to user-mode, it will also dequeue SIGINT, but
+this does not matter. regs->ax was changed, the next signal can't see
+the soon-to-be-restarted syscall returned ERESTARTSYS.
+
+When we send SIGINT + SIGHUP, SIGINT wins. It changes ->ax too, but
+doesn't change ->ip - the child returns from syscall.
+
+Again, this test-case relies on SIGHUP < SIGINT < SIGQUIT, but this is
+not necessary. The thing is, if we dequeue the !SA_RESTART signal after
+SA_RESTART signal - syscall will be restarted.
 
 
-Subject: [UNTESTED PATCH] i7core_edac: avoid spinlock on fatal error
 
-Be careful on MCE context, or it might cause a deadlock.
+And this does not look like a bug to me. Because we can pretend that
+SIGINT was sent _after_ the task has actually returned to user-mode
+and before it restarts this syscall. In this case SIGINT can not
+cancel the syscall which was not called yet.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- drivers/edac/i7core_edac.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+IOW, we have SIG_1 and SIG_2. SIG_1 has SA_RESTART, SIG_2 not. The
+task sleeps in syscall(). Then,
 
-diff --git a/drivers/edac/i7core_edac.c b/drivers/edac/i7core_edac.c
-index 97f6d17..f915a39 100644
---- a/drivers/edac/i7core_edac.c
-+++ b/drivers/edac/i7core_edac.c
-@@ -1679,6 +1679,12 @@ static int i7core_mce_check_error(void *priv, struct mce *mce)
- 		return 0;
- 	}
- 
-+	/* Handle fatal errors immediately */
-+	if (mce->mcgstatus & 1) {
-+		i7core_mce_output_error(mci, mce);
-+		return 1;
-+	}
-+
- 	spin_lock_irqsave(&pvt->mce_lock, flags);
- 	if (pvt->mce_count < MCE_LOG_LEN) {
- 		memcpy(&pvt->mce_entry[pvt->mce_count], mce, sizeof(*mce));
-@@ -1686,10 +1692,6 @@ static int i7core_mce_check_error(void *priv, struct mce *mce)
- 	}
- 	spin_unlock_irqrestore(&pvt->mce_lock, flags);
- 
--	/* Handle fatal errors immediately */
--	if (mce->mcgstatus & 1)
--		i7core_check_error(mci);
--
- 	/* Advice mcelog that the error were handled */
- 	return 1;
- }
--- 
-1.6.4.3
+	the task recieves SIG_1
+
+	syscall() returns -ERESTARTSYS
+
+	the tasks returns to user mode to restart syscall()
+
+	the task recieves SIG_2, handles the new signal
+
+	syscall() restarted
+
+We can change this test-case so that SIGHUP will block all signals,
+but this will only change the order of printf's from the handler.
+
+
+If we want to change the current behaviour, we need the nontrivial
+changes.
+
+Oleg.
 
