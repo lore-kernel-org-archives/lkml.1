@@ -1,234 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751568AbZIYEQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751841AbZIYEQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751568AbZIYEQB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 00:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZIYEQB
+	id S1751841AbZIYEQd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 00:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZIYEQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 00:16:01 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51924 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751072AbZIYEQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 00:16:00 -0400
-Date: Fri, 25 Sep 2009 00:14:59 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20090925041459.GA13744@redhat.com>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <20090924143315.781cd0ac.akpm@linux-foundation.org> <20090925100952.55c2dd7a.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 25 Sep 2009 00:16:30 -0400
+Received: from bld-mail18.adl2.internode.on.net ([150.101.137.103]:60953 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751403AbZIYEQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 00:16:29 -0400
+Date: Fri, 25 Sep 2009 14:16:19 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Jan Kara <jack@suse.cz>
+Subject: Re: [RFC] page-writeback: move indoes from one superblock together
+Message-ID: <20090925041619.GB9464@discord.disaster>
+References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924100136.GA25778@localhost> <20090924123519.GF23126@kernel.dk> <20090924132252.GA696@localhost> <20090924132949.GH23126@kernel.dk> <20090924134625.GA2507@localhost> <20090924155217.5ad0de4b@infradead.org> <20090924140919.GA3103@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090925100952.55c2dd7a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090924140919.GA3103@localhost>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 10:09:52AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Thu, 24 Sep 2009 14:33:15 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > Test5 (Fairness for async writes, Buffered Write Vs Buffered Write)
-> > > ===================================================================
-> > > Fairness for async writes is tricky and biggest reason is that async writes
-> > > are cached in higher layers (page cahe) as well as possibly in file system
-> > > layer also (btrfs, xfs etc), and are dispatched to lower layers not necessarily
-> > > in proportional manner.
+On Thu, Sep 24, 2009 at 10:09:19PM +0800, Wu Fengguang wrote:
+> On Thu, Sep 24, 2009 at 09:52:17PM +0800, Arjan van de Ven wrote:
+> > On Thu, 24 Sep 2009 21:46:25 +0800
+> > Wu Fengguang <fengguang.wu@intel.com> wrote:
 > > > 
-> > > For example, consider two dd threads reading /dev/zero as input file and doing
-> > > writes of huge files. Very soon we will cross vm_dirty_ratio and dd thread will
-> > > be forced to write out some pages to disk before more pages can be dirtied. But
-> > > not necessarily dirty pages of same thread are picked. It can very well pick
-> > > the inode of lesser priority dd thread and do some writeout. So effectively
-> > > higher weight dd is doing writeouts of lower weight dd pages and we don't see
-> > > service differentation.
+> > > Note that dirty_time may not be unique, so need some workaround.  And
+> > > the resulted rbtree implementation may not be more efficient than
+> > > several list traversals even for a very large list (as long as
+> > > superblocks numbers are low).
 > > > 
-> > > IOW, the core problem with buffered write fairness is that higher weight thread
-> > > does not throw enought IO traffic at IO controller to keep the queue
-> > > continuously backlogged. In my testing, there are many .2 to .8 second
-> > > intervals where higher weight queue is empty and in that duration lower weight
-> > > queue get lots of job done giving the impression that there was no service
-> > > differentiation.
-> > > 
-> > > In summary, from IO controller point of view async writes support is there.
-> > > Because page cache has not been designed in such a manner that higher 
-> > > prio/weight writer can do more write out as compared to lower prio/weight
-> > > writer, gettting service differentiation is hard and it is visible in some
-> > > cases and not visible in some cases.
+> > > The good side is, once sb+dirty_time rbtree is implemented, it should
+> > > be trivial to switch the key to sb+inode_number (also may not be
+> > > unique), and to do location ordered writeback ;)
 > > 
-> > Here's where it all falls to pieces.
-> > 
-> > For async writeback we just don't care about IO priorities.  Because
-> > from the point of view of the userspace task, the write was async!  It
-> > occurred at memory bandwidth speed.
-> > 
-> > It's only when the kernel's dirty memory thresholds start to get
-> > exceeded that we start to care about prioritisation.  And at that time,
-> > all dirty memory (within a memcg?) is equal - a high-ioprio dirty page
-> > consumes just as much memory as a low-ioprio dirty page.
-> > 
-> > So when balance_dirty_pages() hits, what do we want to do?
-> > 
-> > I suppose that all we can do is to block low-ioprio processes more
-> > agressively at the VFS layer, to reduce the rate at which they're
-> > dirtying memory so as to give high-ioprio processes more of the disk
-> > bandwidth.
-> > 
-> > But you've gone and implemented all of this stuff at the io-controller
-> > level and not at the VFS level so you're, umm, screwed.
-> > 
+> > would you want to sort by dirty time, or by inode number?
+> > (assuming inode number is loosely related to location on disk)
 > 
-> I think I must support dirty-ratio in memcg layer. But not yet.
-> I can't easily imagine how the system will work if both dirty-ratio and
-> io-controller cgroup are supported.
+> Sort by inode number; dirty time will also be considered when judging
+> whether the traversed inode is old enough(*) to be eligible for writeback.
 
-IIUC, you are suggesting per memeory cgroup dirty ratio and writer will be 
-throttled if dirty ratio is crossed.  makes sense to me. Just that io
-controller and memory controller shall have to me mounted together.
+Even if the inode number is directly related to location on disk
+(like for XFS), there is no guarantee that the data or related
+metadata (indirect blocks) writeback location is in any way related
+to the inode number. e.g when using the 32 bit allocator on XFS
+(default for > 1TB filesystems), there is _zero correlation_ between
+the inode number and the data location. Hence writeback by inode
+number will not improve writeback patterns at all.
 
-Thanks
-Vivek
+Only the filesystem knows what the best writeback pattern really is;
+any change is going to affect filesystems differently.
 
-> But considering use them as a set of
-> cgroup, called containers(zone?), it's will not be bad, I think.
+> The more detailed algorithm would be:
 > 
-> The final bottelneck queue for fairness in usual workload on usual (small)
-> server will ext3's journal, I wonder ;)
-> 
-> Thanks,
-> -Kame
-> 
-> 
-> > Importantly screwed!  It's a very common workload pattern, and one
-> > which causes tremendous amounts of IO to be generated very quickly,
-> > traditionally causing bad latency effects all over the place.  And we
-> > have no answer to this.
-> > 
-> > > Vanilla CFQ Vs IO Controller CFQ
-> > > ================================
-> > > We have not fundamentally changed CFQ, instead enhanced it to also support
-> > > hierarchical io scheduling. In the process invariably there are small changes
-> > > here and there as new scenarios come up. Running some tests here and comparing
-> > > both the CFQ's to see if there is any major deviation in behavior.
-> > > 
-> > > Test1: Sequential Readers
-> > > =========================
-> > > [fio --rw=read --bs=4K --size=2G --runtime=30 --direct=1 --numjobs=<1 to 16> ]
-> > > 
-> > > IO scheduler: Vanilla CFQ
-> > > 
-> > > nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency 
-> > > 1   35499KiB/s  35499KiB/s  35499KiB/s  19195 usec  
-> > > 2   17089KiB/s  13600KiB/s  30690KiB/s  118K usec   
-> > > 4   9165KiB/s   5421KiB/s   29411KiB/s  380K usec   
-> > > 8   3815KiB/s   3423KiB/s   29312KiB/s  830K usec   
-> > > 16  1911KiB/s   1554KiB/s   28921KiB/s  1756K usec  
-> > > 
-> > > IO scheduler: IO controller CFQ
-> > > 
-> > > nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency 
-> > > 1   34494KiB/s  34494KiB/s  34494KiB/s  14482 usec  
-> > > 2   16983KiB/s  13632KiB/s  30616KiB/s  123K usec   
-> > > 4   9237KiB/s   5809KiB/s   29631KiB/s  372K usec   
-> > > 8   3901KiB/s   3505KiB/s   29162KiB/s  822K usec   
-> > > 16  1895KiB/s   1653KiB/s   28945KiB/s  1778K usec  
-> > > 
-> > > Test2: Sequential Writers
-> > > =========================
-> > > [fio --rw=write --bs=4K --size=2G --runtime=30 --direct=1 --numjobs=<1 to 16> ]
-> > > 
-> > > IO scheduler: Vanilla CFQ
-> > > 
-> > > nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency 
-> > > 1   22669KiB/s  22669KiB/s  22669KiB/s  401K usec   
-> > > 2   14760KiB/s  7419KiB/s   22179KiB/s  571K usec   
-> > > 4   5862KiB/s   5746KiB/s   23174KiB/s  444K usec   
-> > > 8   3377KiB/s   2199KiB/s   22427KiB/s  1057K usec  
-> > > 16  2229KiB/s   556KiB/s    20601KiB/s  5099K usec  
-> > > 
-> > > IO scheduler: IO Controller CFQ
-> > > 
-> > > nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency 
-> > > 1   22911KiB/s  22911KiB/s  22911KiB/s  37319 usec  
-> > > 2   11752KiB/s  11632KiB/s  23383KiB/s  245K usec   
-> > > 4   6663KiB/s   5409KiB/s   23207KiB/s  384K usec   
-> > > 8   3161KiB/s   2460KiB/s   22566KiB/s  935K usec   
-> > > 16  1888KiB/s   795KiB/s    21349KiB/s  3009K usec  
-> > > 
-> > > Test3: Random Readers
-> > > =========================
-> > > [fio --rw=randread --bs=4K --size=2G --runtime=30 --direct=1 --numjobs=1 to 16]
-> > > 
-> > > IO scheduler: Vanilla CFQ
-> > > 
-> > > nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency 
-> > > 1   484KiB/s    484KiB/s    484KiB/s    22596 usec  
-> > > 2   229KiB/s    196KiB/s    425KiB/s    51111 usec  
-> > > 4   119KiB/s    73KiB/s     405KiB/s    2344 msec   
-> > > 8   93KiB/s     23KiB/s     399KiB/s    2246 msec   
-> > > 16  38KiB/s     8KiB/s      328KiB/s    3965 msec   
-> > > 
-> > > IO scheduler: IO Controller CFQ
-> > > 
-> > > nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency 
-> > > 1   483KiB/s    483KiB/s    483KiB/s    29391 usec  
-> > > 2   229KiB/s    196KiB/s    426KiB/s    51625 usec  
-> > > 4   132KiB/s    88KiB/s     417KiB/s    2313 msec   
-> > > 8   79KiB/s     18KiB/s     389KiB/s    2298 msec   
-> > > 16  43KiB/s     9KiB/s      327KiB/s    3905 msec   
-> > > 
-> > > Test4: Random Writers
-> > > =====================
-> > > [fio --rw=randwrite --bs=4K --size=2G --runtime=30 --direct=1 --numjobs=1 to 16]
-> > > 
-> > > IO scheduler: Vanilla CFQ
-> > > 
-> > > nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency 
-> > > 1   14641KiB/s  14641KiB/s  14641KiB/s  93045 usec  
-> > > 2   7896KiB/s   1348KiB/s   9245KiB/s   82778 usec  
-> > > 4   2657KiB/s   265KiB/s    6025KiB/s   216K usec   
-> > > 8   951KiB/s    122KiB/s    3386KiB/s   1148K usec  
-> > > 16  66KiB/s     22KiB/s     829KiB/s    1308 msec   
-> > > 
-> > > IO scheduler: IO Controller CFQ
-> > > 
-> > > nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency 
-> > > 1   14454KiB/s  14454KiB/s  14454KiB/s  74623 usec  
-> > > 2   4595KiB/s   4104KiB/s   8699KiB/s   135K usec   
-> > > 4   3113KiB/s   334KiB/s    5782KiB/s   200K usec   
-> > > 8   1146KiB/s   95KiB/s     3832KiB/s   593K usec   
-> > > 16  71KiB/s     29KiB/s     814KiB/s    1457 msec   
-> > > 
-> > > Notes:
-> > >  - Does not look like that anything has changed significantly.
-> > > 
-> > > Previous versions of the patches were posted here.
-> > > ------------------------------------------------
-> > > 
-> > > (V1) http://lkml.org/lkml/2009/3/11/486
-> > > (V2) http://lkml.org/lkml/2009/5/5/275
-> > > (V3) http://lkml.org/lkml/2009/5/26/472
-> > > (V4) http://lkml.org/lkml/2009/6/8/580
-> > > (V5) http://lkml.org/lkml/2009/6/19/279
-> > > (V6) http://lkml.org/lkml/2009/7/2/369
-> > > (V7) http://lkml.org/lkml/2009/7/24/253
-> > > (V8) http://lkml.org/lkml/2009/8/16/204
-> > > (V9) http://lkml.org/lkml/2009/8/28/327
-> > > 
-> > > Thanks
-> > > Vivek
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
+> - put inodes to rbtree with key sb+inode_number
+> - in each per-5s writeback, traverse a range of 1/5 rbtree
+> - in each traverse, sync inodes that is dirtied more than 5s ago
+>
+> So the user visible result would be
+> - on every 5s, roughly a 1/5 disk area will be visited
+> - for each dirtied inode, it will be synced after 5-30s
+
+Personally, I'd prefer that writeback calls a vector that says
+"writeback inodes older than N" and implement something like the
+above as the generic mechanism. That way filesystems can override
+the generic algorithm if there is a better way to track and write
+back dirty inodes for that filesystem.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
