@@ -1,260 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbZIYCJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZIYBeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753168AbZIYCJn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 22:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZIYCJl
+	id S1753067AbZIYBeF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 21:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZIYBeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 22:09:41 -0400
-Received: from stargate.chelsio.com ([67.207.112.58]:18908 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbZIYCJk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 22:09:40 -0400
-X-Greylist: delayed 2592 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Sep 2009 22:09:40 EDT
-From: kxie@chelsio.com
-Message-Id: <200909250133.n8P1XAZb030062@localhost.localdomain>
-Date: Thu, 24 Sep 2009 18:33:10 -0700
-To: davem@davemloft.net
-Subject: [PATCH net-next-2.6] cxgb3: Added private MAC address and
- provisioning packet handler for iSCSI
-Cc: swise@opengridcomputing.com, divy@chelsio.com, rranjan@chelsio.com,
-       kxie@chelsio.com, James.Bottomley@HansenPartnership.com,
-       michaelc@cs.wisc.edu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-User-Agent: Heirloom mailx 12.4 7/29/08
+	Thu, 24 Sep 2009 21:34:03 -0400
+Received: from mga03.intel.com ([143.182.124.21]:44436 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751698AbZIYBeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 21:34:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,449,1249282800"; 
+   d="scan'208";a="191464619"
+Date: Fri, 25 Sep 2009 09:33:50 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+Message-ID: <20090925013350.GD6190@localhost>
+References: <1252428983.7746.140.camel@twins> <20090908172842.GC2975@think> <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz> <20090924083342.GA15918@localhost> <1253806696.18939.40.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1253806696.18939.40.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-00c487ed661c0904757a21b7c958eba59e68482a
-[PATCH net-next-2.6] cxgb3: Added private MAC address and provisioning packet handler for iSCSI
+On Thu, Sep 24, 2009 at 11:38:16PM +0800, Peter Zijlstra wrote:
+> On Thu, 2009-09-24 at 16:33 +0800, Wu Fengguang wrote:
+> 
+> > Yeah, FIFO queuing should be good enough.
+> > 
+> > I'd like to propose one more data structure for evaluation :)
+> > 
+> > - bdi->throttle_lock
+> > - bdi->throttle_list    pages to sync for each waiting task, taken from sync_writeback_pages()
+> > - bdi->throttle_pages   (counted down) pages to sync for the head task, shall be atomic_t
+> > 
+> > In balance_dirty_pages(), it would do
+> > 
+> >         nr_to_sync = sync_writeback_pages()
+> >         if (list_empty(bdi->throttle_list))  # I'm the only task
+> >                 bdi->throttle_pages = nr_to_sync
+> >         append nr_to_sync to bdi->throttle_list
+> >         kick off background writeback
+> >         wait
+> >         remove itself from bdi->throttle_list and wait list
+> >         set bdi->throttle_pages for new head task (or LONG_MAX)
+> > 
+> > In __bdi_writeout_inc(), it would do
+> > 
+> >         if (--bdi->throttle_pages <= 0)
+> >                 check and wake up head task
+> > 
+> > In wb_writeback(), it would do
+> > 
+> >         if (args->for_background && exiting)
+> >                 wake up all throttled tasks
 
-This patch added support of private MAC address per port and provisioning
-packet handler for iSCSI traffic only.
+> > To prevent wake up too many tasks at the same time, it can relax the
+> > background threshold a bit, so that __bdi_writeout_inc() become the
+> > only wake up point in normal cases.
+> > 
+> >         if (args->for_background && !list_empty(bdi->throttle_list) &&
+> >                 over background_thresh - background_thresh / 32)
+> >                 keep write pages;
 
-Acked-by: Karen Xie <kxie@chelsio.com>
-Acked-by: Divy Le Ray <divy@chelsio.com>
-Signed-off-by: Rakesh Ranjan <rranjan@chelsio.com>
----
- drivers/net/cxgb3/adapter.h       |   18 +++++++++++++++++-
- drivers/net/cxgb3/cxgb3_main.c    |   22 ++++++++++++++++++----
- drivers/net/cxgb3/cxgb3_offload.c |    2 +-
- drivers/net/cxgb3/sge.c           |   30 ++++++++++++++++++++----------
- 4 files changed, 56 insertions(+), 16 deletions(-)
+I realized this last change is not necessary, because we already
+have a big enough buffer area:
 
-diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
-index 2b1aea6..3f3083a 100644
---- a/drivers/net/cxgb3/adapter.h
-+++ b/drivers/net/cxgb3/adapter.h
-@@ -48,12 +48,28 @@
- struct vlan_group;
- struct adapter;
- struct sge_qset;
-+struct port_info;
- 
- enum {			/* rx_offload flags */
- 	T3_RX_CSUM	= 1 << 0,
- 	T3_LRO		= 1 << 1,
- };
- 
-+enum {
-+	LAN_MAC_IDX	= 0,
-+	SAN_MAC_IDX,
-+
-+	MAX_MAC_IDX
-+};
-+
-+struct iscsi_config {
-+	__be32	ipv4_addr;
-+	__u8	mac_addr[ETH_ALEN];
-+	__u32	flags;
-+	int (*send)(struct port_info *pi, struct sk_buff **skb);
-+	int (*recv)(struct port_info *pi, struct sk_buff *skb);
-+};
-+
- struct port_info {
- 	struct adapter *adapter;
- 	struct vlan_group *vlan_grp;
-@@ -67,7 +83,7 @@ struct port_info {
- 	struct link_config link_config;
- 	struct net_device_stats netstats;
- 	int activity;
--	__be32 iscsi_ipv4addr;
-+	struct iscsi_config iscsic;
- 
- 	int link_fault; /* link fault was detected */
- };
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 34e776c..c9113d3 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -344,8 +344,10 @@ static void link_start(struct net_device *dev)
- 
- 	init_rx_mode(&rm, dev, dev->mc_list);
- 	t3_mac_reset(mac);
-+	t3_mac_set_num_ucast(mac, MAX_MAC_IDX);
- 	t3_mac_set_mtu(mac, dev->mtu);
--	t3_mac_set_address(mac, 0, dev->dev_addr);
-+	t3_mac_set_address(mac, LAN_MAC_IDX, dev->dev_addr);
-+	t3_mac_set_address(mac, SAN_MAC_IDX, pi->iscsic.mac_addr);
- 	t3_mac_set_rx_mode(mac, &rm);
- 	t3_link_start(&pi->phy, mac, &pi->link_config);
- 	t3_mac_enable(mac, MAC_DIRECTION_RX | MAC_DIRECTION_TX);
-@@ -903,6 +905,7 @@ static inline int offload_tx(struct t3cdev *tdev, struct sk_buff *skb)
- static int write_smt_entry(struct adapter *adapter, int idx)
- {
- 	struct cpl_smt_write_req *req;
-+	struct port_info *pi = netdev_priv(adapter->port[idx]);
- 	struct sk_buff *skb = alloc_skb(sizeof(*req), GFP_KERNEL);
- 
- 	if (!skb)
-@@ -913,8 +916,8 @@ static int write_smt_entry(struct adapter *adapter, int idx)
- 	OPCODE_TID(req) = htonl(MK_OPCODE_TID(CPL_SMT_WRITE_REQ, idx));
- 	req->mtu_idx = NMTUS - 1;	/* should be 0 but there's a T3 bug */
- 	req->iff = idx;
--	memset(req->src_mac1, 0, sizeof(req->src_mac1));
- 	memcpy(req->src_mac0, adapter->port[idx]->dev_addr, ETH_ALEN);
-+	memcpy(req->src_mac1, pi->iscsic.mac_addr, ETH_ALEN);
- 	skb->priority = 1;
- 	offload_tx(&adapter->tdev, skb);
- 	return 0;
-@@ -2516,7 +2519,7 @@ static int cxgb_set_mac_addr(struct net_device *dev, void *p)
- 		return -EINVAL;
- 
- 	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
--	t3_mac_set_address(&pi->mac, 0, dev->dev_addr);
-+	t3_mac_set_address(&pi->mac, LAN_MAC_IDX, dev->dev_addr);
- 	if (offload_running(adapter))
- 		write_smt_entry(adapter, pi->port_id);
- 	return 0;
-@@ -2654,7 +2657,7 @@ static void check_t3b2_mac(struct adapter *adapter)
- 			struct cmac *mac = &p->mac;
- 
- 			t3_mac_set_mtu(mac, dev->mtu);
--			t3_mac_set_address(mac, 0, dev->dev_addr);
-+			t3_mac_set_address(mac, LAN_MAC_IDX, dev->dev_addr);
- 			cxgb_set_rxmode(dev);
- 			t3_link_start(&p->phy, mac, &p->link_config);
- 			t3_mac_enable(mac, MAC_DIRECTION_RX | MAC_DIRECTION_TX);
-@@ -3112,6 +3115,14 @@ static const struct net_device_ops cxgb_netdev_ops = {
- #endif
- };
- 
-+static void __devinit cxgb3_init_iscsi_mac(struct net_device *dev)
-+{
-+	struct port_info *pi = netdev_priv(dev);
-+
-+	memcpy(pi->iscsic.mac_addr, dev->dev_addr, ETH_ALEN);
-+	pi->iscsic.mac_addr[3] |= 0x80;
-+}
-+
- static int __devinit init_one(struct pci_dev *pdev,
- 			      const struct pci_device_id *ent)
- {
-@@ -3270,6 +3281,9 @@ static int __devinit init_one(struct pci_dev *pdev,
- 		goto out_free_dev;
- 	}
- 
-+	for_each_port(adapter, i)
-+		cxgb3_init_iscsi_mac(adapter->port[i]);
-+
- 	/* Driver's ready. Reflect it on LEDs */
- 	t3_led_ready(adapter);
- 
-diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
-index 75064ee..7f314c3 100644
---- a/drivers/net/cxgb3/cxgb3_offload.c
-+++ b/drivers/net/cxgb3/cxgb3_offload.c
-@@ -447,7 +447,7 @@ static int cxgb_offload_ctl(struct t3cdev *tdev, unsigned int req, void *data)
- 	case GET_ISCSI_IPV4ADDR: {
- 		struct iscsi_ipv4addr *p = data;
- 		struct port_info *pi = netdev_priv(p->dev);
--		p->ipv4addr = pi->iscsi_ipv4addr;
-+		p->ipv4addr = pi->iscsic.ipv4_addr;
- 		break;
- 	}
- 	case GET_EMBEDDED_INFO: {
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index f866128..a911363 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -1946,10 +1946,9 @@ static void restart_tx(struct sge_qset *qs)
-  *	Check if the ARP request is probing the private IP address
-  *	dedicated to iSCSI, generate an ARP reply if so.
-  */
--static void cxgb3_arp_process(struct adapter *adapter, struct sk_buff *skb)
-+static void cxgb3_arp_process(struct port_info *pi, struct sk_buff *skb)
- {
- 	struct net_device *dev = skb->dev;
--	struct port_info *pi;
- 	struct arphdr *arp;
- 	unsigned char *arp_ptr;
- 	unsigned char *sha;
-@@ -1972,12 +1971,11 @@ static void cxgb3_arp_process(struct adapter *adapter, struct sk_buff *skb)
- 	arp_ptr += dev->addr_len;
- 	memcpy(&tip, arp_ptr, sizeof(tip));
- 
--	pi = netdev_priv(dev);
--	if (tip != pi->iscsi_ipv4addr)
-+	if (tip != pi->iscsic.ipv4_addr)
- 		return;
- 
- 	arp_send(ARPOP_REPLY, ETH_P_ARP, sip, dev, tip, sha,
--		 dev->dev_addr, sha);
-+		 pi->iscsic.mac_addr, sha);
- 
- }
- 
-@@ -1986,6 +1984,19 @@ static inline int is_arp(struct sk_buff *skb)
- 	return skb->protocol == htons(ETH_P_ARP);
- }
- 
-+static void cxgb3_process_iscsi_prov_pack(struct port_info *pi,
-+					struct sk_buff *skb)
-+{
-+	if (is_arp(skb)) {
-+		cxgb3_arp_process(pi, skb);
-+		return;
-+	}
-+
-+	if (pi->iscsic.recv)
-+		pi->iscsic.recv(pi, skb);
-+
-+}
-+
- /**
-  *	rx_eth - process an ingress ethernet packet
-  *	@adap: the adapter
-@@ -2024,13 +2035,12 @@ static void rx_eth(struct adapter *adap, struct sge_rspq *rq,
- 				vlan_gro_receive(&qs->napi, grp,
- 						 ntohs(p->vlan), skb);
- 			else {
--				if (unlikely(pi->iscsi_ipv4addr &&
--				    is_arp(skb))) {
-+				if (unlikely(pi->iscsic.flags)) {
- 					unsigned short vtag = ntohs(p->vlan) &
- 								VLAN_VID_MASK;
- 					skb->dev = vlan_group_get_device(grp,
- 									 vtag);
--					cxgb3_arp_process(adap, skb);
-+					cxgb3_process_iscsi_prov_pack(pi, skb);
- 				}
- 				__vlan_hwaccel_rx(skb, grp, ntohs(p->vlan),
- 					  	  rq->polling);
-@@ -2041,8 +2051,8 @@ static void rx_eth(struct adapter *adap, struct sge_rspq *rq,
- 		if (lro)
- 			napi_gro_receive(&qs->napi, skb);
- 		else {
--			if (unlikely(pi->iscsi_ipv4addr && is_arp(skb)))
--				cxgb3_arp_process(adap, skb);
-+			if (unlikely(pi->iscsic.flags))
-+				cxgb3_process_iscsi_prov_pack(pi, skb);
- 			netif_receive_skb(skb);
- 		}
- 	} else
--- 
-1.6.0.6
+(dirty_thresh + background_thresh)/2  ==> background_thresh
 
+> Right, something like that ought to work well, or at least sounds like
+> worth a try ;-)
+
+Thanks :)
