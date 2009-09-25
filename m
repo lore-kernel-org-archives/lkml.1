@@ -1,61 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZIYKo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZIYK4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbZIYKo0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 06:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZIYKoZ
+	id S1752203AbZIYK4e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 06:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZIYK4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 06:44:25 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:49593 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbZIYKoY (ORCPT
+	Fri, 25 Sep 2009 06:56:32 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:41323 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbZIYK4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 06:44:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=X7qUhX7eVd3c4ti81tira5bh0jE5wFOC0O8iq7EyieXoNVEWNkf/iz8nVmXGNNMKNe
-         72puE1n3XDI3W8+BUme4ZVqFeokOYcefPGgZs6QE/BugoBKdDxPNDaqGstul/7RKdi9J
-         1vejMgif4aG4n06z7aySgmEwWb2bXR3arfkEg=
-Date: Fri, 25 Sep 2009 12:44:24 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
-       Prasad <prasad@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH] perf_core: provide a kernel-internal interface to
-	get to performance counters
-Message-ID: <20090925104423.GB6467@nowhere>
-References: <20090925122556.2f8bd939@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 25 Sep 2009 06:56:31 -0400
+Date: Fri, 25 Sep 2009 12:56:32 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       mingo@elte.hu, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
+Message-ID: <20090925105632.GG12824@hawkmoon.kerlabs.com>
+Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
+	Containers <containers@lists.linux-foundation.org>,
+	Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+	"Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+	mingo@elte.hu, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+	torvalds@linux-foundation.org,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	Pavel Emelyanov <xemul@openvz.org>
+References: <20090924165548.GA16586@us.ibm.com> <20090924170308.GH16989@us.ibm.com> <200909242343.59903.arnd@arndb.de> <20090925082346.GB4436@localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-7906-1253876148-0001-2"
 Content-Disposition: inline
-In-Reply-To: <20090925122556.2f8bd939@infradead.org>
+In-Reply-To: <20090925082346.GB4436@localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 12:25:56PM +0200, Arjan van de Ven wrote:
-> From 5db5cd76f3c16c9f6093f54d1ccfb97d04b9a1ca Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Fri, 25 Sep 2009 12:20:57 +0200
-> Subject: [PATCH] perf_core: provide a kernel-internal interface to get to performance counters
-> 
-> There are reasons for kernel code to ask for, and use, performance counters.
-> For example, in CPU freq governors this tends to be a good idea, but there
-> are other examples possible as well of course.
-> 
-> This patch adds the needed bits to do enable this functionality; they have been
-> tested in an experimental cpufreq driver that I'm working on, and the changes
-> are all that I needed to access counters properly.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
+--=_bohort-7906-1253876148-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On 25/09/09 10:23 +0200, Louis Rilling wrote:
+> On Thu, Sep 24, 2009 at 11:43:59PM +0200, Arnd Bergmann wrote:
+> > On Thursday 24 September 2009, Sukadev Bhattiprolu wrote:
+> > > +asmlinkage long
+> > > +sys_clone2(struct clone_struct __user *ucs, pid_t __user *pids)
+> > > +{
+> > > +       int rc;
+> > > +       struct clone_struct kcs;
+> > > +       unsigned long clone_flags;
+> > > +       int __user *parent_tid_ptr;
+> > > +       int __user *child_tid_ptr;
+> > > +       unsigned long __user child_stack_base;
+> > > +       struct pt_regs *regs;
+> > > +
+> > > +       rc =3D copy_from_user(&ucs, &kcs, sizeof(kcs));
+> > > +       if (rc)
+> > > +               return -EFAULT;
+> > > +
+> > > +       /*
+> > > +        * TODO: Convert clone_flags to 64-bit
+> > > +        */
+> > > +       clone_flags =3D (unsigned long)kcs.flags;
+> > > +       child_stack_base =3D (unsigned long)kcs.child_stack;
+> > > +       parent_tid_ptr =3D &ucs.parent_tid;
+> > > +       child_tid_ptr =3D  &ucs.child_tid;
+> > > +       regs =3D task_pt_regs(current);
+> > > +
+> > > +       if (!child_stack_base)
+> > > +               child_stack_base =3D user_stack_pointer(regs);
+> > > +
+> > > +       return do_fork_with_pids(clone_flags, child_stack_base, regs,=
+ 0,
+> > > +                       parent_tid_ptr, child_tid_ptr, kcs.nr_pids, p=
+ids);
+> > > +}
+> > > +
+> >=20
+> > The function looks ok, but you have put it into arch/x86/kernel/process=
+_32.c,
+> > which is specific to x86-32. Since the code in this form is generic, why
+> > not just put it into kernel/fork.c? You should probably enclose it with=
+in
+> > #ifdef CONFIG_HAVE_ARCH_TRACEHOOK to make sure that user_stack_pointer()
+> > is implemented, but then it would be immediately usable by the nine arc=
+hitectures
+> > implementing that. The other architectures can then decide between addi=
+ng
+> > their private version of sys_clone2 with an open-coded user_stack_point=
+er
+> > implementation or alternatively implement the tracehooks.
+>=20
+> It will very likely break ia64, which defines CONFIG_HAVE_ARCH_TRACEHOOK =
+and
+> already has sys_clone2().
 
-Sounds like a very good idea. I have that as an ad-hoc part in the
-hw-breakpoint patchset. This patch would help me drop this part
-and use such unified in-kernel users interface.
+-> sys_clone_ext() ?
 
-Frederic.
+Louis
 
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-7906-1253876148-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkq8oeAACgkQVKcRuvQ9Q1Q6SwCgimdrl0B5UnPR3otnzftg5DrZ
+21sAmwSFxuqZP6a9bqaNXiu3J2IBhLrz
+=4eRk
+-----END PGP SIGNATURE-----
+
+--=_bohort-7906-1253876148-0001-2--
