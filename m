@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbZIYEwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751620AbZIYFBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751646AbZIYEwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 00:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbZIYEws
+	id S1751620AbZIYFBO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 01:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbZIYFBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 00:52:48 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55776 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZIYEwr (ORCPT
+	Fri, 25 Sep 2009 01:01:13 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:42938 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbZIYFBM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 00:52:47 -0400
-Message-ID: <4ABC4CAB.7090302@np.css.fujitsu.com>
-Date: Fri, 25 Sep 2009 13:52:59 +0900
-From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 25 Sep 2009 01:01:12 -0400
+Date: Fri, 25 Sep 2009 00:53:17 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Ken Lewis <kennylewis@gmail.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: PATCH 0/1: rt2x00dev.c / rt2x00lib.h fixes build breakage
+Message-ID: <20090925045316.GB2722@tuxdriver.com>
+References: <5a44caba0909231358y23f21c0drb2a3451084028a6f@mail.gmail.com>
 MIME-Version: 1.0
-To: LKLM <linux-kernel@vger.kernel.org>
-Cc: "Paul E. McKenney " <paulmck@linux.vnet.ibm.com>,
-       =?ISO-2022-JP?B?QUtQTRskQiEhGyhC?= <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: [Patch x86-tip] Clean up the warning message about RCU not defined
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5a44caba0909231358y23f21c0drb2a3451084028a6f@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(This fix is for commit 4765c1db84c73f775eb1822a009117cbae524e9e
-   Titled "rcu-tiny: The Bloatwatch Edition, v6")
+On Wed, Sep 23, 2009 at 09:58:35PM +0100, Ken Lewis wrote:
+> The headers in drivers/net/wireless/rt2x00/rt2x00lib.h don't match the
+> use of the function in rt2x00dev.c  The build fails as a result.
+> 
+> This has been a problem in linux-next since early September.  I've
+> e-mailed a patch to linux-next and to linux-net, but the 2.6.32 merge
+> window has brought the problem to the mainline and so I'm re-sending
+> my patch.  I've opened a bug on bugzilla:
+> http://bugzilla.kernel.org/show_bug.cgi?id=14217
 
-When the kernel is built, there is some message printed as
-following:
-    include/linux/rcupdate.h:80:7: \
-        warning: "CONFIG_TINY_RCU" is not defined
+Always make sure to send wireless LAN patches to
+linux-wireless@vger.kernel.org.  Anyway, the following patch is in
+the pull request I sent to Dave yesterday (and which I believe he
+has already pulled):
 
-So I did "grep _RCU .config" to search the information of "CONFIG_TINY_RCU"
-in .config file and the result is listed as following:
-    Command:
-        grep _RCU .config
-    Result:
-        CONFIG_TREE_RCU=y
-        # CONFIG_TREE_PREEMPT_RCU is not set
-        # CONFIG_TINY_RCU is not set
-        CONFIG_RCU_TRACE=y
-        CONFIG_RCU_FANOUT=64
-        # CONFIG_RCU_FANOUT_EXACT is not set
-        CONFIG_TREE_RCU_TRACE=y
-        # CONFIG_RCU_TORTURE_TEST is not set
-        # CONFIG_RCU_CPU_STALL_DETECTOR is not set
+commit fe2475633676b0a976400dfc53f8d7006f56543e
+Author: Andrew Price <andy@andrewprice.me.uk>
+Date:   Thu Sep 17 21:15:48 2009 +0100
 
-Though the "WARNING" does not give impact to build kernel, I think
-it should be cleaned up. And I made the patch for modifying it.
-With this patch there is not any other warning message of
-CONFIG_TINY_RCU and the kernel could be built successfully. And I
-confirmed that the built kernel works well.
+    rt2x00: fix the definition of rt2x00crypto_rx_insert_iv
+    
+    Remove the redundant l2pad parameter from the definition of
+    rt2x00crypto_rx_insert_iv which is used when only CONFIG_RT2500PCI but
+    none of the other rt2x00 family drivers is configured.
+    
+    Signed-off-by: Andrew Price <andy@andrewprice.me.uk>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
 
-Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
----
- include/linux/rcupdate.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hth!
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index b2f1e10..fe5c560 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -77,7 +77,7 @@ extern int rcu_scheduler_active;
- 
- #if defined(CONFIG_TREE_RCU) || defined(CONFIG_TREE_PREEMPT_RCU)
- #include <linux/rcutree.h>
--#elif CONFIG_TINY_RCU
-+#elif defined(CONFIG_TINY_RCU)
- #include <linux/rcutiny.h>
- #else
- #error "Unknown RCU implementation specified to kernel configuration"
+John
 -- 
-1.6.2.2
-
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
