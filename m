@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZIYDT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZIYDYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbZIYDT2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 23:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZIYDT2
+	id S1753336AbZIYDYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 23:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZIYDYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 23:19:28 -0400
-Received: from mga14.intel.com ([143.182.124.37]:52891 "EHLO mga14.intel.com"
+	Thu, 24 Sep 2009 23:24:48 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46356 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753218AbZIYDT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 23:19:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,449,1249282800"; 
-   d="scan'208";a="191489191"
-Date: Fri, 25 Sep 2009 11:19:20 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: regression in page writeback
-Message-ID: <20090925031920.GB10487@localhost>
-References: <20090922175452.d66400dd.akpm@linux-foundation.org> <20090923011758.GC6382@localhost> <20090922182832.28e7f73a.akpm@linux-foundation.org> <20090923014500.GA11076@localhost> <20090922185941.1118e011.akpm@linux-foundation.org> <20090923022622.GB11918@localhost> <20090922193622.42c00012.akpm@linux-foundation.org> <20090923140058.GA2794@think> <20090924031508.GD6456@localhost> <20090925001117.GA9464@discord.disaster>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090925001117.GA9464@discord.disaster>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753224AbZIYDYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 23:24:48 -0400
+Date: Fri, 25 Sep 2009 13:24:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Steve French <smfrench@gmail.com>
+Cc: linux-cifs-client@lists.samba.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Layton <jlayton@redhat.com>
+Subject: Re: linux-next: cifs tree build failures
+Message-Id: <20090925132436.4de168bd.sfr@canb.auug.org.au>
+In-Reply-To: <524f69650909242013r4d312204w9f8457c07db9dd24@mail.gmail.com>
+References: <20090925095105.b06d77f3.sfr@canb.auug.org.au>
+	<524f69650909242013r4d312204w9f8457c07db9dd24@mail.gmail.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__25_Sep_2009_13_24_36_+1000_ZUctlgkhC2APY5J="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 08:11:17AM +0800, Dave Chinner wrote:
-> On Thu, Sep 24, 2009 at 11:15:08AM +0800, Wu Fengguang wrote:
-> > On Wed, Sep 23, 2009 at 10:00:58PM +0800, Chris Mason wrote:
-> > > The only place that actually honors the congestion flag is pdflush.
-> > > It's trivial to get pdflush backed up and make it sit down without
-> > > making any progress because once the queue congests, pdflush goes away.
-> > 
-> > Right. I guess that's more or less intentional - to give lowest priority
-> > to periodic/background writeback.
-> 
-> IMO, this is the wrong design. Background writeback should
-> have higher CPU/scheduler priority than normal tasks. If there is
-> sufficient dirty pages in the system for background writeback to
-> be active, it should be running *now* to start as much IO as it can
-> without being held up by other, lower priority tasks.
-> 
-> Cleaning pages is important to keeping the system running smoothly.
-> Given that IO takes time to clean pages, it is therefore important
-> to issue as much as possible as quickly as possible without delays
-> before going back to sleep. Delaying issue of the IO or doing
-> sub-optimal issue simply reduces performance of the system because
-> it takes longer to clean the same number of dirty pages.
-> 
-> > > Nothing stops other procs from keeping the queue congested forever.
-> > > This can only be fixed by making everyone wait for congestion, at which
-> > > point we might as well wait for requests.
-> > 
-> > Yes. That gives everyone somehow equal opportunity, this is a policy change
-> > that may lead to interesting effects, as well as present a challenge to
-> > get_request_wait(). That said, I'm not against the change to a wait queue
-> > in general.
-> 
-> If you block all threads doing _writebehind caching_ (synchronous IO
-> is self-throttling) to the same BDI on the same queue as the bdi
-> flusher then when congestion clears the higher priority background
-> flusher thread should run first and issue more IO.  This should
-> happen as a natural side-effect of our scheduling algorithms and it
-> gives preference to efficient background writeback over in-efficient
-> foreground writeback. Indeed, with this approach we can even avoid
-> foreground writeback altogether...
+--Signature=_Fri__25_Sep_2009_13_24_36_+1000_ZUctlgkhC2APY5J=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I don't see how balance_dirty_pages() writeout is less efficient than
-pdflush writeout.
+Hi Steve,
 
-They all called the same routines to do the job.
-balance_dirty_pages() sets nr_to_write=1536 at least for ext4 and xfs
-(unless memory is tight; btrfs is 1540), which is in fact 50% bigger
-than the 1024 pages used by pdflush. And it won't back off on congestion.
-The s_io/b_io queues are shared, so a balance_dirty_pages() will just
-continue from where the last sync thread exited. So it does not make
-much difference who initiates the IO. Did I missed something?
+On Thu, 24 Sep 2009 22:13:46 -0500 Steve French <smfrench@gmail.com> wrote:
+>
+> These now are fixed in cifs-2.6.git.   In the same patch found a minor
+> locking problem which Jeff will fix tomorrow.
 
-Thanks,
-Fengguang
+OK, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__25_Sep_2009_13_24_36_+1000_ZUctlgkhC2APY5J=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkq8N/QACgkQjjKRsyhoI8y0HgCfUdeBHwpppkFcgdA517jOF4G6
+EEEAnRBXPj2mKOJOjQgr5pBIHmYef+RT
+=tHNV
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__25_Sep_2009_13_24_36_+1000_ZUctlgkhC2APY5J=--
