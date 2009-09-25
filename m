@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbZIYLh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZIYLly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbZIYLh7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 07:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZIYLh5
+	id S1752420AbZIYLly (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 07:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZIYLlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 07:37:57 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:16900 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752426AbZIYLhx (ORCPT
+	Fri, 25 Sep 2009 07:41:53 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41615 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbZIYLlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 07:37:53 -0400
-X-Trace: 266405067/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.26.166/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.26.166
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArcEAP5HvEpPRRqm/2dsb2JhbACBUdVxhBwF
-X-IronPort-AV: E=Sophos;i="4.44,451,1249254000"; 
-   d="scan'208";a="266405067"
-Date: Fri, 25 Sep 2009 12:36:15 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Nigel Cunningham <ncunningham@crca.org.au>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: No more bits in vm_area_struct's vm_flags.
-In-Reply-To: <4ABC7FBC.4050409@crca.org.au>
-Message-ID: <Pine.LNX.4.64.0909251225150.7496@sister.anvils>
-References: <4AB9A0D6.1090004@crca.org.au> <Pine.LNX.4.64.0909232056020.3360@sister.anvils>
- <4ABC7FBC.4050409@crca.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 25 Sep 2009 07:41:53 -0400
+Subject: Re: [RFC PATCH] perf_core: provide a kernel-internal interface to
+ get to performance counters
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <20090925122556.2f8bd939@infradead.org>
+References: <20090925122556.2f8bd939@infradead.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 25 Sep 2009 13:42:37 +0200
+Message-Id: <1253878957.26976.1.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Sep 2009, Nigel Cunningham wrote:
-> Hugh Dickins wrote:
-> > 
-> > Does TuxOnIce rely on CONFIG_MMU?  If so, then the TuxOnIce patch
-> > could presumably reuse VM_MAPPED_COPY for now - but don't be
-> > surprised if that's one we clean away later on.
+On Fri, 2009-09-25 at 12:25 +0200, Arjan van de Ven wrote:
+> From 5db5cd76f3c16c9f6093f54d1ccfb97d04b9a1ca Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Fri, 25 Sep 2009 12:20:57 +0200
+> Subject: [PATCH] perf_core: provide a kernel-internal interface to get to performance counters
 > 
-> Hmm. I'm not sure. The requirements are the same as for swsusp and
-> uswsusp. Is there some tool to graph config dependencies?
+> There are reasons for kernel code to ask for, and use, performance counters.
+> For example, in CPU freq governors this tends to be a good idea, but there
+> are other examples possible as well of course.
+> 
+> This patch adds the needed bits to do enable this functionality; they have been
+> tested in an experimental cpufreq driver that I'm working on, and the changes
+> are all that I needed to access counters properly.
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-If its requirements are the same as theirs, then I think yes,
-TuxOnIce relies on  config MMU: because config HIBERNATION depends
-on SWAP (kernel/power/Kconfig) and config SWAP depends on MMU
-(init/Kconfig).
+Looks fine to me, can go in when we acquire a user.
 
-But I hesitated to assume that, because in the TuxOnIce patch I have
-here for reference (e.g. when deciding it'll cause you unwelcome hassle
-if I move swap_info_struct from swap.h to swapfile.c!), it looked as if
-you support saving to an ordinary file, not just to a swap file?
 
-> Is there some tool to graph config dependencies?
-
-I don't know it, but would be nice, and maybe it does exist.
-
-Hugh
