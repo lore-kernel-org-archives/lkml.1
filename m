@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbZIYNJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbZIYNUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752825AbZIYNJh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 09:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZIYNJg
+	id S1751988AbZIYNUD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 09:20:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbZIYNUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 09:09:36 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:60281 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752654AbZIYNJf (ORCPT
+	Fri, 25 Sep 2009 09:20:00 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:43063 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbZIYNT7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 09:09:35 -0400
-Date: Fri, 25 Sep 2009 16:09:38 +0300 (EEST)
-From: "=?ISO-8859-15?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wel-95.cs.helsinki.fi
-To: Ray Lee <ray-lk@madrabbit.org>
-cc: Joe Cao <caoco2002@yahoo.com>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, jcaoco2002@yahoo.com
-Subject: Re: TCP stack bug related to F-RTO?
-In-Reply-To: <2c0942db0909241639vafd348eia19436d18b182d60@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0909251556130.13543@wel-95.cs.helsinki.fi>
-References: <427999.33681.qm@web63406.mail.re1.yahoo.com> <2c0942db0909241639vafd348eia19436d18b182d60@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 25 Sep 2009 09:19:59 -0400
+Date: Fri, 25 Sep 2009 18:49:58 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       linux-s390@vger.kernel.org, adobriyan@gmail.com
+Subject: linux-next: 20090925 - build breaks with !CONFIG_AIO
+Message-ID: <20090925131958.GC6831@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20090925133830.1ba29584.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="8323329-938466288-1253883977=:13543"
-Content-ID: <alpine.DEB.2.00.0909251607420.13543@wel-95.cs.helsinki.fi>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090925133830.1ba29584.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Stephen,
 
---8323329-938466288-1253883977=:13543
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Content-ID: <alpine.DEB.2.00.0909251607421.13543@wel-95.cs.helsinki.fi>
+	next-20090925 randconfig build breaks on s390x, with CONFIG_AIO=n.
 
-On Thu, 24 Sep 2009, Ray Lee wrote:
+arch/s390/mm/pgtable.c: In function 's390_enable_sie':
+arch/s390/mm/pgtable.c:282: error: 'struct mm_struct' has no member named 'ioctx_list'
+arch/s390/mm/pgtable.c:298: error: 'struct mm_struct' has no member named 'ioctx_list'
+make[1]: *** [arch/s390/mm/pgtable.o] Error 1
 
-> [adding netdev cc:]
-> 
-> On Thu, Sep 24, 2009 at 10:43 AM, Joe Cao <caoco2002@yahoo.com> wrote:
-> >
-> > Hello,
-> >
-> > I have found the following behavior with different versions of linux 
-> > kernel. The attached pcap trace is collected with server 
-> > (192.168.0.13) running 2.6.24 and shows the problem. Basically the 
-> > behavior is like this: 
-> >
-> > 1. The client opens up a big window,
-> > 2. the server sends 19 packets in a row (pkt #14- #32 in the trace), but all of them are dropped due to some congestion.
-> > 3. The server hits RTO and retransmits pkt #14 in #33
-> > 4. The client immediately acks #33 (=#14), and the server (seems like to enter F-RTO) expends the window and sends *NEW* pkt #35 & #36.=A0 Timeoute is doubled to 2*RTO; The client immediately sends two Dup-ack to #35 and #36.
-> > 5. after 2*RTO, pkt #15 is retransmitted in #39.
-> > 6. The client immediately acks #39 (=#15) in #40, and the server continues to expand the window and sends two *NEW* pkt #41 & #42. Now the timeoute is doubled to 4 *RTO.
-> > 8. After 4*RTO timeout, #16 is retransmitted.
-> > 9....
-> > 10. The above steps repeats for retransmitting pkt #16-#32 and each time the timeout is doubled.
-> > 11. It takes a long long time to retransmit all the lost packets and before that is done, the client sends a RST because of timeout.
-> >
-> > The above behavior looks like F-RTO is in effect.  And there seems to 
-> > be a bug in the TCP's congestion control and retransmission algorithm. 
-> > Why doesn't the TCP on server (running 2.6.24) enter the slow start? 
-> > Why should the server take that long to recover from a short period 
-> > of packet loss?
-> >
-> > Has anyone else noticed similar problem before?  If my analysis was 
-> > wrong, can anyone gives me some pointers to what's really wrong and 
-> > how to fix it?
+Reverting the below commit helps
 
-Yes, 2.6.24 is an obsoleted version with known wrongs in FRTO 
-implementation. Fixes never when to 2.6.24 stable series as it was 
-_already_ obsoleted when the problems where reported and found. The 
-correct fixes may be found from 2.6.25.7 (.7 iirc) and are included from 
-2.6.26 onward too.
+commit 858f09930b32c11b40fd0c5c467982ba09b10894
+Author: Alexey Dobriyan <adobriyan@gmail.com>
+Date:   Wed Sep 23 15:57:32 2009 -0700
 
-Just in case you happen to run ubuntu based kernel from that era (of 
-course you should be reporting the bug here then...), a word of warning: 
-it seemed nearly impossible for them to get a simple thing like that 
-fixed, I haven't been looking if they'd eventually come to some sensible 
-conclusion in that matter or is it still unresolved (or e.g., closed 
-without real resolution).
+    aio: ifdef fields in mm_struct
 
--- 
- i.
---8323329-938466288-1253883977=:13543--
+	->ioctx_lock and ->ioctx_list are used only under CONFIG_AIO.
+			    
+
+			Kamalesh
