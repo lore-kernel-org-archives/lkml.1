@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbZIYPGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752977AbZIYPMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752985AbZIYPGz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 11:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZIYPGy
+	id S1752977AbZIYPMX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 11:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbZIYPMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 11:06:54 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:14080 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752716AbZIYPGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 11:06:54 -0400
-Message-ID: <4ABCDBFF.1020203@redhat.com>
-Date: Fri, 25 Sep 2009 11:04:31 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Fri, 25 Sep 2009 11:12:22 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:46384 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752750AbZIYPMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 11:12:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=v93eZJn1k279rgrlqax8SQEmjMU53dqJgnYliMDQR1dusOrl6N3/H7Djta2Q/eYrli
+         6rNs1cOFJh+oiIjrP1kglwY+i/6zxLRaVbSEaewoGPFzqzd3anPwe4zK4FMmejRdmkXG
+         GXHBFOZ1mtpbGCbDl59HBn0X231/ZBVZSOSDQ=
 MIME-Version: 1.0
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-CC: vgoyal@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: IO scheduler based IO controller V10
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>	<20090924143315.781cd0ac.akpm@linux-foundation.org>	<20090925050429.GB12555@redhat.com> <20090925.180724.104041942.ryov@valinux.co.jp>
-In-Reply-To: <20090925.180724.104041942.ryov@valinux.co.jp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Fri, 25 Sep 2009 17:12:24 +0200
+Message-ID: <c4e36d110909250812g74e049b7u39566d189970d77e@mail.gmail.com>
+Subject: NFS problem with past 2.6.31 git tree
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Trond.Myklebust@netapp.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ryo Tsuruta wrote:
+Hi
 
-> Because dm-ioband provides faireness in terms of how many IO requests
-> are issued or how many bytes are transferred, so this behaviour is to
-> be expected. Do you think fairness in terms of IO requests and size is
-> not fair?
+I've noticed that my qemu guest is now unable to use localy exported
+nfs directory.
+Directory gets mounted, plain 'ls' shows filenames - but nothing else
+could be done.
 
-When there are two workloads competing for the same
-resources, I would expect each of the workloads to
-run at about 50% of the speed at which it would run
-on an uncontended system.
+ls -la gives this output:
+ls: cannot access patch: Input/output error
+...
 
-Having one of the workloads run at 95% of the
-uncontended speed and the other workload at 5%
-is "not fair" (to put it diplomatically).
 
--- 
-All rights reversed.
+Both host & guest are running same kernel:
+851b147e4411df6a1e7e90e2a609773c277eefd2
+
+I've checked last few commits and tried to revert them -
+and this one seems to cure my problem when reverted:
+
+Sep 23:  8a6e5deb8a8caa810fef2c525f5dbea2cfe04a47
+NFS: Get rid of the NFS_MOUNT_VER3 and NFS_MOUNT_TCP flags
+
+I should also probably note that I'm seeing this message in my dmesg log:
+svc: failed to register lockdv1 RPC service (errno 97)
+
+rpcinfo -p
+   program vers proto   port
+    100000    2   tcp    111  portmapper
+    100000    2   udp    111  portmapper
+    100024    1   udp  53550  status
+    100024    1   tcp  44174  status
+    100021    1   udp  49878  nlockmgr
+    100021    3   udp  49878  nlockmgr
+    100021    4   udp  49878  nlockmgr
+    100021    1   tcp  47319  nlockmgr
+    100021    3   tcp  47319  nlockmgr
+    100021    4   tcp  47319  nlockmgr
+
+automount(pid1720) /misc autofs
+rw,relatime,fd=4,pgrp=1720,timeout=300,minproto=2,maxproto=4,indirect
+0 0
+192.168.122.1:/home/u/export /misc/u nfs
+rw,relatime,vers=3,rsize=524288,wsize=524288,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=192.168.xxx.yyy,mountvers=3,mountproto=tcp,addr=192.168.xxx.yyy
+0 0
+
+
+Zdenek
