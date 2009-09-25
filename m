@@ -1,95 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbZIYRJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbZIYRVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751930AbZIYRJF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 13:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZIYRJF
+	id S1752011AbZIYRVH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 13:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZIYRVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 13:09:05 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:56865 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbZIYRJD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 13:09:03 -0400
-Date: Fri, 25 Sep 2009 22:38:51 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Shaohua Li <shaohua.li@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v6 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
-	management code in x86, cleanup drivers/cpuidle/cpuidle.c and
-	introduce cpuidle to POWER.
-Message-ID: <20090925170851.GA28191@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090922112526.GA7788@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090922112526.GA7788@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 25 Sep 2009 13:21:06 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51097 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185AbZIYRVG (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 13:21:06 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "Dr. David Alan Gilbert" <linux@treblig.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, Andreas Gruenbacher <agruen@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vfs: new O_NODE open flag
+In-Reply-To: Your message of "Fri, 25 Sep 2009 13:37:47 BST."
+             <20090925123747.GA31228@gallifrey>
+From: Valdis.Kletnieks@vt.edu
+References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu>
+            <20090925123747.GA31228@gallifrey>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1253899252_2918P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 25 Sep 2009 13:20:52 -0400
+Message-ID: <9988.1253899252@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
-Hi,
+--==_Exmh_1253899252_2918P
+Content-Type: text/plain; charset=us-ascii
 
-I have done the following experiments and have posted the results
-below.
+On Fri, 25 Sep 2009 13:37:47 BST, "Dr. David Alan Gilbert" said:
 
+> Given an fd opened in this way is it possible to reopen it normally and
+> be guarenteed to get the same object?
 
-Average of 5 iterations:
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
+It's not possible even without this flag. Consider:
 
-Kernbench make -j16 results on a
-16 core x86 machine _with_deep_sleep_ support (C1,C2,C3)
+        fd1 = open("/tmp/foo",flags);
+        rc = rename("/tmp/foo","/tmp/bar");
+        fd2 = open("/tmp/foo",flags);
 
+Or were you asking if *absent that sort of tomfoolery* if it would work?
 
-Without the patches applied			With the patches applied
+--==_Exmh_1253899252_2918P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-	31.8s						30.4s
+iD8DBQFKvPv0cC3lWbTT17ARAvs2AJ9yrHE+Uw5kwTEe7b9pBZZMwNvOjgCg4gGu
+5P25hI/VFnTiK/NOMkhOWVc=
+=Vfdk
+-----END PGP SIGNATURE-----
 
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
-
-
-Kernbench make -j8 results on a
-8 core x86 machine _without_deep_sleep_ support (only mwait)
-
-
-Without the patches applied			With the patches applied
-
-
-	20.2s						20.4s
-
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
-
-Kernbench make -j8 results on a 8 core _dedicated_lpar_pSeries_ machine
-
-
-Without the patches applied                     With the patches applied
-
-
-	4m, 37s						4m, 36s
-
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
-
-Please let me know if any other kind of testing is necessary.
-
-
-Based on the feedback, I will post out the next iteration with a few
-minor bug fixes.
-
-
-thanks,
-arun
+--==_Exmh_1253899252_2918P--
