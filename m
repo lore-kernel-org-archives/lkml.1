@@ -1,93 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZIYFJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbZIYF0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751962AbZIYFJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 01:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbZIYFJ1
+	id S1751783AbZIYF0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 01:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbZIYF0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 01:09:27 -0400
-Received: from mga03.intel.com ([143.182.124.21]:31128 "EHLO mga03.intel.com"
+	Fri, 25 Sep 2009 01:26:46 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41534 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbZIYFJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 01:09:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,449,1249282800"; 
-   d="scan'208";a="191512906"
-Date: Fri, 25 Sep 2009 13:09:18 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [RFC] page-writeback: move indoes from one superblock together
-Message-ID: <20090925050918.GA25501@localhost>
-References: <1253775260.10618.10.camel@sli10-desk.sh.intel.com> <20090924100136.GA25778@localhost> <20090924123519.GF23126@kernel.dk> <20090924132252.GA696@localhost> <20090924132949.GH23126@kernel.dk> <20090924134625.GA2507@localhost> <20090924155217.5ad0de4b@infradead.org> <20090924140919.GA3103@localhost> <20090925041619.GB9464@discord.disaster>
+	id S1750955AbZIYF0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 01:26:45 -0400
+From: Neil Brown <neilb@suse.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Fri, 25 Sep 2009 15:27:40 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090925041619.GB9464@discord.disaster>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19132.21708.867658.970822@notabene.brown>
+Cc: lmb@suse.de, lars.ellenberg@linbit.com, arjan@infradead.org,
+       jens.axboe@oracle.com, hch@infradead.org, James.Bottomley@suse.de,
+       linux-kernel@vger.kernel.org, drbd-dev@lists.linbit.com,
+       akpm@linux-foundation.org, bart.vanassche@gmail.com, davej@redhat.com,
+       gregkh@suse.de, kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
+       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
+       philipp.reisner@linbit.com, sam@ravnborg.org, Mauelshagen@redhat.com
+Subject: Re: [GIT PULL] DRBD for 2.6.32
+In-Reply-To: message from FUJITA Tomonori on Thursday September 24
+References: <20090922062034.GE22732@suse.de>
+	<20090923203531C.fujita.tomonori@lab.ntt.co.jp>
+	<19130.43495.807916.962040@notabene.brown>
+	<20090924083617J.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 12:16:19PM +0800, Dave Chinner wrote:
-> On Thu, Sep 24, 2009 at 10:09:19PM +0800, Wu Fengguang wrote:
-> > On Thu, Sep 24, 2009 at 09:52:17PM +0800, Arjan van de Ven wrote:
-> > > On Thu, 24 Sep 2009 21:46:25 +0800
-> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > > 
-> > > > Note that dirty_time may not be unique, so need some workaround.  And
-> > > > the resulted rbtree implementation may not be more efficient than
-> > > > several list traversals even for a very large list (as long as
-> > > > superblocks numbers are low).
-> > > > 
-> > > > The good side is, once sb+dirty_time rbtree is implemented, it should
-> > > > be trivial to switch the key to sb+inode_number (also may not be
-> > > > unique), and to do location ordered writeback ;)
+On Thursday September 24, fujita.tomonori@lab.ntt.co.jp wrote:
+> On Thu, 24 Sep 2009 09:06:15 +1000
+> Neil Brown <neilb@suse.de> wrote:
+> 
+> > On Wednesday September 23, fujita.tomonori@lab.ntt.co.jp wrote:
+> > > On Tue, 22 Sep 2009 08:20:34 +0200
+> > > Lars Marowsky-Bree <lmb@suse.de> wrote:
 > > > 
-> > > would you want to sort by dirty time, or by inode number?
-> > > (assuming inode number is loosely related to location on disk)
+> > > > On 2009-09-22T07:27:21, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > > 
+> > > > > > If it happens, once that happens, that _will_ be an ABI break.
+> > > > > 
+> > > > > You misunderstand the raid unification.
+> > > > > 
+> > > > > We will not unify the kernel<->userspace configuration interface
+> > > > > because we can't break the kernel<->userspace ABI.
+> > > > 
+> > > > I disagree here. Who says we can't over time, and with due notice?
+> > > > 
+> > > > For sure, the new ABI needs to co-exist with the old ones for a while,
+> > > > until it is proven and fully complete, but then, why can't the old one
+> > > > be marked as depreciated and phased out over 1-2 years time?
+> > > 
+> > > Let me know If you find a Linux storage developer who say, "Yeah, we
+> > > can remove the md ABI over 1-2 years time after the raid unification".
 > > 
-> > Sort by inode number; dirty time will also be considered when judging
-> > whether the traversed inode is old enough(*) to be eligible for writeback.
+> > I would have said 3-5 years, that being about the time frame for
+> > enterprise releases, and it would be best if every enterprise vendor
 > 
-> Even if the inode number is directly related to location on disk
-> (like for XFS), there is no guarantee that the data or related
-> metadata (indirect blocks) writeback location is in any way related
-> to the inode number. e.g when using the 32 bit allocator on XFS
-> (default for > 1TB filesystems), there is _zero correlation_ between
-> the inode number and the data location. Hence writeback by inode
-> number will not improve writeback patterns at all.
+> Enterprise vendors don't pick up the latest kernel. So I think that we
+> need more.
 
-The location ordering is mainly an optimization for _small files_.
-So no indirect blocks. A good filesystem will put metadata+data as
-close as possible for small files. Is that true for XFS?
+I don't really follow your logic, but that isn't important.  I think
+that we need to be open to deprecating old ABIs, particularly when the
+ABI is largely used by just one or two programs or libraries.  This is
+the case for md/dm/drbd and similar devices.
 
-> Only the filesystem knows what the best writeback pattern really is;
-> any change is going to affect filesystems differently.
 > 
-> > The more detailed algorithm would be:
+> 
+> > got to have a release that supported both the old and the new
+> > interface.  But I don't have a problem with migrating to a better ABI
+> > is we actually had a better ABI.
+> > > 
+> > > Seems that you have a very different idea from other kernel developers
+> > > about the stable ABI.
 > > 
-> > - put inodes to rbtree with key sb+inode_number
-> > - in each per-5s writeback, traverse a range of 1/5 rbtree
-> > - in each traverse, sync inodes that is dirtied more than 5s ago
-> >
-> > So the user visible result would be
-> > - on every 5s, roughly a 1/5 disk area will be visited
-> > - for each dirtied inode, it will be synced after 5-30s
+> > CONFIG_SYSFS_DEPRECATED_V2  seems to suggest that other kernel
+> > developers understand that we sometimes make mistakes and need to
+> > deprecate them.
 > 
-> Personally, I'd prefer that writeback calls a vector that says
-> "writeback inodes older than N" and implement something like the
-> above as the generic mechanism. That way filesystems can override
-> the generic algorithm if there is a better way to track and write
-> back dirty inodes for that filesystem.
+> Yeah, however, we can try not to make mistakes.
 
-We have wbc->older_than_this. Is it good enough for XFS?
+In this case the mistakes are already made.   The main mistake was
+that there was no credible model to follow for managing a virtual
+block device.  There is still no generally good model to follow so
+that mistake hasn't been fixed.
 
-Thanks,
-Fengguang
+Merging perfectly working and widely used code, so that it will be
+easier for the community to maintain, to learn from, and to help
+improve is not a mistake.
+Had the implementers deliberately ignored the established practice in
+the kernel for doing things you might have a case.  But there was no
+established practice to follow or to ignore.
+
+> 
+> 
+> > However I think this is all very premature as there is even a coherent
+> > proposal for what unification might look like, let alone broad
+> > agreement or implementation.  I would *much* rather we spent our
+> > energies debating that than debating whether or not DRBD should get
+> > merged.... Maybe would should only accept votes on "Should DRBD get
+> > merged" from people provide constructive input to the question "what
+> > would a unified virtual block device model look like".
+> > 
+> > > 
+> > > Improving the existing framework is a proper approach.
+> > 
+> > Yes.  So let's do it.
+> 
+> So we should implement something like drbd on the top of dm framework,
+> one of the existing 'virtual device' frameworks. That would improve dm
+> and we could get better ideas about "what would a unified virtual
+> block device model look like".
+
+dm is not an appropriate framework.  It is a walled garden that
+follows its own rules rather than being consistent with the rest of
+the kernel.
+The clearest example is that individual drivers in dm don't present
+block devices, they present dm-targets.  dm-targets do not fit in to
+the device model and are not visible in sysfs.
+
+NeilBrown
