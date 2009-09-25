@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbZIYBS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbZIYBXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752711AbZIYBS2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 21:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbZIYBS1
+	id S1752962AbZIYBXX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 21:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZIYBXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 21:18:27 -0400
-Received: from mail.perches.com ([173.55.12.10]:1191 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751837AbZIYBS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 21:18:27 -0400
-Subject: git merge conflict resolution?
-From: Joe Perches <joe@perches.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       git@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-In-Reply-To: <200909250101.n8P11HwO030173@hera.kernel.org>
-References: <200909250101.n8P11HwO030173@hera.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 24 Sep 2009 18:18:30 -0700
-Message-Id: <1253841510.18126.10.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Thu, 24 Sep 2009 21:23:22 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53038 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751613AbZIYBXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 21:23:22 -0400
+Message-ID: <4ABC1B55.3020108@cn.fujitsu.com>
+Date: Fri, 25 Sep 2009 09:22:29 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] perf_counter: cleanup for __perf_event_sched_*()
+References: <4AB88F06.10900@cn.fujitsu.com>	 <19128.39768.149110.673711@cargo.ozlabs.ibm.com>	 <4AB98BB0.6020202@cn.fujitsu.com>	 <19129.38627.94363.857137@cargo.ozlabs.ibm.com>	 <4AB9D7FA.5040707@cn.fujitsu.com> <1253695230.7695.122.camel@twins>
+In-Reply-To: <1253695230.7695.122.camel@twins>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Question about how git does merge conflict resolution.
 
-This patch doesn't really apply, and the results after the
-patch aren't what at least I expect.
 
-Patch 1: ====================
+Peter Zijlstra wrote:
 
-On Fri, 2009-09-25 at 01:01 +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/linus/784546839fd45de485b9e9e4cd072b9d53100aa5
-> Commit:     784546839fd45de485b9e9e4cd072b9d53100aa5
-> Parent:     07198871dac00e9c250d647e1976d7aee527b805
->     ARM: Update mailing list addresses
->     The old list has now been closed off; update the now invalid addresses.
->     Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  MAINTAINERS |  106 +++++++++++++++++++++++++++++-----------------------------
->  1 files changed, 53 insertions(+), 53 deletions(-)
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 837b598..12be157 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -497,7 +497,7 @@ F:	arch/arm/include/asm/floppy.h
->  
->  ARM PORT
->  M:	Russell King <linux@arm.linux.org.uk>
-> -L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
-> +L:	linux-arm-kernel@lists.infradead.org
->  W:	http://www.arm.linux.org.uk/
->  S:	Maintained
->  F:	arch/arm/
+> Hrm.. I think its not just a cleanup, but an actual bugfix.
+> 
+> The intent was to call event_sched_{in,out}() for single counter groups
+> because that's cheaper than group_sched_{in,out}(), however..
+> 
+>  - as you noticed, I got the condition wrong, it should have read:
+> 
+>      list_empty(&event->sibling_list)
+> 
+>  - it failed to call group_can_go_on() which deals with ->exclusive.
+> 
+>  - it also doesn't call hw_perf_group_sched_in() which might break
+>    power.
+> 
 
-====================
+Yeah, I'll fix the title
 
-vs the patch that was applied a bit earlier:
+> Also, I'm not sure I like the comments and WARN_ON bits, the changelog
+> should be sufficient.
+> 
 
-Patch 2: ====================
+Um, I'll remove the comments and WARN_ON_ONCE()
 
-commit efc03ecb9d674588a13aee27289c2af2afe5e6b4
-Author: Joe Perches <joe@perches.com>
-Date:   Mon Sep 21 17:04:27 2009 -0700
-
-    MAINTAINERS: move ARM lists to infradead
-
-====================
-
-Patch 2 was applied before patch 1.
-
-Russell's patch removes the "(moderated for non-subscribers)"
-from each entry, yet the final result includes it.
-
-Can someone help me understand why?
-
+Thanks,
+Xiao
