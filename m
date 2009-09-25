@@ -1,54 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbZIYOUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbZIYOfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752846AbZIYOUN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 10:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZIYOUN
+	id S1752855AbZIYOfU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 10:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbZIYOfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 10:20:13 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:52527 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752368AbZIYOUM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 10:20:12 -0400
-From: Matt Fleming <matt@console-pimps.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>
-Subject: [PATCH] lib/checksum.c: Fix another endianess bug
-Date: Fri, 25 Sep 2009 15:20:40 +0100
-Message-Id: <1253888440-14111-1-git-send-email-matt@console-pimps.org>
-X-Mailer: git-send-email 1.6.4.rc0
+	Fri, 25 Sep 2009 10:35:19 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:12136 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752649AbZIYOfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 10:35:18 -0400
+Date: Fri, 25 Sep 2009 10:33:37 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20090925143337.GA15007@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <20090924143315.781cd0ac.akpm@linux-foundation.org> <20090925050429.GB12555@redhat.com> <20090925.180724.104041942.ryov@valinux.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090925.180724.104041942.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matt Fleming <matthew.fleming@imgtec.com>
+On Fri, Sep 25, 2009 at 06:07:24PM +0900, Ryo Tsuruta wrote:
+> Hi Vivek,
+> 
+> Vivek Goyal <vgoyal@redhat.com> wrote:
+> > Higher level solutions are not keeping track of time slices. Time slices will
+> > be allocated by CFQ which does not have any idea about grouping. Higher
+> > level controller just keeps track of size of IO done at group level and
+> > then run either a leaky bucket or token bucket algorithm.
+> > 
+> > IO throttling is a max BW controller, so it will not even care about what is
+> > happening in other group. It will just be concerned with rate of IO in one
+> > particular group and if we exceed specified limit, throttle it. So until and
+> > unless sequential reader group hits it max bw limit, it will keep sending
+> > reads down to CFQ, and CFQ will happily assign 100ms slices to readers.
+> > 
+> > dm-ioband will not try to choke the high throughput sequential reader group
+> > for the slow random reader group because that would just kill the throughput
+> > of rotational media. Every sequential reader will run for few ms and then 
+> > be throttled and this goes on. Disk will soon be seek bound.
+> 
+> Because dm-ioband provides faireness in terms of how many IO requests
+> are issued or how many bytes are transferred, so this behaviour is to
+> be expected. Do you think fairness in terms of IO requests and size is
+> not fair?
+> 
 
-This fix allows the generic checksum code to work on my little endian
-system. The previous fix was not enough, as "buff" is a big-endian
-value. Without this patch I see malformed TCP packets.
+Hi Ryo,
 
-Signed-off-by: Matt Fleming <matthew.fleming@imgtec.com>
----
- lib/checksum.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Fairness in terms of size of IO or number of requests is probably not the
+best thing to do on rotational media where seek latencies are significant.
 
-diff --git a/lib/checksum.c b/lib/checksum.c
-index b2e2fd4..c34f030 100644
---- a/lib/checksum.c
-+++ b/lib/checksum.c
-@@ -55,10 +55,10 @@ static unsigned int do_csum(const unsigned char *buff, int len)
- 		goto out;
- 	odd = 1 & (unsigned long) buff;
- 	if (odd) {
--#ifdef __LITTLE_ENDIAN
-+#ifdef __BIG_ENDIAN
- 		result = *buff;
- #else
--		result += (*buff << 8);
-+		result = (*buff << 8);
- #endif
- 		len--;
- 		buff++;
--- 
-1.6.3.GIT
+It probably should work just well on media with very low seek latencies
+like SSD.
 
+So on rotational media, either you will not provide fairness to random 
+readers because they are too slow or you will choke the sequential readers
+in other group and also bring down the overall disk throughput.
+
+If you don't decide to choke/throttle sequential reader group for the sake
+of random reader in other group then you will not have a good control
+on random reader latencies. Because now IO scheduler sees the IO from both
+sequential reader as well as random reader and sequential readers have not
+been throttled. So the dispatch pattern/time slices will again look like..
+
+	SR1 SR2 SR3 SR4 SR5 RR.....
+
+	instead  of
+
+	SR1 RR SR2 RR SR3 RR SR4 RR ....
+ 
+SR --> sequential reader,  RR --> random reader
+
+> > > >   Buffering at higher layer can delay read requests for more than slice idle
+> > > >   period of CFQ (default 8 ms). That means, it is possible that we are waiting
+> > > >   for a request from the queue but it is buffered at higher layer and then idle
+> > > >   timer will fire. It means that queue will losse its share at the same time
+> > > >   overall throughput will be impacted as we lost those 8 ms.
+> > > 
+> > > That sounds like a bug.
+> > > 
+> > 
+> > Actually this probably is a limitation of higher level controller. It most
+> > likely is sitting so high in IO stack that it has no idea what underlying
+> > IO scheduler is and what are IO scheduler's policies. So it can't keep up
+> > with IO scheduler's policies. Secondly, it might be a low weight group and
+> > tokens might not be available fast enough to release the request.
+> >
+> > > >   Read Vs Write
+> > > >   -------------
+> > > >   Writes can overwhelm readers hence second level controller FIFO release
+> > > >   will run into issue here. If there is a single queue maintained then reads
+> > > >   will suffer large latencies. If there separate queues for reads and writes
+> > > >   then it will be hard to decide in what ratio to dispatch reads and writes as
+> > > >   it is IO scheduler's decision to decide when and how much read/write to
+> > > >   dispatch. This is another place where higher level controller will not be in
+> > > >   sync with lower level io scheduler and can change the effective policies of
+> > > >   underlying io scheduler.
+> > > 
+> > > The IO schedulers already take care of read-vs-write and already take
+> > > care of preventing large writes-starve-reads latencies (or at least,
+> > > they're supposed to).
+> > 
+> > True. Actually this is a limitation of higher level controller. A higher
+> > level controller will most likely implement some of kind of queuing/buffering
+> > mechanism where it will buffer requeuests when it decides to throttle the
+> > group. Now once a fair number read and requests are buffered, and if
+> > controller is ready to dispatch some requests from the group, which
+> > requests/bio should it dispatch? reads first or writes first or reads and
+> > writes in certain ratio?
+> 
+> The write-starve-reads on dm-ioband, that you pointed out before, was
+> not caused by FIFO release, it was caused by IO flow control in
+> dm-ioband. When I turned off the flow control, then the read
+> throughput was quite improved.
+
+What was flow control doing?
+
+> 
+> Now I'm considering separating dm-ioband's internal queue into sync
+> and async and giving a certain priority of dispatch to async IOs.
+
+Even if you maintain separate queues for sync and async, in what ratio will
+you dispatch reads and writes to underlying layer once fresh tokens become
+available to the group and you decide to unthrottle the group.
+
+Whatever policy you adopt for read and write dispatch, it might not match
+with policy of underlying IO scheduler because every IO scheduler seems to
+have its own way of determining how reads and writes should be dispatched.
+
+Now somebody might start complaining that my job inside the group is not
+getting same reader/writer ratio as it was getting outside the group.
+
+Thanks
+Vivek
