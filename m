@@ -1,204 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbZIYV6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752747AbZIYVts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752715AbZIYV6Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 17:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZIYV6P
+	id S1752747AbZIYVts (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 17:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZIYVtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 17:58:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34625 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752257AbZIYV6O (ORCPT
+	Fri, 25 Sep 2009 17:49:47 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:31016 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752535AbZIYVtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 17:58:14 -0400
-Message-Id: <200909252158.n8PLwFhG024011@imap1.linux-foundation.org>
-Subject: mmotm 2009-09-25-14-35 uploaded
-To: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-From: akpm@linux-foundation.org
-Date: Fri, 25 Sep 2009 14:35:46 -0700
+	Fri, 25 Sep 2009 17:49:46 -0400
+Subject: Re: [origin tree boot crash] NULL pointer dereference, IP:
+	[<ffffffff82b07130>] ibm_find_acpi_device+0x5c/0xf5
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <1253758420.9794.59.camel@minggr.sh.intel.com>
+References: <alpine.LFD.2.00.0909190237560.22030@localhost.localdomain>
+	 <20090923213052.GA6648@elte.hu>
+	 <1253756114.9794.43.camel@minggr.sh.intel.com>
+	 <1253757510.9794.55.camel@minggr.sh.intel.com>
+	 <1253758420.9794.59.camel@minggr.sh.intel.com>
+Content-Type: text/plain
+Date: Fri, 25 Sep 2009 15:47:14 -0600
+Message-Id: <1253915234.16789.14.camel@dc7800.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mm-of-the-moment snapshot 2009-09-25-14-35 has been uploaded to
+On Thu, 2009-09-24 at 10:13 +0800, Lin Ming wrote:
+> On Thu, 2009-09-24 at 09:58 +0800, Lin Ming wrote:
+> > On Thu, 2009-09-24 at 09:35 +0800, Lin Ming wrote:
+> > > On Thu, 2009-09-24 at 05:30 +0800, Ingo Molnar wrote:
+> > > > > commit 15b8dd53f5ffaf8e2d9095c423f713423f576c0f
+> > > > > Date:   Mon Jun 29 13:39:29 2009 +0800
+> > > > >
+> > > > >     ACPICA: Major update for acpi_get_object_info external interface
+> > > > 
+> > > > this one is causing boot crashes in -tip testing: 
 
-   http://userweb.kernel.org/~akpm/mmotm/
+> hp-agp.c need the same fix.
+> Could you refresh your patch with this one?
 
-and will soon be available at
+I think Len has already applied the series containing the acpiphp_ibm.c
+fix.  I tested that one and verified that it fixed an actual crash.
 
-   git://git.zen-sources.org/zen/mmotm.git
+I think your hp-agp.c patch below is correct, and I don't object if you
+want to submit it, but I don't *think* we'll have a problem even without
+it.
 
-It contains the following patches against 2.6.31:
+We will only touch "info->hardware_id.string[]" if we have already found
+an HP vendor-defined CSR space descriptor.  Any device with that
+descriptor should have a HID.
 
-origin.patch
-module-fix-up-config_kallsyms=n-build.patch
-linux-next.patch
-linux-next-git-rejects.patch
-next-remove-localversion.patch
-i-need-old-gcc.patch
-kernel-core-add-smp_call_function_any.patch
-arch-x86-kernel-cpu-cpufreq-acpi-cpufreqc-avoid-cross-cpu-interrupts-by-using-smp_call_function_any.patch
-dell_laptop-when-the-hardware-switch-is-disabled-dont-actually-allow-changing-the-softblock-status.patch
-acpi-reintroduce-acpi_device_ops-shutdown-method.patch
-cs5535-gpio-add-amd-cs5535-cs5536-gpio-driver-support.patch
-cs5535-gpio-request-function-mask-names-added.patch
-alsa-cs5535audio-free-olpc-quirks-from-reliance-on-mgeode_lx-cpu-optimization.patch
-agp-correct-missing-cleanup-on-error-in-agp_add_bridge.patch
-avr32-convert-to-asm-generic-hardirqh.patch
-powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned.patch
-hpilo-add-locking-comment.patch
-drm-via-add-pci-id-for-via-vx800-chipset.patch
-genirq-switch-proc-irq-spurious-to-seq_file.patch
-timer-stats-fix-del_timer_sync-and-try_to_del_timer_sync.patch
-ia64-use-printk_once.patch
-input-drivers-input-xpadc-improve-xbox-360-wireless-support-and-add-sysfs-interface.patch
-input-documentation-input-xpadtxt-update-for-new-driver-functionality.patch
-kbuild-generate-modulesbuiltin.patch
-kbuild-rebuild-fix-for-makefilemodbuiltin.patch
-kconfig-cross_compile-option.patch
-ide-use-printk_once.patch
-mips-decrease-size-of-au1xxx_dbdma_pm_regs.patch
-msp71xx-request_irq-failure-ignored-in-msp_pcibios_config_access.patch
-mtdpart-memory-accessor-interface-for-mtd-layer.patch
-isdn-hisax-fix-lock-imbalance.patch
-hfc_usb-fix-read-buffer-overflow.patch
-isdn-fix-netjet-build-errors.patch
-misdn-fix-reversed-if-in-st_own_ctrl.patch
-isdn-eicon-use-offsetof.patch
-isdn-eicon-return-on-error.patch
-3x59x-fix-pci-resource-management.patch
-bluetooth-fix-for-acer-bluetooth-optical-rechargeable-mouse.patch
-sunrpc-use-formatting-of-module-name-in-sunrpc.patch
-serial_txx9-use-container_of-instead-of-direct-cast.patch
-icom-converting-space-to-tabs.patch
-cyclades-read-buffer-overflow.patch
-serial167-fix-read-buffer-overflow.patch
-serial-add-parameter-to-force-skipping-the-test-for-the-txen-bug.patch
-drivers-md-introduce-missing-kfree.patch
-scsi-add-__init-__exit-macros-to-ibmvstgtc.patch
-drivers-scsi-fnic-fnic_scsic-clean-up.patch
-ibmmca-buffer-overflow.patch
-scsi-eata-fix-buffer-overflow.patch
-drivers-scsi-gdthc-fix-buffer-overflow.patch
-drivers-scsi-u14-34fc-fix-uffer-overflow.patch
-drivers-scsi-lpfc-lpfc_vportc-fix-read-buffer-overflow.patch
-osst-fix-read-buffer-overflow.patch
-scsi-fix-func-names-in-kernel-doc.patch
-gdth-unmap-ccb_phys-when-scsi_add_host-fails-in-gdth_eisa_probe_one.patch
-zfcp-test-kmalloc-failure-in-scsi_get_vpd_page.patch
-st-fix-test-of-value-range-in-st_set_options.patch
-sparc32-convert-to-asm-generic-hardirqh.patch
-synaptics-touchscreen-for-htc-dream-check-that-smbus-is-available.patch
-drivers-staging-octeon-ethernet-rgmiic-dont-ignore-request_irq-return-code.patch
-revert-staging-android-lowmemorykillerc-fix-it-for-oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch
-oom-move-oom_adj-value-from-task_struct-to-signal_struct-fix.patch
-vfs-fix-vfs_rename_dir-for-fs_rename_does_d_move-filesystems.patch
-raw-fix-rawctl-compat-ioctls-breakage-on-amd64-and-itanic.patch
-vfs-improve-comment-describing-fget_light.patch
-ecryptfs-another-lockdep-issue.patch
-fs-remove-unneeded-dcache_unhashed-tricks.patch
-fs-improve-remountro-vs-buffercache-coherency.patch
-vfs-implement-posix-o_sync-and-o_dsync-semantics.patch
-vfs-implement-posix-o_sync-and-o_dsync-semantics-checkpatch-fixes.patch
-xtensa-use-generic-sys_pipe.patch
-xtensa-convert-to-asm-generic-hardirqh.patch
-percpu-avoid-calling-__pcpu_ptr_to_addrnull.patch
-mm.patch
-ksm-more-on-default-values.patch
-mm-includecheck-fix-vmallocc.patch
-fs-includecheck-fix-proc-kcorec.patch
-video-includecheck-fix-msm-mddic.patch
-video-includecheck-fix-da8xx-fbc.patch
-cgroups-update-documentation-of-cgroups-tasks-and-procs-files.patch
-drivers-input-inputc-fix-config_pm=n-warning.patch
-x86-_end-symbol-missing-from-symbolmap.patch
-sched-fix-htmldocs-schedc.patch
-scsi_libc-avoid-calling-scsi_device_put-from-under-host_lock.patch
-hrtimers-remove-the-timer_stats_active-check-when-setting-the-start-info.patch
-drivers-net-wireless-ath-ar9170-phyc-fix-uninitialised-variable.patch
-readahead-add-blk_run_backing_dev.patch
-mm-warn-once-when-a-page-is-freed-with-pg_mlocked-set.patch
-mm-vsmcan-check-shrink_active_list-sc-isolate_pages-return-value.patch
-dev-mem-remove-redundant-test-on-len.patch
-dev-mem-introduce-size_inside_page.patch
-dev-mem-cleanup-unxlate_dev_mem_ptr-calls.patch
-dev-mem-cleanup-unxlate_dev_mem_ptr-calls-fix.patch
-dev-mem-cleanup-unxlate_dev_mem_ptr-calls-fix-fix.patch
-dev-mem-make-size_inside_page-logic-straight.patch
-dev-mem-remove-the-written-variable-in-write_kmem.patch
-dev-mem-remove-the-written-variable-in-write_kmem-fix.patch
-dev-mem-remove-redundant-parameter-from-do_write_kmem.patch
-pcmcia-fix-controller-printk-warnings.patch
-frv-duplicate-output_buffer-of-e03.patch
-frv-duplicate-output_buffer-of-e03-checkpatch-fixes.patch
-cris-convert-to-use-arch_gettimeoffset.patch
-generic-ipi-cleanup-for-generic_smp_call_function_interrupt.patch
-maintainers-update-generic-uio-for-pci-devices.patch
-maintainers-update-tracing-section.patch
-maintainers-update-omap-tony-lindgren-email-name.patch
-maintainers-change-atm-mailing-list-to-moderated.patch
-maintainers-use-tab-not-spaces-after-field-types.patch
-maintainers-update-kernel-janitors-after-mismerge.patch
-maintainers-update-score-architecture-name-style-and-add-file-pattern.patch
-maintainers-simple-firmware-interface-update-email-style.patch
-maintainers-winbond-cir-integrate-p-m-lines-fixup-david-härdemans-name.patch
-maintainers-fix-up-peripheral-spelling.patch
-maintainers-update-wolfson-microelectronics.patch
-mmc-make-the-configuration-memory-resource-optional.patch
-tmio_mmc-optionally-support-using-platform-clock.patch
-sh-switch-migo-r-to-use-the-tmio-mmc-driver-instead-of-spi.patch
-sdio-recognize-io-card-without-powercycle.patch
-sdio-pass-whitelisted-cis-funce-tuples-to-sdio-drivers.patch
-hwmon-driver-for-texas-instruments-amc6821-chip.patch
-rtc-set-wakeup-capability-for-i2c-and-spi-rtc-drivers.patch
-gpiolib-add-names-file-in-gpio-chip-sysfs.patch
-fbdev-bfin-lq035q1-fb-new-blackfin-landscape-lcd-ez-extender-driver.patch
-fbdev-bfin-t350mcqb-fb-handle-all-resources-in-suspend-resume.patch
-fbdev-bfin-t350mcqb-fb-fix-lcd-dimensions.patch
-intelfb-fix-setting-of-active-pipe-with-lvds-displays.patch
-hfsplus-identify-journal-info-block-in-volume-header.patch
-hfsplus-fix-journal-detection.patch
-reiserfs-remove-proc-fs-reiserfs-version.patch
-reiserfs-dont-compile-procfso-at-all-if-no-support.patch
-reiserfs-truncate-blocks-not-used-by-a-write-v2.patch
-fatfs-use-common-time_to_tm-in-fat_time_unix2fat.patch
-do_wait-optimization-do-not-place-sub-threads-on-task_struct-children-list.patch
-utrace-core.patch
-cyclades-allow-overriding-isa-defaults-also-when-the-driver-is-built-in.patch
-sound-core-pcm_timerc-use-lib-gcdc.patch
-net-netfilter-ipvs-ip_vs_wrrc-use-lib-gcdc.patch
-net-netfilter-ipvs-ip_vs_wrrc-use-lib-gcdc-fix.patch
-vfs-take-2add-set_page_dirty_notag.patch
-reiser4-vfs-add-super_operationssync_inodes-2.patch
-reiser4-export-remove_from_page_cache.patch
-reiser4-export-remove_from_page_cache-fix.patch
-reiser4-export-find_get_pages.patch
-reiser4.patch
-reiser4-adjust-to-the-new-aops.patch
-reiser4-adjust-to-the-new-aops-fixup.patch
-reiser4-remove-simple_prepare_write-usage.patch
-reiser4-remove-simple_prepare_write-usage-checkpatch-fixes.patch
-fs-symlink-write_begin-allocation-context-fix-reiser4-fix.patch
-reiser4-handling-error-returned-by-d_obtain_alias-fixup.patch
-reiser4-update-names-of-quota-methods.patch
-reiser4-use-set_page_dirty_notag.patch
-fs-reiser4-add-parenths-around-x-y.patch
-fs-reiser4-contextc-current_is_pdflush-got-removed.patch
-reiser4-fix.patch
-reiser4-disable.patch
-make-sure-nobodys-leaking-resources.patch
-journal_add_journal_head-debug.patch
-releasing-resources-with-children.patch
-make-frame_pointer-default=y.patch
-mutex-subsystem-synchro-test-module.patch
-slab-leaks3-default-y.patch
-put_bh-debug.patch
-add-debugging-aid-for-memory-initialisation-problems.patch
-keep-track-of-network-interface-renaming.patch
-workaround-for-a-pci-restoring-bug.patch
-prio_tree-debugging-patch.patch
-single_open-seq_release-leak-diagnostics.patch
-add-a-refcount-check-in-dput.patch
-getblk-handle-2tb-devices.patch
-getblk-handle-2tb-devices-fix.patch
-undeprecate-pci_find_device.patch
-notify_change-callers-must-hold-i_mutex.patch
+Bjorn
+
+> diff --git a/drivers/char/agp/hp-agp.c b/drivers/char/agp/hp-agp.c
+> index 7bead4c..d83c4a8 100644
+> --- a/drivers/char/agp/hp-agp.c
+> +++ b/drivers/char/agp/hp-agp.c
+> @@ -492,8 +492,10 @@ zx1_gart_probe (acpi_handle obj, u32 depth, void *context, void **ret)
+>  		status = acpi_get_object_info(handle, &info);
+>  		if (ACPI_SUCCESS(status)) {
+>  			/* TBD check _CID also */
+> -			info->hardware_id.string[sizeof(info->hardware_id.length)-1] = '\0';
+> -			match = (strcmp(info->hardware_id.string, "HWP0001") == 0);
+> +			if (info->valid & ACPI_VALID_HID)
+> +				match = !strcmp(info->hardware_id.string, "HWP0001");
+> +			else
+> +				match = 0;
+>  			kfree(info);
+>  			if (match) {
+>  				status = hp_acpi_csr_space(handle, &sba_hpa, &length);
+> diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
+> index a9d926b..e7be66d 100644
+> --- a/drivers/pci/hotplug/acpiphp_ibm.c
+> +++ b/drivers/pci/hotplug/acpiphp_ibm.c
+> @@ -406,7 +406,6 @@ static acpi_status __init ibm_find_acpi_device(acpi_handle handle,
+>  			__func__, status);
+>  		return retval;
+>  	}
+> -	info->hardware_id.string[sizeof(info->hardware_id.length) - 1] = '\0';
+>  
+>  	if (info->current_status && (info->valid & ACPI_VALID_HID) &&
+>  			(!strcmp(info->hardware_id.string, IBM_HARDWARE_ID1) ||
+> 
+> 
+> > 
+> > Below patch should fix the crash.
+> > http://patchwork.kernel.org/patch/49090/ 
+> > 
+> > Subject: [PATCH v3 01/17] ACPICA: fixup after acpi_get_object_info() change
+> > 
+> > Commit 15b8dd53f5ffa changed info->hardware_id from a static array to
+> > a pointer.  If hardware_id is non-NULL, it points to a NULL-terminated
+> > string, so we don't need to terminate it explicitly.  However, it may
+> > be NULL; in that case, we *can't* add a NULL terminator.
+> > 
+> > This causes a NULL pointer dereference oops for devices without _HID.
+> > 
+> > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> > CC: Lin Ming <ming.m.lin@intel.com>
+> > CC: Bob Moore <robert.moore@intel.com>
+> > CC: Gary Hade <garyhade@us.ibm.com>
+> > ---
+> >  drivers/pci/hotplug/acpiphp_ibm.c |    1 -
+> >  1 files changed, 0 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
+> > index a9d926b..e7be66d 100644
+> > --- a/drivers/pci/hotplug/acpiphp_ibm.c
+> > +++ b/drivers/pci/hotplug/acpiphp_ibm.c
+> > @@ -406,7 +406,6 @@ static acpi_status __init ibm_find_acpi_device(acpi_handle handle,
+> >  			__func__, status);
+> >  		return retval;
+> >  	}
+> > -	info->hardware_id.string[sizeof(info->hardware_id.length) - 1] = '\0';
+> >  
+> >  	if (info->current_status && (info->valid & ACPI_VALID_HID) &&
+> >  			(!strcmp(info->hardware_id.string, IBM_HARDWARE_ID1) ||
+> > 
+> > 
+> > ---
+> > Lin Ming
+> > 
+> > > 
+> > > commit 718fb0de8ff88f71b3b91a8ee8e42e60c88e5128
+> > > Author: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > > Date:   Thu Aug 6 23:18:12 2009 +0000
+> > > 
+> > >     ACPI: fix NULL bug for HID/UID string
+> > >     
+> > >     acpi_device->pnp.hardware_id and unique_id are now allocated pointers,
+> > >     replacing the previous arrays.  acpi_device_install_notify_handler()
+> > >     oopsed on the NULL hid when probing the video device, and perhaps other
+> > >     uses are vulnerable too.  So initialize those pointers to empty strings
+> > >     when there is no hid or uid.  Also, free hardware_id and unique_id when
+> > >     when acpi_device is going to be freed.
+> > >     
+> > >     http://bugzilla.kernel.org/show_bug.cgi?id=14096
+> > >     
+> > >     Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > >     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> > >     Signed-off-by: Len Brown <len.brown@intel.com>
+> > > 
+> > > Thanks,
+> > > Lin Ming
+> > 
+> 
+
