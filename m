@@ -1,206 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZIYCxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZIYCze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753257AbZIYCxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 22:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZIYCxR
+	id S1753284AbZIYCze (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 22:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZIYCze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 22:53:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38530 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 22:55:34 -0400
+Received: from mga14.intel.com ([143.182.124.37]:40022 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752696AbZIYCxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 22:53:16 -0400
-Date: Fri, 25 Sep 2009 04:48:48 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Heffner <mikeh@fesnel.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: HR timers prevent an itimer from generating EINTR?
-Message-ID: <20090925024848.GA20855@redhat.com>
-References: <4AA1860B.4030409@fesnel.com> <20090924160946.f54aa215.akpm@linux-foundation.org>
+	id S1753181AbZIYCzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 22:55:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,449,1249282800"; 
+   d="scan'208";a="191484112"
+Date: Fri, 25 Sep 2009 10:55:27 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 0/10] Current writeback patch queue
+Message-ID: <20090925025527.GA10487@localhost>
+References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090924160946.f54aa215.akpm@linux-foundation.org>
+In-Reply-To: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/24, Andrew Morton wrote:
->
-> (cc's added)
+On Thu, Sep 24, 2009 at 10:40:26PM +0800, Jens Axboe wrote:
+> Hi,
+> 
+> This is the current writeback patch queue. Most of the patches
+> have already been reviewed and acked, but please take a look
+> at the ones that have not (and ack/comment as necessary).
+> 
+> Wu, this one is still missing the 5/6 patch from your latest posting,
+> Please double check and re-submit that bit. Thanks!
 
-add Roland.
+OK, updated patch to add the missing label and the wbc->for_kupdate
+check to avoid jumping from !for_kupdate to the for_kupdate code
+block.  Tested on ext2/3/4, xfs and btrfs and works as expected.
 
-> (it's a regression)
+Thanks,
+Fengguang
+---
 
-Not sure...
+writeback: don't delay inodes redirtied by a fast dirtier
 
-> On Fri, 04 Sep 2009 17:26:35 -0400
-> Mike Heffner <mikeh@fesnel.com> wrote:
->
-> > Summary:
-> >
-> > Mixing HR timers with itimers occasionally hides an EINTR from a
-> > blocking syscall.
-> >
-> >
-> > Description:
-> >
-> > In my test program I have a High Resolution timer firing every one
-> > second (with SA_RESTART) and I set an itimer (without SA_RESTART) to
-> > fire after three seconds. I then execute a blocking system call (flock
-> > in this case) and expect the three second itimer to interrupt the system
-> > call with EINTR. However, I frequently notice that the itimer will fire
-> > but it will not interrupt the blocking system call. There appears to be
-> > a race between the HR timer firing and the itimer firing. If I offset
-> > the HR timer frequency by a half second, the itimer always interrupts
-> > the system call.
-> >
-> > Kernel version:
-> >
-> > These kernels both demonstrate the condition:
-> >
-> > 2.6.29.6-217.2.16.fc11.x86_64
-> > 	and
-> > 2.6.30.5-43.fc11.x86_64
-> >
-> >
-> > I do not see this condition on:
-> >
-> > 2.6.18-53.el5
+Debug traces show that in per-bdi writeback, the inode under writeback
+almost always get redirtied by a busy dirtier.  We used to call
+redirty_tail() in this case, which could delay inode for up to 30s.
 
-This is strange.
+This is unacceptable because it now happens so frequently for plain cp/dd,
+that the accumulated delays could make writeback of big files very slow.
 
-> > The following program illustrates this condition:
-> >
-> > http://github.com/mheffner/scripts/commits/master/hrtimer_vs_itimer.c
+So let's distinguish between data redirty and metadata only redirty.
+The first one is caused by a busy dirtier, while the latter one could
+happen in XFS, NFS, etc. when they are doing delalloc or updating isize.
 
-I didn't try this test-case, but afaics everything is clear, please
-see below.
+The inode being busy dirtied will now be requeued for next io, while
+the inode being redirtied by fs will continue to be delayed to avoid
+repeated IO.
 
-> > Is this behavior expected?
+CC: Jan Kara <jack@suse.cz>
+CC: Theodore Ts'o <tytso@mit.edu>
+CC: Dave Chinner <david@fromorbit.com>
+CC: Jens Axboe <jens.axboe@oracle.com>
+CC: Chris Mason <chris.mason@oracle.com>
+CC: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/fs-writeback.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-I don't know ;)
-
-Well, I'd say this is expected. I mean, I am not surprized. But I can't
-"prove" this is correct.
-
-OK, I wrote the simple test-case to simplify the explanation. The child
-instals the same handler for SIGHUP < SIGINT < SIGQUIT, but SIGINT doesn't
-use SA_RESTART.
-
-The test-case:
-
-	static void sigh(int sig)
-	{
-		printf("SIG: %d\n", sig);
-	}
-
-	int main(void)
-	{
-		int pid;
-
-		if (!(pid = fork())) {
-			struct sigaction sa = { .sa_handler = sigh };
-
-			sa.sa_flags = SA_RESTART;
-			assert(0 == sigaction(SIGHUP, &sa, NULL));
-
-			sa.sa_flags = 0;
-			assert(0 == sigaction(SIGINT, &sa, NULL));
-
-			sa.sa_flags = SA_RESTART;
-			assert(0 == sigaction(SIGQUIT, &sa, NULL));
-
-			printf("block...\n");
-			getchar();		// any restartable syscall
-			printf("exit\n");
-
-			return 0;
-		}
-
-		sleep(1);
-		printf("it shouldn't exit\n");
-		kill(pid, SIGHUP); kill(pid, SIGINT);
-
-		sleep(1);
-		printf("now it should exit!\n");
-		kill(pid, SIGINT); kill(pid, SIGQUIT);
-
-		wait(NULL);
-
-		return 0;
-	}
-
-The output:
-
-	block...
-	it shouldn't exit
-	SIG: 2
-	SIG: 1
-	now it should exit!
-	SIG: 3
-	SIG: 2
-	exit
-
-So. The child sleeps in getchar().
-
-The parent sends SIGHUP + SIGINT. The child recievese both signals and
-restarts the syscall, despite the fact the hanlder for SIGINT has not
-SA_RESTART flag.
-
-What happens is:
-
-	syscall returns -ERESTARTSYS
-
-	SIGHUP < SIGINT, the child dequeues SIGHUP first.
-
-	handle_signal() notices -ERESTARTSYS and does:
-			
-		regs->ax = regs->orig_ax;
-		regs->ip -= 2;
-
-Before the child returns to user-mode, it will also dequeue SIGINT, but
-this does not matter. regs->ax was changed, the next signal can't see
-the soon-to-be-restarted syscall returned ERESTARTSYS.
-
-When we send SIGINT + SIGHUP, SIGINT wins. It changes ->ax too, but
-doesn't change ->ip - the child returns from syscall.
-
-Again, this test-case relies on SIGHUP < SIGINT < SIGQUIT, but this is
-not necessary. The thing is, if we dequeue the !SA_RESTART signal after
-SA_RESTART signal - syscall will be restarted.
-
-
-
-And this does not look like a bug to me. Because we can pretend that
-SIGINT was sent _after_ the task has actually returned to user-mode
-and before it restarts this syscall. In this case SIGINT can not
-cancel the syscall which was not called yet.
-
-IOW, we have SIG_1 and SIG_2. SIG_1 has SA_RESTART, SIG_2 not. The
-task sleeps in syscall(). Then,
-
-	the task recieves SIG_1
-
-	syscall() returns -ERESTARTSYS
-
-	the tasks returns to user mode to restart syscall()
-
-	the task recieves SIG_2, handles the new signal
-
-	syscall() restarted
-
-We can change this test-case so that SIGHUP will block all signals,
-but this will only change the order of printf's from the handler.
-
-
-If we want to change the current behaviour, we need the nontrivial
-changes.
-
-Oleg.
-
+--- linux.orig/fs/fs-writeback.c	2009-09-23 21:43:30.000000000 +0800
++++ linux/fs/fs-writeback.c	2009-09-25 10:29:07.000000000 +0800
+@@ -452,10 +452,15 @@ writeback_single_inode(struct inode *ino
+ 	spin_lock(&inode_lock);
+ 	inode->i_state &= ~I_SYNC;
+ 	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+-		if (inode->i_state & I_DIRTY) {
++		if ((inode->i_state & I_DIRTY_PAGES) && wbc->for_kupdate) {
+ 			/*
+-			 * Someone redirtied the inode while were writing back
+-			 * the pages.
++			 * More pages get dirtied by a fast dirtier.
++			 */
++			goto select_queue;
++		} else if (inode->i_state & I_DIRTY) {
++			/*
++			 * At least XFS will redirty the inode during the
++			 * writeback (delalloc) and on io completion (isize).
+ 			 */
+ 			redirty_tail(inode);
+ 		} else if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+@@ -480,6 +485,7 @@ writeback_single_inode(struct inode *ino
+ 				 * soon as the queue becomes uncongested.
+ 				 */
+ 				inode->i_state |= I_DIRTY_PAGES;
++select_queue:
+ 				if (wbc->nr_to_write <= 0) {
+ 					/*
+ 					 * slice used up: queue for next turn
