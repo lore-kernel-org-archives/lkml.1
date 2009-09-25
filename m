@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbZIYWUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbZIYWVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbZIYWUE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 18:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZIYWUB
+	id S1753205AbZIYWVJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 18:21:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZIYWUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 18:20:01 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:46565 "EHLO
+	Fri, 25 Sep 2009 18:20:20 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:58683 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbZIYWT7 (ORCPT
+	with ESMTP id S1753110AbZIYWUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 18:19:59 -0400
+	Fri, 25 Sep 2009 18:20:14 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=Sy2Hvey1IHx6svlBkKI4sF4PpI1Q9E4m2aolN3gT9JkXprZe0vSZJNBLUzeQcsMJv
-	i1h5O9uxH4kKK+KGDKfTQ==
-Date: Fri, 25 Sep 2009 15:19:47 -0700 (PDT)
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=aiipS0DAvrMSO+NElMOfz/lrquHwWzcA8DH3Prj1sMSpm2DMTaPVzc2vPyb83sy+C
+	1dRbJG7sdAbZLZ6Gdlz8g==
+Date: Fri, 25 Sep 2009 15:20:00 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
 cc: Yinghai Lu <yinghai@kernel.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
        Ankita Garg <ankita@in.ibm.com>, Len Brown <len.brown@intel.com>,
        x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 1/4] x86: cleanup and add missing log levels for k8
-Message-ID: <alpine.DEB.1.00.0909251517440.14754@chino.kir.corp.google.com>
+Subject: [patch 2/4] x86: export k8 physical topology
+In-Reply-To: <alpine.DEB.1.00.0909251517440.14754@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.00.0909251518400.14754@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0909251517440.14754@chino.kir.corp.google.com>
 User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,125 +34,278 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert all printk's in arch/x86/mm/k8topology_64.c to use pr_info() or
-pr_err() appropriately.
+To eventually interleave emulated nodes over physical nodes, we need to
+know the physical topology of the machine without actually registering
+it.  This does the k8 node setup in two parts: detection and
+registration.  NUMA emulation can then used the physical topology
+detected to setup the address ranges of emulated nodes accordingly.  If
+emulation isn't used, the k8 nodes are registered as normal.
 
-Adds log levels for messages currently lacking them.
+Two formals are added to the x86 NUMA setup functions: `acpi' and `k8'.
+These represent whether ACPI or K8 NUMA has been detected; both cannot be
+true at the same time.  This specifies to the NUMA emulation code whether
+an underlying physical NUMA topology exists and which interface to use.
+
+This patch deals solely with separating the k8 setup path into
+Northbridge detection and registration steps and leaves the ACPI changes
+for a subsequent patch.  The `acpi' formal is added here, however, to
+avoid touching all the header files again in the next patch.
+
+This approach also ensures emulated nodes will not span physical nodes so
+the true memory latency is not misrepresented.
+
+k8_get_nodes() may now be used to export the k8 physical topology of the
+machine for NUMA emulation.
 
 Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Ankita Garg <ankita@in.ibm.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- arch/x86/mm/k8topology_64.c |   39 +++++++++++++++++++--------------------
- 1 files changed, 19 insertions(+), 20 deletions(-)
+ arch/x86/include/asm/k8.h         |    4 ++-
+ arch/x86/include/asm/page_types.h |    3 +-
+ arch/x86/kernel/setup.c           |   10 ++++++-
+ arch/x86/mm/init_32.c             |    4 +-
+ arch/x86/mm/init_64.c             |    3 +-
+ arch/x86/mm/k8topology_64.c       |   52 +++++++++++++++++++++++++++---------
+ arch/x86/mm/numa_32.c             |    4 +-
+ arch/x86/mm/numa_64.c             |    6 ++--
+ 8 files changed, 62 insertions(+), 24 deletions(-)
 
+diff --git a/arch/x86/include/asm/k8.h b/arch/x86/include/asm/k8.h
+--- a/arch/x86/include/asm/k8.h
++++ b/arch/x86/include/asm/k8.h
+@@ -10,7 +10,9 @@ extern struct pci_dev **k8_northbridges;
+ extern int num_k8_northbridges;
+ extern int cache_k8_northbridges(void);
+ extern void k8_flush_garts(void);
+-extern int k8_scan_nodes(unsigned long start, unsigned long end);
++extern int k8_get_nodes(struct bootnode *nodes);
++extern int k8_numa_init(unsigned long start_pfn, unsigned long end_pfn);
++extern int k8_scan_nodes(void);
+ 
+ #ifdef CONFIG_K8_NB
+ static inline struct pci_dev *node_to_k8_nb_misc(int node)
+diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
+--- a/arch/x86/include/asm/page_types.h
++++ b/arch/x86/include/asm/page_types.h
+@@ -49,7 +49,8 @@ extern unsigned long max_pfn_mapped;
+ extern unsigned long init_memory_mapping(unsigned long start,
+ 					 unsigned long end);
+ 
+-extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
++extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn,
++				int acpi, int k8);
+ extern void free_initmem(void);
+ 
+ #endif	/* !__ASSEMBLY__ */
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -106,6 +106,7 @@
+ #include <asm/percpu.h>
+ #include <asm/topology.h>
+ #include <asm/apicdef.h>
++#include <asm/k8.h>
+ #ifdef CONFIG_X86_64
+ #include <asm/numa_64.h>
+ #endif
+@@ -691,6 +692,9 @@ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
+ 
+ void __init setup_arch(char **cmdline_p)
+ {
++	int acpi = 0;
++	int k8 = 0;
++
+ #ifdef CONFIG_X86_32
+ 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
+ 	visws_early_detect();
+@@ -937,7 +941,11 @@ void __init setup_arch(char **cmdline_p)
+ 	acpi_numa_init();
+ #endif
+ 
+-	initmem_init(0, max_pfn);
++#ifdef CONFIG_K8_NUMA
++	k8 = !k8_numa_init(0, max_pfn);
++#endif
++
++	initmem_init(0, max_pfn, acpi, k8);
+ 
+ #ifdef CONFIG_ACPI_SLEEP
+ 	/*
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -703,8 +703,8 @@ void __init find_low_pfn_range(void)
+ }
+ 
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+-void __init initmem_init(unsigned long start_pfn,
+-				  unsigned long end_pfn)
++void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn,
++				int acpi, int k8)
+ {
+ #ifdef CONFIG_HIGHMEM
+ 	highstart_pfn = highend_pfn = max_pfn;
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -568,7 +568,8 @@ kernel_physical_mapping_init(unsigned long start,
+ }
+ 
+ #ifndef CONFIG_NUMA
+-void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn)
++void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn,
++				int acpi, int k8)
+ {
+ 	unsigned long bootmap_size, bootmap;
+ 
 diff --git a/arch/x86/mm/k8topology_64.c b/arch/x86/mm/k8topology_64.c
 --- a/arch/x86/mm/k8topology_64.c
 +++ b/arch/x86/mm/k8topology_64.c
-@@ -91,14 +91,14 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
- 	if (nb < 0)
- 		return nb;
+@@ -24,6 +24,9 @@
+ #include <asm/apic.h>
+ #include <asm/k8.h>
  
--	printk(KERN_INFO "Scanning NUMA topology in Northbridge %d\n", nb);
-+	pr_info("Scanning NUMA topology in Northbridge %d\n", nb);
++static struct bootnode __initdata nodes[8];
++static nodemask_t __initdata nodes_parsed = NODE_MASK_NONE;
++
+ static __init int find_northbridge(void)
+ {
+ 	int num;
+@@ -76,12 +79,26 @@ static __init void early_get_boot_cpu_id(void)
+ 	early_init_lapic_mapping();
+ }
  
- 	reg = read_pci_config(0, nb, 0, 0x60);
- 	numnodes = ((reg >> 4) & 0xF) + 1;
+-int __init k8_scan_nodes(unsigned long start, unsigned long end)
++int __init k8_get_nodes(struct bootnode *physnodes)
+ {
+-	unsigned numnodes, cores, bits, apicid_base;
++	int i;
++	int ret = 0;
++
++	for_each_node_mask(i, nodes_parsed) {
++		physnodes[ret].start = nodes[i].start;
++		physnodes[ret].end = nodes[i].end;
++		ret++;
++	}
++	return ret;
++}
++
++int __init k8_numa_init(unsigned long start_pfn, unsigned long end_pfn)
++{
++	unsigned long start = PFN_PHYS(start_pfn);
++	unsigned long end = PFN_PHYS(end_pfn);
++	unsigned numnodes;
+ 	unsigned long prevbase;
+-	struct bootnode nodes[8];
+-	int i, j, nb, found = 0;
++	int i, nb, found = 0;
+ 	u32 nodeid, reg;
+ 
+ 	if (!early_pci_allowed())
+@@ -98,9 +115,8 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
  	if (numnodes <= 1)
  		return -1;
  
--	printk(KERN_INFO "Number of nodes %d\n", numnodes);
-+	pr_info("Number of nodes %d\n", numnodes);
+-	pr_info("Number of nodes %d\n", numnodes);
++	pr_info("Number of physical nodes %d\n", numnodes);
  
- 	memset(&nodes, 0, sizeof(nodes));
+-	memset(&nodes, 0, sizeof(nodes));
  	prevbase = 0;
-@@ -111,28 +111,28 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
- 		nodeid = limit & 7;
- 		if ((base & 3) == 0) {
- 			if (i < numnodes)
--				printk("Skipping disabled node %d\n", i);
-+				pr_info("Skipping disabled node %d\n", i);
- 			continue;
- 		}
- 		if (nodeid >= numnodes) {
--			printk("Ignoring excess node %d (%lx:%lx)\n", nodeid,
--			       base, limit);
-+			pr_info("Ignoring excess node %d (%lx:%lx)\n", nodeid,
-+				base, limit);
- 			continue;
- 		}
- 
- 		if (!limit) {
--			printk(KERN_INFO "Skipping node entry %d (base %lx)\n",
--			       i, base);
-+			pr_info("Skipping node entry %d (base %lx)\n",
-+				i, base);
- 			continue;
- 		}
- 		if ((base >> 8) & 3 || (limit >> 8) & 3) {
--			printk(KERN_ERR "Node %d using interleaving mode %lx/%lx\n",
--			       nodeid, (base>>8)&3, (limit>>8) & 3);
-+			pr_err("Node %d using interleaving mode %lx/%lx\n",
-+			       nodeid, (base >> 8) & 3, (limit >> 8) & 3);
+ 	for (i = 0; i < 8; i++) {
+ 		unsigned long base, limit;
+@@ -130,7 +146,7 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 			       nodeid, (base >> 8) & 3, (limit >> 8) & 3);
  			return -1;
  		}
- 		if (node_isset(nodeid, node_possible_map)) {
--			printk(KERN_INFO "Node %d already present. Skipping\n",
--			       nodeid);
-+			pr_info("Node %d already present, skipping\n",
-+				nodeid);
+-		if (node_isset(nodeid, node_possible_map)) {
++		if (node_isset(nodeid, nodes_parsed)) {
+ 			pr_info("Node %d already present, skipping\n",
+ 				nodeid);
  			continue;
- 		}
+@@ -141,8 +157,8 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 		limit |= (1<<24)-1;
+ 		limit++;
  
-@@ -154,24 +154,24 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
- 		if (limit > end)
- 			limit = end;
- 		if (limit == base) {
--			printk(KERN_ERR "Empty node %d\n", nodeid);
-+			pr_err("Empty node %d\n", nodeid);
+-		if (limit > max_pfn << PAGE_SHIFT)
+-			limit = max_pfn << PAGE_SHIFT;
++		if (limit > end)
++			limit = end;
+ 		if (limit <= base)
  			continue;
- 		}
- 		if (limit < base) {
--			printk(KERN_ERR "Node %d bogus settings %lx-%lx.\n",
-+			pr_err("Node %d bogus settings %lx-%lx.\n",
- 			       nodeid, base, limit);
- 			continue;
- 		}
  
- 		/* Could sort here, but pun for now. Should not happen anyroads. */
- 		if (prevbase > base) {
--			printk(KERN_ERR "Node map not sorted %lx,%lx\n",
-+			pr_err("Node map not sorted %lx,%lx\n",
- 			       prevbase, base);
- 			return -1;
- 		}
+@@ -180,12 +196,23 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
  
--		printk(KERN_INFO "Node %d MemBase %016lx Limit %016lx\n",
--		       nodeid, base, limit);
-+		pr_info("Node %d MemBase %016lx Limit %016lx\n",
-+			nodeid, base, limit);
+ 		prevbase = base;
  
- 		found++;
+-		node_set(nodeid, node_possible_map);
++		node_set(nodeid, nodes_parsed);
+ 	}
  
-@@ -188,10 +188,10 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 	if (!found)
+ 		return -1;
++	return 0;
++}
  
++int __init k8_scan_nodes(void)
++{
++	unsigned int bits;
++	unsigned int cores;
++	unsigned int apicid_base;
++	int i;
++
++	BUG_ON(nodes_empty(nodes_parsed));
++	node_possible_map = nodes_parsed;
  	memnode_shift = compute_hash_shift(nodes, 8, NULL);
  	if (memnode_shift < 0) {
--		printk(KERN_ERR "No NUMA node hash function found. Contact maintainer\n");
-+		pr_err("No NUMA node hash function found. Contact maintainer\n");
- 		return -1;
- 	}
--	printk(KERN_INFO "Using node hash shift of %d\n", memnode_shift);
-+	pr_info("Using node hash shift of %d\n", memnode_shift);
- 
- 	/* use the coreid bits from early_identify_cpu */
- 	bits = boot_cpu_data.x86_coreid_bits;
-@@ -200,8 +200,7 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
- 	/* need to get boot_cpu_id early for system with apicid lifting */
- 	early_get_boot_cpu_id();
- 	if (boot_cpu_physical_apicid > 0) {
--		printk(KERN_INFO "BSP APIC ID: %02x\n",
--				 boot_cpu_physical_apicid);
-+		pr_info("BSP APIC ID: %02x\n", boot_cpu_physical_apicid);
+ 		pr_err("No NUMA node hash function found. Contact maintainer\n");
+@@ -204,9 +231,8 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
  		apicid_base = boot_cpu_physical_apicid;
  	}
  
+-	for (i = 0; i < 8; i++) {
+-		if (nodes[i].start == nodes[i].end)
+-			continue;
++	for_each_node_mask(i, node_possible_map) {
++		int j;
+ 
+ 		e820_register_active_regions(i,
+ 				nodes[i].start >> PAGE_SHIFT,
+diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
+--- a/arch/x86/mm/numa_32.c
++++ b/arch/x86/mm/numa_32.c
+@@ -347,8 +347,8 @@ static void init_remap_allocator(int nid)
+ 		(ulong) node_remap_end_vaddr[nid]);
+ }
+ 
+-void __init initmem_init(unsigned long start_pfn,
+-				  unsigned long end_pfn)
++void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn,
++				int acpi, int k8)
+ {
+ 	int nid;
+ 	long kva_target_pfn;
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -524,7 +524,8 @@ out:
+ }
+ #endif /* CONFIG_NUMA_EMU */
+ 
+-void __init initmem_init(unsigned long start_pfn, unsigned long last_pfn)
++void __init initmem_init(unsigned long start_pfn, unsigned long last_pfn,
++				int acpi, int k8)
+ {
+ 	int i;
+ 
+@@ -547,8 +548,7 @@ void __init initmem_init(unsigned long start_pfn, unsigned long last_pfn)
+ #endif
+ 
+ #ifdef CONFIG_K8_NUMA
+-	if (!numa_off && !k8_scan_nodes(start_pfn<<PAGE_SHIFT,
+-					last_pfn<<PAGE_SHIFT))
++	if (!numa_off && k8 && !k8_scan_nodes())
+ 		return;
+ 	nodes_clear(node_possible_map);
+ 	nodes_clear(node_online_map);
