@@ -1,98 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbZIYWMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbZIYWUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbZIYWMo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 18:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZIYWMn
+	id S1753163AbZIYWUE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 18:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZIYWUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 18:12:43 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:41227 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752441AbZIYWMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 18:12:43 -0400
-Date: Sat, 26 Sep 2009 00:12:46 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] single writeback fixup
-Message-ID: <20090925221246.GU23126@kernel.dk>
+	Fri, 25 Sep 2009 18:20:01 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:46565 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753140AbZIYWT7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 18:19:59 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-system-of-record;
+	b=Sy2Hvey1IHx6svlBkKI4sF4PpI1Q9E4m2aolN3gT9JkXprZe0vSZJNBLUzeQcsMJv
+	i1h5O9uxH4kKK+KGDKfTQ==
+Date: Fri, 25 Sep 2009 15:19:47 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+cc: Yinghai Lu <yinghai@kernel.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Ankita Garg <ankita@in.ibm.com>, Len Brown <len.brown@intel.com>,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 1/4] x86: cleanup and add missing log levels for k8
+Message-ID: <alpine.DEB.1.00.0909251517440.14754@chino.kir.corp.google.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Convert all printk's in arch/x86/mm/k8topology_64.c to use pr_info() or
+pr_err() appropriately.
 
-The last commit in the series caused all inodes on all super_blocks to
-be written out from writeback_inodes_sb() (potentially at least), this
-single commit fixes that up again. Please pull!
+Adds log levels for messages currently lacking them.
 
-  git://git.kernel.dk/linux-2.6-block.git writeback
+Cc: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ arch/x86/mm/k8topology_64.c |   39 +++++++++++++++++++--------------------
+ 1 files changed, 19 insertions(+), 20 deletions(-)
 
-Jens Axboe (1):
-      writeback: pass in super_block to bdi_start_writeback()
-
- fs/fs-writeback.c           |    6 ++++--
- include/linux/backing-dev.h |    3 ++-
- mm/page-writeback.c         |    2 +-
- 3 files changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index fb61178..9d5360c 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -250,9 +250,11 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
-  *   completion. Caller need not hold sb s_umount semaphore.
-  *
-  */
--void bdi_start_writeback(struct backing_dev_info *bdi, long nr_pages)
-+void bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
-+			 long nr_pages)
- {
- 	struct wb_writeback_args args = {
-+		.sb		= sb,
- 		.sync_mode	= WB_SYNC_NONE,
- 		.nr_pages	= nr_pages,
- 		.range_cyclic	= 1,
-@@ -1206,7 +1208,7 @@ void writeback_inodes_sb(struct super_block *sb)
- 	nr_to_write = nr_dirty + nr_unstable +
- 			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
+diff --git a/arch/x86/mm/k8topology_64.c b/arch/x86/mm/k8topology_64.c
+--- a/arch/x86/mm/k8topology_64.c
++++ b/arch/x86/mm/k8topology_64.c
+@@ -91,14 +91,14 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 	if (nb < 0)
+ 		return nb;
  
--	bdi_start_writeback(sb->s_bdi, nr_to_write);
-+	bdi_start_writeback(sb->s_bdi, sb, nr_to_write);
- }
- EXPORT_SYMBOL(writeback_inodes_sb);
+-	printk(KERN_INFO "Scanning NUMA topology in Northbridge %d\n", nb);
++	pr_info("Scanning NUMA topology in Northbridge %d\n", nb);
  
-diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-index 0ee33c2..b449e73 100644
---- a/include/linux/backing-dev.h
-+++ b/include/linux/backing-dev.h
-@@ -101,7 +101,8 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- 		const char *fmt, ...);
- int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev);
- void bdi_unregister(struct backing_dev_info *bdi);
--void bdi_start_writeback(struct backing_dev_info *bdi, long nr_pages);
-+void bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
-+				long nr_pages);
- int bdi_writeback_task(struct bdi_writeback *wb);
- int bdi_has_dirty_io(struct backing_dev_info *bdi);
+ 	reg = read_pci_config(0, nb, 0, 0x60);
+ 	numnodes = ((reg >> 4) & 0xF) + 1;
+ 	if (numnodes <= 1)
+ 		return -1;
  
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 69b5fba..a3b1409 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -596,7 +596,7 @@ static void balance_dirty_pages(struct address_space *mapping,
- 	    (!laptop_mode && ((global_page_state(NR_FILE_DIRTY)
- 			       + global_page_state(NR_UNSTABLE_NFS))
- 					  > background_thresh)))
--		bdi_start_writeback(bdi, 0);
-+		bdi_start_writeback(bdi, NULL, 0);
- }
+-	printk(KERN_INFO "Number of nodes %d\n", numnodes);
++	pr_info("Number of nodes %d\n", numnodes);
  
- void set_page_dirty_balance(struct page *page, int page_mkwrite)
-
-
--- 
-Jens Axboe
-
+ 	memset(&nodes, 0, sizeof(nodes));
+ 	prevbase = 0;
+@@ -111,28 +111,28 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 		nodeid = limit & 7;
+ 		if ((base & 3) == 0) {
+ 			if (i < numnodes)
+-				printk("Skipping disabled node %d\n", i);
++				pr_info("Skipping disabled node %d\n", i);
+ 			continue;
+ 		}
+ 		if (nodeid >= numnodes) {
+-			printk("Ignoring excess node %d (%lx:%lx)\n", nodeid,
+-			       base, limit);
++			pr_info("Ignoring excess node %d (%lx:%lx)\n", nodeid,
++				base, limit);
+ 			continue;
+ 		}
+ 
+ 		if (!limit) {
+-			printk(KERN_INFO "Skipping node entry %d (base %lx)\n",
+-			       i, base);
++			pr_info("Skipping node entry %d (base %lx)\n",
++				i, base);
+ 			continue;
+ 		}
+ 		if ((base >> 8) & 3 || (limit >> 8) & 3) {
+-			printk(KERN_ERR "Node %d using interleaving mode %lx/%lx\n",
+-			       nodeid, (base>>8)&3, (limit>>8) & 3);
++			pr_err("Node %d using interleaving mode %lx/%lx\n",
++			       nodeid, (base >> 8) & 3, (limit >> 8) & 3);
+ 			return -1;
+ 		}
+ 		if (node_isset(nodeid, node_possible_map)) {
+-			printk(KERN_INFO "Node %d already present. Skipping\n",
+-			       nodeid);
++			pr_info("Node %d already present, skipping\n",
++				nodeid);
+ 			continue;
+ 		}
+ 
+@@ -154,24 +154,24 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 		if (limit > end)
+ 			limit = end;
+ 		if (limit == base) {
+-			printk(KERN_ERR "Empty node %d\n", nodeid);
++			pr_err("Empty node %d\n", nodeid);
+ 			continue;
+ 		}
+ 		if (limit < base) {
+-			printk(KERN_ERR "Node %d bogus settings %lx-%lx.\n",
++			pr_err("Node %d bogus settings %lx-%lx.\n",
+ 			       nodeid, base, limit);
+ 			continue;
+ 		}
+ 
+ 		/* Could sort here, but pun for now. Should not happen anyroads. */
+ 		if (prevbase > base) {
+-			printk(KERN_ERR "Node map not sorted %lx,%lx\n",
++			pr_err("Node map not sorted %lx,%lx\n",
+ 			       prevbase, base);
+ 			return -1;
+ 		}
+ 
+-		printk(KERN_INFO "Node %d MemBase %016lx Limit %016lx\n",
+-		       nodeid, base, limit);
++		pr_info("Node %d MemBase %016lx Limit %016lx\n",
++			nodeid, base, limit);
+ 
+ 		found++;
+ 
+@@ -188,10 +188,10 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 
+ 	memnode_shift = compute_hash_shift(nodes, 8, NULL);
+ 	if (memnode_shift < 0) {
+-		printk(KERN_ERR "No NUMA node hash function found. Contact maintainer\n");
++		pr_err("No NUMA node hash function found. Contact maintainer\n");
+ 		return -1;
+ 	}
+-	printk(KERN_INFO "Using node hash shift of %d\n", memnode_shift);
++	pr_info("Using node hash shift of %d\n", memnode_shift);
+ 
+ 	/* use the coreid bits from early_identify_cpu */
+ 	bits = boot_cpu_data.x86_coreid_bits;
+@@ -200,8 +200,7 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 	/* need to get boot_cpu_id early for system with apicid lifting */
+ 	early_get_boot_cpu_id();
+ 	if (boot_cpu_physical_apicid > 0) {
+-		printk(KERN_INFO "BSP APIC ID: %02x\n",
+-				 boot_cpu_physical_apicid);
++		pr_info("BSP APIC ID: %02x\n", boot_cpu_physical_apicid);
+ 		apicid_base = boot_cpu_physical_apicid;
+ 	}
+ 
