@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbZIYJxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbZIYJzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751983AbZIYJxY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 05:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZIYJxW
+	id S1751998AbZIYJzu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 05:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZIYJzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 05:53:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53074 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbZIYJxV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 05:53:21 -0400
-Subject: Re: ARCH=x86 patch
-From: David Woodhouse <dwmw2@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeff Dike <jdike@addtoit.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4ABC8F50.2030006@zytor.com>
-References: <4ABC8F50.2030006@zytor.com>
+	Fri, 25 Sep 2009 05:55:49 -0400
+Received: from ns.penguin.cz ([84.21.108.25]:59061 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750879AbZIYJzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 05:55:48 -0400
+Subject: Re: [PATCH] serial-core: resume serial hardware with
+ no_console_suspend
+From: Stanislav Brabec <utx@penguin.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090925073617.GA5856@n2100.arm.linux.org.uk>
+References: <1253021938.6597.16.camel@hammer.suse.cz>
+	 <20090924170503.37cbe4ed.akpm@linux-foundation.org>
+	 <20090925073617.GA5856@n2100.arm.linux.org.uk>
 Content-Type: text/plain
-Date: Fri, 25 Sep 2009 02:50:46 -0700
-Message-Id: <1253872246.4310.1448.camel@macbook.infradead.org>
+Date: Fri, 25 Sep 2009 11:55:47 +0200
+Message-Id: <1253872547.13257.18.camel@hammer.suse.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.27.91 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-25 at 02:37 -0700, H. Peter Anvin wrote:
-> I am confused, because I could have sworn I had tested this combination 
-> already, but having applied Jeff's UM fix and then David's ARCH=x86 
-> patch on top of that, I now find that all the 32-bit builds crap out 
-> when building on a 64-bit platform, due to asm-offsets.c being compiled 
-> with -m64 rather than -m32.
+Russell King - ARM Linux wrote:
+> On Thu, Sep 24, 2009 at 05:05:03PM -0700, Andrew Morton wrote:
+> > On Tue, 15 Sep 2009 15:38:58 +0200
+> > Stanislav Brabec <utx@penguin.cz> wrote:
+> > 
+> > > Hardware may need re-initialization to get serial port working after
+> > > resume. It does not happen with no_console_suspend. Attached patch
+> > > attempts to fix it.
+> > > 
+> > > The patch attempts to keep hardware running before suspend and run
+> > > hardware re-initialization after resume. Maybe simpler approach is
+> > > possible.
+> > 
+> > The patch doesn't apply any more and seems like a rather hacky thing to do.
 
-Argh.
+Yes, but no_console_suspend itself is a bit hacky. You need to save
+console state but keep it running as long as possible afterwards and
+resume it after return from the sleep.
 
-All this nonsense simply because Ingo objected to my previous patch...
-purely on the basis that it made 'make randconfig' actually random.
+I was not sure, what exactly should be skipped and what must be run, so
+I experimented a bit.
+
+Not calling hardware suspend/resume (current implementation) breaks
+serial port in hardware that need resume.
+
+Calling of resume without suspend seems to be dangerous. Not calling
+suspend at all and standard initialization on resume would probably
+reset the port setting and maybe cause memory leak.
+
+> > It appears that you have specific serial hardware which doesn't resume
+> > correctly?  If so, that's a bug, so how about we start with a bug
+> > report/description?
+
+The hardware resumes correctly. But no_console_suspend breaks its
+resume.
+
+> It's something that I did point out when the no_console_suspend patch
+> appeared, but I was overruled/ignored.
+> 
+> The problem is that on ARM hardware, there is no BIOS to re-initialize
+> hardware.  The kernel has to do restore the entire system hardware
+> state upon resume.  Unfortunately, no_console_suspend not only prevents
+> the console from being suspended but _also_ resumed.
+> 
+> The result of that is the console UART is left in a totally uninitialized
+> state.
+
+Exactly, my ARM hardware is PXA270 on Zaurus SL-C3200.
 
 -- 
-dwmw2
+Stanislav Brabec
+http://www.penguin.cz/~utx
 
