@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZIYIZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZIYIZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbZIYIZu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 04:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZIYIZs
+	id S1753079AbZIYIZm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 04:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZIYIZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 04:25:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:35464 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753094AbZIYIZp convert rfc822-to-8bit (ORCPT
+	Fri, 25 Sep 2009 04:25:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38357 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbZIYIZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 04:25:45 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <7d86d44a0909242139v32a0ef6bh68386cbda31d0682@mail.gmail.com>
-References: <7d86d44a0909242139v32a0ef6bh68386cbda31d0682@mail.gmail.com> <20090924141310.19746.31678.stgit@warthog.procyon.org.uk>
-To: graff yang <graff.yang@gmail.com>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Paul Mundt <lethal@linux-sh.org>, Mel Gorman <mel@csn.ul.ie>,
-       Greg Ungerer <gerg@snapgear.com>
-Subject: Re: [PATCH] NOMMU: Fix MAP_PRIVATE mmap() of objects where the data can be mapped directly
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Date: Fri, 25 Sep 2009 09:24:27 +0100
-Message-ID: <11260.1253867067@redhat.com>
+	Fri, 25 Sep 2009 04:25:37 -0400
+Date: Fri, 25 Sep 2009 10:25:16 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Rusty Lynch <rusty.lynch@intel.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Vamsi Krishna S <vamsi_krishna@in.ibm.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nathan Sidwell <nathan@codesourcery.com>,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Anton Massoud <anton.massoud@ericsson.com>,
+       Richard J Moore <richardj_moore@uk.ibm.com>
+Subject: Re: Immediate values
+Message-ID: <20090925102516.2ef02414@infradead.org>
+In-Reply-To: <20090925073512.GA10346@Krystal>
+References: <20090924191642.GA19225@elte.hu>
+	<20090924193422.GB2533@elte.hu>
+	<20090925085119.2b77ea04@infradead.org>
+	<20090925073512.GA10346@Krystal>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-graff yang <graff.yang@gmail.com> wrote:
+On Fri, 25 Sep 2009 03:35:13 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> > +       if (capabilities & BDI_CAP_MAP_DIRECT) {
+> * Arjan van de Ven (arjan@infradead.org) wrote:
+> > On Thu, 24 Sep 2009 21:34:22 +0200
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> [context for people CCed: see
+> http://lkml.org/lkml/2009/9/24/262]
 > 
-> This will breaks many drivers, e.g. some frame-buffer drivers, on NOMMU
-> system.  Because they don't have get_unmapped_area().  These drivers depend
-> on it's mmap() to return the frame-buffer base address.
+> > > 
+> > 
+> > stopmachine is fine.
+> > 
+> > more aggressive tricks are rather dicey.
+> > 
+> > (cross modifying code that's being executed in ring 0 is ... not
+> > something CPU designers had in mind)
+> > 
+> 
+> Then, following your advice, kprobes should be re-designed to do a
+> stop_machine around the int3 breakpoint insertion ? And gdb
+> should be stopping all threads of a target process before inserting a
+> breakpoint. Therefore, I do not seem to be the only one confused about
+> Intel statement on this issue.
 
-Then they won't work on NOMMU.  Read Documentation/nommu-mmap.txt:
+you are oversimplifying what you are trying to do, and overstating what
+a ring 3 app and others do. 
 
-	============================================
-	PROVIDING SHAREABLE CHARACTER DEVICE SUPPORT
-	============================================
+But I'm not the one whom you'd need to convince, I don't design the
+CPU. The people who do are extremely frowning on cross modifying code,
+and Peter and I need to sit down with people who did many generations
+of CPU to figure out if your scheme is actually safe. And on the AMD
+side someone will need to do the same.
 
-	To provide shareable character device support, a driver must provide a
-	file->f_op->get_unmapped_area() operation. The mmap() routines will
-	call this to get a proposed address for the mapping. This may return an
-	error if it doesn't wish to honour the mapping because it's too long,
-	at a weird offset, under some unsupported combination of flags or
-	whatever.
 
-The chardev driver doesn't provide the virtual address through its mmap() fop
-in MMU-mode either - that's provided by do_mmap_pgoff().
-
-David
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
