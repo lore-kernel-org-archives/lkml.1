@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751329AbZIYEGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751259AbZIYELn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751329AbZIYEGc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 00:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZIYEGb
+	id S1751259AbZIYELn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 00:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbZIYELl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 00:06:31 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42206 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992AbZIYEG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 00:06:28 -0400
-Date: Fri, 25 Sep 2009 06:06:31 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "jack@suse.cz" <jack@suse.cz>
-Subject: Re: [PATCH 0/10] Current writeback patch queue
-Message-ID: <20090925040631.GP23126@kernel.dk>
-References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com> <20090925025527.GA10487@localhost>
+	Fri, 25 Sep 2009 00:11:41 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:35216 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbZIYELk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 00:11:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=BNvTeAZ5aS6VhmsmIdqlwUvFpU4aaUSd8KK57qdeCVg3g752FFEWae0xx+NU02GmWQ
+         GTyybnfNOkLdzMHcMIeWo1hElwsrQAjRI2YtUn/kPYz9qKUft+Np8ty0KvUCtLzoWfh/
+         b4ccTKYveaA66oAnBXFp1DTn9yAEnTOdF7NTs=
+Message-ID: <4ABC42F9.3010403@gmail.com>
+Date: Fri, 25 Sep 2009 13:11:37 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090925025527.GA10487@localhost>
+To: Berthold Gunreben <b.gunreben@web.de>
+CC: "linux.kernel" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Niel Lambrechts <niel.lambrechts@gmail.com>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <clqON-2Xv-7@gated-at.bofh.it> <cnTWo-7bV-25@gated-at.bofh.it> <4A446998.4070508@gmail.com> <200909182226.39660.b.gunreben@web.de>
+In-Reply-To: <200909182226.39660.b.gunreben@web.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25 2009, Wu Fengguang wrote:
-> On Thu, Sep 24, 2009 at 10:40:26PM +0800, Jens Axboe wrote:
-> > Hi,
-> > 
-> > This is the current writeback patch queue. Most of the patches
-> > have already been reviewed and acked, but please take a look
-> > at the ones that have not (and ack/comment as necessary).
-> > 
-> > Wu, this one is still missing the 5/6 patch from your latest posting,
-> > Please double check and re-submit that bit. Thanks!
-> 
-> OK, updated patch to add the missing label and the wbc->for_kupdate
-> check to avoid jumping from !for_kupdate to the for_kupdate code
+Hello, Berthold.
 
-Thanks, looks good, applied now.
+Berthold Gunreben wrote:
+> I am not quite sure if I am at the right place here, however, I get very
+> similar problems with a totally different setup. What I do is the following:
+> 
+> I added a fourth disk to a software raid5 array and did setup the raid
+> completely from scratch (the same disks have been running for about
+> 1.5 years without any problems before, the difference is that previously
+> one of the disks was setup as hot spare).
+> 
+> After the software raid was in sync, I started to copy my data back to
+> the raid, and after a  less than 5 minutes time, one of the disks failed
+> (from /var/log/warn):
+> 
+> Sep 18 22:04:02 Bacchus kernel: ata3.00: exception Emask 0x10 SAct 0x0 SErr 0x10000 action 0xe frozen
+> Sep 18 22:04:02 Bacchus kernel: ata3.00: irq_stat 0x00400000, PHY RDY changed
+> Sep 18 22:04:02 Bacchus kernel: ata3: SError: { PHYRdyChg }
+> Sep 18 22:04:02 Bacchus kernel: ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+> Sep 18 22:04:02 Bacchus kernel:          res 40/00:0c:3f:6c:d5/00:00:15:00:00/40 Emask 0x10 (ATA bus error)
+> Sep 18 22:04:02 Bacchus kernel: ata3.00: status: { DRDY }
+
+The disk is most likely losing power briefly.  After boot, run
+"smartctl -a" on the device and record the output.  After triggering
+the problem, do it again.  See if Start_Stop_Count, Power_Cycle_Count
+or Power-Off_Retract_Count has increased.  If so, take out your PSU,
+bury it half-deep in your backyard, apply some gasoline, light it up
+and enjoy the sight of perishing evil with a can of beer.
+
+Thanks.
 
 -- 
-Jens Axboe
-
+tejun
