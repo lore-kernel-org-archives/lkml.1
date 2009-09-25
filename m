@@ -1,105 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbZIYQBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbZIYQHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbZIYQBs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 12:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZIYQBr
+	id S1753405AbZIYQHf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 12:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZIYQHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 12:01:47 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:55375 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752962AbZIYQBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 12:01:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAKeFvEqrR7PE/2dsb2JhbAC+R4hTAZAABYQegV0
-X-IronPort-AV: E=Sophos;i="4.44,452,1249257600"; 
-   d="scan'208";a="396136828"
-From: Roland Dreier <rdreier@cisco.com>
-To: ykzhao <yakui.zhao@intel.com>
-Cc: Len Brown <lenb@kernel.org>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi\@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH] ACPI: Kill overly verbose "power state" log messages
-References: <adapr9gypqz.fsf@cisco.com>
-	<1253839597.3609.459.camel@localhost.localdomain>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 25 Sep 2009 09:01:43 -0700
-In-Reply-To: <1253839597.3609.459.camel@localhost.localdomain> (ykzhao's
-	message of "Fri, 25 Sep 2009 08:46:37 +0800")
-Message-ID: <adak4znypw8.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 25 Sep 2009 12:07:34 -0400
+Received: from n9a.bullet.mail.mud.yahoo.com ([209.191.87.108]:43087 "HELO
+	n9a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753020AbZIYQHe convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 12:07:34 -0400
+X-Greylist: delayed 319 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Sep 2009 12:07:34 EDT
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 720416.57467.bm@omp122.mail.ac4.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=AwqtJ3kzvfgCOFJQQLaar+Xqr5XFKb7tNpE6dhZpgzc8CAQ59kZW5NhbshHuw6Ls/XXd2OE++jtYmSU4Mbm97sFkfkQmxCHIA2+JDMbdP0AVDfN63+lqk3mEQr6uGVUyOBjH4IWFGclR8Ezh9PORqUM18yY3pw3K5RFS16osSck=;
+Message-ID: <619356.98592.qm@web63403.mail.re1.yahoo.com>
+X-YMail-OSG: MZ9yRC0VM1mAEC_p4cHNxgN.7dIxfvjhtJOR3LykBRlrqLPmh_c7_KFBRf9ZbzOBmRq.CXXIa5vHHvR6pZAfWdtCkk5vaIRACDKo_ver61t724AwnmeiqrM39BYcWmW1weGWaPCwF5b6jEEmuWaqiEwlbicgpZCGu69Xw7ujhrWvjR94ENyiiTUSxb9ZEmfAmRo_zCnKivWULi6bWgW8j1vckyHGPHYUb9QQRZCygE8R_smN1bmNi88QkNRq5O2ky.Fkbw5YH48MRdUy1lN.ziiRMzynWGXbBRgkDeDUD7H7oAhQCji6y.XbrNyZqruXmv3kKrBfreNTDAlgM0LviH_g0JUxSdmyKYKo9ShxPgclz.uwVA--
+X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.347.3
+Date: Fri, 25 Sep 2009 09:02:19 -0700 (PDT)
+From: Joe Cao <caoco2002@yahoo.com>
+Subject: Re: TCP stack bug related to F-RTO?
+To: zhigang gong <zhigang.gong@gmail.com>
+Cc: linux-kernel@vger.kernel.org, jcaoco2002@yahoo.com, netdev@vger.kernel.org
+In-Reply-To: <40c9f5b20909250155l49ad5fd2if8efb4fd48ed6066@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Sep 2009 16:01:44.0319 (UTC) FILETIME=[7A66D0F0:01CA3DF9]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len, I see I messed up editing my changelog message, see below...
+Hi Zhigang,
 
- > > I was recently lucky enough to get a 64-CPU system.  The processors
- > > actually have T-states, so my kernel log ends up with 64 lines like:
- > > 
- > >     ACPI: CPU0 (power states: C1[C1] C2[C3])
- > > 
- > > This is pretty useless clutter because this info is already available
- > > after boot from both /sys/devices/system/cpu/cpu*/cpuidle/state?/ as
- > > well as /proc/acpi/processor/CPU*/power.
- > > 
- > > So just delete the code that prints the throttling states in
- > > processor_idle.c.
+Thanks for help looking into the issue.
 
- > It seems that it is unnecessary to delete the C-state info.
+My answer to your analysis is of course there won't the third dup-ack, because the server only sends TWO NEW data packets every time.  Clearly this is server's problem and not the client's problem.
 
-Sorry, this is a little too terse for me to know what you mean.
-Certainly it's not useful to have 64 copies of
+Thanks,
+Joe
 
-    ACPI: CPU0 (power states: C1[C1] C2[C3])
+--- On Fri, 9/25/09, zhigang gong <zhigang.gong@gmail.com> wrote:
 
-in the kernel log on a big box, when all 64 processors are going to
-support the same C-states.  However, I don't see what the use of having
-even one copy in the boot log is, when I can easily get that info at
-runtime from /proc/acpi/processor/CPU*/power.
+> From: zhigang gong <zhigang.gong@gmail.com>
+> Subject: Re: TCP stack bug related to F-RTO?
+> To: "Joe Cao" <caoco2002@yahoo.com>
+> Cc: linux-kernel@vger.kernel.org, jcaoco2002@yahoo.com, netdev@vger.kernel.org
+> Date: Friday, September 25, 2009, 1:55 AM
+> Oh, I see, so I spoke too quickly in
+> last mail. You just ignore some packets
+> in the trace. I have analysed the traffic flow  and
+> have some findings as below,
+> hope it's helpful.
+> 
+> >> > 1. The client opens up a big window,
+> >> > 2. the server sends 19 packets in a row (pkt
+> #14- #32
+> >> in the trace), but all of them are dropped due to
+> some
+> >> congestion.
+> >> > 3. The server hits RTO and retransmits pkt
+> #14 in #33
+> This retransmission timer expiring indicate the server's
+> tcp/ip
+> stack to enter slow start mode, as a result we can see the
+> server's sending window will be reduced to one.
+> 
+> >> > 4. The client immediately acks #33 (=#14),
+> and the
+> >> server (seems like to enter F-RTO) expends the
+> window and
+> >> sends *NEW* pkt #35 & #36.=A0 Timeoute is
+> doubled to
+> >> 2*RTO; The client immediately sends two Dup-ack to
+> #35 and
+> >> #36.
+> 
+> Server is still in slow start mode, and extend window to
+> 2.
+> 
+> >> > 5. after 2*RTO, pkt #15 is retransmitted in
+> #39.
+> 
+> Here , the second retransmission timer expiring ocur.
+> Server's sending
+> window reduce to one again and continue in slow start
+> mode.
+> 
+> >> > 6.. The client immediately acks #39 (=#15) in
+> #40, and
+> >> the server continues to expand the window and
+> sends two
+> >> *NEW* pkt #41 & #42. Now the timeoute is
+> doubled to 4
+> >> *RTO.
+> Here you ignore two duplicate acks #37 and #38 sent by the
+> client. As I know
+> the server must receive three or even more duplcate acks
+> before it enter fast
+> retransmit mode, otherwise it will still in slow start mode
+> and  it
+> will wait until next
+> time retransmission timer expiring before retransmit the
+> lost packets.
+> And this is
+> actually what you got.
+> 
+> I'm not an kernel expert, I just analyse from the TCP
+> protocol standard. From my
+> view, I think there is no problem in the server's network
+> stack. But
+> there maybe
+> some problem in the client (or some intermediate network
+> appliance) side, as it
+> always just sends two duplicate acks at the same time, and
+> never send the third
+> one no matter how long the interval is. In my opinion, if
+> the client
+> can send the third
+> duplicate acks then the server will enter fast retransmit
+> mode and
+> then fast recovery
+> then every thing will be ok.
+> 
+> >> > 8. After 4*RTO timeout, #16 is
+> retransmitted.
+> >> > 9....
+> >> > 10. The above steps repeats for
+> retransmitting pkt
+> >> #16-#32 and each time the timeout is doubled.
+> >> > 11. It takes a long long time to retransmit
+> all the
+> >> lost packets and before that is done, the client
+> sends a RST
+> >> because of timeout.
+> 
+> On Fri, Sep 25, 2009 at 2:42 PM, Joe Cao <caoco2002@yahoo.com>
+> wrote:
+> > Hi,
+> >
+> > On the wrong tcp checksum, that's because of hardware
+> checksum offload.
+> >
+> > As for the seq/ack number, because the trace is long,
+> I deliberately removed those irrelevant packets between
+> after the three-way handshake and when the problem happens.
+>  That can be seen from the timestamps.
+> >
+> > Please also note that I intentionally replaced the IP
+> addresses and mac addresses in the trace to hide proprietary
+> information in the trace.
+> >
+> > Anyway, the problem is not related to the checksum, or
+> seq/ack number, otherwise, you won't see the behavior shown
+> in the trace.
+> >
+> > Thanks,
+> > Joe
+> >
+> > --- On Thu, 9/24/09, zhigang gong <zhigang.gong@gmail.com>
+> wrote:
+> >
+> 
 
 
-Anyway, Len, I see I copy-and-pasted too quickly from my T-state patch
-submission... if you want to apply, a version with better changelog would be:
+      
 
-<--- snip --->
-
-I was recently lucky enough to get a 64-CPU system, so my kernel log
-ends up with 64 lines like:
-
-    ACPI: CPU0 (power states: C1[C1] C2[C3])
-
-This is pretty useless clutter because this info is already available
-after boot from both /sys/devices/system/cpu/cpu*/cpuidle/state?/ as
-well as /proc/acpi/processor/CPU*/power.
-
-So just delete the code that prints the C-states in processor_idle.c.
-
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
- drivers/acpi/processor_idle.c |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index cc61a62..706eacf 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -1214,13 +1214,6 @@ int __cpuinit acpi_processor_power_init(struct acpi_processor *pr,
- 		acpi_processor_setup_cpuidle(pr);
- 		if (cpuidle_register_device(&pr->power.dev))
- 			return -EIO;
--
--		printk(KERN_INFO PREFIX "CPU%d (power states:", pr->id);
--		for (i = 1; i <= pr->power.count; i++)
--			if (pr->power.states[i].valid)
--				printk(" C%d[C%d]", i,
--				       pr->power.states[i].type);
--		printk(")\n");
- 	}
- #ifdef CONFIG_ACPI_PROCFS
- 	/* 'power' [R] */
