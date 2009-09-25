@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbZIYUso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561AbZIYUtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752606AbZIYUso (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 16:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZIYUso
+	id S1752561AbZIYUtb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 16:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbZIYUta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 16:48:44 -0400
-Received: from mail-yw0-f174.google.com ([209.85.211.174]:58199 "EHLO
-	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752535AbZIYUsn convert rfc822-to-8bit (ORCPT
+	Fri, 25 Sep 2009 16:49:30 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34271 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752313AbZIYUta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 16:48:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=qElPQ9SRC4r1jop32tXI+2efUZeNXhmIuZ/D7gXBZj01O9PDxQwTJi4vHHl3BnpqHe
-         jmE9soHE9M08rIsqoCx7sHP1G79t+wbs49o/GxN0B2GgaGwdof/0uxwo3f+uFNth/jI3
-         S37yk2Ru40e6W6w3SmcXdXvDlmcaNGGqoKWTk=
+	Fri, 25 Sep 2009 16:49:30 -0400
+Date: Fri, 25 Sep 2009 22:49:26 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg KH <greg@kroah.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
+	(Was: Re: [PATCH] Remove broken by design and by implementation
+	devtmpfs maintenance disaster)
+Message-ID: <20090925204925.GA4726@elf.ucw.cz>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <m1ab0tcwep.fsf@fess.ebiederm.org> <20090917185306.GA28635@elte.hu> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain> <20090917203113.GA9530@elte.hu> <20090918055843.GB7104@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <8bd0f97a0909251324h115c5c47wb2d50cc982ba17dd@mail.gmail.com>
-References: <1252950549-9838-1-git-send-email-vapier@gentoo.org> 
-	<1253223426-5938-1-git-send-email-vapier@gentoo.org> <20090924163240.d03127e3.akpm@linux-foundation.org> 
-	<8bd0f97a0909251324h115c5c47wb2d50cc982ba17dd@mail.gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 25 Sep 2009 16:48:27 -0400
-Message-ID: <8bd0f97a0909251348k9e5240av6ebd49d2e99c04a1@mail.gmail.com>
-Subject: Re: [PATCH v2] fbdev: bfin-lq035q1-fb: new Blackfin Landscape LCD 
-	EZ-Extender driver
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       michael.hennerich@analog.com, cooloney@kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090918055843.GB7104@kroah.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 16:24, Mike Frysinger wrote:
-> On Thu, Sep 24, 2009 at 19:32, Andrew Morton wrote:
->> On Thu, 17 Sep 2009 17:37:06 -0400 Mike Frysinger wrote:
->>> +static int lq035q1_control(unsigned char reg, unsigned short value)
->>> +{
->>> +     int ret;
->>> +     u8 regs[3] = {LQ035_INDEX, 0, 0};
->>> +     u8 dat[3] = {LQ035_DATA, 0, 0};
->>> +
->>> +     if (spi_control.spidev) {
->>> +             regs[2] = reg;
->>> +             dat[1] = value >> 8;
->>> +             dat[2] = value & 0xFF;
->>> +
->>> +             ret = spi_write(spi_control.spidev, regs, ARRAY_SIZE(regs));
->>> +             ret |= spi_write(spi_control.spidev, dat, ARRAY_SIZE(dat));
->>> +     } else
->>> +             return -ENODEV;
->>> +
->>> +     return ret;
->>> +}
->>
->> I am suspecting that this function (and the similar ones below) rely
->> upon state within the hardware and will hence misbehave if two
->> instances are run concurrently.
->>
->> Is that correct>  If so, is there locking to prevent this from occurring?
->
-> if by "instances" you mean "users" as in "multiple programs
-> reading/writing the framebuffer concurrently", then probably.  rather
-> than handle the locking ourselves, it can be pushed to the SPI bus by
-> having the regs/dat be transfers in a single message.
+Hi!
 
-hmm there shouldnt be any locking problems here actually.  the spi
-access is only to initialize/shutdown, and there is a dedicated CS for
-each device.  so i dont think anything here really needs changing
-(other than to allocate the spi_control global variable dynamically in
-the probe).
--mike
+> > > > > I've reproduced a bug with the following .config options:
+> > > > >
+> > > > > ??CONFIG_DEVTMPFS=y
+> > > > > ??CONFIG_DEVTMPFS_MOUNT=y
+> > > > >
+> > > > > /dev/null and /dev/zero are not read/writable to ordinary users, 
+> > > > > breaking normal bootup and login:
+> > > > 
+> > > > Udev should run long before some ordinary/non-root user can login, 
+> > > > and apply the permissions as it always does. It's known to work on 
+> > > > Fedora, SUSE, Ubuntu. What kind of system/environment/setup is that 
+> > > > where you see this?
+> > > 
+> > > I don't know if this is what Ingo does, but I have a few machines 
+> > > where I don't run the distro-supplied 'initrd' at all, because it's 
+> > > easier to boot without it. The Fedora initrd doesn't allow me to 
+> > > sanely set root filesystem parameters without totally rewriting the 
+> > > initrd image, which I'm not interested in, for example (they'll take 
+> > > effect for the root initrd, not the final root).
+> > 
+> > Correct: i'm booting raw bzImages, with /dev copied to the real /dev. To 
+> > this box udev is mostly an annoyance that slows down my bootup ;-)
+> 
+> I use non-initrd systems as well, and this option works for me on Gentoo
+> and SUSE machines.
+> 
+> As you are using a very old udev, and the boot infrastructure for udev
+> in older Fedora releases was a bit "odd" in places, I would recommend
+> not using these options on that machine.  If we need to reword the
+> Kconfig help option to make it a bit more clear, do you have a
+> suggestion on what we should change?
+
+"no regressions" ?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
