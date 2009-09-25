@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbZIYGtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZIYGve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752357AbZIYGtT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 02:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZIYGtT
+	id S1752401AbZIYGve (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 02:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZIYGvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 02:49:19 -0400
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:36208 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983AbZIYGtS convert rfc822-to-8bit (ORCPT
+	Fri, 25 Sep 2009 02:51:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43167 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbZIYGvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 02:49:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=qEppsC1vOfSeLz1FAutm0s0IMFzAMxlU9TdNNbk3ZiQmAC309F1KWM6myVt25JYFeP
-         AnsXSIdkzCYKsS2sPdNCli4C7W6xM5XWO6fCjV8q5rLnXx7lSxCCOGChbdpDOEmA3P91
-         609A7SCuhLpcpjGc3gTtuhRfcLi/VXllimikI=
-MIME-Version: 1.0
-In-Reply-To: <20090925034557.GA12810@linux-sh.org>
-References: <20090925034557.GA12810@linux-sh.org>
-Date: Fri, 25 Sep 2009 14:49:22 +0800
-Message-ID: <2375c9f90909242349u7daa7b1epae52fb0da6c92b7d@mail.gmail.com>
-Subject: Re: [PATCH] module: Fix up CONFIG_KALLSYMS=n build.
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>, Jan Beulich <jbeulich@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 25 Sep 2009 02:51:31 -0400
+Date: Fri, 25 Sep 2009 08:51:19 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Immediate values
+Message-ID: <20090925085119.2b77ea04@infradead.org>
+In-Reply-To: <20090924193422.GB2533@elte.hu>
+References: <20090924191642.GA19225@elte.hu>
+	<20090924193422.GB2533@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 11:45 AM, Paul Mundt <lethal@linux-sh.org> wrote:
-> Starting from commit 4a4962263f07d14660849ec134ee42b63e95ea9a
-> "reduce symbol table for loaded modules (v2)", the kernel/module.c build
-> is broken with CONFIG_KALLSYMS disabled.
->
->  CC      kernel/module.o
-> kernel/module.c:1995: warning: type defaults to 'int' in declaration of 'Elf_Hdr'
-> kernel/module.c:1995: error: expected ';', ',' or ')' before '*' token
-> kernel/module.c: In function 'load_module':
-> kernel/module.c:2203: error: 'strmap' undeclared (first use in this function)
-> kernel/module.c:2203: error: (Each undeclared identifier is reported only once
-> kernel/module.c:2203: error: for each function it appears in.)
-> kernel/module.c:2239: error: 'symoffs' undeclared (first use in this function)
-> kernel/module.c:2239: error: implicit declaration of function 'layout_symtab'
-> kernel/module.c:2240: error: 'stroffs' undeclared (first use in this function)
-> make[1]: *** [kernel/module.o] Error 1
-> make: *** [kernel/module.o] Error 2
->
-> There are three different issues:
->
->    - layout_symtab() takes a const Elf_Ehdr
->
->    - layout_symtab() needs to return a value
->
->    - symoffs/stroffs/strmap are referenced by the load_module() code
->      despite being ifdefed out, which seems unnecessary given the noop
->      behaviour of layout_symtab()/add_kallsyms() in the case of
->      CONFIG_KALLSYMS=n.
->
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> Cc: Jan Beulich <jbeulich@novell.com>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
+On Thu, 24 Sep 2009 21:34:22 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Indeed.
+> 
+> * H. Peter Anvin <hpa@zytor.com> wrote:
+> 
+> > I would like to get an official ACK or NAK for this patching
+> > technique from inside Intel, and preferrably from AMD as well.  If
+> > it does work as described it would provide a very clean way to do
+> > one-shot alternative functions, which probably would be higher
+> > value than immediate data values.
+> 
+> Sounds tempting. Things like the CONFIG_SECURITY hookery could use it?
+> 
+> But ... since it's patched under stopmachine, is there any reason why 
+> this wouldnt work?
+> 
 
-Acked-by: WANG Cong <amwang@redhat.com>
+stopmachine is fine.
+
+more aggressive tricks are rather dicey.
+
+(cross modifying code that's being executed in ring 0 is ... not
+something CPU designers had in mind)
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
