@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZIYEQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751775AbZIYEVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751931AbZIYEQm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 00:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZIYEQd
+	id S1751775AbZIYEVX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 00:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZIYEVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 00:16:33 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:33788 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751172AbZIYEQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 00:16:30 -0400
-Date: Fri, 25 Sep 2009 06:16:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mbroz@redhat.com, tytso@mit.edu, mingo@elte.hu
-Subject: Re: [PATCH] Add missing blk_trace_remove_sysfs to be in pair with
-	blk_trace_init_sysfs
-Message-ID: <20090925041633.GQ23126@kernel.dk>
-References: <c4e36d110909210307m6579807ehe4d659053c4dc696@mail.gmail.com> <4AB86A03.7060207@cn.fujitsu.com> <c4e36d110909220057q6d9ce816yfcec7de4849c1969@mail.gmail.com> <4ABAC663.60906@cn.fujitsu.com> <c4e36d110909240326k16bf40cdpfa4b818d1a24a25f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c4e36d110909240326k16bf40cdpfa4b818d1a24a25f@mail.gmail.com>
+	Fri, 25 Sep 2009 00:21:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55754 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751172AbZIYEVV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 00:21:21 -0400
+Date: Thu, 24 Sep 2009 21:20:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 02/12] Immediate Values - Architecture Independent Code
+Message-Id: <20090924212013.d27226c4.akpm@linux-foundation.org>
+In-Reply-To: <20090924133359.218934235@polymtl.ca>
+References: <20090924132626.485545323@polymtl.ca>
+	<20090924133359.218934235@polymtl.ca>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24 2009, Zdenek Kabelac wrote:
-> 2009/9/24 Li Zefan <lizf@cn.fujitsu.com>:
-> >>>> Subject: [PATCH] Add missing blk_trace_remove_sysfs to be in pair with
-> >>>> blk_trace_init_sysfs
-> >>>> From: Zdenek Kabelac <zkabelac@redhat.com>
-> >>>>
-> >>>> Adds missing blk_trace_remove_sysfs() to be in pair with
-> >>>> blk_trace_init_sysfs() introduced in commit
-> >>>> 1d54ad6da9192fed5dd3b60224d9f2dfea0dcd82.
-> >>>>
-> >>>> Problem was noticed via kmemleak backtrace when some sysfs entries
-> >>>> were note properly destroyed during  device removal:
-> >>>>
-> >>> Thanks for reporting and fixing this!
-> >>>
-> >>>> @@ -465,6 +466,7 @@ void blk_unregister_queue(struct gendisk *disk)
-> >>>>
-> >>>>               kobject_uevent(&q->kobj, KOBJ_REMOVE);
-> >>>>               kobject_del(&q->kobj);
-> >>>> +             blk_trace_remove_sysfs(disk_to_dev(disk));
-> >>> This should be moved outside of 'if'.
-> >>>
-> >>
-> >> I was not really sure about the proper place - if it could be placed
-> >> before if() or after the if(){} - as I've not checked in depth
-> >
-> > Just use the reverse order against blk_register_queue() should be fine.
-> 
-> Yes - I think the order of release is correct.
-> 
-> >
-> >> connection between kobj and sysfs. It's somewhat unclear why all the
-> >> kobject operation are only within this if(){} block - so I've thought
-> >> there is some reason...
-> >> IMHO only elv_unregister_queue() should be probably in the if(){} block.
-> >>
-> >
-> > Seems it's a bug to put kobject_put(dev->kobj) in the if block.
-> >
-> > I created a stacked device (mdadm) and kmemleak still reported leaks
-> > even after I fixed the blktrace issue. And then I moved kobejct_put()
-> > outside the if, no more leaks reports.
-> >
-> 
-> Ok - I didn't have a testcase where the request_fn would be NULL.
-> So in this case I propose this patch:
-> 
-> ---
-> Add missing blk_trace_remove_sysfs to be in pair with blk_trace_init_sysfs
-> introduced in commit 1d54ad6da9192fed5dd3b60224d9f2dfea0dcd82.
-> Release kobject also in case the request_fn is NULL.
-> 
-> Problem was noticed via kmemleak backtrace when some sysfs entries were
-> note properly destroyed during  device removal:
+On Thu, 24 Sep 2009 09:26:28 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-Thanks, this looks good now, applied.
+> Immediate values are used as read mostly variables that are rarely updated. They
+> use code patching to modify the values inscribed in the instruction stream. It
+> provides a way to save precious cache lines that would otherwise have to be used
+> by these variables.
 
--- 
-Jens Axboe
+What a hare-brained concept.
 
+> * Why should this be merged *
+> 
+> It improves performances on heavy memory I/O workloads.
+> 
+> An interesting result shows the potential this infrastructure has by
+> showing the slowdown a simple system call such as getppid() suffers when it is
+> used under heavy user-space cache trashing:
+> 
+> Random walk L1 and L2 trashing surrounding a getppid() call:
+> (note: in this test, do_syscal_trace was taken at each system call, see
+> Documentation/immediate.txt in these patches for details)
+> - No memory pressure :   getppid() takes  1573 cycles
+> - With memory pressure : getppid() takes 15589 cycles
+
+Our ideas of what constitutes an "interesting result" differ.
+
+Do you have any data which indicates that this thing is of any real
+benefit to anyone for anything?
