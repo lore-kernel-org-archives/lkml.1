@@ -1,217 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZIYOHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZIYOKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752770AbZIYOHw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 10:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZIYOHv
+	id S1752780AbZIYOKV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 10:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZIYOKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 10:07:51 -0400
-Received: from mba.ocn.ne.jp ([122.28.14.163]:50987 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752361AbZIYOHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 10:07:49 -0400
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 3/3] rtc-tx4939: Fix races around device registration
-Date: Fri, 25 Sep 2009 23:07:52 +0900
-Message-Id: <1253887672-16250-3-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.5
+	Fri, 25 Sep 2009 10:10:20 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:37777 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752626AbZIYOKT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 10:10:19 -0400
+Date: Fri, 25 Sep 2009 10:10:14 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, jack@suse.cz
+Subject: [PATCH] bdi_sync_writeback should WB_SYNC_NONE first
+Message-ID: <20090925141014.GB15853@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	linux-kernel@vger.kernel.org, jens.axboe@oracle.com, jack@suse.cz
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt012.oracle.com [141.146.116.21]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4ABCCF48.016E:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Use its own spinlock instead of rtc->irq_lock
-* Check pdata->rtc before calling rtc_update_irq
-* Disable interrupt after rtc_device_unregister
+At unmount time, we do writeback in two stages.  First we call
+sync_filesystems with wait == 0, and then we call it with wait == 1.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
- drivers/rtc/rtc-tx4939.c |   51 +++++++++++++++++++++++----------------------
- 1 files changed, 26 insertions(+), 25 deletions(-)
+When wait == 1, WB_SYNC_ALL is used.  WB_SYNC_ALL will pass wait == 1 to
+the filesystem write_inode function if the inode was I_DIRTY_SYNC, and
+the filesystem write_inode function is then expected to commit the
+running transaction.
 
-diff --git a/drivers/rtc/rtc-tx4939.c b/drivers/rtc/rtc-tx4939.c
-index 4a6ed11..9ee81d8 100644
---- a/drivers/rtc/rtc-tx4939.c
-+++ b/drivers/rtc/rtc-tx4939.c
-@@ -17,6 +17,7 @@
- struct tx4939rtc_plat_data {
- 	struct rtc_device *rtc;
- 	struct tx4939_rtc_reg __iomem *rtcreg;
-+	spinlock_t lock;
- };
- 
- static struct tx4939rtc_plat_data *get_tx4939rtc_plat_data(struct device *dev)
-@@ -52,14 +53,14 @@ static int tx4939_rtc_set_mmss(struct device *dev, unsigned long secs)
- 	buf[3] = secs >> 8;
- 	buf[4] = secs >> 16;
- 	buf[5] = secs >> 24;
--	spin_lock_irq(&pdata->rtc->irq_lock);
-+	spin_lock_irq(&pdata->lock);
- 	__raw_writel(0, &rtcreg->adr);
- 	for (i = 0; i < 6; i++)
- 		__raw_writel(buf[i], &rtcreg->dat);
- 	ret = tx4939_rtc_cmd(rtcreg,
- 			     TX4939_RTCCTL_COMMAND_SETTIME |
- 			     (__raw_readl(&rtcreg->ctl) & TX4939_RTCCTL_ALME));
--	spin_unlock_irq(&pdata->rtc->irq_lock);
-+	spin_unlock_irq(&pdata->lock);
- 	return ret;
- }
- 
-@@ -71,18 +72,18 @@ static int tx4939_rtc_read_time(struct device *dev, struct rtc_time *tm)
- 	unsigned long sec;
- 	unsigned char buf[6];
- 
--	spin_lock_irq(&pdata->rtc->irq_lock);
-+	spin_lock_irq(&pdata->lock);
- 	ret = tx4939_rtc_cmd(rtcreg,
- 			     TX4939_RTCCTL_COMMAND_GETTIME |
- 			     (__raw_readl(&rtcreg->ctl) & TX4939_RTCCTL_ALME));
- 	if (ret) {
--		spin_unlock_irq(&pdata->rtc->irq_lock);
-+		spin_unlock_irq(&pdata->lock);
- 		return ret;
- 	}
- 	__raw_writel(2, &rtcreg->adr);
- 	for (i = 2; i < 6; i++)
- 		buf[i] = __raw_readl(&rtcreg->dat);
--	spin_unlock_irq(&pdata->rtc->irq_lock);
-+	spin_unlock_irq(&pdata->lock);
- 	sec = (buf[5] << 24) | (buf[4] << 16) | (buf[3] << 8) | buf[2];
- 	rtc_time_to_tm(sec, tm);
- 	return rtc_valid_tm(tm);
-@@ -110,13 +111,13 @@ static int tx4939_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
- 	buf[3] = sec >> 8;
- 	buf[4] = sec >> 16;
- 	buf[5] = sec >> 24;
--	spin_lock_irq(&pdata->rtc->irq_lock);
-+	spin_lock_irq(&pdata->lock);
- 	__raw_writel(0, &rtcreg->adr);
- 	for (i = 0; i < 6; i++)
- 		__raw_writel(buf[i], &rtcreg->dat);
- 	ret = tx4939_rtc_cmd(rtcreg, TX4939_RTCCTL_COMMAND_SETALARM |
- 			     (alrm->enabled ? TX4939_RTCCTL_ALME : 0));
--	spin_unlock_irq(&pdata->rtc->irq_lock);
-+	spin_unlock_irq(&pdata->lock);
- 	return ret;
- }
- 
-@@ -129,12 +130,12 @@ static int tx4939_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
- 	unsigned char buf[6];
- 	u32 ctl;
- 
--	spin_lock_irq(&pdata->rtc->irq_lock);
-+	spin_lock_irq(&pdata->lock);
- 	ret = tx4939_rtc_cmd(rtcreg,
- 			     TX4939_RTCCTL_COMMAND_GETALARM |
- 			     (__raw_readl(&rtcreg->ctl) & TX4939_RTCCTL_ALME));
- 	if (ret) {
--		spin_unlock_irq(&pdata->rtc->irq_lock);
-+		spin_unlock_irq(&pdata->lock);
- 		return ret;
- 	}
- 	__raw_writel(2, &rtcreg->adr);
-@@ -143,7 +144,7 @@ static int tx4939_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
- 	ctl = __raw_readl(&rtcreg->ctl);
- 	alrm->enabled = (ctl & TX4939_RTCCTL_ALME) ? 1 : 0;
- 	alrm->pending = (ctl & TX4939_RTCCTL_ALMD) ? 1 : 0;
--	spin_unlock_irq(&pdata->rtc->irq_lock);
-+	spin_unlock_irq(&pdata->lock);
- 	sec = (buf[5] << 24) | (buf[4] << 16) | (buf[3] << 8) | buf[2];
- 	rtc_time_to_tm(sec, &alrm->time);
- 	return rtc_valid_tm(&alrm->time);
-@@ -153,11 +154,11 @@ static int tx4939_rtc_alarm_irq_enable(struct device *dev, unsigned int enabled)
+The new bdi threads try to keep this two stage writeback, but the
+problem is that they do it by calling bdi_writeback_all, which just
+kicks a few procs here and there and returns.
+
+The end result is that btrfs is getting stuck in a loop where it commits
+the transaction for every dirty inode, and unmount takes forever.
+
+This patch is one possible fix. It just changes bdi_sync_writeback to
+always do a WB_SYNC_NONE run synchronously before the WB_SYNC_ALL run.
+I'm not sure I've got the bdi calling conventions right, but we need
+something along these lines.
+
+We could also make a synchronous form of bdi_writeback_all, but unmount
+really isn't the common case so I think this patch is sufficient.
+
+Signed-off-by: Chris Mason <chris.mason@oracle.com>
+
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 8e1e5e1..27f8e0e 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -225,7 +225,7 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
  {
- 	struct tx4939rtc_plat_data *pdata = get_tx4939rtc_plat_data(dev);
+ 	struct wb_writeback_args args = {
+ 		.sb		= sb,
+-		.sync_mode	= WB_SYNC_ALL,
++		.sync_mode	= WB_SYNC_NONE,
+ 		.nr_pages	= LONG_MAX,
+ 		.range_cyclic	= 0,
+ 	};
+@@ -236,6 +236,13 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
  
--	spin_lock_irq(&pdata->rtc->irq_lock);
-+	spin_lock_irq(&pdata->lock);
- 	tx4939_rtc_cmd(pdata->rtcreg,
- 		       TX4939_RTCCTL_COMMAND_NOP |
- 		       (enabled ? TX4939_RTCCTL_ALME : 0));
--	spin_unlock_irq(&pdata->rtc->irq_lock);
-+	spin_unlock_irq(&pdata->lock);
- 	return 0;
+ 	bdi_queue_work(bdi, &work);
+ 	bdi_wait_on_work_clear(&work);
++
++	args.sync_mode = WB_SYNC_ALL;
++	args.nr_pages = LONG_MAX;
++
++	work.state = WS_USED | WS_ONSTACK;
++	bdi_queue_work(bdi, &work);
++	bdi_wait_on_work_clear(&work);
  }
  
-@@ -167,13 +168,14 @@ static irqreturn_t tx4939_rtc_interrupt(int irq, void *dev_id)
- 	struct tx4939_rtc_reg __iomem *rtcreg = pdata->rtcreg;
- 	unsigned long events = RTC_IRQF;
- 
--	spin_lock(&pdata->rtc->irq_lock);
-+	spin_lock(&pdata->lock);
- 	if (__raw_readl(&rtcreg->ctl) & TX4939_RTCCTL_ALMD) {
- 		events |= RTC_AF;
- 		tx4939_rtc_cmd(rtcreg, TX4939_RTCCTL_COMMAND_NOP);
- 	}
--	spin_unlock(&pdata->rtc->irq_lock);
--	rtc_update_irq(pdata->rtc, 1, events);
-+	spin_unlock(&pdata->lock);
-+	if (likely(pdata->rtc))
-+		rtc_update_irq(pdata->rtc, 1, events);
- 	return IRQ_HANDLED;
- }
- 
-@@ -194,13 +196,13 @@ static ssize_t tx4939_rtc_nvram_read(struct kobject *kobj,
- 	struct tx4939_rtc_reg __iomem *rtcreg = pdata->rtcreg;
- 	ssize_t count;
- 
--	spin_lock_irq(&pdata->rtc->irq_lock);
-+	spin_lock_irq(&pdata->lock);
- 	for (count = 0; size > 0 && pos < TX4939_RTC_REG_RAMSIZE;
- 	     count++, size--) {
- 		__raw_writel(pos++, &rtcreg->adr);
- 		*buf++ = __raw_readl(&rtcreg->dat);
- 	}
--	spin_unlock_irq(&pdata->rtc->irq_lock);
-+	spin_unlock_irq(&pdata->lock);
- 	return count;
- }
- 
-@@ -213,13 +215,13 @@ static ssize_t tx4939_rtc_nvram_write(struct kobject *kobj,
- 	struct tx4939_rtc_reg __iomem *rtcreg = pdata->rtcreg;
- 	ssize_t count;
- 
--	spin_lock_irq(&pdata->rtc->irq_lock);
-+	spin_lock_irq(&pdata->lock);
- 	for (count = 0; size > 0 && pos < TX4939_RTC_REG_RAMSIZE;
- 	     count++, size--) {
- 		__raw_writel(pos++, &rtcreg->adr);
- 		__raw_writel(*buf++, &rtcreg->dat);
- 	}
--	spin_unlock_irq(&pdata->rtc->irq_lock);
-+	spin_unlock_irq(&pdata->lock);
- 	return count;
- }
- 
-@@ -259,6 +261,7 @@ static int __init tx4939_rtc_probe(struct platform_device *pdev)
- 	if (!pdata->rtcreg)
- 		return -EBUSY;
- 
-+	spin_lock_init(&pdata->lock);
- 	tx4939_rtc_cmd(pdata->rtcreg, TX4939_RTCCTL_COMMAND_NOP);
- 	if (devm_request_irq(&pdev->dev, irq, tx4939_rtc_interrupt,
- 			     IRQF_DISABLED, pdev->name, &pdev->dev) < 0)
-@@ -277,14 +280,12 @@ static int __init tx4939_rtc_probe(struct platform_device *pdev)
- static int __exit tx4939_rtc_remove(struct platform_device *pdev)
- {
- 	struct tx4939rtc_plat_data *pdata = platform_get_drvdata(pdev);
--	struct rtc_device *rtc = pdata->rtc;
- 
--	spin_lock_irq(&rtc->irq_lock);
--	tx4939_rtc_cmd(pdata->rtcreg, TX4939_RTCCTL_COMMAND_NOP);
--	spin_unlock_irq(&rtc->irq_lock);
- 	sysfs_remove_bin_file(&pdev->dev.kobj, &tx4939_rtc_nvram_attr);
--	rtc_device_unregister(rtc);
--	platform_set_drvdata(pdev, NULL);
-+	rtc_device_unregister(pdata->rtc);
-+	spin_lock_irq(&pdata->lock);
-+	tx4939_rtc_cmd(pdata->rtcreg, TX4939_RTCCTL_COMMAND_NOP);
-+	spin_unlock_irq(&pdata->lock);
- 	return 0;
- }
- 
--- 
-1.5.6.5
-
+ /**
