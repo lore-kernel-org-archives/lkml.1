@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbZIYAq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbZIYArQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751825AbZIYAq3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 20:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZIYAq2
+	id S1752012AbZIYArQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 20:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZIYArP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 20:46:28 -0400
-Received: from mga14.intel.com ([143.182.124.37]:54514 "EHLO mga14.intel.com"
+	Thu, 24 Sep 2009 20:47:15 -0400
+Received: from mga03.intel.com ([143.182.124.21]:51671 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194AbZIYAq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 20:46:27 -0400
+	id S1750911AbZIYArO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 20:47:14 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,448,1249282800"; 
-   d="scan'208";a="191451287"
-Subject: Re: [PATCH] ACPI: Kill overly verbose "power state" log messages
-From: ykzhao <yakui.zhao@intel.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Len Brown <lenb@kernel.org>,
+   d="scan'208";a="191451449"
+Date: Fri, 25 Sep 2009 08:47:07 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <adapr9gypqz.fsf@cisco.com>
-References: <adapr9gypqz.fsf@cisco.com>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Fri, 25 Sep 2009 08:46:37 +0800
-Message-Id: <1253839597.3609.459.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 03/10] writeback: stop background writeback when below
+	background threshold
+Message-ID: <20090925004707.GA6190@localhost>
+References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com> <1253803236-20760-4-git-send-email-jens.axboe@oracle.com> <1253804615.18939.36.camel@laptop> <1253805536.18939.39.camel@laptop> <20090924161357.GL23126@kernel.dk> <1253809560.18939.69.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253809560.18939.69.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-25 at 05:52 +0800, Roland Dreier wrote:
-> I was recently lucky enough to get a 64-CPU system.  The processors
-> actually have T-states, so my kernel log ends up with 64 lines like:
+On Fri, Sep 25, 2009 at 12:26:00AM +0800, Peter Zijlstra wrote:
+> On Thu, 2009-09-24 at 18:13 +0200, Jens Axboe wrote:
 > 
->     ACPI: CPU0 (power states: C1[C1] C2[C3])
-> 
-> This is pretty useless clutter because this info is already available
-> after boot from both /sys/devices/system/cpu/cpu*/cpuidle/state?/ as
-> well as /proc/acpi/processor/CPU*/power.
-> 
-> So just delete the code that prints the throttling states in
-> processor_idle.c.
-It seems that it is unnecessary to delete the C-state info.
-Thanks.
-> 
-> Signed-off-by: Roland Dreier <rolandd@cisco.com>
-> ---
->  drivers/acpi/processor_idle.c |    7 -------
->  1 files changed, 0 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-> index cc61a62..706eacf 100644
-> --- a/drivers/acpi/processor_idle.c
-> +++ b/drivers/acpi/processor_idle.c
-> @@ -1214,13 +1214,6 @@ int __cpuinit acpi_processor_power_init(struct acpi_processor *pr,
->  		acpi_processor_setup_cpuidle(pr);
->  		if (cpuidle_register_device(&pr->power.dev))
->  			return -EIO;
-> -
-> -		printk(KERN_INFO PREFIX "CPU%d (power states:", pr->id);
-> -		for (i = 1; i <= pr->power.count; i++)
-> -			if (pr->power.states[i].valid)
-> -				printk(" C%d[C%d]", i,
-> -				       pr->power.states[i].type);
-> -		printk(")\n");
->  	}
->  #ifdef CONFIG_ACPI_PROCFS
->  	/* 'power' [R] */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > > >  	for (;;) {
+> > > > >  		/*
+> > > > > +		 * Stop writeback when nr_pages has been consumed
+> > > > >  		 */
+> > > > > +		if (args->nr_pages <= 0)
+> > > > >  			break;
+> > > > >  
+> > > > >  		/*
+> > > > > +		 * For background writeout, stop when we are below the
+> > > > > +		 * background dirty threshold
+> > > > >  		 */
+> > > > > +		if (args->for_background && !over_bground_thresh())
+> > > > >  			break;
+> > > > 
+> > > > 
+> > > > What I'm not getting is why this is conditional on for_background(),
+> > > > shouldn't we always stop writeback when below the background threshold?
+> > > 
+> > > Ah, that would be for things like sync, which need to write out
+> > > everything, right?
 
+Besides sync, it's reasonable for periodic writeback to write all
+inodes as long as they are expired.
+
+> > Yes, wb_writeback() handles any kind of writeback. The definition of our
+> > background writeout is to stop when we are no longer over the background
+> > writeout threshold.
+> 
+> Right, ok
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+Thanks! This patch was partly inspired by your comments :)
+
+Regards,
+Fengguang
