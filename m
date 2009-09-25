@@ -1,62 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbZIYAts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbZIYAtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbZIYAts (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 20:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbZIYAtl
+	id S1751955AbZIYAtA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 20:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZIYAs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 20:49:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11562 "EHLO mx1.redhat.com"
+	Thu, 24 Sep 2009 20:48:59 -0400
+Received: from mga03.intel.com ([143.182.124.21]:58571 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbZIYAtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 20:49:39 -0400
-From: Zachary Amsden <zamsden@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Zachary Amsden <zamsden@redhat.com>,
-       Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [PATCH: kvm 5/5] Math is hard; let's do some cooking.
-Date: Thu, 24 Sep 2009 14:47:20 -1000
-Message-Id: <1253839640-12695-6-git-send-email-zamsden@redhat.com>
-In-Reply-To: <1253839640-12695-5-git-send-email-zamsden@redhat.com>
-References: <20090924151049.GB14102@amt.cnet>
- <1253839640-12695-1-git-send-email-zamsden@redhat.com>
- <1253839640-12695-2-git-send-email-zamsden@redhat.com>
- <1253839640-12695-3-git-send-email-zamsden@redhat.com>
- <1253839640-12695-4-git-send-email-zamsden@redhat.com>
- <1253839640-12695-5-git-send-email-zamsden@redhat.com>
-Organization: Frobozz Magic Timekeeping Company
+	id S1751092AbZIYAs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 20:48:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,448,1249282800"; 
+   d="scan'208";a="191451830"
+Date: Fri, 25 Sep 2009 08:48:55 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 01/10] fs: Fix busyloop in wb_writeback()
+Message-ID: <20090925004855.GB6190@localhost>
+References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com> <1253803236-20760-2-git-send-email-jens.axboe@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253803236-20760-2-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CPU frequency change callback provides new TSC frequency for us, and in the
-same units (kHz), so there is no reason to do any math.
+On Thu, Sep 24, 2009 at 10:40:27PM +0800, Jens Axboe wrote:
+> From: Jan Kara <jack@suse.cz>
+> 
+> If all inodes are under writeback (e.g. in case when there's only one inode
+> with dirty pages), wb_writeback() with WB_SYNC_NONE work basically degrades
+> to busylooping until I_SYNC flags of the inode is cleared. Fix the problem by
+> waiting on I_SYNC flags of an inode on b_more_io list in case we failed to
+> write anything.
+> 
+> CC: Wu Fengguang <fengguang.wu@intel.com>
 
-Signed-off-by: Zachary Amsden <zamsden@redhat.com>
----
- arch/x86/kvm/x86.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+Tested-by: Wu Fengguang <fengguang.wu@intel.com>
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 66c6bb9..60ae2c7 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -3070,15 +3070,12 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
- 	struct kvm *kvm;
- 	struct kvm_vcpu *vcpu;
- 	int i, send_ipi = 0;
--	unsigned long old_khz;
- 
- 	if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
- 		return 0;
- 	if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
- 		return 0;
--	old_khz = per_cpu(cpu_tsc_khz, freq->cpu);
--	per_cpu(cpu_tsc_khz, freq->cpu) = cpufreq_scale(old_khz, freq->old,
--							freq->new);
-+	per_cpu(cpu_tsc_khz, freq->cpu) = freq->new;
- 
- 	spin_lock(&kvm_lock);
- 	list_for_each_entry(kvm, &vm_list, vm_list) {
--- 
-1.6.4.4
-
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/fs-writeback.c |   19 ++++++++++++++++++-
+>  1 files changed, 18 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 8e1e5e1..c59d673 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -706,6 +706,7 @@ static long wb_writeback(struct bdi_writeback *wb,
+>  	};
+>  	unsigned long oldest_jif;
+>  	long wrote = 0;
+> +	struct inode *inode;
+>  
+>  	if (wbc.for_kupdate) {
+>  		wbc.older_than_this = &oldest_jif;
+> @@ -747,8 +748,24 @@ static long wb_writeback(struct bdi_writeback *wb,
+>  		 * If we ran out of stuff to write, bail unless more_io got set
+>  		 */
+>  		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+> -			if (wbc.more_io && !wbc.for_kupdate)
+> +			if (wbc.more_io && !wbc.for_kupdate) {
+> +				if (wbc.nr_to_write < MAX_WRITEBACK_PAGES)
+> +					continue;
+> +				/*
+> +				 * Nothing written. Wait for some inode to
+> +				 * become available for writeback. Otherwise
+> +				 * we'll just busyloop.
+> +				 */
+> +				spin_lock(&inode_lock);
+> +				if (!list_empty(&wb->b_more_io))  {
+> +					inode = list_entry(
+> +							wb->b_more_io.prev,
+> +							struct inode, i_list);
+> +					inode_wait_for_writeback(inode);
+> +				}
+> +				spin_unlock(&inode_lock);
+>  				continue;
+> +			}
+>  			break;
+>  		}
+>  	}
+> -- 
+> 1.6.4.1.207.g68ea
