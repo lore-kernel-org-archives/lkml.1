@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbZIYLEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbZIYLF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752270AbZIYLEb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 07:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZIYLEa
+	id S1752328AbZIYLF1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 07:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZIYLF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 07:04:30 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50399 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750926AbZIYLE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 07:04:29 -0400
-Message-ID: <4ABCA3BF.8060107@suse.cz>
-Date: Fri, 25 Sep 2009 13:04:31 +0200
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Fri, 25 Sep 2009 07:05:26 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:55738 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751158AbZIYLFZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 07:05:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cYeaISzRNSJrxhLfTSN499CUFLIhQ9T4Tj+tfYSjVcYALJH8phRyisfio7vjnptGrm
+         vQ/3rJlRTJ4RAjOXpa1aJ6DYkB6gZNDtc/6TCGSTMoQ2llYEbYrGQyf5K3eV77w9700S
+         4iu6ETTWVPgwxqPGc746Ju+BxtLdA0d/faft4=
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: akpm@linux-foundation.org, linux-kbuild@vger.kernel.org,
-       JBeulich@novell.com, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Feedback on "kbuild: generate modules.builtin"
-References: <200909181949.n8IJnT4R019097@imap1.linux-foundation.org> <20090920132856.GA26845@merkur.ravnborg.org>
-In-Reply-To: <20090920132856.GA26845@merkur.ravnborg.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <11260.1253867067@redhat.com>
+References: <20090924141310.19746.31678.stgit@warthog.procyon.org.uk>
+	 <7d86d44a0909242139v32a0ef6bh68386cbda31d0682@mail.gmail.com>
+	 <11260.1253867067@redhat.com>
+Date: Fri, 25 Sep 2009 19:05:28 +0800
+Message-ID: <7d86d44a0909250405j60a0f27dncef8443a2d74b747@mail.gmail.com>
+Subject: Re: [PATCH] NOMMU: Fix MAP_PRIVATE mmap() of objects where the data 
+	can be mapped directly
+From: graff yang <graff.yang@gmail.com>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Mundt <lethal@linux-sh.org>,
+       Mel Gorman <mel@csn.ul.ie>, Greg Ungerer <gerg@snapgear.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg napsal(a):
-> On Fri, Sep 18, 2009 at 12:49:29PM -0700, akpm@linux-foundation.org wrote:
->> From: Michal Marek <mmarek@suse.cz>
+On Fri, Sep 25, 2009 at 4:24 PM, David Howells <dhowells@redhat.com> wrote:
+> graff yang <graff.yang@gmail.com> wrote:
+>
+>> > +       if (capabilities & BDI_CAP_MAP_DIRECT) {
 >>
->> To make it easier for tools like mkinitrd to detect whether a needed
->> module is missing or whether it is compiled into the kernel, install a
->> modules.builtin file listing all modules built into the kernel.  This is
->> done by generating an alternate config file with all tristate =y options
->> set to =Y and reading the makefiles with this config included.  The built
->> in modules then appear in obj-Y.
-> 
-> Hi Michael.
-> 
-> [Added Steven on cc: as he had done some kconfig
->  hacking lately].
-> 
-> Got some time (finally) to look at this.
-> I understand the functionality and I have myself had the need
-> to see builtin modules.
+>> This will breaks many drivers, e.g. some frame-buffer drivers, on NOMMU
+>> system.  Because they don't have get_unmapped_area().  These drivers depend
+>> on it's mmap() to return the frame-buffer base address.
+>
+> Then they won't work on NOMMU.  Read Documentation/nommu-mmap.txt:
+>
+>        ============================================
+>        PROVIDING SHAREABLE CHARACTER DEVICE SUPPORT
+>        ============================================
+>
+>        To provide shareable character device support, a driver must provide a
+>        file->f_op->get_unmapped_area() operation. The mmap() routines will
+>        call this to get a proposed address for the mapping. This may return an
+>        error if it doesn't wish to honour the mapping because it's too long,
+>        at a weird offset, under some unsupported combination of flags or
+>        whatever.
+>
+> The chardev driver doesn't provide the virtual address through its mmap() fop
+> in MMU-mode either - that's provided by do_mmap_pgoff().
+>
+> David
+>
+OK, I think do_mmap_pgoff() now looks nice with your patch.   Merely,
+at least the alsa/fb driver
+will crash due to the vm_region changes.
+The alsa guys are fixing this issue:
+http://mailman.alsa-project.org/pipermail/alsa-devel/2009-March/015802.html
 
-Hi Sam,
+Is there any other things be affected?
 
-many thanks for the review and for the patch, I basically agree with all
-what you said, except this one:
-
->> diff -puN Makefile~kbuild-generate-modulesbuiltin Makefile
->> --- a/Makefile~kbuild-generate-modulesbuiltin
->> +++ a/Makefile
->> @@ -871,6 +871,9 @@ $(sort $(vmlinux-init) $(vmlinux-main)) 
->>  PHONY += $(vmlinux-dirs)
->>  $(vmlinux-dirs): prepare scripts
->>  	$(Q)$(MAKE) $(build)=$@
->> +ifdef CONFIG_MODULES
->> +	$(Q)$(MAKE) $(modbuiltin)=$@
->> +endif
-> 
-> The other stuff we run after a completed build is the
-> target vmlinux: just above.
-> If there is no good reason not to do so please move
-> it so we keep all these post processing steps in one place.
-
-The reason is that I need to iterate over $(vmlinux-dirs) to descend
-into subdirectories like Makefile.build does. Putting the command here
-allows to just write $(MAKE) $(modbuiltin)=$@ and be done, in the
-vmlinux target I would have to do the iteration manually.
-
-I'll provide an updated patch soon.
-
-Michal
+-- 
+-Graff
