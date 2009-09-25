@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbZIYBXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807AbZIYBYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753041AbZIYBXi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 21:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZIYBXg
+	id S1752807AbZIYBYi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 21:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZIYBYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 21:23:36 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:33825 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751613AbZIYBXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 21:23:35 -0400
-Subject: Re: [PATCH] scsi_lib.c: sleeping function called from invalid
- context
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: iceberg <strakh@ispras.ru>, eric@andante.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090924155604.4299aa0a.akpm@linux-foundation.org>
-References: <200909231758.47612.strakh@ispras.ru>
-	 <20090924155604.4299aa0a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 18:23:36 -0700
-Message-Id: <1253841816.5183.361.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Thu, 24 Sep 2009 21:24:36 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63219 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751568AbZIYBYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Sep 2009 21:24:35 -0400
+Message-ID: <4ABC1B9E.50109@cn.fujitsu.com>
+Date: Fri, 25 Sep 2009 09:23:42 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] perf_counter: optimize for perf_event_init_task()
+References: <4AB88F06.10900@cn.fujitsu.com>	 <19128.39768.149110.673711@cargo.ozlabs.ibm.com>	 <4AB98BB0.6020202@cn.fujitsu.com>	 <19129.38627.94363.857137@cargo.ozlabs.ibm.com>	 <4AB9D7FA.5040707@cn.fujitsu.com>  <4AB9D8B1.4020000@cn.fujitsu.com> <1253695389.7695.124.camel@twins>
+In-Reply-To: <1253695389.7695.124.camel@twins>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-24 at 15:56 -0700, Andrew Morton wrote:
-> On Wed, 23 Sep 2009 17:58:47 +0000
-> iceberg <strakh@ispras.ru> wrote:
+
+
+Peter Zijlstra wrote:
+> On Wed, 2009-09-23 at 16:13 +0800, Xiao Guangrong wrote:
+>> We can traverse ctx->group_list to get all group leader, it should be safe
+>> since we hold ctx->mutex
 > 
-> > Driver scsi_lib.c might sleep in atomic context, because it calls 
-> > scsi_device_put under spin_lock_irqsave.
-> > drivers/scsi/scsi_lib.c:356:
-> > 	spin_lock_irqsave(shost->host_lock, flags);
-> > 	scsi_device_put(sdev);
-> > Path to might_sleep macro from scsi_device_put:
-> > 1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111 
-> > 2. put_device calls kobject_put at ./drivers/base/core.c:1038 
-> > 3. kobject_put calls kref_put at ./lib/kobject.c
-> > 4. kref_put may call callback function kobject_release at ./lib/kref.c if 
-> > refcount becomes zero, which might_sleep because it calls user event. Details:
-> > 	4.1 kobject_cleanup calls kobject_uevent at ./lib/kobject.c:555
-> > 	4.2 kobject_uevent calls kobject_uevent_env at  ./lib/kobject_uevent.c:282
-> > 	4.3 kobject_uevent_env calls call_usermodehelper_exec at 
-> > ./include/linux/kmod.h:83
-> > 	4.4 call_usermodehelper_exec calls wait_for_completion at 
-> > ./kernel/kmod.c:481
-> > 	4.5 wait_for_completion calls wait_for_common at ./kernel/sched.c:5710
-> > 	4.5 wait_for_common calls might_sleep at ./kernels/sched.c:5692
-> > 
-> > Found by Linux Driver Verification project.
-> > 
-> > Delete wrong sleeping function calls.
-> > 
-> > Signed-off-by: Alexander Strakh <strakh@ispras.ru>
-> > 
-> > ---
-> > diff --git a/./a/drivers/scsi/scsi_lib.c b/./b/drivers/scsi/scsi_lib.c
-> > index f3c4089..a8f8e2f 100644
-> > --- a/./a/drivers/scsi/scsi_lib.c
-> > +++ b/./b/drivers/scsi/scsi_lib.c
-> > @@ -353,9 +353,9 @@ static void scsi_single_lun_run(struct scsi_device 
-> > *current_sdev)
-> >  
-> >  		spin_unlock_irqrestore(shost->host_lock, flags);
-> >  		blk_run_queue(sdev->request_queue);
-> > -		spin_lock_irqsave(shost->host_lock, flags);
-> >  	
-> > -		scsi_device_put(sdev);
-> > +		scsi_device_put(sdev);	
-> > +		spin_lock_irqsave(shost->host_lock, flags);
-> >  	}
-> >   out:
-> >  	spin_unlock_irqrestore(shost->host_lock, flags);
-> > 
+> I don't think we need that WARN_ON_ONCE there.
 > 
-> Well this is strange.  afacit all the code to which you refer is
-> ancient, so why did this bug just pop up now?
 
-No idea.  I think the root cause of this is in the kobject code:  we
-explicitly require the ability to call last put from interrupt context
-(and that includes holding locks).  I'll talks to Greg and Kai about
-this (they're both here at plumbers).  I think the fix is to indirect
-the kobject uevent stuff via a usermode helper so we don't get this
-problem.
+I'll remove it
 
-James
+Thanks,
+Xiao
 
----
-
-
+>> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+>> ---
+>>  kernel/perf_event.c |    5 ++---
+>>  1 files changed, 2 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+>> index 9ca975a..4e6e822 100644
+>> --- a/kernel/perf_event.c
+>> +++ b/kernel/perf_event.c
+>> @@ -4786,9 +4786,8 @@ int perf_event_init_task(struct task_struct *child)
+>>  	 * We dont have to disable NMIs - we are only looking at
+>>  	 * the list, not manipulating it:
+>>  	 */
+>> -	list_for_each_entry_rcu(event, &parent_ctx->event_list, event_entry) {
+>> -		if (event != event->group_leader)
+>> -			continue;
+>> +	list_for_each_entry(event, &parent_ctx->group_list, group_entry) {
+>> +		WARN_ON_ONCE(event != event->group_leader);
+>>  
+>>  		if (!event->attr.inherit) {
+>>  			inherited_all = 0;
+> 
+> 
