@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZIYQRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZIYQ1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZIYQRL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 12:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZIYQRJ
+	id S1753234AbZIYQ1P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 12:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZIYQ1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 12:17:09 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:34539 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753052AbZIYQRI (ORCPT
+	Fri, 25 Sep 2009 12:27:15 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43471 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753115AbZIYQ1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 12:17:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer;
-        b=IJX61gKNrQSmdq/hJo3i1ITNT/LOT7EDtpoHKTsVUMQOBY6tn8v7CNq3YN6HfuNBdg
-         fdtO/ARX40FJU5JvSBjbCE/Fd4PW45nyKuP9KJ+JrnfMo0V4hzo8RTxnEsajy6J2zXhy
-         DiA2dbV0vUpC/GxN8ymcUnpHHVSWMUkpRm9A4=
-Subject: Re: [PATCH] Fix build with KALLSYMS disabled.
-From: "Diego E." =?UTF-8?Q?=E2=80=9CFlameeyes=E2=80=9D_?=
-	 =?ISO-8859-1?Q?Petten=F2?= <flameeyes@gmail.com>
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4ABCEC77.70705@grupopie.com>
-References: <1253894312-17663-1-git-send-email-flameeyes@gmail.com>
-	 <4ABCEC77.70705@grupopie.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-hEpe9k0xuOANC60yVJu5"
-Date: Fri, 25 Sep 2009 18:17:07 +0200
-Message-Id: <1253895427.12282.1.camel@yamato>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Fri, 25 Sep 2009 12:27:14 -0400
+Message-ID: <4ABCED94.4010804@zytor.com>
+Date: Fri, 25 Sep 2009 09:19:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Rusty Lynch <rusty.lynch@intel.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Vamsi Krishna S <vamsi_krishna@in.ibm.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nathan Sidwell <nathan@codesourcery.com>,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Anton Massoud <anton.massoud@ericsson.com>,
+       Richard J Moore <richardj_moore@uk.ibm.com>
+Subject: Re: Immediate values
+References: <20090924191642.GA19225@elte.hu>	<20090924193422.GB2533@elte.hu>	<20090925085119.2b77ea04@infradead.org>	<20090925073512.GA10346@Krystal>	<20090925110206.50ab8a20@lxorguk.ukuu.org.uk> <20090925121449.7bb27b61@infradead.org>
+In-Reply-To: <20090925121449.7bb27b61@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven wrote:
+> On Fri, 25 Sep 2009 11:02:06 +0100
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+>>> Then, following your advice, kprobes should be re-designed to do a
+>>> stop_machine around the int3 breakpoint insertion ? And gdb
+>>> should be stopping all threads of a target process before inserting
+>>> a breakpoint. Therefore, I do not seem to be the only one confused
+>>> about Intel statement on this issue.
+>> There was considerable discussion abut this when the kprobe stuff went
+>> in. If I remember rightly it was stated by someone @intel.com then
+>> that int3 was ok (even though its not strictly documented as such).
+>> The same is not true for all instructions on all x86 processors
+>> unfortunately.
+> 
+> specifically, using int3 *and then going back to the old value*.
+> 
 
---=-hEpe9k0xuOANC60yVJu5
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+As I told Mathieu in person yesterday:
 
-Il giorno Fri, 25/09/2009 alle 17.14 +0100, Paulo Marques ha scritto:
-> Thanks for the patch, but it seems it arrived about 12 hours too
-> late ;)
->=20
-Heh, I guess I was too hasty in sending it before I had a working
-browser.
+1. We have no information if this is safe or not.  It is most certainly 
+not documented as safe, and trying to play language lawyer with the 
+errata text is pointless, as it's trying to interpret something that 
+isn't there.
 
---=20
-Diego Elio Petten=C3=B2 =E2=80=94 =E2=80=9CFlameeyes=E2=80=9D
-http://blog.flameeyes.eu/
+2. There are some reasons to believe there might be a safe technique 
+somewhere in here (the one he described is a possibility, but not the 
+only one.)
 
-If you found a .asc file in this mail and know not what it is,
-it's a GnuPG digital signature: http://www.gnupg.org/
+3. Being able to patch code without stopping all cores has other uses, 
+and so spending some time doing legwork on it is probably worth it.
 
+4. "Someone at Intel" isn't a reference... we need to track down actual 
+CPU architects with real names who can give us a thumbs up or down.
 
---=-hEpe9k0xuOANC60yVJu5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Questa =?ISO-8859-1?Q?=E8?= una parte del messaggio
- firmata digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEABECAAYFAkq87QMACgkQe2h1+2mHVWMEqgCfeO6YR5ZKZf1dm6ZBQIu4Hsee
-oAYAn2jyQVL74bey4j3npz7JH8mbhZau
-=gEXG
------END PGP SIGNATURE-----
-
---=-hEpe9k0xuOANC60yVJu5--
-
+	-hpa
