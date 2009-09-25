@@ -1,88 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbZIYJMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751628AbZIYJXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbZIYJMb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 05:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZIYJMa
+	id S1751628AbZIYJXO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 05:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZIYJXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 05:12:30 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:36631 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbZIYJMa (ORCPT
+	Fri, 25 Sep 2009 05:23:11 -0400
+Received: from mtagate7.de.ibm.com ([195.212.17.167]:33442 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbZIYJXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 05:12:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Zrk28VYnMLCE8579KjB3P5BVgNWygyd4PaiCNBpmeVuUK7CqD4duS3Vd2VUrfPXj0u
-         9IwgiGpVFWdhJD5lRybuSFdjR4HnQ3OBtDKuIRScKUE9uytL2Yg8wB9zpr3tamSLKmnj
-         PVlYys44mxDK6I+UJi4q3AdD25Egt7JPxdoE4=
-Date: Fri, 25 Sep 2009 11:12:30 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Tom Zanussi <tzanussi@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL v2] bkl tracepoints + filter regex support
-Message-ID: <20090925091229.GB4686@nowhere>
-References: <1253821775-8618-1-git-send-email-fweisbec@gmail.com> <20090924201509.GA26573@elte.hu> <20090924201622.GA15459@elte.hu> <1253824200.18939.173.camel@laptop> <20090924204357.GB8662@nowhere> <1253825489.18939.180.camel@laptop> <20090924213631.GA2661@nowhere> <1253866792.10287.0.camel@twins>
+	Fri, 25 Sep 2009 05:23:10 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Scott James Remnant <scott@ubuntu.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: 2.3.31++: Badness at kernel/softirq.c:143 due to new session leader connector
+Date: Fri, 25 Sep 2009 11:23:03 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-release; KDE/4.3.1; i686; ; )
+Cc: Matt Helsley <matthltc@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Oleg Nesterov <oleg@tv-sign.ru>
+Organization: IBM
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253866792.10287.0.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909251123.03482.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 10:19:52AM +0200, Peter Zijlstra wrote:
-> On Thu, 2009-09-24 at 23:36 +0200, Frederic Weisbecker wrote:
-> 
-> > > Remember, there are no second chances for the filter syntax anymore.
-> > 
-> > 
-> > But well, it's not yet an ABI. It's still a baby, although powerful
-> > for filtering, it's not yet a whole scripting language.
-> > 
-> > Before thinking about it as an ABI, we should develop it, extend
-> > it, use these extensions, spot the weaknesses in the syntax, fix them,
-> > etc...
-> 
-> Then this is a NACK for the perf ioctl for setting a filter. Fine with
-> me.
+Scott,
+
+I am using the proc connector for fork and exit tracking. With the latest git 
+the new session leader connector(commit 02b51df1b07b4e9ca823c89284e704cadb323cd1 
+proc connector: add event for process becoming session leader)
+causes the following warning:
+
+------------[ cut here ]------------
+Badness at kernel/softirq.c:143
+Modules linked in: tun bridge stp kvm sclp_cpi dm_multipath scsi_dh sunrpc ipv6 
+qeth_l2 binfmt_misc dm_mod qeth ccwgroup
+CPU: 7 Not tainted 2.6.31-selfgit-08936-g851b147-dirty #130
+Process xzd (pid: 7189, task: 000000013d804758, ksp: 00000001329eddb8)
+Krnl PSW : 0404c00180000000 00000000001481d4 (local_bh_enable+0xb0/0xe0)
+           R:0 T:1 IO:0 EX:0 Key:0 M:1 W:0 P:0 AS:3 CC:0 PM:0 EA:3
+Krnl GPRS: 0000000000000000 0000000000fcdd68 0000000100000000 00000001329ee000
+           00000000008268a8 0000000132980bb4 0000000000000000 0000000132980ac8
+           0000000000000001 0000000132980ac8 0000000100000000 000000013db3a470
+           0000000132980ac8 0000000000525de8 000000000048a946 00000001329edc58
+Krnl Code: 00000000001481c6: e33002f00004       lg      %r3,752
+           00000000001481cc: a7f4ffd8           brc     15,14817c
+           00000000001481d0: a7f40001           brc     15,1481d2
+          >00000000001481d4: a7280001           lhi     %r2,1
+           00000000001481d8: 50201000           st      %r2,0(%r1)
+           00000000001481dc: a7f4ffd0           brc     15,14817c
+           00000000001481e0: c0e5fffe4b76       brasl   %r14,1118cc
+           00000000001481e6: e33002f00004       lg      %r3,752
+Call Trace:
+([<000000013fe04100>] 0x13fe04100)
+ [<000000000048a946>] sk_filter+0x9a/0xd0
+ [<000000000049d938>] netlink_broadcast+0x2c0/0x53c
+ [<00000000003ba9ae>] cn_netlink_send+0x272/0x2b0
+ [<00000000003baef0>] proc_sid_connector+0xc4/0xd4
+ [<0000000000142604>] __set_special_pids+0x58/0x90
+ [<0000000000159938>] sys_setsid+0xb4/0xd8
+ [<00000000001187fe>] sysc_noemu+0x10/0x16
+ [<00000041616cb266>] 0x41616cb266
+Last Breaking-Event-Address:
+ [<00000000001481d0>] local_bh_enable+0xac/0xe0
 
 
-Ftrace side (debugfs use):
+The warning is
+--->    WARN_ON_ONCE(in_irq() || irqs_disabled());
 
-I think the native filter glob is good for ftrace use through debugfs.
-As I said, IMO it's so much a primary requirement for events filtering
-that it should be a default.
-But if others have mixed feelings about it, tell me and I will
-reconsider. I've done this native glob in this patchset because the
-general opinion (yours included) was in favour of that, instead of
-a split into a filter and another filter_glob file.
-That said, the future plans have evolved, and I'm fine if you have
-changed your opinion and think about a better way to develop this.
+I think the problem is, that sys_setsid holds the tasklist_lock with 
+spinlock_irq. while calling the connector.
+
+Any ideas for a proper fix?
 
 
-Perf side:
-
-But the use from perf would be for a larger scope. And I agree we may
-want to break this glob default from it to get a flexible usability
-and use a pure string match by default that we can override with
-functions-like expressions.
-
-
-So why not keeping the default native blob for ftrace and throw away
-this default for perf? It's a matter of a flag in the filters.
-
-You don't need to drop a NACK rock on the ground and laconically go out
-like that to wake me up. I think I've already enough shown how much I'm
-willing to help building a nice bridge between ftrace and perf.
-I just don't want that this bridge turns out any ftrace uses through debugfs
-into an overkill.
-Instead I'd prefer to satisfy both, hence the above proposition.
-
-Thanks,
-Frederic.
-
+Christian
