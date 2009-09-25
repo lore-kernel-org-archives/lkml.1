@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZIYHgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZIYHqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbZIYHgf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 03:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZIYHge
+	id S1752740AbZIYHqX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 03:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbZIYHqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 03:36:34 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:9133 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343AbZIYHgd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 03:36:33 -0400
-From: Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: "James.Bottomley@suse.de" <James.Bottomley@suse.de>,
-       "linux-scsi@vger.kernel.org Mailing List" 
-	<linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>
-Date: Fri, 25 Sep 2009 00:36:36 -0700
-Subject: Re: [PATCH 4/5] SCSI: qla2xxx, fix NULL-ptr dereference
-Thread-Topic: [PATCH 4/5] SCSI: qla2xxx, fix NULL-ptr dereference
-Thread-Index: Aco9stJPAfbeUvsrSZGZ0+ehyx/eTw==
-Message-ID: <3B8522E6-D391-4057-9F9D-84FC1019B337@qlogic.com>
-References: <1253715335-6723-1-git-send-email-jirislaby@gmail.com>
- <1253715335-6723-4-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1253715335-6723-4-git-send-email-jirislaby@gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
-X-OriginalArrivalTime: 25 Sep 2009 07:35:58.0220 (UTC) FILETIME=[D2B794C0:01CA3DB2]
+	Fri, 25 Sep 2009 03:46:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:31369 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752602AbZIYHqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 03:46:21 -0400
+Date: Fri, 25 Sep 2009 03:37:14 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Al Viro <viro@zeniv.linux.org.uk>,
+       Amerigo Wang <amwang@redhat.com>
+Message-Id: <20090925073948.4147.839.sendpatchset@localhost.localdomain>
+Subject: [Patch] vfs: use {set,get}_max_files()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sep 23, 2009, at 7:15 AM, Jiri Slaby wrote:
+Use the wrapper functions, {get,set}_max_files().
 
-> Stanse found a NULL-ptr dereference on one fail path in
-> qla25xx_create_rsp_que. It jumps to que_failed label and
-> qla25xx_free_rsp_que there dereferences rsp which is NULL.
->
-> Return with ENOMEM directly instead.
->
-Thanks for pointing it out. There is another code path (create_req_que)
-where the same bug exists. I will send a patch that takes care of the  
-both.
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 
--Anirban
+---
+diff --git a/fs/file_table.c b/fs/file_table.c
+index 8eb4404..840f71d 100644
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -70,6 +70,11 @@ int get_max_files(void)
+ }
+ EXPORT_SYMBOL_GPL(get_max_files);
+ 
++static void set_max_files(int new_value)
++{
++	files_stat.max_files = new_value;
++}
++
+ /*
+  * Handle nr_files sysctl
+  */
+@@ -107,12 +112,12 @@ struct file *get_empty_filp(void)
+ 	/*
+ 	 * Privileged users can go above max_files
+ 	 */
+-	if (get_nr_files() >= files_stat.max_files && !capable(CAP_SYS_ADMIN)) {
++	if (get_nr_files() >= get_max_files() && !capable(CAP_SYS_ADMIN)) {
+ 		/*
+ 		 * percpu_counters are inaccurate.  Do an expensive check before
+ 		 * we go and fail.
+ 		 */
+-		if (percpu_counter_sum_positive(&nr_files) >= files_stat.max_files)
++		if (percpu_counter_sum_positive(&nr_files) >= get_max_files())
+ 			goto over;
+ 	}
+ 
+@@ -450,9 +455,9 @@ void __init files_init(unsigned long mempages)
+ 	 */ 
+ 
+ 	n = (mempages * (PAGE_SIZE / 1024)) / 10;
+-	files_stat.max_files = n; 
+-	if (files_stat.max_files < NR_FILE)
+-		files_stat.max_files = NR_FILE;
++	set_max_files(n);
++	if (get_max_files() < NR_FILE)
++		set_max_files(NR_FILE);
+ 	files_defer_init();
+ 	percpu_counter_init(&nr_files, 0);
+ } 
