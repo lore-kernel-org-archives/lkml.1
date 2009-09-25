@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbZIYVPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbZIYVSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752578AbZIYVPM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 17:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZIYVPM
+	id S1752650AbZIYVSk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 17:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZIYVSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 17:15:12 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41032 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751823AbZIYVPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 17:15:11 -0400
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-In-Reply-To: <1253890120.18939.189.camel@laptop>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	 <1253016701.5506.73.camel@laptop>  <1253753501.7103.358.camel@pasglop>
-	 <1253890120.18939.189.camel@laptop>
-Content-Type: text/plain
-Date: Sat, 26 Sep 2009 07:12:48 +1000
-Message-Id: <1253913169.7103.529.camel@pasglop>
+	Fri, 25 Sep 2009 17:18:40 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:47324 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752515AbZIYVSj (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 17:18:39 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "Dr. David Alan Gilbert" <linux@treblig.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, Andreas Gruenbacher <agruen@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vfs: new O_NODE open flag
+In-Reply-To: Your message of "Fri, 25 Sep 2009 19:35:23 BST."
+             <20090925183523.GA6065@gallifrey>
+From: Valdis.Kletnieks@vt.edu
+References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu> <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu>
+            <20090925183523.GA6065@gallifrey>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: multipart/signed; boundary="==_Exmh_1253913514_2918P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 25 Sep 2009 17:18:34 -0400
+Message-ID: <19645.1253913514@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-25 at 16:48 +0200, Peter Zijlstra wrote:
-> On Thu, 2009-09-24 at 10:51 +1000, Benjamin Herrenschmidt wrote:
-> > On Tue, 2009-09-15 at 14:11 +0200, Peter Zijlstra wrote:
-> > > I still think its a layering violation... its the hypervisor manager
-> > > that should be bothered in what state an off-lined cpu is in. 
-> > > 
-> > That's not how our hypervisor works.
-> 
-> Then fix it?
+--==_Exmh_1253913514_2918P
+Content-Type: text/plain; charset=us-ascii
 
-Are you serious ? :-)
+On Fri, 25 Sep 2009 19:35:23 BST, "Dr. David Alan Gilbert" said:
 
-> CPU hotplug is terribly invasive and expensive to the kernel, doing
-> hotplug on a minute basis is just plain crazy.
-> 
-> If you want a CPU in a keep it near and don't hand it back to the HV
-> state, why not use cpusets to isolate it and simply not run tasks on it?
-> 
-> cpusets don't use stopmachine and are much nicer to the rest of the
-> kernel over-all.
+> I know it's not possible without this flag, my interest is whether
+> it would be possible WITH this flag to promote an fd opened with the
+> O_NODE to a normal fd, guaranteeing that it's still operating on the
+> same object.
 
-Gautham, what is the different in term of power saving between having
-it idle for long periods of time (which could do H_CEDE and with NO_HZ,
-probably wouln't need to wake up that often) and having it unplugged in
-a H_CEDE loop ?
+Well, maybe the question is if we should treat "promote" differently than
+"re-open"?
 
-Ben.
+(And now I'm wondering what happens if you dup() one of these beasts....)
 
+--==_Exmh_1253913514_2918P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFKvTOqcC3lWbTT17ARAs97AJ4nTBjrPPdhH9lCxdJrJC1lnuUOFACgh4yT
+Mpp/3jf5pOuFT3p1V0Mf3yY=
+=Th5X
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1253913514_2918P--
