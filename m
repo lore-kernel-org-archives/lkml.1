@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZIYTMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZIYTNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394AbZIYTMY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 15:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZIYTMY
+	id S1752575AbZIYTNr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 15:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZIYTNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 15:12:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33398
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750946AbZIYTMX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 15:12:23 -0400
-Date: Fri, 25 Sep 2009 12:12:42 -0700 (PDT)
-Message-Id: <20090925.121242.184886085.davem@davemloft.net>
-To: kxie@chelsio.com
-Cc: swise@opengridcomputing.com, divy@chelsio.com, rranjan@chelsio.com,
-       James.Bottomley@HansenPartnership.com, michaelc@cs.wisc.edu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH net-next-2.6] cxgb3: Added private MAC address and
- provisioning packet handler for iSCSI
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200909250133.n8P1XAZb030062@localhost.localdomain>
-References: <200909250133.n8P1XAZb030062@localhost.localdomain>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Sep 2009 15:13:45 -0400
+Received: from [195.41.46.235] ([195.41.46.235]:59129 "EHLO pfepa.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752537AbZIYTNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 15:13:44 -0400
+Date: Fri, 25 Sep 2009 21:13:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Cc: Tim Abbott <tabbott@ksplice.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Richard Henderson <rth@twiddle.net>,
+       Manuel Lauss <manuel.lauss@gmail.com>,
+       Dmitri Vorobiev <dmitri.vorobiev@movial.com>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: [GIT] fixes for alpha+mips
+Message-ID: <20090925191340.GA3280@merkur.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: kxie@chelsio.com
-Date: Thu, 24 Sep 2009 18:33:10 -0700
+Hi Linus.
 
-> 00c487ed661c0904757a21b7c958eba59e68482a
-> [PATCH net-next-2.6] cxgb3: Added private MAC address and provisioning packet handler for iSCSI
-> 
-> This patch added support of private MAC address per port and provisioning
-> packet handler for iSCSI traffic only.
-> 
-> Acked-by: Karen Xie <kxie@chelsio.com>
-> Acked-by: Divy Le Ray <divy@chelsio.com>
-> Signed-off-by: Rakesh Ranjan <rranjan@chelsio.com>
+Two fixlets.
 
-Applied, thanks.
+One to fix alpha build after vmlinux.lds.S cleanup.
+Another to fix mips build - a bug included in my prevoius batch
+of updates.
+
+Note: master.kernel.org is slow on mirroring and this was
+not mirrored out when I sent this mail.
+
+	Sam
+
+
+The following changes since commit 94e0fb086fc5663c38bbc0fe86d698be8314f82f:
+  Linus Torvalds (1):
+        Merge branch 'drm-intel-next' of git://git.kernel.org/.../anholt/drm-intel
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+
+Manuel Lauss (1):
+      mips: fix build of vmlinux.lds
+
+Sam Ravnborg (1):
+      alpha: fix build after vmlinux.lds.S cleanup
+
+ arch/alpha/kernel/vmlinux.lds.S |    1 +
+ arch/mips/kernel/Makefile       |    2 ++
+ arch/mips/kernel/vmlinux.lds.S  |   12 ++++++------
+ 3 files changed, 9 insertions(+), 6 deletions(-)
