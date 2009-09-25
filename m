@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbZIYTNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbZIYTN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752511AbZIYTNi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 15:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZIYTNi
+	id S1752609AbZIYTN7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 15:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZIYTN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 15:13:38 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:58022 "EHLO mx1.redhat.com"
+	Fri, 25 Sep 2009 15:13:59 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:27880 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752361AbZIYTNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 15:13:37 -0400
+	id S1752486AbZIYTN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 15:13:58 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC PATCH tracing/kprobes 1/5] tracing/kprobes: Rename special
-	variables syntax
+Subject: [RFC PATCH tracing/kprobes 2/5] tracing/kprobes: Avoid field name
+	confliction
 To: Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        lkml <linux-kernel@vger.kernel.org>
@@ -28,8 +28,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Jim Keniston <jkenisto@us.ibm.com>,
        "Frank Ch. Eigler" <fche@redhat.com>
-Date: Fri, 25 Sep 2009 12:14:46 -0700
-Message-ID: <20090925191446.12939.27456.stgit@omoto>
+Date: Fri, 25 Sep 2009 12:15:05 -0700
+Message-ID: <20090925191505.12939.69682.stgit@omoto>
 In-Reply-To: <20090925191424.12939.91503.stgit@omoto>
 References: <20090925191424.12939.91503.stgit@omoto>
 User-Agent: StGIT/0.14.3
@@ -40,8 +40,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add $ prefix to the special variables(e.g. sa, rv) of kprobe-tracer.
-This resolves consistency issue between kprobe_events and perf-kprobe.
+Check whether the argument name is conflict with other field names.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
@@ -58,155 +57,139 @@ Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Frank Ch. Eigler <fche@redhat.com>
 ---
 
- Documentation/trace/kprobetrace.txt |   10 +++---
- kernel/trace/trace_kprobe.c         |   60 ++++++++++++++++++++++-------------
- 2 files changed, 42 insertions(+), 28 deletions(-)
+ kernel/trace/trace_kprobe.c |   64 +++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 52 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index 9b8f7c6..40caef0 100644
---- a/Documentation/trace/kprobetrace.txt
-+++ b/Documentation/trace/kprobetrace.txt
-@@ -36,13 +36,13 @@ Synopsis of kprobe_events
- 
-  FETCHARGS	: Arguments. Each probe can have up to 128 args.
-   %REG	: Fetch register REG
--  sN	: Fetch Nth entry of stack (N >= 0)
--  sa	: Fetch stack address.
-   @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
-   @SYM[+|-offs]	: Fetch memory at SYM +|- offs (SYM should be a data symbol)
--  aN	: Fetch function argument. (N >= 0)(*)
--  rv	: Fetch return value.(**)
--  ra	: Fetch return address.(**)
-+  $sN	: Fetch Nth entry of stack (N >= 0)
-+  $sa	: Fetch stack address.
-+  $aN	: Fetch function argument. (N >= 0)(*)
-+  $rv	: Fetch return value.(**)
-+  $ra	: Fetch return address.(**)
-   +|-offs(FETCHARG) : Fetch memory at FETCHARG +|- offs address.(***)
-   NAME=FETCHARG: Set NAME as the argument name of FETCHARG.
- 
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 97309d4..f63ead0 100644
+index f63ead0..c09411f 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -220,24 +220,24 @@ static int probe_arg_string(char *buf, size_t n, struct fetch_func *ff)
- 	int ret = -EINVAL;
+@@ -38,6 +38,24 @@
+ #define MAX_EVENT_NAME_LEN 64
+ #define KPROBE_EVENT_SYSTEM "kprobes"
  
- 	if (ff->func == fetch_argument)
--		ret = snprintf(buf, n, "a%lu", (unsigned long)ff->data);
-+		ret = snprintf(buf, n, "$a%lu", (unsigned long)ff->data);
- 	else if (ff->func == fetch_register) {
- 		const char *name;
- 		name = regs_query_register_name((unsigned int)((long)ff->data));
- 		ret = snprintf(buf, n, "%%%s", name);
- 	} else if (ff->func == fetch_stack)
--		ret = snprintf(buf, n, "s%lu", (unsigned long)ff->data);
-+		ret = snprintf(buf, n, "$s%lu", (unsigned long)ff->data);
- 	else if (ff->func == fetch_memory)
- 		ret = snprintf(buf, n, "@0x%p", ff->data);
- 	else if (ff->func == fetch_symbol) {
- 		struct symbol_cache *sc = ff->data;
- 		ret = snprintf(buf, n, "@%s%+ld", sc->symbol, sc->offset);
- 	} else if (ff->func == fetch_retvalue)
--		ret = snprintf(buf, n, "rv");
-+		ret = snprintf(buf, n, "$rv");
- 	else if (ff->func == fetch_ip)
--		ret = snprintf(buf, n, "ra");
-+		ret = snprintf(buf, n, "$ra");
- 	else if (ff->func == fetch_stack_address)
--		ret = snprintf(buf, n, "sa");
-+		ret = snprintf(buf, n, "$sa");
- 	else if (ff->func == fetch_indirect) {
- 		struct indirect_fetch_data *id = ff->data;
- 		size_t l = 0;
-@@ -429,12 +429,10 @@ static int split_symbol_offset(char *symbol, unsigned long *offset)
- #define PARAM_MAX_ARGS 16
- #define PARAM_MAX_STACK (THREAD_SIZE / sizeof(unsigned long))
++/* Reserved field names */
++#define FIELD_STRING_IP "ip"
++#define FIELD_STRING_NARGS "nargs"
++#define FIELD_STRING_RETIP "ret_ip"
++#define FIELD_STRING_FUNC "func"
++
++const char *reserved_field_names[] = {
++	"common_type",
++	"common_flags",
++	"common_preempt_count",
++	"common_pid",
++	"common_tgid",
++	FIELD_STRING_IP,
++	FIELD_STRING_NARGS,
++	FIELD_STRING_RETIP,
++	FIELD_STRING_FUNC,
++};
++
+ /* currently, trace_kprobe only supports X86. */
  
--static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
-+static int parse_probe_vars(char *arg, struct fetch_func *ff, int is_return)
- {
- 	int ret = 0;
- 	unsigned long param;
--	long offset;
--	char *tmp;
+ struct fetch_func {
+@@ -551,6 +569,20 @@ static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
+ 	return ret;
+ }
  
- 	switch (arg[0]) {
- 	case 'a':	/* argument */
-@@ -456,14 +454,6 @@ static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
- 		} else
- 			ret = -EINVAL;
- 		break;
--	case '%':	/* named register */
--		ret = regs_query_register_offset(arg + 1);
--		if (ret >= 0) {
--			ff->func = fetch_register;
--			ff->data = (void *)(unsigned long)ret;
--			ret = 0;
--		}
--		break;
- 	case 's':	/* stack */
- 		if (arg[1] == 'a') {
- 			ff->func = fetch_stack_address;
-@@ -478,6 +468,31 @@ static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
- 			}
- 		}
- 		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+	return ret;
++/* Return 1 if name is reserved or already used by another argument */
++static int conflict_field_name(const char *name,
++			       struct probe_arg *args, int narg)
++{
++	int i;
++	for (i = 0; i < ARRAY_SIZE(reserved_field_names); i++)
++		if (!strcmp(reserved_field_names[i], name))
++			return 1;
++	for (i = 0; i < narg; i++)
++		if (!strcmp(args[i].name, name))
++			return 1;
++	return 0;
 +}
 +
-+static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
-+{
-+	int ret = 0;
-+	unsigned long param;
-+	long offset;
-+	char *tmp;
+ static int create_trace_probe(int argc, char **argv)
+ {
+ 	/*
+@@ -652,6 +684,12 @@ static int create_trace_probe(int argc, char **argv)
+ 			*arg++ = '\0';
+ 		else
+ 			arg = argv[i];
 +
-+	switch (arg[0]) {
-+	case '$':
-+		ret = parse_probe_vars(arg + 1, ff, is_return);
-+		break;
-+	case '%':	/* named register */
-+		ret = regs_query_register_offset(arg + 1);
-+		if (ret >= 0) {
-+			ff->func = fetch_register;
-+			ff->data = (void *)(unsigned long)ret;
-+			ret = 0;
++		if (conflict_field_name(argv[i], tp->args, i)) {
++			ret = -EINVAL;
++			goto error;
 +		}
-+		break;
- 	case '@':	/* memory or symbol */
- 		if (isdigit(arg[1])) {
- 			ret = strict_strtoul(arg + 1, 0, &param);
-@@ -489,8 +504,7 @@ static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
- 			ret = split_symbol_offset(arg + 1, &offset);
- 			if (ret)
- 				break;
--			ff->data = alloc_symbol_cache(arg + 1,
--							      offset);
-+			ff->data = alloc_symbol_cache(arg + 1, offset);
- 			if (ff->data)
- 				ff->func = fetch_symbol;
- 			else
-@@ -544,11 +558,11 @@ static int create_trace_probe(int argc, char **argv)
- 	 *  - Add kprobe: p[:[GRP/]EVENT] KSYM[+OFFS]|KADDR [FETCHARGS]
- 	 *  - Add kretprobe: r[:[GRP/]EVENT] KSYM[+0] [FETCHARGS]
- 	 * Fetch args:
--	 *  aN	: fetch Nth of function argument. (N:0-)
--	 *  rv	: fetch return value
--	 *  ra	: fetch return address
--	 *  sa	: fetch stack address
--	 *  sN	: fetch Nth of stack (N:0-)
-+	 *  $aN	: fetch Nth of function argument. (N:0-)
-+	 *  $rv	: fetch return value
-+	 *  $ra	: fetch return address
-+	 *  $sa	: fetch stack address
-+	 *  $sN	: fetch Nth of stack (N:0-)
- 	 *  @ADDR	: fetch memory at ADDR (ADDR should be in kernel)
- 	 *  @SYM[+|-offs] : fetch memory at SYM +|- offs (SYM is a data symbol)
- 	 *  %REG	: fetch register REG
++
+ 		tp->args[i].name = kstrdup(argv[i], GFP_KERNEL);
+ 
+ 		/* Parse fetch argument */
+@@ -1054,8 +1092,8 @@ static int kprobe_event_define_fields(struct ftrace_event_call *event_call)
+ 	if (!ret)
+ 		return ret;
+ 
+-	DEFINE_FIELD(unsigned long, ip, "ip", 0);
+-	DEFINE_FIELD(int, nargs, "nargs", 1);
++	DEFINE_FIELD(unsigned long, ip, FIELD_STRING_IP, 0);
++	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
+ 	/* Set argument names as fields */
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		DEFINE_FIELD(unsigned long, args[i], tp->args[i].name, 0);
+@@ -1072,9 +1110,9 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
+ 	if (!ret)
+ 		return ret;
+ 
+-	DEFINE_FIELD(unsigned long, func, "func", 0);
+-	DEFINE_FIELD(unsigned long, ret_ip, "ret_ip", 0);
+-	DEFINE_FIELD(int, nargs, "nargs", 1);
++	DEFINE_FIELD(unsigned long, func, FIELD_STRING_FUNC, 0);
++	DEFINE_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP, 0);
++	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
+ 	/* Set argument names as fields */
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		DEFINE_FIELD(unsigned long, args[i], tp->args[i].name, 0);
+@@ -1123,15 +1161,16 @@ static int kprobe_event_show_format(struct ftrace_event_call *call,
+ 	int ret, i;
+ 	struct trace_probe *tp = (struct trace_probe *)call->data;
+ 
+-	SHOW_FIELD(unsigned long, ip, "ip");
+-	SHOW_FIELD(int, nargs, "nargs");
++	SHOW_FIELD(unsigned long, ip, FIELD_STRING_IP);
++	SHOW_FIELD(int, nargs, FIELD_STRING_NARGS);
+ 
+ 	/* Show fields */
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		SHOW_FIELD(unsigned long, args[i], tp->args[i].name);
+ 	trace_seq_puts(s, "\n");
+ 
+-	return __probe_event_show_format(s, tp, "(%lx)", "REC->ip");
++	return __probe_event_show_format(s, tp, "(%lx)",
++					 "REC->" FIELD_STRING_IP);
+ }
+ 
+ static int kretprobe_event_show_format(struct ftrace_event_call *call,
+@@ -1141,9 +1180,9 @@ static int kretprobe_event_show_format(struct ftrace_event_call *call,
+ 	int ret, i;
+ 	struct trace_probe *tp = (struct trace_probe *)call->data;
+ 
+-	SHOW_FIELD(unsigned long, func, "func");
+-	SHOW_FIELD(unsigned long, ret_ip, "ret_ip");
+-	SHOW_FIELD(int, nargs, "nargs");
++	SHOW_FIELD(unsigned long, func, FIELD_STRING_FUNC);
++	SHOW_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP);
++	SHOW_FIELD(int, nargs, FIELD_STRING_NARGS);
+ 
+ 	/* Show fields */
+ 	for (i = 0; i < tp->nr_args; i++)
+@@ -1151,7 +1190,8 @@ static int kretprobe_event_show_format(struct ftrace_event_call *call,
+ 	trace_seq_puts(s, "\n");
+ 
+ 	return __probe_event_show_format(s, tp, "(%lx <- %lx)",
+-					  "REC->func, REC->ret_ip");
++					 "REC->" FIELD_STRING_FUNC
++					 ", REC->" FIELD_STRING_RETIP);
+ }
+ 
+ #ifdef CONFIG_EVENT_PROFILE
 
 
 -- 
