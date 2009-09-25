@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbZIYEyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbZIYEwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751924AbZIYEyY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 00:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbZIYEyX
+	id S1751646AbZIYEwt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 00:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbZIYEws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 00:54:23 -0400
-Received: from mail.impulse.net.au ([210.9.195.23]:51814 "HELO
-	mail.impulse.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751407AbZIYEyW (ORCPT
+	Fri, 25 Sep 2009 00:52:48 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55776 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbZIYEwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 00:54:22 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Sep 2009 00:54:21 EDT
-From: "Ben Ryan" <ben@impulse.net.au>
-To: <linux-kernel@vger.kernel.org>
-Subject: USB HDD boot panic (2.6.31)
-Date: Fri, 25 Sep 2009 14:47:45 +1000
-Message-ID: <002701ca3d9b$53250240$f96f06c0$@net.au>
+	Fri, 25 Sep 2009 00:52:47 -0400
+Message-ID: <4ABC4CAB.7090302@np.css.fujitsu.com>
+Date: Fri, 25 Sep 2009 13:52:59 +0900
+From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: LKLM <linux-kernel@vger.kernel.org>
+Cc: "Paul E. McKenney " <paulmck@linux.vnet.ibm.com>,
+       =?ISO-2022-JP?B?QUtQTRskQiEhGyhC?= <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: [Patch x86-tip] Clean up the warning message about RCU not defined
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Aco9m1LWIPrtEiXlR0WdgQNIlquzgg==
-Content-Language: en-au
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've a question regarding boot from USB-attached IDE HDD under 2.6.31
-(slackware/lilo).
-Searches haven't shed much light on status or resolutions.
-Booting from this device throws:
+(This fix is for commit 4765c1db84c73f775eb1822a009117cbae524e9e
+   Titled "rcu-tiny: The Bloatwatch Edition, v6")
 
+When the kernel is built, there is some message printed as
+following:
+    include/linux/rcupdate.h:80:7: \
+        warning: "CONFIG_TINY_RCU" is not defined
 
-VFS: Cannot open root device "sda1" or unknown-block(0,0)
-Please append a correct "root=" boot option; here are the available
-partitions:
-.
-Kernel panic - not syncing: VFS: Unable to mount root fs on unknown
-block(0,)
+So I did "grep _RCU .config" to search the information of "CONFIG_TINY_RCU"
+in .config file and the result is listed as following:
+    Command:
+        grep _RCU .config
+    Result:
+        CONFIG_TREE_RCU=y
+        # CONFIG_TREE_PREEMPT_RCU is not set
+        # CONFIG_TINY_RCU is not set
+        CONFIG_RCU_TRACE=y
+        CONFIG_RCU_FANOUT=64
+        # CONFIG_RCU_FANOUT_EXACT is not set
+        CONFIG_TREE_RCU_TRACE=y
+        # CONFIG_RCU_TORTURE_TEST is not set
+        # CONFIG_RCU_CPU_STALL_DETECTOR is not set
 
+Though the "WARNING" does not give impact to build kernel, I think
+it should be cleaned up. And I made the patch for modifying it.
+With this patch there is not any other warning message of
+CONFIG_TINY_RCU and the kernel could be built successfully. And I
+confirmed that the built kernel works well.
 
-I notice that there's no /dev/sd(x) devices listed as possible roots in the
-error.
-I've tried a kernel build with all relevant drivers inbuilt (not modules).
-Tested on multiple machines with same result.
-This issue seems to have some history, earlier kernels had patches written
-for genhd.c (but I lack the skills to port them forward).
-Discussion here:
-http://lkml.indiana.edu/hypermail/linux/kernel/0405.0/0224.html
+Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+---
+ include/linux/rcupdate.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
->From what I can gather the USB drivers aren't finished initialising before
-the disks are enumerated and mapped to /dev.
-
-Is this a known, current issue?
-Does anyone have a patch that can help? If so, why isn't it mainlined?
-(Please CC responses!)
-
-Thanks
-Ben
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index b2f1e10..fe5c560 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -77,7 +77,7 @@ extern int rcu_scheduler_active;
+ 
+ #if defined(CONFIG_TREE_RCU) || defined(CONFIG_TREE_PREEMPT_RCU)
+ #include <linux/rcutree.h>
+-#elif CONFIG_TINY_RCU
++#elif defined(CONFIG_TINY_RCU)
+ #include <linux/rcutiny.h>
+ #else
+ #error "Unknown RCU implementation specified to kernel configuration"
+-- 
+1.6.2.2
 
