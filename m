@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbZIYJzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbZIYJ6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751998AbZIYJzu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 05:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZIYJzt
+	id S1752084AbZIYJ6f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 05:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZIYJ6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 05:55:49 -0400
-Received: from ns.penguin.cz ([84.21.108.25]:59061 "EHLO ns.penguin.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbZIYJzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 05:55:48 -0400
-Subject: Re: [PATCH] serial-core: resume serial hardware with
- no_console_suspend
-From: Stanislav Brabec <utx@penguin.cz>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090925073617.GA5856@n2100.arm.linux.org.uk>
-References: <1253021938.6597.16.camel@hammer.suse.cz>
-	 <20090924170503.37cbe4ed.akpm@linux-foundation.org>
-	 <20090925073617.GA5856@n2100.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Fri, 25 Sep 2009 11:55:47 +0200
-Message-Id: <1253872547.13257.18.camel@hammer.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.91 
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Sep 2009 05:58:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43258 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751158AbZIYJ6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 05:58:33 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1/fg8dH5hTf44SSSnrJpam48k6A/s3E7eaeNfRZUv
+	GIlG33vL+Kxzf8
+Date: Fri, 25 Sep 2009 11:58:31 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Joe Perches <joe@perches.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       git@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: git merge conflict resolution?
+Message-ID: <20090925095831.GA17721@atjola.homenet>
+References: <200909250101.n8P11HwO030173@hera.kernel.org>
+ <1253841510.18126.10.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1253841510.18126.10.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
-> On Thu, Sep 24, 2009 at 05:05:03PM -0700, Andrew Morton wrote:
-> > On Tue, 15 Sep 2009 15:38:58 +0200
-> > Stanislav Brabec <utx@penguin.cz> wrote:
-> > 
-> > > Hardware may need re-initialization to get serial port working after
-> > > resume. It does not happen with no_console_suspend. Attached patch
-> > > attempts to fix it.
-> > > 
-> > > The patch attempts to keep hardware running before suspend and run
-> > > hardware re-initialization after resume. Maybe simpler approach is
-> > > possible.
-> > 
-> > The patch doesn't apply any more and seems like a rather hacky thing to do.
-
-Yes, but no_console_suspend itself is a bit hacky. You need to save
-console state but keep it running as long as possible afterwards and
-resume it after return from the sleep.
-
-I was not sure, what exactly should be skipped and what must be run, so
-I experimented a bit.
-
-Not calling hardware suspend/resume (current implementation) breaks
-serial port in hardware that need resume.
-
-Calling of resume without suspend seems to be dangerous. Not calling
-suspend at all and standard initialization on resume would probably
-reset the port setting and maybe cause memory leak.
-
-> > It appears that you have specific serial hardware which doesn't resume
-> > correctly?  If so, that's a bug, so how about we start with a bug
-> > report/description?
-
-The hardware resumes correctly. But no_console_suspend breaks its
-resume.
-
-> It's something that I did point out when the no_console_suspend patch
-> appeared, but I was overruled/ignored.
+On 2009.09.24 18:18:30 -0700, Joe Perches wrote:
+> Question about how git does merge conflict resolution.
 > 
-> The problem is that on ARM hardware, there is no BIOS to re-initialize
-> hardware.  The kernel has to do restore the entire system hardware
-> state upon resume.  Unfortunately, no_console_suspend not only prevents
-> the console from being suspended but _also_ resumed.
+> This patch doesn't really apply, and the results after the
+> patch aren't what at least I expect.
+[...]
+> Russell's patch removes the "(moderated for non-subscribers)"
+> from each entry, yet the final result includes it.
 > 
-> The result of that is the console UART is left in a totally uninitialized
-> state.
+> Can someone help me understand why?
 
-Exactly, my ARM hardware is PXA270 on Zaurus SL-C3200.
+If you look at baea7b946f00a291b166ccae7fcfed6c01530cc6, you see:
 
--- 
-Stanislav Brabec
-http://www.penguin.cz/~utx
+    Merge branch 'origin' into for-linus
 
+    Conflicts:
+        MAINTAINERS
+
+Git was unable to automatically merge that file, as there were
+conflicting changes. That merge was done by Russel King, and _he_
+decided that the result should include the "(moderated for ...)" part.
+
+Björn
