@@ -1,64 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbZIYQIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbZIYQBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418AbZIYQIk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 12:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZIYQIi
+	id S1753407AbZIYQBs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 12:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZIYQBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 12:08:38 -0400
-Received: from mail-yx0-f173.google.com ([209.85.210.173]:43052 "EHLO
-	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752573AbZIYQIh (ORCPT
+	Fri, 25 Sep 2009 12:01:47 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:55375 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752962AbZIYQBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 12:08:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Hx+0NkxJQiSuodzXYOu0xuR3fyWoPpZLyyImAEGr3CjUUXcawG7fvnCBVH57IsXtiy
-         NOporwHa7Jeg4uTVmAcavTtME3RZRhxvF0T9WHodBtrbMd3ozf75Vu7cvSFbvAOFn5Nm
-         IUHmsEKOarA9Cy0uluDg1fQXY8VQX+PgXwFtU=
+	Fri, 25 Sep 2009 12:01:46 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAKeFvEqrR7PE/2dsb2JhbAC+R4hTAZAABYQegV0
+X-IronPort-AV: E=Sophos;i="4.44,452,1249257600"; 
+   d="scan'208";a="396136828"
+From: Roland Dreier <rdreier@cisco.com>
+To: ykzhao <yakui.zhao@intel.com>
+Cc: Len Brown <lenb@kernel.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi\@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH] ACPI: Kill overly verbose "power state" log messages
+References: <adapr9gypqz.fsf@cisco.com>
+	<1253839597.3609.459.camel@localhost.localdomain>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 25 Sep 2009 09:01:43 -0700
+In-Reply-To: <1253839597.3609.459.camel@localhost.localdomain> (ykzhao's
+	message of "Fri, 25 Sep 2009 08:46:37 +0800")
+Message-ID: <adak4znypw8.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <4ABCE72D.5040001@xenotime.net>
-References: <b6a2187b0909240624u2821a312ub6d02df21d552248@mail.gmail.com>
-	 <20090924160136.44e31ad0@lxorguk.ukuu.org.uk>
-	 <b6a2187b0909240923t4e8d61f4g6d82b7f9f9bf621b@mail.gmail.com>
-	 <20090925115636.5b4b8aca@linux.intel.com>
-	 <b6a2187b0909250835g1b72037er13b86bf762fd5e37@mail.gmail.com>
-	 <20090925164747.55dab000@lxorguk.ukuu.org.uk>
-	 <4ABCE72D.5040001@xenotime.net>
-Date: Sat, 26 Sep 2009 00:00:36 +0800
-Message-ID: <b6a2187b0909250900n7922f606w8b99f042b0a6f441@mail.gmail.com>
-Subject: Re: linux-2.6.31 INIT: open(/dev/console): Input/output error (due to 
-	commit b50989dc444599c8b21edc23536fc305f4e9b7d5)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Sep 2009 16:01:44.0319 (UTC) FILETIME=[7A66D0F0:01CA3DF9]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 11:52 PM, Randy Dunlap <rdunlap@xenotime.net> wrote:
-> Alan Cox wrote:
->>> Is this going into Linus's branch soon? Otherwise, please kindly post
->>> the full patch so that I can test it instead of pulling 400MB from
->>> Andrew's tree.
->>
->> I don't have Andrews tty patches here either sorry but I thought he kept
->> them broken out on kernel.org ?
->> --
->
-> http://userweb.kernel.org/~akpm/mmotm/
-> see the broken-out/ subdir.
+Len, I see I messed up editing my changelog message, see below...
 
-I see. But that patch is not there. Did find it on google.
+ > > I was recently lucky enough to get a 64-CPU system.  The processors
+ > > actually have T-states, so my kernel log ends up with 64 lines like:
+ > > 
+ > >     ACPI: CPU0 (power states: C1[C1] C2[C3])
+ > > 
+ > > This is pretty useless clutter because this info is already available
+ > > after boot from both /sys/devices/system/cpu/cpu*/cpuidle/state?/ as
+ > > well as /proc/acpi/processor/CPU*/power.
+ > > 
+ > > So just delete the code that prints the throttling states in
+ > > processor_idle.c.
 
-http://www.spinics.net/lists/mm-commits/msg71772.html
+ > It seems that it is unnecessary to delete the C-state info.
 
-So, I'll test it now.
+Sorry, this is a little too terse for me to know what you mean.
+Certainly it's not useful to have 64 copies of
 
-Thanks,
-Jeff
+    ACPI: CPU0 (power states: C1[C1] C2[C3])
+
+in the kernel log on a big box, when all 64 processors are going to
+support the same C-states.  However, I don't see what the use of having
+even one copy in the boot log is, when I can easily get that info at
+runtime from /proc/acpi/processor/CPU*/power.
+
+
+Anyway, Len, I see I copy-and-pasted too quickly from my T-state patch
+submission... if you want to apply, a version with better changelog would be:
+
+<--- snip --->
+
+I was recently lucky enough to get a 64-CPU system, so my kernel log
+ends up with 64 lines like:
+
+    ACPI: CPU0 (power states: C1[C1] C2[C3])
+
+This is pretty useless clutter because this info is already available
+after boot from both /sys/devices/system/cpu/cpu*/cpuidle/state?/ as
+well as /proc/acpi/processor/CPU*/power.
+
+So just delete the code that prints the C-states in processor_idle.c.
+
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ drivers/acpi/processor_idle.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index cc61a62..706eacf 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1214,13 +1214,6 @@ int __cpuinit acpi_processor_power_init(struct acpi_processor *pr,
+ 		acpi_processor_setup_cpuidle(pr);
+ 		if (cpuidle_register_device(&pr->power.dev))
+ 			return -EIO;
+-
+-		printk(KERN_INFO PREFIX "CPU%d (power states:", pr->id);
+-		for (i = 1; i <= pr->power.count; i++)
+-			if (pr->power.states[i].valid)
+-				printk(" C%d[C%d]", i,
+-				       pr->power.states[i].type);
+-		printk(")\n");
+ 	}
+ #ifdef CONFIG_ACPI_PROCFS
+ 	/* 'power' [R] */
