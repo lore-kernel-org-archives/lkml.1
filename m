@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbZIYKBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbZIYKB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbZIYKBn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 06:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZIYKBn
+	id S1752245AbZIYKB4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 06:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZIYKB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 06:01:43 -0400
-Received: from gate.in-addr.de ([212.8.193.158]:54407 "EHLO mx.in-addr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751841AbZIYKBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 06:01:42 -0400
-Date: Fri, 25 Sep 2009 11:59:08 +0200
-From: Lars Marowsky-Bree <lmb@suse.de>
-To: Neil Brown <neilb@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: lars.ellenberg@linbit.com, arjan@infradead.org, jens.axboe@oracle.com,
-       hch@infradead.org, James.Bottomley@suse.de,
-       linux-kernel@vger.kernel.org, drbd-dev@lists.linbit.com,
-       akpm@linux-foundation.org, bart.vanassche@gmail.com, davej@redhat.com,
-       gregkh@suse.de, kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
-       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
-       philipp.reisner@linbit.com, sam@ravnborg.org, Mauelshagen@redhat.com
-Subject: Re: [GIT PULL] DRBD for 2.6.32
-Message-ID: <20090925095908.GC28951@suse.de>
-References: <20090922062034.GE22732@suse.de> <20090923203531C.fujita.tomonori@lab.ntt.co.jp> <19130.43495.807916.962040@notabene.brown> <20090924083617J.fujita.tomonori@lab.ntt.co.jp> <19132.21708.867658.970822@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <19132.21708.867658.970822@notabene.brown>
-X-Ctuhulu: HASTUR
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 25 Sep 2009 06:01:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45941 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752134AbZIYKBz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 06:01:55 -0400
+Date: Fri, 25 Sep 2009 11:02:06 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jason Baron <jbaron@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Rusty Lynch <rusty.lynch@intel.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Vamsi Krishna S <vamsi_krishna@in.ibm.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nathan Sidwell <nathan@codesourcery.com>,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Anton Massoud <anton.massoud@ericsson.com>,
+       Richard J Moore <richardj_moore@uk.ibm.com>
+Subject: Re: Immediate values
+Message-ID: <20090925110206.50ab8a20@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090925073512.GA10346@Krystal>
+References: <20090924191642.GA19225@elte.hu>
+	<20090924193422.GB2533@elte.hu>
+	<20090925085119.2b77ea04@infradead.org>
+	<20090925073512.GA10346@Krystal>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-09-25T15:27:40, Neil Brown <neilb@suse.de> wrote:
+> Then, following your advice, kprobes should be re-designed to do a
+> stop_machine around the int3 breakpoint insertion ? And gdb
+> should be stopping all threads of a target process before inserting a
+> breakpoint. Therefore, I do not seem to be the only one confused about
+> Intel statement on this issue.
 
-> > Enterprise vendors don't pick up the latest kernel. So I think that we
-> > need more.
+There was considerable discussion abut this when the kprobe stuff went
+in. If I remember rightly it was stated by someone @intel.com then that
+int3 was ok (even though its not strictly documented as such). The same
+is not true for all instructions on all x86 processors unfortunately.
 
-Enterprise kernel providers tend to accept the burden of supporting
-their enterprise releases. While I appreciate the thought from the
-community, I think the enterprise kernels already including drbd would
-be extremely happy to see it officially included.
-
-> I don't really follow your logic, but that isn't important.  I think
-> that we need to be open to deprecating old ABIs, particularly when the
-> ABI is largely used by just one or two programs or libraries.  This is
-> the case for md/dm/drbd and similar devices.
-
-It is even one step beyond this here. The additional ABI effort is
-raised as an objection to merging drbd, and the drbd developers and user
-community is offering to depreciate it within a reasonable timeframe of
-a better ABI existing (since this will be hidden in the user-space
-tools), if this means that it can be merged earlier.
-
-This is quite different from an ABI which is expected to be stable and
-remain forever (even if it was just an implicit user assumption); the
-expectations are set accordingly from day 0, and thus should not be a
-hurdle to acceptance.
-
-
-Regards,
-    Lars
-
--- 
-Architect Storage/HA, OPS Engineering, Novell, Inc.
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
-
+Alan
