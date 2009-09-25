@@ -1,129 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZIYK4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbZIYLCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752203AbZIYK4e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 06:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZIYK4c
+	id S1752222AbZIYLCu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 07:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZIYLCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 06:56:32 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:41323 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbZIYK4b (ORCPT
+	Fri, 25 Sep 2009 07:02:46 -0400
+Received: from mga12.intel.com ([143.182.124.36]:47415 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750914AbZIYLCp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 06:56:31 -0400
-Date: Fri, 25 Sep 2009 12:56:32 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       mingo@elte.hu, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       torvalds@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
-Message-ID: <20090925105632.GG12824@hawkmoon.kerlabs.com>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
-	Containers <containers@lists.linux-foundation.org>,
-	Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-	mingo@elte.hu, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-	torvalds@linux-foundation.org,
-	Alexey Dobriyan <adobriyan@gmail.com>,
-	Pavel Emelyanov <xemul@openvz.org>
-References: <20090924165548.GA16586@us.ibm.com> <20090924170308.GH16989@us.ibm.com> <200909242343.59903.arnd@arndb.de> <20090925082346.GB4436@localdomain>
+	Fri, 25 Sep 2009 07:02:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,451,1249282800"; 
+   d="scan'208";a="191600154"
+Date: Fri, 25 Sep 2009 11:56:36 +0100
+From: Alan Cox <alan@linux.intel.com>
+To: "jeff.chua.linux" <jeff.chua.linux@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: linux-2.6.31 INIT: open(/dev/console): Input/output error (due
+ to  commit b50989dc444599c8b21edc23536fc305f4e9b7d5)
+Message-ID: <20090925115636.5b4b8aca@linux.intel.com>
+In-Reply-To: <b6a2187b0909240923t4e8d61f4g6d82b7f9f9bf621b@mail.gmail.com>
+References: <b6a2187b0909240624u2821a312ub6d02df21d552248@mail.gmail.com>
+	<20090924160136.44e31ad0@lxorguk.ukuu.org.uk>
+	<b6a2187b0909240923t4e8d61f4g6d82b7f9f9bf621b@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-7906-1253876148-0001-2"
-Content-Disposition: inline
-In-Reply-To: <20090925082346.GB4436@localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Fri, 25 Sep 2009 00:23:27 +0800
+"jeff.chua.linux" <jeff.chua.linux@gmail.com> wrote:
 
---=_bohort-7906-1253876148-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Thu, Sep 24, 2009 at 11:01 PM, Alan Cox <alan@lxorguk.ukuu.org.uk>
+> wrote:
+> > It is timing dependant. A discussion and some fixes were posted a
+> > while ago.
+> 
+> I must have missed that. Will try to search for it.
+> 
+> Thanks,
+> Jeff
 
-On 25/09/09 10:23 +0200, Louis Rilling wrote:
-> On Thu, Sep 24, 2009 at 11:43:59PM +0200, Arnd Bergmann wrote:
-> > On Thursday 24 September 2009, Sukadev Bhattiprolu wrote:
-> > > +asmlinkage long
-> > > +sys_clone2(struct clone_struct __user *ucs, pid_t __user *pids)
-> > > +{
-> > > +       int rc;
-> > > +       struct clone_struct kcs;
-> > > +       unsigned long clone_flags;
-> > > +       int __user *parent_tid_ptr;
-> > > +       int __user *child_tid_ptr;
-> > > +       unsigned long __user child_stack_base;
-> > > +       struct pt_regs *regs;
-> > > +
-> > > +       rc =3D copy_from_user(&ucs, &kcs, sizeof(kcs));
-> > > +       if (rc)
-> > > +               return -EFAULT;
-> > > +
-> > > +       /*
-> > > +        * TODO: Convert clone_flags to 64-bit
-> > > +        */
-> > > +       clone_flags =3D (unsigned long)kcs.flags;
-> > > +       child_stack_base =3D (unsigned long)kcs.child_stack;
-> > > +       parent_tid_ptr =3D &ucs.parent_tid;
-> > > +       child_tid_ptr =3D  &ucs.child_tid;
-> > > +       regs =3D task_pt_regs(current);
-> > > +
-> > > +       if (!child_stack_base)
-> > > +               child_stack_base =3D user_stack_pointer(regs);
-> > > +
-> > > +       return do_fork_with_pids(clone_flags, child_stack_base, regs,=
- 0,
-> > > +                       parent_tid_ptr, child_tid_ptr, kcs.nr_pids, p=
-ids);
-> > > +}
-> > > +
-> >=20
-> > The function looks ok, but you have put it into arch/x86/kernel/process=
-_32.c,
-> > which is specific to x86-32. Since the code in this form is generic, why
-> > not just put it into kernel/fork.c? You should probably enclose it with=
-in
-> > #ifdef CONFIG_HAVE_ARCH_TRACEHOOK to make sure that user_stack_pointer()
-> > is implemented, but then it would be immediately usable by the nine arc=
-hitectures
-> > implementing that. The other architectures can then decide between addi=
-ng
-> > their private version of sys_clone2 with an open-coded user_stack_point=
-er
-> > implementation or alternatively implement the tracehooks.
->=20
-> It will very likely break ia64, which defines CONFIG_HAVE_ARCH_TRACEHOOK =
-and
-> already has sys_clone2().
+>From Andrew's tree:
 
--> sys_clone_ext() ?
+     tty: fix regression caused by "tty: make the kref destructor occur
+     asynchronously"
 
-Louis
+which allows both a sync and an async element to the destruction
+cleanup. The console uses the synchronous one which avoids the delay
+before it becomes available again.
 
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-7906-1253876148-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkq8oeAACgkQVKcRuvQ9Q1Q6SwCgimdrl0B5UnPR3otnzftg5DrZ
-21sAmwSFxuqZP6a9bqaNXiu3J2IBhLrz
-=4eRk
------END PGP SIGNATURE-----
-
---=_bohort-7906-1253876148-0001-2--
