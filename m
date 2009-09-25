@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbZIYHUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbZIYH3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbZIYHUn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 03:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZIYHUm
+	id S1752619AbZIYH3z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 03:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZIYH3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 03:20:42 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:55444 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbZIYHUl (ORCPT
+	Fri, 25 Sep 2009 03:29:51 -0400
+Received: from mail-yx0-f173.google.com ([209.85.210.173]:63570 "EHLO
+	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbZIYH3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 03:20:41 -0400
+	Fri, 25 Sep 2009 03:29:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=iyT0SZv5WcUCPWQBVOFvIJ8S4gY2L3OEbbi1WxFVkVsQdJM2oOqwWVvAgGgalCKWmb
-         L/fKdVufcYCHpX1iMUTR2j92XOxUa1iZR/pny1hJPIhWpkYQBWjmckzxqxR+bn8nmoge
-         PfibN2fnrL/WWW855afQBxgDzWm+68ksXBcuc=
-MIME-Version: 1.0
-Reply-To: balbir@in.ibm.com
-In-Reply-To: <20090924142228.5a2ddf59@infradead.org>
-References: <20090922112526.GA7788@linux.vnet.ibm.com>
-	 <20090924051238.GA5963@linux.vnet.ibm.com>
-	 <20090924142228.5a2ddf59@infradead.org>
-Date: Fri, 25 Sep 2009 12:50:44 +0530
-X-Google-Sender-Auth: 96607bfb917e96cd
-Message-ID: <661de9470909250020u711031djfbf30f41e06d60bf@mail.gmail.com>
-Subject: Re: [v6 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power management 
-	code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce cpuidle to 
-	POWER.
-From: Balbir Singh <balbir@in.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: arun@linux.vnet.ibm.com, Len Brown <lenb@kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TK4Hb86fr2PBXJmqb0337WRjuLH5vl2H658LD03+yQ64wDXoD7DNbS0I7hEpy5dZ2b
+         Sq1uqhxYVX4Zm05EskfSKrscHAduC2d1GwtZ4mf0RgiKogyvdYlrEfRymfzLgV97Lm7O
+         dlBinoxG624hjwb384NBhu9vx86BYGGtmZTBc=
+Date: Fri, 25 Sep 2009 07:22:48 +0000
+From: Andy Spencer <andy753421@gmail.com>
+To: David Wagner <daw-news@cs.berkeley.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Privilege dropping security module
+Message-ID: <20090925072248.GB9821@c.hsd1.tn.comcast.net>
+References: <20090923005644.GA28244@c.hsd1.tn.comcast.net>
+ <4ABA892A.9090804@schaufler-ca.com>
+ <20090923223110.GA1449@c.hsd1.tn.comcast.net>
+ <h9g795$9om$1@taverner.cs.berkeley.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_c-9986-1253863392-0001-2"
+Content-Disposition: inline
+In-Reply-To: <h9g795$9om$1@taverner.cs.berkeley.edu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 5:52 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Thu, 24 Sep 2009 10:42:41 +0530
-> Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
->
->> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
->>
->> Hi Len, (or other acpi folks),
->>
->> I had a question regarding ACPI-cpuidle interaction in the current
->> implementation.
->>
->> Currently, every cpu (i.e. acpi_processor) registers to cpuidle as
->> a cpuidle_device. So every cpu has to go through the process of
->> setting up the idle states and then registering as a cpuidle device.
->>
->> What exactly is the reason behind this?
->>
->
-> technically a BIOS can opt to give you C states via ACPI on some cpus,
-> but not on others.
->
-> in practice when this happens it tends to be a bug.. but it's
-> technically a valid configuration
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-In this day and age of flashable BIOS with recovery BIOS built in,
-can't we just print out a big far warning, asking users of such
-systems to go back to their vendors and ask for updates or find the
-updates and apply them? Does the OS have to do the heavy lifting and
-allow users to live with buggy BIOS's.
+--=_c-9986-1253863392-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-When you say it is a technically valid configuration, you mean that
-the ACPI spec allows for such inconsistency?
+> If I understand correctly, this isn't sufficient to run untrusted code,
+> because it only restricts access to the filesystem.  You gotta restrict
+> access to the network, interaction with other processes, and so on.
+> (For instance, does dpriv let the untrusted process take over another of
+> your processes using ptrace?)
 
-Balbir Singh
+Yes, currently dpriv allows a process to take over another process using
+ptrace. However, I plan on supporting limits on ptrace (and other
+things) in the future.
+
+
+> I suspect making all permissions recursive is going to lead to overly
+> permissive policies.  Suppose I want to allow read access to everything
+> under /lib and /usr/lib, read-execute access to everything under /bin
+> and /usr/bin, and read-write access to everything under /tmp.  (But I
+> do not want to allow any access to any other directories.)  How do I
+> do it?
+
+The important thing is that limits can be overridden while they are
+still in the stage. This allows you to deny access to a directory, but
+still allow access to specific subdirectories.
+
+  $ echo -----X /        > /sys/kernel/security/dpriv/stage
+  $ echo r--R-X /lib     > /sys/kernel/security/dpriv/stage
+  $ echo r--R-X /usr/lib > /sys/kernel/security/dpriv/stage
+  $ echo r-xR-X /bin     > /sys/kernel/security/dpriv/stage
+  $ echo r-xR-X /usr/bin > /sys/kernel/security/dpriv/stage
+  $ echo rw-RWX /tmp     > /sys/kernel/security/dpriv/stage
+  $ echo commit          > /sys/kernel/security/dpriv/control
+
+Does this answer your question? It should be noted that you can still
+walk to any directory because X is allowed on /. To prevent this you
+would have to allow X on / and then specifically deny X on /*/, but
+expanding * is something that I would rather have done in userspace.
+
+--=_c-9986-1253863392-0001-2
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkq8b+AACgkQz1OYJ/s1XTCZDACg037c6edQaOfmR+HbHSDJ8XG2
+GsMAnRVceV2y5BntfkN2EKuwNxFd/BjY
+=sF/J
+-----END PGP SIGNATURE-----
+
+--=_c-9986-1253863392-0001-2--
