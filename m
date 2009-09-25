@@ -1,101 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751616AbZIYQpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbZIYQxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751616AbZIYQpo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 12:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbZIYQpn
+	id S1751646AbZIYQxZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 12:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbZIYQxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 12:45:43 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44832 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbZIYQpn (ORCPT
+	Fri, 25 Sep 2009 12:53:25 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58946 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750972AbZIYQxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 12:45:43 -0400
-Date: Fri, 25 Sep 2009 18:45:06 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Rusty Lynch <rusty.lynch@intel.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       Vamsi Krishna S <vamsi_krishna@in.ibm.com>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nathan Sidwell <nathan@codesourcery.com>,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       Anton Massoud <anton.massoud@ericsson.com>,
-       Richard J Moore <richardj_moore@uk.ibm.com>
-Subject: Re: Immediate values
-Message-ID: <20090925184506.322a9a9a@infradead.org>
-In-Reply-To: <4ABCED94.4010804@zytor.com>
-References: <20090924191642.GA19225@elte.hu>
-	<20090924193422.GB2533@elte.hu>
-	<20090925085119.2b77ea04@infradead.org>
-	<20090925073512.GA10346@Krystal>
-	<20090925110206.50ab8a20@lxorguk.ukuu.org.uk>
-	<20090925121449.7bb27b61@infradead.org>
-	<4ABCED94.4010804@zytor.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 25 Sep 2009 12:53:24 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Fri, 25 Sep 2009 10:53:16 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] vfs: new O_NODE open flag
+In-reply-to: <20090925123747.GA31228@gallifrey>
+To: "Dr. David Alan Gilbert" <linux@treblig.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, Andreas Gruenbacher <agruen@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <20090925165316.GT10562@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu>
+ <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu>
+ <20090925123747.GA31228@gallifrey>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Sep 2009 09:19:32 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> Arjan van de Ven wrote:
-> > On Fri, 25 Sep 2009 11:02:06 +0100
-> > Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sep 25, 2009  13:37 +0100, Dr. David Alan Gilbert wrote:
+> * Miklos Szeredi (miklos@szeredi.hu) wrote:
+> > On Fri, 25 Sep 2009, Andreas Gruenbacher wrote:
+> > > On Thursday, 24 September 2009 16:51:58 Miklos Szeredi wrote:
+> > > > This patch adds a new open flag, O_NODE.  This flag means: open just
+> > > > the filesystem node instead of the object referenced by the node.
+> > > 
+> > > What is the intended use for O_NODE?
 > > 
-> >>> Then, following your advice, kprobes should be re-designed to do a
-> >>> stop_machine around the int3 breakpoint insertion ? And gdb
-> >>> should be stopping all threads of a target process before
-> >>> inserting a breakpoint. Therefore, I do not seem to be the only
-> >>> one confused about Intel statement on this issue.
-> >> There was considerable discussion abut this when the kprobe stuff
-> >> went in. If I remember rightly it was stated by someone @intel.com
-> >> then that int3 was ok (even though its not strictly documented as
-> >> such). The same is not true for all instructions on all x86
-> >> processors unfortunately.
+> > It lets userspace file descriptors reference a inode without actually
+> > "dereferencing" it to get the underlying object.  This allows for a
+> > couple of new things:
 > > 
-> > specifically, using int3 *and then going back to the old value*.
+> >  - opening a special file (device/socket/fifo) without side effects
 > > 
+> >  - opening a symlink
+> > 
+> >  - opening any type of file without any permission is also possible
+> >    (of course the resuling file descriptor may not be read or written)
+> > 
+> > The above allows fstat(), fchmod(), ioctl(), etc to be used for files
+> > previously not possible.
 > 
-> As I told Mathieu in person yesterday:
-> 
-> 1. We have no information if this is safe or not.  It is most
-> certainly not documented as safe, and trying to play language lawyer
-> with the errata text is pointless, as it's trying to interpret
-> something that isn't there.
-> 
-> 2. There are some reasons to believe there might be a safe technique 
-> somewhere in here (the one he described is a possibility, but not the 
-> only one.)
-> 
-> 3. Being able to patch code without stopping all cores has other
-> uses, and so spending some time doing legwork on it is probably worth
-> it.
-> 
-> 4. "Someone at Intel" isn't a reference... we need to track down
-> actual CPU architects with real names who can give us a thumbs up or
-> down.
+> Given an fd opened in this way is it possible to reopen it normally and
+> be guarenteed to get the same object?
 
-and we need to talk to about 5 or so generations at least.
-We know whom to talk to, it just will take time
-(and first indication is frowned faces)
+That was something I'd be interested in as well.
 
-AMD will also do the same, and VIA (I think they have dual core/smp as
-well)
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
