@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753011AbZIYAe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZIYAir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753011AbZIYAe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 20:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZIYAe0
+	id S1752750AbZIYAir (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 20:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZIYAiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 20:34:26 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:49667 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbZIYAeZ (ORCPT
+	Thu, 24 Sep 2009 20:38:46 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:62558 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbZIYAip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 20:34:25 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 24 Sep 2009 17:34:28 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Carlo Marcelo Arenas Belon <carenas@sajinet.com.pe>
-cc: Alexander Viro <viro@zeniv.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] EPOLL_CTL_SET operatin for epoll_ctl when using
- EPOLLONESHOT
-In-Reply-To: <20090925002254.GA16356@sajinet.com.pe>
-Message-ID: <alpine.DEB.2.00.0909241731130.1164@makko.or.mcafeemobile.com>
-References: <1253831539-4506-1-git-send-email-carenas@sajinet.com.pe> <alpine.DEB.2.00.0909241641100.1164@makko.or.mcafeemobile.com> <20090925002254.GA16356@sajinet.com.pe>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 24 Sep 2009 20:38:45 -0400
+Date: Thu, 24 Sep 2009 20:38:20 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20090925003820.GK2662@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Dave Chinner <david@fromorbit.com>,
+	Wu Fengguang <fengguang.wu@intel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	"Li, Shaohua" <shaohua.li@intel.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+	"jens.axboe@oracle.com" <jens.axboe@oracle.com>
+References: <20090922175452.d66400dd.akpm@linux-foundation.org>
+ <20090923011758.GC6382@localhost>
+ <20090922182832.28e7f73a.akpm@linux-foundation.org>
+ <20090923014500.GA11076@localhost>
+ <20090922185941.1118e011.akpm@linux-foundation.org>
+ <20090923022622.GB11918@localhost>
+ <20090922193622.42c00012.akpm@linux-foundation.org>
+ <20090923140058.GA2794@think>
+ <20090924031508.GD6456@localhost>
+ <20090925001117.GA9464@discord.disaster>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090925001117.GA9464@discord.disaster>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4ABC1102.002E:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Sep 2009, Carlo Marcelo Arenas Belon wrote:
-
-> On Thu, Sep 24, 2009 at 04:46:20PM -0700, Davide Libenzi wrote:
-> > On Thu, 24 Sep 2009, Carlo Marcelo Arenas Belon wrote:
+On Fri, Sep 25, 2009 at 10:11:17AM +1000, Dave Chinner wrote:
+> On Thu, Sep 24, 2009 at 11:15:08AM +0800, Wu Fengguang wrote:
+> > On Wed, Sep 23, 2009 at 10:00:58PM +0800, Chris Mason wrote:
+> > > The only place that actually honors the congestion flag is pdflush.
+> > > It's trivial to get pdflush backed up and make it sit down without
+> > > making any progress because once the queue congests, pdflush goes away.
 > > 
-> > > Simplify userspace by eliminating the need to track whether a specific
-> > > filehandle was added to epoll already and only needs to be re-arm
-> > > after being internally disabled by EPOLLONESHOT.
-> > > 
-> > > EPOLL_CLT_SET can be used to add or modify a filehandle in epoll
-> > > using the kernel's internal tracking to apply the right equivalent
-> > > operation to EPOLL_CTL_ADD or EPOLL_CTL_MOD.
-> > 
-> > Applications (except poorly written ones) usually know what's in the 
-> > epoll set and what's not, in their bookkeeping.
+> > Right. I guess that's more or less intentional - to give lowest priority
+> > to periodic/background writeback.
 > 
-> agree, but since the kernel is also doing that bookkeeping using
-> ep_find it is possible by using this new operation to avoid doing
-> that in userspace, saving some cycles (and probably some contention in
-> multithreaded applications if the epoll set is global) in the hot path.
-> 
-> > I'm sorry, but I see no use of this code.
-> 
-> a very simple, probe of concept echoserver using this (once #defined)
-> is available from :
-> 
->   http://sajino.sajinet.com.pe/echoserver.c
+> IMO, this is the wrong design. Background writeback should
+> have higher CPU/scheduler priority than normal tasks. If there is
+> sufficient dirty pages in the system for background writeback to
+> be active, it should be running *now* to start as much IO as it can
+> without being held up by other, lower priority tasks.
 
-As I said, a poorly designed code. You could easily have done an ADD in 
-one place, and then have your multishot function handle only MOD.
+I'd say that an fsync from mutt or vi should be done at a higher prio
+than a background streaming writer.
 
-
-
-- Davide
-
-
+-chris
