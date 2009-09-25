@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZIYHkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbZIYHgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbZIYHkN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 03:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZIYHkN
+	id S1752693AbZIYHgm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 03:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZIYHgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 03:40:13 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:37022 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751983AbZIYHkL (ORCPT
+	Fri, 25 Sep 2009 03:36:41 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55878 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752659AbZIYHgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 03:40:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArcEAEcPvEpMROOX/2dsb2JhbACBUtUNhBwFgVg
-Date: Fri, 25 Sep 2009 03:35:13 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Rusty Lynch <rusty.lynch@intel.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       Vamsi Krishna S <vamsi_krishna@in.ibm.com>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nathan Sidwell <nathan@codesourcery.com>,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       Anton Massoud <anton.massoud@ericsson.com>,
-       Richard J Moore <richardj_moore@uk.ibm.com>
-Subject: Re: Immediate values
-Message-ID: <20090925073512.GA10346@Krystal>
-References: <20090924191642.GA19225@elte.hu> <20090924193422.GB2533@elte.hu> <20090925085119.2b77ea04@infradead.org>
-Mime-Version: 1.0
+	Fri, 25 Sep 2009 03:36:37 -0400
+Date: Fri, 25 Sep 2009 08:36:17 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stanislav Brabec <utx@penguin.cz>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] serial-core: resume serial hardware with
+	no_console_suspend
+Message-ID: <20090925073617.GA5856@n2100.arm.linux.org.uk>
+References: <1253021938.6597.16.camel@hammer.suse.cz> <20090924170503.37cbe4ed.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090925085119.2b77ea04@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 03:16:52 up 37 days, 18:06,  2 users,  load average: 0.07, 0.11,
-	0.16
+In-Reply-To: <20090924170503.37cbe4ed.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven (arjan@infradead.org) wrote:
-> On Thu, 24 Sep 2009 21:34:22 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, Sep 24, 2009 at 05:05:03PM -0700, Andrew Morton wrote:
+> On Tue, 15 Sep 2009 15:38:58 +0200
+> Stanislav Brabec <utx@penguin.cz> wrote:
 > 
-[context for people CCed: see
-http://lkml.org/lkml/2009/9/24/262]
-
+> > Hardware may need re-initialization to get serial port working after
+> > resume. It does not happen with no_console_suspend. Attached patch
+> > attempts to fix it.
 > > 
-> > * H. Peter Anvin <hpa@zytor.com> wrote:
-> > 
-> > > I would like to get an official ACK or NAK for this patching
-> > > technique from inside Intel, and preferrably from AMD as well.  If
-> > > it does work as described it would provide a very clean way to do
-> > > one-shot alternative functions, which probably would be higher
-> > > value than immediate data values.
-> > 
-> > Sounds tempting. Things like the CONFIG_SECURITY hookery could use it?
-> > 
-> > But ... since it's patched under stopmachine, is there any reason why 
-> > this wouldnt work?
-> > 
+> > The patch attempts to keep hardware running before suspend and run
+> > hardware re-initialization after resume. Maybe simpler approach is
+> > possible.
 > 
-> stopmachine is fine.
+> The patch doesn't apply any more and seems like a rather hacky thing to do.
 > 
-> more aggressive tricks are rather dicey.
-> 
-> (cross modifying code that's being executed in ring 0 is ... not
-> something CPU designers had in mind)
-> 
+> It appears that you have specific serial hardware which doesn't resume
+> correctly?  If so, that's a bug, so how about we start with a bug
+> report/description?
 
-Then, following your advice, kprobes should be re-designed to do a
-stop_machine around the int3 breakpoint insertion ? And gdb
-should be stopping all threads of a target process before inserting a
-breakpoint. Therefore, I do not seem to be the only one confused about
-Intel statement on this issue.
+It's something that I did point out when the no_console_suspend patch
+appeared, but I was overruled/ignored.
 
-Mathieu
+The problem is that on ARM hardware, there is no BIOS to re-initialize
+hardware.  The kernel has to do restore the entire system hardware
+state upon resume.  Unfortunately, no_console_suspend not only prevents
+the console from being suspended but _also_ resumed.
 
-> -- 
-> Arjan van de Ven 	Intel Open Source Technology Centre
-> For development, discussion and tips for power savings, 
-> visit http://www.lesswatts.org
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The result of that is the console UART is left in a totally uninitialized
+state.
