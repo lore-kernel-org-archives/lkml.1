@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZIYXCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592AbZIYXI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZIYXCq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 19:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZIYXCp
+	id S1752592AbZIYXI7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 19:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbZIYXI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 19:02:45 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:31973 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbZIYXCo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 19:02:44 -0400
-Message-ID: <4ABD4C28.9070202@oracle.com>
-Date: Fri, 25 Sep 2009 16:03:04 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com
-Subject: [PATCH -next] drbd: trace depends on TRACING
-References: <20090925133830.1ba29584.sfr@canb.auug.org.au>
-In-Reply-To: <20090925133830.1ba29584.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Sep 2009 19:08:58 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:56434 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751750AbZIYXI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 19:08:58 -0400
+X-IronPort-AV: E=Sophos;i="4.44,453,1249282800"; 
+   d="scan'208";a="249217110"
+Subject: Re: NFS problem with past 2.6.31 git tree
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <c4e36d110909251246s6af618e8n663afe2b66c4cd5d@mail.gmail.com>
+References: <c4e36d110909250812g74e049b7u39566d189970d77e@mail.gmail.com>
+	 <1253892426.31072.37.camel@heimdal.trondhjem.org>
+	 <c4e36d110909251246s6af618e8n663afe2b66c4cd5d@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt016.oracle.com [141.146.116.25]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4ABD4BE9.001A:SCFSTAT5015188,ss=1,fgs=0
+Organization: NetApp
+Date: Fri, 25 Sep 2009 19:08:12 -0400
+Message-Id: <1253920093.3549.25.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-OriginalArrivalTime: 25 Sep 2009 23:09:02.0063 (UTC) FILETIME=[2BB017F0:01CA3E35]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri, 2009-09-25 at 21:46 +0200, Zdenek Kabelac wrote:
+> Working version: (kernel 2.6.31 or current git with reverted NFS patch)
+> 
+> 22 12 0:17 / /misc rw,relatime - autofs automount(pid1720)
+> rw,fd=4,pgrp=1720,timeout=300,minproto=2,maxproto=4,indirect
+> 
+> 24 22 0:19 / /misc/kabi rw,relatime - nfs IP:/home/kabi/export
+> rw,vers=3,rsize=524288,wsize=524288,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=IP,mountvers=3,mountproto=tcp,addr=IP
+> 
+> 
+> Nonworking version:
+> 
+> 22 12 0:17 / /misc rw,relatime - autofs automount(pid1704)
+> rw,fd=4,pgrp=1704,timeout=300,minproto=2,maxproto=4,indirect
+> 
+> 24 22 0:19 / /misc/kabi rw,relatime - nfs IP:/home/kabi/export
+> rw,vers=2,rsize=8192,wsize=8192,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=IP,mountvers=3,mountproto=tcp,addr=IP
+> 
+> 
+> 
+> Looks like vers=2  != vers=3   and rsize/wsize - which is also set by
+> the kernel itself to those lower values.
+> (i.e. my /etc/init.d/autofs doesn't modify localoptions - of course I
+> could use this to set 8192 wsize and rsize for my working kernel)
 
-DRBD_TRACE should depend on TRACING.
-It's also possible that TRACEPOINTS should depend on TRACING.
 
-arch/x86/built-in.o: In function `default_idle':
-(.text+0x145a1): undefined reference to `__tracepoint_power_start'
-arch/x86/built-in.o: In function `default_idle':
-(.text+0x145d4): undefined reference to `__tracepoint_power_start'
-arch/x86/built-in.o: In function `mwait_idle_with_hints':
-(.text+0x1583d): undefined reference to `__tracepoint_power_start'
-arch/x86/built-in.o: In function `mwait_idle_with_hints':
-(.text+0x15870): undefined reference to `__tracepoint_power_start'
-arch/x86/built-in.o: In function `mwait_idle':
-process.c:(.text+0x15b92): undefined reference to `__tracepoint_power_start'
-arch/x86/built-in.o:process.c:(.text+0x15bbe): more undefined references to `__tracepoint_power_start' follow
-arch/x86/built-in.o: In function `poll_idle':
-process.c:(.text+0x160bd): undefined reference to `__tracepoint_power_end'
-process.c:(.text+0x160e9): undefined reference to `__tracepoint_power_end'
-drivers/built-in.o: In function `cpuidle_idle_call':
-cpuidle.c:(.text+0x517f16): undefined reference to `__tracepoint_power_end'
-cpuidle.c:(.text+0x517f49): undefined reference to `__tracepoint_power_end'
+Thanks for the report! I'll take a look at this over the weekend...
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/block/drbd/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Cheers
+  Trond
 
---- linux-next-20090925.orig/drivers/block/drbd/Kconfig
-+++ linux-next-20090925/drivers/block/drbd/Kconfig
-@@ -40,7 +40,7 @@ config BLK_DEV_DRBD
- 
- config DRBD_TRACE
- 	tristate "DRBD tracing"
--	depends on BLK_DEV_DRBD
-+	depends on BLK_DEV_DRBD && TRACING
- 	select TRACEPOINTS
- 	default n
- 	help
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
