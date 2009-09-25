@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbZIYP6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbZIYQIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753161AbZIYP6d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 11:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbZIYP6c
+	id S1753418AbZIYQIk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 12:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZIYQIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 11:58:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:16015 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753110AbZIYP6b (ORCPT
+	Fri, 25 Sep 2009 12:08:38 -0400
+Received: from mail-yx0-f173.google.com ([209.85.210.173]:43052 "EHLO
+	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbZIYQIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 11:58:31 -0400
+	Fri, 25 Sep 2009 12:08:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:message-id:x-mailer:mime-version:content-type
-         :content-transfer-encoding;
-        b=rmt1OtmDQX2pwc/zkr6zc6pBue4T1tyiP295vVvQZf6753Po1rXP+ePEcLHTyclY9y
-         4bqW1hvnCjx4/sVtJWrrPA4TXWC51Gq9XCNq3L0UsgQw55hbateUupmqbg1PBo4V2MHp
-         4itKSznuOXll23ZAnOOowH5GmlZeCzxOsLyEw=
-From: =?UTF-8?q?Diego=20Elio=20=27Flameeyes=27=20Petten=C3=B2?= 
-	<flameeyes@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix build with KALLSYMS disabled.
-Date: Fri, 25 Sep 2009 17:58:32 +0200
-Message-Id: <1253894312-17663-1-git-send-email-flameeyes@gmail.com>
-X-Mailer: git-send-email 1.6.5.rc1
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Hx+0NkxJQiSuodzXYOu0xuR3fyWoPpZLyyImAEGr3CjUUXcawG7fvnCBVH57IsXtiy
+         NOporwHa7Jeg4uTVmAcavTtME3RZRhxvF0T9WHodBtrbMd3ozf75Vu7cvSFbvAOFn5Nm
+         IUHmsEKOarA9Cy0uluDg1fQXY8VQX+PgXwFtU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <4ABCE72D.5040001@xenotime.net>
+References: <b6a2187b0909240624u2821a312ub6d02df21d552248@mail.gmail.com>
+	 <20090924160136.44e31ad0@lxorguk.ukuu.org.uk>
+	 <b6a2187b0909240923t4e8d61f4g6d82b7f9f9bf621b@mail.gmail.com>
+	 <20090925115636.5b4b8aca@linux.intel.com>
+	 <b6a2187b0909250835g1b72037er13b86bf762fd5e37@mail.gmail.com>
+	 <20090925164747.55dab000@lxorguk.ukuu.org.uk>
+	 <4ABCE72D.5040001@xenotime.net>
+Date: Sat, 26 Sep 2009 00:00:36 +0800
+Message-ID: <b6a2187b0909250900n7922f606w8b99f042b0a6f441@mail.gmail.com>
+Subject: Re: linux-2.6.31 INIT: open(/dev/console): Input/output error (due to 
+	commit b50989dc444599c8b21edc23536fc305f4e9b7d5)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With KALLSYMS disabled, but some debug features enabled, build will fail
-because the layout_symtab function uses the wrong type for ELF headers, and
-some variables are not declared. Fix that.
+On Fri, Sep 25, 2009 at 11:52 PM, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> Alan Cox wrote:
+>>> Is this going into Linus's branch soon? Otherwise, please kindly post
+>>> the full patch so that I can test it instead of pulling 400MB from
+>>> Andrew's tree.
+>>
+>> I don't have Andrews tty patches here either sorry but I thought he kept
+>> them broken out on kernel.org ?
+>> --
+>
+> http://userweb.kernel.org/~akpm/mmotm/
+> see the broken-out/ subdir.
 
-Signed-off-by: Diego Elio 'Flameeyes' Pettenò <flameeyes@gmail.com>
----
- kernel/module.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+I see. But that patch is not there. Did find it on google.
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 5a29397..8dc6017 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1992,7 +1992,7 @@ static inline unsigned long layout_symtab(struct module *mod,
- 					  Elf_Shdr *sechdrs,
- 					  unsigned int symindex,
- 					  unsigned int strindex,
--					  const Elf_Hdr *hdr,
-+					  const Elf_Ehdr *hdr,
- 					  const char *secstrings,
- 					  unsigned long *pstroffs,
- 					  unsigned long *strmap)
-@@ -2081,9 +2081,7 @@ static noinline struct module *load_module(void __user *umod,
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
--#ifdef CONFIG_KALLSYMS
- 	unsigned long symoffs, stroffs, *strmap;
--#endif
- 	mm_segment_t old_fs;
- 
- 	DEBUGP("load_module: umod=%p, len=%lu, uargs=%p\n",
--- 
-1.6.5.rc1
+http://www.spinics.net/lists/mm-commits/msg71772.html
 
+So, I'll test it now.
+
+Thanks,
+Jeff
