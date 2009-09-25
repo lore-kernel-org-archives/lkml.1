@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbZIYHgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZIYHgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752693AbZIYHgm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 03:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZIYHgl
+	id S1752637AbZIYHgf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 03:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZIYHge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 03:36:41 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55878 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752659AbZIYHgh (ORCPT
+	Fri, 25 Sep 2009 03:36:34 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:9133 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbZIYHgd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 03:36:37 -0400
-Date: Fri, 25 Sep 2009 08:36:17 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stanislav Brabec <utx@penguin.cz>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] serial-core: resume serial hardware with
-	no_console_suspend
-Message-ID: <20090925073617.GA5856@n2100.arm.linux.org.uk>
-References: <1253021938.6597.16.camel@hammer.suse.cz> <20090924170503.37cbe4ed.akpm@linux-foundation.org>
+	Fri, 25 Sep 2009 03:36:33 -0400
+From: Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: "James.Bottomley@suse.de" <James.Bottomley@suse.de>,
+       "linux-scsi@vger.kernel.org Mailing List" 
+	<linux-scsi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+Date: Fri, 25 Sep 2009 00:36:36 -0700
+Subject: Re: [PATCH 4/5] SCSI: qla2xxx, fix NULL-ptr dereference
+Thread-Topic: [PATCH 4/5] SCSI: qla2xxx, fix NULL-ptr dereference
+Thread-Index: Aco9stJPAfbeUvsrSZGZ0+ehyx/eTw==
+Message-ID: <3B8522E6-D391-4057-9F9D-84FC1019B337@qlogic.com>
+References: <1253715335-6723-1-git-send-email-jirislaby@gmail.com>
+ <1253715335-6723-4-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1253715335-6723-4-git-send-email-jirislaby@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924170503.37cbe4ed.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 25 Sep 2009 07:35:58.0220 (UTC) FILETIME=[D2B794C0:01CA3DB2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 05:05:03PM -0700, Andrew Morton wrote:
-> On Tue, 15 Sep 2009 15:38:58 +0200
-> Stanislav Brabec <utx@penguin.cz> wrote:
-> 
-> > Hardware may need re-initialization to get serial port working after
-> > resume. It does not happen with no_console_suspend. Attached patch
-> > attempts to fix it.
-> > 
-> > The patch attempts to keep hardware running before suspend and run
-> > hardware re-initialization after resume. Maybe simpler approach is
-> > possible.
-> 
-> The patch doesn't apply any more and seems like a rather hacky thing to do.
-> 
-> It appears that you have specific serial hardware which doesn't resume
-> correctly?  If so, that's a bug, so how about we start with a bug
-> report/description?
 
-It's something that I did point out when the no_console_suspend patch
-appeared, but I was overruled/ignored.
+On Sep 23, 2009, at 7:15 AM, Jiri Slaby wrote:
 
-The problem is that on ARM hardware, there is no BIOS to re-initialize
-hardware.  The kernel has to do restore the entire system hardware
-state upon resume.  Unfortunately, no_console_suspend not only prevents
-the console from being suspended but _also_ resumed.
+> Stanse found a NULL-ptr dereference on one fail path in
+> qla25xx_create_rsp_que. It jumps to que_failed label and
+> qla25xx_free_rsp_que there dereferences rsp which is NULL.
+>
+> Return with ENOMEM directly instead.
+>
+Thanks for pointing it out. There is another code path (create_req_que)
+where the same bug exists. I will send a patch that takes care of the  
+both.
 
-The result of that is the console UART is left in a totally uninitialized
-state.
+-Anirban
