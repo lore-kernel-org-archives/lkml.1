@@ -1,168 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZIYSDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbZIYSSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752118AbZIYSDc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 14:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZIYSDb
+	id S1752050AbZIYSSg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 14:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZIYSSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 14:03:31 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40406 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbZIYSDa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 14:03:30 -0400
-Date: Fri, 25 Sep 2009 21:03:32 +0300 (EEST)
-From: "=?ISO-8859-15?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@melkinkari.cs.Helsinki.FI
-To: Joe Cao <caoco2002@yahoo.com>
-cc: Ray Lee <ray-lk@madrabbit.org>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: TCP stack bug related to F-RTO?
-In-Reply-To: <773030.8168.qm@web63404.mail.re1.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0909252049260.1854@melkinkari.cs.Helsinki.FI>
-References: <773030.8168.qm@web63404.mail.re1.yahoo.com>
+	Fri, 25 Sep 2009 14:18:35 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:34453 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751585AbZIYSSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 14:18:35 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH tracing/kprobes 0/3] tracing/kprobes: kprobe-tracer updates
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Fri, 25 Sep 2009 11:19:52 -0700
+Message-ID: <20090925181952.10157.9975.stgit@omoto>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696243445-2077347718-1253901812=:1854"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Frederic,
 
----696243445-2077347718-1253901812=:1854
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Here is a few updates for kprobe-tracer which fix reported bugs and
+is for catching up the latest ftrace.
 
-On Fri, 25 Sep 2009, Joe Cao wrote:
+ - Use dynamic percpu profiling buffer patch is for catching up
+   the latest ftrace change.
+ - Checking the result of create_event_dir() patch improves ftrace
+   code pointed by Li Zefan (thanks!).
+ - Add VIA instructions to x86 insn decoder patch fixes decoding
+   bug reported by Ingo Molnar (thanks!).
 
-> Thanks for the reply!  Do you happen to know which patch fixed the 
-> problem?
+Soon after this series, I'll send perf-kprobe patch series.
 
-You can find those patches from the stable queue git tree. I gave you hint 
-from what release to look from in the last mail. However, as 2.6.24 is 
-anyway obsolete my recommendation is that you should probably consider 
-upgrading to fix all the other bugs that have been found since 2.6.24 was 
-obsoleted.
+Thank you,
 
-> Is there a bug tracking system for linux kernel?
+---
 
-Nothing that knows everything about everything.
+Masami Hiramatsu (3):
+      tracing/ftrace: Fix to check create_event_dir() when adding new events
+      x86: Add VIA processor instructions
+      tracing/kprobes: Use global event profile buffer in kprobe tracer
 
-> I studied the FRTO code in latest kernel 2.6.31.  It seems the problem 
-> is still there:  
->
-> 1. Every time a RTO fires, because tcp_is_sackfrto(tp) returns 1, 
-> tcp_use_frto() returns true.  And the server tcp enters FRTO.
-> 2. After the head of write queue is retransmitted, two new data packets 
-> are transmitted, the server receives two dup-ACKs.  That will make the 
-> TCP enter tcp_enter_frto_loss(), however, that only rests ssthresh and 
-> some other fields.
 
-Perhaps those other fields are far more important than you think... :-)
-...Some retransmission would happen here as step 3.
-
-> 3. After another longer RTO fires, because tcp_is_sackfrto(tp) returns 
-> 1, tcp_use_frto() again returns true.  The stack enters FRTO again.
-> 4. The above repeats and the stack couldn't retransmits the lost packets 
-> faster.
-> 
-> Is my understanding above correct?
-
-...No. All magic that happens in tcp_enter_frto_loss should be enough to 
-really do more than a single retransmission (that is, in any other than 
-2.6.24 series kernel). There was an unfortunate bug in this area in 2.6.24 
-which basically undoed the effect of correct actions tcp_enter_frto_loss 
-did which effectively prevented tcp_xmit_retransmit_queue from doing its 
-part.
+ arch/x86/lib/x86-opcode-map.txt |    8 ++-
+ kernel/trace/trace_events.c     |   29 +++++++---
+ kernel/trace/trace_kprobe.c     |  115 +++++++++++++++++++++++++--------------
+ 3 files changed, 101 insertions(+), 51 deletions(-)
 
 -- 
- i.
+Masami Hiramatsu
 
---- On Fri, 9/25/09, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-> From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> Subject: Re: TCP stack bug related to F-RTO?
-> To: "Ray Lee" <ray-lk@madrabbit.org>
-> Cc: "Joe Cao" <caoco2002@yahoo.com>, "Netdev" <netdev@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>, jcaoco2002@yahoo.com
-> Date: Friday, September 25, 2009, 6:09 AM
-> On Thu, 24 Sep 2009, Ray Lee wrote:
-> 
-> > [adding netdev cc:]
-> > 
-> > On Thu, Sep 24, 2009 at 10:43 AM, Joe Cao <caoco2002@yahoo.com>
-> wrote:
-> > >
-> > > Hello,
-> > >
-> > > I have found the following behavior with
-> different versions of linux 
-> > > kernel. The attached pcap trace is collected with
-> server 
-> > > (192.168.0.13) running 2.6.24 and shows the
-> problem. Basically the 
-> > > behavior is like this: 
-> > >
-> > > 1. The client opens up a big window,
-> > > 2. the server sends 19 packets in a row (pkt #14-
-> #32 in the trace), but all of them are dropped due to some
-> congestion.
-> > > 3. The server hits RTO and retransmits pkt #14 in
-> #33
-> > > 4. The client immediately acks #33 (=#14), and
-> the server (seems like to enter F-RTO) expends the window
-> and sends *NEW* pkt #35 & #36.=A0 Timeoute is doubled to
-> 2*RTO; The client immediately sends two Dup-ack to #35 and
-> #36.
-> > > 5. after 2*RTO, pkt #15 is retransmitted in #39.
-> > > 6. The client immediately acks #39 (=#15) in #40,
-> and the server continues to expand the window and sends two
-> *NEW* pkt #41 & #42. Now the timeoute is doubled to 4
-> *RTO.
-> > > 8. After 4*RTO timeout, #16 is retransmitted.
-> > > 9....
-> > > 10. The above steps repeats for retransmitting
-> pkt #16-#32 and each time the timeout is doubled.
-> > > 11. It takes a long long time to retransmit all
-> the lost packets and before that is done, the client sends a
-> RST because of timeout.
-> > >
-> > > The above behavior looks like F-RTO is in effect.
->  And there seems to 
-> > > be a bug in the TCP's congestion control and
-> retransmission algorithm. 
-> > > Why doesn't the TCP on server (running 2.6.24)
-> enter the slow start? 
-> > > Why should the server take that long to recover
-> from a short period 
-> > > of packet loss?
-> > >
-> > > Has anyone else noticed similar problem before?
->  If my analysis was 
-> > > wrong, can anyone gives me some pointers to
-> what's really wrong and 
-> > > how to fix it?
-> 
-> Yes, 2.6.24 is an obsoleted version with known wrongs in
-> FRTO 
-> implementation. Fixes never when to 2.6.24 stable series as
-> it was 
-> _already_ obsoleted when the problems where reported and
-> found. The 
-> correct fixes may be found from 2.6.25.7 (.7 iirc) and are
-> included from 
-> 2.6.26 onward too.
-> 
-> Just in case you happen to run ubuntu based kernel from
-> that era (of 
-> course you should be reporting the bug here then...), a
-> word of warning: 
-> it seemed nearly impossible for them to get a simple thing
-> like that 
-> fixed, I haven't been looking if they'd eventually come to
-> some sensible 
-> conclusion in that matter or is it still unresolved (or
-> e.g., closed 
-> without real resolution).
-
-
----696243445-2077347718-1253901812=:1854--
+e-mail: mhiramat@redhat.com
