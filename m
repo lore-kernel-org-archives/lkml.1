@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbZIYUw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbZIYVAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbZIYUw0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 16:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZIYUw0
+	id S1752431AbZIYVAX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 17:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZIYVAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 16:52:26 -0400
-Received: from [195.41.46.236] ([195.41.46.236]:58878 "EHLO pfepb.post.tele.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752352AbZIYUw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 16:52:26 -0400
-Date: Fri, 25 Sep 2009 22:52:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [RFC Patch] kbuild: remove -Wdeclaration-after-statement
-Message-ID: <20090925205219.GA3481@merkur.ravnborg.org>
-References: <20090923094034.23512.90809.sendpatchset@localhost.localdomain> <20090923105157.GA31281@merkur.ravnborg.org> <4ABD25AC.30705@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ABD25AC.30705@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 25 Sep 2009 17:00:22 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:43276 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbZIYVAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 17:00:22 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [RFC][PATCH] Privilege dropping security module
+Date: Fri, 25 Sep 2009 21:00:26 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <h9jb1a$url$2@taverner.cs.berkeley.edu>
+References: <20090923005644.GA28244@c.hsd1.tn.comcast.net> <20090923213109.GA936@c.hsd1.tn.comcast.net> <4ABB9D6D.8000607@schaufler-ca.com> <20090925100630.GD10098@c.hsd1.tn.comcast.net>
+Reply-To: daw-news@cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1253912426 31605 128.32.168.222 (25 Sep 2009 21:00:26 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Fri, 25 Sep 2009 21:00:26 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 01:18:52PM -0700, Randy Dunlap wrote:
-> Sam Ravnborg wrote:
-> > On Wed, Sep 23, 2009 at 05:38:01AM -0400, Amerigo Wang wrote:
-> >> I got lots of "ISO C90 forbids mixed declarations and code" warnings
-> >> during compile today's kernel.
-> >>
-> >> I think we can remove the gcc option '-Wdeclaration-after-statement'
-> >> now, since we already have C99 for 10 years. :)
-> > 
-> > This is a matter of style more than what C99 allows.
-> > Kernel style is to fobid this(*) so we keep the warning.
-> 
-> Agreed.
-> 
-> > (*) Based on reading several threads where this has
-> > been mentioned - I have no specific references to CodingStyle.
-> 
-> I've avoided making updates to CodingStyle lately.
-> Is this one needed?
-No - CodingStyle should be general stuff.
+Andy Spencer  wrote:
+>static ssize_t dpriv_stage_write(struct file *filp, const char *ubuffer,
+>		size_t length, loff_t *off)
+>{
+>	struct file *file;
+>	int err, rval, perm;
+>	char *kbuffer, *perm_str, *path_str;
+>	int perm_start, perm_end, path_start;
+>
+>	if (!(kbuffer = kzalloc(length+1, GFP_KERNEL)))
+>		return -ENOMEM;
+>
+>	if (copy_from_user(kbuffer, ubuffer, length))
+>		goto fail_fault;
 
-	Sam
+Can 'length+1' overflow?
+(Can the caller arrange to pass MAX_SIZE_T as the length parameter?
+If yes, that's a vulnerability.)
+I haven't checked how dpriv_stage_write() is called, to see whether
+this is possible.
+
+>	/* Parse input */
+>	path_start = -1;
+>	sscanf(kbuffer, " %n%*s%n %n", &perm_start, &perm_end, &path_start);
+>	if (path_start == -1)
+>		goto fail_inval;
+>	perm_str = kbuffer+perm_start;
+>	kbuffer[perm_end] = '\0';
+>	path_str = kbuffer+path_start;
+
+What if kbuffer isn't '\0'-terminated?  Won't this read past the end
+of kbuffer?
+
+Are you certain that perm_end and path_start will be within bounds?
+If the user supplies a sufficiently large string (more than MAX_INT
+characters long), could perm_end or path_start be negative?
+
+>	rval = length;
+
+Converts size_t to ssize_t.
