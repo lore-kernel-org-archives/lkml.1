@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZIYMsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbZIYNJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbZIYMsS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 08:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZIYMsQ
+	id S1752825AbZIYNJh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 09:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZIYNJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 08:48:16 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:65514 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752612AbZIYMsP (ORCPT
+	Fri, 25 Sep 2009 09:09:36 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:60281 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752654AbZIYNJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 08:48:15 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Alexander Huemer <alexander.huemer@sbg.ac.at>
-Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
-Date: Fri, 25 Sep 2009 14:48:16 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, stable@kernel.org
-References: <4ABBB8C2.2080901@sbg.ac.at> <200909251424.25334.elendil@planet.nl> <4ABCB732.9050609@sbg.ac.at>
-In-Reply-To: <4ABCB732.9050609@sbg.ac.at>
+	Fri, 25 Sep 2009 09:09:35 -0400
+Date: Fri, 25 Sep 2009 16:09:38 +0300 (EEST)
+From: "=?ISO-8859-15?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wel-95.cs.helsinki.fi
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: Joe Cao <caoco2002@yahoo.com>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, jcaoco2002@yahoo.com
+Subject: Re: TCP stack bug related to F-RTO?
+In-Reply-To: <2c0942db0909241639vafd348eia19436d18b182d60@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0909251556130.13543@wel-95.cs.helsinki.fi>
+References: <427999.33681.qm@web63406.mail.re1.yahoo.com> <2c0942db0909241639vafd348eia19436d18b182d60@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909251448.17671.elendil@planet.nl>
-X-OriginalArrivalTime: 25 Sep 2009 12:48:17.0794 (UTC) FILETIME=[745FA620:01CA3DDE]
+Content-Type: MULTIPART/MIXED; boundary="8323329-938466288-1253883977=:13543"
+Content-ID: <alpine.DEB.2.00.0909251607420.13543@wel-95.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 September 2009, Alexander Huemer wrote:
-> > So with the revert already in mainline for .32, the only thing left is
-> > for that to get included in stable updates for .30 and .31.
->
-> please see the last comment in [1].
-> can i do anything else to help ?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> [1] http://bugzilla.kernel.org/show_bug.cgi?id=14124
+--8323329-938466288-1253883977=:13543
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.DEB.2.00.0909251607421.13543@wel-95.cs.helsinki.fi>
 
-Yes, adding that comment was excellent. I also added the relevant people
-in the CC of my previous mail, so it should get taken care of now. Unless 
-they have additional questions no further action from you should be 
-needed.
+On Thu, 24 Sep 2009, Ray Lee wrote:
+
+> [adding netdev cc:]
+> 
+> On Thu, Sep 24, 2009 at 10:43 AM, Joe Cao <caoco2002@yahoo.com> wrote:
+> >
+> > Hello,
+> >
+> > I have found the following behavior with different versions of linux 
+> > kernel. The attached pcap trace is collected with server 
+> > (192.168.0.13) running 2.6.24 and shows the problem. Basically the 
+> > behavior is like this: 
+> >
+> > 1. The client opens up a big window,
+> > 2. the server sends 19 packets in a row (pkt #14- #32 in the trace), but all of them are dropped due to some congestion.
+> > 3. The server hits RTO and retransmits pkt #14 in #33
+> > 4. The client immediately acks #33 (=#14), and the server (seems like to enter F-RTO) expends the window and sends *NEW* pkt #35 & #36.=A0 Timeoute is doubled to 2*RTO; The client immediately sends two Dup-ack to #35 and #36.
+> > 5. after 2*RTO, pkt #15 is retransmitted in #39.
+> > 6. The client immediately acks #39 (=#15) in #40, and the server continues to expand the window and sends two *NEW* pkt #41 & #42. Now the timeoute is doubled to 4 *RTO.
+> > 8. After 4*RTO timeout, #16 is retransmitted.
+> > 9....
+> > 10. The above steps repeats for retransmitting pkt #16-#32 and each time the timeout is doubled.
+> > 11. It takes a long long time to retransmit all the lost packets and before that is done, the client sends a RST because of timeout.
+> >
+> > The above behavior looks like F-RTO is in effect.  And there seems to 
+> > be a bug in the TCP's congestion control and retransmission algorithm. 
+> > Why doesn't the TCP on server (running 2.6.24) enter the slow start? 
+> > Why should the server take that long to recover from a short period 
+> > of packet loss?
+> >
+> > Has anyone else noticed similar problem before?  If my analysis was 
+> > wrong, can anyone gives me some pointers to what's really wrong and 
+> > how to fix it?
+
+Yes, 2.6.24 is an obsoleted version with known wrongs in FRTO 
+implementation. Fixes never when to 2.6.24 stable series as it was 
+_already_ obsoleted when the problems where reported and found. The 
+correct fixes may be found from 2.6.25.7 (.7 iirc) and are included from 
+2.6.26 onward too.
+
+Just in case you happen to run ubuntu based kernel from that era (of 
+course you should be reporting the bug here then...), a word of warning: 
+it seemed nearly impossible for them to get a simple thing like that 
+fixed, I haven't been looking if they'd eventually come to some sensible 
+conclusion in that matter or is it still unresolved (or e.g., closed 
+without real resolution).
+
+-- 
+ i.
+--8323329-938466288-1253883977=:13543--
