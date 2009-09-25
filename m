@@ -1,210 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbZIYG0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbZIYG17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbZIYG0w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 02:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZIYG0v
+	id S1752120AbZIYG17 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 02:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZIYG15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 02:26:51 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52153 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbZIYG0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 02:26:50 -0400
-Message-ID: <4ABC6222.9090103@cn.fujitsu.com>
-Date: Fri, 25 Sep 2009 14:24:34 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 15/28] io-controller: Allow CFQ specific extra preemptions
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <1253820332-10246-16-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1253820332-10246-16-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Sep 2009 02:27:57 -0400
+Received: from mail-yx0-f173.google.com ([209.85.210.173]:62410 "EHLO
+	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbZIYG14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 02:27:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=fz2mNgd/ZqY/6kcXtf0Sw/i0BjLi/q1Z5pMsn3hv25/6jR7yQ2sayOBpHC6kkEZQqQ
+         gDlC4DfOVVK+ZbqrtXjDvjcWwwI1iivOV4nzN/uNia4tBpQ3z/y+b1fWSXcCytThxctH
+         VnWm2uGn7valZaVjmIYiYjwV+oFu1rdmOlG7w=
+Date: Fri, 25 Sep 2009 06:27:34 +0000
+From: Andy Spencer <andy753421@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix %*s%n in sscanf
+Message-ID: <20090925062734.GA9318@c.hsd1.tn.comcast.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_c-9434-1253860078-0001-2"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> o CFQ allows a reader preemting a writer. So far we allow this with-in group
->   but not across groups. But there seems to be following special case where
->   this preemption might make sense.
-> 
-> 			root
-> 			/  \
-> 		       R   Group
-> 			     |
-> 			     W
-> 
->   Now here reader should be able to preempt the writer. Think of there are
->   10 groups each running a writer and an admin trying to do "ls" and he
->   experiences suddenly high latencies for ls.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-  Hi Vivek, 
+--=_c-9434-1253860078-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-  This preemption might be unfair to the readers who stay in the same group with
-  writer. Consider the following:
+When using %*s, sscanf should honor conversion specifiers immediately following
+the %*s. For example, the following code should find the position of the end of
+the string "hello".
 
-                     root
-                     /  \
-                    R1  Group
-                        /  \
-                       R2   W
+  int end;
+  char buf[] = "hello    world";
+  sscanf(buf, "%*s%n", &end);
+  printf("%d\n", end);
 
-  Say W is running and late preemption is enabled, then a request goes into R1,
-  R1 will preempt W immediately regardless of R2. Now R2 don't have a chance to
-  get scheduled even if R1 has a very high vdisktime. It seems not so fair to R2.
-  So I suggest the number of readers in group should be taken into account when
-  making this preemption decision. R1 should only preempts W when there are not 
-  any readers in that group.
+Ideally, sscanf would advance the fmt and str pointers the same as it would
+without the *, but the code for that is rather complicated and is not included
+in the patch.
 
-  Thanks,
-  Gui Jianfeng
+Please CC me in replies.
 
-> 
->   Same is true for meta data requests. If there is a meta data request and
->   a reader is running inside a sibling group, preemption will be allowed.
->   Note, following is not allowed.
-> 			root
-> 			/  \
-> 	            group1 group2
-> 		      |      |
-> 	              R	     W
-> 
->   Here reader can't preempt writer.
-> 
-> o Put meta data requesting queues at the front of the service tree. Generally
->   such queues will preempt currently running queue but not in following case.
-> 			root
-> 			/  \
-> 	            group1 group2
-> 		      |     / \
-> 	              R1   R3  R2 (meta data)
-> 
->  Here R2 is having a meta data request but it will not preempt R1. We need
->  to make sure that R2 gets queued ahead of R3 so taht once group2 gets
->  going, we first service R2 and then R3 and not vice versa.
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
->  block/elevator-fq.c |   47 +++++++++++++++++++++++++++++++++++++++++++++--
->  block/elevator-fq.h |    3 +++
->  2 files changed, 48 insertions(+), 2 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 25beaf7..8ff8a19 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -701,6 +701,7 @@ static void enqueue_io_entity(struct io_entity *entity)
->  	struct io_service_tree *st;
->  	struct io_sched_data *sd = io_entity_sched_data(entity);
->  	struct io_queue *ioq = ioq_of(entity);
-> +	int add_front = 0;
->  
->  	if (entity->on_idle_st)
->  		dequeue_io_entity_idle(entity);
-> @@ -716,12 +717,22 @@ static void enqueue_io_entity(struct io_entity *entity)
->  	st = entity->st;
->  	st->nr_active++;
->  	sd->nr_active++;
-> +
->  	/* Keep a track of how many sync queues are backlogged on this group */
->  	if (ioq && elv_ioq_sync(ioq) && !elv_ioq_class_idle(ioq))
->  		sd->nr_sync++;
->  	entity->on_st = 1;
-> -	place_entity(st, entity, 0);
-> -	__enqueue_io_entity(st, entity, 0);
-> +
-> +	/*
-> +	 * If a meta data request is pending in this queue, put this
-> +	 * queue at the front so that it gets a chance to run first
-> +	 * as soon as the associated group becomes eligbile to run.
-> +	 */
-> +	if (ioq && ioq->meta_pending)
-> +		add_front = 1;
-> +
-> +	place_entity(st, entity, add_front);
-> +	__enqueue_io_entity(st, entity, add_front);
->  	debug_update_stats_enqueue(entity);
->  }
->  
-> @@ -2280,6 +2291,31 @@ static int elv_should_preempt(struct request_queue *q, struct io_queue *new_ioq,
->  		return 1;
->  
->  	/*
-> +	 * Allow some additional preemptions where a reader queue gets
-> +	 * backlogged and some writer queue is running under any of the
-> +	 * sibling groups.
-> +	 *
-> +	 * 		     root
-> +	 * 		     /  \
-> +	 * 		    R  group
-> +	 * 			 |
-> +	 * 			 W
-> +	 */
-> +
-> +	if (ioq_of(new_entity) == new_ioq  && iog_of(entity)) {
-> +		/* Let reader queue preempt writer in sibling group */
-> +		if (elv_ioq_sync(new_ioq) && !elv_ioq_sync(active_ioq))
-> +			return 1;
-> +		/*
-> +		 * So both queues are sync. Let the new request get disk time if
-> +		 * it's a metadata request and the current queue is doing
-> +		 * regular IO.
-> +		 */
-> +		if (new_ioq->meta_pending && !active_ioq->meta_pending)
-> +			return 1;
-> +	}
-> +
-> +	/*
->  	 * If both the queues belong to same group, check with io scheduler
->  	 * if it has additional criterion based on which it wants to
->  	 * preempt existing queue.
-> @@ -2335,6 +2371,8 @@ void elv_ioq_request_add(struct request_queue *q, struct request *rq)
->  	BUG_ON(!efqd);
->  	BUG_ON(!ioq);
->  	ioq->nr_queued++;
-> +	if (rq_is_meta(rq))
-> +		ioq->meta_pending++;
->  	elv_log_ioq(efqd, ioq, "add rq: rq_queued=%d", ioq->nr_queued);
->  
->  	if (!elv_ioq_busy(ioq))
-> @@ -2669,6 +2707,11 @@ void elv_ioq_request_removed(struct elevator_queue *e, struct request *rq)
->  	ioq = rq->ioq;
->  	BUG_ON(!ioq);
->  	ioq->nr_queued--;
-> +
-> +	if (rq_is_meta(rq)) {
-> +		WARN_ON(!ioq->meta_pending);
-> +		ioq->meta_pending--;
-> +	}
->  }
->  
->  /* A request got dispatched. Do the accounting. */
-> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-> index 2992d93..27ff5c4 100644
-> --- a/block/elevator-fq.h
-> +++ b/block/elevator-fq.h
-> @@ -100,6 +100,9 @@ struct io_queue {
->  
->  	/* Pointer to io scheduler's queue */
->  	void *sched_queue;
-> +
-> +	/* pending metadata requests */
-> +	int meta_pending;
->  };
->  
->  #ifdef CONFIG_GROUP_IOSCHED /* CONFIG_GROUP_IOSCHED */
 
--- 
+Signed-off-by: Andy Spencer <andy753421@gmail.com>
 
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 73a14b8..da2daf2 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -1766,7 +1766,7 @@ int vsscanf(const char * buf, const char * fmt, va_list args)
+ 		 * advance both strings to next white space
+ 		 */
+ 		if (*fmt == '*') {
+-			while (!isspace(*fmt) && *fmt)
++			while (!isspace(*fmt) && *fmt != '%' && *fmt)
+ 				fmt++;
+ 			while (!isspace(*str) && *str)
+ 				str++;
+
+--=_c-9434-1253860078-0001-2
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkq8Yu4ACgkQz1OYJ/s1XTDyeACfdPJ/LssxjxubsKbzpDsZ67aS
+UpEAoN85t8XYyr/84tdNmFpeiD7kRJNR
+=KqoF
+-----END PGP SIGNATURE-----
+
+--=_c-9434-1253860078-0001-2--
