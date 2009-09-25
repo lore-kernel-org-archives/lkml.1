@@ -1,67 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbZIYQch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751616AbZIYQpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753204AbZIYQch (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 12:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbZIYQcg
+	id S1751616AbZIYQpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 12:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbZIYQpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 12:32:36 -0400
-Received: from mail-px0-f189.google.com ([209.85.216.189]:44399 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753120AbZIYQcf (ORCPT
+	Fri, 25 Sep 2009 12:45:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44832 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbZIYQpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 12:32:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=mt71MBmOhZubiHMF1ui1lj8/gBoTpw1ZQwu9mmqB4d/2VkL1pm0J5pMwf3cD678XRw
-         N9sQWk4LshRcz1J72zK9bWEHDZgXqRztp1X+a0E7+1dVKFRqe4kLo0vTuezYTsPeme75
-         SMxNSKPF/lgXhZVtFhouar2QqPfc+TXrtvs+s=
-MIME-Version: 1.0
-In-Reply-To: <b6a2187b0909250900n7922f606w8b99f042b0a6f441@mail.gmail.com>
-References: <b6a2187b0909240624u2821a312ub6d02df21d552248@mail.gmail.com>
-	 <20090924160136.44e31ad0@lxorguk.ukuu.org.uk>
-	 <b6a2187b0909240923t4e8d61f4g6d82b7f9f9bf621b@mail.gmail.com>
-	 <20090925115636.5b4b8aca@linux.intel.com>
-	 <b6a2187b0909250835g1b72037er13b86bf762fd5e37@mail.gmail.com>
-	 <20090925164747.55dab000@lxorguk.ukuu.org.uk>
-	 <4ABCE72D.5040001@xenotime.net>
-	 <b6a2187b0909250900n7922f606w8b99f042b0a6f441@mail.gmail.com>
-Date: Sat, 26 Sep 2009 00:32:39 +0800
-Message-ID: <b6a2187b0909250932r140eca54y75b38634b853bb9@mail.gmail.com>
-Subject: Re: linux-2.6.31 INIT: open(/dev/console): Input/output error (due to 
-	commit b50989dc444599c8b21edc23536fc305f4e9b7d5)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Sep 2009 12:45:43 -0400
+Date: Fri, 25 Sep 2009 18:45:06 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Rusty Lynch <rusty.lynch@intel.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Vamsi Krishna S <vamsi_krishna@in.ibm.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nathan Sidwell <nathan@codesourcery.com>,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Anton Massoud <anton.massoud@ericsson.com>,
+       Richard J Moore <richardj_moore@uk.ibm.com>
+Subject: Re: Immediate values
+Message-ID: <20090925184506.322a9a9a@infradead.org>
+In-Reply-To: <4ABCED94.4010804@zytor.com>
+References: <20090924191642.GA19225@elte.hu>
+	<20090924193422.GB2533@elte.hu>
+	<20090925085119.2b77ea04@infradead.org>
+	<20090925073512.GA10346@Krystal>
+	<20090925110206.50ab8a20@lxorguk.ukuu.org.uk>
+	<20090925121449.7bb27b61@infradead.org>
+	<4ABCED94.4010804@zytor.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 26, 2009 at 12:00 AM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> On Fri, Sep 25, 2009 at 11:52 PM, Randy Dunlap <rdunlap@xenotime.net> wrote:
->> Alan Cox wrote:
->>>> Is this going into Linus's branch soon? Otherwise, please kindly post
->>>> the full patch so that I can test it instead of pulling 400MB from
->>>> Andrew's tree.
->>> I don't have Andrews tty patches here either sorry but I thought he kept
->>> them broken out on kernel.org ?
->> http://userweb.kernel.org/~akpm/mmotm/
->> see the broken-out/ subdir.
->
-> I see. But that patch is not there. Did find it on google.
->
-> http://www.spinics.net/lists/mm-commits/msg71772.html
->
-> So, I'll test it now.
+On Fri, 25 Sep 2009 09:19:32 -0700
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-Alan, Randy,
+> Arjan van de Ven wrote:
+> > On Fri, 25 Sep 2009 11:02:06 +0100
+> > Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > 
+> >>> Then, following your advice, kprobes should be re-designed to do a
+> >>> stop_machine around the int3 breakpoint insertion ? And gdb
+> >>> should be stopping all threads of a target process before
+> >>> inserting a breakpoint. Therefore, I do not seem to be the only
+> >>> one confused about Intel statement on this issue.
+> >> There was considerable discussion abut this when the kprobe stuff
+> >> went in. If I remember rightly it was stated by someone @intel.com
+> >> then that int3 was ok (even though its not strictly documented as
+> >> such). The same is not true for all instructions on all x86
+> >> processors unfortunately.
+> > 
+> > specifically, using int3 *and then going back to the old value*.
+> > 
+> 
+> As I told Mathieu in person yesterday:
+> 
+> 1. We have no information if this is safe or not.  It is most
+> certainly not documented as safe, and trying to play language lawyer
+> with the errata text is pointless, as it's trying to interpret
+> something that isn't there.
+> 
+> 2. There are some reasons to believe there might be a safe technique 
+> somewhere in here (the one he described is a possibility, but not the 
+> only one.)
+> 
+> 3. Being able to patch code without stopping all cores has other
+> uses, and so spending some time doing legwork on it is probably worth
+> it.
+> 
+> 4. "Someone at Intel" isn't a reference... we need to track down
+> actual CPU architects with real names who can give us a thumbs up or
+> down.
 
-That patch works!
+and we need to talk to about 5 or so generations at least.
+We know whom to talk to, it just will take time
+(and first indication is frowned faces)
 
-Thanks,
-Jeff
+AMD will also do the same, and VIA (I think they have dual core/smp as
+well)
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
