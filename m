@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZIYDq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbZIYD6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752203AbZIYDq1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Sep 2009 23:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZIYDq1
+	id S1751467AbZIYD6z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Sep 2009 23:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZIYD6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Sep 2009 23:46:27 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:57711 "EHLO
+	Thu, 24 Sep 2009 23:58:54 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:38471 "EHLO
 	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbZIYDq0 (ORCPT
+	with ESMTP id S1750769AbZIYD6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Sep 2009 23:46:26 -0400
-Date: Fri, 25 Sep 2009 12:45:57 +0900
+	Thu, 24 Sep 2009 23:58:54 -0400
+Date: Fri, 25 Sep 2009 12:58:25 +0900
 From: Paul Mundt <lethal@linux-sh.org>
-To: Jan Beulich <jbeulich@novell.com>, Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] module: Fix up CONFIG_KALLSYMS=n build.
-Message-ID: <20090925034557.GA12810@linux-sh.org>
+To: David Woodhouse <David.Woodhouse@intel.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, Bryan Wu <cooloney@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] mtd/maps: gpio-addr-flash: Fix up the GENERIC_GPIO=n build.
+Message-ID: <20090925035825.GB12810@linux-sh.org>
 Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Jan Beulich <jbeulich@novell.com>,
-	Rusty Russell <rusty@rustcorp.com.au>,
+	David Woodhouse <David.Woodhouse@intel.com>,
+	Mike Frysinger <vapier@gentoo.org>, Bryan Wu <cooloney@kernel.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -29,71 +30,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Starting from commit 4a4962263f07d14660849ec134ee42b63e95ea9a
-"reduce symbol table for loaded modules (v2)", the kernel/module.c build
-is broken with CONFIG_KALLSYMS disabled.
+linux/gpio.h takes care of wrapping in to asm/gpio.h or defining a stubbed out
+interface. gpio-addr-flush unfortunately references asm/gpio.h directly and as
+a result blows up when CONFIG_GENERIC_GPIO is disabled.
 
-  CC      kernel/module.o
-kernel/module.c:1995: warning: type defaults to 'int' in declaration of 'Elf_Hdr'
-kernel/module.c:1995: error: expected ';', ',' or ')' before '*' token
-kernel/module.c: In function 'load_module':
-kernel/module.c:2203: error: 'strmap' undeclared (first use in this function)
-kernel/module.c:2203: error: (Each undeclared identifier is reported only once
-kernel/module.c:2203: error: for each function it appears in.)
-kernel/module.c:2239: error: 'symoffs' undeclared (first use in this function)
-kernel/module.c:2239: error: implicit declaration of function 'layout_symtab'
-kernel/module.c:2240: error: 'stroffs' undeclared (first use in this function)
-make[1]: *** [kernel/module.o] Error 1
-make: *** [kernel/module.o] Error 2
+  CC      drivers/mtd/maps/gpio-addr-flash.o
+In file included from /home/pmundt/devel/git/sh-2.6/arch/sh/include/asm/gpio.h:24,
+                 from drivers/mtd/maps/gpio-addr-flash.c:27:
+include/asm-generic/gpio.h: In function 'gpio_get_value_cansleep':
+include/asm-generic/gpio.h:170: error: implicit declaration of function 'gpio_get_value'
+include/asm-generic/gpio.h: In function 'gpio_set_value_cansleep':
+include/asm-generic/gpio.h:176: error: implicit declaration of function 'gpio_set_value'
+In file included from drivers/mtd/maps/gpio-addr-flash.c:27:
+/home/pmundt/devel/git/sh-2.6/arch/sh/include/asm/gpio.h: At top level:
+/home/pmundt/devel/git/sh-2.6/arch/sh/include/asm/gpio.h:131: error: field 'chip' has incomplete type
+drivers/mtd/maps/gpio-addr-flash.c: In function 'gpio_flash_probe':
+drivers/mtd/maps/gpio-addr-flash.c:232: error: implicit declaration of function 'gpio_request'
+drivers/mtd/maps/gpio-addr-flash.c:236: error: implicit declaration of function 'gpio_free'
+drivers/mtd/maps/gpio-addr-flash.c:240: error: implicit declaration of function 'gpio_direction_output'
+make[3]: *** [drivers/mtd/maps/gpio-addr-flash.o] Error 1
+make[2]: *** [drivers/mtd/maps] Error 2
+make[1]: *** [drivers/mtd] Error 2
+make: *** [drivers] Error 2
 
-There are three different issues:
-
-    - layout_symtab() takes a const Elf_Ehdr
-
-    - layout_symtab() needs to return a value
-
-    - symoffs/stroffs/strmap are referenced by the load_module() code
-      despite being ifdefed out, which seems unnecessary given the noop
-      behaviour of layout_symtab()/add_kallsyms() in the case of
-      CONFIG_KALLSYMS=n.
+I've opted to just switch to the linux/ version instead of adding a depends on,
+as the driver still builds and does the error handling properly.
 
 Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Jan Beulich <jbeulich@novell.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mike Frysinger <vapier@gentoo.org>
+Cc: Bryan Wu <cooloney@kernel.org>
 
 ---
 
- kernel/module.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/mtd/maps/gpio-addr-flash.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 5a29397..4e84c64 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1992,12 +1992,14 @@ static inline unsigned long layout_symtab(struct module *mod,
- 					  Elf_Shdr *sechdrs,
- 					  unsigned int symindex,
- 					  unsigned int strindex,
--					  const Elf_Hdr *hdr,
-+					  const Elf_Ehdr *hdr,
- 					  const char *secstrings,
- 					  unsigned long *pstroffs,
- 					  unsigned long *strmap)
- {
-+	return 0;
- }
-+
- static inline void add_kallsyms(struct module *mod,
- 				Elf_Shdr *sechdrs,
- 				unsigned int shnum,
-@@ -2081,9 +2083,8 @@ static noinline struct module *load_module(void __user *umod,
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
--#ifdef CONFIG_KALLSYMS
- 	unsigned long symoffs, stroffs, *strmap;
--#endif
-+
- 	mm_segment_t old_fs;
+diff --git a/drivers/mtd/maps/gpio-addr-flash.c b/drivers/mtd/maps/gpio-addr-flash.c
+index 44ef9a4..3d7c911 100644
+--- a/drivers/mtd/maps/gpio-addr-flash.c
++++ b/drivers/mtd/maps/gpio-addr-flash.c
+@@ -22,8 +22,7 @@
+ #include <linux/mtd/physmap.h>
+ #include <linux/platform_device.h>
+ #include <linux/types.h>
+-
+-#include <asm/gpio.h>
++#include <linux/gpio.h>
+ #include <asm/io.h>
  
- 	DEBUGP("load_module: umod=%p, len=%lu, uargs=%p\n",
+ #define pr_devinit(fmt, args...) ({ static const __devinitconst char __fmt[] = fmt; printk(__fmt, ## args); })
