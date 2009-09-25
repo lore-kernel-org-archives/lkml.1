@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbZIYJ6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbZIYKBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084AbZIYJ6f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 05:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZIYJ6e
+	id S1752114AbZIYKBn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 06:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZIYKBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 05:58:34 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43258 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751158AbZIYJ6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 05:58:33 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX1/fg8dH5hTf44SSSnrJpam48k6A/s3E7eaeNfRZUv
-	GIlG33vL+Kxzf8
-Date: Fri, 25 Sep 2009 11:58:31 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Joe Perches <joe@perches.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       git@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: git merge conflict resolution?
-Message-ID: <20090925095831.GA17721@atjola.homenet>
-References: <200909250101.n8P11HwO030173@hera.kernel.org>
- <1253841510.18126.10.camel@Joe-Laptop.home>
+	Fri, 25 Sep 2009 06:01:43 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:54407 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751841AbZIYKBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 06:01:42 -0400
+Date: Fri, 25 Sep 2009 11:59:08 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: Neil Brown <neilb@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: lars.ellenberg@linbit.com, arjan@infradead.org, jens.axboe@oracle.com,
+       hch@infradead.org, James.Bottomley@suse.de,
+       linux-kernel@vger.kernel.org, drbd-dev@lists.linbit.com,
+       akpm@linux-foundation.org, bart.vanassche@gmail.com, davej@redhat.com,
+       gregkh@suse.de, kosaki.motohiro@jp.fujitsu.com, kyle@moffetthome.net,
+       torvalds@linux-foundation.org, nab@linux-iscsi.org, knikanth@suse.de,
+       philipp.reisner@linbit.com, sam@ravnborg.org, Mauelshagen@redhat.com
+Subject: Re: [GIT PULL] DRBD for 2.6.32
+Message-ID: <20090925095908.GC28951@suse.de>
+References: <20090922062034.GE22732@suse.de> <20090923203531C.fujita.tomonori@lab.ntt.co.jp> <19130.43495.807916.962040@notabene.brown> <20090924083617J.fujita.tomonori@lab.ntt.co.jp> <19132.21708.867658.970822@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1253841510.18126.10.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+In-Reply-To: <19132.21708.867658.970822@notabene.brown>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009.09.24 18:18:30 -0700, Joe Perches wrote:
-> Question about how git does merge conflict resolution.
-> 
-> This patch doesn't really apply, and the results after the
-> patch aren't what at least I expect.
-[...]
-> Russell's patch removes the "(moderated for non-subscribers)"
-> from each entry, yet the final result includes it.
-> 
-> Can someone help me understand why?
+On 2009-09-25T15:27:40, Neil Brown <neilb@suse.de> wrote:
 
-If you look at baea7b946f00a291b166ccae7fcfed6c01530cc6, you see:
+> > Enterprise vendors don't pick up the latest kernel. So I think that we
+> > need more.
 
-    Merge branch 'origin' into for-linus
+Enterprise kernel providers tend to accept the burden of supporting
+their enterprise releases. While I appreciate the thought from the
+community, I think the enterprise kernels already including drbd would
+be extremely happy to see it officially included.
 
-    Conflicts:
-        MAINTAINERS
+> I don't really follow your logic, but that isn't important.  I think
+> that we need to be open to deprecating old ABIs, particularly when the
+> ABI is largely used by just one or two programs or libraries.  This is
+> the case for md/dm/drbd and similar devices.
 
-Git was unable to automatically merge that file, as there were
-conflicting changes. That merge was done by Russel King, and _he_
-decided that the result should include the "(moderated for ...)" part.
+It is even one step beyond this here. The additional ABI effort is
+raised as an objection to merging drbd, and the drbd developers and user
+community is offering to depreciate it within a reasonable timeframe of
+a better ABI existing (since this will be hidden in the user-space
+tools), if this means that it can be merged earlier.
 
-Björn
+This is quite different from an ABI which is expected to be stable and
+remain forever (even if it was just an implicit user assumption); the
+expectations are set accordingly from day 0, and thus should not be a
+hurdle to acceptance.
+
+
+Regards,
+    Lars
+
+-- 
+Architect Storage/HA, OPS Engineering, Novell, Inc.
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+
