@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751554AbZIYTBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbZIYTC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751554AbZIYTBk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 15:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbZIYTBi
+	id S1751923AbZIYTC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 15:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZIYTCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 15:01:38 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:49266 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750926AbZIYTBh (ORCPT
+	Fri, 25 Sep 2009 15:02:24 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:51690 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbZIYTCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 15:01:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=nxULWZ6s69vWYrlP6cFPUCwbon4GfM2qAX/3NLNlIHB3UWyhme4OtM9A2zCAUo+WdY
-         KRC81qxuj/AOpCGIXEe7wp4kZpETlXECh42aGqKVMl8sp8im0dzqzToZcnPnjteV4Ro3
-         3sdafMLMaOs+NACxW/qNT06s6A1qbICHRD+3M=
-MIME-Version: 1.0
-Date: Sat, 26 Sep 2009 02:01:41 +0700
-Message-ID: <f284c33d0909251201w422e9687x8cd3a784e85adf7d@mail.gmail.com>
-Subject: [PATCH] generate-cmdlist.sh should be either executable or run as 
-	parameter of "."
-From: Mulyadi Santosa <mulyadi.santosa@gmail.com>
-To: mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Sep 2009 15:02:24 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Fri, 25 Sep 2009 13:02:22 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] vfs: new O_NODE open flag
+In-reply-to: <9988.1253899252@turing-police.cc.vt.edu>
+To: Valdis.Kletnieks@vt.edu
+Cc: "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Andreas Gruenbacher <agruen@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Message-id: <20090925190222.GX10562@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu>
+ <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu>
+ <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I believe this is just a small glitch. generate-cmdlist.sh by default
-should be made as executable. But since one might forgot to do it, we
-could simply call it as an argument "." or "source" or even "sh -c". I
-pick "."
+On Sep 25, 2009  13:20 -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 25 Sep 2009 13:37:47 BST, "Dr. David Alan Gilbert" said:
+> 
+> > Given an fd opened in this way is it possible to reopen it normally and
+> > be guarenteed to get the same object?
+> 
+> It's not possible even without this flag. Consider:
+> 
+>         fd1 = open("/tmp/foo",flags);
+>         rc = rename("/tmp/foo","/tmp/bar");
+>         fd2 = open("/tmp/foo",flags);
+> 
+> Or were you asking if *absent that sort of tomfoolery* if it would work?
 
-Tested in 2.6.31
+No, the point is that we HAVE an fd that points to the original "/tmp/foo"
+opened with O_NODE, and now (after an ioctl, stat, etc) we decide it is
+safe to open the file read and/or write without releasing the existing
+fd.  The whole point is to AVOID this kind of tomfoolery.
 
-Signed-off-by: Mulyadi Santosa <mulyadi.santosa@gmail.com>
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
---- linux-2.6.31/tools/perf/Makefile.bak	2009-09-12 22:28:37.000000000 +0700
-+++ linux-2.6.31/tools/perf/Makefile	2009-09-26 01:51:04.000000000 +0700
-@@ -682,7 +682,7 @@
- common-cmds.h: util/generate-cmdlist.sh command-list.txt
-
- common-cmds.h: $(wildcard Documentation/perf-*.txt)
--	$(QUIET_GEN)util/generate-cmdlist.sh > $@+ && mv $@+ $@
-+	$(QUIET_GEN). util/generate-cmdlist.sh > $@+ && mv $@+ $@
-
- $(patsubst %.sh,%,$(SCRIPT_SH)) : % : %.sh
- 	$(QUIET_GEN)$(RM) $@ $@+ && \
