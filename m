@@ -1,110 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbZIYGVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbZIYG0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbZIYGVP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 02:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZIYGVO
+	id S1752043AbZIYG0w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 02:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZIYG0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 02:21:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49362 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751886AbZIYGVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 02:21:13 -0400
-Date: Fri, 25 Sep 2009 06:20:33 GMT
-From: tip-bot for Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, mschmidt@redhat.com,
-       tglx@linutronix.de, xtfeng@gmail.com, mingo@elte.hu
-Reply-To: mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       schwidefsky@de.ibm.com, tglx@linutronix.de, xtfeng@gmail.com,
-       mingo@elte.hu
-In-Reply-To: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
-References: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/urgent] clocksource: Resume clocksource without taking the clocksource mutex
-Message-ID: <tip-89133f93508137231251543d1732da638e6022e1@git.kernel.org>
-Git-Commit-ID: 89133f93508137231251543d1732da638e6022e1
-X-Mailer: tip-git-log-daemon
+	Fri, 25 Sep 2009 02:26:51 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52153 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751403AbZIYG0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 02:26:50 -0400
+Message-ID: <4ABC6222.9090103@cn.fujitsu.com>
+Date: Fri, 25 Sep 2009 14:24:34 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 15/28] io-controller: Allow CFQ specific extra preemptions
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <1253820332-10246-16-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1253820332-10246-16-git-send-email-vgoyal@redhat.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 25 Sep 2009 06:20:46 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  89133f93508137231251543d1732da638e6022e1
-Gitweb:     http://git.kernel.org/tip/89133f93508137231251543d1732da638e6022e1
-Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
-AuthorDate: Thu, 24 Sep 2009 17:29:52 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 24 Sep 2009 22:37:53 +0200
+Vivek Goyal wrote:
+> o CFQ allows a reader preemting a writer. So far we allow this with-in group
+>   but not across groups. But there seems to be following special case where
+>   this preemption might make sense.
+> 
+> 			root
+> 			/  \
+> 		       R   Group
+> 			     |
+> 			     W
+> 
+>   Now here reader should be able to preempt the writer. Think of there are
+>   10 groups each running a writer and an admin trying to do "ls" and he
+>   experiences suddenly high latencies for ls.
 
-clocksource: Resume clocksource without taking the clocksource mutex
+  Hi Vivek, 
 
-git commit 75c5158f70c065b9 converted the clocksource spinlock to a
-mutex. This causes the following BUG:
+  This preemption might be unfair to the readers who stay in the same group with
+  writer. Consider the following:
 
-BUG: sleeping function called from invalid context at
-kernel/mutex.c:280 in_atomic(): 0, irqs_disabled(): 1, pid: 2473,
-name: pm-suspend 2 locks held by pm-suspend/2473:
- #0:  (&buffer->mutex){......}, at: [<ffffffff8115ab13>]
-sysfs_write_file+0x3c/0x137
- #1:  (pm_mutex){......}, at: [<ffffffff810865b5>]
-enter_state+0x39/0x130 Pid: 2473, comm: pm-suspend Not tainted 2.6.31
-#1 Call Trace:
- [<ffffffff810792f0>] ? __debug_show_held_locks+0x22/0x24
- [<ffffffff8104a2ef>] __might_sleep+0x107/0x10b
- [<ffffffff8141fca9>] mutex_lock_nested+0x25/0x43
- [<ffffffff81073537>] clocksource_resume+0x1c/0x60
- [<ffffffff81072902>] timekeeping_resume+0x1e/0x1c8
- [<ffffffff812aee62>] __sysdev_resume+0x25/0xcf
- [<ffffffff812aef79>] sysdev_resume+0x6d/0xae
- [<ffffffff810864f8>] suspend_devices_and_enter+0x12b/0x1af
- [<ffffffff8108665b>] enter_state+0xdf/0x130
- [<ffffffff81085dc3>] state_store+0xb6/0xd3
- [<ffffffff81204c73>] kobj_attr_store+0x17/0x19
- [<ffffffff8115abd2>] sysfs_write_file+0xfb/0x137
- [<ffffffff811057d2>] vfs_write+0xae/0x10b
- [<ffffffff81208392>] ? __up_read+0x1a/0x7f
- [<ffffffff811058ef>] sys_write+0x4a/0x6e
- [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
+                     root
+                     /  \
+                    R1  Group
+                        /  \
+                       R2   W
 
-clocksource_resume is called early in the resume process, there is
-only one cpu, no processes are running and the interrupts are
-disabled. It is therefore possible to resume the clocksources
-without taking the clocksource mutex.
+  Say W is running and late preemption is enabled, then a request goes into R1,
+  R1 will preempt W immediately regardless of R2. Now R2 don't have a chance to
+  get scheduled even if R1 has a very high vdisktime. It seems not so fair to R2.
+  So I suggest the number of readers in group should be taken into account when
+  making this preemption decision. R1 should only preempts W when there are not 
+  any readers in that group.
 
-Reported-by: Xiaotian Feng <xtfeng@gmail.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Tested-by: Michal Schmidt <mschmidt@redhat.com>
-Cc: Xiaotian Feng <xtfeng@gmail.com>
-Cc: John Stultz <johnstul@us.ibm.com>
-LKML-Reference: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+  Thanks,
+  Gui Jianfeng
 
+> 
+>   Same is true for meta data requests. If there is a meta data request and
+>   a reader is running inside a sibling group, preemption will be allowed.
+>   Note, following is not allowed.
+> 			root
+> 			/  \
+> 	            group1 group2
+> 		      |      |
+> 	              R	     W
+> 
+>   Here reader can't preempt writer.
+> 
+> o Put meta data requesting queues at the front of the service tree. Generally
+>   such queues will preempt currently running queue but not in following case.
+> 			root
+> 			/  \
+> 	            group1 group2
+> 		      |     / \
+> 	              R1   R3  R2 (meta data)
+> 
+>  Here R2 is having a meta data request but it will not preempt R1. We need
+>  to make sure that R2 gets queued ahead of R3 so taht once group2 gets
+>  going, we first service R2 and then R3 and not vice versa.
+> 
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/elevator-fq.c |   47 +++++++++++++++++++++++++++++++++++++++++++++--
+>  block/elevator-fq.h |    3 +++
+>  2 files changed, 48 insertions(+), 2 deletions(-)
+> 
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index 25beaf7..8ff8a19 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -701,6 +701,7 @@ static void enqueue_io_entity(struct io_entity *entity)
+>  	struct io_service_tree *st;
+>  	struct io_sched_data *sd = io_entity_sched_data(entity);
+>  	struct io_queue *ioq = ioq_of(entity);
+> +	int add_front = 0;
+>  
+>  	if (entity->on_idle_st)
+>  		dequeue_io_entity_idle(entity);
+> @@ -716,12 +717,22 @@ static void enqueue_io_entity(struct io_entity *entity)
+>  	st = entity->st;
+>  	st->nr_active++;
+>  	sd->nr_active++;
+> +
+>  	/* Keep a track of how many sync queues are backlogged on this group */
+>  	if (ioq && elv_ioq_sync(ioq) && !elv_ioq_class_idle(ioq))
+>  		sd->nr_sync++;
+>  	entity->on_st = 1;
+> -	place_entity(st, entity, 0);
+> -	__enqueue_io_entity(st, entity, 0);
+> +
+> +	/*
+> +	 * If a meta data request is pending in this queue, put this
+> +	 * queue at the front so that it gets a chance to run first
+> +	 * as soon as the associated group becomes eligbile to run.
+> +	 */
+> +	if (ioq && ioq->meta_pending)
+> +		add_front = 1;
+> +
+> +	place_entity(st, entity, add_front);
+> +	__enqueue_io_entity(st, entity, add_front);
+>  	debug_update_stats_enqueue(entity);
+>  }
+>  
+> @@ -2280,6 +2291,31 @@ static int elv_should_preempt(struct request_queue *q, struct io_queue *new_ioq,
+>  		return 1;
+>  
+>  	/*
+> +	 * Allow some additional preemptions where a reader queue gets
+> +	 * backlogged and some writer queue is running under any of the
+> +	 * sibling groups.
+> +	 *
+> +	 * 		     root
+> +	 * 		     /  \
+> +	 * 		    R  group
+> +	 * 			 |
+> +	 * 			 W
+> +	 */
+> +
+> +	if (ioq_of(new_entity) == new_ioq  && iog_of(entity)) {
+> +		/* Let reader queue preempt writer in sibling group */
+> +		if (elv_ioq_sync(new_ioq) && !elv_ioq_sync(active_ioq))
+> +			return 1;
+> +		/*
+> +		 * So both queues are sync. Let the new request get disk time if
+> +		 * it's a metadata request and the current queue is doing
+> +		 * regular IO.
+> +		 */
+> +		if (new_ioq->meta_pending && !active_ioq->meta_pending)
+> +			return 1;
+> +	}
+> +
+> +	/*
+>  	 * If both the queues belong to same group, check with io scheduler
+>  	 * if it has additional criterion based on which it wants to
+>  	 * preempt existing queue.
+> @@ -2335,6 +2371,8 @@ void elv_ioq_request_add(struct request_queue *q, struct request *rq)
+>  	BUG_ON(!efqd);
+>  	BUG_ON(!ioq);
+>  	ioq->nr_queued++;
+> +	if (rq_is_meta(rq))
+> +		ioq->meta_pending++;
+>  	elv_log_ioq(efqd, ioq, "add rq: rq_queued=%d", ioq->nr_queued);
+>  
+>  	if (!elv_ioq_busy(ioq))
+> @@ -2669,6 +2707,11 @@ void elv_ioq_request_removed(struct elevator_queue *e, struct request *rq)
+>  	ioq = rq->ioq;
+>  	BUG_ON(!ioq);
+>  	ioq->nr_queued--;
+> +
+> +	if (rq_is_meta(rq)) {
+> +		WARN_ON(!ioq->meta_pending);
+> +		ioq->meta_pending--;
+> +	}
+>  }
+>  
+>  /* A request got dispatched. Do the accounting. */
+> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+> index 2992d93..27ff5c4 100644
+> --- a/block/elevator-fq.h
+> +++ b/block/elevator-fq.h
+> @@ -100,6 +100,9 @@ struct io_queue {
+>  
+>  	/* Pointer to io scheduler's queue */
+>  	void *sched_queue;
+> +
+> +	/* pending metadata requests */
+> +	int meta_pending;
+>  };
+>  
+>  #ifdef CONFIG_GROUP_IOSCHED /* CONFIG_GROUP_IOSCHED */
 
----
- kernel/time/clocksource.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+-- 
 
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 0911334..5e18c6a 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -394,15 +394,11 @@ void clocksource_resume(void)
- {
- 	struct clocksource *cs;
- 
--	mutex_lock(&clocksource_mutex);
--
- 	list_for_each_entry(cs, &clocksource_list, list)
- 		if (cs->resume)
- 			cs->resume();
- 
- 	clocksource_resume_watchdog();
--
--	mutex_unlock(&clocksource_mutex);
- }
- 
- /**
