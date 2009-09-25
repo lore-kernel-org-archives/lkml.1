@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZIYN7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZIYOCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752516AbZIYN7J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 09:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZIYN7I
+	id S1752570AbZIYOCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 10:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZIYOCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 09:59:08 -0400
-Received: from gw0.danplanet.com ([71.245.107.82]:44775 "EHLO
-	mail.danplanet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752223AbZIYN7H (ORCPT
+	Fri, 25 Sep 2009 10:02:18 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:58523 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752223AbZIYOCR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 09:59:07 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oren Laadan <orenl@librato.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, torvalds@linux-foundation.org,
-       xemul@openvz.org
-Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
-References: <1253749920-18673-1-git-send-email-orenl@librato.com>
-	<20090924154139.2a7dd5ec.akpm@linux-foundation.org>
-From: Dan Smith <danms@us.ibm.com>
-Date: Fri, 25 Sep 2009 06:59:06 -0700
-In-Reply-To: <20090924154139.2a7dd5ec.akpm@linux-foundation.org> (Andrew Morton's message of "Thu\, 24 Sep 2009 15\:41\:39 -0700")
-Message-ID: <87ljk39lcl.fsf@caffeine.danplanet.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 25 Sep 2009 10:02:17 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] fatfs-2.6 patches
+Date: Fri, 25 Sep 2009 23:02:16 +0900
+Message-ID: <87zl8jt95j.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Q: What additional work needs to be done to it?  A: Fill in the
->> gory details following the examples so far. Current WIP includes
->> inet sockets, event-poll, and early work on inotify, mount
->> namespace and mount-points, pseudo file systems
+Hi,
 
-AM> Will this new code muck up the kernel, or will it be clean?
+Please pull from
 
-I have (and have previously posted) prototype code to do c/r of open
-sockets, ignoring some things like updating timers and such.  It looks
-rather similar to the existing UNIX bits, and is even easier in some
-ways.
+    git://git.kernel.org/pub/scm/linux/kernel/git/hirofumi/fatfs-2.6.git master
 
-One particular use case is only migrating listening sockets and
-allowing the connected ones to be reset upon restart.  That enables a
-bunch of things like apache, postfix, vncserver, and even sshd.  I
-will pull the listen-only bits out of my current patch, scrape off a
-little bitrot, and post them in a few days.
+to get these changes:
 
+OGAWA Hirofumi (2):
+      fat/nls: Fix handling of utf8 invalid char
+      fat: Check s_dirt in fat_sync_fs()
+
+Paul Wise (1):
+      vfat: change the default from shortname=lower to shortname=mixed
+
+ Documentation/filesystems/vfat.txt |    2 +-
+ fs/fat/fat.h                       |    2 +-
+ fs/fat/inode.c                     |   18 +++++++++++-------
+ fs/fat/misc.c                      |    8 +++++---
+ fs/fat/namei_vfat.c                |   15 ++++-----------
+ fs/nls/nls_base.c                  |    8 ++++----
+ 6 files changed, 26 insertions(+), 27 deletions(-)
 -- 
-Dan Smith
-IBM Linux Technology Center
-email: danms@us.ibm.com
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
