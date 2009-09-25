@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbZIYHGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZIYHJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752406AbZIYHGs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 03:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZIYHGp
+	id S1752516AbZIYHJM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 03:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbZIYHJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 03:06:45 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:39211 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbZIYHGo (ORCPT
+	Fri, 25 Sep 2009 03:09:08 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:40792 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbZIYHJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 03:06:44 -0400
-Date: Fri, 25 Sep 2009 12:36:23 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: arun@linux.vnet.ibm.com, Len Brown <lenb@kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Shaohua Li <shaohua.li@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [v6 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
- management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
- cpuidle to POWER.
-Message-ID: <20090925070623.GH8595@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090922112526.GA7788@linux.vnet.ibm.com>
- <20090924051238.GA5963@linux.vnet.ibm.com>
- <20090924142228.5a2ddf59@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090924142228.5a2ddf59@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 25 Sep 2009 03:09:07 -0400
+Date: Fri, 25 Sep 2009 16:09:11 +0900 (JST)
+Message-Id: <20090925.160911.71102299.ryov@valinux.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       vgoyal@redhat.com, linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, agk@redhat.com, peterz@infradead.org,
+       jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090925052911.GK4590@balbir.in.ibm.com>
+References: <20090925100952.55c2dd7a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090925101821.1de8091a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090925052911.GK4590@balbir.in.ibm.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven <arjan@infradead.org> [2009-09-24 14:22:28]:
+Hi,
 
-> On Thu, 24 Sep 2009 10:42:41 +0530
-> Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
-> 
-> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
-> > 
-> > Hi Len, (or other acpi folks),
-> > 
-> > I had a question regarding ACPI-cpuidle interaction in the current
-> > implementation.
-> > 
-> > Currently, every cpu (i.e. acpi_processor) registers to cpuidle as
-> > a cpuidle_device. So every cpu has to go through the process of
-> > setting up the idle states and then registering as a cpuidle device.
-> > 
-> > What exactly is the reason behind this?
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > I think I must support dirty-ratio in memcg layer. But not yet.
 > > 
 > 
-> technically a BIOS can opt to give you C states via ACPI on some cpus,
-> but not on others.
+> We need to add this to the TODO list.
 > 
-> in practice when this happens it tends to be a bug.. but it's
-> technically a valid configuration
+> > OR...I'll add a bufferred-write-cgroup to track bufferred writebacks.
+> > And add a control knob as
+> >   bufferred_write.nr_dirty_thresh
+> > to limit the number of dirty pages generetad via a cgroup.
+> > 
+> > Because memcg just records a owner of pages but not records who makes them
+> > dirty, this may be better. Maybe I can reuse page_cgroup and Ryo's blockio
+> > cgroup code.
+> 
+> Very good point, this is crucial for shared pages.
+> 
+> > 
+> > But I'm not sure how I should treat I/Os generated out by kswapd.
+> >
+> 
+> Account them to process 0 :)
 
-So we will need to keep the per-cpu registration as of now because we
-may have such buggy BIOS in the field and we don't want the cpuidle
-framework to malfunction there.
+How about accounting them to processes who make pages dirty? I think
+that a process which consumes more memory should get penalty. However,
+this allows a page request process to use other's bandwidth, but If
+a user doesn't want to swap-out the memory, the user should allocate
+enough memory for the process by using memcg in advance.
 
---Vaidy
-
-
+Thanks,
+Ryo Tsuruta
