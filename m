@@ -1,55 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbZIYOE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbZIYOHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752696AbZIYOE4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 10:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZIYOEz
+	id S1752819AbZIYOHx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 10:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZIYOHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 10:04:55 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42124 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752592AbZIYOEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 10:04:55 -0400
-Date: Fri, 25 Sep 2009 16:05:01 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 17/63] edac_mce: Add an interface driver to report mce
- errors via edac
-Message-ID: <20090925160501.03a0f37d@infradead.org>
-In-Reply-To: <20090925135626.GA8145@aftab>
-References: <20090924192727.212ce46f@pedra.chehab.org>
-	<20090925094855.GA29551@aftab>
-	<20090925091130.14135879@pedra.chehab.org>
-	<20090925135626.GA8145@aftab>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 25 Sep 2009 10:07:52 -0400
+Received: from mba.ocn.ne.jp ([122.28.14.163]:50953 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752370AbZIYOHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 10:07:49 -0400
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH 1/3] rtc-ds1553: Fix races around device registration
+Date: Fri, 25 Sep 2009 23:07:50 +0900
+Message-Id: <1253887672-16250-1-git-send-email-anemo@mba.ocn.ne.jp>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Sep 2009 15:56:26 +0200
-> > 1) edac_mce is not a module (see patch 18). So, just calling a
-> > routine on edac_mce should be safe, even at NMI;
-> 
-> no, I mean the ->check_error member - it could call into a module if
-> i7core_edac is compiled as such.
+* Call dev_set_drvdata before rtc device creation
+* Use its own spinlock instead of rtc->irq_lock
+* Check pdata->rtc before calling rtc_update_irq
+* Use {alarm,update}_irq_enable and remove ioctl routine
+* Use devres APIs and simplify error/remove path
 
-calling modular code from NMI is not a fatal event though.
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+ drivers/rtc/rtc-ds1553.c |  141 +++++++++++++++++++++-------------------------
+ 1 files changed, 64 insertions(+), 77 deletions(-)
 
-calling printk or taking spinlocks otoh..
-
-
-
-
+diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
+index 7172885..dadd0f5 100644
+--- a/drivers/rtc/rtc-ds1553.c
++++ b/drivers/rtc/rtc-ds1553.c
+@@ -18,7 +18,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
+ 
+-#define DRV_VERSION "0.2"
++#define DRV_VERSION "0.3"
+ 
+ #define RTC_REG_SIZE		0x2000
+ #define RTC_OFFSET		0x1ff0
+@@ -61,7 +61,6 @@
+ struct rtc_plat_data {
+ 	struct rtc_device *rtc;
+ 	void __iomem *ioaddr;
+-	resource_size_t baseaddr;
+ 	unsigned long last_jiffies;
+ 	int irq;
+ 	unsigned int irqen;
+@@ -69,6 +68,7 @@ struct rtc_plat_data {
+ 	int alrm_min;
+ 	int alrm_hour;
+ 	int alrm_mday;
++	spinlock_t lock;
+ };
+ 
+ static int ds1553_rtc_set_time(struct device *dev, struct rtc_time *tm)
+@@ -139,7 +139,7 @@ static void ds1553_rtc_update_alarm(struct rtc_plat_data *pdata)
+ 	void __iomem *ioaddr = pdata->ioaddr;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&pdata->rtc->irq_lock, flags);
++	spin_lock_irqsave(&pdata->lock, flags);
+ 	writeb(pdata->alrm_mday < 0 || (pdata->irqen & RTC_UF) ?
+ 	       0x80 : bin2bcd(pdata->alrm_mday),
+ 	       ioaddr + RTC_DATE_ALARM);
+@@ -154,7 +154,7 @@ static void ds1553_rtc_update_alarm(struct rtc_plat_data *pdata)
+ 	       ioaddr + RTC_SECONDS_ALARM);
+ 	writeb(pdata->irqen ? RTC_INTS_AE : 0, ioaddr + RTC_INTERRUPTS);
+ 	readb(ioaddr + RTC_FLAGS);	/* clear interrupts */
+-	spin_unlock_irqrestore(&pdata->rtc->irq_lock, flags);
++	spin_unlock_irqrestore(&pdata->lock, flags);
+ }
+ 
+ static int ds1553_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+@@ -194,56 +194,61 @@ static irqreturn_t ds1553_rtc_interrupt(int irq, void *dev_id)
+ 	struct platform_device *pdev = dev_id;
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 	void __iomem *ioaddr = pdata->ioaddr;
+-	unsigned long events = RTC_IRQF;
++	unsigned long events = 0;
+ 
++	spin_lock(&pdata->lock);
+ 	/* read and clear interrupt */
+-	if (!(readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_AF))
+-		return IRQ_NONE;
+-	if (readb(ioaddr + RTC_SECONDS_ALARM) & 0x80)
+-		events |= RTC_UF;
+-	else
+-		events |= RTC_AF;
+-	rtc_update_irq(pdata->rtc, 1, events);
+-	return IRQ_HANDLED;
++	if (readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_AF) {
++		events = RTC_IRQF;
++		if (readb(ioaddr + RTC_SECONDS_ALARM) & 0x80)
++			events |= RTC_UF;
++		else
++			events |= RTC_AF;
++		if (likely(pdata->rtc))
++			rtc_update_irq(pdata->rtc, 1, events);
++	}
++	spin_unlock(&pdata->lock);
++	return events ? IRQ_HANDLED : IRQ_NONE;
+ }
+ 
+-static int ds1553_rtc_ioctl(struct device *dev, unsigned int cmd,
+-			    unsigned long arg)
++static int ds1553_rtc_alarm_irq_enable(struct device *dev, unsigned int enabled)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 
+ 	if (pdata->irq <= 0)
+-		return -ENOIOCTLCMD; /* fall back into rtc-dev's emulation */
+-	switch (cmd) {
+-	case RTC_AIE_OFF:
+-		pdata->irqen &= ~RTC_AF;
+-		ds1553_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_AIE_ON:
++		return -EINVAL;
++	if (enabled)
+ 		pdata->irqen |= RTC_AF;
+-		ds1553_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_UIE_OFF:
+-		pdata->irqen &= ~RTC_UF;
+-		ds1553_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_UIE_ON:
++	else
++		pdata->irqen &= ~RTC_AF;
++	ds1553_rtc_update_alarm(pdata);
++	return 0;
++}
++
++static int ds1553_rtc_update_irq_enable(struct device *dev,
++	unsigned int enabled)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
++
++	if (pdata->irq <= 0)
++		return -EINVAL;
++	if (enabled)
+ 		pdata->irqen |= RTC_UF;
+-		ds1553_rtc_update_alarm(pdata);
+-		break;
+-	default:
+-		return -ENOIOCTLCMD;
+-	}
++	else
++		pdata->irqen &= ~RTC_UF;
++	ds1553_rtc_update_alarm(pdata);
+ 	return 0;
+ }
+ 
+ static const struct rtc_class_ops ds1553_rtc_ops = {
+-	.read_time	= ds1553_rtc_read_time,
+-	.set_time	= ds1553_rtc_set_time,
+-	.read_alarm	= ds1553_rtc_read_alarm,
+-	.set_alarm	= ds1553_rtc_set_alarm,
+-	.ioctl		= ds1553_rtc_ioctl,
++	.read_time		= ds1553_rtc_read_time,
++	.set_time		= ds1553_rtc_set_time,
++	.read_alarm		= ds1553_rtc_read_alarm,
++	.set_alarm		= ds1553_rtc_set_alarm,
++	.alarm_irq_enable	= ds1553_rtc_alarm_irq_enable,
++	.update_irq_enable	= ds1553_rtc_update_irq_enable,
+ };
+ 
+ static ssize_t ds1553_nvram_read(struct kobject *kobj,
+@@ -291,26 +296,23 @@ static int __devinit ds1553_rtc_probe(struct platform_device *pdev)
+ 	struct rtc_device *rtc;
+ 	struct resource *res;
+ 	unsigned int cen, sec;
+-	struct rtc_plat_data *pdata = NULL;
+-	void __iomem *ioaddr = NULL;
++	struct rtc_plat_data *pdata;
++	void __iomem *ioaddr;
+ 	int ret = 0;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res)
+ 		return -ENODEV;
+-	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
++	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
+ 	if (!pdata)
+ 		return -ENOMEM;
+-	if (!request_mem_region(res->start, RTC_REG_SIZE, pdev->name)) {
+-		ret = -EBUSY;
+-		goto out;
+-	}
+-	pdata->baseaddr = res->start;
+-	ioaddr = ioremap(pdata->baseaddr, RTC_REG_SIZE);
+-	if (!ioaddr) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
++	if (!devm_request_mem_region(&pdev->dev, res->start, RTC_REG_SIZE,
++			pdev->name))
++		return -EBUSY;
++
++	ioaddr = devm_ioremap(&pdev->dev, res->start, RTC_REG_SIZE);
++	if (!ioaddr)
++		return -ENOMEM;
+ 	pdata->ioaddr = ioaddr;
+ 	pdata->irq = platform_get_irq(pdev, 0);
+ 
+@@ -326,9 +328,13 @@ static int __devinit ds1553_rtc_probe(struct platform_device *pdev)
+ 	if (readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_BLF)
+ 		dev_warn(&pdev->dev, "voltage-low detected.\n");
+ 
++	spin_lock_init(&pdata->lock);
++	pdata->last_jiffies = jiffies;
++	platform_set_drvdata(pdev, pdata);
+ 	if (pdata->irq > 0) {
+ 		writeb(0, ioaddr + RTC_INTERRUPTS);
+-		if (request_irq(pdata->irq, ds1553_rtc_interrupt,
++		if (devm_request_irq(&pdev->dev, pdata->irq,
++				ds1553_rtc_interrupt,
+ 				IRQF_DISABLED, pdev->name, pdev) < 0) {
+ 			dev_warn(&pdev->dev, "interrupt not available.\n");
+ 			pdata->irq = 0;
+@@ -337,27 +343,13 @@ static int __devinit ds1553_rtc_probe(struct platform_device *pdev)
+ 
+ 	rtc = rtc_device_register(pdev->name, &pdev->dev,
+ 				  &ds1553_rtc_ops, THIS_MODULE);
+-	if (IS_ERR(rtc)) {
+-		ret = PTR_ERR(rtc);
+-		goto out;
+-	}
++	if (IS_ERR(rtc))
++		return PTR_ERR(rtc);
+ 	pdata->rtc = rtc;
+-	pdata->last_jiffies = jiffies;
+-	platform_set_drvdata(pdev, pdata);
++
+ 	ret = sysfs_create_bin_file(&pdev->dev.kobj, &ds1553_nvram_attr);
+ 	if (ret)
+-		goto out;
+-	return 0;
+- out:
+-	if (pdata->rtc)
+-		rtc_device_unregister(pdata->rtc);
+-	if (pdata->irq > 0)
+-		free_irq(pdata->irq, pdev);
+-	if (ioaddr)
+-		iounmap(ioaddr);
+-	if (pdata->baseaddr)
+-		release_mem_region(pdata->baseaddr, RTC_REG_SIZE);
+-	kfree(pdata);
++		rtc_device_unregister(rtc);
+ 	return ret;
+ }
+ 
+@@ -367,13 +359,8 @@ static int __devexit ds1553_rtc_remove(struct platform_device *pdev)
+ 
+ 	sysfs_remove_bin_file(&pdev->dev.kobj, &ds1553_nvram_attr);
+ 	rtc_device_unregister(pdata->rtc);
+-	if (pdata->irq > 0) {
++	if (pdata->irq > 0)
+ 		writeb(0, pdata->ioaddr + RTC_INTERRUPTS);
+-		free_irq(pdata->irq, pdev);
+-	}
+-	iounmap(pdata->ioaddr);
+-	release_mem_region(pdata->baseaddr, RTC_REG_SIZE);
+-	kfree(pdata);
+ 	return 0;
+ }
+ 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.5.6.5
+
