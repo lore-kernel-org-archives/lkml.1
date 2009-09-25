@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZIYIQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZIYITR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbZIYIQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 04:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZIYIQc
+	id S1752875AbZIYITR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 04:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZIYITP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 04:16:32 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:58453 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983AbZIYIQT (ORCPT
+	Fri, 25 Sep 2009 04:19:15 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:30435 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752825AbZIYITN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 04:16:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=klthxQSDHKtK9n0fDaorKab6zsa2fz7JuB4lNzmiYte2Pr6Qdlepg5GJAPBMM5uv3T
-         ojmKXvvkbbwZCpgl1+CWR2pyzBCb2tZ3pVRf9JXZCZficF0Ovj5JwQGzhqWi8pV7iW2Y
-         FFqDNGSdQI2Aqa3b9uvjjd1ZranR5EPoo31xE=
-MIME-Version: 1.0
-In-Reply-To: <1253825033-30094-1-git-send-email-linux@bohmer.net>
-References: <1253825033-30094-1-git-send-email-linux@bohmer.net>
-Date: Fri, 25 Sep 2009 10:16:22 +0200
-X-Google-Sender-Auth: d2664353f2622f0e
-Message-ID: <4de7f8a60909250116o69a52b09wbbeec340de4b7158@mail.gmail.com>
-Subject: Re: [PATCH] get rid of [softirq-NULL]
-From: Jan Blunck <jblunck@suse.de>
-To: Remy Bohmer <linux@bohmer.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Sep 2009 04:19:13 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [GIT PULL v2] bkl tracepoints + filter regex support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Tom Zanussi <tzanussi@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Li Zefan <lizf@cn.fujitsu.com>
+In-Reply-To: <20090924213631.GA2661@nowhere>
+References: <1253821775-8618-1-git-send-email-fweisbec@gmail.com>
+	 <20090924201509.GA26573@elte.hu> <20090924201622.GA15459@elte.hu>
+	 <1253824200.18939.173.camel@laptop> <20090924204357.GB8662@nowhere>
+	 <1253825489.18939.180.camel@laptop>  <20090924213631.GA2661@nowhere>
+Content-Type: text/plain
+Date: Fri, 25 Sep 2009 10:19:52 +0200
+Message-Id: <1253866792.10287.0.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 10:43 PM, Remy Bohmer <linux@bohmer.net> wrote:
-> if CONFIG_HIGH_RES_TIMERS is not configured, still the hrtimer-softirq
-> is started, so to prevent the name 'softirq-NULL' in 'ps' output we
-> should still define its name here.
-> Preventing the softirq from starting at all would touch much more code, so
-> I chose the easy way here, it is a cosmetic fix anyway.
+On Thu, 2009-09-24 at 23:36 +0200, Frederic Weisbecker wrote:
 
-Anyway, it would be the right thing to do just that.
+> > Remember, there are no second chances for the filter syntax anymore.
+> 
+> 
+> But well, it's not yet an ABI. It's still a baby, although powerful
+> for filtering, it's not yet a whole scripting language.
+> 
+> Before thinking about it as an ABI, we should develop it, extend
+> it, use these extensions, spot the weaknesses in the syntax, fix them,
+> etc...
 
-Just un-define the enum HRTIMER_SOFTIRQ and the code that needs
-modification should pop up. Removing it from the enum also disables
-the kthread. Most of the code that raises the softirq should be
-guarded by CONFIG_HIGH_RES_TIMERS anyway.
+Then this is a NACK for the perf ioctl for setting a filter. Fine with
+me.
 
-HtH,
-Jan
+
