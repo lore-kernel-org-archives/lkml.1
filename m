@@ -1,76 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752584AbZIYHdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZIYHkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752584AbZIYHdh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 03:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZIYHdh
+	id S1752703AbZIYHkN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 03:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZIYHkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 03:33:37 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:44852 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbZIYHdg (ORCPT
+	Fri, 25 Sep 2009 03:40:13 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:37022 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751983AbZIYHkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 03:33:36 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: avi@redhat.com
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [PATCH 1/1] KVM: fix lock imbalance
-Date: Fri, 25 Sep 2009 09:33:38 +0200
-Message-Id: <1253864018-7547-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
+	Fri, 25 Sep 2009 03:40:11 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArcEAEcPvEpMROOX/2dsb2JhbACBUtUNhBwFgVg
+Date: Fri, 25 Sep 2009 03:35:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Rusty Lynch <rusty.lynch@intel.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Vamsi Krishna S <vamsi_krishna@in.ibm.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nathan Sidwell <nathan@codesourcery.com>,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Anton Massoud <anton.massoud@ericsson.com>,
+       Richard J Moore <richardj_moore@uk.ibm.com>
+Subject: Re: Immediate values
+Message-ID: <20090925073512.GA10346@Krystal>
+References: <20090924191642.GA19225@elte.hu> <20090924193422.GB2533@elte.hu> <20090925085119.2b77ea04@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090925085119.2b77ea04@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 03:16:52 up 37 days, 18:06,  2 users,  load average: 0.07, 0.11,
+	0.16
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanse found 2 lock imbalances in kvm_request_irq_source_id and
-kvm_free_irq_source_id. They omit to unlock kvm->irq_lock on fail paths.
+* Arjan van de Ven (arjan@infradead.org) wrote:
+> On Thu, 24 Sep 2009 21:34:22 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+[context for people CCed: see
+http://lkml.org/lkml/2009/9/24/262]
 
-Fix that by adding unlock labels at the end of the functions and jump
-there from the fail paths.
+> > 
+> > * H. Peter Anvin <hpa@zytor.com> wrote:
+> > 
+> > > I would like to get an official ACK or NAK for this patching
+> > > technique from inside Intel, and preferrably from AMD as well.  If
+> > > it does work as described it would provide a very clean way to do
+> > > one-shot alternative functions, which probably would be higher
+> > > value than immediate data values.
+> > 
+> > Sounds tempting. Things like the CONFIG_SECURITY hookery could use it?
+> > 
+> > But ... since it's patched under stopmachine, is there any reason why 
+> > this wouldnt work?
+> > 
+> 
+> stopmachine is fine.
+> 
+> more aggressive tricks are rather dicey.
+> 
+> (cross modifying code that's being executed in ring 0 is ... not
+> something CPU designers had in mind)
+> 
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
----
- virt/kvm/irq_comm.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+Then, following your advice, kprobes should be re-designed to do a
+stop_machine around the int3 breakpoint insertion ? And gdb
+should be stopping all threads of a target process before inserting a
+breakpoint. Therefore, I do not seem to be the only one confused about
+Intel statement on this issue.
 
-diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index 15a83b9..00c68d2 100644
---- a/virt/kvm/irq_comm.c
-+++ b/virt/kvm/irq_comm.c
-@@ -220,11 +220,13 @@ int kvm_request_irq_source_id(struct kvm *kvm)
- 
- 	if (irq_source_id >= sizeof(kvm->arch.irq_sources_bitmap)) {
- 		printk(KERN_WARNING "kvm: exhaust allocatable IRQ sources!\n");
--		return -EFAULT;
-+		irq_source_id = -EFAULT;
-+		goto unlock;
- 	}
- 
- 	ASSERT(irq_source_id != KVM_USERSPACE_IRQ_SOURCE_ID);
- 	set_bit(irq_source_id, bitmap);
-+unlock:
- 	mutex_unlock(&kvm->irq_lock);
- 
- 	return irq_source_id;
-@@ -240,7 +242,7 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id)
- 	if (irq_source_id < 0 ||
- 	    irq_source_id >= sizeof(kvm->arch.irq_sources_bitmap)) {
- 		printk(KERN_ERR "kvm: IRQ source ID out of range!\n");
--		return;
-+		goto unlock;
- 	}
- 	for (i = 0; i < KVM_IOAPIC_NUM_PINS; i++) {
- 		clear_bit(irq_source_id, &kvm->arch.vioapic->irq_states[i]);
-@@ -251,6 +253,7 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id)
- #endif
- 	}
- 	clear_bit(irq_source_id, &kvm->arch.irq_sources_bitmap);
-+unlock:
- 	mutex_unlock(&kvm->irq_lock);
- }
- 
+Mathieu
+
+> -- 
+> Arjan van de Ven 	Intel Open Source Technology Centre
+> For development, discussion and tips for power savings, 
+> visit http://www.lesswatts.org
+
 -- 
-1.6.4.2
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
