@@ -1,171 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977AbZIYR6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZIYSDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751977AbZIYR6N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 13:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZIYR6M
+	id S1752118AbZIYSDc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 14:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZIYSDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 13:58:12 -0400
-Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:21164 "HELO
-	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751669AbZIYR6L (ORCPT
+	Fri, 25 Sep 2009 14:03:31 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40406 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbZIYSDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 13:58:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VyJuPDQareQTyRPIYDw17LjKZEl8010zGc5QyVS+GYwAGsBFhFPHzcrf3bsEthHcsn2nJ7VpnW3a9dbDGBvlt3SAF3FxVmz15OE5N1wjiv0usPuYb5AOKnpldFvEVLunBhIKS1Ec3EoJ5apDGQeapIVNATYFAquHj7UUivlckfA=  ;
-X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
-X-YMail-OSG: iCMiowgVM1lghQ4VaKY8v2YwyNLG8RywjRVBW7BoZSQPsBZdsy1hx.1yDZLvz9k3xxbIXYiDIQq9YdLY_TUeYTY_NxvBLIelXYINJOrcOeE9ZGsG3Ox4gKP4jWJBE2xB3hHdE1K4qviHF76XTkdKDRWn5CeSaejVETXmVhKC8VRf5kBMnDNDjtv1an0MaZUjZpUWDG8MmZMO2YrfrVh65YlnpmmkkP7vTlyR_h_FBefBRJxWBd9wVjp2LqN91iH_VYI7Cfkr0hHNvwVs.qhR
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: Re: [PATCH 4/5] at91/USB: USB drivers modifications for at91sam9g10
-Date: Fri, 25 Sep 2009 10:51:34 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-usb@vger.kernel.org, "Greg Kroah-Hartman" <gregkh@suse.de>,
-       avictor.za@gmail.com, linux-arm-kernel@lists.infradead.org,
-       patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
-       Hong Xu <hong.xu@atmel.com>
-References: <1245341772-1689-1-git-send-email-nicolas.ferre@atmel.com> <4AB0D325.9080407@atmel.com> <4ABC9A4C.8000702@atmel.com>
-In-Reply-To: <4ABC9A4C.8000702@atmel.com>
+	Fri, 25 Sep 2009 14:03:30 -0400
+Date: Fri, 25 Sep 2009 21:03:32 +0300 (EEST)
+From: "=?ISO-8859-15?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@melkinkari.cs.Helsinki.FI
+To: Joe Cao <caoco2002@yahoo.com>
+cc: Ray Lee <ray-lk@madrabbit.org>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: TCP stack bug related to F-RTO?
+In-Reply-To: <773030.8168.qm@web63404.mail.re1.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0909252049260.1854@melkinkari.cs.Helsinki.FI>
+References: <773030.8168.qm@web63404.mail.re1.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909251051.34916.david-b@pacbell.net>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696243445-2077347718-1253901812=:1854"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 September 2009, Nicolas Ferre wrote:
-> Greg,
-> 
-> Please, can you consider the inclusion of this patch. I have no news
-> about it for a long time...
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-ISTR either acking this or suggesting it go with the rest
-of the G10 patches ... regardless, seems OK to me now that
-its precursors have merged.
+---696243445-2077347718-1253901812=:1854
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+
+On Fri, 25 Sep 2009, Joe Cao wrote:
+
+> Thanks for the reply!  Do you happen to know which patch fixed the 
+> problem?
+
+You can find those patches from the stable queue git tree. I gave you hint 
+from what release to look from in the last mail. However, as 2.6.24 is 
+anyway obsolete my recommendation is that you should probably consider 
+upgrading to fix all the other bugs that have been found since 2.6.24 was 
+obsoleted.
+
+> Is there a bug tracking system for linux kernel?
+
+Nothing that knows everything about everything.
+
+> I studied the FRTO code in latest kernel 2.6.31.  It seems the problem 
+> is still there:  
+>
+> 1. Every time a RTO fires, because tcp_is_sackfrto(tp) returns 1, 
+> tcp_use_frto() returns true.  And the server tcp enters FRTO.
+> 2. After the head of write queue is retransmitted, two new data packets 
+> are transmitted, the server receives two dup-ACKs.  That will make the 
+> TCP enter tcp_enter_frto_loss(), however, that only rests ssthresh and 
+> some other fields.
+
+Perhaps those other fields are far more important than you think... :-)
+...Some retransmission would happen here as step 3.
+
+> 3. After another longer RTO fires, because tcp_is_sackfrto(tp) returns 
+> 1, tcp_use_frto() again returns true.  The stack enters FRTO again.
+> 4. The above repeats and the stack couldn't retransmits the lost packets 
+> faster.
+> 
+> Is my understanding above correct?
+
+...No. All magic that happens in tcp_enter_frto_loss should be enough to 
+really do more than a single retransmission (that is, in any other than 
+2.6.24 series kernel). There was an unfortunate bug in this area in 2.6.24 
+which basically undoed the effect of correct actions tcp_enter_frto_loss 
+did which effectively prevented tcp_xmit_retransmit_queue from doing its 
+part.
+
+-- 
+ i.
+
+--- On Fri, 9/25/09, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+
+> From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> Subject: Re: TCP stack bug related to F-RTO?
+> To: "Ray Lee" <ray-lk@madrabbit.org>
+> Cc: "Joe Cao" <caoco2002@yahoo.com>, "Netdev" <netdev@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>, jcaoco2002@yahoo.com
+> Date: Friday, September 25, 2009, 6:09 AM
+> On Thu, 24 Sep 2009, Ray Lee wrote:
+> 
+> > [adding netdev cc:]
+> > 
+> > On Thu, Sep 24, 2009 at 10:43 AM, Joe Cao <caoco2002@yahoo.com>
+> wrote:
+> > >
+> > > Hello,
+> > >
+> > > I have found the following behavior with
+> different versions of linux 
+> > > kernel. The attached pcap trace is collected with
+> server 
+> > > (192.168.0.13) running 2.6.24 and shows the
+> problem. Basically the 
+> > > behavior is like this: 
+> > >
+> > > 1. The client opens up a big window,
+> > > 2. the server sends 19 packets in a row (pkt #14-
+> #32 in the trace), but all of them are dropped due to some
+> congestion.
+> > > 3. The server hits RTO and retransmits pkt #14 in
+> #33
+> > > 4. The client immediately acks #33 (=#14), and
+> the server (seems like to enter F-RTO) expends the window
+> and sends *NEW* pkt #35 & #36.=A0 Timeoute is doubled to
+> 2*RTO; The client immediately sends two Dup-ack to #35 and
+> #36.
+> > > 5. after 2*RTO, pkt #15 is retransmitted in #39.
+> > > 6. The client immediately acks #39 (=#15) in #40,
+> and the server continues to expand the window and sends two
+> *NEW* pkt #41 & #42. Now the timeoute is doubled to 4
+> *RTO.
+> > > 8. After 4*RTO timeout, #16 is retransmitted.
+> > > 9....
+> > > 10. The above steps repeats for retransmitting
+> pkt #16-#32 and each time the timeout is doubled.
+> > > 11. It takes a long long time to retransmit all
+> the lost packets and before that is done, the client sends a
+> RST because of timeout.
+> > >
+> > > The above behavior looks like F-RTO is in effect.
+>  And there seems to 
+> > > be a bug in the TCP's congestion control and
+> retransmission algorithm. 
+> > > Why doesn't the TCP on server (running 2.6.24)
+> enter the slow start? 
+> > > Why should the server take that long to recover
+> from a short period 
+> > > of packet loss?
+> > >
+> > > Has anyone else noticed similar problem before?
+>  If my analysis was 
+> > > wrong, can anyone gives me some pointers to
+> what's really wrong and 
+> > > how to fix it?
+> 
+> Yes, 2.6.24 is an obsoleted version with known wrongs in
+> FRTO 
+> implementation. Fixes never when to 2.6.24 stable series as
+> it was 
+> _already_ obsoleted when the problems where reported and
+> found. The 
+> correct fixes may be found from 2.6.25.7 (.7 iirc) and are
+> included from 
+> 2.6.26 onward too.
+> 
+> Just in case you happen to run ubuntu based kernel from
+> that era (of 
+> course you should be reporting the bug here then...), a
+> word of warning: 
+> it seemed nearly impossible for them to get a simple thing
+> like that 
+> fixed, I haven't been looking if they'd eventually come to
+> some sensible 
+> conclusion in that matter or is it still unresolved (or
+> e.g., closed 
+> without real resolution).
 
 
-> Here is a link to its patchwork entry:
-> http://patchwork.kernel.org/patch/31173/
-> 
-> Thanks for your help.
-> 
-> Nicolas Ferre :
-> > Hi,
-> > 
-> > Here is a little "ping" about integration of this patch.
-> > 
-> > Nicolas Ferre :
-> >> From: Hong Xu <hong.xu@atmel.com>
-> >>
-> >> Modify both host and gadget USB drivers for at91sam9g10.
-> >> This add a clock management equivalent to at91sam9261 on usb drivers.
-> >> It also add the way of handling gadget pull-ups (like the at91sam9261).
-> > 
-> > I wonder if we can consider its inclusion as at91sam9g10 is now
-> > integrated in mainline.
-> > Do you want me to split this in several pieces for host/gadget split.
-> > 
-> > Thanks.
-> > 
-> >> Signed-off-by: Hong Xu <hong.xu@atmel.com>
-> >> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> >> ---
-> >>  drivers/usb/gadget/at91_udc.c |    6 +++---
-> >>  drivers/usb/host/ohci-at91.c  |   10 +++++-----
-> >>  2 files changed, 8 insertions(+), 8 deletions(-)
-> >>
-> >> diff --git a/drivers/usb/gadget/at91_udc.c b/drivers/usb/gadget/at91_udc.c
-> >> index 0b2bb8f..bfed3d9 100644
-> >> --- a/drivers/usb/gadget/at91_udc.c
-> >> +++ b/drivers/usb/gadget/at91_udc.c
-> >> @@ -892,7 +892,7 @@ static void pullup(struct at91_udc *udc, int is_on)
-> >>  
-> >>  			txvc |= AT91_UDP_TXVC_PUON;
-> >>  			at91_udp_write(udc, AT91_UDP_TXVC, txvc);
-> >> -		} else if (cpu_is_at91sam9261()) {
-> >> +		} else if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()) {
-> >>  			u32	usbpucr;
-> >>  
-> >>  			usbpucr = at91_sys_read(AT91_MATRIX_USBPUCR);
-> >> @@ -910,7 +910,7 @@ static void pullup(struct at91_udc *udc, int is_on)
-> >>  
-> >>  			txvc &= ~AT91_UDP_TXVC_PUON;
-> >>  			at91_udp_write(udc, AT91_UDP_TXVC, txvc);
-> >> -		} else if (cpu_is_at91sam9261()) {
-> >> +		} else if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()) {
-> >>  			u32	usbpucr;
-> >>  
-> >>  			usbpucr = at91_sys_read(AT91_MATRIX_USBPUCR);
-> >> @@ -1692,7 +1692,7 @@ static int __init at91udc_probe(struct platform_device *pdev)
-> >>  		udc->ep[3].maxpacket = 64;
-> >>  		udc->ep[4].maxpacket = 512;
-> >>  		udc->ep[5].maxpacket = 512;
-> >> -	} else if (cpu_is_at91sam9261()) {
-> >> +	} else if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()) {
-> >>  		udc->ep[3].maxpacket = 64;
-> >>  	} else if (cpu_is_at91sam9263()) {
-> >>  		udc->ep[0].maxpacket = 64;
-> >> diff --git a/drivers/usb/host/ohci-at91.c b/drivers/usb/host/ohci-at91.c
-> >> index b29b0fe..fb64def 100644
-> >> --- a/drivers/usb/host/ohci-at91.c
-> >> +++ b/drivers/usb/host/ohci-at91.c
-> >> @@ -35,7 +35,7 @@ extern int usb_disabled(void);
-> >>  
-> >>  static void at91_start_clock(void)
-> >>  {
-> >> -	if (cpu_is_at91sam9261())
-> >> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
-> >>  		clk_enable(hclk);
-> >>  	clk_enable(iclk);
-> >>  	clk_enable(fclk);
-> >> @@ -46,7 +46,7 @@ static void at91_stop_clock(void)
-> >>  {
-> >>  	clk_disable(fclk);
-> >>  	clk_disable(iclk);
-> >> -	if (cpu_is_at91sam9261())
-> >> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
-> >>  		clk_disable(hclk);
-> >>  	clocked = 0;
-> >>  }
-> >> @@ -142,7 +142,7 @@ static int usb_hcd_at91_probe(const struct hc_driver *driver,
-> >>  
-> >>  	iclk = clk_get(&pdev->dev, "ohci_clk");
-> >>  	fclk = clk_get(&pdev->dev, "uhpck");
-> >> -	if (cpu_is_at91sam9261())
-> >> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
-> >>  		hclk = clk_get(&pdev->dev, "hck0");
-> >>  
-> >>  	at91_start_hc(pdev);
-> >> @@ -156,7 +156,7 @@ static int usb_hcd_at91_probe(const struct hc_driver *driver,
-> >>  	/* Error handling */
-> >>  	at91_stop_hc(pdev);
-> >>  
-> >> -	if (cpu_is_at91sam9261())
-> >> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
-> >>  		clk_put(hclk);
-> >>  	clk_put(fclk);
-> >>  	clk_put(iclk);
-> >> @@ -193,7 +193,7 @@ static void usb_hcd_at91_remove(struct usb_hcd *hcd,
-> >>  	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-> >>  	usb_put_hcd(hcd);
-> >>  
-> >> -	if (cpu_is_at91sam9261())
-> >> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
-> >>  		clk_put(hclk);
-> >>  	clk_put(fclk);
-> >>  	clk_put(iclk);
-> > 
-> > 
-> 
-> 
-> -- 
-> Nicolas Ferre
-> 
-> 
-
-
+---696243445-2077347718-1253901812=:1854--
