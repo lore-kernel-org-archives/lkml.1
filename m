@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZIYIzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZIYJJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbZIYIzT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 04:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbZIYIzR
+	id S1753239AbZIYJJN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 05:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZIYJJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 04:55:17 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47239 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbZIYIzQ (ORCPT
+	Fri, 25 Sep 2009 05:09:11 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40168 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753204AbZIYJJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 04:55:16 -0400
-Subject: Re: [PATCH 2/2 v2] optimize for perf_event_init_task()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4ABC5AF9.6060808@cn.fujitsu.com>
-References: <4AB88F06.10900@cn.fujitsu.com>
-	 <19128.39768.149110.673711@cargo.ozlabs.ibm.com>
-	 <4AB98BB0.6020202@cn.fujitsu.com>
-	 <19129.38627.94363.857137@cargo.ozlabs.ibm.com>
-	 <4AB9D7FA.5040707@cn.fujitsu.com> <1253695230.7695.122.camel@twins>
-	 <4ABC5A55.7000208@cn.fujitsu.com>  <4ABC5AF9.6060808@cn.fujitsu.com>
-Content-Type: text/plain
+	Fri, 25 Sep 2009 05:09:10 -0400
+Message-ID: <4ABC8773.7010104@zytor.com>
+Date: Fri, 25 Sep 2009 02:03:47 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Jeff Dike <jdike@addtoit.com>
+CC: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de, David.Woodhouse@intel.com
+Subject: Re: [tip:x86/kbuild] x86: Don't silently override CONFIG_64BIT in
+ 'make oldconfig'
+References: <tip-5a8a2d13b1526e306ff2a9fe12dc9d5878d355f9@git.kernel.org> <20090904144857.GA12872@elte.hu> <alpine.LFD.2.00.0909041631210.14872@twosheds.infradead.org> <4AA13FE6.20807@zytor.com> <20090904183103.GA1873@elte.hu> <4AA16336.3050606@zytor.com> <20090911211654.GA11399@c2.user-mode-linux.org> <4AAED1E2.7060906@zytor.com> <20090915033334.GA16531@c2.user-mode-linux.org>
+In-Reply-To: <20090915033334.GA16531@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Sep 2009 10:55:57 +0200
-Message-Id: <1253868957.10287.5.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-25 at 13:54 +0800, Xiao Guangrong wrote:
-> We can traverse ctx->group_list to get all group leader, it should be safe
-> since we hold ctx->mutex
+Jeff Dike wrote:
+> On Mon, Sep 14, 2009 at 04:29:38PM -0700, H. Peter Anvin wrote:
+>> Jeff, could you re-send this as a proper patch with an SOB line?
 > 
-> Changlog v1->v2:
-> - remove WARN_ON_ONCE() as Peter Zijlstra's suggestion
+> I could - I wanted to get it out for comment first in case anyone had
+> any conniptions, especially about moving the include of the arch
+> Makefile.
 > 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> I'll take another look at it tomorrow and send it out properly...
+> 
+> 				Jeff
 
-Thanks!
+Ping on this?  Also, Sam, it would be great if you could comment on the 
+patch:
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+     http://marc.info?i=20090911211654.GA11399@c2.user-mode-linux.org
+
+	-hpa
+
