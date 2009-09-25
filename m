@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbZIYTuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbZIYT52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751884AbZIYTuS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 15:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZIYTuR
+	id S1752328AbZIYT52 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 15:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZIYT51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 15:50:17 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:53649 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbZIYTuQ (ORCPT
+	Fri, 25 Sep 2009 15:57:27 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:54524 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750936AbZIYT51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 15:50:16 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Fri, 25 Sep 2009 15:50:19 -0400 (EDT)
-From: Nicolas Pitre <nico@fluxnic.net>
-X-X-Sender: nico@xanadu.home
-To: Frans Pop <elendil@planet.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org,
-       Lennert Buytenhek <buytenh@marvell.com>
-Subject: Re: arm: current mainline fails to boot on QNAP TS-109
-In-reply-to: <200909252039.19789.elendil@planet.nl>
-Message-id: <alpine.LFD.2.00.0909251547450.4997@xanadu.home>
-References: <200909252039.19789.elendil@planet.nl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 25 Sep 2009 15:57:27 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [GIT] kbuild - 2nd batch
+Date: Fri, 25 Sep 2009 21:57:27 +0200
+User-Agent: KMail/1.9.9
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+References: <20090925190702.GA3275@merkur.ravnborg.org>
+In-reply-To: <20090925190702.GA3275@merkur.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909252157.29628.elendil@planet.nl>
+X-OriginalArrivalTime: 25 Sep 2009 19:57:30.0490 (UTC) FILETIME=[6A2D35A0:01CA3E1A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Sep 2009, Frans Pop wrote:
+On Monday 21 September Sam Ravnborg wrote:
+> First (delayed) batch of kbuild stuff.
+[...]
+> And I guess a bit more if I find time to crawl through my mailbox.
 
-> Current mainline kernel fails to boot on my QNAP TS-109 (orion5x).
-> 
-> It fails immediately after uncompressing the kernel, there are no other 
-> messages on the serial console. The problem was probably introduced in the 
-> last ARM merge:
-> 
-> v2.6.31-8766-gf25f60b is OK
-> v2.6.31-8936-g851b147 fails
-> 
-> If needed I can run a bisect between those commits.
+On Friday 25 September Sam Ravnborg wrote:
+> Here comes the 2nd batch of kbuild updates.
 
-No need -- I found the screw-up.  Will submit a patch right away.
+Hello Sam,
 
-In the mean time just revert commit 200b812d00.
+It would be really great if you could take the time to go through your 
+inbox (assuming mails to l-kbuild also end up there).
 
+You should find one patch from me in it (sent twice) that was intended 
+for .32, titled:
+   kbuild: fix the binrpm-pkg target to work with KBUILD_OUTPUT set
 
-Nicolas
+No doubt there are also patches from others that were missed by Andrew and 
+were thus not included in your first pull via that circuitous route.
+
+TIA,
+FJP
