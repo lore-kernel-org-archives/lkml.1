@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750946AbZIYEGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751329AbZIYEGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750946AbZIYEGW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 00:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbZIYEGW
+	id S1751329AbZIYEGc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 00:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZIYEGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 00:06:22 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:59631 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750740AbZIYEGV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 00:06:21 -0400
-Message-ID: <4ABC41A2.6000109@snapgear.com>
-Date: Fri, 25 Sep 2009 14:05:54 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 25 Sep 2009 00:06:31 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42206 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750992AbZIYEG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 00:06:28 -0400
+Date: Fri, 25 Sep 2009 06:06:31 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "jack@suse.cz" <jack@suse.cz>
+Subject: Re: [PATCH 0/10] Current writeback patch queue
+Message-ID: <20090925040631.GP23126@kernel.dk>
+References: <1253803236-20760-1-git-send-email-jens.axboe@oracle.com> <20090925025527.GA10487@localhost>
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Greg Ungerer <gerg@uclinux.org>, Steven King <sfking@fdwdc.com>,
-       uclinux-dev@uclinux.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] m68knommu: includecheck fix: 5206e, config.c
-References: <1253789400.5860.4.camel@ht.satnam>
-In-Reply-To: <1253789400.5860.4.camel@ht.satnam>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090925025527.GA10487@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jaswinder,
-
-Jaswinder Singh Rajput wrote:
-> fix the following 'make includecheck' warning:
+On Fri, Sep 25 2009, Wu Fengguang wrote:
+> On Thu, Sep 24, 2009 at 10:40:26PM +0800, Jens Axboe wrote:
+> > Hi,
+> > 
+> > This is the current writeback patch queue. Most of the patches
+> > have already been reviewed and acked, but please take a look
+> > at the ones that have not (and ack/comment as necessary).
+> > 
+> > Wu, this one is still missing the 5/6 patch from your latest posting,
+> > Please double check and re-submit that bit. Thanks!
 > 
->   arch/m68knommu/platform/5206e/config.c: asm/mcfuart.h is included more than once.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Cc: Greg Ungerer <gerg@uclinux.org>
-> Cc: Steven King <sfking@fdwdc.com>
+> OK, updated patch to add the missing label and the wbc->for_kupdate
+> check to avoid jumping from !for_kupdate to the for_kupdate code
 
-Thanks. Essentially the same patch was sent here a few days ago
-by Huang Weiyi. And that is currently sitting in the for-linus
-branch of:
-
-  http://git.kernel.org/?p=linux/kernel/git/gerg/m68knommu.git;a=summary
-
-I will be sending that to Linus soon (with a couple of other
-fixes too).
-
-Regards
-Greg
-
-
-
-> ---
->  arch/m68knommu/platform/5206e/config.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/m68knommu/platform/5206e/config.c b/arch/m68knommu/platform/5206e/config.c
-> index 0f41ba8..9423979 100644
-> --- a/arch/m68knommu/platform/5206e/config.c
-> +++ b/arch/m68knommu/platform/5206e/config.c
-> @@ -17,7 +17,6 @@
->  #include <asm/mcfsim.h>
->  #include <asm/mcfuart.h>
->  #include <asm/mcfdma.h>
-> -#include <asm/mcfuart.h>
->  
->  /***************************************************************************/
->  
+Thanks, looks good, applied now.
 
 -- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Jens Axboe
+
