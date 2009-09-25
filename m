@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZIYHyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZIYHyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbZIYHyA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 03:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZIYHx7
+	id S1752793AbZIYHyW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 03:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZIYHyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 03:53:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58189 "EHLO hera.kernel.org"
+	Fri, 25 Sep 2009 03:54:20 -0400
+Received: from ozlabs.org ([203.10.76.45]:52159 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752673AbZIYHx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 03:53:58 -0400
-Message-ID: <4ABC7714.2030709@kernel.org>
-Date: Fri, 25 Sep 2009 16:53:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1752598AbZIYHyT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 03:54:19 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: =?utf-8?q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH] module: Fix up CONFIG_KALLSYMS=n build.
+Date: Fri, 25 Sep 2009 17:24:20 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Paul Mundt <lethal@linux-sh.org>, Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20090925034557.GA12810@linux-sh.org> <2375c9f90909242349u7daa7b1epae52fb0da6c92b7d@mail.gmail.com>
+In-Reply-To: <2375c9f90909242349u7daa7b1epae52fb0da6c92b7d@mail.gmail.com>
 MIME-Version: 1.0
-To: Tim Blechmann <tim@klingt.org>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: 2.6.31-rc5 regression: hd don't show up
-References: <h63737$b2a$1@ger.gmane.org> <4A852BC0.1090404@kernel.org> <4A8559D7.6090405@klingt.org> <4A8774E5.4070609@kernel.org> <4A87D9FC.9070408@klingt.org> <4A96460F.3020600@kernel.org> <4A965E3B.3000808@klingt.org> <4A966F7D.60707@kernel.org> <4A97B9C0.9090003@klingt.org> <4A9B7E1E.8060909@kernel.org> <4A9DAF78.4070703@klingt.org> <4A9DD6D9.50407@kernel.org> <4A9E371A.5040208@klingt.org> <4A9FCD8C.6010107@kernel.org> <4AA18F57.8030107@klingt.org> <4AA1ACF8.7030101@kernel.org> <4AA6C569.9090901@klingt.org> <4AB04B39.7030907@kernel.org> <4AB079FC.6000906@kernel.org> <4AB09562.3010501@klingt.org> <4AB0D34A.2010502@kernel.org> <4ABC44FE.5050904@kernel.org> <4ABC7543.90407@klingt.org>
-In-Reply-To: <4ABC7543.90407@klingt.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 25 Sep 2009 07:53:58 +0000 (UTC)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200909251724.21416.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Blechmann wrote:
->>>>> Can you please try the attached patch and report the result?  The bug
->>>>> shouldn't happen now and for cases where it would have happened,
->>>>> libata will report "link online but device misclassified" and retry.
->>>> this patch cannot be applied onto stable-2.6.31/master ... e.g. the
->>>> first chunk is already in there ....
->>> Eh... the first chunk was for the current devel branch.  Here's a
->>> version without that one.
->> Ping.
+On Fri, 25 Sep 2009 04:19:22 pm Américo Wang wrote:
+> On Fri, Sep 25, 2009 at 11:45 AM, Paul Mundt <lethal@linux-sh.org> wrote:
+> > Starting from commit 4a4962263f07d14660849ec134ee42b63e95ea9a
+> > "reduce symbol table for loaded modules (v2)", the kernel/module.c build
+> > is broken with CONFIG_KALLSYMS disabled.
+> >
+> >  CC      kernel/module.o
+> > kernel/module.c:1995: warning: type defaults to 'int' in declaration of 'Elf_Hdr'
+> > kernel/module.c:1995: error: expected ';', ',' or ')' before '*' token
+> > kernel/module.c: In function 'load_module':
+> > kernel/module.c:2203: error: 'strmap' undeclared (first use in this function)
+> > kernel/module.c:2203: error: (Each undeclared identifier is reported only once
+> > kernel/module.c:2203: error: for each function it appears in.)
+> > kernel/module.c:2239: error: 'symoffs' undeclared (first use in this function)
+> > kernel/module.c:2239: error: implicit declaration of function 'layout_symtab'
+> > kernel/module.c:2240: error: 'stroffs' undeclared (first use in this function)
+> > make[1]: *** [kernel/module.o] Error 1
+> > make: *** [kernel/module.o] Error 2
+> >
+> > There are three different issues:
+> >
+> >    - layout_symtab() takes a const Elf_Ehdr
+> >
+> >    - layout_symtab() needs to return a value
+> >
+> >    - symoffs/stroffs/strmap are referenced by the load_module() code
+> >      despite being ifdefed out, which seems unnecessary given the noop
+> >      behaviour of layout_symtab()/add_kallsyms() in the case of
+> >      CONFIG_KALLSYMS=n.
+> >
+> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> > Cc: Jan Beulich <jbeulich@novell.com>
+> > Cc: Rusty Russell <rusty@rustcorp.com.au>
 > 
-> i haven't run into any further issues with this patch ... so i somehow
-> guess, it solved the problem ...
+> Indeed.
+> 
+> Acked-by: WANG Cong <amwang@redhat.com>
 
-In your boot logs, do you ever see messages like "link online but
-device misclassified, retrying"?
+And this completes the set:
 
--- 
-tejun
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+
+Thanks Paul!
+
+Cheers,
+Rusty.
