@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbZIZMoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZIZNGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbZIZMoN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 08:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZIZMoN
+	id S1752412AbZIZNGU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 09:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZIZNGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 08:44:13 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:50571 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752353AbZIZMoM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 08:44:12 -0400
-Date: Sat, 26 Sep 2009 08:44:14 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: how best to report results of my kernel tree scanning scripts?
-In-Reply-To: <1253968675.4568.3.camel@ht.satnam>
-Message-ID: <alpine.LFD.2.00.0909260841530.19382@localhost>
-References: <alpine.LFD.2.00.0909260811470.19017@localhost> <1253968675.4568.3.camel@ht.satnam>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Sat, 26 Sep 2009 09:06:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33906 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751538AbZIZNGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 09:06:18 -0400
+Subject: [PATCH] alpha: Remove unused CONFIG ALPHA_EV7
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Content-Type: text/plain
+Date: Sat, 26 Sep 2009 18:35:53 +0530
+Message-Id: <1253970353.4568.5.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Sep 2009, Jaswinder Singh Rajput wrote:
 
-> Hello Robert,
->
-> On Sat, 2009-09-26 at 08:16 -0400, Robert P. J. Day wrote:
-> > since the merge window appears to be ready to close fairly soon(?),
-> > i'm prepping to run my scanning scripts once again to identify (among
-> > other things):
-> >
-> >   * unused Kconfig CONFIG variables
-> >   * references to CONFIG_ variables that don't even exist (both in
-> >     source files and Makefiles)
-> >   * references to non-existent header files
-> >
-> > and bunches of other things.  i'm open as to the best way to post the
-> > results, since different people have different opinions.
-> >
-> >   and, no, i can't just submit patches since, in many cases, i have no
-> > idea what the fix should be (if any) -- that's the kind of decision
-> > best left to the respective subsystem maintainers.
-> >
-> >   thoughts?  this is where i put the old output:
-> >
-> > http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
-> >
->
-> Thanks for reporting these results, I will try to fix them and submit
-> patches with Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+ALPHA_EV7 is unused and currently ALPHA_MARVEL is used for EV7.
 
-  keep in mind that those are *old* results (although, of course, some
-of it will still be relevant).  i'll update those pages as soon as
--rc1 is out.  unsurprisingly, some of that is historical cruft that's
-been around a *looooong* time.  very little of it represents actual
-breakage but, occasionally, those scans will reveal actual typoes.
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+---
+ arch/alpha/Kconfig |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
-rday
---
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 4434481..2a50491 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -449,11 +449,6 @@ config ALPHA_EV67
+ 	  Is this a machine based on the EV67 core?  If in doubt, select N here
+ 	  and the machine will be treated as an EV6.
+ 
+-config ALPHA_EV7
+-	bool
+-	depends on ALPHA_MARVEL
+-	default y
+-
+ config ALPHA_MCPCIA
+ 	bool
+ 	depends on ALPHA_RAWHIDE
+-- 
+1.6.0.6
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
