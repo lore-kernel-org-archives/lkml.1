@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbZIZM3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbZIZMba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbZIZM3x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 08:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZIZM3x
+	id S1752657AbZIZMba (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 08:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZIZMb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 08:29:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50908 "EHLO mx2.mail.elte.hu"
+	Sat, 26 Sep 2009 08:31:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57363 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751875AbZIZM3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 08:29:52 -0400
-Date: Sat, 26 Sep 2009 14:29:45 +0200
+	id S1752194AbZIZMb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 08:31:28 -0400
+Date: Sat, 26 Sep 2009 14:31:21 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [GIT PULL] perf events fixes
-Message-ID: <20090926122945.GA2188@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [GIT PULL] futex fixes
+Message-ID: <20090926123121.GA12839@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,453 +33,285 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest perf-fixes-for-linus git tree from:
+Please pull the latest futex fixes git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perf-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Anton Blanchard (1):
-      perf_event: Update PERF_EVENT_FORK header definition
-
-Eric Dumazet (2):
-      perf tools: Fix buffer allocation
-      perf tools: Dont use openat()
-
-Ingo Molnar (1):
-      perf stat: Fix zero total printouts
-
-Kirill Smelkov (1):
-      perf tools: .gitignore += perf*.html
-
-Mike Galbraith (2):
-      perf tools: Fix module symbol loading bug
-      perf tools: Handle relative paths while loading module symbols
-
-Peter Zijlstra (1):
-      perf_event, x86: Fix 'perf sched record' crashing the machine
+Darren Hart (6):
+      futex: Correct futex_wait_requeue_pi() commentary
+      futex: Correct queue_me and unqueue_me commentary
+      futex: Make function kernel-doc commentary consistent
+      futex: Correct futex_q woken state commentary
+      futex: Fix wakeup race by setting TASK_INTERRUPTIBLE before queue_me()
+      futex: Add memory barrier commentary to futex_wait_queue_me()
 
 
- arch/x86/kernel/cpu/perf_event.c |    3 +
- include/linux/perf_counter.h     |    2 +-
- include/linux/perf_event.h       |    2 +-
- tools/perf/.gitignore            |    1 +
- tools/perf/builtin-stat.c        |   18 ++++++--
- tools/perf/util/module.c         |   96 ++++++++++++++++++++++++++------------
- tools/perf/util/parse-events.c   |   49 ++++++++-----------
- tools/perf/util/symbol.c         |   17 +++++--
- 8 files changed, 119 insertions(+), 69 deletions(-)
+ kernel/futex.c |  137 +++++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 76 insertions(+), 61 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index a3c7adb..b5801c3 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -1790,6 +1790,9 @@ void smp_perf_pending_interrupt(struct pt_regs *regs)
- void set_perf_event_pending(void)
- {
- #ifdef CONFIG_X86_LOCAL_APIC
-+	if (!x86_pmu.apic || !x86_pmu_initialized())
-+		return;
-+
- 	apic->send_IPI_self(LOCAL_PENDING_VECTOR);
- #endif
- }
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 368bd70..7b7fbf4 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -361,7 +361,7 @@ enum perf_event_type {
- 	 *	struct perf_event_header	header;
- 	 *	u32				pid, ppid;
- 	 *	u32				tid, ptid;
--	 *	{ u64				time;     } && PERF_SAMPLE_TIME
-+	 *	u64				time;
- 	 * };
- 	 */
- 	PERF_EVENT_FORK			= 7,
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index acefaf7..3a9d36d 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -357,7 +357,7 @@ enum perf_event_type {
- 	 *	struct perf_event_header	header;
- 	 *	u32				pid, ppid;
- 	 *	u32				tid, ptid;
--	 *	{ u64				time;     } && PERF_SAMPLE_TIME
-+	 *	u64				time;
- 	 * };
- 	 */
- 	PERF_RECORD_FORK			= 7,
-diff --git a/tools/perf/.gitignore b/tools/perf/.gitignore
-index d69a759..0854f11 100644
---- a/tools/perf/.gitignore
-+++ b/tools/perf/.gitignore
-@@ -10,6 +10,7 @@ perf-stat
- perf-top
- perf*.1
- perf*.xml
-+perf*.html
- common-cmds.h
- tags
- TAGS
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 16af2d8..e5f6ece 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -338,14 +338,24 @@ static void nsec_printout(int counter, double avg)
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 248dd11..b911adc 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -89,36 +89,36 @@ struct futex_pi_state {
+ 	union futex_key key;
+ };
  
- static void abs_printout(int counter, double avg)
- {
-+	double total, ratio = 0.0;
-+
- 	fprintf(stderr, " %14.0f  %-24s", avg, event_name(counter));
+-/*
+- * We use this hashed waitqueue instead of a normal wait_queue_t, so
++/**
++ * struct futex_q - The hashed futex queue entry, one per waiting task
++ * @task:		the task waiting on the futex
++ * @lock_ptr:		the hash bucket lock
++ * @key:		the key the futex is hashed on
++ * @pi_state:		optional priority inheritance state
++ * @rt_waiter:		rt_waiter storage for use with requeue_pi
++ * @requeue_pi_key:	the requeue_pi target futex key
++ * @bitset:		bitset for the optional bitmasked wakeup
++ *
++ * We use this hashed waitqueue, instead of a normal wait_queue_t, so
+  * we can wake only the relevant ones (hashed queues may be shared).
+  *
+  * A futex_q has a woken state, just like tasks have TASK_RUNNING.
+  * It is considered woken when plist_node_empty(&q->list) || q->lock_ptr == 0.
+  * The order of wakup is always to make the first condition true, then
+- * wake up q->waiter, then make the second condition true.
++ * the second.
++ *
++ * PI futexes are typically woken before they are removed from the hash list via
++ * the rt_mutex code. See unqueue_me_pi().
+  */
+ struct futex_q {
+ 	struct plist_node list;
+-	/* Waiter reference */
+-	struct task_struct *task;
  
- 	if (MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter)) {
--		fprintf(stderr, " # %10.3f IPC  ",
--				avg / avg_stats(&runtime_cycles_stats));
-+		total = avg_stats(&runtime_cycles_stats);
-+
-+		if (total)
-+			ratio = avg / total;
-+
-+		fprintf(stderr, " # %10.3f IPC  ", ratio);
- 	} else {
--		fprintf(stderr, " # %10.3f M/sec",
--				1000.0 * avg / avg_stats(&runtime_nsecs_stats));
-+		total = avg_stats(&runtime_nsecs_stats);
-+
-+		if (total)
-+			ratio = 1000.0 * avg / total;
-+
-+		fprintf(stderr, " # %10.3f M/sec", ratio);
- 	}
- }
- 
-diff --git a/tools/perf/util/module.c b/tools/perf/util/module.c
-index 3d567fe..0d8c85d 100644
---- a/tools/perf/util/module.c
-+++ b/tools/perf/util/module.c
-@@ -4,6 +4,7 @@
- #include "module.h"
- 
- #include <libelf.h>
-+#include <libgen.h>
- #include <gelf.h>
- #include <elf.h>
- #include <dirent.h>
-@@ -409,35 +410,40 @@ out_failure:
- static int mod_dso__load_module_paths(struct mod_dso *self)
- {
- 	struct utsname uts;
--	int count = 0, len;
-+	int count = 0, len, err = -1;
- 	char *line = NULL;
- 	FILE *file;
--	char *path;
-+	char *dpath, *dir;
- 	size_t n;
- 
- 	if (uname(&uts) < 0)
--		goto out_failure;
-+		return err;
- 
- 	len = strlen("/lib/modules/");
- 	len += strlen(uts.release);
- 	len += strlen("/modules.dep");
- 
--	path = calloc(1, len);
--	if (path == NULL)
--		goto out_failure;
-+	dpath = calloc(1, len + 1);
-+	if (dpath == NULL)
-+		return err;
- 
--	strcat(path, "/lib/modules/");
--	strcat(path, uts.release);
--	strcat(path, "/modules.dep");
-+	strcat(dpath, "/lib/modules/");
-+	strcat(dpath, uts.release);
-+	strcat(dpath, "/modules.dep");
- 
--	file = fopen(path, "r");
--	free(path);
-+	file = fopen(dpath, "r");
- 	if (file == NULL)
- 		goto out_failure;
- 
-+	dir = dirname(dpath);
-+	if (!dir)
-+		goto out_failure;
-+	strcat(dir, "/");
-+
- 	while (!feof(file)) {
--		char *name, *tmp;
- 		struct module *module;
-+		char *name, *path, *tmp;
-+		FILE *modfile;
- 		int line_len;
- 
- 		line_len = getline(&line, &n, file);
-@@ -445,17 +451,41 @@ static int mod_dso__load_module_paths(struct mod_dso *self)
- 			break;
- 
- 		if (!line)
--			goto out_failure;
-+			break;
- 
- 		line[--line_len] = '\0'; /* \n */
- 
--		path = strtok(line, ":");
-+		path = strchr(line, ':');
-+		if (!path)
-+			break;
-+		*path = '\0';
-+
-+		path = strdup(line);
- 		if (!path)
--			goto out_failure;
-+			break;
-+
-+		if (!strstr(path, dir)) {
-+			if (strncmp(path, "kernel/", 7))
-+				break;
-+
-+			free(path);
-+			path = calloc(1, strlen(dir) + strlen(line) + 1);
-+			if (!path)
-+				break;
-+			strcat(path, dir);
-+			strcat(path, line);
-+		}
-+
-+		modfile = fopen(path, "r");
-+		if (modfile == NULL)
-+			break;
-+		fclose(modfile);
- 
- 		name = strdup(path);
--		name = strtok(name, "/");
-+		if (!name)
-+			break;
- 
-+		name = strtok(name, "/");
- 		tmp = name;
- 
- 		while (tmp) {
-@@ -463,26 +493,25 @@ static int mod_dso__load_module_paths(struct mod_dso *self)
- 			if (tmp)
- 				name = tmp;
- 		}
-+
- 		name = strsep(&name, ".");
-+		if (!name)
-+			break;
- 
--		/* Quirk: replace '-' with '_' in sound modules */
-+		/* Quirk: replace '-' with '_' in all modules */
- 		for (len = strlen(name); len; len--) {
- 			if (*(name+len) == '-')
- 				*(name+len) = '_';
- 		}
- 
- 		module = module__new(name, path);
--		if (!module) {
--			fprintf(stderr, "load_module_paths: allocation error\n");
--			goto out_failure;
--		}
-+		if (!module)
-+			break;
- 		mod_dso__insert_module(self, module);
- 
- 		module->sections = sec_dso__new_dso("sections");
--		if (!module->sections) {
--			fprintf(stderr, "load_module_paths: allocation error\n");
--			goto out_failure;
--		}
-+		if (!module->sections)
-+			break;
- 
- 		module->active = mod_dso__load_sections(module);
- 
-@@ -490,13 +519,20 @@ static int mod_dso__load_module_paths(struct mod_dso *self)
- 			count++;
- 	}
- 
--	free(line);
--	fclose(file);
+-	/* Which hash list lock to use: */
++	struct task_struct *task;
+ 	spinlock_t *lock_ptr;
 -
--	return count;
-+	if (feof(file))
-+		err = count;
-+	else
-+		fprintf(stderr, "load_module_paths: modules.dep parsing failure!\n");
- 
- out_failure:
--	return -1;
-+	if (dpath)
-+		free(dpath);
-+	if (file)
-+		fclose(file);
-+	if (line)
-+		free(line);
-+
-+	return err;
- }
- 
- int mod_dso__load_modules(struct mod_dso *dso)
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 13ab4b8..87c424d 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -165,33 +165,31 @@ struct tracepoint_path *tracepoint_id_to_path(u64 config)
- 	DIR *sys_dir, *evt_dir;
- 	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
- 	char id_buf[4];
--	int sys_dir_fd, fd;
-+	int fd;
- 	u64 id;
- 	char evt_path[MAXPATHLEN];
-+	char dir_path[MAXPATHLEN];
- 
- 	if (valid_debugfs_mount(debugfs_path))
- 		return NULL;
- 
- 	sys_dir = opendir(debugfs_path);
- 	if (!sys_dir)
--		goto cleanup;
--	sys_dir_fd = dirfd(sys_dir);
-+		return NULL;
- 
- 	for_each_subsystem(sys_dir, sys_dirent, sys_next) {
--		int dfd = openat(sys_dir_fd, sys_dirent.d_name,
--				 O_RDONLY|O_DIRECTORY), evt_dir_fd;
--		if (dfd == -1)
--			continue;
--		evt_dir = fdopendir(dfd);
--		if (!evt_dir) {
--			close(dfd);
-+
-+		snprintf(dir_path, MAXPATHLEN, "%s/%s", debugfs_path,
-+			 sys_dirent.d_name);
-+		evt_dir = opendir(dir_path);
-+		if (!evt_dir)
- 			continue;
--		}
--		evt_dir_fd = dirfd(evt_dir);
-+
- 		for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next) {
--			snprintf(evt_path, MAXPATHLEN, "%s/id",
-+
-+			snprintf(evt_path, MAXPATHLEN, "%s/%s/id", dir_path,
- 				 evt_dirent.d_name);
--			fd = openat(evt_dir_fd, evt_path, O_RDONLY);
-+			fd = open(evt_path, O_RDONLY);
- 			if (fd < 0)
- 				continue;
- 			if (read(fd, id_buf, sizeof(id_buf)) < 0) {
-@@ -225,7 +223,6 @@ struct tracepoint_path *tracepoint_id_to_path(u64 config)
- 		closedir(evt_dir);
- 	}
- 
--cleanup:
- 	closedir(sys_dir);
- 	return NULL;
- }
-@@ -761,28 +758,24 @@ static void print_tracepoint_events(void)
- {
- 	DIR *sys_dir, *evt_dir;
- 	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
--	int sys_dir_fd;
- 	char evt_path[MAXPATHLEN];
-+	char dir_path[MAXPATHLEN];
- 
- 	if (valid_debugfs_mount(debugfs_path))
- 		return;
- 
- 	sys_dir = opendir(debugfs_path);
- 	if (!sys_dir)
--		goto cleanup;
--	sys_dir_fd = dirfd(sys_dir);
-+		return;
- 
- 	for_each_subsystem(sys_dir, sys_dirent, sys_next) {
--		int dfd = openat(sys_dir_fd, sys_dirent.d_name,
--				 O_RDONLY|O_DIRECTORY), evt_dir_fd;
--		if (dfd == -1)
--			continue;
--		evt_dir = fdopendir(dfd);
--		if (!evt_dir) {
--			close(dfd);
-+
-+		snprintf(dir_path, MAXPATHLEN, "%s/%s", debugfs_path,
-+			 sys_dirent.d_name);
-+		evt_dir = opendir(dir_path);
-+		if (!evt_dir)
- 			continue;
--		}
--		evt_dir_fd = dirfd(evt_dir);
-+
- 		for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next) {
- 			snprintf(evt_path, MAXPATHLEN, "%s:%s",
- 				 sys_dirent.d_name, evt_dirent.d_name);
-@@ -791,8 +784,6 @@ static void print_tracepoint_events(void)
- 		}
- 		closedir(evt_dir);
- 	}
+-	/* Key which the futex is hashed on: */
+ 	union futex_key key;
 -
--cleanup:
- 	closedir(sys_dir);
+-	/* Optional priority inheritance state: */
+ 	struct futex_pi_state *pi_state;
+-
+-	/* rt_waiter storage for requeue_pi: */
+ 	struct rt_mutex_waiter *rt_waiter;
+-
+-	/* The expected requeue pi target futex key: */
+ 	union futex_key *requeue_pi_key;
+-
+-	/* Bitset for the optional bitmasked wakeup */
+ 	u32 bitset;
+ };
+ 
+@@ -198,11 +198,12 @@ static void drop_futex_key_refs(union futex_key *key)
  }
  
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index fd3d9c8..559fb06 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -833,7 +833,7 @@ int dso__load_modules(struct dso *self, symbol_filter_t filter, int v)
- 	struct mod_dso *mods = mod_dso__new_dso("modules");
- 	struct module *pos;
- 	struct rb_node *next;
--	int err;
-+	int err, count = 0;
- 
- 	err = mod_dso__load_modules(mods);
- 
-@@ -852,14 +852,16 @@ int dso__load_modules(struct dso *self, symbol_filter_t filter, int v)
- 			break;
- 
- 		next = rb_next(&pos->rb_node);
-+		count += err;
- 	}
- 
- 	if (err < 0) {
- 		mod_dso__delete_modules(mods);
- 		mod_dso__delete_self(mods);
-+		return err;
- 	}
- 
--	return err;
-+	return count;
+ /**
+- * get_futex_key - Get parameters which are the keys for a futex.
+- * @uaddr: virtual address of the futex
+- * @fshared: 0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
+- * @key: address where result is stored.
+- * @rw: mapping needs to be read/write (values: VERIFY_READ, VERIFY_WRITE)
++ * get_futex_key() - Get parameters which are the keys for a futex
++ * @uaddr:	virtual address of the futex
++ * @fshared:	0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
++ * @key:	address where result is stored.
++ * @rw:		mapping needs to be read/write (values: VERIFY_READ,
++ * 		VERIFY_WRITE)
+  *
+  * Returns a negative error code or 0
+  * The key words are stored in *key on success.
+@@ -288,8 +289,8 @@ void put_futex_key(int fshared, union futex_key *key)
+ 	drop_futex_key_refs(key);
  }
  
- static inline void dso__fill_symbol_holes(struct dso *self)
-@@ -913,8 +915,15 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
+-/*
+- * fault_in_user_writeable - fault in user address and verify RW access
++/**
++ * fault_in_user_writeable() - Fault in user address and verify RW access
+  * @uaddr:	pointer to faulting user space address
+  *
+  * Slow path to fixup the fault we just took in the atomic write
+@@ -309,8 +310,8 @@ static int fault_in_user_writeable(u32 __user *uaddr)
  
- 	if (vmlinux) {
- 		err = dso__load_vmlinux(self, vmlinux, filter, v);
--		if (err > 0 && use_modules)
--			err = dso__load_modules(self, filter, v);
-+		if (err > 0 && use_modules) {
-+			int syms = dso__load_modules(self, filter, v);
+ /**
+  * futex_top_waiter() - Return the highest priority waiter on a futex
+- * @hb:     the hash bucket the futex_q's reside in
+- * @key:    the futex key (to distinguish it from other futex futex_q's)
++ * @hb:		the hash bucket the futex_q's reside in
++ * @key:	the futex key (to distinguish it from other futex futex_q's)
+  *
+  * Must be called with the hb lock held.
+  */
+@@ -588,7 +589,7 @@ lookup_pi_state(u32 uval, struct futex_hash_bucket *hb,
+ }
+ 
+ /**
+- * futex_lock_pi_atomic() - atomic work required to acquire a pi aware futex
++ * futex_lock_pi_atomic() - Atomic work required to acquire a pi aware futex
+  * @uaddr:		the pi futex user address
+  * @hb:			the pi futex hash bucket
+  * @key:		the futex key associated with uaddr and hb
+@@ -1011,9 +1012,9 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
+ 
+ /**
+  * requeue_pi_wake_futex() - Wake a task that acquired the lock during requeue
+- * q:	the futex_q
+- * key:	the key of the requeue target futex
+- * hb:  the hash_bucket of the requeue target futex
++ * @q:		the futex_q
++ * @key:	the key of the requeue target futex
++ * @hb:		the hash_bucket of the requeue target futex
+  *
+  * During futex_requeue, with requeue_pi=1, it is possible to acquire the
+  * target futex if it is uncontended or via a lock steal.  Set the futex_q key
+@@ -1350,6 +1351,25 @@ static inline struct futex_hash_bucket *queue_lock(struct futex_q *q)
+ 	return hb;
+ }
+ 
++static inline void
++queue_unlock(struct futex_q *q, struct futex_hash_bucket *hb)
++{
++	spin_unlock(&hb->lock);
++	drop_futex_key_refs(&q->key);
++}
 +
-+			if (syms < 0) {
-+				fprintf(stderr, "dso__load_modules failed!\n");
-+				return syms;
-+			}
-+			err += syms;
-+		}
++/**
++ * queue_me() - Enqueue the futex_q on the futex_hash_bucket
++ * @q:	The futex_q to enqueue
++ * @hb:	The destination hash bucket
++ *
++ * The hb->lock must be held by the caller, and is released here. A call to
++ * queue_me() is typically paired with exactly one call to unqueue_me().  The
++ * exceptions involve the PI related operations, which may use unqueue_me_pi()
++ * or nothing if the unqueue is done as part of the wake process and the unqueue
++ * state is implicit in the state of woken task (see futex_wait_requeue_pi() for
++ * an example).
++ */
+ static inline void queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
+ {
+ 	int prio;
+@@ -1373,19 +1393,17 @@ static inline void queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
+ 	spin_unlock(&hb->lock);
+ }
+ 
+-static inline void
+-queue_unlock(struct futex_q *q, struct futex_hash_bucket *hb)
+-{
+-	spin_unlock(&hb->lock);
+-	drop_futex_key_refs(&q->key);
+-}
+-
+-/*
+- * queue_me and unqueue_me must be called as a pair, each
+- * exactly once.  They are called with the hashed spinlock held.
++/**
++ * unqueue_me() - Remove the futex_q from its futex_hash_bucket
++ * @q:	The futex_q to unqueue
++ *
++ * The q->lock_ptr must not be held by the caller. A call to unqueue_me() must
++ * be paired with exactly one earlier call to queue_me().
++ *
++ * Returns:
++ *   1 - if the futex_q was still queued (and we removed unqueued it)
++ *   0 - if the futex_q was already removed by the waking thread
+  */
+-
+-/* Return 1 if we were still queued (ie. 0 means we were woken) */
+ static int unqueue_me(struct futex_q *q)
+ {
+ 	spinlock_t *lock_ptr;
+@@ -1638,17 +1656,14 @@ out:
+ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+ 				struct hrtimer_sleeper *timeout)
+ {
+-	queue_me(q, hb);
+-
+ 	/*
+-	 * There might have been scheduling since the queue_me(), as we
+-	 * cannot hold a spinlock across the get_user() in case it
+-	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
+-	 * queueing ourselves into the futex hash. This code thus has to
+-	 * rely on the futex_wake() code removing us from hash when it
+-	 * wakes us up.
++	 * The task state is guaranteed to be set before another task can
++	 * wake it. set_current_state() is implemented using set_mb() and
++	 * queue_me() calls spin_unlock() upon completion, both serializing
++	 * access to the hash list and forcing another memory barrier.
+ 	 */
+ 	set_current_state(TASK_INTERRUPTIBLE);
++	queue_me(q, hb);
+ 
+ 	/* Arm the timer */
+ 	if (timeout) {
+@@ -1658,8 +1673,8 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
  	}
  
- 	if (err <= 0)
+ 	/*
+-	 * !plist_node_empty() is safe here without any lock.
+-	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
++	 * If we have been removed from the hash list, then another task
++	 * has tried to wake us, and we can skip the call to schedule().
+ 	 */
+ 	if (likely(!plist_node_empty(&q->list))) {
+ 		/*
+@@ -2114,12 +2129,12 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
+ 
+ /**
+  * futex_wait_requeue_pi() - Wait on uaddr and take uaddr2
+- * @uaddr:	the futex we initialyl wait on (non-pi)
++ * @uaddr:	the futex we initially wait on (non-pi)
+  * @fshared:	whether the futexes are shared (1) or not (0).  They must be
+  * 		the same type, no requeueing from private to shared, etc.
+  * @val:	the expected value of uaddr
+  * @abs_time:	absolute timeout
+- * @bitset:	32 bit wakeup bitset set by userspace, defaults to all.
++ * @bitset:	32 bit wakeup bitset set by userspace, defaults to all
+  * @clockrt:	whether to use CLOCK_REALTIME (1) or CLOCK_MONOTONIC (0)
+  * @uaddr2:	the pi futex we will take prior to returning to user-space
+  *
+@@ -2246,7 +2261,7 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
+ 		res = fixup_owner(uaddr2, fshared, &q, !ret);
+ 		/*
+ 		 * If fixup_owner() returned an error, proprogate that.  If it
+-		 * acquired the lock, clear our -ETIMEDOUT or -EINTR.
++		 * acquired the lock, clear -ETIMEDOUT or -EINTR.
+ 		 */
+ 		if (res)
+ 			ret = (res < 0) ? res : 0;
+@@ -2302,9 +2317,9 @@ out:
+  */
+ 
+ /**
+- * sys_set_robust_list - set the robust-futex list head of a task
+- * @head: pointer to the list-head
+- * @len: length of the list-head, as userspace expects
++ * sys_set_robust_list() - Set the robust-futex list head of a task
++ * @head:	pointer to the list-head
++ * @len:	length of the list-head, as userspace expects
+  */
+ SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
+ 		size_t, len)
+@@ -2323,10 +2338,10 @@ SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
+ }
+ 
+ /**
+- * sys_get_robust_list - get the robust-futex list head of a task
+- * @pid: pid of the process [zero for current task]
+- * @head_ptr: pointer to a list-head pointer, the kernel fills it in
+- * @len_ptr: pointer to a length field, the kernel fills in the header size
++ * sys_get_robust_list() - Get the robust-futex list head of a task
++ * @pid:	pid of the process [zero for current task]
++ * @head_ptr:	pointer to a list-head pointer, the kernel fills it in
++ * @len_ptr:	pointer to a length field, the kernel fills in the header size
+  */
+ SYSCALL_DEFINE3(get_robust_list, int, pid,
+ 		struct robust_list_head __user * __user *, head_ptr,
