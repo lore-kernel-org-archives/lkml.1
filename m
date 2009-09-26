@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbZIZSSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZIZSUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752324AbZIZSSg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 14:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZIZSSf
+	id S1752551AbZIZSUl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 14:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZIZSUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 14:18:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48159 "EHLO
+	Sat, 26 Sep 2009 14:20:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48169 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbZIZSSe (ORCPT
+	with ESMTP id S1750897AbZIZSUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 14:18:34 -0400
-Date: Sat, 26 Sep 2009 20:18:37 +0200
+	Sat, 26 Sep 2009 14:20:40 -0400
+Date: Sat, 26 Sep 2009 20:20:43 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: Fix CONFIG_NUMA help message
-Message-ID: <20090926181837.GA15018@basil.fritz.box>
-MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       torvalds@linux-foundation.org, fengguang.wu@intel.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [origin tree build failure] Re: [PULL] Please pull hwpoison code for 2.6.32
+Message-ID: <20090926182043.GU30185@one.firstfloor.org>
+References: <20090926172802.GS30185@one.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090926172802.GS30185@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed recently while looking at this file. The x86 NUMA Kconfig help
-entry is not quite correct.
+On Sat, Sep 26, 2009 at 11:15:23AM -0700, H. Peter Anvin wrote:
+> We're definitely going to continue to have this problem until we decide we have hit the pain threshold either support external *zone* numbers or permit a 64-bit pageflags.
 
-- Core i7 systems are always non NUMA. Refer to multi socket Nehalems instead.
-- Replace outdated EM64T term with Intel 64
+Yes I agree. I implemented a perfect hash scheme for the NUMA pfn->node
+mapping a long time ago which is still there, that code could be probably
+extended to support zones too. It would just make the hash slightly larger.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
----
- arch/x86/Kconfig |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 384a897..47c81bd 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1118,8 +1118,9 @@ config NUMA
- 	  local memory controller of the CPU and add some more
- 	  NUMA awareness to the kernel.
- 
--	  For 64-bit this is recommended if the system is Intel Core i7
--	  (or later), AMD Opteron, or EM64T NUMA.
-+	  For 64-bit this is recommended if the system is Intel Xeon 75xx
-+	  (Intel Nehalem based multi socket systems), AMD Opteron, or Intel
-+          64 NUMA.
- 
- 	  For 32-bit this is only needed on (rare) 32-bit-only platforms
- 	  that support NUMA topologies, such as NUMAQ / Summit, or if you
--- 
-1.6.0.2
-
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+-Andi
