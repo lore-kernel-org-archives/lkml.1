@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807AbZIZAWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZIZAz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752807AbZIZAWZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 20:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZIZAWZ
+	id S1752904AbZIZAz3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 20:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZIZAz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 20:22:25 -0400
-Received: from claw.goop.org ([74.207.240.146]:58147 "EHLO claw.goop.org"
+	Fri, 25 Sep 2009 20:55:29 -0400
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:50699 "EHLO sabe.cs.wisc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751803AbZIZAWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 20:22:24 -0400
-Message-ID: <4ABD5EC3.5040204@goop.org>
-Date: Fri, 25 Sep 2009 17:22:27 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1750946AbZIZAz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 20:55:28 -0400
+X-Greylist: delayed 1149 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Sep 2009 20:55:28 EDT
+Message-ID: <4ABD61FA.2040609@cs.wisc.edu>
+Date: Fri, 25 Sep 2009 19:36:10 -0500
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] x86: unify sys_iopl
-References: <4ABD3EC2.1020104@goop.org>	 <73c1f2160909251556g40f3c5b1o1c29b7f012912873@mail.gmail.com>	 <4ABD50A5.5000309@goop.org> <73c1f2160909251654v1c9f8eb9k9211f1e0c5e15f67@mail.gmail.com>
-In-Reply-To: <73c1f2160909251654v1c9f8eb9k9211f1e0c5e15f67@mail.gmail.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
+To: kxie@chelsio.com
+CC: James.Bottomley@HansenPartnership.com, davem@davemloft.net,
+       swise@opengridcomputing.com, divy@chelsio.com, rakesh@chelsio.com,
+       linux-scsi@vger.kernel.org, open-iscsi@googlegroups.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2 2/2 scsi-post-merge] cxgb3i: support of private MAC
+ address in iSCSI
+References: <200909252225.n8PMPaa4031752@localhost.localdomain>
+In-Reply-To: <200909252225.n8PMPaa4031752@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/25/09 16:54, Brian Gerst wrote:
-> Using task_pt_regs is less effecient than getting the pointer directly
-> from the syscall entry code.
+kxie@chelsio.com wrote:
+> [PATCH v2 2/2 scsi-post-merge] cxgb3i: private MAC address for iSCSI
+> 
+> From: Karen Xie <kxie@chelsio.com>
+>         
+> This patch updated the use of private MAC address per port in iscsi.
+> 
+> This patch is generated against scsi-post-merge.
+>              
+> Signed-off-by: Karen Xie <kxie@chelsio.com>
+> --- 
+>  drivers/scsi/cxgb3i/cxgb3i_offload.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> 
+> diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.h b/drivers/scsi/cxgb3i/cxgb3i_offload.h
+> index 6a1d86b..f585ece 100644
+> --- a/drivers/scsi/cxgb3i/cxgb3i_offload.h
+> +++ b/drivers/scsi/cxgb3i/cxgb3i_offload.h
+> @@ -234,9 +234,9 @@ struct sge_opaque_hdr {
+>   * get and set private ip for iscsi traffic
+>   */
+>  #define cxgb3i_get_private_ipv4addr(ndev) \
+> -	(((struct port_info *)(netdev_priv(ndev)))->iscsi_ipv4addr)
+> +	(((struct port_info *)(netdev_priv(ndev)))->iscsic.ipv4_addr)
+>  #define cxgb3i_set_private_ipv4addr(ndev, addr) \
+> -	(((struct port_info *)(netdev_priv(ndev)))->iscsi_ipv4addr) = addr
+> +	(((struct port_info *)(netdev_priv(ndev)))->iscsic.ipv4_addr) = addr
+>  
 
-(really not an issue in this case)
+This looks ok.
 
->   On 32-bit it probably doesn't matter too
-> much, but on 64-bit, you still need the special stub code in
-> entry_64.S to put the full pt_regs struct on the stack.  Changing the
-> calling conventions should be a seperate patch, and should be done for
-> all pt_regs-using syscalls.
->   
-
-iopl only really cares about [er]flags, so it probably doesn't need a
-full ptregs structure anyway.  But I'm not sure what changes you'd
-consider for the rest of the ptregs calls; sigaltstack probably doesn't
-need full ptregs either (it just updates [er]sp I think), but fork/clone
-definitely do.
-
-    J
+Reviewed-by Mike Christie <michaelc@cs.wisc.edu>
