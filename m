@@ -1,317 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbZIZMba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752370AbZIZMcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752657AbZIZMba (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 08:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZIZMb3
+	id S1752370AbZIZMcm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 08:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbZIZMcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 08:31:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57363 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752194AbZIZMb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 08:31:28 -0400
-Date: Sat, 26 Sep 2009 14:31:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [GIT PULL] futex fixes
-Message-ID: <20090926123121.GA12839@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 26 Sep 2009 08:32:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58472 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbZIZMcl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 08:32:41 -0400
+Date: Sat, 26 Sep 2009 14:33:01 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
+Subject: [PATCH] x86: Use __builtin_object_size to validate the buffer size
+ for copy_from_user
+Message-ID: <20090926143301.2c396b94@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+>From 524a1da3c45683cec77480acc6cab1d33ae8d5cb Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sat, 26 Sep 2009 12:36:21 +0200
+Subject: [PATCH] x86: Use __builtin_object_size to validate the buffer size for copy_from_user
 
-Please pull the latest futex fixes git tree from:
+gcc (4.x) supports the __builtin_object_size() builtin, which reports the
+size of an object that a pointer point to, when known at compile time.
+If the buffer size is not known at compile time, a constant -1 is returned.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+This patch uses this feature to add a sanity check to copy_from_user();
+if the target buffer is known to be smaller than the copy size, the copy
+is aborted and a WARNing is emitted in memory debug mode.
 
- Thanks,
+These extra checks compile away when the object size is not known,
+or if both the buffer size and the copy length are constants.
 
-	Ingo
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Reviewed-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/uaccess_32.h |   19 ++++++++++++++++++-
+ arch/x86/include/asm/uaccess_64.h |   19 ++++++++++++++++++-
+ arch/x86/kernel/x8664_ksyms_64.c  |    2 +-
+ arch/x86/lib/copy_user_64.S       |    4 ++--
+ arch/x86/lib/usercopy_32.c        |    4 ++--
+ include/linux/compiler-gcc4.h     |    2 ++
+ include/linux/compiler.h          |    4 ++++
+ 7 files changed, 47 insertions(+), 7 deletions(-)
 
------------------->
-Darren Hart (6):
-      futex: Correct futex_wait_requeue_pi() commentary
-      futex: Correct queue_me and unqueue_me commentary
-      futex: Make function kernel-doc commentary consistent
-      futex: Correct futex_q woken state commentary
-      futex: Fix wakeup race by setting TASK_INTERRUPTIBLE before queue_me()
-      futex: Add memory barrier commentary to futex_wait_queue_me()
-
-
- kernel/futex.c |  137 +++++++++++++++++++++++++++++++-------------------------
- 1 files changed, 76 insertions(+), 61 deletions(-)
-
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 248dd11..b911adc 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -89,36 +89,36 @@ struct futex_pi_state {
- 	union futex_key key;
- };
+diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
+index 632fb44..582d6ae 100644
+--- a/arch/x86/include/asm/uaccess_32.h
++++ b/arch/x86/include/asm/uaccess_32.h
+@@ -187,9 +187,26 @@ __copy_from_user_inatomic_nocache(void *to, const void __user *from,
  
--/*
-- * We use this hashed waitqueue instead of a normal wait_queue_t, so
-+/**
-+ * struct futex_q - The hashed futex queue entry, one per waiting task
-+ * @task:		the task waiting on the futex
-+ * @lock_ptr:		the hash bucket lock
-+ * @key:		the key the futex is hashed on
-+ * @pi_state:		optional priority inheritance state
-+ * @rt_waiter:		rt_waiter storage for use with requeue_pi
-+ * @requeue_pi_key:	the requeue_pi target futex key
-+ * @bitset:		bitset for the optional bitmasked wakeup
-+ *
-+ * We use this hashed waitqueue, instead of a normal wait_queue_t, so
-  * we can wake only the relevant ones (hashed queues may be shared).
-  *
-  * A futex_q has a woken state, just like tasks have TASK_RUNNING.
-  * It is considered woken when plist_node_empty(&q->list) || q->lock_ptr == 0.
-  * The order of wakup is always to make the first condition true, then
-- * wake up q->waiter, then make the second condition true.
-+ * the second.
-+ *
-+ * PI futexes are typically woken before they are removed from the hash list via
-+ * the rt_mutex code. See unqueue_me_pi().
-  */
- struct futex_q {
- 	struct plist_node list;
--	/* Waiter reference */
--	struct task_struct *task;
- 
--	/* Which hash list lock to use: */
-+	struct task_struct *task;
- 	spinlock_t *lock_ptr;
--
--	/* Key which the futex is hashed on: */
- 	union futex_key key;
--
--	/* Optional priority inheritance state: */
- 	struct futex_pi_state *pi_state;
--
--	/* rt_waiter storage for requeue_pi: */
- 	struct rt_mutex_waiter *rt_waiter;
--
--	/* The expected requeue pi target futex key: */
- 	union futex_key *requeue_pi_key;
--
--	/* Bitset for the optional bitmasked wakeup */
- 	u32 bitset;
- };
- 
-@@ -198,11 +198,12 @@ static void drop_futex_key_refs(union futex_key *key)
- }
- 
- /**
-- * get_futex_key - Get parameters which are the keys for a futex.
-- * @uaddr: virtual address of the futex
-- * @fshared: 0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
-- * @key: address where result is stored.
-- * @rw: mapping needs to be read/write (values: VERIFY_READ, VERIFY_WRITE)
-+ * get_futex_key() - Get parameters which are the keys for a futex
-+ * @uaddr:	virtual address of the futex
-+ * @fshared:	0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
-+ * @key:	address where result is stored.
-+ * @rw:		mapping needs to be read/write (values: VERIFY_READ,
-+ * 		VERIFY_WRITE)
-  *
-  * Returns a negative error code or 0
-  * The key words are stored in *key on success.
-@@ -288,8 +289,8 @@ void put_futex_key(int fshared, union futex_key *key)
- 	drop_futex_key_refs(key);
- }
- 
--/*
-- * fault_in_user_writeable - fault in user address and verify RW access
-+/**
-+ * fault_in_user_writeable() - Fault in user address and verify RW access
-  * @uaddr:	pointer to faulting user space address
-  *
-  * Slow path to fixup the fault we just took in the atomic write
-@@ -309,8 +310,8 @@ static int fault_in_user_writeable(u32 __user *uaddr)
- 
- /**
-  * futex_top_waiter() - Return the highest priority waiter on a futex
-- * @hb:     the hash bucket the futex_q's reside in
-- * @key:    the futex key (to distinguish it from other futex futex_q's)
-+ * @hb:		the hash bucket the futex_q's reside in
-+ * @key:	the futex key (to distinguish it from other futex futex_q's)
-  *
-  * Must be called with the hb lock held.
-  */
-@@ -588,7 +589,7 @@ lookup_pi_state(u32 uval, struct futex_hash_bucket *hb,
- }
- 
- /**
-- * futex_lock_pi_atomic() - atomic work required to acquire a pi aware futex
-+ * futex_lock_pi_atomic() - Atomic work required to acquire a pi aware futex
-  * @uaddr:		the pi futex user address
-  * @hb:			the pi futex hash bucket
-  * @key:		the futex key associated with uaddr and hb
-@@ -1011,9 +1012,9 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
- 
- /**
-  * requeue_pi_wake_futex() - Wake a task that acquired the lock during requeue
-- * q:	the futex_q
-- * key:	the key of the requeue target futex
-- * hb:  the hash_bucket of the requeue target futex
-+ * @q:		the futex_q
-+ * @key:	the key of the requeue target futex
-+ * @hb:		the hash_bucket of the requeue target futex
-  *
-  * During futex_requeue, with requeue_pi=1, it is possible to acquire the
-  * target futex if it is uncontended or via a lock steal.  Set the futex_q key
-@@ -1350,6 +1351,25 @@ static inline struct futex_hash_bucket *queue_lock(struct futex_q *q)
- 	return hb;
- }
- 
-+static inline void
-+queue_unlock(struct futex_q *q, struct futex_hash_bucket *hb)
+ unsigned long __must_check copy_to_user(void __user *to,
+ 					const void *from, unsigned long n);
+-unsigned long __must_check copy_from_user(void *to,
++unsigned long __must_check _copy_from_user(void *to,
+ 					  const void __user *from,
+ 					  unsigned long n);
++
++static inline unsigned long __must_check copy_from_user(void *to,
++					  const void __user *from,
++					  unsigned long n)
 +{
-+	spin_unlock(&hb->lock);
-+	drop_futex_key_refs(&q->key);
++	int sz = __compiletime_object_size(to);
++	int ret = -EFAULT;
++
++	if (likely(sz == -1 || sz >= n))
++		ret = _copy_from_user(to, from, n);
++#ifdef CONFIG_DEBUG_VM
++	else
++		WARN(1, "Buffer overflow detected!\n");
++#endif
++	return ret;
 +}
 +
-+/**
-+ * queue_me() - Enqueue the futex_q on the futex_hash_bucket
-+ * @q:	The futex_q to enqueue
-+ * @hb:	The destination hash bucket
-+ *
-+ * The hb->lock must be held by the caller, and is released here. A call to
-+ * queue_me() is typically paired with exactly one call to unqueue_me().  The
-+ * exceptions involve the PI related operations, which may use unqueue_me_pi()
-+ * or nothing if the unqueue is done as part of the wake process and the unqueue
-+ * state is implicit in the state of woken task (see futex_wait_requeue_pi() for
-+ * an example).
-+ */
- static inline void queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
+ long __must_check strncpy_from_user(char *dst, const char __user *src,
+ 				    long count);
+ long __must_check __strncpy_from_user(char *dst,
+diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
+index db24b21..ce6fec7 100644
+--- a/arch/x86/include/asm/uaccess_64.h
++++ b/arch/x86/include/asm/uaccess_64.h
+@@ -21,10 +21,27 @@ copy_user_generic(void *to, const void *from, unsigned len);
+ __must_check unsigned long
+ copy_to_user(void __user *to, const void *from, unsigned len);
+ __must_check unsigned long
+-copy_from_user(void *to, const void __user *from, unsigned len);
++_copy_from_user(void *to, const void __user *from, unsigned len);
+ __must_check unsigned long
+ copy_in_user(void __user *to, const void __user *from, unsigned len);
+ 
++static inline unsigned long __must_check copy_from_user(void *to,
++					  const void __user *from,
++					  unsigned long n)
++{
++	int sz = __compiletime_object_size(to);
++	int ret = -EFAULT;
++
++	if (likely(sz == -1 || sz >= n))
++		ret = _copy_from_user(to, from, n);
++#ifdef CONFIG_DEBUG_VM
++	else
++		WARN(1, "Buffer overflow detected!\n");
++#endif
++	return ret;
++}
++
++
+ static __always_inline __must_check
+ int __copy_from_user(void *dst, const void __user *src, unsigned size)
  {
- 	int prio;
-@@ -1373,19 +1393,17 @@ static inline void queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
- 	spin_unlock(&hb->lock);
+diff --git a/arch/x86/kernel/x8664_ksyms_64.c b/arch/x86/kernel/x8664_ksyms_64.c
+index 3909e3b..a0cdd8c 100644
+--- a/arch/x86/kernel/x8664_ksyms_64.c
++++ b/arch/x86/kernel/x8664_ksyms_64.c
+@@ -30,7 +30,7 @@ EXPORT_SYMBOL(__put_user_8);
+ 
+ EXPORT_SYMBOL(copy_user_generic);
+ EXPORT_SYMBOL(__copy_user_nocache);
+-EXPORT_SYMBOL(copy_from_user);
++EXPORT_SYMBOL(_copy_from_user);
+ EXPORT_SYMBOL(copy_to_user);
+ EXPORT_SYMBOL(__copy_from_user_inatomic);
+ 
+diff --git a/arch/x86/lib/copy_user_64.S b/arch/x86/lib/copy_user_64.S
+index 6ba0f7b..4be3c41 100644
+--- a/arch/x86/lib/copy_user_64.S
++++ b/arch/x86/lib/copy_user_64.S
+@@ -78,7 +78,7 @@ ENTRY(copy_to_user)
+ ENDPROC(copy_to_user)
+ 
+ /* Standard copy_from_user with segment limit checking */
+-ENTRY(copy_from_user)
++ENTRY(_copy_from_user)
+ 	CFI_STARTPROC
+ 	GET_THREAD_INFO(%rax)
+ 	movq %rsi,%rcx
+@@ -88,7 +88,7 @@ ENTRY(copy_from_user)
+ 	jae bad_from_user
+ 	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
+ 	CFI_ENDPROC
+-ENDPROC(copy_from_user)
++ENDPROC(_copy_from_user)
+ 
+ ENTRY(copy_user_generic)
+ 	CFI_STARTPROC
+diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
+index 1f118d4..8498684 100644
+--- a/arch/x86/lib/usercopy_32.c
++++ b/arch/x86/lib/usercopy_32.c
+@@ -874,7 +874,7 @@ EXPORT_SYMBOL(copy_to_user);
+  * data to the requested size using zero bytes.
+  */
+ unsigned long
+-copy_from_user(void *to, const void __user *from, unsigned long n)
++_copy_from_user(void *to, const void __user *from, unsigned long n)
+ {
+ 	if (access_ok(VERIFY_READ, from, n))
+ 		n = __copy_from_user(to, from, n);
+@@ -882,4 +882,4 @@ copy_from_user(void *to, const void __user *from, unsigned long n)
+ 		memset(to, 0, n);
+ 	return n;
  }
+-EXPORT_SYMBOL(copy_from_user);
++EXPORT_SYMBOL(_copy_from_user);
+diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
+index 450fa59..a3aef5d 100644
+--- a/include/linux/compiler-gcc4.h
++++ b/include/linux/compiler-gcc4.h
+@@ -37,3 +37,5 @@
+ #define __cold			__attribute__((__cold__))
  
--static inline void
--queue_unlock(struct futex_q *q, struct futex_hash_bucket *hb)
--{
--	spin_unlock(&hb->lock);
--	drop_futex_key_refs(&q->key);
--}
--
--/*
-- * queue_me and unqueue_me must be called as a pair, each
-- * exactly once.  They are called with the hashed spinlock held.
-+/**
-+ * unqueue_me() - Remove the futex_q from its futex_hash_bucket
-+ * @q:	The futex_q to unqueue
-+ *
-+ * The q->lock_ptr must not be held by the caller. A call to unqueue_me() must
-+ * be paired with exactly one earlier call to queue_me().
-+ *
-+ * Returns:
-+ *   1 - if the futex_q was still queued (and we removed unqueued it)
-+ *   0 - if the futex_q was already removed by the waking thread
-  */
--
--/* Return 1 if we were still queued (ie. 0 means we were woken) */
- static int unqueue_me(struct futex_q *q)
- {
- 	spinlock_t *lock_ptr;
-@@ -1638,17 +1656,14 @@ out:
- static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
- 				struct hrtimer_sleeper *timeout)
- {
--	queue_me(q, hb);
--
- 	/*
--	 * There might have been scheduling since the queue_me(), as we
--	 * cannot hold a spinlock across the get_user() in case it
--	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
--	 * queueing ourselves into the futex hash. This code thus has to
--	 * rely on the futex_wake() code removing us from hash when it
--	 * wakes us up.
-+	 * The task state is guaranteed to be set before another task can
-+	 * wake it. set_current_state() is implemented using set_mb() and
-+	 * queue_me() calls spin_unlock() upon completion, both serializing
-+	 * access to the hash list and forcing another memory barrier.
- 	 */
- 	set_current_state(TASK_INTERRUPTIBLE);
-+	queue_me(q, hb);
+ #endif
++
++#define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 9d4c4b0..9c42853 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -185,6 +185,10 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+ # define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
+ #endif
  
- 	/* Arm the timer */
- 	if (timeout) {
-@@ -1658,8 +1673,8 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
- 	}
- 
- 	/*
--	 * !plist_node_empty() is safe here without any lock.
--	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
-+	 * If we have been removed from the hash list, then another task
-+	 * has tried to wake us, and we can skip the call to schedule().
- 	 */
- 	if (likely(!plist_node_empty(&q->list))) {
- 		/*
-@@ -2114,12 +2129,12 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
- 
- /**
-  * futex_wait_requeue_pi() - Wait on uaddr and take uaddr2
-- * @uaddr:	the futex we initialyl wait on (non-pi)
-+ * @uaddr:	the futex we initially wait on (non-pi)
-  * @fshared:	whether the futexes are shared (1) or not (0).  They must be
-  * 		the same type, no requeueing from private to shared, etc.
-  * @val:	the expected value of uaddr
-  * @abs_time:	absolute timeout
-- * @bitset:	32 bit wakeup bitset set by userspace, defaults to all.
-+ * @bitset:	32 bit wakeup bitset set by userspace, defaults to all
-  * @clockrt:	whether to use CLOCK_REALTIME (1) or CLOCK_MONOTONIC (0)
-  * @uaddr2:	the pi futex we will take prior to returning to user-space
-  *
-@@ -2246,7 +2261,7 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
- 		res = fixup_owner(uaddr2, fshared, &q, !ret);
- 		/*
- 		 * If fixup_owner() returned an error, proprogate that.  If it
--		 * acquired the lock, clear our -ETIMEDOUT or -EINTR.
-+		 * acquired the lock, clear -ETIMEDOUT or -EINTR.
- 		 */
- 		if (res)
- 			ret = (res < 0) ? res : 0;
-@@ -2302,9 +2317,9 @@ out:
-  */
- 
- /**
-- * sys_set_robust_list - set the robust-futex list head of a task
-- * @head: pointer to the list-head
-- * @len: length of the list-head, as userspace expects
-+ * sys_set_robust_list() - Set the robust-futex list head of a task
-+ * @head:	pointer to the list-head
-+ * @len:	length of the list-head, as userspace expects
-  */
- SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
- 		size_t, len)
-@@ -2323,10 +2338,10 @@ SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
- }
- 
- /**
-- * sys_get_robust_list - get the robust-futex list head of a task
-- * @pid: pid of the process [zero for current task]
-- * @head_ptr: pointer to a list-head pointer, the kernel fills it in
-- * @len_ptr: pointer to a length field, the kernel fills in the header size
-+ * sys_get_robust_list() - Get the robust-futex list head of a task
-+ * @pid:	pid of the process [zero for current task]
-+ * @head_ptr:	pointer to a list-head pointer, the kernel fills it in
-+ * @len_ptr:	pointer to a length field, the kernel fills in the header size
-  */
- SYSCALL_DEFINE3(get_robust_list, int, pid,
- 		struct robust_list_head __user * __user *, head_ptr,
++/* Compile time object size, -1 for unknown */
++#ifndef __compiletime_object_size
++# define __compiletime_object_size(obj) -1
++#endif
+ /*
+  * Prevent the compiler from merging or refetching accesses.  The compiler
+  * is also forbidden from reordering successive instances of ACCESS_ONCE(),
+-- 
+1.6.0.6
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
