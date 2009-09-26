@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbZIZJrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751890AbZIZJzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751870AbZIZJrk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 05:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZIZJrj
+	id S1751890AbZIZJzL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 05:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZIZJzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 05:47:39 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:58358 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751717AbZIZJri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 05:47:38 -0400
-Date: Sat, 26 Sep 2009 11:47:40 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Mika Kuoppala <mika.kuoppala@nokia.com>,
-       Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Subject: Re: [PATCH -next]  i2c: uses/select RT_MUTEXES
-Message-ID: <20090926114740.182d8b70@hyperion.delvare>
-In-Reply-To: <4ABD4213.9010700@oracle.com>
-References: <20090925133830.1ba29584.sfr@canb.auug.org.au>
-	<4ABD4213.9010700@oracle.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Sep 2009 05:55:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35627 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbZIZJzK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 05:55:10 -0400
+Date: Sat, 26 Sep 2009 11:55:06 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: linux-kernel@vger.kernel.org, lenz@cs.wisc.edu
+Subject: Re: [PATCH] locomo.c: CodingStyle cleanups
+Message-ID: <20090926095506.GD1331@ucw.cz>
+References: <BD79186B4FD85F4B8E60E381CAEE190901CBF2B3@mi8nycmail19.Mi8.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901CBF2B3@mi8nycmail19.Mi8.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randy,
+On Tue 2009-09-15 20:12:27, H Hartley Sweeten wrote:
+> [ARM] locomo.c: CodingStyle cleanups
+> 
+> EXPORT* macros should follow immediately after the closing function
+> brace line.
+> 
+> The prototype for locomo_chip_driver() is not needed since the static
+> (inline) function is located earlier in the file.
+> 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Cc: John Lenz <lenz@cs.wisc.edu>
 
-On Fri, 25 Sep 2009 15:20:03 -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> i2c-core uses rt mutexes, so it needs to select that
-> kconfig symbol since there is no prompt for it.
-> 
-> ERROR: "rt_mutex_lock" [drivers/i2c/i2c-core.ko] undefined!
-> ERROR: "__rt_mutex_init" [drivers/i2c/i2c-core.ko] undefined!
-> ERROR: "rt_mutex_trylock" [drivers/i2c/i2c-core.ko] undefined!
-> ERROR: "rt_mutex_unlock" [drivers/i2c/i2c-core.ko] undefined!
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/i2c/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- linux-next-20090925.orig/drivers/i2c/Kconfig
-> +++ linux-next-20090925/drivers/i2c/Kconfig
-> @@ -5,6 +5,7 @@
->  menuconfig I2C
->  	tristate "I2C support"
->  	depends on HAS_IOMEM
-> +	select RT_MUTEXES
->  	---help---
->  	  I2C (pronounce: I-square-C) is a slow serial bus protocol used in
->  	  many micro controller applications and developed by Philips.  SMBus,
-
-Thanks for the fix, I've folded it into
-i2c-prevent-priority-inversion-on-top-of-bus-lock.patch.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
 -- 
-Jean Delvare
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
