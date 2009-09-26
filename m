@@ -1,117 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751362AbZIZHFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751423AbZIZHQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751362AbZIZHFU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 03:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbZIZHFU
+	id S1751423AbZIZHQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 03:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZIZHQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 03:05:20 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:54686 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750968AbZIZHFT (ORCPT
+	Sat, 26 Sep 2009 03:16:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42620
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750818AbZIZHQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 03:05:19 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Au4EAMpZvUpMROOX/2dsb2JhbACBUNVugiiBdgU
-Date: Sat, 26 Sep 2009 03:05:22 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
-	energy
-Message-ID: <20090926070522.GB32430@Krystal>
-References: <20090923174820.GA12827@Krystal> <4ABA631A.8030306@nortel.com> <20090923190337.GA16983@Krystal> <20090923223204.GA2921@Krystal> <4ABAAB4F.2060905@nortel.com> <20090923232855.GB9621@Krystal>
+	Sat, 26 Sep 2009 03:16:27 -0400
+Date: Sat, 26 Sep 2009 00:16:46 -0700 (PDT)
+Message-Id: <20090926.001646.06991481.davem@davemloft.net>
+To: kxie@chelsio.com
+Cc: michaelc@cs.wisc.edu, James.Bottomley@HansenPartnership.com,
+       swise@opengridcomputing.com, divy@chelsio.com, rakesh@chelsio.com,
+       linux-scsi@vger.kernel.org, open-iscsi@googlegroups.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2 0/2] cxgb3/cxgb3i: added support of private MAC
+ address and provisioning packet handler for iSCSI
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <8A71B368A89016469F72CD08050AD334066E7019@maui.asicdesigners.com>
+References: <200909252225.n8PMPaqI031748@localhost.localdomain>
+	<20090925.152430.119503066.davem@davemloft.net>
+	<8A71B368A89016469F72CD08050AD334066E7019@maui.asicdesigners.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090923232855.GB9621@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 02:58:20 up 38 days, 17:47,  2 users,  load average: 0.14, 0.25,
-	0.22
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Chris Friesen (cfriesen@nortel.com) wrote:
-> > On 09/23/2009 04:32 PM, Mathieu Desnoyers wrote:
-> > 
-> > 
-> > > /*
-> > >  * Defer thread waiting. Single thread.
-> > >  */
-> > > static void wait_defer(void)
-> > > {
-> > >         atomic_dec(&defer_thread_futex);
-> > >         smp_mb();       /* Write futex before read queue */
-> > >         if (rcu_defer_num_callbacks()) {
-> > >                 smp_mb();       /* Read queue before write futex */
-> > >                 /* Callbacks are queued, don't wait. */
-> > >                 atomic_set(&defer_thread_futex, 0);
-> > >         } else {
-> > >                 smp_rmb();      /* Read queue before read futex */
-> > >                 if (atomic_read(&defer_thread_futex) == -1)
-> > >                         futex(&defer_thread_futex, FUTEX_WAIT, -1,
-> > >                               NULL, NULL, 0);
-> > >         }
-> > > }
-> > 
-> > > The goal here is that if call_rcu() enqueues a callback (even if it
-> > > races with defer thread going to sleep), there should not be a
-> > > potentially infinite delay before it gets executed.
-> > 
-> > It doesn't seem like the test for the number of callbacks should be
-> > necessary.  I don't see anything like that in the glibc code, nor do I
-> > remember anything like that in the futex sample code.
-> > 
-> 
-> The mutex code (and usual futex users) use futex to implement mutual
-> exclusion.  My goal is to send a wakeup signal to a thread waiting for
-> work to perform when adding such work. But without any mutual exclusion.
-> 
-> So it is understandable that glibc code or futex sample code does not
-> cover that, given this use is, well, creative. ;)
-> 
-> > I'm still not totally convinced that you can avoid race conditions
-> > without using atomic test-and-set or compare-and-exchange.  I haven't
-> > sat down and worked it out completely though.
-> > 
-> 
-> Yes.. this is heavily dependent on the states and values which can be
-> reached. I should probably take time to create a promela model and run
-> that though the spin model checker to be sure.
-> 
+From: "Karen Xie" <kxie@chelsio.com>
+Date: Fri, 25 Sep 2009 15:34:22 -0700
 
-Just created a Promela model for this. It assumes sequential memory
-ordering (so it's a fairly simplified model). Given I added memory
-barriers between each operation, it should well represent reality
-though.
+> Hmm, I am wondering how could this merge activity to be coordinated? If
+> only the driver/scsi change is merged, then it won't compile either,
+> since it requires the driver/net change.
 
-My algorithm seems to behave as expected: when a callback is added to
-the queue, it's not possible to have the waiter thread blocked until the
-end of days.
+That's rediculious, frankly.
 
-Available at:
-http://www.lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=blob;f=formal-model/futex-wakeup/futex.spin
+Since they are two seperate changes you are knowingly creating
+a bisection point that will not work.  That's wrong.
 
-Thanks,
-
-Mathieu
-
-> Thanks for the comments,
-> 
-> Mathieu
-> 
-> > Chris
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+You need to split up the changes so that each and every one of them
+are independant and the tree can be checked out at either of them and
+everything can be expected to work.
