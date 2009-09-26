@@ -1,164 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbZIZOPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZIZOSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752675AbZIZOPd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 10:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZIZOPd
+	id S1752661AbZIZOSA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 10:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZIZOR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 10:15:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48858 "EHLO mx3.mail.elte.hu"
+	Sat, 26 Sep 2009 10:17:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53533 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752566AbZIZOPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 10:15:32 -0400
-Date: Sat, 26 Sep 2009 16:15:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, tglx@tglx.de, hpa@zytor.com
-Subject: Re: [PATCH] x86: Use __builtin_object_size to validate the buffer
-	size for copy_from_user
-Message-ID: <20090926141525.GA540@elte.hu>
-References: <20090926143301.2c396b94@infradead.org> <20090926124151.GA648@elte.hu> <20090926160343.218bb52c@infradead.org>
+	id S1752198AbZIZOR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 10:17:58 -0400
+Date: Sat, 26 Sep 2009 14:17:31 GMT
+From: tip-bot for Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jin.dongming@np.css.fujitsu.com, seto.hidetoshi@jp.fujitsu.com,
+       kaneshige.kenji@jp.fujitsu.com, paulmck@linux.vnet.ibm.com,
+       dhowells@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jin.dongming@np.css.fujitsu.com, seto.hidetoshi@jp.fujitsu.com,
+       kaneshige.kenji@jp.fujitsu.com, paulmck@linux.vnet.ibm.com,
+       dhowells@redhat.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4ABC4CAB.7090302@np.css.fujitsu.com>
+References: <4ABC4CAB.7090302@np.css.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/rcu] rcu: Clean up the warning message about RCU not defined
+Message-ID: <tip-5ef9b8e59c043624fb44e31439cecf7f8b4cd62a@git.kernel.org>
+Git-Commit-ID: 5ef9b8e59c043624fb44e31439cecf7f8b4cd62a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090926160343.218bb52c@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 26 Sep 2009 14:17:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  5ef9b8e59c043624fb44e31439cecf7f8b4cd62a
+Gitweb:     http://git.kernel.org/tip/5ef9b8e59c043624fb44e31439cecf7f8b4cd62a
+Author:     Jin Dongming <jin.dongming@np.css.fujitsu.com>
+AuthorDate: Fri, 25 Sep 2009 13:52:59 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 26 Sep 2009 14:33:41 +0200
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+rcu: Clean up the warning message about RCU not defined
 
-> On Sat, 26 Sep 2009 14:41:51 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > 
-> > > From 524a1da3c45683cec77480acc6cab1d33ae8d5cb Mon Sep 17 00:00:00
-> > > 2001 From: Arjan van de Ven <arjan@linux.intel.com>
-> > > Date: Sat, 26 Sep 2009 12:36:21 +0200
-> > > Subject: [PATCH] x86: Use __builtin_object_size to validate the
-> > > buffer size for copy_from_user
-> > > 
-> > > gcc (4.x) supports the __builtin_object_size() builtin, which
-> > > reports the size of an object that a pointer point to, when known
-> > > at compile time. If the buffer size is not known at compile time, a
-> > > constant -1 is returned.
-> > > 
-> > > This patch uses this feature to add a sanity check to
-> > > copy_from_user(); if the target buffer is known to be smaller than
-> > > the copy size, the copy is aborted and a WARNing is emitted in
-> > > memory debug mode.
-> > > 
-> > > These extra checks compile away when the object size is not known,
-> > > or if both the buffer size and the copy length are constants.
-> > > 
-> > > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> > > Reviewed-by: Ingo Molnar <mingo@elte.hu>
-> > > ---
-> > >  arch/x86/include/asm/uaccess_32.h |   19 ++++++++++++++++++-
-> > >  arch/x86/include/asm/uaccess_64.h |   19 ++++++++++++++++++-
-> > >  arch/x86/kernel/x8664_ksyms_64.c  |    2 +-
-> > >  arch/x86/lib/copy_user_64.S       |    4 ++--
-> > >  arch/x86/lib/usercopy_32.c        |    4 ++--
-> > >  include/linux/compiler-gcc4.h     |    2 ++
-> > >  include/linux/compiler.h          |    4 ++++
-> > >  7 files changed, 47 insertions(+), 7 deletions(-)
-> > 
-> > I have tested this on a buffer overflow and it caught it:
-> > 
-> > [   87.056952] ------------[ cut here ]------------
-> > [   87.061628] WARNING:
-> > at /home/mingo/linux/arch/x86/include/asm/uaccess_64.h:35
-> > sys_perf_counter_open+0x112/0x65b() [   87.072600] Hardware name:
-> > System Product Name [   87.077072] Buffer overflow detected!
-> > [   87.080762] Modules linked in: [   87.083858] Pid: 2670, comm:
-> > exploit Not tainted 2.6.31 #17235 [   87.089708] Call Trace:
-> > [   87.092180]  [<ffffffff810a3241>] ?
-> > sys_perf_counter_open+0x112/0x65b [   87.098654]
-> > [<ffffffff8104303c>] warn_slowpath_common+0x77/0xa4 [   87.104684]
-> > [<ffffffff810430b6>] warn_slowpath_fmt+0x3c/0x3e [   87.110458]
-> > [<ffffffff810e41c3>] ? putname+0x30/0x39 [   87.115570]
-> > [<ffffffff810a3241>] sys_perf_counter_open+0x112/0x65b
-> > [   87.121880]  [<ffffffff8105b6df>] ? up_read+0x9/0xb
-> > [   87.126802]  [<ffffffff8100ba6b>] system_call_fastpath+0x16/0x1b
-> > [   87.132851] ---[ end trace 7469dba2cd3cfea8 ]---
-> > 
-> > 
-> > > +static inline unsigned long __must_check copy_from_user(void *to,
-> > > +					  const void __user *from,
-> > > +					  unsigned long n)
-> > > +{
-> > > +	int sz = __compiletime_object_size(to);
-> > > +	int ret = -EFAULT;
-> > > +
-> > > +	if (likely(sz == -1 || sz >= n))
-> > > +		ret = _copy_from_user(to, from, n);
-> > > +#ifdef CONFIG_DEBUG_VM
-> > > +	else
-> > > +		WARN(1, "Buffer overflow detected!\n");
-> > > +#endif
-> > > +	return ret;
-> > > +}
-> > 
-> > This is pretty optimal in the !CONFIG_DEBUG_VM case. Would be nice to 
-> > see precisely how optimal - how many new instructions in the default 
-> > !CONFIG_DEBUG_VM case?
-> > 
-> 
-> a test ->write method:
-> 
-> static ssize_t test_write(struct file *fp, const char __user *buf,
->                          size_t len, loff_t *off)
-> {
->         char buffer[10];
->         int ret;
-> 
->         ret = copy_from_user(&buffer, buf, len);
-> 
->         return ret;
-> }
-> 
-> with the patch turns into
-> 
->    0:   55                      push   %ebp
-> 
-> *  1:   b8 f2 ff ff ff          mov    $0xfffffff2,%eax
->    6:   89 e5                   mov    %esp,%ebp
->    8:   83 ec 0c                sub    $0xc,%esp
-> *  b:   83 f9 0a                cmp    $0xa,%ecx
-> *  e:   77 08                   ja     18 <test_write+0x18>
->   10:   8d 45 f6                lea    -0xa(%ebp),%eax
->   13:   e8 fc ff ff ff          call   14 <_copy_from_user>
->   18:   c9                      leave  
->   19:   c3                      ret  
-> 
-> while without it gets
-> 
->    0:   55                      push   %ebp
->    1:   89 e5                   mov    %esp,%ebp
->    3:   83 ec 0c                sub    $0xc,%esp
->    6:   8d 45 f6                lea    -0xa(%ebp),%eax
->    9:   e8 fc ff ff ff          call   <copy_from_user>
->    e:   c9                      leave  
->    f:   c3                      ret  
-> 
-> This is for the case where you have a known stack variable, but
-> variable copy size.
-> If you have either an unknown target size and/or a fixed sized copy,
-> the code goes away entirely.
+When the kernel is built, there is some message printed as
+following:
 
-That's pretty convincing.
+    include/linux/rcupdate.h:80:7: \
+        warning: "CONFIG_TINY_RCU" is not defined
 
-Linus, any objections?
+So I did "grep _RCU .config" to search the information of "CONFIG_TINY_RCU"
+in .config file and the result is listed as following:
 
-	Ingo
+    Command:
+        grep _RCU .config
+    Result:
+        CONFIG_TREE_RCU=y
+        # CONFIG_TREE_PREEMPT_RCU is not set
+        # CONFIG_TINY_RCU is not set
+        CONFIG_RCU_TRACE=y
+        CONFIG_RCU_FANOUT=64
+        # CONFIG_RCU_FANOUT_EXACT is not set
+        CONFIG_TREE_RCU_TRACE=y
+        # CONFIG_RCU_TORTURE_TEST is not set
+        # CONFIG_RCU_CPU_STALL_DETECTOR is not set
+
+Though the "WARNING" does not give impact to build kernel, I think
+it should be cleaned up. And I made the patch for modifying it.
+With this patch there is not any other warning message of
+CONFIG_TINY_RCU and the kernel could be built successfully. And I
+confirmed that the built kernel works well.
+
+Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Reviewed-by: "Paul E. McKenney " <paulmck@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org
+Cc: David Howells <dhowells@redhat.com>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+LKML-Reference: <4ABC4CAB.7090302@np.css.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/linux/rcupdate.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index b2f1e10..fe5c560 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -77,7 +77,7 @@ extern int rcu_scheduler_active;
+ 
+ #if defined(CONFIG_TREE_RCU) || defined(CONFIG_TREE_PREEMPT_RCU)
+ #include <linux/rcutree.h>
+-#elif CONFIG_TINY_RCU
++#elif defined(CONFIG_TINY_RCU)
+ #include <linux/rcutiny.h>
+ #else
+ #error "Unknown RCU implementation specified to kernel configuration"
