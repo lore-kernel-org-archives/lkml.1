@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbZIZSyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZIZSy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753032AbZIZSyf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 14:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZIZSyc
+	id S1752937AbZIZSy1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 14:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZIZSy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 14:54:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36410 "EHLO
+	Sat, 26 Sep 2009 14:54:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36396 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbZIZSyW (ORCPT
+	with ESMTP id S1750795AbZIZSyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 14:54:22 -0400
-Date: Sat, 26 Sep 2009 20:51:14 +0200
+	Sat, 26 Sep 2009 14:54:19 -0400
+Date: Sat, 26 Sep 2009 20:51:50 +0200
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       linux-wireless@vger.kernel.org
-Subject: [PATCH 3/9] Add bound checks in wext for copy_from_user
-Message-ID: <20090926205114.4ec62382@infradead.org>
+       hpa@zytor.com, tglx@tglx.de
+Subject: [PATCH 4/9] Simplify bound checks in the MTRR code
+Message-ID: <20090926205150.30797709@infradead.org>
 In-Reply-To: <20090926204951.424e567e@infradead.org>
 References: <20090926204951.424e567e@infradead.org>
 Organization: Intel
@@ -31,40 +31,54 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH 3/9] Add bound checks in wext for copy_from_user
-CC: linux-wireless@vger.kernel.org
+Subject: [PATCH 4/9] Simplify bound checks in the MTRR code
+CC: mingo@elte.hu
+CC: hpa@zytor.com
+CC: tglx@tglx.de
 
-The wireless extensions have a copy_from_user to a local stack
-array "essid", but both me and gcc have failed to find where
-the bounds for this copy are located in the code.
+The current bound checks for copy_from_user in the MTRR driver
+are not as obvious as they could be, and gcc agrees with that.
 
-This patch adds some basic sanity checks for the copy length
-to make sure that we don't overflow the stack buffer.
+This patch simplifies the boundary checks to the point that gcc
+can now prove to itself that the copy_from_user() is never going
+past its bounds.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-
-diff --git a/net/wireless/wext.c b/net/wireless/wext.c
-index 5b4a0ce..34beae6 100644
---- a/net/wireless/wext.c
-+++ b/net/wireless/wext.c
-@@ -773,10 +773,13 @@ static int ioctl_standard_iw_point(struct iw_point *iwp, unsigned int cmd,
- 			essid_compat = 1;
- 		else if (IW_IS_SET(cmd) && (iwp->length != 0)) {
- 			char essid[IW_ESSID_MAX_SIZE + 1];
-+			unsigned int len;
-+			len = iwp->length * descr->token_size;
+diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
+index f04e725..3c1b12d 100644
+--- a/arch/x86/kernel/cpu/mtrr/if.c
++++ b/arch/x86/kernel/cpu/mtrr/if.c
+@@ -96,17 +96,24 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
+ 	unsigned long long base, size;
+ 	char *ptr;
+ 	char line[LINE_SIZE];
++	int length;
+ 	size_t linelen;
  
--			err = copy_from_user(essid, iwp->pointer,
--					     iwp->length *
--					     descr->token_size);
-+			if (len > IW_ESSID_MAX_SIZE)
-+				return -EFAULT;
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+-	if (!len)
+-		return -EINVAL;
+ 
+ 	memset(line, 0, LINE_SIZE);
+-	if (len > LINE_SIZE)
+-		len = LINE_SIZE;
+-	if (copy_from_user(line, buf, len - 1))
 +
-+			err = copy_from_user(essid, iwp->pointer, len);
- 			if (err)
- 				return -EFAULT;
++	length = len;
++	length--;
++
++	if (length > LINE_SIZE - 1)
++		length = LINE_SIZE - 1;
++
++	if (length < 0)
++		return -EINVAL;
++
++	if (copy_from_user(line, buf, length))
+ 		return -EFAULT;
  
+ 	linelen = strlen(line);
 
 
 
