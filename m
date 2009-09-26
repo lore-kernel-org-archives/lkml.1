@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZIZT1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZIZTfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZIZT1t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 15:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZIZT1r
+	id S1752677AbZIZTfh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 15:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZIZTfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 15:27:47 -0400
-Received: from solo.fdn.fr ([80.67.169.19]:53823 "EHLO solo.fdn.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752345AbZIZT1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 15:27:47 -0400
-Date: Sat, 26 Sep 2009 21:27:48 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH,TRIVIAL] Fix csum_ipv6_magic asm memory clobber
-Message-ID: <20090926192748.GX7681@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org
+	Sat, 26 Sep 2009 15:35:36 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:51424 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750867AbZIZTfg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 15:35:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Rrf1hvxYRtq8bMu5P4EftnGGlfmIlF4QLOTH5LeVbeYX03K2yENeJpuWe07qwQAIGq
+         zNu1PstANxghZJwCplUhNfR33kTJqVHZJ1VMM0pig2jgbS3/6lOdsmjT2FCzqvcBuUHL
+         9UguHrf7REO7GdR7Mez/mf0Gvuu2YeCUjMB7w=
+Date: Sat, 26 Sep 2009 23:35:38 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 9/9] Add explicit bound checks in net/socket.c
+Message-ID: <20090926193538.GC4356@lenovo>
+References: <20090926204951.424e567e@infradead.org> <20090926205432.24aa1023@infradead.org> <20090926190103.GB4356@lenovo> <20090926212302.0ce64a5c@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20090926212302.0ce64a5c@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just like ip_fast_csum, the assembly snippet in csum_ipv6_magic needs a
-memory clobber, as it is only passed the address of the buffer, not a
-memory reference to the buffer itself.
+[Arjan van de Ven - Sat, Sep 26, 2009 at 09:23:02PM +0200]
+...
+| 
+| goof once goof twice, make it sizeof.. that's nicer.
+| 
 
-Signed-Off-By: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: stable@kernel.org
+yeah, I was about to propose the same :)
 
-diff --git a/arch/x86/include/asm/checksum_32.h b/arch/x86/include/asm/checksum_32.h
-index 7c5ef8b..46fc474 100644
---- a/arch/x86/include/asm/checksum_32.h
-+++ b/arch/x86/include/asm/checksum_32.h
-@@ -161,7 +161,8 @@ static inline __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
- 	    "adcl $0, %0	;\n"
- 	    : "=&r" (sum)
- 	    : "r" (saddr), "r" (daddr),
--	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum));
-+	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum)
-+	    : "memory");
- 
- 	return csum_fold(sum);
- }
+...
+	- Cyrill
