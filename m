@@ -1,36 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbZIZP2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZIZPad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752819AbZIZP2A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 11:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZIZP17
+	id S1752842AbZIZPad (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 11:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZIZPac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 11:27:59 -0400
-Received: from n15a.bullet.mail.mud.yahoo.com ([68.142.207.125]:41038 "HELO
-	n15a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751640AbZIZP16 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 11:27:58 -0400
-X-Greylist: delayed 313 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Sep 2009 11:27:58 EDT
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 959121.21041.bm@omp101.mail.gq1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=bellsouth.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=vylHmIA7P0YraxHbRNEoYMoGl0iTjeXHzOL+YisLLMwFpcOFwiVW6uyCw4gH6AUJK0ZjCulMzoz9mLbnQnUACrwowsOaJS8qsGhddmx2vMar9q0k5XymY5dSA9mPyrqkuhxfbUNMmCfgz0XDGZdC8RCFlxndy9BlxE6z6nO075o=;
-Message-ID: <747101.26866.qm@web180301.mail.gq1.yahoo.com>
-X-YMail-OSG: 76W.GF8VM1nX0AjSpEcMwr.32avgpjH7bL_av9Rw6s8IFuq4Mgpzrvhfq4tF0d9vJ.m6Ymrmi1KbXARnJLQ_YewRbxrDUGtwn8j3hGX9.2rPbduuM.RnNvL3C_R3Np6i43B1sHmM8wIwgpA.5uKhV807u82q4ubpASncRAzKy1fpajyHHiqB64mxfmjOBfjxgX9uf5JuUJYqxuEP4iNAxI59hBVdVlSSevqZvQ6SqhBRheNL.K5gvC3Y0MTX5BdVvKr6qVEz9k3KbJzR5jMV3krNcd6oOguZacUPEpyG0j2XeXfFaBoFSCN4D_LUd.F7LKsK3kiwjHBs_sUpVQq6RjrstrManyzXEWC6HKkqU1ZDAtykwtr_.eii4GWpBsnmtxRtuIuPPSQRl5t7KmKhZZu8v6oJzWfh3SxSIT8f88PPkFuZGS5VOIOoJMt52fvfcdAJDZGygCbzrCoIzZYlXA3g4RPNep6IOtEVl96l8wlxSbA21JvKH4LcGXgHJ.62n3.6MM2mMWMHOeZ.MtBLUKkWehgjzwWJWtxmEgPtLXEm231193RTNJyRSTNlauta5fvFc6liTADiOG0N
-X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.347.3
-Date: Sat, 26 Sep 2009 08:22:48 -0700 (PDT)
-From: Irish News Center <promonnotices1@bellsouth.net>
-Reply-To: irs.p10@live.com
-Subject: RE:
-To: undisclosed recipients:;
+	Sat, 26 Sep 2009 11:30:32 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:34963 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbZIZPab (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 11:30:31 -0400
+Date: Sat, 26 Sep 2009 11:30:33 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: kernel Makefiles that refer to non-existent CONFIG variables
+Message-ID: <alpine.LFD.2.00.0909261127100.31074@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You've won £750,000.Send:Name,Age,Country
 
+  since the following list is short, i'll just toss it out there --
+Makefiles that use, for conditional processing, CONFIG variables that
+don't appear to even exist (meaning, of course, that the corresponding
+contents will never, ever be processed).  like i said, it's a short
+list so, what the heck:
+
+===== ARCH_QSD =====
+./drivers/staging/dream/camera/Makefile:obj-$(CONFIG_ARCH_QSD) += msm_vfe8x.o msm_vfe8x_proc.o msm_io8x.o
+===== ATHEROS_AR71XX =====
+./drivers/net/wireless/ath/ath9k/Makefile:ath9k-$(CONFIG_ATHEROS_AR71XX) += ahb.o
+===== HAVE_GPIO_LIB =====
+./arch/mips/pmc-sierra/msp71xx/Makefile:obj-$(CONFIG_HAVE_GPIO_LIB) += gpio.o gpio_extended.o
+===== HDPU_FEATURES =====
+./drivers/misc/Makefile:obj-$(CONFIG_HDPU_FEATURES)	+= hdpuftrs/
+./drivers/misc/hdpuftrs/Makefile:obj-$(CONFIG_HDPU_FEATURES) := hdpu_cpustate.o hdpu_nexus.o
+===== IPIPE =====
+./arch/blackfin/kernel/Makefile:obj-$(CONFIG_IPIPE)                  += ipipe.o
+===== KEYBOARD_QT2160 =====
+./drivers/input/keyboard/Makefile:obj-$(CONFIG_KEYBOARD_QT2160)		+= qt2160.o
+===== MSM_ADSP =====
+./drivers/staging/dream/Makefile:obj-$(CONFIG_MSM_ADSP)		+= qdsp5/ smd/
+===== MSPETH =====
+./arch/mips/pmc-sierra/msp71xx/Makefile:obj-$(CONFIG_MSPETH) += msp_eth.o
+===== PPC_BOOK3E_32 =====
+./arch/powerpc/kernel/Makefile:extra-$(CONFIG_PPC_BOOK3E_32)	:= head_new_booke.o
+===== PROFILE =====
+./arch/mn10300/kernel/Makefile:obj-$(CONFIG_PROFILE) += profile.o profile-low.o
+===== PROM_CONSOLE =====
+./arch/mips/dec/Makefile:obj-$(CONFIG_PROM_CONSOLE)	+= promcon.o
+===== USB_MSP71XX =====
+./arch/mips/pmc-sierra/msp71xx/Makefile:obj-$(CONFIG_USB_MSP71XX) += msp_usb.o
+===== XFS_TRACE =====
+./fs/xfs/Makefile:xfs-$(CONFIG_XFS_TRACE)		+= xfs_btree_trace.o \
+./fs/xfs/Makefile:xfs-$(CONFIG_XFS_TRACE)		+= support/ktrace.o
+===== XTENSA_VARIANT_LINUX_CUSTOM =====
+./arch/xtensa/Makefile:variant-$(CONFIG_XTENSA_VARIANT_LINUX_CUSTOM)	:= custom
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
