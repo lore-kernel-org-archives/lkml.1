@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbZIZSyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbZIZSyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753123AbZIZSyo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 14:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZIZSye
+	id S1753032AbZIZSyf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 14:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZIZSyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 14:54:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36421 "EHLO
+	Sat, 26 Sep 2009 14:54:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36410 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbZIZSyZ (ORCPT
+	with ESMTP id S1752691AbZIZSyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 14:54:25 -0400
-Date: Sat, 26 Sep 2009 20:50:49 +0200
+	Sat, 26 Sep 2009 14:54:22 -0400
+Date: Sat, 26 Sep 2009 20:51:14 +0200
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu
-Subject: [PATCH 2/9] Simplify bound checks in nvram for copy_from_user
-Message-ID: <20090926205049.33703eea@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       linux-wireless@vger.kernel.org
+Subject: [PATCH 3/9] Add bound checks in wext for copy_from_user
+Message-ID: <20090926205114.4ec62382@infradead.org>
 In-Reply-To: <20090926204951.424e567e@infradead.org>
 References: <20090926204951.424e567e@infradead.org>
 Organization: Intel
@@ -29,47 +30,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH 2/9] Simplify bound checks in nvram for copy_from_user
+Subject: [PATCH 3/9] Add bound checks in wext for copy_from_user
+CC: linux-wireless@vger.kernel.org
 
-The nvram driver's write() function has an interesting bound check.
-Not only does it use the always-hard-to-read ? C operator, it also
-has a magic "i" in there, which comes from the file position of
-the file.
+The wireless extensions have a copy_from_user to a local stack
+array "essid", but both me and gcc have failed to find where
+the bounds for this copy are located in the code.
 
-On first sight the check looks sane, however the value of "i" is not 
-checked at all and I as human don't know if the C type rules guarantee
-that the result is always within bounds.. and neither does gcc seem to
-know.
-
-This patch simplifies the checks and guarantees that the copy will not
-overflow the destination buffer.
+This patch adds some basic sanity checks for the copy length
+to make sure that we don't overflow the stack buffer.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
 
-diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-index 88cee40..b2a7eaf 100644
---- a/drivers/char/nvram.c
-+++ b/drivers/char/nvram.c
-@@ -267,7 +267,15 @@ static ssize_t nvram_write(struct file *file, const char __user *buf,
- 	unsigned char *tmp;
- 	int len;
+diff --git a/net/wireless/wext.c b/net/wireless/wext.c
+index 5b4a0ce..34beae6 100644
+--- a/net/wireless/wext.c
++++ b/net/wireless/wext.c
+@@ -773,10 +773,13 @@ static int ioctl_standard_iw_point(struct iw_point *iwp, unsigned int cmd,
+ 			essid_compat = 1;
+ 		else if (IW_IS_SET(cmd) && (iwp->length != 0)) {
+ 			char essid[IW_ESSID_MAX_SIZE + 1];
++			unsigned int len;
++			len = iwp->length * descr->token_size;
  
--	len = (NVRAM_BYTES - i) < count ? (NVRAM_BYTES - i) : count;
-+	len = count;
-+	if (count > NVRAM_BYTES - i)
-+		len = NVRAM_BYTES - i;
+-			err = copy_from_user(essid, iwp->pointer,
+-					     iwp->length *
+-					     descr->token_size);
++			if (len > IW_ESSID_MAX_SIZE)
++				return -EFAULT;
 +
-+	if (len > NVRAM_BYTES)
-+		len = NVRAM_BYTES;
-+	if (len < 0)
-+		return -EINVAL;
-+
- 	if (copy_from_user(contents, buf, len))
- 		return -EFAULT;
++			err = copy_from_user(essid, iwp->pointer, len);
+ 			if (err)
+ 				return -EFAULT;
  
+
 
 
 -- 
