@@ -1,109 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752242AbZIZLhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbZIZLqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752242AbZIZLhK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 07:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbZIZLhI
+	id S1752451AbZIZLqs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 07:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZIZLqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 07:37:08 -0400
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:36663 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbZIZLhG (ORCPT
+	Sat, 26 Sep 2009 07:46:47 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37253 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbZIZLqr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 07:37:06 -0400
-Date: Sat, 26 Sep 2009 13:37:02 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, heiko.carstens@de.ibm.com,
-       linux-s390@vger.kernel.org, adobriyan@gmail.com
-Subject: Re: linux-next: 20090925 - build breaks with !CONFIG_AIO
-Message-ID: <20090926133702.44f315f7@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20090925131958.GC6831@linux.vnet.ibm.com>
-References: <20090925133830.1ba29584.sfr@canb.auug.org.au>
-	<20090925131958.GC6831@linux.vnet.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Sep 2009 07:46:47 -0400
+Date: Sat, 26 Sep 2009 13:38:11 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Arjan van de Ven <arjan@infradead.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: something wrong in drivers/power
+Message-ID: <20090926113810.GB3105@ucw.cz>
+References: <20090926095555.GG1331@ucw.cz> <20090926120657.24b337a8@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090926120657.24b337a8@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Sep 2009 18:49:58 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-
-> Hi Stephen,
+On Sat 2009-09-26 12:06:57, Arjan van de Ven wrote:
+> On Sat, 26 Sep 2009 11:55:55 +0200
+> Pavel Machek <pavel@ucw.cz> wrote:
 > 
-> 	next-20090925 randconfig build breaks on s390x, with CONFIG_AIO=n.
+> > 
+> > Tosa battery driver seems to be confused about its own identity.
 > 
-> arch/s390/mm/pgtable.c: In function 's390_enable_sie':
-> arch/s390/mm/pgtable.c:282: error: 'struct mm_struct' has no member named 'ioctx_list'
-> arch/s390/mm/pgtable.c:298: error: 'struct mm_struct' has no member named 'ioctx_list'
-> make[1]: *** [arch/s390/mm/pgtable.o] Error 1
-> 
-> Reverting the below commit helps
-> 
-> commit 858f09930b32c11b40fd0c5c467982ba09b10894
-> Author: Alexey Dobriyan <adobriyan@gmail.com>
-> Date:   Wed Sep 23 15:57:32 2009 -0700
-> 
->     aio: ifdef fields in mm_struct
-> 
-> 	->ioctx_lock and ->ioctx_list are used only under CONFIG_AIO.
+> maybe also stick in the copyright line "borrowed from the wm97xx
+> driver" :)
 
-That should be fixed in the s390 pgtable.c code:
-
---
-Subject: [PATCH] fix build breakage with CONFIG_AIO=n
-
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-next-20090925 randconfig build breaks on s390x, with CONFIG_AIO=n.
-
-arch/s390/mm/pgtable.c: In function 's390_enable_sie':
-arch/s390/mm/pgtable.c:282: error: 'struct mm_struct' has no member named 'ioctx_list'
-arch/s390/mm/pgtable.c:298: error: 'struct mm_struct' has no member named 'ioctx_list'
-make[1]: *** [arch/s390/mm/pgtable.o] Error 1
-
-Reported-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/mm/pgtable.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff -urpN linux-2.6/arch/s390/mm/pgtable.c linux-2.6-patched/arch/s390/mm/pgtable.c
---- linux-2.6/arch/s390/mm/pgtable.c	2009-09-26 13:35:36.000000000 +0200
-+++ linux-2.6-patched/arch/s390/mm/pgtable.c	2009-09-26 13:35:47.000000000 +0200
-@@ -279,7 +279,10 @@ int s390_enable_sie(void)
- 	/* lets check if we are allowed to replace the mm */
- 	task_lock(tsk);
- 	if (!tsk->mm || atomic_read(&tsk->mm->mm_users) > 1 ||
--	    tsk->mm != tsk->active_mm || !hlist_empty(&tsk->mm->ioctx_list)) {
-+#ifdef CONFIG_AIO
-+	    !hlist_empty(&tsk->mm->ioctx_list) ||
-+#endif
-+	    tsk->mm != tsk->active_mm) {
- 		task_unlock(tsk);
- 		return -EINVAL;
- 	}
-@@ -295,7 +298,10 @@ int s390_enable_sie(void)
- 	/* Now lets check again if something happened */
- 	task_lock(tsk);
- 	if (!tsk->mm || atomic_read(&tsk->mm->mm_users) > 1 ||
--	    tsk->mm != tsk->active_mm || !hlist_empty(&tsk->mm->ioctx_list)) {
-+#ifdef CONFIG_AIO
-+	    !hlist_empty(&tsk->mm->ioctx_list) ||
-+#endif
-+	    tsk->mm != tsk->active_mm) {
- 		mmput(mm);
- 		task_unlock(tsk);
- 		return -EINVAL;
+Well, I'd prefer authors to do that one :-).
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
