@@ -1,73 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbZIZLon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZIZLsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752491AbZIZLon (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 07:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZIZLom
+	id S1752401AbZIZLsO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 07:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbZIZLsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 07:44:42 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47652 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752431AbZIZLoj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 07:44:39 -0400
-X-Sasl-enc: vOUyxvk8eyzC7S49v2GWw1Gs9XSHy/bERaUzFBF8BVjZ 1253965483
-Message-ID: <4ABDFE9F.2030404@imap.cc>
-Date: Sat, 26 Sep 2009 13:44:31 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 26 Sep 2009 07:48:13 -0400
+Received: from mga14.intel.com ([143.182.124.37]:44030 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751424AbZIZLsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 07:48:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,456,1249282800"; 
+   d="scan'208";a="191968536"
+Date: Sat, 26 Sep 2009 19:48:06 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
+Message-ID: <20090926114806.GA12419@localhost>
+References: <20090926031537.GA10176@localhost> <Pine.LNX.4.64.0909261115530.12927@sister.anvils>
 MIME-Version: 1.0
-To: Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>
-CC: davem@davemloft.net, i4ldeveloper@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] ISDN patches for 2.6.32 (v2)
-References: <20090919-patch-capi-0.tilman@imap.cc>
-In-Reply-To: <20090919-patch-capi-0.tilman@imap.cc>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2E7DCB873CC45A615004EF4A"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0909261115530.12927@sister.anvils>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2E7DCB873CC45A615004EF4A
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Sat, Sep 26, 2009 at 07:09:21PM +0800, Hugh Dickins wrote:
+> On Sat, 26 Sep 2009, Wu Fengguang wrote:
+> 
+> > The swap cache and page cache code assume that they 'own' the newly
+> > allocated page and therefore can disregard the locking rules. However
+> > now hwpoison can hit any time on any page.
+> > 
+> > So use the safer lock_page()/trylock_page(). The main intention is not
+> > to close such a small time window of memory corruption. But to avoid
+> > kernel oops that may result from such races, and also avoid raising
+> > false alerts in hwpoison stress tests.
+> > 
+> > This in theory will slightly increase page cache/swap cache overheads,
+> > however it seems to be too small to be measurable in benchmark.
+> 
+> No.
+> 
+> But I'd most certainly defer to Nick if he disagrees with me.
+> 
+> I don't think anyone would want to quarrel very long over the swap
+> and migration mods alone, but add_to_page_cache() is of a higher
+> order of magnitude.
 
-Hello Karsten,
+Yup, add_to_page_cache() is hot path.
 
-is there any chance of getting these and the Gigaset patches forwarded
-for inclusion in 2.6.32 before the merge window closes?
-If not all of them, perhaps at least those which you had already acked
-before David Miller asked that they should formally go through you
-(#2-4 of the ISDN series), and those which are just fixes to the
-existing i4l version of the driver (#1-10 of the Gigaset series)?
-I would really appreciate not having to maintain all of them out of
-tree for another release cycle.
+> I can't see any reason to surrender add_to_page_cache() optimizations
+> to the remote possibility of hwpoison (infinitely remote for most of
+> us); though I wouldn't myself want to run the benchmark to defend them.
+> 
+> You'd later be sending a patch to replace __SetPageUptodate()s by
+> SetPageUptodate()s etc, wouldn't you?  Because any non-atomic op
+> on page->flags might wipe your locked bit (or your hwpoison bit).
 
-Thanks a lot,
-Tilman
+That's a sad fact, there may be more holes than we want/able to handle..
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+> You could make #ifdef CONFIG_HWPOISON_INJECT select the slower
+> versions of these things; or #ifdef CONFIG_MEMORY_FAILURE? that
+> would pose distros with a harder choice.  But I'd much prefer
+> not to go that way.
+> 
+> Please accept that there will be quite a number of places where
+> the code "knows" it's the only user of the page, and hwpoison
+> handling and testing should work around those places (can shift
+> things around slightly to suit itself better, but not add cost).
+> 
+> Look into why you think you want the page lock: I can see it's
+> going to be useful if you're taking a page out of a file (but then
+> why bother if page->mapping not set?), or if you're using rmap-style
+> lookup (but then why bother if !page_mapped?).
+> 
+> I suspect if memory_failure() did something like:
+> 	if (page->mapping)
+> 		lock_page_nosync(p);
+> then you'd be okay, perhaps with a few additional _inexpensive_
+> tweaks here and there.  With the "necessary" memory barriers?
+> no, we probably wouldn't want to be adding any in hot paths.
+> 
+> But I definitely say "something like": remember that page_mapping()
+> does that weird thing with PageSwapCache (a mistake from day one in
+> my opinion), which might or might not be what you want.  There are
+> probably various reasons why it's not as simple as I suggest above.
 
+Good view point! Could do it if turned out to be simple.
 
---------------enig2E7DCB873CC45A615004EF4A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+However we may well end up to accept the fact that "we just cannot do
+hwpoison 100% correct", and settle with a simple and 99% correct code.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+> It seems to me that the Intel hardware guys have done half a job
+> here: the sooner they get to remapping the bad pages, the better.
 
-iD8DBQFKvf6nQ3+did9BuFsRAmMrAKCCjw+jlZ2aNyXfj/qlbso99ImTnQCdHm28
-ePGJ6d5gQa7pH2au0f0zcjU=
-=EpF9
------END PGP SIGNATURE-----
+When we can offer to set aside half memory :)
 
---------------enig2E7DCB873CC45A615004EF4A--
+Thanks,
+Fengguang
+
+> > CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > CC: Andi Kleen <andi@firstfloor.org> 
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  include/linux/pagemap.h |   13 ++++---------
+> >  mm/migrate.c            |    2 +-
+> >  mm/swap_state.c         |    4 ++--
+> >  3 files changed, 7 insertions(+), 12 deletions(-)
+> > 
+> > --- sound-2.6.orig/mm/swap_state.c	2009-09-14 10:50:19.000000000 +0800
+> > +++ sound-2.6/mm/swap_state.c	2009-09-25 18:42:23.000000000 +0800
+> > @@ -306,7 +306,7 @@ struct page *read_swap_cache_async(swp_e
+> >  		 * re-using the just freed swap entry for an existing page.
+> >  		 * May fail (-ENOMEM) if radix-tree node allocation failed.
+> >  		 */
+> > -		__set_page_locked(new_page);
+> > +		lock_page(new_page);
+> >  		SetPageSwapBacked(new_page);
+> >  		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+> >  		if (likely(!err)) {
+> > @@ -318,7 +318,7 @@ struct page *read_swap_cache_async(swp_e
+> >  			return new_page;
+> >  		}
+> >  		ClearPageSwapBacked(new_page);
+> > -		__clear_page_locked(new_page);
+> > +		unlock_page(new_page);
+> >  		swapcache_free(entry, NULL);
+> >  	} while (err != -ENOMEM);
+> >  
+> > --- sound-2.6.orig/include/linux/pagemap.h	2009-09-14 10:50:19.000000000 +0800
+> > +++ sound-2.6/include/linux/pagemap.h	2009-09-25 18:42:19.000000000 +0800
+> > @@ -292,11 +292,6 @@ extern int __lock_page_killable(struct p
+> >  extern void __lock_page_nosync(struct page *page);
+> >  extern void unlock_page(struct page *page);
+> >  
+> > -static inline void __set_page_locked(struct page *page)
+> > -{
+> > -	__set_bit(PG_locked, &page->flags);
+> > -}
+> > -
+> >  static inline void __clear_page_locked(struct page *page)
+> >  {
+> >  	__clear_bit(PG_locked, &page->flags);
+> > @@ -435,18 +430,18 @@ extern void remove_from_page_cache(struc
+> >  extern void __remove_from_page_cache(struct page *page);
+> >  
+> >  /*
+> > - * Like add_to_page_cache_locked, but used to add newly allocated pages:
+> > - * the page is new, so we can just run __set_page_locked() against it.
+> > + * Like add_to_page_cache_locked, but used to add newly allocated pages.
+> >   */
+> >  static inline int add_to_page_cache(struct page *page,
+> >  		struct address_space *mapping, pgoff_t offset, gfp_t gfp_mask)
+> >  {
+> >  	int error;
+> >  
+> > -	__set_page_locked(page);
+> > +	if (!trylock_page(page))
+> > +		return -EIO;	/* hwpoisoned */
+> >  	error = add_to_page_cache_locked(page, mapping, offset, gfp_mask);
+> >  	if (unlikely(error))
+> > -		__clear_page_locked(page);
+> > +		unlock_page(page);
+> >  	return error;
+> >  }
+> >  
+> > --- sound-2.6.orig/mm/migrate.c	2009-09-14 10:50:19.000000000 +0800
+> > +++ sound-2.6/mm/migrate.c	2009-09-25 18:42:19.000000000 +0800
+> > @@ -551,7 +551,7 @@ static int move_to_new_page(struct page 
+> >  	 * holding a reference to the new page at this point.
+> >  	 */
+> >  	if (!trylock_page(newpage))
+> > -		BUG();
+> > +		return -EAGAIN;		/* got by hwpoison */
+> >  
+> >  	/* Prepare mapping for the new page.*/
+> >  	newpage->index = page->index;
