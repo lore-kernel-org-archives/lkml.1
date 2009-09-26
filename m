@@ -1,260 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbZIZRvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371AbZIZSKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752293AbZIZRvJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 13:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbZIZRvI
+	id S1752371AbZIZSKv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 14:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZIZSKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 13:51:08 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34703 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbZIZRvG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 13:51:06 -0400
-Date: Sat, 26 Sep 2009 20:51:06 +0300 (EEST)
-From: "=?ISO-8859-15?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@melkinkari.cs.Helsinki.FI
-To: Joe Cao <caoco2002@yahoo.com>
-cc: Ray Lee <ray-lk@madrabbit.org>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: TCP stack bug related to F-RTO?
-In-Reply-To: <844721.77331.qm@web63403.mail.re1.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0909262034130.12882@melkinkari.cs.Helsinki.FI>
-References: <844721.77331.qm@web63403.mail.re1.yahoo.com>
+	Sat, 26 Sep 2009 14:10:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39566 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751602AbZIZSKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 14:10:49 -0400
+Date: Sat, 26 Sep 2009 20:10:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, fengguang.wu@intel.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] x86: Fix hwpoison code related build failure on 32-bit
+	NUMAQ
+Message-ID: <20090926181037.GA4666@elte.hu>
+References: <20090916125116.GA12751@basil.fritz.box> <20090926141352.GA26117@elte.hu> <20090926151740.GN30185@one.firstfloor.org> <alpine.LFD.2.01.0909260930410.3303@localhost.localdomain> <20090926173522.GA22723@elte.hu> <alpine.LFD.2.01.0909261038510.3303@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696243445-1478973408-1253987466=:12882"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0909261038510.3303@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696243445-1478973408-1253987466=:12882
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On Sat, 26 Sep 2009, Joe Cao wrote:
-
-> Can you elaborate on "Some retransmission would happen here as step 3"?  
-> When the second timeout happens, it will again go into FRTO and then 
-> retransmit the write queue head.
-
-Why do you think that the second RTO will happen with anything else than 
-with 2.6.24. And it's perfectly ok to go into FRTO for the second time.
-
-> I looked at the patch (debian Bug#478062) that's probably what you 
-> mentioned as the fix. All it does was to exclude the SACK case when 
-> considering FRTO.  But in my case, SACK was enabled, as seen in the 
-> trace.
-
-You should be looking from where I said rather than picking up your own 
-sources and assuming that they'll tell you all the story :-). In fact, 
-there are two fixes that were made in a row and one workaround in the
-same timeframe. ...And you managed to pick the wrong one of the fixes, so 
-I kind of understand why you got confused :-).
-
-> In other words, do we still have a problem with FRTO when SACK is 
-> enabled in the latest kernel?
-
-For sure we might have all kinds of problems no one has yet 
-noticed/reported :-). ...However, it seems that this particular problem 
-your trace is showing is solved. Can you please test with a fixed kernel 
-before coming back here with these claims.
-
-
--- 
- i.
-
---- On Fri, 9/25/09, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-
-> From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> Subject: Re: TCP stack bug related to F-RTO?
-> To: "Joe Cao" <caoco2002@yahoo.com>
-> Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Netdev" <netdev@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>
-> Date: Friday, September 25, 2009, 11:03 AM
-> On Fri, 25 Sep 2009, Joe Cao wrote:
-> 
-> > Thanks for the reply!  Do you happen to know
-> which patch fixed the 
-> > problem?
-> 
-> You can find those patches from the stable queue git tree.
-> I gave you hint 
-> from what release to look from in the last mail. However,
-> as 2.6.24 is 
-> anyway obsolete my recommendation is that you should
-> probably consider 
-> upgrading to fix all the other bugs that have been found
-> since 2.6.24 was 
-> obsoleted.
-> 
-> > Is there a bug tracking system for linux kernel?
-> 
-> Nothing that knows everything about everything.
-> 
-> > I studied the FRTO code in latest kernel 2.6.31.. 
-> It seems the problem 
-> > is still there:  
-> >
-> > 1. Every time a RTO fires, because tcp_is_sackfrto(tp)
-> returns 1, 
-> > tcp_use_frto() returns true.  And the server tcp
-> enters FRTO.
-> > 2. After the head of write queue is retransmitted, two
-> new data packets 
-> > are transmitted, the server receives two
-> dup-ACKs.  That will make the 
-> > TCP enter tcp_enter_frto_loss(), however, that only
-> rests ssthresh and 
-> > some other fields.
-> 
-> Perhaps those other fields are far more important than you
-> think... :-)
-> ...Some retransmission would happen here as step 3.
-> 
-> > 3. After another longer RTO fires, because
-> tcp_is_sackfrto(tp) returns 
-> > 1, tcp_use_frto() again returns true.  The stack
-> enters FRTO again.
-> > 4. The above repeats and the stack couldn't
-> retransmits the lost packets 
-> > faster.
+> On Sat, 26 Sep 2009, Ingo Molnar wrote:
+> > >  
+> > > +config X86_SUPPORTS_MEMORY_FAILURE
+> > > +	bool
+> > > +	depends on !X86_NUMAQ
+> > > +	select ARCH_SUPPORTS_MEMORY_FAILURE
+> > > +	default y
 > > 
-> > Is my understanding above correct?
+> > Thanks Linus, this patch fixed the NUMAQ build problem.
 > 
-> ...No. All magic that happens in tcp_enter_frto_loss should
-> be enough to 
-> really do more than a single retransmission (that is, in
-> any other than 
-> 2.6.24 series kernel). There was an unfortunate bug in this
-> area in 2.6.24 
-> which basically undoed the effect of correct actions
-> tcp_enter_frto_loss 
-> did which effectively prevented tcp_xmit_retransmit_queue
-> from doing its 
-> part.
+> I think it's slightly buggy still.
 > 
-> -- 
->  i.
+> I think the X86_SUPPORTS_MEMORY_FAILURE thing should also have a
 > 
-> --- On Fri, 9/25/09, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> wrote:
+> 	depends on X86_MCE
 > 
-> > From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> > Subject: Re: TCP stack bug related to F-RTO?
-> > To: "Ray Lee" <ray-lk@madrabbit.org>
-> > Cc: "Joe Cao" <caoco2002@yahoo.com>,
-> "Netdev" <netdev@vger.kernel.org>,
-> "LKML" <linux-kernel@vger.kernel.org>,
-> jcaoco2002@yahoo.com
-> > Date: Friday, September 25, 2009, 6:09 AM
-> > On Thu, 24 Sep 2009, Ray Lee wrote:
-> > 
-> > > [adding netdev cc:]
-> > > 
-> > > On Thu, Sep 24, 2009 at 10:43 AM, Joe Cao <caoco2002@yahoo.com>
-> > wrote:
-> > > >
-> > > > Hello,
-> > > >
-> > > > I have found the following behavior with
-> > different versions of linux 
-> > > > kernel. The attached pcap trace is collected
-> with
-> > server 
-> > > > (192.168.0.13) running 2.6.24 and shows the
-> > problem. Basically the 
-> > > > behavior is like this: 
-> > > >
-> > > > 1. The client opens up a big window,
-> > > > 2. the server sends 19 packets in a row (pkt
-> #14-
-> > #32 in the trace), but all of them are dropped due to
-> some
-> > congestion.
-> > > > 3. The server hits RTO and retransmits pkt
-> #14 in
-> > #33
-> > > > 4. The client immediately acks #33 (=#14),
-> and
-> > the server (seems like to enter F-RTO) expends the
-> window
-> > and sends *NEW* pkt #35 & #36.=A0 Timeoute is
-> doubled to
-> > 2*RTO; The client immediately sends two Dup-ack to #35
-> and
-> > #36.
-> > > > 5. after 2*RTO, pkt #15 is retransmitted in
-> #39.
-> > > > 6. The client immediately acks #39 (=#15) in
-> #40,
-> > and the server continues to expand the window and
-> sends two
-> > *NEW* pkt #41 & #42. Now the timeoute is doubled
-> to 4
-> > *RTO.
-> > > > 8. After 4*RTO timeout, #16 is
-> retransmitted.
-> > > > 9....
-> > > > 10. The above steps repeats for
-> retransmitting
-> > pkt #16-#32 and each time the timeout is doubled.
-> > > > 11. It takes a long long time to retransmit
-> all
-> > the lost packets and before that is done, the client
-> sends a
-> > RST because of timeout.
-> > > >
-> > > > The above behavior looks like F-RTO is in
-> effect.
-> >  And there seems to 
-> > > > be a bug in the TCP's congestion control
-> and
-> > retransmission algorithm. 
-> > > > Why doesn't the TCP on server (running
-> 2.6.24)
-> > enter the slow start? 
-> > > > Why should the server take that long to
-> recover
-> > from a short period 
-> > > > of packet loss?
-> > > >
-> > > > Has anyone else noticed similar problem
-> before?
-> >  If my analysis was 
-> > > > wrong, can anyone gives me some pointers to
-> > what's really wrong and 
-> > > > how to fix it?
-> > 
-> > Yes, 2.6.24 is an obsoleted version with known wrongs
-> in
-> > FRTO 
-> > implementation. Fixes never when to 2.6.24 stable
-> series as
-> > it was 
-> > _already_ obsoleted when the problems where reported
-> and
-> > found. The 
-> > correct fixes may be found from 2.6.25.7 (.7 iirc) and
-> are
-> > included from 
-> > 2.6.26 onward too.
-> > 
-> > Just in case you happen to run ubuntu based kernel
-> from
-> > that era (of 
-> > course you should be reporting the bug here then...),
-> a
-> > word of warning: 
-> > it seemed nearly impossible for them to get a simple
-> thing
-> > like that 
-> > fixed, I haven't been looking if they'd eventually
-> come to
-> > some sensible 
-> > conclusion in that matter or is it still unresolved
-> (or
-> > e.g., closed 
-> > without real resolution).
+> line, because we still depend on MCE.
 
----696243445-1478973408-1253987466=:12882--
+Yeah.
+
+( Note, it should not necessarily depend on it: while the only hw 
+  mechanism that calls memory_failure() is indeed MCE, the act of having 
+  a memory-failures subsystem does not depend on the presence of an x86 
+  MCE subsystem. There's for example the injection debug-code which 
+  allows the injection of memory_failure() calls. That should work fine 
+  without having MCE build in as well.
+
+  But that is a separate change. )
+
+> And as you found out, there's also the sparsemem thing.
+> 
+> Don't make it one huge ugly thing, just split out the requirements like
+> 
+> 	depends on X86_MCE
+> 	depends on !X86_NUMAQ
+> 	depends on X86_64 || !SPARSEMEM
+> 
+> because I think the requirements are fairly independent, and it makes 
+> it easier to read (you could even comment each line on why _that_ 
+> particular issue needs to disable X86_SUPPORTS_MEMORY_FAILURE)
+
+Good idea, have done that too.
+
+> But yeah, with that, and some testing, please add my sign-off (or 
+> acked-by, if you end up changing the patch so much that it has little 
+> to do with my original one)
+
+It's still mostly your patch so i've added your SOB, thanks. Below is 
+the updated patch.
+
+btw., i think mm/memory-failure.c needs similar cleanups to 
+ARCH_SUPPORTS_MEMORY_FAILURE.
+
+Right now it is full of x86 details, not sure that is right. 'MCE' for 
+example is an x86 expression and goes way beyond just memory errors - it 
+stands for 'Machine Check Exception' and covers IO/bus errors, etc.
+
+We even put 'MCE' into new ABI details in include/asm-generic/siginfo.h:
+
+/* hardware memory error consumed on a machine check: action required */
+#define BUS_MCEERR_AR   (__SI_FAULT|4)
+/* hardware memory error detected in process but not consumed: action optional*/
+#define BUS_MCEERR_AO   (__SI_FAULT|5)
+#define NSIGBUS         5
+
+That should be fixed to be something like:
+
+	 BUS_MEMERR_MANDATORY
+	 BUS_MEMERR_OPTIONAL
+
+before such a kernel is released, IMHO.
+
+In mm/memory-failure.c i find the 'ao' / 'ar' abbreviations rather 
+unreadable as well - they are totally meaningless (to me at least),
+even if i know the code.
+
+Same goes for the me_*() prefixes.
+
+Also, 'struct to_kill' ....
+
+	Ingo
