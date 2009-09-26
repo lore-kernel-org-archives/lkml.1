@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbZIZSyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbZIZS4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752607AbZIZSyU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 14:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZIZSyT
+	id S1752900AbZIZS4N (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 14:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZIZSyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 14:54:19 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36387 "EHLO
+	Sat, 26 Sep 2009 14:54:20 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36390 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750795AbZIZSyS (ORCPT
+	with ESMTP id S1750867AbZIZSyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 14:54:18 -0400
-Date: Sat, 26 Sep 2009 20:49:51 +0200
+	Sat, 26 Sep 2009 14:54:19 -0400
+Date: Sat, 26 Sep 2009 20:50:25 +0200
 From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, mingo@elte.hu
-Subject: [PATCH 0/9] Series to make copy_from_user to a stack slot provable
- right
-Message-ID: <20090926204951.424e567e@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       lenb@kernel.org
+Subject: [PATCH 1/9] Fix bound checks for copy_from_user in the acpi /proc
+ code
+Message-ID: <20090926205025.3befecf6@infradead.org>
+In-Reply-To: <20090926204951.424e567e@infradead.org>
+References: <20090926204951.424e567e@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -28,27 +31,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 0/9] Series to make copy_from_user to a stack slot provable right
 
-This series contains a series of patches that, when applied, make every
-copy_from_user() in a make allyesconfig to a (direct) stack slot
-provable-by-gcc to have a correct size.
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH 1/9] Fix bound checks for copy_from_user in the acpi /proc code
+CC: Len Brown <lenb@kernel.org>
 
-This is useful because if we fix all of these, we can make the non-provable
-case an error, as an indication of a possible security hole.
+The ACPI /proc write() code takes an unsigned length argument like any write()
+function, but then assigned it to a *signed* integer called "len".
+Only after this is a sanity check for len done to make it not larger than 4.
 
-Now the series has 4 types of patches
-1) changes where the original code really was missing checks
-2) changes where the checks were coded so complex and games were played with
-   types, that I (and the compiler) couldn't be sure if it was correct or
-   not
-3) changes where we're hitting a small gcc missing optimization, but where
-   a simplification of the code allows gcc to prove things anyway.
-   (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=41477 is filed for this)
-4) a case in sys_socketcall where Dave Miller and co were very smart in
-   optimizing the code to the point where it's not reasonable for gcc
-   to realize the result is ok.
+Due to the type change a len < 0 is in principle also possible; this patch
+adds a check for this.
 
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
+diff --git a/drivers/acpi/proc.c b/drivers/acpi/proc.c
+index d0d550d..f8b6f55 100644
+--- a/drivers/acpi/proc.c
++++ b/drivers/acpi/proc.c
+@@ -398,6 +398,8 @@ acpi_system_write_wakeup_device(struct file *file,
+ 
+ 	if (len > 4)
+ 		len = 4;
++	if (len < 0)
++		return -EFAULT;
+ 
+ 	if (copy_from_user(strbuf, buffer, len))
+ 		return -EFAULT;
 
 
 -- 
