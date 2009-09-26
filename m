@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbZIZTzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZIZTr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752513AbZIZTzi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 15:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZIZTzi
+	id S1752707AbZIZTr6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 15:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZIZTr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 15:55:38 -0400
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:37711 "EHLO
-	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751363AbZIZTzh (ORCPT
+	Sat, 26 Sep 2009 15:47:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56799 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbZIZTr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 15:55:37 -0400
-X-Greylist: delayed 588 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Sep 2009 15:55:37 EDT
-X-IronPort-AV: E=Sophos;i="4.44,457,1249250400"; 
-   d="scan'208";a="33602997"
-Message-ID: <4ABE6F3A.9000901@ens-lyon.org>
-Date: Sat, 26 Sep 2009 21:44:58 +0200
-From: Brice Goglin <Brice.Goglin@ens-lyon.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Sat, 26 Sep 2009 15:47:57 -0400
+Date: Sat, 26 Sep 2009 15:47:47 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jan Kara <jack@suse.cz>,
+       Theodore Tso <tytso@mit.edu>, Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-fsdevel@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/6] writeback: don't delay inodes redirtied by a fast
+	dirtier
+Message-ID: <20090926194747.GA1593@infradead.org>
+References: <20090923123337.990689487@intel.com> <20090923124028.060887241@intel.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Fix CONFIG_NUMA help message
-References: <20090926181837.GA15018@basil.fritz.box>
-In-Reply-To: <20090926181837.GA15018@basil.fritz.box>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090923124028.060887241@intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Noticed recently while looking at this file. The x86 NUMA Kconfig help
-> entry is not quite correct.
->
-> - Core i7 systems are always non NUMA. Refer to multi socket Nehalems instead.
-> - Replace outdated EM64T term with Intel 64
->
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> ---
->  arch/x86/Kconfig |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 384a897..47c81bd 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -1118,8 +1118,9 @@ config NUMA
->  	  local memory controller of the CPU and add some more
->  	  NUMA awareness to the kernel.
->  
-> -	  For 64-bit this is recommended if the system is Intel Core i7
-> -	  (or later), AMD Opteron, or EM64T NUMA.
-> +	  For 64-bit this is recommended if the system is Intel Xeon 75xx
-> +	  (Intel Nehalem based multi socket systems), AMD Opteron, or Intel
-> +          64 NUMA.
->  
->  	  For 32-bit this is only needed on (rare) 32-bit-only platforms
->  	  that support NUMA topologies, such as NUMAQ / Summit, or if you
->   
+On Wed, Sep 23, 2009 at 08:33:43PM +0800, Wu Fengguang wrote:
+> So let's distinguish between data redirty and metadata only redirty.
+> The first one is caused by a busy dirtier, while the latter one could
+> happen in XFS, NFS, etc. when they are doing delalloc or updating isize.
 
-Why Xeon 75xx and not 55xx ?
-
-Brice
+Btw, I'm not sure the existing and preserved behaviour for that case
+is good.  In the worst case the inode writeout gets delayed by another
+30 seconds, doubling the window until a file is on disk if it was
+extended.
 
