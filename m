@@ -1,79 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbZIZBr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbZIZBu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752987AbZIZBr6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 21:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZIZBry
+	id S1752970AbZIZBu5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 21:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZIZBu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 21:47:54 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:62589 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbZIZBrv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 21:47:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=NHE5AZhnH8QH+v84brXQ1CKgneuPqYZcy4uD6GK4t2yF+d5tsjXRZVHZfMncfTMWXg
-         5N5U8dK/EjUzFFbOeKbfibGkilhAOirkYajccUjJg37lnfeQ2uVioeJbaa4M7pz6mtYh
-         5Yl7bZepEqFYorj9VJDXmrF7Fzn4hxcIt/VKs=
+	Fri, 25 Sep 2009 21:50:57 -0400
+Received: from n6.bullet.mail.ac4.yahoo.com ([76.13.13.234]:42007 "HELO
+	n6.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752371AbZIZBu4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 21:50:56 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 660361.25430.bm@omp102.mail.ac4.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=sWaH1gYOrIBXeXazm9R7zP+a1jpJ0kfCtNeRD8pmX4HrK/ykGcxWE52t6NEyX+w6gVYNltRBKVRC+Y3rIflSaV04s9IqiZsmAZwlekFY4Tj3P657Q+kX5blvXjWGQAEeHqtM2P3mqzHMSIYsRgog3In0NHFRCBr5Ll8apf2xsOA=;
+Message-ID: <557199.94656.qm@web63402.mail.re1.yahoo.com>
+X-YMail-OSG: dsNnrg0VM1msuZdAFVLOnAEPeeSBjiIOtR_y6Sf84xTzWQIEIk7Igb4H1pa66tb3wY6xLANp6zz0XHmlNTnMrrM1UJoa9WhpCD0GCcIt3zJ6.U1lLbBc_Yg2dQDSWveXmStFLYn8aBx1bZ1rLGRo1qrfD8jj1ToeNNehaSsNvRoB1oYaNqxRXsqCLCmHW32xUuFtnBXQT0LlcyoEkmBfUZBYx2yY_zqPCXY1fIMxq0o5moimiETxT1rMI_GJLeAHJwajjqV7376um0AOUzRopXGginI29zB_I0p3H2GDhZ7CJDXleEnQHpzdTpfwRcO7aJydpBCMsZ8TCTYTUvOooQYN
+X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.347.3
+Date: Fri, 25 Sep 2009 18:50:59 -0700 (PDT)
+From: Joe Cao <caoco2002@yahoo.com>
+Subject: Re: TCP stack bug related to F-RTO?
+To: =?iso-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0909252049260.1854@melkinkari.cs.Helsinki.FI>
 MIME-Version: 1.0
-In-Reply-To: <501db8660909251802hacbaf04wb8dc1734fa523d34@mail.gmail.com>
-References: <501db8660909251509i3eb6cb20i74337928e0708410@mail.gmail.com>
-	 <200909260051.34541.elendil@planet.nl>
-	 <501db8660909251802hacbaf04wb8dc1734fa523d34@mail.gmail.com>
-Date: Fri, 25 Sep 2009 18:47:55 -0700
-Message-ID: <86802c440909251847p421d6523ra40c59e724d566fb@mail.gmail.com>
-Subject: Re: Regression: kernels since 2.6.26 are unusably slow
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Aneurin Price <aneurin.price@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yinghai.lu@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 6:02 PM, Aneurin Price <aneurin.price@gmail.com> wrote:
+That makes sense.  Thanks for the info!
 
-> Hmm. Looking at dmesg for a 'working' kernel includes an interesting part which
-> I foolishly forgot to save, saying that the last 512MB of memory is
-> inaccessible (I was wondering where that last half-gig had gone :-)). I can go
-> and check exactly what it says, but I don't have the energy left for any more
-> reboots today. Anyway, that prompted me to try booting with mem=7168 - and that
-> makes the problem go away. Perhaps that will shed some light on things.
+Joe
 
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009e800 (usable)
-[    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 00000000dfee0000 (usable)
-[    0.000000]  BIOS-e820: 00000000dfee0000 - 00000000dfee3000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000dfee3000 - 00000000dfef0000 (ACPI data)
-[    0.000000]  BIOS-e820: 00000000dfef0000 - 00000000dff00000 (reserved)
-[    0.000000]  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-[    0.000000]  BIOS-e820: 0000000100000000 - 0000000220000000 (usable)
-[    0.000000] DMI 2.4 present.
-[    0.000000] last_pfn = 0x220000 max_arch_pfn = 0x400000000
-[    0.000000] MTRR default type: uncachable
-[    0.000000] MTRR fixed ranges enabled:
-[    0.000000]   00000-9FFFF write-back
-[    0.000000]   A0000-BFFFF uncachable
-[    0.000000]   C0000-CDFFF write-protect
-[    0.000000]   CE000-EFFFF uncachable
-[    0.000000]   F0000-FFFFF write-through
-[    0.000000] MTRR variable ranges enabled:
-[    0.000000]   0 base 100000000 mask FE0000000 write-back
-[    0.000000]   1 base 100000000 mask F00000000 write-back
-[    0.000000]   2 base 000000000 mask F00000000 write-back
-[    0.000000]   3 base 0E0000000 mask FE0000000 uncachable
-[    0.000000]   4 base 0DFF00000 mask FFFF00000 write-through
-[    0.000000]   5 disabled
-[    0.000000]   6 disabled
-[    0.000000]   7 disabled
+--- On Fri, 9/25/09, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
 
-looks like your MTRR has some problem, and with that WRITE-THROUGH
-there, the trimming e820 will not happen
+> From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> Subject: Re: TCP stack bug related to F-RTO?
+> To: "Joe Cao" <caoco2002@yahoo.com>
+> Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Netdev" <netdev@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>
+> Date: Friday, September 25, 2009, 11:03 AM
+> On Fri, 25 Sep 2009, Joe Cao wrote:
+> 
+> > Thanks for the reply!  Do you happen to know
+> which patch fixed the 
+> > problem?
+> 
+> You can find those patches from the stable queue git tree.
+> I gave you hint 
+> from what release to look from in the last mail. However,
+> as 2.6.24 is 
+> anyway obsolete my recommendation is that you should
+> probably consider 
+> upgrading to fix all the other bugs that have been found
+> since 2.6.24 was 
+> obsoleted.
+> 
+> > Is there a bug tracking system for linux kernel?
+> 
+> Nothing that knows everything about everything.
+> 
+> > I studied the FRTO code in latest kernel 2.6.31. 
+> It seems the problem 
+> > is still there:  
+> >
+> > 1. Every time a RTO fires, because tcp_is_sackfrto(tp)
+> returns 1, 
+> > tcp_use_frto() returns true.  And the server tcp
+> enters FRTO.
+> > 2. After the head of write queue is retransmitted, two
+> new data packets 
+> > are transmitted, the server receives two
+> dup-ACKs.  That will make the 
+> > TCP enter tcp_enter_frto_loss(), however, that only
+> rests ssthresh and 
+> > some other fields.
+> 
+> Perhaps those other fields are far more important than you
+> think... :-)
+> ...Some retransmission would happen here as step 3.
+> 
+> > 3. After another longer RTO fires, because
+> tcp_is_sackfrto(tp) returns 
+> > 1, tcp_use_frto() again returns true.  The stack
+> enters FRTO again.
+> > 4. The above repeats and the stack couldn't
+> retransmits the lost packets 
+> > faster.
+> > 
+> > Is my understanding above correct?
+> 
+> ...No. All magic that happens in tcp_enter_frto_loss should
+> be enough to 
+> really do more than a single retransmission (that is, in
+> any other than 
+> 2.6.24 series kernel). There was an unfortunate bug in this
+> area in 2.6.24 
+> which basically undoed the effect of correct actions
+> tcp_enter_frto_loss 
+> did which effectively prevented tcp_xmit_retransmit_queue
+> from doing its 
+> part.
+> 
+> -- 
+>  i.
+> 
+> --- On Fri, 9/25/09, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> wrote:
+> 
+> > From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> > Subject: Re: TCP stack bug related to F-RTO?
+> > To: "Ray Lee" <ray-lk@madrabbit.org>
+> > Cc: "Joe Cao" <caoco2002@yahoo.com>,
+> "Netdev" <netdev@vger.kernel.org>,
+> "LKML" <linux-kernel@vger.kernel.org>,
+> jcaoco2002@yahoo.com
+> > Date: Friday, September 25, 2009, 6:09 AM
+> > On Thu, 24 Sep 2009, Ray Lee wrote:
+> > 
+> > > [adding netdev cc:]
+> > > 
+> > > On Thu, Sep 24, 2009 at 10:43 AM, Joe Cao <caoco2002@yahoo.com>
+> > wrote:
+> > > >
+> > > > Hello,
+> > > >
+> > > > I have found the following behavior with
+> > different versions of linux 
+> > > > kernel. The attached pcap trace is collected
+> with
+> > server 
+> > > > (192.168.0.13) running 2.6.24 and shows the
+> > problem. Basically the 
+> > > > behavior is like this: 
+> > > >
+> > > > 1. The client opens up a big window,
+> > > > 2. the server sends 19 packets in a row (pkt
+> #14-
+> > #32 in the trace), but all of them are dropped due to
+> some
+> > congestion.
+> > > > 3. The server hits RTO and retransmits pkt
+> #14 in
+> > #33
+> > > > 4. The client immediately acks #33 (=#14),
+> and
+> > the server (seems like to enter F-RTO) expends the
+> window
+> > and sends *NEW* pkt #35 & #36.=A0 Timeoute is
+> doubled to
+> > 2*RTO; The client immediately sends two Dup-ack to #35
+> and
+> > #36.
+> > > > 5. after 2*RTO, pkt #15 is retransmitted in
+> #39.
+> > > > 6. The client immediately acks #39 (=#15) in
+> #40,
+> > and the server continues to expand the window and
+> sends two
+> > *NEW* pkt #41 & #42. Now the timeoute is doubled
+> to 4
+> > *RTO.
+> > > > 8. After 4*RTO timeout, #16 is
+> retransmitted.
+> > > > 9....
+> > > > 10. The above steps repeats for
+> retransmitting
+> > pkt #16-#32 and each time the timeout is doubled.
+> > > > 11. It takes a long long time to retransmit
+> all
+> > the lost packets and before that is done, the client
+> sends a
+> > RST because of timeout.
+> > > >
+> > > > The above behavior looks like F-RTO is in
+> effect.
+> >  And there seems to 
+> > > > be a bug in the TCP's congestion control
+> and
+> > retransmission algorithm. 
+> > > > Why doesn't the TCP on server (running
+> 2.6.24)
+> > enter the slow start? 
+> > > > Why should the server take that long to
+> recover
+> > from a short period 
+> > > > of packet loss?
+> > > >
+> > > > Has anyone else noticed similar problem
+> before?
+> >  If my analysis was 
+> > > > wrong, can anyone gives me some pointers to
+> > what's really wrong and 
+> > > > how to fix it?
+> > 
+> > Yes, 2.6.24 is an obsoleted version with known wrongs
+> in
+> > FRTO 
+> > implementation. Fixes never when to 2.6.24 stable
+> series as
+> > it was 
+> > _already_ obsoleted when the problems where reported
+> and
+> > found. The 
+> > correct fixes may be found from 2.6.25.7 (.7 iirc) and
+> are
+> > included from 
+> > 2.6.26 onward too.
+> > 
+> > Just in case you happen to run ubuntu based kernel
+> from
+> > that era (of 
+> > course you should be reporting the bug here then...),
+> a
+> > word of warning: 
+> > it seemed nearly impossible for them to get a simple
+> thing
+> > like that 
+> > fixed, I haven't been looking if they'd eventually
+> come to
+> > some sensible 
+> > conclusion in that matter or is it still unresolved
+> (or
+> > e.g., closed 
+> > without real resolution).
+> 
+> 
 
-YH
+
+      
+
