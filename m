@@ -1,68 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbZIZO1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbZIZOvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbZIZO1o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 10:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZIZO1n
+	id S1752686AbZIZOvZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 10:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZIZOvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 10:27:43 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:58430 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbZIZO1m convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 10:27:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=HUP1ziGtwFATSNVjf49duBMUVChZ5Ja3w+JVFFc/GrYmXgFI3c1nJTsR8GwHidmZJQ
-         KanEcyhMJxljMRQD8PaA0sOXKHopKEGKTpxGO6abxALbT86Ti/k9t4hRWhzxhRJX7dc5
-         lFZj2EdpWvDiPrelCdYElSQd0rtbu0LuFVl4U=
-MIME-Version: 1.0
-In-Reply-To: <20090919231810.GE7121@mit.edu>
-References: <a769871e0909191112t3adb852cn93d72dc5fd94b9fd@mail.gmail.com>
-	 <20090919231810.GE7121@mit.edu>
-Date: Sat, 26 Sep 2009 16:27:46 +0200
-Message-ID: <a769871e0909260727l65fd04a8ud49a9e0e0ec7d9a6@mail.gmail.com>
-Subject: Re: EXT4 RAID read performance
-From: wbrana@gmail.com
-To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 26 Sep 2009 10:51:25 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44443 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752128AbZIZOvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 10:51:24 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19W9psvpe9W3kXP1DPc6+Z4D3Stwo1cuwD01J/ltM
+	hMZKhIVpG+wZLg
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       jens.axboe@oracle.com
+In-Reply-To: <20090925202636.GC15007@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	 <4ABC28DE.7050809@datenparkplatz.de>  <20090925202636.GC15007@redhat.com>
+Content-Type: text/plain
+Date: Sat, 26 Sep 2009 16:51:16 +0200
+Message-Id: <1253976676.7005.40.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 20, 2009 at 1:18 AM, Theodore Tso <tytso@mit.edu> wrote:
-> You didn't say which version of the kernel you are using, which could
-> be important when asking these sorts of questions about potential
-> performance problems.
->
-2.6.31
+On Fri, 2009-09-25 at 16:26 -0400, Vivek Goyal wrote:
+> On Fri, Sep 25, 2009 at 04:20:14AM +0200, Ulrich Lukas wrote:
+> > Vivek Goyal wrote:
+> > > Notes:
+> > > - With vanilla CFQ, random writers can overwhelm a random reader.
+> > >   Bring down its throughput and bump up latencies significantly.
+> > 
+> > 
+> > IIRC, with vanilla CFQ, sequential writing can overwhelm random readers,
+> > too.
+> > 
+> > I'm basing this assumption on the observations I made on both OpenSuse
+> > 11.1 and Ubuntu 9.10 alpha6 which I described in my posting on LKML
+> > titled: "Poor desktop responsiveness with background I/O-operations" of
+> > 2009-09-20.
+> > (Message ID: 4AB59CBB.8090907@datenparkplatz.de)
+> > 
+> > 
+> > Thus, I'm posting this to show that your work is greatly appreciated,
+> > given the rather disappointig status quo of Linux's fairness when it
+> > comes to disk IO time.
+> > 
+> > I hope that your efforts lead to a change in performance of current
+> > userland applications, the sooner, the better.
+> > 
+> [Please don't remove people from original CC list. I am putting them back.]
+> 
+> Hi Ulrich,
+> 
+> I quicky went through that mail thread and I tried following on my
+> desktop.
+> 
+> ##########################################
+> dd if=/home/vgoyal/4G-file of=/dev/null &
+> sleep 5
+> time firefox
+> # close firefox once gui pops up.
+> ##########################################
+> 
+> It was taking close to 1 minute 30 seconds to launch firefox and dd got 
+> following.
+> 
+> 4294967296 bytes (4.3 GB) copied, 100.602 s, 42.7 MB/s
+> 
+> (Results do vary across runs, especially if system is booted fresh. Don't
+>  know why...).
+> 
+> 
+> Then I tried putting both the applications in separate groups and assign
+> them weights 200 each.
+> 
+> ##########################################
+> dd if=/home/vgoyal/4G-file of=/dev/null &
+> echo $! > /cgroup/io/test1/tasks
+> sleep 5
+> echo $$ > /cgroup/io/test2/tasks
+> time firefox
+> # close firefox once gui pops up.
+> ##########################################
+> 
+> Now I firefox pops up in 27 seconds. So it cut down the time by 2/3.
+> 
+> 4294967296 bytes (4.3 GB) copied, 84.6138 s, 50.8 MB/s
+> 
+> Notice that throughput of dd also improved.
+> 
+> I ran the block trace and noticed in many a cases firefox threads
+> immediately preempted the "dd". Probably because it was a file system
+> request. So in this case latency will arise from seek time.
+> 
+> In some other cases, threads had to wait for up to 100ms because dd was
+> not preempted. In this case latency will arise both from waiting on queue
+> as well as seek time.
 
->
-> Now, there are some workloads which compilebench might accurately
-> model --- for example, tar'ing up a directory.  However, despite the
-> name of the benchmark, it doesn't accurately model a kernel compile.
->
+Hm, with tip, I see ~10ms max wakeup latency running scriptlet below.
 
-You are right. I created simple benchmark which does real compilation of kernel
-with following results:
+> With cgroup thing, We will run 100ms slice for the group in which firefox
+> is being launched and then give 100ms uninterrupted time slice to dd. So
+> it should cut down on number of seeks happening and that's why we probably
+> see this improvement.
 
-reiser3
-16925 msec: tar xf /usr/src/linux.tar
-119173 msec: make -j4 all
+I'm not testing with group IO/CPU, but my numbers kinda agree that it's
+seek latency that's THE killer.  What the compiled numbers below from
+the cheezy script below that _seem_ to be telling me is that the default
+setting of CFQ quantum is allowing too many write requests through,
+inflicting too much read latency... for the disk where my binaries live.
+The longer the seeky burst, the more it hurts both reader/writer, so
+cutting down the max requests queueable helps the reader (which i think
+can't queue anything near per unit time that the writer can) finish and
+get out of the writer's way sooner.
 
-ext4
-14296 msec: tar xf /usr/src/linux.tar
-116692 msec: make -j4 all
+'nuff possibly useless words, onward to possibly useless numbers :)
 
-btrfs
-13493 msec: tar xf /usr/src/linux.tar
-116015 msec: make -j4 all
+dd pre == number dd emits upon receiving USR1 before execing perf.
+perf stat == time to load/execute perf stat konsole -e exit.
+dd post == same after dd number, after perf finishes.
 
-MD RAID10-f2 with 256 kB chunk size was used in all cases.
+quantum = 1                                                  Avg
+dd pre         58.4     52.5     56.1     61.6     52.3     56.1  MB/s
+perf stat      2.87     0.91     1.64     1.41     0.90      1.5  Sec
+dd post        56.6     61.0     66.3     64.7     60.9     61.9
 
-Source code:
-http://www.sendspace.com/file/fmikv7
-It depends on Qt Core library. There are hard-coded paths.
-It can delete important data if it is started without customization !!!
+quantum = 2
+dd pre         59.7     62.4     58.9     65.3     60.3     61.3
+perf stat      5.81     6.09     6.24    10.13     6.21      6.8
+dd post        64.0     62.6     64.2     60.4     61.1     62.4
+
+quantum = 3
+dd pre         65.5     57.7     54.5     51.1     56.3     57.0
+perf stat     14.01    13.71     8.35     5.35     8.57      9.9
+dd post        59.2     49.1     58.8     62.3     62.1     58.3
+
+quantum = 4
+dd pre         57.2     52.1     56.8     55.2     61.6     56.5
+perf stat     11.98     1.61     9.63    16.21    11.13     10.1
+dd post        57.2     52.6     62.2     49.3     50.2     54.3
+
+Nothing pinned btw, 4 cores available, but only 1 drive.
+
+#!/bin/sh
+
+DISK=sdb
+QUANTUM=/sys/block/$DISK/queue/iosched/quantum
+END=$(cat $QUANTUM)
+
+for q in `seq 1 $END`; do
+	echo $q > $QUANTUM
+	LOGFILE=quantum_log_$q
+	rm -f $LOGFILE
+	for i in `seq 1 5`; do
+		echo 2 > /proc/sys/vm/drop_caches
+		sh -c "dd if=/dev/zero of=./deleteme.dd 2>&1|tee -a $LOGFILE" &
+		sleep 30
+		sh -c "echo quantum $(cat $QUANTUM) loop $i" 2>&1|tee -a $LOGFILE
+		perf stat -- killlall -q get_stuf_into_ram >/dev/null 2>&1
+		sleep 1
+		killall -q -USR1 dd &
+		sleep 1
+		sh -c "perf stat -- konsole -e exit" 2>&1|tee -a $LOGFILE
+		sleep 1
+		killall -q -USR1 dd &
+		sleep 5
+		killall -qw dd
+		rm -f ./deleteme.dd
+		sync
+		sh -c "echo" 2>&1|tee -a $LOGFILE
+	done;
+done;
+
+
