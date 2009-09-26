@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZIZSy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZIZSyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752937AbZIZSy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 14:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZIZSy0
+	id S1752839AbZIZSyY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 14:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZIZSyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 14:54:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36396 "EHLO
+	Sat, 26 Sep 2009 14:54:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36394 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750795AbZIZSyT (ORCPT
+	with ESMTP id S1751800AbZIZSyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 26 Sep 2009 14:54:19 -0400
-Date: Sat, 26 Sep 2009 20:51:50 +0200
+Date: Sat, 26 Sep 2009 20:52:23 +0200
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       hpa@zytor.com, tglx@tglx.de
-Subject: [PATCH 4/9] Simplify bound checks in the MTRR code
-Message-ID: <20090926205150.30797709@infradead.org>
+       lenb@kernel.org
+Subject: [PATCH 5/9] Add bound checks in acpi/video for copy_from_user
+Message-ID: <20090926205223.61dd0844@infradead.org>
 In-Reply-To: <20090926204951.424e567e@infradead.org>
 References: <20090926204951.424e567e@infradead.org>
 Organization: Intel
@@ -31,54 +31,68 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH 4/9] Simplify bound checks in the MTRR code
-CC: mingo@elte.hu
-CC: hpa@zytor.com
-CC: tglx@tglx.de
+Subject: [PATCH 5/9] Add bound checks in acpi/video for copy_from_user
+CC: Len Brown <lenb@kernel.org>
 
-The current bound checks for copy_from_user in the MTRR driver
-are not as obvious as they could be, and gcc agrees with that.
+The ACPI video driver has a few boundary checks for copy_from_user
+that unfortunately confuse the GCC optimizer.
 
-This patch simplifies the boundary checks to the point that gcc
-can now prove to itself that the copy_from_user() is never going
-past its bounds.
+This patch simplifies these boundary checks to the point that
+gcc knows they copy_from_user() is always within bounds.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
-index f04e725..3c1b12d 100644
---- a/arch/x86/kernel/cpu/mtrr/if.c
-+++ b/arch/x86/kernel/cpu/mtrr/if.c
-@@ -96,17 +96,24 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
- 	unsigned long long base, size;
- 	char *ptr;
- 	char line[LINE_SIZE];
-+	int length;
- 	size_t linelen;
+
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 94b1a4c..0dd2cc8 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -1218,7 +1218,9 @@ acpi_video_device_write_state(struct file *file,
+ 	u32 state = 0;
  
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
--	if (!len)
--		return -EINVAL;
  
- 	memset(line, 0, LINE_SIZE);
--	if (len > LINE_SIZE)
--		len = LINE_SIZE;
--	if (copy_from_user(line, buf, len - 1))
-+
-+	length = len;
-+	length--;
-+
-+	if (length > LINE_SIZE - 1)
-+		length = LINE_SIZE - 1;
-+
-+	if (length < 0)
+-	if (!dev || count + 1 > sizeof str)
++	if (!dev)
++		return -EINVAL;
++	if (count >= sizeof(str))
+ 		return -EINVAL;
+ 
+ 	if (copy_from_user(str, buffer, count))
+@@ -1275,7 +1277,10 @@ acpi_video_device_write_brightness(struct file *file,
+ 	int i;
+ 
+ 
+-	if (!dev || !dev->brightness || count + 1 > sizeof str)
++	if (!dev || !dev->brightness)
 +		return -EINVAL;
 +
-+	if (copy_from_user(line, buf, length))
- 		return -EFAULT;
++	if (count >= sizeof(str))
+ 		return -EINVAL;
  
- 	linelen = strlen(line);
+ 	if (copy_from_user(str, buffer, count))
+@@ -1557,7 +1562,10 @@ acpi_video_bus_write_POST(struct file *file,
+ 	unsigned long long opt, options;
+ 
+ 
+-	if (!video || count + 1 > sizeof str)
++	if (!video)
++		return -EINVAL;
++
++	if (count >= sizeof(str))
+ 		return -EINVAL;
+ 
+ 	status = acpi_video_bus_POST_options(video, &options);
+@@ -1597,7 +1605,9 @@ acpi_video_bus_write_DOS(struct file *file,
+ 	unsigned long opt;
+ 
+ 
+-	if (!video || count + 1 > sizeof str)
++	if (!video)
++		return -EINVAL;
++	if (count >= sizeof(str))
+ 		return -EINVAL;
+ 
+ 	if (copy_from_user(str, buffer, count))
 
 
 
