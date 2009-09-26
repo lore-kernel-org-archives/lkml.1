@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbZIZCtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbZIZCvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753142AbZIZCtk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 22:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZIZCtj
+	id S1753154AbZIZCvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 22:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbZIZCvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 22:49:39 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:37188 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbZIZCti convert rfc822-to-8bit (ORCPT
+	Fri, 25 Sep 2009 22:51:51 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:49901 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839AbZIZCvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 22:49:38 -0400
+	Fri, 25 Sep 2009 22:51:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=b4jGYT0HPrM3f0zFw8sS6mTMtjrhHHQCdXw4cPW3kh0nh5hMCMukKoK+sa3HWt+3hM
-         jRFYZWE+NzPn0/3ou7r5dGeae+HgyqK++AS5JstRRrfxFRI86roNrWOolJH/tD6MKmw7
-         AZibqPm6bOMG50v4lO6p15K7tcWog/QxvPzFM=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=EiZKW8E+91w5ENuL3tg8qk7GmtEcCuKBsugarVPjcf7zxZsRagbjzNQrL9Xwhm/tk8
+         RjuiQ8SeSMbhtwEQuHmQlTHL+HtxHMoI9SKoetKByKQVLfLNk+3+6k6yAztoQGja4TR+
+         uKLByta6gJ2QeMMFI3EE0LVKe2+6AjtQ7cOkI=
+Message-ID: <4ABD81C8.7030803@gmail.com>
+Date: Fri, 25 Sep 2009 20:51:52 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <52241.192.168.10.89.1251990701.squirrel@dbdmail.itg.ti.com>
-References: <52241.192.168.10.89.1251990701.squirrel@dbdmail.itg.ti.com>
-From: vimal singh <vimal.newwork@gmail.com>
-Date: Fri, 25 Sep 2009 19:49:22 -0700
-Message-ID: <ce9ab5790909251949s71083c3brd625d36653387cc8@mail.gmail.com>
-Subject: Re: [PATCH 0/2] mfd: restoring twl4030 power-off and power-button 
-	capabilities
-To: Tony Lindgren <tony@atomide.com>, vimal singh <vimalsingh@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Ben Ryan <ben@impulse.net.au>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: USB HDD boot panic (2.6.31)
+References: <002701ca3d9b$53250240$f96f06c0$@net.au>
+In-Reply-To: <002701ca3d9b$53250240$f96f06c0$@net.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tony,
+On 09/24/2009 10:47 PM, Ben Ryan wrote:
+> I've a question regarding boot from USB-attached IDE HDD under 2.6.31
+> (slackware/lilo).
+> Searches haven't shed much light on status or resolutions.
+> Booting from this device throws:
+>
+>
+> VFS: Cannot open root device "sda1" or unknown-block(0,0)
+> Please append a correct "root=" boot option; here are the available
+> partitions:
+> .
+> Kernel panic - not syncing: VFS: Unable to mount root fs on unknown
+> block(0,)
+>
+>
+> I notice that there's no /dev/sd(x) devices listed as possible roots in the
+> error.
+> I've tried a kernel build with all relevant drivers inbuilt (not modules).
+> Tested on multiple machines with same result.
+> This issue seems to have some history, earlier kernels had patches written
+> for genhd.c (but I lack the skills to port them forward).
+> Discussion here:
+> http://lkml.indiana.edu/hypermail/linux/kernel/0405.0/0224.html
+>
+>  From what I can gather the USB drivers aren't finished initialising before
+> the disks are enumerated and mapped to /dev.
+>
+> Is this a known, current issue?
+> Does anyone have a patch that can help? If so, why isn't it mainlined?
+> (Please CC responses!)
 
-Since there are no comments on these patches, can these go upstream?
-Or, is there something to fix?
-
---vimal
-
-On Thu, Sep 3, 2009 at 8:11 AM, vimal singh <vimalsingh@ti.com> wrote:
-> This patch series restores the TWL Power-button and Power-off capabilities.
-> Which were removed in "REMOVE OMAP LEGACY CODE" patches.
->
-> Patches are compile tested only.
->
-> [PATCH 1/2]: twl4030: register twl4030-pwrbuttonas a child of twl4030-core.c
-> [PATCH 2/2]: twl4030: initialization of pm_power_off in twl4030-core.c
->
-> Both patches are based on Felipe Balbi's patches posted earlier.
-> http://lkml.org/lkml/2009/2/28/88
-> http://markmail.org/message/ts4if3553qnauket
->
-> --
-> Vimal
->
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+For this sort of setup you really need some sort of initrd that will 
+wait until the devices are detected before trying to mount the root file 
+system, rather than trying to have the kernel mount the root file system 
+on the USB HD directly. The problem is that the USB device detection is 
+asynchronous and the kernel doesn't really know when all possible USB 
+devices have "shown up".
