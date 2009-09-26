@@ -1,192 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbZIZOvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZIZOzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686AbZIZOvZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 10:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZIZOvZ
+	id S1752707AbZIZOzT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 10:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZIZOzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 10:51:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44443 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752128AbZIZOvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 10:51:24 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19W9psvpe9W3kXP1DPc6+Z4D3Stwo1cuwD01J/ltM
-	hMZKhIVpG+wZLg
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       jens.axboe@oracle.com
-In-Reply-To: <20090925202636.GC15007@redhat.com>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-	 <4ABC28DE.7050809@datenparkplatz.de>  <20090925202636.GC15007@redhat.com>
-Content-Type: text/plain
-Date: Sat, 26 Sep 2009 16:51:16 +0200
-Message-Id: <1253976676.7005.40.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.45
+	Sat, 26 Sep 2009 10:55:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35023 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751462AbZIZOzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 10:55:17 -0400
+Date: Sat, 26 Sep 2009 14:54:45 GMT
+From: tip-bot for Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, arjan@infradead.org, hpa@zytor.com,
+       mingo@redhat.com, arjan@linux.intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, arjan@infradead.org,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090926143301.2c396b94@infradead.org>
+References: <20090926143301.2c396b94@infradead.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/asm] x86: Use __builtin_object_size() to validate the buffer size for copy_from_user()
+Message-ID: <tip-9f0cf4adb6aa0bfccf675c938124e68f7f06349d@git.kernel.org>
+Git-Commit-ID: 9f0cf4adb6aa0bfccf675c938124e68f7f06349d
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 26 Sep 2009 14:54:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-25 at 16:26 -0400, Vivek Goyal wrote:
-> On Fri, Sep 25, 2009 at 04:20:14AM +0200, Ulrich Lukas wrote:
-> > Vivek Goyal wrote:
-> > > Notes:
-> > > - With vanilla CFQ, random writers can overwhelm a random reader.
-> > >   Bring down its throughput and bump up latencies significantly.
-> > 
-> > 
-> > IIRC, with vanilla CFQ, sequential writing can overwhelm random readers,
-> > too.
-> > 
-> > I'm basing this assumption on the observations I made on both OpenSuse
-> > 11.1 and Ubuntu 9.10 alpha6 which I described in my posting on LKML
-> > titled: "Poor desktop responsiveness with background I/O-operations" of
-> > 2009-09-20.
-> > (Message ID: 4AB59CBB.8090907@datenparkplatz.de)
-> > 
-> > 
-> > Thus, I'm posting this to show that your work is greatly appreciated,
-> > given the rather disappointig status quo of Linux's fairness when it
-> > comes to disk IO time.
-> > 
-> > I hope that your efforts lead to a change in performance of current
-> > userland applications, the sooner, the better.
-> > 
-> [Please don't remove people from original CC list. I am putting them back.]
-> 
-> Hi Ulrich,
-> 
-> I quicky went through that mail thread and I tried following on my
-> desktop.
-> 
-> ##########################################
-> dd if=/home/vgoyal/4G-file of=/dev/null &
-> sleep 5
-> time firefox
-> # close firefox once gui pops up.
-> ##########################################
-> 
-> It was taking close to 1 minute 30 seconds to launch firefox and dd got 
-> following.
-> 
-> 4294967296 bytes (4.3 GB) copied, 100.602 s, 42.7 MB/s
-> 
-> (Results do vary across runs, especially if system is booted fresh. Don't
->  know why...).
-> 
-> 
-> Then I tried putting both the applications in separate groups and assign
-> them weights 200 each.
-> 
-> ##########################################
-> dd if=/home/vgoyal/4G-file of=/dev/null &
-> echo $! > /cgroup/io/test1/tasks
-> sleep 5
-> echo $$ > /cgroup/io/test2/tasks
-> time firefox
-> # close firefox once gui pops up.
-> ##########################################
-> 
-> Now I firefox pops up in 27 seconds. So it cut down the time by 2/3.
-> 
-> 4294967296 bytes (4.3 GB) copied, 84.6138 s, 50.8 MB/s
-> 
-> Notice that throughput of dd also improved.
-> 
-> I ran the block trace and noticed in many a cases firefox threads
-> immediately preempted the "dd". Probably because it was a file system
-> request. So in this case latency will arise from seek time.
-> 
-> In some other cases, threads had to wait for up to 100ms because dd was
-> not preempted. In this case latency will arise both from waiting on queue
-> as well as seek time.
+Commit-ID:  9f0cf4adb6aa0bfccf675c938124e68f7f06349d
+Gitweb:     http://git.kernel.org/tip/9f0cf4adb6aa0bfccf675c938124e68f7f06349d
+Author:     Arjan van de Ven <arjan@infradead.org>
+AuthorDate: Sat, 26 Sep 2009 14:33:01 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 26 Sep 2009 16:25:41 +0200
 
-Hm, with tip, I see ~10ms max wakeup latency running scriptlet below.
+x86: Use __builtin_object_size() to validate the buffer size for copy_from_user()
 
-> With cgroup thing, We will run 100ms slice for the group in which firefox
-> is being launched and then give 100ms uninterrupted time slice to dd. So
-> it should cut down on number of seeks happening and that's why we probably
-> see this improvement.
+gcc (4.x) supports the __builtin_object_size() builtin, which
+reports the size of an object that a pointer point to, when known
+at compile time. If the buffer size is not known at compile time, a
+constant -1 is returned.
 
-I'm not testing with group IO/CPU, but my numbers kinda agree that it's
-seek latency that's THE killer.  What the compiled numbers below from
-the cheezy script below that _seem_ to be telling me is that the default
-setting of CFQ quantum is allowing too many write requests through,
-inflicting too much read latency... for the disk where my binaries live.
-The longer the seeky burst, the more it hurts both reader/writer, so
-cutting down the max requests queueable helps the reader (which i think
-can't queue anything near per unit time that the writer can) finish and
-get out of the writer's way sooner.
+This patch uses this feature to add a sanity check to
+copy_from_user(); if the target buffer is known to be smaller than
+the copy size, the copy is aborted and a WARNing is emitted in
+memory debug mode.
 
-'nuff possibly useless words, onward to possibly useless numbers :)
+These extra checks compile away when the object size is not known,
+or if both the buffer size and the copy length are constants.
 
-dd pre == number dd emits upon receiving USR1 before execing perf.
-perf stat == time to load/execute perf stat konsole -e exit.
-dd post == same after dd number, after perf finishes.
-
-quantum = 1                                                  Avg
-dd pre         58.4     52.5     56.1     61.6     52.3     56.1  MB/s
-perf stat      2.87     0.91     1.64     1.41     0.90      1.5  Sec
-dd post        56.6     61.0     66.3     64.7     60.9     61.9
-
-quantum = 2
-dd pre         59.7     62.4     58.9     65.3     60.3     61.3
-perf stat      5.81     6.09     6.24    10.13     6.21      6.8
-dd post        64.0     62.6     64.2     60.4     61.1     62.4
-
-quantum = 3
-dd pre         65.5     57.7     54.5     51.1     56.3     57.0
-perf stat     14.01    13.71     8.35     5.35     8.57      9.9
-dd post        59.2     49.1     58.8     62.3     62.1     58.3
-
-quantum = 4
-dd pre         57.2     52.1     56.8     55.2     61.6     56.5
-perf stat     11.98     1.61     9.63    16.21    11.13     10.1
-dd post        57.2     52.6     62.2     49.3     50.2     54.3
-
-Nothing pinned btw, 4 cores available, but only 1 drive.
-
-#!/bin/sh
-
-DISK=sdb
-QUANTUM=/sys/block/$DISK/queue/iosched/quantum
-END=$(cat $QUANTUM)
-
-for q in `seq 1 $END`; do
-	echo $q > $QUANTUM
-	LOGFILE=quantum_log_$q
-	rm -f $LOGFILE
-	for i in `seq 1 5`; do
-		echo 2 > /proc/sys/vm/drop_caches
-		sh -c "dd if=/dev/zero of=./deleteme.dd 2>&1|tee -a $LOGFILE" &
-		sleep 30
-		sh -c "echo quantum $(cat $QUANTUM) loop $i" 2>&1|tee -a $LOGFILE
-		perf stat -- killlall -q get_stuf_into_ram >/dev/null 2>&1
-		sleep 1
-		killall -q -USR1 dd &
-		sleep 1
-		sh -c "perf stat -- konsole -e exit" 2>&1|tee -a $LOGFILE
-		sleep 1
-		killall -q -USR1 dd &
-		sleep 5
-		killall -qw dd
-		rm -f ./deleteme.dd
-		sync
-		sh -c "echo" 2>&1|tee -a $LOGFILE
-	done;
-done;
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+LKML-Reference: <20090926143301.2c396b94@infradead.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ arch/x86/include/asm/uaccess_32.h |   19 ++++++++++++++++++-
+ arch/x86/include/asm/uaccess_64.h |   19 ++++++++++++++++++-
+ arch/x86/kernel/x8664_ksyms_64.c  |    2 +-
+ arch/x86/lib/copy_user_64.S       |    4 ++--
+ arch/x86/lib/usercopy_32.c        |    4 ++--
+ include/linux/compiler-gcc4.h     |    2 ++
+ include/linux/compiler.h          |    4 ++++
+ 7 files changed, 47 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
+index 632fb44..582d6ae 100644
+--- a/arch/x86/include/asm/uaccess_32.h
++++ b/arch/x86/include/asm/uaccess_32.h
+@@ -187,9 +187,26 @@ __copy_from_user_inatomic_nocache(void *to, const void __user *from,
+ 
+ unsigned long __must_check copy_to_user(void __user *to,
+ 					const void *from, unsigned long n);
+-unsigned long __must_check copy_from_user(void *to,
++unsigned long __must_check _copy_from_user(void *to,
+ 					  const void __user *from,
+ 					  unsigned long n);
++
++static inline unsigned long __must_check copy_from_user(void *to,
++					  const void __user *from,
++					  unsigned long n)
++{
++	int sz = __compiletime_object_size(to);
++	int ret = -EFAULT;
++
++	if (likely(sz == -1 || sz >= n))
++		ret = _copy_from_user(to, from, n);
++#ifdef CONFIG_DEBUG_VM
++	else
++		WARN(1, "Buffer overflow detected!\n");
++#endif
++	return ret;
++}
++
+ long __must_check strncpy_from_user(char *dst, const char __user *src,
+ 				    long count);
+ long __must_check __strncpy_from_user(char *dst,
+diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
+index db24b21..ce6fec7 100644
+--- a/arch/x86/include/asm/uaccess_64.h
++++ b/arch/x86/include/asm/uaccess_64.h
+@@ -21,10 +21,27 @@ copy_user_generic(void *to, const void *from, unsigned len);
+ __must_check unsigned long
+ copy_to_user(void __user *to, const void *from, unsigned len);
+ __must_check unsigned long
+-copy_from_user(void *to, const void __user *from, unsigned len);
++_copy_from_user(void *to, const void __user *from, unsigned len);
+ __must_check unsigned long
+ copy_in_user(void __user *to, const void __user *from, unsigned len);
+ 
++static inline unsigned long __must_check copy_from_user(void *to,
++					  const void __user *from,
++					  unsigned long n)
++{
++	int sz = __compiletime_object_size(to);
++	int ret = -EFAULT;
++
++	if (likely(sz == -1 || sz >= n))
++		ret = _copy_from_user(to, from, n);
++#ifdef CONFIG_DEBUG_VM
++	else
++		WARN(1, "Buffer overflow detected!\n");
++#endif
++	return ret;
++}
++
++
+ static __always_inline __must_check
+ int __copy_from_user(void *dst, const void __user *src, unsigned size)
+ {
+diff --git a/arch/x86/kernel/x8664_ksyms_64.c b/arch/x86/kernel/x8664_ksyms_64.c
+index 3909e3b..a0cdd8c 100644
+--- a/arch/x86/kernel/x8664_ksyms_64.c
++++ b/arch/x86/kernel/x8664_ksyms_64.c
+@@ -30,7 +30,7 @@ EXPORT_SYMBOL(__put_user_8);
+ 
+ EXPORT_SYMBOL(copy_user_generic);
+ EXPORT_SYMBOL(__copy_user_nocache);
+-EXPORT_SYMBOL(copy_from_user);
++EXPORT_SYMBOL(_copy_from_user);
+ EXPORT_SYMBOL(copy_to_user);
+ EXPORT_SYMBOL(__copy_from_user_inatomic);
+ 
+diff --git a/arch/x86/lib/copy_user_64.S b/arch/x86/lib/copy_user_64.S
+index 6ba0f7b..4be3c41 100644
+--- a/arch/x86/lib/copy_user_64.S
++++ b/arch/x86/lib/copy_user_64.S
+@@ -78,7 +78,7 @@ ENTRY(copy_to_user)
+ ENDPROC(copy_to_user)
+ 
+ /* Standard copy_from_user with segment limit checking */
+-ENTRY(copy_from_user)
++ENTRY(_copy_from_user)
+ 	CFI_STARTPROC
+ 	GET_THREAD_INFO(%rax)
+ 	movq %rsi,%rcx
+@@ -88,7 +88,7 @@ ENTRY(copy_from_user)
+ 	jae bad_from_user
+ 	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
+ 	CFI_ENDPROC
+-ENDPROC(copy_from_user)
++ENDPROC(_copy_from_user)
+ 
+ ENTRY(copy_user_generic)
+ 	CFI_STARTPROC
+diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
+index 1f118d4..8498684 100644
+--- a/arch/x86/lib/usercopy_32.c
++++ b/arch/x86/lib/usercopy_32.c
+@@ -874,7 +874,7 @@ EXPORT_SYMBOL(copy_to_user);
+  * data to the requested size using zero bytes.
+  */
+ unsigned long
+-copy_from_user(void *to, const void __user *from, unsigned long n)
++_copy_from_user(void *to, const void __user *from, unsigned long n)
+ {
+ 	if (access_ok(VERIFY_READ, from, n))
+ 		n = __copy_from_user(to, from, n);
+@@ -882,4 +882,4 @@ copy_from_user(void *to, const void __user *from, unsigned long n)
+ 		memset(to, 0, n);
+ 	return n;
+ }
+-EXPORT_SYMBOL(copy_from_user);
++EXPORT_SYMBOL(_copy_from_user);
+diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
+index 450fa59..a3aef5d 100644
+--- a/include/linux/compiler-gcc4.h
++++ b/include/linux/compiler-gcc4.h
+@@ -37,3 +37,5 @@
+ #define __cold			__attribute__((__cold__))
+ 
+ #endif
++
++#define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 04fb513..8e54108 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -266,6 +266,10 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+ # define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
+ #endif
+ 
++/* Compile time object size, -1 for unknown */
++#ifndef __compiletime_object_size
++# define __compiletime_object_size(obj) -1
++#endif
+ /*
+  * Prevent the compiler from merging or refetching accesses.  The compiler
+  * is also forbidden from reordering successive instances of ACCESS_ONCE(),
