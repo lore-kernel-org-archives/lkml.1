@@ -1,76 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbZIZDOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZIZDPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753197AbZIZDOP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Sep 2009 23:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZIZDOO
+	id S1753208AbZIZDPn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Sep 2009 23:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbZIZDPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Sep 2009 23:14:14 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:32045 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752959AbZIZDOO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Sep 2009 23:14:14 -0400
-Subject: Re: linux-next: acpi tree build failure
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Len Brown <lenb@kernel.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Crane Cai <crane.cai@amd.com>
-In-Reply-To: <20090926121528.dfba135e.sfr@canb.auug.org.au>
-References: <20090926121528.dfba135e.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Fri, 25 Sep 2009 21:11:43 -0600
-Message-Id: <1253934703.16789.21.camel@dc7800.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Sep 2009 23:15:42 -0400
+Received: from mga03.intel.com ([143.182.124.21]:8039 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752959AbZIZDPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Sep 2009 23:15:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,454,1249282800"; 
+   d="scan'208";a="191882817"
+Date: Sat, 26 Sep 2009 11:15:37 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
+Message-ID: <20090926031537.GA10176@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-26 at 12:15 +1000, Stephen Rothwell wrote:
-> Hi Len,
-> 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/i2c/busses/i2c-scmi.c: In function 'acpi_smbus_cmi_add':
-> drivers/i2c/busses/i2c-scmi.c:374: error: implicit declaration of function 'acpi_device_uid'
-> drivers/i2c/busses/i2c-scmi.c:374: warning: format '%s' expects type 'char *', but argument 5 has type 'int'
-> 
-> Caused by commit 6622d8cee73a26bce958484065c8f0e704911a62 ("ACPI: remove
-> acpi_device_uid() and related stuff") interacting with commit
-> dc9854212e0d7318d7133697906d98b78f3088b6 ("i2c: Add driver for SMBus
-> Control Method Interface") recently added to Linus' tree.
-> 
-> I have used the version of the acpi tree from next-20090925 for today.
+The swap cache and page cache code assume that they 'own' the newly
+allocated page and therefore can disregard the locking rules. However
+now hwpoison can hit any time on any page.
 
-I think we should use the following patch to remove the usage of
-acpi_device_uid().  Crane, do you agree, or is there some special
-reason you need it here?
+So use the safer lock_page()/trylock_page(). The main intention is not
+to close such a small time window of memory corruption. But to avoid
+kernel oops that may result from such races, and also avoid raising
+false alerts in hwpoison stress tests.
 
+This in theory will slightly increase page cache/swap cache overheads,
+however it seems to be too small to be measurable in benchmark.
 
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andi Kleen <andi@firstfloor.org> 
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ include/linux/pagemap.h |   13 ++++---------
+ mm/migrate.c            |    2 +-
+ mm/swap_state.c         |    4 ++--
+ 3 files changed, 7 insertions(+), 12 deletions(-)
 
-i2c-scmi: don't use acpi_device_uid()
-    
-We recently removed the acpi_device_uid() interface because nobody
-used it.  I don't think it's essential here either.
-    
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-diff --git a/drivers/i2c/busses/i2c-scmi.c b/drivers/i2c/busses/i2c-scmi.c
-index 276a046..b4a55d4 100644
---- a/drivers/i2c/busses/i2c-scmi.c
-+++ b/drivers/i2c/busses/i2c-scmi.c
-@@ -369,9 +369,8 @@ static int acpi_smbus_cmi_add(struct acpi_device *device)
- 		goto err;
+--- sound-2.6.orig/mm/swap_state.c	2009-09-14 10:50:19.000000000 +0800
++++ sound-2.6/mm/swap_state.c	2009-09-25 18:42:23.000000000 +0800
+@@ -306,7 +306,7 @@ struct page *read_swap_cache_async(swp_e
+ 		 * re-using the just freed swap entry for an existing page.
+ 		 * May fail (-ENOMEM) if radix-tree node allocation failed.
+ 		 */
+-		__set_page_locked(new_page);
++		lock_page(new_page);
+ 		SetPageSwapBacked(new_page);
+ 		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+ 		if (likely(!err)) {
+@@ -318,7 +318,7 @@ struct page *read_swap_cache_async(swp_e
+ 			return new_page;
+ 		}
+ 		ClearPageSwapBacked(new_page);
+-		__clear_page_locked(new_page);
++		unlock_page(new_page);
+ 		swapcache_free(entry, NULL);
+ 	} while (err != -ENOMEM);
  
- 	snprintf(smbus_cmi->adapter.name, sizeof(smbus_cmi->adapter.name),
--		"SMBus CMI adapter %s (%s)",
--		acpi_device_name(device),
--		acpi_device_uid(device));
-+		"SMBus CMI adapter %s",
-+		acpi_device_name(device));
- 	smbus_cmi->adapter.owner = THIS_MODULE;
- 	smbus_cmi->adapter.algo = &acpi_smbus_cmi_algorithm;
- 	smbus_cmi->adapter.algo_data = smbus_cmi;
-
-
+--- sound-2.6.orig/include/linux/pagemap.h	2009-09-14 10:50:19.000000000 +0800
++++ sound-2.6/include/linux/pagemap.h	2009-09-25 18:42:19.000000000 +0800
+@@ -292,11 +292,6 @@ extern int __lock_page_killable(struct p
+ extern void __lock_page_nosync(struct page *page);
+ extern void unlock_page(struct page *page);
+ 
+-static inline void __set_page_locked(struct page *page)
+-{
+-	__set_bit(PG_locked, &page->flags);
+-}
+-
+ static inline void __clear_page_locked(struct page *page)
+ {
+ 	__clear_bit(PG_locked, &page->flags);
+@@ -435,18 +430,18 @@ extern void remove_from_page_cache(struc
+ extern void __remove_from_page_cache(struct page *page);
+ 
+ /*
+- * Like add_to_page_cache_locked, but used to add newly allocated pages:
+- * the page is new, so we can just run __set_page_locked() against it.
++ * Like add_to_page_cache_locked, but used to add newly allocated pages.
+  */
+ static inline int add_to_page_cache(struct page *page,
+ 		struct address_space *mapping, pgoff_t offset, gfp_t gfp_mask)
+ {
+ 	int error;
+ 
+-	__set_page_locked(page);
++	if (!trylock_page(page))
++		return -EIO;	/* hwpoisoned */
+ 	error = add_to_page_cache_locked(page, mapping, offset, gfp_mask);
+ 	if (unlikely(error))
+-		__clear_page_locked(page);
++		unlock_page(page);
+ 	return error;
+ }
+ 
+--- sound-2.6.orig/mm/migrate.c	2009-09-14 10:50:19.000000000 +0800
++++ sound-2.6/mm/migrate.c	2009-09-25 18:42:19.000000000 +0800
+@@ -551,7 +551,7 @@ static int move_to_new_page(struct page 
+ 	 * holding a reference to the new page at this point.
+ 	 */
+ 	if (!trylock_page(newpage))
+-		BUG();
++		return -EAGAIN;		/* got by hwpoison */
+ 
+ 	/* Prepare mapping for the new page.*/
+ 	newpage->index = page->index;
