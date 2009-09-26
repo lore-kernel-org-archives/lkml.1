@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbZIZGd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751176AbZIZGud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751131AbZIZGd7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 02:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZIZGd7
+	id S1751176AbZIZGud (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 02:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZIZGuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 02:33:59 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58376 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750818AbZIZGd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 02:33:58 -0400
-X-Authenticated: #28250155
-X-Provags-ID: V01U2FsdGVkX1+mi0FwTBamG4zvTZXmvL6jp12JH/KIF4qKkzRO3J
-	+UF2CBaQ6e1aqJ
-From: Sven Joachim <svenjoac@gmx.de>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
-Subject: Re: Linux 2.6.31.1
-References: <20090924174002.GE17077@kroah.com>
-Date: Sat, 26 Sep 2009 08:33:51 +0200
-In-Reply-To: <20090924174002.GE17077@kroah.com> (Greg KH's message of "Thu, 24
-	Sep 2009 10:40:02 -0700")
-Message-ID: <87pr9egqpc.fsf@turtle.gmx.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.71
+	Sat, 26 Sep 2009 02:50:32 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:52190 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750843AbZIZGuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 02:50:32 -0400
+Subject: Re: massive_intr on CFS, BFS, and EDF
+From: Raistlin <raistlin@linux.it>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Michael Trimarchi <trimarchi@gandalf.sssup.it>,
+       sat <takeuchi_satoru@jp.fujitsu.com>,
+       lkml <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <4ABD36CE.3080400@nortel.com>
+References: <4ABC068A.6070704@jp.fujitsu.com>
+	 <4ABCEABC.4050200@gandalf.sssup.it>  <4ABD36CE.3080400@nortel.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-LQH16N3vXJ/LlUGcw5f3"
+Date: Sat, 26 Sep 2009 08:50:26 +0200
+Message-Id: <1253947826.4924.9.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+
+--=-LQH16N3vXJ/LlUGcw5f3
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On 2009-09-24 19:40 +0200, Greg KH wrote:
+On Fri, 2009-09-25 at 15:31 -0600, Chris Friesen wrote:
+> Do you allow oversubscription with EDF?  It would seem so based on these
+> results.  Would it maybe make sense to disallow oversubscription, or
+> make it an option?
+>=20
+What I want is the user to be able to achieve whatever result he likes.
 
-> I'm announcing the release of the 2.6.31.1 kernel.  All users of the
-> 2.6.31 kernel series are very strongly encouraged to upgrade.
+Thus, with EDF_GROUP_SCHED enabled, you first have to assign a bandwidth
+value, at least to the root group. If 100% (e.g., on UP) is used as such
+value, oversubscription will never happen.
 
-Stable kernel releases used to be announced on
-linux-kernel-announce@hera.kernel.org, but apparently they are not any
-more; the last version announced there was 2.6.30.5.
+If EDF_GROUP_SCHED is off, nothing is in place right now, but I already
+planned to add it, and I'm just introducing something like
+sysctl_sched_rt_runtime, sysctl_sched_rt_period, in the new version I'm
+working on right now.
 
-Is there an easy way to get informed about new stable kernel releases
-without having to subscribe to high-volume mailing lists or to poll a=20
-website?
+> If you have massive oversubscription with EDF, what is the design
+> intent?  Do you try to meet the goals on as many tasks as possible,
+> while the oversubscribed tasks get nothing?
+>=20
+No, nothing like that... So using this scheduler without avoiding system
+overload will be nonsene, unless some kind of logic (as you was
+describing) is not implemented in userspace, and that's why I think
+oversubscription avoidance should be an available, but also,
+configurrable feature... Comments on that?
 
 Regards,
-        Sven
+Dario
 
---=-=-=
-Content-Type: application/pgp-signature
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-LQH16N3vXJ/LlUGcw5f3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iQEcBAEBCgAGBQJKvbXPAAoJEOGSxLJa6pippWkIAJlQLqIR2C+u4ZMbhh+Pq94P
-wuuodjG1xg8du2J+PFPhBDg5dfuUb6OoJvCr8oTyurR/9vnq4qPPVYXHroEZNHCw
-DsIEZP5tZ2XjtnCtPUA245HtJGdZlpVnLC9yqCfU/AjKPelAvUT4ArhYZeYU2B0W
-PevYuxCWzG3SF6Tkhx7VbbW5grkYuHZxpFjVkELY/q8A0yMxIq51ES8YNsGWweor
-XcZHXJh6HpK5PHrG/RCCF915RQOVzH39UrACdouOpEz8I/N4kjwcbs7IzdcNkQuS
-xGhJaPAFPL0Nr9d4wqo9vpSzI0EB3mIfFkF4SOGYFiJ5wWJ7WwHGjPIaHLVpZ/Y=
-=ealI
+iEYEABECAAYFAkq9uaAACgkQk4XaBE3IOsTjSQCfVInckr8C39YWhDgcad1ZZ92p
+iIcAmwXGZq4G95IVYpvVifozCN5ZVrJA
+=XfRP
 -----END PGP SIGNATURE-----
---=-=-=--
+
+--=-LQH16N3vXJ/LlUGcw5f3--
+
