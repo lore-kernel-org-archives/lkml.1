@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbZIZQLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbZIZQMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753000AbZIZQLV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 12:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbZIZQLS
+	id S1752409AbZIZQMf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 12:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbZIZQMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 12:11:18 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:61426 "EHLO dan.rpsys.net"
+	Sat, 26 Sep 2009 12:12:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56619 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752156AbZIZQLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 12:11:15 -0400
-Subject: [GIT PULL] LED updates for 2.6.32
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	id S1751167AbZIZQMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 12:12:34 -0400
+Subject: [PATCH] x86: SLUB: Remove unused CONFIG FAST_CMPXCHG_LOCAL
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 26 Sep 2009 17:10:51 +0100
-Message-Id: <1253981451.7598.61.camel@ted>
+Content-Type: text/plain
+Date: Sat, 26 Sep 2009 21:41:41 +0530
+Message-Id: <1253981501.4568.61.camel@ht.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Could you please pull from:
+Remove unused CONFIG FAST_CMPXCHG_LOCAL from Kconfig and defconfigs
 
-git://git.o-hand.com/linux-rpurdie-leds for-linus
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig                  |    4 ----
+ arch/x86/configs/i386_defconfig   |    1 -
+ arch/x86/configs/x86_64_defconfig |    1 -
+ 3 files changed, 0 insertions(+), 6 deletions(-)
 
-for the LED tree updates for 2.6.32. This is mainly minor
-bugfixes/cleanups and also one new driver.
-
-Thanks, Richard
-
- drivers/leds/Kconfig              |   13 +-
- drivers/leds/Makefile             |    1 +
- drivers/leds/leds-clevo-mail.c    |    2 +-
- drivers/leds/leds-cobalt-qube.c   |    2 +-
- drivers/leds/leds-cobalt-raq.c    |    4 +-
- drivers/leds/leds-gpio.c          |    2 +-
- drivers/leds/leds-pca9532.c       |   12 +-
- drivers/leds/leds-wm831x-status.c |  341 +++++++++++++++++++++++++++++++++++++
- drivers/leds/ledtrig-gpio.c       |   28 ++--
- drivers/macintosh/via-pmu-led.c   |    2 +-
- include/linux/mfd/wm831x/status.h |   34 ++++
- 11 files changed, 412 insertions(+), 29 deletions(-)
- create mode 100644 drivers/leds/leds-wm831x-status.c
- create mode 100644 include/linux/mfd/wm831x/status.h
-
-Antonio Ospite (1):
-      leds: Fix indentation in LEDS_LP3944 Kconfig entry
-
-Mark Brown (1):
-      leds: Add WM831x status LED driver
-
-Michal Simek (1):
-      leds: gpio-leds: fix typographics fault
-
-Olaf Hering (1):
-      leds: Fix LED names
-
-Richard Purdie (1):
-      leds: Fix leds-pca9532 whitespace issues
-
-Thadeu Lima de Souza Cascardo (1):
-      leds: fix coding style in worker thread code for ledtrig-gpio.
-
-Uwe Kleine-König (1):
-      leds: move leds-clevo-mail's probe function to .devinit.text
-
-
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 9369879..27ebee4 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -86,10 +86,6 @@ config STACKTRACE_SUPPORT
+ config HAVE_LATENCYTOP_SUPPORT
+ 	def_bool y
+ 
+-config FAST_CMPXCHG_LOCAL
+-	bool
+-	default y
+-
+ config MMU
+ 	def_bool y
+ 
+diff --git a/arch/x86/configs/i386_defconfig b/arch/x86/configs/i386_defconfig
+index d28fad1..fdf15d3 100644
+--- a/arch/x86/configs/i386_defconfig
++++ b/arch/x86/configs/i386_defconfig
+@@ -17,7 +17,6 @@ CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+ CONFIG_LOCKDEP_SUPPORT=y
+ CONFIG_STACKTRACE_SUPPORT=y
+ CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+-CONFIG_FAST_CMPXCHG_LOCAL=y
+ CONFIG_MMU=y
+ CONFIG_ZONE_DMA=y
+ CONFIG_GENERIC_ISA_DMA=y
+diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
+index 6c86acd..b75aec8 100644
+--- a/arch/x86/configs/x86_64_defconfig
++++ b/arch/x86/configs/x86_64_defconfig
+@@ -17,7 +17,6 @@ CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+ CONFIG_LOCKDEP_SUPPORT=y
+ CONFIG_STACKTRACE_SUPPORT=y
+ CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+-CONFIG_FAST_CMPXCHG_LOCAL=y
+ CONFIG_MMU=y
+ CONFIG_ZONE_DMA=y
+ CONFIG_GENERIC_ISA_DMA=y
 -- 
-Richard Purdie
-Intel Open Source Technology Centre
+1.6.0.6
+
 
