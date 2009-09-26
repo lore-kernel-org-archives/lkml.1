@@ -1,166 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751935AbZIZRbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbZIZSLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751935AbZIZRbp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 13:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbZIZRbp
+	id S1752512AbZIZSLr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 14:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZIZSLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 13:31:45 -0400
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:56436 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbZIZRbn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 13:31:43 -0400
-Date: Sat, 26 Sep 2009 23:01:43 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: sam@ravnborg.org
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org, sfr@canb.auug.org.au
-Subject: [PATCH] linux-next: 20090926 - drop autoconf.h from DRBD driver
-Message-ID: <20090926173143.GA5041@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20090926152800.a6568e53.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090926152800.a6568e53.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 26 Sep 2009 14:11:46 -0400
+Received: from mta-14.siol.net ([193.189.160.142]:55788 "EHLO mta-14.siol.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbZIZSLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 14:11:45 -0400
+X-Greylist: delayed 2287 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Sep 2009 14:11:45 EDT
+Date: Sat, 26 Sep 2009 19:33:36 +0200
+From: "Darko K." <darko.koruga@siol.net>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.31 crash when resuming from hibernation
+Message-ID: <20090926193336.3e3a8985@beavis.confused.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="MP_/Kqeii1zdLlh04CkSln.u3kn"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+--MP_/Kqeii1zdLlh04CkSln.u3kn
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-	next-20090926 allyesconfig build breaks on powerpc,
+Hello,
 
-drivers/block/drbd/drbd_proc.c:26:28: error: linux/autoconf.h: No such file or directory
-make[3]: *** [drivers/block/drbd/drbd_proc.o] Error 1
+I've just experienced a kernel crash when resuming from hibernation
+(suspend to disk). System was still operational so I was able to gather
+dmesg output before rebooting the machine (dmesg output is attached
+to this mail). This is first time this has happened with 2.6.31. I was
+getting occasional crash when resuming from hibernation with 2.6.28.4
+although I was never able to capture dmesg output as machine was just
+frozen, I could not even ping it.
 
-dropping autoconf.h from drbd_proc.c helps. The cleanup patch drops the
-unneeded include autoconf.h.
+My hardware is:
+- Intel G41 chipset
+- 2GB RAM
+- Intel Pentium E5200
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
- drivers/block/drbd/drbd_main.c     |    1 -
- drivers/block/drbd/drbd_nl.c       |    1 -
- drivers/block/drbd/drbd_proc.c     |    1 -
- drivers/block/drbd/drbd_receiver.c |    1 -
- drivers/block/drbd/drbd_req.c      |    1 -
- drivers/block/drbd/drbd_req.h      |    1 -
- drivers/block/drbd/drbd_worker.c   |    1 -
- drivers/staging/cowloop/cowloop.c  |    4 ----
- drivers/staging/iio/ring_sw.h      |    1 -
- 9 files changed, 0 insertions(+), 12 deletions(-)
+System has been running for a few days with at least one hibernation
+per day (sometimes more) and one suspend to RAM (for testing purposes).
+/usr/sbin/s2disk is used to put system into hibernation.
 
-diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-index edf0b80..80273f2 100644
---- a/drivers/block/drbd/drbd_main.c
-+++ b/drivers/block/drbd/drbd_main.c
-@@ -26,7 +26,6 @@
- 
-  */
- 
--#include <linux/autoconf.h>
- #include <linux/module.h>
- #include <linux/version.h>
- #include <linux/drbd.h>
-diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
-index 1927ace..cfde310 100644
---- a/drivers/block/drbd/drbd_nl.c
-+++ b/drivers/block/drbd/drbd_nl.c
-@@ -23,7 +23,6 @@
- 
-  */
- 
--#include <linux/autoconf.h>
- #include <linux/module.h>
- #include <linux/drbd.h>
- #include <linux/in.h>
-diff --git a/drivers/block/drbd/drbd_proc.c b/drivers/block/drbd/drbd_proc.c
-index 98fcb74..bdd0b49 100644
---- a/drivers/block/drbd/drbd_proc.c
-+++ b/drivers/block/drbd/drbd_proc.c
-@@ -23,7 +23,6 @@
- 
-  */
- 
--#include <linux/autoconf.h>
- #include <linux/module.h>
- 
- #include <asm/uaccess.h>
-diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 63686c4..2f81821 100644
---- a/drivers/block/drbd/drbd_receiver.c
-+++ b/drivers/block/drbd/drbd_receiver.c
-@@ -23,7 +23,6 @@
-  */
- 
- 
--#include <linux/autoconf.h>
- #include <linux/module.h>
- 
- #include <asm/uaccess.h>
-diff --git a/drivers/block/drbd/drbd_req.c b/drivers/block/drbd/drbd_req.c
-index 0656cf1..1aaa397 100644
---- a/drivers/block/drbd/drbd_req.c
-+++ b/drivers/block/drbd/drbd_req.c
-@@ -23,7 +23,6 @@
- 
-  */
- 
--#include <linux/autoconf.h>
- #include <linux/module.h>
- 
- #include <linux/slab.h>
-diff --git a/drivers/block/drbd/drbd_req.h b/drivers/block/drbd/drbd_req.h
-index d37ab57..f22c1bc 100644
---- a/drivers/block/drbd/drbd_req.h
-+++ b/drivers/block/drbd/drbd_req.h
-@@ -25,7 +25,6 @@
- #ifndef _DRBD_REQ_H
- #define _DRBD_REQ_H
- 
--#include <linux/autoconf.h>
- #include <linux/module.h>
- 
- #include <linux/slab.h>
-diff --git a/drivers/block/drbd/drbd_worker.c b/drivers/block/drbd/drbd_worker.c
-index 212e954..34a4b3e 100644
---- a/drivers/block/drbd/drbd_worker.c
-+++ b/drivers/block/drbd/drbd_worker.c
-@@ -23,7 +23,6 @@
- 
-  */
- 
--#include <linux/autoconf.h>
- #include <linux/module.h>
- #include <linux/version.h>
- #include <linux/drbd.h>
-diff --git a/drivers/staging/cowloop/cowloop.c b/drivers/staging/cowloop/cowloop.c
-index a71c743..a21b9b4 100644
---- a/drivers/staging/cowloop/cowloop.c
-+++ b/drivers/staging/cowloop/cowloop.c
-@@ -237,10 +237,6 @@ char revision[] = "$Revision: 3.1 $"; /* cowlo_init_module() has
- #endif
- 
- #include <linux/types.h>
--#include <linux/autoconf.h>
--#ifndef AUTOCONF_INCLUDED
--#include <linux/config.h>
--#endif
- #include <linux/module.h>
- #include <linux/version.h>
- #include <linux/moduleparam.h>
-diff --git a/drivers/staging/iio/ring_sw.h b/drivers/staging/iio/ring_sw.h
-index ae70ee0..4b0de7c 100644
---- a/drivers/staging/iio/ring_sw.h
-+++ b/drivers/staging/iio/ring_sw.h
-@@ -29,7 +29,6 @@
-  * driver requests - some may support multiple options */
- 
- 
--#include <linux/autoconf.h>
- #include "iio.h"
- #include "ring_generic.h"
- 
-			
-			Kamalesh
+OS is Debian testing running kernel 2.6.31, X.Org 1.6.3. Intel
+video driver 2.8.1.
+
+I am not subscribed to lkml so please put me on cc: if you reply to this
+mail.
+
+Regards,
+              Darko
+--MP_/Kqeii1zdLlh04CkSln.u3kn
+Content-Type: application/x-gzip
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=dmesg.txt.gz
+
+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
+i0MnCrnw6QsA2n8AbiJJL+M7AAA=
+
+--MP_/Kqeii1zdLlh04CkSln.u3kn--
