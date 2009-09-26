@@ -1,123 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZIZTWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZIZT1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbZIZTWm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 15:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZIZTWl
+	id S1752793AbZIZT1t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 15:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZIZT1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 15:22:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41083 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbZIZTWl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 15:22:41 -0400
-Date: Sat, 26 Sep 2009 21:23:02 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 9/9] Add explicit bound checks in net/socket.c
-Message-ID: <20090926212302.0ce64a5c@infradead.org>
-In-Reply-To: <20090926190103.GB4356@lenovo>
-References: <20090926204951.424e567e@infradead.org>
-	<20090926205432.24aa1023@infradead.org>
-	<20090926190103.GB4356@lenovo>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 26 Sep 2009 15:27:47 -0400
+Received: from solo.fdn.fr ([80.67.169.19]:53823 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752345AbZIZT1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 15:27:47 -0400
+Date: Sat, 26 Sep 2009 21:27:48 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH,TRIVIAL] Fix csum_ipv6_magic asm memory clobber
+Message-ID: <20090926192748.GX7681@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Sep 2009 23:01:03 +0400
-Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+Just like ip_fast_csum, the assembly snippet in csum_ipv6_magic needs a
+memory clobber, as it is only passed the address of the buffer, not a
+memory reference to the buffer itself.
 
-> [Arjan van de Ven - Sat, Sep 26, 2009 at 08:54:32PM +0200]
-> | From: Arjan van de Ven <arjan@linux.intel.com>
-> | Subject: [PATCH 9/9] Add explicit bound checks in net/socket.c
-> | CC: netdev@vger.kernel.org
-> | 
-> | The sys_socketcall() function has a very clever system for the copy
-> | size of its arguments. Unfortunately, gcc cannot deal with this in
-> | terms of proving that the copy_from_user() is then always in bounds.
-> | This is the last (well 9th of this series, but last in the kernel)
-> such | case around.
-> | 
-> | With this patch, we can turn on code to make having the boundary
-> provably | right for the whole kernel, and detect introduction of new
-> security | accidents of this type early on.
-> | 
-> | Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> | 
-> | 
-> | diff --git a/net/socket.c b/net/socket.c
-> | index 49917a1..13a8d67 100644
-> | --- a/net/socket.c
-> | +++ b/net/socket.c
-> | @@ -2098,12 +2098,17 @@ SYSCALL_DEFINE2(socketcall, int, call,
-> unsigned long __user *, args) |  	unsigned long a[6];
-> |  	unsigned long a0, a1;
-> |  	int err;
-> | +	unsigned int len;
-> |  
-> |  	if (call < 1 || call > SYS_ACCEPT4)
-> |  		return -EINVAL;
-> |  
-> | +	len = nargs[call];
-> | +	if (len > 6)
-> 
-> Hi Arjan, wouldn't ARRAY_SIZE suffice beter there?
-> Or I miss something?
-> 
+Signed-Off-By: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: stable@kernel.org
 
-goof once goof twice, make it sizeof.. that's nicer.
-
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH 9/9] Add explicit bound checks in net/socket.c
-CC: netdev@vger.kernel.org
-
-The sys_socketcall() function has a very clever system for the copy
-size of its arguments. Unfortunately, gcc cannot deal with this in
-terms of proving that the copy_from_user() is then always in bounds.
-This is the last (well 9th of this series, but last in the kernel) such
-case around.
-
-With this patch, we can turn on code to make having the boundary provably
-right for the whole kernel, and detect introduction of new security
-accidents of this type early on.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-
-
-diff --git a/net/socket.c b/net/socket.c
-index 49917a1..13a8d67 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -2098,12 +2098,17 @@ SYSCALL_DEFINE2(socketcall, int, call, unsigned long __user *, args)
- 	unsigned long a[6];
- 	unsigned long a0, a1;
- 	int err;
-+	unsigned int len;
+diff --git a/arch/x86/include/asm/checksum_32.h b/arch/x86/include/asm/checksum_32.h
+index 7c5ef8b..46fc474 100644
+--- a/arch/x86/include/asm/checksum_32.h
++++ b/arch/x86/include/asm/checksum_32.h
+@@ -161,7 +161,8 @@ static inline __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
+ 	    "adcl $0, %0	;\n"
+ 	    : "=&r" (sum)
+ 	    : "r" (saddr), "r" (daddr),
+-	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum));
++	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum)
++	    : "memory");
  
- 	if (call < 1 || call > SYS_ACCEPT4)
- 		return -EINVAL;
- 
-+	len = nargs[call];
-+	if (len > sizeof(a))
-+		return -EINVAL;
-+
- 	/* copy_from_user should be SMP safe. */
--	if (copy_from_user(a, args, nargs[call]))
-+	if (copy_from_user(a, args, len))
- 		return -EFAULT;
- 
- 	audit_socketcall(nargs[call] / sizeof(unsigned long), a);
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+ 	return csum_fold(sum);
+ }
