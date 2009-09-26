@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZIZSyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbZIZSzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbZIZSyY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 14:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZIZSyW
+	id S1753155AbZIZSzA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 14:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZIZSya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 14:54:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36394 "EHLO
+	Sat, 26 Sep 2009 14:54:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36400 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbZIZSyT (ORCPT
+	with ESMTP id S1750867AbZIZSyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 14:54:19 -0400
-Date: Sat, 26 Sep 2009 20:52:23 +0200
+	Sat, 26 Sep 2009 14:54:20 -0400
+Date: Sat, 26 Sep 2009 20:52:55 +0200
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       lenb@kernel.org
-Subject: [PATCH 5/9] Add bound checks in acpi/video for copy_from_user
-Message-ID: <20090926205223.61dd0844@infradead.org>
+       sfrench@samba.org
+Subject: [PATCH 6/9] Simplify bound checks in cifs for copy_from_user
+Message-ID: <20090926205255.1d9de6c7@infradead.org>
 In-Reply-To: <20090926204951.424e567e@infradead.org>
 References: <20090926204951.424e567e@infradead.org>
 Organization: Intel
@@ -31,68 +31,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH 5/9] Add bound checks in acpi/video for copy_from_user
-CC: Len Brown <lenb@kernel.org>
+Subject: [PATCH 6/9] Simplify bound checks in cifs for copy_from_user
+CC: Steve French <sfrench@samba.org>
 
-The ACPI video driver has a few boundary checks for copy_from_user
-that unfortunately confuse the GCC optimizer.
+The CIFS code unfortunately hits a missed optimization in gcc
+(http://gcc.gnu.org/bugzilla/show_bug.cgi?id=41477)
+where gcc can't prove to itself that count will not be larger than 11.
 
-This patch simplifies these boundary checks to the point that
-gcc knows they copy_from_user() is always within bounds.
+This patch simplifies the expression so that GCC does realize this,
+giving slightly better code soon when copy_from_user() grows some checks.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 94b1a4c..0dd2cc8 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -1218,7 +1218,9 @@ acpi_video_device_write_state(struct file *file,
- 	u32 state = 0;
+diff --git a/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
+index 42cec2a..94b86da 100644
+--- a/fs/cifs/cifs_debug.c
++++ b/fs/cifs/cifs_debug.c
+@@ -732,11 +732,13 @@ static ssize_t cifs_security_flags_proc_write(struct file *file,
+ 	char flags_string[12];
+ 	char c;
  
+-	if ((count < 1) || (count > 11))
+-		return -EINVAL;
+-
+ 	memset(flags_string, 0, 12);
  
--	if (!dev || count + 1 > sizeof str)
-+	if (!dev)
++	if (count < 1)
 +		return -EINVAL;
-+	if (count >= sizeof(str))
- 		return -EINVAL;
- 
- 	if (copy_from_user(str, buffer, count))
-@@ -1275,7 +1277,10 @@ acpi_video_device_write_brightness(struct file *file,
- 	int i;
- 
- 
--	if (!dev || !dev->brightness || count + 1 > sizeof str)
-+	if (!dev || !dev->brightness)
++	if (count > 11)
 +		return -EINVAL;
 +
-+	if (count >= sizeof(str))
- 		return -EINVAL;
+ 	if (copy_from_user(flags_string, buffer, count))
+ 		return -EFAULT;
  
- 	if (copy_from_user(str, buffer, count))
-@@ -1557,7 +1562,10 @@ acpi_video_bus_write_POST(struct file *file,
- 	unsigned long long opt, options;
- 
- 
--	if (!video || count + 1 > sizeof str)
-+	if (!video)
-+		return -EINVAL;
-+
-+	if (count >= sizeof(str))
- 		return -EINVAL;
- 
- 	status = acpi_video_bus_POST_options(video, &options);
-@@ -1597,7 +1605,9 @@ acpi_video_bus_write_DOS(struct file *file,
- 	unsigned long opt;
- 
- 
--	if (!video || count + 1 > sizeof str)
-+	if (!video)
-+		return -EINVAL;
-+	if (count >= sizeof(str))
- 		return -EINVAL;
- 
- 	if (copy_from_user(str, buffer, count))
 
 
 
