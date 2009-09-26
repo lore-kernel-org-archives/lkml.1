@@ -1,142 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbZIZPhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbZIZP4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbZIZPhW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 11:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZIZPhW
+	id S1752866AbZIZP4S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 11:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZIZP4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 11:37:22 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:33871 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752230AbZIZPhV (ORCPT
+	Sat, 26 Sep 2009 11:56:18 -0400
+Received: from nfitmail.nfit.au.dk ([130.225.31.129]:58618 "EHLO
+	smtp.nfit.au.dk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751904AbZIZP4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 11:37:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=F/dQZE7BUWRlvm/B9a92I4n/zD3eRSALdPwO0Pq6VNZKlyEVmHHN1huyo0RuUovzuZ
-         r4N2v4/Pm1c+UAOTDoeKZD6XEqWuENQ+0cgzg43dxpxZksXHBubNUUjTO3ceR+rSJdQL
-         YqQZapoD+7RgZVNRK1EVil7NdC91K611CaRjE=
-Date: Sat, 26 Sep 2009 19:37:22 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] headers: kref.h redux
-Message-ID: <20090926153722.GA4298@x200>
+	Sat, 26 Sep 2009 11:56:17 -0400
+X-Greylist: delayed 595 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Sep 2009 11:56:17 EDT
+To: gnome-announce@gnome.org, linux-kernel@vger.kernel.org
+Subject: Announce: Sysprof 1.1.2 CPU profiler for Linux
+From: Soeren Sandmann <sandmann@daimi.au.dk>
+Date: 26 Sep 2009 17:46:23 +0200
+Message-ID: <ye8bpkxemk0.fsf@camel21.daimi.au.dk>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-NFIT-RelayAddr: 130.225.16.140
+X-NFIT-Solido-Score: 0.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* remove asm/atomic.h inclusion from kref.h -- not needed, linux/types.h
-  is enough for atomic_t
-* remove linux/kref.h inclusion from files which do not need it.
+Sysprof 1.1.2 is now available. This is a development release leading
+up to a stable 1.2.0 release.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Sysprof is a sampling system-wide CPU profiler for Linux.  This
+version is based on the perf counter interface in 2.6.31 kernels and
+will not work with earlier kernels.
 
- drivers/net/irda/kingsun-sir.c           |    1 -
- drivers/net/irda/ks959-sir.c             |    1 -
- drivers/net/irda/ksdazzle-sir.c          |    1 -
- drivers/net/irda/mcs7780.c               |    1 -
- drivers/scsi/pmcraid.h                   |    1 -
- drivers/usb/misc/sisusbvga/sisusb_init.c |    1 -
- include/linux/ipc.h                      |    2 --
- include/linux/kref.h                     |    1 -
- include/linux/nfs_fs.h                   |    1 -
- 9 files changed, 10 deletions(-)
+Major new features since version 1.0:
 
---- a/drivers/net/irda/kingsun-sir.c
-+++ b/drivers/net/irda/kingsun-sir.c
-@@ -66,7 +66,6 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/slab.h>
--#include <linux/kref.h>
- #include <linux/usb.h>
- #include <linux/device.h>
- #include <linux/crc32.h>
---- a/drivers/net/irda/ks959-sir.c
-+++ b/drivers/net/irda/ks959-sir.c
-@@ -118,7 +118,6 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/slab.h>
--#include <linux/kref.h>
- #include <linux/usb.h>
- #include <linux/device.h>
- #include <linux/crc32.h>
---- a/drivers/net/irda/ksdazzle-sir.c
-+++ b/drivers/net/irda/ksdazzle-sir.c
-@@ -82,7 +82,6 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/slab.h>
--#include <linux/kref.h>
- #include <linux/usb.h>
- #include <linux/device.h>
- #include <linux/crc32.h>
---- a/drivers/net/irda/mcs7780.c
-+++ b/drivers/net/irda/mcs7780.c
-@@ -50,7 +50,6 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/slab.h>
--#include <linux/kref.h>
- #include <linux/usb.h>
- #include <linux/device.h>
- #include <linux/crc32.h>
---- a/drivers/scsi/pmcraid.h
-+++ b/drivers/scsi/pmcraid.h
-@@ -26,7 +26,6 @@
- #include <linux/completion.h>
- #include <linux/list.h>
- #include <scsi/scsi.h>
--#include <linux/kref.h>
- #include <scsi/scsi_cmnd.h>
- #include <linux/cdev.h>
- #include <net/netlink.h>
---- a/drivers/usb/misc/sisusbvga/sisusb_init.c
-+++ b/drivers/usb/misc/sisusbvga/sisusb_init.c
-@@ -43,7 +43,6 @@
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
--#include <linux/kref.h>
- 
- #include "sisusb.h"
- 
---- a/include/linux/ipc.h
-+++ b/include/linux/ipc.h
-@@ -78,8 +78,6 @@ struct ipc_kludge {
- #define IPCCALL(version,op)	((version)<<16 | (op))
- 
- #ifdef __KERNEL__
--
--#include <linux/kref.h>
- #include <linux/spinlock.h>
- 
- #define IPCMNI 32768  /* <= MAX_INT limit for ipc arrays (including sysctl changes) */
---- a/include/linux/kref.h
-+++ b/include/linux/kref.h
-@@ -16,7 +16,6 @@
- #define _KREF_H_
- 
- #include <linux/types.h>
--#include <asm/atomic.h>
- 
- struct kref {
- 	atomic_t refcount;
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -40,7 +40,6 @@
- #ifdef __KERNEL__
- 
- #include <linux/in.h>
--#include <linux/kref.h>
- #include <linux/mm.h>
- #include <linux/pagemap.h>
- #include <linux/rbtree.h>
+  * Commandline interface, [Lorenzo Colitti]
+
+  * Stacktraces for both kernel and userspace
+
+  * More accurate accounting when processes rapidly appear or
+    disappear.
+
+  * Profiles can be cutted and pasted 
+
+  * Improved performance
+
+
+Version 1.1.2 is a development release. Please report bugs to
+sandmann@daimi.au.dk.
+
+
+Download:
+
+        http://www.daimi.au.dk/~sandmann/sysprof/sysprof-1.1.2.tar.gz
+
+
+Git:
+
+        git://git.gnome.org/sysprof
+
+
+
+Thanks,
+Soren
