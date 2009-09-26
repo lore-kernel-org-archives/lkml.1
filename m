@@ -1,29 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752747AbZIZPrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931AbZIZQDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752747AbZIZPrX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 11:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZIZPrW
+	id S1752931AbZIZQDv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 12:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZIZQDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 11:47:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:3823 "EHLO mx1.redhat.com"
+	Sat, 26 Sep 2009 12:03:50 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:12511 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751462AbZIZPrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 11:47:22 -0400
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL v2] bkl tracepoints + filter regex support
-References: <1253821775-8618-1-git-send-email-fweisbec@gmail.com>
-	<20090924201509.GA26573@elte.hu> <20090924201622.GA15459@elte.hu>
-	<1253824200.18939.173.camel@laptop> <20090924204357.GB8662@nowhere>
-	<1253825489.18939.180.camel@laptop> <20090924213631.GA2661@nowhere>
-	<1253866792.10287.0.camel@twins> <20090925091229.GB4686@nowhere>
-	<1253871601.10287.23.camel@twins> <20090925103806.GA6467@nowhere>
+	id S1751952AbZIZQDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 12:03:50 -0400
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [RFC PATCH] perf_core: provide a kernel-internal interface to get to performance counters
+References: <20090925122556.2f8bd939@infradead.org>
 From: fche@redhat.com (Frank Ch. Eigler)
-Date: Sat, 26 Sep 2009 11:47:06 -0400
-In-Reply-To: <20090925103806.GA6467@nowhere> (Frederic Weisbecker's message of "Fri, 25 Sep 2009 12:38:07 +0200")
-Message-ID: <y0mljk1lnd1.fsf@fche.csb>
+Date: Sat, 26 Sep 2009 12:03:28 -0400
+In-Reply-To: <20090925122556.2f8bd939@infradead.org> (Arjan van de Ven's message of "Fri, 25 Sep 2009 12:25:56 +0200")
+Message-ID: <y0mhbuplmlr.fsf@fche.csb>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -32,21 +26,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi -
+Arjan van de Ven <arjan@infradead.org> writes:
 
+> [...]
+> There are reasons for kernel code to ask for, and use, performance counters.
+> For example, in CPU freq governors this tends to be a good idea, but there
+> are other examples possible as well of course.
+> 
+> This patch adds the needed bits to do enable this functionality; they have been
+> tested in an experimental cpufreq driver that I'm working on, and the changes
+> are all that I needed to access counters properly.
+> [...]
 
-Frederic Weisbecker <fweisbec@gmail.com> writes:
+For what it's worth, this sort of thing also looks useful from
+systemtap's point of view.
 
->> > That said, the future plans have evolved, and I'm fine if you have
->> > changed your opinion and think about a better way to develop this.
+It appears that the patch assumes that a perf counter instance is to
+be associated with the "current" task.  How do you use this from your
+prototype scheduler?  Do you create/attach a new one for each thread?
 
->> No, but the thing is, IF we're going to freeze this into ABI, then
->> there's no second chances.
-
-> Right. Once it becomes an ioctl, it becomes an ABI :-/
-
-Are y'all convinced that a little ascii language parser/interpreter is
-the right thing to put into the kernel, as opposed to bytecode (with a
-userspace compiler)?
 
 - FChE
