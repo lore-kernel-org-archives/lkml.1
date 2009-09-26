@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751428AbZIZJJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751608AbZIZJTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751428AbZIZJJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 05:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbZIZJJ5
+	id S1751608AbZIZJTG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 05:19:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbZIZJTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 05:09:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61438 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbZIZJJ4 (ORCPT
+	Sat, 26 Sep 2009 05:19:05 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:34548 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbZIZJTF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 05:09:56 -0400
-Subject: Re: [PATCH tracing/kprobes 0/3] tracing/kprobes: kprobe-tracer
- updates
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-In-Reply-To: <20090925181952.10157.9975.stgit@omoto>
-References: <20090925181952.10157.9975.stgit@omoto>
-Content-Type: text/plain
-Date: Sat, 26 Sep 2009 05:08:45 -0400
-Message-Id: <1253956125.12145.5.camel@frodo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Sep 2009 05:19:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=kJDWZcXjY/zAntusRBwxlyWe0RAi3gVKk28ugoFsLc3BpuL62NoGGWLRbNJd2EY96u
+         XGzOEJy4ShJt6rok5NpdsYl6CJudJIqwtmJuc7cEyxQG0ivpHditl2EzCIzmN9GQIrvm
+         BkBnL1G+IydsI8UGPhEx+gxj/lIKC1HCRa0Jc=
+MIME-Version: 1.0
+Date: Sat, 26 Sep 2009 17:19:07 +0800
+Message-ID: <e997b7420909260219n17fcf421ke2e552e6311c66f6@mail.gmail.com>
+Subject: Why get_fs_names return NULL?
+From: "wilbur.chan" <wilbur512@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-25 at 11:19 -0700, Masami Hiramatsu wrote:
-> Hi Frederic,
-> 
-> Here is a few updates for kprobe-tracer which fix reported bugs and
-> is for catching up the latest ftrace.
-> 
->  - Use dynamic percpu profiling buffer patch is for catching up
->    the latest ftrace change.
->  - Checking the result of create_event_dir() patch improves ftrace
->    code pointed by Li Zefan (thanks!).
->  - Add VIA instructions to x86 insn decoder patch fixes decoding
->    bug reported by Ingo Molnar (thanks!).
-> 
-> Soon after this series, I'll send perf-kprobe patch series.
-
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
--- Steve
+I am going to start a kernel using ramdisk, but  kernel panic  when
+mounting the ramdisk fs.
 
 
+After traped the code , I found that , when kernel invoked
+get_fs_names, it got a NULL list of existing file system names.
+
+That is to say,
+prepare_namespace--->mount_root-->mount_block_root-->get_fs_names-->get_filesystem_list
+ ,
+
+return  a list of nothing...
+
+I thought that , maybe module_init(init_ext2_fs) failed , but I don't
+know why? and how to solve it ?
+
+here is my ramdisk script:
+
+mkdir initrd
+dd if=/dev/zero of=initrd.img bs=1k count=4096
+mke2fs -F -v -m0 initrd.img
+mount -o loop initrd.img initrd
+cp -av rootfs/* initrd
+sync
+umount initrd
+sync
+gzip -f -9 initrd.img
+sync
+./mkimage -T ramdisk -C gzip -n ' Ramdisk Image' -d initrd.img.gz
+your.ramdisk.u-boot
