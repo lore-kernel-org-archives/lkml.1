@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751755AbZI0Qme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbZI0Qo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751755AbZI0Qme (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 12:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbZI0Qmd
+	id S1752294AbZI0Qo3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 12:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbZI0Qo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 12:42:33 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57737 "EHLO kernel.dk"
+	Sun, 27 Sep 2009 12:44:29 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57762 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbZI0Qmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 12:42:33 -0400
-Date: Sun, 27 Sep 2009 18:42:36 +0200
+	id S1750841AbZI0Qo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 12:44:28 -0400
+Date: Sun, 27 Sep 2009 18:44:32 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20090927164235.GA23126@kernel.dk>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com> <1253976676.7005.40.camel@marge.simson.net> <1254034500.7933.6.camel@marge.simson.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       jack@suse.cz
+Subject: Re: [PATCH] bdi_sync_writeback should WB_SYNC_NONE first
+Message-ID: <20090927164431.GB23126@kernel.dk>
+References: <20090925141014.GB15853@think> <20090927013458.53e43459.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1254034500.7933.6.camel@marge.simson.net>
+In-Reply-To: <20090927013458.53e43459.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 27 2009, Mike Galbraith wrote:
-> My dd vs load non-cached binary woes seem to be coming from backmerge.
+On Sun, Sep 27 2009, Andrew Morton wrote:
+> On Fri, 25 Sep 2009 10:10:14 -0400 Chris Mason <chris.mason@oracle.com> wrote:
 > 
-> #if 0 /*MIKEDIDIT sand in gearbox?*/
->         /*
->          * See if our hash lookup can find a potential backmerge.
->          */
->         __rq = elv_rqhash_find(q, bio->bi_sector);
->         if (__rq && elv_rq_merge_ok(__rq, bio)) {
->                 *req = __rq;
->                 return ELEVATOR_BACK_MERGE;
->         }
-> #endif
+> > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> > index 8e1e5e1..27f8e0e 100644
+> > --- a/fs/fs-writeback.c
+> > +++ b/fs/fs-writeback.c
+> > @@ -225,7 +225,7 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
+> >  {
+> >  	struct wb_writeback_args args = {
+> >  		.sb		= sb,
+> > -		.sync_mode	= WB_SYNC_ALL,
+> > +		.sync_mode	= WB_SYNC_NONE,
+> >  		.nr_pages	= LONG_MAX,
+> >  		.range_cyclic	= 0,
+> >  	};
+> > @@ -236,6 +236,13 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
+> >  
+> >  	bdi_queue_work(bdi, &work);
+> >  	bdi_wait_on_work_clear(&work);
+> > +
+> > +	args.sync_mode = WB_SYNC_ALL;
+> > +	args.nr_pages = LONG_MAX;
+> > +
+> > +	work.state = WS_USED | WS_ONSTACK;
+> > +	bdi_queue_work(bdi, &work);
+> > +	bdi_wait_on_work_clear(&work);
+> >  }
+> 
+> Those LONG_MAX's are a worry.  What prevents a very long
+> almost-livelock from occurring if userspace is concurrently dirtying
+> pagecache at a high rate?
 
-It's a given that not merging will provide better latency. We can't
-disable that or performance will suffer A LOT on some systems. There are
-ways to make it better, though. One would be to make the max request
-size smaller, but that would also hurt for streamed workloads. Can you
-try whether the below patch makes a difference? It will basically
-disallow merges to a request that isn't the last one.
+Not sure whether Chris' system is back up again, but I discussed this
+with him on irc. Since the WB_SYNC_ALL writeback should be queued behind
+the WB_SYNC_NONE that the non-wait sync already issued, not sure why
+this patch makes a difference. It's definitely not the right approach.
 
-We should probably make the merging logic a bit more clever, since the
-below wont work well for two (or more) streamed cases. I'll think a bit
-about that.
-
-Note this is totally untested!
-
-diff --git a/block/elevator.c b/block/elevator.c
-index 1975b61..d00a72b 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -497,9 +497,17 @@ int elv_merge(struct request_queue *q, struct request **req, struct bio *bio)
- 	 * See if our hash lookup can find a potential backmerge.
- 	 */
- 	__rq = elv_rqhash_find(q, bio->bi_sector);
--	if (__rq && elv_rq_merge_ok(__rq, bio)) {
--		*req = __rq;
--		return ELEVATOR_BACK_MERGE;
-+	if (__rq) {
-+		/*
-+		 * If requests are queued behind this one, disallow merge. This
-+		 * prevents streaming IO from continually passing new IO.
-+		 */
-+		if (elv_latter_request(q, __rq))
-+			return ELEVATOR_NO_MERGE;
-+		if (elv_rq_merge_ok(__rq, bio)) {
-+			*req = __rq;
-+			return ELEVATOR_BACK_MERGE;
-+		}
- 	}
- 
- 	if (e->ops->elevator_merge_fn)
+I'll debug this when I get back.
 
 -- 
 Jens Axboe
