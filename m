@@ -1,105 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZI0GzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZI0HOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbZI0GzK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 02:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZI0GzJ
+	id S1753354AbZI0HOo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 03:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZI0HOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 02:55:09 -0400
-Received: from mail.gmx.net ([213.165.64.20]:32780 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752701AbZI0GzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 02:55:08 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+5YlEaUGa5TuPXKM8fXX0eHNIpbkV72j9ntSIyIr
-	8cgcPx9HUgz7yg
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       jens.axboe@oracle.com
-In-Reply-To: <1253976676.7005.40.camel@marge.simson.net>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-	 <4ABC28DE.7050809@datenparkplatz.de>  <20090925202636.GC15007@redhat.com>
-	 <1253976676.7005.40.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Sun, 27 Sep 2009 08:55:00 +0200
-Message-Id: <1254034500.7933.6.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Sun, 27 Sep 2009 03:14:44 -0400
+Received: from panacea.frsk.net ([92.243.16.10]:45748 "EHLO panacea.frsk.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753071AbZI0HOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 03:14:43 -0400
+X-Greylist: delayed 1114 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Sep 2009 03:14:43 EDT
+From: Henrik Austad <henrik@austad.us>
+To: Peter Zijlstra <peterz@infradead.org>
+Date: Sun, 27 Sep 2009 08:55:43 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Raistlin <raistlin@linux.it>, claudio@evidence.eu.com,
+       michael@evidence.eu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, johan.eker@ericsson.com, p.faure@akatech.ch,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
+References: <1253615424.20345.76.camel@Palantir> <1253623867.20345.156.camel@Palantir> <1253644603.18939.25.camel@laptop>
+In-Reply-To: <1253644603.18939.25.camel@laptop>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2961817.d7cvJMcIgH";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
+Message-Id: <200909270855.49367.henrik@austad.us>
+X-SA-Exim-Connect-IP: 129.241.93.108
+X-SA-Exim-Mail-From: henrik@austad.us
+Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on panacea.frsk.net)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My dd vs load non-cached binary woes seem to be coming from backmerge.
+--nextPart2961817.d7cvJMcIgH
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-#if 0 /*MIKEDIDIT sand in gearbox?*/
-        /*
-         * See if our hash lookup can find a potential backmerge.
-         */
-        __rq = elv_rqhash_find(q, bio->bi_sector);
-        if (__rq && elv_rq_merge_ok(__rq, bio)) {
-                *req = __rq;
-                return ELEVATOR_BACK_MERGE;
-        }
-#endif
+On Tuesday 22. September 2009 20.36.43 Peter Zijlstra wrote:
+> On Tue, 2009-09-22 at 14:51 +0200, Raistlin wrote:
 
-- = stock = 0
-+ = /sys/block/sdb/queue/nomerges = 1
-x = backmerge disabled
+>[...]
+> > > >  * In case a SCHED_EDF tasks forks, parent's budget is split among
+> > > >    parent and child.
+> > >
+> > > Right, I guess there's really nothing else you can do here...
+> >
+> > Well, me too... But during tests I run into a poor EDF shell that, after
+> > each `ls' or `cat', lost half of its bandwidth up to be no longer
+> > capable of running at all! :(
+> >
+> > We may avoid this having the son giving back its bandwidth to the father
+> > when dieing (what a sad story! :( ) but this would need distinguishing
+> > between fork-ed and setschedul-ed EDF tasks. Moreover, e.g., what if the
+> > son changed its EDF bandwidth in the meanwhile? Or worse if it changed
+> > its scheduling policy?
+> >
+> > At the current time, I'm just splitting the bandwidth, and nothing more.
+> > Actually, I also think the solution is the right one, but I would really
+> > like to discuss the issues it raises.
+>
+> Ooh, good point,.. yes we can put some exit hooks in there folding the
+> runtime back.
+>
+> An alternative is starting the child out with 0 runtime, and have the
+> parent run sched_setscheduler() on it giving us a clear point to run
+> admission on.
 
-quantum = 1                                                  Avg
-dd pre         58.4     52.5     56.1     61.6     52.3     56.1-  MB/s   virgin/foo
-               59.6     54.4     53.0     56.1     58.6     56.3+           1.003
-               53.8     56.6     54.7     50.7     59.3     55.0x            .980
-perf stat      2.87     0.91     1.64     1.41     0.90      1.5-  Sec
-               2.61     1.14     1.45     1.43     1.47      1.6+           1.066
-               1.07     1.19     1.20     1.24     1.37      1.2x            .800
-dd post        56.6     61.0     66.3     64.7     60.9     61.9-
-               54.0     59.3     61.1     58.3     58.9     58.3+            .941
-               54.3     60.2     59.6     60.6     60.3     59.0x            .953
+Why not start it as sched_fair/sched_rt and let the child apply for
+resources the same way the parent did? That would be fairly
+straightforward and lead to predictable behaviour, and also make a nice,=20
+simple hook into the acceptance-tests.
 
-quantum = 2
-dd pre         59.7     62.4     58.9     65.3     60.3     61.3-
-               49.4     51.9     58.7     49.3     52.4     52.3+            .853
-               58.3     52.8     53.1     50.4     59.9     54.9x            .895
-perf stat      5.81     6.09     6.24    10.13     6.21      6.8-
-               2.48     2.10     3.23     2.29     2.31      2.4+            .352
-               2.09     2.73     1.72     1.96     1.83      2.0x            .294
-dd post        64.0     62.6     64.2     60.4     61.1     62.4-
-               52.9     56.2     49.6     51.3     51.2     52.2+            .836
-               54.7     60.9     56.0     54.0     55.4     56.2x            .900
+=2D-=20
+     henrik
 
-quantum = 3
-dd pre         65.5     57.7     54.5     51.1     56.3     57.0-
-               58.1     53.9     52.2     58.2     51.8     54.8+            .961
-               60.5     56.5     56.7     55.3     54.6     56.7x            .994
-perf stat     14.01    13.71     8.35     5.35     8.57      9.9-
-               1.84     2.30     2.14     2.10     2.45      2.1+            .212
-               2.12     1.63     2.54     2.23     2.29      2.1x            .212
-dd post        59.2     49.1     58.8     62.3     62.1     58.3-
-               59.8     53.2     55.2     50.9     53.7     54.5+            .934
-               56.1     61.9     51.9     54.3     53.1     55.4x            .950
+--nextPart2961817.d7cvJMcIgH
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-quantun = 4
-dd pre         57.2     52.1     56.8     55.2     61.6     56.5-
-               48.7     55.4     51.3     49.7     54.5     51.9+            .918
-               55.8     54.5     50.3     56.4     49.3     53.2x            .941
-perf stat     11.98     1.61     9.63    16.21    11.13     10.1-
-               2.29     1.94     2.68     2.46     2.45      2.3+            .227
-               3.01     1.84     2.11     2.27     2.30      2.3x            .227
-dd post        57.2     52.6     62.2     49.3     50.2     54.3-
-               50.1     54.5     58.4     54.1     49.0     53.2+            .979
-               52.9     53.2     50.6     53.2     50.5     52.0x            .957
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEABECAAYFAkq/DHAACgkQ6k5VT6v45lkLygCg+h9HuD7h5YokQb/j0M5c1E4V
+oIAAoKRQSL2duniUW7+g6w7rIBdhug1K
+=qM+X
+-----END PGP SIGNATURE-----
 
+--nextPart2961817.d7cvJMcIgH--
