@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZI0BgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZI0Cgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbZI0BgJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 21:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZI0BgH
+	id S1753232AbZI0Cgu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 22:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZI0Cgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 21:36:07 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:34030 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137AbZI0BgG (ORCPT
+	Sat, 26 Sep 2009 22:36:47 -0400
+Received: from rcpt-mqugw.biglobe.ne.jp ([133.205.19.70]:49489 "EHLO
+	rcpt-mqugw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbZI0Cgq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 21:36:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=QKi+cnefWWGVX616WVSDcVkzdObwuVeF3+sRvxWGE1pq9GvxnMZRIyrjKQkCdyhseG
-         hh+XxTXnwvM6Cxagy+QhKZgC2l4XM3/tHBb1KDgI+9LJNXZroCnzqx1KZWQTN+SoPTlR
-         BqQSenln/vMNswoZtuVwBw2ZVUZ9Ut+b6hFMI=
+	Sat, 26 Sep 2009 22:36:46 -0400
+X-Greylist: delayed 2382 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Sep 2009 22:36:46 EDT
+X-Biglobe-Sender: <toshitoshi@kfa.biglobe.ne.jp>
+Reply-To: <hsaito766@gmail.com>
+From: "NETQ SND BHD" <toshitoshi@kfa.biglobe.ne.jp>
+Subject: Request For Legal Services
+Date: Sat, 26 Sep 2009 18:37:12 -0700
 MIME-Version: 1.0
-In-Reply-To: <1253974303.4568.13.camel@ht.satnam>
-References: <1253974303.4568.13.camel@ht.satnam>
-Date: Sun, 27 Sep 2009 02:36:09 +0100
-Message-ID: <3d374d00909261836g38ceceb0p3fed39ac62103c33@mail.gmail.com>
-Subject: Re: [PATCH] ARM: OMAP: Remove unused CONFIG MACH_OMAP_HTCWIZARD
-From: Alistair Buxton <a.j.buxton@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: "Zebediah C. McClure" <zmc@lurian.net>, Tony Lindgren <tony@atomide.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="Windows-1251"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
+Message-Id: <20090927105502.KAEZAC15AFD7.FA7DCA51@mail.biglobe.ne.jp>
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/26 Jaswinder Singh Rajput <jaswinder@kernel.org>:
->
-> Remove unused CONFIG MACH_OMAP_HTCWIZARD from Kconfig
+Attention Counsel,
 
-Don't do it please! We're working on it.... board file is coming very soon.
+NETQ SND BHD Company is a manufacturing company with its head office in, Hong Kong, with branches all over Asian continent. The management of NETQ SND BHD Company requires your legal representation for our American delinquent customers.
 
--- 
-Alistair Buxton
-a.j.buxton@gmail.com
+
+We are looking for a reputable attorney to represent us in America in order for us to recover monies due to our organization by overseas customers,and as well follow up with these accounts. In order to achieve these objectives a good and reputable law firm will be required to handle this service.
+
+We understand that a proper Attorney client agreement must be entered into by both parties.Your consideration of our request is highly anticipated, and we look forward to yourprompt response.
+
+Yours Faithfully,
+
+Mr. Hashito Saito.
+(GM)
