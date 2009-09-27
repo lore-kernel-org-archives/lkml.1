@@ -1,103 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbZI0Q3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZI0Ql1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbZI0Q3S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 12:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZI0Q3R
+	id S1753912AbZI0Ql1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 12:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZI0Ql1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 12:29:17 -0400
-Received: from smtp5-g21.free.fr ([212.27.42.5]:39105 "EHLO smtp5-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753484AbZI0Q3R convert rfc822-to-8bit (ORCPT
+	Sun, 27 Sep 2009 12:41:27 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44200 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753645AbZI0Ql0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 12:29:17 -0400
-Message-ID: <4ABF92D7.609@upmc.fr>
-Date: Sun, 27 Sep 2009 18:29:11 +0200
-From: Bernard Pidoux <bernard.pidoux@upmc.fr>
-Organization: Universite Pierre & Marie Curie - Paris 6
-User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
+	Sun, 27 Sep 2009 12:41:26 -0400
+Date: Sun, 27 Sep 2009 17:41:16 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Solving section mismatches
+Message-ID: <20090927164115.GB20093@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31.1 BUG #include <asm/bitsperlong.h>
-References: <4ABF4E36.4090703@upmc.fr>	<4ABF5328.8020901@upmc.fr>	<4ABF5E21.9080104@upmc.fr> <20090927151942.1c6a010a@infradead.org>
-In-Reply-To: <20090927151942.1c6a010a@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If it was supposed to install bitsperlong.h in /asm/ magic did not work.
+Sam,
 
-I am a little bit puzzled for the script writes 
+Any idea how to solve this:
 
-  INSTALL include/asm (53 files)
+WARNING: arch/arm/kernel/built-in.o(.text+0x1ebc): Section mismatch in reference from the function cpu_idle() to the function .cpuexit.text:cpu_die()
+The function cpu_idle() references a function in an exit section.
+Often the function cpu_die() has valid usage outside the exit section
+and the fix is to remove the __cpuexit annotation of cpu_die.
 
-and I can still only list one file in that directory. 
+WARNING: arch/arm/kernel/built-in.o(.cpuexit.text+0x3c): Section mismatch in reference from the function cpu_die() to the function .cpuinit.text:secondary_start_kernel()
+The function __cpuexit cpu_die() references
+a function __cpuinit secondary_start_kernel().
+This is often seen when error handling in the exit function
+uses functionality in the init path.
+The fix is often to remove the __cpuinit annotation of
+secondary_start_kernel() so it may be used outside an init section.
 
+Logically, the annotations are correct - in the first case, cpu_die()
+will only ever be called if hotplug CPU is enabled, since you can't
+offline a CPU without hotplug CPU enabled.  In that case, the __cpuexit.*
+sections are not discarded.
 
-[root@f6bvp-11 linux-2.6.31.1]# make headers_install
-  CHK     include/linux/version.h
-  HOSTCC  scripts/unifdef
-  INSTALL include/asm-generic (34 files)
-  INSTALL include/drm (12 files)
-  INSTALL include/linux/byteorder (2 files)
-  INSTALL include/linux/can (4 files)
-  INSTALL include/linux/dvb (8 files)
-  INSTALL include/linux/hdlc (1 file)
-  INSTALL include/linux/isdn (1 file)
-  INSTALL include/linux/netfilter (58 files)
-  INSTALL include/linux/netfilter_arp (2 files)
-  INSTALL include/linux/netfilter_bridge (16 files)
-  INSTALL include/linux/netfilter_ipv4 (46 files)
-  INSTALL include/linux/netfilter_ipv6 (21 files)
-  INSTALL include/linux/nfsd (6 files)
-  INSTALL include/linux/raid (2 files)
-  INSTALL include/linux/spi (1 file)
-  INSTALL include/linux/sunrpc (1 file)
-  INSTALL include/linux/tc_act (6 files)
-  INSTALL include/linux/tc_ematch (4 files)
-  INSTALL include/linux/usb (8 files)
-  INSTALL include/linux/wimax (1 file)
-  INSTALL include/linux (353 files)
-  INSTALL include/mtd (5 files)
-  INSTALL include/rdma (1 file)
-  INSTALL include/scsi (4 files)
-  INSTALL include/sound (9 files)
-  INSTALL include/video (3 files)
-  INSTALL include/xen (1 file)
-  INSTALL include (0 file)
-  INSTALL include/asm (53 files)
-[root@f6bvp-11 linux-2.6.31.1]# ll include/asm/
-total 8
--rw-r--r-- 1 root root 4890 2009-09-27 14:34 asm-offsets.h
+In the second case, this is platform code to restart the CPU, and
+again the anotations are entirely correct - cpuexit code only exists
+if hotplug CPU is enabled, in which case the cpuinit code must also
+be kept around.  Therefore, it is entirely legal for cpuexit code to
+call cpuinit code - unlike __init vs __exit or __devinit vs __devexit.
 
-
-Arjan van de Ven a écrit :
-> On Sun, 27 Sep 2009 14:44:17 +0200
-> Bernard Pidoux <bernard.pidoux@upmc.fr> wrote:
-> 
->> I downloaded again linux-2.6.31.1.tar.bz2 and unpacked it.
->>
->> ll /usr/src/linux-2.6.31.1/include/
->> total 128
->> drwxrwxr-x   3 root root  4096 2009-09-24 17:45 acpi/
->> lrwxrwxrwx   1 root root     7 2009-09-27 14:34 asm -> asm-x86/
->> drwxrwxr-x   3 root root  4096 2009-09-24 17:45 asm-generic/
->> drwxr-xr-x   2 root root  4096 2009-09-27 14:34 asm-x86/
->>
->> and
->>
->> ll /usr/src/linux-2.6.31.1/include/asm/
->> total 8
->> -rw-r--r-- 1 root root 4890 2009-09-27 14:34 asm-offsets.h
->>
->> So, I think that the kernel header problem is in the linux package,
->> not in my system installation.
-> 
-> do not count until you have done "make headers_install"... there is
-> magic there that fixes up a bunch of things.
-> .
-> 
-> 
-
+Therefore, I believe both of these warnings to be incorrect.
