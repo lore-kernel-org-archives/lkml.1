@@ -1,144 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbZI0Wjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752261AbZI0W7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752475AbZI0Wjr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 18:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZI0Wjq
+	id S1752261AbZI0W7K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 18:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZI0W7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 18:39:46 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50137 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751431AbZI0Wjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 18:39:45 -0400
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX184RTwiI5Q4jffpx1zCXJtHCkuz+bAs2pgS/t9jgU
-	DKjRQfZm3ggWTP
-Message-ID: <4ABFE9B3.8000000@gmx.de>
-Date: Mon, 28 Sep 2009 00:39:47 +0200
-From: Helge Deller <deller@gmx.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sun, 27 Sep 2009 18:59:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36212 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbZI0W7J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 18:59:09 -0400
+Date: Sun, 27 Sep 2009 15:52:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bug] /etc/profile: line 30: /dev/null: Permission denied
+	(Was: Re: [PATCH] Remove broken by design and by implementation
+	devtmpfs maintenance disaster)
+Message-ID: <20090927225220.GB19076@kroah.com>
+References: <m1y6oef08k.fsf@fess.ebiederm.org> <20090917125759.GA4045@kroah.com> <m1ab0tcwep.fsf@fess.ebiederm.org> <20090917185306.GA28635@elte.hu> <ac3eb2510909171218k4963fc7dv8fb7549007e511aa@mail.gmail.com> <alpine.LFD.2.01.0909171322210.4950@localhost.localdomain> <20090917203113.GA9530@elte.hu> <20090918055843.GB7104@kroah.com> <20090925204925.GA4726@elf.ucw.cz>
 MIME-Version: 1.0
-To: Tim Abbott <tabbott@ksplice.com>
-CC: linux-parisc@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v2 0/2] Linker script cleanup patches for parisc
-References: <1253306078-7066-1-git-send-email-tabbott@ksplice.com> <4ABFD2D3.5050606@gmx.de> <alpine.DEB.1.10.0909271719570.14151@dr-wily.mit.edu>
-In-Reply-To: <alpine.DEB.1.10.0909271719570.14151@dr-wily.mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090925204925.GA4726@elf.ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/27/2009 11:25 PM, Tim Abbott wrote:
-> On Sun, 27 Sep 2009, Helge Deller wrote:
->
->>   Tim, thanks for your work!
->>
->> Sadly it broke the parisc build in two places:
->> a) THREAD_SIZE can't be used in the vmlinux.lds.S file
->> b) It generates linker errors like "local symbol 0: discarded in section
->> `.exit.text' from kernel/built-in.o".
->
-> Sorry about that -- I should have tried harder to get someone to test this
-> one, since parisc is one of the architectures for which I don't have a
-> cross-compiler.
+On Fri, Sep 25, 2009 at 10:49:26PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > > > > I've reproduced a bug with the following .config options:
+> > > > > >
+> > > > > > ??CONFIG_DEVTMPFS=y
+> > > > > > ??CONFIG_DEVTMPFS_MOUNT=y
+> > > > > >
+> > > > > > /dev/null and /dev/zero are not read/writable to ordinary users, 
+> > > > > > breaking normal bootup and login:
+> > > > > 
+> > > > > Udev should run long before some ordinary/non-root user can login, 
+> > > > > and apply the permissions as it always does. It's known to work on 
+> > > > > Fedora, SUSE, Ubuntu. What kind of system/environment/setup is that 
+> > > > > where you see this?
+> > > > 
+> > > > I don't know if this is what Ingo does, but I have a few machines 
+> > > > where I don't run the distro-supplied 'initrd' at all, because it's 
+> > > > easier to boot without it. The Fedora initrd doesn't allow me to 
+> > > > sanely set root filesystem parameters without totally rewriting the 
+> > > > initrd image, which I'm not interested in, for example (they'll take 
+> > > > effect for the root initrd, not the final root).
+> > > 
+> > > Correct: i'm booting raw bzImages, with /dev copied to the real /dev. To 
+> > > this box udev is mostly an annoyance that slows down my bootup ;-)
+> > 
+> > I use non-initrd systems as well, and this option works for me on Gentoo
+> > and SUSE machines.
+> > 
+> > As you are using a very old udev, and the boot infrastructure for udev
+> > in older Fedora releases was a bit "odd" in places, I would recommend
+> > not using these options on that machine.  If we need to reword the
+> > Kconfig help option to make it a bit more clear, do you have a
+> > suggestion on what we should change?
+> 
+> "no regressions" ?
 
-No problem. It was on my todo-list to test your patch, but then it
-already got merged :-)
+It's now resolved, so there are no regressions :)
 
->> Attached patch below fixes both issues. Tested with 32- and 64-bit parisc
->> kernel.
->
-> The .exit.text change looks fine.
+thanks,
 
-Good.
-
-> [...]
-> Rather than adding a new definition in asm-offsets.c, I think it'll be
-> better to do something like the following to make the normal THREAD_SIZE
-> definition available in the linker script and other assembly files:
->
-> 	-Tim Abbott
->
-> parisc: Make THREAD_SIZE available to assembly files and linker scripts.
->
-> Signed-off-by: Tim Abbott<tabbott@ksplice.com>
-
-Yes, much better.
-Acked-by: Helge Deller <deller@gmx.de>
-
-But with this change, the vmlinux.lds.S file needs to include
-the <asm/thread_info.h> file as well. I've added the adjusted patch
-to vmlinux.lds.S below.
-
-> ---
->   arch/parisc/include/asm/thread_info.h |   10 +++++-----
->   1 files changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/parisc/include/asm/thread_info.h b/arch/parisc/include/asm/thread_info.h
-> index ac775a7..51bca20 100644
-> --- a/arch/parisc/include/asm/thread_info.h
-> +++ b/arch/parisc/include/asm/thread_info.h
-> @@ -32,6 +32,11 @@ struct thread_info {
->   #define init_thread_info        (init_thread_union.thread_info)
->   #define init_stack              (init_thread_union.stack)
->
-> +/* how to get the thread information struct from C */
-> +#define current_thread_info()	((struct thread_info *)mfctl(30))
-> +
-> +#endif /* !__ASSEMBLY */
-> +
->   /* thread information allocation */
->
->   #define THREAD_SIZE_ORDER            2
-> @@ -40,11 +45,6 @@ struct thread_info {
->   #define THREAD_SIZE             (PAGE_SIZE<<  THREAD_SIZE_ORDER)
->   #define THREAD_SHIFT            (PAGE_SHIFT + THREAD_SIZE_ORDER)
->
-> -/* how to get the thread information struct from C */
-> -#define current_thread_info()	((struct thread_info *)mfctl(30))
-> -
-> -#endif /* !__ASSEMBLY */
-> -
->   #define PREEMPT_ACTIVE_BIT	28
->   #define PREEMPT_ACTIVE		(1<<  PREEMPT_ACTIVE_BIT)
->
-
-Adjusted patch to vmlinux.lds.S:
-
-parisc: Fix linker script breakage.
-
-Signed-off-by: Helge Deller <deller@gmx.de>
-
-diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
-index 775be27..7fc2c3d 100644
---- a/arch/parisc/kernel/vmlinux.lds.S
-+++ b/arch/parisc/kernel/vmlinux.lds.S
-@@ -28,6 +28,7 @@
-  #include <asm/cache.h>
-  #include <asm/page.h>
-  #include <asm/asm-offsets.h>
-+#include <asm/thread_info.h>
-  	
-  /* ld script to make hppa Linux kernel */
-  #ifndef CONFIG_64BIT
-@@ -135,6 +136,16 @@ SECTIONS
-  	INIT_TEXT_SECTION(16384)
-  	INIT_DATA_SECTION(16)
-  
-+	/* we have to discard exit text and such at runtime, not link time */
-+	.exit.text :
-+	{
-+		EXIT_TEXT
-+	}
-+	.exit.data :
-+	{
-+		EXIT_DATA
-+	}
-+
-  	PERCPU(PAGE_SIZE)
-  	. = ALIGN(PAGE_SIZE);
-  	__init_end = .;
+greg k-h
