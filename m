@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZI0Lqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZI0L5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZI0Lqg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 07:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZI0Lqf
+	id S1753853AbZI0L5d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 07:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZI0L5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 07:46:35 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56944 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753823AbZI0Lqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 07:46:34 -0400
-Date: Sun, 27 Sep 2009 12:47:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>
-Subject: Re: [Regression] 2.6.31-git: tty change broke resume from
- hibernation on MSI Wind U100
-Message-ID: <20090927124716.2fd8a1de@lxorguk.ukuu.org.uk>
-In-Reply-To: <200909260038.22079.rjw@sisk.pl>
-References: <200909260038.22079.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 27 Sep 2009 07:57:33 -0400
+Received: from smtp5-g21.free.fr ([212.27.42.5]:45585 "EHLO smtp5-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752881AbZI0L5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 07:57:32 -0400
+Message-ID: <4ABF5328.8020901@upmc.fr>
+Date: Sun, 27 Sep 2009 13:57:28 +0200
+From: Bernard Pidoux <bernard.pidoux@upmc.fr>
+Organization: Universite Pierre & Marie Curie - Paris 6
+User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.31.1 BUG #include <asm/bitsperlong.h>
+References: <4ABF4E36.4090703@upmc.fr>
+In-Reply-To: <4ABF4E36.4090703@upmc.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Sep 2009 00:38:21 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+The only file in asm-x86 directory is asm-offsets.h
 
-> Hi Alan,
-> 
-> As stated at http://bugzilla.kernel.org/show_bug.cgi?id=14229, your commit
-> b50989dc444599c8b21edc23536fc305f4e9b7d5
-> (tty: make the kref destructor occur asynchronously) appears to have broken
-> resume from hibernation on MSI Wind U100.
-> 
-> I verified that hibernation works correctly with this commit reverted.
-> 
-> I'm still not sure what the root cause of the problem is, though.
+This is a Mandriva 2009.1 Spring distro.
+I checked that it was the same on two other machines with the same 
+new installed distro.
 
-The root cause is that the patch to fix the console async/sync behaviour
-went into Andrews tree, back out of it and vanished.
+I will copy bitsperlong.h into asm-x86 as suggested.
 
-It's a known bug, with a known confirmed fix. You may want to pick it up
-and submit it as there is no tty maintainer currently.
+Should other files be present in the above directory ?
+
+Should I send a bug report to Mandriva ?
+
+Thank you all for your help.
+
+Bernard Pidoux
+
+
+On Sun, Sep 27, 2009 at 01:16:41PM +0200, Bernard Pidoux wrote:
+> The problem is that when I compile an application that never caused any 
+> problem before I get an error due to incorrect reference to 
+> <asm/bitsperlong>
+>
+> This was due to int-ll64.h including <asm/bitsperlong.h> which does not exists.
+>
+> Is the correct solution to replace symbolic link ?
+>
+> /usr/src/linux/include/asm->asm-x86
+>
+> by
+>
+> /usr/src/linux/include/asm->asm-generic
+
+The correct fix is to include the missing bitsperlong in
+the asm-x86 directory.
+In other words your kernel headers are broken.
+
+Looking at latest kernel we do export bitsperlong.h.
+So see if you can find a fix for your broken kernel headers.
+
+	Sam
+
