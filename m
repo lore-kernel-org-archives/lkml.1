@@ -1,289 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbZI0FrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbZI0Fty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752315AbZI0FrU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 01:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZI0FrT
+	id S1752553AbZI0Fty (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 01:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZI0Fty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 01:47:19 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:60855 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751781AbZI0FrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 01:47:18 -0400
-Date: Sun, 27 Sep 2009 15:47:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for September 27
-Message-Id: <20090927154714.ae43c580.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__27_Sep_2009_15_47_14_+1000_k_OBXhmd./82ouj."
+	Sun, 27 Sep 2009 01:49:54 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:58020 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751905AbZI0Ftx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 01:49:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=bQy9GaH0iQW1haeGt/deu0hfkI+Wwd3YArOSYP4+P7B2BfVM7fyfGv9qHcLIZv9DnK
+         ZH6FRWJ97C2UimL8C49ldcgT2XLH5MRPIpNBrLfLy+2wmWfLlIfArFIXO1JiskgYkOSA
+         JJv/+nrip2zm7qjK4qkiYuYax1Erav76IV3sE=
+Message-ID: <4ABEFCFE.3080500@gmail.com>
+Date: Sun, 27 Sep 2009 13:49:50 +0800
+From: Jia Zhang <jia.zhang2008@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] softlockup: keep current softlockup period before touching
+ timestamp
+Content-Type: text/plain; charset=x-gbk
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__27_Sep_2009_15_47_14_+1000_k_OBXhmd./82ouj.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Jia Zhang <jia.zhang2008@gmail.com>
 
-Hi all,
+Imaging such a scenario, softlockup deadline is 60s and a softirq runs
+at most 65s. Assume that currently that softirq runs 50s. At this moment,
+issue a "echo 40 > /proc/sys/kernel/softlockup_thresh" and thus lead to
+recounting the timeout. The remaining time for that softirq is 15s less
+than new threshold 40s, which means the warning will be depressed after
+15s. It is not what we expected because softlockup actually feeds
+100s(old+new) for that softirq. To fix this problem, softlockup should
+keep current softlockup period before touching timestamp.
 
-Please do not add code destined for 2.6.33 into linux-next trees until
-(at least) 2.6.32-rc1 is out.  This will hopefully give those who have
-stuff destined for just after -rc1 a chance.
+Signed-off-by: Jia Zhang <jia.zhang2008@gmail.com>
+---
+ include/linux/sched.h |    5 +----
+ kernel/softlockup.c   |   26 ++++++++++++++------------
+ kernel/sysctl.c       |    2 +-
+ 3 files changed, 16 insertions(+), 17 deletions(-)
 
-Changes since 20090926:
-
-We are seeing conflicts resolved and move from one tree to another as
-Linus merges them.
-
-My fixes tree contains a build fix for powerpc/kvm.
-
-The sparc-current tree lost its conflict.
-
-The acpi tree lost its build failure.
-
-The backlight tree lost its conflict.
-
-I added a patch to remove includes of autoconf.h that were causing some
-build failures.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 139 trees (counting Linus' and 21 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-CONFLICT (content): Merge conflict in drivers/usb/host/xhci-hcd.c
-CONFLICT (content): Merge conflict in drivers/usb/host/xhci-mem.c
-CONFLICT (content): Merge conflict in drivers/usb/host/xhci-ring.c
-CONFLICT (content): Merge conflict in drivers/usb/host/xhci.h
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging thumb-2/thumb-2
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in arch/mips/Kconfig
-CONFLICT (add/add): Merge conflict in arch/mips/bcm63xx/Makefile
-CONFLICT (add/add): Merge conflict in arch/mips/bcm63xx/boards/board_bcm963=
-xx.c
-CONFLICT (delete/modify): arch/mips/lemote/lm2e/Makefile deleted in HEAD an=
-d modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of=
- arch/mips/lemote/lm2e/Makefile left in tree.
-CONFLICT (delete/modify): arch/mips/lemote/lm2e/pci.c deleted in HEAD and m=
-odified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of ar=
-ch/mips/lemote/lm2e/pci.c left in tree.
-CONFLICT (delete/modify): arch/mips/lemote/lm2e/prom.c deleted in HEAD and =
-modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of a=
-rch/mips/lemote/lm2e/prom.c left in tree.
-$ git rm -f arch/mips/lemote/lm2e/Makefile arch/mips/lemote/lm2e/pci.c arch=
-/mips/lemote/lm2e/prom.c
-Merging parisc/next
-CONFLICT (content): Merge conflict in arch/parisc/include/asm/thread_info.h
-CONFLICT (content): Merge conflict in arch/parisc/kernel/entry.S
-CONFLICT (content): Merge conflict in arch/parisc/kernel/signal.c
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in fs/fs-writeback.c
-CONFLICT (content): Merge conflict in mm/page-writeback.c
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging drbd/drbd
-Merging kmemleak/kmemleak
-Merging tip/auto-latest
-Merging oprofile/for-next
-Merging percpu/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-CONFLICT (content): Merge conflict in arch/x86/kernel/early_printk.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-Merging quilt/staging
-Merging scsi-post-merge/master
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/scsi/Makefile
-CONFLICT (content): Merge conflict in drivers/scsi/fcoe/fcoe.c
-CONFLICT (content): Merge conflict in drivers/scsi/fcoe/fcoe.h
-CONFLICT (content): Merge conflict in drivers/scsi/libfc/fc_elsct.c
-CONFLICT (content): Merge conflict in drivers/scsi/libfc/fc_lport.c
-CONFLICT (add/add): Merge conflict in drivers/scsi/pmcraid.c
-CONFLICT (add/add): Merge conflict in drivers/scsi/pmcraid.h
-CONFLICT (content): Merge conflict in include/scsi/fc_encode.h
-CONFLICT (content): Merge conflict in include/scsi/libfc.h
-CONFLICT (content): Merge conflict in kernel/sysctl.c
-Applying: linux-next: 20090926 - drop autoconf.h from DRBD driver
-
---Signature=_Sun__27_Sep_2009_15_47_14_+1000_k_OBXhmd./82ouj.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkq+/GIACgkQjjKRsyhoI8wJ+ACfTZBC36jdWwkErsl6VXSFj9o/
-zzUAn3bePuAZ3w1OR950VKH/qMiKtJpP
-=JdsJ
------END PGP SIGNATURE-----
-
---Signature=_Sun__27_Sep_2009_15_47_14_+1000_k_OBXhmd./82ouj.--
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 848d1f2..6583f6a 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -308,10 +308,7 @@ extern void sched_show_task(struct task_struct *p);
+ extern void softlockup_tick(void);
+ extern void touch_softlockup_watchdog(void);
+ extern void touch_all_softlockup_watchdogs(void);
+-extern int proc_dosoftlockup_thresh(struct ctl_table *table, int write,
+-				    struct file *filp, void __user *buffer,
+-				    size_t *lenp, loff_t *ppos);
+-extern unsigned int  softlockup_panic;
++extern unsigned int softlockup_panic;
+ extern int softlockup_thresh;
+ #else
+ static inline void softlockup_tick(void)
+diff --git a/kernel/softlockup.c b/kernel/softlockup.c
+index 88796c3..2ffd34b 100644
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -4,7 +4,7 @@
+  * started by Ingo Molnar, Copyright (C) 2005, 2006 Red Hat, Inc.
+  *
+  * this code detects soft lockups: incidents in where on a CPU
+- * the kernel does not reschedule for 10 seconds or more.
++ * the kernel does not reschedule for at most 60 seconds.
+  */
+ #include <linux/mm.h>
+ #include <linux/cpu.h>
+@@ -22,6 +22,7 @@
+ 
+ static DEFINE_SPINLOCK(print_lock);
+ 
++static DEFINE_PER_CPU(int, softlockup_thresh);
+ static DEFINE_PER_CPU(unsigned long, touch_timestamp);
+ static DEFINE_PER_CPU(unsigned long, print_timestamp);
+ static DEFINE_PER_CPU(struct task_struct *, watchdog_task);
+@@ -71,6 +72,7 @@ static void __touch_softlockup_watchdog(void)
+ 	int this_cpu = raw_smp_processor_id();
+ 
+ 	__raw_get_cpu_var(touch_timestamp) = get_timestamp(this_cpu);
++	__raw_get_cpu_var(softlockup_thresh) = softlockup_thresh;
+ }
+ 
+ void touch_softlockup_watchdog(void)
+@@ -89,14 +91,6 @@ void touch_all_softlockup_watchdogs(void)
+ }
+ EXPORT_SYMBOL(touch_all_softlockup_watchdogs);
+ 
+-int proc_dosoftlockup_thresh(struct ctl_table *table, int write,
+-			     struct file *filp, void __user *buffer,
+-			     size_t *lenp, loff_t *ppos)
+-{
+-	touch_all_softlockup_watchdogs();
+-	return proc_dointvec_minmax(table, write, filp, buffer, lenp, ppos);
+-}
+-
+ /*
+  * This callback runs from the timer interrupt, and checks
+  * whether the watchdog thread has hung or not:
+@@ -108,9 +102,16 @@ void softlockup_tick(void)
+ 	unsigned long print_timestamp;
+ 	struct pt_regs *regs = get_irq_regs();
+ 	unsigned long now;
++	int new_thresh = softlockup_thresh;
++	int cur_thresh = per_cpu(softlockup_thresh, this_cpu);
+ 
++	if (unlikely(new_thresh > cur_thresh)) {
++		cur_thresh = new_thresh;	
++		per_cpu(softlockup_thresh, this_cpu) = new_thresh;
++	}
++	
+ 	/* Is detection switched off? */
+-	if (!per_cpu(watchdog_task, this_cpu) || softlockup_thresh <= 0) {
++	if (unlikely(!per_cpu(watchdog_task, this_cpu) || cur_thresh <= 0)) {
+ 		/* Be sure we don't false trigger if switched back on */
+ 		if (touch_timestamp)
+ 			per_cpu(touch_timestamp, this_cpu) = 0;
+@@ -140,11 +141,11 @@ void softlockup_tick(void)
+ 	 * Wake up the high-prio watchdog task twice per
+ 	 * threshold timespan.
+ 	 */
+-	if (now > touch_timestamp + softlockup_thresh/2)
++	if (now > touch_timestamp + cur_thresh/2)
+ 		wake_up_process(per_cpu(watchdog_task, this_cpu));
+ 
+ 	/* Warn about unreasonable delays: */
+-	if (now <= (touch_timestamp + softlockup_thresh))
++	if (now <= (touch_timestamp + cur_thresh))
+ 		return;
+ 
+ 	per_cpu(print_timestamp, this_cpu) = touch_timestamp;
+@@ -215,6 +216,7 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 			printk(KERN_ERR "watchdog for %i failed\n", hotcpu);
+ 			return NOTIFY_BAD;
+ 		}
++		per_cpu(softlockup_thresh, hotcpu) = softlockup_thresh;
+ 		per_cpu(touch_timestamp, hotcpu) = 0;
+ 		per_cpu(watchdog_task, hotcpu) = p;
+ 		kthread_bind(p, hotcpu);
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 7f4f57b..89bfadd 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -876,7 +876,7 @@ static struct ctl_table kern_table[] = {
+ 		.data		= &softlockup_thresh,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dosoftlockup_thresh,
++		.proc_handler	= &proc_dointvec_minmax,
+ 		.strategy	= &sysctl_intvec,
+ 		.extra1		= &neg_one,
+ 		.extra2		= &sixty,
+-- 
+1.6.0.4
