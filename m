@@ -1,198 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbZI0FoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbZI0FrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157AbZI0FoG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 01:44:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZI0FoF
+	id S1752315AbZI0FrU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 01:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZI0FrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 01:44:05 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:43988 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbZI0FoD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 01:44:03 -0400
-Date: Sun, 27 Sep 2009 11:13:36 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org, sfr@canb.auug.org.au
-Subject: Re: [PATCH] linux-next: 20090926 - drop autoconf.h from DRBD driver
-Message-ID: <20090927054336.GB4300@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20090926152800.a6568e53.sfr@canb.auug.org.au> <20090926173143.GA5041@linux.vnet.ibm.com> <20090926200839.GA5220@merkur.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090926200839.GA5220@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 27 Sep 2009 01:47:19 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60855 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751781AbZI0FrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 01:47:18 -0400
+Date: Sun, 27 Sep 2009 15:47:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for September 27
+Message-Id: <20090927154714.ae43c580.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__27_Sep_2009_15_47_14_+1000_k_OBXhmd./82ouj."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sam Ravnborg <sam@ravnborg.org> [2009-09-26 22:08:39]:
+--Signature=_Sun__27_Sep_2009_15_47_14_+1000_k_OBXhmd./82ouj.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sat, Sep 26, 2009 at 11:01:43PM +0530, Kamalesh Babulal wrote:
-> > Hi Sam,
-> > 
-> > 	next-20090926 allyesconfig build breaks on powerpc,
-> > 
-> > drivers/block/drbd/drbd_proc.c:26:28: error: linux/autoconf.h: No such file or directory
-> > make[3]: *** [drivers/block/drbd/drbd_proc.o] Error 1
-> > 
-> > dropping autoconf.h from drbd_proc.c helps. The cleanup patch drops the
-> > unneeded include autoconf.h.
-> > 
-> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> 
-> I only checked upstream - so this is no big suprise.
-> As there is no need to explicitly include autoconf.h this
-> change should be included by the drdb folks even if the
-> stuff I have does not hit upstream.
-> 
-> Can I ask you to audit the rest of -next for similar issues.
-> A 'git grep "autoconf\.h"' should be a qucik way to find other
-> spots to fix up.
+Hi all,
 
-Sorry for being lazy here. The cleanup patch already drops 
-unneeded autoconf.h from next-20090926. Thanks to stephen
-for greping through the files.
+Please do not add code destined for 2.6.33 into linux-next trees until
+(at least) 2.6.32-rc1 is out.  This will hopefully give those who have
+stuff destined for just after -rc1 a chance.
 
-> 
-> Patch is:
-> 
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> 	Sam
-> 
-> > --
-> >  drivers/block/drbd/drbd_main.c     |    1 -
-> >  drivers/block/drbd/drbd_nl.c       |    1 -
-> >  drivers/block/drbd/drbd_proc.c     |    1 -
-> >  drivers/block/drbd/drbd_receiver.c |    1 -
-> >  drivers/block/drbd/drbd_req.c      |    1 -
-> >  drivers/block/drbd/drbd_req.h      |    1 -
-> >  drivers/block/drbd/drbd_worker.c   |    1 -
-> >  drivers/staging/cowloop/cowloop.c  |    4 ----
-> >  drivers/staging/iio/ring_sw.h      |    1 -
-> >  9 files changed, 0 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-> > index edf0b80..80273f2 100644
-> > --- a/drivers/block/drbd/drbd_main.c
-> > +++ b/drivers/block/drbd/drbd_main.c
-> > @@ -26,7 +26,6 @@
-> >  
-> >   */
-> >  
-> > -#include <linux/autoconf.h>
-> >  #include <linux/module.h>
-> >  #include <linux/version.h>
-> >  #include <linux/drbd.h>
-> > diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
-> > index 1927ace..cfde310 100644
-> > --- a/drivers/block/drbd/drbd_nl.c
-> > +++ b/drivers/block/drbd/drbd_nl.c
-> > @@ -23,7 +23,6 @@
-> >  
-> >   */
-> >  
-> > -#include <linux/autoconf.h>
-> >  #include <linux/module.h>
-> >  #include <linux/drbd.h>
-> >  #include <linux/in.h>
-> > diff --git a/drivers/block/drbd/drbd_proc.c b/drivers/block/drbd/drbd_proc.c
-> > index 98fcb74..bdd0b49 100644
-> > --- a/drivers/block/drbd/drbd_proc.c
-> > +++ b/drivers/block/drbd/drbd_proc.c
-> > @@ -23,7 +23,6 @@
-> >  
-> >   */
-> >  
-> > -#include <linux/autoconf.h>
-> >  #include <linux/module.h>
-> >  
-> >  #include <asm/uaccess.h>
-> > diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-> > index 63686c4..2f81821 100644
-> > --- a/drivers/block/drbd/drbd_receiver.c
-> > +++ b/drivers/block/drbd/drbd_receiver.c
-> > @@ -23,7 +23,6 @@
-> >   */
-> >  
-> >  
-> > -#include <linux/autoconf.h>
-> >  #include <linux/module.h>
-> >  
-> >  #include <asm/uaccess.h>
-> > diff --git a/drivers/block/drbd/drbd_req.c b/drivers/block/drbd/drbd_req.c
-> > index 0656cf1..1aaa397 100644
-> > --- a/drivers/block/drbd/drbd_req.c
-> > +++ b/drivers/block/drbd/drbd_req.c
-> > @@ -23,7 +23,6 @@
-> >  
-> >   */
-> >  
-> > -#include <linux/autoconf.h>
-> >  #include <linux/module.h>
-> >  
-> >  #include <linux/slab.h>
-> > diff --git a/drivers/block/drbd/drbd_req.h b/drivers/block/drbd/drbd_req.h
-> > index d37ab57..f22c1bc 100644
-> > --- a/drivers/block/drbd/drbd_req.h
-> > +++ b/drivers/block/drbd/drbd_req.h
-> > @@ -25,7 +25,6 @@
-> >  #ifndef _DRBD_REQ_H
-> >  #define _DRBD_REQ_H
-> >  
-> > -#include <linux/autoconf.h>
-> >  #include <linux/module.h>
-> >  
-> >  #include <linux/slab.h>
-> > diff --git a/drivers/block/drbd/drbd_worker.c b/drivers/block/drbd/drbd_worker.c
-> > index 212e954..34a4b3e 100644
-> > --- a/drivers/block/drbd/drbd_worker.c
-> > +++ b/drivers/block/drbd/drbd_worker.c
-> > @@ -23,7 +23,6 @@
-> >  
-> >   */
-> >  
-> > -#include <linux/autoconf.h>
-> >  #include <linux/module.h>
-> >  #include <linux/version.h>
-> >  #include <linux/drbd.h>
-> > diff --git a/drivers/staging/cowloop/cowloop.c b/drivers/staging/cowloop/cowloop.c
-> > index a71c743..a21b9b4 100644
-> > --- a/drivers/staging/cowloop/cowloop.c
-> > +++ b/drivers/staging/cowloop/cowloop.c
-> > @@ -237,10 +237,6 @@ char revision[] = "$Revision: 3.1 $"; /* cowlo_init_module() has
-> >  #endif
-> >  
-> >  #include <linux/types.h>
-> > -#include <linux/autoconf.h>
-> > -#ifndef AUTOCONF_INCLUDED
-> > -#include <linux/config.h>
-> > -#endif
-> >  #include <linux/module.h>
-> >  #include <linux/version.h>
-> >  #include <linux/moduleparam.h>
-> > diff --git a/drivers/staging/iio/ring_sw.h b/drivers/staging/iio/ring_sw.h
-> > index ae70ee0..4b0de7c 100644
-> > --- a/drivers/staging/iio/ring_sw.h
-> > +++ b/drivers/staging/iio/ring_sw.h
-> > @@ -29,7 +29,6 @@
-> >   * driver requests - some may support multiple options */
-> >  
-> >  
-> > -#include <linux/autoconf.h>
-> >  #include "iio.h"
-> >  #include "ring_generic.h"
-> >  
-> > 			
-> > 			Kamalesh
-> > 
-> > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-next" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-			
-			Kamalesh
+Changes since 20090926:
+
+We are seeing conflicts resolved and move from one tree to another as
+Linus merges them.
+
+My fixes tree contains a build fix for powerpc/kvm.
+
+The sparc-current tree lost its conflict.
+
+The acpi tree lost its build failure.
+
+The backlight tree lost its conflict.
+
+I added a patch to remove includes of autoconf.h that were causing some
+build failures.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 139 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+CONFLICT (content): Merge conflict in drivers/usb/host/xhci-hcd.c
+CONFLICT (content): Merge conflict in drivers/usb/host/xhci-mem.c
+CONFLICT (content): Merge conflict in drivers/usb/host/xhci-ring.c
+CONFLICT (content): Merge conflict in drivers/usb/host/xhci.h
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/Kconfig
+CONFLICT (add/add): Merge conflict in arch/mips/bcm63xx/Makefile
+CONFLICT (add/add): Merge conflict in arch/mips/bcm63xx/boards/board_bcm963=
+xx.c
+CONFLICT (delete/modify): arch/mips/lemote/lm2e/Makefile deleted in HEAD an=
+d modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of=
+ arch/mips/lemote/lm2e/Makefile left in tree.
+CONFLICT (delete/modify): arch/mips/lemote/lm2e/pci.c deleted in HEAD and m=
+odified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of ar=
+ch/mips/lemote/lm2e/pci.c left in tree.
+CONFLICT (delete/modify): arch/mips/lemote/lm2e/prom.c deleted in HEAD and =
+modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of a=
+rch/mips/lemote/lm2e/prom.c left in tree.
+$ git rm -f arch/mips/lemote/lm2e/Makefile arch/mips/lemote/lm2e/pci.c arch=
+/mips/lemote/lm2e/prom.c
+Merging parisc/next
+CONFLICT (content): Merge conflict in arch/parisc/include/asm/thread_info.h
+CONFLICT (content): Merge conflict in arch/parisc/kernel/entry.S
+CONFLICT (content): Merge conflict in arch/parisc/kernel/signal.c
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in fs/fs-writeback.c
+CONFLICT (content): Merge conflict in mm/page-writeback.c
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+Merging oprofile/for-next
+Merging percpu/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+CONFLICT (content): Merge conflict in arch/x86/kernel/early_printk.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+Merging quilt/staging
+Merging scsi-post-merge/master
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in drivers/scsi/Makefile
+CONFLICT (content): Merge conflict in drivers/scsi/fcoe/fcoe.c
+CONFLICT (content): Merge conflict in drivers/scsi/fcoe/fcoe.h
+CONFLICT (content): Merge conflict in drivers/scsi/libfc/fc_elsct.c
+CONFLICT (content): Merge conflict in drivers/scsi/libfc/fc_lport.c
+CONFLICT (add/add): Merge conflict in drivers/scsi/pmcraid.c
+CONFLICT (add/add): Merge conflict in drivers/scsi/pmcraid.h
+CONFLICT (content): Merge conflict in include/scsi/fc_encode.h
+CONFLICT (content): Merge conflict in include/scsi/libfc.h
+CONFLICT (content): Merge conflict in kernel/sysctl.c
+Applying: linux-next: 20090926 - drop autoconf.h from DRBD driver
+
+--Signature=_Sun__27_Sep_2009_15_47_14_+1000_k_OBXhmd./82ouj.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkq+/GIACgkQjjKRsyhoI8wJ+ACfTZBC36jdWwkErsl6VXSFj9o/
+zzUAn3bePuAZ3w1OR950VKH/qMiKtJpP
+=JdsJ
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__27_Sep_2009_15_47_14_+1000_k_OBXhmd./82ouj.--
