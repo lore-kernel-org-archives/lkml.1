@@ -1,232 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZI0OkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbZI0Ot5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbZI0OkJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 10:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZI0OkI
+	id S1753111AbZI0Ot5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 10:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZI0Ot4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 10:40:08 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:38772 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752807AbZI0OkG (ORCPT
+	Sun, 27 Sep 2009 10:49:56 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:33431 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752944AbZI0Otz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 10:40:06 -0400
+	Sun, 27 Sep 2009 10:49:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WEcLMVewrQ1S38HVJKVbzdpeUZBBs0ifzw3Vdbt3fOSNNBrsp6VE48zAU1zHsgpVSv
-         lXS3PQ1Px3GGkK5fBd3xaemVSFUSpVusHTvKK+nhMdlIoPws3lQmpBAiH39Wy6NciQ2O
-         BMFmTpboCrzPWXdghjqj0/0FXMxAtPWinGh0w=
-Date: Sun, 27 Sep 2009 18:40:08 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add show_lapic=
-Message-ID: <20090927144008.GD4984@lenovo>
-References: <4ABF0DE0.1030400@kernel.org> <20090927080605.GA4984@lenovo> <4ABF2262.3090905@kernel.org> <20090927085406.GB4984@lenovo> <20090927102805.GC4984@lenovo>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xCYsff2tHjJ34y9PEEPngupEsRuKnC7udHTTa6eItJ4nSGKqUQbks+y8KT+t5QFxIL
+         cMUVrlHWAMZo3Dvmu0AmZbVKG/onurThXoi6RNKFWTYaXEfbwHgIYZZuwdN798nxc8k6
+         9SefDr1mc2NVF+y3r3liwulOp/+x9xFgZg/Po=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090927102805.GC4984@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <2674af740909270701u6febabdbpc5c772fabc193b32@mail.gmail.com>
+References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com>
+	 <2674af740909270127s464a3cb2xef5e7f4cd61b0eb7@mail.gmail.com>
+	 <2674af740909270130h359a5d23taa7e8b63e6a18a4d@mail.gmail.com>
+	 <8db1092f0909270325j67825cem82fc93cf19336d6f@mail.gmail.com>
+	 <2674af740909270701u6febabdbpc5c772fabc193b32@mail.gmail.com>
+Date: Sun, 27 Sep 2009 22:49:58 +0800
+Message-ID: <2674af740909270749u339671a1ia81d5736eeb750fa@mail.gmail.com>
+Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 
+	hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 
+	__sysdev_resume+0xc3/0xe0()
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, clemens@ladisch.de,
+       venkatesh.pallipadi@intel.com, gregkh@suse.de, zambrano@broadcom.com,
+       davem@davemloft.net, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sun, Sep 27, 2009 at 02:28:05PM +0400]
-| [Cyrill Gorcunov - Sun, Sep 27, 2009 at 12:54:06PM +0400]
-| | [Yinghai Lu - Sun, Sep 27, 2009 at 01:29:22AM -0700]
-| | | Cyrill Gorcunov wrote:
-| | | > [Yinghai Lu - Sun, Sep 27, 2009 at 12:01:52AM -0700]
-| | | > | 
-| | | > | so could use that together with apci=debug to print less cpu apic.
-| | | > | 
-| | | > | otherwise for system have more cpus will take a while
-| | | > | 
-| | | > | also move apic_verbosity check to print_all_ICs
-| | | > | 
-| | | > | Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-| | | > | 
-| | | > | ---
-| | | > |  arch/x86/kernel/apic/io_apic.c |   42 ++++++++++++++++++++++++++---------------
-| | | > |  1 file changed, 27 insertions(+), 15 deletions(-)
-| | | > ...
-| | | > 
-| | | > Hi Yinghai, good idea!
-| | | > 
-| | | > I've tuned your patch a bit together with changelog.
-| | | > 
-| | | > 1) show_lapic=1 by default does change current kernel behaviour
-| | | >    so it should be set to max cpu available.
-| | | 
-| | | think about system with lots of cpu. but i still want to use apic=debug
-| | 
-| | but you should not change current behaviour. starting with this change
-| | I'll get only first apic dump, so if I don;t know how many apics I have
-| | what the number I should pass? Does it mean I would need to
-| | pass say show_lapic=2, or 4, or 6 or whatever  _all-the-time_ to be sure
-| | my Core2Duo prints all lapics?
-| | 
-| | | 
-| | | > 2) show_lapic contains the max number of lapics being printed
-| | | >    so we need to count them instead of plain comparation with
-| | | >    cpu number, as a result I've changed print_local_APICs. Or
-| | | >    you meant _exactly_ cpuid number? In meaning like
-| | | >    show_lapic=max_cpuid. Hmm?
-| | | > 
-| | | your change anything about that. there is not gap between cpu id.
-| | 
-| | you walk with for_each_online_cpu with is not the same
-| | as for_each_present_cpu. yes, at this stage we hardly get
-| | the situation when cpu initialized and then suddenly get
-| | offline status but anyway
-| | 
-| | | 
-| | | YH
-| | | 
-| | 	-- Cyrill
-| 
-| Also and your and my "update" (that named :-) missed the fact that get_option
-| may return without set argument at all, so num should be explicitly
-| initialized as well (in setup_show_lapic).
-| 
-| 	-- Cyrill
+Add cc'ed.
 
-Yinghai, I've updated it to fix this nit. Convinced on for_each_online_cpu,
-since it's early stage indeed. But for show_lapic=1 by default -- this is
-plainly *wrong*. Now I put apic=debug and see only one apic dump regardless
-how many apics I have, so we should place limit explicitly.
+On Sun, Sep 27, 2009 at 10:01 PM, Yong Zhang <yong.zhang0@gmail.com> wrote:
+> On Sun, Sep 27, 2009 at 6:25 PM, Maciej Rutecki
+> <maciej.rutecki@gmail.com> wrote:
+>> 2009/9/27 Yong Zhang <yong.zhang0@gmail.com>:
+>>>
+>>> Oops, TABLE is corrupted. Please use the attachment.
+>>
+>> kernel/time/timekeeping.c: In function ‘timekeeping_resume’:
+>> kernel/time/timekeeping.c:577: error: ‘xtime_locks’ undeclared (first
+>> use in this function)
+>> kernel/time/timekeeping.c:577: error: (Each undeclared identifier is
+>> reported only once
+>> kernel/time/timekeeping.c:577: error: for each function it appears
+>> in.)
+>> make[3]: *** [kernel/time/timekeeping.o] Błąd 1
+>> make[2]: *** [kernel/time] Błąd 2
+>>
+>>
+>> I change:
+>> write_seqlock(&xtime_locks);
+>> to:
+>> write_seqlock(&xtime_lock);
+>>
+>
+> Oh, typo error.
+>
+>> Corrected patch in attachment.
+>>
+>> First warning has gone, but still I have this:
+>> [  120.868049] SMP alternatives: switching to UP code
+>> [  120.872570] CPU0 attaching NULL sched-domain.
+>> [  120.872574] CPU1 attaching NULL sched-domain.
+>> [  120.872581] CPU0 attaching NULL sched-domain.
+>> [  120.872787] CPU1 is down
+>> [  120.872846] Extended CMOS year: 2000
+>> [  120.872945] PM: Creating hibernation image:
+>> [  120.876009] PM: Need to copy 107120 pages
+>> [  120.872009] PM: Restoring platform NVS memory
+>> [  120.872009] CPU0: Thermal monitoring handled by SMI
+>> [  120.872009] Extended CMOS year: 2000
+>> [  120.872009] ------------[ cut here ]------------
+>> [  120.872009] WARNING: at drivers/base/sys.c:353
+>> __sysdev_resume+0xc3/0xe0()
+>> [  120.872009] Hardware name: HP Compaq nx6310 (EY501ES#AKD)
+>> [  120.872009] Interrupts enabled after timekeeping_resume+0x0/0x1c0
+>
+> Irq is enabled after timekeeping_resume(), the previous patch do something
+> sensible. But we even don't know when the irq is enabled. such as in
+> timekeeping_resume() or before enter timekeeping_resume(). But it
+> seem that this is not due to timekeeping_resume(). Instead I'm afraid
+> it's caused by buggy driver.
+>
 
-So here is an updated version. I don't know what is the best way would
-be to say that initial patch was yours and the idea as well.
+It seem this is cause by b44 dirver. Can you give a try?
 
-If you *agreed* on this patch -- you may either SOB it, Ack it, or take
-it without my SOB at all (ie do anything you like) -- I don't care much :)
+>From 05ee2f22a7ea065e05bf8b5294d222a3700d2cc8 Mon Sep 17 00:00:00 2001
+From: Yong Zhang <yong.zhang0@gmail.com>
+Date: Sun, 27 Sep 2009 22:42:41 +0800
+Subject: [PATCH] net/b44: keep irq state at suspend_resume
 
-	-- Cyrill
+suspend() and resume() assume irq is disabled. So keep the irq
+state when do this.
+
+Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
 ---
-[PATCH -tip] x86,apic: introduce show_lapic setup option
+ drivers/net/b44.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-In case if a system has a large number of cpus printing apics
-contents may consume a long time period. So to control it
-we introduce "show_lapic" setup option which allow us to limit
-the number of APICs being dumped.
-
-Example: apic=debug show_lapic=5
-
-Also lift apic_verbosity checking upper that way so helper routines
-do not need to inspect it at all.
-
-Suggested-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/kernel/apic/io_apic.c |   43 ++++++++++++++++++++++++++---------------
- 1 file changed, 28 insertions(+), 15 deletions(-)
-
-Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-@@ -1599,9 +1599,6 @@ __apicdebuginit(void) print_IO_APIC(void
- 	struct irq_desc *desc;
- 	unsigned int irq;
- 
--	if (apic_verbosity == APIC_QUIET)
--		return;
--
- 	printk(KERN_DEBUG "number of MP IRQ sources: %d.\n", mp_irq_entries);
- 	for (i = 0; i < nr_ioapics; i++)
- 		printk(KERN_DEBUG "number of IO-APIC #%d registers: %d.\n",
-@@ -1708,9 +1705,6 @@ __apicdebuginit(void) print_APIC_field(i
+diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+index e046943..97b467f 100644
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -2258,20 +2258,21 @@ static int b44_suspend(struct ssb_device
+*sdev, pm_message_t state)
  {
- 	int i;
- 
--	if (apic_verbosity == APIC_QUIET)
--		return;
--
- 	printk(KERN_DEBUG);
- 
- 	for (i = 0; i < 8; i++)
-@@ -1724,9 +1718,6 @@ __apicdebuginit(void) print_local_APIC(v
- 	unsigned int i, v, ver, maxlvt;
- 	u64 icr;
- 
--	if (apic_verbosity == APIC_QUIET)
--		return;
--
- 	printk(KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
- 		smp_processor_id(), hard_smp_processor_id());
- 	v = apic_read(APIC_ID);
-@@ -1824,13 +1815,19 @@ __apicdebuginit(void) print_local_APIC(v
- 	printk("\n");
- }
- 
--__apicdebuginit(void) print_all_local_APICs(void)
-+__apicdebuginit(void) print_local_APICs(int maxcpu)
- {
- 	int cpu;
- 
-+	if (!maxcpu)
-+		return;
-+
- 	preempt_disable();
--	for_each_online_cpu(cpu)
-+	for_each_online_cpu(cpu) {
-+		if (cpu >= maxcpu)
-+			break;
- 		smp_call_function_single(cpu, print_local_APIC, NULL, 1);
-+	}
- 	preempt_enable();
- }
- 
-@@ -1839,7 +1836,7 @@ __apicdebuginit(void) print_PIC(void)
- 	unsigned int v;
- 	unsigned long flags;
- 
--	if (apic_verbosity == APIC_QUIET || !nr_legacy_irqs)
-+	if (!nr_legacy_irqs)
- 		return;
- 
- 	printk(KERN_DEBUG "\nprinting PIC contents\n");
-@@ -1866,21 +1863,37 @@ __apicdebuginit(void) print_PIC(void)
- 	printk(KERN_DEBUG "... PIC ELCR: %04x\n", v);
- }
- 
--__apicdebuginit(int) print_all_ICs(void)
-+static int __initdata show_lapic = NR_CPUS;
-+static __init int setup_show_lapic(char *arg)
- {
-+	int num = 0;
-+
-+	get_option(&arg, &num);
-+	if (num >= 0)
-+		show_lapic = num;
-+
-+	return 1;
-+}
-+__setup("show_lapic=", setup_show_lapic);
-+
-+__apicdebuginit(int) print_ICs(void)
-+{
-+	if (apic_verbosity == APIC_QUIET)
-+		return 0;
-+
- 	print_PIC();
- 
- 	/* don't print out if apic is not there */
- 	if (!cpu_has_apic && !apic_from_smp_config())
+ 	struct net_device *dev = ssb_get_drvdata(sdev);
+ 	struct b44 *bp = netdev_priv(dev);
++	unsigned long flags;
+
+ 	if (!netif_running(dev))
  		return 0;
- 
--	print_all_local_APICs();
-+	print_local_APICs(show_lapic);
- 	print_IO_APIC();
- 
- 	return 0;
- }
- 
--fs_initcall(print_all_ICs);
-+fs_initcall(print_ICs);
- 
- 
- /* Where if anywhere is the i8259 connect in external int mode */
+
+ 	del_timer_sync(&bp->timer);
+
+-	spin_lock_irq(&bp->lock);
++	spin_lock_irqsave(&bp->lock, flags);
+
+ 	b44_halt(bp);
+ 	netif_carrier_off(bp->dev);
+ 	netif_device_detach(bp->dev);
+ 	b44_free_rings(bp);
+
+-	spin_unlock_irq(&bp->lock);
++	spin_unlock_irqrestore(&bp->lock, flags);
+
+ 	free_irq(dev->irq, dev);
+ 	if (bp->flags & B44_FLAG_WOL_ENABLE) {
+@@ -2288,6 +2289,7 @@ static int b44_resume(struct ssb_device *sdev)
+ 	struct net_device *dev = ssb_get_drvdata(sdev);
+ 	struct b44 *bp = netdev_priv(dev);
+ 	int rc = 0;
++	unsigned long flags;
+
+ 	rc = ssb_bus_powerup(sdev->bus, 0);
+ 	if (rc) {
+@@ -2305,12 +2307,12 @@ static int b44_resume(struct ssb_device *sdev)
+ 		return rc;
+ 	}
+
+-	spin_lock_irq(&bp->lock);
++	spin_lock_irqsave(&bp->lock, flags);
+
+ 	b44_init_rings(bp);
+ 	b44_init_hw(bp, B44_FULL_RESET);
+ 	netif_device_attach(bp->dev);
+-	spin_unlock_irq(&bp->lock);
++	spin_unlock_irqrestore(&bp->lock, flags);
+
+ 	b44_enable_ints(bp);
+ 	netif_wake_queue(dev);
+-- 
+1.6.0.4
+
+> So can you test the follow patch. And show the dmesg info(DEBUG
+> level) after WARNING is triggered?
+>
+> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+> index fb0f46f..4a00a1a 100644
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -569,6 +569,9 @@ static int timekeeping_resume(struct sys_device *dev)
+>        unsigned long flags;
+>        struct timespec ts;
+>
+> +       WARN_ONCE(!irqs_disabled(),
+> +               KERN_INFO "timekeeping_resume() called with IRQs enabled!");
+> +
+>        read_persistent_clock(&ts);
+>
+>        clocksource_resume();
+>
+> Thanks,
+> Yong
+>
+>> [  120.872009] Modules linked in: i915 drm_kms_helper drm i2c_algo_bit
+>> i2c_core sco bnep rfcomm l2cap crc16 xt_tcpudp xt_limit xt_state
+>> iptable_filter nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 ip_tables
+>> x_tables aes_i586 aes_generic cbc dm_crypt dm_snapshot dm_mirror
+>> dm_region_hash dm_log dm_mod hp_wmi fuse sbp2 loop
+>> snd_hda_codec_si3054 snd_hda_codec_analog snd_hda_intel snd_hda_codec
+>> snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy arc4 snd_seq_oss ecb
+>> snd_seq_midi snd_rawmidi iwl3945 snd_seq_midi_event iwlcore btusb
+>> firmware_class snd_seq bluetooth snd_timer mac80211 pcmcia
+>> snd_seq_device led_class b44 video ohci1394 backlight ssb rtc_cmos snd
+>> yenta_socket cfg80211 intel_agp soundcore rsrc_nonstatic uhci_hcd
+>> ehci_hcd rtc_core usbcore psmouse snd_page_alloc agpgart pcmcia_core
+>> rfkill rtc_lib ieee1394 sg output evdev serio_raw mii fan button ac
+>> battery
+>> [  120.872009] Pid: 3510, comm: pm-hibernate Not tainted 2.6.31-git17
+>> #1
+>> [  120.872009] Call Trace:
+>> [  120.872009]  [<c030f4a3>] ? __sysdev_resume+0xc3/0xe0
+>> [  120.872009]  [<c030f4a3>] ? __sysdev_resume+0xc3/0xe0
+>> [  120.872009]  [<c013c3a1>] warn_slowpath_common+0x71/0xc0
+>> [  120.872009]  [<c030f4a3>] ? __sysdev_resume+0xc3/0xe0
+>> [  120.872009]  [<c013c43b>] warn_slowpath_fmt+0x2b/0x30
+>> [  120.872009]  [<c030f4a3>] __sysdev_resume+0xc3/0xe0
+>> [  120.872009]  [<c015f810>] ? timekeeping_resume+0x0/0x1c0
+>> [  120.872009]  [<c030f50f>] sysdev_resume+0x4f/0xc0
+>> [  120.872009]  [<c0176909>] ? hibernate_nvs_restore+0x19/0x60
+>> [  120.872009]  [<c0172ac1>] hibernation_snapshot+0x1d1/0x210
+>> [  120.872009]  [<c0171b54>] ? freeze_processes+0x44/0xa0
+>> [  120.872009]  [<c0172bef>] hibernate+0xef/0x190
+>> [  120.872009]  [<c0171590>] ? state_store+0x0/0xc0
+>> [  120.872009]  [<c017163b>] state_store+0xab/0xc0
+>> [  120.872009]  [<c0171590>] ? state_store+0x0/0xc0
+>> [  120.872009]  [<c0285e04>] kobj_attr_store+0x24/0x30
+>> [  120.872009]  [<c0223d82>] sysfs_write_file+0xa2/0x100
+>> [  120.872009]  [<c01d880c>] vfs_write+0x9c/0x150
+>> [  120.872009]  [<c0223ce0>] ? sysfs_write_file+0x0/0x100
+>> [  120.872009]  [<c01d8982>] sys_write+0x42/0x70
+>> [  120.872009]  [<c0102f04>] sysenter_do_call+0x12/0x22
+>> [  120.872009] ---[ end trace 51d3cc987b340170 ]---
+>> [  120.872009] Enabling non-boot CPUs ...
+>> [  120.872009] SMP alternatives: switching to SMP code
+>>
+>> Regards
+>> --
+>> Maciej Rutecki
+>> http://www.maciek.unixy.pl
+>>
+>
