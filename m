@@ -1,69 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbZI0GKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbZI0Gls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752433AbZI0GKe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 02:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZI0GKe
+	id S1752730AbZI0Gls (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 02:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZI0Glr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 02:10:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59393 "EHLO hera.kernel.org"
+	Sun, 27 Sep 2009 02:41:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53778 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751814AbZI0GKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 02:10:33 -0400
-Date: Sun, 27 Sep 2009 06:10:05 GMT
-From: tip-bot for Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rdreier@cisco.com, rolandd@cisco.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rdreier@cisco.com, tglx@linutronix.de, rolandd@cisco.com, mingo@elte.hu
-In-Reply-To: <ada1vlw126s.fsf_-_@cisco.com>
-References: <ada1vlw126s.fsf_-_@cisco.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/urgent] hrtimer: Remove overly verbose "switch to high res mode" message
-Message-ID: <tip-d3f6302e7e51b41af86c6496ffb2f95e8f2179df@git.kernel.org>
-Git-Commit-ID: d3f6302e7e51b41af86c6496ffb2f95e8f2179df
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 27 Sep 2009 06:10:07 +0000 (UTC)
+	id S1752163AbZI0Glr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 02:41:47 -0400
+Subject: Re: how best to report results of my kernel tree scanning scripts?
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Sam Ravnborg <sam@ravnborg.org>, Julia Lawall <julia@diku.dk>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0909260841530.19382@localhost>
+References: <alpine.LFD.2.00.0909260811470.19017@localhost>
+	 <1253968675.4568.3.camel@ht.satnam>
+	 <alpine.LFD.2.00.0909260841530.19382@localhost>
+Content-Type: text/plain
+Date: Sun, 27 Sep 2009 12:11:19 +0530
+Message-Id: <1254033679.4285.21.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d3f6302e7e51b41af86c6496ffb2f95e8f2179df
-Gitweb:     http://git.kernel.org/tip/d3f6302e7e51b41af86c6496ffb2f95e8f2179df
-Author:     Roland Dreier <rdreier@cisco.com>
-AuthorDate: Thu, 24 Sep 2009 14:07:55 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 26 Sep 2009 16:58:09 +0200
+Hello Robert,
 
-hrtimer: Remove overly verbose "switch to high res mode" message
+On Sat, 2009-09-26 at 08:44 -0400, Robert P. J. Day wrote:
+> On Sat, 26 Sep 2009, Jaswinder Singh Rajput wrote:
+> 
+> > Hello Robert,
+> >
+> > On Sat, 2009-09-26 at 08:16 -0400, Robert P. J. Day wrote:
+> > > since the merge window appears to be ready to close fairly soon(?),
+> > > i'm prepping to run my scanning scripts once again to identify (among
+> > > other things):
+> > >
+> > >   * unused Kconfig CONFIG variables
+> > >   * references to CONFIG_ variables that don't even exist (both in
+> > >     source files and Makefiles)
+> > >   * references to non-existent header files
+> > >
+> > > and bunches of other things.  i'm open as to the best way to post the
+> > > results, since different people have different opinions.
+> > >
+> > >   and, no, i can't just submit patches since, in many cases, i have no
+> > > idea what the fix should be (if any) -- that's the kind of decision
+> > > best left to the respective subsystem maintainers.
+> > >
+> > >   thoughts?  this is where i put the old output:
+> > >
+> > > http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
+> > >
+> >
+> > Thanks for reporting these results, I will try to fix them and submit
+> > patches with Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> 
+>   keep in mind that those are *old* results (although, of course, some
+> of it will still be relevant).  i'll update those pages as soon as
+> -rc1 is out.  unsurprisingly, some of that is historical cruft that's
+> been around a *looooong* time.  very little of it represents actual
+> breakage but, occasionally, those scans will reveal actual typoes.
+> 
 
-On big systems, printing <number of CPUs> copies of
+For http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables :
 
-    Switched to high resolution mode on CPU nnn
+I send following patches which looks relevant to me :
+0001-alpha-Remove-unused-CONFIG-ALPHA_EV7.patch
+0002-ARM-Remove-unused-CONFIG-ARCH_AT91SAM9260_SAM9XE.patch
+0003-ARM-Remove-unused-CONFIG-reference-DEBUG_S3C_PORT.patch
+0004-ARM-OMAP-Remove-unused-CONFIG-MACH_OMAP_HTCWIZARD.patch
+0005-ARM-Remove-unused-CONFIG-SA1100_H3XXX.patch
+0006-x86-SLUB-Remove-unused-CONFIG-FAST_CMPXCHG_LOCAL.patch
+0007-xtensa-Remove-unused-CONFIG-XTENSA_ISS_NETWORK-and.patch
+0008-isdn-Fix-HISAX_DE_AOC-it-should-be-CONFIG_DE_AOC.patch
 
-clutters up the kernel log for minimal gain.  Just get rid of them.
+For http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables
+http://www.crashcourse.ca/wiki/index.php/Badref_make_CONFIG_variables
+http://www.crashcourse.ca/wiki/index.php/Badref_linux_header_files
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
-LKML-Reference: <ada1vlw126s.fsf_-_@cisco.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Enough information is not present because we need to make Kconfig
+entries or so. So I request you to send these information to respective
+maintainers so that they can fix it.
 
+And if you provide these scripts to Sam (also Cc) then he will make some
+option line 'make configcheck' so that other developers can also take
+advantages of your scripts.
 
----
- kernel/hrtimer.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+For http://www.crashcourse.ca/wiki/index.php/The_style_script :
 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index e5d98ce..4267279 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -720,8 +720,6 @@ static int hrtimer_switch_to_hres(void)
- 	/* "Retrigger" the interrupt to get things going */
- 	retrigger_next_event(NULL);
- 	local_irq_restore(flags);
--	printk(KERN_DEBUG "Switched to high resolution mode on CPU %d\n",
--	       smp_processor_id());
- 	return 1;
- }
- 
+I think Julia (also Cc) and some janitors (also Cc) are already working
+on few points.
+
+If you also provide these scripts to Sam, then we can also take
+advantage of it.
+
+Thanks,
+--
+JSR
+
