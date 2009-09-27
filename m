@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbZI0Huv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbZI0Hxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418AbZI0Huv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 03:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZI0Huu
+	id S1753421AbZI0Hxd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 03:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZI0Hxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 03:50:50 -0400
-Received: from vms173019pub.verizon.net ([206.46.173.19]:34256 "EHLO
-	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751812AbZI0Hut (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 03:50:49 -0400
-Date: Sun, 27 Sep 2009 03:50:45 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Thomas Backlund <tmb@mandriva.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [git pull request] ACPI & driver patches for Linux-2.6.32-rc0
-In-reply-to: <1254016503.17697.21.camel@minggr.sh.intel.com>
-Message-id: <alpine.LFD.2.00.0909270348570.16783@localhost.localdomain>
-References: <alpine.LFD.2.00.0909190237560.22030@localhost.localdomain>
- <4ABCB2CA.4020709@mandriva.org>
- <d3f22a0909261902o5e48c2a0lab56fca21edf8c5b@mail.gmail.com>
- <1254016503.17697.21.camel@minggr.sh.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 27 Sep 2009 03:53:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60893 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753369AbZI0Hxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 03:53:31 -0400
+Date: Sun, 27 Sep 2009 09:52:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@hera.kernel.org>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [origin tree build failure] [PATCH] thinkpad-acpi: Fix build on
+	!CONFIG_THINKPAD_ACPI_HOTKEY_POLL
+Message-ID: <20090927075254.GA20847@elte.hu>
+References: <200909260519.n8Q5JrB6016778@hera.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909260519.n8Q5JrB6016778@hera.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> > This gets my laptop flooding logs with:
+>  drivers/platform/x86/thinkpad_acpi.c    |  632 +++++++++++++++++++---------
 
-> > 
-> > > ACPI Exception: AE_TIME, Returned by Handler for [EmbeddedControl] (20090903/evregion-424)
-> > > ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.LPCB.EC0_.GBST] (Node ffff88013f81c5e0), AE_TIME
-> > > ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.LPCB.EC0_.BAT0._BST] (Node ffff88013f81c720), AE_TIME
-> > > ACPI Exception: AE_TIME, Evaluating _BST (20090903/battery-393)
+-tip testing found that these changes caused a build failure 
+in drivers/platform/x86/thinkpad_acpi.c when 
+!CONFIG_THINKPAD_ACPI_HOTKEY_POLL - the fix is attached 
+below.
 
-> Could you do a bisect?
+Thanks,
 
-In particular, please try the 2.6.31 versio of drivers/acpi/ec.c
+	Ingo
 
-thanks,
--Len Brown, Intel Open Source Technology Center
+------------------------->
+>From 7f6443f7238a0aa9014b11a0a31ab76825d75cdf Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 27 Sep 2009 09:47:46 +0200
+Subject: [PATCH] thinkpad-acpi: Fix build on !CONFIG_THINKPAD_ACPI_HOTKEY_POLL
 
+This build error:
 
+  drivers/platform/x86/thinkpad_acpi.c: In function 'tpacpi_hotkey_driver_mask_set':
+  drivers/platform/x86/thinkpad_acpi.c:2238: error: lvalue required as left operand of assignment
+
+Triggers because in the !CONFIG_THINKPAD_ACPI_HOTKEY_POLL case
+tpacpi_hotkey_driver_mask_set ymbol is defined to a constant
+literal - which is not an lvalue so cannot be assigned to.
+
+The whole tpacpi_hotkey_driver_mask_set() function is not used
+in the !CONFIG_THINKPAD_ACPI_HOTKEY_POLL, so enclose it with
+an #ifdef.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/platform/x86/thinkpad_acpi.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
+index 3910f2f..a52dbc9 100644
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -2216,6 +2216,7 @@ static int hotkey_user_mask_set(const u32 mask)
+ 	return rc;
+ }
+ 
++#ifdef CONFIG_THINKPAD_ACPI_HOTKEY_POLL
+ /*
+  * Sets the driver hotkey mask.
+  *
+@@ -2244,6 +2245,7 @@ static int tpacpi_hotkey_driver_mask_set(const u32 mask)
+ 
+ 	return rc;
+ }
++#endif
+ 
+ static int hotkey_status_get(int *status)
+ {
