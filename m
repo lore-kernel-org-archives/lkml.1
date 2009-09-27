@@ -1,134 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbZI0Pl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZI0PpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbZI0Pl7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 11:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZI0Pl6
+	id S1753355AbZI0PpW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 11:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZI0PpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 11:41:58 -0400
-Received: from relay2-d.mail.gandi.net ([217.70.183.194]:43713 "EHLO
-	relay2-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753129AbZI0Pl5 (ORCPT
+	Sun, 27 Sep 2009 11:45:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60350 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752680AbZI0PpV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 11:41:57 -0400
-Date: Sun, 27 Sep 2009 08:41:28 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 1/2] rcu: Apply review feedback from Josh
- Triplett, part 3
-Message-ID: <20090927154128.GB2445@feather>
-References: <20090927064753.GA9394@linux.vnet.ibm.com>
- <12540341911389-git-send-email->
+	Sun, 27 Sep 2009 11:45:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Yong Zhang <yong.zhang0@gmail.com>
+Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 __sysdev_resume+0xc3/0xe0()
+Date: Sun, 27 Sep 2009 17:46:30 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       clemens@ladisch.de, venkatesh.pallipadi@intel.com, gregkh@suse.de
+References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com> <8db1092f0909270325j67825cem82fc93cf19336d6f@mail.gmail.com> <2674af740909270701u6febabdbpc5c772fabc193b32@mail.gmail.com>
+In-Reply-To: <2674af740909270701u6febabdbpc5c772fabc193b32@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12540341911389-git-send-email->
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200909271746.30542.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 26, 2009 at 11:49:50PM -0700, Paul E. McKenney wrote:
-> Whitespace fixes, updated comments, and trivial code movement.
+On Sunday 27 September 2009, Yong Zhang wrote:
+> On Sun, Sep 27, 2009 at 6:25 PM, Maciej Rutecki
+> <maciej.rutecki@gmail.com> wrote:
+> > 2009/9/27 Yong Zhang <yong.zhang0@gmail.com>:
+> >>
+> >> Oops, TABLE is corrupted. Please use the attachment.
+> >
+> > kernel/time/timekeeping.c: In function ‘timekeeping_resume’:
+> > kernel/time/timekeeping.c:577: error: ‘xtime_locks’ undeclared (first
+> > use in this function)
+> > kernel/time/timekeeping.c:577: error: (Each undeclared identifier is
+> > reported only once
+> > kernel/time/timekeeping.c:577: error: for each function it appears
+> > in.)
+> > make[3]: *** [kernel/time/timekeeping.o] Błąd 1
+> > make[2]: *** [kernel/time] Błąd 2
+> >
+> >
+> > I change:
+> > write_seqlock(&xtime_locks);
+> > to:
+> > write_seqlock(&xtime_lock);
+> >
 > 
-> o	Fix whitespace error in RCU_HEAD_INIT()
+> Oh, typo error.
 > 
-> o	Move "So where is rcu_write_lock()" comment so that it does
-> 	not come between the rcu_read_unlock() header comment and
-> 	the rcu_read_unlock() definition.
+> > Corrected patch in attachment.
+> >
+> > First warning has gone, but still I have this:
+> > [  120.868049] SMP alternatives: switching to UP code
+> > [  120.872570] CPU0 attaching NULL sched-domain.
+> > [  120.872574] CPU1 attaching NULL sched-domain.
+> > [  120.872581] CPU0 attaching NULL sched-domain.
+> > [  120.872787] CPU1 is down
+> > [  120.872846] Extended CMOS year: 2000
+> > [  120.872945] PM: Creating hibernation image:
+> > [  120.876009] PM: Need to copy 107120 pages
+> > [  120.872009] PM: Restoring platform NVS memory
+> > [  120.872009] CPU0: Thermal monitoring handled by SMI
+> > [  120.872009] Extended CMOS year: 2000
+> > [  120.872009] ------------[ cut here ]------------
+> > [  120.872009] WARNING: at drivers/base/sys.c:353
+> > __sysdev_resume+0xc3/0xe0()
+> > [  120.872009] Hardware name: HP Compaq nx6310 (EY501ES#AKD)
+> > [  120.872009] Interrupts enabled after timekeeping_resume+0x0/0x1c0
 > 
-> o	Move the module_param statements for blimit, qhimark, and qlowmark
-> 	to immediately follow the corresponding definitions.
-> 
-> o	In __rcu_offline_cpu(), move the assignment to rdp_me inside the
-> 	"if" statement, given that rdp_me is not used outside of that "if"
-> 	statement.
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Irq is enabled after timekeeping_resume(), the previous patch do something
+> sensible. But we even don't know when the irq is enabled. such as in
+> timekeeping_resume() or before enter timekeeping_resume(). But it
+> seem that this is not due to timekeeping_resume(). Instead I'm afraid
+> it's caused by buggy driver.
 
-Acked-by: Josh Triplett <josh@joshtriplett.org>
+Interrupts are disabled by the suspend core code right before sysdev_suspend(),
+so device drivers cannot make this happen.  One of the sysdevs is doing this.
 
-> ---
->  include/linux/rcupdate.h |   14 +++++++-------
->  kernel/rcutree.c         |   10 +++++-----
->  2 files changed, 12 insertions(+), 12 deletions(-)
-> 
-> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> index b2f1e10..6dd71fa 100644
-> --- a/include/linux/rcupdate.h
-> +++ b/include/linux/rcupdate.h
-> @@ -83,7 +83,7 @@ extern int rcu_scheduler_active;
->  #error "Unknown RCU implementation specified to kernel configuration"
->  #endif
->  
-> -#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
-> +#define RCU_HEAD_INIT	{ .next = NULL, .func = NULL }
->  #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
->  #define INIT_RCU_HEAD(ptr) do { \
->         (ptr)->next = NULL; (ptr)->func = NULL; \
-> @@ -135,12 +135,6 @@ static inline void rcu_read_lock(void)
->  	rcu_read_acquire();
->  }
->  
-> -/**
-> - * rcu_read_unlock - marks the end of an RCU read-side critical section.
-> - *
-> - * See rcu_read_lock() for more information.
-> - */
-> -
->  /*
->   * So where is rcu_write_lock()?  It does not exist, as there is no
->   * way for writers to lock out RCU readers.  This is a feature, not
-> @@ -150,6 +144,12 @@ static inline void rcu_read_lock(void)
->   * used as well.  RCU does not care how the writers keep out of each
->   * others' way, as long as they do so.
->   */
-> +
-> +/**
-> + * rcu_read_unlock - marks the end of an RCU read-side critical section.
-> + *
-> + * See rcu_read_lock() for more information.
-> + */
->  static inline void rcu_read_unlock(void)
->  {
->  	rcu_read_release();
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index 45eb2d1..1ccdd5b 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -121,6 +121,10 @@ static int blimit = 10;		/* Maximum callbacks per softirq. */
->  static int qhimark = 10000;	/* If this many pending, ignore blimit. */
->  static int qlowmark = 100;	/* Once only this many pending, use blimit. */
->  
-> +module_param(blimit, int, 0);
-> +module_param(qhimark, int, 0);
-> +module_param(qlowmark, int, 0);
-> +
->  static void force_quiescent_state(struct rcu_state *rsp, int relaxed);
->  static int rcu_pending(int cpu);
->  
-> @@ -873,8 +877,8 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
->  	 * indefinitely delay callbacks, you have far worse things to
->  	 * be worrying about.
->  	 */
-> -	rdp_me = rsp->rda[smp_processor_id()];
->  	if (rdp->nxtlist != NULL) {
-> +		rdp_me = rsp->rda[smp_processor_id()];
->  		*rdp_me->nxttail[RCU_NEXT_TAIL] = rdp->nxtlist;
->  		rdp_me->nxttail[RCU_NEXT_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
->  		rdp->nxtlist = NULL;
-> @@ -1570,7 +1574,3 @@ void __init __rcu_init(void)
->  }
->  
->  #include "rcutree_plugin.h"
-> -
-> -module_param(blimit, int, 0);
-> -module_param(qhimark, int, 0);
-> -module_param(qlowmark, int, 0);
-> -- 
-> 1.5.2.5
-> 
+Thanks,
+Rafael
