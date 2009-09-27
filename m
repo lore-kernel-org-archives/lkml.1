@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbZI0MB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZI0M1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753890AbZI0MB5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 08:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZI0MB5
+	id S1753913AbZI0M1y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 08:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbZI0M1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 08:01:57 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40754 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753833AbZI0MB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 08:01:56 -0400
-X-Authenticated: #404998
-X-Provags-ID: V01U2FsdGVkX1+AqDxuDVqAIAPj/+i2yzaNpNgXH3R68R3iyIt7s5
-	AggGHGJjYzHE0q
-Message-ID: <4ABF5432.9020508@gmx.net>
-Date: Sun, 27 Sep 2009 14:01:54 +0200
-From: Martin Wache <m.wache@gmx.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 27 Sep 2009 08:27:54 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:61484 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753889AbZI0M1x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 08:27:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=fMacpDhaqz17vLpRVCdA2urXbcglm6TRK8bmWYOY9CjURlw7e5ZB3XF0UAClnibBmq
+         e5I3bHBeo4lkeySBQTgsiSixLkP/m3pUCBogHbIvyJtPSgTYo8gABg1uK4njRegxtbHx
+         K9NjO2aYQHB+jmLxP8ZobAxI/FHxnH+Uj3Tjc=
 MIME-Version: 1.0
+Date: Sun, 27 Sep 2009 14:27:55 +0200
+Message-ID: <a769871e0909270527j5d4a6a51ycb5627ebe94704be@mail.gmail.com>
+Subject: ext4/reiser3/btr directory create/read perf
+From: wbrana@gmail.com
 To: linux-kernel@vger.kernel.org
-CC: M.Wache@gmx.net
-Subject: Status of Regression/Bug 13407 adb trackpad disappears after suspend
- to ram?
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hello,
 
-I'd like to ask if there is any news on the bug 13407
+I executed benchmark which creates and reads 10000 directories.
+It is much slower with ext4 than with reiser3 or btrfs.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=13407
+ext4 without dir_index
+void cfs::vdirs_create(): 7754 msec
+void cfs::vdirs_read(): 3363 msec
 
-The status of the bugreport is "NEEDINFO", I'm also hit by this bug, 
-using 2.6.31 on an iBook G4. Can I help in anyway to get this bug fixed? 
-I'm happy to provide any info I can, if there is need for more info. I 
-would also try patches if that helps.
+reiser3
+void cfs::vdirs_create(): 1173 msec
+void cfs::vdirs_read(): 421 msec
 
-Thank you,
+btrfs
+void cfs::vdirs_create(): 1331 msec
+void cfs::vdirs_read(): 567 msec
 
-Martin Wache
+MD RAID10-f2, 64 kB chunk size
+
+Source code:
+http://www.sendspace.com/file/bconaa
+depends on Qt Core, has hard-coded paths
