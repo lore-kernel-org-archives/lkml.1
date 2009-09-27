@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbZI0I37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbZI0I3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbZI0I37 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 04:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZI0I35
+	id S1753516AbZI0I3v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 04:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZI0I3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 04:29:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44739 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753521AbZI0I3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 04:29:55 -0400
-Message-ID: <4ABF2262.3090905@kernel.org>
-Date: Sun, 27 Sep 2009 01:29:22 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 27 Sep 2009 04:29:50 -0400
+Received: from [195.41.46.236] ([195.41.46.236]:35695 "EHLO pfepb.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753480AbZI0I3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 04:29:49 -0400
+Date: Sun, 27 Sep 2009 10:29:29 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH,resend] kbuild: fix the binrpm-pkg target to work with
+	KBUILD_OUTPUT set
+Message-ID: <20090927082929.GA10156@merkur.ravnborg.org>
+References: <200908252215.40950.elendil@planet.nl>
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add show_lapic=
-References: <4ABF0DE0.1030400@kernel.org> <20090927080605.GA4984@lenovo>
-In-Reply-To: <20090927080605.GA4984@lenovo>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908252215.40950.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> [Yinghai Lu - Sun, Sep 27, 2009 at 12:01:52AM -0700]
-> | 
-> | so could use that together with apci=debug to print less cpu apic.
-> | 
-> | otherwise for system have more cpus will take a while
-> | 
-> | also move apic_verbosity check to print_all_ICs
-> | 
-> | Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> | 
-> | ---
-> |  arch/x86/kernel/apic/io_apic.c |   42 ++++++++++++++++++++++++++---------------
-> |  1 file changed, 27 insertions(+), 15 deletions(-)
-> ...
+On Tue, Aug 25, 2009 at 10:15:39PM +0200, Frans Pop wrote:
+> The binrpm-pkg target (binary RPM only) fails when called with
+> KBUILD_OUTPUT set. This patch makes it work.
 > 
-> Hi Yinghai, good idea!
+> For the rpm-pkg target (source + binary RPM), building with
+> KBUILD_OUTPUT set is not possible and also not needed as the
+> actual build is done in a temporary directory anyway, so check
+> that KBUILD_OUTPUT is not set in that case to avoid later errors.
 > 
-> I've tuned your patch a bit together with changelog.
-> 
-> 1) show_lapic=1 by default does change current kernel behaviour
->    so it should be set to max cpu available.
+> Signed-off-by: Frans Pop <elendil@planet.nl>
 
-think about system with lots of cpu. but i still want to use apic=debug
+Applied.
 
-> 2) show_lapic contains the max number of lapics being printed
->    so we need to count them instead of plain comparation with
->    cpu number, as a result I've changed print_local_APICs. Or
->    you meant _exactly_ cpuid number? In meaning like
->    show_lapic=max_cpuid. Hmm?
+> ---
 > 
-your change anything about that. there is not gap between cpu id.
+> I ran into this while trying if I could build an RPM kernel package on
+> my Debian notebook :-)
+> 
+> The patch has been tested by doing three builds:
+> - make -j4 rpm-pkg
+> - make -j4 binrpm-pkg
+> - KBUILD_OUTPUT=../builds/amd64 make -j4 binrpm-pkg
+> 
+> For all three the contents of the resulting binary RPM package was 
+> identical
+> (and looked correct); the source RPM package from the first build looked 
+> sane.
+> 
+> A 'KBUILD_OUTPUT=../builds/amd64 make -j4 rpm-pkg' fails as intended.
+> 
+> One open issue is that the following commands should IIUC be identical,
+> but the second one does not work:
+> - KBUILD_OUTPUT=../builds/amd64 make -j4 binrpm-pkg
+> - make -j4 O=../builds/amd64 binrpm-pkg
+> 
+> AFAICT the root Makefile is supposed to set KBUILD_OUTPUT based on O=, but
+> that is not visible when the lines within the binrpm-pkg target are 
+> executed.
+> My make foo was not strong enough to debug this. Sam, do you know?
 
-YH
+I did not look into this - there is too much other stuff pending.
+
+	Sam
