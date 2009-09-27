@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbZI0Lg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZI0Lg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753857AbZI0Lg2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 07:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbZI0Lg1
+	id S1753861AbZI0Lg6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 07:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZI0Lg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 07:36:27 -0400
-Received: from smtp5-g21.free.fr ([212.27.42.5]:38617 "EHLO smtp5-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753811AbZI0Lg0 convert rfc822-to-8bit (ORCPT
+	Sun, 27 Sep 2009 07:36:58 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:50486 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753813AbZI0Lg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 07:36:26 -0400
-Message-ID: <4ABF4E36.4090703@upmc.fr>
-Date: Sun, 27 Sep 2009 13:36:22 +0200
-From: Bernard Pidoux <bernard.pidoux@upmc.fr>
-Organization: Universite Pierre & Marie Curie - Paris 6
-User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
+	Sun, 27 Sep 2009 07:36:58 -0400
+Date: Sun, 27 Sep 2009 07:37:00 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: updated list of "bad" refs to CONFIG variables
+Message-ID: <alpine.LFD.2.00.0909270733570.30042@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31.1 BUG #include <asm/bitsperlong.h>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a user space application.
 
-Here is Gcc error message :
+  and to go with the earlier wiki page, i've updated the page of
+preprocessor tests of CONFIG variables that don't appear to even
+exist:
 
-gcc -Wall -Wstrict-prototypes -O2 -ggdb2 -funsigned-char  -D__LINUX__ -Wformat-security -D_FORTIFY_SOURCE=2 -DPROTOTYPES -I../lib -I/usr/src/linux/include -fstack-check -fstack-protector-all -c listen.c
-Dans le fichier inclus à partir de /usr/include/asm/types.h:4,
-          à partir de /usr/src/linux/include/linux/types.h:4,
-          à partir de /usr/src/linux/include/linux/if_ether.h:24,
-          à partir de /usr/include/net/ethernet.h:27,
-          à partir de listen.c:21:
-/usr/src/linux/include/asm-generic/int-ll64.h:11:29: erreur: asm/bitsperlong.h : Aucun fichier ou dossier de ce type
-listen.c: In function ‘main’:
+http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables
 
+  could be a number of reasons for those:
 
+  1) simple typoes
+  2) removal of CONFIG variable from Kconfig file while forgetting
+     to delete the corresponding test(s) that check that variable
+  3) adding new code without adding the corresponding Kconfig info
 
-On Sun, 27 Sep 2009 13:16:41 +0200
-Bernard Pidoux <bernard.pidoux@upmc.fr> wrote:
+you get the idea.
 
-> The problem is that when I compile an application that never 
-> caused any problem before I get an error due to incorrect reference
-> to <asm/bitsperlong>
+rday
+--
 
-is this a userspace application? or some kernel module?
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
+        Linux Consulting, Training and Annoying Kernel Pedantry.
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
-
-
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
