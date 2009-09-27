@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZI0NTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbZI0NYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752570AbZI0NTT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 09:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZI0NTS
+	id S1752716AbZI0NYK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 09:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZI0NYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 09:19:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45159 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751936AbZI0NTS (ORCPT
+	Sun, 27 Sep 2009 09:24:09 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:59967 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbZI0NYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 09:19:18 -0400
-Date: Sun, 27 Sep 2009 15:19:42 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bernard Pidoux <bernard.pidoux@upmc.fr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31.1 BUG #include <asm/bitsperlong.h>
-Message-ID: <20090927151942.1c6a010a@infradead.org>
-In-Reply-To: <4ABF5E21.9080104@upmc.fr>
-References: <4ABF4E36.4090703@upmc.fr>
-	<4ABF5328.8020901@upmc.fr>
-	<4ABF5E21.9080104@upmc.fr>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 27 Sep 2009 09:24:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=cL1e22H6vmkrXVDjfdOxSDcZ0jy8ToTSaPqEmi1VbkZ/WEnXL8i4On4ztu2evsrnzj
+         Ppr441e3i3WpBgr596Ji4LN4n/DZAphrFOYr0L78pGgtqAUUKt1tjCUV5f0gEvWQF/j1
+         xjF9/eXcNBh8lz477hgmR7/zVNx1H0wOeMVZQ=
+MIME-Version: 1.0
+In-Reply-To: <20090927151855.29efcc53@infradead.org>
+References: <20090927151855.29efcc53@infradead.org>
+Date: Sun, 27 Sep 2009 15:24:10 +0200
+Message-ID: <8db1092f0909270624l4fc46734u6a91f7cc7ffb0c72@mail.gmail.com>
+Subject: Re: [bisected] Wireless regression in 2.6.32-git
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Sep 2009 14:44:17 +0200
-Bernard Pidoux <bernard.pidoux@upmc.fr> wrote:
+Did You have similar messages in dmesg like this:
 
-> I downloaded again linux-2.6.31.1.tar.bz2 and unpacked it.
-> 
-> ll /usr/src/linux-2.6.31.1/include/
-> total 128
-> drwxrwxr-x   3 root root  4096 2009-09-24 17:45 acpi/
-> lrwxrwxrwx   1 root root     7 2009-09-27 14:34 asm -> asm-x86/
-> drwxrwxr-x   3 root root  4096 2009-09-24 17:45 asm-generic/
-> drwxr-xr-x   2 root root  4096 2009-09-27 14:34 asm-x86/
-> 
-> and
-> 
-> ll /usr/src/linux-2.6.31.1/include/asm/
-> total 8
-> -rw-r--r-- 1 root root 4890 2009-09-27 14:34 asm-offsets.h
-> 
-> So, I think that the kernel header problem is in the linux package,
-> not in my system installation.
+http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2089
+(use WPA)
+?
 
-do not count until you have done "make headers_install"... there is
-magic there that fixes up a bunch of things.
-.
-
-
+I try make sure, that that result of my bisection is correct.
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Maciej Rutecki
+http://www.maciek.unixy.pl
