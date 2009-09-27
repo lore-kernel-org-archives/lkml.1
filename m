@@ -1,193 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZI0SZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972AbZI0S1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751877AbZI0SZZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 14:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZI0SZZ
+	id S1751972AbZI0S1L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 14:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbZI0S1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 14:25:25 -0400
-Received: from smtp-04.mandic.com.br ([200.225.81.151]:48059 "EHLO
-	smtp-04.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751151AbZI0SZY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 14:25:24 -0400
-From: Cesar Eduardo Barros <cesarb@cesarb.net>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       Cesar Eduardo Barros <cesarb@cesarb.net>,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: [PATCH] WARN_ONCE(): use bool for condition
-Date: Sun, 27 Sep 2009 15:25:12 -0300
-Message-Id: <1254075912-17557-1-git-send-email-cesarb@cesarb.net>
-X-Mailer: git-send-email 1.6.4.4
-In-Reply-To: <4ABFAB27.1040608@cesarb.net>
-References: <4ABFAB27.1040608@cesarb.net>
+	Sun, 27 Sep 2009 14:27:10 -0400
+Received: from [195.41.46.235] ([195.41.46.235]:47995 "EHLO pfepa.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751421AbZI0S1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 14:27:10 -0400
+Date: Sun, 27 Sep 2009 20:27:07 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: Solving section mismatches
+Message-ID: <20090927182707.GA10405@merkur.ravnborg.org>
+References: <20090927164115.GB20093@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090927164115.GB20093@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the type bool for __ret_warn_once and __ret_warn_on, instead of int
-with a double negation. This matches the intent of the code better and
-should allow the compiler to generate better code, like in commit
-70867453092297be9afb2249e712a1f960ec0a09. However, some versions of gcc
-seems to pessimize the code instead when the condition is not trivial.
+On Sun, Sep 27, 2009 at 05:41:16PM +0100, Russell King - ARM Linux wrote:
+> Sam,
+> 
+> Any idea how to solve this:
+> 
+> WARNING: arch/arm/kernel/built-in.o(.text+0x1ebc): Section mismatch in reference from the function cpu_idle() to the function .cpuexit.text:cpu_die()
+> The function cpu_idle() references a function in an exit section.
+> Often the function cpu_die() has valid usage outside the exit section
+> and the fix is to remove the __cpuexit annotation of cpu_die.
+> 
+> WARNING: arch/arm/kernel/built-in.o(.cpuexit.text+0x3c): Section mismatch in reference from the function cpu_die() to the function .cpuinit.text:secondary_start_kernel()
+> The function __cpuexit cpu_die() references
+> a function __cpuinit secondary_start_kernel().
+> This is often seen when error handling in the exit function
+> uses functionality in the init path.
+> The fix is often to remove the __cpuinit annotation of
+> secondary_start_kernel() so it may be used outside an init section.
+> 
+> Logically, the annotations are correct - in the first case, cpu_die()
+> will only ever be called if hotplug CPU is enabled, since you can't
+> offline a CPU without hotplug CPU enabled.  In that case, the __cpuexit.*
+> sections are not discarded.
 
-Cc: Daniel Walker <dwalker@fifo99.com>
-Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
----
- arch/avr32/include/asm/bug.h    |    2 +-
- arch/blackfin/include/asm/bug.h |    2 +-
- arch/parisc/include/asm/bug.h   |    2 +-
- arch/powerpc/include/asm/bug.h  |    2 +-
- arch/s390/include/asm/bug.h     |    2 +-
- arch/sh/include/asm/bug.h       |    4 ++--
- include/asm-generic/bug.h       |   12 ++++++------
- 7 files changed, 13 insertions(+), 13 deletions(-)
+The annotation of cpu_die() is wrong.
+To be annotated __cpuexit the function shall:
+- be used in exit context and only in exit context with HOTPLUG_CPU=n
+- be used outside exit context with HOTPLUG_CPU=y
 
-diff --git a/arch/avr32/include/asm/bug.h b/arch/avr32/include/asm/bug.h
-index 331d45b..c636fec 100644
---- a/arch/avr32/include/asm/bug.h
-+++ b/arch/avr32/include/asm/bug.h
-@@ -57,7 +57,7 @@
- 
- #define WARN_ON(condition)							\
- 	({								\
--		int __ret_warn_on = !!(condition);			\
-+		bool __ret_warn_on = (condition);			\
- 		if (unlikely(__ret_warn_on))				\
- 			_BUG_OR_WARN(BUGFLAG_WARNING);			\
- 		unlikely(__ret_warn_on);				\
-diff --git a/arch/blackfin/include/asm/bug.h b/arch/blackfin/include/asm/bug.h
-index 655e495..3584d52 100644
---- a/arch/blackfin/include/asm/bug.h
-+++ b/arch/blackfin/include/asm/bug.h
-@@ -46,7 +46,7 @@
- 
- #define WARN_ON(condition)							\
- 	({								\
--		int __ret_warn_on = !!(condition);			\
-+		bool __ret_warn_on = (condition);			\
- 		if (unlikely(__ret_warn_on))				\
- 			_BUG_OR_WARN(BUGFLAG_WARNING);			\
- 		unlikely(__ret_warn_on);				\
-diff --git a/arch/parisc/include/asm/bug.h b/arch/parisc/include/asm/bug.h
-index 8cfc553..373e16a 100644
---- a/arch/parisc/include/asm/bug.h
-+++ b/arch/parisc/include/asm/bug.h
-@@ -74,7 +74,7 @@
- 
- 
- #define WARN_ON(x) ({						\
--	int __ret_warn_on = !!(x);				\
-+	bool __ret_warn_on = (x);				\
- 	if (__builtin_constant_p(__ret_warn_on)) {		\
- 		if (__ret_warn_on)				\
- 			__WARN();				\
-diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-index 64e1fdc..eda46ac 100644
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -95,7 +95,7 @@
- } while (0)
- 
- #define WARN_ON(x) ({						\
--	int __ret_warn_on = !!(x);				\
-+	bool __ret_warn_on = (x);				\
- 	if (__builtin_constant_p(__ret_warn_on)) {		\
- 		if (__ret_warn_on)				\
- 			__WARN();				\
-diff --git a/arch/s390/include/asm/bug.h b/arch/s390/include/asm/bug.h
-index 7efd0ab..577b6d1 100644
---- a/arch/s390/include/asm/bug.h
-+++ b/arch/s390/include/asm/bug.h
-@@ -53,7 +53,7 @@
- } while (0)
- 
- #define WARN_ON(x) ({					\
--	int __ret_warn_on = !!(x);			\
-+	bool __ret_warn_on = (x);			\
- 	if (__builtin_constant_p(__ret_warn_on)) {	\
- 		if (__ret_warn_on)			\
- 			__EMIT_BUG(BUGFLAG_WARNING);	\
-diff --git a/arch/sh/include/asm/bug.h b/arch/sh/include/asm/bug.h
-index d02c01b..7a7872c 100644
---- a/arch/sh/include/asm/bug.h
-+++ b/arch/sh/include/asm/bug.h
-@@ -62,7 +62,7 @@ do {							\
- } while (0)
- 
- #define WARN_ON(x) ({						\
--	int __ret_warn_on = !!(x);				\
-+	bool __ret_warn_on = (x);				\
- 	if (__builtin_constant_p(__ret_warn_on)) {		\
- 		if (__ret_warn_on)				\
- 			__WARN();				\
-@@ -87,7 +87,7 @@ do {							\
- } while (0)
- 
- #define UNWINDER_BUG_ON(x) ({					\
--	int __ret_unwinder_on = !!(x);				\
-+	bool __ret_unwinder_on = (x);				\
- 	if (__builtin_constant_p(__ret_unwinder_on)) {		\
- 		if (__ret_unwinder_on)				\
- 			UNWINDER_BUG();				\
-diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
-index 18c435d..9eb001e 100644
---- a/include/asm-generic/bug.h
-+++ b/include/asm-generic/bug.h
-@@ -71,7 +71,7 @@ extern void warn_slowpath_null(const char *file, const int line);
- 
- #ifndef WARN_ON
- #define WARN_ON(condition) ({						\
--	int __ret_warn_on = !!(condition);				\
-+	bool __ret_warn_on = (condition);				\
- 	if (unlikely(__ret_warn_on))					\
- 		__WARN();						\
- 	unlikely(__ret_warn_on);					\
-@@ -80,7 +80,7 @@ extern void warn_slowpath_null(const char *file, const int line);
- 
- #ifndef WARN
- #define WARN(condition, format...) ({						\
--	int __ret_warn_on = !!(condition);				\
-+	bool __ret_warn_on = (condition);				\
- 	if (unlikely(__ret_warn_on))					\
- 		__WARN_printf(format);					\
- 	unlikely(__ret_warn_on);					\
-@@ -98,14 +98,14 @@ extern void warn_slowpath_null(const char *file, const int line);
- 
- #ifndef HAVE_ARCH_WARN_ON
- #define WARN_ON(condition) ({						\
--	int __ret_warn_on = !!(condition);				\
-+	bool __ret_warn_on = (condition);				\
- 	unlikely(__ret_warn_on);					\
- })
- #endif
- 
- #ifndef WARN
- #define WARN(condition, format...) ({					\
--	int __ret_warn_on = !!(condition);				\
-+	bool __ret_warn_on = (condition);				\
- 	unlikely(__ret_warn_on);					\
- })
- #endif
-@@ -114,7 +114,7 @@ extern void warn_slowpath_null(const char *file, const int line);
- 
- #define WARN_ON_ONCE(condition)	({				\
- 	static bool __warned;					\
--	int __ret_warn_once = !!(condition);			\
-+	bool __ret_warn_once = (condition);			\
- 								\
- 	if (unlikely(__ret_warn_once))				\
- 		if (WARN_ON(!__warned)) 			\
-@@ -124,7 +124,7 @@ extern void warn_slowpath_null(const char *file, const int line);
- 
- #define WARN_ONCE(condition, format...)	({			\
- 	static bool __warned;					\
--	int __ret_warn_once = !!(condition);			\
-+	bool __ret_warn_once = (condition);			\
- 								\
- 	if (unlikely(__ret_warn_once))				\
- 		if (WARN(!__warned, format)) 			\
--- 
-1.6.4.4
+cpu_die() fails on the first condition because it is only used
+if HOTPLUG_CPU=y.
+The annotation is wrongly used as a replacement for an ifdef.
+As cpu_die() is already inside ifdef CONFIG_HOTPLUG_CPU is should
+be enough to just remove the annotation.
 
+Like this (copy'n'paste so it does not apply)
+
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index e0d3277..de4ef1c 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -214,7 +214,7 @@ void __cpuexit __cpu_die(unsigned int cpu)
+  * of the other hotplug-cpu capable cores, so presumably coming
+  * out of idle fixes this.
+  */
+-void __cpuexit cpu_die(void)
++void cpu_die(void)
+ {
+        unsigned int cpu = smp_processor_id();
+ 
+
+
+I did not see any section mismatch with defconfig so I failed to
+test if it made a difference.
+
+> 
+> In the second case, this is platform code to restart the CPU, and
+> again the anotations are entirely correct - cpuexit code only exists
+> if hotplug CPU is enabled, in which case the cpuinit code must also
+> be kept around.  Therefore, it is entirely legal for cpuexit code to
+> call cpuinit code - unlike __init vs __exit or __devinit vs __devexit.
+> 
+> Therefore, I believe both of these warnings to be incorrect.
+
+Same reasoning as above.
+And the patch ougth to solve this case too.
+
+Please note that throughout the kernel there is a lot of places where
+the __cpu* annotations has been misused.
+I once suggested to drop the chek from modpost as I could not see
+this being fixed - but alas no replies it never happened.
+
+	Sam
