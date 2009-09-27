@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZI0Imi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbZI0IoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598AbZI0Imi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 04:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZI0Imi
+	id S1753646AbZI0IoJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 04:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZI0IoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 04:42:38 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:24824 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753385AbZI0Imh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 04:42:37 -0400
-Message-ID: <4ABF257C.2000803@redhat.com>
-Date: Sun, 27 Sep 2009 10:42:36 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Sun, 27 Sep 2009 04:44:08 -0400
+Received: from [195.41.46.235] ([195.41.46.235]:48661 "EHLO pfepa.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753447AbZI0IoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 04:44:07 -0400
+Date: Sun, 27 Sep 2009 10:44:06 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Am?rico Wang <xiyou.wangcong@gmail.com>, Caveh Jalali <ecaveh@gmail.com>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] warn about use of uninstalled kernel headers
+Message-ID: <20090927084406.GD10177@merkur.ravnborg.org>
+References: <830a8fa70909161930r518a9644ja954ced2ae5814b4@mail.gmail.com> <2375c9f90909171849n429bc474heabdc4d4fd064226@mail.gmail.com> <20090918045259.GA23333@merkur.ravnborg.org> <200909211637.12983.arnd@arndb.de>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH 1/1] KVM: fix lock imbalance
-References: <1253864018-7547-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1253864018-7547-1-git-send-email-jirislaby@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909211637.12983.arnd@arndb.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/25/2009 10:33 AM, Jiri Slaby wrote:
-> Stanse found 2 lock imbalances in kvm_request_irq_source_id and
-> kvm_free_irq_source_id. They omit to unlock kvm->irq_lock on fail paths.
->
-> Fix that by adding unlock labels at the end of the functions and jump
-> there from the fail paths.
->    
+On Mon, Sep 21, 2009 at 04:37:12PM +0200, Arnd Bergmann wrote:
+> On Friday 18 September 2009, Sam Ravnborg wrote:
+> > > > I think we should no longer have the include2 directory at all with new kernels.
+> > > >
+> > > > LINUXINCLUDE already contains the right path in theory:
+> > > >
+> > > > LINUXINCLUDE    := -Iinclude \
+> > > >                   $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
+> > > >                   -I$(srctree)/arch/$(hdr-arch)/include               \
+> > > >                   -include include/linux/autoconf.h
+> > > 
+> > > Hmm, at least in mmotm, we still have include2...
+> > > 
+> > > Maybe Sam is queueing the patches to remove include2?
+> > I have them queued - yes.
+> > But as they never hit -next they will wait another cycle.
+> 
+> Variations of this are starting to turn into a FAQ. How about
+> printing a useful warning when someone tries to use the kernel
+> headers without installing them first?
 
-Applied, thanks.
+OK - applied.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+	Sam
