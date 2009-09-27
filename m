@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbZI0XsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752172AbZI0Xw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157AbZI0XsM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 19:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZI0XsM
+	id S1752172AbZI0Xw6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 19:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZI0Xw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 19:48:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:54526 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbZI0XsL convert rfc822-to-8bit (ORCPT
+	Sun, 27 Sep 2009 19:52:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58085 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750912AbZI0Xw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 19:48:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=Fwb+Yd1XAO3/xjugrHAK3QQ2fIrzq6HY59lLXJwKySd9eaF3i8iZyr2gDspRfPEMIs
-         yBcZKE5CE6WIFvqWik3pUpXLhnyVmvz/B+peNRqvHnKMzycXa210JAD6BzvWK2UrMvbq
-         1mH/roDmcbISkWe57mBc48lZJUcsXQjZbreGw=
-From: Diego Calleja <diegocg@gmail.com>
+	Sun, 27 Sep 2009 19:52:57 -0400
+Date: Sun, 27 Sep 2009 16:52:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
 To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.32-rc1
-Date: Mon, 28 Sep 2009 01:48:08 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-08936-g851b147; KDE/4.3.1; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain> <20090928094458.4ad704c2.sfr@canb.auug.org.au>
 In-Reply-To: <20090928094458.4ad704c2.sfr@canb.auug.org.au>
+Message-ID: <alpine.LFD.2.01.0909271650480.3349@localhost.localdomain>
+References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain> <20090928094458.4ad704c2.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200909280148.09060.diegocg@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Lunes 28 Septiembre 2009 01:44:58 Stephen Rothwell escribió:
 
+
+On Mon, 28 Sep 2009, Stephen Rothwell wrote:
+
+> Hi Linus,
+> 
+> On Sun, 27 Sep 2009 15:34:53 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> >
+> > It's been two weeks (and then some - but with last week being LinuxCon and 
+> > Plumbers conf I extended it by a few days), and as usual that means that 
+> > the merge window is all over and done with. 2.6.32-rc1 is out, so give it 
+> > a whirl.
+> 
 > Of course, you realise that you set EXTRAVERSION to -rc2  :-(
 
-Not a big problem i guess, except that the kernel.org files are "-rc1"
+Oh nnooooooooooooo-(takes breath)-ooooooo...
+
+Damn. I hadn't realized. I'm a moron.
+
+Ok, so it's an extra-special -rc1. It's the "short bus" kind of special 
+-rc1 release. But quite frankly, I'll just let it be. The git tags etc 
+look to be ok, it's just my editing of the Makefile itself that was too 
+complicated for my little mind.
+
+I'll try not to do that again,
+
+		Linus
