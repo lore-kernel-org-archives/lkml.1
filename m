@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbZI0Qwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbZI0QzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753029AbZI0Qwy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 12:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZI0Qwx
+	id S1752995AbZI0QzL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 12:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbZI0QzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 12:52:53 -0400
-Received: from fifo99.com ([67.223.236.141]:49967 "EHLO fifo99.com"
+	Sun, 27 Sep 2009 12:55:11 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49674 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752944AbZI0Qwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 12:52:53 -0400
-Subject: Re: [PATCH] WARN_ONCE(): use bool for boolean flag
-From: Daniel Walker <dwalker@fifo99.com>
-To: Cesar Eduardo Barros <cesarb@cesarb.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Roland Dreier <rolandd@cisco.com>
-In-Reply-To: <4ABF8B30.5050801@cesarb.net>
-References: <1254059590-31690-1-git-send-email-cesarb@cesarb.net>
-	 <1254060189.20648.462.camel@desktop>  <4ABF8B30.5050801@cesarb.net>
-Content-Type: text/plain
-Date: Sun, 27 Sep 2009 09:52:16 -0700
-Message-Id: <1254070336.20648.518.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1751431AbZI0QzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 12:55:10 -0400
+Date: Sun, 27 Sep 2009 18:55:14 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       jack@suse.cz
+Subject: Re: [PATCH] bdi_sync_writeback should WB_SYNC_NONE first
+Message-ID: <20090927165513.GC23126@kernel.dk>
+References: <20090925141014.GB15853@think> <20090927013458.53e43459.akpm@linux-foundation.org> <20090927164431.GB23126@kernel.dk> <20090927095202.717fdf64.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090927095202.717fdf64.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-27 at 12:56 -0300, Cesar Eduardo Barros wrote:
-> Daniel Walker escreveu:
-> > On Sun, 2009-09-27 at 10:53 -0300, Cesar Eduardo Barros wrote:
-> >>  #define
-> >> WARN_ON_ONCE(condition)        ({                              \
-> >> -       static int __warned;                                    \
-> >> +       static bool __warned;                                   \
-> >>         int __ret_warn_once = !!(condition);                    \
-> > 
-> > Could __ret_warn_once be bool also ? It looks like just another
-> > conditional variable..
+On Sun, Sep 27 2009, Andrew Morton wrote:
+> On Sun, 27 Sep 2009 18:44:32 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> Yes, it could (as long as either it is converted back to int in the 
-> return of the macro, or all users do not care about the macro's return 
-> type). However, the justification used for the printk_once patch (and 
-> this WARN_ONCE patch) does not apply directly anymore, since the code is 
-> different (to start with, it is not a static variable).
+> > On Sun, Sep 27 2009, Andrew Morton wrote:
+> > > On Fri, 25 Sep 2009 10:10:14 -0400 Chris Mason <chris.mason@oracle.com> wrote:
+> > > 
+> > > > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> > > > index 8e1e5e1..27f8e0e 100644
+> > > > --- a/fs/fs-writeback.c
+> > > > +++ b/fs/fs-writeback.c
+> > > > @@ -225,7 +225,7 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
+> > > >  {
+> > > >  	struct wb_writeback_args args = {
+> > > >  		.sb		= sb,
+> > > > -		.sync_mode	= WB_SYNC_ALL,
+> > > > +		.sync_mode	= WB_SYNC_NONE,
+> > > >  		.nr_pages	= LONG_MAX,
+> > > >  		.range_cyclic	= 0,
+> > > >  	};
+> > > > @@ -236,6 +236,13 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
+> > > >  
+> > > >  	bdi_queue_work(bdi, &work);
+> > > >  	bdi_wait_on_work_clear(&work);
+> > > > +
+> > > > +	args.sync_mode = WB_SYNC_ALL;
+> > > > +	args.nr_pages = LONG_MAX;
+> > > > +
+> > > > +	work.state = WS_USED | WS_ONSTACK;
+> > > > +	bdi_queue_work(bdi, &work);
+> > > > +	bdi_wait_on_work_clear(&work);
+> > > >  }
+> > > 
+> > > Those LONG_MAX's are a worry.  What prevents a very long
+> > > almost-livelock from occurring if userspace is concurrently dirtying
+> > > pagecache at a high rate?
+> > 
+> > Not sure whether Chris' system is back up again, but I discussed this
+> > with him on irc. Since the WB_SYNC_ALL writeback should be queued behind
+> > the WB_SYNC_NONE that the non-wait sync already issued, not sure why
+> > this patch makes a difference. It's definitely not the right approach.
+> > 
+> 
+> I wasn't referring to this patch actually.  The code as it stands in
+> Linus's tree right now attempts to write back up to 2^63 pages...  
 
-I did a couple kernel builds to test this on a small normal config,
+I agree, it could make the fs sync take a looong time. This is not a new
+issue, though.
 
-vmlinux.base-line
-   text	   data	    bss	    dec	    hex	filename
-6718958	 497200	1082460	8298618	 7ea07a	vmlinux.base-line
-
-vmlinux.one-bool <-- Your patch
-   text	   data	    bss	    dec	    hex	filename
-6718590	 497232	1082292	8298114	 7e9e82	vmlinux.one-bool
-
-vmlinux.all-bool-converted 
-   text	   data	    bss	    dec	    hex	filename
-6718506	 497232	1082292	8298030	 7e9e2e	vmlinux.all-converted
-
-your changes drops the size 368 bytes, and if you convert the other
-conditionals it drops it by another 84 bytes. Not much more, but it's
-something.
-
-So I think Rolands original reasoning still holds.. As far as people
-needing an int output from WARN_ON() , I'm not sure that's happening
-anyplace .. I can't imagine a sane usage for that.. 
-
-Daniel
+-- 
+Jens Axboe
 
