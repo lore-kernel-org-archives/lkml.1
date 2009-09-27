@@ -1,108 +1,331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZI0VZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752706AbZI0Vo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbZI0VZb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 17:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZI0VZa
+	id S1752706AbZI0Vo7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 17:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZI0Vo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 17:25:30 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54752 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750955AbZI0VZ3 (ORCPT
+	Sun, 27 Sep 2009 17:44:58 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:55864 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbZI0Vo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 17:25:29 -0400
-Date: Sun, 27 Sep 2009 17:25:08 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Helge Deller <deller@gmx.de>
-cc: linux-parisc@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v2 0/2] Linker script cleanup patches for parisc
-In-Reply-To: <4ABFD2D3.5050606@gmx.de>
-Message-ID: <alpine.DEB.1.10.0909271719570.14151@dr-wily.mit.edu>
-References: <1253306078-7066-1-git-send-email-tabbott@ksplice.com> <4ABFD2D3.5050606@gmx.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 27 Sep 2009 17:44:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=NosEnAMBuVHgxKOTj27RozVjA8M83tZuts6Jww4su//kqKM/4pqC6kSjSAAwlKZFdu
+         loUeCnKXJ1uKdMpIwH4GSah6eeSUsrFRuZgpCA1VcQKTJYvuVSOGKj1oAZ/27I/dp3Ui
+         INZelFD/65+YZgIr4DkuWK2//gWYOih9L4XiA=
+Date: Mon, 28 Sep 2009 01:44:58 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] headers: remove sched.h from poll.h
+Message-ID: <20090927214458.GA6612@x200>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Sep 2009, Helge Deller wrote:
-
->  Tim, thanks for your work!
-> 
-> Sadly it broke the parisc build in two places:
-> a) THREAD_SIZE can't be used in the vmlinux.lds.S file
-> b) It generates linker errors like "local symbol 0: discarded in section
-> `.exit.text' from kernel/built-in.o".
-
-Sorry about that -- I should have tried harder to get someone to test this 
-one, since parisc is one of the architectures for which I don't have a 
-cross-compiler.
-
-> Attached patch below fixes both issues. Tested with 32- and 64-bit parisc
-> kernel.
-
-The .exit.text change looks fine.
-
-[...]
-> b/arch/parisc/kernel/asm-offsets.c
-> index 699cf8e..7e76f03 100644
-> --- a/arch/parisc/kernel/asm-offsets.c
-> +++ b/arch/parisc/kernel/asm-offsets.c
-> @@ -287,6 +287,8 @@ int main(void)
->  	DEFINE(ASM_PFN_PTE_SHIFT, PFN_PTE_SHIFT);
->  	DEFINE(ASM_PT_INITIAL, PT_INITIAL);
->  	BLANK();
-> +	DEFINE(ASM_THREAD_SIZE, THREAD_SIZE);
-> +	BLANK();
->  	DEFINE(EXCDATA_IP, offsetof(struct exception_data, fault_ip));
->  	DEFINE(EXCDATA_SPACE, offsetof(struct exception_data, fault_space));
->  	DEFINE(EXCDATA_ADDR, offsetof(struct exception_data, fault_addr));
-
-Rather than adding a new definition in asm-offsets.c, I think it'll be 
-better to do something like the following to make the normal THREAD_SIZE 
-definition available in the linker script and other assembly files:
-
-	-Tim Abbott
-
-parisc: Make THREAD_SIZE available to assembly files and linker scripts.
-
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- arch/parisc/include/asm/thread_info.h |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/parisc/include/asm/thread_info.h b/arch/parisc/include/asm/thread_info.h
-index ac775a7..51bca20 100644
---- a/arch/parisc/include/asm/thread_info.h
-+++ b/arch/parisc/include/asm/thread_info.h
-@@ -32,6 +32,11 @@ struct thread_info {
- #define init_thread_info        (init_thread_union.thread_info)
- #define init_stack              (init_thread_union.stack)
+ drivers/char/dtlk.c                    |    1 +
+ drivers/char/ipmi/ipmi_devintf.c       |    1 +
+ drivers/char/ipmi/ipmi_msghandler.c    |    1 +
+ drivers/firewire/core-cdev.c           |    1 +
+ drivers/hid/hidraw.c                   |    1 +
+ drivers/infiniband/core/ucm.c          |    1 +
+ drivers/infiniband/core/user_mad.c     |    1 +
+ drivers/infiniband/core/uverbs_main.c  |    1 +
+ drivers/input/evdev.c                  |    1 +
+ drivers/input/input.c                  |    1 +
+ drivers/input/joydev.c                 |    1 +
+ drivers/input/misc/uinput.c            |    1 +
+ drivers/input/mousedev.c               |    1 +
+ drivers/isdn/divert/divert_procfs.c    |    1 +
+ drivers/media/dvb/dvb-core/dmxdev.c    |    1 +
+ drivers/media/dvb/dvb-core/dvb_demux.c |    1 +
+ drivers/media/radio/radio-cadet.c      |    1 +
+ drivers/media/video/cpia.c             |    1 +
+ drivers/mfd/ucb1400_core.c             |    1 +
+ drivers/usb/gadget/inode.c             |    1 +
+ drivers/xen/xenfs/xenbus.c             |    1 +
+ fs/anon_inodes.c                       |    2 ++
+ fs/coda/psdev.c                        |    1 +
+ fs/select.c                            |    1 +
+ include/linux/poll.h                   |    2 +-
+ net/rfkill/core.c                      |    1 +
+ 26 files changed, 27 insertions(+), 1 deletion(-)
+
+--- a/drivers/char/dtlk.c
++++ b/drivers/char/dtlk.c
+@@ -56,6 +56,7 @@
+ #include <linux/errno.h>	/* for -EBUSY */
+ #include <linux/ioport.h>	/* for request_region */
+ #include <linux/delay.h>	/* for loops_per_jiffy */
++#include <linux/sched.h>
+ #include <linux/smp_lock.h>	/* cycle_kernel_lock() */
+ #include <asm/io.h>		/* for inb_p, outb_p, inb, outb, etc. */
+ #include <asm/uaccess.h>	/* for get_user, etc. */
+--- a/drivers/char/ipmi/ipmi_devintf.c
++++ b/drivers/char/ipmi/ipmi_devintf.c
+@@ -36,6 +36,7 @@
+ #include <linux/errno.h>
+ #include <asm/system.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/ipmi.h>
+--- a/drivers/char/ipmi/ipmi_msghandler.c
++++ b/drivers/char/ipmi/ipmi_msghandler.c
+@@ -35,6 +35,7 @@
+ #include <linux/errno.h>
+ #include <asm/system.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
+--- a/drivers/firewire/core-cdev.c
++++ b/drivers/firewire/core-cdev.c
+@@ -33,6 +33,7 @@
+ #include <linux/mutex.h>
+ #include <linux/poll.h>
+ #include <linux/preempt.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/time.h>
+ #include <linux/uaccess.h>
+--- a/drivers/hid/hidraw.c
++++ b/drivers/hid/hidraw.c
+@@ -30,6 +30,7 @@
+ #include <linux/major.h>
+ #include <linux/hid.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
+ #include <linux/smp_lock.h>
  
-+/* how to get the thread information struct from C */
-+#define current_thread_info()	((struct thread_info *)mfctl(30))
-+
-+#endif /* !__ASSEMBLY */
-+
- /* thread information allocation */
+ #include <linux/hidraw.h>
+--- a/drivers/infiniband/core/ucm.c
++++ b/drivers/infiniband/core/ucm.c
+@@ -38,6 +38,7 @@
+ #include <linux/device.h>
+ #include <linux/err.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/file.h>
+ #include <linux/mount.h>
+ #include <linux/cdev.h>
+--- a/drivers/infiniband/core/user_mad.c
++++ b/drivers/infiniband/core/user_mad.c
+@@ -44,6 +44,7 @@
+ #include <linux/mutex.h>
+ #include <linux/kref.h>
+ #include <linux/compat.h>
++#include <linux/sched.h>
+ #include <linux/semaphore.h>
  
- #define THREAD_SIZE_ORDER            2
-@@ -40,11 +45,6 @@ struct thread_info {
- #define THREAD_SIZE             (PAGE_SIZE << THREAD_SIZE_ORDER)
- #define THREAD_SHIFT            (PAGE_SHIFT + THREAD_SIZE_ORDER)
+ #include <asm/uaccess.h>
+--- a/drivers/infiniband/core/uverbs_main.c
++++ b/drivers/infiniband/core/uverbs_main.c
+@@ -40,6 +40,7 @@
+ #include <linux/err.h>
+ #include <linux/fs.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/file.h>
+ #include <linux/mount.h>
+ #include <linux/cdev.h>
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -13,6 +13,7 @@
+ #define EVDEV_BUFFER_SIZE	64
  
--/* how to get the thread information struct from C */
--#define current_thread_info()	((struct thread_info *)mfctl(30))
--
--#endif /* !__ASSEMBLY */
--
- #define PREEMPT_ACTIVE_BIT	28
- #define PREEMPT_ACTIVE		(1 << PREEMPT_ACTIVE_BIT)
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -17,6 +17,7 @@
+ #include <linux/random.h>
+ #include <linux/major.h>
+ #include <linux/proc_fs.h>
++#include <linux/sched.h>
+ #include <linux/seq_file.h>
+ #include <linux/poll.h>
+ #include <linux/device.h>
+--- a/drivers/input/joydev.c
++++ b/drivers/input/joydev.c
+@@ -18,6 +18,7 @@
+ #include <linux/input.h>
+ #include <linux/kernel.h>
+ #include <linux/major.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
+ #include <linux/miscdevice.h>
+--- a/drivers/input/misc/uinput.c
++++ b/drivers/input/misc/uinput.c
+@@ -30,6 +30,7 @@
+  *		- first public version
+  */
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+--- a/drivers/input/mousedev.c
++++ b/drivers/input/mousedev.c
+@@ -13,6 +13,7 @@
+ #define MOUSEDEV_MINORS		32
+ #define MOUSEDEV_MIX		31
  
--- 
-1.6.3.3
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/smp_lock.h>
+ #include <linux/poll.h>
+--- a/drivers/isdn/divert/divert_procfs.c
++++ b/drivers/isdn/divert/divert_procfs.c
+@@ -16,6 +16,7 @@
+ #else
+ #include <linux/fs.h>
+ #endif
++#include <linux/sched.h>
+ #include <linux/isdnif.h>
+ #include <net/net_namespace.h>
+ #include "isdn_divert.h"
+--- a/drivers/media/dvb/dvb-core/dmxdev.c
++++ b/drivers/media/dvb/dvb-core/dmxdev.c
+@@ -20,6 +20,7 @@
+  *
+  */
+ 
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
+--- a/drivers/media/dvb/dvb-core/dvb_demux.c
++++ b/drivers/media/dvb/dvb-core/dvb_demux.c
+@@ -21,6 +21,7 @@
+  *
+  */
+ 
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
+--- a/drivers/media/radio/radio-cadet.c
++++ b/drivers/media/radio/radio-cadet.c
+@@ -32,6 +32,7 @@
+ 
+ #include <linux/version.h>
+ #include <linux/module.h>	/* Modules 			*/
++#include <linux/sched.h>
+ #include <linux/init.h>		/* Initdata			*/
+ #include <linux/ioport.h>	/* request_region		*/
+ #include <linux/delay.h>	/* udelay			*/
+--- a/drivers/media/video/cpia.c
++++ b/drivers/media/video/cpia.c
+@@ -31,6 +31,7 @@
+ #include <linux/init.h>
+ #include <linux/fs.h>
+ #include <linux/vmalloc.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/proc_fs.h>
+ #include <linux/ctype.h>
+--- a/drivers/mfd/ucb1400_core.c
++++ b/drivers/mfd/ucb1400_core.c
+@@ -21,6 +21,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/sched.h>
+ #include <linux/ucb1400.h>
+ 
+ unsigned int ucb1400_adc_read(struct snd_ac97 *ac97, u16 adc_channel,
+--- a/drivers/usb/gadget/inode.c
++++ b/drivers/usb/gadget/inode.c
+@@ -30,6 +30,7 @@
+ #include <linux/wait.h>
+ #include <linux/compiler.h>
+ #include <asm/uaccess.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/poll.h>
+ #include <linux/smp_lock.h>
+--- a/drivers/xen/xenfs/xenbus.c
++++ b/drivers/xen/xenfs/xenbus.c
+@@ -43,6 +43,7 @@
+ #include <linux/fs.h>
+ #include <linux/poll.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/mount.h>
+ #include <linux/pagemap.h>
+--- a/fs/anon_inodes.c
++++ b/fs/anon_inodes.c
+@@ -8,8 +8,10 @@
+  *
+  */
+ 
++#include <linux/cred.h>
+ #include <linux/file.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/fs.h>
+--- a/fs/coda/psdev.c
++++ b/fs/coda/psdev.c
+@@ -22,6 +22,7 @@
+ #include <linux/kernel.h>
+ #include <linux/major.h>
+ #include <linux/time.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/ioport.h>
+ #include <linux/fcntl.h>
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/syscalls.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
+--- a/include/linux/poll.h
++++ b/include/linux/poll.h
+@@ -6,10 +6,10 @@
+ #ifdef __KERNEL__
+ 
+ #include <linux/compiler.h>
++#include <linux/ktime.h>
+ #include <linux/wait.h>
+ #include <linux/string.h>
+ #include <linux/fs.h>
+-#include <linux/sched.h>
+ #include <asm/uaccess.h>
+ 
+ /* ~832 bytes of stack space used max in sys_select/sys_poll before allocating
+--- a/net/rfkill/core.c
++++ b/net/rfkill/core.c
+@@ -27,6 +27,7 @@
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ #include <linux/rfkill.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/miscdevice.h>
+ #include <linux/wait.h>
