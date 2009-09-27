@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbZI0UZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZI0U7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbZI0UZs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 16:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZI0UZs
+	id S1752708AbZI0U7S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 16:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZI0U7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 16:25:48 -0400
-Received: from bamako.nerim.net ([62.4.17.28]:53292 "EHLO bamako.nerim.net"
+	Sun, 27 Sep 2009 16:59:18 -0400
+Received: from kroah.org ([198.145.64.141]:53359 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbZI0UZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 16:25:47 -0400
-Date: Sun, 27 Sep 2009 22:25:48 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux I2C <linux-i2c@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] More i2c updates for 2.6.32
-Message-ID: <20090927222548.3afe3aab@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752276AbZI0U7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 16:59:17 -0400
+Date: Sun, 27 Sep 2009 13:53:48 -0700
+From: Greg KH <greg@kroah.com>
+To: Joe Perches <joe@perches.com>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/3] lib/vsprintf.c: Add %pU - ptr to a UUID/GUID
+Message-ID: <20090927205348.GA32464@kroah.com>
+References: <cover.1254030722.git.joe@perches.com>
+ <1507728e0ea3deafa71c481d508a6e9765c92221.1254030722.git.joe@perches.com>
+ <200909271245.34000.ioe-lkml@rameria.de>
+ <1254078046.28232.183.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254078046.28232.183.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sun, Sep 27, 2009 at 12:00:46PM -0700, Joe Perches wrote:
+> On Sun, 2009-09-27 at 12:45 +0200, Ingo Oeser wrote:
+> > Hi Joe,
+> 
+> Hello Ingo.
+> 
+> > On Sunday 27 September 2009, Joe Perches wrote:
+> > > UUID/GUIDs are somewhat common in kernel source.
+> > > Standardize the printed style of UUID/GUIDs by using
+> > > another extension to %p.
+> > > %pU:    01020304:0506:0708:090a:0b0c0d0e0f10
+> > > %pUr:   04030201:0605:0807:0a09:0b0c0d0e0f10
+> > Code does "01020304-0506-0708-090a-0b0c0d0e0f10".
+> > This is not, what commit promises. Please change the commit message!
+> 
+> True enough, that can change, no worries.
+> 
+> Does anyone have comments like:
+> 
+> 1 what a stupid idea
+> 2 how unnecessary
+> 3 meh
+> 4 bloat alert! linux is supposed to be lean
+> 5 ok idea, bad implementation
+> 6 sure, why not
 
-Please pull some more i2c subsystem updates for Linux 2.6.32 from:
+Sure, why not :)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git i2c-for-linus
-
-These are mainly cleanups removing obsolete code from random i2c
-drivers, and moving documentation files where they belong.
-
- Documentation/hwmon/ltc4215                       |    7 +-
- Documentation/hwmon/ltc4245                       |    7 +-
- Documentation/{i2c/chips => misc-devices}/eeprom  |    0
- Documentation/{i2c/chips => misc-devices}/max6875 |    6 +-
- Documentation/w1/masters/ds2482                   |    6 +-
- drivers/hwmon/ltc4215.c                           |   47 +-------
- drivers/hwmon/ltc4245.c                           |  131 +--------------------
- drivers/leds/leds-pca9532.c                       |    3 -
- drivers/mfd/ab3100-core.c                         |    4 +-
- drivers/misc/eeprom/max6875.c                     |   29 +----
- drivers/staging/iio/light/tsl2561.c               |    4 -
- drivers/w1/masters/ds2482.c                       |   35 +-----
- 12 files changed, 36 insertions(+), 243 deletions(-)
- rename Documentation/{i2c/chips => misc-devices}/eeprom (100%)
- rename Documentation/{i2c/chips => misc-devices}/max6875 (94%)
-
----------------
-
-Jean Delvare (7):
-      i2c: Move misc devices documentation
-      max6875: Discard obsolete detect method
-      ds2482: Discard obsolete detect method
-      ltc4215/ltc4245: Discard obsolete detect methods
-      leds: leds-pca9532 - Drop unused module parameters
-      Staging: IIO: tsl2561: Drop unused module parameters
-      mfd: AB3100 drop unused module parameters
-
-Thanks,
--- 
-Jean Delvare
