@@ -1,100 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZI0CCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZI0COx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbZI0CCo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Sep 2009 22:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZI0CCo
+	id S1753235AbZI0COx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Sep 2009 22:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZI0COw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Sep 2009 22:02:44 -0400
-Received: from mga14.intel.com ([143.182.124.37]:9094 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753160AbZI0CCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Sep 2009 22:02:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,459,1249282800"; 
-   d="scan'208";a="192082681"
-Date: Sun, 27 Sep 2009 10:02:34 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jan Kara <jack@suse.cz>,
-       Theodore Tso <tytso@mit.edu>, Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/6] writeback: don't delay inodes redirtied by a fast
-	dirtier
-Message-ID: <20090927020233.GA10318@localhost>
-References: <20090923123337.990689487@intel.com> <20090923124028.060887241@intel.com> <20090926194747.GA1593@infradead.org>
+	Sat, 26 Sep 2009 22:14:52 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:61733 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753169AbZI0COv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Sep 2009 22:14:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vbwjFm6PUQMl5440o45yf46cYaIpe2pvhTE+emMN8E5AbQEoKOJKEniF1CysUOy7ix
+         Gz0VpMQIJLNOTjVpZwMkhYOL54zNaMP3v0TvQh+YfG7F8RutMon9QrDbaLDEVly+iHQf
+         sDxiJ/Q4ClprOxUiKsy6qXuwSsEku4qyLPv2w=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090926194747.GA1593@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <871vluc5wi.fsf@spindle.srvr.nix>
+References: <871vluc5wi.fsf@spindle.srvr.nix>
+Date: Sat, 26 Sep 2009 19:14:55 -0700
+Message-ID: <5f2db9d90909261914l3a927f4cya1dc5e4548688bce@mail.gmail.com>
+Subject: Re: 2.6.31 regression: e1000e jumbo frames no longer work: 
+	'Unsupported MTU setting'
+From: Alexander Duyck <alexander.duyck@gmail.com>
+To: Nix <nix@esperi.org.uk>
+Cc: e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>, bruce.w.allan@intel.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 27, 2009 at 03:47:47AM +0800, Christoph Hellwig wrote:
-> On Wed, Sep 23, 2009 at 08:33:43PM +0800, Wu Fengguang wrote:
-> > So let's distinguish between data redirty and metadata only redirty.
-> > The first one is caused by a busy dirtier, while the latter one could
-> > happen in XFS, NFS, etc. when they are doing delalloc or updating isize.
-> 
-> Btw, I'm not sure the existing and preserved behaviour for that case
-> is good.  In the worst case the inode writeout gets delayed by another
-> 30 seconds, doubling the window until a file is on disk if it was
-> extended.
+On Sat, Sep 26, 2009 at 4:16 AM, Nix <nix@esperi.org.uk> wrote:
+> [Bruce, you have changes in net-next in this area, so you might have a clue
+>  what's going on here.]
+>
+> In 2.6.30.x, I was happily bringing up the 82574L cards in one server like
+> this:
+>
+> ip link set fastnet up mtu 7200
+>
+> As of 2.6.31.x, what I see is this:
+>
+> spindle:/root# ip link set mtu 7200 dev fastnet
+> RTNETLINK answers: Invalid argument
+> [ 3380.261796] 0000:02:00.0: fastnet: Unsupported MTU setting
+>
+> As far as I can tell, all MTUs above 1500 now fail.
+>
+> 'Unsupported' or not, this used to work, and I'd certainly expect jumbo
+> frames to be supported on a gigabit card!
+>
+> I can't see any terribly relevant changes to e1000e between 2.6.30 and
+> 2.6.31, so I'm Cc:ing netdev on the offchance that this is something
+> more generic (unlikely, as 7200-byte MTUs still work fine in 2.6.31 with
+> the r8169 I'm typing this on, but that doesn't help if half the subnet
+> is forced to use MTUs of 1500).
 
-Yes, the preserved behaviour is not optimal for XFS, but safe.
+It looks like the problem is that the 82574 and 82583 seem to have
+their max_hw_frame_size values swapped.  You might try applying the
+patch below.  I am not sure if it will apply since I hand generated it
+using the git patch that seems to have introduced the problem, and I
+am sending the patch through an untested account that may mangle the
+patch.  I will see about submitting an official patch for this
+sometime next few days.
 
-We could try redirty_tail when there are no remaining
-dirty pages, and only metadata dirtiness. Like this:
+Thanks,
 
----
- fs/fs-writeback.c |   20 +++++++-------------
- 1 file changed, 7 insertions(+), 13 deletions(-)
+Alex
 
---- linux.orig/fs/fs-writeback.c	2009-09-27 09:52:15.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-09-27 09:54:23.000000000 +0800
-@@ -477,18 +477,7 @@ writeback_single_inode(struct inode *ino
- 	spin_lock(&inode_lock);
- 	inode->i_state &= ~I_SYNC;
- 	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
--		if ((inode->i_state & I_DIRTY_PAGES) && wbc->for_kupdate) {
--			/*
--			 * More pages get dirtied by a fast dirtier.
--			 */
--			goto select_queue;
--		} else if (inode->i_state & I_DIRTY) {
--			/*
--			 * At least XFS will redirty the inode during the
--			 * writeback (delalloc) and on io completion (isize).
--			 */
--			redirty_tail(inode);
--		} else if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
-+		if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
- 			/*
- 			 * We didn't write back all the pages.  nfs_writepages()
- 			 * sometimes bales out without doing anything. Redirty
-@@ -510,7 +499,6 @@ writeback_single_inode(struct inode *ino
- 				 * soon as the queue becomes uncongested.
- 				 */
- 				inode->i_state |= I_DIRTY_PAGES;
--select_queue:
- 				if (wbc->nr_to_write <= 0) {
- 					/*
- 					 * slice used up: queue for next turn
-@@ -533,6 +521,12 @@ select_queue:
- 				inode->i_state |= I_DIRTY_PAGES;
- 				redirty_tail(inode);
- 			}
-+		} else if (inode->i_state & I_DIRTY) {
-+			/*
-+			 * At least XFS will redirty the inode during the
-+			 * writeback (delalloc) and on io completion (isize).
-+			 */
-+			redirty_tail(inode);
- 		} else if (atomic_read(&inode->i_count)) {
- 			/*
- 			 * The inode is clean, inuse
+diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
+--- a/drivers/net/e1000e/82571.c
++++ b/drivers/net/e1000e/82571.c
+@@ -1803,7 +1803,7 @@ struct e1000_info e1000_82574_info = {
+ 				  | FLAG_HAS_AMT
+ 				  | FLAG_HAS_CTRLEXT_ON_LOAD,
+ 	.pba			= 20,
+-	.max_hw_frame_size	= ETH_FRAME_LEN + ETH_FCS_LEN,
++	.max_hw_frame_size	= DEFAULT_JUMBO,
+ 	.get_variants		= e1000_get_variants_82571,
+ 	.mac_ops		= &e82571_mac_ops,
+ 	.phy_ops		= &e82_phy_ops_bm,
+@@ -1820,7 +1820,7 @@ struct e1000_info e1000_82583_info = {
+ 				  | FLAG_HAS_AMT
+ 				  | FLAG_HAS_CTRLEXT_ON_LOAD,
+ 	.pba			= 20,
+-	.max_hw_frame_size	= DEFAULT_JUMBO,
++	.max_hw_frame_size	= ETH_FRAME_LEN + ETH_FCS_LEN,
+ 	.get_variants		= e1000_get_variants_82571,
+ 	.mac_ops		= &e82571_mac_ops,
+ 	.phy_ops		= &e82_phy_ops_bm,
