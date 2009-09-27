@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZI0RfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZI0RgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbZI0RfS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 13:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZI0RfS
+	id S1753481AbZI0RgH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 13:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZI0RgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 13:35:18 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57961 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbZI0RfR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 13:35:17 -0400
-Date: Sun, 27 Sep 2009 19:35:16 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       omegamoon@gmail.com, eric.y.miao@gmail.com, utx@penguin.cz,
-       cbou@mail.ru
-Subject: Re: something wrong in drivers/power
-Message-ID: <20090927173516.GB6710@elf.ucw.cz>
-References: <20090926095555.GG1331@ucw.cz> <20090926145536.GA8445@doriath.ww600.siemens.net>
+	Sun, 27 Sep 2009 13:36:06 -0400
+Received: from smtp5-g21.free.fr ([212.27.42.5]:38752 "EHLO smtp5-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752261AbZI0RgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 13:36:06 -0400
+Message-ID: <4ABFA27F.1080100@upmc.fr>
+Date: Sun, 27 Sep 2009 19:35:59 +0200
+From: Bernard Pidoux <bernard.pidoux@upmc.fr>
+Organization: Universite Pierre & Marie Curie - Paris 6
+User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090926145536.GA8445@doriath.ww600.siemens.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: sam@ravnborg.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.31.1 BUG #include <asm/bitsperlong.h>
+References: <4ABF4E36.4090703@upmc.fr>	<4ABF5328.8020901@upmc.fr>	<4ABF5E21.9080104@upmc.fr> <20090927151942.1c6a010a@infradead.org>
+In-Reply-To: <20090927151942.1c6a010a@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-09-26 18:55:36, Dmitry Eremin-Solenikov wrote:
-> On Sat, Sep 26, 2009 at 11:55:55AM +0200, Pavel Machek wrote:
-> > 
-> > Tosa battery driver seems to be confused about its own identity.
+Here is the difference that made my system crazy :
+
+--- /usr/src/linux-2.6.30.6/include/asm-generic/int-ll64.h	2009-06-10 05:05:27.000000000 +0200
++++ /usr/src/linux-2.6.31/include/asm-generic/int-ll64.h	2009-09-27 11:27:02.577804468 +0200
+@@ -8,6 +8,8 @@
+ #ifndef _ASM_GENERIC_INT_LL64_H
+ #define _ASM_GENERIC_INT_LL64_H
+ 
++#include <asm/bitsperlong.h>
++
+ #ifndef __ASSEMBLY__
+ /*
+  * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
+
+So, where are supposed to be the export routines that did not work ?
+
+Bernard
+
+
+> The correct fix is to include the missing bitsperlong in
+> the asm-x86 directory.
+> In other words your kernel headers are broken.
 > 
-> NAK. Please see the drivers/input/touchscree/wm97xx-core.c
-
-Could you elaborate? 
-
-I took a look at touchscreen file, and it does not explain
-anything. Having tosa_battery calling itself wm97xx-battery is at
-least confusing, and there's no explaining comment. Given that we have
-different wm97xx_battery.c driver calling itself "wm97xx-battery"... I
-believe that's a bug.
-
-								Pavel
-
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > diff -ur power.ofic/tosa_battery.c power/tosa_battery.c
-> > --- linux/drivers/power.ofic/tosa_battery.c	2009-09-06 08:56:36.000000000 +0200
-> > +++ linux/drivers/power/tosa_battery.c	2009-09-15 15:14:08.000000000 +0200
-> > @@ -459,7 +459,7 @@
-> >  }
-> >  
-> >  static struct platform_driver tosa_bat_driver = {
-> > -	.driver.name	= "wm97xx-battery",
-> > +	.driver.name	= "tosa-battery",
-> >  	.driver.owner	= THIS_MODULE,
-> >  	.probe		= tosa_bat_probe,
-> >  	.remove		= __devexit_p(tosa_bat_remove),
-> > @@ -483,4 +483,4 @@
-> >  MODULE_LICENSE("GPL");
-> >  MODULE_AUTHOR("Dmitry Baryshkov");
-> >  MODULE_DESCRIPTION("Tosa battery driver");
-> > -MODULE_ALIAS("platform:wm97xx-battery");
-> > +MODULE_ALIAS("platform:tosa-battery");
-> > 
-> > 
-> > -- 
-> > (english) http://www.livejournal.com/~pavelmachek
-> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Looking at latest kernel we do export bitsperlong.h.
+> So see if you can find a fix for your broken kernel headers.
 > 
+> 	Sam
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
