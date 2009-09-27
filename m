@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752242AbZI0NBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbZI0NSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752242AbZI0NBw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 09:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZI0NBv
+	id S1752475AbZI0NSd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 09:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZI0NSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 09:01:51 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:39347 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751420AbZI0NBu (ORCPT
+	Sun, 27 Sep 2009 09:18:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45151 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957AbZI0NSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 09:01:50 -0400
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Tim Abbott <tabbott@ksplice.com>, Roman Zippel <zippel@linux-m68k.org>,
-       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v2 2/2] m68k: Cleanup linker scripts using new linker  script macros.
-References: <1253119466-19488-1-git-send-email-tabbott@ksplice.com>
-	<1253119466-19488-3-git-send-email-tabbott@ksplice.com>
-	<10f740e80909270258o6bde0f3dk720bd5b5c091ed2f@mail.gmail.com>
-X-Yow: The appreciation of the average visual graphisticator alone is worth
- the whole suaveness and decadence which abounds!!
-Date: Sun, 27 Sep 2009 15:01:51 +0200
-In-Reply-To: <10f740e80909270258o6bde0f3dk720bd5b5c091ed2f@mail.gmail.com>
-	(Geert Uytterhoeven's message of "Sun, 27 Sep 2009 11:58:06 +0200")
-Message-ID: <m2ocowwngg.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 27 Sep 2009 09:18:31 -0400
+Date: Sun, 27 Sep 2009 15:18:55 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: [bisected] Wireless regression in 2.6.32-git
+Message-ID: <20090927151855.29efcc53@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+Hi,
 
-> On Wed, Sep 16, 2009 at 18:44, Tim Abbott <tabbott@ksplice.com> wrote:
->> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
->> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
->> Cc: Roman Zippel <zippel@linux-m68k.org>
->> Cc: linux-m68k@lists.linux-m68k.org
->> Cc: Sam Ravnborg <sam@ravnborg.org>
->
-> This patch must do something wrong, as it now fails to boot on ARAnyM:
->
-> | CPU: Double bus fault detected !
-> | CPU: Halting
->
-> Haven't investigated why yet, though...
+With todays git my laptop fails to associate with my access point.
+Bisection points to the commit below, and reverting this one commit on
+the HEAD of tree also fixes the issue, so I'm pretty confident that this
+commit is to blame.
 
-The problem is that _end no longer matches the end of the load segment.
-Previously, the .data.init_task section was the last allocated item in
-the linker script, now the last item is an align.  This align does not
-affect the memsize of the segment.  The startup code expects the boot
-info to be placed at _end, but the boot loader puts it at the end of the
-load segment, which is the best it can do.
+I have a 4965 wifi card in my laptop, and the network I'm trying to
+connect to has no encryption. I'm running Fedora 11 as OS.
 
-Andreas.
+I would like to kindly request for this commit to be reverted until a
+more permanent solution is found (I'm happy to test any patches)..
+
+
+
+
+94f85853324e02c3a32bc3101f090dc9a3f512b4 is first bad commit
+commit 94f85853324e02c3a32bc3101f090dc9a3f512b4
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Thu Sep 17 17:15:31 2009 -0700
+
+    cfg80211: don't overwrite privacy setting
+    
+    When cfg80211 is instructed to connect, it always
+    uses the default WEP key for the privacy setting,
+    which clearly is wrong when using wpa_supplicant.
+    Don't overwrite the setting, and rely on it being
+    false when wpa_supplicant is not running, instead
+    set it to true when we have keys.
+    
+    Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
+
+:040000 040000 27fb46273e88eefee373699eb7e3f2923ac0886b
+9518ee3e52c8320613cc5eee5ac54aabf082432f M	net
 
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
