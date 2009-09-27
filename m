@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbZI0MoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592AbZI0MsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752161AbZI0MoX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 08:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZI0MoW
+	id S1752592AbZI0MsV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 08:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZI0MsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 08:44:22 -0400
-Received: from smtp5-g21.free.fr ([212.27.42.5]:50589 "EHLO smtp5-g21.free.fr"
+	Sun, 27 Sep 2009 08:48:20 -0400
+Received: from gold.linx.net ([195.66.232.40]:33478 "EHLO gold.linx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750999AbZI0MoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 08:44:22 -0400
-Message-ID: <4ABF5E21.9080104@upmc.fr>
-Date: Sun, 27 Sep 2009 14:44:17 +0200
-From: Bernard Pidoux <bernard.pidoux@upmc.fr>
-Organization: Universite Pierre & Marie Curie - Paris 6
-User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31.1 BUG #include <asm/bitsperlong.h>
-References: <4ABF4E36.4090703@upmc.fr> <4ABF5328.8020901@upmc.fr>
-In-Reply-To: <4ABF5328.8020901@upmc.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751904AbZI0MsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 08:48:19 -0400
+Subject: 2.6.31-09194-g0d9df25 Early boot exception
+From: Tony Vroon <tony@linx.net>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <4ABAC2F1.3020302@kernel.org>
+References: <4ABAC2F1.3020302@kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MdU56WineQCaNVDcVhXA"
+Organization: London Internet Exchange (LINX; AS5459)
+Date: Sun, 27 Sep 2009 13:49:57 +0100
+Message-Id: <1254055797.2756.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I downloaded again linux-2.6.31.1.tar.bz2 and unpacked it.
 
-ll /usr/src/linux-2.6.31.1/include/
-total 128
-drwxrwxr-x   3 root root  4096 2009-09-24 17:45 acpi/
-lrwxrwxrwx   1 root root     7 2009-09-27 14:34 asm -> asm-x86/
-drwxrwxr-x   3 root root  4096 2009-09-24 17:45 asm-generic/
-drwxr-xr-x   2 root root  4096 2009-09-27 14:34 asm-x86/
+--=-MdU56WineQCaNVDcVhXA
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-and
+On Thu, 2009-09-24 at 09:53 +0900, Tejun Heo wrote:
+> Add PCPU_SETUP_BUG() macro which prints out enough information about
+> the parameters.  As the macro still puts separate BUG() for each
+> check, it won't lose any information even on the situations where only
+> the program counter can be retrieved.
 
-ll /usr/src/linux-2.6.31.1/include/asm/
-total 8
--rw-r--r-- 1 root root 4890 2009-09-27 14:34 asm-offsets.h
+On Thu, 2009-09-24 at 21:49 +0900, Tejun Heo wrote:
+> Warn and dump stack when percpu allocation fails.
 
-So, I think that the kernel header problem is in the linux package, not in
-my system installation.
+Thank you Tejun, both patches applied, more information is now visible:
 
-Bernard Pidoux
+ACPI: INT_SRC_OVR (bus 0 bus_irq 15 global_irq 15 high edge)
+Using ACPI (MADT) for SMP configuration information
+ACPI: HPET id: 0x10de8201 base: 0xfed00000
+SMP: allowing 12 CPUs, 0 hotplug CPUs
+Allocating PCI resources starting at b00000000 (gap: b0000000:30000000)
+NR_CPUS: 12 nr_cpumask_bits:12 nr_cpu_ids:12 nr_node_ids:2
+PERCPU: Embedded 23 pages/cpu @ffff880028200000 s73176 r0 d21032 u262144
+PERCPU: failed to initialize, unit_map[cpu] =3D=3D NR_CPUS
+PERCPU: cpu_possible_mask=3Dfff
+pcpu-alloc: s73176 r0 d21032 u262144 alloc=3D1*2097152
+pcpu-alloc: [0] 00 01 02 03 04 05 -- -- [1] 06 07 08 09 10 11 -- --
+PANIC: early exception 06 rip 10:ffffffff81597feb error 0 cr2 d0fff6
+Pid: 0, comm: swapper Not tainted 2.6.31-09194-g0d9df25-dirty #1
+Call Trace:
+ [<ffffffff81582195>] early_idt_handler+0x55/0x68
+ [<ffffffff81597feb>] ? pcpu_setup_first_chunk+0x472/0x769
+ [<ffffffff81597feb>] ? pcpu_setup_first_chunk+0x472/0x769
+ [<ffffffff815987e8>] pcpu_embed_first_chunk+0x1e2/0x241
+ [<ffffffff8158b51d>] ? pcpu_fc_alloc+0x0/0xac
+ [<ffffffff8158b4fe>] ? pcpu_fc_free+0x0/0x1f
+ [<ffffffff8158b33f>] setup_per_cpu_areas+0x65/0x219
+ [<ffffffff815829df>] start_kernel+0x124/0x2c5
+ [<ffffffff81582272>] x86_64_start_reservations+0x82/0x86
+ [<ffffffff8158235a>] x86_64_start_kernel+0xe4/0xeb
+RIP pcpu_setup_first_chunk+0x472/0x769
 
+If you would like the vmlinux image again, let me know.
 
+Regards,
+Tony V.
 
-On Sun, Sep 27, 2009 at 01:16:41PM +0200, Bernard Pidoux wrote:
-> The problem is that when I compile an application that never caused any 
-> problem before I get an error due to incorrect reference to 
-> <asm/bitsperlong>
->
-> This was due to int-ll64.h including <asm/bitsperlong.h> which does not exists.
->
-> Is the correct solution to replace symbolic link ?
->
-> /usr/src/linux/include/asm->asm-x86
->
-> by
->
-> /usr/src/linux/include/asm->asm-generic
+--=-MdU56WineQCaNVDcVhXA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-The correct fix is to include the missing bitsperlong in
-the asm-x86 directory.
-In other words your kernel headers are broken.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-Looking at latest kernel we do export bitsperlong.h.
-So see if you can find a fix for your broken kernel headers.
+iEYEABECAAYFAkq/X3UACgkQp5vW4rUFj5r/CQCfd4zKDdspnDU+uQ02a1c7FeAo
+hVEAn2pZ/YursfAZed4/RGcIjDlKIHEt
+=NVan
+-----END PGP SIGNATURE-----
 
-	Sam
+--=-MdU56WineQCaNVDcVhXA--
 
