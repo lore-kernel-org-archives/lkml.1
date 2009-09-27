@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbZI0PMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbZI0Pb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753159AbZI0PMr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 11:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZI0PMq
+	id S1753295AbZI0Pb3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 11:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZI0Pb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 11:12:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60203 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752967AbZI0PMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 11:12:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Martin Wache <m.wache@gmx.net>
-Subject: Re: Status of Regression/Bug 13407 adb trackpad disappears after suspend to ram?
-Date: Sun, 27 Sep 2009 17:13:44 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <4ABF5432.9020508@gmx.net>
-In-Reply-To: <4ABF5432.9020508@gmx.net>
+	Sun, 27 Sep 2009 11:31:28 -0400
+Received: from relay2-v.mail.gandi.net ([217.70.178.76]:59926 "EHLO
+	relay2-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753110AbZI0Pb2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 11:31:28 -0400
+Date: Sun, 27 Sep 2009 08:31:08 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 2/2] rcu: Apply review feedback from Josh
+ Triplett, part 4
+Message-ID: <20090927153107.GA2445@feather>
+References: <20090927064753.GA9394@linux.vnet.ibm.com>
+ <1254034191918-git-send-email->
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909271713.44719.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254034191918-git-send-email->
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 27 September 2009, Martin Wache wrote:
-> Hi all,
+On Sat, Sep 26, 2009 at 11:49:51PM -0700, Paul E. McKenney wrote:
+> These issues identified during an old-fashioned face-to-face code
+> review extending over many hours.  This group improves an existing
+> abstraction and introduces two new ones.
 > 
-> I'd like to ask if there is any news on the bug 13407
+> o	Make RCU_INIT_FLAVOR() declare its own variables, removing
+> 	the need to declare them at each call site.
 > 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13407
+> o	Create an rcu_for_each_leaf() macro that scans the leaf nodes
+> 	of the rcu_node tree.
 > 
-> The status of the bugreport is "NEEDINFO", I'm also hit by this bug, 
-> using 2.6.31 on an iBook G4. Can I help in anyway to get this bug fixed? 
-> I'm happy to provide any info I can, if there is need for more info. I 
-> would also try patches if that helps.
+> o	Create an rcu_for_each_node_breadth_first() macro that does
+> 	a breadth-first traversal of the rcu_node tree, AKA stepping
+> 	through the array in index-number order.
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-A patch has been submitted which is reported to fix the issue:
+I noticed one bit of unrelated code in this patch, which the commit
+message doesn't mention:
 
-http://patchwork.kernel.org/patch/49462/
+> --- a/kernel/rcutree.c
+> +++ b/kernel/rcutree.c
+[...]
+> @@ -473,18 +471,24 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
+>  		return;
+>  	}
+>  	rsp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
+> +
+> +	/*
+> +	 * Now rat on any tasks that got kicked up to the root rcu_node
+> +	 * due to CPU offlining.
+> +	 */
+> +	rcu_print_task_stall(rnp);
+>  	spin_unlock_irqrestore(&rnp->lock, flags);
 
-Please test it as requested.
-
-Best,
-Rafael
+- Josh Triplett
