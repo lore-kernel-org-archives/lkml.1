@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZI0U7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZI0U73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752708AbZI0U7S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 16:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZI0U7S
+	id S1752842AbZI0U73 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 16:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZI0U72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 16:59:18 -0400
-Received: from kroah.org ([198.145.64.141]:53359 "EHLO coco.kroah.org"
+	Sun, 27 Sep 2009 16:59:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39611 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752276AbZI0U7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 16:59:17 -0400
-Date: Sun, 27 Sep 2009 13:53:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Joe Perches <joe@perches.com>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/3] lib/vsprintf.c: Add %pU - ptr to a UUID/GUID
-Message-ID: <20090927205348.GA32464@kroah.com>
-References: <cover.1254030722.git.joe@perches.com>
- <1507728e0ea3deafa71c481d508a6e9765c92221.1254030722.git.joe@perches.com>
- <200909271245.34000.ioe-lkml@rameria.de>
- <1254078046.28232.183.camel@Joe-Laptop.home>
+	id S1752748AbZI0U70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 16:59:26 -0400
+Date: Sun, 27 Sep 2009 13:59:00 -0700
+From: Greg KH <gregkh@suse.de>
+To: Sven Joachim <svenjoac@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
+Subject: Re: Linux 2.6.31.1
+Message-ID: <20090927205900.GA32554@suse.de>
+References: <20090924174002.GE17077@kroah.com>
+ <87pr9egqpc.fsf@turtle.gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1254078046.28232.183.camel@Joe-Laptop.home>
+In-Reply-To: <87pr9egqpc.fsf@turtle.gmx.de>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 27, 2009 at 12:00:46PM -0700, Joe Perches wrote:
-> On Sun, 2009-09-27 at 12:45 +0200, Ingo Oeser wrote:
-> > Hi Joe,
+On Sat, Sep 26, 2009 at 08:33:51AM +0200, Sven Joachim wrote:
+> On 2009-09-24 19:40 +0200, Greg KH wrote:
 > 
-> Hello Ingo.
+> > I'm announcing the release of the 2.6.31.1 kernel.  All users of the
+> > 2.6.31 kernel series are very strongly encouraged to upgrade.
 > 
-> > On Sunday 27 September 2009, Joe Perches wrote:
-> > > UUID/GUIDs are somewhat common in kernel source.
-> > > Standardize the printed style of UUID/GUIDs by using
-> > > another extension to %p.
-> > > %pU:    01020304:0506:0708:090a:0b0c0d0e0f10
-> > > %pUr:   04030201:0605:0807:0a09:0b0c0d0e0f10
-> > Code does "01020304-0506-0708-090a-0b0c0d0e0f10".
-> > This is not, what commit promises. Please change the commit message!
+> Stable kernel releases used to be announced on
+> linux-kernel-announce@hera.kernel.org, but apparently they are not any
+> more; the last version announced there was 2.6.30.5.
 > 
-> True enough, that can change, no worries.
-> 
-> Does anyone have comments like:
-> 
-> 1 what a stupid idea
-> 2 how unnecessary
-> 3 meh
-> 4 bloat alert! linux is supposed to be lean
-> 5 ok idea, bad implementation
-> 6 sure, why not
+> Is there an easy way to get informed about new stable kernel releases
+> without having to subscribe to high-volume mailing lists or to poll a 
+> website?
 
-Sure, why not :)
+linux-kernel-announce should work, perhaps something recently broke when
+the backend kernel-org stuff was changed.  Try pinging the kernel.org
+admins about this.
 
+thanks,
+
+greg k-h
