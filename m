@@ -1,21 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbZI0NSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZI0NTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752475AbZI0NSd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 09:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZI0NSc
+	id S1752570AbZI0NTT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 09:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZI0NTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 09:18:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45151 "EHLO
+	Sun, 27 Sep 2009 09:19:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45159 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbZI0NSb (ORCPT
+	with ESMTP id S1751936AbZI0NTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 09:18:31 -0400
-Date: Sun, 27 Sep 2009 15:18:55 +0200
+	Sun, 27 Sep 2009 09:19:18 -0400
+Date: Sun, 27 Sep 2009 15:19:42 +0200
 From: Arjan van de Ven <arjan@infradead.org>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: [bisected] Wireless regression in 2.6.32-git
-Message-ID: <20090927151855.29efcc53@infradead.org>
+To: Bernard Pidoux <bernard.pidoux@upmc.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.31.1 BUG #include <asm/bitsperlong.h>
+Message-ID: <20090927151942.1c6a010a@infradead.org>
+In-Reply-To: <4ABF5E21.9080104@upmc.fr>
+References: <4ABF4E36.4090703@upmc.fr>
+	<4ABF5328.8020901@upmc.fr>
+	<4ABF5E21.9080104@upmc.fr>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -27,41 +31,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 27 Sep 2009 14:44:17 +0200
+Bernard Pidoux <bernard.pidoux@upmc.fr> wrote:
 
-With todays git my laptop fails to associate with my access point.
-Bisection points to the commit below, and reverting this one commit on
-the HEAD of tree also fixes the issue, so I'm pretty confident that this
-commit is to blame.
+> I downloaded again linux-2.6.31.1.tar.bz2 and unpacked it.
+> 
+> ll /usr/src/linux-2.6.31.1/include/
+> total 128
+> drwxrwxr-x   3 root root  4096 2009-09-24 17:45 acpi/
+> lrwxrwxrwx   1 root root     7 2009-09-27 14:34 asm -> asm-x86/
+> drwxrwxr-x   3 root root  4096 2009-09-24 17:45 asm-generic/
+> drwxr-xr-x   2 root root  4096 2009-09-27 14:34 asm-x86/
+> 
+> and
+> 
+> ll /usr/src/linux-2.6.31.1/include/asm/
+> total 8
+> -rw-r--r-- 1 root root 4890 2009-09-27 14:34 asm-offsets.h
+> 
+> So, I think that the kernel header problem is in the linux package,
+> not in my system installation.
 
-I have a 4965 wifi card in my laptop, and the network I'm trying to
-connect to has no encryption. I'm running Fedora 11 as OS.
+do not count until you have done "make headers_install"... there is
+magic there that fixes up a bunch of things.
+.
 
-I would like to kindly request for this commit to be reverted until a
-more permanent solution is found (I'm happy to test any patches)..
-
-
-
-
-94f85853324e02c3a32bc3101f090dc9a3f512b4 is first bad commit
-commit 94f85853324e02c3a32bc3101f090dc9a3f512b4
-Author: Johannes Berg <johannes@sipsolutions.net>
-Date:   Thu Sep 17 17:15:31 2009 -0700
-
-    cfg80211: don't overwrite privacy setting
-    
-    When cfg80211 is instructed to connect, it always
-    uses the default WEP key for the privacy setting,
-    which clearly is wrong when using wpa_supplicant.
-    Don't overwrite the setting, and rely on it being
-    false when wpa_supplicant is not running, instead
-    set it to true when we have keys.
-    
-    Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-    Signed-off-by: John W. Linville <linville@tuxdriver.com>
-
-:040000 040000 27fb46273e88eefee373699eb7e3f2923ac0886b
-9518ee3e52c8320613cc5eee5ac54aabf082432f M	net
 
 -- 
 Arjan van de Ven 	Intel Open Source Technology Centre
