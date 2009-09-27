@@ -1,83 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZI0Rtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751533AbZI0R6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751432AbZI0Rtd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 13:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZI0Rtc
+	id S1751533AbZI0R6Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 13:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZI0R6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 13:49:32 -0400
-Received: from smtp-01.mandic.com.br ([200.225.81.132]:39725 "EHLO
-	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbZI0Rtb (ORCPT
+	Sun, 27 Sep 2009 13:58:22 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:52221 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751071AbZI0R6V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 13:49:31 -0400
-Message-ID: <4ABFA583.6030908@cesarb.net>
-Date: Sun, 27 Sep 2009 14:48:51 -0300
-From: Cesar Eduardo Barros <cesarb@cesarb.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 27 Sep 2009 13:58:21 -0400
+Date: Sun, 27 Sep 2009 13:57:55 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Andreas Schwab <schwab@linux-m68k.org>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH v2 2/2] m68k: Cleanup linker scripts using new linker 
+ script macros.
+In-Reply-To: <m2ocowwngg.fsf@igel.home>
+Message-ID: <alpine.DEB.1.10.0909271351110.14151@dr-wily.mit.edu>
+References: <1253119466-19488-1-git-send-email-tabbott@ksplice.com> <1253119466-19488-3-git-send-email-tabbott@ksplice.com> <10f740e80909270258o6bde0f3dk720bd5b5c091ed2f@mail.gmail.com> <m2ocowwngg.fsf@igel.home>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: Re: [PATCH] WARN_ONCE(): use bool for boolean flag
-References: <1254059590-31690-1-git-send-email-cesarb@cesarb.net>	 <1254060189.20648.462.camel@desktop>  <4ABF8B30.5050801@cesarb.net>	 <1254070336.20648.518.camel@desktop>  <4ABF9FB4.6040608@cesarb.net> <1254072760.20648.524.camel@desktop>
-In-Reply-To: <1254072760.20648.524.camel@desktop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker escreveu:
-> On Sun, 2009-09-27 at 14:24 -0300, Cesar Eduardo Barros wrote:
+On Sun, 27 Sep 2009, Andreas Schwab wrote:
+
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
 > 
->> I took a quick look, and all uses seem to be directly in a boolean 
->> context (within an if()), so there would be no problem. Besides, the 
->> unlikely() all these macros end with does a double negation, meaning 
->> even if it is an int, it will be either 0 or 1 (but I am not sure I am 
->> reading these macros right - it seems CONFIG_TRACE_BRANCH_PROFILING 
->> turns all unlikely() into likely()).
->>
->> In fact, I was expecting no change at all, since gcc should be able to 
->> see it is being treated as a boolean (perhaps I am trusting gcc too 
->> much). And to make matters even more confusing, my own test changing all 
->> __ret_warn_once to bool and dropping the !! caused an _increase_ of 598 
->> bytes (x86-64 defconfig).
->>
->>     text    data     bss     dec     hex filename
->> 8100553 1207148  991988 10299689         9d2929 vmlinux.warnret.before
->> 8101119 1207180  991988 10300287         9d2b7f vmlinux.warnret.after
->>
->> (And yes, data increased again.)
+> > On Wed, Sep 16, 2009 at 18:44, Tim Abbott <tabbott@ksplice.com> wrote:
+> >> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> >> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> >> Cc: Roman Zippel <zippel@linux-m68k.org>
+> >> Cc: linux-m68k@lists.linux-m68k.org
+> >> Cc: Sam Ravnborg <sam@ravnborg.org>
+> >
+> > This patch must do something wrong, as it now fails to boot on ARAnyM:
+> >
+> > | CPU: Double bus fault detected !
+> > | CPU: Halting
+> >
+> > Haven't investigated why yet, though...
 > 
-> Did you have the CONFIG_TRACE_BRANCH_PROFILING option enabled for the
-> test above?
+> The problem is that _end no longer matches the end of the load segment.
+> Previously, the .data.init_task section was the last allocated item in
+> the linker script, now the last item is an align.  This align does not
+> affect the memsize of the segment.  The startup code expects the boot
+> info to be placed at _end, but the boot loader puts it at the end of the
+> load segment, which is the best it can do.
 
-CONFIG_BRANCH_PROFILE_NONE=y
+Below is a new version of the second patch that attempts to address this 
+by putting the ALIGN inside a section, so that _end is at the end of the 
+load segment (I also did a bit more cleanup):
 
-CONFIG_TRACE_BRANCH_PROFILING does not even appear in the .config.
+  .init_end : {
+	/* This ALIGN be in a section so that _end is at the end of the
+	   load segment. */
+	. = ALIGN(PAGE_SIZE);
+	__init_end = .;
+  }
+  
+  _end = .;
 
-> If this was just your regular base line config , then that is odd .. I
-> also would think worse case would be no size reduction .. I did my
-> compile test on x86-32 btw..
+	-Tim Abbott
 
-Yes, it is very odd. And I tried compiling a small test module to see if 
-I could see the changes in the assembly output:
+m68k: Cleanup linker scripts using new linker script macros.
 
-#include <linux/module.h>
-#include <linux/kernel.h>
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-m68k@lists.linux-m68k.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/m68k/kernel/vmlinux-std.lds  |   61 ++++++++-----------------------------
+ arch/m68k/kernel/vmlinux-sun3.lds |   54 ++++----------------------------
+ 2 files changed, 20 insertions(+), 95 deletions(-)
 
-void test(int value)
-{
-         WARN_ON_ONCE(value);
-}
-EXPORT_SYMBOL_GPL(test);
-
-But the assembly output is identical.
-
-I will try looking at the first function which shows a difference in 
-size (which appears to be handle_irq) and see what I can find.
-
+diff --git a/arch/m68k/kernel/vmlinux-std.lds b/arch/m68k/kernel/vmlinux-std.lds
+index 47eac19..878be5f 100644
+--- a/arch/m68k/kernel/vmlinux-std.lds
++++ b/arch/m68k/kernel/vmlinux-std.lds
+@@ -2,6 +2,7 @@
+ 
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/page.h>
++#include <asm/thread_info.h>
+ 
+ OUTPUT_FORMAT("elf32-m68k", "elf32-m68k", "elf32-m68k")
+ OUTPUT_ARCH(m68k)
+@@ -22,73 +23,37 @@ SECTIONS
+ 
+   _etext = .;			/* End of text section */
+ 
+-  . = ALIGN(16);		/* Exception table */
+-  __start___ex_table = .;
+-  __ex_table : { *(__ex_table) }
+-  __stop___ex_table = .;
++  EXCEPTION_TABLE(16)
+ 
+   RODATA
+ 
+-  .data : {			/* Data */
+-	DATA_DATA
+-	CONSTRUCTORS
+-	}
++  RW_DATA_SECTION(16, PAGE_SIZE, THREAD_SIZE)
+ 
+-  . = ALIGN(16);
+-  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
+-
+-  .bss : { *(.bss) }		/* BSS */
++  BSS_SECTION(0, 0, 0)
+ 
+   _edata = .;			/* End of data section */
+ 
+   /* will be freed after init */
+   . = ALIGN(PAGE_SIZE);		/* Init code and data */
+   __init_begin = .;
+-  .init.text : {
+-	_sinittext = .;
+-	INIT_TEXT
+-	_einittext = .;
+-  } :data
+-  .init.data : { INIT_DATA }
+-  . = ALIGN(16);
+-  __setup_start = .;
+-  .init.setup : { *(.init.setup) }
+-  __setup_end = .;
+-  __initcall_start = .;
+-  .initcall.init : {
+-	INITCALLS
+-  }
+-  __initcall_end = .;
+-  __con_initcall_start = .;
+-  .con_initcall.init : { *(.con_initcall.init) }
+-  __con_initcall_end = .;
++  INIT_TEXT_SECTION(PAGE_SIZE) :data
++  INIT_DATA_SECTION(16)
+   .m68k_fixup : {
+ 	__start_fixup = .;
+ 	*(.m68k_fixup)
+ 	__stop_fixup = .;
+   }
+-  SECURITY_INIT
+-#ifdef CONFIG_BLK_DEV_INITRD
+-  . = ALIGN(8192);
+-  __initramfs_start = .;
+-  .init.ramfs : { *(.init.ramfs) }
+-  __initramfs_end = .;
+-#endif
+   NOTES
+-  . = ALIGN(8192);
+-  __init_end = .;
+-
+-  .data.init_task : { *(.data.init_task) }	/* The initial task and kernel stack */
++  .init_end : {
++	/* This ALIGN be in a section so that _end is at the end of the
++	   load segment. */
++	. = ALIGN(PAGE_SIZE);
++	__init_end = .;
++  }
+ 
+   _end = . ;
+ 
+-  /* Stabs debugging sections.  */
+-  .stab 0 : { *(.stab) }
+-  .stabstr 0 : { *(.stabstr) }
+-  .stab.excl 0 : { *(.stab.excl) }
+-  .stab.exclstr 0 : { *(.stab.exclstr) }
+-  .stab.index 0 : { *(.stab.index) }
+-  .stab.indexstr 0 : { *(.stab.indexstr) }
++  STABS_DEBUG
+   .comment 0 : { *(.comment) }
+ 
+   /* Sections to be discarded */
+diff --git a/arch/m68k/kernel/vmlinux-sun3.lds b/arch/m68k/kernel/vmlinux-sun3.lds
+index 03efaf0..1ad6b7a 100644
+--- a/arch/m68k/kernel/vmlinux-sun3.lds
++++ b/arch/m68k/kernel/vmlinux-sun3.lds
+@@ -2,6 +2,7 @@
+ 
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/page.h>
++#include <asm/thread_info.h>
+ 
+ OUTPUT_FORMAT("elf32-m68k", "elf32-m68k", "elf32-m68k")
+ OUTPUT_ARCH(m68k)
+@@ -23,14 +24,8 @@ SECTIONS
+ 
+   _etext = .;			/* End of text section */
+ 
+-  .data : {			/* Data */
+-	DATA_DATA
+-	CONSTRUCTORS
+-	. = ALIGN(16);		/* Exception table */
+-	__start___ex_table = .;
+-	*(__ex_table)
+-	__stop___ex_table = .;
+-	} :data
++  EXCEPTION_TABLE(16) :data
++  RW_DATA_SECTION(16, PAGE_SIZE, THREAD_SIZE) :data
+   /* End of data goes *here* so that freeing init code works properly. */
+   _edata = .;
+   NOTES
+@@ -38,56 +33,21 @@ SECTIONS
+   /* will be freed after init */
+   . = ALIGN(PAGE_SIZE);	/* Init code and data */
+ __init_begin = .;
+-	.init.text : {
+-		_sinittext = .;
+-		INIT_TEXT
+-		_einittext = .;
+-	}
+-	.init.data : { INIT_DATA }
+-	. = ALIGN(16);
+-	__setup_start = .;
+-	.init.setup : { *(.init.setup) }
+-	__setup_end = .;
+-	__initcall_start = .;
+-	.initcall.init : {
+-		INITCALLS
+-	}
+-	__initcall_end = .;
+-	__con_initcall_start = .;
+-	.con_initcall.init : { *(.con_initcall.init) }
+-	__con_initcall_end = .;
++	INIT_TEXT_SECTION(PAGE_SIZE)
++	INIT_DATA_SECTION(16)
+ 	.m68k_fixup : {
+ 		__start_fixup = .;
+ 		*(.m68k_fixup)
+ 		__stop_fixup = .;
+ 	}
+-	SECURITY_INIT
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	. = ALIGN(PAGE_SIZE);
+-	__initramfs_start = .;
+-	.init.ramfs : { *(.init.ramfs) }
+-	__initramfs_end = .;
+-#endif
+ 	. = ALIGN(PAGE_SIZE);
+ 	__init_end = .;
+-	.data.init.task : { *(.data.init_task) }
+-
+ 
+-  .bss : { *(.bss) }		/* BSS */
++  BSS_SECTION(0, 0, 0)
+ 
+   _end = . ;
+ 
+-  .crap : {
+-	/* Stabs debugging sections.  */
+-	*(.stab)
+-	*(.stabstr)
+-	*(.stab.excl)
+-	*(.stab.exclstr)
+-	*(.stab.index)
+-	*(.stab.indexstr)
+-	*(.comment)
+-	*(.note)
+-  }
++  STABS_DEBUG
+ 
+   /* Sections to be discarded */
+   DISCARDS
 -- 
-Cesar Eduardo Barros
-cesarb@cesarb.net
-cesar.barros@gmail.com
+1.6.3.3
+
