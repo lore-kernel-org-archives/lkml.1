@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZI0IyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZI0Iyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbZI0IyH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 04:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZI0IyG
+	id S1753730AbZI0Iyn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 04:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZI0Iym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 04:54:06 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:16484 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753415AbZI0IyE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 04:54:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vFa/MEwXrTTsTHI45agzLy51Wxi/xfpb7drzzX7IVVgXjvVLzvtqIuyiY4LIuJ3o6m
-         Z5fCBGjdfAFg5KCV1B54UpDiu4gSWDUkSqIt3JtNItus8nrcTjSrw4WAbo2kgHm/RBqA
-         8rryVnn8EiIFksfsmkYNOGJZ5UvBMSSqpqC5E=
-Date: Sun, 27 Sep 2009 12:54:06 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add show_lapic=
-Message-ID: <20090927085406.GB4984@lenovo>
-References: <4ABF0DE0.1030400@kernel.org> <20090927080605.GA4984@lenovo> <4ABF2262.3090905@kernel.org>
+	Sun, 27 Sep 2009 04:54:42 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:52113 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753695AbZI0Iym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 04:54:42 -0400
+Message-ID: <4ABF2851.5090302@redhat.com>
+Date: Sun, 27 Sep 2009 10:54:41 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ABF2262.3090905@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Zachary Amsden <zamsden@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH: kvm 4/5] Fix hotremove of CPUs for KVM.
+References: <20090924151049.GB14102@amt.cnet> <1253839640-12695-1-git-send-email-zamsden@redhat.com> <1253839640-12695-2-git-send-email-zamsden@redhat.com> <1253839640-12695-3-git-send-email-zamsden@redhat.com> <1253839640-12695-4-git-send-email-zamsden@redhat.com> <1253839640-12695-5-git-send-email-zamsden@redhat.com>
+In-Reply-To: <1253839640-12695-5-git-send-email-zamsden@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Yinghai Lu - Sun, Sep 27, 2009 at 01:29:22AM -0700]
-| Cyrill Gorcunov wrote:
-| > [Yinghai Lu - Sun, Sep 27, 2009 at 12:01:52AM -0700]
-| > | 
-| > | so could use that together with apci=debug to print less cpu apic.
-| > | 
-| > | otherwise for system have more cpus will take a while
-| > | 
-| > | also move apic_verbosity check to print_all_ICs
-| > | 
-| > | Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-| > | 
-| > | ---
-| > |  arch/x86/kernel/apic/io_apic.c |   42 ++++++++++++++++++++++++++---------------
-| > |  1 file changed, 27 insertions(+), 15 deletions(-)
-| > ...
-| > 
-| > Hi Yinghai, good idea!
-| > 
-| > I've tuned your patch a bit together with changelog.
-| > 
-| > 1) show_lapic=1 by default does change current kernel behaviour
-| >    so it should be set to max cpu available.
-| 
-| think about system with lots of cpu. but i still want to use apic=debug
+On 09/25/2009 03:47 AM, Zachary Amsden wrote:
+> In the process of bringing down CPUs, the SVM / VMX structures associated
+> with those CPUs are not freed.  This may cause leaks when unloading and
+> reloading the KVM module, as only the structures associated with online
+> CPUs are cleaned up.  So, clean up all possible CPUs, not just online ones.
+>
+> Signed-off-by: Zachary Amsden<zamsden@redhat.com>
+> ---
+>   arch/x86/kvm/svm.c |    2 +-
+>   arch/x86/kvm/vmx.c |    7 +++++--
+>   2 files changed, 6 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> index 8f99d0c..13ca268 100644
+> --- a/arch/x86/kvm/svm.c
+> +++ b/arch/x86/kvm/svm.c
+> @@ -525,7 +525,7 @@ static __exit void svm_hardware_unsetup(void)
+>   {
+>   	int cpu;
+>
+> -	for_each_online_cpu(cpu)
+> +	for_each_possible_cpu(cpu)
+>   		svm_cpu_uninit(cpu);
+>
+>   	__free_pages(pfn_to_page(iopm_base>>  PAGE_SHIFT), IOPM_ALLOC_ORDER);
+> diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+> index b8a8428..603bde3 100644
+> --- a/arch/x86/kvm/vmx.c
+> +++ b/arch/x86/kvm/vmx.c
+> @@ -1350,8 +1350,11 @@ static void free_kvm_area(void)
+>   {
+>   	int cpu;
+>
+> -	for_each_online_cpu(cpu)
+> -		free_vmcs(per_cpu(vmxarea, cpu));
+> +	for_each_possible_cpu(cpu)
+> +		if (per_cpu(vmxarea, cpu)) {
+> +			free_vmcs(per_cpu(vmxarea, cpu));
+> +			per_cpu(vmxarea, cpu) = NULL;
+> +		}
+>   }
+>
+>   static __init int alloc_kvm_area(void)
+>    
 
-but you should not change current behaviour. starting with this change
-I'll get only first apic dump, so if I don;t know how many apics I have
-what the number I should pass? Does it mean I would need to
-pass say show_lapic=2, or 4, or 6 or whatever  _all-the-time_ to be sure
-my Core2Duo prints all lapics?
+First, I'm not sure per_cpu works for possible but not actual cpus.  
+Second, we now eagerly allocate but lazily free, leading to lots of ifs 
+and buts.  I think the code can be cleaner by eagerly allocating and 
+eagerly freeing.
 
-| 
-| > 2) show_lapic contains the max number of lapics being printed
-| >    so we need to count them instead of plain comparation with
-| >    cpu number, as a result I've changed print_local_APICs. Or
-| >    you meant _exactly_ cpuid number? In meaning like
-| >    show_lapic=max_cpuid. Hmm?
-| > 
-| your change anything about that. there is not gap between cpu id.
 
-you walk with for_each_online_cpu with is not the same
-as for_each_present_cpu. yes, at this stage we hardly get
-the situation when cpu initialized and then suddenly get
-offline status but anyway
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-| 
-| YH
-| 
-	-- Cyrill
