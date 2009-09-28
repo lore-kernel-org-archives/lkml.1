@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbZI1NvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbZI1Nva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751646AbZI1NvP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 09:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZI1NvP
+	id S1751906AbZI1Nva (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 09:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZI1Nva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 09:51:15 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:34990 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbZI1NvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 09:51:14 -0400
-Date: Mon, 28 Sep 2009 19:21:03 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-Message-ID: <20090928135103.GA27218@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
- <1253016701.5506.73.camel@laptop>
- <1253753501.7103.358.camel@pasglop>
- <1253890120.18939.189.camel@laptop>
+	Mon, 28 Sep 2009 09:51:30 -0400
+Received: from thunk.org ([69.25.196.29]:38845 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751677AbZI1Nv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 09:51:29 -0400
+Date: Mon, 28 Sep 2009 09:51:09 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: tglx@linutronix.de, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Ondrej Zary <linux@rainbow-software.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: T400 suspend/resume regression -- bisected to a mystery merge
+	commit
+Message-ID: <20090928135109.GB17514@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, tglx@linutronix.de,
+	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+	Ondrej Zary <linux@rainbow-software.org>,
+	Magnus Damm <magnus.damm@gmail.com>
+References: <E1MrRDa-0002WF-LO@closure.thunk.org> <200909271813.42829.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1253890120.18939.189.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <200909271813.42829.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-25 16:48:40]:
-
-> On Thu, 2009-09-24 at 10:51 +1000, Benjamin Herrenschmidt wrote:
-> > On Tue, 2009-09-15 at 14:11 +0200, Peter Zijlstra wrote:
-> > > I still think its a layering violation... its the hypervisor manager
-> > > that should be bothered in what state an off-lined cpu is in. 
-> > > 
-> > That's not how our hypervisor works.
+On Sun, Sep 27, 2009 at 06:13:42PM +0200, Rafael J. Wysocki wrote:
 > 
-> Then fix it?
+> commit c7121843685de2bf7f3afd3ae1d6a146010bf1fc
+> Author: Magnus Damm <magnus.damm@gmail.com>
+> Date:   Tue Jul 28 14:09:55 2009 -0700
 > 
-> > If you ask through the management interface, to remove a CPU from a
-> > partition, the HV will communicate with a daemon inside the partition
-> > that will then unplug the CPU via the right call.
-> > 
-> > I don't really understand your objections to be honest. And I fail to
-> > see why it would be a layering violation to have the ability for the OS
-> > to indicate in what state it wishes to relinguish a CPU to the
-> > hypervisor, which more or less defines what is the expected latency for
-> > getting it back later on.
+>     clocksource: Save mult_orig in clocksource_disable()
 > 
-> OK, so the main objection is the abuse of CPU hotplug as resource
-> management feature.
-> 
-> CPU hotplug is terribly invasive and expensive to the kernel, doing
-> hotplug on a minute basis is just plain crazy.
-> 
-> If you want a CPU in a keep it near and don't hand it back to the HV
-> state, why not use cpusets to isolate it and simply not run tasks on it?
-> 
-> cpusets don't use stopmachine and are much nicer to the rest of the
-> kernel over-all.
+> Please try to revert it and retest.
 
-Hi Peter,
+Using Linus's suggested technique, I bisected it down to this commit:
 
-This interface is not expected to be used every minute or so to impact
-the operation of the rest of the system.  Cpuhotplug is currently used
-as a resource management feature in virtualised system using dlpar
-operations.  I do understand that cpu hotplug is invasive at run time
-and that amount of complexity is required to carefully isolate the cpu
-from any involvement in the running kernel.
+Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Date:   Fri Aug 14 15:47:30 2009 +0200
 
-Building another interface to isolate the cpus to the same extent as
-cpu hotplug does today would be redundant and is going to be equally
-invasive. Alternatives like cpuset for isolation migrates only tasks.
+    timekeeping: Update clocksource with stop_machine
+    
+    update_wall_time calls change_clocksource HZ times per second to check
+    if a new clock source is available. In close to 100% of all calls
+    there is no new clock. Replace the tick based check by an update done
+    with stop_machine.
+    
+    Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+    Cc: Ingo Molnar <mingo@elte.hu>
+    Acked-by: John Stultz <johnstul@us.ibm.com>
+    Cc: Daniel Walker <dwalker@fifo99.com>
+    LKML-Reference: <20090814134810.711836357@de.ibm.com>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
---Vaidy
+Unfortunately there are a bunch of patches I'm trying to get in shape
+to push to Linus (the merge window coincided unfortunately with
+LinuxCon/Plumbeer's so I'm a bit behind) so I haven't had a chance to
+take it further.  I'll try reverting each of the above two patches,
+and report back in a day or two.
 
+    	   	   				- Ted
