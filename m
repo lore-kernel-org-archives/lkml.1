@@ -1,60 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZI1VRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbZI1VVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbZI1VRt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 17:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbZI1VRt
+	id S1753366AbZI1VVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 17:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZI1VVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 17:17:49 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35594 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752952AbZI1VRs (ORCPT
+	Mon, 28 Sep 2009 17:21:36 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:18021 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753330AbZI1VVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 17:17:48 -0400
-Date: Mon, 28 Sep 2009 23:17:45 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Joseph Cihula <joseph.cihula@intel.com>,
-       Shane Wang <shane.wang@intel.com>
-Subject: Re: [GIT PULL] x86/txt for v2.6.32
-Message-ID: <20090928211745.GA2119@elf.ucw.cz>
-References: <200909142051.n8EKpiOM017912@terminus.zytor.com> <200909262344.21257.rjw@sisk.pl> <20090928210252.GD1960@elf.ucw.cz> <200909282307.56190.rjw@sisk.pl> <4AC1267D.6020405@zytor.com>
+	Mon, 28 Sep 2009 17:21:33 -0400
+X-Trace: 264271651/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.103.254/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.103.254
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgEFACPFwEpPRWf+/2dsb2JhbACBUdVohB4F
+X-IronPort-AV: E=Sophos;i="4.44,468,1249254000"; 
+   d="scan'208";a="264271651"
+Date: Mon, 28 Sep 2009 22:21:27 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Nigel Cunningham <ncunningham@crca.org.au>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: No more bits in vm_area_struct's vm_flags.
+In-Reply-To: <4AC03D9C.3020907@crca.org.au>
+Message-ID: <Pine.LNX.4.64.0909282200470.11529@sister.anvils>
+References: <4AB9A0D6.1090004@crca.org.au> <20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com>
+ <4ABC80B0.5010100@crca.org.au> <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
+ <4AC0234F.2080808@crca.org.au> <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090928033624.GA11191@localhost> <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com>
+ <4AC03D9C.3020907@crca.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC1267D.6020405@zytor.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-09-28 14:11:25, H. Peter Anvin wrote:
-> On 09/28/2009 02:07 PM, Rafael J. Wysocki wrote:
-> >>
-> >> Well, I worry that S3 support for TXT makes TXT completely useless. A
-> >> little liquid nitrogen, remove RAM, place it in another machine,
-> >> modify it in any way you want, more liquid nitrogen, place it back.
-> >>
-> >> Oops, protection provided by TXT is lost.
+On Mon, 28 Sep 2009, Nigel Cunningham wrote:
+> KAMEZAWA Hiroyuki wrote:
+> > Then, Nigel, you have 2 choices I think.
 > > 
-> > Ah, I see your point now.
+> > (1) don't merge if vm_hints is set  or (2) pass vm_hints to all
+> > __merge() functions.
 > > 
+> > One of above will be accesptable for stakeholders... I personally
+> > like (1) but just trying (2) may be accepted.
+> > 
+> > What I dislike is making vm_flags to be long long ;)
 > 
-> Shane Wang sent me a patch for S3 support, but it missed the merge window:
-> 
-> 	http://marc.info/?i=4A9CE0B2.5060608@intel.com
-> 
-> *As far as I understand* -- and I haven't looked into it in detail yet,
-> having just come back from Plumber's -- this provides integrity
-> protection, not content extraction protection.
+> Okay. I've gone for option 1 for now.
 
-How does it provide integrity protection? I'm free to modify RAM
-content in the other machine....
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Arbitrary limitation, but not important at this stage.
+
+> Here's what I currently have (compile testing as I write)...
+> 
+> 
+> 
+> vm_flags in struct vm_area_struct is full. Move some of the less commonly
+> used flags to a new variable so that other flags that need to be in vm_flags
+> (because, for example, they need to be in variables that are passed around)
+> can be added.
+> 
+> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+
+This is quite a small patch (much smaller than my unsigned long long
+one, not that I've completed or posted that yet); but I'm afraid that
+I do not like it.
+
+First off, do you realize that unsigned long vm_hints adds a pointless
+8 bytes to every vm_area_struct on 64-bit systems?  Pointless because
+there was already space for the flags you've moved in 64-bit vm_flags.
+
+You might eliminate the bloat by making it an unsigned int or unsigned
+char and squeezing it into a gap between other fields; but it still
+seems silly to separate them.
+
+I agree that VM_SEQ_READ and VM_RAND_READ are low hanging fruit,
+in that they stand out as odd, partly because of the CamelCase
+macros which hide them from sight.  But many others of the flags
+are their own peculiar cases too.
+
+I don't think there's a great queue of people wanting to add more
+read hints: nobody would be more likely to do so than Fengguang,
+and even he worries about "vm_hints" limiting its scope.
+
+If you're looking to make more flagspace available, then it would
+need to accomodate motley other flags too, so should be called...
+vm_flags2?  shudder!
+
+Were it not for the bloat, I wouldn't hesitate over unsigned long long.
+
+As it is, I think that (as I said before) we should first look to see
+if we can cull just a few of the flags which have accumulated.  Then
+move on to unsigned long long when we have to.
+
+I suggested before that for the moment you reuse VM_MAPPED_COPY,
+and you said "Okee doke".  What changed?
+
+Hugh
