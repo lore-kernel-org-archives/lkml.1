@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbZI1N2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751826AbZI1NdC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752982AbZI1N2q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 09:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbZI1N2p
+	id S1751826AbZI1NdC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 09:33:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbZI1NdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 09:28:45 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:57503 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752903AbZI1N2o (ORCPT
+	Mon, 28 Sep 2009 09:33:01 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:19733 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbZI1NdA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 09:28:44 -0400
-Date: Mon, 28 Sep 2009 14:28:45 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Valdis.Kletnieks@vt.edu, linux@treblig.org, agruen@suse.de,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: new O_NODE open flag
-Message-ID: <20090928132845.GC19778@shareable.org>
-References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu> <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu> <20090925183523.GA6065@gallifrey> <19645.1253913514@turing-police.cc.vt.edu> <E1MsDQ6-0001cY-92@pomaz-ex.szeredi.hu>
+	Mon, 28 Sep 2009 09:33:00 -0400
+Date: Mon, 28 Sep 2009 09:32:19 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, jack@suse.cz
+Subject: Re: [PATCH] bdi_sync_writeback should WB_SYNC_NONE first
+Message-ID: <20090928133219.GA6405@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, jens.axboe@oracle.com, jack@suse.cz
+References: <20090925141014.GB15853@think>
+ <20090927013458.53e43459.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1MsDQ6-0001cY-92@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090927013458.53e43459.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4AC0BAE5.0094:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> BTW I just checked, and it is possible to re-open or promote an fd
-> opened with O_NODE like this:
+On Sun, Sep 27, 2009 at 01:34:58AM -0700, Andrew Morton wrote:
+> On Fri, 25 Sep 2009 10:10:14 -0400 Chris Mason <chris.mason@oracle.com> wrote:
 > 
-> 	char tmp[64];
+> > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> > index 8e1e5e1..27f8e0e 100644
+> > --- a/fs/fs-writeback.c
+> > +++ b/fs/fs-writeback.c
+> > @@ -225,7 +225,7 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
+> >  {
+> >  	struct wb_writeback_args args = {
+> >  		.sb		= sb,
+> > -		.sync_mode	= WB_SYNC_ALL,
+> > +		.sync_mode	= WB_SYNC_NONE,
+> >  		.nr_pages	= LONG_MAX,
+> >  		.range_cyclic	= 0,
+> >  	};
+> > @@ -236,6 +236,13 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
+> >  
+> >  	bdi_queue_work(bdi, &work);
+> >  	bdi_wait_on_work_clear(&work);
+> > +
+> > +	args.sync_mode = WB_SYNC_ALL;
+> > +	args.nr_pages = LONG_MAX;
+> > +
+> > +	work.state = WS_USED | WS_ONSTACK;
+> > +	bdi_queue_work(bdi, &work);
+> > +	bdi_wait_on_work_clear(&work);
+> >  }
 > 
-> 	fd = open(filename, O_NODE | O_NOACCESS);
-> 	/* ... */
-> 	sprintf(tmp, "/proc/self/fd/%i", fd);
-> 	fd_rw = open(tmp, O_RDWR);
+> Those LONG_MAX's are a worry.  What prevents a very long
+> almost-livelock from occurring if userspace is concurrently dirtying
+> pagecache at a high rate?
 > 
-> Now fd_rw is guaranteed to refer to the same inode as fd.
 
-If someone passes you a file descriptor opened with O_RDONLY, you
-shouldn't be able to upgrade it to O_RDWR unless you have access to
-the file and could do a normal open() on the file.
+In this case, we should be called from unmount.  But, Jens tells me my
+patch isn't quite right because even without my patch, the WB_SYNC_ALL
+run is queued onto the tail of the list after the WB_SYNC_NONE run.
 
-I hope the above cannot convert O_NOACCESS to O_RDWR without checking
-that you have access to the file.
+So, I need to trace it a little better.   My initial theory was that the
+nr_dirty number done by the first WB_SYNC_NONE run wasn't big enough.
+Once btrfs writepage kicks in, it can make more dirty metadata pages to
+close out the delalloc, and if those get written first things could exit
+before all the data pages are on disk.
 
-Hmm.  I have just tried, and you _can _use open("/proc/self/fd/%d",
-O_RDWR) to re-open with more permissions when you can't access the
-path which /proc/self/fd/%d pretends to link to.  It looks a bit
-dubious, as you might have been passed an O_RDONLY descriptor with the
-intention that you can't write to it...  Oh well!
+Its a theory anyway, I'll dig in more.
 
--- Jamie
+-chris
