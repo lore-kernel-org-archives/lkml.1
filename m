@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752464AbZI1QOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbZI1QUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752464AbZI1QOF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 12:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbZI1QOE
+	id S1752539AbZI1QUI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 12:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZI1QUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 12:14:04 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58865 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbZI1QOD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 12:14:03 -0400
-Message-ID: <a0ea21a7cfe313202e2b51510aa5435a.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0909281637160.25798@sister.anvils>
-References: <4AB9A0D6.1090004@crca.org.au>
-    <20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com>
-    <4ABC80B0.5010100@crca.org.au>
-    <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
-    <4AC0234F.2080808@crca.org.au>
-    <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090928033624.GA11191@localhost>
-    <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com>
-    <Pine.LNX.4.64.0909281637160.25798@sister.anvils>
-Date: Tue, 29 Sep 2009 01:14:03 +0900 (JST)
-Subject: Re: No more bits in vm_area_struct's vm_flags.
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Hugh Dickins" <hugh.dickins@tiscali.co.uk>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Wu Fengguang" <fengguang.wu@intel.com>,
-       "Nigel Cunningham" <ncunningham@crca.org.au>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-User-Agent: SquirrelMail/1.4.16
+	Mon, 28 Sep 2009 12:20:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58019 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752513AbZI1QUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 12:20:06 -0400
+Message-ID: <4AC0E201.2020006@kernel.org>
+Date: Tue, 29 Sep 2009 01:19:13 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Tony Vroon <tony@linx.net>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] percpu: fix unit_map[] verification in pcpu_setup_first_chunk()
+References: <4ABAC2F1.3020302@kernel.org> <1254055797.2756.1.camel@localhost>
+In-Reply-To: <1254055797.2756.1.camel@localhost>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 28 Sep 2009 16:19:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Mon, 28 Sep 2009, KAMEZAWA Hiroyuki wrote:
->>
->> What I dislike is making vm_flags to be long long ;)
->
-> Why?
-I'm sorry if my "dislike" sounds too strong.
+pcpu_setup_first_chunk() incorrectly used NR_CPUS as the impossible
+unit number while unit number can equal and go over NR_CPUS with
+sparse unit map.  This triggers BUG_ON() spuriously on machines which
+have non-power-of-two number of cpus.  Use UINT_MAX instead.
 
-Every time I see long long in the kernel, my concern is
-"do I need spinlock to access this for 32bit arch ? is it safe ?".
-(And it makes binary=>disassemble=>C (by eyes) a bit difficult)
-Then, I don't like long long personally.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Tony Vroon <tony@linx.net>
+---
+Erghh... stupid mistake.  This should fix it.  Can you please verify?
 
-Another reason is some other calls like test_bit() cannot be used against
-long long. (even if it's not used _now_)
+Thanks.
 
-Maybe vm->vm_flags will not require extra locks because
-it can be protected by bigger lock as mmap_sem. Then, please make it
-to be long long if its's recommended.
+ mm/percpu.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-keeping vm_flags to be 32bit may makes vma_merge() ugly.
-If so, long long is  a choice.
+Index: work/mm/percpu.c
+===================================================================
+--- work.orig/mm/percpu.c
++++ work/mm/percpu.c
+@@ -1604,7 +1604,7 @@ int __init pcpu_setup_first_chunk(const
+ 	unit_off = alloc_bootmem(nr_cpu_ids * sizeof(unit_off[0]));
 
-Thanks,
--Kame
+ 	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
+-		unit_map[cpu] = NR_CPUS;
++		unit_map[cpu] = UINT_MAX;
+ 	pcpu_first_unit_cpu = NR_CPUS;
 
+ 	for (group = 0, unit = 0; group < ai->nr_groups; group++, unit += i) {
+@@ -1619,7 +1619,7 @@ int __init pcpu_setup_first_chunk(const
+ 				continue;
 
-> Hugh
->
+ 			BUG_ON(cpu > nr_cpu_ids || !cpu_possible(cpu));
+-			BUG_ON(unit_map[cpu] != NR_CPUS);
++			BUG_ON(unit_map[cpu] != UINT_MAX);
 
+ 			unit_map[cpu] = unit + i;
+ 			unit_off[cpu] = gi->base_offset + i * ai->unit_size;
+@@ -1632,7 +1632,7 @@ int __init pcpu_setup_first_chunk(const
+ 	pcpu_nr_units = unit;
 
+ 	for_each_possible_cpu(cpu)
+-		BUG_ON(unit_map[cpu] == NR_CPUS);
++		BUG_ON(unit_map[cpu] == UINT_MAX);
+
+ 	pcpu_nr_groups = ai->nr_groups;
+ 	pcpu_group_offsets = group_offsets;
