@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZI1IoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZI1Ism@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbZI1IoK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 04:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZI1IoJ
+	id S1752570AbZI1Ism (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 04:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZI1Isl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 04:44:09 -0400
-Received: from mga14.intel.com ([143.182.124.37]:41627 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbZI1IoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 04:44:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,465,1249282800"; 
-   d="scan'208";a="192375869"
-Date: Mon, 28 Sep 2009 16:44:01 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
-Message-ID: <20090928084401.GA22131@localhost>
-References: <20090926031537.GA10176@localhost> <20090926034936.GK30185@one.firstfloor.org> <20090926105259.GA5496@localhost> <20090926113156.GA12240@localhost> <20090927104739.GA1666@localhost> <20090927192025.GA6327@wotan.suse.de>
+	Mon, 28 Sep 2009 04:48:41 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:61719 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752034AbZI1Isk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 04:48:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=VTPDjNbNoPuwyIBLC+sghLlWmyJjj9BKIUJOJy1CQVGVDPD+HErm3ToI1w3rLwR/Ya
+         5KX0QfAFkx8juYoWDy3FkocFfQczkFiQRo+EaZi/HhuWTbbZf1RlStXy1XWBUjuVY3lM
+         KSPyTAGWueAwibjpjX04qoKw0J3TLvEHFrMkg=
+Date: Mon, 28 Sep 2009 10:48:38 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
+       lizf@cn.fujitsu.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/core] tracing/bkl: Add bkl ftrace events
+Message-ID: <20090928084836.GA6142@nowhere>
+References: <tip-96a2c464de07d7c72988db851c029b204fc59108@git.kernel.org> <1253959554.12145.88.camel@frodo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090927192025.GA6327@wotan.suse.de>
+In-Reply-To: <1253959554.12145.88.camel@frodo>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 03:20:25AM +0800, Nick Piggin wrote:
-> On Sun, Sep 27, 2009 at 06:47:39PM +0800, Wu Fengguang wrote:
-> > > 
-> > > And standard deviation is 0.04%, much larger than the difference 0.008% ..
-> > 
-> > Sorry that's not correct. I improved the accounting by treating
-> > function0+function1 from two CPUs as an integral entity:
-> > 
-> >                  total time      add_to_page_cache_lru   percent  stddev
-> >          before  3880166848.722  9683329.610             0.250%   0.014%
-> >          after   3828516894.376  9778088.870             0.256%   0.012%
-> >          delta                                           0.006%
+On Sat, Sep 26, 2009 at 06:05:54AM -0400, Steven Rostedt wrote:
+> On Fri, 2009-09-25 at 06:19 +0000, tip-bot for Frederic Weisbecker
+> wrote:
+> > Commit-ID:  96a2c464de07d7c72988db851c029b204fc59108
 > 
-> I don't understand why you're doing this NFS workload to measure?
+> > +#if !defined(_TRACE_BKL_H) || defined(TRACE_HEADER_MULTI_READ)
+> > +#define _TRACE_BKL_H
+> > +
+> > +#include <linux/tracepoint.h>
+> > +
+> > +TRACE_EVENT(lock_kernel,
+> > +
+> > +	TP_PROTO(const char *func, const char *file, int line),
+> > +
+> > +	TP_ARGS(func, file, line),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__field(	int,		lock_depth		)
+> 
+> FYI,
+> 
+> By your request I added this as a common field ;-)
+> 
+> With commit:
+> 
+>  637e7e864103a7a68c1ce43ada27dfc25c0d113f
+> 
+> But since other utilities outside of ftrace may use this trace point, it
+> may be OK to keep the duplicate information in the kernel lock API trace
+> points.
+> 
+> -- Steve
 
-Because it is the first convenient workload hit my mind, and avoids
-real disk IO :)
 
-> I see significant nfs, networking protocol and device overheads in
-> your profiles, also you're hitting some locks or something which
-> is causing massive context switching. So I don't think this is a
-> good test.
 
-Yes there are overheads. However it is a real and common workload.
 
-> But anyway as Hugh points out, you need to compare with a
-> *completely* fixed kernel, which includes auditing all users of page
-> flags non-atomically (slab, notably, but possibly also other
-> places).
+Right, or may be we can define this tracepoint as a latency format
+user by default. It's not possible yet for an event to do that but
+I guess we can set a flag for this purpose or something...
 
-That's good point. We can do more benchmarks when more fixes are
-available. However I suspect their design goal will be "fix them
-without introducing noticeable overheads" :)
+Thanks.
 
-> One other thing to keep in mind that I will mention is that I am
-> going to push in a patch to the page allocator to allow callers
-> to avoid the refcounting (atomic_dec_and_test) in page lifetime,
-> which is especially important for SLUB and takes more cycles off
-> the page allocator...
->
-> I don't know exactly what you're going to do after that to get a
-> stable reference to slab pages. I guess you can read the page
-> flags and speculatively take some slab locks and recheck etc...
-
-For reliably we could skip page lock on zero refcounted pages.
-
-We may lose the PG_hwpoison bit on races with __SetPageSlub*, however
-it should be an acceptable imperfection.
-
-Thanks,
-Fengguang
