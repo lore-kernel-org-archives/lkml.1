@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbZI1Fe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbZI1Fwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751302AbZI1Fe7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 01:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbZI1Fe6
+	id S1751707AbZI1Fwb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 01:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbZI1Fw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 01:34:58 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38045 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbZI1Fe6 (ORCPT
+	Mon, 28 Sep 2009 01:52:29 -0400
+Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:1836 "EHLO
+	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbZI1Fw2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 01:34:58 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 28 Sep 2009 14:32:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: No more bits in vm_area_struct's vm_flags.
-Message-Id: <20090928143246.ffed3413.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4AC04800.70708@crca.org.au>
-References: <4AB9A0D6.1090004@crca.org.au>
-	<20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com>
-	<4ABC80B0.5010100@crca.org.au>
-	<20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AC0234F.2080808@crca.org.au>
-	<20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090928033624.GA11191@localhost>
-	<20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AC03D9C.3020907@crca.org.au>
-	<20090928135315.083aca18.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AC04800.70708@crca.org.au>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
+	Mon, 28 Sep 2009 01:52:28 -0400
+X-Greylist: delayed 814 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Sep 2009 01:52:28 EDT
+Message-ID: <b452e0d0387e9350a5f8bb7fac242194.squirrel@webmail.xs4all.nl>
+In-Reply-To: <20090926213528.GB23564@c.hsd1.tn.comcast.net>
+References: <20090923005644.GA28244@c.hsd1.tn.comcast.net>
+    <20090923213109.GA936@c.hsd1.tn.comcast.net>
+    <4ABB9D6D.8000607@schaufler-ca.com>
+    <20090925100630.GD10098@c.hsd1.tn.comcast.net>
+    <4ABCEE71.6060703@schaufler-ca.com>
+    <20090926213528.GB23564@c.hsd1.tn.comcast.net>
+Date: Mon, 28 Sep 2009 07:38:55 +0200
+Subject: Re: [RFC][PATCH] Privilege dropping security module
+From: "Rob Meijer" <capibara@xs4all.nl>
+To: "Andy Spencer" <andy753421@gmail.com>
+Cc: "Casey Schaufler" <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Reply-To: rmeijer@xs4all.nl
+User-Agent: SquirrelMail/1.4.18
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Sep 2009 15:22:08 +1000
-Nigel Cunningham <ncunningham@crca.org.au> wrote:
+On Sat, September 26, 2009 23:35, Andy Spencer wrote:
+>> It's amazing who much of this stuff there is to attend to.  If you
+>> haven't, run checkpatch.py on your patches. You'll need to pass that
+>> eventually.
+>
+> I've fixed the remaining things that checkpatch.pl suggests as well as a
+> few others and will include those checks for future patches.
+>
+>
+>> Hmm. You are working with the Linux DAC mechanism, even if only within
+>> a process tree. You're not dropping privilege, you're applying a mask
+>> to the file permission bits, currently for file system objects, and
+>> with other objects (sysvipc at least) in the future. Hmm. modemask?
+>> Something derived from "restricted process tree?"
+>
+> `Access Control Masking' or `Policy Masking' perhaps?
+>
 
-> Hi.
-> 
-> KAMEZAWA Hiroyuki wrote:
-> > Seems good to me.
-> > 
-> > Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > But
-> >> +	if (vma->vm_hints)
-> >> +		return 0;
-> >>  	return 1;
-> > 
-> > Maybe adding a comment (or more detailed patch description) is necessary.
-> 
-> Thinking about this some more, I think we should also be looking at whether the new hints are non zero. Perhaps I should just add the new value to the
-> function parameters and be done with it.
-> 
-No objections from me. plz do.
-I said option (1) just because patch size will be big to unexpected.
-Thank you for your effort.
-
-Regards,
--Kame
+Or  'Permission Attenuation' ?
 
