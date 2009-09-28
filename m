@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZI1SZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbZI1S2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbZI1SZM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 14:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbZI1SZL
+	id S1752507AbZI1S2L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 14:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZI1S2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 14:25:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56969 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752267AbZI1SZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 14:25:10 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18KqiA3UvYKgv46z3IsypTOqnJ8MtHzI5rjAXuwh7
-	10ewfD+/5roc5G
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-In-Reply-To: <20090928174809.GB3643@redhat.com>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
-	 <1253976676.7005.40.camel@marge.simson.net>
-	 <1254034500.7933.6.camel@marge.simson.net>
-	 <20090927164235.GA23126@kernel.dk>
-	 <1254075359.7354.66.camel@marge.simson.net>
-	 <1254110648.7683.3.camel@marge.simson.net>
-	 <20090928174809.GB3643@redhat.com>
-Content-Type: text/plain
-Date: Mon, 28 Sep 2009 20:24:57 +0200
-Message-Id: <1254162297.9820.54.camel@marge.simson.net>
+	Mon, 28 Sep 2009 14:28:11 -0400
+Received: from mail.perches.com ([173.55.12.10]:1240 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751651AbZI1S2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 14:28:10 -0400
+Subject: Re: [PATCH] LED driver for Intel NAS SS4200 series (v3)
+From: Joe Perches <joe@perches.com>
+To: Dave Hansen <dave@sr71.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, rpurdie@rpsys.net,
+       linux-kernel@vger.kernel.org, rgirod@confocus.com,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <1254160310.17303.20180.camel@nimitz>
+References: <1253118732-11944-1-git-send-email-dave@sr71.net>
+	 <20090924171929.8ce89786.akpm@linux-foundation.org>
+	 <1254160310.17303.20180.camel@nimitz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 28 Sep 2009 11:28:13 -0700
+Message-Id: <1254162493.28232.235.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-28 at 13:48 -0400, Vivek Goyal wrote:
+On Mon, 2009-09-28 at 10:51 -0700, Dave Hansen wrote:
+> On Thu, 2009-09-24 at 17:19 -0700, Andrew Morton wrote:
 
-> Hmm.., so close to 25% reduction on average in completion time of konsole.
-> But this is in presece of writer. Does this help even in presence of 1 or
-> more sequential readers going?
+Trivial logging comments:
 
-Dunno, I've only tested sequential writer.
+One of the printks is not prefaced and the printks
+and dev_printks are not consistently using either
+periods or no periods.
 
-> So here latency seems to be coming from three sources.
-> 
-> - Wait in CFQ before request is dispatched (only in case of competing seq readers).
-> - seek latencies
-> - latencies because of bigger requests are already dispatched to disk.
-> 
-> So limiting the size of request will help with third factor but not with first  
-> two factors and here seek latencies seem to be the biggest contributor.
+Some possible substitutions:
 
-Yeah, seek latency seems to dominate.
+s/dev_printk(KERN_INFO/dev_info(/
+s/dev_printk(KERN_DEBUG/dev_dbg(/
+s/printk(KERN_INFO/pr_info(/
 
-	-Mike
+I think it would be better to use:
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+and remove the "%s: " ... KBUILD_MODNAME
+
+>+	printk(KERN_INFO KBUILD_MODNAME ": '%s' found\n", id->ident);
+
+Perhaps
+	pr_info("Found a '%s'\n", id->ident);
+
+> +	printk(KERN_DEBUG "setting blue off and amber on\n");
+
+pr_debug?
+
+> +		printk(KERN_INFO "%s: skipping hardware autodetection\n",
+> +				KBUILD_MODNAME);
+> +		printk(KERN_INFO "\tif this works, please send the output ");
+> +		printk(KERN_INFO "of 'dmidecode' to dave@sr71.net\n");
+
+I think this will look odd when printed.
+There's a tab on the second line, not on third.
+Perhaps:
+		pr_info("Skipping hardware detection.\n");
+		pr_info("Please send 'dmidecode' output to dave@sr71.net\n");
+
+> +		printk(KERN_INFO "%s: no LED devices found\n",
+> +				KBUILD_MODNAME);
+> +	printk(KERN_INFO "registering %s PCI driver\n", KBUILD_MODNAME);
+> +	printk(KERN_INFO "Unregistering %s driver\n", KBUILD_MODNAME);
+
+	pr_info("No LED devices found\n");
+	pr_info("Registering PCI driver\n");
+	pr_info("Unregistering PCI driver\n");
+
 
