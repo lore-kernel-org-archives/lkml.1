@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbZI1RiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751976AbZI1Rjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbZI1RiS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 13:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZI1RiR
+	id S1751976AbZI1Rjn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 13:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZI1Rjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 13:38:17 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:6809 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbZI1RiQ (ORCPT
+	Mon, 28 Sep 2009 13:39:42 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:64603 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZI1Rjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 13:38:16 -0400
-Date: Mon, 28 Sep 2009 11:38:20 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: lenb@kernel.org, bjorn.helgaas@hp.com, andrew.patterson@hp.com,
-       jbarnes@virtuousgeek.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] acpi: pci_root: fix NULL pointer deref after resume
-	from suspend
-Message-ID: <20090928173819.GA2441@ldl.fc.hp.com>
-References: <1254119480-9730-1-git-send-email-dfeng@redhat.com>
+	Mon, 28 Sep 2009 13:39:42 -0400
+From: Matthias Geissert <geissert@mathematik.tu-darmstadt.de>
+To: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
+Subject: Re: Status of Bug 8094 -  ipaq oops on connecting "Vodafone VPA-II"?
+Date: Mon, 28 Sep 2009 19:42:17 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31; KDE/4.3.0; i686; ; )
+Cc: Tilman Schmidt <tilman@imap.cc>
+References: <Pine.LNX.4.44L0.0909202152420.15304-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0909202152420.15304-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254119480-9730-1-git-send-email-dfeng@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909281942.17317.geissert@mathematik.tu-darmstadt.de>
+X-Provags-ID: V01U2FsdGVkX1+ZfG+gBCqwUqrCwVVSfTA1qHyOVeFWNZ41paT
+ /YGMyAbUVq03lYkTHhUBvohb61kFMaD5ZtDt+WjNR8G03gpaD2
+ C8B2Xq8+IJIUL46pl8pkrUOOko8nmM89glhuFp8ILw=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Xiaotian,
+Am Montag 21 September 2009 03:59:17 schrieb Alan Stern:
+> On Sun, 20 Sep 2009, Greg KH wrote:
+> > Yes, I missed the fact that the ipaq driver needed to pay attention to
+> > this, my mistake :(
+> >
+> > I'm pretty much not able to write any new patches until the end of next
+> > week, due to conferences I'm currently attending, so if someone wants to
+> > knock up a patch to fix this before then, it would be most appreciated.
+>
+> Here's a patch which ought to fix the oops.  I trust it won't cause
+> any existing devices to start misbehaving.  Tilman and Matthias, please
+> verify that this works okay on your systems.
+Sorry for the late answer but I was abroad last week. 
 
-Thanks for the bug report.
+I tested your patch and it works for me (it still gives me ttyUSB0 and 
+ttyUSB1). 
 
-* Xiaotian Feng <dfeng@redhat.com>:
-> commit 275582 introduces acpi_get_pci_dev(), but pdev->subordinate
-> can be NULL, then a NULL was passed to pci_get_slot, this results
-> the kernel oops when resume from suspend.
-> 
-> This patch resolves following kernel oops:
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
-> IP: [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
-> 
-> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> ---
->  drivers/acpi/pci_root.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-> index 3112221..3c35144 100644
-> --- a/drivers/acpi/pci_root.c
-> +++ b/drivers/acpi/pci_root.c
-> @@ -387,7 +387,11 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
->  		if (!pdev || hnd == handle)
->  			break;
->  
-> -		pbus = pdev->subordinate;
-> +		if (pdev->subordinate)
-> +			pbus = pdev->subordinate;
-> +		else
-> +			pbus = pdev->bus;
-> +
 
-I'm a little confused by this. If we start from the PCI root
-bridge and walk back down the hierarchy, shouldn't everything
-between the root and the device be a P2P bridge?
-
-What is special about suspend/resume that causes the subordinate
-bus to become NULL?
-
-Can you send the full stacktrace?
-
-Thanks.
-
-/ac
-
+Thanks,
+matthias
