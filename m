@@ -1,714 +1,638 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbZI1PdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbZI1PfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752613AbZI1PdN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 11:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbZI1PdM
+	id S1752628AbZI1PfA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 11:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbZI1PfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 11:33:12 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:41216 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752258AbZI1PdJ (ORCPT
+	Mon, 28 Sep 2009 11:35:00 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:16728 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751473AbZI1Pe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 11:33:09 -0400
+	Mon, 28 Sep 2009 11:34:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=WM2tcfuWf53qETsBU5Nv+6gXu3U13tFBbbsRySXBh3gBhXiqw9O0vzaijaO5iK619u
-         FkHLCTfyRhSljqJ9zKJFN9Os37wM4CUTizHBkGgxUGBUclP9UdB4ReD6j0JPbueZHwD9
-         mwAsC4MbYhiWypjYSA6LsgzO+zR+YPrk4n1+o=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Jung-Ik (John) Lee" <jilee@google.com>
-Subject: Re: [git patches] libata updates
-Date: Mon, 28 Sep 2009 17:34:10 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-07381-g7fa0772-dirty; KDE/4.3.1; i686; ; )
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Grant Grundler <grundler@google.com>,
-       Gwendal Gringo <gwendal@google.com>
-References: <20090917204935.GA7432@havoc.gtf.org> <200909202305.06199.bzolnier@gmail.com> <8b5805ff0909211936s4968d11fnd3e6604d38e31c79@mail.gmail.com>
-In-Reply-To: <8b5805ff0909211936s4968d11fnd3e6604d38e31c79@mail.gmail.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=qvFn2/ZJUyfQ0ePwIzslYUKBJM9i5aYyF7LMKLsNwq3fGL81KWGhTOm4mnxMqt8B9S
+         fF921d1pQVAag4+PEW+/5g/sshrD7kdnIfPInKCibtJEXhWUd07a8CWtMKpjIodh89oJ
+         SSujt2VjaSwP/jVNXp0bm4OeSSeHNmhoDFzjc=
 MIME-Version: 1.0
-Message-Id: <200909281734.11090.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090928145655.GB8192@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	 <4ABC28DE.7050809@datenparkplatz.de>
+	 <20090925202636.GC15007@redhat.com>
+	 <4e5e476b0909271000u69d79346s27cccad219e49902@mail.gmail.com>
+	 <20090928145655.GB8192@redhat.com>
+Date: Mon, 28 Sep 2009 17:35:02 +0200
+Message-ID: <4e5e476b0909280835w3410d58aod93a29d1dcda8909@mail.gmail.com>
+Subject: Re: IO scheduler based IO controller V10
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       jens.axboe@oracle.com, Tobias Oetiker <tobi@oetiker.ch>
+Content-Type: multipart/mixed; boundary=0016e6d386fe8db9340474a50ac1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 September 2009 04:36:13 Jung-Ik (John) Lee wrote:
-> On Sun, Sep 20, 2009 at 2:05 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> > On Thursday 17 September 2009 22:49:35 Jeff Garzik wrote:
-> >>
-> >> Bug fixes, and a new driver.
-> >>
-> >>
-> >>
-> >> Please pull from 'upstream-linus' branch of
-> >> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
-> >>
-> >> to receive the following updates:
-> >>
-> >>  drivers/ata/Kconfig        |    9 +
-> >>  drivers/ata/Makefile       |    1 +
-> >>  drivers/ata/ahci.c         |    4 +-
-> >>  drivers/ata/libata-core.c  |    4 +-
-> >>  drivers/ata/pata_amd.c     |    3 +
-> >>  drivers/ata/pata_atp867x.c |  548 ++++++++++++++++++++++++++++++++++++++++++++
-> >>  drivers/ata/sata_promise.c |  155 +++++++++++--
-> >>  include/linux/pci_ids.h    |    2 +
-> >>  8 files changed, 704 insertions(+), 22 deletions(-)
-> >>  create mode 100644 drivers/ata/pata_atp867x.c
-> >>
-> >> John(Jung-Ik) Lee (1):
-> >>       libata: Add pata_atp867x driver for Artop/Acard ATP867X controllers
-> >
-> > That was really fast..  Not necessarily a bad thing but this driver would
-> > benefit from few polishing touches..
-> >
-> >> diff --git a/drivers/ata/pata_atp867x.c b/drivers/ata/pata_atp867x.c
-> >> new file mode 100644
-> >> index 0000000..7990de9
-> >> --- /dev/null
-> >> +++ b/drivers/ata/pata_atp867x.c
-> >> @@ -0,0 +1,548 @@
-> >> +/*
-> >> + * pata_atp867x.c - ARTOP 867X 64bit 4-channel UDMA133 ATA controller driver
-> >> + *
-> >> + *   (C) 2009 Google Inc. John(Jung-Ik) Lee <jilee@google.com>
-> >> + *
-> >> + * Per Atp867 data sheet rev 1.2, Acard.
-> >> + * Based in part on early ide code from
-> >> + *   2003-2004 by Eric Uhrhane, Google, Inc.
-> >> + *
-> >> + * This program is free software; you can redistribute it and/or modify
-> >> + * it under the terms of the GNU General Public License as published by
-> >> + * the Free Software Foundation; either version 2 of the License, or
-> >> + * (at your option) any later version.
-> >> + *
-> >> + * This program is distributed in the hope that it will be useful,
-> >> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> >> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> >> + * GNU General Public License for more details.
-> >> + *
-> >> + * You should have received a copy of the GNU General Public License
-> >> + * along with this program; if not, write to the Free Software
-> >> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-> >> + *
-> >> + *
-> >> + * TODO:
-> >> + *   1. RAID features [comparison, XOR, striping, mirroring, etc.]
-> >> + */
-> >> +
-> >> +#include <linux/kernel.h>
-> >> +#include <linux/module.h>
-> >> +#include <linux/pci.h>
-> >> +#include <linux/init.h>
-> >> +#include <linux/blkdev.h>
-> >> +#include <linux/delay.h>
-> >> +#include <linux/device.h>
-> >> +#include <scsi/scsi_host.h>
-> >> +#include <linux/libata.h>
-> >> +
-> >> +#define      DRV_NAME        "pata_atp867x"
-> >> +#define      DRV_VERSION     "0.7.5"
-> >> +
-> >> +/*
-> >> + * IO Registers
-> >> + * Note that all runtime hot priv ports are cached in ap private_data
-> >> + */
-> >> +
-> >> +enum {
-> >> +     ATP867X_IO_CHANNEL_OFFSET       = 0x10,
-> >> +
-> >> +     /*
-> >> +      * IO Register Bitfields
-> >> +      */
-> >> +
-> >> +     ATP867X_IO_PIOSPD_ACTIVE_SHIFT  = 4,
-> >> +     ATP867X_IO_PIOSPD_RECOVER_SHIFT = 0,
-> >> +
-> >> +     ATP867X_IO_DMAMODE_MSTR_SHIFT   = 0,
-> >> +     ATP867X_IO_DMAMODE_MSTR_MASK    = 0x07,
-> >> +     ATP867X_IO_DMAMODE_SLAVE_SHIFT  = 4,
-> >> +     ATP867X_IO_DMAMODE_SLAVE_MASK   = 0x70,
-> >> +
-> >> +     ATP867X_IO_DMAMODE_UDMA_6       = 0x07,
-> >> +     ATP867X_IO_DMAMODE_UDMA_5       = 0x06,
-> >> +     ATP867X_IO_DMAMODE_UDMA_4       = 0x05,
-> >> +     ATP867X_IO_DMAMODE_UDMA_3       = 0x04,
-> >> +     ATP867X_IO_DMAMODE_UDMA_2       = 0x03,
-> >> +     ATP867X_IO_DMAMODE_UDMA_1       = 0x02,
-> >> +     ATP867X_IO_DMAMODE_UDMA_0       = 0x01,
-> >> +     ATP867X_IO_DMAMODE_DISABLE      = 0x00,
-> >> +
-> >> +     ATP867X_IO_SYS_INFO_66MHZ       = 0x04,
-> >> +     ATP867X_IO_SYS_INFO_SLOW_UDMA5  = 0x02,
-> >> +     ATP867X_IO_SYS_MASK_RESERVED    = (~0xf1),
-> >> +
-> >> +     ATP867X_IO_PORTSPD_VAL          = 0x1143,
-> >> +     ATP867X_PREREAD_VAL             = 0x0200,
-> >> +
-> >> +     ATP867X_NUM_PORTS               = 4,
-> >> +     ATP867X_BAR_IOBASE              = 0,
-> >> +     ATP867X_BAR_ROMBASE             = 6,
-> >> +};
-> >> +
-> >> +#define ATP867X_IOBASE(ap)           ((ap)->host->iomap[0])
-> >> +#define ATP867X_SYS_INFO(ap)         (0x3F + ATP867X_IOBASE(ap))
-> >> +
-> >> +#define ATP867X_IO_PORTBASE(ap, port)        (0x00 + ATP867X_IOBASE(ap) + \
-> >> +                                     (port) * ATP867X_IO_CHANNEL_OFFSET)
-> >> +#define ATP867X_IO_DMABASE(ap, port) (0x40 + \
-> >> +                                     ATP867X_IO_PORTBASE((ap), (port)))
-> >> +
-> >> +#define ATP867X_IO_STATUS(ap, port)  (0x07 + \
-> >> +                                     ATP867X_IO_PORTBASE((ap), (port)))
-> >> +#define ATP867X_IO_ALTSTATUS(ap, port)       (0x0E + \
-> >> +                                     ATP867X_IO_PORTBASE((ap), (port)))
-> >> +
-> >> +/*
-> >> + * hot priv ports
-> >> + */
-> >> +#define ATP867X_IO_MSTRPIOSPD(ap, port)      (0x08 + \
-> >> +                                     ATP867X_IO_DMABASE((ap), (port)))
-> >> +#define ATP867X_IO_SLAVPIOSPD(ap, port)      (0x09 + \
-> >> +                                     ATP867X_IO_DMABASE((ap), (port)))
-> >> +#define ATP867X_IO_8BPIOSPD(ap, port)        (0x0A + \
-> >> +                                     ATP867X_IO_DMABASE((ap), (port)))
-> >> +#define ATP867X_IO_DMAMODE(ap, port) (0x0B + \
-> >> +                                     ATP867X_IO_DMABASE((ap), (port)))
-> >> +
-> >> +#define ATP867X_IO_PORTSPD(ap, port) (0x4A + \
-> >> +                                     ATP867X_IO_PORTBASE((ap), (port)))
-> >> +#define ATP867X_IO_PREREAD(ap, port) (0x4C + \
-> >> +                                     ATP867X_IO_PORTBASE((ap), (port)))
-> >> +
-> >> +struct atp867x_priv {
-> >> +     void __iomem *dma_mode;
-> >> +     void __iomem *mstr_piospd;
-> >> +     void __iomem *slave_piospd;
-> >> +     void __iomem *eightb_piospd;
-> >> +     int             pci66mhz;
-> >> +};
-> >> +
-> >> +static inline u8 atp867x_speed_to_mode(u8 speed)
-> >> +{
-> >> +     return speed - XFER_UDMA_0 + 1;
-> >> +}
-> >> +
-> >> +static void atp867x_set_dmamode(struct ata_port *ap, struct ata_device *adev)
-> >> +{
-> >> +     struct pci_dev *pdev    = to_pci_dev(ap->host->dev);
-> >> +     struct atp867x_priv *dp = ap->private_data;
-> >> +     u8 speed = adev->dma_mode;
-> >> +     u8 b;
-> >> +     u8 mode;
-> >> +
-> >> +     mode = atp867x_speed_to_mode(speed);
-> >
-> > The driver currently doesn't support MWDMA modes but claims otherwise
-> > (fixed in the attached patch).
-> >
-> >> +     /*
-> >> +      * Doc 6.6.9: decrease the udma mode value by 1 for safer UDMA speed
-> >> +      * on 66MHz bus
-> >> +      *   rev-A: UDMA_1~4 (5, 6 no change)
-> >> +      *   rev-B: all UDMA modes
-> >> +      *   UDMA_0 stays not to disable UDMA
-> >> +      */
-> >> +     if (dp->pci66mhz && mode > ATP867X_IO_DMAMODE_UDMA_0  &&
-> >> +        (pdev->device == PCI_DEVICE_ID_ARTOP_ATP867B ||
-> >> +         mode < ATP867X_IO_DMAMODE_UDMA_5))
-> >> +             mode--;
-> >> +
-> >> +     b = ioread8(dp->dma_mode);
-> >> +     if (adev->devno & 1) {
-> >> +             b = (b & ~ATP867X_IO_DMAMODE_SLAVE_MASK) |
-> >> +                     (mode << ATP867X_IO_DMAMODE_SLAVE_SHIFT);
-> >> +     } else {
-> >> +             b = (b & ~ATP867X_IO_DMAMODE_MSTR_MASK) |
-> >> +                     (mode << ATP867X_IO_DMAMODE_MSTR_SHIFT);
-> >> +     }
-> >> +     iowrite8(b, dp->dma_mode);
-> >> +}
-> >> +
-> >> +static int atp867x_get_active_clocks_shifted(unsigned int clk)
-> >> +{
-> >> +     unsigned char clocks = clk;
-> >> +
-> >> +     switch (clocks) {
-> >> +     case 0:
-> >> +             clocks = 1;
-> >> +             break;
-> >> +     case 1 ... 7:
-> >> +             break;
-> >> +     case 8 ... 12:
-> >> +             clocks = 7;
-> >
-> > Shouldn't "clocks = 0" (the default case) be used here?
-> 
-> The clocks value 0 sets it to 8 clocks, while value 7 sets to 12 clocks.
+--0016e6d386fe8db9340474a50ac1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-This would explain it but then there is no need to use "clocks = 7"
-for the _input_ "clocks == 7".
+On Mon, Sep 28, 2009 at 4:56 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Sun, Sep 27, 2009 at 07:00:08PM +0200, Corrado Zoccolo wrote:
+>> Hi Vivek,
+>> On Fri, Sep 25, 2009 at 10:26 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>> > On Fri, Sep 25, 2009 at 04:20:14AM +0200, Ulrich Lukas wrote:
+>> >> Vivek Goyal wrote:
+>> >> > Notes:
+>> >> > - With vanilla CFQ, random writers can overwhelm a random reader.
+>> >> > =C2=A0 Bring down its throughput and bump up latencies significantl=
+y.
+>> >>
+>> >>
+>> >> IIRC, with vanilla CFQ, sequential writing can overwhelm random reade=
+rs,
+>> >> too.
+>> >>
+>> >> I'm basing this assumption on the observations I made on both OpenSus=
+e
+>> >> 11.1 and Ubuntu 9.10 alpha6 which I described in my posting on LKML
+>> >> titled: "Poor desktop responsiveness with background I/O-operations" =
+of
+>> >> 2009-09-20.
+>> >> (Message ID: 4AB59CBB.8090907@datenparkplatz.de)
+>> >>
+>> >>
+>> >> Thus, I'm posting this to show that your work is greatly appreciated,
+>> >> given the rather disappointig status quo of Linux's fairness when it
+>> >> comes to disk IO time.
+>> >>
+>> >> I hope that your efforts lead to a change in performance of current
+>> >> userland applications, the sooner, the better.
+>> >>
+>> > [Please don't remove people from original CC list. I am putting them b=
+ack.]
+>> >
+>> > Hi Ulrich,
+>> >
+>> > I quicky went through that mail thread and I tried following on my
+>> > desktop.
+>> >
+>> > ##########################################
+>> > dd if=3D/home/vgoyal/4G-file of=3D/dev/null &
+>> > sleep 5
+>> > time firefox
+>> > # close firefox once gui pops up.
+>> > ##########################################
+>> >
+>> > It was taking close to 1 minute 30 seconds to launch firefox and dd go=
+t
+>> > following.
+>> >
+>> > 4294967296 bytes (4.3 GB) copied, 100.602 s, 42.7 MB/s
+>> >
+>> > (Results do vary across runs, especially if system is booted fresh. Do=
+n't
+>> > =C2=A0know why...).
+>> >
+>> >
+>> > Then I tried putting both the applications in separate groups and assi=
+gn
+>> > them weights 200 each.
+>> >
+>> > ##########################################
+>> > dd if=3D/home/vgoyal/4G-file of=3D/dev/null &
+>> > echo $! > /cgroup/io/test1/tasks
+>> > sleep 5
+>> > echo $$ > /cgroup/io/test2/tasks
+>> > time firefox
+>> > # close firefox once gui pops up.
+>> > ##########################################
+>> >
+>> > Now I firefox pops up in 27 seconds. So it cut down the time by 2/3.
+>> >
+>> > 4294967296 bytes (4.3 GB) copied, 84.6138 s, 50.8 MB/s
+>> >
+>> > Notice that throughput of dd also improved.
+>> >
+>> > I ran the block trace and noticed in many a cases firefox threads
+>> > immediately preempted the "dd". Probably because it was a file system
+>> > request. So in this case latency will arise from seek time.
+>> >
+>> > In some other cases, threads had to wait for up to 100ms because dd wa=
+s
+>> > not preempted. In this case latency will arise both from waiting on qu=
+eue
+>> > as well as seek time.
+>>
+>> I think cfq should already be doing something similar, i.e. giving
+>> 100ms slices to firefox, that alternate with dd, unless:
+>> * firefox is too seeky (in this case, the idle window will be too small)
+>> * firefox has too much think time.
+>>
+>
+Hi Vivek,
+> Hi Corrado,
+>
+> "firefox" is the shell script to setup the environment and launch the
+> broser. It seems to be a group of threads. Some of them run in parallel
+> and some of these seems to be running one after the other (once previous
+> process or threads finished).
 
-> I cleaned up a bit on clocks_shift. See the patch below.
-> 
-> > Otherwise it seems to result in underclocked timings for dp->pci66mhz == 0.
-> >
-> >> +             break;
-> >> +     default:
-> >> +             printk(KERN_WARNING "ATP867X: active %dclk is invalid. "
-> >> +                     "Using default 8clk.\n", clk);
-> >> +             clocks = 0;     /* 8 clk */
-> >> +             break;
-> >> +     }
-> >> +     return clocks << ATP867X_IO_PIOSPD_ACTIVE_SHIFT;
-> >> +}
-> >> +
-> >> +static int atp867x_get_recover_clocks_shifted(unsigned int clk)
-> >> +{
-> >> +     unsigned char clocks = clk;
-> >> +
-> >> +     switch (clocks) {
-> >> +     case 0:
-> >> +             clocks = 1;
-> >> +             break;
-> >> +     case 1 ... 11:
-> >> +             break;
-> >> +     case 12:
-> >> +             clocks = 0;
-> >> +             break;
-> >> +     case 13: case 14:
-> >> +             --clocks;
-> >> +             break;
-> >
-> > Is "clocks == 14" a reserved setting?
-> 
-> 12 is reserved for the default (== 0), and 13, 14 are set to value 12,
-> 13 respectively.
+Ok.
 
-I meant the _output_ "clocks == 14" here.
+>
+>> To rule out the first case, what happens if you run the test with your
+>> "fairness for seeky processes" patch?
+>
+> I applied that patch and it helps a lot.
+>
+> http://lwn.net/Articles/341032/
+>
+> With above patchset applied, and fairness=3D1, firefox pops up in 27-28 s=
+econds.
 
-> >
-> > If so a comment documenting it would be appreciated.
-> 
-> Sure. see the new patch below.
-> 
-> >
-> >> +     case 15:
-> >> +             break;
-> >> +     default:
-> >> +             printk(KERN_WARNING "ATP867X: recover %dclk is invalid. "
-> >> +                     "Using default 15clk.\n", clk);
-> >> +             clocks = 0;     /* 12 clk */
-> >
-> > Shouldn't it use "clocks == 15" setting?
-> It was a typo. 12 is the right default.
-> 
-> >
-> >> +             break;
-> >> +     }
-> >> +     return clocks << ATP867X_IO_PIOSPD_RECOVER_SHIFT;
-> >> +}
-> >> +
-> >> +static void atp867x_set_piomode(struct ata_port *ap, struct ata_device *adev)
-> >> +{
-> >> +     struct ata_device *peer = ata_dev_pair(adev);
-> >> +     struct atp867x_priv *dp = ap->private_data;
-> >> +     u8 speed = adev->pio_mode;
-> >> +     struct ata_timing t, p;
-> >> +     int T, UT;
-> >> +     u8 b;
-> >> +
-> >> +     T = 1000000000 / 33333;
-> >> +     UT = T / 4;
-> >> +
-> >> +     ata_timing_compute(adev, speed, &t, T, UT);
-> >> +     if (peer && peer->pio_mode) {
-> >> +             ata_timing_compute(peer, peer->pio_mode, &p, T, UT);
-> >> +             ata_timing_merge(&p, &t, &t, ATA_TIMING_8BIT);
-> >> +     }
-> >> +
-> >> +     b = ioread8(dp->dma_mode);
-> >> +     if (adev->devno & 1)
-> >> +             b = (b & ~ATP867X_IO_DMAMODE_SLAVE_MASK);
-> >> +     else
-> >> +             b = (b & ~ATP867X_IO_DMAMODE_MSTR_MASK);
-> >> +     iowrite8(b, dp->dma_mode);
-> >> +
-> >> +     b = atp867x_get_active_clocks_shifted(t.active) |
-> >> +             atp867x_get_recover_clocks_shifted(t.recover);
-> >> +     if (dp->pci66mhz)
-> >> +             b += 0x10;
-> >
-> > What is the purpose of the above hack?
-> 
-> For safe PIO mode according to spec.
-> 
-> >
-> > AFAICS (I don't have a datasheet) it may result in invalid active
-> > clocks being used for t.active > 12 and 0x80 bit being set incorrectly
-> > for t.active values 7..12 (unless it was the purpose of the hack).
-> 
-> See the patch below..
-> 
-> >
-> >> +     if (adev->devno & 1)
-> >> +             iowrite8(b, dp->slave_piospd);
-> >> +     else
-> >> +             iowrite8(b, dp->mstr_piospd);
-> >> +
-> >> +     /*
-> >> +      * use the same value for comand timing as for PIO timimg
-> >> +      */
-> >> +     iowrite8(b, dp->eightb_piospd);
-> >
-> > This is incorrect if slave/master devices use different PIO modes
-> > or if PIO mode <= 2 is used by any device.
-> >
-> > Timing based on t.act8b and t.rec8b values should be used instead.
-> 
-> act8b and rec8b have the same values as active, recovery of the port.
+Great.
+Can you try the attached patch (on top of 2.6.31)?
+It implements the alternative approach we discussed privately in july,
+and it addresses the possible latency increase that could happen with
+your patch.
 
-Please take a look at drivers/ata/libata-core.c::ata_timing[] table:
+To summarize for everyone, we separate sync sequential queues, sync
+seeky queues and async queues in three separate RR strucutres, and
+alternate servicing requests between them.
 
-...
-	{ XFER_PIO_0,     70, 290, 240, 600, 165, 150, 0,  600,   0 },
-	{ XFER_PIO_1,     50, 290,  93, 383, 125, 100, 0,  383,   0 },
-	{ XFER_PIO_2,     30, 290,  40, 330, 100,  90, 0,  240,   0 },
-	{ XFER_PIO_3,     30,  80,  70, 180,  80,  70, 0,  180,   0 },
-	{ XFER_PIO_4,     25,  70,  25, 120,  70,  25, 0,  120,   0 },
-	{ XFER_PIO_5,     15,  65,  25, 100,  65,  25, 0,  100,   0 },
-	{ XFER_PIO_6,     10,  55,  20,  80,  55,  20, 0,   80,   0 },
-...
+When servicing seeky queues (the ones that are usually penalized by
+cfq, for which no fairness is usually provided), we do not idle
+between them, but we do idle for the last queue (the idle can be
+exited when any seeky queue has requests). This allows us to allocate
+disk time globally for all seeky processes, and to reduce seeky
+processes latencies.
 
-For PIO modes <= 2 (or if master/slave devices use different PIO modes)
-we'll have different values, i.e. for PIO2 in case of a single device on
-the port using standard timings we'll have:
+I tested with 'konsole -e exit', while doing a sequential write with
+dd, and the start up time reduced from 37s to 7s, on an old laptop
+disk.
 
-t.active   =  4
-t.recovery =  4
-t.act8b    = 10
-t.rec8b    =  2
+Thanks,
+Corrado
 
-Most likely we won't see much use of this driver with older devices,
-however this should not stop us from supporting them and at the same
-time making the driver easier to maintain.
+>
+>> To rule out the first case, what happens if you run the test with your
+>> "fairness for seeky processes" patch?
+>
+> I applied that patch and it helps a lot.
+>
+> http://lwn.net/Articles/341032/
+>
+> With above patchset applied, and fairness=3D1, firefox pops up in 27-28
+> seconds.
+>
+> So it looks like if we don't disable idle window for seeky processes on
+> hardware supporting command queuing, it helps in this particular case.
+>
+> Thanks
+> Vivek
+>
 
-> If a:r=3:1 then they become 4:1 on 66mhz for safer transfer, and
-> a8:r8=3:1, which is identical but the a8 should be incremented by 1.
-> I can use a8:r8 with 66mhz fixup but it becomes the same as using a:r.
-> Take a look at the patch below.
-> 
-> >
-> > On the somehow related note:
-> >
-> > * I don't see how PIO0-2 command timings can be met with only 3 bits
-> >  used for active clocks.  Could it be that dp->eight_piospd should be
-> >  programmed in a slightly different way than dp->{mstr,slave}_piospd?
-> >
-> 
-> See new patch on clocks_shift below.
-> 
-> > * The controller allows higher clocks values for recovery timings but
-> >  ata_timing_compute() tries to fairly increase both recovery and active
-> >  timings to meet the required cycle timing.
-> >
-> >> +}
-> >> +
-> >> +static int atp867x_cable_detect(struct ata_port *ap)
-> >> +{
-> >> +     return ATA_CBL_PATA40_SHORT;
-> >> +}
-> >
-> > As noticed by Robert and Alan already:
-> >
-> > This should use ATA_CBL_PATA_UNK and rely on the driver-side cable detection.
-> 
-> I modified cable_detect() to use override; on a certain
-> subsystem_vendor|device, its 40short, others, unknown.
-> 
-> >
-> >
-> > One last thing: Power Management support is missing from this driver
-> > (I tried addressing this in the separately posted patch but it needs
-> > testing by somebody with the hardware).
-> >
-> >
-> > MWDMA fix:
-> >
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] pata_atp867x: fix it to not claim MWDMA support
-> >
-> > MWDMA modes are not supported by this driver currently.
-> >
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> >  drivers/ata/pata_atp867x.c |   10 +---------
-> >  1 file changed, 1 insertion(+), 9 deletions(-)
-> >
-> > Index: b/drivers/ata/pata_atp867x.c
-> > ===================================================================
-> > --- a/drivers/ata/pata_atp867x.c
-> > +++ b/drivers/ata/pata_atp867x.c
-> > @@ -118,20 +118,13 @@ struct atp867x_priv {
-> >        int             pci66mhz;
-> >  };
-> >
-> > -static inline u8 atp867x_speed_to_mode(u8 speed)
-> > -{
-> > -       return speed - XFER_UDMA_0 + 1;
-> > -}
-> > -
-> >  static void atp867x_set_dmamode(struct ata_port *ap, struct ata_device *adev)
-> >  {
-> >        struct pci_dev *pdev    = to_pci_dev(ap->host->dev);
-> >        struct atp867x_priv *dp = ap->private_data;
-> >        u8 speed = adev->dma_mode;
-> >        u8 b;
-> > -       u8 mode;
-> > -
-> > -       mode = atp867x_speed_to_mode(speed);
-> > +       u8 mode = speed - XFER_UDMA_0 + 1;
-> >
-> >        /*
-> >         * Doc 6.6.9: decrease the udma mode value by 1 for safer UDMA speed
-> > @@ -471,7 +464,6 @@ static int atp867x_init_one(struct pci_d
-> >        static const struct ata_port_info info_867x = {
-> >                .flags          = ATA_FLAG_SLAVE_POSS,
-> >                .pio_mask       = ATA_PIO4,
-> > -               .mwdma_mask     = ATA_MWDMA2,
-> 
-> This looks good to me. thx.
-> 
-> >                .udma_mask      = ATA_UDMA6,
-> >                .port_ops       = &atp867x_ops,
-> >        };
-> >
-> 
-> 
-> From: John(Jung-Ik) Lee <jilee@google.com>
-> 
-> clarifications in timings calculations and cable detection
-> 
-> Signed-off-by: John(Jung-Ik) Lee <jilee@google.com>
-> ---
-> 
->  pata_atp867x.c |   50 +++++++++++++++++++++++++++++++++++++-------------
->  1 files changed, 37 insertions, 13 deletions
-> 
-> diff --git a/drivers/ata/pata_atp867x.c b/drivers/ata/pata_atp867x.c
-> index e6c4706..c1c691f 100644
-> --- a/drivers/ata/pata_atp867x.c
-> +++ b/drivers/ata/pata_atp867x.c
-> @@ -156,8 +156,10 @@ static void atp867x_set_dmamode(struct ata_port
-> *ap, struct ata_device *adev)
->  	iowrite8(b, dp->dma_mode);
->  }
-> 
-> -static int atp867x_get_active_clocks_shifted(unsigned int clk)
-> +static int atp867x_get_active_clocks_shifted(struct ata_port *ap,
-> +	unsigned int clk)
->  {
-> +	struct atp867x_priv *dp = ap->private_data;
->  	unsigned char clocks = clk;
-> 
->  	switch (clocks) {
-> @@ -166,15 +168,25 @@ static int
-> atp867x_get_active_clocks_shifted(unsigned int clk)
->  		break;
->  	case 1 ... 7:
->  		break;
-> -	case 8 ... 12:
-> +	case 9 ... 12:
->  		clocks = 7;
->  		break;
->  	default:
->  		printk(KERN_WARNING "ATP867X: active %dclk is invalid. "
->  			"Using default 8clk.\n", clk);
-> -		clocks = 0;	/* 8 clk */
-> -		break;
-> +	case 8:	/* default 8 clk */
-> +		clocks = 0;
-> +		goto active_clock_shift_done;
->  	}
-> +
-> +	/*
-> +	 * Doc 6.6.9: increase the clock value by 1 for safer PIO speed
-> +	 * on 66MHz bus
-> +	 */
-> +	if (dp->pci66mhz && clocks < 7)
-> +		clocks++;
-> +
-> +active_clock_shift_done:
->  	return clocks << ATP867X_IO_PIOSPD_ACTIVE_SHIFT;
->  }
-> 
-> @@ -188,20 +200,19 @@ static int
-> atp867x_get_recover_clocks_shifted(unsigned int clk)
->  		break;
->  	case 1 ... 11:
->  		break;
-> -	case 12:
-> -		clocks = 0;
-> -		break;
->  	case 13: case 14:
-> -		--clocks;
-> +		--clocks;	/* by the spec */
->  		break;
->  	case 15:
->  		break;
->  	default:
->  		printk(KERN_WARNING "ATP867X: recover %dclk is invalid. "
->  			"Using default 12clk.\n", clk);
-> -		clocks = 0;	/* 12 clk */
-> +	case 12:	/* default 12 clk */
-> +		clocks = 0;
->  		break;
->  	}
-> +
->  	return clocks << ATP867X_IO_PIOSPD_RECOVER_SHIFT;
->  }
-> 
-> @@ -230,10 +241,8 @@ static void atp867x_set_piomode(struct ata_port
-> *ap, struct ata_device *adev)
->  		b = (b & ~ATP867X_IO_DMAMODE_MSTR_MASK);
->  	iowrite8(b, dp->dma_mode);
-> 
-> -	b = atp867x_get_active_clocks_shifted(t.active) |
-> +	b = atp867x_get_active_clocks_shifted(ap, t.active) |
->  		atp867x_get_recover_clocks_shifted(t.recover);
-> -	if (dp->pci66mhz)
-> -		b += 0x10;
-> 
->  	if (adev->devno & 1)
->  		iowrite8(b, dp->slave_piospd);
-> @@ -246,9 +255,24 @@ static void atp867x_set_piomode(struct ata_port
-> *ap, struct ata_device *adev)
->  	iowrite8(b, dp->eightb_piospd);
->  }
-> 
-> +static int atp867x_cable_override(struct pci_dev *pdev)
-> +{
-> +	if (pdev->subsystem_vendor == PCI_VENDOR_ID_ARTOP &&
-> +		(pdev->subsystem_device == PCI_DEVICE_ID_ARTOP_ATP867A ||
-> +		 pdev->subsystem_device == PCI_DEVICE_ID_ARTOP_ATP867B)) {
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> +
->  static int atp867x_cable_detect(struct ata_port *ap)
->  {
-> -	return ATA_CBL_PATA40_SHORT;
-> +	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
-> +
-> +	if (atp867x_cable_override(pdev))
-> +		return ATA_CBL_PATA40_SHORT;
-> +
-> +	return ATA_CBL_PATA_UNK;
->  }
-> 
->  static struct scsi_host_template atp867x_sht = {
+--0016e6d386fe8db9340474a50ac1
+Content-Type: application/octet-stream; name="cfq.patch"
+Content-Disposition: attachment; filename="cfq.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g05bx0jl0
 
-Thanks, your patch looks good to me but since there are still some
-leftover issues left we would also need something like the incremental
-patch below:
-
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_atp867x: PIO support fixes
-
-* use  8 clk setting for active clocks == 7 (was 12 clk)
-* use 12 clk setting for active clocks > 12 (was  8 clk)
-* do 66MHz bus fixup before mapping active clocks
-* fix setup of PIO command timings
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ata/pata_atp867x.c |   36 +++++++++++++++++++-----------------
- 1 file changed, 19 insertions(+), 17 deletions(-)
-
-Index: b/drivers/ata/pata_atp867x.c
-===================================================================
---- a/drivers/ata/pata_atp867x.c
-+++ b/drivers/ata/pata_atp867x.c
-@@ -155,30 +155,31 @@ static int atp867x_get_active_clocks_shi
- 	struct atp867x_priv *dp = ap->private_data;
- 	unsigned char clocks = clk;
- 
-+	/*
-+	 * Doc 6.6.9: increase the clock value by 1 for safer PIO speed
-+	 * on 66MHz bus
-+	 */
-+	if (dp->pci66mhz)
-+		clocks++;
-+
- 	switch (clocks) {
- 	case 0:
- 		clocks = 1;
- 		break;
--	case 1 ... 7:
--		break;
--	case 9 ... 12:
--		clocks = 7;
-+	case 1 ... 6:
- 		break;
- 	default:
- 		printk(KERN_WARNING "ATP867X: active %dclk is invalid. "
--			"Using default 8clk.\n", clk);
-+			"Using 12clk.\n", clk);
-+	case 9 ... 12:
-+		clocks = 7;	/* 12 clk */
-+		break;
-+	case 7:
- 	case 8:	/* default 8 clk */
- 		clocks = 0;
- 		goto active_clock_shift_done;
- 	}
- 
--	/*
--	 * Doc 6.6.9: increase the clock value by 1 for safer PIO speed
--	 * on 66MHz bus
--	 */
--	if (dp->pci66mhz && clocks < 7)
--		clocks++;
--
- active_clock_shift_done:
- 	return clocks << ATP867X_IO_PIOSPD_ACTIVE_SHIFT;
- }
-@@ -193,7 +194,8 @@ static int atp867x_get_recover_clocks_sh
- 		break;
- 	case 1 ... 11:
- 		break;
--	case 13: case 14:
-+	case 13:
-+	case 14:
- 		--clocks;	/* by the spec */
- 		break;
- 	case 15:
-@@ -235,16 +237,16 @@ static void atp867x_set_piomode(struct a
- 	iowrite8(b, dp->dma_mode);
- 
- 	b = atp867x_get_active_clocks_shifted(ap, t.active) |
--		atp867x_get_recover_clocks_shifted(t.recover);
-+	    atp867x_get_recover_clocks_shifted(t.recover);
- 
- 	if (adev->devno & 1)
- 		iowrite8(b, dp->slave_piospd);
- 	else
- 		iowrite8(b, dp->mstr_piospd);
- 
--	/*
--	 * use the same value for comand timing as for PIO timimg
--	 */
-+	b = atp867x_get_active_clocks_shifted(ap, t.act8b) |
-+	    atp867x_get_recover_clocks_shifted(t.rec8b);
-+
- 	iowrite8(b, dp->eightb_piospd);
- }
- 
+ZGlmZiAtLWdpdCBhL2Jsb2NrL2NmcS1pb3NjaGVkLmMgYi9ibG9jay9jZnEtaW9zY2hlZC5jCmlu
+ZGV4IGZkNzA4MGUuLjA2NGY0ZmIgMTAwNjQ0Ci0tLSBhL2Jsb2NrL2NmcS1pb3NjaGVkLmMKKysr
+IGIvYmxvY2svY2ZxLWlvc2NoZWQuYwpAQCAtMjcsNiArMjcsMTIgQEAgc3RhdGljIGNvbnN0IGlu
+dCBjZnFfc2xpY2Vfc3luYyA9IEhaIC8gMTA7CiBzdGF0aWMgaW50IGNmcV9zbGljZV9hc3luYyA9
+IEhaIC8gMjU7CiBzdGF0aWMgY29uc3QgaW50IGNmcV9zbGljZV9hc3luY19ycSA9IDI7CiBzdGF0
+aWMgaW50IGNmcV9zbGljZV9pZGxlID0gSFogLyAxMjU7CitzdGF0aWMgaW50IGNmcV90YXJnZXRf
+bGF0ZW5jeSA9IEhaICogMy8xMDsgLyogMzAwIG1zICovCitzdGF0aWMgaW50IGNmcV9oaXN0X2Rp
+dmlzb3IgPSA0OworLyoKKyAqIE51bWJlciBvZiB0aW1lcyB0aGF0IG90aGVyIHdvcmtsb2FkcyBj
+YW4gYmUgc2NoZWR1bGVkIGJlZm9yZSBhc3luYworICovCitzdGF0aWMgY29uc3QgdW5zaWduZWQg
+aW50IGNmcV9hc3luY19wZW5hbHR5ID0gNDsKIAogLyoKICAqIG9mZnNldCBmcm9tIGVuZCBvZiBz
+ZXJ2aWNlIHRyZWUKQEAgLTM2LDcgKzQyLDcgQEAgc3RhdGljIGludCBjZnFfc2xpY2VfaWRsZSA9
+IEhaIC8gMTI1OwogLyoKICAqIGJlbG93IHRoaXMgdGhyZXNob2xkLCB3ZSBjb25zaWRlciB0aGlu
+a3RpbWUgaW1tZWRpYXRlCiAgKi8KLSNkZWZpbmUgQ0ZRX01JTl9UVAkJKDIpCisjZGVmaW5lIENG
+UV9NSU5fVFQJCSgxKQogCiAjZGVmaW5lIENGUV9TTElDRV9TQ0FMRQkJKDUpCiAjZGVmaW5lIENG
+UV9IV19RVUVVRV9NSU4JKDUpCkBAIC02Nyw4ICs3Myw5IEBAIHN0YXRpYyBERUZJTkVfU1BJTkxP
+Q0soaW9jX2dvbmVfbG9jayk7CiBzdHJ1Y3QgY2ZxX3JiX3Jvb3QgewogCXN0cnVjdCByYl9yb290
+IHJiOwogCXN0cnVjdCByYl9ub2RlICpsZWZ0OworCXVuc2lnbmVkIGNvdW50OwogfTsKLSNkZWZp
+bmUgQ0ZRX1JCX1JPT1QJKHN0cnVjdCBjZnFfcmJfcm9vdCkgeyBSQl9ST09ULCBOVUxMLCB9Cisj
+ZGVmaW5lIENGUV9SQl9ST09UCShzdHJ1Y3QgY2ZxX3JiX3Jvb3QpIHsgUkJfUk9PVCwgTlVMTCwg
+MCwgfQogCiAvKgogICogUGVyIHByb2Nlc3MtZ3JvdXBpbmcgc3RydWN0dXJlCkBAIC0xMTMsNiAr
+MTIwLDIxIEBAIHN0cnVjdCBjZnFfcXVldWUgewogCXVuc2lnbmVkIHNob3J0IGlvcHJpb19jbGFz
+cywgb3JnX2lvcHJpb19jbGFzczsKIAogCXBpZF90IHBpZDsKKworCXN0cnVjdCBjZnFfcmJfcm9v
+dCAqc2VydmljZV90cmVlOworCXN0cnVjdCBjZnFfaW9fY29udGV4dCAqY2ljOworfTsKKworZW51
+bSB3bF9wcmlvX3QgeworCUlETEVfV0wgPSAtMSwKKwlCRV9XTCA9IDAsCisJUlRfV0wgPSAxCit9
+OworCitlbnVtIHdsX3R5cGVfdCB7CisJQVNZTkNfV0wgPSAwLAorCVNZTkNfTk9JRExFX1dMID0g
+MSwKKwlTWU5DX1dMID0gMgogfTsKIAogLyoKQEAgLTEyNCw3ICsxNDYsMTMgQEAgc3RydWN0IGNm
+cV9kYXRhIHsKIAkvKgogCSAqIHJyIGxpc3Qgb2YgcXVldWVzIHdpdGggcmVxdWVzdHMgYW5kIHRo
+ZSBjb3VudCBvZiB0aGVtCiAJICovCi0Jc3RydWN0IGNmcV9yYl9yb290IHNlcnZpY2VfdHJlZTsK
+KwlzdHJ1Y3QgY2ZxX3JiX3Jvb3Qgc2VydmljZV90cmVlc1syXVszXTsKKwlzdHJ1Y3QgY2ZxX3Ji
+X3Jvb3Qgc2VydmljZV90cmVlX2lkbGU7CisKKwllbnVtIHdsX3ByaW9fdCBzZXJ2aW5nX3ByaW87
+CisJZW51bSB3bF90eXBlX3Qgc2VydmluZ190eXBlOworCXVuc2lnbmVkIGxvbmcgd29ya2xvYWRf
+ZXhwaXJlczsKKwl1bnNpZ25lZCBpbnQgYXN5bmNfc3RhcnZlZDsKIAogCS8qCiAJICogRWFjaCBw
+cmlvcml0eSB0cmVlIGlzIHNvcnRlZCBieSBuZXh0X3JlcXVlc3QgcG9zaXRpb24uICBUaGVzZQpA
+QCAtMTM0LDE0ICsxNjIsMTEgQEAgc3RydWN0IGNmcV9kYXRhIHsKIAlzdHJ1Y3QgcmJfcm9vdCBw
+cmlvX3RyZWVzW0NGUV9QUklPX0xJU1RTXTsKIAogCXVuc2lnbmVkIGludCBidXN5X3F1ZXVlczsK
+LQkvKgotCSAqIFVzZWQgdG8gdHJhY2sgYW55IHBlbmRpbmcgcnQgcmVxdWVzdHMgc28gd2UgY2Fu
+IHByZS1lbXB0IGN1cnJlbnQKLQkgKiBub24tUlQgY2ZxcSBpbiBzZXJ2aWNlIHdoZW4gdGhpcyB2
+YWx1ZSBpcyBub24temVyby4KLQkgKi8KLQl1bnNpZ25lZCBpbnQgYnVzeV9ydF9xdWV1ZXM7CisJ
+dW5zaWduZWQgaW50IGJ1c3lfcXVldWVzX2F2Z1syXTsKIAotCWludCBycV9pbl9kcml2ZXI7CisJ
+aW50IHJxX2luX2RyaXZlclsyXTsKIAlpbnQgc3luY19mbGlnaHQ7CisJaW50IHJlYWRzX2RlbGF5
+ZWQ7CiAKIAkvKgogCSAqIHF1ZXVlLWRlcHRoIGRldGVjdGlvbgpAQCAtMTc4LDYgKzIwMyw5IEBA
+IHN0cnVjdCBjZnFfZGF0YSB7CiAJdW5zaWduZWQgaW50IGNmcV9zbGljZVsyXTsKIAl1bnNpZ25l
+ZCBpbnQgY2ZxX3NsaWNlX2FzeW5jX3JxOwogCXVuc2lnbmVkIGludCBjZnFfc2xpY2VfaWRsZTsK
+Kwl1bnNpZ25lZCBpbnQgY2ZxX3RhcmdldF9sYXRlbmN5OworCXVuc2lnbmVkIGludCBjZnFfaGlz
+dF9kaXZpc29yOworCXVuc2lnbmVkIGludCBjZnFfYXN5bmNfcGVuYWx0eTsKIAogCXN0cnVjdCBs
+aXN0X2hlYWQgY2ljX2xpc3Q7CiAKQEAgLTE4NywxMSArMjE1LDE1IEBAIHN0cnVjdCBjZnFfZGF0
+YSB7CiAJc3RydWN0IGNmcV9xdWV1ZSBvb21fY2ZxcTsKIH07CiAKK3N0YXRpYyBzdHJ1Y3QgY2Zx
+X3JiX3Jvb3QgKiBzZXJ2aWNlX3RyZWVfZm9yKGVudW0gd2xfcHJpb190IHByaW8sIGVudW0gd2xf
+dHlwZV90IHR5cGUsCisJCQkJCQkJICBzdHJ1Y3QgY2ZxX2RhdGEgKmNmcWQpIHsKKwlyZXR1cm4g
+cHJpbyA9PSBJRExFX1dMID8gJmNmcWQtPnNlcnZpY2VfdHJlZV9pZGxlIDogICZjZnFkLT5zZXJ2
+aWNlX3RyZWVzW3ByaW9dW3R5cGVdOworfQorCiBlbnVtIGNmcXFfc3RhdGVfZmxhZ3MgewogCUNG
+UV9DRlFRX0ZMQUdfb25fcnIgPSAwLAkvKiBvbiByb3VuZC1yb2JpbiBidXN5IGxpc3QgKi8KIAlD
+RlFfQ0ZRUV9GTEFHX3dhaXRfcmVxdWVzdCwJLyogd2FpdGluZyBmb3IgYSByZXF1ZXN0ICovCiAJ
+Q0ZRX0NGUVFfRkxBR19tdXN0X2Rpc3BhdGNoLAkvKiBtdXN0IGJlIGFsbG93ZWQgYSBkaXNwYXRj
+aCAqLwotCUNGUV9DRlFRX0ZMQUdfbXVzdF9hbGxvYywJLyogbXVzdCBiZSBhbGxvd2VkIHJxIGFs
+bG9jICovCiAJQ0ZRX0NGUVFfRkxBR19tdXN0X2FsbG9jX3NsaWNlLAkvKiBwZXItc2xpY2UgbXVz
+dF9hbGxvYyBmbGFnICovCiAJQ0ZRX0NGUVFfRkxBR19maWZvX2V4cGlyZSwJLyogRklGTyBjaGVj
+a2VkIGluIHRoaXMgc2xpY2UgKi8KIAlDRlFfQ0ZRUV9GTEFHX2lkbGVfd2luZG93LAkvKiBzbGlj
+ZSBpZGxpbmcgZW5hYmxlZCAqLwpAQCAtMjE4LDcgKzI1MCw2IEBAIHN0YXRpYyBpbmxpbmUgaW50
+IGNmcV9jZnFxXyMjbmFtZShjb25zdCBzdHJ1Y3QgY2ZxX3F1ZXVlICpjZnFxKQkJXAogQ0ZRX0NG
+UVFfRk5TKG9uX3JyKTsKIENGUV9DRlFRX0ZOUyh3YWl0X3JlcXVlc3QpOwogQ0ZRX0NGUVFfRk5T
+KG11c3RfZGlzcGF0Y2gpOwotQ0ZRX0NGUVFfRk5TKG11c3RfYWxsb2MpOwogQ0ZRX0NGUVFfRk5T
+KG11c3RfYWxsb2Nfc2xpY2UpOwogQ0ZRX0NGUVFfRk5TKGZpZm9fZXhwaXJlKTsKIENGUV9DRlFR
+X0ZOUyhpZGxlX3dpbmRvdyk7CkBAIC0yMzMsMTIgKzI2NCwyOCBAQCBDRlFfQ0ZRUV9GTlMoY29v
+cCk7CiAjZGVmaW5lIGNmcV9sb2coY2ZxZCwgZm10LCBhcmdzLi4uKQlcCiAJYmxrX2FkZF90cmFj
+ZV9tc2coKGNmcWQpLT5xdWV1ZSwgImNmcSAiIGZtdCwgIyNhcmdzKQogCisjZGVmaW5lIENJQ19T
+RUVLX1RIUgkxMDI0CisjZGVmaW5lIENJQ19TRUVLWShjaWMpCSgoY2ljKS0+c2Vla19tZWFuID4g
+Q0lDX1NFRUtfVEhSKQorI2RlZmluZSBDRlFRX1NFRUtZKGNmcXEpICghY2ZxcS0+Y2ljIHx8IENJ
+Q19TRUVLWShjZnFxLT5jaWMpKQorCitzdGF0aWMgaW5saW5lIGludCBjZnFfYnVzeV9xdWV1ZXNf
+d2woZW51bSB3bF9wcmlvX3Qgd2wsIHN0cnVjdCBjZnFfZGF0YSAqY2ZxZCkgeworCXJldHVybiB3
+bD09SURMRV9XTD8gY2ZxZC0+c2VydmljZV90cmVlX2lkbGUuY291bnQgOgorCQljZnFkLT5zZXJ2
+aWNlX3RyZWVzW3dsXVtBU1lOQ19XTF0uY291bnQKKwkJKyBjZnFkLT5zZXJ2aWNlX3RyZWVzW3ds
+XVtTWU5DX05PSURMRV9XTF0uY291bnQKKwkJKyBjZnFkLT5zZXJ2aWNlX3RyZWVzW3dsXVtTWU5D
+X1dMXS5jb3VudDsKK30KKwogc3RhdGljIHZvaWQgY2ZxX2Rpc3BhdGNoX2luc2VydChzdHJ1Y3Qg
+cmVxdWVzdF9xdWV1ZSAqLCBzdHJ1Y3QgcmVxdWVzdCAqKTsKIHN0YXRpYyBzdHJ1Y3QgY2ZxX3F1
+ZXVlICpjZnFfZ2V0X3F1ZXVlKHN0cnVjdCBjZnFfZGF0YSAqLCBpbnQsCiAJCQkJICAgICAgIHN0
+cnVjdCBpb19jb250ZXh0ICosIGdmcF90KTsKIHN0YXRpYyBzdHJ1Y3QgY2ZxX2lvX2NvbnRleHQg
+KmNmcV9jaWNfbG9va3VwKHN0cnVjdCBjZnFfZGF0YSAqLAogCQkJCQkJc3RydWN0IGlvX2NvbnRl
+eHQgKik7CiAKK3N0YXRpYyBpbmxpbmUgaW50IHJxX2luX2RyaXZlcihzdHJ1Y3QgY2ZxX2RhdGEg
+KmNmcWQpCit7CisJcmV0dXJuIGNmcWQtPnJxX2luX2RyaXZlclswXSArIGNmcWQtPnJxX2luX2Ry
+aXZlclsxXTsKK30KKwogc3RhdGljIGlubGluZSBzdHJ1Y3QgY2ZxX3F1ZXVlICpjaWNfdG9fY2Zx
+cShzdHJ1Y3QgY2ZxX2lvX2NvbnRleHQgKmNpYywKIAkJCQkJICAgIGludCBpc19zeW5jKQogewpA
+QCAtMjQ5LDYgKzI5Niw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBjaWNfc2V0X2NmcXEoc3RydWN0
+IGNmcV9pb19jb250ZXh0ICpjaWMsCiAJCQkJc3RydWN0IGNmcV9xdWV1ZSAqY2ZxcSwgaW50IGlz
+X3N5bmMpCiB7CiAJY2ljLT5jZnFxWyEhaXNfc3luY10gPSBjZnFxOworCWNmcXEtPmNpYyA9IGNp
+YzsKIH0KIAogLyoKQEAgLTI1Nyw3ICszMDUsNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgY2ljX3Nl
+dF9jZnFxKHN0cnVjdCBjZnFfaW9fY29udGV4dCAqY2ljLAogICovCiBzdGF0aWMgaW5saW5lIGlu
+dCBjZnFfYmlvX3N5bmMoc3RydWN0IGJpbyAqYmlvKQogewotCWlmIChiaW9fZGF0YV9kaXIoYmlv
+KSA9PSBSRUFEIHx8IGJpb19zeW5jKGJpbykpCisJaWYgKGJpb19kYXRhX2RpcihiaW8pID09IFJF
+QUQgfHwgYmlvX3J3X2ZsYWdnZWQoYmlvLCBCSU9fUldfU1lOQ0lPKSkKIAkJcmV0dXJuIDE7CiAK
+IAlyZXR1cm4gMDsKQEAgLTMwMywxMCArMzUxLDMzIEBAIGNmcV9wcmlvX3RvX3NsaWNlKHN0cnVj
+dCBjZnFfZGF0YSAqY2ZxZCwgc3RydWN0IGNmcV9xdWV1ZSAqY2ZxcSkKIAlyZXR1cm4gY2ZxX3By
+aW9fc2xpY2UoY2ZxZCwgY2ZxX2NmcXFfc3luYyhjZnFxKSwgY2ZxcS0+aW9wcmlvKTsKIH0KIAor
+c3RhdGljIGlubGluZSB1bnNpZ25lZAorY2ZxX2dldF9pbnRlcmVzdGVkX3F1ZXVlcyhzdHJ1Y3Qg
+Y2ZxX2RhdGEgKmNmcWQsIGJvb2wgcnQpIHsKKwl1bnNpZ25lZCBtaW5fcSwgbWF4X3E7CisJdW5z
+aWduZWQgbXVsdCAgPSBjZnFkLT5jZnFfaGlzdF9kaXZpc29yIC0gMTsKKwl1bnNpZ25lZCByb3Vu
+ZCA9IGNmcWQtPmNmcV9oaXN0X2Rpdmlzb3IgLyAyOworCXVuc2lnbmVkIGJ1c3kgID0gY2ZxX2J1
+c3lfcXVldWVzX3dsKHJ0LCBjZnFkKTsKKwltaW5fcSA9IG1pbihjZnFkLT5idXN5X3F1ZXVlc19h
+dmdbcnRdLCBidXN5KTsKKwltYXhfcSA9IG1heChjZnFkLT5idXN5X3F1ZXVlc19hdmdbcnRdLCBi
+dXN5KTsKKwljZnFkLT5idXN5X3F1ZXVlc19hdmdbcnRdID0gKG11bHQgKiBtYXhfcSArIG1pbl9x
+ICsgcm91bmQpIC8KKwkJY2ZxZC0+Y2ZxX2hpc3RfZGl2aXNvcjsKKwlyZXR1cm4gY2ZxZC0+YnVz
+eV9xdWV1ZXNfYXZnW3J0XTsKK30KKwogc3RhdGljIGlubGluZSB2b2lkCiBjZnFfc2V0X3ByaW9f
+c2xpY2Uoc3RydWN0IGNmcV9kYXRhICpjZnFkLCBzdHJ1Y3QgY2ZxX3F1ZXVlICpjZnFxKQogewot
+CWNmcXEtPnNsaWNlX2VuZCA9IGNmcV9wcmlvX3RvX3NsaWNlKGNmcWQsIGNmcXEpICsgamlmZmll
+czsKKwl1bnNpZ25lZCBwcm9jZXNzX3RociA9IGNmcWQtPmNmcV90YXJnZXRfbGF0ZW5jeSAvIGNm
+cWQtPmNmcV9zbGljZVsxXTsKKwl1bnNpZ25lZCBpcSA9IGNmcV9nZXRfaW50ZXJlc3RlZF9xdWV1
+ZXMoY2ZxZCwgY2ZxX2NsYXNzX3J0KGNmcXEpKTsKKwl1bnNpZ25lZCBzbGljZSA9IGNmcV9wcmlv
+X3RvX3NsaWNlKGNmcWQsIGNmcXEpOworCisJaWYgKGlxID4gcHJvY2Vzc190aHIpIHsKKwkJdW5z
+aWduZWQgbG93X3NsaWNlID0gMiAqIHNsaWNlICogY2ZxZC0+Y2ZxX3NsaWNlX2lkbGUKKwkJCS8g
+Y2ZxZC0+Y2ZxX3NsaWNlWzFdOworCQlzbGljZSA9IG1heChzbGljZSAqIHByb2Nlc3NfdGhyIC8g
+aXEsIG1pbihzbGljZSwgbG93X3NsaWNlKSk7CisJfQorCisJY2ZxcS0+c2xpY2VfZW5kID0gamlm
+ZmllcyArIHNsaWNlOwogCWNmcV9sb2dfY2ZxcShjZnFkLCBjZnFxLCAic2V0X3NsaWNlPSVsdSIs
+IGNmcXEtPnNsaWNlX2VuZCAtIGppZmZpZXMpOwogfQogCkBAIC00NDUsNiArNTE2LDcgQEAgc3Rh
+dGljIHZvaWQgY2ZxX3JiX2VyYXNlKHN0cnVjdCByYl9ub2RlICpuLCBzdHJ1Y3QgY2ZxX3JiX3Jv
+b3QgKnJvb3QpCiAJaWYgKHJvb3QtPmxlZnQgPT0gbikKIAkJcm9vdC0+bGVmdCA9IE5VTEw7CiAJ
+cmJfZXJhc2VfaW5pdChuLCAmcm9vdC0+cmIpOworCS0tcm9vdC0+Y291bnQ7CiB9CiAKIC8qCkBA
+IC00ODUsNDYgKzU1Nyw1NiBAQCBzdGF0aWMgdW5zaWduZWQgbG9uZyBjZnFfc2xpY2Vfb2Zmc2V0
+KHN0cnVjdCBjZnFfZGF0YSAqY2ZxZCwKIH0KIAogLyoKLSAqIFRoZSBjZnFkLT5zZXJ2aWNlX3Ry
+ZWUgaG9sZHMgYWxsIHBlbmRpbmcgY2ZxX3F1ZXVlJ3MgdGhhdCBoYXZlCisgKiBUaGUgY2ZxZC0+
+c2VydmljZV90cmVlcyBob2xkcyBhbGwgcGVuZGluZyBjZnFfcXVldWUncyB0aGF0IGhhdmUKICAq
+IHJlcXVlc3RzIHdhaXRpbmcgdG8gYmUgcHJvY2Vzc2VkLiBJdCBpcyBzb3J0ZWQgaW4gdGhlIG9y
+ZGVyIHRoYXQKICAqIHdlIHdpbGwgc2VydmljZSB0aGUgcXVldWVzLgogICovCi1zdGF0aWMgdm9p
+ZCBjZnFfc2VydmljZV90cmVlX2FkZChzdHJ1Y3QgY2ZxX2RhdGEgKmNmcWQsIHN0cnVjdCBjZnFf
+cXVldWUgKmNmcXEsCi0JCQkJIGludCBhZGRfZnJvbnQpCitzdGF0aWMgdm9pZCBjZnFfc2Vydmlj
+ZV90cmVlX2FkZChzdHJ1Y3QgY2ZxX2RhdGEgKmNmcWQsIHN0cnVjdCBjZnFfcXVldWUgKmNmcXEp
+CiB7CiAJc3RydWN0IHJiX25vZGUgKipwLCAqcGFyZW50OwogCXN0cnVjdCBjZnFfcXVldWUgKl9f
+Y2ZxcTsKIAl1bnNpZ25lZCBsb25nIHJiX2tleTsKKwlzdHJ1Y3QgY2ZxX3JiX3Jvb3QgKnNlcnZp
+Y2VfdHJlZTsKIAlpbnQgbGVmdDsKIAogCWlmIChjZnFfY2xhc3NfaWRsZShjZnFxKSkgewogCQly
+Yl9rZXkgPSBDRlFfSURMRV9ERUxBWTsKLQkJcGFyZW50ID0gcmJfbGFzdCgmY2ZxZC0+c2Vydmlj
+ZV90cmVlLnJiKTsKKwkJc2VydmljZV90cmVlID0gJmNmcWQtPnNlcnZpY2VfdHJlZV9pZGxlOwor
+CQlwYXJlbnQgPSByYl9sYXN0KCZzZXJ2aWNlX3RyZWUtPnJiKTsKIAkJaWYgKHBhcmVudCAmJiBw
+YXJlbnQgIT0gJmNmcXEtPnJiX25vZGUpIHsKIAkJCV9fY2ZxcSA9IHJiX2VudHJ5KHBhcmVudCwg
+c3RydWN0IGNmcV9xdWV1ZSwgcmJfbm9kZSk7CiAJCQlyYl9rZXkgKz0gX19jZnFxLT5yYl9rZXk7
+CiAJCX0gZWxzZQogCQkJcmJfa2V5ICs9IGppZmZpZXM7Ci0JfSBlbHNlIGlmICghYWRkX2Zyb250
+KSB7CisJfSBlbHNlIHsKKwkJZW51bSB3bF9wcmlvX3QgcHJpbyA9IGNmcV9jbGFzc19ydChjZnFx
+KSA/IFJUX1dMIDogQkVfV0w7CisJCWVudW0gd2xfdHlwZV90IHR5cGUgPSBjZnFfY2ZxcV9zeW5j
+KGNmcXEpID8gU1lOQ19XTCA6IEFTWU5DX1dMOworCiAJCXJiX2tleSA9IGNmcV9zbGljZV9vZmZz
+ZXQoY2ZxZCwgY2ZxcSkgKyBqaWZmaWVzOwogCQlyYl9rZXkgKz0gY2ZxcS0+c2xpY2VfcmVzaWQ7
+CiAJCWNmcXEtPnNsaWNlX3Jlc2lkID0gMDsKLQl9IGVsc2UKLQkJcmJfa2V5ID0gMDsKKworCQlp
+ZiAodHlwZSA9PSBTWU5DX1dMICYmIChDRlFRX1NFRUtZKGNmcXEpIHx8ICFjZnFfY2ZxcV9pZGxl
+X3dpbmRvdyhjZnFxKSkpCisJCQl0eXBlID0gU1lOQ19OT0lETEVfV0w7CisKKwkJc2VydmljZV90
+cmVlID0gc2VydmljZV90cmVlX2ZvcihwcmlvLCB0eXBlLCBjZnFkKTsKKwl9CiAKIAlpZiAoIVJC
+X0VNUFRZX05PREUoJmNmcXEtPnJiX25vZGUpKSB7CiAJCS8qCiAJCSAqIHNhbWUgcG9zaXRpb24s
+IG5vdGhpbmcgbW9yZSB0byBkbwogCQkgKi8KLQkJaWYgKHJiX2tleSA9PSBjZnFxLT5yYl9rZXkp
+CisJCWlmIChyYl9rZXkgPT0gY2ZxcS0+cmJfa2V5ICYmIGNmcXEtPnNlcnZpY2VfdHJlZSA9PSBz
+ZXJ2aWNlX3RyZWUpCiAJCQlyZXR1cm47CiAKLQkJY2ZxX3JiX2VyYXNlKCZjZnFxLT5yYl9ub2Rl
+LCAmY2ZxZC0+c2VydmljZV90cmVlKTsKKwkJY2ZxX3JiX2VyYXNlKCZjZnFxLT5yYl9ub2RlLCBj
+ZnFxLT5zZXJ2aWNlX3RyZWUpOworCQljZnFxLT5zZXJ2aWNlX3RyZWUgPSBOVUxMOwogCX0KIAog
+CWxlZnQgPSAxOwogCXBhcmVudCA9IE5VTEw7Ci0JcCA9ICZjZnFkLT5zZXJ2aWNlX3RyZWUucmIu
+cmJfbm9kZTsKKwljZnFxLT5zZXJ2aWNlX3RyZWUgPSBzZXJ2aWNlX3RyZWU7CisJcCA9ICZzZXJ2
+aWNlX3RyZWUtPnJiLnJiX25vZGU7CiAJd2hpbGUgKCpwKSB7CiAJCXN0cnVjdCByYl9ub2RlICoq
+bjsKIApAQCAtNTU2LDExICs2MzgsMTIgQEAgc3RhdGljIHZvaWQgY2ZxX3NlcnZpY2VfdHJlZV9h
+ZGQoc3RydWN0IGNmcV9kYXRhICpjZnFkLCBzdHJ1Y3QgY2ZxX3F1ZXVlICpjZnFxLAogCX0KIAog
+CWlmIChsZWZ0KQotCQljZnFkLT5zZXJ2aWNlX3RyZWUubGVmdCA9ICZjZnFxLT5yYl9ub2RlOwor
+CQlzZXJ2aWNlX3RyZWUtPmxlZnQgPSAmY2ZxcS0+cmJfbm9kZTsKIAogCWNmcXEtPnJiX2tleSA9
+IHJiX2tleTsKIAlyYl9saW5rX25vZGUoJmNmcXEtPnJiX25vZGUsIHBhcmVudCwgcCk7Ci0JcmJf
+aW5zZXJ0X2NvbG9yKCZjZnFxLT5yYl9ub2RlLCAmY2ZxZC0+c2VydmljZV90cmVlLnJiKTsKKwly
+Yl9pbnNlcnRfY29sb3IoJmNmcXEtPnJiX25vZGUsICZzZXJ2aWNlX3RyZWUtPnJiKTsKKwlzZXJ2
+aWNlX3RyZWUtPmNvdW50Kys7CiB9CiAKIHN0YXRpYyBzdHJ1Y3QgY2ZxX3F1ZXVlICoKQEAgLTYz
+Myw3ICs3MTYsNyBAQCBzdGF0aWMgdm9pZCBjZnFfcmVzb3J0X3JyX2xpc3Qoc3RydWN0IGNmcV9k
+YXRhICpjZnFkLCBzdHJ1Y3QgY2ZxX3F1ZXVlICpjZnFxKQogCSAqIFJlc29ydGluZyByZXF1aXJl
+cyB0aGUgY2ZxcSB0byBiZSBvbiB0aGUgUlIgbGlzdCBhbHJlYWR5LgogCSAqLwogCWlmIChjZnFf
+Y2ZxcV9vbl9ycihjZnFxKSkgewotCQljZnFfc2VydmljZV90cmVlX2FkZChjZnFkLCBjZnFxLCAw
+KTsKKwkJY2ZxX3NlcnZpY2VfdHJlZV9hZGQoY2ZxZCwgY2ZxcSk7CiAJCWNmcV9wcmlvX3RyZWVf
+YWRkKGNmcWQsIGNmcXEpOwogCX0KIH0KQEAgLTY0OCw4ICs3MzEsNiBAQCBzdGF0aWMgdm9pZCBj
+ZnFfYWRkX2NmcXFfcnIoc3RydWN0IGNmcV9kYXRhICpjZnFkLCBzdHJ1Y3QgY2ZxX3F1ZXVlICpj
+ZnFxKQogCUJVR19PTihjZnFfY2ZxcV9vbl9ycihjZnFxKSk7CiAJY2ZxX21hcmtfY2ZxcV9vbl9y
+cihjZnFxKTsKIAljZnFkLT5idXN5X3F1ZXVlcysrOwotCWlmIChjZnFfY2xhc3NfcnQoY2ZxcSkp
+Ci0JCWNmcWQtPmJ1c3lfcnRfcXVldWVzKys7CiAKIAljZnFfcmVzb3J0X3JyX2xpc3QoY2ZxZCwg
+Y2ZxcSk7CiB9CkBAIC02NjQsOCArNzQ1LDEwIEBAIHN0YXRpYyB2b2lkIGNmcV9kZWxfY2ZxcV9y
+cihzdHJ1Y3QgY2ZxX2RhdGEgKmNmcWQsIHN0cnVjdCBjZnFfcXVldWUgKmNmcXEpCiAJQlVHX09O
+KCFjZnFfY2ZxcV9vbl9ycihjZnFxKSk7CiAJY2ZxX2NsZWFyX2NmcXFfb25fcnIoY2ZxcSk7CiAK
+LQlpZiAoIVJCX0VNUFRZX05PREUoJmNmcXEtPnJiX25vZGUpKQotCQljZnFfcmJfZXJhc2UoJmNm
+cXEtPnJiX25vZGUsICZjZnFkLT5zZXJ2aWNlX3RyZWUpOworCWlmICghUkJfRU1QVFlfTk9ERSgm
+Y2ZxcS0+cmJfbm9kZSkpIHsKKwkJY2ZxX3JiX2VyYXNlKCZjZnFxLT5yYl9ub2RlLCBjZnFxLT5z
+ZXJ2aWNlX3RyZWUpOworCQljZnFxLT5zZXJ2aWNlX3RyZWUgPSBOVUxMOworCX0KIAlpZiAoY2Zx
+cS0+cF9yb290KSB7CiAJCXJiX2VyYXNlKCZjZnFxLT5wX25vZGUsIGNmcXEtPnBfcm9vdCk7CiAJ
+CWNmcXEtPnBfcm9vdCA9IE5VTEw7CkBAIC02NzMsOCArNzU2LDYgQEAgc3RhdGljIHZvaWQgY2Zx
+X2RlbF9jZnFxX3JyKHN0cnVjdCBjZnFfZGF0YSAqY2ZxZCwgc3RydWN0IGNmcV9xdWV1ZSAqY2Zx
+cSkKIAogCUJVR19PTighY2ZxZC0+YnVzeV9xdWV1ZXMpOwogCWNmcWQtPmJ1c3lfcXVldWVzLS07
+Ci0JaWYgKGNmcV9jbGFzc19ydChjZnFxKSkKLQkJY2ZxZC0+YnVzeV9ydF9xdWV1ZXMtLTsKIH0K
+IAogLyoKQEAgLTc2MCw5ICs4NDEsOSBAQCBzdGF0aWMgdm9pZCBjZnFfYWN0aXZhdGVfcmVxdWVz
+dChzdHJ1Y3QgcmVxdWVzdF9xdWV1ZSAqcSwgc3RydWN0IHJlcXVlc3QgKnJxKQogewogCXN0cnVj
+dCBjZnFfZGF0YSAqY2ZxZCA9IHEtPmVsZXZhdG9yLT5lbGV2YXRvcl9kYXRhOwogCi0JY2ZxZC0+
+cnFfaW5fZHJpdmVyKys7CisJY2ZxZC0+cnFfaW5fZHJpdmVyW3JxX2lzX3N5bmMocnEpXSsrOwog
+CWNmcV9sb2dfY2ZxcShjZnFkLCBSUV9DRlFRKHJxKSwgImFjdGl2YXRlIHJxLCBkcnY9JWQiLAot
+CQkJCQkJY2ZxZC0+cnFfaW5fZHJpdmVyKTsKKwkJCQkJCXJxX2luX2RyaXZlcihjZnFkKSk7CiAK
+IAljZnFkLT5sYXN0X3Bvc2l0aW9uID0gYmxrX3JxX3BvcyhycSkgKyBibGtfcnFfc2VjdG9ycyhy
+cSk7CiB9CkBAIC03NzAsMTEgKzg1MSwxMiBAQCBzdGF0aWMgdm9pZCBjZnFfYWN0aXZhdGVfcmVx
+dWVzdChzdHJ1Y3QgcmVxdWVzdF9xdWV1ZSAqcSwgc3RydWN0IHJlcXVlc3QgKnJxKQogc3RhdGlj
+IHZvaWQgY2ZxX2RlYWN0aXZhdGVfcmVxdWVzdChzdHJ1Y3QgcmVxdWVzdF9xdWV1ZSAqcSwgc3Ry
+dWN0IHJlcXVlc3QgKnJxKQogewogCXN0cnVjdCBjZnFfZGF0YSAqY2ZxZCA9IHEtPmVsZXZhdG9y
+LT5lbGV2YXRvcl9kYXRhOworCWNvbnN0IGludCBzeW5jID0gcnFfaXNfc3luYyhycSk7CiAKLQlX
+QVJOX09OKCFjZnFkLT5ycV9pbl9kcml2ZXIpOwotCWNmcWQtPnJxX2luX2RyaXZlci0tOworCVdB
+Uk5fT04oIWNmcWQtPnJxX2luX2RyaXZlcltzeW5jXSk7CisJY2ZxZC0+cnFfaW5fZHJpdmVyW3N5
+bmNdLS07CiAJY2ZxX2xvZ19jZnFxKGNmcWQsIFJRX0NGUVEocnEpLCAiZGVhY3RpdmF0ZSBycSwg
+ZHJ2PSVkIiwKLQkJCQkJCWNmcWQtPnJxX2luX2RyaXZlcik7CisJCQkJCQlycV9pbl9kcml2ZXIo
+Y2ZxZCkpOwogfQogCiBzdGF0aWMgdm9pZCBjZnFfcmVtb3ZlX3JlcXVlc3Qoc3RydWN0IHJlcXVl
+c3QgKnJxKQpAQCAtOTI4LDEwICsxMDEwLDExIEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBjZnFfc2xp
+Y2VfZXhwaXJlZChzdHJ1Y3QgY2ZxX2RhdGEgKmNmcWQsIGludCB0aW1lZF9vdXQpCiAgKi8KIHN0
+YXRpYyBzdHJ1Y3QgY2ZxX3F1ZXVlICpjZnFfZ2V0X25leHRfcXVldWUoc3RydWN0IGNmcV9kYXRh
+ICpjZnFkKQogewotCWlmIChSQl9FTVBUWV9ST09UKCZjZnFkLT5zZXJ2aWNlX3RyZWUucmIpKQot
+CQlyZXR1cm4gTlVMTDsKKwlzdHJ1Y3QgY2ZxX3JiX3Jvb3QgKnNlcnZpY2VfdHJlZSA9IHNlcnZp
+Y2VfdHJlZV9mb3IoY2ZxZC0+c2VydmluZ19wcmlvLCBjZnFkLT5zZXJ2aW5nX3R5cGUsIGNmcWQp
+OwogCi0JcmV0dXJuIGNmcV9yYl9maXJzdCgmY2ZxZC0+c2VydmljZV90cmVlKTsKKwlpZiAoUkJf
+RU1QVFlfUk9PVCgmc2VydmljZV90cmVlLT5yYikpCisJCXJldHVybiBOVUxMOworCXJldHVybiBj
+ZnFfcmJfZmlyc3Qoc2VydmljZV90cmVlKTsKIH0KIAogLyoKQEAgLTk1OSw5ICsxMDQyLDYgQEAg
+c3RhdGljIGlubGluZSBzZWN0b3JfdCBjZnFfZGlzdF9mcm9tX2xhc3Qoc3RydWN0IGNmcV9kYXRh
+ICpjZnFkLAogCQlyZXR1cm4gY2ZxZC0+bGFzdF9wb3NpdGlvbiAtIGJsa19ycV9wb3MocnEpOwog
+fQogCi0jZGVmaW5lIENJQ19TRUVLX1RIUgk4ICogMTAyNAotI2RlZmluZSBDSUNfU0VFS1koY2lj
+KQkoKGNpYyktPnNlZWtfbWVhbiA+IENJQ19TRUVLX1RIUikKLQogc3RhdGljIGlubGluZSBpbnQg
+Y2ZxX3JxX2Nsb3NlKHN0cnVjdCBjZnFfZGF0YSAqY2ZxZCwgc3RydWN0IHJlcXVlc3QgKnJxKQog
+ewogCXN0cnVjdCBjZnFfaW9fY29udGV4dCAqY2ljID0gY2ZxZC0+YWN0aXZlX2NpYzsKQEAgLTEw
+NDksNiArMTEyOSwxMCBAQCBzdGF0aWMgc3RydWN0IGNmcV9xdWV1ZSAqY2ZxX2Nsb3NlX2Nvb3Bl
+cmF0b3Ioc3RydWN0IGNmcV9kYXRhICpjZnFkLAogCWlmIChjZnFfY2ZxcV9jb29wKGNmcXEpKQog
+CQlyZXR1cm4gTlVMTDsKIAorCS8qIHdlIGRvbid0IHdhbnQgdG8gbWl4IHByb2Nlc3NlcyB3aXRo
+IGRpZmZlcmVudCBjaGFyYWN0ZXJpc3RpY3MgKi8KKwlpZiAoY2ZxcS0+c2VydmljZV90cmVlICE9
+IGN1cl9jZnFxLT5zZXJ2aWNlX3RyZWUpCisJCXJldHVybiBOVUxMOworCiAJaWYgKCFwcm9iZSkK
+IAkJY2ZxX21hcmtfY2ZxcV9jb29wKGNmcXEpOwogCXJldHVybiBjZnFxOwpAQCAtMTA4MCw3ICsx
+MTY0LDcgQEAgc3RhdGljIHZvaWQgY2ZxX2FybV9zbGljZV90aW1lcihzdHJ1Y3QgY2ZxX2RhdGEg
+KmNmcWQpCiAJLyoKIAkgKiBzdGlsbCByZXF1ZXN0cyB3aXRoIHRoZSBkcml2ZXIsIGRvbid0IGlk
+bGUKIAkgKi8KLQlpZiAoY2ZxZC0+cnFfaW5fZHJpdmVyKQorCWlmIChycV9pbl9kcml2ZXIoY2Zx
+ZCkpCiAJCXJldHVybjsKIAogCS8qCkBAIC0xMDkyLDE0ICsxMTc2LDE1IEBAIHN0YXRpYyB2b2lk
+IGNmcV9hcm1fc2xpY2VfdGltZXIoc3RydWN0IGNmcV9kYXRhICpjZnFkKQogCiAJY2ZxX21hcmtf
+Y2ZxcV93YWl0X3JlcXVlc3QoY2ZxcSk7CiAKLQkvKgotCSAqIHdlIGRvbid0IHdhbnQgdG8gaWRs
+ZSBmb3Igc2Vla3MsIGJ1dCB3ZSBkbyB3YW50IHRvIGFsbG93Ci0JICogZmFpciBkaXN0cmlidXRp
+b24gb2Ygc2xpY2UgdGltZSBmb3IgYSBwcm9jZXNzIGRvaW5nIGJhY2stdG8tYmFjawotCSAqIHNl
+ZWtzLiBzbyBhbGxvdyBhIGxpdHRsZSBiaXQgb2YgdGltZSBmb3IgaGltIHRvIHN1Ym1pdCBhIG5l
+dyBycQotCSAqLwotCXNsID0gY2ZxZC0+Y2ZxX3NsaWNlX2lkbGU7Ci0JaWYgKHNhbXBsZV92YWxp
+ZChjaWMtPnNlZWtfc2FtcGxlcykgJiYgQ0lDX1NFRUtZKGNpYykpCisJc2wgPSBtaW5fdCh1bnNp
+Z25lZCwgY2ZxZC0+Y2ZxX3NsaWNlX2lkbGUsIGNmcXEtPnNsaWNlX2VuZCAtIGppZmZpZXMpOwor
+CisJLyogdmVyeSBzbWFsbCBpZGxlIGlmIHdlIGFyZSBzZXJ2aW5nIG5vaWRsZSB0cmVlcywgYW5k
+IHRoZXJlIGFyZSBtb3JlIHRyZWVzICovCisJaWYgKGNmcWQtPnNlcnZpbmdfdHlwZSA9PSBTWU5D
+X05PSURMRV9XTCAmJgorCSAgICBzZXJ2aWNlX3RyZWVfZm9yKGNmcWQtPnNlcnZpbmdfcHJpbywg
+U1lOQ19OT0lETEVfV0wsIGNmcWQpLT5jb3VudCA+IDApIHsKKwkJaWYgKGJsa19xdWV1ZV9ub25y
+b3QoY2ZxZC0+cXVldWUpKQorCQkJcmV0dXJuOwogCQlzbCA9IG1pbihzbCwgbXNlY3NfdG9famlm
+ZmllcyhDRlFfTUlOX1RUKSk7CisJfQogCiAJbW9kX3RpbWVyKCZjZnFkLT5pZGxlX3NsaWNlX3Rp
+bWVyLCBqaWZmaWVzICsgc2wpOwogCWNmcV9sb2dfY2ZxcShjZnFkLCBjZnFxLCAiYXJtX2lkbGU6
+ICVsdSIsIHNsKTsKQEAgLTExMTUsNiArMTIwMCwxMiBAQCBzdGF0aWMgdm9pZCBjZnFfZGlzcGF0
+Y2hfaW5zZXJ0KHN0cnVjdCByZXF1ZXN0X3F1ZXVlICpxLCBzdHJ1Y3QgcmVxdWVzdCAqcnEpCiAK
+IAljZnFfbG9nX2NmcXEoY2ZxZCwgY2ZxcSwgImRpc3BhdGNoX2luc2VydCIpOwogCisJaWYgKCF0
+aW1lX2JlZm9yZShqaWZmaWVzLCBycS0+c3RhcnRfdGltZSArIGNmcWQtPmNmcV90YXJnZXRfbGF0
+ZW5jeSAvIDIpICYmIHJxX2RhdGFfZGlyKHJxKT09UkVBRCkgeworCQljZnFkLT5yZWFkc19kZWxh
+eWVkID0gbWF4X3QoaW50LCBjZnFkLT5yZWFkc19kZWxheWVkLAorCQkJCQkgICAgKGppZmZpZXMg
+LSBycS0+c3RhcnRfdGltZSkgLyAoY2ZxZC0+Y2ZxX3RhcmdldF9sYXRlbmN5IC8gMikpOworCX0K
+KworCWNmcXEtPm5leHRfcnEgPSBjZnFfZmluZF9uZXh0X3JxKGNmcWQsIGNmcXEsIHJxKTsKIAlj
+ZnFfcmVtb3ZlX3JlcXVlc3QocnEpOwogCWNmcXEtPmRpc3BhdGNoZWQrKzsKIAllbHZfZGlzcGF0
+Y2hfc29ydChxLCBycSk7CkBAIC0xMTYwLDYgKzEyNTEsMTYgQEAgY2ZxX3ByaW9fdG9fbWF4cnEo
+c3RydWN0IGNmcV9kYXRhICpjZnFkLCBzdHJ1Y3QgY2ZxX3F1ZXVlICpjZnFxKQogCXJldHVybiAy
+ICogKGJhc2VfcnEgKyBiYXNlX3JxICogKENGUV9QUklPX0xJU1RTIC0gMSAtIGNmcXEtPmlvcHJp
+bykpOwogfQogCitlbnVtIHdsX3R5cGVfdCBjZnFfY2hvb3NlX3N5bmNfYXN5bmMoc3RydWN0IGNm
+cV9kYXRhICpjZnFkLCBlbnVtIHdsX3ByaW9fdCBwcmlvKSB7CisJc3RydWN0IGNmcV9xdWV1ZSAq
+aWQsICpuaTsKKwluaSA9IGNmcV9yYl9maXJzdChzZXJ2aWNlX3RyZWVfZm9yKHByaW8sIFNZTkNf
+Tk9JRExFX1dMLCBjZnFkKSk7CisJaWQgPSBjZnFfcmJfZmlyc3Qoc2VydmljZV90cmVlX2Zvcihw
+cmlvLCBTWU5DX1dMLCBjZnFkKSk7CisJaWYgKGlkICYmIG5pICYmIGlkLT5yYl9rZXkgPCBuaS0+
+cmJfa2V5KQorCQlyZXR1cm4gU1lOQ19XTDsKKwlpZiAoIW5pKSByZXR1cm4gU1lOQ19XTDsKKwly
+ZXR1cm4gU1lOQ19OT0lETEVfV0w7Cit9CisKIC8qCiAgKiBTZWxlY3QgYSBxdWV1ZSBmb3Igc2Vy
+dmljZS4gSWYgd2UgaGF2ZSBhIGN1cnJlbnQgYWN0aXZlIHF1ZXVlLAogICogY2hlY2sgd2hldGhl
+ciB0byBjb250aW51ZSBzZXJ2aWNpbmcgaXQsIG9yIHJldHJpZXZlIGFuZCBzZXQgYSBuZXcgb25l
+LgpAQCAtMTE3OSwyMCArMTI4MCw2IEBAIHN0YXRpYyBzdHJ1Y3QgY2ZxX3F1ZXVlICpjZnFfc2Vs
+ZWN0X3F1ZXVlKHN0cnVjdCBjZnFfZGF0YSAqY2ZxZCkKIAkJZ290byBleHBpcmU7CiAKIAkvKgot
+CSAqIElmIHdlIGhhdmUgYSBSVCBjZnFxIHdhaXRpbmcsIHRoZW4gd2UgcHJlLWVtcHQgdGhlIGN1
+cnJlbnQgbm9uLXJ0Ci0JICogY2ZxcS4KLQkgKi8KLQlpZiAoIWNmcV9jbGFzc19ydChjZnFxKSAm
+JiBjZnFkLT5idXN5X3J0X3F1ZXVlcykgewotCQkvKgotCQkgKiBXZSBzaW11bGF0ZSB0aGlzIGFz
+IGNmcXEgdGltZWQgb3V0IHNvIHRoYXQgaXQgZ2V0cyB0byBiYW5rCi0JCSAqIHRoZSByZW1haW5p
+bmcgb2YgaXRzIHRpbWUgc2xpY2UuCi0JCSAqLwotCQljZnFfbG9nX2NmcXEoY2ZxZCwgY2ZxcSwg
+InByZWVtcHQiKTsKLQkJY2ZxX3NsaWNlX2V4cGlyZWQoY2ZxZCwgMSk7Ci0JCWdvdG8gbmV3X3F1
+ZXVlOwotCX0KLQotCS8qCiAJICogVGhlIGFjdGl2ZSBxdWV1ZSBoYXMgcmVxdWVzdHMgYW5kIGlz
+bid0IGV4cGlyZWQsIGFsbG93IGl0IHRvCiAJICogZGlzcGF0Y2guCiAJICovCkBAIC0xMjE0LDE1
+ICsxMzAxLDY4IEBAIHN0YXRpYyBzdHJ1Y3QgY2ZxX3F1ZXVlICpjZnFfc2VsZWN0X3F1ZXVlKHN0
+cnVjdCBjZnFfZGF0YSAqY2ZxZCkKIAkgKiBmbGlnaHQgb3IgaXMgaWRsaW5nIGZvciBhIG5ldyBy
+ZXF1ZXN0LCBhbGxvdyBlaXRoZXIgb2YgdGhlc2UKIAkgKiBjb25kaXRpb25zIHRvIGhhcHBlbiAo
+b3IgdGltZSBvdXQpIGJlZm9yZSBzZWxlY3RpbmcgYSBuZXcgcXVldWUuCiAJICovCi0JaWYgKHRp
+bWVyX3BlbmRpbmcoJmNmcWQtPmlkbGVfc2xpY2VfdGltZXIpIHx8CisJaWYgKHRpbWVyX3BlbmRp
+bmcoJmNmcWQtPmlkbGVfc2xpY2VfdGltZXIpIHx8IAogCSAgICAoY2ZxcS0+ZGlzcGF0Y2hlZCAm
+JiBjZnFfY2ZxcV9pZGxlX3dpbmRvdyhjZnFxKSkpIHsKIAkJY2ZxcSA9IE5VTEw7CiAJCWdvdG8g
+a2VlcF9xdWV1ZTsKIAl9Ci0KIGV4cGlyZToKIAljZnFfc2xpY2VfZXhwaXJlZChjZnFkLCAwKTsK
+IG5ld19xdWV1ZToKKwlpZiAoIW5ld19jZnFxKSB7CisJCWVudW0gd2xfcHJpb190IHByZXZpb3Vz
+X3ByaW8gPSBjZnFkLT5zZXJ2aW5nX3ByaW87CisKKwkJaWYgKGNmcV9idXN5X3F1ZXVlc193bChS
+VF9XTCwgY2ZxZCkpCisJCQljZnFkLT5zZXJ2aW5nX3ByaW8gPSBSVF9XTDsKKwkJZWxzZSBpZiAo
+Y2ZxX2J1c3lfcXVldWVzX3dsKEJFX1dMLCBjZnFkKSkKKwkJCWNmcWQtPnNlcnZpbmdfcHJpbyA9
+IEJFX1dMOworCQllbHNlIHsKKwkJCWNmcWQtPnNlcnZpbmdfcHJpbyA9IElETEVfV0w7CisJCQlj
+ZnFkLT53b3JrbG9hZF9leHBpcmVzID0gamlmZmllcyArIDE7CisJCQljZnFkLT5yZWFkc19kZWxh
+eWVkID0gMDsKKwkJfQorCisJCWlmIChjZnFkLT5zZXJ2aW5nX3ByaW8gIT0gSURMRV9XTCkgewor
+CQkJaW50IGNvdW50c1tdPXsKKwkJCQlzZXJ2aWNlX3RyZWVfZm9yKGNmcWQtPnNlcnZpbmdfcHJp
+bywgQVNZTkNfV0wsIGNmcWQpLT5jb3VudCwKKwkJCQlzZXJ2aWNlX3RyZWVfZm9yKGNmcWQtPnNl
+cnZpbmdfcHJpbywgU1lOQ19OT0lETEVfV0wsIGNmcWQpLT5jb3VudCwKKwkJCQlzZXJ2aWNlX3Ry
+ZWVfZm9yKGNmcWQtPnNlcnZpbmdfcHJpbywgU1lOQ19XTCwgY2ZxZCktPmNvdW50CisJCQl9Owor
+CQkJaW50IG5vbnplcm9fY291bnRzPSAhIWNvdW50c1swXSArICEhY291bnRzWzFdICsgISFjb3Vu
+dHNbMl07CisKKwkJCWlmIChwcmV2aW91c19wcmlvICE9IGNmcWQtPnNlcnZpbmdfcHJpbyB8fCAo
+bm9uemVyb19jb3VudHMgPT0gMSkpIHsKKwkJCQljZnFkLT5zZXJ2aW5nX3R5cGUgPSBjb3VudHNb
+MV0gPyBTWU5DX05PSURMRV9XTCA6IGNvdW50c1syXSA/IFNZTkNfV0wgOiBBU1lOQ19XTDsKKwkJ
+CQljZnFkLT5hc3luY19zdGFydmVkID0gMDsKKwkJCQljZnFkLT5yZWFkc19kZWxheWVkID0gMDsK
+KwkJCX0gZWxzZSB7CisJCQkJaWYgKCFjb3VudHNbY2ZxZC0+c2VydmluZ190eXBlXSB8fCB0aW1l
+X2FmdGVyKGppZmZpZXMsIGNmcWQtPndvcmtsb2FkX2V4cGlyZXMpKSB7CisJCQkJCWlmIChjZnFk
+LT5zZXJ2aW5nX3R5cGUgIT0gQVNZTkNfV0wgJiYgY291bnRzW0FTWU5DX1dMXSAmJgorCQkJCQkg
+ICAgY2ZxZC0+YXN5bmNfc3RhcnZlZCsrID4gY2ZxZC0+Y2ZxX2FzeW5jX3BlbmFsdHkgKiAoMSAr
+IGNmcWQtPnJlYWRzX2RlbGF5ZWQpKQorCQkJCQkJY2ZxZC0+c2VydmluZ190eXBlID0gQVNZTkNf
+V0w7CisJCQkJCWVsc2UgCisJCQkJCQljZnFkLT5zZXJ2aW5nX3R5cGUgPSBjZnFfY2hvb3NlX3N5
+bmNfYXN5bmMoY2ZxZCwgY2ZxZC0+c2VydmluZ19wcmlvKTsKKwkJCQl9IGVsc2UKKwkJCQkJZ290
+byBzYW1lX3dsOworCQkJfQorCisJCQl7CisJCQkJdW5zaWduZWQgc2xpY2UgPSBjZnFkLT5jZnFf
+dGFyZ2V0X2xhdGVuY3k7CisJCQkJc2xpY2UgPSBzbGljZSAqIGNvdW50c1tjZnFkLT5zZXJ2aW5n
+X3R5cGVdIC8KKwkJCQkJbWF4X3QodW5zaWduZWQsIGNmcWQtPmJ1c3lfcXVldWVzX2F2Z1tjZnFk
+LT5zZXJ2aW5nX3ByaW9dLAorCQkJCQkgICAgICBjb3VudHNbU1lOQ19XTF0gKyBjb3VudHNbU1lO
+Q19OT0lETEVfV0xdICsgY291bnRzW0FTWU5DX1dMXSk7CisJCQkJCSAgICAKKwkJCQlpZiAoY2Zx
+ZC0+c2VydmluZ190eXBlID09IEFTWU5DX1dMKQorCQkJCQlzbGljZSA9IG1heCgxVSwgKHNsaWNl
+IC8gKDEgKyBjZnFkLT5yZWFkc19kZWxheWVkKSkKKwkJCQkJCSAgICAqIGNmcWQtPmNmcV9zbGlj
+ZVswXSAvIGNmcWQtPmNmcV9zbGljZVsxXSk7CisJCQkJZWxzZQorCQkJCQlzbGljZSA9IG1heChz
+bGljZSwgMlUgKiBtYXgoMVUsIGNmcWQtPmNmcV9zbGljZV9pZGxlKSk7CisKKwkJCQljZnFkLT53
+b3JrbG9hZF9leHBpcmVzID0gamlmZmllcyArIHNsaWNlOworCQkJCWNmcWQtPmFzeW5jX3N0YXJ2
+ZWQgKj0gKGNmcWQtPnNlcnZpbmdfdHlwZSAhPSBBU1lOQ19XTCk7CisJCQl9CisJCX0KKwl9Cisg
+c2FtZV93bDoKIAljZnFxID0gY2ZxX3NldF9hY3RpdmVfcXVldWUoY2ZxZCwgbmV3X2NmcXEpOwog
+a2VlcF9xdWV1ZToKIAlyZXR1cm4gY2ZxcTsKQEAgLTEyNDksOCArMTM4OSwxMyBAQCBzdGF0aWMg
+aW50IGNmcV9mb3JjZWRfZGlzcGF0Y2goc3RydWN0IGNmcV9kYXRhICpjZnFkKQogewogCXN0cnVj
+dCBjZnFfcXVldWUgKmNmcXE7CiAJaW50IGRpc3BhdGNoZWQgPSAwOworCWludCBpLGo7CisJZm9y
+IChpID0gMDsgaSA8IDI7ICsraSkKKwkJZm9yIChqID0gMDsgaiA8IDM7ICsraikKKwkJCXdoaWxl
+ICgoY2ZxcSA9IGNmcV9yYl9maXJzdCgmY2ZxZC0+c2VydmljZV90cmVlc1tpXVtqXSkpICE9IE5V
+TEwpCisJCQkJZGlzcGF0Y2hlZCArPSBfX2NmcV9mb3JjZWRfZGlzcGF0Y2hfY2ZxcShjZnFxKTsK
+IAotCXdoaWxlICgoY2ZxcSA9IGNmcV9yYl9maXJzdCgmY2ZxZC0+c2VydmljZV90cmVlKSkgIT0g
+TlVMTCkKKwl3aGlsZSAoKGNmcXEgPSBjZnFfcmJfZmlyc3QoJmNmcWQtPnNlcnZpY2VfdHJlZV9p
+ZGxlKSkgIT0gTlVMTCkKIAkJZGlzcGF0Y2hlZCArPSBfX2NmcV9mb3JjZWRfZGlzcGF0Y2hfY2Zx
+cShjZnFxKTsKIAogCWNmcV9zbGljZV9leHBpcmVkKGNmcWQsIDApOwpAQCAtMTMxMiw2ICsxNDU3
+LDEyIEBAIHN0YXRpYyBpbnQgY2ZxX2Rpc3BhdGNoX3JlcXVlc3RzKHN0cnVjdCByZXF1ZXN0X3F1
+ZXVlICpxLCBpbnQgZm9yY2UpCiAJCXJldHVybiAwOwogCiAJLyoKKwkgKiBEcmFpbiBhc3luYyBy
+ZXF1ZXN0cyBiZWZvcmUgd2Ugc3RhcnQgc3luYyBJTworCSAqLworCWlmIChjZnFfY2ZxcV9pZGxl
+X3dpbmRvdyhjZnFxKSAmJiBjZnFkLT5ycV9pbl9kcml2ZXJbQkxLX1JXX0FTWU5DXSkKKwkJcmV0
+dXJuIDA7CisKKwkvKgogCSAqIElmIHRoaXMgaXMgYW4gYXN5bmMgcXVldWUgYW5kIHdlIGhhdmUg
+c3luYyBJTyBpbiBmbGlnaHQsIGxldCBpdCB3YWl0CiAJICovCiAJaWYgKGNmcWQtPnN5bmNfZmxp
+Z2h0ICYmICFjZnFfY2ZxcV9zeW5jKGNmcXEpKQpAQCAtMTM2Miw3ICsxNTEzLDcgQEAgc3RhdGlj
+IGludCBjZnFfZGlzcGF0Y2hfcmVxdWVzdHMoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEsIGludCBm
+b3JjZSkKIAkJY2ZxX3NsaWNlX2V4cGlyZWQoY2ZxZCwgMCk7CiAJfQogCi0JY2ZxX2xvZyhjZnFk
+LCAiZGlzcGF0Y2hlZCBhIHJlcXVlc3QiKTsKKwljZnFfbG9nX2NmcXEoY2ZxZCwgY2ZxcSwgImRp
+c3BhdGNoZWQgYSByZXF1ZXN0Iik7CiAJcmV0dXJuIDE7CiB9CiAKQEAgLTIwMDQsMTggKzIxNTUs
+OCBAQCBjZnFfc2hvdWxkX3ByZWVtcHQoc3RydWN0IGNmcV9kYXRhICpjZnFkLCBzdHJ1Y3QgY2Zx
+X3F1ZXVlICpuZXdfY2ZxcSwKIAlpZiAoY2ZxX2NsYXNzX2lkbGUoY2ZxcSkpCiAJCXJldHVybiAx
+OwogCi0JLyoKLQkgKiBpZiB0aGUgbmV3IHJlcXVlc3QgaXMgc3luYywgYnV0IHRoZSBjdXJyZW50
+bHkgcnVubmluZyBxdWV1ZSBpcwotCSAqIG5vdCwgbGV0IHRoZSBzeW5jIHJlcXVlc3QgaGF2ZSBw
+cmlvcml0eS4KLQkgKi8KLQlpZiAocnFfaXNfc3luYyhycSkgJiYgIWNmcV9jZnFxX3N5bmMoY2Zx
+cSkpCi0JCXJldHVybiAxOwotCi0JLyoKLQkgKiBTbyBib3RoIHF1ZXVlcyBhcmUgc3luYy4gTGV0
+IHRoZSBuZXcgcmVxdWVzdCBnZXQgZGlzayB0aW1lIGlmCi0JICogaXQncyBhIG1ldGFkYXRhIHJl
+cXVlc3QgYW5kIHRoZSBjdXJyZW50IHF1ZXVlIGlzIGRvaW5nIHJlZ3VsYXIgSU8uCi0JICovCi0J
+aWYgKHJxX2lzX21ldGEocnEpICYmICFjZnFxLT5tZXRhX3BlbmRpbmcpCisJaWYgKGNmcWQtPnNl
+cnZpbmdfdHlwZSA9PSBTWU5DX05PSURMRV9XTAorCSAgICAmJiBuZXdfY2ZxcS0+c2VydmljZV90
+cmVlID09IGNmcXEtPnNlcnZpY2VfdHJlZSkKIAkJcmV0dXJuIDE7CiAKIAkvKgpAQCAtMjA0Niwx
+MyArMjE4Nyw5IEBAIHN0YXRpYyB2b2lkIGNmcV9wcmVlbXB0X3F1ZXVlKHN0cnVjdCBjZnFfZGF0
+YSAqY2ZxZCwgc3RydWN0IGNmcV9xdWV1ZSAqY2ZxcSkKIAljZnFfbG9nX2NmcXEoY2ZxZCwgY2Zx
+cSwgInByZWVtcHQiKTsKIAljZnFfc2xpY2VfZXhwaXJlZChjZnFkLCAxKTsKIAotCS8qCi0JICog
+UHV0IHRoZSBuZXcgcXVldWUgYXQgdGhlIGZyb250IG9mIHRoZSBvZiB0aGUgY3VycmVudCBsaXN0
+LAotCSAqIHNvIHdlIGtub3cgdGhhdCBpdCB3aWxsIGJlIHNlbGVjdGVkIG5leHQuCi0JICovCiAJ
+QlVHX09OKCFjZnFfY2ZxcV9vbl9ycihjZnFxKSk7CiAKLQljZnFfc2VydmljZV90cmVlX2FkZChj
+ZnFkLCBjZnFxLCAxKTsKKwljZnFfc2VydmljZV90cmVlX2FkZChjZnFkLCBjZnFxKTsKIAogCWNm
+cXEtPnNsaWNlX2VuZCA9IDA7CiAJY2ZxX21hcmtfY2ZxcV9zbGljZV9uZXcoY2ZxcSk7CkBAIC0y
+MTMwLDExICsyMjY3LDExIEBAIHN0YXRpYyB2b2lkIGNmcV9pbnNlcnRfcmVxdWVzdChzdHJ1Y3Qg
+cmVxdWVzdF9xdWV1ZSAqcSwgc3RydWN0IHJlcXVlc3QgKnJxKQogICovCiBzdGF0aWMgdm9pZCBj
+ZnFfdXBkYXRlX2h3X3RhZyhzdHJ1Y3QgY2ZxX2RhdGEgKmNmcWQpCiB7Ci0JaWYgKGNmcWQtPnJx
+X2luX2RyaXZlciA+IGNmcWQtPnJxX2luX2RyaXZlcl9wZWFrKQotCQljZnFkLT5ycV9pbl9kcml2
+ZXJfcGVhayA9IGNmcWQtPnJxX2luX2RyaXZlcjsKKwlpZiAocnFfaW5fZHJpdmVyKGNmcWQpID4g
+Y2ZxZC0+cnFfaW5fZHJpdmVyX3BlYWspCisJCWNmcWQtPnJxX2luX2RyaXZlcl9wZWFrID0gcnFf
+aW5fZHJpdmVyKGNmcWQpOwogCiAJaWYgKGNmcWQtPnJxX3F1ZXVlZCA8PSBDRlFfSFdfUVVFVUVf
+TUlOICYmCi0JICAgIGNmcWQtPnJxX2luX2RyaXZlciA8PSBDRlFfSFdfUVVFVUVfTUlOKQorCSAg
+ICBycV9pbl9kcml2ZXIoY2ZxZCkgPD0gQ0ZRX0hXX1FVRVVFX01JTikKIAkJcmV0dXJuOwogCiAJ
+aWYgKGNmcWQtPmh3X3RhZ19zYW1wbGVzKysgPCA1MCkKQEAgLTIxNjEsOSArMjI5OCw5IEBAIHN0
+YXRpYyB2b2lkIGNmcV9jb21wbGV0ZWRfcmVxdWVzdChzdHJ1Y3QgcmVxdWVzdF9xdWV1ZSAqcSwg
+c3RydWN0IHJlcXVlc3QgKnJxKQogCiAJY2ZxX3VwZGF0ZV9od190YWcoY2ZxZCk7CiAKLQlXQVJO
+X09OKCFjZnFkLT5ycV9pbl9kcml2ZXIpOworCVdBUk5fT04oIWNmcWQtPnJxX2luX2RyaXZlcltz
+eW5jXSk7CiAJV0FSTl9PTighY2ZxcS0+ZGlzcGF0Y2hlZCk7Ci0JY2ZxZC0+cnFfaW5fZHJpdmVy
+LS07CisJY2ZxZC0+cnFfaW5fZHJpdmVyW3N5bmNdLS07CiAJY2ZxcS0+ZGlzcGF0Y2hlZC0tOwog
+CiAJaWYgKGNmcV9jZnFxX3N5bmMoY2ZxcSkpCkBAIC0yMTk3LDcgKzIzMzQsNyBAQCBzdGF0aWMg
+dm9pZCBjZnFfY29tcGxldGVkX3JlcXVlc3Qoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEsIHN0cnVj
+dCByZXF1ZXN0ICpycSkKIAkJCWNmcV9hcm1fc2xpY2VfdGltZXIoY2ZxZCk7CiAJfQogCi0JaWYg
+KCFjZnFkLT5ycV9pbl9kcml2ZXIpCisJaWYgKCFycV9pbl9kcml2ZXIoY2ZxZCkpCiAJCWNmcV9z
+Y2hlZHVsZV9kaXNwYXRjaChjZnFkKTsKIH0KIApAQCAtMjIyOSw4ICsyMzY2LDcgQEAgc3RhdGlj
+IHZvaWQgY2ZxX3ByaW9fYm9vc3Qoc3RydWN0IGNmcV9xdWV1ZSAqY2ZxcSkKIAogc3RhdGljIGlu
+bGluZSBpbnQgX19jZnFfbWF5X3F1ZXVlKHN0cnVjdCBjZnFfcXVldWUgKmNmcXEpCiB7Ci0JaWYg
+KChjZnFfY2ZxcV93YWl0X3JlcXVlc3QoY2ZxcSkgfHwgY2ZxX2NmcXFfbXVzdF9hbGxvYyhjZnFx
+KSkgJiYKLQkgICAgIWNmcV9jZnFxX211c3RfYWxsb2Nfc2xpY2UoY2ZxcSkpIHsKKwlpZiAoY2Zx
+X2NmcXFfd2FpdF9yZXF1ZXN0KGNmcXEpICYmICFjZnFfY2ZxcV9tdXN0X2FsbG9jX3NsaWNlKGNm
+cXEpKSB7CiAJCWNmcV9tYXJrX2NmcXFfbXVzdF9hbGxvY19zbGljZShjZnFxKTsKIAkJcmV0dXJu
+IEVMVl9NUVVFVUVfTVVTVDsKIAl9CkBAIC0yMzE3LDcgKzI0NTMsNiBAQCBjZnFfc2V0X3JlcXVl
+c3Qoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEsIHN0cnVjdCByZXF1ZXN0ICpycSwgZ2ZwX3QgZ2Zw
+X21hc2spCiAJfQogCiAJY2ZxcS0+YWxsb2NhdGVkW3J3XSsrOwotCWNmcV9jbGVhcl9jZnFxX211
+c3RfYWxsb2MoY2ZxcSk7CiAJYXRvbWljX2luYygmY2ZxcS0+cmVmKTsKIAogCXNwaW5fdW5sb2Nr
+X2lycXJlc3RvcmUocS0+cXVldWVfbG9jaywgZmxhZ3MpOwpAQCAtMjQ1MSwxMyArMjU4NiwxNiBA
+QCBzdGF0aWMgdm9pZCBjZnFfZXhpdF9xdWV1ZShzdHJ1Y3QgZWxldmF0b3JfcXVldWUgKmUpCiBz
+dGF0aWMgdm9pZCAqY2ZxX2luaXRfcXVldWUoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEpCiB7CiAJ
+c3RydWN0IGNmcV9kYXRhICpjZnFkOwotCWludCBpOworCWludCBpLGo7CiAKIAljZnFkID0ga21h
+bGxvY19ub2RlKHNpemVvZigqY2ZxZCksIEdGUF9LRVJORUwgfCBfX0dGUF9aRVJPLCBxLT5ub2Rl
+KTsKIAlpZiAoIWNmcWQpCiAJCXJldHVybiBOVUxMOwogCi0JY2ZxZC0+c2VydmljZV90cmVlID0g
+Q0ZRX1JCX1JPT1Q7CisJZm9yIChpID0gMDsgaSA8IDI7ICsraSkKKwkJZm9yIChqID0gMDsgaiA8
+IDM7ICsraikKKwkJCWNmcWQtPnNlcnZpY2VfdHJlZXNbaV1bal0gPSBDRlFfUkJfUk9PVDsKKwlj
+ZnFkLT5zZXJ2aWNlX3RyZWVfaWRsZSA9IENGUV9SQl9ST09UOwogCiAJLyoKIAkgKiBOb3Qgc3Ry
+aWN0bHkgbmVlZGVkIChzaW5jZSBSQl9ST09UIGp1c3QgY2xlYXJzIHRoZSBub2RlIGFuZCB3ZQpA
+QCAtMjQ5NCw2ICsyNjMyLDkgQEAgc3RhdGljIHZvaWQgKmNmcV9pbml0X3F1ZXVlKHN0cnVjdCBy
+ZXF1ZXN0X3F1ZXVlICpxKQogCWNmcWQtPmNmcV9zbGljZVsxXSA9IGNmcV9zbGljZV9zeW5jOwog
+CWNmcWQtPmNmcV9zbGljZV9hc3luY19ycSA9IGNmcV9zbGljZV9hc3luY19ycTsKIAljZnFkLT5j
+ZnFfc2xpY2VfaWRsZSA9IGNmcV9zbGljZV9pZGxlOworCWNmcWQtPmNmcV90YXJnZXRfbGF0ZW5j
+eSA9IGNmcV90YXJnZXRfbGF0ZW5jeTsKKwljZnFkLT5jZnFfaGlzdF9kaXZpc29yID0gY2ZxX2hp
+c3RfZGl2aXNvcjsKKwljZnFkLT5jZnFfYXN5bmNfcGVuYWx0eSA9IGNmcV9hc3luY19wZW5hbHR5
+OwogCWNmcWQtPmh3X3RhZyA9IDE7CiAKIAlyZXR1cm4gY2ZxZDsKQEAgLTI1MzAsNiArMjY3MSw3
+IEBAIGZhaWw6CiAvKgogICogc3lzZnMgcGFydHMgYmVsb3cgLS0+CiAgKi8KKwogc3RhdGljIHNz
+aXplX3QKIGNmcV92YXJfc2hvdyh1bnNpZ25lZCBpbnQgdmFyLCBjaGFyICpwYWdlKQogewpAQCAt
+MjU2Myw2ICsyNzA1LDkgQEAgU0hPV19GVU5DVElPTihjZnFfc2xpY2VfaWRsZV9zaG93LCBjZnFk
+LT5jZnFfc2xpY2VfaWRsZSwgMSk7CiBTSE9XX0ZVTkNUSU9OKGNmcV9zbGljZV9zeW5jX3Nob3cs
+IGNmcWQtPmNmcV9zbGljZVsxXSwgMSk7CiBTSE9XX0ZVTkNUSU9OKGNmcV9zbGljZV9hc3luY19z
+aG93LCBjZnFkLT5jZnFfc2xpY2VbMF0sIDEpOwogU0hPV19GVU5DVElPTihjZnFfc2xpY2VfYXN5
+bmNfcnFfc2hvdywgY2ZxZC0+Y2ZxX3NsaWNlX2FzeW5jX3JxLCAwKTsKK1NIT1dfRlVOQ1RJT04o
+Y2ZxX3RhcmdldF9sYXRlbmN5X3Nob3csIGNmcWQtPmNmcV90YXJnZXRfbGF0ZW5jeSwgMSk7CitT
+SE9XX0ZVTkNUSU9OKGNmcV9oaXN0X2Rpdmlzb3Jfc2hvdywgY2ZxZC0+Y2ZxX2hpc3RfZGl2aXNv
+ciwgMCk7CitTSE9XX0ZVTkNUSU9OKGNmcV9hc3luY19wZW5hbHR5X3Nob3csIGNmcWQtPmNmcV9h
+c3luY19wZW5hbHR5LCAwKTsKICN1bmRlZiBTSE9XX0ZVTkNUSU9OCiAKICNkZWZpbmUgU1RPUkVf
+RlVOQ1RJT04oX19GVU5DLCBfX1BUUiwgTUlOLCBNQVgsIF9fQ09OVikJCQlcCkBAIC0yNTk0LDYg
+KzI3MzksMTEgQEAgU1RPUkVfRlVOQ1RJT04oY2ZxX3NsaWNlX3N5bmNfc3RvcmUsICZjZnFkLT5j
+ZnFfc2xpY2VbMV0sIDEsIFVJTlRfTUFYLCAxKTsKIFNUT1JFX0ZVTkNUSU9OKGNmcV9zbGljZV9h
+c3luY19zdG9yZSwgJmNmcWQtPmNmcV9zbGljZVswXSwgMSwgVUlOVF9NQVgsIDEpOwogU1RPUkVf
+RlVOQ1RJT04oY2ZxX3NsaWNlX2FzeW5jX3JxX3N0b3JlLCAmY2ZxZC0+Y2ZxX3NsaWNlX2FzeW5j
+X3JxLCAxLAogCQlVSU5UX01BWCwgMCk7CisKK1NUT1JFX0ZVTkNUSU9OKGNmcV90YXJnZXRfbGF0
+ZW5jeV9zdG9yZSwgJmNmcWQtPmNmcV90YXJnZXRfbGF0ZW5jeSwgMSwgMTAwMCwgMSk7CitTVE9S
+RV9GVU5DVElPTihjZnFfaGlzdF9kaXZpc29yX3N0b3JlLCAmY2ZxZC0+Y2ZxX2hpc3RfZGl2aXNv
+ciwgMSwgMTAwLCAwKTsKK1NUT1JFX0ZVTkNUSU9OKGNmcV9hc3luY19wZW5hbHR5X3N0b3JlLCAm
+Y2ZxZC0+Y2ZxX2FzeW5jX3BlbmFsdHksIDEsIFVJTlRfTUFYLCAwKTsKKwogI3VuZGVmIFNUT1JF
+X0ZVTkNUSU9OCiAKICNkZWZpbmUgQ0ZRX0FUVFIobmFtZSkgXApAQCAtMjYwOSw2ICsyNzU5LDkg
+QEAgc3RhdGljIHN0cnVjdCBlbHZfZnNfZW50cnkgY2ZxX2F0dHJzW10gPSB7CiAJQ0ZRX0FUVFIo
+c2xpY2VfYXN5bmMpLAogCUNGUV9BVFRSKHNsaWNlX2FzeW5jX3JxKSwKIAlDRlFfQVRUUihzbGlj
+ZV9pZGxlKSwKKwlDRlFfQVRUUih0YXJnZXRfbGF0ZW5jeSksCisJQ0ZRX0FUVFIoaGlzdF9kaXZp
+c29yKSwKKwlDRlFfQVRUUihhc3luY19wZW5hbHR5KSwKIAlfX0FUVFJfTlVMTAogfTsKIAo=
+--0016e6d386fe8db9340474a50ac1--
