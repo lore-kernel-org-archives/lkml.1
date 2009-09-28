@@ -1,74 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbZI1BwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbZI1BxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752651AbZI1BwT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 21:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZI1BwT
+	id S1752748AbZI1BxU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 21:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZI1BxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 21:52:19 -0400
-Received: from mga03.intel.com ([143.182.124.21]:32561 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751825AbZI1BwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 21:52:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,462,1249282800"; 
-   d="scan'208";a="192281958"
-Date: Mon, 28 Sep 2009 09:52:10 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
-Message-ID: <20090928015210.GA8379@localhost>
-References: <20090926031537.GA10176@localhost> <Pine.LNX.4.64.0909261115530.12927@sister.anvils> <20090926190645.GB14368@wotan.suse.de> <20090926213204.GX30185@one.firstfloor.org> <Pine.LNX.4.64.0909271714370.9097@sister.anvils> <20090927192251.GB6327@wotan.suse.de> <Pine.LNX.4.64.0909272251180.4402@sister.anvils> <20090927230118.GH6327@wotan.suse.de> <20090928011943.GB1656@one.firstfloor.org>
+	Sun, 27 Sep 2009 21:53:19 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:58122 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752439AbZI1BxS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 21:53:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=v0PnWSpmse6++l3VvENtUqy147Ms/YmqBRh9e3bSNOZG/G74A0mXoebjI06ANQ2gWI
+         bMvnkAqHbr+NiPxxHtZMbhAosKWuU7h1vmSZ7B5a2Vn/Q2VQytckHasfg3mD4llcybuf
+         /2GvsTZJRiFhLLpFH7sjAhTkhOi8g2pXAtvWI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090928011943.GB1656@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200909271746.30542.rjw@sisk.pl>
+References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com>
+	 <8db1092f0909270325j67825cem82fc93cf19336d6f@mail.gmail.com>
+	 <2674af740909270701u6febabdbpc5c772fabc193b32@mail.gmail.com>
+	 <200909271746.30542.rjw@sisk.pl>
+Date: Mon, 28 Sep 2009 09:53:22 +0800
+Message-ID: <2674af740909271853r73bb70f7s81d7ddd1b09f18b5@mail.gmail.com>
+Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 
+	hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 
+	__sysdev_resume+0xc3/0xe0()
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       clemens@ladisch.de, venkatesh.pallipadi@intel.com, gregkh@suse.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 09:19:43AM +0800, Andi Kleen wrote:
-> > There is no real rush AFAIKS to fix this one single pagecache site
-> > while we have problems with slab allocators and all other unaudited
-> > places that nonatomically modify page flags with an elevated
-> 
-> hwpoison ignores slab pages.
-> 
-> > page reference ... just mark HWPOISON as broken for the moment, or
-> > cut it down to do something much simpler I guess?
-> 
-> Erm no. These cases are *EXTREMLY* unlikely to hit.
-> 
-> I'll look into exploiting the ordering of the mapping assignment.
+On Sun, Sep 27, 2009 at 11:46 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Sunday 27 September 2009, Yong Zhang wrote:
+>> On Sun, Sep 27, 2009 at 6:25 PM, Maciej Rutecki
+>> <maciej.rutecki@gmail.com> wrote:
+>> > 2009/9/27 Yong Zhang <yong.zhang0@gmail.com>:
+>> >>
+>> >> Oops, TABLE is corrupted. Please use the attachment.
+>> >
+>> > kernel/time/timekeeping.c: In function ‘timekeeping_resume’:
+>> > kernel/time/timekeeping.c:577: error: ‘xtime_locks’ undeclared (first
+>> > use in this function)
+>> > kernel/time/timekeeping.c:577: error: (Each undeclared identifier is
+>> > reported only once
+>> > kernel/time/timekeeping.c:577: error: for each function it appears
+>> > in.)
+>> > make[3]: *** [kernel/time/timekeeping.o] Błąd 1
+>> > make[2]: *** [kernel/time] Błąd 2
+>> >
+>> >
+>> > I change:
+>> > write_seqlock(&xtime_locks);
+>> > to:
+>> > write_seqlock(&xtime_lock);
+>> >
+>>
+>> Oh, typo error.
+>>
+>> > Corrected patch in attachment.
+>> >
+>> > First warning has gone, but still I have this:
+>> > [  120.868049] SMP alternatives: switching to UP code
+>> > [  120.872570] CPU0 attaching NULL sched-domain.
+>> > [  120.872574] CPU1 attaching NULL sched-domain.
+>> > [  120.872581] CPU0 attaching NULL sched-domain.
+>> > [  120.872787] CPU1 is down
+>> > [  120.872846] Extended CMOS year: 2000
+>> > [  120.872945] PM: Creating hibernation image:
+>> > [  120.876009] PM: Need to copy 107120 pages
+>> > [  120.872009] PM: Restoring platform NVS memory
+>> > [  120.872009] CPU0: Thermal monitoring handled by SMI
+>> > [  120.872009] Extended CMOS year: 2000
+>> > [  120.872009] ------------[ cut here ]------------
+>> > [  120.872009] WARNING: at drivers/base/sys.c:353
+>> > __sysdev_resume+0xc3/0xe0()
+>> > [  120.872009] Hardware name: HP Compaq nx6310 (EY501ES#AKD)
+>> > [  120.872009] Interrupts enabled after timekeeping_resume+0x0/0x1c0
+>>
+>> Irq is enabled after timekeeping_resume(), the previous patch do something
+>> sensible. But we even don't know when the irq is enabled. such as in
+>> timekeeping_resume() or before enter timekeeping_resume(). But it
+>> seem that this is not due to timekeeping_resume(). Instead I'm afraid
+>> it's caused by buggy driver.
+>
+> Interrupts are disabled by the suspend core code right before sysdev_suspend(),
 
-Andi, given that overheads of this patch is considered unacceptable,
-I think we can just ignore it.
+You are quite right. Thanks for your clarification.
 
-The proposed schemes are already tricky enough (and may not achieve
-100% correctness). We have not even considered the interaction with
-free buddy pages, unpoison, and hwpoison filtering.
+-Yong
 
-It may well result in something unmanageable.
-
-On the other hand, we may just ignore the __set_page_locked race, 
-
-- it could trigger BUG() on unlock_page(), however that's _no worse_
-  than plain kernel without hwpoison. Plain kernel will also die when
-  trying to fill data into the newly allocated pages.
-- it is _not yet_ a LRU page. So it does not hurt the general idea of
-  "hwpoison can handle LRU pages reliably".
-- in hwpoison stress testing, we can avoid such pages by checking the
-  PG_lru bit. Thus we can make the tests immune to this race.
-
-Or,
-- the page being __set_page_locked() is _not_ the fine LRU page
-- we can prevent the kernel panic in the tests
-- for a production workload, this presents merely another (rare) type
-  of kernel page we cannot rescue.
-
-Thanks,
-Fengguang
+> so device drivers cannot make this happen.  One of the sysdevs is doing this.
+>
+> Thanks,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
