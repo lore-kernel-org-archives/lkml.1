@@ -1,88 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbZI1D7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750917AbZI1EEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752835AbZI1D7Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 23:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbZI1D7P
+	id S1750917AbZI1EEN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 00:04:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZI1EEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 23:59:15 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33578 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbZI1D7O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 23:59:14 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 28 Sep 2009 12:57:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: No more bits in vm_area_struct's vm_flags.
-Message-Id: <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090928033624.GA11191@localhost>
-References: <4AB9A0D6.1090004@crca.org.au>
-	<20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com>
-	<4ABC80B0.5010100@crca.org.au>
-	<20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AC0234F.2080808@crca.org.au>
-	<20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090928033624.GA11191@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 28 Sep 2009 00:04:12 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36607 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750721AbZI1EEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 00:04:12 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18nCq0yNa8n5nBYpJFFhA7sCAI4fHgMQRFuLlenKv
+	zFXiJ5c/c6quyv
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+In-Reply-To: <1254075359.7354.66.camel@marge.simson.net>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
+	 <1253976676.7005.40.camel@marge.simson.net>
+	 <1254034500.7933.6.camel@marge.simson.net>
+	 <20090927164235.GA23126@kernel.dk>
+	 <1254075359.7354.66.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Mon, 28 Sep 2009 06:04:08 +0200
+Message-Id: <1254110648.7683.3.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Sep 2009 11:36:24 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Sun, 2009-09-27 at 20:16 +0200, Mike Galbraith wrote:
+> On Sun, 2009-09-27 at 18:42 +0200, Jens Axboe wrote:
 
-> On Mon, Sep 28, 2009 at 11:04:50AM +0800, KAMEZAWA Hiroyuki wrote:
- 
-> > But, yes it implies to add a new argument to several functions in mmap.c
-> > and maybe a patch will be ugly.
-> > 
-> > How about addding this check ?
-> > 
-> > is_mergeable_vma(...)
-> > ....
-> >   if (vma->vm_hints)
-> > 	return 0;
-> > 
-> > And not calling vma_merge() at madvice(ACCESS_PATTERN_HINT).
-> > 
-> > I wonder there are little chances when madice(ACCESS_PATTERN_HINT) is
-> > given against mapped-file-vma...
-> 
-> Me wonder too. The access hints should be rarely used.
-> A simple solution is reasonable for them.
-> 
-> But what if more flags going into vm_hints in future?
-> 
+> I'll give it a shot first thing in the A.M.
 
-yes, that's concern...
+> > diff --git a/block/elevator.c b/block/elevator.c
+> > index 1975b61..d00a72b 100644
+> > --- a/block/elevator.c
+> > +++ b/block/elevator.c
+> > @@ -497,9 +497,17 @@ int elv_merge(struct request_queue *q, struct request **req, struct bio *bio)
+> >  	 * See if our hash lookup can find a potential backmerge.
+> >  	 */
+> >  	__rq = elv_rqhash_find(q, bio->bi_sector);
+> > -	if (__rq && elv_rq_merge_ok(__rq, bio)) {
+> > -		*req = __rq;
+> > -		return ELEVATOR_BACK_MERGE;
+> > +	if (__rq) {
+> > +		/*
+> > +		 * If requests are queued behind this one, disallow merge. This
+> > +		 * prevents streaming IO from continually passing new IO.
+> > +		 */
+> > +		if (elv_latter_request(q, __rq))
+> > +			return ELEVATOR_NO_MERGE;
+> > +		if (elv_rq_merge_ok(__rq, bio)) {
+> > +			*req = __rq;
+> > +			return ELEVATOR_BACK_MERGE;
+> > +		}
+> >  	}
+> >  
+> >  	if (e->ops->elevator_merge_fn)
 
-But I wonder there are several flags which implies that the vma is not for
-merge. as....
+- = virgin tip v2.6.31-10215-ga3c9602
++ = with patchlet
+                                                            Avg
+dd pre         67.4     70.9     65.4     68.9     66.2     67.7-
+               65.9     68.5     69.8     65.2     65.8     67.0-     Avg
+               70.4     70.3     65.1     66.4     70.1     68.4-     67.7-
+               73.1     64.6     65.3     65.3     64.9     66.6+     65.6+     .968
+               63.8     67.9     65.2     65.1     64.4     65.2+
+               64.9     66.3     64.1     65.2     64.8     65.0+
+perf stat      8.66    16.29     9.65    14.88     9.45     11.7-
+              15.36     9.71    15.47    10.44    12.93     12.7-
+              10.55    15.11    10.22    15.35    10.32     12.3-     12.2-
+               9.87     7.53    10.62     7.51     9.95      9.0+      9.1+     .745
+               7.73    10.12     8.19    11.87     8.07      9.1+
+              11.04     7.62    10.14     8.13    10.23      9.4+
+dd post        63.4     60.5     66.7     64.5     67.3     64.4-
+               64.4     66.8     64.3     61.5     62.0     63.8-
+               63.8     64.9     66.2     65.6     66.9     65.4-     64.5-
+               60.9     63.4     60.2     63.4     65.5     62.6+     61.8+     .958
+               63.3     59.9     61.9     62.7     61.2     61.8+
+               60.1     63.7     59.5     61.5     60.6     61.0+
 
-#define VM_GROWSDOWN    0x00000100      /* general info on the segment */
-#define VM_GROWSUP      0x00000200
-
-or some PFN_MAP flags...
-(At least, we can have 4 flags of not-for-merge in vm_hints ;)
-
-Then, Nigel, you have 2 choices I think.
-
-  (1) don't merge if vm_hints is set  or
-  (2) pass vm_hints to all __merge() functions.
-
-One of above will be accesptable for stakeholders...
-I personally like (1) but just trying (2) may be accepted.
-
-What I dislike is making vm_flags to be long long ;)
-
-Thanks,
--Kame
 
