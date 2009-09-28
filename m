@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbZI1H01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZI1H1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbZI1H01 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 03:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZI1H00
+	id S1752608AbZI1H1D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 03:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZI1H1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 03:26:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:17577 "EHLO mx1.redhat.com"
+	Mon, 28 Sep 2009 03:27:02 -0400
+Received: from mga11.intel.com ([192.55.52.93]:9612 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750917AbZI1H00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 03:26:26 -0400
-Subject: Re: [RFC] VFS: Export dquot_send_warning
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
-In-Reply-To: <20090926162951.GA12397@infradead.org>
-References: <1253708720.6052.289.camel@localhost.localdomain>
-	 <20090926162951.GA12397@infradead.org>
+	id S1751302AbZI1H1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 03:27:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,464,1249282800"; 
+   d="scan'208";a="730763886"
+Subject: Re: [PATCH 3/5] mce-inject: make injected mce valid only during
+ faked handler call
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AC05D48.1000007@jp.fujitsu.com>
+References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>
+	 <4AC05BBF.3010102@jp.fujitsu.com>  <4AC05D48.1000007@jp.fujitsu.com>
 Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
- 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
- Street, Windsor, Berkshire, SL4 ITE
-Date: Mon, 28 Sep 2009 08:26:20 +0100
-Message-Id: <1254122780.6052.365.camel@localhost.localdomain>
+Date: Mon, 28 Sep 2009 15:27:03 +0800
+Message-Id: <1254122823.15717.1389.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sat, 2009-09-26 at 12:29 -0400, Christoph Hellwig wrote:
-> On Wed, Sep 23, 2009 at 01:25:20PM +0100, Steven Whitehouse wrote:
-> > Hi,
-> > 
-> > It would be useful to have a generic method of sending quota messages
-> > to userspace. The dquot code has such a method, but it can only currently
-> > be used by that code, so I'm wondering whether there would be any objections
-> > to exporting it so that other (non-dquot) filesystems could use it?
-> > 
-> > My proposed (first draft) patch is below,
+On Mon, 2009-09-28 at 14:52 +0800, Hidetoshi Seto wrote: 
+> In the current implementation, injected MCE is valid from the point
+> the MCE is injected to the point the MCE is processed by the faked
+> handler call.
 > 
-> If you want to use it without the "generic" quotas it needs to move
-> from dquota.c to quota.c.  And of course a user in the patch series
-> makes the likelyhood of getting this included muc higher :)
+> This has an undesired side-effect: it is possible for it to be
+> consumed by real machine_check_poll. This may confuse a real system
+> error and may confuse the mce test suite.
 > 
+> To fix this, this patch changes mce_rdmsrl/wemsrl() to refer injected
+> data only when injectm.valid states 3rd state "2", which indicates that
+> the injected MCE entry is valid and ready for the handler.
+> 
+> The injectm.valid becomes "2" only during faked MCE handler call
+> and protected by IRQ disabling. This make it impossible for real
+> machine_check_poll to consume it.
 
-Yes, I have a patch to make use of this from GFS2 though I didn't sent
-it in the first instance as its trivial and I was more worried about the
-generic idea being acceptable. Anyway, I'll send an updated patch,
-including moving/renaming where required, shortly,
+Anyway, I don't think it is a good idea to use a magic number like "2"
+here. A meaningful name is better.
 
-Steve.
+And I think my original method is clearer. Because injection related
+flags go inject_flags, not be mixed with normal path flag "finished".
 
+Best Regards,
+Huang Ying
 
