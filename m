@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZI1QxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbZI1Q4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbZI1QxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 12:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZI1QxX
+	id S1752827AbZI1Q4I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 12:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZI1Q4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 12:53:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41847 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752550AbZI1QxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 12:53:22 -0400
-Message-ID: <4AC0E9F2.1020408@kernel.org>
-Date: Tue, 29 Sep 2009 01:53:06 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 28 Sep 2009 12:56:07 -0400
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:52026 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751407AbZI1Q4H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 12:56:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: Wrong Vmalloc numbers in /proc/meminfo
+Date: Mon, 28 Sep 2009 18:56:08 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200909280209.32457.elendil@planet.nl> <20090928113222.ae0f49c5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090928113222.ae0f49c5.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Tony Vroon <tony@linx.net>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] percpu: fix unit_map[] verification in pcpu_setup_first_chunk()
-References: <4ABAC2F1.3020302@kernel.org> <1254055797.2756.1.camel@localhost> <4AC0E201.2020006@kernel.org> <alpine.DEB.1.10.0909281223510.16040@gentwo.org> <4AC0E5D8.6090707@kernel.org> <4AC0E6A3.4040500@kernel.org> <alpine.DEB.1.10.0909281239100.16040@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0909281239100.16040@gentwo.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 28 Sep 2009 16:53:08 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200909281856.08969.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Sep 2009 16:56:08.0996 (UTC) FILETIME=[938A3E40:01CA405C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 29 Sep 2009, Tejun Heo wrote:
-> 
->> Christoph, can you please elaborate why nr_cpu_ids < NR_CPUS is
->> broken?
-> 
-> If its just an internal number that becomes larger than NR_CPUS then
-> everything is fine.
-> 
-> But if a real cpu id (returned by smp_processor_id()) gets larger than
-> NR_CPUS then we get into trouble with the parts of the kernel that index
-> by cpu id.
+On Monday 28 September 2009, KAMEZAWA Hiroyuki wrote:
+> > VmallocTotal:   34359738367 kB
+> > VmallocUsed:      340084 kB
+> > VmallocChunk:   34359387131 kB
+> >
+> > Is it me or are VmallocTotal and VmallocChunk off by a factor 10,000
+> > or so?
+>
+> I'm sorry I misunderstand your 10,000 implies.
 
-It's a unit number.  Each cpu has exactly one unit number assigned to
-it but there can be holes, so unit number can legally go over both
-nr_cpu_ids and NR_CPUS, so yeap, it's just an internal number used
-inside percpu allocator.
+What I meant is: is the Vmalloc area really 32 *terra*bytes in size?
+Seems rather big for a system with only 2GB RAM.
 
-Tony, the original patch should be correct.  Please verify.
-
-Thanks.
-
--- 
-tejun
+I'd never noticed it before and it looks strange to me, but I guess it's 
+just the result of having 64-bit addressing: a theoretically addressable 
+area most of which will never actually be used?
