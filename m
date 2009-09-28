@@ -1,115 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbZI1PKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752212AbZI1PQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752177AbZI1PKf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 11:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbZI1PKe
+	id S1752212AbZI1PQs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 11:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZI1PQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 11:10:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34159 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZI1PKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 11:10:34 -0400
-Subject: Re: Linux 2.6.32-rc1 compile error
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Wolfgang Erig <Wolfgang.Erig@gmx.de>, Jan Beulich <jbeulich@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090928143451.GA22949@erig.dyndns.org>
-References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>
-	 <20090928143451.GA22949@erig.dyndns.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Sep 2009 20:40:09 +0530
-Message-Id: <1254150609.16585.3.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 8bit
+	Mon, 28 Sep 2009 11:16:46 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:42686 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751202AbZI1PQq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 11:16:46 -0400
+Date: Mon, 28 Sep 2009 11:12:10 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Tejun Heo <tj@kernel.org>
+cc: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu
+ areas for other cpus
+In-Reply-To: <4ABB2FE3.40608@kernel.org>
+Message-ID: <alpine.DEB.1.10.0909281104060.12252@gentwo.org>
+References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-3-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0909221856050.9410@V090114053VZO-1> <4AB983B6.6050203@kernel.org> <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1>
+ <4ABA2A3A.6020308@kernel.org> <alpine.DEB.1.10.0909231315310.4025@V090114053VZO-1> <4ABA9B14.20904@kernel.org> <alpine.DEB.1.10.0909240332130.1488@V090114053VZO-1> <4ABB2FE3.40608@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Wolfgang,
+On Thu, 24 Sep 2009, Tejun Heo wrote:
 
-Can you please check, following patch fix your problem. (This is
-untested)
+> percpu implementation on ia64 has always been like that.  The problem
+> with the alternate mapping is that you can't take the pointer to it as
+> it would mean different thing depending on which processor you're on
+> and the overall generic percpu implementation expects unique addresses
+> from percpu access macros.
 
-On Mon, 2009-09-28 at 16:34 +0200, Wolfgang Erig wrote:
-> ------------ snip ------------
->   CC      kernel/time/tick-oneshot.o
->   CC      kernel/time/tick-sched.o
->   LD      kernel/time/built-in.o
->   CC      kernel/futex.o
->   CC      kernel/rtmutex.o
->   CC      kernel/dma.o
->   CC      kernel/smp.o
->   CC      kernel/spinlock.o
->   CC      kernel/uid16.o
->   CC      kernel/module.o
-> kernel/module.c:1995: warning: type defaults to ‘int’ in declaration of ‘Elf_Hdr’
-> kernel/module.c:1995: error: expected ‘;’, ‘,’ or ‘)’ before ‘*’ token
-> kernel/module.c: In function ‘load_module’:
-> kernel/module.c:2203: error: ‘strmap’ undeclared (first use in this function)
-> kernel/module.c:2203: error: (Each undeclared identifier is reported only once
-> kernel/module.c:2203: error: for each function it appears in.)
-> kernel/module.c:2239: error: ‘symoffs’ undeclared (first use in this function)
-> kernel/module.c:2239: error: implicit declaration of function ‘layout_symtab’
-> kernel/module.c:2240: error: ‘stroffs’ undeclared (first use in this function)
-> make[1]: *** [kernel/module.o] Fehler 1
-> make: *** [kernel] Fehler 2
-> 
-> seemed to be a strange .config, which is attached.
-> 
+The cpu ops patchset uses per cpu addresses that are not relocated to a
+certain processor. The relocation is implicit in these instructions and
+must be implicit so these operations can be processor atomic.
 
-From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Date: Mon, 28 Sep 2009 20:14:37 +0530
-Subject: [PATCH] module: fix compilation errors
+> ia64 currently has been and is the only arch which uses virtual percpu
+> mapping.  The one biggest benefit would be accesses to the
+> local_per_cpu_offset.  Whether it's beneficial enough to justify the
+> complexity, I frankly don't know.
 
-Fix following compilation errors :
-  kernel/module.c:1995: warning: type defaults to ‘int’ in declaration of ‘Elf_Hdr’
-  kernel/module.c:1995: error: expected ‘;’, ‘,’ or ‘)’ before ‘*’ token
-  kernel/module.c: In function ‘load_module’:
-  kernel/module.c:2203: error: ‘strmap’ undeclared (first use in this function)
-  kernel/module.c:2203: error: (Each undeclared identifier is reported only once
-  kernel/module.c:2203: error: for each function it appears in.)
-  kernel/module.c:2239: error: ‘symoffs’ undeclared (first use in this function)
-  kernel/module.c:2239: error: implicit declaration of function ‘layout_symtab’
-  kernel/module.c:2240: error: ‘stroffs’ undeclared (first use in this function)
-  make[1]: *** [kernel/module.o] Fehler 1
-  make: *** [kernel] Fehler 2
+Its not worth working on given the state of IA64. I talked to Tony at the
+Plumbers conference. It may be beneficial to drop the virtual percpu
+mapping entirely because that would increase the number of TLB entries
+available.
 
-Reported-by: Wolfgang Erig <Wolfgang.Erig@gmx.de>
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Jan Beulich <jbeulich@novell.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/module.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+> Andrew once also suggested taking advantage of those overlapping
+> virtual mappings for local percpu accesses.  If the generic code
+> followed such design, ia64's virtual mappings would definitely be more
+> useful, but that means we would need aliased mappings for percpu areas
+> and addresses will be different for local and remote accesses.  Also,
+> getting it right on machines with virtually mapped caches would be
+> very painful.  Given that %gs/fs offesetting is quite efficient on
+> x86, I don't think changing the generic mechanism is worthwhile.
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 5a29397..0034621 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1992,7 +1992,7 @@ static inline unsigned long layout_symtab(struct module *mod,
- 					  Elf_Shdr *sechdrs,
- 					  unsigned int symindex,
- 					  unsigned int strindex,
--					  const Elf_Hdr *hdr,
-+				   	  const Elf_Ehdr *hdr,
- 					  const char *secstrings,
- 					  unsigned long *pstroffs,
- 					  unsigned long *strmap)
-@@ -2081,9 +2081,8 @@ static noinline struct module *load_module(void __user *umod,
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
--#ifdef CONFIG_KALLSYMS
- 	unsigned long symoffs, stroffs, *strmap;
--#endif
-+
- 	mm_segment_t old_fs;
- 
- 	DEBUGP("load_module: umod=%p, len=%lu, uargs=%p\n",
--- 
-1.6.0.6
+There is no problem with using unrelocated percpu addresses as an
+"address" for the cpu ops. The IA64 "virtual" addresses are a stand in for
+the segment registers on IA64.
 
+> So, it would be great if we can find a better way to offset addresses
+> on ia64.  If not, nothing improves or deteriorates performance-wise
+> with the new implementation.
 
+Dropping the use of the special mapping over time may be the easiest way
+to go for IA64. percpu RMW ops like this_cpu_add are not possible with
+IA64 since no lightweight primitives exist. We could only avoid the
+calculation of the per cpu variables address. Would allow assignment and
+access to be atomic but not the RMW instruction. So it would not be a full
+per cpu ops implementation anyways.
 
