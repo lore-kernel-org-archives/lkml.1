@@ -1,48 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZI1Pxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbZI1Pzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601AbZI1Pxx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 11:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZI1Pxw
+	id S1752651AbZI1Pzi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 11:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZI1Pzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 11:53:52 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:53786 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbZI1Pxw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 11:53:52 -0400
-Date: Mon, 28 Sep 2009 16:53:53 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Valdis.Kletnieks@vt.edu, "Dr. David Alan Gilbert" <linux@treblig.org>,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Andreas Gruenbacher <agruen@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: new O_NODE open flag
-Message-ID: <20090928155353.GA25375@shareable.org>
-References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu> <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu> <20090925190222.GX10562@webber.adilger.int>
+	Mon, 28 Sep 2009 11:55:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44824 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751932AbZI1Pzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 11:55:36 -0400
+Date: Mon, 28 Sep 2009 15:55:10 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <12541491931164-git-send-email->
+References: <12541491931164-git-send-email->
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/rcu] rcu: Clean up code based on review feedback from Josh Triplett, part 3
+Message-ID: <tip-10905fde9671288030c616473eade4574f9894a1@git.kernel.org>
+Git-Commit-ID: 10905fde9671288030c616473eade4574f9894a1
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090925190222.GX10562@webber.adilger.int>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 28 Sep 2009 15:55:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Dilger wrote:
-> > It's not possible even without this flag. Consider:
-> > 
-> >         fd1 = open("/tmp/foo",flags);
-> >         rc = rename("/tmp/foo","/tmp/bar");
-> >         fd2 = open("/tmp/foo",flags);
-> > 
-> > Or were you asking if *absent that sort of tomfoolery* if it would work?
-> 
-> No, the point is that we HAVE an fd that points to the original "/tmp/foo"
-> opened with O_NODE, and now (after an ioctl, stat, etc) we decide it is
-> safe to open the file read and/or write without releasing the existing
-> fd.  The whole point is to AVOID this kind of tomfoolery.
+Commit-ID:  10905fde9671288030c616473eade4574f9894a1
+Gitweb:     http://git.kernel.org/tip/10905fde9671288030c616473eade4574f9894a1
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Mon, 28 Sep 2009 07:46:32 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 28 Sep 2009 17:52:38 +0200
 
-Make sense, and openat() seems like a good way to accomplish it.
+rcu: Clean up code based on review feedback from Josh Triplett, part 3
 
--- Jamie
+Whitespace fixes, updated comments, and trivial code movement.
+
+o	Fix whitespace error in RCU_HEAD_INIT()
+
+o	Move "So where is rcu_write_lock()" comment so that it does
+	not come between the rcu_read_unlock() header comment and
+	the rcu_read_unlock() definition.
+
+o	Move the module_param statements for blimit, qhimark, and
+	qlowmark to immediately follow the corresponding
+	definitions.
+
+o	In __rcu_offline_cpu(), move the assignment to rdp_me
+	inside the "if" statement, given that rdp_me is not used
+	outside of that "if" statement.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: akpm@linux-foundation.org
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: josh@joshtriplett.org
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+Cc: Valdis.Kletnieks@vt.edu
+Cc: dhowells@redhat.com
+LKML-Reference: <12541491931164-git-send-email->
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/linux/rcupdate.h |   14 +++++++-------
+ kernel/rcutree.c         |   10 +++++-----
+ 2 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index fe5c560..2f1bc42 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -83,7 +83,7 @@ extern int rcu_scheduler_active;
+ #error "Unknown RCU implementation specified to kernel configuration"
+ #endif
+ 
+-#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
++#define RCU_HEAD_INIT	{ .next = NULL, .func = NULL }
+ #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
+ #define INIT_RCU_HEAD(ptr) do { \
+        (ptr)->next = NULL; (ptr)->func = NULL; \
+@@ -135,12 +135,6 @@ static inline void rcu_read_lock(void)
+ 	rcu_read_acquire();
+ }
+ 
+-/**
+- * rcu_read_unlock - marks the end of an RCU read-side critical section.
+- *
+- * See rcu_read_lock() for more information.
+- */
+-
+ /*
+  * So where is rcu_write_lock()?  It does not exist, as there is no
+  * way for writers to lock out RCU readers.  This is a feature, not
+@@ -150,6 +144,12 @@ static inline void rcu_read_lock(void)
+  * used as well.  RCU does not care how the writers keep out of each
+  * others' way, as long as they do so.
+  */
++
++/**
++ * rcu_read_unlock - marks the end of an RCU read-side critical section.
++ *
++ * See rcu_read_lock() for more information.
++ */
+ static inline void rcu_read_unlock(void)
+ {
+ 	rcu_read_release();
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 81af59b..d559783 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -122,6 +122,10 @@ static int blimit = 10;		/* Maximum callbacks per softirq. */
+ static int qhimark = 10000;	/* If this many pending, ignore blimit. */
+ static int qlowmark = 100;	/* Once only this many pending, use blimit. */
+ 
++module_param(blimit, int, 0);
++module_param(qhimark, int, 0);
++module_param(qlowmark, int, 0);
++
+ static void force_quiescent_state(struct rcu_state *rsp, int relaxed);
+ static int rcu_pending(int cpu);
+ 
+@@ -878,8 +882,8 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 	 * indefinitely delay callbacks, you have far worse things to
+ 	 * be worrying about.
+ 	 */
+-	rdp_me = rsp->rda[smp_processor_id()];
+ 	if (rdp->nxtlist != NULL) {
++		rdp_me = rsp->rda[smp_processor_id()];
+ 		*rdp_me->nxttail[RCU_NEXT_TAIL] = rdp->nxtlist;
+ 		rdp_me->nxttail[RCU_NEXT_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
+ 		rdp->nxtlist = NULL;
+@@ -1575,7 +1579,3 @@ void __init __rcu_init(void)
+ }
+ 
+ #include "rcutree_plugin.h"
+-
+-module_param(blimit, int, 0);
+-module_param(qhimark, int, 0);
+-module_param(qlowmark, int, 0);
