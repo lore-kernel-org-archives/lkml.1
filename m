@@ -1,54 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZI1Suk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbZI1SyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752780AbZI1Suk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 14:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZI1Suk
+	id S1752893AbZI1SyE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 14:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZI1SyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 14:50:40 -0400
-Received: from mga05.intel.com ([192.55.52.89]:21185 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752286AbZI1Suj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 14:50:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,467,1249282800"; 
-   d="scan'208";a="730938244"
-Message-ID: <4AC10588.90808@linux.intel.com>
-Date: Mon, 28 Sep 2009 20:50:48 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-CC: Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/5] mce-inject: make injected mce valid only during faked
- handler call
-References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com> <4AC05BBF.3010102@jp.fujitsu.com> <4AC05D48.1000007@jp.fujitsu.com>
-In-Reply-To: <4AC05D48.1000007@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Mon, 28 Sep 2009 14:54:03 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33072 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752398AbZI1SyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 14:54:02 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX189kGY1MfI9VG1pIdzsMatg6tv8o4P7BiyP8XnHld
+	ff5aiVNlaE5oo+
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       jens.axboe@oracle.com, Tobias Oetiker <tobi@oetiker.ch>
+In-Reply-To: <20090928181846.GC3643@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
+	 <4e5e476b0909271000u69d79346s27cccad219e49902@mail.gmail.com>
+	 <20090928145655.GB8192@redhat.com>
+	 <4e5e476b0909280835w3410d58aod93a29d1dcda8909@mail.gmail.com>
+	 <1254160274.9820.25.camel@marge.simson.net>
+	 <20090928181846.GC3643@redhat.com>
+Content-Type: text/plain
+Date: Mon, 28 Sep 2009 20:53:54 +0200
+Message-Id: <1254164034.9820.81.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hidetoshi Seto wrote:
+On Mon, 2009-09-28 at 14:18 -0400, Vivek Goyal wrote:
+> On Mon, Sep 28, 2009 at 07:51:14PM +0200, Mike Galbraith wrote:
 
-> This has an undesired side-effect: it is possible for it to be
-> consumed by real machine_check_poll. This may confuse a real system
-> error and may confuse the mce test suite.
+> I guess changing class to IDLE should have helped a bit as now this is
+> equivalent to setting the quantum to 1 and after dispatching one request
+> to disk, CFQ will always expire the writer once. So it might happen that
+> by the the reader preempted writer, we have less number of requests in
+> disk and lesser latency for this reader.
 
-You can just disable the poll handler in the test suite. That's
-what we did.
+I expected SCHED_IDLE to be better than setting quantum to 1, because
+max is quantum*4 if you aren't IDLE.  But that's not what happened.  I
+just retested with all knobs set back to stock, fairness off, and
+quantum set to 1 with everything running nice 0.  2.8 seconds avg :-/
 
-> To fix this, this patch changes mce_rdmsrl/wemsrl() to refer injected
-> data only when injectm.valid states 3rd state "2", which indicates that
-> the injected MCE entry is valid and ready for the handler.
+> > I saw
+> > the reference to Vivek's patch, and gave it a shot.  Makes a large
+> > difference.
+> >                                                            Avg
+> > perf stat     12.82     7.19     8.49     5.76     9.32    8.7     anticipatory
+> >               16.24   175.82   154.38   228.97   147.16  144.5     noop
+> >               43.23    57.39    96.13   148.25   180.09  105.0     deadline
+> >                9.15    14.51     9.39    15.06     9.90   11.6     cfq fairness=0 dd=nice 0
+> >               12.22     9.85    12.55     9.88    15.06   11.9     cfq fairness=0 dd=nice 19
+> >                9.77    13.19    11.78    17.40     9.51   11.9     cfq fairness=0 dd=SCHED_IDLE
+> >                4.59     2.74     4.70     3.45     4.69    4.0     cfq fairness=1 dd=nice 0
+> >                3.79     4.66     2.66     5.15     3.03    3.8     cfq fairness=1 dd=nice 19
+> >                2.79     4.73     2.79     4.02     2.50    3.3     cfq fairness=1 dd=SCHED_IDLE
+> > 
 > 
-> The injectm.valid becomes "2" only during faked MCE handler call
-> and protected by IRQ disabling. This make it impossible for real
-> machine_check_poll to consume it.
+> Hmm.., looks like average latency went down only in  case of fairness=1
+> and not in case of fairness=0. (Looking at previous mail, average vanilla
+> cfq latencies were around 12 seconds).
 
-Using magic numbers for this seems very hackish.
+Yup.
 
--Andi
+> Are you running all this in root group or have you put writers and readers
+> into separate cgroups?
+
+No cgroups here.
+
+> If everything is running in root group, then I am curious why latency went
+> down in case of fairness=1. The only thing fairness=1 parameter does is
+> that it lets complete all the requests from previous queue before start
+> dispatching from next queue. On top of this is valid only if no preemption
+> took place. In your test case, konsole should preempt the writer so
+> practically fairness=1 might not make much difference.
+
+fairness=1 very definitely makes a very large difference.  All of those
+cfq numbers were logged in back to back runs.
+
+> In fact now Jens has committed a patch which achieves the similar effect as
+> fairness=1 for async queues.
+
+Yeah, I was there yesterday.  I speculated that that would hurt my
+reader, but rearranging things didn't help one bit.  Playing with merge,
+I managed to give dd ~7% more throughput, and injured poor reader even
+more.  (problem analysis via hammer/axe not always most effective;)
+
+> commit 5ad531db6e0f3c3c985666e83d3c1c4d53acccf9
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Fri Jul 3 12:57:48 2009 +0200
+> 
+>     cfq-iosched: drain device queue before switching to a sync queue
+>     
+>     To lessen the impact of async IO on sync IO, let the device drain of
+>     any async IO in progress when switching to a sync cfqq that has idling
+>     enabled.
+> 
+> 
+> If everything is in separate cgroups, then we should have seen latency 
+> improvements in case of fairness=0 case also. I am little perplexed here..
+> 
+> Thanks
+> Vivek
+
