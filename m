@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752172AbZI0Xw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbZI1AJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752172AbZI0Xw6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 19:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZI0Xw6
+	id S1751961AbZI1AJb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 20:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZI1AJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 19:52:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58085 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750912AbZI0Xw5 (ORCPT
+	Sun, 27 Sep 2009 20:09:30 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:55901 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751424AbZI1AJa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 19:52:57 -0400
-Date: Sun, 27 Sep 2009 16:52:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc1
-In-Reply-To: <20090928094458.4ad704c2.sfr@canb.auug.org.au>
-Message-ID: <alpine.LFD.2.01.0909271650480.3349@localhost.localdomain>
-References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain> <20090928094458.4ad704c2.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 27 Sep 2009 20:09:30 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Wrong Vmalloc numbers in /proc/meminfo
+Date: Mon, 28 Sep 2009 02:09:30 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909280209.32457.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Sep 2009 00:09:33.0107 (UTC) FILETIME=[F4C8F030:01CA3FCF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With 2.6.31 (on x86_64) I'm seeing the following in /proc/meminfo.
 
+$ cat /proc/meminfo
+MemTotal:        2030968 kB
+MemFree:          539408 kB
+Buffers:           94984 kB
+Cached:           308564 kB
+SwapCached:        16048 kB
+Active:           652236 kB
+Inactive:         428808 kB
+Active(anon):     436808 kB
+Inactive(anon):   246996 kB
+Active(file):     215428 kB
+Inactive(file):   181812 kB
+Unevictable:        1632 kB
+Mlocked:            1632 kB
+SwapTotal:       2097144 kB
+SwapFree:        1979524 kB
+Dirty:                12 kB
+Writeback:             0 kB
+AnonPages:        671276 kB
+Mapped:            57684 kB
+Slab:             177692 kB
+SReclaimable:     160516 kB
+SUnreclaim:        17176 kB
+PageTables:        14812 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     3112628 kB
+Committed_AS:     988780 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:      340084 kB
+VmallocChunk:   34359387131 kB
+DirectMap4k:     2008768 kB
+DirectMap2M:       63488 kB
 
-On Mon, 28 Sep 2009, Stephen Rothwell wrote:
+Is it me or are VmallocTotal and VmallocChunk off by a factor 10,000 or so?
 
-> Hi Linus,
-> 
-> On Sun, 27 Sep 2009 15:34:53 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> >
-> > It's been two weeks (and then some - but with last week being LinuxCon and 
-> > Plumbers conf I extended it by a few days), and as usual that means that 
-> > the merge window is all over and done with. 2.6.32-rc1 is out, so give it 
-> > a whirl.
-> 
-> Of course, you realise that you set EXTRAVERSION to -rc2  :-(
-
-Oh nnooooooooooooo-(takes breath)-ooooooo...
-
-Damn. I hadn't realized. I'm a moron.
-
-Ok, so it's an extra-special -rc1. It's the "short bus" kind of special 
--rc1 release. But quite frankly, I'll just let it be. The git tags etc 
-look to be ok, it's just my editing of the Makefile itself that was too 
-complicated for my little mind.
-
-I'll try not to do that again,
-
-		Linus
+Cheers,
+FJP
