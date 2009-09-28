@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZI1VLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZI1VMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbZI1VLV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 17:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZI1VLU
+	id S1753332AbZI1VMJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 17:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZI1VMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 17:11:20 -0400
-Received: from mail-pz0-f191.google.com ([209.85.222.191]:65429 "EHLO
-	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbZI1VLU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 17:11:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=CpytythISfSA96lhHYqAsYc32lsqLmHrREd9yYJ4/clRPv5opba7gJkDdZXwx4DG7E
-         alvHYx870H5seNF4WIyzh+vryV/UxSSnJLuvANQYm90jT1VmqqQgiyIxFluNYrX/5vtx
-         6XG0CLNKbTE9zde9t/1Mfn5ATJ9KhtTuP8Hk0=
-Message-ID: <4AC12685.5030002@gmail.com>
-Date: Mon, 28 Sep 2009 14:11:33 -0700
-From: Bruce Jones <brucej97223@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 28 Sep 2009 17:12:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38643 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751959AbZI1VMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 17:12:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 __sysdev_resume+0xc3/0xe0()
+Date: Mon, 28 Sep 2009 23:13:15 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Yong Zhang <yong.zhang0@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       clemens@ladisch.de, venkatesh.pallipadi@intel.com, gregkh@suse.de,
+       zambrano@broadcom.com, davem@davemloft.net, netdev@vger.kernel.org
+References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com> <8db1092f0909281138t18a379d1qdf999b0610ed6414@mail.gmail.com> <8db1092f0909281308s36c35c80s65c18dcbcf9fff2b@mail.gmail.com>
+In-Reply-To: <8db1092f0909281308s36c35c80s65c18dcbcf9fff2b@mail.gmail.com>
 MIME-Version: 1.0
-To: gregkh@suse.de
-CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: comedi: CodingStyle cleanup for drivers/acl722b.c
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909282313.15246.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup this file as per the coding style.  Adding KERN_INFO to
-the printks.
+On Monday 28 September 2009, Maciej Rutecki wrote:
+> 2009/9/28 Maciej Rutecki <maciej.rutecki@gmail.com>:
+> >
+> > Add patch and remove previous:
+> > http://unixy.pl/maciek/download/kernel/2.6.31-git17/gumis/dmesg-debug.txt
+> >
+> > s2disk&resume twice.
+> >
+> > no "timekeeping_resume() called with IRQs enabled!".
+> >
+> > I found some interesting thing, warnings appear only once, during
+> > first s2disk, on second don't appear.
+> 
+> Already I test 2.6-32-rc1 few times; warnings has gone. Any patches
+> has been add since 2.6.31-git17?
 
-Signed-off-by: Bruce Jones <brucej@linux.com>
----
- drivers/staging/comedi/drivers/acl7225b.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Quite some of them, actually.
 
-diff --git a/drivers/staging/comedi/drivers/acl7225b.c b/drivers/staging/comedi/drivers/acl7225b.c
-index c3652ef..e6c6c87 100644
---- a/drivers/staging/comedi/drivers/acl7225b.c
-+++ b/drivers/staging/comedi/drivers/acl7225b.c
-@@ -94,7 +94,7 @@ static int acl7225b_attach(struct comedi_device *dev,
- 
- 	iobase = it->options[0];
- 	iorange = this_board->io_range;
--	printk("comedi%d: acl7225b: board=%s 0x%04x ", dev->minor,
-+	printk(KERN_INFO "comedi%d: acl7225b: board=%s 0x%04x ", dev->minor,
- 	       this_board->name, iobase);
- 	if (!request_region(iobase, iorange, "acl7225b")) {
- 		printk("I/O port conflict\n");
-@@ -137,14 +137,14 @@ static int acl7225b_attach(struct comedi_device *dev,
- 	s->range_table = &range_digital;
- 	s->private = (void *)ACL7225_DI_LO;
- 
--	printk("\n");
-+	printk(KERN_INFO "\n");
- 
- 	return 0;
- }
- 
- static int acl7225b_detach(struct comedi_device *dev)
- {
--	printk("comedi%d: acl7225b: remove\n", dev->minor);
-+	printk(KERN_INFO "comedi%d: acl7225b: remove\n", dev->minor);
- 
- 	if (dev->iobase)
- 		release_region(dev->iobase, this_board->io_range);
--- 
-1.6.5.rc2
+Thanks,
+Rafael
