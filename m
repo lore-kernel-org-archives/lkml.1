@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbZI1QgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896AbZI1QgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752852AbZI1QgB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 12:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbZI1QgB
+	id S1752896AbZI1QgQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 12:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZI1QgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 12:36:01 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41281 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbZI1QgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 12:36:00 -0400
-Message-ID: <4AC0E5D8.6090707@kernel.org>
-Date: Tue, 29 Sep 2009 01:35:36 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 28 Sep 2009 12:36:15 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60904 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbZI1QgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 12:36:13 -0400
+Date: Mon, 28 Sep 2009 18:36:17 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31: booting on a PIII Celeron?
+Message-ID: <20090928163617.GA25503@atrey.karlin.mff.cuni.cz>
+References: <4AC0D59F.8000502@msgid.tls.msk.ru> <4AC0D651.7030009@msgid.tls.msk.ru>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Tony Vroon <tony@linx.net>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] percpu: fix unit_map[] verification in pcpu_setup_first_chunk()
-References: <4ABAC2F1.3020302@kernel.org> <1254055797.2756.1.camel@localhost> <4AC0E201.2020006@kernel.org> <alpine.DEB.1.10.0909281223510.16040@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0909281223510.16040@gentwo.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 28 Sep 2009 16:35:39 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AC0D651.7030009@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 29 Sep 2009, Tejun Heo wrote:
+> Michael Tokarev wrote:
+> >Hello.
+> >I've a problem here with 2.6.31.  kernel is
+> >compiled for PIII:
+> >
+> > CONFIG_MPENTIUMIII=y
+> > CONFIG_X86_GENERIC=y
+> >
+> >This kernel works on real PIII machine - like this:
+> >
+> >vendor_id    : GenuineIntel
+> >cpu family    : 6
+> >model        : 8
+> >model name    : Pentium III (Coppermine)
+> >stepping    : 10
+> >cpu MHz        : 997.580
+> >
+> >But it fails on a Celeron:
+> >
+> >vendor_id    : GenuineIntel
+> >cpu family    : 6
+> >model        : 8
+> >model name    : Celeron (Coppermine)
+> >stepping    : 6
+> >cpu MHz        : 797.481
+> >
 > 
->> pcpu_setup_first_chunk() incorrectly used NR_CPUS as the impossible
->> unit number while unit number can equal and go over NR_CPUS with
->> sparse unit map.  This triggers BUG_ON() spuriously on machines which
->> have non-power-of-two number of cpus.  Use UINT_MAX instead.
+> There's one more difference between the two:
 > 
-> Uhhh. Funky. The assumption nr_cpu_ids < NR_CPUS has been broken. Wonder
-> what other effects that will have. In particular since the slab and page
-> allocators have arrays indexed by the cpu number and those arrays are
-> dimensioned for NR_CPUS.
-
-Heh.. that's not what's broken.  unit# can legally go over NR_CPUS or
-nr_cpu_ids as cpus can be sparsely mapped to units.  The problem is
-that I didn't fix unit_map allocation.  Will update the patch.  Just a
-sec.
+> PIII, working:
+> flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pse36 
+> mmx fxsr sse up
+> Celeron, !working:
+> flags: fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pse36 mmx 
+> fxsr sse up
+> 
+> So the celeron machine lacks "apic" flag.  And in my
+> kernel config, apic is enabled:
+>  CONFIG_X86_LOCAL_APIC=y
+>  CONFIG_X86_IO_APIC=y
+> (but not on the command line like apic=force)
+try 'noapic nolapic' to see if it helps?
 
 -- 
-tejun
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
