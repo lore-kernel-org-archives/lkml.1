@@ -1,93 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbZI1RDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZI1RQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753041AbZI1RDX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 13:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbZI1RDW
+	id S1752873AbZI1RQK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 13:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZI1RQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 13:03:22 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:39859 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752997AbZI1RDT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 13:03:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oueuRmHJAnE8tzjuk2G9lk4wjWYrtYYVIPjbeZapND+sWJh9NnmBIGZzeQQDLoi1ER
-         FvvGTfxhpIrGkgTA5J63cJ4LAMPMYQOzMNKSqfV9SZuDIDNgFf8hWDz6TaVqfOxwJAab
-         zbi9VLZMdwk4ULGz+sDLZWWToeHwolzxJBsY4=
-Date: Mon, 28 Sep 2009 10:03:14 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>,
-       Trilok Soni <soni.trilok@gmail.com>,
-       Linux USB <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: Using EV_MSC or extending KEY_*
-Message-ID: <20090928170314.GI21455@core.coreip.homeip.net>
-References: <aac07123ee2b14a0ac25d1652dbe0780.squirrel@intranet.cs.nmsu.edu> <5d5443650909151011k4b21a6d0n28ac6142c3d7161d@mail.gmail.com> <20090915183406.GA5696@core.coreip.homeip.net> <0debc76f26fe85e28adf642396233928.squirrel@intranet.cs.nmsu.edu> <20090916034642.GC2756@core.coreip.homeip.net> <2c0ac825ebe78da99328b896faae04a2.squirrel@intranet.cs.nmsu.edu> <20090917175707.GB789@khazad-dum.debian.net> <20090918064627.GG18668@core.coreip.homeip.net> <20090918135601.GA25109@khazad-dum.debian.net>
+	Mon, 28 Sep 2009 13:16:09 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:27948 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752397AbZI1RQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 13:16:08 -0400
+Date: Mon, 28 Sep 2009 13:14:20 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       jens.axboe@oracle.com, Tobias Oetiker <tobi@oetiker.ch>
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20090928171420.GA3643@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com> <4e5e476b0909271000u69d79346s27cccad219e49902@mail.gmail.com> <20090928145655.GB8192@redhat.com> <4e5e476b0909280835w3410d58aod93a29d1dcda8909@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090918135601.GA25109@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b0909280835w3410d58aod93a29d1dcda8909@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 18, 2009 at 10:56:01AM -0300, Henrique de Moraes Holschuh wrote:
-> On Thu, 17 Sep 2009, Dmitry Torokhov wrote:
-> > On Thu, Sep 17, 2009 at 02:57:07PM -0300, Henrique de Moraes Holschuh wrote:
-> > > On Wed, 16 Sep 2009, Rick L. Vinyard, Jr. wrote:
-> > > > The M* keys are intended to provide a quick way to switch between key
-> > > > mappings, with each mode having their own user-defined mappings.
-> > > 
-> > > What I'd do in this case would be this:
-> > > 
-> > > 1. Initially have the M* level-shift keys assigned KEY_RESERVED
-> > > 
-> > > 2. Have a big enough keymap to map all keys in all M*-level shift states
-> > > possible.
-> > > 
-> > > Eg:
-> > >    START OF KEYMAP
-> > >    M* keys
-> > >    1st set of G* keys
-> > >    2nd set of G* keys
-> > >    3rd set of G* keys...
-> > >    ...
-> > >    last set of G* keys
-> > >    END OF KEYMAP
-> > > 
-> > > 3. Have the driver special-process M* level-shift keys *as long as they are
-> > > still set to KEY_RESERVED* to select which part of the keymap is used to
-> > > translate the other keys.  Note that this likely means pressing a M* key
-> > > would be transparent to userspace in this case, i.e. no events would be
-> > > issued when a M* key is doing a level shift.
-> > > 
-> > > So, you'd be able to set all mappings you want in the driver, and the M*
-> > > keys would do what they're expected to do without any userland help at all,
-> > > but you'd still be able to program the M* keys to be normal keys if you
-> > > want.
-> > > 
-> > > Of course, this assumes you don't do chording on multiple M* keys to end up
-> > > with a huge number of keymaps :p
-> > 
-> > Actually I think that the device should just emit KEY_PROG1..KEY_PROG4
-> > for the M keys and have userspace daemon load alternate keymaps on the
-> > fly in resaponse to KEY_PROGx. The device is just a set of completely
-> > generic buttons... User will have to tell the kernel what to map them
-> > to.
+On Mon, Sep 28, 2009 at 05:35:02PM +0200, Corrado Zoccolo wrote:
+> On Mon, Sep 28, 2009 at 4:56 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Sun, Sep 27, 2009 at 07:00:08PM +0200, Corrado Zoccolo wrote:
+> >> Hi Vivek,
+> >> On Fri, Sep 25, 2009 at 10:26 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >> > On Fri, Sep 25, 2009 at 04:20:14AM +0200, Ulrich Lukas wrote:
+> >> >> Vivek Goyal wrote:
+> >> >> > Notes:
+> >> >> > - With vanilla CFQ, random writers can overwhelm a random reader.
+> >> >> >   Bring down its throughput and bump up latencies significantly.
+> >> >>
+> >> >>
+> >> >> IIRC, with vanilla CFQ, sequential writing can overwhelm random readers,
+> >> >> too.
+> >> >>
+> >> >> I'm basing this assumption on the observations I made on both OpenSuse
+> >> >> 11.1 and Ubuntu 9.10 alpha6 which I described in my posting on LKML
+> >> >> titled: "Poor desktop responsiveness with background I/O-operations" of
+> >> >> 2009-09-20.
+> >> >> (Message ID: 4AB59CBB.8090907@datenparkplatz.de)
+> >> >>
+> >> >>
+> >> >> Thus, I'm posting this to show that your work is greatly appreciated,
+> >> >> given the rather disappointig status quo of Linux's fairness when it
+> >> >> comes to disk IO time.
+> >> >>
+> >> >> I hope that your efforts lead to a change in performance of current
+> >> >> userland applications, the sooner, the better.
+> >> >>
+> >> > [Please don't remove people from original CC list. I am putting them back.]
+> >> >
+> >> > Hi Ulrich,
+> >> >
+> >> > I quicky went through that mail thread and I tried following on my
+> >> > desktop.
+> >> >
+> >> > ##########################################
+> >> > dd if=/home/vgoyal/4G-file of=/dev/null &
+> >> > sleep 5
+> >> > time firefox
+> >> > # close firefox once gui pops up.
+> >> > ##########################################
+> >> >
+> >> > It was taking close to 1 minute 30 seconds to launch firefox and dd got
+> >> > following.
+> >> >
+> >> > 4294967296 bytes (4.3 GB) copied, 100.602 s, 42.7 MB/s
+> >> >
+> >> > (Results do vary across runs, especially if system is booted fresh. Don't
+> >> >  know why...).
+> >> >
+> >> >
+> >> > Then I tried putting both the applications in separate groups and assign
+> >> > them weights 200 each.
+> >> >
+> >> > ##########################################
+> >> > dd if=/home/vgoyal/4G-file of=/dev/null &
+> >> > echo $! > /cgroup/io/test1/tasks
+> >> > sleep 5
+> >> > echo $$ > /cgroup/io/test2/tasks
+> >> > time firefox
+> >> > # close firefox once gui pops up.
+> >> > ##########################################
+> >> >
+> >> > Now I firefox pops up in 27 seconds. So it cut down the time by 2/3.
+> >> >
+> >> > 4294967296 bytes (4.3 GB) copied, 84.6138 s, 50.8 MB/s
+> >> >
+> >> > Notice that throughput of dd also improved.
+> >> >
+> >> > I ran the block trace and noticed in many a cases firefox threads
+> >> > immediately preempted the "dd". Probably because it was a file system
+> >> > request. So in this case latency will arise from seek time.
+> >> >
+> >> > In some other cases, threads had to wait for up to 100ms because dd was
+> >> > not preempted. In this case latency will arise both from waiting on queue
+> >> > as well as seek time.
+> >>
+> >> I think cfq should already be doing something similar, i.e. giving
+> >> 100ms slices to firefox, that alternate with dd, unless:
+> >> * firefox is too seeky (in this case, the idle window will be too small)
+> >> * firefox has too much think time.
+> >>
+> >
+> Hi Vivek,
+> > Hi Corrado,
+> >
+> > "firefox" is the shell script to setup the environment and launch the
+> > broser. It seems to be a group of threads. Some of them run in parallel
+> > and some of these seems to be running one after the other (once previous
+> > process or threads finished).
 > 
-> It would work, but it is a big trip through userspace.  If quickly pressing
-> M#+G# is a common use pattern (and it will be, for gaming), i.e. you often
-> want to access quickly a function on one level then another on a different
-> level, asking userspace to upload a new keymap to switch levels at every M#
-> press is going to be way too racy.
+> Ok.
+> 
+> >
+> >> To rule out the first case, what happens if you run the test with your
+> >> "fairness for seeky processes" patch?
+> >
+> > I applied that patch and it helps a lot.
+> >
+> > http://lwn.net/Articles/341032/
+> >
+> > With above patchset applied, and fairness=1, firefox pops up in 27-28 seconds.
+> 
+> Great.
+> Can you try the attached patch (on top of 2.6.31)?
+> It implements the alternative approach we discussed privately in july,
+> and it addresses the possible latency increase that could happen with
+> your patch.
+> 
+> To summarize for everyone, we separate sync sequential queues, sync
+> seeky queues and async queues in three separate RR strucutres, and
+> alternate servicing requests between them.
+> 
+> When servicing seeky queues (the ones that are usually penalized by
+> cfq, for which no fairness is usually provided), we do not idle
+> between them, but we do idle for the last queue (the idle can be
+> exited when any seeky queue has requests). This allows us to allocate
+> disk time globally for all seeky processes, and to reduce seeky
+> processes latencies.
+> 
 
-I'd say it should be pretty quick, compared to what a game needs to do
-to render a single frame.
+Ok, I seem to be doing same thing at group level (In group scheduling
+patches). I do not idle on individual sync seeky queues but if this is
+last queue in the group, then I do idle to make sure group does not loose
+its fair share and exit from idle the moment there is any busy queue in
+the group.
 
--- 
-Dmitry
+So you seem to be grouping all the sync seeky queues system wide in a 
+single group. So all the sync seeky queues collectively get 100ms in a
+single round of dispatch? I am wondering what happens if there are lot
+of such sync seeky queues this 100ms time slice is consumed before all the
+sync seeky queues got a chance to dispatch. Does that mean that some of
+the queues can completely skip the one dispatch round?
+
+Thanks
+Vivek
+
+> I tested with 'konsole -e exit', while doing a sequential write with
+> dd, and the start up time reduced from 37s to 7s, on an old laptop
+> disk.
+> 
+> Thanks,
+> Corrado
+> 
+> >
+> >> To rule out the first case, what happens if you run the test with your
+> >> "fairness for seeky processes" patch?
+> >
+> > I applied that patch and it helps a lot.
+> >
+> > http://lwn.net/Articles/341032/
+> >
+> > With above patchset applied, and fairness=1, firefox pops up in 27-28
+> > seconds.
+> >
+> > So it looks like if we don't disable idle window for seeky processes on
+> > hardware supporting command queuing, it helps in this particular case.
+> >
+> > Thanks
+> > Vivek
+> >
+
+
