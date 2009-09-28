@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZI1VoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbZI1Vcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbZI1VoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 17:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZI1VoR
+	id S1753364AbZI1Vcs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 17:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZI1Vcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 17:44:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36846 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbZI1VoQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 17:44:16 -0400
-Message-ID: <4AC12B6E.7010805@zytor.com>
-Date: Mon, 28 Sep 2009 14:32:30 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 28 Sep 2009 17:32:47 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:36795 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752747AbZI1Vcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 17:32:46 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <4AC12BA8.40704@crca.org.au>
+Date: Tue, 29 Sep 2009 07:33:28 +1000
+From: Nigel Cunningham <ncunningham@crca.org.au>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Adrian Bunk <bunk@stusta.de>, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 02/12] Immediate Values - Architecture Independent Code
-References: <20090924132626.485545323@polymtl.ca>	<20090924133359.218934235@polymtl.ca>	<20090924212013.d27226c4.akpm@linux-foundation.org>	<20090928012337.GC1656@one.firstfloor.org>	<20090928104617.9c4b868a.akpm@linux-foundation.org>	<20090928200317.64a419ff@infradead.org>	<20090928195444.GF1656@one.firstfloor.org> <20090928223735.74267e3e@infradead.org>
-In-Reply-To: <20090928223735.74267e3e@infradead.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: No more bits in vm_area_struct's vm_flags.
+References: <4AB9A0D6.1090004@crca.org.au> <20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com> <4ABC80B0.5010100@crca.org.au> <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com> <4AC0234F.2080808@crca.org.au> <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com> <20090928033624.GA11191@localhost> <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com> <4AC03D9C.3020907@crca.org.au> <Pine.LNX.4.64.0909282200470.11529@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0909282200470.11529@sister.anvils>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/28/2009 01:37 PM, Arjan van de Ven wrote:
-> 
-> this makes me wonder what happens when a variable is used in multiple
-> places... that makes the icache overhead multiply right?
-> 
+Hi Hugh.
 
-On x86, the icache overhead can often be zero or close to zero -- or
-even negative in a fairly common subcase[1] -- simply because you are
-dropping a displacement used to fetch a global variable with an
-immediate in the code itself.
+Hugh Dickins wrote:
+> I suggested before that for the moment you reuse VM_MAPPED_COPY,
+> and you said "Okee doke".  What changed?
 
-For 8- or 16-bit data items this is even more of a win in terms of
-icache space; for 64-bit data it is always a lose.
+I made a mistake - got stuck at the point where I wasn't sure that was
+an option. Everything had gone quiet and I wanted to make some headway,
+so I started trying to make some progress by working on the path I
+knew would be doable.
 
-It is also worth noting that the way this is implemented as a graft-on
-rather than with compiler support means that the full instruction set
-cannot exploited -- x86 can often use a memory operand or immediate as
-part of an operation.  This adds icache pressure.
+Sorry about that.
 
-	-hpa
-
-[1] Common subcase:
-
-	movl global, %reg	; 6 bytes (unless reg is eax on 32 bits)
-	movl $immed, %reg	; 5 bytes
-
+Nigel
