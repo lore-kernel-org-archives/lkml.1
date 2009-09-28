@@ -1,99 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbZI1Wnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZI1Wo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbZI1Wnj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 18:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZI1Wni
+	id S1753490AbZI1Wo4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 18:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbZI1Woz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 18:43:38 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:65133 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752394AbZI1Wnh (ORCPT
+	Mon, 28 Sep 2009 18:44:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57742 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752836AbZI1Woz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 18:43:37 -0400
-Authentication-Results: sj-iport-1.cisco.com; dkim=pass (signature verified [TEST]) header.i=rdreier@cisco.com
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEANTYwEqrR7PD/2dsb2JhbADAEohTAY5PBYQe
-X-IronPort-AV: E=Sophos;i="4.44,469,1249257600"; 
-   d="scan'208";a="248132718"
-From: Roland Dreier <rdreier@cisco.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ACPI: Get rid of "registered as cooling_deviceX" messages
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 28 Sep 2009 15:43:39 -0700
-Message-ID: <adahbumwuzo.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Sep 2009 22:43:39.0877 (UTC) FILETIME=[1FA23150:01CA408D]
+	Mon, 28 Sep 2009 18:44:55 -0400
+Date: Mon, 28 Sep 2009 15:44:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, nhorman@tuxdriver.com
+Subject: Re: [PATCH] proc: augment /proc/pid/limits to allow setting of
+ process limits.
+Message-Id: <20090928154403.25678002.akpm@linux-foundation.org>
+In-Reply-To: <20090928200600.GA3053@hmsreliant.think-freely.org>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The messages "<xyz> registered as cooling_deviceX" printed by various
-ACPI drivers give the same information as just looking at the symlinks
-/sys/class/thermal/cooling_deviceX/device.  On a big system, they
-clutter up the syslog and take a long time to print on a serial console.
+On Mon, 28 Sep 2009 16:06:00 -0400
+Neil Horman <nhorman@tuxdriver.com> wrote:
 
-On a 64-thread system I've been lucky enough to play with:
+> Augment /proc/<pid>/limits file to support limit setting
+> 
+> It was suggested to me recently that we support a mechanism by which we can set
+> various process limits from points external to the process.  The reasoning being
+> that some processes are very long lived, and it would be beneficial to these
+> long lived processes if we could modify their various limits without needing to
+> kill them, adjust the limits for the user and restarting them.  While individual
+> application can certainly export this control on their own, it would be nice if
+> such functionality were available to a sysadmin, without needing to have each
+> application re-invent the wheel.
+> 
+> As such, I've implemented the below patch, which makes /proc/pid/limits writable
+> for each process.  By writing the following format:
+> <limit> <current value> <max value>
+> to the limits file, an administrator can now dynamically change the limits for
+> the respective process.  Tested by myself with good results.
+> 
 
-    $ dmesg | grep 'registered as cooling_device' | wc
-         64     448    4278
+Confused.  This appears to allow processes to cheerily exceed their
+inherited limits, without bound.  See sys_setrliit()'s
 
-which is getting past tragedy and into the realm of comedy.  We may as
-well not print these messages.
+	if (new_rlim.rlim_cur > new_rlim.rlim_max)
+		return -EINVAL;
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
-Len, still more in my trimming of the boot log on my big box.  If this
-makes sense to you, please apply.
+It might allow user A to diddle user B's limit too, I didn't check?
 
-Also I think <http://patchwork.kernel.org/patch/50048/> might have
-gotten lost somewhere -- you applied the C-state version but not the
-equivalent T-state patch.
+And it cheerily avoids security_task_setrlimit() too.
 
- drivers/acpi/fan.c            |    2 --
- drivers/acpi/processor_core.c |    3 ---
- drivers/acpi/video.c          |    2 --
- 3 files changed, 0 insertions(+), 7 deletions(-)
+Apart from those somewhat fatal problems, it's all a bit unpleasing that
+we now have two ways of setting rlimits, one of which is a superset of
+the other.  Perhaps a better way would be a new sys_setrlimit2() which
+takes a pid (in the current pid namespace, one assumes).  Then deprecate
+sys_setrlimit().
 
-diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
-index f419849..6bbc61d 100644
---- a/drivers/acpi/fan.c
-+++ b/drivers/acpi/fan.c
-@@ -267,8 +267,6 @@ static int acpi_fan_add(struct acpi_device *device)
- 		goto end;
- 	}
- 
--	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
--
- 	device->driver_data = cdev;
- 	result = sysfs_create_link(&device->dev.kobj,
- 				   &cdev->device.kobj,
-diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-index c2d4d6e..3d6e95e 100644
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -845,9 +845,6 @@ static int acpi_processor_add(struct acpi_device *device)
- 		goto err_power_exit;
- 	}
- 
--	dev_info(&device->dev, "registered as cooling_device%d\n",
--		 pr->cdev->id);
--
- 	result = sysfs_create_link(&device->dev.kobj,
- 				   &pr->cdev->device.kobj,
- 				   "thermal_cooling");
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index a4fddb2..3f67f4d 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -1022,8 +1022,6 @@ static void acpi_video_device_find_cap(struct acpi_video_device *device)
- 			return;
- 		}
- 
--		dev_info(&device->dev->dev, "registered as cooling_device%d\n",
--			 device->cooling_dev->id);
- 		result = sysfs_create_link(&device->dev->dev.kobj,
- 				&device->cooling_dev->device.kobj,
- 				"thermal_cooling");
+>
+> ...
+>
+> +static ssize_t proc_pid_limit_write(struct file *file, const char __user *buf,
+> +		size_t count, loff_t *ppos)
+> +{
+> +	char *buffer;
+> +	char *element, *vmc, *vmm;
+> +	unsigned long long valuec, valuem;
+> +	unsigned long flags;
+> +	int i;
+> +	int index = -1;
+> +	size_t wcount = 0;
+> +	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
+> +
+> +
+> +	if (*ppos != 0)
+> +		goto out;
+> +
+> +	if (count > 128)
+> +		goto out;
+> +	buffer = kzalloc(128, GFP_KERNEL);
+> +
+> +	if (!buffer)
+> +		goto out;
+> +
+> +	element = kzalloc(sizeof(buffer), GFP_KERNEL);
+> +	vmc = kzalloc(sizeof(buffer), GFP_KERNEL);
+> +	vmm = kzalloc(sizeof(buffer), GFP_KERNEL);
+> +
+> +	if (!element || !vmm || !vmc)
+> +		goto out_free;
+> +
+> +	wcount = count - copy_from_user(buffer, buf, count);
+> +	if (wcount < count)
+> +		goto out_free;
+> +
+> +	i = sscanf(buffer, "%s %s %s", element, vmc, vmm);
+> +
+> +	if (i < 3)
+> +		goto out_free;
+> +
+> +	for (i = 0; i <= strlen(element); i++)
+> +		element[i] = tolower(element[i]);
+> +
+> +	if (!strncmp(vmc, "unlimited", 9))
+> +		valuec = RLIM_INFINITY;
+> +	else
+> +		valuec = simple_strtoull(vmc, NULL, 10);
+> +
+> +	if (!strncmp(vmm, "unlimited", 9))
+> +		valuem = RLIM_INFINITY;
+> +	else
+> +		valuem = simple_strtoull(vmm, NULL, 10);
+> +
+> +	for (i = 0; i < RLIM_NLIMITS; i++) {
+> +		if ((lnames[i].match) &&
+> +		    !strncmp(element, lnames[i].match, 
+> +		     strlen(lnames[i].match))) {
+> +			index = i;
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (!lock_task_sighand(task, &flags))
+> +		goto out_free;
+
+The function silently does nothing if lock_task_sighand() fails.
+
+> +	if (index >= 0) {
+> +		task->signal->rlim[index].rlim_cur = valuec;
+> +		task->signal->rlim[index].rlim_max = valuem;
+> +	}
+> +
+> +	unlock_task_sighand(task, &flags);
+> +
+> +out_free:
+> +	kfree(element);
+> +	kfree(vmc);
+> +	kfree(vmm);
+> +	kfree(buffer);
+> +out:
+> +	*ppos += count;
+> +	put_task_struct(task);
+>  	return count;
+>  }
+>  
+> +
+> +static const struct file_operations proc_limit_operations = {
+> +        .read           = proc_pid_limit_read,
+> +	.write		= proc_pid_limit_write,
+
+whitespace got munged.
+
+> +};
+> +
+
