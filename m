@@ -1,334 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbZI1RtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZI1Rut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752303AbZI1RtI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 13:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZI1RtI
+	id S1752412AbZI1Rut (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 13:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZI1Rus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 13:49:08 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1670 "EHLO mx1.redhat.com"
+	Mon, 28 Sep 2009 13:50:48 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:44549 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751925AbZI1RtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 13:49:06 -0400
-Date: Mon, 28 Sep 2009 14:48:46 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1 tip] perf tools: Use rb_tree for maps
-Message-ID: <20090928174846.GA3361@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1751688AbZI1Rur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 13:50:47 -0400
+X-IronPort-AV: E=Sophos;i="4.44,467,1249282800"; 
+   d="scan'208";a="250316078"
+Subject: Re: NFS problem with past 2.6.31 git tree
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <c4e36d110909251246s6af618e8n663afe2b66c4cd5d@mail.gmail.com>
+References: <c4e36d110909250812g74e049b7u39566d189970d77e@mail.gmail.com>
+	 <1253892426.31072.37.camel@heimdal.trondhjem.org>
+	 <c4e36d110909251246s6af618e8n663afe2b66c4cd5d@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Mon, 28 Sep 2009 13:50:02 -0400
+Message-Id: <1254160202.7124.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-OriginalArrivalTime: 28 Sep 2009 17:50:35.0680 (UTC) FILETIME=[2EA2AA00:01CA4064]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Threads can have many and kernel modules will be represented as a tree
-of maps as well.
+On Fri, 2009-09-25 at 21:46 +0200, Zdenek Kabelac wrote:
+> 2009/9/25 Trond Myklebust <Trond.Myklebust@netapp.com>:
+> > On Fri, 2009-09-25 at 17:12 +0200, Zdenek Kabelac wrote:
+> >> Hi
+> >>
+> >> I've noticed that my qemu guest is now unable to use localy exported
+> >> nfs directory.
+> >> Directory gets mounted, plain 'ls' shows filenames - but nothing else
+> >> could be done.
+> >>
+> >> ls -la gives this output:
+> >> ls: cannot access patch: Input/output error
+> >> ...
+> >>
+> >>
+> >> Both host & guest are running same kernel:
+> >> 851b147e4411df6a1e7e90e2a609773c277eefd2
+> >>
+> >> I've checked last few commits and tried to revert them -
+> >> and this one seems to cure my problem when reverted:
+> >>
+> >> Sep 23:  8a6e5deb8a8caa810fef2c525f5dbea2cfe04a47
+> >> NFS: Get rid of the NFS_MOUNT_VER3 and NFS_MOUNT_TCP flags
+> >>
+> >> I should also probably note that I'm seeing this message in my dmesg log:
+> >> svc: failed to register lockdv1 RPC service (errno 97)
+> >>
+> >> rpcinfo -p
+> >>    program vers proto   port
+> >>     100000    2   tcp    111  portmapper
+> >>     100000    2   udp    111  portmapper
+> >>     100024    1   udp  53550  status
+> >>     100024    1   tcp  44174  status
+> >>     100021    1   udp  49878  nlockmgr
+> >>     100021    3   udp  49878  nlockmgr
+> >>     100021    4   udp  49878  nlockmgr
+> >>     100021    1   tcp  47319  nlockmgr
+> >>     100021    3   tcp  47319  nlockmgr
+> >>     100021    4   tcp  47319  nlockmgr
+> >>
+> >> automount(pid1720) /misc autofs
+> >> rw,relatime,fd=4,pgrp=1720,timeout=300,minproto=2,maxproto=4,indirect
+> >> 0 0
+> >> 192.168.122.1:/home/u/export /misc/u nfs
+> >> rw,relatime,vers=3,rsize=524288,wsize=524288,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=192.168.xxx.yyy,mountvers=3,mountproto=tcp,addr=192.168.xxx.yyy
+> >> 0 0
+> >>
+> >>
+> >> Zdenek
+> > What does
+> >
+> >   cat /proc/self/mountinfo
+> >
+> > give you?
+> >
+> 
+> 
+> Working version: (kernel 2.6.31 or current git with reverted NFS patch)
+> 
+> 22 12 0:17 / /misc rw,relatime - autofs automount(pid1720)
+> rw,fd=4,pgrp=1720,timeout=300,minproto=2,maxproto=4,indirect
+> 
+> 24 22 0:19 / /misc/kabi rw,relatime - nfs IP:/home/kabi/export
+> rw,vers=3,rsize=524288,wsize=524288,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=IP,mountvers=3,mountproto=tcp,addr=IP
+> 
+> 
+> Nonworking version:
+> 
+> 22 12 0:17 / /misc rw,relatime - autofs automount(pid1704)
+> rw,fd=4,pgrp=1704,timeout=300,minproto=2,maxproto=4,indirect
+> 
+> 24 22 0:19 / /misc/kabi rw,relatime - nfs IP:/home/kabi/export
+> rw,vers=2,rsize=8192,wsize=8192,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=IP,mountvers=3,mountproto=tcp,addr=IP
+> 
+> 
+> 
+> Looks like vers=2  != vers=3   and rsize/wsize - which is also set by
+> the kernel itself to those lower values.
+> (i.e. my /etc/init.d/autofs doesn't modify localoptions - of course I
+> could use this to set 8192 wsize and rsize for my working kernel)
+> 
+> Zdenek
 
-Ah, and for a perf.data with 146607 samples:
 
-Before:
+OK. The following patch fixes the default nfs version issue for me. I
+have another one to fix the incorrectly displayed port numbers...
 
-[root@doppio ~]# perf stat -r 5 perf report > /dev/null
+Cheers
+  Trond
+------------------------------------------------------------------------
+NFS: Fix a default mount regression...
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
- Performance counter stats for 'perf report' (5 runs):
+With the recent spate of changes, the nfs protocol version will now default
+to 2 instead of 3, while the mount protocol version defaults to 3.
 
-     699.823680  task-clock-msecs         #      0.991 CPUs    ( +-   0.454% )
-             74  context-switches         #      0.000 M/sec   ( +-   1.709% )
-              2  CPU-migrations           #      0.000 M/sec   ( +-  17.008% )
-          23114  page-faults              #      0.033 M/sec   ( +-   0.000% )
-     1381257019  cycles                   #   1973.721 M/sec   ( +-   0.290% )
-     1456894438  instructions             #      1.055 IPC     ( +-   0.007% )
-       18779818  cache-references         #     26.835 M/sec   ( +-   0.380% )
-         641799  cache-misses             #      0.917 M/sec   ( +-   1.200% )
+The following patch should ensure the defaults are consistent with the
+previous defaults of vers=3,proto=tcp,mountvers=3,mountproto=tcp.
 
-    0.705972729  seconds time elapsed   ( +-   0.501% )
-
-[root@doppio ~]#
-
-After
-
- Performance counter stats for 'perf report' (5 runs):
-
-     691.261451  task-clock-msecs         #      0.993 CPUs    ( +-   0.307% )
-             72  context-switches         #      0.000 M/sec   ( +-   0.829% )
-              6  CPU-migrations           #      0.000 M/sec   ( +-  18.409% )
-          23127  page-faults              #      0.033 M/sec   ( +-   0.000% )
-     1366395876  cycles                   #   1976.670 M/sec   ( +-   0.153% )
-     1443136016  instructions             #      1.056 IPC     ( +-   0.012% )
-       17956402  cache-references         #     25.976 M/sec   ( +-   0.325% )
-         661924  cache-misses             #      0.958 M/sec   ( +-   1.335% )
-
-    0.696127275  seconds time elapsed   ( +-   0.377% )
-
-I.e. we see some speedup too.
-
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 ---
- tools/perf/Makefile      |    1 +
- tools/perf/util/event.h  |    4 +-
- tools/perf/util/thread.c |  129 +++++++++++++++++++++++++++++----------------
- tools/perf/util/thread.h |   12 +++-
- 4 files changed, 95 insertions(+), 51 deletions(-)
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 0a9e5ae..17b0757 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -340,6 +340,7 @@ LIB_H += util/module.h
- LIB_H += util/color.h
- LIB_H += util/values.h
- LIB_H += util/sort.h
-+LIB_H += util/thread.h
+ fs/nfs/super.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
+
+
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 29786d3..0343ebc 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -728,22 +728,24 @@ static void nfs_umount_begin(struct super_block *sb)
+ 	unlock_kernel();
+ }
  
- LIB_OBJS += util/abspath.o
- LIB_OBJS += util/alias.o
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index c31a5da..4c69eb5 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -3,7 +3,7 @@
+-static struct nfs_parsed_mount_data *nfs_alloc_parsed_mount_data(int flags)
++static struct nfs_parsed_mount_data *nfs_alloc_parsed_mount_data(unsigned int version)
+ {
+ 	struct nfs_parsed_mount_data *data;
  
- #include "../perf.h"
- #include "util.h"
--#include <linux/list.h>
-+#include <linux/rbtree.h>
- 
- enum {
- 	SHOW_KERNEL	= 1,
-@@ -79,7 +79,7 @@ typedef union event_union {
- } event_t;
- 
- struct map {
--	struct list_head	node;
-+	struct rb_node		rb_node;
- 	u64			start;
- 	u64			end;
- 	u64			pgoff;
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index 45efb5d..9d0945c 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -15,7 +15,7 @@ static struct thread *thread__new(pid_t pid)
- 		self->comm = malloc(32);
- 		if (self->comm)
- 			snprintf(self->comm, 32, ":%d", self->pid);
--		INIT_LIST_HEAD(&self->maps);
-+		self->maps = RB_ROOT;
+ 	data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 	if (data) {
+-		data->flags		= flags;
+ 		data->rsize		= NFS_MAX_FILE_IO_SIZE;
+ 		data->wsize		= NFS_MAX_FILE_IO_SIZE;
+ 		data->acregmin		= NFS_DEF_ACREGMIN;
+ 		data->acregmax		= NFS_DEF_ACREGMAX;
+ 		data->acdirmin		= NFS_DEF_ACDIRMIN;
+ 		data->acdirmax		= NFS_DEF_ACDIRMAX;
++		data->mount_server.port	= NFS_UNSPEC_PORT;
+ 		data->nfs_server.port	= NFS_UNSPEC_PORT;
++		data->nfs_server.protocol = XPRT_TRANSPORT_TCP;
+ 		data->auth_flavors[0]	= RPC_AUTH_UNIX;
+ 		data->auth_flavor_len	= 1;
++		data->version		= version;
+ 		data->minorversion	= 0;
  	}
+ 	return data;
+@@ -1711,8 +1713,6 @@ static int nfs_validate_mount_data(void *options,
  
- 	return self;
-@@ -31,11 +31,13 @@ int thread__set_comm(struct thread *self, const char *comm)
+ 		if (!(data->flags & NFS_MOUNT_TCP))
+ 			args->nfs_server.protocol = XPRT_TRANSPORT_UDP;
+-		else
+-			args->nfs_server.protocol = XPRT_TRANSPORT_TCP;
+ 		/* N.B. caller will free nfs_server.hostname in all cases */
+ 		args->nfs_server.hostname = kstrdup(data->hostname, GFP_KERNEL);
+ 		args->namlen		= data->namlen;
+@@ -2106,7 +2106,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
+ 	};
+ 	int error = -ENOMEM;
  
- static size_t thread__fprintf(struct thread *self, FILE *fp)
- {
--	struct map *pos;
-+	struct rb_node *nd;
- 	size_t ret = fprintf(fp, "Thread %d %s\n", self->pid, self->comm);
+-	data = nfs_alloc_parsed_mount_data(NFS_MOUNT_VER3 | NFS_MOUNT_TCP);
++	data = nfs_alloc_parsed_mount_data(3);
+ 	mntfh = kzalloc(sizeof(*mntfh), GFP_KERNEL);
+ 	if (data == NULL || mntfh == NULL)
+ 		goto out_free_fh;
+@@ -2376,7 +2376,6 @@ static int nfs4_validate_mount_data(void *options,
+ 	if (data == NULL)
+ 		goto out_no_data;
  
--	list_for_each_entry(pos, &self->maps, node)
-+	for (nd = rb_first(&self->maps); nd; nd = rb_next(nd)) {
-+		struct map *pos = rb_entry(nd, struct map, rb_node);
- 		ret += map__fprintf(pos, fp);
-+	}
+-	args->version		= 4;
+ 	switch (data->version) {
+ 	case 1:
+ 		if (data->host_addrlen > sizeof(args->nfs_server.address))
+@@ -2660,7 +2659,7 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
+ 	struct nfs_parsed_mount_data *data;
+ 	int error = -ENOMEM;
  
- 	return ret;
- }
-@@ -93,42 +95,90 @@ register_idle_thread(struct rb_root *threads, struct thread **last_match)
- 	return thread;
- }
+-	data = nfs_alloc_parsed_mount_data(0);
++	data = nfs_alloc_parsed_mount_data(4);
+ 	if (data == NULL)
+ 		goto out_free_data;
  
--void thread__insert_map(struct thread *self, struct map *map)
-+static void thread__remove_overlappings(struct thread *self, struct map *map)
- {
--	struct map *pos, *tmp;
--
--	list_for_each_entry_safe(pos, tmp, &self->maps, node) {
--		if (map__overlap(pos, map)) {
--			if (verbose >= 2) {
--				printf("overlapping maps:\n");
--				map__fprintf(map, stdout);
--				map__fprintf(pos, stdout);
--			}
--
--			if (map->start <= pos->start && map->end > pos->start)
--				pos->start = map->end;
--
--			if (map->end >= pos->end && map->start < pos->end)
--				pos->end = map->start;
--
--			if (verbose >= 2) {
--				printf("after collision:\n");
--				map__fprintf(pos, stdout);
--			}
--
--			if (pos->start >= pos->end) {
--				list_del_init(&pos->node);
--				free(pos);
--			}
-+	struct rb_node *next = rb_first(&self->maps);
-+
-+	while (next) {
-+		struct map *pos = rb_entry(next, struct map, rb_node);
-+		next = rb_next(&pos->rb_node);
-+
-+		if (!map__overlap(pos, map))
-+			continue;
-+
-+		if (verbose >= 2) {
-+			printf("overlapping maps:\n");
-+			map__fprintf(map, stdout);
-+			map__fprintf(pos, stdout);
-+		}
-+
-+		if (map->start <= pos->start && map->end > pos->start)
-+			pos->start = map->end;
-+
-+		if (map->end >= pos->end && map->start < pos->end)
-+			pos->end = map->start;
-+
-+		if (verbose >= 2) {
-+			printf("after collision:\n");
-+			map__fprintf(pos, stdout);
-+		}
-+
-+		if (pos->start >= pos->end) {
-+			rb_erase(&pos->rb_node, &self->maps);
-+			free(pos);
- 		}
- 	}
-+}
-+
-+void maps__insert(struct rb_root *maps, struct map *map)
-+{
-+	struct rb_node **p = &maps->rb_node;
-+	struct rb_node *parent = NULL;
-+	const u64 ip = map->start;
-+	struct map *m;
-+
-+	while (*p != NULL) {
-+		parent = *p;
-+		m = rb_entry(parent, struct map, rb_node);
-+		if (ip < m->start)
-+			p = &(*p)->rb_left;
-+		else
-+			p = &(*p)->rb_right;
-+	}
-+
-+	rb_link_node(&map->rb_node, parent, p);
-+	rb_insert_color(&map->rb_node, maps);
-+}
-+
-+struct map *maps__find(struct rb_root *maps, u64 ip)
-+{
-+	struct rb_node **p = &maps->rb_node;
-+	struct rb_node *parent = NULL;
-+	struct map *m;
-+
-+	while (*p != NULL) {
-+		parent = *p;
-+		m = rb_entry(parent, struct map, rb_node);
-+		if (ip < m->start)
-+			p = &(*p)->rb_left;
-+		else if (ip > m->end)
-+			p = &(*p)->rb_right;
-+		else
-+			return m;
-+	}
-+
-+	return NULL;
-+}
- 
--	list_add_tail(&map->node, &self->maps);
-+void thread__insert_map(struct thread *self, struct map *map)
-+{
-+	thread__remove_overlappings(self, map);
-+	maps__insert(&self->maps, map);
- }
- 
- int thread__fork(struct thread *self, struct thread *parent)
- {
--	struct map *map;
-+	struct rb_node *nd;
- 
- 	if (self->comm)
- 		free(self->comm);
-@@ -136,7 +186,8 @@ int thread__fork(struct thread *self, struct thread *parent)
- 	if (!self->comm)
- 		return -ENOMEM;
- 
--	list_for_each_entry(map, &parent->maps, node) {
-+	for (nd = rb_first(&parent->maps); nd; nd = rb_next(nd)) {
-+		struct map *map = rb_entry(nd, struct map, rb_node);
- 		struct map *new = map__clone(map);
- 		if (!new)
- 			return -ENOMEM;
-@@ -146,20 +197,6 @@ int thread__fork(struct thread *self, struct thread *parent)
- 	return 0;
- }
- 
--struct map *thread__find_map(struct thread *self, u64 ip)
--{
--	struct map *pos;
--
--	if (self == NULL)
--		return NULL;
--
--	list_for_each_entry(pos, &self->maps, node)
--		if (ip >= pos->start && ip <= pos->end)
--			return pos;
--
--	return NULL;
--}
--
- size_t threads__fprintf(FILE *fp, struct rb_root *threads)
- {
- 	size_t ret = 0;
-diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
-index 693ed1e..bbb37c1 100644
---- a/tools/perf/util/thread.h
-+++ b/tools/perf/util/thread.h
-@@ -2,13 +2,12 @@
- #define __PERF_THREAD_H
- 
- #include <linux/rbtree.h>
--#include <linux/list.h>
- #include <unistd.h>
- #include "symbol.h"
- 
- struct thread {
- 	struct rb_node		rb_node;
--	struct list_head	maps;
-+	struct rb_root		maps;
- 	pid_t			pid;
- 	char			shortname[3];
- 	char			*comm;
-@@ -21,7 +20,14 @@ struct thread *
- register_idle_thread(struct rb_root *threads, struct thread **last_match);
- void thread__insert_map(struct thread *self, struct map *map);
- int thread__fork(struct thread *self, struct thread *parent);
--struct map *thread__find_map(struct thread *self, u64 ip);
- size_t threads__fprintf(FILE *fp, struct rb_root *threads);
- 
-+void maps__insert(struct rb_root *maps, struct map *map);
-+struct map *maps__find(struct rb_root *maps, u64 ip);
-+
-+static inline struct map *thread__find_map(struct thread *self, u64 ip)
-+{
-+	return self ? maps__find(&self->maps, ip) : NULL;
-+}
-+
- #endif	/* __PERF_THREAD_H */
+
+
+
 -- 
-1.6.2.5
+Trond Myklebust
+Linux NFS client maintainer
 
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
