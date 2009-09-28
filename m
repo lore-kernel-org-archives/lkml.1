@@ -1,123 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbZI1SyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbZI1S5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbZI1SyE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 14:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZI1SyD
+	id S1752927AbZI1S5H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 14:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZI1S5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 14:54:03 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33072 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752398AbZI1SyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 14:54:02 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX189kGY1MfI9VG1pIdzsMatg6tv8o4P7BiyP8XnHld
-	ff5aiVNlaE5oo+
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       jens.axboe@oracle.com, Tobias Oetiker <tobi@oetiker.ch>
-In-Reply-To: <20090928181846.GC3643@redhat.com>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
-	 <4e5e476b0909271000u69d79346s27cccad219e49902@mail.gmail.com>
-	 <20090928145655.GB8192@redhat.com>
-	 <4e5e476b0909280835w3410d58aod93a29d1dcda8909@mail.gmail.com>
-	 <1254160274.9820.25.camel@marge.simson.net>
-	 <20090928181846.GC3643@redhat.com>
+	Mon, 28 Sep 2009 14:57:06 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:60120 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbZI1S5E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 14:57:04 -0400
+Subject: Re: [tip:timers/urgent] clocksource: Resume clocksource without
+ taking the clocksource mutex
+From: john stultz <johnstul@us.ibm.com>
+To: mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
+       tglx@linutronix.de, xtfeng@gmail.com, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-89133f93508137231251543d1732da638e6022e1@git.kernel.org>
+References: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
+	 <tip-89133f93508137231251543d1732da638e6022e1@git.kernel.org>
 Content-Type: text/plain
-Date: Mon, 28 Sep 2009 20:53:54 +0200
-Message-Id: <1254164034.9820.81.camel@marge.simson.net>
+Date: Mon, 28 Sep 2009 11:55:14 -0700
+Message-Id: <1254164114.7977.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-28 at 14:18 -0400, Vivek Goyal wrote:
-> On Mon, Sep 28, 2009 at 07:51:14PM +0200, Mike Galbraith wrote:
-
-> I guess changing class to IDLE should have helped a bit as now this is
-> equivalent to setting the quantum to 1 and after dispatching one request
-> to disk, CFQ will always expire the writer once. So it might happen that
-> by the the reader preempted writer, we have less number of requests in
-> disk and lesser latency for this reader.
-
-I expected SCHED_IDLE to be better than setting quantum to 1, because
-max is quantum*4 if you aren't IDLE.  But that's not what happened.  I
-just retested with all knobs set back to stock, fairness off, and
-quantum set to 1 with everything running nice 0.  2.8 seconds avg :-/
-
-> > I saw
-> > the reference to Vivek's patch, and gave it a shot.  Makes a large
-> > difference.
-> >                                                            Avg
-> > perf stat     12.82     7.19     8.49     5.76     9.32    8.7     anticipatory
-> >               16.24   175.82   154.38   228.97   147.16  144.5     noop
-> >               43.23    57.39    96.13   148.25   180.09  105.0     deadline
-> >                9.15    14.51     9.39    15.06     9.90   11.6     cfq fairness=0 dd=nice 0
-> >               12.22     9.85    12.55     9.88    15.06   11.9     cfq fairness=0 dd=nice 19
-> >                9.77    13.19    11.78    17.40     9.51   11.9     cfq fairness=0 dd=SCHED_IDLE
-> >                4.59     2.74     4.70     3.45     4.69    4.0     cfq fairness=1 dd=nice 0
-> >                3.79     4.66     2.66     5.15     3.03    3.8     cfq fairness=1 dd=nice 19
-> >                2.79     4.73     2.79     4.02     2.50    3.3     cfq fairness=1 dd=SCHED_IDLE
-> > 
+On Fri, 2009-09-25 at 06:20 +0000, tip-bot for Martin Schwidefsky wrote:
+> Commit-ID:  89133f93508137231251543d1732da638e6022e1
+> Gitweb:     http://git.kernel.org/tip/89133f93508137231251543d1732da638e6022e1
+> Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
+> AuthorDate: Thu, 24 Sep 2009 17:29:52 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Thu, 24 Sep 2009 22:37:53 +0200
 > 
-> Hmm.., looks like average latency went down only in  case of fairness=1
-> and not in case of fairness=0. (Looking at previous mail, average vanilla
-> cfq latencies were around 12 seconds).
-
-Yup.
-
-> Are you running all this in root group or have you put writers and readers
-> into separate cgroups?
-
-No cgroups here.
-
-> If everything is running in root group, then I am curious why latency went
-> down in case of fairness=1. The only thing fairness=1 parameter does is
-> that it lets complete all the requests from previous queue before start
-> dispatching from next queue. On top of this is valid only if no preemption
-> took place. In your test case, konsole should preempt the writer so
-> practically fairness=1 might not make much difference.
-
-fairness=1 very definitely makes a very large difference.  All of those
-cfq numbers were logged in back to back runs.
-
-> In fact now Jens has committed a patch which achieves the similar effect as
-> fairness=1 for async queues.
-
-Yeah, I was there yesterday.  I speculated that that would hurt my
-reader, but rearranging things didn't help one bit.  Playing with merge,
-I managed to give dd ~7% more throughput, and injured poor reader even
-more.  (problem analysis via hammer/axe not always most effective;)
-
-> commit 5ad531db6e0f3c3c985666e83d3c1c4d53acccf9
-> Author: Jens Axboe <jens.axboe@oracle.com>
-> Date:   Fri Jul 3 12:57:48 2009 +0200
+> clocksource: Resume clocksource without taking the clocksource mutex
 > 
->     cfq-iosched: drain device queue before switching to a sync queue
->     
->     To lessen the impact of async IO on sync IO, let the device drain of
->     any async IO in progress when switching to a sync cfqq that has idling
->     enabled.
+> git commit 75c5158f70c065b9 converted the clocksource spinlock to a
+> mutex. This causes the following BUG:
+> 
+> BUG: sleeping function called from invalid context at
+> kernel/mutex.c:280 in_atomic(): 0, irqs_disabled(): 1, pid: 2473,
+> name: pm-suspend 2 locks held by pm-suspend/2473:
+>  #0:  (&buffer->mutex){......}, at: [<ffffffff8115ab13>]
+> sysfs_write_file+0x3c/0x137
+>  #1:  (pm_mutex){......}, at: [<ffffffff810865b5>]
+> enter_state+0x39/0x130 Pid: 2473, comm: pm-suspend Not tainted 2.6.31
+> #1 Call Trace:
+>  [<ffffffff810792f0>] ? __debug_show_held_locks+0x22/0x24
+>  [<ffffffff8104a2ef>] __might_sleep+0x107/0x10b
+>  [<ffffffff8141fca9>] mutex_lock_nested+0x25/0x43
+>  [<ffffffff81073537>] clocksource_resume+0x1c/0x60
+>  [<ffffffff81072902>] timekeeping_resume+0x1e/0x1c8
+>  [<ffffffff812aee62>] __sysdev_resume+0x25/0xcf
+>  [<ffffffff812aef79>] sysdev_resume+0x6d/0xae
+>  [<ffffffff810864f8>] suspend_devices_and_enter+0x12b/0x1af
+>  [<ffffffff8108665b>] enter_state+0xdf/0x130
+>  [<ffffffff81085dc3>] state_store+0xb6/0xd3
+>  [<ffffffff81204c73>] kobj_attr_store+0x17/0x19
+>  [<ffffffff8115abd2>] sysfs_write_file+0xfb/0x137
+>  [<ffffffff811057d2>] vfs_write+0xae/0x10b
+>  [<ffffffff81208392>] ? __up_read+0x1a/0x7f
+>  [<ffffffff811058ef>] sys_write+0x4a/0x6e
+>  [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
+> 
+> clocksource_resume is called early in the resume process, there is
+> only one cpu, no processes are running and the interrupts are
+> disabled. It is therefore possible to resume the clocksources
+> without taking the clocksource mutex.
+
+Should a comment to this effect be included in the code?
+
+thanks
+-john
+
+
+
+> Reported-by: Xiaotian Feng <xtfeng@gmail.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Tested-by: Michal Schmidt <mschmidt@redhat.com>
+> Cc: Xiaotian Feng <xtfeng@gmail.com>
+> Cc: John Stultz <johnstul@us.ibm.com>
+> LKML-Reference: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
 > 
-> If everything is in separate cgroups, then we should have seen latency 
-> improvements in case of fairness=0 case also. I am little perplexed here..
+> ---
+>  kernel/time/clocksource.c |    4 ----
+>  1 files changed, 0 insertions(+), 4 deletions(-)
 > 
-> Thanks
-> Vivek
+> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+> index 0911334..5e18c6a 100644
+> --- a/kernel/time/clocksource.c
+> +++ b/kernel/time/clocksource.c
+> @@ -394,15 +394,11 @@ void clocksource_resume(void)
+>  {
+>  	struct clocksource *cs;
+> 
+> -	mutex_lock(&clocksource_mutex);
+> -
+>  	list_for_each_entry(cs, &clocksource_list, list)
+>  		if (cs->resume)
+>  			cs->resume();
+> 
+>  	clocksource_resume_watchdog();
+> -
+> -	mutex_unlock(&clocksource_mutex);
+>  }
+> 
+>  /**
 
