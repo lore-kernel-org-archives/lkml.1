@@ -1,185 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbZI1Pie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752526AbZI1PkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbZI1Pie (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 11:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbZI1Pid
+	id S1752526AbZI1PkR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 11:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbZI1PkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 11:38:33 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:47200 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbZI1Pid (ORCPT
+	Mon, 28 Sep 2009 11:40:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43372 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751482AbZI1PkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 11:38:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=aHDeEh8RLSRvfMCYE0p8ApQVfbnNbpTqETRxOr9MmuUZxhP62ttk8rQNor+IO3WD0I
-         7u3rxMRNYuBaX4+hleDbntmZiPHSgPqoxhKq+r8yiijHEd1HkCtJ77x1cha68KnUFu74
-         O+ViuYQtP+RkRBZjdUjtkyOINF3ph39UHVRjQ=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH] tracing: Pushdown the bkl tracepoints calls
-Date: Mon, 28 Sep 2009 17:38:35 +0200
-Message-Id: <1254152315-10324-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Mon, 28 Sep 2009 11:40:14 -0400
+Date: Mon, 28 Sep 2009 08:39:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Dumazet <eric.dumazet@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       John Stultz <johnstul@us.ibm.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32-rc1
+In-Reply-To: <4AC060AE.1090401@gmail.com>
+Message-ID: <alpine.LFD.2.01.0909280829100.3349@localhost.localdomain>
+References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain> <4AC060AE.1090401@gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Ingo,
 
-Please pull this patch from
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	tracing/core
+On Mon, 28 Sep 2009, Eric Dumazet wrote:
+> Linus Torvalds a écrit :
+> > 
+> > Go wild, test it out, and let us know about any regressions you find,
+> 
+> Something seems wrong with process time accounting.
+> 
+> Following program should consume 10*8 seconds of cpu on a 8 cpu machine, but
+> with 2.6.32-rc1 numbers are crazy.
 
-It should fix the crash you have reported few days ago.
+Ok, so the top-level process time looks sane _while_ the thing is running 
+(sum of all threads), but the per-thread times look broken (as if they had 
+randomly had the times of the other threads added into them - looks to me 
+like they on average had half the other threads' time accounted into 
+them).
 
-Thanks.
+And then at the end, it looks like the time of the threads (which was 
+over-accounted) get re-accounted back into the main process, so the final 
+time is indeed wildly inflated.
+
+IOW, looks like we're adding thread times multiple times to other threads 
+(and then finally to the parent).
+
+I'm adding the usual suspects to the cc, and leaving your results and 
+test-program quoted here for them.. Thomas, Martin, John - if you're not 
+the people I should blame for this, let me know.
+
+		Linus
 
 ---
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Date: Mon, 28 Sep 2009 17:12:49 +0200
-Subject: [PATCH] tracing: Pushdown the bkl tracepoints calls
-
-Currently we are calling the bkl tracepoint callbacks just before the
-bkl lock/unlock operations, ie the tracepoint call is not inside a
-lock_kernel() function but inside a lock_kernel() macro. Hence the
-bkl trace event header must be included from smp_lock.h. This raises
-some nasty circular header dependencies:
-
-linux/smp_lock.h -> trace/events/bkl.h -> trace/define_trace.h
--> trace/ftrace.h -> linux/ftrace_event.h -> linux/hardirq.h
--> linux/smp_lock.h
-
-This results in incomplete event declarations, spurious event
-definitions and other kind of funny behaviours.
-
-This is hardly fixable without ugly workarounds. So instead, we push
-the file name, line number and function name as lock_kernel()
-parameters, so that we only deal with the trace event header from
-lib/kernel_lock.c
-
-This adds two parameters to lock_kernel() and unlock_kernel() but
-it should be fine wrt to performances because this pair dos not seem
-to be called in fast paths.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/smp_lock.h |   28 +++++++++++++++-------------
- lib/kernel_lock.c        |   15 +++++++++++----
- 2 files changed, 26 insertions(+), 17 deletions(-)
-
-diff --git a/include/linux/smp_lock.h b/include/linux/smp_lock.h
-index d48cc77..2ea1dd1 100644
---- a/include/linux/smp_lock.h
-+++ b/include/linux/smp_lock.h
-@@ -3,7 +3,6 @@
- 
- #ifdef CONFIG_LOCK_KERNEL
- #include <linux/sched.h>
--#include <trace/events/bkl.h>
- 
- #define kernel_locked()		(current->lock_depth >= 0)
- 
-@@ -25,18 +24,21 @@ static inline int reacquire_kernel_lock(struct task_struct *task)
- 	return 0;
- }
- 
--extern void __lockfunc _lock_kernel(void)	__acquires(kernel_lock);
--extern void __lockfunc _unlock_kernel(void)	__releases(kernel_lock);
-+extern void __lockfunc
-+_lock_kernel(const char *func, const char *file, int line)
-+__acquires(kernel_lock);
- 
--#define lock_kernel()	{					\
--	trace_lock_kernel(__func__, __FILE__, __LINE__);	\
--	_lock_kernel();						\
--}
-+extern void __lockfunc
-+_unlock_kernel(const char *func, const char *file, int line)
-+__releases(kernel_lock);
- 
--#define unlock_kernel()	{					\
--	trace_unlock_kernel(__func__, __FILE__, __LINE__);	\
--	_unlock_kernel();					\
--}
-+#define lock_kernel() do {					\
-+	_lock_kernel(__func__, __FILE__, __LINE__);		\
-+} while (0)
-+
-+#define unlock_kernel()	do {					\
-+	_unlock_kernel(__func__, __FILE__, __LINE__);		\
-+} while (0)
- 
- /*
-  * Various legacy drivers don't really need the BKL in a specific
-@@ -52,8 +54,8 @@ static inline void cycle_kernel_lock(void)
- 
- #else
- 
--#define lock_kernel()	   trace_lock_kernel(__func__, __FILE__, __LINE__);
--#define unlock_kernel()    trace_unlock_kernel(__func__, __FILE__, __LINE__);
-+#define lock_kernel()
-+#define unlock_kernel()
- #define release_kernel_lock(task)		do { } while(0)
- #define cycle_kernel_lock()			do { } while(0)
- #define reacquire_kernel_lock(task)		0
-diff --git a/lib/kernel_lock.c b/lib/kernel_lock.c
-index 5c10b2e..4ebfa5a 100644
---- a/lib/kernel_lock.c
-+++ b/lib/kernel_lock.c
-@@ -8,9 +8,11 @@
- #include <linux/module.h>
- #include <linux/kallsyms.h>
- #include <linux/semaphore.h>
--#define CREATE_TRACE_POINTS
- #include <linux/smp_lock.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/bkl.h>
-+
- /*
-  * The 'big kernel lock'
-  *
-@@ -114,19 +116,24 @@ static inline void __unlock_kernel(void)
-  * This cannot happen asynchronously, so we only need to
-  * worry about other CPU's.
-  */
--void __lockfunc _lock_kernel(void)
-+void __lockfunc _lock_kernel(const char *func, const char *file, int line)
- {
--	int depth = current->lock_depth+1;
-+	int depth = current->lock_depth + 1;
-+
-+	trace_lock_kernel(func, file, line);
-+
- 	if (likely(!depth))
- 		__lock_kernel();
- 	current->lock_depth = depth;
- }
- 
--void __lockfunc _unlock_kernel(void)
-+void __lockfunc _unlock_kernel(const char *func, const char *file, int line)
- {
- 	BUG_ON(current->lock_depth < 0);
- 	if (likely(--current->lock_depth < 0))
- 		__unlock_kernel();
-+
-+	trace_unlock_kernel(func, file, line);
- }
- 
- EXPORT_SYMBOL(_lock_kernel);
--- 
-1.6.2.3
-
-
-
+> $ gcc -O2 -o process process.c -lpthread
+> $ ./process
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      0:08 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:05 -
+>     - -        Rl+    0:05 -
+>     - -        Rl+    0:09 -
+>     - -        Rl+    0:05 -
+>     - -        Rl+    0:05 -
+>     - -        Rl+    0:05 -
+>     - -        Rl+    0:05 -
+>     - -        Rl+    0:01 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      0:16 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:14 -
+>     - -        Rl+    0:06 -
+>     - -        Rl+    0:14 -
+>     - -        Rl+    0:10 -
+>     - -        Rl+    0:06 -
+>     - -        Rl+    0:06 -
+>     - -        Rl+    0:10 -
+>     - -        Rl+    0:02 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      0:24 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:20 -
+>     - -        Rl+    0:11 -
+>     - -        Rl+    0:24 -
+>     - -        Rl+    0:15 -
+>     - -        Rl+    0:07 -
+>     - -        Rl+    0:07 -
+>     - -        Rl+    0:24 -
+>     - -        Rl+    0:03 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      0:32 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:29 -
+>     - -        Rl+    0:12 -
+>     - -        Rl+    0:29 -
+>     - -        Rl+    0:21 -
+>     - -        Rl+    0:08 -
+>     - -        Rl+    0:08 -
+>     - -        Rl+    0:29 -
+>     - -        Rl+    0:04 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      0:40 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:35 -
+>     - -        Rl+    0:13 -
+>     - -        Rl+    0:35 -
+>     - -        Rl+    0:26 -
+>     - -        Rl+    0:09 -
+>     - -        Rl+    0:09 -
+>     - -        Rl+    0:35 -
+>     - -        Rl+    0:05 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      0:48 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:40 -
+>     - -        Rl+    0:14 -
+>     - -        Rl+    0:40 -
+>     - -        Rl+    0:31 -
+>     - -        Rl+    0:10 -
+>     - -        Rl+    0:10 -
+>     - -        Rl+    0:40 -
+>     - -        Rl+    0:06 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      0:56 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:45 -
+>     - -        Rl+    0:15 -
+>     - -        Rl+    0:45 -
+>     - -        Rl+    0:37 -
+>     - -        Rl+    0:11 -
+>     - -        Rl+    0:11 -
+>     - -        Rl+    0:45 -
+>     - -        Rl+    0:07 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      1:05 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:51 -
+>     - -        Rl+    0:21 -
+>     - -        Rl+    0:55 -
+>     - -        Rl+    0:46 -
+>     - -        Rl+    0:12 -
+>     - -        Rl+    0:12 -
+>     - -        Rl+    0:59 -
+>     - -        Rl+    0:08 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      1:13 ./process
+>     - -        Sl+    0:00 -
+>     - -        Rl+    0:56 -
+>     - -        Rl+    0:22 -
+>     - -        Rl+    1:00 -
+>     - -        Rl+    0:52 -
+>     - -        Rl+    0:13 -
+>     - -        Rl+    0:13 -
+>     - -        Rl+    1:04 -
+>     - -        Rl+    0:09 -
+>   PID TTY      STAT   TIME COMMAND
+>  5532 pts/1    -      5:13 ./process
+>     - -        S+     5:13 -
+> 
+> 
+> $ cat process.c
+> #include <pthread.h>
+> #include <time.h>
+> #include <stdio.h>
+> 
+> /*
+>  * Burn cpu cycles for about 10 seconds
+>  */
+> static void *do_unit(void *arg)
+> {
+>         time_t t0,t1;
+> 
+>         t0 = time(NULL);
+>         do {
+>                 t1 = time(NULL);
+>         } while (t1 - t0 <= 10);
+>         return NULL;
+> }
+> 
+> 
+> 
+> 
+> int main(int argc, char *argv[])
+> {
+>         pthread_t tids[8];
+>         int i;
+>         char cmd[128];
+> 
+>         sprintf(cmd, "ps m -p %d", getpid());
+>         for (i = 0; i < 8 ; i++)
+>                 pthread_create(&tids[i], NULL, do_unit, NULL);
+>         for (i = 0; i < 9; i++) {
+>                 sleep(1);
+>                 system(cmd);
+>         }
+>         for (i = 0; i < 8 ; i++)
+>                 pthread_join(tids[i], NULL);
+>         system(cmd);
+>         return 0;
+> }
+> 
