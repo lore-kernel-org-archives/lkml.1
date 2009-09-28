@@ -1,80 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbZI1S2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbZI1SeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752507AbZI1S2L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 14:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZI1S2L
+	id S1752672AbZI1SeK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 14:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZI1SeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 14:28:11 -0400
-Received: from mail.perches.com ([173.55.12.10]:1240 "EHLO mail.perches.com"
+	Mon, 28 Sep 2009 14:34:09 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42393 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751651AbZI1S2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 14:28:10 -0400
-Subject: Re: [PATCH] LED driver for Intel NAS SS4200 series (v3)
-From: Joe Perches <joe@perches.com>
-To: Dave Hansen <dave@sr71.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, rpurdie@rpsys.net,
-       linux-kernel@vger.kernel.org, rgirod@confocus.com,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <1254160310.17303.20180.camel@nimitz>
-References: <1253118732-11944-1-git-send-email-dave@sr71.net>
-	 <20090924171929.8ce89786.akpm@linux-foundation.org>
-	 <1254160310.17303.20180.camel@nimitz>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Sep 2009 11:28:13 -0700
-Message-Id: <1254162493.28232.235.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	id S1752397AbZI1SeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 14:34:09 -0400
+Date: Mon, 28 Sep 2009 11:33:37 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: fix vt_compat_ioctl
+Message-ID: <20090928183337.GA10855@suse.de>
+References: <m2y6nzgcud.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m2y6nzgcud.fsf@igel.home>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-28 at 10:51 -0700, Dave Hansen wrote:
-> On Thu, 2009-09-24 at 17:19 -0700, Andrew Morton wrote:
+On Mon, Sep 28, 2009 at 08:10:02PM +0200, Andreas Schwab wrote:
+> Call compat_unimap_ioctl, not do_unimap_ioctl.
 
-Trivial logging comments:
+That's a nice description of what the patch does, but why do we need to
+do that?  What is the problem here?  What caused it?
 
-One of the printks is not prefaced and the printks
-and dev_printks are not consistently using either
-periods or no periods.
+thanks,
 
-Some possible substitutions:
-
-s/dev_printk(KERN_INFO/dev_info(/
-s/dev_printk(KERN_DEBUG/dev_dbg(/
-s/printk(KERN_INFO/pr_info(/
-
-I think it would be better to use:
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-and remove the "%s: " ... KBUILD_MODNAME
-
->+	printk(KERN_INFO KBUILD_MODNAME ": '%s' found\n", id->ident);
-
-Perhaps
-	pr_info("Found a '%s'\n", id->ident);
-
-> +	printk(KERN_DEBUG "setting blue off and amber on\n");
-
-pr_debug?
-
-> +		printk(KERN_INFO "%s: skipping hardware autodetection\n",
-> +				KBUILD_MODNAME);
-> +		printk(KERN_INFO "\tif this works, please send the output ");
-> +		printk(KERN_INFO "of 'dmidecode' to dave@sr71.net\n");
-
-I think this will look odd when printed.
-There's a tab on the second line, not on third.
-Perhaps:
-		pr_info("Skipping hardware detection.\n");
-		pr_info("Please send 'dmidecode' output to dave@sr71.net\n");
-
-> +		printk(KERN_INFO "%s: no LED devices found\n",
-> +				KBUILD_MODNAME);
-> +	printk(KERN_INFO "registering %s PCI driver\n", KBUILD_MODNAME);
-> +	printk(KERN_INFO "Unregistering %s driver\n", KBUILD_MODNAME);
-
-	pr_info("No LED devices found\n");
-	pr_info("Registering PCI driver\n");
-	pr_info("Unregistering PCI driver\n");
-
-
+greg k-h
