@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbZI1HYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZI1HNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752491AbZI1HYB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 03:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZI1HYA
+	id S1752463AbZI1HNg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 03:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZI1HNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 03:24:00 -0400
-Received: from ns2.intersolute.de ([193.110.43.67]:55359 "EHLO
-	ns2.intersolute.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZI1HYA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 03:24:00 -0400
-X-Greylist: delayed 780 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Sep 2009 03:23:59 EDT
-Message-ID: <4AC06187.2050806@lumino.de>
-Date: Mon, 28 Sep 2009 09:11:03 +0200
-From: Michael Schnell <mschnell@lumino.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
- energy
-References: <20090923174820.GA12827@Krystal> <4ABA631A.8030306@nortel.com> <20090923190337.GA16983@Krystal> <20090923223204.GA2921@Krystal> <4ABAAB4F.2060905@nortel.com> <20090923232855.GB9621@Krystal>
-In-Reply-To: <20090923232855.GB9621@Krystal>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 28 Sep 2009 03:13:36 -0400
+Received: from relay.atmel.no ([80.232.32.139]:58959 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751299AbZI1HNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 03:13:35 -0400
+Date: Mon, 28 Sep 2009 09:12:59 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Ben Nizette <bn@niasdigital.com>
+Cc: hskinnemoen@atmel.com, spi-devel-general@lists.sourceforge.net,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       kernel <kernel@avr32linux.org>, dbrownell@users.sourceforge.net
+Subject: Re: [PATCH] atmel_spi: fix dma addr calculation for len >
+ BUFFER_SIZE
+Message-ID: <20090928091259.27485716@hskinnemoen-d830>
+In-Reply-To: <1254029187.7587.146.camel@ben-desktop>
+References: <1254029187.7587.146.camel@ben-desktop>
+Organization: Atmel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
+Ben Nizette <bn@niasdigital.com> wrote:
+> If len > BUFFER_LEN and !xfer->rx_buf we end up calculating the tx
+> buffer address as
 > 
-> The mutex code (and usual futex users) use futex to implement mutual
-> exclusion.  My goal is to send a wakeup signal to a thread waiting for
-> work to perform when adding such work. But without any mutual exclusion.
+> *tx_dma = xfer->tx_dma + xfer->len - BUFFER_SIZE;
+> 
+> which is constant; i.e. we just send the last BUFFER_SIZE data over
+> again until we've reached the right number of bytes.
+> 
+> This patch gets around this by using the /requested/ length when
+> calculating addresses.
+> 
+> Note there's no way len != *plen when we calculate the rx buffer address
+> but conceptually we should be using *plen and I don't want someone to
+> come through later, see the calculations for rx and tx are different and
+> "clean up" back to what we had.
+> 
+> Signed-off-by: Ben Nizette <bn@niasdigital.com>
 
-Why is that different ?
+Wow, that is subtle. I had to stare at it for a long while before I
+understood what's going on, but I believe you're right.
 
-if you use a normal FUTEX like pthread_mutex_...() and have the thread
-block right at the start (by blocking the *UTEX before creating the
-thread). Now you can wake the thread by unblocking the *UTEX.
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
--Michael
+While you're at it, could you send another patch renaming 'len' to
+'next_len'? I think that would make it a bit more obvious why your
+patch is correct and prevent similar mistakes in the future.
 
+Haavard
