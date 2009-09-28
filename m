@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZI1Q0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbZI1Q1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740AbZI1Q0s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 12:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZI1Q0r
+	id S1752848AbZI1Q1r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 12:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZI1Q1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 12:26:47 -0400
-Received: from fanny.its.uu.se ([130.238.4.241]:45530 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZI1Q0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 12:26:47 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 28 Sep 2009 12:27:46 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:20904 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbZI1Q1q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 12:27:46 -0400
+Date: Mon, 28 Sep 2009 09:26:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: torvalds <torvalds@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] docs: update patch size in SubmittingPatches
+Message-Id: <20090928092657.f739be0c.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <19136.58289.484320.591187@pilspetsen.it.uu.se>
-Date: Mon, 28 Sep 2009 18:26:25 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: dri-devel@lists.sourceforge.net
-Subject: [PATCH 2.6.32-rc1] fix drm_fb_helper warning when !CONFIG_MAGIC_SYSRQ
-Cc: linux-kernel@vger.kernel.org
-X-Mailer: VM 7.17 under Emacs 20.7.1
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4AC0E3D6.00E2:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compiling DRM throws the following warning if MAGIC_SYSRQ is disabled:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-drivers/gpu/drm/drm_fb_helper.c:101: warning: 'sysrq_drm_fb_helper_restore_op' defined but not used
+This patch size comment is like so last millenium.
+Update it to modern times.
 
-Fix: place sysrq_drm_fb_helper_restore_op and associated
-definitions inside #ifdef CONFIG_MAGIC_SYSRQ.
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/gpu/drm/drm_fb_helper.c |    2 ++
- 1 file changed, 2 insertions(+)
+ Documentation/SubmittingPatches |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.32-rc1/drivers/gpu/drm/drm_fb_helper.c.~1~	2009-09-28 13:54:30.000000000 +0200
-+++ linux-2.6.32-rc1/drivers/gpu/drm/drm_fb_helper.c	2009-09-28 17:16:12.000000000 +0200
-@@ -87,6 +87,7 @@ void drm_fb_helper_restore(void)
- }
- EXPORT_SYMBOL(drm_fb_helper_restore);
+--- lnx-2632-rc1.orig/Documentation/SubmittingPatches
++++ lnx-2632-rc1/Documentation/SubmittingPatches
+@@ -232,7 +232,7 @@ your e-mail client so that it sends your
+ When sending patches to Linus, always follow step #7.
  
-+#ifdef CONFIG_MAGIC_SYSRQ
- static void drm_fb_helper_restore_work_fn(struct work_struct *ignored)
- {
- 	drm_fb_helper_restore();
-@@ -103,6 +104,7 @@ static struct sysrq_key_op sysrq_drm_fb_
- 	.help_msg = "force-fb(V)",
- 	.action_msg = "Restore framebuffer console",
- };
-+#endif
+ Large changes are not appropriate for mailing lists, and some
+-maintainers.  If your patch, uncompressed, exceeds 40 kB in size,
++maintainers.  If your patch, uncompressed, exceeds 300 kB in size,
+ it is preferred that you store your patch on an Internet-accessible
+ server, and provide instead a URL (link) pointing to your patch.
  
- static void drm_fb_helper_on(struct fb_info *info)
- {
+---
