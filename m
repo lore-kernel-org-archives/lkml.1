@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZI1R4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZI1SCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbZI1R4J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 13:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZI1R4I
+	id S1752354AbZI1SCB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 14:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZI1SCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 13:56:08 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45857 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbZI1R4H (ORCPT
+	Mon, 28 Sep 2009 14:02:01 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:56086 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752134AbZI1SCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 13:56:07 -0400
-Date: Mon, 28 Sep 2009 19:56:05 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: sam@ravnborg.org, linux-kbuild@vger.kernel.org
-Subject: 32-rc1: "CROSS_COMPILE changed" message breaks compilation
-Message-ID: <20090928175605.GB28514@elf.ucw.cz>
+	Mon, 28 Sep 2009 14:02:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=YxWu3aQpvstTstZI9joSgKkRuS9622pFVewIj2Q1K8N4iOgpzin+nUsdlMvNzNC70d
+         CJr68FbkWe9bWI2tZxYi7zYuOCTKV129PuygwiAWgF+tiTpE9e8xG5huSfER+xk6uHta
+         Lv8SJFttO4+V1p3g6k3LyfqcpgZu+3os6g9oE=
+Date: Mon, 28 Sep 2009 22:02:01 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: add show_lapic=
+Message-ID: <20090928180201.GH5264@lenovo>
+References: <4ABF0DE0.1030400@kernel.org> <20090927080605.GA4984@lenovo> <4ABF2262.3090905@kernel.org> <20090927085406.GB4984@lenovo> <20090927102805.GC4984@lenovo> <20090927144008.GD4984@lenovo> <20090927174219.GA14280@lenovo> <20090928160757.GD5264@lenovo> <86802c440909281046o5fa0032do3497087d173cbf82@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <86802c440909281046o5fa0032do3497087d173cbf82@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+[Yinghai Lu - Mon, Sep 28, 2009 at 10:46:54AM -0700]
+| On Mon, Sep 28, 2009 at 9:07 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+...
+| >
+| > -__apicdebuginit(int) print_all_ICs(void)
+| > +static int __initdata show_lapic = 1;
+| > +static __init int setup_show_lapic(char *arg)
+| > +{
+| > +       int num = -1;
+| > +
+| > +       if (strcmp(arg, "all") == 0) {
+| > +               show_lapic = CONFIG_NR_CPUS;
+| 
+| NR_CPUS or nr_cpu_ids?
 
-After update to 2.6.32-rc1, I'm getting
+NR_CPUS as far as I can tell -- maximal to not exit for() loop until end.
+nr_cpu_ids safe here as well, but constant is better :)
 
-"Makefile:197: *** CROSS_COMPILE changed from "ccache" to to "ccache ". Use "make mrproper" to fix it up. Stop.
-
-Note that the message has typo in it ("to to")... What is worse, the
-message triggers even when I try to run make mrproper. Ouch.
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+| 
+| YH
+| 
+	-- Cyrill
