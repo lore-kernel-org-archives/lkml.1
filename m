@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZI1VMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZI1VLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbZI1VMd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 17:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZI1VMc
+	id S1753219AbZI1VLV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 17:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZI1VLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 17:12:32 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51727 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170AbZI1VMc (ORCPT
+	Mon, 28 Sep 2009 17:11:20 -0400
+Received: from mail-pz0-f191.google.com ([209.85.222.191]:65429 "EHLO
+	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbZI1VLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 17:12:32 -0400
-Message-ID: <4AC1267D.6020405@zytor.com>
-Date: Mon, 28 Sep 2009 14:11:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 28 Sep 2009 17:11:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=CpytythISfSA96lhHYqAsYc32lsqLmHrREd9yYJ4/clRPv5opba7gJkDdZXwx4DG7E
+         alvHYx870H5seNF4WIyzh+vryV/UxSSnJLuvANQYm90jT1VmqqQgiyIxFluNYrX/5vtx
+         6XG0CLNKbTE9zde9t/1Mfn5ATJ9KhtTuP8Hk0=
+Message-ID: <4AC12685.5030002@gmail.com>
+Date: Mon, 28 Sep 2009 14:11:33 -0700
+From: Bruce Jones <brucej97223@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Joseph Cihula <joseph.cihula@intel.com>,
-       Shane Wang <shane.wang@intel.com>
-Subject: Re: [GIT PULL] x86/txt for v2.6.32
-References: <200909142051.n8EKpiOM017912@terminus.zytor.com> <200909262344.21257.rjw@sisk.pl> <20090928210252.GD1960@elf.ucw.cz> <200909282307.56190.rjw@sisk.pl>
-In-Reply-To: <200909282307.56190.rjw@sisk.pl>
+To: gregkh@suse.de
+CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: comedi: CodingStyle cleanup for drivers/acl722b.c
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/28/2009 02:07 PM, Rafael J. Wysocki wrote:
->>
->> Well, I worry that S3 support for TXT makes TXT completely useless. A
->> little liquid nitrogen, remove RAM, place it in another machine,
->> modify it in any way you want, more liquid nitrogen, place it back.
->>
->> Oops, protection provided by TXT is lost.
-> 
-> Ah, I see your point now.
-> 
+Cleanup this file as per the coding style.  Adding KERN_INFO to
+the printks.
 
-Shane Wang sent me a patch for S3 support, but it missed the merge window:
+Signed-off-by: Bruce Jones <brucej@linux.com>
+---
+ drivers/staging/comedi/drivers/acl7225b.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-	http://marc.info/?i=4A9CE0B2.5060608@intel.com
-
-*As far as I understand* -- and I haven't looked into it in detail yet,
-having just come back from Plumber's -- this provides integrity
-protection, not content extraction protection.
-
-Shane, could you please comment?
-
-Thanks,
-
-	-hpa
+diff --git a/drivers/staging/comedi/drivers/acl7225b.c b/drivers/staging/comedi/drivers/acl7225b.c
+index c3652ef..e6c6c87 100644
+--- a/drivers/staging/comedi/drivers/acl7225b.c
++++ b/drivers/staging/comedi/drivers/acl7225b.c
+@@ -94,7 +94,7 @@ static int acl7225b_attach(struct comedi_device *dev,
+ 
+ 	iobase = it->options[0];
+ 	iorange = this_board->io_range;
+-	printk("comedi%d: acl7225b: board=%s 0x%04x ", dev->minor,
++	printk(KERN_INFO "comedi%d: acl7225b: board=%s 0x%04x ", dev->minor,
+ 	       this_board->name, iobase);
+ 	if (!request_region(iobase, iorange, "acl7225b")) {
+ 		printk("I/O port conflict\n");
+@@ -137,14 +137,14 @@ static int acl7225b_attach(struct comedi_device *dev,
+ 	s->range_table = &range_digital;
+ 	s->private = (void *)ACL7225_DI_LO;
+ 
+-	printk("\n");
++	printk(KERN_INFO "\n");
+ 
+ 	return 0;
+ }
+ 
+ static int acl7225b_detach(struct comedi_device *dev)
+ {
+-	printk("comedi%d: acl7225b: remove\n", dev->minor);
++	printk(KERN_INFO "comedi%d: acl7225b: remove\n", dev->minor);
+ 
+ 	if (dev->iobase)
+ 		release_region(dev->iobase, this_board->io_range);
+-- 
+1.6.5.rc2
