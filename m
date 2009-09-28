@@ -1,76 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbZI1U42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbZI1VAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbZI1U42 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 16:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbZI1U41
+	id S1752864AbZI1VAZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 17:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZI1VAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 16:56:27 -0400
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:49039 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752441AbZI1U41 (ORCPT
+	Mon, 28 Sep 2009 17:00:24 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:65487 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751901AbZI1VAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 16:56:27 -0400
-Date: Mon, 28 Sep 2009 22:56:23 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Linux 2.6.32-rc1
-Message-ID: <20090928225623.2dc5d2b2@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <4AC10365.7090802@gmail.com>
-References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>
-	<4AC060AE.1090401@gmail.com>
-	<alpine.LFD.2.01.0909280829100.3349@localhost.localdomain>
-	<20090928191506.40b61793@mschwide.boeblingen.de.ibm.com>
-	<4AC10365.7090802@gmail.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Sep 2009 17:00:24 -0400
+X-Trace: 263746126/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.126.168/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.126.168
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgEFADfAwEpPRX6o/2dsb2JhbACBUdVlhB4F
+X-IronPort-AV: E=Sophos;i="4.44,468,1249254000"; 
+   d="scan'208";a="263746126"
+Date: Mon, 28 Sep 2009 22:00:20 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: No more bits in vm_area_struct's vm_flags.
+In-Reply-To: <a0ea21a7cfe313202e2b51510aa5435a.squirrel@webmail-b.css.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0909282134100.11529@sister.anvils>
+References: <4AB9A0D6.1090004@crca.org.au>    <20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com>
+    <4ABC80B0.5010100@crca.org.au>    <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
+    <4AC0234F.2080808@crca.org.au>    <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090928033624.GA11191@localhost>    <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com>
+    <Pine.LNX.4.64.0909281637160.25798@sister.anvils>
+ <a0ea21a7cfe313202e2b51510aa5435a.squirrel@webmail-b.css.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Sep 2009 20:41:41 +0200
-Eric Dumazet <eric.dumazet@gmail.com> wrote:
+On Tue, 29 Sep 2009, KAMEZAWA Hiroyuki wrote:
+> Hugh Dickins wrote:
+> > On Mon, 28 Sep 2009, KAMEZAWA Hiroyuki wrote:
+> >>
+> >> What I dislike is making vm_flags to be long long ;)
+> >
+> > Why?
+> I'm sorry if my "dislike" sounds too strong.
 
-> I did a bisection and found commit def0a9b2573e00ab0b486cb5382625203ab4c4a6
-> was the origin of the problem on my x86_32 machine.
-> 
-> def0a9b2573e00ab0b486cb5382625203ab4c4a6 is first bad commit
-> commit def0a9b2573e00ab0b486cb5382625203ab4c4a6
-> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date:   Fri Sep 18 20:14:01 2009 +0200
-> 
->     sched_clock: Make it NMI safe
-> 
->     Arjan complained about the suckyness of TSC on modern machines, and
->     asked if we could do something about that for PERF_SAMPLE_TIME.
-> 
->     Make cpu_clock() NMI safe by removing the spinlock and using
->     cmpxchg. This also makes it smaller and more robust.
-> 
->     Affects architectures that use HAVE_UNSTABLE_SCHED_CLOCK, i.e. IA64
->     and x86.
-> 
->     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->     LKML-Reference: <new-submission>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+No, not at all, I like the honesty with which you say "dislike".
 
-Confirmed. The bisect run on my machine gave me the same bad commit.
-The new logic in sched_clock_remove seems racy: the old code got the
-locks for the sched_clock_data of the local and the remove cpu before
-it changed any value. The new code tries to get to the same result with
-a single cmpxchg. Bad things happen if two cpus try to update the clock
-values crosswise, no?
+> 
+> Every time I see long long in the kernel, my concern is
+> "do I need spinlock to access this for 32bit arch ? is it safe ?".
+> (And it makes binary=>disassemble=>C (by eyes) a bit difficult)
+> Then, I don't like long long personally.
+> 
+> Another reason is some other calls like test_bit() cannot be used against
+> long long. (even if it's not used _now_)
+> 
+> Maybe vm->vm_flags will not require extra locks because
+> it can be protected by bigger lock as mmap_sem.
 
--- 
-blue skies,
-   Martin.
+I think that even as you wrote, you guessed I wouldn't be persuaded ;)
+It sounds like you've had a bad experience with a long long in the past.
 
-"Reality continues to ruin my life." - Calvin.
+We already have to have locking for vm_flags, of course we do: it's
+mmap_sem, yes, though I think you'll find some exceptions which know
+they have exclusive access without it.
 
+We use ordinary logical operations on vm_flags, we don't need it to
+be atomic, we don't need an additional spinlock, we don't need to use
+test_bit().  It's very easy!  (But irritating in a few places which
+have to down_write mmap_sem for no other reason than to update vm_flags.)
+
+> Then, please make it to be long long if its's recommended.
+> 
+> keeping vm_flags to be 32bit may makes vma_merge() ugly.
+> If so, long long is  a choice.
+
+unsigned long long is certainly the natural choice: that way leaves
+freedom for people to add more flags in future without worrying about
+which flags variable to put them into.  I'd better explain some of my
+objections to Nigel's patch in a reply to him rather than here.
+
+I have made up a patch to convert it to unsigned long long (not gone
+through all the arches yet though), mainly to try a build to see how
+it works out in practice.  I used a config which built most of the
+non-debugging objects in mm/, things like migration and mempolicy
+and memcg and ksm and so forth, but not kmemleak.
+
+And I have to admit that the 834 bytes it added to i386 kernel text
+is more than I was expecting, more than I can just brush away as "in
+the noise".  I don't fully understand it yet.  There's a few silly
+"andl $0xffffffff"s from the compiler (4.3.2), but not enough to
+worry about.  Typically enlarged objects grow by 4 bytes, presumably
+clearing the upper half when setting vma->vm_flags, fair enough.
+
+300 bytes of growth is in mmap.o, 100 bytes of that in do_mmap_pgoff();
+yet I don't see why it needed to grow by more than, say, 12 bytes.
+
+My current feeling is that unsigned long long is the right way to
+go, but given the bloat, we shouldn't convert over until we need to:
+right now we should look to save a few flags instead.
+
+Hugh
