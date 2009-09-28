@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbZI1Wi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbZI1Wnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbZI1Wi7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 18:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZI1Wi7
+	id S1753480AbZI1Wnj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 18:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZI1Wni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 18:38:59 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38717 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751575AbZI1Wi7 (ORCPT
+	Mon, 28 Sep 2009 18:43:38 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:65133 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbZI1Wnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 18:38:59 -0400
-Date: Mon, 28 Sep 2009 23:40:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Disabling DMA with ICH10?
-Message-ID: <20090928234025.6dc4e3f7@lxorguk.ukuu.org.uk>
-In-Reply-To: <1254173481.4454.32.camel@goodbyte.homelinux.com>
-References: <1254173481.4454.32.camel@goodbyte.homelinux.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+	Mon, 28 Sep 2009 18:43:37 -0400
+Authentication-Results: sj-iport-1.cisco.com; dkim=pass (signature verified [TEST]) header.i=rdreier@cisco.com
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANTYwEqrR7PD/2dsb2JhbADAEohTAY5PBYQe
+X-IronPort-AV: E=Sophos;i="4.44,469,1249257600"; 
+   d="scan'208";a="248132718"
+From: Roland Dreier <rdreier@cisco.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ACPI: Get rid of "registered as cooling_deviceX" messages
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 28 Sep 2009 15:43:39 -0700
+Message-ID: <adahbumwuzo.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Sep 2009 22:43:39.0877 (UTC) FILETIME=[1FA23150:01CA408D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1. Is there a way to completely disable DMA usage system-wide?
+The messages "<xyz> registered as cooling_deviceX" printed by various
+ACPI drivers give the same information as just looking at the symlinks
+/sys/class/thermal/cooling_deviceX/device.  On a big system, they
+clutter up the syslog and take a long time to print on a serial console.
 
-No
+On a 64-thread system I've been lucky enough to play with:
 
-> 2. My system uses an ICH10 chipset, the harddrive is connected to the
-> Intel SATA controller. Is there a way to disable DMA and switch back to
-> PIO? I tried compiling with libata support and without SCSI support, but
-> the kernel is unable to mount root (no matter if /dev/sda1
-> or /dev/hda1), then.
+    $ dmesg | grep 'registered as cooling_device' | wc
+         64     448    4278
 
-If you disable DMA you will make your performance and latency worse not
-better as the PIO transfers will stall the bus and thus the processor.
+which is getting past tragedy and into the realm of comedy.  We may as
+well not print these messages.
 
-> If disabling DMA is impossible for some reason for one or both drivers,
-> is it at least possible to reduce the burst sizes so the bus gets free
-> for a short time during which I could access it from my real time kernel
-> module?
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+Len, still more in my trimming of the boot log on my big box.  If this
+makes sense to you, please apply.
 
-You want the disk controller in AHCI mode to minimise CPU stalls and
-then any burst size configuration and the like is down to the PCI
-configuration. On some systems where memory or bus bandwidth is an issue
-then forcing the disk to run at a lower speed can help, at least for
-PATA. What effect it will have on SATA I am less sure.
+Also I think <http://patchwork.kernel.org/patch/50048/> might have
+gotten lost somewhere -- you applied the C-state version but not the
+equivalent T-state patch.
 
-If you really are that latency sensitive then the more normal approach
-would be to lock one core for real time use, load the critical code into
-that core CPU cache and run from cache. If you are utterly pushing the
-limit you might even do crazy stuff like use on thread on the core to
-execute RT stuff and the other to issue any I/O accesses that might stall.
+ drivers/acpi/fan.c            |    2 --
+ drivers/acpi/processor_core.c |    3 ---
+ drivers/acpi/video.c          |    2 --
+ 3 files changed, 0 insertions(+), 7 deletions(-)
 
-And then on many systems things like BIOS SMI glue will still clobber you
-8(
-
-Alan
+diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
+index f419849..6bbc61d 100644
+--- a/drivers/acpi/fan.c
++++ b/drivers/acpi/fan.c
+@@ -267,8 +267,6 @@ static int acpi_fan_add(struct acpi_device *device)
+ 		goto end;
+ 	}
+ 
+-	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
+-
+ 	device->driver_data = cdev;
+ 	result = sysfs_create_link(&device->dev.kobj,
+ 				   &cdev->device.kobj,
+diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+index c2d4d6e..3d6e95e 100644
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -845,9 +845,6 @@ static int acpi_processor_add(struct acpi_device *device)
+ 		goto err_power_exit;
+ 	}
+ 
+-	dev_info(&device->dev, "registered as cooling_device%d\n",
+-		 pr->cdev->id);
+-
+ 	result = sysfs_create_link(&device->dev.kobj,
+ 				   &pr->cdev->device.kobj,
+ 				   "thermal_cooling");
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index a4fddb2..3f67f4d 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -1022,8 +1022,6 @@ static void acpi_video_device_find_cap(struct acpi_video_device *device)
+ 			return;
+ 		}
+ 
+-		dev_info(&device->dev->dev, "registered as cooling_device%d\n",
+-			 device->cooling_dev->id);
+ 		result = sysfs_create_link(&device->dev->dev.kobj,
+ 				&device->cooling_dev->device.kobj,
+ 				"thermal_cooling");
