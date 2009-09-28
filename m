@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbZI1Q0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZI1QZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752802AbZI1Q0O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 12:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbZI1Q0N
+	id S1752764AbZI1QZX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 12:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZI1QZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 12:26:13 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:37913 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbZI1Q0M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 12:26:12 -0400
-Date: Mon, 28 Sep 2009 09:25:20 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Karsten Keil <keil@b1-systems.de>, netdev <netdev@vger.kernel.org>
-Subject: [PATCH] isdn: fix netjet/isdnhdlc build errors
-Message-Id: <20090928092520.b6f921de.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>
-References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4AC0E374.0147:SCFSTAT5015188,ss=1,fgs=0
+	Mon, 28 Sep 2009 12:25:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33024 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752677AbZI1QZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 12:25:22 -0400
+Date: Mon, 28 Sep 2009 16:25:22 +0000
+From: Kyle McMartin <kyle@hera.kernel.org>
+To: linux-parisc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, deller@gmx.de
+Subject: What's in parisc-2.6.git
+Message-ID: <20090928162522.GA22368@hera.kernel.org>
+Reply-To: kyle@mcmartin.ca
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 28 Sep 2009 16:25:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Rebased on top of v2.6.32-rc1, fixed tracehook. Seems to build alright
+on my pa8800 in a few different configs. Is anything missing?
 
-Commit cb3824bade2549d7ad059d5802da43312540fdee didn't fix this problem.
+regards, Kyle
 
-Fix build errors in netjet, using isdnhdlc module:
+The following changes since commit 17d857be649a21ca90008c6dc425d849fa83db5c:
+  Linus Torvalds (1):
+        Linux 2.6.32-rc1
 
-drivers/built-in.o: In function `mode_tiger':
-netjet.c:(.text+0x1ca0c7): undefined reference to `isdnhdlc_rcv_init'
-netjet.c:(.text+0x1ca0d4): undefined reference to `isdnhdlc_out_init'
-drivers/built-in.o: In function `fill_dma':
-netjet.c:(.text+0x1ca2bd): undefined reference to `isdnhdlc_encode'
-drivers/built-in.o: In function `read_dma':
-netjet.c:(.text+0x1ca614): undefined reference to `isdnhdlc_decode'
-drivers/built-in.o: In function `nj_irq':
-netjet.c:(.text+0x1cb07a): undefined reference to `isdnhdlc_encode'
+are available in the git repository at:
 
-drivers/built-in.o: In function `isdnhdlc_decode':
-(.text+0x1c2088): undefined reference to `crc_ccitt_table'
-drivers/built-in.o: In function `isdnhdlc_encode':
-(.text+0x1c2339): undefined reference to `crc_ccitt_table'
+  git://git.kernel.org/pub/scm/linux/kernel/git/kyle/parisc-2.6.git parisc
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Karsten Keil <keil@b1-systems.de>
----
- drivers/isdn/hardware/mISDN/Kconfig |    1 +
- drivers/isdn/i4l/Kconfig            |    3 +--
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Christoph Hellwig (1):
+      parisc: convert to asm-generic/hardirq.h
 
---- lnx-2632-rc1.orig/drivers/isdn/hardware/mISDN/Kconfig
-+++ lnx-2632-rc1/drivers/isdn/hardware/mISDN/Kconfig
-@@ -78,6 +78,7 @@ config MISDN_NETJET
- 	depends on PCI
- 	select MISDN_IPAC
- 	select ISDN_HDLC
-+	select ISDN_I4L
- 	help
- 	  Enable support for Traverse Technologies NETJet PCI cards.
- 
---- lnx-2632-rc1.orig/drivers/isdn/i4l/Kconfig
-+++ lnx-2632-rc1/drivers/isdn/i4l/Kconfig
-@@ -141,8 +141,7 @@ endmenu
- endif
- 
- config ISDN_HDLC
--	tristate 
--	depends on HISAX_ST5481
-+	tristate
- 	select CRC_CCITT
- 	select BITREVERSE
- 
+Helge Deller (2):
+      parisc: rename parisc's vmalloc_start to parisc_vmalloc_start
+      parisc: Fix linker script breakage.
+
+James Bottomley (1):
+      parisc: add me to Maintainers
+
+Jaswinder Singh Rajput (1):
+      parisc: includecheck fix: signal.c
+
+Julia Lawall (1):
+      parisc: correct use of SHF_ALLOC
+
+Kyle McMartin (7):
+      parisc: tracehook_report_syscall
+      parisc: tracehook_signal_handler
+      parisc: add missing TI_TASK macro in syscall.S
+      parisc: split syscall_trace into two halves
+      parisc: stop using task->ptrace for {single,block}step flags
+      parisc: add skeleton syscall.h
+      parisc: HAVE_ARCH_TRACEHOOK
+
+Tim Abbott (1):
+      parisc: Make THREAD_SIZE available to assembly files and linker scripts.
+
+ MAINTAINERS                           |    1 +
+ arch/parisc/Kconfig                   |    1 +
+ arch/parisc/include/asm/fixmap.h      |    4 +-
+ arch/parisc/include/asm/hardirq.h     |   20 +---------------
+ arch/parisc/include/asm/ptrace.h      |    5 +++-
+ arch/parisc/include/asm/syscall.h     |   40 +++++++++++++++++++++++++++++++
+ arch/parisc/include/asm/thread_info.h |   14 +++++++----
+ arch/parisc/kernel/asm-offsets.c      |    4 +-
+ arch/parisc/kernel/entry.S            |   21 ++++++++--------
+ arch/parisc/kernel/irq.c              |    5 ----
+ arch/parisc/kernel/module.c           |    2 +-
+ arch/parisc/kernel/ptrace.c           |   42 ++++++++++++++++----------------
+ arch/parisc/kernel/signal.c           |    5 +++-
+ arch/parisc/kernel/syscall.S          |   22 +++++++++++------
+ arch/parisc/kernel/vmlinux.lds.S      |   10 ++++++++
+ arch/parisc/mm/init.c                 |   11 ++++----
+ 16 files changed, 127 insertions(+), 80 deletions(-)
+ create mode 100644 arch/parisc/include/asm/syscall.h
