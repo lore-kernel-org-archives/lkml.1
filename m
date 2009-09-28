@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbZI1UIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbZI1ULE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752919AbZI1UIw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 16:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZI1UIu
+	id S1753151AbZI1ULE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 16:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZI1ULD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 16:08:50 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:62568 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753078AbZI1UIt (ORCPT
+	Mon, 28 Sep 2009 16:11:03 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:50043 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751959AbZI1ULC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 16:08:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=xso6cXZp3UWfo8JFk00w7cAoU/Xgwqm64PMsmKsyRofs/39NnuritorQetoZcnnacY
-         ImKEz+eOLyM6Xhle/kiXYwE0vIg2BvswTT5mTVGTz3GTkXNvzkHVfAFeFLpgxo9X5n4U
-         l5g66V4o1umamQ6157avG+0q8NYOoJNfszI9k=
+	Mon, 28 Sep 2009 16:11:02 -0400
+Date: Mon, 28 Sep 2009 16:11:00 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: final scan results:  bad Kconfig "select"s
+Message-ID: <alpine.LFD.2.00.0909281609270.16036@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <8db1092f0909281138t18a379d1qdf999b0610ed6414@mail.gmail.com>
-References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com>
-	 <2674af740909270127s464a3cb2xef5e7f4cd61b0eb7@mail.gmail.com>
-	 <2674af740909270130h359a5d23taa7e8b63e6a18a4d@mail.gmail.com>
-	 <8db1092f0909270325j67825cem82fc93cf19336d6f@mail.gmail.com>
-	 <2674af740909270701u6febabdbpc5c772fabc193b32@mail.gmail.com>
-	 <2674af740909270749u339671a1ia81d5736eeb750fa@mail.gmail.com>
-	 <8db1092f0909270916k79d0c369ub93b5e8ddf66c979@mail.gmail.com>
-	 <2674af740909271854v191d9768mc3d96f30998f8c01@mail.gmail.com>
-	 <8db1092f0909281138t18a379d1qdf999b0610ed6414@mail.gmail.com>
-Date: Mon, 28 Sep 2009 22:08:51 +0200
-Message-ID: <8db1092f0909281308s36c35c80s65c18dcbcf9fff2b@mail.gmail.com>
-Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 
-	hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 
-	__sysdev_resume+0xc3/0xe0()
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, clemens@ladisch.de,
-       venkatesh.pallipadi@intel.com, gregkh@suse.de, zambrano@broadcom.com,
-       davem@davemloft.net, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/28 Maciej Rutecki <maciej.rutecki@gmail.com>:
->
-> Add patch and remove previous:
-> http://unixy.pl/maciek/download/kernel/2.6.31-git17/gumis/dmesg-debug.txt
->
-> s2disk&resume twice.
->
-> no "timekeeping_resume() called with IRQs enabled!".
->
-> I found some interesting thing, warnings appear only once, during
-> first s2disk, on second don't appear.
 
-Already I test 2.6-32-rc1 few times; warnings has gone. Any patches
-has been add since 2.6.31-git17?
+  short list of "select" directives to non-existent Kconfig variables:
 
-Regards
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+===== CRYPTO_SHASH.
+crypto/Kconfig:	select CRYPTO_SHASH
+===== GCD.
+arch/arm/plat-pxa/include/plat/i2c.h:*  7.  GCD      1 (Disables i2c unit response to general call messages as a slave)
+arch/mips/Kconfig:	select GCD
+drivers/i2c/busses/i2c-pxa.c:	PXA_BIT(ICR_GCD,    "GCD",	NULL),
+fs/jffs2/background.c:		/* Problem - immediately after bootup, the GCD spends a lot
+fs/jffs2/background.c:		 * doesn't help, either (presumably because userspace and GCD
+fs/jffs2/background.c:		 * This forces the GCD to slow the hell down.   Pulling an
+===== GENERIC_HAS_IOMAP.
+arch/score/Kconfig:	select GENERIC_HAS_IOMAP
+arch/score/Kconfig:	select GENERIC_HAS_IOMAP
+arch/score/Kconfig:	select GENERIC_HAS_IOMAP
+===== HAVE_FTRACE_SYSCALLS.
+arch/sh/Kconfig:	select HAVE_FTRACE_SYSCALLS
+Documentation/trace/ftrace-design.txt:HAVE_FTRACE_SYSCALLS
+===== HAVE_READQ.
+arch/x86/Kconfig:	select HAVE_READQ
+===== HAVE_WRITEQ.
+arch/x86/Kconfig:	select HAVE_WRITEQ
+===== MACH_NEO1973.
+arch/arm/mach-s3c2442/Kconfig:	select MACH_NEO1973
+===== MPC5121_ADS_CPLD.
+arch/powerpc/platforms/512x/Kconfig:	select MPC5121_ADS_CPLD
+===== S3C2410_PWM.
+arch/arm/mach-s3c2442/Kconfig:	select S3C2410_PWM
+===== S3C_DEVICE_NAND.
+arch/arm/plat-s3c24xx/Kconfig:	select S3C_DEVICE_NAND
+===== S5PC1XX_SETUP_I2C1.
+arch/arm/mach-s5pc100/Kconfig:	select S5PC1XX_SETUP_I2C1
+===== SFFSDR_FPGA.
+sound/soc/davinci/Kconfig:	select SFFSDR_FPGA
+===== SIBYTE_CFE.
+arch/mips/sibyte/Kconfig:	select SIBYTE_CFE
+===== USB_GADGET_S3C_HSOTG_PIO.
+drivers/usb/gadget/Kconfig:	select USB_GADGET_S3C_HSOTG_PIO
+
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
