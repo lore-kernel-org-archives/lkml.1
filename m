@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZI1GHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751904AbZI1GL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751877AbZI1GHk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 02:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZI1GHk
+	id S1751904AbZI1GL4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 02:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZI1GLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 02:07:40 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:46936 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751031AbZI1GHj (ORCPT
+	Mon, 28 Sep 2009 02:11:55 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:55660
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbZI1GLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 02:07:39 -0400
-Date: Mon, 28 Sep 2009 02:07:41 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Dave Young <hidave.darkstar@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <gregkh@suse.de>, pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] [PATCH, fix] Re: [Regression] 2.6.31-git: tty change
-  broke resume from hibernation on MSI Wind U100
-In-Reply-To: <a8e1da0909272203me287858y2f8d82f3710e07d3@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0909280202280.14348-100000@netrider.rowland.org>
+	Mon, 28 Sep 2009 02:11:55 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [Qemu-devel] 2.6.31 kernel built for sh4 doesn't boot under qemu-system-sh4.
+Date: Mon, 28 Sep 2009 01:11:54 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
+Cc: kernel list <linux-kernel@vger.kernel.org>, qemu-devel@nongnu.org
+References: <200909201919.17990.rob@landley.net> <20090925084430.GA14363@linux-sh.org>
+In-Reply-To: <20090925084430.GA14363@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909280111.54976.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Sep 2009, Dave Young wrote:
+On Friday 25 September 2009 03:44:30 Paul Mundt wrote:
+> On Sun, Sep 20, 2009 at 07:19:17PM -0500, Rob Landley wrote:
+> > The 2.6.30 kernel in the system image at
+> > http://impactlinux.com/fwl/downloads/binaries/system-image-sh4.tar.bz2
+> > boots to a shell prompt under a reasonably current qemu-git snapshot
+> > (sometime Tuesday I think).
+>
+> In the future please make sure to cc the linux-sh@vger.kernel.org list, I
+> only stumbled across this by chance.
 
-> On Mon, Sep 28, 2009 at 2:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday 27 September 2009, Alan Stern wrote:
-> >> On Sun, 27 Sep 2009, Rafael J. Wysocki wrote:
-> >>
-> >> > Tested, works.
-> >> >
-> >> > Greg, could you please consider taking the patch below?  It fixes a recent
-> >> > hibernation regression for me, so if not this one, another fix is necessary.
-> >>
-> >> This patch has a mistake.
-> >>
-> >> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
-> >> > ===================================================================
-> >> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
-> >> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
-> >> > @@ -1210,7 +1210,7 @@ static const struct tty_operations seria
-> >> >     .chars_in_buffer =      serial_chars_in_buffer,
-> >> >     .tiocmget =             serial_tiocmget,
-> >> >     .tiocmset =             serial_tiocmset,
-> >> > -   .shutdown =             serial_release,
-> >> > +   .cleanup =              serial_release,
-> >> >     .install =              serial_install,
-> >> >     .proc_fops =            &serial_proc_fops,
-> >> >  };
-> >>
-> >> It isn't enough to change the method pointer.  The code in
-> >> serial_release() has to be changed too; it must not call tty_shutdown()
-> >> any more.
-> >
-> > Would it be sufficient to remove the tty_shutdown() call from
-> > serial_release()?
-> 
-> I think so, because standard shutdown will be called in queue_release_one_tty.
-> 
-> Alan, could you confirm about this?  Thus I'd like to update the patch.
+Will do, thanks.
 
-Yes, that's right.  Just remove the function call.  But what happens if
-the device is a serial console?  Shouldn't the call to tty_shutdown()  
-be skipped in that case?  (Eventually this won't matter; the console
-code will be straightened out so that we never release a serial console
-device.  But for now it's important.)
+> > >trapped io 0xc0000000 overrides mmio 0xb4001000
+> > >trapped io 0xc0001000 overrides mmio 0xb400080c
+>
+> Also, you do not want to be using trapped io with qemu, it is only there
+> to aid broken hardware, and degrades performance under emulation. Boot
+> with the "noiotrap" argument on the kernel command line, documented in
+> Documentation/kernel-parameters.txt.
 
-If you think it would be appropriate, you could also rename
-serial_release() to serial_cleanup() -- it's up to you.
+Is _that_ why it's so slow?  Thanks.
 
-Alan Stern
+> > #
+> > # Timer and clock configuration
+> > #
+> > # CONFIG_SH_TIMER_TMU is not set
+> > CONFIG_SH_PCLK_FREQ=60000000
+> > CONFIG_SH_CLK_CPG=y
+> > CONFIG_SH_CLK_CPG_LEGACY=y
+> > # CONFIG_NO_HZ is not set
+> > # CONFIG_HIGH_RES_TIMERS is not set
+> > CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+>
+> And here we can see that the TMU option is unset. Fix this up and
+> everything should be fine.
 
+Yup, that did it.
+
+> It's actually quite remarkable how far you
+> made it in the boot process without a timer interrupt.
+
+Tickless kernels, gotta love 'em. :)
+
+> I'm running current git with qemu and the kernel without any issue,
+> except for the aforementioned libata stuff.
+
+Thank you.
+
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
