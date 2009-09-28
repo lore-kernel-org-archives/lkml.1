@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbZI1PyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZI1Pxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752716AbZI1PyK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 11:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZI1PyJ
+	id S1752601AbZI1Pxx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 11:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZI1Pxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 11:54:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35430 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751992AbZI1PyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 11:54:08 -0400
-Date: Mon, 28 Sep 2009 17:53:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 0/2] rcu: v2: more review feedback
-Message-ID: <20090928155317.GA10560@elte.hu>
-References: <20090927064753.GA9394@linux.vnet.ibm.com> <20090928144551.GA20704@linux.vnet.ibm.com>
+	Mon, 28 Sep 2009 11:53:52 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:53786 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbZI1Pxw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 11:53:52 -0400
+Date: Mon, 28 Sep 2009 16:53:53 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Valdis.Kletnieks@vt.edu, "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Andreas Gruenbacher <agruen@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vfs: new O_NODE open flag
+Message-ID: <20090928155353.GA25375@shareable.org>
+References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu> <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu> <20090925190222.GX10562@webber.adilger.int>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090928144551.GA20704@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090925190222.GX10562@webber.adilger.int>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> This patchset applies the last of the review comments:
+Andreas Dilger wrote:
+> > It's not possible even without this flag. Consider:
+> > 
+> >         fd1 = open("/tmp/foo",flags);
+> >         rc = rename("/tmp/foo","/tmp/bar");
+> >         fd2 = open("/tmp/foo",flags);
+> > 
+> > Or were you asking if *absent that sort of tomfoolery* if it would work?
 > 
-> o	Whitespace fixes, updated comments, and code movement.
-> 
-> o	Improve an existing abstraction and introduce two additional
-> 	abstractions for traversing the rcu_node tree.
-> 
-> Change since v1 (http://lkml.org/lkml/2009/9/27/17):
-> 
-> o	Update second patch's changelog
+> No, the point is that we HAVE an fd that points to the original "/tmp/foo"
+> opened with O_NODE, and now (after an ioctl, stat, etc) we decide it is
+> safe to open the file read and/or write without releasing the existing
+> fd.  The whole point is to AVOID this kind of tomfoolery.
 
-Applied, thanks a lot Paul!
+Make sense, and openat() seems like a good way to accomplish it.
 
-	Ingo
+-- Jamie
