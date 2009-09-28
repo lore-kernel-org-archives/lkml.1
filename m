@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752046AbZI1EbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751989AbZI1Ebf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752046AbZI1EbI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 00:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZI1EbH
+	id S1751989AbZI1Ebf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 00:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbZI1Ebe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 00:31:07 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60770 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751398AbZI1EbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 00:31:06 -0400
-X-Authenticated: #404998
-X-Provags-ID: V01U2FsdGVkX19hOzxTEClhfzrCyByDYLjc1MhSMIT1ucMAM5ficQ
-	aG1YegqBbEpQ2I
-Message-ID: <4AC03C09.7090008@gmx.net>
-Date: Mon, 28 Sep 2009 06:31:05 +0200
-From: Martin Wache <m.wache@gmx.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 28 Sep 2009 00:31:34 -0400
+Received: from [195.41.46.235] ([195.41.46.235]:42094 "EHLO pfepa.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751599AbZI1Ebe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 00:31:34 -0400
+Date: Mon, 28 Sep 2009 06:31:31 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeff Dike <jdike@addtoit.com>, Ingo Molnar <mingo@elte.hu>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de, David.Woodhouse@intel.com
+Subject: Re: [tip:x86/kbuild] x86: Don't silently override CONFIG_64BIT in
+	'make oldconfig'
+Message-ID: <20090928043131.GA10652@merkur.ravnborg.org>
+References: <tip-5a8a2d13b1526e306ff2a9fe12dc9d5878d355f9@git.kernel.org> <20090904144857.GA12872@elte.hu> <alpine.LFD.2.00.0909041631210.14872@twosheds.infradead.org> <4AA13FE6.20807@zytor.com> <20090904183103.GA1873@elte.hu> <4AA16336.3050606@zytor.com> <20090911211654.GA11399@c2.user-mode-linux.org> <4AAED1E2.7060906@zytor.com> <20090915033334.GA16531@c2.user-mode-linux.org> <4ABC8773.7010104@zytor.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Status of Regression/Bug 13407 adb trackpad disappears after
- suspend to ram?
-References: <4ABF5432.9020508@gmx.net> <200909271713.44719.rjw@sisk.pl>	 <4ABFAA82.2040200@gmx.net> <1254108467.8421.3.camel@pasglop>
-In-Reply-To: <1254108467.8421.3.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ABC8773.7010104@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt schrieb:
-> On Sun, 2009-09-27 at 20:10 +0200, Martin Wache wrote:
->> Hi,
+On Fri, Sep 25, 2009 at 02:03:47AM -0700, H. Peter Anvin wrote:
+> Jeff Dike wrote:
+>> On Mon, Sep 14, 2009 at 04:29:38PM -0700, H. Peter Anvin wrote:
+>>> Jeff, could you re-send this as a proper patch with an SOB line?
 >>
->> Rafael J. Wysocki schrieb:
+>> I could - I wanted to get it out for comment first in case anyone had
+>> any conniptions, especially about moving the include of the arch
+>> Makefile.
 >>
->>> A patch has been submitted which is reported to fix the issue:
->>>
->>> http://patchwork.kernel.org/patch/49462/
->>>
->>> Please test it as requested.
->>>
->> Thank you for the info :-)
+>> I'll take another look at it tomorrow and send it out properly...
 >>
->> Unfortunately, applying the patch on top of 2.6.31 doesn't improve the 
->> situation for me, rather the opposite. Under X I get no reaction on any 
->>   keypress on the keyboard or movement on the trackpad. Even plugging in 
->> an USB mouse and keyboard didn't help, the usb port doesn't provide an 
->> power to the mouse (at least the led in the mouse doesn't light up).
->> Before X starts up the keyboard does respond, also the trackpad seems to 
->> be detected. Doing a suspend/resume cycle doesn't change the situation.
-> 
-> That looks like a different problem than the one I fixed. Is there an
-> email thread or a bugzilla entry that describes the setup precisely, the
-> symptoms, kernel logs etc... ?
-> 
-The USB not working was indeed a separate issue, I striped down my 
-kernel config before building 2.6.31 and striped it down too much. After 
-fixing the config the usb is again working.
+>> 				Jeff
+>
+> Ping on this?  Also, Sam, it would be great if you could comment on the  
+> patch:
+>
+>     http://marc.info?i=20090911211654.GA11399@c2.user-mode-linux.org
 
-What I don't really understand is that now after I fixed the usb kernel 
-config and recompiled also the adb keyboard and trackpad are working again.
-To test the original issue, I did several suspend/resume cycles and my 
-trackpad is still working :-).
-Without the patch the trackpad was almost never working after a 
-suspend/resume cycle, so the adb trackpad issue seems to be fixed with 
-your patch.
-Thank you very much :-)
+I took a quick look at it this weekend. My first reaction was that um
+is now again doing it best to workaround something rather than to
+use something.
 
-Bye,
+But I have not had time to come up with any alternative proposal.
+I may give it a spin the coming weekend.
 
-Martin
+	Sam
