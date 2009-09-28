@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZI1QZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZI1Q0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZI1QZX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 12:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZI1QZX
+	id S1752740AbZI1Q0s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 12:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZI1Q0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 12:25:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33024 "EHLO hera.kernel.org"
+	Mon, 28 Sep 2009 12:26:47 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:45530 "EHLO fanny.its.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677AbZI1QZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 12:25:22 -0400
-Date: Mon, 28 Sep 2009 16:25:22 +0000
-From: Kyle McMartin <kyle@hera.kernel.org>
-To: linux-parisc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, deller@gmx.de
-Subject: What's in parisc-2.6.git
-Message-ID: <20090928162522.GA22368@hera.kernel.org>
-Reply-To: kyle@mcmartin.ca
+	id S1751599AbZI1Q0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 12:26:47 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 28 Sep 2009 16:25:23 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19136.58289.484320.591187@pilspetsen.it.uu.se>
+Date: Mon, 28 Sep 2009 18:26:25 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: dri-devel@lists.sourceforge.net
+Subject: [PATCH 2.6.32-rc1] fix drm_fb_helper warning when !CONFIG_MAGIC_SYSRQ
+Cc: linux-kernel@vger.kernel.org
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rebased on top of v2.6.32-rc1, fixed tracehook. Seems to build alright
-on my pa8800 in a few different configs. Is anything missing?
+Compiling DRM throws the following warning if MAGIC_SYSRQ is disabled:
 
-regards, Kyle
+drivers/gpu/drm/drm_fb_helper.c:101: warning: 'sysrq_drm_fb_helper_restore_op' defined but not used
 
-The following changes since commit 17d857be649a21ca90008c6dc425d849fa83db5c:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc1
+Fix: place sysrq_drm_fb_helper_restore_op and associated
+definitions inside #ifdef CONFIG_MAGIC_SYSRQ.
 
-are available in the git repository at:
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+---
+ drivers/gpu/drm/drm_fb_helper.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/kyle/parisc-2.6.git parisc
-
-Christoph Hellwig (1):
-      parisc: convert to asm-generic/hardirq.h
-
-Helge Deller (2):
-      parisc: rename parisc's vmalloc_start to parisc_vmalloc_start
-      parisc: Fix linker script breakage.
-
-James Bottomley (1):
-      parisc: add me to Maintainers
-
-Jaswinder Singh Rajput (1):
-      parisc: includecheck fix: signal.c
-
-Julia Lawall (1):
-      parisc: correct use of SHF_ALLOC
-
-Kyle McMartin (7):
-      parisc: tracehook_report_syscall
-      parisc: tracehook_signal_handler
-      parisc: add missing TI_TASK macro in syscall.S
-      parisc: split syscall_trace into two halves
-      parisc: stop using task->ptrace for {single,block}step flags
-      parisc: add skeleton syscall.h
-      parisc: HAVE_ARCH_TRACEHOOK
-
-Tim Abbott (1):
-      parisc: Make THREAD_SIZE available to assembly files and linker scripts.
-
- MAINTAINERS                           |    1 +
- arch/parisc/Kconfig                   |    1 +
- arch/parisc/include/asm/fixmap.h      |    4 +-
- arch/parisc/include/asm/hardirq.h     |   20 +---------------
- arch/parisc/include/asm/ptrace.h      |    5 +++-
- arch/parisc/include/asm/syscall.h     |   40 +++++++++++++++++++++++++++++++
- arch/parisc/include/asm/thread_info.h |   14 +++++++----
- arch/parisc/kernel/asm-offsets.c      |    4 +-
- arch/parisc/kernel/entry.S            |   21 ++++++++--------
- arch/parisc/kernel/irq.c              |    5 ----
- arch/parisc/kernel/module.c           |    2 +-
- arch/parisc/kernel/ptrace.c           |   42 ++++++++++++++++----------------
- arch/parisc/kernel/signal.c           |    5 +++-
- arch/parisc/kernel/syscall.S          |   22 +++++++++++------
- arch/parisc/kernel/vmlinux.lds.S      |   10 ++++++++
- arch/parisc/mm/init.c                 |   11 ++++----
- 16 files changed, 127 insertions(+), 80 deletions(-)
- create mode 100644 arch/parisc/include/asm/syscall.h
+--- linux-2.6.32-rc1/drivers/gpu/drm/drm_fb_helper.c.~1~	2009-09-28 13:54:30.000000000 +0200
++++ linux-2.6.32-rc1/drivers/gpu/drm/drm_fb_helper.c	2009-09-28 17:16:12.000000000 +0200
+@@ -87,6 +87,7 @@ void drm_fb_helper_restore(void)
+ }
+ EXPORT_SYMBOL(drm_fb_helper_restore);
+ 
++#ifdef CONFIG_MAGIC_SYSRQ
+ static void drm_fb_helper_restore_work_fn(struct work_struct *ignored)
+ {
+ 	drm_fb_helper_restore();
+@@ -103,6 +104,7 @@ static struct sysrq_key_op sysrq_drm_fb_
+ 	.help_msg = "force-fb(V)",
+ 	.action_msg = "Restore framebuffer console",
+ };
++#endif
+ 
+ static void drm_fb_helper_on(struct fb_info *info)
+ {
