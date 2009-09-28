@@ -1,86 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZI1WBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbZI1WCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbZI1WBN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 18:01:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZI1WBN
+	id S1753466AbZI1WCc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 18:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZI1WCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 18:01:13 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:51562 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753419AbZI1WBM (ORCPT
+	Mon, 28 Sep 2009 18:02:32 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:38196 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753420AbZI1WCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 18:01:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgEFAKfIwEpMROOX/2dsb2JhbACBUdVrhB4F
-Date: Mon, 28 Sep 2009 18:01:14 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, jbaron@redhat.com, rusty@rustcorp.com.au,
-       bunk@stusta.de, hch@infradead.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch 02/12] Immediate Values - Architecture Independent Code
-Message-ID: <20090928220114.GB27947@Krystal>
-References: <20090924132626.485545323@polymtl.ca> <20090924133359.218934235@polymtl.ca> <20090924212013.d27226c4.akpm@linux-foundation.org> <20090928012337.GC1656@one.firstfloor.org> <20090928104617.9c4b868a.akpm@linux-foundation.org> <20090928201108.GG1656@one.firstfloor.org> <20090928141600.03c64726.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090928141600.03c64726.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 17:58:22 up 41 days,  8:47,  4 users,  load average: 0.35, 0.24,
-	0.24
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 28 Sep 2009 18:02:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=vWIJzAVvsdq1VMxKJYU+Yvtnr538QMTuqKLyisy831S69AZS0phKZvLCEXz5mu7Cr0
+         +dA9O8b52FsQAtGHfrNvs4h+M8BJFujHIAOQ3bFnhpXciZYVbh69LeG9CcEvlrI/HeMU
+         ea/qhz7WoJopH9yIKAK2iO00bdDWc/oPvGx6c=
+MIME-Version: 1.0
+Date: Tue, 29 Sep 2009 00:02:33 +0200
+Message-ID: <25a94d2a0909281502u2bb383aemdb44f4af8ffdc9e7@mail.gmail.com>
+Subject: visibility of linux source
+From: Taro Okumichi <tarookumichi@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Mon, 28 Sep 2009 22:11:08 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > For example, how do we know it's safe to use immediate-values for
-> > > anything which can be modified from userspace, such as a sysfs-accessed
-> > > tunable?  How do we know this won't take someone's odd-but-legitimate
-> > > workload and shoot it in the head?
-> > 
-> > You're arguing we should tune for sysctl performance? That doesn't make
-> > sense to me.
-> 
-> We're talking about a tiny tiny performance gain (one which thus far
-> appears to be unobserveable) on the read-side traded off against a
-> tremendous slowdown on the write-side.
-> 
-> That's OK for people whose workloads use the expected read-vs-write
-> ratio.  But there's always someone out there who does something
-> peculiar.  There will be people who simply cannot accept large
-> slowdowns in writes to particular tunables.  Who these people are and
-> which tunables they care about we do not know.
-> 
-> No, I'm not saying we should "tune for sysctl performance".  I'm saying
-> we should tune for not making Linux utterly uselessly slow for people
-> for whom it previously worked OK.
-> 
-> It means we'd have to look very carefully at each tunable and decide
-> whether there's any conceivable situation in which someone would want
-> to alter it frequently.  If so, we need to leave it alone.
-> 
-> How many tunables will that leave behind, and how much use was it to
-> speed that remainder up by a teensy amount?  Who knows.
-> 
+I have written a gcc-tracer and html-formatter that shows
+Linux's init/main.c formatted as dynamic-html including:
+ o expand macros by clicking on them
+ o expand include directives
+ o traverse c-structs
+Address:
+http://cfw.sourceforge.net/htmltag/init/main.c.pinfo.html
+I have only processed init/main.c (50mb mysql content)
+As far as I understand (maybe I am wrong) this kind of
+visibility is not achieved till now.
+Note:
+I tested firefox (3.5) and konqueror. The first page takes ~
+10 Seconds to load, therefore be patient until the right
+side init/main.c content is shown (ajax fetch from a mysql db).
 
-BTW, when/if we get the OK from Intel to use a breakpoint/IPI-based
-scheme to perform the updates rather than using the heavyweight
-stop_machine(), this update performance question will be much less of a
-concern.
+o Complete Preprocessor Trace:
+   All Macro expansions where traced and can be clicked
+   open to see how they expand and where the macro was
+   defined.
+  - to open a macro expansion: click the macro marked
+    with a white box,
+    + after the macro has been expanded you can:
+    + click the macro name to get the macro definition location
+    + a "<" link appears at the end of the macro expansion,
+       click it to close the macro expansion again.
+  - #ifdef etc. preprocessor directives
+    can also be expanded. Blocks that are inactive are
+    marked grey.
+  - #include directives can be clicked to expand to the
+    included file
 
-hpa is currently looking into this.
+o Variable/function declares are Trace:
+   Full struct type layout is traced and when a struct
+   types is used you can click on the type declarator,
 
-Thanks,
+To get going:
+1. Browse to the end of init/main.c page:
+2. click on
+    "param_check_bool" it will expand to:
+     param_check_bool __param_check ( initcall_debug , & (
+initcall_debug ) , int )[<]
+     Click on param_check_bool again, it will sow the definition pos of
+     the macro, click on "<" and it will close the expansion,
+     You can recursively ascend into for instance expanding __param_check etc...
 
-Mathieu
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I thought to share this link to inspire some real gcc experts
+or kernel hackers to implement this kind of feature in the production
+gcc, I was using gcc-4.2.1 to output a cpp and c-parse trace
+however the code is that kind of messy and would be of no
+use, easier to implement newly, I guess that it should be obvious
+what to do for for the right person. After getting the trace I use
+a simple perl script (also messy code that I'm kind of ashamed to
+publish) to format html.
+
+Implementation note:
+
+Using a ajax request to retrieve the html, the Mysql db
+content is ~ 50 mb for the whole of main.c. No optimization
+is done, so this includes lots of redundant entries.
+
+The left index frame should not be used, the javascript code
+is kind of buggy, so only use the right frame where the code
+is shown.
+
+Also: There is a bug in when closing a "include" directive section:
+(At least in firefox) A new windows will pop up (I didnt find out
+why this is the case). Click the window to the back and continue
+(not closing it otherwise the next #include directive opens it again...
+
+Have fun
+-- Tkokum
