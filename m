@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752889AbZI1QhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbZI1Qjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752889AbZI1QhP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 12:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZI1QhO
+	id S1752933AbZI1Qjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 12:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZI1Qji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 12:37:14 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:35791 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752721AbZI1QhM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 12:37:12 -0400
-Date: Mon, 28 Sep 2009 11:37:04 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oren Laadan <orenl@librato.com>, torvalds@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org, mingo@elte.hu,
-       xemul@openvz.org
-Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
-Message-ID: <20090928163704.GA3327@us.ibm.com>
-References: <1253749920-18673-1-git-send-email-orenl@librato.com> <20090924154139.2a7dd5ec.akpm@linux-foundation.org>
+	Mon, 28 Sep 2009 12:39:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57732 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752747AbZI1Qji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 12:39:38 -0400
+Message-ID: <4AC0E6A3.4040500@kernel.org>
+Date: Tue, 29 Sep 2009 01:38:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924154139.2a7dd5ec.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Tony Vroon <tony@linx.net>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] percpu: fix unit_map[] verification in pcpu_setup_first_chunk()
+References: <4ABAC2F1.3020302@kernel.org> <1254055797.2756.1.camel@localhost> <4AC0E201.2020006@kernel.org> <alpine.DEB.1.10.0909281223510.16040@gentwo.org> <4AC0E5D8.6090707@kernel.org>
+In-Reply-To: <4AC0E5D8.6090707@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 28 Sep 2009 16:39:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Wed, 23 Sep 2009 19:50:40 -0400
-> Oren Laadan <orenl@librato.com> wrote:
-> > Q: What about namespaces ?
-> > A: Currrently, UTS and IPC namespaces are restored. They demonstrate
-> >    how namespaces are handled. More to come.
+Tejun Heo wrote:
+> Christoph Lameter wrote:
+>> On Tue, 29 Sep 2009, Tejun Heo wrote:
+>>
+>>> pcpu_setup_first_chunk() incorrectly used NR_CPUS as the impossible
+>>> unit number while unit number can equal and go over NR_CPUS with
+>>> sparse unit map.  This triggers BUG_ON() spuriously on machines which
+>>> have non-power-of-two number of cpus.  Use UINT_MAX instead.
+>> Uhhh. Funky. The assumption nr_cpu_ids < NR_CPUS has been broken. Wonder
+>> what other effects that will have. In particular since the slab and page
+>> allocators have arrays indexed by the cpu number and those arrays are
+>> dimensioned for NR_CPUS.
 > 
-> Will this new code muck up the kernel?
+> Heh.. that's not what's broken.  unit# can legally go over NR_CPUS or
+> nr_cpu_ids as cpus can be sparsely mapped to units.  The problem is
+> that
+      ^
+      I'm delusional at the moment.  :-)
 
-Actually user namespaces are handled as well.  Pid namespaces will
-be named and recorded by kernel at checkpoint, and re-created in
-userspace using clone(CLONE_NEWPID).  This shouldn't muck up the
-kernel at all.  The handling of network and mounts namespaces is
-at this point undecided.  Well, mounts namespaces themselves are
-pretty simple, but not so much for mountpoints.  There it's mainly
-a question of how to predict what a user wants to have automatically
-recreated.  All mounts which differ between the root checkpoint task
-and its parent?  Do we do no mounts for the restarted init task at
-all, and only recreate mounts in private child namespaces (i.e. if a
-task did a unshare(CLONE_NEWNS); mount --make-private /var; 
-mount --bind /container2/var/run /var/run)?
+Christoph, can you please elaborate why nr_cpu_ids < NR_CPUS is
+broken?
 
-I hear a decision was made at plumber's about how to begin
-handling them, so I'll let someone (Oren? Dave?) give that info.
+Thanks.
 
-For network namespaces i think it's clearer that a wrapper
-program should set up the network for the restarted init task,
-while the usrspace code should recreate any private network
-namespaces and veth's which were created by the application.
-But it still needs discussion.
-
-> > Q: What additional work needs to be done to it?
-> > A: Fill in the gory details following the examples so far. Current WIP
-> >    includes inet sockets, event-poll, and early work on inotify, mount
-> >    namespace and mount-points, pseudo file systems
-> 
-> Will this new code muck up the kernel, or will it be clean?
-> 
-> > and x86_64 support.
-> 
-> eh?  You mean the code doesn't work on x86_64 at present?
-
-There have been patches for it, but I think the main problem is noone
-involved has hw to test.
-
-> What is the story on migration?  Moving the process(es) to a different
-> machine?
-
-Since that's basically checkpoint; recreate container on remote
-machine; restart on remote machine; that will mainly be done by
-userspace code exploiting the c/r kernel patches.
-
-The main thing we may want to add is a way to initiate pre-dump
-of large amounts of VM while the container is still running.
-I suspect Oren and Dave can say a lot more about that than I can
-right now.
-
-thanks,
--serge
+-- 
+tejun
