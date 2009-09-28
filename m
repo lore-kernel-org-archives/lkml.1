@@ -1,116 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbZI1S5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbZI1TGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752927AbZI1S5H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 14:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZI1S5G
+	id S1752289AbZI1TGH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 15:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZI1TGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 14:57:06 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:60120 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560AbZI1S5E (ORCPT
+	Mon, 28 Sep 2009 15:06:06 -0400
+Received: from mail201.messagelabs.com ([216.82.254.211]:8942 "EHLO
+	mail201.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441AbZI1TGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 14:57:04 -0400
-Subject: Re: [tip:timers/urgent] clocksource: Resume clocksource without
- taking the clocksource mutex
-From: john stultz <johnstul@us.ibm.com>
-To: mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
-       tglx@linutronix.de, xtfeng@gmail.com, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-89133f93508137231251543d1732da638e6022e1@git.kernel.org>
-References: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
-	 <tip-89133f93508137231251543d1732da638e6022e1@git.kernel.org>
-Content-Type: text/plain
-Date: Mon, 28 Sep 2009 11:55:14 -0700
-Message-Id: <1254164114.7977.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Sep 2009 15:06:04 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Scott.Kilau@digi.com
+X-Msg-Ref: server-6.tower-201.messagelabs.com!1254164768!18444149!1
+X-StarScan-Version: 6.1.3; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+From: "Kilau, Scott" <Scott.Kilau@digi.com>
+To: "'Breno Leitao'" <leitao@linux.vnet.ibm.com>,
+       "'Wen Xiong'" <wenxiong@us.ibm.com>
+CC: "'alan@lxorguk.ukuu.org.uk'" <alan@lxorguk.ukuu.org.uk>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Date: Mon, 28 Sep 2009 14:06:06 -0500
+Subject: RE: Adding EEH handlers
+Thread-Topic: Adding EEH handlers
+Thread-Index: Acoy9ZNoeMvaOtOvSdexuicGMfboYQNePn9Q
+Message-ID: <A961E3870077E34C8FEF355D71BFDEAAC6AF0231AB@mtk-sms-exch01.digi.com>
+References: <4AAA6E5E.9000900@linux.vnet.ibm.com>
+In-Reply-To: <4AAA6E5E.9000900@linux.vnet.ibm.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n8SJ6Q16014785
 
-On Fri, 2009-09-25 at 06:20 +0000, tip-bot for Martin Schwidefsky wrote:
-> Commit-ID:  89133f93508137231251543d1732da638e6022e1
-> Gitweb:     http://git.kernel.org/tip/89133f93508137231251543d1732da638e6022e1
-> Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
-> AuthorDate: Thu, 24 Sep 2009 17:29:52 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu, 24 Sep 2009 22:37:53 +0200
+> -----Original Message-----
+> From: Breno Leitao [mailto:leitao@linux.vnet.ibm.com]
+> Sent: Friday, September 11, 2009 10:36 AM
+> To: Wen Xiong; Kilau, Scott
+> Cc: alan@lxorguk.ukuu.org.uk; Linux Kernel Mailing List
+> Subject: jsm: Adding EEH handlers
 > 
-> clocksource: Resume clocksource without taking the clocksource mutex
+> Adding EEH handlers for the serial jsm driver. This patch adds
+> the PCI error handlers and also register them to be called when
+> a error is detected.
 > 
-> git commit 75c5158f70c065b9 converted the clocksource spinlock to a
-> mutex. This causes the following BUG:
-> 
-> BUG: sleeping function called from invalid context at
-> kernel/mutex.c:280 in_atomic(): 0, irqs_disabled(): 1, pid: 2473,
-> name: pm-suspend 2 locks held by pm-suspend/2473:
->  #0:  (&buffer->mutex){......}, at: [<ffffffff8115ab13>]
-> sysfs_write_file+0x3c/0x137
->  #1:  (pm_mutex){......}, at: [<ffffffff810865b5>]
-> enter_state+0x39/0x130 Pid: 2473, comm: pm-suspend Not tainted 2.6.31
-> #1 Call Trace:
->  [<ffffffff810792f0>] ? __debug_show_held_locks+0x22/0x24
->  [<ffffffff8104a2ef>] __might_sleep+0x107/0x10b
->  [<ffffffff8141fca9>] mutex_lock_nested+0x25/0x43
->  [<ffffffff81073537>] clocksource_resume+0x1c/0x60
->  [<ffffffff81072902>] timekeeping_resume+0x1e/0x1c8
->  [<ffffffff812aee62>] __sysdev_resume+0x25/0xcf
->  [<ffffffff812aef79>] sysdev_resume+0x6d/0xae
->  [<ffffffff810864f8>] suspend_devices_and_enter+0x12b/0x1af
->  [<ffffffff8108665b>] enter_state+0xdf/0x130
->  [<ffffffff81085dc3>] state_store+0xb6/0xd3
->  [<ffffffff81204c73>] kobj_attr_store+0x17/0x19
->  [<ffffffff8115abd2>] sysfs_write_file+0xfb/0x137
->  [<ffffffff811057d2>] vfs_write+0xae/0x10b
->  [<ffffffff81208392>] ? __up_read+0x1a/0x7f
->  [<ffffffff811058ef>] sys_write+0x4a/0x6e
->  [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
-> 
-> clocksource_resume is called early in the resume process, there is
-> only one cpu, no processes are running and the interrupts are
-> disabled. It is therefore possible to resume the clocksources
-> without taking the clocksource mutex.
-
-Should a comment to this effect be included in the code?
-
-thanks
--john
-
-
-
-> Reported-by: Xiaotian Feng <xtfeng@gmail.com>
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Tested-by: Michal Schmidt <mschmidt@redhat.com>
-> Cc: Xiaotian Feng <xtfeng@gmail.com>
-> Cc: John Stultz <johnstul@us.ibm.com>
-> LKML-Reference: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
+> Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
 > ---
->  kernel/time/clocksource.c |    4 ----
->  1 files changed, 0 insertions(+), 4 deletions(-)
+> diff --git a/drivers/serial/jsm/jsm_driver.c
+> b/drivers/serial/jsm/jsm_driver.c
+> index b3604aa..b37d2e2 100644
+> --- a/drivers/serial/jsm/jsm_driver.c
+> +++ b/drivers/serial/jsm/jsm_driver.c
+> @@ -48,6 +48,20 @@ struct uart_driver jsm_uart_driver = {
+>  	.nr		= NR_PORTS,
+>  };
 > 
-> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-> index 0911334..5e18c6a 100644
-> --- a/kernel/time/clocksource.c
-> +++ b/kernel/time/clocksource.c
-> @@ -394,15 +394,11 @@ void clocksource_resume(void)
+> +static pci_ers_result_t jsm_io_error_detected(struct pci_dev *pdev,
+> +					pci_channel_state_t state);
+> +static pci_ers_result_t jsm_io_slot_reset(struct pci_dev *pdev);
+> +static void jsm_io_resume(struct pci_dev *pdev);
+> +
+> +static struct pci_error_handlers jsm_err_handler = {
+> +	.error_detected = jsm_io_error_detected,
+> +	.slot_reset = jsm_io_slot_reset,
+> +	.resume = jsm_io_resume,
+> +};
+> +
+>  int jsm_debug;
+>  module_param(jsm_debug, int, 0);
+>  MODULE_PARM_DESC(jsm_debug, "Driver debugging level");
+> @@ -164,6 +178,7 @@ static int __devinit jsm_probe_one(struct pci_dev
+> *pdev, const struct pci_device
+>  	}
+> 
+>  	pci_set_drvdata(pdev, brd);
+> +	pci_save_state(pdev);
+> 
+>  	return 0;
+>   out_free_irq:
+> @@ -222,8 +237,39 @@ static struct pci_driver jsm_driver = {
+>  	.id_table	= jsm_pci_tbl,
+>  	.probe		= jsm_probe_one,
+>  	.remove		= __devexit_p(jsm_remove_one),
+> +	.err_handler	= &jsm_err_handler,
+>  };
+> 
+> +static pci_ers_result_t jsm_io_error_detected(struct pci_dev *pdev,
+> +					pci_channel_state_t state)
+> +{
+> +	struct jsm_board *brd = pci_get_drvdata(pdev);
+> +
+> +	jsm_remove_uart_port(brd);
+> +
+> +	return PCI_ERS_RESULT_NEED_RESET;
+> +}
+> +
+> +static pci_ers_result_t jsm_io_slot_reset(struct pci_dev *pdev)
+> +{
+> +	pci_enable_device(pdev);
+> +	pci_set_master(pdev);
+> +
+> +	return PCI_ERS_RESULT_RECOVERED;
+> +}
+> +
+> +static void jsm_io_resume(struct pci_dev *pdev)
+> +{
+> +	struct jsm_board *brd = pci_get_drvdata(pdev);
+> +
+> +	pci_restore_state(pdev);
+> +
+> +	jsm_uart_port_init(brd);
+> +}
+> +
+>  static int __init jsm_init_module(void)
 >  {
->  	struct clocksource *cs;
-> 
-> -	mutex_lock(&clocksource_mutex);
-> -
->  	list_for_each_entry(cs, &clocksource_list, list)
->  		if (cs->resume)
->  			cs->resume();
-> 
->  	clocksource_resume_watchdog();
-> -
-> -	mutex_unlock(&clocksource_mutex);
+>  	int rc;
+> diff --git a/drivers/serial/jsm/jsm_tty.c
+> b/drivers/serial/jsm/jsm_tty.c
+> index 00f4577..e70f2c1 100644
+> --- a/drivers/serial/jsm/jsm_tty.c
+> +++ b/drivers/serial/jsm/jsm_tty.c
+> @@ -432,7 +432,7 @@ int __devinit jsm_tty_init(struct jsm_board *brd)
+>  	return 0;
 >  }
 > 
->  /**
+> -int __devinit jsm_uart_port_init(struct jsm_board *brd)
+> +int jsm_uart_port_init(struct jsm_board *brd)
+>  {
+>  	int i;
+>  	unsigned int line;
 
+
+Looks good, thanks Breno!
+Acked-by: Scott Kilau <scottk@digi.com>
+
+
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
