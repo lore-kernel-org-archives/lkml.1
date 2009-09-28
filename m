@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbZI1Um0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbZI1UoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753243AbZI1Um0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 16:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZI1UmZ
+	id S1753249AbZI1UoF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 16:44:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbZI1UoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 16:42:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38496 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753143AbZI1UmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 16:42:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH] acpi: pci_root: fix NULL pointer deref after resume from suspend
-Date: Mon, 28 Sep 2009 22:43:44 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Xiaotian Feng <dfeng@redhat.com>, lenb@kernel.org, bjorn.helgaas@hp.com,
-       andrew.patterson@hp.com, jbarnes@virtuousgeek.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1254119480-9730-1-git-send-email-dfeng@redhat.com> <20090928173819.GA2441@ldl.fc.hp.com>
-In-Reply-To: <20090928173819.GA2441@ldl.fc.hp.com>
+	Mon, 28 Sep 2009 16:44:05 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:56184 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752286AbZI1UoE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 16:44:04 -0400
+Message-ID: <4AC12015.4040508@suse.de>
+Date: Tue, 29 Sep 2009 00:44:05 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909282243.44226.rjw@sisk.pl>
+To: Thomas Backlund <tmb@mandriva.org>
+CC: Len Brown <lenb@kernel.org>, Lin Ming <ming.m.lin@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [git pull request] ACPI & driver patches for Linux-2.6.32-rc0
+References: <alpine.LFD.2.00.0909190237560.22030@localhost.localdomain> <4ABCB2CA.4020709@mandriva.org> <d3f22a0909261902o5e48c2a0lab56fca21edf8c5b@mail.gmail.com> <1254016503.17697.21.camel@minggr.sh.intel.com> <alpine.LFD.2.00.0909270348570.16783@localhost.localdomain> <4AC11A0F.2030806@mandriva.org>
+In-Reply-To: <4AC11A0F.2030806@mandriva.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 September 2009, Alex Chiang wrote:
-> Hi Xiaotian,
+Thomas Backlund пишет:
+> Len Brown wrote:
+>>>> This gets my laptop flooding logs with:
+>>
+>>>>> ACPI Exception: AE_TIME, Returned by Handler for [EmbeddedControl] 
+>>>>> (20090903/evregion-424)
+>>>>> ACPI Error (psparse-0537): Method parse/execution failed 
+>>>>> [\_SB_.PCI0.LPCB.EC0_.GBST] (Node ffff88013f81c5e0), AE_TIME
+>>>>> ACPI Error (psparse-0537): Method parse/execution failed 
+>>>>> [\_SB_.PCI0.LPCB.EC0_.BAT0._BST] (Node ffff88013f81c720), AE_TIME
+>>>>> ACPI Exception: AE_TIME, Evaluating _BST (20090903/battery-393)
+>>
+>>> Could you do a bisect?
+>>
+>> In particular, please try the 2.6.31 versio of drivers/acpi/ec.c
+>>
 > 
-> Thanks for the bug report.
+> Hi,
 > 
-> * Xiaotian Feng <dfeng@redhat.com>:
-> > commit 275582 introduces acpi_get_pci_dev(), but pdev->subordinate
-> > can be NULL, then a NULL was passed to pci_get_slot, this results
-> > the kernel oops when resume from suspend.
-> > 
-> > This patch resolves following kernel oops:
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
-> > IP: [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
-> > 
-> > Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> > ---
-> >  drivers/acpi/pci_root.c |    6 +++++-
-> >  1 files changed, 5 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-> > index 3112221..3c35144 100644
-> > --- a/drivers/acpi/pci_root.c
-> > +++ b/drivers/acpi/pci_root.c
-> > @@ -387,7 +387,11 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
-> >  		if (!pdev || hnd == handle)
-> >  			break;
-> >  
-> > -		pbus = pdev->subordinate;
-> > +		if (pdev->subordinate)
-> > +			pbus = pdev->subordinate;
-> > +		else
-> > +			pbus = pdev->bus;
-> > +
+> in order to get the 2.6.31 version of ec.c to build I had to apply a 
+> small patch:
 > 
-> I'm a little confused by this. If we start from the PCI root
-> bridge and walk back down the hierarchy, shouldn't everything
-> between the root and the device be a P2P bridge?
+>> --- linux-acpi/drivers/acpi/ec.c.orig    2009-09-10 01:13:59.000000000 
+>> +0300
+>> +++ linux-acpi/drivers/acpi/ec.c    2009-09-28 21:09:15.359406828 +0300
+>> @@ -42,6 +42,7 @@
+>>  #include <asm/io.h>
+>>  #include <acpi/acpi_bus.h>
+>>  #include <acpi/acpi_drivers.h>
+>> +#include <linux/dmi.h>
+>>  
+>>  #define ACPI_EC_CLASS            "embedded_controller"
+>>  #define ACPI_EC_DEVICE_NAME        "Embedded Controller"
+>> @@ -1078,7 +1079,6 @@ static struct acpi_driver acpi_ec_driver
+>>          .add = acpi_ec_add,
+>>          .remove = acpi_ec_remove,
+>>          .start = acpi_ec_start,
+>> -        .stop = acpi_ec_stop,
+>>          .suspend = acpi_ec_suspend,
+>>          .resume = acpi_ec_resume,
+>>          },
+> 
+> After that  it built and the errors are gone.
+> 
+> Now this is a Acer TravelMate 5720G laptop with the latest 1.35 bios.
+> Distro is Mandriva Linux Cooker, and arch is x86_64
+> 
+> Attached is output of "grep ACPI /var/log/dmesg"
+> dmesg-acpi-20090903
+> - all acpi patches as of 2.6.32-rc1
+This one does not have errors you've mentioned earlier, could you find dmesg with them?
+> 
+> dmesg-acpi-20090903-ec-2.6.31
+> - all acpi patches as of 2.6.32-rc1
+> - ec.c from 2.6.31.1
+> 
+> 
+> Should I start bisecting, or do you have any other suggestion?
+There is only one patch which touch ec.c, 2a84cb9852f52c0cd1c48bca41a8792d44ad06cc. You may try to revert it, and see.
 
-Well, if my reading of the code is correct, there's no guarantee that
-pci_get_slot() will always return either the right device or a bridge.  If it
-returns anything that's not a bridge or the device we're looking for, we'll hit
-the NULL pointer deref.
 
-In fact it looks like we should also clear pdev if no device was found.
-
-Thanks,
-Rafael
+Regards,
+Alex.
