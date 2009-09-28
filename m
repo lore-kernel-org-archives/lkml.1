@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZI1L0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZI1LaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbZI1L0P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 07:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZI1L0P
+	id S1752770AbZI1LaB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 07:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZI1LaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 07:26:15 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53753 "EHLO
+	Mon, 28 Sep 2009 07:30:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53846 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751901AbZI1L0O (ORCPT
+	with ESMTP id S1752451AbZI1L37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 07:26:14 -0400
-Message-ID: <388eedb15161ebaccb671e1c1fe3af46.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <661de9470909280222g7fef6a0fq947c8e22cfc0029b@mail.gmail.com>
+	Mon, 28 Sep 2009 07:29:59 -0400
+Message-ID: <a9f68c7bb7c34f435b59e57e70339786.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090928093434.GA6199@linux.vnet.ibm.com>
 References: <200909252158.n8PLwFhG024011@imap1.linux-foundation.org>
     <20090928154213.8e873dec.kamezawa.hiroyu@jp.fujitsu.com>
-    <661de9470909280222g7fef6a0fq947c8e22cfc0029b@mail.gmail.com>
-Date: Mon, 28 Sep 2009 20:26:13 +0900 (JST)
-Subject: Re: Question: RCU stall detected in memcg (Re: mmotm
- 2009-09-25-14-35  uploaded
+    <20090928093434.GA6199@linux.vnet.ibm.com>
+Date: Mon, 28 Sep 2009 20:30:01 +0900 (JST)
+Subject: Re: Question: RCU stall detected in memcg  (Re: mmotm
+ 2009-09-25-14-35 uploaded
 From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
 Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
        linux-kernel@vger.kernel.org,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
 User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
@@ -34,19 +35,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
+Paul E. McKenney wrote:
+> On Mon, Sep 28, 2009 at 03:42:13PM +0900, KAMEZAWA Hiroyuki wrote:
+>> On Fri, 25 Sep 2009 14:35:46 -0700
 >> akpm@linux-foundation.org wrote:
 >>
->>> The mm-of-the-moment snapshot 2009-09-25-14-35 has been uploaded to
->>>
->>> &#160; &#160;http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> and will soon be available at
->>>
->>> &#160; &#160;git://git.zen-sources.org/zen/mmotm.git
->>>
->>> It contains the following patches against 2.6.31:
->>>
+>> > The mm-of-the-moment snapshot 2009-09-25-14-35 has been uploaded to
+>> >
+>> >    http://userweb.kernel.org/~akpm/mmotm/
+>> >
+>> > and will soon be available at
+>> >
+>> >    git://git.zen-sources.org/zen/mmotm.git
+>> >
+>> > It contains the following patches against 2.6.31:
+>> >
 >>
 >> At testing my (small) patch, with high memory pressure to
 >> memcg+hierarchy+softlimit, following is shown.
@@ -63,58 +66,91 @@ Balbir Singh wrote:
 >> parport_pc parport button shpchp megaraid_sas sd_mo
 >> d scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded:
 >> microcode]
->> &#160;Pid: 2886, comm: ruby Not tainted 2.6.31-mm1 #2 PRIMERGY
->> &#160;RIP: 0010:[<ffffffff810878fe>] &#160;[<ffffffff810878fe>]
-trace_hardirqs_off_ca
->> ller+0x3e/0xb RSP: 0018:ffff88004fa03d98 &#160;EFLAGS: 00000006
->> &#160;RAX: 0000000000000046 RBX: 0000000000000c00 RCX: 000000000000e501
->> &#160;RDX: ffff8806133564f0 RSI: 0000000000000002 RDI: ffffffff8102a940
->> &#160;RBP: ffff88004fa03d98 R08: 0000000000000001 R09: 0000000000000000
->> &#160;R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000002
->> &#160;R13: 0000000000000046 R14: 00000000000000ff R15: ffff88004fa03f48
->> &#160;FS: &#160;00007fdeca0856f0(0000) GS:ffff88004fa00000(0000)
-knlGS:0000000000000000
->> &#160;CS: &#160;0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->> &#160;CR2: 00007fdeca09e000 CR3: 0000000619fc6000 CR4: 00000000000006f0
->> &#160;DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->> &#160;DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->> &#160;Call Trace:
->> &#160;<#DB[1]> &#160;<<EOE>> Pid: 2886, comm: ruby Not tainted
-2.6.31-mm1 #2
->> &#160;Call Trace:
->> &#160;<NMI> &#160;[<ffffffff8100af79>] ? show_regs+0x49/0x50
->> &#160;[<ffffffff81429385>] nmi_watchdog_tick+0x1e5/0x210
->> &#160;[<ffffffff81428891>] do_nmi+0x1b1/0x2e0
->> &#160;[<ffffffff8142808a>] nmi+0x1a/0x2c
->> &#160;[<ffffffff8102a940>] ? flat_send_IPI_mask+0x90/0xb0
->> &#160;[<ffffffff810878fe>] ? trace_hardirqs_off_caller+0x3e/0xb0
->> &#160;<<EOE>> &#160;<IRQ> &#160;[<ffffffff810884bd>]
-trace_hardirqs_off+0xd/0x10
->> &#160;[<ffffffff8102a940>] flat_send_IPI_mask+0x90/0xb0
->> &#160;[<ffffffff8102a9c9>] flat_send_IPI_all+0x69/0x70
->> &#160;[<ffffffff81027372>] arch_trigger_all_cpu_backtrace+0x62/0xa0
->> &#160;[<ffffffff810bff8e>] __rcu_pending+0x7e/0x370
->> &#160;[<ffffffff810c02c7>] rcu_check_callbacks+0x47/0x130
->> &#160;[<ffffffff81063a26>] update_process_times+0x46/0x70
->> &#160;[<ffffffff81085930>] tick_sched_timer+0x60/0x160
->> &#160;[<ffffffff810858d0>] ? tick_sched_timer+0x0/0x160
->> &#160;[<ffffffff8107a03a>] __run_hrtimer+0xba/0x150
->> &#160;[<ffffffff8107a325>] hrtimer_interrupt+0xd5/0x1b0
->> &#160;[<ffffffff81426dfe>] ? trace_hardirqs_off_thunk+0x3a/0x3c
->> &#160;[<ffffffff8142cacd>] smp_apic_timer_interrupt+0x6d/0x9b
->> &#160;[<ffffffff8100cb33>] apic_timer_interrupt+0x13/0x20
->> &#160;<EOI> &#160;[<ffffffff811317b6>] ? mem_cgroup_walk_tree+0x156/0x180
->> &#160;[<ffffffff811316d3>] ? mem_cgroup_walk_tree+0x73/0x180
->> &#160;[<ffffffff81131692>] ? mem_cgroup_walk_tree+0x32/0x180
->> &#160;[<ffffffff81131a00>] ? mem_cgroup_get_local_stat+0x0/0x110
->> &#160;[<ffffffff81131d5b>] ? mem_control_stat_show+0x14b/0x330
->> &#160;[<ffffffff810a57fd>] ? cgroup_seqfile_show+0x3d/0x60
->> &#160;[<ffffffff810a5b90>] ? cgroup_map_add+0x0/0x30
->> &#160;[<ffffffff8115de03>] ? seq_read+0xf3/0x420
->> &#160;[<ffffffff811d9926>] ? security_file_permission+0x16/0x20
->> &#160;[<ffffffff8113b7ec>] ? vfs_read+0xcc/0x190
->> &#160;[<ffffffff8113b9b5>] ? sys_read+0x55/0x90
->> &#160;[<ffffffff8100bf9b>] ? system_call_fastpath+0x16/0x1b
+>>  Pid: 2886, comm: ruby Not tainted 2.6.31-mm1 #2 PRIMERGY
+>>  RIP: 0010:[<ffffffff810878fe>]  [<ffffffff810878fe>]
+>> trace_hardirqs_off_ca
+>> ller+0x3e/0xb RSP: 0018:ffff88004fa03d98  EFLAGS: 00000006
+>>  RAX: 0000000000000046 RBX: 0000000000000c00 RCX: 000000000000e501
+>>  RDX: ffff8806133564f0 RSI: 0000000000000002 RDI: ffffffff8102a940
+>>  RBP: ffff88004fa03d98 R08: 0000000000000001 R09: 0000000000000000
+>>  R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000002
+>>  R13: 0000000000000046 R14: 00000000000000ff R15: ffff88004fa03f48
+>>  FS:  00007fdeca0856f0(0000) GS:ffff88004fa00000(0000)
+>> knlGS:0000000000000000
+>>  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>>  CR2: 00007fdeca09e000 CR3: 0000000619fc6000 CR4: 00000000000006f0
+>>  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>>  DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>>  Call Trace:
+>>   <#DB[1]>  <<EOE>> Pid: 2886, comm: ruby Not tainted 2.6.31-mm1 #2
+>>  Call Trace:
+>>   <NMI>  [<ffffffff8100af79>] ? show_regs+0x49/0x50
+>>   [<ffffffff81429385>] nmi_watchdog_tick+0x1e5/0x210
+>>   [<ffffffff81428891>] do_nmi+0x1b1/0x2e0
+>>   [<ffffffff8142808a>] nmi+0x1a/0x2c
+>>   [<ffffffff8102a940>] ? flat_send_IPI_mask+0x90/0xb0
+>>   [<ffffffff810878fe>] ? trace_hardirqs_off_caller+0x3e/0xb0
+>>   <<EOE>>  <IRQ>  [<ffffffff810884bd>] trace_hardirqs_off+0xd/0x10
+>>   [<ffffffff8102a940>] flat_send_IPI_mask+0x90/0xb0
+>>   [<ffffffff8102a9c9>] flat_send_IPI_all+0x69/0x70
+>>   [<ffffffff81027372>] arch_trigger_all_cpu_backtrace+0x62/0xa0
+>>   [<ffffffff810bff8e>] __rcu_pending+0x7e/0x370
+>>   [<ffffffff810c02c7>] rcu_check_callbacks+0x47/0x130
+>>   [<ffffffff81063a26>] update_process_times+0x46/0x70
+>>   [<ffffffff81085930>] tick_sched_timer+0x60/0x160
+>>   [<ffffffff810858d0>] ? tick_sched_timer+0x0/0x160
+>>   [<ffffffff8107a03a>] __run_hrtimer+0xba/0x150
+>>   [<ffffffff8107a325>] hrtimer_interrupt+0xd5/0x1b0
+>>   [<ffffffff81426dfe>] ? trace_hardirqs_off_thunk+0x3a/0x3c
+>>   [<ffffffff8142cacd>] smp_apic_timer_interrupt+0x6d/0x9b
+>>   [<ffffffff8100cb33>] apic_timer_interrupt+0x13/0x20
+>>   <EOI>  [<ffffffff811317b6>] ? mem_cgroup_walk_tree+0x156/0x180
+>>   [<ffffffff811316d3>] ? mem_cgroup_walk_tree+0x73/0x180
+>>   [<ffffffff81131692>] ? mem_cgroup_walk_tree+0x32/0x180
+>
+> mem_cgroup_walk_tree() does have a loop.  Not sure why it is showing
+> up on the stack twice.  But it might well be the culprit.  Also,
+> it repeatedly calls css_get_next(), which acquires ss->id_lock.
+> If some other CPU is holding this lock too long, or failed to release
+> it, then we could see a stall spinning on the lock.  (Though these
+> sorts of problems are often caught by other diagnostics.)
+>
+Thanks. I found above stack trace is in css_tryget() which has a loop.
+It loops forever if css->refcnt is 0. Then, I doubt refcnt-miss in css.
+
+
+
+>>   [<ffffffff81131a00>] ? mem_cgroup_get_local_stat+0x0/0x110
+>
+> mem_cgroup_get_local_stat() is straight-line code, so should not be
+> the problem.
+>
+>>   [<ffffffff81131d5b>] ? mem_control_stat_show+0x14b/0x330
+>
+> mem_control_stat_show() has a pair of fixed-iteration loops, so
+> should not be the problem.
+>
+>>   [<ffffffff810a57fd>] ? cgroup_seqfile_show+0x3d/0x60
+>
+> Straight-line code, should not be a problem.
+>
+>>   [<ffffffff810a5b90>] ? cgroup_map_add+0x0/0x30
+>
+> Straight-line code, should not be a problem.
+>
+>>   [<ffffffff8115de03>] ? seq_read+0xf3/0x420
+>
+> I suppose that seq_read() could be repeatedly getting -EAGAIN out of
+> traverse(), but unless I am missing something, we would be seeing a
+> different stack trace in that case.
+>
+>>   [<ffffffff811d9926>] ? security_file_permission+0x16/0x20
+>
+> ... and so on ...
+>
+>>   [<ffffffff8113b7ec>] ? vfs_read+0xcc/0x190
+>>   [<ffffffff8113b9b5>] ? sys_read+0x55/0x90
+>>   [<ffffffff8100bf9b>] ? system_call_fastpath+0x16/0x1b
 >> .....
 >> ==
 >> mem_cgroup_walk_tree() is not very young function and I've been doing
@@ -126,20 +162,23 @@ trace_hardirqs_off+0xd/0x10
 >> Does this mean mem_cgroup_walk_tree() blocks RCU's progress
 >> over 10000 jiffies ? What should I doubt ?
 >
-> Could you share your test case so that I can reproduce the problem? My
-> tests seem to work fine so far
+> It means that this CPU has indeed been blocking RCU's progress for more
+> than 10 seconds (10,000 jiffies if HZ==1000).  One thing would be to
+> wait for another 30 seconds and see if you get another stall warning.
+> If not, then you could try decreasing RCU_SECONDS_TILL_STALL_RECHECK to
+> (say) 5*HZ.
 >
-Create following hierarchy
+I saw twice in the same place. Thanks. I now doubt memcg's code.
 
-  /cgroup/A     .... use_hierarchy=1, softlimit=300M, no task
-            /01  .... add task which use much memory
-            /02  .... no task
-          B     .... add task which use much memory
+> Either way, if you get two stack traces during the same CPU-stall event,
+> it can give you a much better idea where in the callstack the stall is
+> actually occurring.
+>
 
-Then, kswapd will reclaim memory from A/01.
+Thank you for your advices :)
+I'll review and add bug-check codes in memcg more.
 
-I couldn't reproduce this. I doubt ,y own patch may affect.
-
-Thanks,
+Regards,
 -Kame
+
 
