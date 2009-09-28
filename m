@@ -1,80 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752626AbZI1QJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZI1Qhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752626AbZI1QJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 12:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZI1QJ6
+	id S1752946AbZI1Qhb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 12:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbZI1Qha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 12:09:58 -0400
-Received: from relay1-d.mail.gandi.net ([217.70.183.193]:46093 "EHLO
-	relay1-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726AbZI1QJ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 12:09:57 -0400
-Date: Mon, 28 Sep 2009 09:09:44 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 0/2] rcu: v2: more review feedback
-Message-ID: <20090928160943.GA16591@feather>
-References: <20090927064753.GA9394@linux.vnet.ibm.com>
- <20090928144551.GA20704@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090928144551.GA20704@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 28 Sep 2009 12:37:30 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2844 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752920AbZI1Qh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 12:37:29 -0400
+Subject: Re: [PATCH] drm/radeon/kms: Convert RV515 to new init path and
+ associated cleanup
+From: Jerome Glisse <jglisse@redhat.com>
+To: airlied@gmail.com
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1254153171-13261-1-git-send-email-jglisse@redhat.com>
+References: <1254153171-13261-1-git-send-email-jglisse@redhat.com>
+Content-Type: text/plain
+Organization: redhat.com
+Date: Mon, 28 Sep 2009 18:09:45 +0200
+Message-Id: <1254154185.3075.5.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 07:45:51AM -0700, Paul E. McKenney wrote:
-> This patchset applies the last of the review comments:
+On Mon, 2009-09-28 at 17:52 +0200, Jerome Glisse wrote:
+> Convert the rv515 asic support to new init path also add an explanation
+> in radeon.h about the new init path. There is also few cleanups
+> associated with this change (others asic calling rv515 helper
+> functions).
 > 
-> o	Whitespace fixes, updated comments, and code movement.
-> 
-> o	Improve an existing abstraction and introduce two additional
-> 	abstractions for traversing the rcu_node tree.
-> 
-> Change since v1 (http://lkml.org/lkml/2009/9/27/17):
-> 
-> o	Update second patch's changelog
-> 
-> Issues remaining:
-> 
-> o	I can force hangs given sufficient rcutorture testing in
-> 	conjunction with random CPU-hotplug operations.  I am working
-> 	on a simpler interface between RCU and CPU hotplug that I
-> 	believe will clear this up.
-> 
-> o	TREE_PREEMPT_RCU currently uses the TREE_RCU variant of
-> 	synchronize_rcu_expedited, which is wrong.  I am working on
-> 	an expedited variant for TREE_PREEMPT_RCU, but will fall
-> 	back on synchronize_rcu() for the short term if it gives me
-> 	much trouble.
-> 
-> o	The IPI hyperactivity from call_rcu() noted by Nick Piggin.
-> 	I believe I have identified a clean design for a fix for this.
-> 
-> o	Make RCU less dependent on IPIs for forcing grace periods
-> 	(but this might be best deferred to 2.6.33).
-> 
-> o	RCU priority boosting (2.6.33!).
-> 
-> o	TINY_PREEMPT_RCU (2.6.33!).
-> 
-> o	Squeeze another 400 bytes or so out of TINY_RCU (2.6.33!).
-> 
-> 
->  b/include/linux/rcupdate.h |   14 +++++------
->  b/kernel/rcutree.c         |   11 ++++-----
->  b/kernel/rcutree.h         |   12 ++++++++++
->  b/kernel/rcutree_plugin.h  |    5 ----
->  kernel/rcutree.c           |   53 +++++++++++++++++++++++----------------------
->  5 files changed, 52 insertions(+), 43 deletions(-)
+> Signed-off-by: Jerome Glisse <jglisse@redhat.com>
 
-For both patches:
-Acked-by: Josh Triplett <josh@joshtriplett.org>
+Don't apply this patch it breaks r520 family, i will respawn one
+along with r520 conversion, so we can have a bisectable working
+history.
+
+Cheers,
+Jerome
+
