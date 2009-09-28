@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752212AbZI1PQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752351AbZI1PV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752212AbZI1PQs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 11:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZI1PQq
+	id S1752351AbZI1PV5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 11:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZI1PV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 11:16:46 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:42686 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751202AbZI1PQq (ORCPT
+	Mon, 28 Sep 2009 11:21:56 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61167 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbZI1PVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 11:16:46 -0400
-Date: Mon, 28 Sep 2009 11:12:10 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] ia64: allocate percpu area for cpu0 like percpu
- areas for other cpus
-In-Reply-To: <4ABB2FE3.40608@kernel.org>
-Message-ID: <alpine.DEB.1.10.0909281104060.12252@gentwo.org>
-References: <1253605214-23210-1-git-send-email-tj@kernel.org> <1253605214-23210-3-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0909221856050.9410@V090114053VZO-1> <4AB983B6.6050203@kernel.org> <alpine.DEB.1.10.0909230941560.21821@V090114053VZO-1>
- <4ABA2A3A.6020308@kernel.org> <alpine.DEB.1.10.0909231315310.4025@V090114053VZO-1> <4ABA9B14.20904@kernel.org> <alpine.DEB.1.10.0909240332130.1488@V090114053VZO-1> <4ABB2FE3.40608@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Sep 2009 11:21:55 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Mon, 28 Sep 2009 09:21:28 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] vfs: new O_NODE open flag
+In-reply-to: <E1MsDQ6-0001cY-92@pomaz-ex.szeredi.hu>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Valdis.Kletnieks@vt.edu, linux@treblig.org, agruen@suse.de,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <20090928152128.GA3384@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu>
+ <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu>
+ <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu>
+ <20090925183523.GA6065@gallifrey> <19645.1253913514@turing-police.cc.vt.edu>
+ <E1MsDQ6-0001cY-92@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Sep 2009, Tejun Heo wrote:
+On Sep 28, 2009  12:25 +0200, Miklos Szeredi wrote:
+> BTW I just checked, and it is possible to re-open or promote an fd
+> opened with O_NODE like this:
+> 
+> 	char tmp[64];
+> 
+> 	fd = open(filename, O_NODE | O_NOACCESS);
+> 	/* ... */
+> 	sprintf(tmp, "/proc/self/fd/%i", fd);
+> 	fd_rw = open(tmp, O_RDWR);
+> 
+> Now fd_rw is guaranteed to refer to the same inode as fd.
 
-> percpu implementation on ia64 has always been like that.  The problem
-> with the alternate mapping is that you can't take the pointer to it as
-> it would mean different thing depending on which processor you're on
-> and the overall generic percpu implementation expects unique addresses
-> from percpu access macros.
+It seems very unpleasant to require applications using O_NODE to
+reopen files using /proc.
 
-The cpu ops patchset uses per cpu addresses that are not relocated to a
-certain processor. The relocation is implicit in these instructions and
-must be implicit so these operations can be processor atomic.
-
-> ia64 currently has been and is the only arch which uses virtual percpu
-> mapping.  The one biggest benefit would be accesses to the
-> local_per_cpu_offset.  Whether it's beneficial enough to justify the
-> complexity, I frankly don't know.
-
-Its not worth working on given the state of IA64. I talked to Tony at the
-Plumbers conference. It may be beneficial to drop the virtual percpu
-mapping entirely because that would increase the number of TLB entries
-available.
-
-> Andrew once also suggested taking advantage of those overlapping
-> virtual mappings for local percpu accesses.  If the generic code
-> followed such design, ia64's virtual mappings would definitely be more
-> useful, but that means we would need aliased mappings for percpu areas
-> and addresses will be different for local and remote accesses.  Also,
-> getting it right on machines with virtually mapped caches would be
-> very painful.  Given that %gs/fs offesetting is quite efficient on
-> x86, I don't think changing the generic mechanism is worthwhile.
-
-There is no problem with using unrelocated percpu addresses as an
-"address" for the cpu ops. The IA64 "virtual" addresses are a stand in for
-the segment registers on IA64.
-
-> So, it would be great if we can find a better way to offset addresses
-> on ia64.  If not, nothing improves or deteriorates performance-wise
-> with the new implementation.
-
-Dropping the use of the special mapping over time may be the easiest way
-to go for IA64. percpu RMW ops like this_cpu_add are not possible with
-IA64 since no lightweight primitives exist. We could only avoid the
-calculation of the per cpu variables address. Would allow assignment and
-access to be atomic but not the RMW instruction. So it would not be a full
-per cpu ops implementation anyways.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
