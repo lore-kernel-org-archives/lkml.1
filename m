@@ -1,197 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751543AbZI1EJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751420AbZI1ELJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751543AbZI1EJo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 00:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZI1EJn
+	id S1751420AbZI1ELJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 00:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbZI1ELI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 00:09:43 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:39222 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750827AbZI1EJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 00:09:43 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <4AC0372E.8090706@crca.org.au>
-Date: Mon, 28 Sep 2009 14:10:22 +1000
-From: Nigel Cunningham <ncunningham@crca.org.au>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Rafael Wysocki <rjw@sisk.pl>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
+	Mon, 28 Sep 2009 00:11:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46092 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbZI1ELI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 00:11:08 -0400
+Date: Mon, 28 Sep 2009 06:11:08 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] Shift remaining code from swsusp.c to hibernate.c
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
+Message-ID: <20090928041108.GD1656@one.firstfloor.org>
+References: <20090926031537.GA10176@localhost> <Pine.LNX.4.64.0909261115530.12927@sister.anvils> <20090926190645.GB14368@wotan.suse.de> <20090926213204.GX30185@one.firstfloor.org> <Pine.LNX.4.64.0909271714370.9097@sister.anvils> <20090927192251.GB6327@wotan.suse.de> <Pine.LNX.4.64.0909272251180.4402@sister.anvils> <20090927230118.GH6327@wotan.suse.de> <20090928011943.GB1656@one.firstfloor.org> <20090928025741.GI6327@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090928025741.GI6327@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shift the remaining declaration of the variable in_suspend and the
-function swsusp_show_speed from swsusp.c to hibernate.c, and delete
-swsusp.c.
+On Mon, Sep 28, 2009 at 04:57:41AM +0200, Nick Piggin wrote:
+> On Mon, Sep 28, 2009 at 03:19:43AM +0200, Andi Kleen wrote:
+> > > There is no real rush AFAIKS to fix this one single pagecache site
+> > > while we have problems with slab allocators and all other unaudited
+> > > places that nonatomically modify page flags with an elevated
+> > 
+> > hwpoison ignores slab pages.
+> 
+> "ignores" them *after* it has already written to page flags?
+> By that time it's too late.
 
-Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
----
- kernel/power/Makefile    |    2 +-
- kernel/power/hibernate.c |   30 ++++++++++++++++
- kernel/power/swsusp.c    |   87 ----------------------------------------------
- 3 files changed, 31 insertions(+), 88 deletions(-)
- delete mode 100644 kernel/power/swsusp.c
+Yes, currently the page lock comes first. The only exception 
+is for page count == 0 pages. I suppose we could move the slab check
+up, but then it only helps when slab is set.
 
-diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index c3b81c3..4319181 100644
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -8,7 +8,7 @@ obj-$(CONFIG_PM_SLEEP)		+= console.o
- obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
--obj-$(CONFIG_HIBERNATION)	+= swsusp.o hibernate.o snapshot.o swap.o user.o
-+obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o
- obj-$(CONFIG_HIBERNATION_NVS)	+= hibernate_nvs.o
- 
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 04b3a83..a5b2538 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -32,6 +32,7 @@ static int noresume = 0;
- static char resume_file[256] = CONFIG_PM_STD_PARTITION;
- dev_t swsusp_resume_device;
- sector_t swsusp_resume_block;
-+int in_suspend __nosavedata = 0;
- 
- enum {
- 	HIBERNATION_INVALID,
-@@ -202,6 +203,35 @@ static void platform_recover(int platform_mode)
- }
- 
- /**
-+ *	swsusp_show_speed - print the time elapsed between two events represented by
-+ *	@start and @stop
-+ *
-+ *	@nr_pages -	number of pages processed between @start and @stop
-+ *	@msg -		introductory message to print
-+ */
-+
-+void swsusp_show_speed(struct timeval *start, struct timeval *stop,
-+			unsigned nr_pages, char *msg)
-+{
-+	s64 elapsed_centisecs64;
-+	int centisecs;
-+	int k;
-+	int kps;
-+
-+	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
-+	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
-+	centisecs = elapsed_centisecs64;
-+	if (centisecs == 0)
-+		centisecs = 1;	/* avoid div-by-zero */
-+	k = nr_pages * (PAGE_SIZE / 1024);
-+	kps = (k * 100) / centisecs;
-+	printk(KERN_INFO "PM: %s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\n",
-+			msg, k,
-+			centisecs / 100, centisecs % 100,
-+			kps / 1000, (kps % 1000) / 10);
-+}
-+
-+/**
-  *	create_image - freeze devices that need to be frozen with interrupts
-  *	off, create the hibernation image and thaw those devices.  Control
-  *	reappears in this routine after a restore.
-diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
-deleted file mode 100644
-index 57222d2..0000000
---- a/kernel/power/swsusp.c
-+++ /dev/null
-@@ -1,87 +0,0 @@
--/*
-- * linux/kernel/power/swsusp.c
-- *
-- * This file provides code to write suspend image to swap and read it back.
-- *
-- * Copyright (C) 1998-2001 Gabor Kuti <seasons@fornax.hu>
-- * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@suse.cz>
-- *
-- * This file is released under the GPLv2.
-- *
-- * I'd like to thank the following people for their work:
-- *
-- * Pavel Machek <pavel@ucw.cz>:
-- * Modifications, defectiveness pointing, being with me at the very beginning,
-- * suspend to swap space, stop all tasks. Port to 2.4.18-ac and 2.5.17.
-- *
-- * Steve Doddi <dirk@loth.demon.co.uk>:
-- * Support the possibility of hardware state restoring.
-- *
-- * Raph <grey.havens@earthling.net>:
-- * Support for preserving states of network devices and virtual console
-- * (including X and svgatextmode)
-- *
-- * Kurt Garloff <garloff@suse.de>:
-- * Straightened the critical function in order to prevent compilers from
-- * playing tricks with local variables.
-- *
-- * Andreas Mohr <a.mohr@mailto.de>
-- *
-- * Alex Badea <vampire@go.ro>:
-- * Fixed runaway init
-- *
-- * Rafael J. Wysocki <rjw@sisk.pl>
-- * Reworked the freeing of memory and the handling of swap
-- *
-- * More state savers are welcome. Especially for the scsi layer...
-- *
-- * For TODOs,FIXMEs also look in Documentation/power/swsusp.txt
-- */
--
--#include <linux/mm.h>
--#include <linux/suspend.h>
--#include <linux/spinlock.h>
--#include <linux/kernel.h>
--#include <linux/major.h>
--#include <linux/swap.h>
--#include <linux/pm.h>
--#include <linux/swapops.h>
--#include <linux/bootmem.h>
--#include <linux/syscalls.h>
--#include <linux/highmem.h>
--#include <linux/time.h>
--#include <linux/rbtree.h>
--#include <linux/io.h>
--
--#include "power.h"
--
--int in_suspend __nosavedata = 0;
--
--/**
-- *	swsusp_show_speed - print the time elapsed between two events represented by
-- *	@start and @stop
-- *
-- *	@nr_pages -	number of pages processed between @start and @stop
-- *	@msg -		introductory message to print
-- */
--
--void swsusp_show_speed(struct timeval *start, struct timeval *stop,
--			unsigned nr_pages, char *msg)
--{
--	s64 elapsed_centisecs64;
--	int centisecs;
--	int k;
--	int kps;
--
--	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
--	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
--	centisecs = elapsed_centisecs64;
--	if (centisecs == 0)
--		centisecs = 1;	/* avoid div-by-zero */
--	k = nr_pages * (PAGE_SIZE / 1024);
--	kps = (k * 100) / centisecs;
--	printk(KERN_INFO "PM: %s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\n",
--			msg, k,
--			centisecs / 100, centisecs % 100,
--			kps / 1000, (kps % 1000) / 10);
--}
+So if you make slab use refcount == 0 pages that would help.
+
+> Well it's fundamentally badly buggy, rare or not. We could avoid
+
+Let's put it like this -- any access to the poisoned cache lines
+in that page will trigger a panic anyways.
+
+-Andi
+
 -- 
-1.6.3.3
-
+ak@linux.intel.com -- Speaking for myself only.
