@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752370AbZI1Ihv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZI1IoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752370AbZI1Ihv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 04:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZI1Ihv
+	id S1752463AbZI1IoK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 04:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZI1IoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 04:37:51 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:45126 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751434AbZI1Ihu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 04:37:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=wjpY+Yu4MdW6AAVpkND8NNxERIb90WhQMd0uhUktNaUm+7Ubi7Ee8bJr3m5V6dz8bx
-         41MrW0dhoJR5l79bmIWgO55La4OOQczbqgGdU8aIiZyg2HZM1E0FYYdlRU0Vw/AjsW32
-         E/sGp5YpHKJotb1ipvKvYMSEZ7z5xms6dR3+Q=
+	Mon, 28 Sep 2009 04:44:09 -0400
+Received: from mga14.intel.com ([143.182.124.37]:41627 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751096AbZI1IoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 04:44:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,465,1249282800"; 
+   d="scan'208";a="192375869"
+Date: Mon, 28 Sep 2009 16:44:01 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
+Message-ID: <20090928084401.GA22131@localhost>
+References: <20090926031537.GA10176@localhost> <20090926034936.GK30185@one.firstfloor.org> <20090926105259.GA5496@localhost> <20090926113156.GA12240@localhost> <20090927104739.GA1666@localhost> <20090927192025.GA6327@wotan.suse.de>
 MIME-Version: 1.0
-In-Reply-To: <20090928075540.GD6668@linux-sh.org>
-References: <20090928075540.GD6668@linux-sh.org>
-Date: Mon, 28 Sep 2009 11:37:52 +0300
-X-Google-Sender-Auth: e35c6b2832379842
-Message-ID: <84144f020909280137n6126eb7bm39a32dd7258694d@mail.gmail.com>
-Subject: Re: [PATCH] kmemtrace: Fix up tracer registration.
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Paul Mundt <lethal@linux-sh.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090927192025.GA6327@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 10:55 AM, Paul Mundt <lethal@linux-sh.org> wrote:
-> Commit ddc1637af217dbd8bc51f30e6d24e84476a869a6
-> ("kmemtrace: Print binary output only if 'bin' option is set") ended up
-> inverting the error detection logic. register_tracer() returns 0 on
-> success, which this change caused to treat as an error, resulting in:
->
-> [    0.132000] Warning: could not register the kmem tracer
->
-> as well as bailing out of the initcall with an error value. This
-> restores the old logic.
->
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+On Mon, Sep 28, 2009 at 03:20:25AM +0800, Nick Piggin wrote:
+> On Sun, Sep 27, 2009 at 06:47:39PM +0800, Wu Fengguang wrote:
+> > > 
+> > > And standard deviation is 0.04%, much larger than the difference 0.008% ..
+> > 
+> > Sorry that's not correct. I improved the accounting by treating
+> > function0+function1 from two CPUs as an integral entity:
+> > 
+> >                  total time      add_to_page_cache_lru   percent  stddev
+> >          before  3880166848.722  9683329.610             0.250%   0.014%
+> >          after   3828516894.376  9778088.870             0.256%   0.012%
+> >          delta                                           0.006%
+> 
+> I don't understand why you're doing this NFS workload to measure?
 
-Looks good to me. Thanks Paul!
+Because it is the first convenient workload hit my mind, and avoids
+real disk IO :)
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> I see significant nfs, networking protocol and device overheads in
+> your profiles, also you're hitting some locks or something which
+> is causing massive context switching. So I don't think this is a
+> good test.
+
+Yes there are overheads. However it is a real and common workload.
+
+> But anyway as Hugh points out, you need to compare with a
+> *completely* fixed kernel, which includes auditing all users of page
+> flags non-atomically (slab, notably, but possibly also other
+> places).
+
+That's good point. We can do more benchmarks when more fixes are
+available. However I suspect their design goal will be "fix them
+without introducing noticeable overheads" :)
+
+> One other thing to keep in mind that I will mention is that I am
+> going to push in a patch to the page allocator to allow callers
+> to avoid the refcounting (atomic_dec_and_test) in page lifetime,
+> which is especially important for SLUB and takes more cycles off
+> the page allocator...
+>
+> I don't know exactly what you're going to do after that to get a
+> stable reference to slab pages. I guess you can read the page
+> flags and speculatively take some slab locks and recheck etc...
+
+For reliably we could skip page lock on zero refcounted pages.
+
+We may lose the PG_hwpoison bit on races with __SetPageSlub*, however
+it should be an acceptable imperfection.
+
+Thanks,
+Fengguang
