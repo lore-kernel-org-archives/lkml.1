@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbZI1BXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbZI1BmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752711AbZI1BXg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 21:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZI1BXf
+	id S1752560AbZI1BmA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 21:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZI1Bl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 21:23:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43369 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752161AbZI1BXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 21:23:35 -0400
-Date: Mon, 28 Sep 2009 03:23:37 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 02/12] Immediate Values - Architecture Independent Code
-Message-ID: <20090928012337.GC1656@one.firstfloor.org>
-References: <20090924132626.485545323@polymtl.ca> <20090924133359.218934235@polymtl.ca> <20090924212013.d27226c4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924212013.d27226c4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 27 Sep 2009 21:41:59 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:16402 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751918AbZI1Bl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 21:41:59 -0400
+Message-ID: <4AC013E7.1030508@redhat.com>
+Date: Sun, 27 Sep 2009 15:39:51 -1000
+From: Zachary Amsden <zamsden@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH: kvm 3/5] Fix hotadd of CPUs for KVM.
+References: <20090924151049.GB14102@amt.cnet> <1253839640-12695-1-git-send-email-zamsden@redhat.com> <1253839640-12695-2-git-send-email-zamsden@redhat.com> <1253839640-12695-3-git-send-email-zamsden@redhat.com> <1253839640-12695-4-git-send-email-zamsden@redhat.com> <4ABF27C8.2000406@redhat.com>
+In-Reply-To: <4ABF27C8.2000406@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 09:20:13PM -0700, Andrew Morton wrote:
-> On Thu, 24 Sep 2009 09:26:28 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > Immediate values are used as read mostly variables that are rarely updated. They
-> > use code patching to modify the values inscribed in the instruction stream. It
-> > provides a way to save precious cache lines that would otherwise have to be used
-> > by these variables.
-> 
-> What a hare-brained concept.
+On 09/26/2009 10:52 PM, Avi Kivity wrote:
+> On 09/25/2009 03:47 AM, Zachary Amsden wrote:
+>>
+>> --- a/virt/kvm/kvm_main.c
+>> +++ b/virt/kvm/kvm_main.c
+>> @@ -1716,9 +1716,6 @@ static int kvm_cpu_hotplug(struct 
+>> notifier_block *notifier, unsigned long val,
+>>   {
+>>       int cpu = (long)v;
+>>
+>> -    if (!kvm_usage_count)
+>> -        return NOTIFY_OK;
+>> -
+>
+> Why?  You'll now do hardware_enable() even if kvm is not in use.
 
-The concept makes a lot of sense. Cache misses are extremly costly
-on modern CPUs and when the workload has blown the caches away in user space
-it can literally be hundreds or even thousands of cycles to fetch
-a data cache line.
+Because otherwise you'll never allocate and hardware_enable_all will fail:
 
-Similar optimizations are also quite common in compilers (with 
-profile feedback) and JITs.
+Switch to broadcast mode on CPU1
+svm_hardware_enable: svm_data is NULL on 1
+kvm: enabling virtualization on CPU1 failed
+qemu-system-x86[8698]: segfault at 20 ip 00000000004db22f sp 
+00007fff0a3b4560 error 6 in qemu-system-x86_64[400000+21f000]
 
-> Do you have any data which indicates that this thing is of any real
-> benefit to anyone for anything?
+Perhaps I can make this work better by putting the allocation within 
+hardware_enable_all.
 
-There's a lot of data around that the kernel has very little IPC
-due to a lot of cache misses in some workloads. In general this applies
-to anything that touches a lot of data in user space and blows
-the caches away.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Zach
