@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbZI1Iug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbZI1Iuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752691AbZI1Iug (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 04:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZI1Iug
+	id S1752791AbZI1Iuw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 04:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZI1Iuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 04:50:36 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:44136 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752281AbZI1Iuf (ORCPT
+	Mon, 28 Sep 2009 04:50:52 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:42476 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752537AbZI1Iuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 04:50:35 -0400
-Date: Mon, 28 Sep 2009 10:50:37 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Greg KH <greg@kroah.com>, Philipp Reisner <philipp.reisner@linbit.com>,
-       linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       drbd-dev@lists.linbit.com
-Subject: Re: [Drbd-dev] [PATCH] linux-next: 20090926 - drop autoconf.h from
-	DRBD driver
-Message-ID: <20090928085037.GA8048@barkeeper1-xen.linbit>
-Mail-Followup-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Greg KH <greg@kroah.com>,
-	Philipp Reisner <philipp.reisner@linbit.com>,
-	linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-	drbd-dev@lists.linbit.com
-References: <20090926152800.a6568e53.sfr@canb.auug.org.au> <20090926173143.GA5041@linux.vnet.ibm.com> <20090926200839.GA5220@merkur.ravnborg.org> <20090927125331.5367db08.sfr@canb.auug.org.au>
+	Mon, 28 Sep 2009 04:50:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Nru85uCE/GyTkbMFa3mYoQNX/FF+TufyZOn92L3JkfcUzNcct/UY2Evzkc3QcnJFim
+         vQmXXHQYFcFn11gIXQ0yGflpgxOEXsIILX1Ka1wuJA2uoINLZZrccWKURLEbIz8LTJIM
+         eNsXn8LVyjcNo8tT948+ncHKcidrrTvtab95U=
+Date: Mon, 28 Sep 2009 10:50:51 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
+       tzanussi@gmail.com, lizf@cn.fujitsu.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/core] tracing/filters: Provide basic regex support
+Message-ID: <20090928085049.GB6142@nowhere>
+References: <tip-1889d20922d14a97b2099fa4d47587217c0ba48b@git.kernel.org> <1253959805.12145.95.camel@frodo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090927125331.5367db08.sfr@canb.auug.org.au>
+In-Reply-To: <1253959805.12145.95.camel@frodo>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 27, 2009 at 12:53:31PM +1000, Stephen Rothwell wrote:
-> Hi Greg, Philipp,
-> 
-> On Sat, 26 Sep 2009 22:08:39 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
-> >
-> > On Sat, Sep 26, 2009 at 11:01:43PM +0530, Kamalesh Babulal wrote:
-> > > 
-> > > 	next-20090926 allyesconfig build breaks on powerpc,
-> > > 
-> > > drivers/block/drbd/drbd_proc.c:26:28: error: linux/autoconf.h: No such file or directory
-> > > make[3]: *** [drivers/block/drbd/drbd_proc.o] Error 1
-> > > 
-> > > dropping autoconf.h from drbd_proc.c helps. The cleanup patch drops the
-> > > unneeded include autoconf.h.
-> > > 
-> > > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+On Sat, Sep 26, 2009 at 06:10:05AM -0400, Steven Rostedt wrote:
+> On Fri, 2009-09-25 at 06:19 +0000, tip-bot for Frederic Weisbecker
+> wrote:
+> > Commit-ID:  1889d20922d14a97b2099fa4d47587217c0ba48b
+> > Gitweb:     http://git.kernel.org/tip/1889d20922d14a97b2099fa4d47587217c0ba48b
+> > Author:     Frederic Weisbecker <fweisbec@gmail.com>
+> > AuthorDate: Thu, 24 Sep 2009 21:10:44 +0200
+> > Committer:  Frederic Weisbecker <fweisbec@gmail.com>
+> > CommitDate: Thu, 24 Sep 2009 21:39:27 +0200
 > > 
-> > I only checked upstream - so this is no big suprise.
-> > As there is no need to explicitly include autoconf.h this
-> > change should be included by the drdb folks even if the
-> > stuff I have does not hit upstream.
+> > tracing/filters: Provide basic regex support
+> > 
+> > This patch provides basic support for regular expressions in filters.
+> > 
+> > It supports the following types of regexp:
+> > 
+> > - *match_beginning
+> > - *match_middle*
+> > - match_end*
+> > - !don't match
+> > 
+> > Example:
+> > 	cd /debug/tracing/events/bkl/lock_kernel
+> > 	echo 'file == "*reiserfs*"' > filter
+> > 	echo 1 > enable
 > 
-> Maybe we should let them know (cc'd).
+> Darn! I need to keep up with my email more. Someone asked me at my
+> ftrace tutorial if the filters can take regex's.  I told them that I
+> don't think so. Of course, my tutorial was on 2.6.31 so I was still
+> correct. But it would have been nice if I told them that it will in
+> 2.6.32 or 33.
+> 
+> -- Steve
 
 
-Thanks ;)
-owed to our out-of-tree "backwards" compatibility for all 2.6 kernels
-back to 2.6.5 (I think...).
+Hehe :-)
 
-includes have been dropped.
+That said I guess it should be more for .33 than .32 I guess.
 
--- 
-: Lars Ellenberg
-: LINBIT | Your Way to High Availability
-: DRBD/HA support and consulting http://www.linbit.com
-
-DRBD® and LINBIT® are registered trademarks of LINBIT, Austria.
