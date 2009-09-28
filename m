@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZI1SYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZI1SZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZI1SYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 14:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZI1SYR
+	id S1752815AbZI1SZM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 14:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbZI1SZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 14:24:17 -0400
-Received: from mga12.intel.com ([143.182.124.36]:7758 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752454AbZI1SYQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 14:24:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,468,1249282800"; 
-   d="scan'208";a="192559668"
-Message-ID: <4AC0FF58.5040302@linux.intel.com>
-Date: Mon, 28 Sep 2009 20:24:24 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-CC: Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] x86, mce: rename finished to valid in struct mce
-References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com> <4AC05BBF.3010102@jp.fujitsu.com> <4AC05CFC.4020702@jp.fujitsu.com>
-In-Reply-To: <4AC05CFC.4020702@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Mon, 28 Sep 2009 14:25:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56969 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752267AbZI1SZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 14:25:10 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18KqiA3UvYKgv46z3IsypTOqnJ8MtHzI5rjAXuwh7
+	10ewfD+/5roc5G
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+In-Reply-To: <20090928174809.GB3643@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
+	 <1253976676.7005.40.camel@marge.simson.net>
+	 <1254034500.7933.6.camel@marge.simson.net>
+	 <20090927164235.GA23126@kernel.dk>
+	 <1254075359.7354.66.camel@marge.simson.net>
+	 <1254110648.7683.3.camel@marge.simson.net>
+	 <20090928174809.GB3643@redhat.com>
+Content-Type: text/plain
+Date: Mon, 28 Sep 2009 20:24:57 +0200
+Message-Id: <1254162297.9820.54.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.65
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hidetoshi Seto wrote:
-> The straightforward name is easier to understand.
+On Mon, 2009-09-28 at 13:48 -0400, Vivek Goyal wrote:
 
-struct mce is exported to user space. I don't think it's a good idea
-to rename fields in exported structures like this.  That just causes confusion.
+> Hmm.., so close to 25% reduction on average in completion time of konsole.
+> But this is in presece of writer. Does this help even in presence of 1 or
+> more sequential readers going?
 
--Andi
+Dunno, I've only tested sequential writer.
+
+> So here latency seems to be coming from three sources.
+> 
+> - Wait in CFQ before request is dispatched (only in case of competing seq readers).
+> - seek latencies
+> - latencies because of bigger requests are already dispatched to disk.
+> 
+> So limiting the size of request will help with third factor but not with first  
+> two factors and here seek latencies seem to be the biggest contributor.
+
+Yeah, seek latency seems to dominate.
+
+	-Mike
+
