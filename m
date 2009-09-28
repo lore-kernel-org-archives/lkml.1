@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZI1UgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbZI1Uhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753216AbZI1UgN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 16:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZI1UgM
+	id S1753241AbZI1Uhf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 16:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZI1Uhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 16:36:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44432 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752952AbZI1UgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 16:36:11 -0400
-Message-ID: <4AC11E38.4050703@garzik.org>
-Date: Mon, 28 Sep 2009 16:36:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "Jung-Ik (John) Lee" <jilee@google.com>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Grant Grundler <grundler@google.com>,
-       Gwendal Gringo <gwendal@google.com>
-Subject: Re: [git patches] libata updates
-References: <20090917204935.GA7432@havoc.gtf.org> <200909202305.06199.bzolnier@gmail.com> 	<8b5805ff0909211936s4968d11fnd3e6604d38e31c79@mail.gmail.com> 	<200909281734.11090.bzolnier@gmail.com> <8b5805ff0909281320x57660c0cvb6e72290c6781a99@mail.gmail.com>
-In-Reply-To: <8b5805ff0909281320x57660c0cvb6e72290c6781a99@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Mon, 28 Sep 2009 16:37:34 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:19153 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753230AbZI1Uhd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 16:37:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=r939g6nXSIX0oMJVn5RpiJU0A5xALpFN7oILdytCpZNewWOAstcmIElrPQMZOAx1NY
+         1WA5UchRRfuwi8pPgI73CLO1dpKj1uRo81wlSdMRFtuvZ6TrCr2n5Wtk0aZ/aWLzPYsa
+         esBNpJyaUyl3HPiCDhO6la1CGFhtV2NcvV1eU=
+Date: Mon, 28 Sep 2009 22:37:27 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: FunFlyer@gmx.net
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Disabling DMA with ICH10?
+Message-ID: <20090928223727.0b1367b7@varda>
+In-Reply-To: <1254173481.4454.32.camel@goodbyte.homelinux.com>
+References: <1254173481.4454.32.camel@goodbyte.homelinux.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/28/2009 04:20 PM, Jung-Ik (John) Lee wrote:
->> Thanks, your patch looks good to me but since there are still some
->> leftover issues left we would also need something like the incremental
->> patch below:
->
-> [resending - bounced back from -ide, -kernel]
->
-> your patch below looks good to me.
+El Mon, 28 Sep 2009 23:31:21 +0200
+Lennart Baruschka <FunFlyer@gmx.net> escribió:
+
+> Hello,
+> 
+> I'm new to this list, so please forgive me if this is the wrong place to
+> ask. I'm trying to build a 2.6.30.5 kernel causing as little DMA traffic
+> as possible in order to reduce latencies on a real-time system (using
+> RTAI). 
+> 
+> 1. Is there a way to completely disable DMA usage system-wide?
+> If not:
+> 2. My system uses an ICH10 chipset, the harddrive is connected to the
+> Intel SATA controller. Is there a way to disable DMA and switch back to
+> PIO? I tried compiling with libata support and without SCSI support, but
+> the kernel is unable to mount root (no matter if /dev/sda1
+> or /dev/hda1), then.
+  
+  AFAIK libata needs scsi support. To disable dma in libata I get from
+  Documentation/kernel-parameters.txt --> libata.dma = 0
 
 
-By convention, you should reply to a patch such as Bart's, and provide 
-an explicit line of text that may be pasted into the patch at merge time:
+> 3. Another source seems to be the ATL1E driver for ethernet. Is it
+> possible to either disable DMA for this? 
+  
+  That I dunno
 
-Acked-by: Your Name <your@email.address>
+> 
+> If disabling DMA is impossible for some reason for one or both drivers,
+> is it at least possible to reduce the burst sizes so the bus gets free
+> for a short time during which I could access it from my real time kernel
+> module?
+> 
+> Please point me in the right direction; any suggestion will be greatly
+> appreciated!
+> 
+> Cheers,
+> Lennart
+   
+  Saludos,
+  Alejandro 
+
 
