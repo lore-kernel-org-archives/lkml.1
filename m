@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbZI1OKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbZI1OPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752116AbZI1OKZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 10:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZI1OKY
+	id S1752180AbZI1OPX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 10:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZI1OPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 10:10:24 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:53179 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbZI1OKY (ORCPT
+	Mon, 28 Sep 2009 10:15:23 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32815 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751397AbZI1OPW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 10:10:24 -0400
-Date: Mon, 28 Sep 2009 15:10:25 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Valdis.Kletnieks@vt.edu, linux@treblig.org, agruen@suse.de,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: new O_NODE open flag
-Message-ID: <20090928141025.GF19778@shareable.org>
-References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu> <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu> <20090925183523.GA6065@gallifrey> <19645.1253913514@turing-police.cc.vt.edu> <E1MsDQ6-0001cY-92@pomaz-ex.szeredi.hu> <20090928132845.GC19778@shareable.org> <E1MsGtJ-0001xy-5T@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1MsGtJ-0001xy-5T@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 28 Sep 2009 10:15:22 -0400
+Date: Mon, 28 Sep 2009 15:16:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH] Remove pty_ops_bsd and pty_bsd_ioctl() as they're not
+ used
+Message-ID: <20090928151628.62955233@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090928135332.4300.56046.stgit@warthog.procyon.org.uk>
+References: <20090928135332.4300.56046.stgit@warthog.procyon.org.uk>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> > Hmm.  I have just tried, and you _can _use open("/proc/self/fd/%d",
-> > O_RDWR) to re-open with more permissions when you can't access the
-> > path which /proc/self/fd/%d pretends to link to.  It looks a bit
-> > dubious, as you might have been passed an O_RDONLY descriptor with the
-> > intention that you can't write to it...  Oh well!
+On Mon, 28 Sep 2009 14:53:32 +0100
+David Howells <dhowells@redhat.com> wrote:
+
+> Remove pty_ops_bsd as nothing appears to use it anymore.  It results in the
+> following warning:
 > 
-> True, /proc gives you access to the underlying "path" of an open file
-> descriptor.  If you don't want that, don't mount /proc in your limited
-> namespace.
+> 	drivers/char/pty.c:344: warning: unused variable `pty_ops_bsd'
+> 
+> if CONFIG_LEGACY_PTYS=y.
+> 
+> Also remove pty_bsd_ioctl() as that's only referred to by pty_ops_bsd.
+> 
+> Possibly legacy_pty_init() should be passing this to tty_set_operations()
+> rather than pty_ops.
 
-I wasn't using a limited namespace.
-
-Just a directory without permission to be searched, and as a regular
-user - which is historically supposed to prevent you from opening
-files in it.
-
--- Jamie
+It should indeed, otherwise the BSD pty locking ioctl fails.
