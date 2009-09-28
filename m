@@ -1,46 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbZI1Vcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZI1Vgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753364AbZI1Vcs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 17:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZI1Vcr
+	id S1753265AbZI1Vgi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 17:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZI1Vgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 17:32:47 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:36795 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752747AbZI1Vcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 17:32:46 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <4AC12BA8.40704@crca.org.au>
-Date: Tue, 29 Sep 2009 07:33:28 +1000
-From: Nigel Cunningham <ncunningham@crca.org.au>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: No more bits in vm_area_struct's vm_flags.
-References: <4AB9A0D6.1090004@crca.org.au> <20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com> <4ABC80B0.5010100@crca.org.au> <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com> <4AC0234F.2080808@crca.org.au> <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com> <20090928033624.GA11191@localhost> <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com> <4AC03D9C.3020907@crca.org.au> <Pine.LNX.4.64.0909282200470.11529@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0909282200470.11529@sister.anvils>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 28 Sep 2009 17:36:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48196
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751901AbZI1Vgh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 17:36:37 -0400
+Date: Mon, 28 Sep 2009 14:36:56 -0700 (PDT)
+Message-Id: <20090928.143656.208349447.davem@davemloft.net>
+To: tj@kernel.org
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, mingo@elte.hu, hpa@zytor.com
+Subject: Re: [PATCH 2/3] sparc64: implement page mapping percpu first chunk
+ allocator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4ABB6C80.20109@kernel.org>
+References: <4ABB6C3A.8070109@kernel.org>
+	<4ABB6C80.20109@kernel.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh.
+From: Tejun Heo <tj@kernel.org>
+Date: Thu, 24 Sep 2009 21:56:32 +0900
 
-Hugh Dickins wrote:
-> I suggested before that for the moment you reuse VM_MAPPED_COPY,
-> and you said "Okee doke".  What changed?
+> Implement page mapping percpu first chunk allocator as a fallback to
+> the embedding allocator.  The next patch will make the embedding
+> allocator check distances between units to determine whether it fits
+> within the vmalloc area so that this fallback can be used on such
+> cases.
+> 
+> sparc64 currently has relatively small vmalloc area which makes it
+> impossible to create any dynamic chunks on certain configurations
+> leading to percpu allocation failures.  This and the next patch should
+> allow those configurations to keep working until proper solution is
+> found.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+> David, can you please ack this after reviewing?
 
-I made a mistake - got stuck at the point where I wasn't sure that was
-an option. Everything had gone quiet and I wanted to make some headway,
-so I started trying to make some progress by working on the path I
-knew would be doable.
+Tejun I am testing out the following patch which will make these
+patches of your's basically unnecessary:
 
-Sorry about that.
-
-Nigel
+diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
+index 0ff92fa..f3cb790 100644
+--- a/arch/sparc/include/asm/pgtable_64.h
++++ b/arch/sparc/include/asm/pgtable_64.h
+@@ -41,8 +41,8 @@
+ #define LOW_OBP_ADDRESS		_AC(0x00000000f0000000,UL)
+ #define HI_OBP_ADDRESS		_AC(0x0000000100000000,UL)
+ #define VMALLOC_START		_AC(0x0000000100000000,UL)
+-#define VMALLOC_END		_AC(0x0000000200000000,UL)
+-#define VMEMMAP_BASE		_AC(0x0000000200000000,UL)
++#define VMALLOC_END		_AC(0x0000010000000000,UL)
++#define VMEMMAP_BASE		_AC(0x0000010000000000,UL)
+ 
+ #define vmemmap			((struct page *)VMEMMAP_BASE)
+ 
+diff --git a/arch/sparc/kernel/ktlb.S b/arch/sparc/kernel/ktlb.S
+index 3ea6e8c..1d36147 100644
+--- a/arch/sparc/kernel/ktlb.S
++++ b/arch/sparc/kernel/ktlb.S
+@@ -280,8 +280,8 @@ kvmap_dtlb_nonlinear:
+ 
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+ 	/* Do not use the TSB for vmemmap.  */
+-	mov		(VMEMMAP_BASE >> 24), %g5
+-	sllx		%g5, 24, %g5
++	mov		(VMEMMAP_BASE >> 40), %g5
++	sllx		%g5, 40, %g5
+ 	cmp		%g4,%g5
+ 	bgeu,pn		%xcc, kvmap_vmemmap
+ 	 nop
+@@ -293,8 +293,8 @@ kvmap_dtlb_tsbmiss:
+ 	sethi		%hi(MODULES_VADDR), %g5
+ 	cmp		%g4, %g5
+ 	blu,pn		%xcc, kvmap_dtlb_longpath
+-	 mov		(VMALLOC_END >> 24), %g5
+-	sllx		%g5, 24, %g5
++	 mov		(VMALLOC_END >> 40), %g5
++	sllx		%g5, 40, %g5
+ 	cmp		%g4, %g5
+ 	bgeu,pn		%xcc, kvmap_dtlb_longpath
+ 	 nop
