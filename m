@@ -1,104 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbZI1ULL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbZI1UPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753191AbZI1ULL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 16:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZI1ULJ
+	id S1753166AbZI1UPp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 16:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZI1UPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 16:11:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58489 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbZI1ULF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 16:11:05 -0400
-Date: Mon, 28 Sep 2009 22:11:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Adrian Bunk <bunk@stusta.de>, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 02/12] Immediate Values - Architecture Independent Code
-Message-ID: <20090928201108.GG1656@one.firstfloor.org>
-References: <20090924132626.485545323@polymtl.ca> <20090924133359.218934235@polymtl.ca> <20090924212013.d27226c4.akpm@linux-foundation.org> <20090928012337.GC1656@one.firstfloor.org> <20090928104617.9c4b868a.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090928104617.9c4b868a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 28 Sep 2009 16:15:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38389 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751575AbZI1UPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 16:15:44 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH 1/2] PM / PCMCIA: Drop second argument of pcmcia_socket_dev_suspend()
+Date: Mon, 28 Sep 2009 22:16:53 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, linux-pcmcia@lists.infradead.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Florian <fs-kernelbugzilla@spline.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200909260122.59030.rjw@sisk.pl> <200909260125.11149.rjw@sisk.pl> <20090928113112.GA5602@pengutronix.de>
+In-Reply-To: <20090928113112.GA5602@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909282216.53633.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's how caches work!  If a kernel variable is read frequently, it's
-> still in dcache.  If it's read infrequently, it falls out of dcache but
-> that doesn't matter much because it's read infrequently!
-
-You're assuming that the CPU's cache LRU is perfect. e.g. that it
-never gets swamped by a lot of short term accesses. And that it has perfect
-insight if something is really frequently used or not. But that's 
-not true. A short term cache pig, even when it uses the data only
-once, can swamp it and throw out all the kernel state, even when it's
-accessed frequently enough.  It's a bit similar to all the similar problems
-with the page cache LRU.
+On Monday 28 September 2009, Wolfram Sang wrote:
+> On Sat, Sep 26, 2009 at 01:25:11AM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > pcmcia_socket_dev_suspend() doesn't use its second argument, so it
+> > may be dropped safely.
+> > 
+> > This change is necessary for the subsequent yenta suspend/resume fix.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/pcmcia/at91_cf.c        |    2 +-
+> >  drivers/pcmcia/au1000_generic.c |    2 +-
+> >  drivers/pcmcia/bfin_cf_pcmcia.c |    2 +-
+> >  drivers/pcmcia/cs.c             |    2 +-
+> >  drivers/pcmcia/i82092.c         |    2 +-
+> >  drivers/pcmcia/i82365.c         |    2 +-
+> >  drivers/pcmcia/m32r_cfc.c       |    2 +-
+> >  drivers/pcmcia/m32r_pcc.c       |    2 +-
+> >  drivers/pcmcia/m8xx_pcmcia.c    |    2 +-
+> >  drivers/pcmcia/omap_cf.c        |    2 +-
+> >  drivers/pcmcia/pd6729.c         |    2 +-
+> >  drivers/pcmcia/pxa2xx_base.c    |    2 +-
+> >  drivers/pcmcia/sa1100_generic.c |    2 +-
+> >  drivers/pcmcia/sa1111_generic.c |    2 +-
+> >  drivers/pcmcia/tcic.c           |    2 +-
+> >  drivers/pcmcia/vrc4171_card.c   |    2 +-
+> >  include/pcmcia/ss.h             |    2 +-
 > 
-> And lo, it appears that we're unable to observe any measurable benefit
-> from the changes, so we're cooking up weird fake testcases to be able to
-> drag this thing out of the noise floor.
+> Hmm, you are not converting yenta_socket here. Won't that break building the
+> kernel (git bisect)?
 
-Yes, a really measurable improvement would be great. One problem
-right now is that not enough users are there, so measuring
-something would first need more users to really reduce the cache misses.
-> 
-> Obviously the change will have _some_ performance benefit.  But is it
-> enough to justify the addition of yet more tricksy code to maintain? 
+You're right, I should have modified yenta_socket.c here as well.  Will fix.
 
-I don't think the code is particularly tricky. Especially the user API
-is very simple and neat.
-> 
-> And it is a *small* number of things to which this change is
-> applicable.  This is because the write operation for these read-mostly
-> variables becomes very expensive indeed.  This means that we cannot use
-> "immediate values" for any variable which can conceivable be modified
-> at high frequency by any workload.
-
-A natural target is any sysctl for example.
-
-> 
-> For example, how do we know it's safe to use immediate-values for
-> anything which can be modified from userspace, such as a sysfs-accessed
-> tunable?  How do we know this won't take someone's odd-but-legitimate
-> workload and shoot it in the head?
-
-You're arguing we should tune for sysctl performance? That doesn't make
-sense to me.
-
-> 
-> 
-> Summary:
-> 
-> - at this stage no real-world beenefit has been demonstrated afaict
-
-Yes that's an issue that needs to be addressed.
-
-A good way would be probably to do some measurements on cache misses
-for given workloads and then convert all applicable global references
-and see how much difference it makes.
-
-> - the feature is narrowly applicable anyway
-
-I don't think so, there are quite a lot of global flag variables.
-
-% find /proc/sys -type f | wc -l
-565
-
-not counting sysfs, boot options and other things.
-> 
-> - it addes complexity and maintenance cost
-
-Very little as far as I can see.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Thanks,
+Rafael
