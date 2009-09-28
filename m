@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbZI1FzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZI1GHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751797AbZI1FzV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 01:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbZI1FzV
+	id S1751877AbZI1GHk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 02:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZI1GHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 01:55:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58987 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751016AbZI1FzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 01:55:20 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX182QdpGsek2sTMxx8deY1d6ofKsk1DdXJw0A7Xa64
-	aGX5Vj7pYSdN3+
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-In-Reply-To: <1254110648.7683.3.camel@marge.simson.net>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
-	 <1253976676.7005.40.camel@marge.simson.net>
-	 <1254034500.7933.6.camel@marge.simson.net>
-	 <20090927164235.GA23126@kernel.dk>
-	 <1254075359.7354.66.camel@marge.simson.net>
-	 <1254110648.7683.3.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Mon, 28 Sep 2009 07:55:15 +0200
-Message-Id: <1254117315.6809.9.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67
+	Mon, 28 Sep 2009 02:07:40 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:46936 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751031AbZI1GHj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 02:07:39 -0400
+Date: Mon, 28 Sep 2009 02:07:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Dave Young <hidave.darkstar@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <gregkh@suse.de>, pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [PATCH, fix] Re: [Regression] 2.6.31-git: tty change
+  broke resume from hibernation on MSI Wind U100
+In-Reply-To: <a8e1da0909272203me287858y2f8d82f3710e07d3@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0909280202280.14348-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-P.S.
+On Mon, 28 Sep 2009, Dave Young wrote:
 
-On Mon, 2009-09-28 at 06:04 +0200, Mike Galbraith wrote:
+> On Mon, Sep 28, 2009 at 2:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Sunday 27 September 2009, Alan Stern wrote:
+> >> On Sun, 27 Sep 2009, Rafael J. Wysocki wrote:
+> >>
+> >> > Tested, works.
+> >> >
+> >> > Greg, could you please consider taking the patch below?  It fixes a recent
+> >> > hibernation regression for me, so if not this one, another fix is necessary.
+> >>
+> >> This patch has a mistake.
+> >>
+> >> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
+> >> > ===================================================================
+> >> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
+> >> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
+> >> > @@ -1210,7 +1210,7 @@ static const struct tty_operations seria
+> >> >     .chars_in_buffer =      serial_chars_in_buffer,
+> >> >     .tiocmget =             serial_tiocmget,
+> >> >     .tiocmset =             serial_tiocmset,
+> >> > -   .shutdown =             serial_release,
+> >> > +   .cleanup =              serial_release,
+> >> >     .install =              serial_install,
+> >> >     .proc_fops =            &serial_proc_fops,
+> >> >  };
+> >>
+> >> It isn't enough to change the method pointer.  The code in
+> >> serial_release() has to be changed too; it must not call tty_shutdown()
+> >> any more.
+> >
+> > Would it be sufficient to remove the tty_shutdown() call from
+> > serial_release()?
+> 
+> I think so, because standard shutdown will be called in queue_release_one_tty.
+> 
+> Alan, could you confirm about this?  Thus I'd like to update the patch.
 
-> - = virgin tip v2.6.31-10215-ga3c9602
-> + = with patchlet
->                                                             Avg
-> dd pre         67.4     70.9     65.4     68.9     66.2     67.7-
->                65.9     68.5     69.8     65.2     65.8     67.0-     Avg
->                70.4     70.3     65.1     66.4     70.1     68.4-     67.7-
->                73.1     64.6     65.3     65.3     64.9     66.6+     65.6+     .968
->                63.8     67.9     65.2     65.1     64.4     65.2+
->                64.9     66.3     64.1     65.2     64.8     65.0+
-> perf stat      8.66    16.29     9.65    14.88     9.45     11.7-
->               15.36     9.71    15.47    10.44    12.93     12.7-
->               10.55    15.11    10.22    15.35    10.32     12.3-     12.2-
->                9.87     7.53    10.62     7.51     9.95      9.0+      9.1+     .745
->                7.73    10.12     8.19    11.87     8.07      9.1+
->               11.04     7.62    10.14     8.13    10.23      9.4+
-> dd post        63.4     60.5     66.7     64.5     67.3     64.4-
->                64.4     66.8     64.3     61.5     62.0     63.8-
->                63.8     64.9     66.2     65.6     66.9     65.4-     64.5-
->                60.9     63.4     60.2     63.4     65.5     62.6+     61.8+     .958
->                63.3     59.9     61.9     62.7     61.2     61.8+
->                60.1     63.7     59.5     61.5     60.6     61.0+
+Yes, that's right.  Just remove the function call.  But what happens if
+the device is a serial console?  Shouldn't the call to tty_shutdown()  
+be skipped in that case?  (Eventually this won't matter; the console
+code will be straightened out so that we never release a serial console
+device.  But for now it's important.)
 
-Deadline and noop fsc^W are less than wonderful choices for this load.
+If you think it would be appropriate, you could also rename
+serial_release() to serial_cleanup() -- it's up to you.
 
-perf stat     12.82     7.19     8.49     5.76      9.32   anticipatory
-              16.24   175.82   154.38   228.97    147.16   noop
-              43.23    57.39    96.13   148.25    180.09   deadline
-              28.65   167.40   195.95   183.69    178.61   deadline v2.6.27.35
-
-	-Mike
-
+Alan Stern
 
