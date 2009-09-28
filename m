@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZI1Tbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZI1Vb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbZI1Tbb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 15:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZI1Tba
+	id S1753296AbZI1Vb5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 17:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZI1Vb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 15:31:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49092 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752358AbZI1Tba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 15:31:30 -0400
-X-Authenticated: #272795
-X-Provags-ID: V01U2FsdGVkX1/hdwtv5ErhIz26/jv+th4PrE/5v0DVCPbMTAEUpI
-	qJs/5XS5mypOK3
-Subject: Disabling DMA with ICH10?
-From: Lennart Baruschka <FunFlyer@gmx.net>
-Reply-To: FunFlyer@gmx.net
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 28 Sep 2009 23:31:21 +0200
-Message-Id: <1254173481.4454.32.camel@goodbyte.homelinux.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.63
+	Mon, 28 Sep 2009 17:31:57 -0400
+Received: from mbox2.netikka.net ([213.250.81.203]:43162 "EHLO
+	mbox2.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbZI1Vb4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 17:31:56 -0400
+Message-ID: <4AC12B4D.30508@mandriva.org>
+Date: Tue, 29 Sep 2009 00:31:57 +0300
+From: Thomas Backlund <tmb@mandriva.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090830)
+MIME-Version: 1.0
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+CC: Len Brown <lenb@kernel.org>, Lin Ming <ming.m.lin@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [git pull request] ACPI & driver patches for Linux-2.6.32-rc0
+References: <alpine.LFD.2.00.0909190237560.22030@localhost.localdomain> <4ABCB2CA.4020709@mandriva.org> <d3f22a0909261902o5e48c2a0lab56fca21edf8c5b@mail.gmail.com> <1254016503.17697.21.camel@minggr.sh.intel.com> <alpine.LFD.2.00.0909270348570.16783@localhost.localdomain> <4AC11A0F.2030806@mandriva.org> <4AC12015.4040508@suse.de>
+In-Reply-To: <4AC12015.4040508@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Alexey Starikovskiy wrote:
+> Thomas Backlund пишет:
+>>
+>> Now this is a Acer TravelMate 5720G laptop with the latest 1.35 bios.
+>> Distro is Mandriva Linux Cooker, and arch is x86_64
+>>
+>> Attached is output of "grep ACPI /var/log/dmesg"
+>> dmesg-acpi-20090903
+>> - all acpi patches as of 2.6.32-rc1
+> This one does not have errors you've mentioned earlier, could you find dmesg with them?
 
-I'm new to this list, so please forgive me if this is the wrong place to
-ask. I'm trying to build a 2.6.30.5 kernel causing as little DMA traffic
-as possible in order to reduce latencies on a real-time system (using
-RTAI). 
+Ah, sorry about that...
+I should have done dmesg|grep ACPI to get the errors... it would have 
+shown this too:
+tg3 0000:02:00.0: wake-up capability disabled by ACPI
+ACPI Exception: AE_TIME, Returned by Handler for [EmbeddedControl] 
+(20090903/evregion-424)
+ACPI Error (psparse-0537): Method parse/execution failed 
+[\_SB_.PCI0.LPCB.EC0_.GBST] (Node ffff88013f81c5e0), AE_TIME
+ACPI Error (psparse-0537): Method parse/execution failed 
+[\_SB_.PCI0.LPCB.EC0_.BAT0._BST] (Node ffff88013f81c720), AE_TIME
+ACPI Exception: AE_TIME, Evaluating _BST (20090903/battery-393)
 
-1. Is there a way to completely disable DMA usage system-wide?
-If not:
-2. My system uses an ICH10 chipset, the harddrive is connected to the
-Intel SATA controller. Is there a way to disable DMA and switch back to
-PIO? I tried compiling with libata support and without SCSI support, but
-the kernel is unable to mount root (no matter if /dev/sda1
-or /dev/hda1), then.
-3. Another source seems to be the ATL1E driver for ethernet. Is it
-possible to either disable DMA for this? 
 
-If disabling DMA is impossible for some reason for one or both drivers,
-is it at least possible to reduce the burst sizes so the bus gets free
-for a short time during which I could access it from my real time kernel
-module?
 
-Please point me in the right direction; any suggestion will be greatly
-appreciated!
+>> dmesg-acpi-20090903-ec-2.6.31
+>> - all acpi patches as of 2.6.32-rc1
+>> - ec.c from 2.6.31.1
+>>
+>>
+>> Should I start bisecting, or do you have any other suggestion?
+> There is only one patch which touch ec.c, 2a84cb9852f52c0cd1c48bca41a8792d44ad06cc. You may try to revert it, and see.
+> 
 
-Cheers,
-Lennart
+Isn't that what pretty much what I did when I built a kernel with the 
+2.6.31.1 ec.c ?
 
+Anyway, after I applied your patch you just posted on acpi-devel:
+ACPI: EC: Rewrite DMI checks
+
+to the 2.6.32-rc1 tree the:
+
+> -ACPI Error (psargs-0359): [\_PR_.CPU0.CSTX] Namespace lookup failure, AE_NOT_FOUND
+> -ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.LPCB.EC0_._Q2F] (Node ffff88013f81c1a0), AE_NOT_FOUND
+
+does not show up at boot anymore, and so far I haven't seen the other 
+errors either...
+
+I'll post a follow-up if they show up again...
+
+--
+Thomas
