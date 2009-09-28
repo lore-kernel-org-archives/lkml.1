@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbZI1K6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZI1LBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752515AbZI1K6v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 06:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZI1K6v
+	id S1752608AbZI1LBz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 07:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZI1LBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 06:58:51 -0400
-Received: from ns2.intersolute.de ([193.110.43.67]:38530 "EHLO
+	Mon, 28 Sep 2009 07:01:54 -0400
+Received: from ns2.intersolute.de ([193.110.43.67]:52955 "EHLO
 	ns2.intersolute.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751755AbZI1K6u (ORCPT
+	with ESMTP id S1752321AbZI1LBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 06:58:50 -0400
-Message-ID: <4AC096EC.2090603@lumino.de>
-Date: Mon, 28 Sep 2009 12:58:52 +0200
+	Mon, 28 Sep 2009 07:01:54 -0400
+Message-ID: <4AC097A4.9070903@lumino.de>
+Date: Mon, 28 Sep 2009 13:01:56 +0200
 From: Michael Schnell <mschnell@lumino.de>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
@@ -28,22 +28,12 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Michael Schnell wrote:
-> Mathieu Desnoyers wrote:
->> The mutex code (and usual futex users) use futex to implement mutual
->> exclusion.  My goal is to send a wakeup signal to a thread waiting for
->> work to perform when adding such work. But without any mutual exclusion.
-> 
 > Why is that different ?
-> 
-> if you use a normal FUTEX like pthread_mutex_...() and have the thread
-> block right at the start (by blocking the *UTEX before creating the
-> thread). Now you can wake the thread by unblocking the *UTEX.
-> 
-> -Michael
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
+It might be that (different from a sema), a FUTEX can only be unlocked
+by the process that locked it.
+
+But then why should FUTEX offer advantages over sema, if in that
+application the FUTEX is supposed to block with a system call, anyway ?
+
+-Michael
