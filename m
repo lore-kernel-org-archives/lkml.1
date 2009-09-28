@@ -1,12 +1,12 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752385AbZI1Oqm (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 28 Sep 2009 10:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZI1Oqm
+	id S1752463AbZI1Oqr (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 28 Sep 2009 10:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZI1Oqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 28 Sep 2009 10:46:42 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:34432 "EHLO e5.ny.us.ibm.com"
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:34437 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbZI1Oql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751973AbZI1Oql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Sep 2009 10:46:41 -0400
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/2] rcu: Apply review feedback from Josh Triplett, part 4
-Date: Mon, 28 Sep 2009 07:46:33 -0700
-Message-Id: <12541491934126-git-send-email->
+Subject: [PATCH tip/core/rcu 1/2] rcu: Apply review feedback from Josh Triplett, part 3
+Date: Mon, 28 Sep 2009 07:46:32 -0700
+Message-Id: <12541491931164-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20090928144551.GA20704@linux.vnet.ibm.com>
 References: <20090928144551.GA20704@linux.vnet.ibm.com>
@@ -26,194 +26,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Whitespace fixes, updated comments, and trivial code movement.
 
-These issues identified during an old-fashioned face-to-face code
-review extending over many hours.  This group improves an existing
-abstraction and introduces two new ones.  It also fixes an RCU
-stall-warning bug found while making the other changes.
+o	Fix whitespace error in RCU_HEAD_INIT()
 
-o	Make RCU_INIT_FLAVOR() declare its own variables, removing
-	the need to declare them at each call site.
+o	Move "So where is rcu_write_lock()" comment so that it does
+	not come between the rcu_read_unlock() header comment and
+	the rcu_read_unlock() definition.
 
-o	Create an rcu_for_each_leaf() macro that scans the leaf nodes
-	of the rcu_node tree.
+o	Move the module_param statements for blimit, qhimark, and qlowmark
+	to immediately follow the corresponding definitions.
 
-o	Create an rcu_for_each_node_breadth_first() macro that does
-	a breadth-first traversal of the rcu_node tree, AKA stepping
-	through the array in index-number order.
-
-o	If all CPUs corresponding to a given leaf rcu_node structure
-	go offline, then any tasks queued on that leaf will be moved
-	to the root rcu_node structure.  Therefore, the stall-warning
-	code must dump out tasks queued on the root rcu_node structure
-	as well as those queued on the leaf rcu_node structures.
+o	In __rcu_offline_cpu(), move the assignment to rdp_me inside the
+	"if" statement, given that rdp_me is not used outside of that "if"
+	statement.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutree.c        |   53 ++++++++++++++++++++++++----------------------
- kernel/rcutree.h        |   12 ++++++++++
- kernel/rcutree_plugin.h |    4 ---
- 3 files changed, 40 insertions(+), 29 deletions(-)
+ include/linux/rcupdate.h |   14 +++++++-------
+ kernel/rcutree.c         |   10 +++++-----
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index b2f1e10..6dd71fa 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -83,7 +83,7 @@ extern int rcu_scheduler_active;
+ #error "Unknown RCU implementation specified to kernel configuration"
+ #endif
+ 
+-#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
++#define RCU_HEAD_INIT	{ .next = NULL, .func = NULL }
+ #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
+ #define INIT_RCU_HEAD(ptr) do { \
+        (ptr)->next = NULL; (ptr)->func = NULL; \
+@@ -135,12 +135,6 @@ static inline void rcu_read_lock(void)
+ 	rcu_read_acquire();
+ }
+ 
+-/**
+- * rcu_read_unlock - marks the end of an RCU read-side critical section.
+- *
+- * See rcu_read_lock() for more information.
+- */
+-
+ /*
+  * So where is rcu_write_lock()?  It does not exist, as there is no
+  * way for writers to lock out RCU readers.  This is a feature, not
+@@ -150,6 +144,12 @@ static inline void rcu_read_lock(void)
+  * used as well.  RCU does not care how the writers keep out of each
+  * others' way, as long as they do so.
+  */
++
++/**
++ * rcu_read_unlock - marks the end of an RCU read-side critical section.
++ *
++ * See rcu_read_lock() for more information.
++ */
+ static inline void rcu_read_unlock(void)
+ {
+ 	rcu_read_release();
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 1ccdd5b..bb313fd 100644
+index 45eb2d1..1ccdd5b 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -461,8 +461,6 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
- 	long delta;
- 	unsigned long flags;
- 	struct rcu_node *rnp = rcu_get_root(rsp);
--	struct rcu_node *rnp_cur = rsp->level[NUM_RCU_LVLS - 1];
--	struct rcu_node *rnp_end = &rsp->node[NUM_RCU_NODES];
+@@ -121,6 +121,10 @@ static int blimit = 10;		/* Maximum callbacks per softirq. */
+ static int qhimark = 10000;	/* If this many pending, ignore blimit. */
+ static int qlowmark = 100;	/* Once only this many pending, use blimit. */
  
- 	/* Only let one CPU complain about others per time interval. */
- 
-@@ -473,18 +471,24 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
- 		return;
- 	}
- 	rsp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
++module_param(blimit, int, 0);
++module_param(qhimark, int, 0);
++module_param(qlowmark, int, 0);
 +
-+	/*
-+	 * Now rat on any tasks that got kicked up to the root rcu_node
-+	 * due to CPU offlining.
-+	 */
-+	rcu_print_task_stall(rnp);
- 	spin_unlock_irqrestore(&rnp->lock, flags);
+ static void force_quiescent_state(struct rcu_state *rsp, int relaxed);
+ static int rcu_pending(int cpu);
  
- 	/* OK, time to rat on our buddy... */
- 
- 	printk(KERN_ERR "INFO: RCU detected CPU stalls:");
--	for (; rnp_cur < rnp_end; rnp_cur++) {
-+	rcu_for_each_leaf_node(rsp, rnp) {
- 		rcu_print_task_stall(rnp);
--		if (rnp_cur->qsmask == 0)
-+		if (rnp->qsmask == 0)
- 			continue;
--		for (cpu = 0; cpu <= rnp_cur->grphi - rnp_cur->grplo; cpu++)
--			if (rnp_cur->qsmask & (1UL << cpu))
--				printk(" %d", rnp_cur->grplo + cpu);
-+		for (cpu = 0; cpu <= rnp->grphi - rnp->grplo; cpu++)
-+			if (rnp->qsmask & (1UL << cpu))
-+				printk(" %d", rnp->grplo + cpu);
- 	}
- 	printk(" (detected by %d, t=%ld jiffies)\n",
- 	       smp_processor_id(), (long)(jiffies - rsp->gp_start));
-@@ -644,7 +648,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	 * one corresponding to this CPU, due to the fact that we have
- 	 * irqs disabled.
+@@ -873,8 +877,8 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 	 * indefinitely delay callbacks, you have far worse things to
+ 	 * be worrying about.
  	 */
--	for (rnp = &rsp->node[0]; rnp < &rsp->node[NUM_RCU_NODES]; rnp++) {
-+	rcu_for_each_node_breadth_first(rsp, rnp) {
- 		spin_lock(&rnp->lock);	/* irqs already disabled. */
- 		rcu_preempt_check_blocked_tasks(rnp);
- 		rnp->qsmask = rnp->qsmaskinit;
-@@ -1037,33 +1041,32 @@ static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
- 	int cpu;
- 	unsigned long flags;
- 	unsigned long mask;
--	struct rcu_node *rnp_cur = rsp->level[NUM_RCU_LVLS - 1];
--	struct rcu_node *rnp_end = &rsp->node[NUM_RCU_NODES];
-+	struct rcu_node *rnp;
- 
--	for (; rnp_cur < rnp_end; rnp_cur++) {
-+	rcu_for_each_leaf_node(rsp, rnp) {
- 		mask = 0;
--		spin_lock_irqsave(&rnp_cur->lock, flags);
-+		spin_lock_irqsave(&rnp->lock, flags);
- 		if (rsp->completed != lastcomp) {
--			spin_unlock_irqrestore(&rnp_cur->lock, flags);
-+			spin_unlock_irqrestore(&rnp->lock, flags);
- 			return 1;
- 		}
--		if (rnp_cur->qsmask == 0) {
--			spin_unlock_irqrestore(&rnp_cur->lock, flags);
-+		if (rnp->qsmask == 0) {
-+			spin_unlock_irqrestore(&rnp->lock, flags);
- 			continue;
- 		}
--		cpu = rnp_cur->grplo;
-+		cpu = rnp->grplo;
- 		bit = 1;
--		for (; cpu <= rnp_cur->grphi; cpu++, bit <<= 1) {
--			if ((rnp_cur->qsmask & bit) != 0 && f(rsp->rda[cpu]))
-+		for (; cpu <= rnp->grphi; cpu++, bit <<= 1) {
-+			if ((rnp->qsmask & bit) != 0 && f(rsp->rda[cpu]))
- 				mask |= bit;
- 		}
- 		if (mask != 0 && rsp->completed == lastcomp) {
- 
--			/* cpu_quiet_msk() releases rnp_cur->lock. */
--			cpu_quiet_msk(mask, rsp, rnp_cur, flags);
-+			/* cpu_quiet_msk() releases rnp->lock. */
-+			cpu_quiet_msk(mask, rsp, rnp, flags);
- 			continue;
- 		}
--		spin_unlock_irqrestore(&rnp_cur->lock, flags);
-+		spin_unlock_irqrestore(&rnp->lock, flags);
- 	}
- 	return 0;
- }
-@@ -1545,6 +1548,10 @@ static void __init rcu_init_one(struct rcu_state *rsp)
-  */
- #define RCU_INIT_FLAVOR(rsp, rcu_data) \
- do { \
-+	int i; \
-+	int j; \
-+	struct rcu_node *rnp; \
-+	\
- 	rcu_init_one(rsp); \
- 	rnp = (rsp)->level[NUM_RCU_LVLS - 1]; \
- 	j = 0; \
-@@ -1559,10 +1566,6 @@ do { \
- 
- void __init __rcu_init(void)
- {
--	int i;			/* All used by RCU_INIT_FLAVOR(). */
--	int j;
--	struct rcu_node *rnp;
--
- 	rcu_bootup_announce();
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
- 	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index e6ab31c..676eecd 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -106,6 +106,18 @@ struct rcu_node {
- 				/*  blocked_tasks[] array. */
- } ____cacheline_internodealigned_in_smp;
- 
-+/*
-+ * Do a full breadth-first scan of the rcu_node structures for the
-+ * specified rcu_state structure.
-+ */
-+#define rcu_for_each_node_breadth_first(rsp, rnp) \
-+	for ((rnp) = &(rsp)->node[0]; \
-+	     (rnp) < &(rsp)->node[NUM_RCU_NODES]; (rnp)++)
-+
-+#define rcu_for_each_leaf_node(rsp, rnp) \
-+	for ((rnp) = (rsp)->level[NUM_RCU_LVLS - 1]; \
-+	     (rnp) < &(rsp)->node[NUM_RCU_NODES]; (rnp)++)
-+
- /* Index values for nxttail array in struct rcu_data. */
- #define RCU_DONE_TAIL		0	/* Also RCU_WAIT head. */
- #define RCU_WAIT_TAIL		1	/* Also RCU_NEXT_READY head. */
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 2c73162..d88dfd3 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -424,10 +424,6 @@ static void __cpuinit rcu_preempt_init_percpu_data(int cpu)
-  */
- static void __init __rcu_init_preempt(void)
- {
--	int i;			/* All used by RCU_INIT_FLAVOR(). */
--	int j;
--	struct rcu_node *rnp;
--
- 	RCU_INIT_FLAVOR(&rcu_preempt_state, rcu_preempt_data);
+-	rdp_me = rsp->rda[smp_processor_id()];
+ 	if (rdp->nxtlist != NULL) {
++		rdp_me = rsp->rda[smp_processor_id()];
+ 		*rdp_me->nxttail[RCU_NEXT_TAIL] = rdp->nxtlist;
+ 		rdp_me->nxttail[RCU_NEXT_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
+ 		rdp->nxtlist = NULL;
+@@ -1570,7 +1574,3 @@ void __init __rcu_init(void)
  }
  
+ #include "rcutree_plugin.h"
+-
+-module_param(blimit, int, 0);
+-module_param(qhimark, int, 0);
+-module_param(qlowmark, int, 0);
 -- 
 1.5.2.5
 
