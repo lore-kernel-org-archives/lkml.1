@@ -1,73 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbZI1Hxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbZI1Hzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752656AbZI1Hxz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 03:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZI1Hxx
+	id S1752716AbZI1Hzv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 03:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZI1Hzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 03:53:53 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:32910
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751349AbZI1Hxw (ORCPT
+	Mon, 28 Sep 2009 03:55:50 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:7008 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751432AbZI1Hzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 03:53:52 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAAAIwErLO0En/2dsb2JhbADTTYQeBYFYZQ
-X-IronPort-AV: E=Sophos;i="4.44,465,1249228800"; 
-   d="scan'208";a="584593772"
-Message-ID: <4AC06B84.9010004@themaw.net>
-Date: Mon, 28 Sep 2009 15:53:40 +0800
-From: Ian Kent <raven@themaw.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Mon, 28 Sep 2009 03:55:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PGw4529sClx3Ez7rp9LD3zBhhdpE2RLmdOMKJ/8n0AZzA8OCOAzYQuF7SDOd8RzO9y
+         hQMUvy/Yq9XhfrsrC09y/YCSBlzn5TKk/VSEsmJtumoU/mXaWbzm8pBQEAZvi1VI3wa6
+         aag831fJFJoE3zvFRoPNK/kvpjg+rsYmhpMj4=
+Date: Mon, 28 Sep 2009 11:55:17 +0400
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       omegamoon@gmail.com, eric.y.miao@gmail.com, utx@penguin.cz,
+       cbou@mail.ru, Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: something wrong in drivers/power
+Message-ID: <20090928075517.GA6871@doriath.ww600.siemens.net>
+References: <20090926095555.GG1331@ucw.cz>
+ <20090926145536.GA8445@doriath.ww600.siemens.net>
+ <20090927173516.GB6710@elf.ucw.cz>
 MIME-Version: 1.0
-To: Sage Weil <sage@newdream.net>
-CC: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>, Andreas Dilger <adilger@sun.com>,
-       Yehuda Saheh <yehuda@newdream.net>, Jim Garlick <garlick@llnl.gov>
-Subject: Re: [RFC PATCH 00/11] autofs4 - update autofs4 to deal with VFS locking
- change
-References: <20090924082036.22151.85151.stgit@zeus.themaw.net> <Pine.LNX.4.64.0909240835390.25940@cobra.newdream.net>
-In-Reply-To: <Pine.LNX.4.64.0909240835390.25940@cobra.newdream.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090927173516.GB6710@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sage Weil wrote:
-> On Thu, 24 Sep 2009, Ian Kent wrote:
+On Sun, Sep 27, 2009 at 07:35:16PM +0200, Pavel Machek wrote:
+> On Sat 2009-09-26 18:55:36, Dmitry Eremin-Solenikov wrote:
+> > On Sat, Sep 26, 2009 at 11:55:55AM +0200, Pavel Machek wrote:
+> > > 
+> > > Tosa battery driver seems to be confused about its own identity.
+> > 
+> > NAK. Please see the drivers/input/touchscree/wm97xx-core.c
 > 
->> A change to the VFS path walk locking is needed to resolve an issue
->> identified by Sage Weil. This locking change requires significant
->> changes to the autofs4 module to allow it to callback to userspace
->> without introducing a deadlock.
->>
->> To cope with the change the autofs4 module needs to redirect mount
->> requests from ->d_revalidate() to ->lookup() if the directory
->> inode mutex is held when a callback needs to be done. Note that we
->> cannot redirect these requests when the mutex is not held because,
->> to function correctly, the mutex must be held over both revalidate
->> and lookup.
->>
->> Of the patches in the series most are cleanups and refactoring done
->> to keep the real change in "autofs4 - always use lookup for lookup"
->> as clean as possible. Unfortuneately, there is still quite a bit
->> left in it.
->>
->> Also, I need confirmation that the patch that changes the VFS path
->> walk locking is in fact correct, or at least like for like to what
->> will be submitted. I had some difficulty with the original patches
->> that were paosted. The patch in question below is "vfs: make
->> real_lookup do dentry revalidation with i_mutex held".
+> Could you elaborate? 
 > 
-> It looks identical to be the original two folded into one patch.  I'll 
-> repost those two now, freshened against Linus' tree.  The first has just 
-> the functional change, and the cleanup is in the second (as per 
-> Christoph's review).
+> I took a look at touchscreen file, and it does not explain
+> anything. Having tosa_battery calling itself wm97xx-battery is at
+> least confusing, and there's no explaining comment. Given that we have
+> different wm97xx_battery.c driver calling itself "wm97xx-battery"... I
+> believe that's a bug.
 
-Yes, after checking, the patch I was using is functionally the same as
-the combination of the two you re-posted. So all is good for may part.
+Tosa has a battery that is hanging on the wm97xx codec (9712 if somebody
+cares). The platform device for it is registered in the wm97xx-core and
+then used by tosa-battery driver. If you'd like to clean up this mess
+properly, you should:
 
-Ian
+1) add a clean possibility to pass platform data via ac97 bus to wm97xx
+core driver (care to check that it should be passable both via regular
+ac97 driver and via ASoC).
+
+2) add a possibility to pass device names and platform data to
+wm97xx-core child devices (battery, ts , etc.)
+
+> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > > 
+> > > diff -ur power.ofic/tosa_battery.c power/tosa_battery.c
+> > > --- linux/drivers/power.ofic/tosa_battery.c	2009-09-06 08:56:36.000000000 +0200
+> > > +++ linux/drivers/power/tosa_battery.c	2009-09-15 15:14:08.000000000 +0200
+> > > @@ -459,7 +459,7 @@
+> > >  }
+> > >  
+> > >  static struct platform_driver tosa_bat_driver = {
+> > > -	.driver.name	= "wm97xx-battery",
+> > > +	.driver.name	= "tosa-battery",
+> > >  	.driver.owner	= THIS_MODULE,
+> > >  	.probe		= tosa_bat_probe,
+> > >  	.remove		= __devexit_p(tosa_bat_remove),
+> > > @@ -483,4 +483,4 @@
+> > >  MODULE_LICENSE("GPL");
+> > >  MODULE_AUTHOR("Dmitry Baryshkov");
+> > >  MODULE_DESCRIPTION("Tosa battery driver");
+> > > -MODULE_ALIAS("platform:wm97xx-battery");
+> > > +MODULE_ALIAS("platform:tosa-battery");
+> > > 
+> > > 
+> > > -- 
+> > > (english) http://www.livejournal.com/~pavelmachek
+> > > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > 
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+-- 
+With best wishes
+Dmitry
 
