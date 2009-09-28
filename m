@@ -1,154 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZI1Rqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbZI1Rt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbZI1Rqv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 13:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZI1Rqu
+	id S1752373AbZI1Rt7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 13:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZI1Rt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 13:46:50 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:51903 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbZI1Rqu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 13:46:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=PBCW+JLinN06RP4Gdn9LqL7uxxH71U3RxBFASaAgIa2YSMWTVNXQvRPDjvc+SyCfzp
-         KWjsRQ0wDj/CX64/WC1S/HbYouJT+gw+1CN59sdm2dfUp/CTz6Ekm5zVZEy+MC9UzpHH
-         OpGPN8V1Ew8cTyectTTvKLSJT1KwYeYdQjCbk=
+	Mon, 28 Sep 2009 13:49:58 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:42564 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752083AbZI1Rt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 13:49:58 -0400
+Date: Mon, 28 Sep 2009 13:48:09 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20090928174809.GB3643@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com> <1253976676.7005.40.camel@marge.simson.net> <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254075359.7354.66.camel@marge.simson.net> <1254110648.7683.3.camel@marge.simson.net>
 MIME-Version: 1.0
-In-Reply-To: <20090928160757.GD5264@lenovo>
-References: <4ABF0DE0.1030400@kernel.org> <20090927080605.GA4984@lenovo>
-	 <4ABF2262.3090905@kernel.org> <20090927085406.GB4984@lenovo>
-	 <20090927102805.GC4984@lenovo> <20090927144008.GD4984@lenovo>
-	 <20090927174219.GA14280@lenovo> <20090928160757.GD5264@lenovo>
-Date: Mon, 28 Sep 2009 10:46:54 -0700
-Message-ID: <86802c440909281046o5fa0032do3497087d173cbf82@mail.gmail.com>
-Subject: Re: [PATCH] x86: add show_lapic=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254110648.7683.3.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 9:07 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> Yinghai, if you still need show_lapic=1 by default the
-> acceptable solution (I guess) could be that we accept
-> show_lapic=all as well. So a user may safely put it without
-> knowing how many apics he has.
->
-> Does it look acceptable for you? Something like (tested) below.
-> Also I think maybe we should better extend apic= option itself instead
-> of intruducing new one?
->
-> Anyway, what you think? (again, if you like this patch -- SOB it, Ack it,
-> or whatever you want).
-> ---
-> [PATCH -tip] x86,apic: limit apic dumping, introduce show_lapic setup option
->
-> In case if a system has a large number of cpus printing apics
-> contents may consume a long time period.
->
-> We limit such an output by 1 apic by default. But to have an
-> ability to see all apics or some part of them we introduce
-> "show_lapic" setup option which allow us to limit/unlimit
-> the number of APICs being dumped.
->
-> Example: apic=debug show_lapic=5, or apic=debug show_lapic=all
->
-> Also move apic_verbosity checking upper that way so helper routines
-> do not need to inspect it at all.
->
-> Suggested-by: Yinghai Lu <yinghai@kernel.org>
-> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> ---
->  arch/x86/kernel/apic/io_apic.c |   47 +++++++++++++++++++++++++++--------------
->  1 file changed, 32 insertions(+), 15 deletions(-)
->
-> Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-> =====================================================================
-> --- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
-> +++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-> @@ -1599,9 +1599,6 @@ __apicdebuginit(void) print_IO_APIC(void
->        struct irq_desc *desc;
->        unsigned int irq;
->
-> -       if (apic_verbosity == APIC_QUIET)
-> -               return;
-> -
->        printk(KERN_DEBUG "number of MP IRQ sources: %d.\n", mp_irq_entries);
->        for (i = 0; i < nr_ioapics; i++)
->                printk(KERN_DEBUG "number of IO-APIC #%d registers: %d.\n",
-> @@ -1708,9 +1705,6 @@ __apicdebuginit(void) print_APIC_field(i
->  {
->        int i;
->
-> -       if (apic_verbosity == APIC_QUIET)
-> -               return;
-> -
->        printk(KERN_DEBUG);
->
->        for (i = 0; i < 8; i++)
-> @@ -1724,9 +1718,6 @@ __apicdebuginit(void) print_local_APIC(v
->        unsigned int i, v, ver, maxlvt;
->        u64 icr;
->
-> -       if (apic_verbosity == APIC_QUIET)
-> -               return;
-> -
->        printk(KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
->                smp_processor_id(), hard_smp_processor_id());
->        v = apic_read(APIC_ID);
-> @@ -1824,13 +1815,19 @@ __apicdebuginit(void) print_local_APIC(v
->        printk("\n");
->  }
->
-> -__apicdebuginit(void) print_all_local_APICs(void)
-> +__apicdebuginit(void) print_local_APICs(int maxcpu)
->  {
->        int cpu;
->
-> +       if (!maxcpu)
-> +               return;
-> +
->        preempt_disable();
-> -       for_each_online_cpu(cpu)
-> +       for_each_online_cpu(cpu) {
-> +               if (cpu >= maxcpu)
-> +                       break;
->                smp_call_function_single(cpu, print_local_APIC, NULL, 1);
-> +       }
->        preempt_enable();
->  }
->
-> @@ -1839,7 +1836,7 @@ __apicdebuginit(void) print_PIC(void)
->        unsigned int v;
->        unsigned long flags;
->
-> -       if (apic_verbosity == APIC_QUIET || !nr_legacy_irqs)
-> +       if (!nr_legacy_irqs)
->                return;
->
->        printk(KERN_DEBUG "\nprinting PIC contents\n");
-> @@ -1866,21 +1863,41 @@ __apicdebuginit(void) print_PIC(void)
->        printk(KERN_DEBUG "... PIC ELCR: %04x\n", v);
->  }
->
-> -__apicdebuginit(int) print_all_ICs(void)
-> +static int __initdata show_lapic = 1;
-> +static __init int setup_show_lapic(char *arg)
-> +{
-> +       int num = -1;
-> +
-> +       if (strcmp(arg, "all") == 0) {
-> +               show_lapic = CONFIG_NR_CPUS;
+On Mon, Sep 28, 2009 at 06:04:08AM +0200, Mike Galbraith wrote:
+> On Sun, 2009-09-27 at 20:16 +0200, Mike Galbraith wrote:
+> > On Sun, 2009-09-27 at 18:42 +0200, Jens Axboe wrote:
+> 
+> > I'll give it a shot first thing in the A.M.
+> 
+> > > diff --git a/block/elevator.c b/block/elevator.c
+> > > index 1975b61..d00a72b 100644
+> > > --- a/block/elevator.c
+> > > +++ b/block/elevator.c
+> > > @@ -497,9 +497,17 @@ int elv_merge(struct request_queue *q, struct request **req, struct bio *bio)
+> > >  	 * See if our hash lookup can find a potential backmerge.
+> > >  	 */
+> > >  	__rq = elv_rqhash_find(q, bio->bi_sector);
+> > > -	if (__rq && elv_rq_merge_ok(__rq, bio)) {
+> > > -		*req = __rq;
+> > > -		return ELEVATOR_BACK_MERGE;
+> > > +	if (__rq) {
+> > > +		/*
+> > > +		 * If requests are queued behind this one, disallow merge. This
+> > > +		 * prevents streaming IO from continually passing new IO.
+> > > +		 */
+> > > +		if (elv_latter_request(q, __rq))
+> > > +			return ELEVATOR_NO_MERGE;
+> > > +		if (elv_rq_merge_ok(__rq, bio)) {
+> > > +			*req = __rq;
+> > > +			return ELEVATOR_BACK_MERGE;
+> > > +		}
+> > >  	}
+> > >  
+> > >  	if (e->ops->elevator_merge_fn)
+> 
+> - = virgin tip v2.6.31-10215-ga3c9602
+> + = with patchlet
+>                                                             Avg
+> dd pre         67.4     70.9     65.4     68.9     66.2     67.7-
+>                65.9     68.5     69.8     65.2     65.8     67.0-     Avg
+>                70.4     70.3     65.1     66.4     70.1     68.4-     67.7-
+>                73.1     64.6     65.3     65.3     64.9     66.6+     65.6+     .968
+>                63.8     67.9     65.2     65.1     64.4     65.2+
+>                64.9     66.3     64.1     65.2     64.8     65.0+
+> perf stat      8.66    16.29     9.65    14.88     9.45     11.7-
+>               15.36     9.71    15.47    10.44    12.93     12.7-
+>               10.55    15.11    10.22    15.35    10.32     12.3-     12.2-
+>                9.87     7.53    10.62     7.51     9.95      9.0+      9.1+     .745
+>                7.73    10.12     8.19    11.87     8.07      9.1+
+>               11.04     7.62    10.14     8.13    10.23      9.4+
+> dd post        63.4     60.5     66.7     64.5     67.3     64.4-
+>                64.4     66.8     64.3     61.5     62.0     63.8-
+>                63.8     64.9     66.2     65.6     66.9     65.4-     64.5-
+>                60.9     63.4     60.2     63.4     65.5     62.6+     61.8+     .958
+>                63.3     59.9     61.9     62.7     61.2     61.8+
+>                60.1     63.7     59.5     61.5     60.6     61.0+
+> 
 
-NR_CPUS or nr_cpu_ids?
+Hmm.., so close to 25% reduction on average in completion time of konsole.
+But this is in presece of writer. Does this help even in presence of 1 or
+more sequential readers going?
 
-YH
+So here latency seems to be coming from three sources.
+
+- Wait in CFQ before request is dispatched (only in case of competing seq readers).
+- seek latencies
+- latencies because of bigger requests are already dispatched to disk.
+
+So limiting the size of request will help with third factor but not with first  
+two factors and here seek latencies seem to be the biggest contributor. 
+
+Thanks
+Vivek
