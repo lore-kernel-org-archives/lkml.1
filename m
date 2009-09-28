@@ -1,74 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbZI1Nva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbZI1Nyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751906AbZI1Nva (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 09:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZI1Nva
+	id S1751999AbZI1Nyr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 09:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZI1Nyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 09:51:30 -0400
-Received: from thunk.org ([69.25.196.29]:38845 "EHLO thunker.thunk.org"
+	Mon, 28 Sep 2009 09:54:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38582 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751677AbZI1Nv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 09:51:29 -0400
-Date: Mon, 28 Sep 2009 09:51:09 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: tglx@linutronix.de, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Ondrej Zary <linux@rainbow-software.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: T400 suspend/resume regression -- bisected to a mystery merge
-	commit
-Message-ID: <20090928135109.GB17514@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, tglx@linutronix.de,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-	Ondrej Zary <linux@rainbow-software.org>,
-	Magnus Damm <magnus.damm@gmail.com>
-References: <E1MrRDa-0002WF-LO@closure.thunk.org> <200909271813.42829.rjw@sisk.pl>
+	id S1751412AbZI1Nyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 09:54:46 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Remove pty_ops_bsd and pty_bsd_ioctl() as they're not used
+To: torvalds@osdl.org, akpm@linux-foundation.org, gregkh@suse.de
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Date: Mon, 28 Sep 2009 14:53:32 +0100
+Message-ID: <20090928135332.4300.56046.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909271813.42829.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 27, 2009 at 06:13:42PM +0200, Rafael J. Wysocki wrote:
-> 
-> commit c7121843685de2bf7f3afd3ae1d6a146010bf1fc
-> Author: Magnus Damm <magnus.damm@gmail.com>
-> Date:   Tue Jul 28 14:09:55 2009 -0700
-> 
->     clocksource: Save mult_orig in clocksource_disable()
-> 
-> Please try to revert it and retest.
+Remove pty_ops_bsd as nothing appears to use it anymore.  It results in the
+following warning:
 
-Using Linus's suggested technique, I bisected it down to this commit:
+	drivers/char/pty.c:344: warning: unused variable `pty_ops_bsd'
 
-Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Date:   Fri Aug 14 15:47:30 2009 +0200
+if CONFIG_LEGACY_PTYS=y.
 
-    timekeeping: Update clocksource with stop_machine
-    
-    update_wall_time calls change_clocksource HZ times per second to check
-    if a new clock source is available. In close to 100% of all calls
-    there is no new clock. Replace the tick based check by an update done
-    with stop_machine.
-    
-    Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-    Cc: Ingo Molnar <mingo@elte.hu>
-    Acked-by: John Stultz <johnstul@us.ibm.com>
-    Cc: Daniel Walker <dwalker@fifo99.com>
-    LKML-Reference: <20090814134810.711836357@de.ibm.com>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Also remove pty_bsd_ioctl() as that's only referred to by pty_ops_bsd.
 
-Unfortunately there are a bunch of patches I'm trying to get in shape
-to push to Linus (the merge window coincided unfortunately with
-LinuxCon/Plumbeer's so I'm a bit behind) so I haven't had a chance to
-take it further.  I'll try reverting each of the above two patches,
-and report back in a day or two.
+Possibly legacy_pty_init() should be passing this to tty_set_operations()
+rather than pty_ops.
 
-    	   	   				- Ted
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ drivers/char/pty.c |   23 -----------------------
+ 1 files changed, 0 insertions(+), 23 deletions(-)
+
+
+diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+index 53761ce..175f805 100644
+--- a/drivers/char/pty.c
++++ b/drivers/char/pty.c
+@@ -328,32 +328,9 @@ static const struct tty_operations pty_ops = {
+ #ifdef CONFIG_LEGACY_PTYS
+ static struct tty_driver *pty_driver, *pty_slave_driver;
+ 
+-static int pty_bsd_ioctl(struct tty_struct *tty, struct file *file,
+-			 unsigned int cmd, unsigned long arg)
+-{
+-	switch (cmd) {
+-	case TIOCSPTLCK: /* Set PT Lock (disallow slave open) */
+-		return pty_set_lock(tty, (int __user *) arg);
+-	}
+-	return -ENOIOCTLCMD;
+-}
+-
+ static int legacy_count = CONFIG_LEGACY_PTY_COUNT;
+ module_param(legacy_count, int, 0);
+ 
+-static const struct tty_operations pty_ops_bsd = {
+-	.open = pty_open,
+-	.close = pty_close,
+-	.write = pty_write,
+-	.write_room = pty_write_room,
+-	.flush_buffer = pty_flush_buffer,
+-	.chars_in_buffer = pty_chars_in_buffer,
+-	.unthrottle = pty_unthrottle,
+-	.set_termios = pty_set_termios,
+-	.ioctl = pty_bsd_ioctl,
+-	.resize = pty_resize
+-};
+-
+ static void __init legacy_pty_init(void)
+ {
+ 	if (legacy_count <= 0)
+
