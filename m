@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbZI1EWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZI1C5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751822AbZI1EWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 00:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZI1EWs
+	id S1752740AbZI1C5m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 22:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZI1C5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 00:22:48 -0400
-Received: from ozlabs.org ([203.10.76.45]:36845 "EHLO ozlabs.org"
+	Sun, 27 Sep 2009 22:57:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:45511 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751231AbZI1EWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 00:22:48 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PULL] lguest & virtio
-Date: Mon, 28 Sep 2009 12:20:25 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-References: <200909232235.15076.rusty@rustcorp.com.au> <20090926150124.GA11623@lst.de>
-In-Reply-To: <20090926150124.GA11623@lst.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1752211AbZI1C5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 22:57:41 -0400
+Date: Mon, 28 Sep 2009 04:57:41 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
+Message-ID: <20090928025741.GI6327@wotan.suse.de>
+References: <20090926031537.GA10176@localhost> <Pine.LNX.4.64.0909261115530.12927@sister.anvils> <20090926190645.GB14368@wotan.suse.de> <20090926213204.GX30185@one.firstfloor.org> <Pine.LNX.4.64.0909271714370.9097@sister.anvils> <20090927192251.GB6327@wotan.suse.de> <Pine.LNX.4.64.0909272251180.4402@sister.anvils> <20090927230118.GH6327@wotan.suse.de> <20090928011943.GB1656@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909281220.26266.rusty@rustcorp.com.au>
+In-Reply-To: <20090928011943.GB1656@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Sep 2009 12:31:24 am Christoph Hellwig wrote:
-> What happend to the patch to drop the virt/non-rotational flag?
+On Mon, Sep 28, 2009 at 03:19:43AM +0200, Andi Kleen wrote:
+> > There is no real rush AFAIKS to fix this one single pagecache site
+> > while we have problems with slab allocators and all other unaudited
+> > places that nonatomically modify page flags with an elevated
+> 
+> hwpoison ignores slab pages.
 
-I pushed it back; I realize now you still wanted that one, it was
-"Subject: virtio_blk: set QUEUE_ORDERED_DRAIN by default" you wanted to
-reconsider.
+"ignores" them *after* it has already written to page flags?
+By that time it's too late.
 
-Will send separately now...
-Rusty.
+ 
+> > page reference ... just mark HWPOISON as broken for the moment, or
+> > cut it down to do something much simpler I guess?
+> 
+> Erm no. These cases are *EXTREMLY* unlikely to hit.
+
+Well it's fundamentally badly buggy, rare or not. We could avoid
+lots of nasty atomic operations if we just care that it works
+most of the time. I guess it's a matter of perspective but I
+won't push for one thing or the other in hwpoison code so long
+as it stays out of core code for the most part.
+
