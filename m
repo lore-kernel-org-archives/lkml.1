@@ -1,216 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZI1Rut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752618AbZI1RvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbZI1Rut (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 13:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZI1Rus
+	id S1752618AbZI1RvY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 13:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZI1RvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 13:50:48 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:44549 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbZI1Rur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 13:50:47 -0400
-X-IronPort-AV: E=Sophos;i="4.44,467,1249282800"; 
-   d="scan'208";a="250316078"
-Subject: Re: NFS problem with past 2.6.31 git tree
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <c4e36d110909251246s6af618e8n663afe2b66c4cd5d@mail.gmail.com>
-References: <c4e36d110909250812g74e049b7u39566d189970d77e@mail.gmail.com>
-	 <1253892426.31072.37.camel@heimdal.trondhjem.org>
-	 <c4e36d110909251246s6af618e8n663afe2b66c4cd5d@mail.gmail.com>
+	Mon, 28 Sep 2009 13:51:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38805 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751837AbZI1RvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 13:51:22 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX191tjpkK8l1Hq0TwokoYqXc9Bq3MNP6SAICikce4n
+	t99V0ZhNbFHuOg
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       jens.axboe@oracle.com, Tobias Oetiker <tobi@oetiker.ch>
+In-Reply-To: <4e5e476b0909280835w3410d58aod93a29d1dcda8909@mail.gmail.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
+	 <4e5e476b0909271000u69d79346s27cccad219e49902@mail.gmail.com>
+	 <20090928145655.GB8192@redhat.com>
+	 <4e5e476b0909280835w3410d58aod93a29d1dcda8909@mail.gmail.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Mon, 28 Sep 2009 13:50:02 -0400
-Message-Id: <1254160202.7124.2.camel@heimdal.trondhjem.org>
+Date: Mon, 28 Sep 2009 19:51:14 +0200
+Message-Id: <1254160274.9820.25.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-X-OriginalArrivalTime: 28 Sep 2009 17:50:35.0680 (UTC) FILETIME=[2EA2AA00:01CA4064]
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-25 at 21:46 +0200, Zdenek Kabelac wrote:
-> 2009/9/25 Trond Myklebust <Trond.Myklebust@netapp.com>:
-> > On Fri, 2009-09-25 at 17:12 +0200, Zdenek Kabelac wrote:
-> >> Hi
-> >>
-> >> I've noticed that my qemu guest is now unable to use localy exported
-> >> nfs directory.
-> >> Directory gets mounted, plain 'ls' shows filenames - but nothing else
-> >> could be done.
-> >>
-> >> ls -la gives this output:
-> >> ls: cannot access patch: Input/output error
-> >> ...
-> >>
-> >>
-> >> Both host & guest are running same kernel:
-> >> 851b147e4411df6a1e7e90e2a609773c277eefd2
-> >>
-> >> I've checked last few commits and tried to revert them -
-> >> and this one seems to cure my problem when reverted:
-> >>
-> >> Sep 23:  8a6e5deb8a8caa810fef2c525f5dbea2cfe04a47
-> >> NFS: Get rid of the NFS_MOUNT_VER3 and NFS_MOUNT_TCP flags
-> >>
-> >> I should also probably note that I'm seeing this message in my dmesg log:
-> >> svc: failed to register lockdv1 RPC service (errno 97)
-> >>
-> >> rpcinfo -p
-> >>    program vers proto   port
-> >>     100000    2   tcp    111  portmapper
-> >>     100000    2   udp    111  portmapper
-> >>     100024    1   udp  53550  status
-> >>     100024    1   tcp  44174  status
-> >>     100021    1   udp  49878  nlockmgr
-> >>     100021    3   udp  49878  nlockmgr
-> >>     100021    4   udp  49878  nlockmgr
-> >>     100021    1   tcp  47319  nlockmgr
-> >>     100021    3   tcp  47319  nlockmgr
-> >>     100021    4   tcp  47319  nlockmgr
-> >>
-> >> automount(pid1720) /misc autofs
-> >> rw,relatime,fd=4,pgrp=1720,timeout=300,minproto=2,maxproto=4,indirect
-> >> 0 0
-> >> 192.168.122.1:/home/u/export /misc/u nfs
-> >> rw,relatime,vers=3,rsize=524288,wsize=524288,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=192.168.xxx.yyy,mountvers=3,mountproto=tcp,addr=192.168.xxx.yyy
-> >> 0 0
-> >>
-> >>
-> >> Zdenek
-> > What does
-> >
-> >   cat /proc/self/mountinfo
-> >
-> > give you?
-> >
+On Mon, 2009-09-28 at 17:35 +0200, Corrado Zoccolo wrote:
+
+> Great.
+> Can you try the attached patch (on top of 2.6.31)?
+> It implements the alternative approach we discussed privately in july,
+> and it addresses the possible latency increase that could happen with
+> your patch.
 > 
+> To summarize for everyone, we separate sync sequential queues, sync
+> seeky queues and async queues in three separate RR strucutres, and
+> alternate servicing requests between them.
 > 
-> Working version: (kernel 2.6.31 or current git with reverted NFS patch)
+> When servicing seeky queues (the ones that are usually penalized by
+> cfq, for which no fairness is usually provided), we do not idle
+> between them, but we do idle for the last queue (the idle can be
+> exited when any seeky queue has requests). This allows us to allocate
+> disk time globally for all seeky processes, and to reduce seeky
+> processes latencies.
 > 
-> 22 12 0:17 / /misc rw,relatime - autofs automount(pid1720)
-> rw,fd=4,pgrp=1720,timeout=300,minproto=2,maxproto=4,indirect
-> 
-> 24 22 0:19 / /misc/kabi rw,relatime - nfs IP:/home/kabi/export
-> rw,vers=3,rsize=524288,wsize=524288,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=IP,mountvers=3,mountproto=tcp,addr=IP
-> 
-> 
-> Nonworking version:
-> 
-> 22 12 0:17 / /misc rw,relatime - autofs automount(pid1704)
-> rw,fd=4,pgrp=1704,timeout=300,minproto=2,maxproto=4,indirect
-> 
-> 24 22 0:19 / /misc/kabi rw,relatime - nfs IP:/home/kabi/export
-> rw,vers=2,rsize=8192,wsize=8192,namlen=255,soft,proto=tcp,port=65535,timeo=600,retrans=2,sec=sys,mountaddr=IP,mountvers=3,mountproto=tcp,addr=IP
-> 
-> 
-> 
-> Looks like vers=2  != vers=3   and rsize/wsize - which is also set by
-> the kernel itself to those lower values.
-> (i.e. my /etc/init.d/autofs doesn't modify localoptions - of course I
-> could use this to set 8192 wsize and rsize for my working kernel)
-> 
-> Zdenek
+> I tested with 'konsole -e exit', while doing a sequential write with
+> dd, and the start up time reduced from 37s to 7s, on an old laptop
+> disk.
 
+I was fiddling around trying to get IDLE class to behave at least, and
+getting a bit frustrated.  Class/priority didn't seem to make much if
+any difference for konsole -e exit timings, and now I know why.  I saw
+the reference to Vivek's patch, and gave it a shot.  Makes a large
+difference.
+                                                           Avg
+perf stat     12.82     7.19     8.49     5.76     9.32    8.7     anticipatory
+              16.24   175.82   154.38   228.97   147.16  144.5     noop
+              43.23    57.39    96.13   148.25   180.09  105.0     deadline
+               9.15    14.51     9.39    15.06     9.90   11.6     cfq fairness=0 dd=nice 0
+              12.22     9.85    12.55     9.88    15.06   11.9     cfq fairness=0 dd=nice 19
+               9.77    13.19    11.78    17.40     9.51   11.9     cfq fairness=0 dd=SCHED_IDLE
+               4.59     2.74     4.70     3.45     4.69    4.0     cfq fairness=1 dd=nice 0
+               3.79     4.66     2.66     5.15     3.03    3.8     cfq fairness=1 dd=nice 19
+               2.79     4.73     2.79     4.02     2.50    3.3     cfq fairness=1 dd=SCHED_IDLE
 
-OK. The following patch fixes the default nfs version issue for me. I
-have another one to fix the incorrectly displayed port numbers...
+I'll give your patch a spin as well.
 
-Cheers
-  Trond
-------------------------------------------------------------------------
-NFS: Fix a default mount regression...
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+	-Mike
 
-With the recent spate of changes, the nfs protocol version will now default
-to 2 instead of 3, while the mount protocol version defaults to 3.
-
-The following patch should ensure the defaults are consistent with the
-previous defaults of vers=3,proto=tcp,mountvers=3,mountproto=tcp.
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/nfs/super.c |   13 ++++++-------
- 1 files changed, 6 insertions(+), 7 deletions(-)
-
-
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 29786d3..0343ebc 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -728,22 +728,24 @@ static void nfs_umount_begin(struct super_block *sb)
- 	unlock_kernel();
- }
- 
--static struct nfs_parsed_mount_data *nfs_alloc_parsed_mount_data(int flags)
-+static struct nfs_parsed_mount_data *nfs_alloc_parsed_mount_data(unsigned int version)
- {
- 	struct nfs_parsed_mount_data *data;
- 
- 	data = kzalloc(sizeof(*data), GFP_KERNEL);
- 	if (data) {
--		data->flags		= flags;
- 		data->rsize		= NFS_MAX_FILE_IO_SIZE;
- 		data->wsize		= NFS_MAX_FILE_IO_SIZE;
- 		data->acregmin		= NFS_DEF_ACREGMIN;
- 		data->acregmax		= NFS_DEF_ACREGMAX;
- 		data->acdirmin		= NFS_DEF_ACDIRMIN;
- 		data->acdirmax		= NFS_DEF_ACDIRMAX;
-+		data->mount_server.port	= NFS_UNSPEC_PORT;
- 		data->nfs_server.port	= NFS_UNSPEC_PORT;
-+		data->nfs_server.protocol = XPRT_TRANSPORT_TCP;
- 		data->auth_flavors[0]	= RPC_AUTH_UNIX;
- 		data->auth_flavor_len	= 1;
-+		data->version		= version;
- 		data->minorversion	= 0;
- 	}
- 	return data;
-@@ -1711,8 +1713,6 @@ static int nfs_validate_mount_data(void *options,
- 
- 		if (!(data->flags & NFS_MOUNT_TCP))
- 			args->nfs_server.protocol = XPRT_TRANSPORT_UDP;
--		else
--			args->nfs_server.protocol = XPRT_TRANSPORT_TCP;
- 		/* N.B. caller will free nfs_server.hostname in all cases */
- 		args->nfs_server.hostname = kstrdup(data->hostname, GFP_KERNEL);
- 		args->namlen		= data->namlen;
-@@ -2106,7 +2106,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
- 	};
- 	int error = -ENOMEM;
- 
--	data = nfs_alloc_parsed_mount_data(NFS_MOUNT_VER3 | NFS_MOUNT_TCP);
-+	data = nfs_alloc_parsed_mount_data(3);
- 	mntfh = kzalloc(sizeof(*mntfh), GFP_KERNEL);
- 	if (data == NULL || mntfh == NULL)
- 		goto out_free_fh;
-@@ -2376,7 +2376,6 @@ static int nfs4_validate_mount_data(void *options,
- 	if (data == NULL)
- 		goto out_no_data;
- 
--	args->version		= 4;
- 	switch (data->version) {
- 	case 1:
- 		if (data->host_addrlen > sizeof(args->nfs_server.address))
-@@ -2660,7 +2659,7 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
- 	struct nfs_parsed_mount_data *data;
- 	int error = -ENOMEM;
- 
--	data = nfs_alloc_parsed_mount_data(0);
-+	data = nfs_alloc_parsed_mount_data(4);
- 	if (data == NULL)
- 		goto out_free_data;
- 
-
-
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
