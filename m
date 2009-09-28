@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZI1Hl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbZI1Hxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752559AbZI1Hl3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 03:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbZI1Hl2
+	id S1752656AbZI1Hxz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 03:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZI1Hxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 03:41:28 -0400
-Received: from outbound.icp-qv1-irony-out6.iinet.net.au ([203.59.1.109]:52047
-	"EHLO outbound.icp-qv1-irony-out6.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751701AbZI1Hl2 (ORCPT
+	Mon, 28 Sep 2009 03:53:53 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:32910
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751349AbZI1Hxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 03:41:28 -0400
+	Mon, 28 Sep 2009 03:53:52 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAGsFwErLO0En/2dsb2JhbADTRIQeBYFYZQ
+X-IronPort-Anti-Spam-Result: ApoEAAAIwErLO0En/2dsb2JhbADTTYQeBYFYZQ
 X-IronPort-AV: E=Sophos;i="4.44,465,1249228800"; 
-   d="scan'208";a="10605208"
-Message-ID: <4AC068A7.405@themaw.net>
-Date: Mon, 28 Sep 2009 15:41:27 +0800
+   d="scan'208";a="584593772"
+Message-ID: <4AC06B84.9010004@themaw.net>
+Date: Mon, 28 Sep 2009 15:53:40 +0800
 From: Ian Kent <raven@themaw.net>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
@@ -65,18 +65,9 @@ Sage Weil wrote:
 > repost those two now, freshened against Linus' tree.  The first has just 
 > the functional change, and the cleanup is in the second (as per 
 > Christoph's review).
-> 
->> I've done quite a bit of fairly heavy stress testing of the patch
->> series and they (finally) hold up to it. Although I have also
->> managed to uncover a locking bug in the user space daemon as a
->> result, ;)
-> 
-> I'm glad some other good has come of it.  Thanks, Ian, for carrying this 
-> through!
 
-Not quite so good as I haven't fixed it yet.
-But that's user space and it happens occasionally under an extended
-heavy load so it will take a while to work out.
+Yes, after checking, the patch I was using is functionally the same as
+the combination of the two you re-posted. So all is good for may part.
 
 Ian
 
