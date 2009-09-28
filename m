@@ -1,112 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbZI1Ceo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZI1Co6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbZI1Ceo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 22:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZI1Ceo
+	id S1752780AbZI1Co6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 22:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbZI1Co5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 22:34:44 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38446 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbZI1Cen (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 22:34:43 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 28 Sep 2009 11:32:22 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Wrong Vmalloc numbers in /proc/meminfo
-Message-Id: <20090928113222.ae0f49c5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200909280209.32457.elendil@planet.nl>
-References: <200909280209.32457.elendil@planet.nl>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 27 Sep 2009 22:44:57 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:57907 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752592AbZI1Co4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 22:44:56 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <4AC0234F.2080808@crca.org.au>
+Date: Mon, 28 Sep 2009 12:45:35 +1000
+From: Nigel Cunningham <ncunningham@crca.org.au>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: No more bits in vm_area_struct's vm_flags.
+References: <4AB9A0D6.1090004@crca.org.au>	<20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com>	<4ABC80B0.5010100@crca.org.au> <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Sep 2009 02:09:30 +0200
-Frans Pop <elendil@planet.nl> wrote:
+Hi.
 
-> With 2.6.31 (on x86_64) I'm seeing the following in /proc/meminfo.
+KAMEZAWA Hiroyuki wrote:
+> On Fri, 25 Sep 2009 18:34:56 +1000
+> Nigel Cunningham <ncunningham@crca.org.au> wrote:
+>> Hi.
+>>
+>> KAMEZAWA Hiroyuki wrote:
+>>>> I have some code in TuxOnIce that needs a bit too (explicitly mark the
+>>>> VMA as needing to be atomically copied, for GEM objects), and am not
+>>>> sure what the canonical way to proceed is. Should a new unsigned long be
+>>>> added? The difficulty I see with that is that my flag was used in
+>>>> shmem_file_setup's flags parameter (drm_gem_object_alloc), so that
+>>>> function would need an extra parameter too..
+>>> Hmm, how about adding vma->vm_flags2 ?
+>> The difficulty there is that some functions pass these flags as arguments.
+>>
+> Ah yes. But I wonder some special flags, which is rarey used, can be moved
+> to vm_flags2...
 > 
-> $ cat /proc/meminfo
-> MemTotal:        2030968 kB
-> MemFree:          539408 kB
-> Buffers:           94984 kB
-> Cached:           308564 kB
-> SwapCached:        16048 kB
-> Active:           652236 kB
-> Inactive:         428808 kB
-> Active(anon):     436808 kB
-> Inactive(anon):   246996 kB
-> Active(file):     215428 kB
-> Inactive(file):   181812 kB
-> Unevictable:        1632 kB
-> Mlocked:            1632 kB
-> SwapTotal:       2097144 kB
-> SwapFree:        1979524 kB
-> Dirty:                12 kB
-> Writeback:             0 kB
-> AnonPages:        671276 kB
-> Mapped:            57684 kB
-> Slab:             177692 kB
-> SReclaimable:     160516 kB
-> SUnreclaim:        17176 kB
-> PageTables:        14812 kB
-> NFS_Unstable:          0 kB
-> Bounce:                0 kB
-> WritebackTmp:          0 kB
-> CommitLimit:     3112628 kB
-> Committed_AS:     988780 kB
-> VmallocTotal:   34359738367 kB
-> VmallocUsed:      340084 kB
-> VmallocChunk:   34359387131 kB
-> DirectMap4k:     2008768 kB
-> DirectMap2M:       63488 kB
+> For example,
 > 
-> Is it me or are VmallocTotal and VmallocChunk off by a factor 10,000 or so?
+>  #define VM_SEQ_READ     0x00008000      /* App will access data sequentially */
+>  #define VM_RAND_READ    0x00010000      /* App will not benefit from clustered reads */
+> are all capsuled under
+> mm.h
+>  117 #define VM_READHINTMASK                 (VM_SEQ_READ | VM_RAND_READ)
+>  118 #define VM_ClearReadHint(v)             (v)->vm_flags &= ~VM_READHINTMASK
+>  119 #define VM_NormalReadHint(v)            (!((v)->vm_flags & VM_READHINTMASK))
+>  120 #define VM_SequentialReadHint(v)        ((v)->vm_flags & VM_SEQ_READ)
+>  121 #define VM_RandomReadHint(v)            ((v)->vm_flags & VM_RAND_READ)
 > 
-I'm sorry I misunderstand your 10,000 implies.
-
-On my x86-64 box.
-VmallocTotal:   34359738367 kB
-VmallocUsed:      100856 kB
-VmallocChunk:   34359583863 kB
-
-Then,
-34359738367 - 34359583863
-154504
-
-Then difference is 13412 (pages) 
-
-Hmm. in /proc/vmallocinfo
-==
-..
-0xffffc9000652b000-0xffffc9000672c000 2101248 sys_swapon+0x6a2/0xcd0 pages=512 vmalloc N0=512
-0xffffc90007efd000-0xffffc90008dde000 15601664 pcpu_alloc+0x3ad/0x4e0 vmalloc
-0xffffc900096d9000-0xffffc900096dd000   16384 e1000e_setup_tx_resources+0x39/0xe0 [e1000e] pages=3 vmalloc N0=3
-0xffffc900096de000-0xffffc900096e2000   16384 e1000e_setup_rx_resources+0x37/0x160 [e1000e] pages=3 vmalloc N0=3
-==
-
-It seems some amount of memory holes (rather than PAGESIZE) between vmalloc area
-info.(especially around pcpu_alloc..) please check /proc/vmallocinfo if you
-feel something strange.
-
-
-Thanks,
--Kame
-
-
-> Cheers,
-> FJP
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Or
 > 
+> 105 #define VM_PFN_AT_MMAP  0x40000000      /* PFNMAP vma that is fully mapped at mmap time */
+> is only used under special situation.
+> 
+> etc..
+> 
+> They'll be able to be moved to other(new) flag field, IIUC.
 
+I'm working on a patch to do this, and am looking at is_mergeable_vma,
+which is invoked via can_vma_merge_after from vma_merge from
+madvise_behaviour (which potentially modifies these hint flags). Should
+those hints be considered in that function? (Do I need to pass the hints
+in as well and check they're equal?)
+
+By the way, VM_ClearReadHint and VM_NormalReadHint are currently unused.
+ madvise_behaviour manipulates the flags directly (in preparing
+potential replacement values). Not sure if something should be done
+about that.
+
+By the way #2, in response to the later message in this thread, I'm
+calling the new var vma->vm_hints, and have put it at the end of the
+struct at the moment. Is that a good place?
+
+Regards,
+
+Nigel
