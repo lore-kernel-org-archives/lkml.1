@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZI1VMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbZI1VRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbZI1VMJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 17:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZI1VMI
+	id S1753322AbZI1VRe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 17:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbZI1VRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 17:12:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38643 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751959AbZI1VMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 17:12:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 __sysdev_resume+0xc3/0xe0()
-Date: Mon, 28 Sep 2009 23:13:15 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Yong Zhang <yong.zhang0@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clemens@ladisch.de, venkatesh.pallipadi@intel.com, gregkh@suse.de,
-       zambrano@broadcom.com, davem@davemloft.net, netdev@vger.kernel.org
-References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com> <8db1092f0909281138t18a379d1qdf999b0610ed6414@mail.gmail.com> <8db1092f0909281308s36c35c80s65c18dcbcf9fff2b@mail.gmail.com>
-In-Reply-To: <8db1092f0909281308s36c35c80s65c18dcbcf9fff2b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Mon, 28 Sep 2009 17:17:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43794 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752952AbZI1VRd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 17:17:33 -0400
+Date: Mon, 28 Sep 2009 14:16:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: andi@firstfloor.org, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, jbaron@redhat.com, rusty@rustcorp.com.au,
+       bunk@stusta.de, hch@infradead.org
+Subject: Re: [patch 02/12] Immediate Values - Architecture Independent Code
+Message-Id: <20090928141600.03c64726.akpm@linux-foundation.org>
+In-Reply-To: <20090928201108.GG1656@one.firstfloor.org>
+References: <20090924132626.485545323@polymtl.ca>
+	<20090924133359.218934235@polymtl.ca>
+	<20090924212013.d27226c4.akpm@linux-foundation.org>
+	<20090928012337.GC1656@one.firstfloor.org>
+	<20090928104617.9c4b868a.akpm@linux-foundation.org>
+	<20090928201108.GG1656@one.firstfloor.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909282313.15246.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 September 2009, Maciej Rutecki wrote:
-> 2009/9/28 Maciej Rutecki <maciej.rutecki@gmail.com>:
-> >
-> > Add patch and remove previous:
-> > http://unixy.pl/maciek/download/kernel/2.6.31-git17/gumis/dmesg-debug.txt
-> >
-> > s2disk&resume twice.
-> >
-> > no "timekeeping_resume() called with IRQs enabled!".
-> >
-> > I found some interesting thing, warnings appear only once, during
-> > first s2disk, on second don't appear.
+On Mon, 28 Sep 2009 22:11:08 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> > For example, how do we know it's safe to use immediate-values for
+> > anything which can be modified from userspace, such as a sysfs-accessed
+> > tunable?  How do we know this won't take someone's odd-but-legitimate
+> > workload and shoot it in the head?
 > 
-> Already I test 2.6-32-rc1 few times; warnings has gone. Any patches
-> has been add since 2.6.31-git17?
+> You're arguing we should tune for sysctl performance? That doesn't make
+> sense to me.
 
-Quite some of them, actually.
+We're talking about a tiny tiny performance gain (one which thus far
+appears to be unobserveable) on the read-side traded off against a
+tremendous slowdown on the write-side.
 
-Thanks,
-Rafael
+That's OK for people whose workloads use the expected read-vs-write
+ratio.  But there's always someone out there who does something
+peculiar.  There will be people who simply cannot accept large
+slowdowns in writes to particular tunables.  Who these people are and
+which tunables they care about we do not know.
+
+No, I'm not saying we should "tune for sysctl performance".  I'm saying
+we should tune for not making Linux utterly uselessly slow for people
+for whom it previously worked OK.
+
+It means we'd have to look very carefully at each tunable and decide
+whether there's any conceivable situation in which someone would want
+to alter it frequently.  If so, we need to leave it alone.
+
+How many tunables will that leave behind, and how much use was it to
+speed that remainder up by a teensy amount?  Who knows.
+
