@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbZI1UTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbZI1UZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753138AbZI1UTQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 16:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZI1UTQ
+	id S1753101AbZI1UZI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 16:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbZI1UZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 16:19:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38408 "EHLO ogre.sisk.pl"
+	Mon, 28 Sep 2009 16:25:07 -0400
+Received: from THUNK.ORG ([69.25.196.29]:51828 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752420AbZI1UTP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 16:19:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [PATCH, fix] Re: [Regression] 2.6.31-git: tty change broke resume from hibernation on MSI Wind U100
-Date: Mon, 28 Sep 2009 22:20:32 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Dave Young <hidave.darkstar@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <gregkh@suse.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0909280202280.14348-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0909280202280.14348-100000@netrider.rowland.org>
+	id S1751575AbZI1UZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 16:25:05 -0400
+Date: Mon, 28 Sep 2009 16:25:07 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andy Isaacson <adi@hexapodia.org>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: hard lockup, followed by ext4_lookup: deleted inode
+	referenced: 524788
+Message-ID: <20090928202507.GB22733@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andy Isaacson <adi@hexapodia.org>, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <20090928191644.GR12922@hexapodia.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200909282220.32582.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090928191644.GR12922@hexapodia.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 September 2009, Alan Stern wrote:
-> On Mon, 28 Sep 2009, Dave Young wrote:
+On Mon, Sep 28, 2009 at 12:16:44PM -0700, Andy Isaacson wrote:
+> After a hard lockup and reboot, my test box (running recent Linus git
+> 851b147) came up with:
 > 
-> > On Mon, Sep 28, 2009 at 2:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Sunday 27 September 2009, Alan Stern wrote:
-> > >> On Sun, 27 Sep 2009, Rafael J. Wysocki wrote:
-> > >>
-> > >> > Tested, works.
-> > >> >
-> > >> > Greg, could you please consider taking the patch below? Â It fixes a recent
-> > >> > hibernation regression for me, so if not this one, another fix is necessary.
-> > >>
-> > >> This patch has a mistake.
-> > >>
-> > >> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
-> > >> > ===================================================================
-> > >> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
-> > >> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
-> > >> > @@ -1210,7 +1210,7 @@ static const struct tty_operations seria
-> > >> > Â  Â  .chars_in_buffer = Â  Â  Â serial_chars_in_buffer,
-> > >> > Â  Â  .tiocmget = Â  Â  Â  Â  Â  Â  serial_tiocmget,
-> > >> > Â  Â  .tiocmset = Â  Â  Â  Â  Â  Â  serial_tiocmset,
-> > >> > - Â  .shutdown = Â  Â  Â  Â  Â  Â  serial_release,
-> > >> > + Â  .cleanup = Â  Â  Â  Â  Â  Â  Â serial_release,
-> > >> > Â  Â  .install = Â  Â  Â  Â  Â  Â  Â serial_install,
-> > >> > Â  Â  .proc_fops = Â  Â  Â  Â  Â  Â &serial_proc_fops,
-> > >> > Â };
-> > >>
-> > >> It isn't enough to change the method pointer. Â The code in
-> > >> serial_release() has to be changed too; it must not call tty_shutdown()
-> > >> any more.
-> > >
-> > > Would it be sufficient to remove the tty_shutdown() call from
-> > > serial_release()?
-> > 
-> > I think so, because standard shutdown will be called in queue_release_one_tty.
-> > 
-> > Alan, could you confirm about this?  Thus I'd like to update the patch.
-> 
-> Yes, that's right.  Just remove the function call.  But what happens if
-> the device is a serial console?  Shouldn't the call to tty_shutdown()  
-> be skipped in that case?  (Eventually this won't matter; the console
-> code will be straightened out so that we never release a serial console
-> device.  But for now it's important.)
-> 
-> If you think it would be appropriate, you could also rename
-> serial_release() to serial_cleanup() -- it's up to you.
+> [    5.016854] EXT4-fs (sda1): mounted filesystem with ordered data mode
+> [    8.809125] EXT4-fs (sda1): internal journal on sda1:8
+> [   10.165239] EXT4-fs error (device sda1): ext4_lookup: deleted inode referenced: 524788
+> [   10.165286] Aborting journal on device sda1:8.
+> [   10.168111] EXT4-fs error (device sda1): ext4_journal_start_sb: Detected aborted journal
+> [   10.168169] EXT4-fs (sda1): Remounting filesystem read-only
+> [   10.171614] EXT4-fs (sda1): Remounting filesystem read-only
 
-The patch has been fixed up by Linus and merged as
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f278a2f7bbc2239f479eaf63d0b3ae573b1d746c
+It would be useful to see what pathname is associated with inode 524788.
 
-If any more fixes are necessary, they'll have to go on top of it.
+You can use debugfs to find this out.  For example to find a pathname
+which points to inode 14666, you can do this:
 
-Best,
-Rafael
+# debugfs /dev/sda1
+debugfs 1.41.9 (22-Aug-2009)
+debugfs:  ncheck 14666
+Inode	  Pathname
+14666	  /grub/menu.lst
+
+Also try using the debugfs stat command, send me the output, please:
+
+debugfs: stat <14666>
+
+> 2. after a lockup the journal recovery should not fail.
+
+I'm not sure it was a matter of the journal recovery failing.  All we
+know for certain is that filesystem was corrupted after the lockup and
+remounting the filesystem.  What caused the file system corruption is
+open to question at the moment; it could have been caused by the
+lockup; or it could have been a file that was deleted right about the
+time of the lockup; or it could have been some completely random
+filesystem corruption that.
+
+It would be useful to know whether the inode was in question was
+supposed to have been deleted.  If it was, it would be useful to know
+if the dtime reported by debugfs's stat was around the time of the
+original lockup.  
+
+						- Ted
