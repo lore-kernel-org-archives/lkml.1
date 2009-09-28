@@ -1,60 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZI1H1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbZI1Hat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbZI1H1D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 03:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZI1H1C
+	id S1752645AbZI1Hat (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 03:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZI1Has
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 03:27:02 -0400
-Received: from mga11.intel.com ([192.55.52.93]:9612 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751302AbZI1H1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 03:27:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,464,1249282800"; 
-   d="scan'208";a="730763886"
-Subject: Re: [PATCH 3/5] mce-inject: make injected mce valid only during
- faked handler call
-From: Huang Ying <ying.huang@intel.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AC05D48.1000007@jp.fujitsu.com>
-References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>
-	 <4AC05BBF.3010102@jp.fujitsu.com>  <4AC05D48.1000007@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Mon, 28 Sep 2009 15:27:03 +0800
-Message-Id: <1254122823.15717.1389.camel@yhuang-dev.sh.intel.com>
+	Mon, 28 Sep 2009 03:30:48 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:52500 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbZI1Has (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 03:30:48 -0400
+Date: Mon, 28 Sep 2009 16:30:51 +0900 (JST)
+Message-Id: <20090928.163051.71112594.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090925143337.GA15007@redhat.com>
+References: <20090925050429.GB12555@redhat.com>
+	<20090925.180724.104041942.ryov@valinux.co.jp>
+	<20090925143337.GA15007@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-28 at 14:52 +0800, Hidetoshi Seto wrote: 
-> In the current implementation, injected MCE is valid from the point
-> the MCE is injected to the point the MCE is processed by the faked
-> handler call.
+Hi Vivek,
+
+Vivek Goyal <vgoyal@redhat.com> wrote:
+> > Because dm-ioband provides faireness in terms of how many IO requests
+> > are issued or how many bytes are transferred, so this behaviour is to
+> > be expected. Do you think fairness in terms of IO requests and size is
+> > not fair?
+> > 
 > 
-> This has an undesired side-effect: it is possible for it to be
-> consumed by real machine_check_poll. This may confuse a real system
-> error and may confuse the mce test suite.
+> Hi Ryo,
 > 
-> To fix this, this patch changes mce_rdmsrl/wemsrl() to refer injected
-> data only when injectm.valid states 3rd state "2", which indicates that
-> the injected MCE entry is valid and ready for the handler.
+> Fairness in terms of size of IO or number of requests is probably not the
+> best thing to do on rotational media where seek latencies are significant.
 > 
-> The injectm.valid becomes "2" only during faked MCE handler call
-> and protected by IRQ disabling. This make it impossible for real
-> machine_check_poll to consume it.
+> It probably should work just well on media with very low seek latencies
+> like SSD.
+> 
+> So on rotational media, either you will not provide fairness to random 
+> readers because they are too slow or you will choke the sequential readers
+> in other group and also bring down the overall disk throughput.
+> 
+> If you don't decide to choke/throttle sequential reader group for the sake
+> of random reader in other group then you will not have a good control
+> on random reader latencies. Because now IO scheduler sees the IO from both
+> sequential reader as well as random reader and sequential readers have not
+> been throttled. So the dispatch pattern/time slices will again look like..
+> 
+> 	SR1 SR2 SR3 SR4 SR5 RR.....
+> 
+> 	instead  of
+> 
+> 	SR1 RR SR2 RR SR3 RR SR4 RR ....
+>  
+> SR --> sequential reader,  RR --> random reader
 
-Anyway, I don't think it is a good idea to use a magic number like "2"
-here. A meaningful name is better.
+Thank you for elaborating. However, I think that fairness in terms of
+disk time has a similar problem. The below is a benchmark result of
+randread vs seqread I posted before, rand-readers and seq-readers ran
+on individual groups and their weights were equally assigned.
 
-And I think my original method is clearer. Because injection related
-flags go inject_flags, not be mixed with normal path flag "finished".
+                   Throughput [KiB/s]
+             io-controller  dm-ioband
+randread         161          314
+seqread         9556          631
 
-Best Regards,
-Huang Ying
+I know that dm-ioband is needed to improvement on the seqread
+throughput, but I don't think that io-controller seems quite fair,
+even the disk times of each group are equal, why randread can't get
+more bandwidth. So I think that this is how users think about
+faireness, and it would be good thing to provide multiple policies of
+bandwidth control for uses.
 
+> > The write-starve-reads on dm-ioband, that you pointed out before, was
+> > not caused by FIFO release, it was caused by IO flow control in
+> > dm-ioband. When I turned off the flow control, then the read
+> > throughput was quite improved.
+> 
+> What was flow control doing?
+
+dm-ioband gives a limit on each IO group. When the number of IO
+requests backlogged in a group exceeds the limit, processes which are
+going to issue IO requests to the group are made sleep until all the
+backlogged requests are flushed out.
+
+> > Now I'm considering separating dm-ioband's internal queue into sync
+> > and async and giving a certain priority of dispatch to async IOs.
+> 
+> Even if you maintain separate queues for sync and async, in what ratio will
+> you dispatch reads and writes to underlying layer once fresh tokens become
+> available to the group and you decide to unthrottle the group.
+
+Now I'm thinking that It's according to the requested order, but
+when the number of in-flight sync IOs exceeds io_limit (io_limit is
+calculated based on nr_requests of underlying block device), dm-ioband
+dispatches only async IOs until the number of in-flight sync IOs are
+below the io_limit, and vice versa. At least it could solve the
+write-starve-read issue which you pointed out.
+ 
+> Whatever policy you adopt for read and write dispatch, it might not match
+> with policy of underlying IO scheduler because every IO scheduler seems to
+> have its own way of determining how reads and writes should be dispatched.
+
+I think that this is a matter of users choise, which a user would
+like to give priority to bandwidth or IO scheduler's policy.
+
+> Now somebody might start complaining that my job inside the group is not
+> getting same reader/writer ratio as it was getting outside the group.
+> 
+> Thanks
+> Vivek
+
+Thanks,
+Ryo Tsuruta
