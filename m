@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZI1LWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZI1L0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740AbZI1LWk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 07:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbZI1LWj
+	id S1752758AbZI1L0P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 07:26:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZI1L0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 07:22:39 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34540 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752608AbZI1LWi (ORCPT
+	Mon, 28 Sep 2009 07:26:15 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53753 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751901AbZI1L0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 07:22:38 -0400
-Message-ID: <a15a1673b361dc2f5c9b1fb670e5c23e.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <661de9470909280232q67dd451fkcf063aec671d3ea2@mail.gmail.com>
+	Mon, 28 Sep 2009 07:26:14 -0400
+Message-ID: <388eedb15161ebaccb671e1c1fe3af46.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <661de9470909280222g7fef6a0fq947c8e22cfc0029b@mail.gmail.com>
 References: <200909252158.n8PLwFhG024011@imap1.linux-foundation.org>
     <20090928154213.8e873dec.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090928180649.b6b7eea9.kamezawa.hiroyu@jp.fujitsu.com>
-    <661de9470909280232q67dd451fkcf063aec671d3ea2@mail.gmail.com>
-Date: Mon, 28 Sep 2009 20:22:39 +0900 (JST)
-Subject: Re: [BUGFIX][PATCH][rc1] memcg: fix refcnt goes to minus
+    <661de9470909280222g7fef6a0fq947c8e22cfc0029b@mail.gmail.com>
+Date: Mon, 28 Sep 2009 20:26:13 +0900 (JST)
+Subject: Re: Question: RCU stall detected in memcg (Re: mmotm
+ 2009-09-25-14-35  uploaded
 From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
 To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
 Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
@@ -35,23 +35,59 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Balbir Singh wrote:
->> __mem_cgroup_largest_soft_limit_node() returns a mem_cgroup_per_zone
->> "mz"
->> with incremnted mz->mem->css's refcnt.
->> Then, the caller of this function has to call css_put(mz->mem->css).
+>> akpm@linux-foundation.org wrote:
 >>
->> But, mz can be !NULL even if "not found" i.e. without css_get().
->> By this, css->refcnt will go down to minus.
+>>> The mm-of-the-moment snapshot 2009-09-25-14-35 has been uploaded to
+>>>
+>>> &#160; &#160;http://userweb.kernel.org/~akpm/mmotm/
+>>>
+>>> and will soon be available at
+>>>
+>>> &#160; &#160;git://git.zen-sources.org/zen/mmotm.git
+>>>
+>>> It contains the following patches against 2.6.31:
+>>>
 >>
->> This may cause various things...one of results will be
->> initite-loop in css_tryget() &#160;as this.
->>
+>> At testing my (small) patch, with high memory pressure to
+>> memcg+hierarchy+softlimit, following is shown.
+>> ==
 >> INFO: RCU detected CPU 0 stall (t=10000 jiffies)
 >> sending NMI to all CPUs:
 >> NMI backtrace for cpu 0
 >> CPU 0:
->> <snip>
->>
+>> Modules linked in: sco bridge stp bnep l2cap crc16 bluetooth rfkill
+>> iptabl
+>> e_filter ip_tables ip6table_filter ip6_tables x_tables ipv6
+>> cpufreq_ondemand acpi_cpufreq dm_mirror dm_region_hash dm_log d
+>> m_multipath dm_mod uinput ppdev i2c_i801 pcspkr i2c_core bnx2 sg e1000e
+>> parport_pc parport button shpchp megaraid_sas sd_mo
+>> d scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded:
+>> microcode]
+>> &#160;Pid: 2886, comm: ruby Not tainted 2.6.31-mm1 #2 PRIMERGY
+>> &#160;RIP: 0010:[<ffffffff810878fe>] &#160;[<ffffffff810878fe>]
+trace_hardirqs_off_ca
+>> ller+0x3e/0xb RSP: 0018:ffff88004fa03d98 &#160;EFLAGS: 00000006
+>> &#160;RAX: 0000000000000046 RBX: 0000000000000c00 RCX: 000000000000e501
+>> &#160;RDX: ffff8806133564f0 RSI: 0000000000000002 RDI: ffffffff8102a940
+>> &#160;RBP: ffff88004fa03d98 R08: 0000000000000001 R09: 0000000000000000
+>> &#160;R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000002
+>> &#160;R13: 0000000000000046 R14: 00000000000000ff R15: ffff88004fa03f48
+>> &#160;FS: &#160;00007fdeca0856f0(0000) GS:ffff88004fa00000(0000)
+knlGS:0000000000000000
+>> &#160;CS: &#160;0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>> &#160;CR2: 00007fdeca09e000 CR3: 0000000619fc6000 CR4: 00000000000006f0
+>> &#160;DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> &#160;DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>> &#160;Call Trace:
+>> &#160;<#DB[1]> &#160;<<EOE>> Pid: 2886, comm: ruby Not tainted
+2.6.31-mm1 #2
+>> &#160;Call Trace:
+>> &#160;<NMI> &#160;[<ffffffff8100af79>] ? show_regs+0x49/0x50
+>> &#160;[<ffffffff81429385>] nmi_watchdog_tick+0x1e5/0x210
+>> &#160;[<ffffffff81428891>] do_nmi+0x1b1/0x2e0
+>> &#160;[<ffffffff8142808a>] nmi+0x1a/0x2c
+>> &#160;[<ffffffff8102a940>] ? flat_send_IPI_mask+0x90/0xb0
+>> &#160;[<ffffffff810878fe>] ? trace_hardirqs_off_caller+0x3e/0xb0
 >> &#160;<<EOE>> &#160;<IRQ> &#160;[<ffffffff810884bd>]
 trace_hardirqs_off+0xd/0x10
 >> &#160;[<ffffffff8102a940>] flat_send_IPI_mask+0x90/0xb0
@@ -73,59 +109,37 @@ trace_hardirqs_off+0xd/0x10
 >> &#160;[<ffffffff81131a00>] ? mem_cgroup_get_local_stat+0x0/0x110
 >> &#160;[<ffffffff81131d5b>] ? mem_control_stat_show+0x14b/0x330
 >> &#160;[<ffffffff810a57fd>] ? cgroup_seqfile_show+0x3d/0x60
+>> &#160;[<ffffffff810a5b90>] ? cgroup_map_add+0x0/0x30
+>> &#160;[<ffffffff8115de03>] ? seq_read+0xf3/0x420
+>> &#160;[<ffffffff811d9926>] ? security_file_permission+0x16/0x20
+>> &#160;[<ffffffff8113b7ec>] ? vfs_read+0xcc/0x190
+>> &#160;[<ffffffff8113b9b5>] ? sys_read+0x55/0x90
+>> &#160;[<ffffffff8100bf9b>] ? system_call_fastpath+0x16/0x1b
+>> .....
+>> ==
+>> mem_cgroup_walk_tree() is not very young function and I've been doing
+>> the
+>> same kind of tests but this is 1st messeage for me. So, I'm a bit
+>> confused.
+>> and not sure how I start debug from...
 >>
->> Above shows CPU0 caught in css_tryget()'s inifinite loop because
->> of bad refcnt.
->>
->> This is a fix to set mz=NULL at the top of retry path.
->>
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->> ---
->> &#160;mm/memcontrol.c | &#160; &#160;3 ++-
->> &#160;1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> Index: linux-2.6.32-rc1/mm/memcontrol.c
->> ===================================================================
->> --- linux-2.6.32-rc1.orig/mm/memcontrol.c
->> +++ linux-2.6.32-rc1/mm/memcontrol.c
->> @@ -447,9 +447,10 @@ static struct mem_cgroup_per_zone *
->> &#160;__mem_cgroup_largest_soft_limit_node(struct
-mem_cgroup_tree_per_zone *mctz)
->> &#160;{
->> &#160; &#160; &#160; &#160;struct rb_node *rightmost = NULL;
->> - &#160; &#160; &#160; struct mem_cgroup_per_zone *mz = NULL;
->> + &#160; &#160; &#160; struct mem_cgroup_per_zone *mz;
->>
->> &#160;retry:
->> + &#160; &#160; &#160; mz = NULL;
->> &#160; &#160; &#160; &#160;rightmost = rb_last(&mctz->rb_root);
->> &#160; &#160; &#160; &#160;if (!rightmost)
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;goto done;
-&#160; &#160; &#160; &#160; &#160; &#160; &#160;/* Nothing to reclaim
-from */
->>
+>> Does this mean mem_cgroup_walk_tree() blocks RCU's progress
+>> over 10000 jiffies ? What should I doubt ?
 >
-> Good catch! So we fail at css_tryget() once, but mz is valid, we
-> return a non NULL mz and we do a css_put() causing ref count to go
-> bad.
-yes.
-> The next iteration that uses this mz will hang?
-Maybe no. next css_tryget() hangs if css->refcnt is 0.
+> Could you share your test case so that I can reproduce the problem? My
+> tests seem to work fine so far
+>
+Create following hierarchy
 
-> I've not been
-> able to hit, may be I should test in a really small cgroup under
-> stress.
->
-Maybe my small patch (not posted yet) affected and I couldn't reproduce it.
-But the bug itself should be fixed.
-(So, I want to add a sanity check to css_put()).
+  /cgroup/A     .... use_hierarchy=1, softlimit=300M, no task
+            /01  .... add task which use much memory
+            /02  .... no task
+          B     .... add task which use much memory
+
+Then, kswapd will reclaim memory from A/01.
+
+I couldn't reproduce this. I doubt ,y own patch may affect.
 
 Thanks,
 -Kame
-
-
-> Balbir Singh.
->
-
 
