@@ -1,64 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbZI1OH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbZI1OIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752078AbZI1OH6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 10:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZI1OH6
+	id S1752162AbZI1OIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 10:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbZI1OIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 10:07:58 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:42437 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbZI1OH5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 10:07:57 -0400
-To: Jamie Lokier <jamie@shareable.org>
-CC: miklos@szeredi.hu, Valdis.Kletnieks@vt.edu, linux@treblig.org,
-       agruen@suse.de, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20090928132845.GC19778@shareable.org> (message from Jamie Lokier
-	on Mon, 28 Sep 2009 14:28:45 +0100)
-Subject: Re: [PATCH] vfs: new O_NODE open flag
-References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu> <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu> <20090925183523.GA6065@gallifrey> <19645.1253913514@turing-police.cc.vt.edu> <E1MsDQ6-0001cY-92@pomaz-ex.szeredi.hu> <20090928132845.GC19778@shareable.org>
-Message-Id: <E1MsGtJ-0001xy-5T@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 28 Sep 2009 16:07:49 +0200
+	Mon, 28 Sep 2009 10:08:23 -0400
+Received: from thunk.org ([69.25.196.29]:54512 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751881AbZI1OIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 10:08:22 -0400
+Date: Mon, 28 Sep 2009 10:07:57 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20090928140756.GC17514@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Hellwig <hch@infradead.org>,
+	Wu Fengguang <fengguang.wu@intel.com>,
+	Dave Chinner <david@fromorbit.com>,
+	Chris Mason <chris.mason@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	"Li, Shaohua" <shaohua.li@intel.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+	"jens.axboe@oracle.com" <jens.axboe@oracle.com>
+References: <20090922193622.42c00012.akpm@linux-foundation.org> <20090923140058.GA2794@think> <20090924031508.GD6456@localhost> <20090925001117.GA9464@discord.disaster> <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090928130804.GA25880@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Sep 2009, Jamie Lokier wrote:
-> Miklos Szeredi wrote:
-> > BTW I just checked, and it is possible to re-open or promote an fd
-> > opened with O_NODE like this:
-> > 
-> > 	char tmp[64];
-> > 
-> > 	fd = open(filename, O_NODE | O_NOACCESS);
-> > 	/* ... */
-> > 	sprintf(tmp, "/proc/self/fd/%i", fd);
-> > 	fd_rw = open(tmp, O_RDWR);
-> > 
-> > Now fd_rw is guaranteed to refer to the same inode as fd.
-> 
-> If someone passes you a file descriptor opened with O_RDONLY, you
-> shouldn't be able to upgrade it to O_RDWR unless you have access to
-> the file and could do a normal open() on the file.
-> 
-> I hope the above cannot convert O_NOACCESS to O_RDWR without checking
-> that you have access to the file.
+On Mon, Sep 28, 2009 at 09:08:04AM -0400, Christoph Hellwig wrote:
+> This should help a bit for XFS as it historically does multi-page
+> writeouts from ->writepages (and apprently btrfs that added some
+> write-around recently?) but not those brave filesystems only
+> implementing the multi-page writeout from writepages as designed.
 
-The permissions are checked on the inode at open.  It doesn't matter
-how the inode came to be looked up, via a normal path or via a file
-descriptor in proc, the results are the same.
+Here's the hack which I'm currently working on to work around the
+writeback code limiting writebacks to 1024 pages.  I'm assuming this
+is going to be short-term hack assuming the writeback code gets more
+intelligent, but I thought I would throw this into the mix....
 
-> Hmm.  I have just tried, and you _can _use open("/proc/self/fd/%d",
-> O_RDWR) to re-open with more permissions when you can't access the
-> path which /proc/self/fd/%d pretends to link to.  It looks a bit
-> dubious, as you might have been passed an O_RDONLY descriptor with the
-> intention that you can't write to it...  Oh well!
+	     	   	     	   	      - Ted
 
-True, /proc gives you access to the underlying "path" of an open file
-descriptor.  If you don't want that, don't mount /proc in your limited
-namespace.
+ext4: Adjust ext4_da_writepages() to write out larger contiguous chunks
 
-Thanks,
-Miklos
+Work around problems in the writeback code to force out writebacks in
+larger chunks than just 4mb, which is just too small.  This also works
+around limitations in the ext4 block allocator, which can't allocate
+more than 2048 blocks at a time.  So we need to defeat the round-robin
+characteristics of the writeback code and try to write out as many
+blocks in one inode before allowing the writeback code to move on to
+another inode.  We add a a new per-filesystem tunable,
+max_contig_writeback_mb, which caps this to a default of 128mb per
+inode.
+
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+---
+ fs/ext4/ext4.h              |    1 +
+ fs/ext4/inode.c             |  100 +++++++++++++++++++++++++++++++++++++-----
+ fs/ext4/super.c             |    3 +
+ include/trace/events/ext4.h |   14 ++++--
+ 4 files changed, 102 insertions(+), 16 deletions(-)
+
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index e227eea..9f99427 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -942,6 +942,7 @@ struct ext4_sb_info {
+ 	unsigned int s_mb_stats;
+ 	unsigned int s_mb_order2_reqs;
+ 	unsigned int s_mb_group_prealloc;
++	unsigned int s_max_contig_writeback_mb;
+ 	/* where last allocation was done - for stream allocation */
+ 	unsigned long s_mb_last_group;
+ 	unsigned long s_mb_last_start;
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 5fb72a9..9e0acb7 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1145,6 +1145,60 @@ static int check_block_validity(struct inode *inode, const char *msg,
+ }
+ 
+ /*
++ * Return the number of dirty pages in the given inode starting at
++ * page frame idx.
++ */
++static pgoff_t ext4_num_dirty_pages(struct inode *inode, pgoff_t idx)
++{
++	struct address_space *mapping = inode->i_mapping;
++	pgoff_t	index;
++	struct pagevec pvec;
++	pgoff_t num = 0;
++	int i, nr_pages, done = 0;
++
++	pagevec_init(&pvec, 0);
++
++	while (!done) {
++		index = idx;
++		nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
++					      PAGECACHE_TAG_DIRTY,
++					      (pgoff_t)PAGEVEC_SIZE);
++		if (nr_pages == 0)
++			break;
++		for (i = 0; i < nr_pages; i++) {
++			struct page *page = pvec.pages[i];
++			struct buffer_head *bh, *head;
++
++			lock_page(page);
++			if (unlikely(page->mapping != mapping) ||
++			    !PageDirty(page) ||
++			    PageWriteback(page) ||
++			    page->index != idx) {
++				done = 1;
++				unlock_page(page);
++				break;
++			}
++			head = page_buffers(page);
++			bh = head;
++			do {
++				if (!buffer_delay(bh) &&
++				    !buffer_unwritten(bh)) {
++					done = 1;
++					break;
++				}
++			} while ((bh = bh->b_this_page) != head);
++			unlock_page(page);
++			if (done)
++				break;
++			idx++;
++			num++;
++		}
++		pagevec_release(&pvec);
++	}
++	return num;
++}
++
++/*
+  * The ext4_get_blocks() function tries to look up the requested blocks,
+  * and returns if the blocks are already mapped.
+  *
+@@ -2744,7 +2798,8 @@ static int ext4_da_writepages(struct address_space *mapping,
+ 	int pages_written = 0;
+ 	long pages_skipped;
+ 	int range_cyclic, cycled = 1, io_done = 0;
+-	int needed_blocks, ret = 0, nr_to_writebump = 0;
++	int needed_blocks, ret = 0;
++	long desired_nr_to_write, nr_to_writebump = 0;
+ 	loff_t range_start = wbc->range_start;
+ 	struct ext4_sb_info *sbi = EXT4_SB(mapping->host->i_sb);
+ 
+@@ -2771,16 +2826,6 @@ static int ext4_da_writepages(struct address_space *mapping,
+ 	if (unlikely(sbi->s_mount_flags & EXT4_MF_FS_ABORTED))
+ 		return -EROFS;
+ 
+-	/*
+-	 * Make sure nr_to_write is >= sbi->s_mb_stream_request
+-	 * This make sure small files blocks are allocated in
+-	 * single attempt. This ensure that small files
+-	 * get less fragmented.
+-	 */
+-	if (wbc->nr_to_write < sbi->s_mb_stream_request) {
+-		nr_to_writebump = sbi->s_mb_stream_request - wbc->nr_to_write;
+-		wbc->nr_to_write = sbi->s_mb_stream_request;
+-	}
+ 	if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
+ 		range_whole = 1;
+ 
+@@ -2795,6 +2840,36 @@ static int ext4_da_writepages(struct address_space *mapping,
+ 	} else
+ 		index = wbc->range_start >> PAGE_CACHE_SHIFT;
+ 
++	/*
++	 * This works around two forms of stupidity.  The first is in
++	 * the writeback code, which caps the maximum number of pages
++	 * written to be 1024 pages.  This is wrong on multiple
++	 * levels; different architectues have a different page size,
++	 * which changes the maximum amount of data which gets
++	 * written.  Secondly, 4 megabytes is way too small.  XFS
++	 * forces this value to be 16 megabytes by multiplying
++	 * nr_to_write parameter by four, and then relies on its
++	 * allocator to allocate larger extents to make them
++	 * contiguous.  Unfortunately this brings us to the second
++	 * stupidity, which is that ext4's mballoc code only allocates
++	 * at most 2048 blocks.  So we force contiguous writes up to
++	 * the number of dirty blocks in the inode, or
++	 * sbi->max_contig_writeback_mb whichever is smaller.
++	 */
++	if (!range_cyclic && range_whole)
++		desired_nr_to_write = wbc->nr_to_write * 8;
++	else
++		desired_nr_to_write = ext4_num_dirty_pages(inode, index);
++	if (desired_nr_to_write > (sbi->s_max_contig_writeback_mb << 
++				   (20 - PAGE_CACHE_SHIFT)))
++		desired_nr_to_write = (sbi->s_max_contig_writeback_mb << 
++				       (20 - PAGE_CACHE_SHIFT));
++
++	if (wbc->nr_to_write < desired_nr_to_write) {
++		nr_to_writebump = desired_nr_to_write - wbc->nr_to_write;
++		wbc->nr_to_write = desired_nr_to_write;
++	}
++
+ 	mpd.wbc = wbc;
+ 	mpd.inode = mapping->host;
+ 
+@@ -2914,7 +2989,8 @@ retry:
+ out_writepages:
+ 	if (!no_nrwrite_index_update)
+ 		wbc->no_nrwrite_index_update = 0;
+-	wbc->nr_to_write -= nr_to_writebump;
++	if (wbc->nr_to_write > nr_to_writebump)
++		wbc->nr_to_write -= nr_to_writebump;
+ 	wbc->range_start = range_start;
+ 	trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
+ 	return ret;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index df539ba..9d04bd9 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2197,6 +2197,7 @@ EXT4_RW_ATTR_SBI_UI(mb_min_to_scan, s_mb_min_to_scan);
+ EXT4_RW_ATTR_SBI_UI(mb_order2_req, s_mb_order2_reqs);
+ EXT4_RW_ATTR_SBI_UI(mb_stream_req, s_mb_stream_request);
+ EXT4_RW_ATTR_SBI_UI(mb_group_prealloc, s_mb_group_prealloc);
++EXT4_RW_ATTR_SBI_UI(max_contig_writeback, s_max_contig_writeback_mb);
+ 
+ static struct attribute *ext4_attrs[] = {
+ 	ATTR_LIST(delayed_allocation_blocks),
+@@ -2210,6 +2211,7 @@ static struct attribute *ext4_attrs[] = {
+ 	ATTR_LIST(mb_order2_req),
+ 	ATTR_LIST(mb_stream_req),
+ 	ATTR_LIST(mb_group_prealloc),
++	ATTR_LIST(max_contig_writeback),
+ 	NULL,
+ };
+ 
+@@ -2679,6 +2681,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
+ 	}
+ 
+ 	sbi->s_stripe = ext4_get_stripe_size(sbi);
++	sbi->s_max_contig_writeback_mb = 128;
+ 
+ 	/*
+ 	 * set up enough so that it can read an inode
+diff --git a/include/trace/events/ext4.h b/include/trace/events/ext4.h
+index c1bd8f1..7c6bbb7 100644
+--- a/include/trace/events/ext4.h
++++ b/include/trace/events/ext4.h
+@@ -236,6 +236,7 @@ TRACE_EVENT(ext4_da_writepages,
+ 		__field(	char,	for_kupdate		)
+ 		__field(	char,	for_reclaim		)
+ 		__field(	char,	range_cyclic		)
++		__field(       pgoff_t,	writeback_index		)
+ 	),
+ 
+ 	TP_fast_assign(
+@@ -249,15 +250,17 @@ TRACE_EVENT(ext4_da_writepages,
+ 		__entry->for_kupdate	= wbc->for_kupdate;
+ 		__entry->for_reclaim	= wbc->for_reclaim;
+ 		__entry->range_cyclic	= wbc->range_cyclic;
++		__entry->writeback_index = inode->i_mapping->writeback_index;
+ 	),
+ 
+-	TP_printk("dev %s ino %lu nr_to_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d range_cyclic %d",
++	TP_printk("dev %s ino %lu nr_to_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d range_cyclic %d writeback_index %lu",
+ 		  jbd2_dev_to_name(__entry->dev),
+ 		  (unsigned long) __entry->ino, __entry->nr_to_write,
+ 		  __entry->pages_skipped, __entry->range_start,
+ 		  __entry->range_end, __entry->nonblocking,
+ 		  __entry->for_kupdate, __entry->for_reclaim,
+-		  __entry->range_cyclic)
++		  __entry->range_cyclic,
++		  (unsigned long) __entry->writeback_index)
+ );
+ 
+ TRACE_EVENT(ext4_da_write_pages,
+@@ -309,6 +312,7 @@ TRACE_EVENT(ext4_da_writepages_result,
+ 		__field(	char,	encountered_congestion	)
+ 		__field(	char,	more_io			)	
+ 		__field(	char,	no_nrwrite_index_update )
++		__field(       pgoff_t,	writeback_index		)
+ 	),
+ 
+ 	TP_fast_assign(
+@@ -320,14 +324,16 @@ TRACE_EVENT(ext4_da_writepages_result,
+ 		__entry->encountered_congestion	= wbc->encountered_congestion;
+ 		__entry->more_io	= wbc->more_io;
+ 		__entry->no_nrwrite_index_update = wbc->no_nrwrite_index_update;
++		__entry->writeback_index = inode->i_mapping->writeback_index;
+ 	),
+ 
+-	TP_printk("dev %s ino %lu ret %d pages_written %d pages_skipped %ld congestion %d more_io %d no_nrwrite_index_update %d",
++	TP_printk("dev %s ino %lu ret %d pages_written %d pages_skipped %ld congestion %d more_io %d no_nrwrite_index_update %d writeback_index %lu",
+ 		  jbd2_dev_to_name(__entry->dev),
+ 		  (unsigned long) __entry->ino, __entry->ret,
+ 		  __entry->pages_written, __entry->pages_skipped,
+ 		  __entry->encountered_congestion, __entry->more_io,
+-		  __entry->no_nrwrite_index_update)
++		  __entry->no_nrwrite_index_update,
++		  (unsigned long) __entry->writeback_index)
+ );
+ 
+ TRACE_EVENT(ext4_da_write_begin,
