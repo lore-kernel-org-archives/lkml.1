@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZI1Ism@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbZI1Iug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752570AbZI1Ism (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 04:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZI1Isl
+	id S1752691AbZI1Iug (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 04:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZI1Iug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 04:48:41 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:61719 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbZI1Isk (ORCPT
+	Mon, 28 Sep 2009 04:50:36 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:44136 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752281AbZI1Iuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 04:48:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VTPDjNbNoPuwyIBLC+sghLlWmyJjj9BKIUJOJy1CQVGVDPD+HErm3ToI1w3rLwR/Ya
-         5KX0QfAFkx8juYoWDy3FkocFfQczkFiQRo+EaZi/HhuWTbbZf1RlStXy1XWBUjuVY3lM
-         KSPyTAGWueAwibjpjX04qoKw0J3TLvEHFrMkg=
-Date: Mon, 28 Sep 2009 10:48:38 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       lizf@cn.fujitsu.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/core] tracing/bkl: Add bkl ftrace events
-Message-ID: <20090928084836.GA6142@nowhere>
-References: <tip-96a2c464de07d7c72988db851c029b204fc59108@git.kernel.org> <1253959554.12145.88.camel@frodo>
+	Mon, 28 Sep 2009 04:50:35 -0400
+Date: Mon, 28 Sep 2009 10:50:37 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Greg KH <greg@kroah.com>, Philipp Reisner <philipp.reisner@linbit.com>,
+       linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       drbd-dev@lists.linbit.com
+Subject: Re: [Drbd-dev] [PATCH] linux-next: 20090926 - drop autoconf.h from
+	DRBD driver
+Message-ID: <20090928085037.GA8048@barkeeper1-xen.linbit>
+Mail-Followup-To: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Greg KH <greg@kroah.com>,
+	Philipp Reisner <philipp.reisner@linbit.com>,
+	linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+	drbd-dev@lists.linbit.com
+References: <20090926152800.a6568e53.sfr@canb.auug.org.au> <20090926173143.GA5041@linux.vnet.ibm.com> <20090926200839.GA5220@merkur.ravnborg.org> <20090927125331.5367db08.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1253959554.12145.88.camel@frodo>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090927125331.5367db08.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 26, 2009 at 06:05:54AM -0400, Steven Rostedt wrote:
-> On Fri, 2009-09-25 at 06:19 +0000, tip-bot for Frederic Weisbecker
-> wrote:
-> > Commit-ID:  96a2c464de07d7c72988db851c029b204fc59108
+On Sun, Sep 27, 2009 at 12:53:31PM +1000, Stephen Rothwell wrote:
+> Hi Greg, Philipp,
 > 
-> > +#if !defined(_TRACE_BKL_H) || defined(TRACE_HEADER_MULTI_READ)
-> > +#define _TRACE_BKL_H
-> > +
-> > +#include <linux/tracepoint.h>
-> > +
-> > +TRACE_EVENT(lock_kernel,
-> > +
-> > +	TP_PROTO(const char *func, const char *file, int line),
-> > +
-> > +	TP_ARGS(func, file, line),
-> > +
-> > +	TP_STRUCT__entry(
-> > +		__field(	int,		lock_depth		)
+> On Sat, 26 Sep 2009 22:08:39 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+> >
+> > On Sat, Sep 26, 2009 at 11:01:43PM +0530, Kamalesh Babulal wrote:
+> > > 
+> > > 	next-20090926 allyesconfig build breaks on powerpc,
+> > > 
+> > > drivers/block/drbd/drbd_proc.c:26:28: error: linux/autoconf.h: No such file or directory
+> > > make[3]: *** [drivers/block/drbd/drbd_proc.o] Error 1
+> > > 
+> > > dropping autoconf.h from drbd_proc.c helps. The cleanup patch drops the
+> > > unneeded include autoconf.h.
+> > > 
+> > > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > 
+> > I only checked upstream - so this is no big suprise.
+> > As there is no need to explicitly include autoconf.h this
+> > change should be included by the drdb folks even if the
+> > stuff I have does not hit upstream.
 > 
-> FYI,
-> 
-> By your request I added this as a common field ;-)
-> 
-> With commit:
-> 
->  637e7e864103a7a68c1ce43ada27dfc25c0d113f
-> 
-> But since other utilities outside of ftrace may use this trace point, it
-> may be OK to keep the duplicate information in the kernel lock API trace
-> points.
-> 
-> -- Steve
+> Maybe we should let them know (cc'd).
 
 
+Thanks ;)
+owed to our out-of-tree "backwards" compatibility for all 2.6 kernels
+back to 2.6.5 (I think...).
 
+includes have been dropped.
 
-Right, or may be we can define this tracepoint as a latency format
-user by default. It's not possible yet for an event to do that but
-I guess we can set a flag for this purpose or something...
+-- 
+: Lars Ellenberg
+: LINBIT | Your Way to High Availability
+: DRBD/HA support and consulting http://www.linbit.com
 
-Thanks.
-
+DRBD® and LINBIT® are registered trademarks of LINBIT, Austria.
