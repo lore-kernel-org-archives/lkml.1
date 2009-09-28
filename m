@@ -1,52 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZI1C5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbZI1DHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740AbZI1C5m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 22:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZI1C5l
+	id S1752819AbZI1DHA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 23:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbZI1DG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 22:57:41 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45511 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbZI1C5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 22:57:41 -0400
-Date: Mon, 28 Sep 2009 04:57:41 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
-Message-ID: <20090928025741.GI6327@wotan.suse.de>
-References: <20090926031537.GA10176@localhost> <Pine.LNX.4.64.0909261115530.12927@sister.anvils> <20090926190645.GB14368@wotan.suse.de> <20090926213204.GX30185@one.firstfloor.org> <Pine.LNX.4.64.0909271714370.9097@sister.anvils> <20090927192251.GB6327@wotan.suse.de> <Pine.LNX.4.64.0909272251180.4402@sister.anvils> <20090927230118.GH6327@wotan.suse.de> <20090928011943.GB1656@one.firstfloor.org>
+	Sun, 27 Sep 2009 23:06:59 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:32894 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbZI1DG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 23:06:58 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 28 Sep 2009 12:04:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, fengguang.wu@intel.com
+Subject: Re: No more bits in vm_area_struct's vm_flags.
+Message-Id: <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4AC0234F.2080808@crca.org.au>
+References: <4AB9A0D6.1090004@crca.org.au>
+	<20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com>
+	<4ABC80B0.5010100@crca.org.au>
+	<20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
+	<4AC0234F.2080808@crca.org.au>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090928011943.GB1656@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 03:19:43AM +0200, Andi Kleen wrote:
-> > There is no real rush AFAIKS to fix this one single pagecache site
-> > while we have problems with slab allocators and all other unaudited
-> > places that nonatomically modify page flags with an elevated
+Hi,
+
+On Mon, 28 Sep 2009 12:45:35 +1000
+Nigel Cunningham <ncunningham@crca.org.au> wrote:
+> KAMEZAWA Hiroyuki wrote:
+> > On Fri, 25 Sep 2009 18:34:56 +1000
+> > Nigel Cunningham <ncunningham@crca.org.au> wrote:
+> >> Hi.
+> >>
+> >> KAMEZAWA Hiroyuki wrote:
+> >>>> I have some code in TuxOnIce that needs a bit too (explicitly mark the
+> >>>> VMA as needing to be atomically copied, for GEM objects), and am not
+> >>>> sure what the canonical way to proceed is. Should a new unsigned long be
+> >>>> added? The difficulty I see with that is that my flag was used in
+> >>>> shmem_file_setup's flags parameter (drm_gem_object_alloc), so that
+> >>>> function would need an extra parameter too..
+> >>> Hmm, how about adding vma->vm_flags2 ?
+> >> The difficulty there is that some functions pass these flags as arguments.
+> >>
+> > Ah yes. But I wonder some special flags, which is rarey used, can be moved
+> > to vm_flags2...
+> > 
+> > For example,
+> > 
+> >  #define VM_SEQ_READ     0x00008000      /* App will access data sequentially */
+> >  #define VM_RAND_READ    0x00010000      /* App will not benefit from clustered reads */
+> > are all capsuled under
+> > mm.h
+> >  117 #define VM_READHINTMASK                 (VM_SEQ_READ | VM_RAND_READ)
+> >  118 #define VM_ClearReadHint(v)             (v)->vm_flags &= ~VM_READHINTMASK
+> >  119 #define VM_NormalReadHint(v)            (!((v)->vm_flags & VM_READHINTMASK))
+> >  120 #define VM_SequentialReadHint(v)        ((v)->vm_flags & VM_SEQ_READ)
+> >  121 #define VM_RandomReadHint(v)            ((v)->vm_flags & VM_RAND_READ)
+> > 
+> > Or
+> > 
+> > 105 #define VM_PFN_AT_MMAP  0x40000000      /* PFNMAP vma that is fully mapped at mmap time */
+> > is only used under special situation.
+> > 
+> > etc..
+> > 
+> > They'll be able to be moved to other(new) flag field, IIUC.
 > 
-> hwpoison ignores slab pages.
+CCing Fengguang.
 
-"ignores" them *after* it has already written to page flags?
-By that time it's too late.
+Breif Summary of thread:
+ Now, vm->vm_flags has no more avialable bits. Then, I proposed Nigel
+ to move some flags from vm->vm_flags to other flags as vm->vm_????.
+ It seems readahead-hints are candidates for this......
 
- 
-> > page reference ... just mark HWPOISON as broken for the moment, or
-> > cut it down to do something much simpler I guess?
+> I'm working on a patch to do this, and am looking at is_mergeable_vma,
+> which is invoked via can_vma_merge_after from vma_merge from
+> madvise_behaviour (which potentially modifies these hint flags). Should
+> those hints be considered in that function? (Do I need to pass the hints
+> in as well and check they're equal?)
+
+I think it should be handled.
+But, yes it implies to add a new argument to several functions in mmap.c
+and maybe a patch will be ugly.
+
+How about addding this check ?
+
+is_mergeable_vma(...)
+....
+  if (vma->vm_hints)
+	return 0;
+
+And not calling vma_merge() at madvice(ACCESS_PATTERN_HINT).
+
+I wonder there are little chances when madice(ACCESS_PATTERN_HINT) is
+given against mapped-file-vma...
+
 > 
-> Erm no. These cases are *EXTREMLY* unlikely to hit.
+> By the way, VM_ClearReadHint and VM_NormalReadHint are currently unused.
+>  madvise_behaviour manipulates the flags directly (in preparing
+> potential replacement values). Not sure if something should be done
+> about that.
+> 
+> By the way #2, in response to the later message in this thread, I'm
+> calling the new var vma->vm_hints, and have put it at the end of the
+> struct at the moment. Is that a good place?
+> 
+I think it seems nice. But please before entries under CONFIG.
+How about just after vm_private_data ?
 
-Well it's fundamentally badly buggy, rare or not. We could avoid
-lots of nasty atomic operations if we just care that it works
-most of the time. I guess it's a matter of perspective but I
-won't push for one thing or the other in hwpoison code so long
-as it stays out of core code for the most part.
+Regards,
+-Kame
+
 
