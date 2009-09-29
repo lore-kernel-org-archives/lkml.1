@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZI2QdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752639AbZI2Qh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZI2QdR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 12:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZI2QdQ
+	id S1752639AbZI2Qh7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 12:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZI2Qh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 12:33:16 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19689 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751652AbZI2QdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 12:33:16 -0400
-Date: Tue, 29 Sep 2009 18:28:56 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Scott James Remnant <scott@ubuntu.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Matt Helsley <matthltc@us.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH] connector: Fix sid connector (was: Badness at
-	kernel/softirq.c:143...)
-Message-ID: <20090929162855.GA15319@redhat.com>
-References: <200909251123.03482.borntraeger@de.ibm.com> <20090929142538.GA10180@redhat.com> <20090929144554.GA10937@redhat.com> <200909291712.33099.borntraeger@de.ibm.com>
+	Tue, 29 Sep 2009 12:37:58 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:34314 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751905AbZI2Qh4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 12:37:56 -0400
+From: Shreyas Bhatewara <sbhatewara@vmware.com>
+To: David Miller <davem@davemloft.net>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "shemminger@linux-foundation.org" <shemminger@linux-foundation.org>,
+       "jgarzik@pobox.com" <jgarzik@pobox.com>,
+       "anthony@codemonkey.ws" <anthony@codemonkey.ws>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>
+Date: Tue, 29 Sep 2009 09:37:59 -0700
+Subject: RE: [PATCH 2.6.31-rc9] net: VMware virtual Ethernet NIC driver:
+ vmxnet3
+Thread-Topic: [PATCH 2.6.31-rc9] net: VMware virtual Ethernet NIC driver:
+ vmxnet3
+Thread-Index: AcpAmO8OkYzDeFS0Te2zUQuqEk0t2QAijigw
+Message-ID: <89E2752CFA8EC044846EB849981913410173CDFD23@EXCH-MBX-4.vmware.com>
+References: <89E2752CFA8EC044846EB849981913410173CDFAF6@EXCH-MBX-4.vmware.com>
+ <20090928.170821.124026517.davem@davemloft.net>
+In-Reply-To: <20090928.170821.124026517.davem@davemloft.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909291712.33099.borntraeger@de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/29, Christian Borntraeger wrote:
->
->
-> The network code must not be called with disabled interrupts but
-> sys_setsid holds the tasklist_lock with spinlock_irq while calling
-> the connector. We can safely move proc_sid_connector from
-> __set_special_pids to sys_setsid.
->
-> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
->
-> ---
->  kernel/exit.c |    4 +---
->  kernel/sys.c  |    2 ++
->  2 files changed, 3 insertions(+), 3 deletions(-)
->
-> Index: linux-2.6/kernel/exit.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/exit.c
-> +++ linux-2.6/kernel/exit.c
-> @@ -359,10 +359,8 @@ void __set_special_pids(struct pid *pid)
->  {
->  	struct task_struct *curr = current->group_leader;
->
-> -	if (task_session(curr) != pid) {
-> +	if (task_session(curr) != pid)
->  		change_pid(curr, PIDTYPE_SID, pid);
-> -		proc_sid_connector(curr);
-> -	}
->
->  	if (task_pgrp(curr) != pid)
->  		change_pid(curr, PIDTYPE_PGID, pid);
-> Index: linux-2.6/kernel/sys.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sys.c
-> +++ linux-2.6/kernel/sys.c
-> @@ -1110,6 +1110,8 @@ SYSCALL_DEFINE0(setsid)
->  	err = session;
->  out:
->  	write_unlock_irq(&tasklist_lock);
-> +	if (err > 0)
-> +		proc_sid_connector(sid);
->  	return err;
->  }
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Monday, September 28, 2009 5:08 PM
+> To: Shreyas Bhatewara
+> Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org;
+> shemminger@linux-foundation.org; jgarzik@pobox.com;
+> anthony@codemonkey.ws; chrisw@sous-sol.org; greg@kroah.com; akpm@linux-
+> foundation.org; virtualization@lists.linux-foundation.org; pv-
+> drivers@vmware.com
+> Subject: Re: [PATCH 2.6.31-rc9] net: VMware virtual Ethernet NIC
+> driver: vmxnet3
+> 
+> From: Shreyas Bhatewara <sbhatewara@vmware.com>
+> Date: Mon, 28 Sep 2009 16:56:45 -0700
+> 
+> > +       uint32_t rxdIdx:12;    /* Index of the RxDesc */
+> 
+> Don't use uint32_t et al. sized types, use "u32" and friends
+> throughout.
 
-Acked-by: Oleg Nesterov <oleg@redhat.com>
+Sure, I will fix that.
 
-I'd suggest you to resend this patch to Andrew. Unless you know
-another way to push it into Linus's tree ;)
-
-Perhaps it makes sense to update the changelog, it should mention
-the issues with daemonize().
-
-Oleg.
-
+->Shreyas
