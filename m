@@ -1,108 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZI2RNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbZI2RN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbZI2RNA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZI2RNA
+	id S1753436AbZI2RN3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZI2RN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:13:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42305 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbZI2RM7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:12:59 -0400
-Date: Tue, 29 Sep 2009 19:12:51 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: linux-kernel@vger.kernel.org, yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org
-Subject: 2.6.32-rc0-git: oops in wireless, iwl3945 related?
-Message-ID: <20090929171249.GB14405@elf.ucw.cz>
+	Tue, 29 Sep 2009 13:13:28 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:62356 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753373AbZI2RN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 13:13:26 -0400
+From: Andreas Schwab <schwab@redhat.com>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH v2 2/2] m68k: Cleanup linker scripts using new linker  script macros.
+References: <1253119466-19488-1-git-send-email-tabbott@ksplice.com>
+	<1253119466-19488-3-git-send-email-tabbott@ksplice.com>
+	<10f740e80909270258o6bde0f3dk720bd5b5c091ed2f@mail.gmail.com>
+	<m2ocowwngg.fsf@igel.home>
+	<alpine.DEB.1.10.0909271351110.14151@dr-wily.mit.edu>
+X-Yow: I guess it was all a DREAM..  or an episode of HAWAII FIVE-O...
+Date: Tue, 29 Sep 2009 19:12:56 +0200
+In-Reply-To: <alpine.DEB.1.10.0909271351110.14151@dr-wily.mit.edu> (Tim
+	Abbott's message of "Sun, 27 Sep 2009 13:57:55 -0400 (EDT)")
+Message-ID: <m3zl8dbron.fsf@hase.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tim Abbott <tabbott@ksplice.com> writes:
 
+> Below is a new version of the second patch that attempts to address this 
+> by putting the ALIGN inside a section, so that _end is at the end of the 
+> load segment (I also did a bit more cleanup):
+>
+>   .init_end : {
+> 	/* This ALIGN be in a section so that _end is at the end of the
+> 	   load segment. */
+> 	. = ALIGN(PAGE_SIZE);
+> 	__init_end = .;
+>   }
+>   
+>   _end = .;
 
-Happened while playing with wireless.
+This works fine.
 
-Kernel is:
-
-Linux version 2.6.31 (pavel@amd) (gcc version 4.3.3 (Debian 4.3.3-10)
-) #72 SMP Thu Sep 10 21:56:19 CEST 2009
-KERNEL supported cpus:
-
-(Could we get kernels between release and -rc1 mark themselves
-somehow?)
-									Pavel
-...
-Registered led device: iwl-phy0::radio
-Registered led device: iwl-phy0::assoc
-Registered led device: iwl-phy0::RX
-Registered led device: iwl-phy0::TX
-wlan0: Selected IBSS BSSID 02:18:41:de:3f:02 based on configured SSID
-wlan0: Trigger new scan to find an IBSS to join
-wlan0: Trigger new scan to find an IBSS to join
-wlan0: Creating new IBSS network, BSSID f2:d3:80:82:ed:6a
-wlan0: Creating new IBSS network, BSSID 52:17:bf:45:d6:9d
-skb_over_panic: text:c07b4113 len:130 put:36 head:e4c3edf0
-data:e4c3edf0 tail:0xe4c3ee72 end:0xe4c3ee70 dev:<NULL>
-------------[ cut here ]------------
-kernel BUG at net/core/skbuff.c:127!
-invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC
-last sysfs file:
-/sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:01/PNP0C09:00/PNP0C0A:00/power_supply/BAT0/status
-Modules linked in:
-
-Pid: 1353, comm: iwl3945 Not tainted (2.6.31 #72) 17097HU
-EIP: 0060:[<c06d7189>] EFLAGS: 00010286 CPU: 0
-EIP is at skb_put+0x89/0x90
-EAX: 00000079 EBX: e4c3ee72 ECX: c0230881 EDX: 01eef000
-ESI: 00000024 EDI: f5e20fc0 EBP: f5dcde04 ESP: f5dcddd8
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process iwl3945 (pid: 1353, ti=f5dcc000 task=f72e4698
-task.ti=f5dcc000)
-Stack:
- c0a28c24 c07b4113 00000082 00000024 e4c3edf0 e4c3edf0 e4c3ee72
-e4c3ee70
-<0> c09ac8b9 0000009c 66666667 f5dcde74 c07b4113 00000037 00000007
-00000282
-<0> 00000002 00000000 00000040 00000006 00000064 f5e1bbc0 f5e1be23
-c03e82b1
-Call Trace:
- [<c07b4113>] ? __ieee80211_sta_join_ibss+0x143/0x3d0
- [<c07b4113>] ? __ieee80211_sta_join_ibss+0x143/0x3d0
- [<c03e82b1>] ? extract_entropy+0x51/0xa0
- [<c07b4677>] ? ieee80211_sta_find_ibss+0x227/0x450
- [<c07fcdc2>] ? mutex_lock_nested+0x1c2/0x230
- [<c07b48b7>] ? ieee80211_ibss_notify_scan_completed+0x17/0x80
- [<c07b4909>] ? ieee80211_ibss_notify_scan_completed+0x69/0x80
- [<c07b1b85>] ? ieee80211_scan_completed+0xc5/0x450
- [<c0239e29>] ? del_timer_sync+0x59/0x70
- [<c0239dd0>] ? del_timer_sync+0x0/0x70
- [<c052a4df>] ? iwl_bg_scan_completed+0x3f/0x80
- [<c024089d>] ? worker_thread+0x16d/0x280
- [<c024083a>] ? worker_thread+0x10a/0x280
- [<c052a4a0>] ? iwl_bg_scan_completed+0x0/0x80
- [<c02449d0>] ? autoremove_wake_function+0x0/0x50
- [<c0240730>] ? worker_thread+0x0/0x280
- [<c02446dc>] ? kthread+0x7c/0x90
- [<c0244660>] ? kthread+0x0/0x90
- [<c020385f>] ? kernel_thread_helper+0x7/0x18
-Code: 44 24 14 8b 81 a0 00 00 00 89 74 24 0c 89 44 24 10 8b 41 50 c7
-04 24 24 8c a2 c0 89 44 24 08 8b
-45 04 89 44 24 04 e8 a7 40 12 00 <0f> 0b eb fe 8d 76 00 55 89 e5 57 56
-53 83 ec 18 89 45 e4 89 55
-EIP: [<c06d7189>] skb_put+0x89/0x90 SS:ESP 0068:f5dcddd8
----[ end trace 5d5762000564cd5a ]---
+Andreas.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Andreas Schwab, schwab@redhat.com
+GPG Key fingerprint = D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
+"And now for something completely different."
