@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751919AbZI2OMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbZI2OQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751919AbZI2OMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 10:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZI2OMe
+	id S1752748AbZI2OQE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 10:16:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZI2OQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 10:12:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33941 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751677AbZI2OMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 10:12:33 -0400
-Subject: Re: [PATCH] drivers/scsi/libsas: Use SAM_GOOD
-From: James Bottomley <James.Bottomley@suse.de>
-To: Julia Lawall <julia@diku.dk>
-Cc: djwong@us.ibm.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0909290759420.29620@ask.diku.dk>
-References: <Pine.LNX.4.64.0909290759420.29620@ask.diku.dk>
-Content-Type: text/plain
-Date: Tue, 29 Sep 2009 14:12:26 +0000
-Message-Id: <1254233546.3942.36.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Tue, 29 Sep 2009 10:16:04 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:34371 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbZI2OQC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 10:16:02 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Subject: Re: [PATCH] connector: Fix sid connector (was: Badness at kernel/softirq.c:143...)
+Date: Tue, 29 Sep 2009 16:15:38 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-release; KDE/4.3.1; i686; ; )
+Cc: Oleg Nesterov <oleg@redhat.com>, Evgeny Polyakov <johnpol@2ka.mipt.ru>,
+       Scott James Remnant <scott@ubuntu.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Matt Helsley <matthltc@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+References: <200909251123.03482.borntraeger@de.ibm.com> <200909291547.21528.borntraeger@de.ibm.com> <20090929140718.GA23858@ioremap.net>
+In-Reply-To: <20090929140718.GA23858@ioremap.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909291615.38457.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-29 at 08:00 +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+Am Dienstag 29 September 2009 16:07:18 schrieb Evgeniy Polyakov:
+> Your patch breaks assumption that task_session(current->group_leader) is
+> not equal to new session id, but to check task_session() we need either
+> rcu or task lock. Also setsid() return value is not zero or negative
+> error, but new session ID or negative error,
+
+Right.
+
+> so I believe attached patch is a proper fix, although it looks rather ugly.
 > 
-> The field stat->stat should be compared to SAM_GOOD, not SAM_STAT_GOOD, as
-> done elsewhere in the same function.  Both constants have the same value.
+> Also proc_sid_connector() uses GFP_KERNEL allocation which is way too
+> wrong to use under any locks.
+> 
+> Something like this (not tested :)
 
-Actually, I'd like to see us go the other way.  Use the standard SCSI
-defined SAM_STAT macros in libsas instead of its hand rolled
-equivalents.  This would mean modifying aic94xx/aic94xx_task.c and
-libsas.h as well.
+Patch compiles and seems to work.
 
-Thanks,
-
-James
-
-
+Christian
