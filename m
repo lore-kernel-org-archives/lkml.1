@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbZI2QhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbZI2Qla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbZI2QhW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 12:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZI2QhV
+	id S1752433AbZI2Qla (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 12:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZI2Ql3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 12:37:21 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:46787 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbZI2QhU (ORCPT
+	Tue, 29 Sep 2009 12:41:29 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:38703 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752617AbZI2Ql2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 12:37:20 -0400
-From: Phil Carmody <ext-phil.2.carmody@nokia.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Phil Carmody <ext-phil.2.carmody@nokia.com>
-Subject: [PATCH 1/1] err.h: Additional helper function to simplify pointer error checking.
-Date: Tue, 29 Sep 2009 19:40:26 +0300
-Message-Id: <d2b6fffe5164f15a9cd7e3b814c4ba21aaf281de.1254242153.git.ext-phil.2.carmody@nokia.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
-X-OriginalArrivalTime: 29 Sep 2009 16:36:59.0828 (UTC) FILETIME=[10FEDF40:01CA4123]
-X-Nokia-AV: Clean
+	Tue, 29 Sep 2009 12:41:28 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Subject: Re: ACPI boot memory leaks in 2.6.32-rc1/2
+Date: Tue, 29 Sep 2009 10:41:30 -0600
+User-Agent: KMail/1.9.10
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       len.brown@intel.com
+References: <c4e36d110909290218g3f98c595kaa15566b94527f04@mail.gmail.com>
+In-Reply-To: <c4e36d110909290218g3f98c595kaa15566b94527f04@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909291041.31481.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Phil Carmody <ext-phil.2.carmody@nokia.com>
+On Tuesday 29 September 2009 03:18:53 am Zdenek Kabelac wrote:
+> My qemu guest seems to be reporting now 46 memleaks  ACPI related.
 
-There are quite a few instances in the kernel of checks of pointers
-both against NULL and against the errno range, handling both cases
-identically. This additional helper function would simplify such
-code.
+Thanks a lot for the report!
 
-Signed-off-by: Phil Carmody <ext-phil.2.carmody@nokia.com>
+Can you verify that the patch below fixes these leaks?
 
----
-Should apply cleanly to latest 2.6 tree.
 
-The reason I noticed the lack of a helper like this was because I
-was chasing down some issues where error returns were being handled
-incorrectly. I concluded that a catch-all doesn't-point-to-an-object
-test would be useful for pointers, so that such errors would be
-harder to make.
+commit fff7774a805e392ce258f0342e48cbe682ef2b9b
+Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date:   Tue Sep 29 10:32:19 2009 -0600
 
-There are possibly 50 instances in the code already of a verbatim
-combined check, such as:
-drivers/base/core.c:    if (class == NULL || IS_ERR(class))
-most from a few architecture-specific trees. I would be prepared
-to create a broader-reaching patchset which migrates more verbose
-checks to this simpler one if that would be desirable.
+    ACPI: fix bus scanning memory leaks
+    
+    Free an acpi_get_object_info() buffer when we're finished.  Skip the
+    acpi_get_name() altogether -- it was only used for a printk that was
+    really just for debug anyway.
+    
+    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+    Reported-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
 
-Aside - the test used isn't computationally optimal. Comparing
-unlikely((unsigned long)-x <= MAX_ERRNO) may be quicker on some
-archs. I have favoured the more self-explanatory and portable
-approach in this patch.
----
- include/linux/err.h |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/err.h b/include/linux/err.h
-index ec87f31..fcc836c 100644
---- a/include/linux/err.h
-+++ b/include/linux/err.h
-@@ -34,6 +34,11 @@ static inline long IS_ERR(const void *ptr)
- 	return IS_ERR_VALUE((unsigned long)ptr);
- }
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 468921b..14a7481 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -1052,6 +1052,8 @@ static void acpi_device_set_id(struct acpi_device *device)
+ 			device->flags.bus_address = 1;
+ 		}
  
-+static inline long IS_ERR_OR_NULL(const void *ptr)
-+{
-+	return (ptr == NULL) || IS_ERR_VALUE((unsigned long)ptr);
-+}
++		kfree(info);
 +
- /**
-  * ERR_CAST - Explicitly cast an error-valued pointer to another pointer type
-  * @ptr: The pointer to cast.
--- 
-1.5.4.3
-
+ 		/*
+ 		 * Some devices don't reliably have _HIDs & _CIDs, so add
+ 		 * synthetic HIDs to make sure drivers can find them.
+@@ -1325,13 +1327,8 @@ static int acpi_bus_scan(acpi_handle handle, struct acpi_bus_ops *ops,
+ 			 struct acpi_device **child)
+ {
+ 	acpi_status status;
+-	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+ 	void *device = NULL;
+ 
+-	acpi_get_name(handle, ACPI_FULL_PATHNAME, &buffer);
+-	printk(KERN_INFO PREFIX "Enumerating devices from [%s]\n",
+-	       (char *) buffer.pointer);
+-
+ 	status = acpi_bus_check_add(handle, 0, ops, &device);
+ 	if (ACPI_SUCCESS(status))
+ 		acpi_walk_namespace(ACPI_TYPE_ANY, handle, ACPI_UINT32_MAX,
