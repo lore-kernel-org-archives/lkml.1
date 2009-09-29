@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbZI2FCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbZI2FBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753453AbZI2FCK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 01:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZI2FBW
+	id S1753384AbZI2FBh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 01:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZI2FBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 01:01:22 -0400
+	Tue, 29 Sep 2009 01:01:23 -0400
 Received: from mail.perches.com ([173.55.12.10]:1311 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752906AbZI2FBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752340AbZI2FBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Sep 2009 01:01:14 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
@@ -21,10 +21,11 @@ Cc: Adrian Hunter <adrian.hunter@nokia.com>, Alex Elder <aelder@sgi.com>,
        Matt Mackall <mpm@selenic.com>,
        Mauro Carvalho Chehab <mchehab@infradead.org>,
        Neil Brown <neilb@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       xfs-masters@oss.sgi.com, Tejun Heo <tj@kernel.org>
-Subject: [PATCH 4/9] drivers/firmware/dmi_scan.c: Use %pUX to print UUIDs
-Date: Mon, 28 Sep 2009 22:01:06 -0700
-Message-Id: <ace0c6b1c65b6de8c3c2c7827e290023c7a6d462.1254193019.git.joe@perches.com>
+       xfs-masters@oss.sgi.com, Andre Noll <maan@systemlinux.org>,
+       linux-raid@vger.kernel.org
+Subject: [PATCH 5/9] drivers/md/md.c: Use %pU to print UUIDs
+Date: Mon, 28 Sep 2009 22:01:07 -0700
+Message-Id: <a132672f2d70481e3817ef221b8efddb7097c0b7.1254193019.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1254193019.git.joe@perches.com>
 References: <cover.1254193019.git.joe@perches.com>
@@ -34,25 +35,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/firmware/dmi_scan.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ drivers/md/md.c |   16 ++++------------
+ 1 files changed, 4 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
-index 938100f..c0deabb 100644
---- a/drivers/firmware/dmi_scan.c
-+++ b/drivers/firmware/dmi_scan.c
-@@ -169,10 +169,7 @@ static void __init dmi_save_uuid(const struct dmi_header *dm, int slot, int inde
- 	if (!s)
- 		return;
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 26ba42a..68b52d7 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -1813,15 +1813,11 @@ static void print_sb_1(struct mdp_superblock_1 *sb)
  
--	sprintf(s,
--		"%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
--		d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],
--		d[8], d[9], d[10], d[11], d[12], d[13], d[14], d[15]);
-+	sprintf(s, "%pUX", d);
- 
-         dmi_ident[slot] = s;
- }
+ 	uuid = sb->set_uuid;
+ 	printk(KERN_INFO
+-	       "md:  SB: (V:%u) (F:0x%08x) Array-ID:<%02x%02x%02x%02x"
+-	       ":%02x%02x:%02x%02x:%02x%02x:%02x%02x%02x%02x%02x%02x>\n"
++	       "md:  SB: (V:%u) (F:0x%08x) Array-ID:<%pU>\n"
+ 	       "md:    Name: \"%s\" CT:%llu\n",
+ 		le32_to_cpu(sb->major_version),
+ 		le32_to_cpu(sb->feature_map),
+-		uuid[0], uuid[1], uuid[2], uuid[3],
+-		uuid[4], uuid[5], uuid[6], uuid[7],
+-		uuid[8], uuid[9], uuid[10], uuid[11],
+-		uuid[12], uuid[13], uuid[14], uuid[15],
++		uuid,
+ 		sb->set_name,
+ 		(unsigned long long)le64_to_cpu(sb->ctime)
+ 		       & MD_SUPERBLOCK_1_TIME_SEC_MASK);
+@@ -1830,8 +1826,7 @@ static void print_sb_1(struct mdp_superblock_1 *sb)
+ 	printk(KERN_INFO
+ 	       "md:       L%u SZ%llu RD:%u LO:%u CS:%u DO:%llu DS:%llu SO:%llu"
+ 			" RO:%llu\n"
+-	       "md:     Dev:%08x UUID: %02x%02x%02x%02x:%02x%02x:%02x%02x:%02x%02x"
+-	                ":%02x%02x%02x%02x%02x%02x\n"
++	       "md:     Dev:%08x UUID: %pU\n"
+ 	       "md:       (F:0x%08x) UT:%llu Events:%llu ResyncOffset:%llu CSUM:0x%08x\n"
+ 	       "md:         (MaxDev:%u) \n",
+ 		le32_to_cpu(sb->level),
+@@ -1844,10 +1839,7 @@ static void print_sb_1(struct mdp_superblock_1 *sb)
+ 		(unsigned long long)le64_to_cpu(sb->super_offset),
+ 		(unsigned long long)le64_to_cpu(sb->recovery_offset),
+ 		le32_to_cpu(sb->dev_number),
+-		uuid[0], uuid[1], uuid[2], uuid[3],
+-		uuid[4], uuid[5], uuid[6], uuid[7],
+-		uuid[8], uuid[9], uuid[10], uuid[11],
+-		uuid[12], uuid[13], uuid[14], uuid[15],
++		uuid,
+ 		sb->devflags,
+ 		(unsigned long long)le64_to_cpu(sb->utime) & MD_SUPERBLOCK_1_TIME_SEC_MASK,
+ 		(unsigned long long)le64_to_cpu(sb->events),
 -- 
 1.6.3.1.10.g659a0.dirty
 
