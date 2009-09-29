@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbZI2OA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbZI2N6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752539AbZI2OA1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 10:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZI2OA1
+	id S1752294AbZI2N6G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 09:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZI2N6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 10:00:27 -0400
-Received: from mail.acc.umu.se ([130.239.18.156]:52045 "EHLO mail.acc.umu.se"
+	Tue, 29 Sep 2009 09:58:05 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:39702 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbZI2OA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 10:00:26 -0400
-X-Greylist: delayed 447 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Sep 2009 10:00:26 EDT
-Date: Tue, 29 Sep 2009 15:52:59 +0200 (CEST)
-From: =?ISO-8859-1?Q?Bo_Brant=E9n?= <bosse@acc.umu.se>
-To: linux-kernel@vger.kernel.org
-Subject: still mtrr problems
-Message-ID: <Pine.A41.4.64.0909291547160.1114112@stalin.acc.umu.se>
+	id S1751434AbZI2N6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 09:58:04 -0400
+Date: Tue, 29 Sep 2009 14:58:11 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, david.graham@intel.com,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG 2.6.30+] e100 sometimes causes oops during resume
+Message-ID: <20090929135810.GB14911@csn.ul.ie>
+References: <20090915120538.GA26806@bizet.domek.prywatny> <200909170118.53965.rjw@sisk.pl> <4AB29F4A.3030102@intel.com> <200909180027.37387.rjw@sisk.pl> <20090922233531.GA3198@bizet.domek.prywatny>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090922233531.GA3198@bizet.domek.prywatny>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 23, 2009 at 01:35:31AM +0200, Karol Lewandowski wrote:
+> On Fri, Sep 18, 2009 at 12:27:37AM +0200, Rafael J. Wysocki wrote:
+> > On Thursday 17 September 2009, Graham, David wrote:
+> > > Rafael J. Wysocki wrote:
+> > > > I guess the driver releases its DMA buffer during suspend and attempts to
+> > > > allocate it back on resume, which is not really smart (if that really is the
+> > > > case).
+> 
+> > > Yes, we free a 70KB block (0x80 by 0x230 bytes) on suspend and 
+> > > reallocate on resume, and so that's an Order 5 request. It looks 
+> > > symmetric, and hasn't changed for years. I don't think we are leaking 
+> > > memory, which points back to that the memory is too fragmented to 
+> > > satisfy the request.
+> > > 
+> > > I also concur that Rafael's commit 6905b1f1 shouldn't change the logic 
+> > > in the driver for systems with e100 (like yours Karol) that could 
+> > > already sleep, and I don't see anything else in the driver that looks to 
+> > > be relevant. I'm expecting that your test result without commit 6905b1f1 
+> > > will still show the problem.
+> > > 
+> > > So I wonder if this new issue may be triggered by some other change in 
+> > > the memory subsystem ?
+> 
+> > I think so.  There have been reports about order 2 allocations failing for
+> > 2.6.31, so it looks like newer kernels are more likely to expose such problems.
+> > 
+> > Adding linux-mm to the CC list.
+> 
+> I've hit this bug 2 times since my last email.  Is there anything I
+> could do?
+> 
+> Maybe I should revert following commits (chosen somewhat randomly)?
+> 
+> 1. 49255c619fbd482d704289b5eb2795f8e3b7ff2e
+> 
+> 2. dd5d241ea955006122d76af88af87de73fec25b4 - alters changes made by
+> commit above
+> 
+> Any ideas?
+> 
 
-Hello,
+Those commits should only make a difference on small-memory machines.
+The exact value of "small" varies but on 32 bit x86 without PAE, it would
+be 20MB of RAM. The fact reverting the two patches makes any difference at
+all is a surprise and likely a co-incidence.
 
-when installing 8G RAM on an Intel DG965OT motherboard Linux will hang at 
-boot (or parhaps only become very very slow) if I dont add the boot option 
-mem=8192M, Windows Vista 64-bit works without any probelm on the same 
-hardware.
+If you have a reliable reproduction case, would it be possible to bisect
+between the points
+d239171e4f6efd58d7e423853056b1b6a74f1446..b70d94ee438b3fd9c15c7691d7a932a135c18101
+to see if the problem is in there anywhere?
 
-/proc/mtrr:
-reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
-reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
-reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
-reg05: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
-reg06: base=0x200000000 (8192MB), size= 512MB: write-back, count=1
-reg07: base=0xd0000000 (3328MB), size= 256MB: write-combining, count=1
-
-dmesg|grep e820:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000008f000 (usable)
-[    0.000000]  BIOS-e820: 000000000008f000 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 00000000cf561000 (usable)
-[    0.000000]  BIOS-e820: 00000000cf561000 - 00000000cf56e000 (reserved)
-[    0.000000]  BIOS-e820: 00000000cf56e000 - 00000000cf637000 (usable)
-[    0.000000]  BIOS-e820: 00000000cf637000 - 00000000cf6e9000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000cf6e9000 - 00000000cf6ed000 (usable)
-[    0.000000]  BIOS-e820: 00000000cf6ed000 - 00000000cf6f2000 (ACPI data)
-[    0.000000]  BIOS-e820: 00000000cf6f2000 - 00000000cf6f3000 (usable)
-[    0.000000]  BIOS-e820: 00000000cf6f3000 - 00000000cf6ff000 (ACPI data)
-[    0.000000]  BIOS-e820: 00000000cf6ff000 - 00000000cf700000 (usable)
-[    0.000000]  BIOS-e820: 00000000cf700000 - 00000000d0000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
-[    0.000000]  BIOS-e820: 0000000100000000 - 000000022c000000 (usable)
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
