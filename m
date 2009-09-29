@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072AbZI2DL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbZI2DNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753072AbZI2DL2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 23:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZI2DL1
+	id S1753140AbZI2DNL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 23:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbZI2DNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 23:11:27 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59538 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbZI2DL1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 23:11:27 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 29 Sep 2009 12:09:08 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>
-Subject: [PATCH][rc1] cgroup: catch bad css refcnt at css_put v2
-Message-Id: <20090929120908.cf3147ae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4AC159D9.8020900@cn.fujitsu.com>
-References: <200909252158.n8PLwFhG024011@imap1.linux-foundation.org>
-	<20090928154213.8e873dec.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090928180649.b6b7eea9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090928181310.9492a8a2.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AC159D9.8020900@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Sep 2009 23:13:10 -0400
+Received: from THUNK.ORG ([69.25.196.29]:40279 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752803AbZI2DNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 23:13:09 -0400
+Date: Mon, 28 Sep 2009 23:13:08 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andy Isaacson <adi@hexapodia.org>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: hard lockup, followed by ext4_lookup: deleted inode
+	referenced: 524788
+Message-ID: <20090929031308.GB24383@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andy Isaacson <adi@hexapodia.org>, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <20090928191644.GR12922@hexapodia.org> <20090928202507.GB22733@mit.edu> <20090928212838.GS12922@hexapodia.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090928212838.GS12922@hexapodia.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__css_put() doesn't check a buggy case as refcnt goes to minus.
-This patch adds a check for it.
+On Mon, Sep 28, 2009 at 02:28:38PM -0700, Andy Isaacson wrote:
+> 
+> I've attached the complete output from "fsck -n /dev/sda1" and "stat
+> <%d>" on each inode reported to be deleted.
+> 
 
-Changelog:
-  - using WARN_ON_ONCE() instead of WARN_ON()
+So the large numbers of multiply-claimed blocks message is definitely
+a clue:
 
-Acked-by: Paul Menage <menage@google.com>
-Acked-by: Li Zefan <lizf@cn.fujitsu.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- kernel/cgroup.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+> Multiply-claimed block(s) in inode 919422: 3704637
+> Multiply-claimed block(s) in inode 928410: 3704637
 
-Index: linux-2.6.32-rc1/kernel/cgroup.c
-===================================================================
---- linux-2.6.32-rc1.orig/kernel/cgroup.c
-+++ linux-2.6.32-rc1/kernel/cgroup.c
-@@ -3708,8 +3708,10 @@ static void check_for_release(struct cgr
- void __css_put(struct cgroup_subsys_state *css)
- {
- 	struct cgroup *cgrp = css->cgroup;
-+	int val;
- 	rcu_read_lock();
--	if (atomic_dec_return(&css->refcnt) == 1) {
-+	val = atomic_dec_return(&css->refcnt);
-+	if (val == 1) {
- 		if (notify_on_release(cgrp)) {
- 			set_bit(CGRP_RELEASABLE, &cgrp->flags);
- 			check_for_release(cgrp);
-@@ -3717,6 +3719,7 @@ void __css_put(struct cgroup_subsys_stat
- 		cgroup_wakeup_rmdir_waiter(cgrp);
- 	}
- 	rcu_read_unlock();
-+	WARN_ON_ONCE(val < 1);
- }
- 
- /*
+> Multiply-claimed block(s) in inode 928622: 3703283
+> Multiply-claimed block(s) in inode 943927: 3703283
 
+> Multiply-claimed block(s) in inode 933307: 3702930
+> Multiply-claimed block(s) in inode 943902: 3702930
+
+What this indicates to me is that an inode table block was written to
+the wrong location on disk.  In fact, given large numbers of inode
+numbers involved, it looks like large numbers of inode table blocks
+were written to the wrong location on disk.
+
+So what happend with the file "/etc/rcS.d/S90mountdebugfs" is probably
+_not_ that it was deleted on September 22nd, but rather sometime
+recently the inode table block containing to inode #524788 was
+overwritten by another inode table block, containing a deleted inode
+at that relative position in the inode table block.
+
+This must have happened since the last successful boot, since with
+/etc/rcS.d/S90mountdebugfs pointing at a deleted inode, any attempt to
+boot the system after the corruption had taken place would have
+resulted in catastrophe.
+
+I'm surprised by how many inode tables blocks apparently had gotten
+mis-directed.  Almost certainly there must have been some kind of
+hardware failure that must have triggered this.  I'm not sure what
+caused it, but it does seem like your filesystem has been toasted
+fairly badly.
+
+At this point my advice to you would be to try to recover as much data
+from the disk as you can, and to *not* try to run fsck or mount the
+filesystem read/write until you are confident you have recovered all
+of the critical files you care about, or have made a image copy of the
+disk using dd to a backup hard drive first.  If you're really curious
+we could try to look at the dumpe2fs output and see if we can find the
+pattern of what might have caused so many misdirected writes, but
+there's no guarantee that we would be able to find the definitive root
+cause, and from a recovery perspective, it's probably faster and less
+risk to reinstall your system disk from scratch.
+
+Good luck, and I'm sorry your file system had gotten so badly
+disrupted.
+
+						- Ted
