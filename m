@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbZI2OVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbZI2O0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbZI2OVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 10:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbZI2OVs
+	id S1752819AbZI2O0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 10:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZI2O0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 10:21:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38264 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbZI2OVs (ORCPT
+	Tue, 29 Sep 2009 10:26:54 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:56532 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752758AbZI2O0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 10:21:48 -0400
-Date: Tue, 29 Sep 2009 10:21:28 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: regression in page writeback
-Message-ID: <20090929142128.GA3447@infradead.org>
-References: <20090923140058.GA2794@think> <20090924031508.GD6456@localhost> <20090925001117.GA9464@discord.disaster> <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org> <20090929023227.GA20153@localhost>
+	Tue, 29 Sep 2009 10:26:54 -0400
+Date: Tue, 29 Sep 2009 10:22:16 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: No more bits in vm_area_struct's vm_flags.
+In-Reply-To: <20090929105735.06eea1ee.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0909291019100.15549@gentwo.org>
+References: <4AB9A0D6.1090004@crca.org.au> <20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com> <4ABC80B0.5010100@crca.org.au> <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com> <4AC0234F.2080808@crca.org.au> <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090928033624.GA11191@localhost> <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0909281637160.25798@sister.anvils> <a0ea21a7cfe313202e2b51510aa5435a.squirrel@webmail-b.css.fujitsu.com> <Pine.LNX.4.64.0909282134100.11529@sister.anvils>
+ <20090929105735.06eea1ee.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090929023227.GA20153@localhost>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 10:32:27AM +0800, Wu Fengguang wrote:
-> > This should help a bit for XFS as it historically does multi-page
-> > writeouts from ->writepages (and apprently btrfs that added some
-> 
-> ->writepage ?
 
-Yes.
+Another concern that has not been discussed is the increased cache
+footprint due to a slightly enlarged vm data working set (there is also a
+corresponding icache issue since additional accesses are needed).
 
-> > write-around recently?) but not those brave filesystems only
-> > implementing the multi-page writeout from writepages as designed.
-> 
-> Thanks.  Just tried write_cache_pages(), looks simple. Need to further
-> convert all aops->writepages to support lumpy pageout :)
-
-Yeah.  Most ->writepages instances are just copies of write_cache_pages
-with local hacks.  If you have any good idea to consolidate that that
-would be great.  Also XFS and btrfs do cluster move pages even from
-->writepage, I wonder how well that interacts with reclaim.
-
+Could we stick with the current size and do combinations of flags like we
+do with page flags? VM_HUGETLB cannot grow up and down f.e. and there are
+certainly lots of other impossible combinations that can be used to put
+more information into the flags.
