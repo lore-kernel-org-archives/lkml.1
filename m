@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZI2K3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZI2Ke7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbZI2K3B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 06:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZI2K3A
+	id S1753893AbZI2Ke7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 06:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZI2Ke7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 06:29:00 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:30034 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753771AbZI2K27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 06:28:59 -0400
-Message-ID: <4AC1E16B.1090406@redhat.com>
-Date: Tue, 29 Sep 2009 12:28:59 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 29 Sep 2009 06:34:59 -0400
+Received: from mail142.messagelabs.com ([216.82.249.99]:15934 "HELO
+	mail142.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752810AbZI2Ke6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 06:34:58 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Haneef.Syed@lntinfotech.com
+X-Msg-Ref: server-12.tower-142.messagelabs.com!1254220275!79890071!2
+X-StarScan-Version: 6.1.3; banners=lntinfotech.com,-,-
+X-Originating-IP: [203.101.96.4]
+To: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: cpu affinity issue on kvm-88
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: Stack corruption on 2.6.31 [with KVM]
-References: <200909270816.10832.con@kolivas.org> <200909292018.12989.kernel@kolivas.org>
-In-Reply-To: <200909292018.12989.kernel@kolivas.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+Message-ID: <OFE960567D.0F132D09-ON65257640.0039A660-65257640.003A00F4@lntinfotech.com>
+From: Haneef Syed <Haneef.Syed@lntinfotech.com>
+Date: Tue, 29 Sep 2009 16:03:33 +0530
+X-MIMETrack: Serialize by Router on BANGALORE/LNTINFOTECH(Release 7.0.3|September 26, 2007) at
+ 09/29/2009 04:03:58 PM,
+	Serialize complete at 09/29/2009 04:03:58 PM,
+	Itemize by SMTP Server on BangaloreSMTP/LNTINFOTECH(Release 7.0.3|September
+ 26, 2007) at 09/29/2009 04:05:20 PM,
+	Serialize by Router on BangaloreSMTP/LNTINFOTECH(Release 7.0.3|September 26, 2007) at
+ 09/29/2009 04:06:23 PM,
+	Serialize complete at 09/29/2009 04:06:23 PM
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/29/2009 12:18 PM, Con Kolivas wrote:
-> Resending with a couple of extra CCs.
->
-> Only extra details I guess were debian stable with kvm that reports itself as:
-> QEMU PC emulator version 0.9.1 (kvm-72), Copyright (c) 2003-2008 Fabrice
-> Bellard
->
-> Note that I get this stack corruption *every time*, and it must be with
-> the -no-kvm option.
->
->    
+Hi
+   Actually I am using 2.6.21 kernel and inserting kvm-76 module.
 
--no-kvm means kvm is not in use, so unlikely to be the cause of the problem.
+   It is fine when I am using cpu affinity( like  " taskset 1 
+./qemu-system-x86-64  -hda imgage name ").
 
-Please send to qemu-devel@nongnu.org, but first try with qemu 0.11.0.
+   I am having quad core intel xeon processor.
 
--- 
-error compiling committee.c: too many arguments to function
+  But without cpu affinity It is hanging randomly.(./qemu-system-x86-64 
+-hda imgage name)
 
+  Give me any suggestion
+
+
+______________________________________________________________________
