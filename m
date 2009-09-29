@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZI2KfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZI2KgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZI2KfQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 06:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZI2KfM
+	id S1753977AbZI2KgM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 06:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbZI2KgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 06:35:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:47634 "EHLO mx1.redhat.com"
+	Tue, 29 Sep 2009 06:36:11 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:46014 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753771AbZI2KfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 06:35:10 -0400
-Date: Tue, 29 Sep 2009 16:03:54 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@linux.intel.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
-	generic guest and host communication
-Message-ID: <20090929103354.GA3766@amit-x200.redhat.com>
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <20090922154549.GA11379@amit-x200.redhat.com> <20090929092431.GA3368@amit-x200.redhat.com> <200909291209.25775.borntraeger@de.ibm.com>
+	id S1753609AbZI2KgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 06:36:09 -0400
+Date: Tue, 29 Sep 2009 12:34:07 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Boaz Harrosh <bharrosh@panasas.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCHv2 1/4] scsi: consistent use of __u8 in scsi/scsi.h
+Message-ID: <20090929103407.GB11183@redhat.com>
+References: <cover.1254220284.git.mst@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200909291209.25775.borntraeger@de.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cover.1254220284.git.mst@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Tue) Sep 29 2009 [12:09:25], Christian Borntraeger wrote:
-> Am Dienstag 29 September 2009 11:24:31 schrieb Amit Shah:
-> > OK; how I solved this is: a new internal message between the guest and
-> > the host. If a host is a console port, the host has to indicate that by
-> > passing a message to the guest and the guest then hooks it up with hvc.
-> 
-> I am curious how you going to make this compatible with existing code that 
-> currently uses virtio console.
+scsi/scsi.h is exported to userspace, so it should
+use __u8 instead of u8 as other userspace-visible headers do.
 
-I've tested old qemu new kernel, new qemu old kernel, new qemu, new
-kernel and all the cases work fine.
+This fixes the following errors when application includes scsi/scsi.h
+generated with make headers_install:
+include/scsi/scsi.h:145: error: expected specifier-qualifier-list before ‘u8’
+include/scsi/scsi.h: In function ‘scsi_varlen_cdb_length’:
+include/scsi/scsi.h:156: error: ‘struct scsi_varlen_cdb_hdr’ has no member named ‘additional_cdb_length’
 
-Please see the virtcons_probe() function for the details.
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+ include/scsi/scsi.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-		Amit
+diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
+index 084478e..dfcfaab 100644
+--- a/include/scsi/scsi.h
++++ b/include/scsi/scsi.h
+@@ -142,10 +142,10 @@ struct scsi_cmnd;
+ 
+ /* defined in T10 SCSI Primary Commands-2 (SPC2) */
+ struct scsi_varlen_cdb_hdr {
+-	u8 opcode;        /* opcode always == VARIABLE_LENGTH_CMD */
+-	u8 control;
+-	u8 misc[5];
+-	u8 additional_cdb_length;         /* total cdb length - 8 */
++	__u8 opcode;        /* opcode always == VARIABLE_LENGTH_CMD */
++	__u8 control;
++	__u8 misc[5];
++	__u8 additional_cdb_length;         /* total cdb length - 8 */
+ 	__be16 service_action;
+ 	/* service specific data follows */
+ };
+-- 
+1.6.5.rc2
+
