@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbZI2RNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZI2RNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbZI2RNY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbZI2RNX
+	id S1753487AbZI2RNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZI2RNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:13:23 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42328 "EHLO
+	Tue, 29 Sep 2009 13:13:39 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42376 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753366AbZI2RNX (ORCPT
+	with ESMTP id S1753449AbZI2RNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:13:23 -0400
-Date: Tue, 29 Sep 2009 19:13:18 +0200
+	Tue, 29 Sep 2009 13:13:38 -0400
+Date: Tue, 29 Sep 2009 19:13:32 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Shane Wang <shane.wang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>
-Subject: Re: [GIT PULL] x86/txt for v2.6.32
-Message-ID: <20090929171318.GC14405@elf.ucw.cz>
-References: <200909142051.n8EKpiOM017912@terminus.zytor.com> <200909262344.21257.rjw@sisk.pl> <20090928210252.GD1960@elf.ucw.cz> <200909282307.56190.rjw@sisk.pl> <4AC1267D.6020405@zytor.com> <20090928211745.GA2119@elf.ucw.cz> <4AC1AA61.8070408@intel.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-rdma@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Anton Blanchard <anton@samba.org>, general@lists.openfabrics.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+Message-ID: <20090929171332.GD14405@elf.ucw.cz>
+References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins> <adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com> <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com> <adatyz1d17q.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AC1AA61.8070408@intel.com>
+In-Reply-To: <adatyz1d17q.fsf@cisco.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-09-29 14:34:09, Shane Wang wrote:
-> Pavel Machek wrote:
->> On Mon 2009-09-28 14:11:25, H. Peter Anvin wrote:
->>> On 09/28/2009 02:07 PM, Rafael J. Wysocki wrote:
->>>>> Well, I worry that S3 support for TXT makes TXT completely useless. A
->>>>> little liquid nitrogen, remove RAM, place it in another machine,
->>>>> modify it in any way you want, more liquid nitrogen, place it back.
->>>>>
->>>>> Oops, protection provided by TXT is lost.
->>>> Ah, I see your point now.
->>>>
->>> Shane Wang sent me a patch for S3 support, but it missed the merge window:
->>>
->>> 	http://marc.info/?i=4A9CE0B2.5060608@intel.com
->>>
->>> *As far as I understand* -- and I haven't looked into it in detail yet,
->>> having just come back from Plumber's -- this provides integrity
->>> protection, not content extraction protection.
+On Thu 2009-09-17 08:45:29, Roland Dreier wrote:
+> 
+>  > > > Hmm, or are you saying you can only get 1 event per registered range and
+>  > > > allocate the thing on registration? That'd need some registration limit
+>  > > > to avoid DoS scenarios.
+>  > > 
+>  > > Yes, that's what I do.  You're right, I should add a limit... although
+>  > > their are lots of ways for userspace to consume arbitrary amounts of
+>  > > kernel resources already.
+>  > 
+>  > I'd be good to work at reducing that number, not adding to it ;-)
+> 
+> Yes, definitely.  I'll add a quick ummunotify module parameter that
+> limits the number of registrations per process.
+> 
+>  > But yeah, I currently don't see a very nice match to perf counters.
+> 
+> OK.  It would be nice to tie into something more general, but I think I
+> agree -- perf counters are missing the filtering and the "no lost
+> events" that ummunotify does have.  And I'm not sure it's worth messing
+> up the perf counters design just to jam one more not totally related
+> thing in.
 
-Well, documentation seems to suggest it provides content protection,
-too. If not, should that be clearly documented in Doc*/intel_txt?
-[Also, I'd expect threat model aka "what does it protect against there"].
-
->> How does it provide integrity protection? I'm free to modify RAM
->> content in the other machine....
-
->
-> Before S3 sleep, tboot patch will MAC the memory, and after S3 resume, 
-> the memory integrity will be verified according to the MAC value. So, you 
-> can't modify RAM, or else you will fail on S3 resume.
->
-> The current patch hpa mentioned is for userspace memory integrity. For 
-> kernel memory integrity, the code is already in with the previous txt 
-> patch.
-
-Ok, and what prevents me from commenting out the MAC checking code?
-
+I believe that extending perf counters to do what you want is better
+than adding one more, very strange, user<->kernel interface.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
