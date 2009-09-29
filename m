@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbZI2RS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbZI2RUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753625AbZI2RS4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbZI2RSz
+	id S1753385AbZI2RUO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbZI2RUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:18:55 -0400
-Received: from ozlabs.org ([203.10.76.45]:59248 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753597AbZI2RSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:18:53 -0400
-To: linux-kernel@vger.kernel.org
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Wed, 30 Sep 2009 02:48:54 +0930
-Subject: [PATCH 4/4] lguest: GET_ID "support"
-Cc: virtualization@lists.linux-foundation.org,
-       john cooper <john.cooper@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 29 Sep 2009 13:20:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47338 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753258AbZI2RUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 13:20:12 -0400
+Date: Tue, 29 Sep 2009 19:19:51 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Shane Wang <shane.wang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>
+Subject: Re: [GIT PULL] x86/txt for v2.6.32
+Message-ID: <20090929191951.18315e94@infradead.org>
+In-Reply-To: <20090929171318.GC14405@elf.ucw.cz>
+References: <200909142051.n8EKpiOM017912@terminus.zytor.com>
+	<200909262344.21257.rjw@sisk.pl>
+	<20090928210252.GD1960@elf.ucw.cz>
+	<200909282307.56190.rjw@sisk.pl>
+	<4AC1267D.6020405@zytor.com>
+	<20090928211745.GA2119@elf.ucw.cz>
+	<4AC1AA61.8070408@intel.com>
+	<20090929171318.GC14405@elf.ucw.cz>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909300248.55485.rusty@rustcorp.com.au>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Sep 2009 19:13:18 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
-We advertise the feature for testing, then promptly fail when the guest
-uses it.
+> Ok, and what prevents me from commenting out the MAC checking code?
+> 
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- Documentation/lguest/lguest.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+because the bios verified some code that verified the kernel which
+includes the MAC checking code .. as part of returning from S3 ?
 
-diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
---- a/Documentation/lguest/lguest.c
-+++ b/Documentation/lguest/lguest.c
-@@ -1654,7 +1654,11 @@ static void blk_request(struct virtqueue
- 	 * In general the virtio block driver is allowed to try SCSI commands.
- 	 * It'd be nice if we supported eject, for example, but we don't.
- 	 */
--	if (out->type & VIRTIO_BLK_T_SCSI_CMD) {
-+	if (out->type == VIRTIO_BLK_T_GET_ID) {
-+		fprintf(stderr, "GET ID command unsupported\n");
-+		*in = VIRTIO_BLK_S_UNSUPP;
-+		wlen = sizeof(*in);
-+	} else if (out->type & VIRTIO_BLK_T_SCSI_CMD) {
- 		fprintf(stderr, "Scsi commands unsupported\n");
- 		*in = VIRTIO_BLK_S_UNSUPP;
- 		wlen = sizeof(*in);
-@@ -1751,6 +1755,9 @@ static void setup_block_file(const char 
- 	add_feature(dev, VIRTIO_BLK_F_SEG_MAX);
- 	conf.seg_max = cpu_to_le32(VIRTQUEUE_NUM - 2);
- 
-+	/* We have GET_ID, at least for testing! */
-+	add_feature(dev, VIRTIO_BLK_F_GET_ID);
-+
- 	/*
- 	 * We only have 8 bits of configuration space for each device.  But a
- 	 * new feature for virtio_blk added a 1k 'identify' field to struct
+> 							
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
