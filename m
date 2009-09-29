@@ -1,102 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZI2MQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbZI2MUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZI2MQd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 08:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZI2MQc
+	id S1754028AbZI2MUq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 08:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZI2MUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 08:16:32 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:49367 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753645AbZI2MQc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 08:16:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VvSMPE9+hJdIgqEb6LQJSF6VE8pVVUXXVCqVWACgxauzVUmai5K/4QSqRq/M4KsGdY
-         hIitxNIltadJwj0/HqirBj/rRqaiHNa8QjcTKFaM3NAJU+rn6GrnM43xngjILGHyInQq
-         jjJw/sCHrXz55FcBGNGnNpBDJmctruDBQK4FI=
+	Tue, 29 Sep 2009 08:20:45 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23977 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753733AbZI2MUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 08:20:45 -0400
+Date: Tue, 29 Sep 2009 17:50:06 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@linux.intel.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
+	generic guest and host communication
+Message-ID: <20090929122006.GB3766@amit-x200.redhat.com>
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <20090922154549.GA11379@amit-x200.redhat.com> <20090929092431.GA3368@amit-x200.redhat.com> <200909291403.08547.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20090929135925.50ac88bf@infradead.org>
-References: <f22d86810909290425s46406fe5ib00bcfc9673f70df@mail.gmail.com>
-	 <20090929135925.50ac88bf@infradead.org>
-Date: Tue, 29 Sep 2009 17:46:35 +0530
-Message-ID: <f22d86810909290516l4cdda2bav3588cc5f7d1f2f65@mail.gmail.com>
-Subject: Re: GFP_NOWAIT and GFP_NOMEMALLOC
-From: "Leonidas ." <leonidas137@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909291403.08547.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 5:29 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Tue, 29 Sep 2009 16:55:24 +0530
-> "Leonidas ." <leonidas137@gmail.com> wrote:
->
->> Hi list,
->>
->> I am new here, I have googled/binged enough before posting this
->> message, in case of redundancy please point me to appropriate
->> links/resources etc.
->>
->> I want to kmalloc memory while holding spinlocks in process context,
->> here I can't use GFP_KERNEL flag since it can sleep. Using GFP_ATOMIC
->> guarantees that allocation will succeed by allocating from emergency
->> pools if needed. But I dont think, I need to use emergency pool and I
->> want to limit my memory consumption to ZONE_NORMAL without sleeping,
->> my module is ready to handle the allocation failure if any.
->
-> GFP_NOWAIT is what you want.
->
-> can you give us a pointer to what your module is about? Maybe there's
-> better solutions...
->
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
+On (Tue) Sep 29 2009 [14:03:08], Christian Borntraeger wrote:
+> Am Dienstag 29 September 2009 11:24:31 schrieb Amit Shah:
+> > -static void hvc_handle_input(struct virtqueue *vq)
+> > +/* The operations for our console. */
+> > +static struct hv_ops virtio_cons = {
+> > +	.get_chars = cons_get_chars,
+> > +	.put_chars = cons_put_chars,
+> > +	.notifier_add = cons_notifier_add_vio,
+> > +	.notifier_del = cons_notifier_del_vio,
+> > +	.notifier_hangup = cons_notifier_del_vio,
+> > +};
+> [...]
+> > +int __init virtio_cons_early_init(int (*put_chars)(u32, const char *, int)) 
+> > +{
+> > +	virtio_cons.put_chars = put_chars;
+> > +	return hvc_instantiate(0, 0, &virtio_cons);
+> > +}
+> [...]
+> > +static int __devinit virtcons_probe(struct virtio_device *vdev)
+> [...]
+> > -	/* Start using the new console output. */
+> > -	virtio_cons.get_chars = get_chars;
+> > -	virtio_cons.put_chars = put_chars;
+> 
+> Ok, that wont work for systems that use virtio_cons_early_init. The early
+> put_chars method was replaced by the final one, but these hunks changed that
+> behaviour. Something like the following restores the old behaviour: (only 
+> tested on s390)
+
+Thanks for the testing as well as the patch! Sadly I can only test this
+on qemu and x86, so this is very welcome.
+
+However:
+
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> If you agree, you can merge this snipped into your big patch.
+> 
+> ---
+>  drivers/char/virtio_console.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6/drivers/char/virtio_console.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/char/virtio_console.c
+> +++ linux-2.6/drivers/char/virtio_console.c
+> @@ -590,6 +590,9 @@ int init_port_console(struct virtio_cons
+>  		pr_err("%s: Could not alloc hvc for virtio console port, ret = %d\n",
+>  		       __func__, ret);
+>  		port->hvc = NULL;
+> +	} else {
+> +		/* get rid of early put char variants */
+> +		virtio_cons.put_chars = cons_put_chars;
+>  	}
+>  	return ret;
+>  }
+
+I changed it to look like this, which initializes the final value even
+when hvc_alloc fails. It should work for you I guess.
+
+I'll merge this in my patch when I send it next.
+
+Can you please ack the patch?
+
+Thanks,
+
+		Amit
 
 
-The module is going to be a profiling module and the user module which
-is under profiling
-will call the apis which I am exporting. My apis will collect certain
-data from point
-it is called and populate internal data strcuctures. My apis can be
-called from process
-context as well as interrupt context hence I am using spinlocks as
-locking mechanism.
-The amount of memory I am allocating each time my api is called around
-100 bytes,
-and in worst case I might end up allocating tens of thousands of
-objects of almost same
-size. I am aware that in such a scenario I should be using some kind
-of memory pool
-mechanism and preallocate my buffers to avoid frequent
-allocations/deallocations.
+>From 462aa408c2a1140137d0890ca8043f37b447410d Mon Sep 17 00:00:00 2001
+From: Amit Shah <amit.shah@redhat.com>
+Date: Tue, 29 Sep 2009 17:46:41 +0530
+Subject: [PATCH] virtio_console: fix put_chars after early-init
 
-But frankly, I am not very familiar with Linux kernel apis yet hence
-have resorted to
-using a tree data structure for the first cut where I allocate memory as needed
-depending on the context I am executing in. To optimize a bit, I do
-not free my memory
-till some threshold is reached.
+Christian tested the patch on s390 and found that the output was
+very slow. He tracked it down to put_chars never getting init'ed
+to the final value.
 
-Some questions here:
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+---
+ drivers/char/virtio_console.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-1. GFP_NOWAIT as in kmalloc(size, GFP_KERNEL | GFPNOWAIT)?
+diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
+index 37513e8..598bc0d 100644
+--- a/drivers/char/virtio_console.c
++++ b/drivers/char/virtio_console.c
+@@ -571,6 +571,14 @@ int init_port_console(struct virtio_console_port *port)
+ 	 * The Host's telling us this port is a console port. Hook it
+ 	 * up with an hvc console.
+ 	 *
++	 * We had set the virtio_cons put_chars implementation to
++	 * put_chars for early_init. Now that we're done with the
++	 * early init phase, replace it with our cons_put_chars
++	 * implementation.
++	 */
++	virtio_cons.put_chars = cons_put_chars;
++
++	/*
+ 	 * To set up and manage our virtual console, we call
+ 	 * hvc_alloc().
+ 	 *
+-- 
+1.6.2.5
 
-or
-
-kmalloc(size, GFP_NOWAIT), I know this one is a dumb one.
-
-2. Any reference for the mempool kind of implementation mentioned above?
-
-3. Any other pointers about design, references etc would be helpful.
-
--Leo.
