@@ -1,75 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZI2Rg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZI2RfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548AbZI2Rg1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZI2Rg0
+	id S1753316AbZI2RfN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZI2RfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:36:26 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:37195 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752686AbZI2Rg0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:36:26 -0400
-Message-ID: <4AC24525.9060607@nortel.com>
-Date: Tue, 29 Sep 2009 11:34:29 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 29 Sep 2009 13:35:12 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55494 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752398AbZI2RfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 13:35:11 -0400
+Date: Tue, 29 Sep 2009 19:35:06 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Peter Zijlstra <peterz@infradead.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+Message-ID: <20090929173506.GE11573@duck.suse.cz>
+References: <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins> <20090908172842.GC2975@think> <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz> <20090924083342.GA15918@localhost>
 MIME-Version: 1.0
-To: Raistlin <raistlin@linux.it>
-CC: Henrik Austad <henrik@austad.us>, Peter Zijlstra <peterz@infradead.org>,
-       claudio@evidence.eu.com, michael@evidence.eu.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-References: <1253615424.20345.76.camel@Palantir>	 <1253623867.20345.156.camel@Palantir> <1253644603.18939.25.camel@laptop>	 <200909270855.49367.henrik@austad.us> <1254240635.7775.44.camel@Palantir>
-In-Reply-To: <1254240635.7775.44.camel@Palantir>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Sep 2009 17:36:17.0419 (UTC) FILETIME=[597C2DB0:01CA412B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090924083342.GA15918@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/29/2009 10:10 AM, Raistlin wrote:
-> On Sun, 2009-09-27 at 08:55 +0200, Henrik Austad wrote:
->>> An alternative is starting the child out with 0 runtime, and have the
->>> parent run sched_setscheduler() on it giving us a clear point to run
->>> admission on.
->>
->> Why not start it as sched_fair/sched_rt and let the child apply for
->> resources the same way the parent did? That would be fairly
->> straightforward and lead to predictable behaviour, and also make a nice, 
->> simple hook into the acceptance-tests.
->>
-> Yeah, that's an option as well... It maybe overlap a little bit with
-> reset_on_fork, but I like tha fact that it allows the task itself to ask
-> for EDF bandwidth without having to rely on its parent... Thoughts about
-> that?
+On Thu 24-09-09 16:33:42, Wu Fengguang wrote:
+> On Mon, Sep 14, 2009 at 07:17:21PM +0800, Jan Kara wrote:
+> > On Thu 10-09-09 17:49:10, Peter Zijlstra wrote:
+> > > On Wed, 2009-09-09 at 16:23 +0200, Jan Kara wrote:
+> > > >   Well, what I imagined we could do is:
+> > > > Have a per-bdi variable 'pages_written' - that would reflect the amount of
+> > > > pages written to the bdi since boot (OK, we'd have to handle overflows but
+> > > > that's doable).
+> > > > 
+> > > > There will be a per-bdi variable 'pages_waited'. When a thread should sleep
+> > > > in balance_dirty_pages() because we are over limits, it kicks writeback thread
+> > > > and does:
+> > > >   to_wait =  max(pages_waited, pages_written) + sync_dirty_pages() (or
+> > > > whatever number we decide)
+> > > >   pages_waited = to_wait
+> > > >   sleep until pages_written reaches to_wait or we drop below dirty limits.
+> > > > 
+> > > > That will make sure each thread will sleep until writeback threads have done
+> > > > their duty for the writing thread.
+> > > > 
+> > > > If we make sure sleeping threads are properly ordered on the wait queue,
+> > > > we could always wakeup just the first one and thus avoid the herding
+> > > > effect. When we drop below dirty limits, we would just wakeup the whole
+> > > > waitqueue.
+> > > > 
+> > > > Does this sound reasonable?
+> > > 
+> > > That seems to go wrong when there's multiple tasks waiting on the same
+> > > bdi, you'd count each page for 1/n its weight.
+> > > 
+> > > Suppose pages_written = 1024, and 4 tasks block and compute their to
+> > > wait as pages_written + 256 = 1280, then we'd release all 4 of them
+> > > after 256 pages are written, instead of 4*256, which would be
+> > > pages_written = 2048.
+> >   Well, there's some locking needed of course. The intent is to stack
+> > demands as they come. So in case pages_written = 1024, pages_waited = 1024
+> > we would do:
+> > THREAD 1:
+> > 
+> > spin_lock
+> > to_wait = 1024 + 256
+> > pages_waited = 1280
+> > spin_unlock
+> > 
+> > THREAD 2:
+> > 
+> > spin_lock
+> > to_wait = 1280 + 256
+> > pages_waited = 1536
+> > spin_unlock
+> > 
+> >   So weight of each page will be kept. The fact that second thread
+> > effectively waits until the first thread has its demand satisfied looks
+> > strange at the first sight but we don't do better currently and I think
+> > it's fine - if they were two writer threads, then soon the thread released
+> > first will queue behind the thread still waiting so long term the behavior
+> > should be fair.
+> 
+> Yeah, FIFO queuing should be good enough.
+> 
+> I'd like to propose one more data structure for evaluation :)
+> 
+> - bdi->throttle_lock
+> - bdi->throttle_list    pages to sync for each waiting task, taken from sync_writeback_pages()
+> - bdi->throttle_pages   (counted down) pages to sync for the head task, shall be atomic_t
+> 
+> In balance_dirty_pages(), it would do
+> 
+>         nr_to_sync = sync_writeback_pages()
+>         if (list_empty(bdi->throttle_list))  # I'm the only task
+>                 bdi->throttle_pages = nr_to_sync
+>         append nr_to_sync to bdi->throttle_list
+>         kick off background writeback
+>         wait
+>         remove itself from bdi->throttle_list and wait list
+>         set bdi->throttle_pages for new head task (or LONG_MAX)
+> 
+> In __bdi_writeout_inc(), it would do
+> 
+>         if (--bdi->throttle_pages <= 0)
+>                 check and wake up head task
+  Yeah, this would work as well. I don't see a big difference between my
+approach and this so if you get to implementing this, I'm happy :).
 
-Basically it boils down to a policy decision...if a task with guaranteed
-cpu allocation fork()s, should the child automatically get a guaranteed
-allocation or not?  If so, should that allocation cause the parent's
-allocation to be reduced or not?
+> In wb_writeback(), it would do
+> 
+>         if (args->for_background && exiting)
+>                 wake up all throttled tasks
+> To prevent wake up too many tasks at the same time, it can relax the
+> background threshold a bit, so that __bdi_writeout_inc() become the
+> only wake up point in normal cases.
+> 
+>         if (args->for_background && !list_empty(bdi->throttle_list) &&
+>                 over background_thresh - background_thresh / 32)
+>                 keep write pages;
+  We want to wakeup tasks when we get below dirty_limit (either global
+or per-bdi). Not when we get below background threshold...
 
-Personally I don't like the idea of fork() resulting in permanently
-reduced allocation for the parent.  I think the logical choices are either
-
-a) The child should get an identical bandwidth guarantee as the parent
-and if that can't be guaranteed then the fork() should fail, maybe with
-an errno of EBUSY.
-
-b) The child should start out with no guarantees (SCHED_OTHER nice 0
-maybe?) and should have to request a bandwidth guarantee.  This could
-complicate things in some circumstances because if it can't get the
-guarantee then it needs to inform the parent somehow.
-
-Given that any serious users of EDF are likely pretty specialized,
-either one would probably work.  Which is the best policy is a different
-question, and one that I don't have enough experience with to offer an
-opinion.
-
-Chris
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
