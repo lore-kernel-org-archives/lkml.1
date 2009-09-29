@@ -1,48 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZI2SXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZI2SXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753415AbZI2SXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 14:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZI2SXx
+	id S1753304AbZI2SXK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 14:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZI2SXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 14:23:53 -0400
-Received: from sous-sol.org ([216.99.217.87]:38358 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750952AbZI2SXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 14:23:53 -0400
-Date: Tue, 29 Sep 2009 11:21:06 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-Message-ID: <20090929182106.GE3958@sequoia.sous-sol.org>
-References: <20090919224430.GB9567@kroah.com> <1253419185.3253.21.camel@ank32.eng.vmware.com> <20090920074247.GA5733@elte.hu> <1253647845.10565.20.camel@ank32.eng.vmware.com> <4AB9CE66.1030504@redhat.com> <1254185107.13456.32.camel@ank32.eng.vmware.com> <4AC17018.4040600@zytor.com> <1254193238.13456.48.camel@ank32.eng.vmware.com> <20090929090130.GD3958@sequoia.sous-sol.org> <1254245124.7803.34.camel@ank32.eng.vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254245124.7803.34.camel@ank32.eng.vmware.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 29 Sep 2009 14:23:09 -0400
+Received: from www84.your-server.de ([213.133.104.84]:35266 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbZI2SXI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 14:23:08 -0400
+Subject: PCI Express-to-PCI Bridge: yenta_cardbus  no bus associated!
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 29 Sep 2009 20:23:25 +0200
+Message-Id: <1254248605.8881.1.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alok Kataria (akataria@vmware.com) wrote:
-> Mark VMI for removal in feature-removal-schedule.txt.
-> 
-> From: Alok N Kataria <akataria@vmware.com>
-> 
-> Add text in feature-removal.txt and also modify Kconfig to disable
-> vmi by default.
-> 
-> Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Hi PCI Hackers,
 
-Acked-by: Chris Wright <chrisw@sous-sol.org>
+i have trouble with an ExpressCard PCI Express-to-PCI Bridge
+manufactured by DUEL System under X86/32 Linux kernel 2.6.31.
+
+The kernel will recognized the Texas Instruments XIO2000(A)/XIO2200(A)
+PCI Express-to-PCI Bridge and the attached Texas Instruments PCIxx12
+Cardbus Controller, but the yenta socket driver will fail with the
+message:
+
+yenta_cardbus 0000:0f:00.0: no bus associated! (try 'pci=assign-busses')
+
+The output of dmesg looks like:
+
+pci 0000:0e:00.0: supports D1 D2
+pci 0000:0f:00.0: reg 10 32bit mmio: [0x000000-0x000fff]
+pci 0000:0f:00.0: supports D1 D2
+pci 0000:0f:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:0f:00.0: PME# disabled
+pci 0000:0e:00.0: bridge io port: [0x00-0xfff]
+pci 0000:0e:00.0: bridge 32bit mmio: [0x000000-0x0fffff]
+pci 0000:0e:00.0: bridge 64bit mmio pref: [0x000000-0x0fffff]
+pci 0000:0e:00.0: PCI bridge, secondary bus 0000:0f
+pci 0000:0e:00.0:   IO window: disabled
+pci 0000:0e:00.0:   MEM window: 0xf1c00000-0xf1cfffff
+pci 0000:0e:00.0:   PREFETCH window: disabled
+decode_hpp: Could not get hotplug parameters. Use defaults
+pci 0000:0e:00.0: enabling device (0000 -> 0002)
+pci 0000:0e:00.0: setting latency timer to 64
+yenta_cardbus 0000:0f:00.0: no bus associated! (try 'pci=assign-busses')
+
+lspci -v shows:
+
+0e:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03) (prog-if 00 [Normal decode])
+	Physical Slot: 1
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=0e, secondary=0f, subordinate=0f, sec-latency=64
+	Memory behind bridge: f1c00000-f1cfffff
+	Capabilities: [50] Power Management version 2
+	Capabilities: [60] MSI: Enable- Count=1/16 Maskable- 64bit+
+	Capabilities: [80] Subsystem: Device 5678:1234
+	Capabilities: [90] Express PCI/PCI-X Bridge, MSI 00
+	Capabilities: [100] Advanced Error Reporting
+
+0f:00.0 CardBus bridge: Texas Instruments PCIxx12 Cardbus Controller
+	Subsystem: Texas Instruments Device ac48
+	Flags: medium devsel, IRQ 255
+	Memory at f1c00000 (32-bit, non-prefetchable) [disabled] [size=4K]
+	Bus: primary=00, secondary=00, subordinate=00, sec-latency=0
+	I/O window 0: 00000000-00000003 [disabled]
+	I/O window 1: 00000000-00000003 [disabled]
+	16-bit legacy interface ports at 0001
+
+
+Any idea where the problem is located or how can i fix it?
+
+If you need further information or dumps please contact me.
+
+Stefani
+
+
