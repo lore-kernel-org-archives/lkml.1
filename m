@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZI2L6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbZI2L66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbZI2L6k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 07:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZI2L6j
+	id S1753970AbZI2L66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 07:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbZI2L66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 07:58:39 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41139 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbZI2L6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 07:58:38 -0400
-Date: Tue, 29 Sep 2009 13:58:38 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: =?ISO-8859-15?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>
-Cc: Bruno Premont <bonbons@linux-vserver.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hid: adding __init/__exit macros to twinhan.c
-In-Reply-To: <200909290324.56042.PeterHuewe@gmx.de>
-Message-ID: <alpine.LSU.2.00.0909291358280.9280@wotan.suse.de>
-References: <200909290324.56042.PeterHuewe@gmx.de>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1050125348-1254225520=:9280"
+	Tue, 29 Sep 2009 07:58:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45129 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753690AbZI2L65 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 07:58:57 -0400
+Date: Tue, 29 Sep 2009 13:59:25 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Leonidas ." <leonidas137@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: GFP_NOWAIT and GFP_NOMEMALLOC
+Message-ID: <20090929135925.50ac88bf@infradead.org>
+In-Reply-To: <f22d86810909290425s46406fe5ib00bcfc9673f70df@mail.gmail.com>
+References: <f22d86810909290425s46406fe5ib00bcfc9673f70df@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, 29 Sep 2009 16:55:24 +0530
+"Leonidas ." <leonidas137@gmail.com> wrote:
 
---168427776-1050125348-1254225520=:9280
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+> Hi list,
+> 
+> I am new here, I have googled/binged enough before posting this
+> message, in case of redundancy please point me to appropriate
+> links/resources etc.
+> 
+> I want to kmalloc memory while holding spinlocks in process context,
+> here I can't use GFP_KERNEL flag since it can sleep. Using GFP_ATOMIC
+> guarantees that allocation will succeed by allocating from emergency
+> pools if needed. But I dont think, I need to use emergency pool and I
+> want to limit my memory consumption to ZONE_NORMAL without sleeping,
+> my module is ready to handle the allocation failure if any.
 
-On Tue, 29 Sep 2009, Peter Hüwe wrote:
+GFP_NOWAIT is what you want.
 
-> From: Peter Huewe <peterhuewe@gmx.de>
-> 
-> Trivial patch which adds the __init/__exit macros to the module_init/
-> module_exit functions of the twinhan driver in hid.
-> 
-> Jiri, I guess this time you can decide wether it's the hid or the trivial 
-> tree ;) - thanks jiri for all your patience and work!
-> 
-> linux version v2.6.32-rc1 - linus git tree, Di 29. Sep 01:10:18 CEST 2009
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> ---
-> diff --git a/drivers/hid/hid-twinhan.c b/drivers/hid/hid-twinhan.c
-> index b05f602..c40afc5 100644
-> --- a/drivers/hid/hid-twinhan.c
-> +++ b/drivers/hid/hid-twinhan.c
-> @@ -132,12 +132,12 @@ static struct hid_driver twinhan_driver = {
->  	.input_mapping = twinhan_input_mapping,
->  };
->  
-> -static int twinhan_init(void)
-> +static int __init twinhan_init(void)
->  {
->  	return hid_register_driver(&twinhan_driver);
->  }
->  
-> -static void twinhan_exit(void)
-> +static void __exit twinhan_exit(void)
->  {
->  	hid_unregister_driver(&twinhan_driver);
->  }
+can you give us a pointer to what your module is about? Maybe there's
+better solutions...
 
-Applied, thanks.
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
---168427776-1050125348-1254225520=:9280--
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
