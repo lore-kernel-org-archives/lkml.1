@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbZI2Oyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZI2OzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238AbZI2Oyb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 10:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbZI2Oya
+	id S1753177AbZI2OzR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 10:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbZI2OzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 10:54:30 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:33571 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbZI2Oya (ORCPT
+	Tue, 29 Sep 2009 10:55:16 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:37811 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752953AbZI2OzO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 10:54:30 -0400
+	Tue, 29 Sep 2009 10:55:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=GEFluFN5NRwRugD8r/GtWmZUe8WujyEmxB5udgxzBUuhwpe2zhVZJz+Q1QLTEPnPCP
-         xANwD7kvlFhSd+2gjMcX/+WU3MCv23z1akD4xuK2+v+Iz7Hp5WX+cn4HH9xI9h0HbM9Q
-         y5fcvF15tEC0pCxYyOj/eissh/duj3nZPaWcM=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sSzp96Lx9ii+nVYWBQdVLIGjbwdn8lzOWdC3pRaR1KMsB7k68cwvjcPrao034gAHpL
+         ZBL9sBusMVZuqnWadzwZrXP95yGzmUpNKEQxXitY79bk0QGTleh350DbiAquYrLN5zzy
+         V4T1/IMJgfZF3SlgqUnUYQeivRL+8wtTJSY4M=
+Date: Tue, 29 Sep 2009 16:55:14 +0200
+From: Johan Hovold <jhovold@gmail.com>
+To: Michael Trimarchi <trimarchi@gandalf.sssup.it>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Johan Hovold <jhovold@gmail.com>, Oliver Neukum <oliver@neukum.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+Message-ID: <20090929145514.GF2152@localhost>
+References: <20090924154023.GA27480@localhost>
+ <200909242103.48562.oliver@neukum.org>
+ <20090924202107.4730f2af@lxorguk.ukuu.org.uk>
+ <20090924211459.GB27963@localhost>
+ <4ABD020B.4040901@gandalf.sssup.it>
 MIME-Version: 1.0
-In-Reply-To: <51f3faa70909290740l4f4df186w114bf48e1db3a948@mail.gmail.com>
-References: <20090923191240.GA15198@dreamland.darkstar.lan>
-	 <51f3faa70909232018v7e621190m84deb648b08d2135@mail.gmail.com>
-	 <20090928131700.GA19243@nb-core2.darkstar.lan>
-	 <51f3faa70909281920x2782d8dfm1835ab24779abfa3@mail.gmail.com>
-	 <51f3faa70909282134o1d60efekeded09f09b192df6@mail.gmail.com>
-	 <68676e00909290707u70d192f2j2f2d4dd07bd07234@mail.gmail.com>
-	 <51f3faa70909290740l4f4df186w114bf48e1db3a948@mail.gmail.com>
-Date: Tue, 29 Sep 2009 16:54:33 +0200
-Message-ID: <68676e00909290754o433cb3e7mea8c6e4931934f8d@mail.gmail.com>
-Subject: Re: [PATCH] asus_atk0110: add support for Asus P7P55D
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ABD020B.4040901@gandalf.sssup.it>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 4:40 PM, Robert Hancock <hancockrwd@gmail.com> wrote:
-> On Tue, Sep 29, 2009 at 8:07 AM, Luca Tettamanti <kronos.it@gmail.com> wrote:
->>>>> Hi Robert,
->>>>> I have a new patch for you :)
->>>>> It contains the previous changes to handle the bigger ASBF buffer plus a new
->>>>> method to enable the EC as suggested by Asus. Be sure to compile with
->>>>> HWMON_DEBUG_CHIP enabled.
->>>>
->>>> Excellent.. seems to work now and give actually updating sensor readings :-)
->>>
->>> Have seen a couple of these though, looks like about once an hour:
->>>
->>> ACPI Exception: AE_TIME, Returned by Handler for [EmbeddedControl]
->>> (20090903/evregion-424)
->>> ACPI Error (psparse-0537): Method parse/execution failed
->>> [\_SB_.PCI0.SBRG.ASOC.GIT6] (Node ffff88013ba778c0), AE_TIME
->>> ACPI Error (psparse-0537): Method parse/execution failed
->>> [\_SB_.PCI0.SBRG.ASOC.GITM] (Node ffff88013ba6ea40), AE_TIME
->>> ATK0110 ATK0110:00: atk_read_value_new: ACPI exception: AE_TIME
->>>
->>> Maybe sometimes the embedded controller takes longer than the timeout
->>> to process, or something?
->>
->> Is there a message like "input buffer is not empty" before that?
->
-> Nope, that's all I'm getting each time it happens. Suggestions/debug
-> patches welcome..
+On Fri, Sep 25, 2009 at 07:46:51PM +0200, Michael Trimarchi wrote:
+> Johan Hovold wrote:
+> > On Thu, Sep 24, 2009 at 08:21:07PM +0100, Alan Cox wrote:
+> >> ftdi_sio is correct with low_latency set as it uses a work queue to
+> >> process the packets received.
+> >>     
+> > AFAICT it only uses the work queue if tty_buffer_request_room fails to
+> > allocate enough space. This being the exception, the completion
+> > handler normally processes the packets in interrupt context and this is
+> > where I get my lockdep traces (and it happens every time I hit the echo
+> > or throttle paths).
+> >   
+> Using two urb, double buffering and schedule a tasklet to complete the
+> the reading phase. The usb will use the other free urb during receiving 
+> process.
+> I think remove tty_latency is not a good fix.
 
-drivers/acpi/ec.c:30, uncomment "#define DEBUG"
-Next step would be rising the timeouts and/or retry count in ec_poll
-(will ask support from ACPI gurus...)
+What do you say, Alan? Should ftdi_sio be rewritten so that it actually
+defers all processing, or should low_latency go?
 
-L
+As it stands today ftdi_sio does indeed call tty_flip_buffer_push from
+interrupt context with low_latency set and that is obviously incorrect,
+right?
+
+Regards,
+Johan
+
