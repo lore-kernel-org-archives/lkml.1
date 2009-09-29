@@ -1,108 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbZI2C5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZI2DAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbZI2C5s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 22:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZI2C5r
+	id S1752898AbZI2DAf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 23:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbZI2DAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 22:57:47 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44419 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752194AbZI2C5r (ORCPT
+	Mon, 28 Sep 2009 23:00:35 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:47581 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752606AbZI2DAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 22:57:47 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 29 Sep 2009 11:55:35 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [PATCH][rc1] cgroup: catch bad css refcnt at css_put
-Message-Id: <20090929115535.6d02930f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4AC159D9.8020900@cn.fujitsu.com>
-References: <200909252158.n8PLwFhG024011@imap1.linux-foundation.org>
-	<20090928154213.8e873dec.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090928180649.b6b7eea9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090928181310.9492a8a2.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AC159D9.8020900@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 28 Sep 2009 23:00:34 -0400
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <4AC17018.4040600@zytor.com>
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
+	 <20090919224430.GB9567@kroah.com>
+	 <1253419185.3253.21.camel@ank32.eng.vmware.com>
+	 <20090920074247.GA5733@elte.hu>
+	 <1253647845.10565.20.camel@ank32.eng.vmware.com>
+	 <4AB9CE66.1030504@redhat.com>
+	 <1254185107.13456.32.camel@ank32.eng.vmware.com>
+	 <4AC17018.4040600@zytor.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 28 Sep 2009 20:00:38 -0700
+Message-Id: <1254193238.13456.48.camel@ank32.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Sep 2009 08:50:33 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> KAMEZAWA Hiroyuki wrote:
-> > This is a patch for checking css->refcnt's sanity at css_put().
-> > 
-> > BTW, I noticed that...css->refcnt may overflow if used with memcg...
-> > Now, refcnt is incremented per a page. Paul, do you have any idea ?
+On Mon, 2009-09-28 at 19:25 -0700, H. Peter Anvin wrote:
+> On 09/28/2009 05:45 PM, Alok Kataria wrote:
+> > +	bool "VMI Guest support [will be deprecated soon]"
+> > +	default n
 > 
-> atomic64_t ?
+> This is incorrect use of the word "deprecated"... it's *already*
+> deprecated (a word which pretty much means the opposite of "recommended".)
 > 
-maybe. atomic_long_t ?
+> As far as "default n" is concerned... this is usually not necessary; "n"
+> is the default unless anything else is specified.
 
-> But for 4K pagesize, it won't overflow until when the referenced
-> memory is > 8T?
-> 
-you're right. But there tends to be a few users who use unbelievable amounts
-of memory in the world.
-(Such user uses memcg or not is another problem ;)
+How about this ?  Thanks.
 
-> > (Ah, yes. "don't use css->refcnt per page" is maybe reasonable but
-> >  it will be big change..)
-> > 
-> > ==
-> > __css_put() doesn't check a bug as refcnt goes to minus.
-> > I think it should be caught. This patch adds a check for it.
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Acked-by: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> > ---
-> >  kernel/cgroup.c |    5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.32-rc1/kernel/cgroup.c
-> > ===================================================================
-> > --- linux-2.6.32-rc1.orig/kernel/cgroup.c
-> > +++ linux-2.6.32-rc1/kernel/cgroup.c
-> > @@ -3708,8 +3708,10 @@ static void check_for_release(struct cgr
-> >  void __css_put(struct cgroup_subsys_state *css)
-> >  {
-> >  	struct cgroup *cgrp = css->cgroup;
-> > +	int val;
-> >  	rcu_read_lock();
-> > -	if (atomic_dec_return(&css->refcnt) == 1) {
-> > +	val = atomic_dec_return(&css->refcnt);
-> > +	if (val == 1) {
-> >  		if (notify_on_release(cgrp)) {
-> >  			set_bit(CGRP_RELEASABLE, &cgrp->flags);
-> >  			check_for_release(cgrp);
-> > @@ -3717,6 +3719,7 @@ void __css_put(struct cgroup_subsys_stat
-> >  		cgroup_wakeup_rmdir_waiter(cgrp);
-> >  	}
-> >  	rcu_read_unlock();
-> > +	WARN_ON(val < 1);
-> 
-> When we run into this, it'll probably fill up the syslog quickly,
-> so I think WARN_ON_ONCE() is a bit better.
-> 
-Hmm, ok. I'll rewrite.
+--
+Mark VMI for removal in feature-removal-schedule.txt.
 
-Thanks,
--Kame
+From: Alok N Kataria <akataria@vmware.com>
+
+Add text in feature-removal.txt and also modify Kconfig to disable
+vmi by default.
+
+---
+
+ Documentation/feature-removal-schedule.txt |   30 ++++++++++++++++++++++++++++
+ arch/x86/Kconfig                           |   12 ++++++++---
+ 2 files changed, 39 insertions(+), 3 deletions(-)
 
 
-> >  }
-> >  
-> 
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 89a47b5..d24c1af 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -451,3 +451,33 @@ Why:	OSS sound_core grabs all legacy minors (0-255) of SOUND_MAJOR
+ 	will also allow making ALSA OSS emulation independent of
+ 	sound_core.  The dependency will be broken then too.
+ Who:	Tejun Heo <tj@kernel.org>
++
++----------------------------
++
++What:	Support for VMware's guest paravirtuliazation technique [VMI] will be
++	dropped.
++When:	2.6.37 or earlier.
++Why:	With the recent innovations in CPU hardware acceleration technologies
++	from Intel and AMD, VMware ran a few experiments to compare these
++	techniques to guest paravirtualization technique on VMware's platform.
++	These hardware assisted virtualization techniques have outperformed the
++	performance benefits provided by VMI in most of the workloads. VMware
++	expects that these hardware features will be ubiquitous in a couple of
++	years, as a result, VMware has started a phased retirement of this
++	feature from the hypervisor. We will be removing this feature from the
++	Kernel too. Right now we are targeting 2.6.37 but can retire earlier if
++	technical reasons ( read opportunity to remove major chunk of pvops)
++	arise.
++
++	Please note that VMI has always been an optimization and non-VMI kernels
++	still work fine on VMware's platform.
++	Latest versions of VMware's product which support VMI are,
++	Workstation 7.0 and VSphere 4.0 on ESX side, future maintainence
++	releases for these products will continue supporting VMI.
++
++	For more details about VMI retirement take a look at this,
++	http://blogs.vmware.com/guestosguide/2009/09/vmi-retirement.html
++
++Who:	Alok N Kataria <akataria@vmware.com>
++
++----------------------------
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index f777aaf..44c1660 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -496,14 +496,20 @@ if PARAVIRT_GUEST
+ source "arch/x86/xen/Kconfig"
+ 
+ config VMI
+-	bool "VMI Guest support"
+-	select PARAVIRT
+-	depends on X86_32
++	bool "VMI Guest support [deprecated]"
++	depends on X86_32 && PARAVIRT
+ 	---help---
+ 	  VMI provides a paravirtualized interface to the VMware ESX server
+ 	  (it could be used by other hypervisors in theory too, but is not
+ 	  at the moment), by linking the kernel to a GPL-ed ROM module
+ 	  provided by the hypervisor.
++	  As of September 2009, VMware has started a phased retirement of this
++	  feature from VMware's products. Please see
++	  feature-removal-schedule.txt for details.
++	  If you are planning to enable this option, please note that you
++	  cannot live migrate a VMI enabled VM to a future VMware product,
++	  which doesn't support VMI. So if you expect your kernel to seamlessly
++	  migrate to newer VMware products, keep this disabled.
+ 
+ config KVM_CLOCK
+ 	bool "KVM paravirtualized clock"
+
+
 
