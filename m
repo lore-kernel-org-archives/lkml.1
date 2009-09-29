@@ -1,81 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZI2JSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZI2JUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbZI2JSx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 05:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZI2JSw
+	id S1753726AbZI2JUK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 05:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbZI2JUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 05:18:52 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:41341 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753733AbZI2JSu (ORCPT
+	Tue, 29 Sep 2009 05:20:09 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:59584 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753486AbZI2JUH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 05:18:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=kaXieJVzC5pLeDH8N3KCefVPcgfmY+TfNoBcxD+3lT54Vwfyho+OxxJgiIDi5CU14M
-         4IN8AoAvRkjAVwU36RUn6VbB6Zc1h/iNUZFO/l3+q70pnIT7w6MJZsl4z76i98kj9RDj
-         XuB8c/aQQ00J95UvADH1FX8h/+C8z5WTiT7O4=
+	Tue, 29 Sep 2009 05:20:07 -0400
+Date: Tue, 29 Sep 2009 12:18:53 +0300
+From: Imre Deak <imre.deak@nokia.com>
+To: ext Peter Huewe <PeterHuewe@gmx.de>
+Cc: Jiri Kosina <trivial@kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Jonathan McDowell <noodles@earth.li>,
+       Arnaud Patard <arnaud.patard@rtp-net.org>,
+       Mike Wege <ext-mike.wege@nokia.com>,
+       "Doyu Hiroshi (Nokia-D/Helsinki)" <hiroshi.doyu@nokia.com>,
+       "linux-fbdev-devel@lists.sourceforge.net" 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] video/omap:  adding __init/__exit macros to various
+	drivers
+Message-ID: <20090929091853.GC9536@localhost>
+References: <200909290318.07309.PeterHuewe@gmx.de>
 MIME-Version: 1.0
-Date: Tue, 29 Sep 2009 11:18:53 +0200
-Message-ID: <c4e36d110909290218g3f98c595kaa15566b94527f04@mail.gmail.com>
-Subject: ACPI boot memory leaks in 2.6.32-rc1/2
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: len.brown@intel.com, bjorn.helgaas@hp.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909290318.07309.PeterHuewe@gmx.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 29 Sep 2009 09:17:32.0442 (UTC) FILETIME=[ACCF0FA0:01CA40E5]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Tue, Sep 29, 2009 at 03:18:06AM +0200, ext Peter Huewe wrote:
+> From: Peter Huewe <peterhuewe@gmx.de>
+> 
+> Trivial patch which adds the __init/__exit macros to the module_init/
+> module_exit functions of the following drivers in media/omap:
+> drivers/video/omap/lcd_ams_delta.c
+> drivers/video/omap/lcd_mipid.c
+> 
+> Please have a look at the small patch and either pull it through
+> your tree, or please ack' it so Jiri can pull it through the trivial tree.
+> 
+> linux version v2.6.32-rc1 - linus git tree, Di 29. Sep 01:10:18 CEST 2009
+> 
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 
-My qemu guest seems to be reporting now 46 memleaks  ACPI related.
+Acked-by: Imre Deak <imre.deak@nokia.com>
 
-My kernel   x86_64 - commit: 17d857be649a21ca90008c6dc425d849fa83db5c
-(2.6.32-rc1)
-
-
-unreferenced object 0xffff88001f8095d0 (size 8):
-  comm "swapper", pid 1, jiffies 4294877484
-  hex dump (first 8 bytes):
-    5c 00 80 1f 00 88 ff ff                          \.......
-  backtrace:
-    [<ffffffff8140a0c6>] kmemleak_alloc+0x26/0x60
-    [<ffffffff81128253>] __kmalloc+0x153/0x250
-    [<ffffffff812bfff5>] acpi_os_allocate+0x25/0x27
-    [<ffffffff812c0037>] acpi_ut_initialize_buffer+0x40/0x71
-    [<ffffffff812b739b>] acpi_ns_handle_to_pathname+0x3f/0xa7
-    [<ffffffff812b84c4>] acpi_get_name+0x45/0xb8
-    [<ffffffff8129b854>] acpi_bus_scan+0x3e/0xa0
-    [<ffffffff81878acd>] acpi_scan_init+0x45/0xba
-    [<ffffffff81878906>] acpi_init+0x21f/0x26a
-    [<ffffffff8100904c>] do_one_initcall+0x3c/0x1d0
-    [<ffffffff818574e6>] kernel_init+0x150/0x1a6
-    [<ffffffff8100d21a>] child_rip+0xa/0x20
-    [<ffffffffffffffff>] 0xffffffffffffffff
-unreferenced object 0xffff88001fa13380 (size 128):
-  comm "swapper", pid 1, jiffies 4294877495
-  hex dump (first 32 bytes):
-    7d 00 00 00 50 43 49 30 06 00 00 00 00 0f 01 ff  }...PCI0........
-    ff ff ff ff ff ff ff ff ff ff ff ff 00 00 00 00  ................
-  backtrace:
-    [<ffffffff8140a0c6>] kmemleak_alloc+0x26/0x60
-    [<ffffffff81128253>] __kmalloc+0x153/0x250
-    [<ffffffff812b829f>] acpi_get_object_info+0x161/0x341
-    [<ffffffff8129afcc>] acpi_add_single_object+0x2b8/0x9ca
-    [<ffffffff8129b7be>] acpi_bus_check_add+0xe0/0x138
-    [<ffffffff812b98b4>] acpi_ns_walk_namespace+0xb2/0x127
-    [<ffffffff812b6524>] acpi_walk_namespace+0x78/0xb2
-    [<ffffffff8129b89d>] acpi_bus_scan+0x87/0xa0
-    [<ffffffff81878acd>] acpi_scan_init+0x45/0xba
-    [<ffffffff81878906>] acpi_init+0x21f/0x26a
-    [<ffffffff8100904c>] do_one_initcall+0x3c/0x1d0
-    [<ffffffff818574e6>] kernel_init+0x150/0x1a6
-    [<ffffffff8100d21a>] child_rip+0xa/0x20
-    [<ffffffffffffffff>] 0xffffffffffffffff
-....
-
-All seems to be acpi_bus_scan() related.
-
-Zdenek
+> ---
+> diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
+> index 1f74399..319a9a2 100644
+> --- a/drivers/video/omap/lcd_ams_delta.c
+> +++ b/drivers/video/omap/lcd_ams_delta.c
+> @@ -123,12 +123,12 @@ struct platform_driver ams_delta_panel_driver = {
+>  	},
+>  };
+>  
+> -static int ams_delta_panel_drv_init(void)
+> +static int __init ams_delta_panel_drv_init(void)
+>  {
+>  	return platform_driver_register(&ams_delta_panel_driver);
+>  }
+>  
+> -static void ams_delta_panel_drv_cleanup(void)
+> +static void __exit ams_delta_panel_drv_cleanup(void)
+>  {
+>  	platform_driver_unregister(&ams_delta_panel_driver);
+>  }
+> diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
+> index 918ee89..d88a792 100644
+> --- a/drivers/video/omap/lcd_mipid.c
+> +++ b/drivers/video/omap/lcd_mipid.c
+> @@ -607,7 +607,7 @@ static struct spi_driver mipid_spi_driver = {
+>  	.remove	= __devexit_p(mipid_spi_remove),
+>  };
+>  
+> -static int mipid_drv_init(void)
+> +static int __init mipid_drv_init(void)
+>  {
+>  	spi_register_driver(&mipid_spi_driver);
+>  
+> @@ -615,7 +615,7 @@ static int mipid_drv_init(void)
+>  }
+>  module_init(mipid_drv_init);
+>  
+> -static void mipid_drv_cleanup(void)
+> +static void __exit mipid_drv_cleanup(void)
+>  {
+>  	spi_unregister_driver(&mipid_spi_driver);
+>  }
