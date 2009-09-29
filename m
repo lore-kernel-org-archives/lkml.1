@@ -1,118 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZI2WDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZI2WLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbZI2WDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 18:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZI2WDk
+	id S1753265AbZI2WLl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 18:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbZI2WLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 18:03:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46108 "EHLO
+	Tue, 29 Sep 2009 18:11:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41808 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752039AbZI2WDj (ORCPT
+	by vger.kernel.org with ESMTP id S1752906AbZI2WLk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 18:03:39 -0400
-Date: Tue, 29 Sep 2009 15:03:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: hid-core: fix lockdep in hid_input_report() v2
-Message-Id: <20090929150312.59614446.akpm@linux-foundation.org>
-In-Reply-To: <20090920084140.5287559e.krzysztof.h1@wp.pl>
-References: <20090920084140.5287559e.krzysztof.h1@wp.pl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Sep 2009 18:11:40 -0400
+Date: Tue, 29 Sep 2009 15:11:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Arjan van de Ven <arjan@infradead.org>, Roland McGrath <roland@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Arnd Bergmann <arnd@arndb.de>,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
+In-Reply-To: <4AC267C7.4070300@zytor.com>
+Message-ID: <alpine.LFD.2.01.0909291501530.6996@localhost.localdomain>
+References: <20090924165548.GA16586@us.ibm.com> <20090924170308.GH16989@us.ibm.com> <200909242343.59903.arnd@arndb.de> <20090925082346.GB4436@localdomain> <20090925105632.GG12824@hawkmoon.kerlabs.com> <20090929180537.GD4625@us.ibm.com>
+ <20090929184023.532DF34@magilla.sf.frob.com> <4AC255A4.4030002@zytor.com> <20090929210207.247b94df@infradead.org> <alpine.LFD.2.01.0909291207410.6996@localhost.localdomain> <4AC267C7.4070300@zytor.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Sep 2009 08:41:40 +0200
-Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
 
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+On Tue, 29 Sep 2009, H. Peter Anvin wrote:
 > 
-> There is a lockdep warning in the hid_input_report() due to kmalloc(.,GFP_KERNEL) 
-> allocation of a temporary buffer.
-> Change hid_input_report() call inside the hid_ctrl() after Jiri Slaby's advice. This 
-> converts kmalloc() call into kmalloc(.,GFP_ATOMIC).
-> 
-> The lockdep trace is:
-> 
-> WARNING: at kernel/lockdep.c:2457 lockdep_trace_alloc+0xca/0xd0()
-> Hardware name: Product Name
-> Modules linked in: usbhid(+) hid uhci_hcd ne2k_pci via_agp 8390 i2c_via
-> Pid: 0, comm: swapper Not tainted 2.6.31 #74
-> Call Trace:
->  [<c0243b8a>] ? lockdep_trace_alloc+0xca/0xd0
->  [<c0221d1c>] warn_slowpath_common+0x7c/0xa0
->  [<c0243b8a>] ? lockdep_trace_alloc+0xca/0xd0
->  [<c0221d55>] warn_slowpath_null+0x15/0x20
->  [<c0243b8a>] lockdep_trace_alloc+0xca/0xd0
->  [<c027d2c8>] kmem_cache_alloc+0x28/0x100
->  [<cc9359ef>] ? hid_input_report+0x6f/0x220 [hid]
->  [<cc9359ef>] hid_input_report+0x6f/0x220 [hid]
->  [<cc94cabf>] hid_ctrl+0x7f/0x180 [usbhid]
->  [<c03b28b1>] usb_hcd_giveback_urb+0x41/0xa0
->  [<cc91a3fc>] uhci_giveback_urb+0x8c/0x280 [uhci_hcd]
->  [<c0279853>] ? dma_pool_free+0xd3/0x120
->  [<cc919848>] ? uhci_free_td+0x58/0xa0 [uhci_hcd]
->  [<cc91ac01>] uhci_scan_schedule+0x301/0x910 [uhci_hcd]
->  [<cc91cac4>] uhci_irq+0x94/0x940 [uhci_hcd]
->  [<c0245c43>] ? __lock_acquire+0x433/0xab0
->  [<c0206246>] ? mask_and_ack_8259A+0x66/0x100
->  [<c03b494b>] usb_hcd_irq+0x6b/0x90
->  [<c0255e7d>] handle_IRQ_event+0x2d/0xc0
->  [<c0257e85>] handle_level_irq+0x65/0xe0
->  [<c0204c74>] handle_irq+0x34/0x60
->  [<c0204bc9>] do_IRQ+0x39/0xb0
->  [<c024365c>] ? trace_hardirqs_on_caller+0x12c/0x180
->  [<c020328e>] common_interrupt+0x2e/0x40
->  [<c0208d48>] ? default_idle+0x38/0x50
->  [<c02108df>] apm_cpu_idle+0x10f/0x290
->  [<c0201b11>] cpu_idle+0x21/0x40
->  [<c045892d>] rest_init+0x4d/0x60
->  [<c0575815>] start_kernel+0x235/0x280
->  [<c05751f0>] ? unknown_bootoption+0x0/0x210
->  [<c057503f>] __init_begin+0x3f/0x50
-> 
+> That's not the main issue here, though.  The main issue is that the
+> prototype of the function now depends on one of its arguments
 
-In my 2.6.31 tree, kernel/lockdep.c:2457 is in the middle of a #define
-and the changelog is missing lots of info so I have no hope of
-understanding what's going on here.
+Ok, I agree with that. The kernel side is easy (we have magic calling 
+conventions there and need to turn registers into arguments anyway before 
+you get to the shared code), but your point about the user side prototype 
+is valid.
 
+However, that could easily be handled by just having a extended_clone() 
+prototype that then sets the CLONE_EXTINFO (or whatever) bit in the flags. 
+I think most of the time the clone() stuff needs special user-level 
+wrappers anyway to handle the stack setup etc, no?
 
-> ---
-> This lockdep is in the current git tree.
-> 
-> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-> index 1b0e07a..ab2869d 100644
-> --- a/drivers/hid/usbhid/hid-core.c
-> +++ b/drivers/hid/usbhid/hid-core.c
-> @@ -455,7 +455,7 @@ static void hid_ctrl(struct urb *urb)
->  		if (usbhid->ctrl[usbhid->ctrltail].dir == USB_DIR_IN)
->  			hid_input_report(urb->context,
->  				usbhid->ctrl[usbhid->ctrltail].report->type,
-> -				urb->transfer_buffer, urb->actual_length, 0);
-> +				urb->transfer_buffer, urb->actual_length, 1);
->  		break;
->  	case -ESHUTDOWN:	/* unplug */
->  		unplug = 1;
+In other words, what I'd suggest we could do is
 
-um, OK, we're clearly inside spinlock here.
+ - the kernel "do_fork()" interface would be made to have the "extended" 
+   format by default - so the _kernel_ never has two formats in its 
+   generic logic.
 
-<starts chasing through the HID code>
+ - the "sys_clone()" system call, that already needs to munge the user 
+   mode registers into the "do_fork()" format, would be the one that 
+   recognizes the new flag and copies the extended data from user mode 
+   memory to the extended info mode.
 
-Why does hid_input_field() use hard-coded GFP_ATOMIC even when
-interrupt=0?
+Then each architecture would need to update it's "sys_clone()" function to 
+take advantage of the new extended format, but that's something that the 
+new system call would have had to do anyway, so that's not an added burden 
+in any way.
 
-OK, I got down to
+Hmm?
 
-	if (hid->claimed & HID_CLAIMED_HIDDEV && interrupt && hid->hiddev_hid_event)
-		hid->hiddev_hid_event(hid, field, usage, value);
+I don't feel horribly strongly about this, and as far as I'm concerned 
+it's fine to also do it as a new system call too (we already have 'fork()' 
+and 'vfork()' as special case interfaces to do_fork() - the new 'extended 
+clone' would be no different).
 
-in hid_process_event() and gave up.  I can't actually find anywhere
-where the `interrupt' arg to hid_input_report() would cause that code
-to do something non-atomic when interrupt==0.  The code all seems a bit
-smelly.
+I just think that Roland is correct that if the new extended fork handles 
+the "no new info" case itself _anyway_, then there is no upside to making 
+it a new system call, since the complexity is the same as just extending 
+the old one.
 
-I don't understand this patch.  Can we have a better changelog please?
+			Linus
