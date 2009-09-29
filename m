@@ -1,102 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbZI2DIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072AbZI2DL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753032AbZI2DIW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 23:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZI2DIV
+	id S1753072AbZI2DL2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 23:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZI2DL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 23:08:21 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59400 "EHLO
+	Mon, 28 Sep 2009 23:11:27 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59538 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbZI2DIU (ORCPT
+	with ESMTP id S1752707AbZI2DL1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 23:08:20 -0400
+	Mon, 28 Sep 2009 23:11:27 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 29 Sep 2009 12:06:05 +0900
+Date: Tue, 29 Sep 2009 12:09:08 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
        "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH][rc1] cgroup: catch bad css refcnt at css_put
-Message-Id: <20090929120605.8aa773c1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <6599ad830909280720u6f70e52cp33b89c02c7e389fa@mail.gmail.com>
+       "menage@google.com" <menage@google.com>
+Subject: [PATCH][rc1] cgroup: catch bad css refcnt at css_put v2
+Message-Id: <20090929120908.cf3147ae.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4AC159D9.8020900@cn.fujitsu.com>
 References: <200909252158.n8PLwFhG024011@imap1.linux-foundation.org>
 	<20090928154213.8e873dec.kamezawa.hiroyu@jp.fujitsu.com>
 	<20090928180649.b6b7eea9.kamezawa.hiroyu@jp.fujitsu.com>
 	<20090928181310.9492a8a2.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830909280720u6f70e52cp33b89c02c7e389fa@mail.gmail.com>
+	<4AC159D9.8020900@cn.fujitsu.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Sep 2009 07:20:08 -0700
-Paul Menage <menage@google.com> wrote:
+__css_put() doesn't check a buggy case as refcnt goes to minus.
+This patch adds a check for it.
 
-> On Mon, Sep 28, 2009 at 2:13 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > This is a patch for checking css->refcnt's sanity at css_put().
-> >
-> > BTW, I noticed that...css->refcnt may overflow if used with memcg...
-> > Now, refcnt is incremented per a page. Paul, do you have any idea ?
-> > (Ah, yes. "don't use css->refcnt per page" is maybe reasonable but
-> >  it will be big change..)
-> >
-> > ==
-> > __css_put() doesn't check a bug as refcnt goes to minus.
-> > I think it should be caught. This patch adds a check for it.
-> >
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Acked-by: Paul Menage <menage@google.com>
-> 
-Thanks.
+Changelog:
+  - using WARN_ON_ONCE() instead of WARN_ON()
 
-> Looks reasonable, although there's no guarantee that it will warn on a
-> buggy release rather than a correct release that occur after a buggy
-> release.
-> 
-yes, it's a problem of refcnt.
+Acked-by: Paul Menage <menage@google.com>
+Acked-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ kernel/cgroup.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Thanks,
--Kame
-
-
-> > ---
-> >  kernel/cgroup.c |    5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> >
-> > Index: linux-2.6.32-rc1/kernel/cgroup.c
-> > ===================================================================
-> > --- linux-2.6.32-rc1.orig/kernel/cgroup.c
-> > +++ linux-2.6.32-rc1/kernel/cgroup.c
-> > @@ -3708,8 +3708,10 @@ static void check_for_release(struct cgr
-> >  void __css_put(struct cgroup_subsys_state *css)
-> >  {
-> >        struct cgroup *cgrp = css->cgroup;
-> > +       int val;
-> >        rcu_read_lock();
-> > -       if (atomic_dec_return(&css->refcnt) == 1) {
-> > +       val = atomic_dec_return(&css->refcnt);
-> > +       if (val == 1) {
-> >                if (notify_on_release(cgrp)) {
-> >                        set_bit(CGRP_RELEASABLE, &cgrp->flags);
-> >                        check_for_release(cgrp);
-> > @@ -3717,6 +3719,7 @@ void __css_put(struct cgroup_subsys_stat
-> >                cgroup_wakeup_rmdir_waiter(cgrp);
-> >        }
-> >        rcu_read_unlock();
-> > +       WARN_ON(val < 1);
-> >  }
-> >
-> >  /*
-> >
-> >
-> 
+Index: linux-2.6.32-rc1/kernel/cgroup.c
+===================================================================
+--- linux-2.6.32-rc1.orig/kernel/cgroup.c
++++ linux-2.6.32-rc1/kernel/cgroup.c
+@@ -3708,8 +3708,10 @@ static void check_for_release(struct cgr
+ void __css_put(struct cgroup_subsys_state *css)
+ {
+ 	struct cgroup *cgrp = css->cgroup;
++	int val;
+ 	rcu_read_lock();
+-	if (atomic_dec_return(&css->refcnt) == 1) {
++	val = atomic_dec_return(&css->refcnt);
++	if (val == 1) {
+ 		if (notify_on_release(cgrp)) {
+ 			set_bit(CGRP_RELEASABLE, &cgrp->flags);
+ 			check_for_release(cgrp);
+@@ -3717,6 +3719,7 @@ void __css_put(struct cgroup_subsys_stat
+ 		cgroup_wakeup_rmdir_waiter(cgrp);
+ 	}
+ 	rcu_read_unlock();
++	WARN_ON_ONCE(val < 1);
+ }
+ 
+ /*
 
