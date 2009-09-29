@@ -1,274 +1,414 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZI2UXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZI2UZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZI2UXM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 16:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZI2UXM
+	id S1754032AbZI2UZN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 16:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZI2UZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 16:23:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44308 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753151AbZI2UXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 16:23:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCH 1/2] Move swap functions to kernel/power/swap.c.
-Date: Tue, 29 Sep 2009 22:24:32 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <4AC036F9.5000003@crca.org.au>
-In-Reply-To: <4AC036F9.5000003@crca.org.au>
+	Tue, 29 Sep 2009 16:25:12 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:35135 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752286AbZI2UZK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 16:25:10 -0400
+Date: Tue, 29 Sep 2009 16:25:04 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: augment /proc/pid/limits to allow setting of
+	process limits (v2).
+Message-ID: <20090929202504.GC20420@hmsreliant.think-freely.org>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20090928154403.25678002.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909292224.32795.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090928154403.25678002.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.5 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 September 2009, Nigel Cunningham wrote:
-> Move hibernation code's functions for allocating and freeing swap
-> from swsusp.c to swap.c, which is where you'd expect to find them.
+Version 2 of this patch, taking your notes into account Andrew.
 
-Sorry for the delay.
+Change notes:
 
-Both patches look good, I'm going to add them to suspend-2.6/linux-next
-in the next few days.
+1) Split sys_setrlimit into a wrapper (sys_setrlimit), and an interior common
+function (do_setrlimit).  The latter takes a resource, struct rlimit and
+task_struct argument to do the actual work of setting the request limit to the
+requested rlim_cur/max values.
 
-Thanks,
-Rafael
+2) make sys_setrlimit call do_setrlimit
+
+3) modify the proc/pid/limits write routine so that it uses do_setrlimit,
+thereby giving us the previously missing security checks.
 
 
-> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-> ---
->  kernel/power/swap.c   |  101 +++++++++++++++++++++++++++++++++++++++++++++++++
->  kernel/power/swsusp.c |  101 -------------------------------------------------
->  2 files changed, 101 insertions(+), 101 deletions(-)
-> 
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 8ba052c..ce2d8a7 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -39,6 +39,107 @@ struct swsusp_header {
->  
->  static struct swsusp_header *swsusp_header;
->  
-> +/**
-> + *	The following functions are used for tracing the allocated
-> + *	swap pages, so that they can be freed in case of an error.
-> + */
-> +
-> +struct swsusp_extent {
-> +	struct rb_node node;
-> +	unsigned long start;
-> +	unsigned long end;
-> +};
-> +
-> +static struct rb_root swsusp_extents = RB_ROOT;
-> +
-> +static int swsusp_extents_insert(unsigned long swap_offset)
-> +{
-> +	struct rb_node **new = &(swsusp_extents.rb_node);
-> +	struct rb_node *parent = NULL;
-> +	struct swsusp_extent *ext;
-> +
-> +	/* Figure out where to put the new node */
-> +	while (*new) {
-> +		ext = container_of(*new, struct swsusp_extent, node);
-> +		parent = *new;
-> +		if (swap_offset < ext->start) {
-> +			/* Try to merge */
-> +			if (swap_offset == ext->start - 1) {
-> +				ext->start--;
-> +				return 0;
-> +			}
-> +			new = &((*new)->rb_left);
-> +		} else if (swap_offset > ext->end) {
-> +			/* Try to merge */
-> +			if (swap_offset == ext->end + 1) {
-> +				ext->end++;
-> +				return 0;
-> +			}
-> +			new = &((*new)->rb_right);
-> +		} else {
-> +			/* It already is in the tree */
-> +			return -EINVAL;
-> +		}
-> +	}
-> +	/* Add the new node and rebalance the tree. */
-> +	ext = kzalloc(sizeof(struct swsusp_extent), GFP_KERNEL);
-> +	if (!ext)
-> +		return -ENOMEM;
-> +
-> +	ext->start = swap_offset;
-> +	ext->end = swap_offset;
-> +	rb_link_node(&ext->node, parent, new);
-> +	rb_insert_color(&ext->node, &swsusp_extents);
-> +	return 0;
-> +}
-> +
-> +/**
-> + *	alloc_swapdev_block - allocate a swap page and register that it has
-> + *	been allocated, so that it can be freed in case of an error.
-> + */
-> +
-> +sector_t alloc_swapdev_block(int swap)
-> +{
-> +	unsigned long offset;
-> +
-> +	offset = swp_offset(get_swap_page_of_type(swap));
-> +	if (offset) {
-> +		if (swsusp_extents_insert(offset))
-> +			swap_free(swp_entry(swap, offset));
-> +		else
-> +			return swapdev_block(swap, offset);
-> +	}
-> +	return 0;
-> +}
-> +
-> +/**
-> + *	free_all_swap_pages - free swap pages allocated for saving image data.
-> + *	It also frees the extents used to register which swap entres had been
-> + *	allocated.
-> + */
-> +
-> +void free_all_swap_pages(int swap)
-> +{
-> +	struct rb_node *node;
-> +
-> +	while ((node = swsusp_extents.rb_node)) {
-> +		struct swsusp_extent *ext;
-> +		unsigned long offset;
-> +
-> +		ext = container_of(node, struct swsusp_extent, node);
-> +		rb_erase(node, &swsusp_extents);
-> +		for (offset = ext->start; offset <= ext->end; offset++)
-> +			swap_free(swp_entry(swap, offset));
-> +
-> +		kfree(ext);
-> +	}
-> +}
-> +
-> +int swsusp_swap_in_use(void)
-> +{
-> +	return (swsusp_extents.rb_node != NULL);
-> +}
-> +
->  /*
->   * General things
->   */
-> diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
-> index 6a07f4d..57222d2 100644
-> --- a/kernel/power/swsusp.c
-> +++ b/kernel/power/swsusp.c
-> @@ -58,107 +58,6 @@
->  int in_suspend __nosavedata = 0;
->  
->  /**
-> - *	The following functions are used for tracing the allocated
-> - *	swap pages, so that they can be freed in case of an error.
-> - */
-> -
-> -struct swsusp_extent {
-> -	struct rb_node node;
-> -	unsigned long start;
-> -	unsigned long end;
-> -};
-> -
-> -static struct rb_root swsusp_extents = RB_ROOT;
-> -
-> -static int swsusp_extents_insert(unsigned long swap_offset)
-> -{
-> -	struct rb_node **new = &(swsusp_extents.rb_node);
-> -	struct rb_node *parent = NULL;
-> -	struct swsusp_extent *ext;
-> -
-> -	/* Figure out where to put the new node */
-> -	while (*new) {
-> -		ext = container_of(*new, struct swsusp_extent, node);
-> -		parent = *new;
-> -		if (swap_offset < ext->start) {
-> -			/* Try to merge */
-> -			if (swap_offset == ext->start - 1) {
-> -				ext->start--;
-> -				return 0;
-> -			}
-> -			new = &((*new)->rb_left);
-> -		} else if (swap_offset > ext->end) {
-> -			/* Try to merge */
-> -			if (swap_offset == ext->end + 1) {
-> -				ext->end++;
-> -				return 0;
-> -			}
-> -			new = &((*new)->rb_right);
-> -		} else {
-> -			/* It already is in the tree */
-> -			return -EINVAL;
-> -		}
-> -	}
-> -	/* Add the new node and rebalance the tree. */
-> -	ext = kzalloc(sizeof(struct swsusp_extent), GFP_KERNEL);
-> -	if (!ext)
-> -		return -ENOMEM;
-> -
-> -	ext->start = swap_offset;
-> -	ext->end = swap_offset;
-> -	rb_link_node(&ext->node, parent, new);
-> -	rb_insert_color(&ext->node, &swsusp_extents);
-> -	return 0;
-> -}
-> -
-> -/**
-> - *	alloc_swapdev_block - allocate a swap page and register that it has
-> - *	been allocated, so that it can be freed in case of an error.
-> - */
-> -
-> -sector_t alloc_swapdev_block(int swap)
-> -{
-> -	unsigned long offset;
-> -
-> -	offset = swp_offset(get_swap_page_of_type(swap));
-> -	if (offset) {
-> -		if (swsusp_extents_insert(offset))
-> -			swap_free(swp_entry(swap, offset));
-> -		else
-> -			return swapdev_block(swap, offset);
-> -	}
-> -	return 0;
-> -}
-> -
-> -/**
-> - *	free_all_swap_pages - free swap pages allocated for saving image data.
-> - *	It also frees the extents used to register which swap entres had been
-> - *	allocated.
-> - */
-> -
-> -void free_all_swap_pages(int swap)
-> -{
-> -	struct rb_node *node;
-> -
-> -	while ((node = swsusp_extents.rb_node)) {
-> -		struct swsusp_extent *ext;
-> -		unsigned long offset;
-> -
-> -		ext = container_of(node, struct swsusp_extent, node);
-> -		rb_erase(node, &swsusp_extents);
-> -		for (offset = ext->start; offset <= ext->end; offset++)
-> -			swap_free(swp_entry(swap, offset));
-> -
-> -		kfree(ext);
-> -	}
-> -}
-> -
-> -int swsusp_swap_in_use(void)
-> -{
-> -	return (swsusp_extents.rb_node != NULL);
-> -}
-> -
-> -/**
->   *	swsusp_show_speed - print the time elapsed between two events represented by
->   *	@start and @stop
->   *
-> 
+Augment /proc/<pid>/limits file to support limit setting
 
+It was suggested to me recently that we support a mechanism by which we can set
+various process limits from points external to the process.  The reasoning being
+that some processes are very long lived, and it would be beneficial to these
+long lived processes if we could modify their various limits without needing to
+kill them, adjust the limits for the user and restarting them.  While individual
+application can certainly export this control on their own, it would be nice if
+such functionality were available to a sysadmin, without needing to have each
+application re-invent the wheel.
+
+As such, I've implemented the below patch, which makes /proc/pid/limits writable
+for each process.  By writing the following format:
+<limit> <current value> <max value>
+to the limits file, an administrator can now dynamically change the limits for
+the respective process.  Tested by myself with good results.
+
+Neil
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+
+
+ fs/proc/base.c        |  165 +++++++++++++++++++++++++++++++++++++++++---------
+ include/linux/sched.h |    3 
+ kernel/sys.c          |   48 +++++++++-----
+ 3 files changed, 169 insertions(+), 47 deletions(-)
+
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 6f742f6..2f05799 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -49,6 +49,8 @@
+ 
+ #include <asm/uaccess.h>
+ 
++#include <linux/string.h>
++#include <linux/ctype.h>
+ #include <linux/errno.h>
+ #include <linux/time.h>
+ #include <linux/proc_fs.h>
+@@ -455,72 +457,177 @@ static int proc_oom_score(struct task_struct *task, char *buffer)
+ struct limit_names {
+ 	char *name;
+ 	char *unit;
++	char *match;
+ };
+ 
+ static const struct limit_names lnames[RLIM_NLIMITS] = {
+-	[RLIMIT_CPU] = {"Max cpu time", "ms"},
+-	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
+-	[RLIMIT_DATA] = {"Max data size", "bytes"},
+-	[RLIMIT_STACK] = {"Max stack size", "bytes"},
+-	[RLIMIT_CORE] = {"Max core file size", "bytes"},
+-	[RLIMIT_RSS] = {"Max resident set", "bytes"},
+-	[RLIMIT_NPROC] = {"Max processes", "processes"},
+-	[RLIMIT_NOFILE] = {"Max open files", "files"},
+-	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes"},
+-	[RLIMIT_AS] = {"Max address space", "bytes"},
+-	[RLIMIT_LOCKS] = {"Max file locks", "locks"},
+-	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals"},
+-	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
+-	[RLIMIT_NICE] = {"Max nice priority", NULL},
+-	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
+-	[RLIMIT_RTTIME] = {"Max realtime timeout", "us"},
++	[RLIMIT_CPU] = {"Max cpu time", "ms", "cpu"},
++	[RLIMIT_FSIZE] = {"Max file size", "bytes", "fsize"},
++	[RLIMIT_DATA] = {"Max data size", "bytes", "data"},
++	[RLIMIT_STACK] = {"Max stack size", "bytes", "stack"},
++	[RLIMIT_CORE] = {"Max core file size", "bytes", "core"},
++	[RLIMIT_RSS] = {"Max resident set", "bytes", "rss"},
++	[RLIMIT_NPROC] = {"Max processes", "processes", "nproc"},
++	[RLIMIT_NOFILE] = {"Max open files", "files", "nofile"},
++	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes", "memlock"},
++	[RLIMIT_AS] = {"Max address space", "bytes", "as"},
++	[RLIMIT_LOCKS] = {"Max file locks", "locks", "locks"},
++	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals", "sigpending"},
++	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes", "msgqueue"},
++	[RLIMIT_NICE] = {"Max nice priority", NULL, "nice"},
++	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL, "rtprio"},
++	[RLIMIT_RTTIME] = {"Max realtime timeout", "us", "rttime"},
+ };
+ 
+ /* Display limits for a process */
+-static int proc_pid_limits(struct task_struct *task, char *buffer)
++static ssize_t proc_pid_limit_read(struct file *file, char __user *buf,
++			size_t count, loff_t *ppos)
+ {
+ 	unsigned int i;
+-	int count = 0;
+ 	unsigned long flags;
+-	char *bufptr = buffer;
++	char *bufptr;
++	size_t bcount = 0;
++	size_t ccount = 0;
++	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
+ 
+ 	struct rlimit rlim[RLIM_NLIMITS];
+ 
++	bufptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!bufptr)
++		goto out;
++
+ 	if (!lock_task_sighand(task, &flags))
+-		return 0;
++		goto out;
+ 	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
+ 	unlock_task_sighand(task, &flags);
+ 
+ 	/*
+ 	 * print the file header
+ 	 */
+-	count += sprintf(&bufptr[count], "%-25s %-20s %-20s %-10s\n",
++	bcount += sprintf(&bufptr[bcount], "%-25s %-20s %-20s %-10s\n",
+ 			"Limit", "Soft Limit", "Hard Limit", "Units");
+ 
+ 	for (i = 0; i < RLIM_NLIMITS; i++) {
+ 		if (rlim[i].rlim_cur == RLIM_INFINITY)
+-			count += sprintf(&bufptr[count], "%-25s %-20s ",
++			bcount += sprintf(&bufptr[bcount], "%-25s %-20s ",
+ 					 lnames[i].name, "unlimited");
+ 		else
+-			count += sprintf(&bufptr[count], "%-25s %-20lu ",
++			bcount += sprintf(&bufptr[bcount], "%-25s %-20lu ",
+ 					 lnames[i].name, rlim[i].rlim_cur);
+ 
+ 		if (rlim[i].rlim_max == RLIM_INFINITY)
+-			count += sprintf(&bufptr[count], "%-20s ", "unlimited");
++			bcount += sprintf(&bufptr[bcount], "%-20s ",
++					 "unlimited");
+ 		else
+-			count += sprintf(&bufptr[count], "%-20lu ",
++			bcount += sprintf(&bufptr[bcount], "%-20lu ",
+ 					 rlim[i].rlim_max);
+ 
+ 		if (lnames[i].unit)
+-			count += sprintf(&bufptr[count], "%-10s\n",
++			bcount += sprintf(&bufptr[bcount], "%-10s\n",
+ 					 lnames[i].unit);
+ 		else
+-			count += sprintf(&bufptr[count], "\n");
++			bcount += sprintf(&bufptr[bcount], "\n");
++	}
++
++	if (*ppos >= bcount)
++		goto out_task;
++
++	ccount = min(count, (size_t)(bcount-(*ppos)));
++	ccount = ccount - copy_to_user(buf, &bufptr[*ppos], ccount);
++	*ppos += ccount;
++	kfree(bufptr);
++out_task:
++	put_task_struct(task);
++out:
++	return ccount;
++}
++
++static ssize_t proc_pid_limit_write(struct file *file, const char __user *buf,
++		size_t count, loff_t *ppos)
++{
++	char *buffer;
++	char *element, *vmc, *vmm;
++	struct rlimit new_rlim;
++	unsigned long flags;
++	int i;
++	int index = -1;
++	size_t wcount = 0;
++	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
++
++
++	if (*ppos != 0)
++		goto out;
++
++	if (count > 128)
++		goto out;
++	buffer = kzalloc(128, GFP_KERNEL);
++
++	if (!buffer)
++		goto out;
++
++	element = kzalloc(sizeof(buffer), GFP_KERNEL);
++	vmc = kzalloc(sizeof(buffer), GFP_KERNEL);
++	vmm = kzalloc(sizeof(buffer), GFP_KERNEL);
++
++	if (!element || !vmm || !vmc)
++		goto out_free;
++
++	wcount = count - copy_from_user(buffer, buf, count);
++	if (wcount < count)
++		goto out_free;
++
++	i = sscanf(buffer, "%s %s %s", element, vmc, vmm);
++
++	if (i < 3)
++		goto out_free;
++
++	for (i = 0; i <= strlen(element); i++)
++		element[i] = tolower(element[i]);
++
++	if (!strncmp(vmc, "unlimited", 9))
++		new_rlim.rlim_cur = RLIM_INFINITY;
++	else
++		new_rlim.rlim_cur = simple_strtoull(vmc, NULL, 10);
++
++	if (!strncmp(vmm, "unlimited", 9))
++		new_rlim.rlim_max = RLIM_INFINITY;
++	else
++		new_rlim.rlim_max = simple_strtoull(vmm, NULL, 10);
++
++	for (i = 0; i < RLIM_NLIMITS; i++) {
++		if ((lnames[i].match) &&
++		    !strncmp(element, lnames[i].match,
++		     strlen(lnames[i].match))) {
++			index = i;
++			break;
++		}
+ 	}
+ 
++	if (!lock_task_sighand(task, &flags))
++		goto out_free;
++
++	if ((index >= 0) && (index < RLIM_NLIMITS))
++		do_setrlimit(index, &new_rlim, task);
++
++	unlock_task_sighand(task, &flags);
++
++out_free:
++	kfree(element);
++	kfree(vmc);
++	kfree(vmm);
++	kfree(buffer);
++out:
++	*ppos += count;
++	put_task_struct(task);
+ 	return count;
+ }
+ 
++
++static const struct file_operations proc_limit_operations = {
++	.read           = proc_pid_limit_read,
++	.write		= proc_pid_limit_write,
++};
++
+ #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
+ static int proc_pid_syscall(struct task_struct *task, char *buffer)
+ {
+@@ -2483,7 +2590,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	INF("auxv",       S_IRUSR, proc_pid_auxv),
+ 	ONE("status",     S_IRUGO, proc_pid_status),
+ 	ONE("personality", S_IRUSR, proc_pid_personality),
+-	INF("limits",	  S_IRUSR, proc_pid_limits),
++	REG("limits",	  S_IRUSR|S_IWUSR, proc_limit_operations),
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
+ #endif
+@@ -2822,7 +2929,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	INF("auxv",      S_IRUSR, proc_pid_auxv),
+ 	ONE("status",    S_IRUGO, proc_pid_status),
+ 	ONE("personality", S_IRUSR, proc_pid_personality),
+-	INF("limits",	 S_IRUSR, proc_pid_limits),
++	REG("limits",	 S_IRUSR|S_IWUSR, proc_limit_operations),
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
+ #endif
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f3d74bd..6bcc125 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -633,6 +633,9 @@ struct signal_struct {
+ #endif
+ };
+ 
++extern int do_setrlimit(unsigned int resource, struct rlimit *new_rlim,
++			struct task_struct *tsk);
++
+ /* Context switch must be unlocked if interrupts are to be enabled */
+ #ifdef __ARCH_WANT_INTERRUPTS_ON_CTXSW
+ # define __ARCH_WANT_UNLOCKED_CTXSW
+diff --git a/kernel/sys.c b/kernel/sys.c
+index b3f1097..05bd22a 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1236,41 +1236,41 @@ SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource,
+ 
+ #endif
+ 
+-SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
++int do_setrlimit(unsigned int resource, struct rlimit *new_rlim,
++		 struct task_struct *tsk)
+ {
+-	struct rlimit new_rlim, *old_rlim;
+ 	int retval;
++	struct rlimit *old_rlim;
+ 
+-	if (resource >= RLIM_NLIMITS)
+-		return -EINVAL;
+-	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
+-		return -EFAULT;
+-	if (new_rlim.rlim_cur > new_rlim.rlim_max)
++
++	if (new_rlim->rlim_cur > new_rlim->rlim_max)
+ 		return -EINVAL;
+-	old_rlim = current->signal->rlim + resource;
+-	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
++	old_rlim = tsk->signal->rlim + resource;
++
++	if ((new_rlim->rlim_max > old_rlim->rlim_max) &&
+ 	    !capable(CAP_SYS_RESOURCE))
+ 		return -EPERM;
+-	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
++
++	if (resource == RLIMIT_NOFILE && new_rlim->rlim_max > sysctl_nr_open)
+ 		return -EPERM;
+ 
+-	retval = security_task_setrlimit(resource, &new_rlim);
++	retval = security_task_setrlimit(resource, new_rlim);
+ 	if (retval)
+ 		return retval;
+ 
+-	if (resource == RLIMIT_CPU && new_rlim.rlim_cur == 0) {
++	if (resource == RLIMIT_CPU && new_rlim->rlim_cur == 0) {
+ 		/*
+ 		 * The caller is asking for an immediate RLIMIT_CPU
+ 		 * expiry.  But we use the zero value to mean "it was
+ 		 * never set".  So let's cheat and make it one second
+ 		 * instead
+ 		 */
+-		new_rlim.rlim_cur = 1;
++		new_rlim->rlim_cur = 1;
+ 	}
+ 
+-	task_lock(current->group_leader);
+-	*old_rlim = new_rlim;
+-	task_unlock(current->group_leader);
++	task_lock(tsk->group_leader);
++	*old_rlim = *new_rlim;
++	task_unlock(tsk->group_leader);
+ 
+ 	if (resource != RLIMIT_CPU)
+ 		goto out;
+@@ -1281,14 +1281,26 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ 	 * very long-standing error, and fixing it now risks breakage of
+ 	 * applications, so we live with it
+ 	 */
+-	if (new_rlim.rlim_cur == RLIM_INFINITY)
++	if (new_rlim->rlim_cur == RLIM_INFINITY)
+ 		goto out;
+ 
+-	update_rlimit_cpu(new_rlim.rlim_cur);
++	update_rlimit_cpu(new_rlim->rlim_cur);
+ out:
+ 	return 0;
+ }
+ 
++SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
++{
++	struct rlimit new_rlim;
++
++	if (resource >= RLIM_NLIMITS)
++		return -EINVAL;
++	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
++		return -EFAULT;
++
++	return do_setrlimit(resource, &new_rlim, current);
++}
++
+ /*
+  * It would make sense to put struct rusage in the task_struct,
+  * except that would make the task_struct be *really big*.  After
