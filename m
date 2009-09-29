@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbZI2ApG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbZI2ArG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753821AbZI2ApG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 20:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbZI2ApF
+	id S1753876AbZI2ArG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 20:47:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZI2ArF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 20:45:05 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:47791 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753645AbZI2ApE (ORCPT
+	Mon, 28 Sep 2009 20:47:05 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:35814 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753728AbZI2ArE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 20:45:04 -0400
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
+	Mon, 28 Sep 2009 20:47:04 -0400
+Subject: Re: [Pv-drivers] [PATCH 2.6.31-rc9] net: VMware virtual Ethernet
+	NIC driver: vmxnet3
 From: Alok Kataria <akataria@vmware.com>
 Reply-To: akataria@vmware.com
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
+To: Greg KH <greg@kroah.com>
+Cc: Shreyas Bhatewara <sbhatewara@vmware.com>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
        Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <4AB9CE66.1030504@redhat.com>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
-	 <20090919224430.GB9567@kroah.com>
-	 <1253419185.3253.21.camel@ank32.eng.vmware.com>
-	 <20090920074247.GA5733@elte.hu>
-	 <1253647845.10565.20.camel@ank32.eng.vmware.com>
-	 <4AB9CE66.1030504@redhat.com>
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20090929002056.GA31372@kroah.com>
+References: <89E2752CFA8EC044846EB849981913410173CDFAF6@EXCH-MBX-4.vmware.com>
+	 <20090929002056.GA31372@kroah.com>
 Content-Type: text/plain
 Organization: VMware INC.
-Date: Mon, 28 Sep 2009 17:45:07 -0700
-Message-Id: <1254185107.13456.32.camel@ank32.eng.vmware.com>
+Date: Mon, 28 Sep 2009 17:47:08 -0700
+Message-Id: <1254185228.13456.34.camel@ank32.eng.vmware.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
@@ -43,145 +40,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Greg,
 
-On Wed, 2009-09-23 at 00:29 -0700, Gerd Hoffmann wrote:
-> On 09/22/09 21:30, Alok Kataria wrote:
-> > Hi Ingo,
-> >
-> > On Sun, 2009-09-20 at 00:42 -0700, Ingo Molnar wrote:
-> >
-> >>
-> >> The thing is, the overwhelming majority of vmware users dont benefit
-> >> from hardware features like nested page tables yet. So this needs to be
-> >> done _way_ more carefully, with a proper sunset period of a couple of
-> >> kernel cycles.
-> >
-> > I am fine with that too. Below is a patch which adds notes in
-> > feature-removal-schedule.txt, I have marked it for removal from 2.6.34.
-> > Please consider this patch for 2.6.32.
+On Mon, 2009-09-28 at 17:20 -0700, Greg KH wrote:
+> On Mon, Sep 28, 2009 at 04:56:45PM -0700, Shreyas Bhatewara wrote:
+> > Ethernet NIC driver for VMware's vmxnet3
+> > 
+> > From: Shreyas Bhatewara <sbhatewara@vmware.com>
+> > 
+> > This patch adds driver support for VMware's virtual Ethernet NIC : vmxnet3
+> > Guests running on VMware hypervisors supporting vmxnet3 device will thus
+> > have access to improved network functionalities and performance.
+> > 
+> > Signed-off-by: Shreyas Bhatewara <sbhatewara@vmware.com>
 > 
-> Hmm.  Given that you are talking about vmi not being supported any more 
-> in *future* products, there is a huge installed base with vmi support 
-> available, right?  I don't think we should zap the code that quickly.
+> I thought this was going to be submitted for the drivers/staging/ tree.
+> What happened?
 
-Yep, hpa too raised the same issue, I spoke to him during LPC and we
-decided that 2.6.37 will be the right time frame for removal of this
-code. 
-For now I have just added some text in the feature-removal file and
-disabled VMI by default in the Kconfig, the reason that needs to be done
-is because "Live Migration" of a VMI enabled VM to future products which
-don't support VMI will not work, so its important that newer distros
-keep this disabled, if they want seamless migration that is.
+We managed to do most of the cleanup's inhouse over the weekend and
+think this shouldn't need any major cleanup now. That's why thought
+better to submit directly. 
+
+Thanks,
+Alok
 
 > 
-> >   config VMI
-> > -	bool "VMI Guest support"
-> > -	select PARAVIRT
-> > -	depends on X86_32
-> > +	bool "VMI Guest support [will be deprecated soon]"
-> > +	default n
-> > +	depends on X86_32&&  PARAVIRT
-> >   	---help---
-> >   	  VMI provides a paravirtualized interface to the VMware ESX server
-> >   	  (it could be used by other hypervisors in theory too, but is not
-> >   	  at the moment), by linking the kernel to a GPL-ed ROM module
-> >   	  provided by the hypervisor.
-> > +	  VMware has started a phased retirement of this feature from there
-> > +	  products. Please see feature-removal-schedule.txt for details.
+> thanks,
 > 
-> How about adding version numbers here?  i.e. latest versions with vmi 
-> support are workstation x.y, ...
-> 
-> So people can easily figure whenever it makes sense to turn this on for 
-> their environment.
-
-Okay, have added that text too.
-
-Thanks for your comments.
-
-Ingo/hpa, please consider the patch below for tip. 
-
---
-
-Mark VMI for deprecation in feature-removal-schedule.txt.
-
-From: Alok N Kataria <akataria@vmware.com>
-
-Add text in feature-removal.txt and also modify Kconfig to disable
-vmi by default.
----
-
- Documentation/feature-removal-schedule.txt |   30 ++++++++++++++++++++++++++++
- arch/x86/Kconfig                           |   13 +++++++++---
- 2 files changed, 40 insertions(+), 3 deletions(-)
-
-
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index fa75220..0271f37 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -459,3 +459,33 @@ Why:	OSS sound_core grabs all legacy minors (0-255) of SOUND_MAJOR
- 	will also allow making ALSA OSS emulation independent of
- 	sound_core.  The dependency will be broken then too.
- Who:	Tejun Heo <tj@kernel.org>
-+
-+----------------------------
-+
-+What:	Support for VMware's guest paravirtuliazation technique [VMI] will be
-+	dropped.
-+When:	2.6.37 or earlier.
-+Why:	With the recent innovations in CPU hardware acceleration technologies
-+	from Intel and AMD, VMware ran a few experiments to compare these
-+	techniques to guest paravirtualization technique on VMware's platform.
-+	These hardware assisted virtualization techniques have outperformed the
-+	performance benefits provided by VMI in most of the workloads. VMware
-+	expects that these hardware features will be ubiquitous in a couple of
-+	years, as a result, VMware has started a phased retirement of this
-+	feature from the hypervisor. We will be removing this feature from the
-+	Kernel too. Right now we are targeting 2.6.37 but can retire earlier if
-+	technical reasons ( read opportunity to remove major chunk of pvops)
-+	arise.
-+
-+	Please note that VMI has always been an optimization and non-VMI kernels
-+	still work fine on VMware's platform.
-+	Latest versions of VMware's product which support VMI are,
-+	Workstation 7.0 and VSphere 4.0 on ESX side, future maintainence
-+	releases for these products will continue supporting VMI.
-+
-+	For more details about VMI retirement take a look at this,
-+	http://blogs.vmware.com/guestosguide/2009/09/vmi-retirement.html
-+
-+Who:	Alok N Kataria <akataria@vmware.com>
-+
-+----------------------------
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index e214f45..84fd47c 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -485,14 +485,21 @@ if PARAVIRT_GUEST
- source "arch/x86/xen/Kconfig"
- 
- config VMI
--	bool "VMI Guest support"
--	select PARAVIRT
--	depends on X86_32
-+	bool "VMI Guest support [will be deprecated soon]"
-+	default n
-+	depends on X86_32 && PARAVIRT
- 	---help---
- 	  VMI provides a paravirtualized interface to the VMware ESX server
- 	  (it could be used by other hypervisors in theory too, but is not
- 	  at the moment), by linking the kernel to a GPL-ed ROM module
- 	  provided by the hypervisor.
-+	  As of September 2009, VMware has started a phased retirement of this
-+	  feature from VMware's products. Please see
-+	  feature-removal-schedule.txt for details.
-+	  If you are planning to enable this option, please note that you
-+	  cannot live migrate a VMI enabled VM to a future VMware product,
-+	  which doesn't support VMI. So if you expect your kernel to seamlessly
-+	  migrate to newer VMware products, keep this disabled.
- 
- config KVM_CLOCK
- 	bool "KVM paravirtualized clock"
-
+> greg k-h
+> _______________________________________________
+> Pv-drivers mailing list
+> Pv-drivers@vmware.com
+> http://mailman2.vmware.com/mailman/listinfo/pv-drivers
 
