@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbZI2QYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZI2QdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbZI2QYZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 12:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZI2QYY
+	id S1752525AbZI2QdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 12:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZI2QdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 12:24:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49244 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751919AbZI2QYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 12:24:24 -0400
-Date: Tue, 29 Sep 2009 09:23:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Howells <dhowells@redhat.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
-       gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove pty_ops_bsd and pty_bsd_ioctl() as they're not
- used
-In-Reply-To: <395.1254239745@redhat.com>
-Message-ID: <alpine.LFD.2.01.0909290909280.6996@localhost.localdomain>
-References: <alpine.LFD.2.01.0909280743310.3349@localhost.localdomain> <20090928135332.4300.56046.stgit@warthog.procyon.org.uk> <20090928151628.62955233@lxorguk.ukuu.org.uk> <395.1254239745@redhat.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 29 Sep 2009 12:33:16 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:19689 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751652AbZI2QdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 12:33:16 -0400
+Date: Tue, 29 Sep 2009 18:28:56 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Scott James Remnant <scott@ubuntu.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Matt Helsley <matthltc@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH] connector: Fix sid connector (was: Badness at
+	kernel/softirq.c:143...)
+Message-ID: <20090929162855.GA15319@redhat.com>
+References: <200909251123.03482.borntraeger@de.ibm.com> <20090929142538.GA10180@redhat.com> <20090929144554.GA10937@redhat.com> <200909291712.33099.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909291712.33099.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/29, Christian Borntraeger wrote:
+>
+>
+> The network code must not be called with disabled interrupts but
+> sys_setsid holds the tasklist_lock with spinlock_irq while calling
+> the connector. We can safely move proc_sid_connector from
+> __set_special_pids to sys_setsid.
+>
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+>
+> ---
+>  kernel/exit.c |    4 +---
+>  kernel/sys.c  |    2 ++
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+>
+> Index: linux-2.6/kernel/exit.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/exit.c
+> +++ linux-2.6/kernel/exit.c
+> @@ -359,10 +359,8 @@ void __set_special_pids(struct pid *pid)
+>  {
+>  	struct task_struct *curr = current->group_leader;
+>
+> -	if (task_session(curr) != pid) {
+> +	if (task_session(curr) != pid)
+>  		change_pid(curr, PIDTYPE_SID, pid);
+> -		proc_sid_connector(curr);
+> -	}
+>
+>  	if (task_pgrp(curr) != pid)
+>  		change_pid(curr, PIDTYPE_PGID, pid);
+> Index: linux-2.6/kernel/sys.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sys.c
+> +++ linux-2.6/kernel/sys.c
+> @@ -1110,6 +1110,8 @@ SYSCALL_DEFINE0(setsid)
+>  	err = session;
+>  out:
+>  	write_unlock_irq(&tasklist_lock);
+> +	if (err > 0)
+> +		proc_sid_connector(sid);
+>  	return err;
+>  }
 
+Acked-by: Oleg Nesterov <oleg@redhat.com>
 
-On Tue, 29 Sep 2009, David Howells wrote:
-> 
-> Is it right to use pty_ops_bsd in _both_ places?  Looking at the code in
-> linux-2.6.0, the BSD ioctl only applies to the master and doesn't apply to the
-> slave.
+I'd suggest you to resend this patch to Andrew. Unless you know
+another way to push it into Linus's tree ;)
 
-Right you are, good catch.
+Perhaps it makes sense to update the changelog, it should mention
+the issues with daemonize().
 
-That said, I have to say that this whole pty lock thing seems to have been 
-broken since 2.6.26, and even now, nobody actually _complained_. You found 
-the problem due to a compiler warning rather than due to somebody noticing 
-that pty_bsd_ioctl() is no longer hooked up.
+Oleg.
 
-Because as far as I can tell, the bug was introduced by commit 
-3e8e88ca053150efdbecb45d8f481cf560ec808d ("pty: prepare for tty->ops 
-changes") back in April of 2008. That added the whole 'pty_ops_bsd' 
-structure, but it has never actually been used.
-
-So I do wonder whether the right thing to do would not be to simple remove 
-the whole pty_ops_bsd code entirely. Or maybe mode the trivial TIOCSPTLCK 
-into the generic tty ioctl handling, and just make it test for 
-"driver->subtype == PTY_TYPE_MASTER" - and at least get rid of this subtle 
-thing that was broken for over a year without anybody noticing..
-
-		Linus
