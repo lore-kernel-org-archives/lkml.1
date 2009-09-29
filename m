@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbZI2CUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZI2CbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbZI2CUR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 22:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbZI2CUQ
+	id S1752960AbZI2CbF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 22:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZI2CbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 22:20:16 -0400
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:63500 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753834AbZI2CUP (ORCPT
+	Mon, 28 Sep 2009 22:31:04 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46557 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbZI2CbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 22:20:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=HWWttGcr3F8GBF9OGrvJRUvR3/oLsWl2uJT/AUuKbVj3jHQBVhbkKoIHBfgtdQXn6x
-         SWjcplCvTLE4HBFlD6ZoZPmU9y4weBrtgznYkvnheF95FUJo0H7qD6iYDayV774uyuRB
-         sIBor7K1fadlDx6zfXusH9jhkFC1Lt+Ajc4Vw=
+	Mon, 28 Sep 2009 22:31:03 -0400
+Message-ID: <4AC17018.4040600@zytor.com>
+Date: Mon, 28 Sep 2009 19:25:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <20090928131700.GA19243@nb-core2.darkstar.lan>
-References: <20090923191240.GA15198@dreamland.darkstar.lan>
-	 <51f3faa70909232018v7e621190m84deb648b08d2135@mail.gmail.com>
-	 <20090928131700.GA19243@nb-core2.darkstar.lan>
-Date: Mon, 28 Sep 2009 20:20:18 -0600
-Message-ID: <51f3faa70909281920x2782d8dfm1835ab24779abfa3@mail.gmail.com>
-Subject: Re: [PATCH] asus_atk0110: add support for Asus P7P55D
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: akataria@vmware.com
+CC: Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	 <20090919224430.GB9567@kroah.com>	 <1253419185.3253.21.camel@ank32.eng.vmware.com>	 <20090920074247.GA5733@elte.hu>	 <1253647845.10565.20.camel@ank32.eng.vmware.com>	 <4AB9CE66.1030504@redhat.com> <1254185107.13456.32.camel@ank32.eng.vmware.com>
+In-Reply-To: <1254185107.13456.32.camel@ank32.eng.vmware.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 7:17 AM, Luca Tettamanti <kronos.it@gmail.com> wrote:
-> On Wed, Sep 23, 2009 at 09:18:45PM -0600, Robert Hancock wrote:
->> On Wed, Sep 23, 2009 at 1:12 PM, Luca Tettamanti <kronos.it@gmail.com> wrote:
->> > With P7P55D (and newer) boards Asus extended the output buffer (ASBF)
->> > making the driver unable to read the data from the sensors.
->> > Change the driver to use dynamic buffers (allocated by ACPI core); the
->> > return value is cached, so the number of memory allocations is very low.
->> >
->> > Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
->> > Tested-by: Robert Hancock <hancockrwd@gmail.com>
->>
->> I just noticed a problem (either with this patch or some other issue
->> with the driver on this board): The readings don't seem to be
->> updating, I get the same values all the time. (Just now I started
->> compiling a kernel and coretemp reports temperatures in the 60 degree
->> plus range but atk0110-acpi still reports 35 degrees as it did
->> before..)
->
-> Hi Robert,
-> I have a new patch for you :)
-> It contains the previous changes to handle the bigger ASBF buffer plus a new
-> method to enable the EC as suggested by Asus. Be sure to compile with
-> HWMON_DEBUG_CHIP enabled.
+On 09/28/2009 05:45 PM, Alok Kataria wrote:
+> +	bool "VMI Guest support [will be deprecated soon]"
+> +	default n
 
-Excellent.. seems to work now and give actually updating sensor readings :-)
+This is incorrect use of the word "deprecated"... it's *already*
+deprecated (a word which pretty much means the opposite of "recommended".)
 
-By the way, if you have any firmware-type contacts at Asus that know
-about these boards, you might want to point them at this problem, the
-BIOS DMAR tables point to invalid locations when Intel VT-d is
-enabled. So far haven't gotten any useful response from tech support..
+As far as "default n" is concerned... this is usually not necessary; "n"
+is the default unless anything else is specified.
 
-http://www.gossamer-threads.com/lists/linux/kernel/1131574
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
