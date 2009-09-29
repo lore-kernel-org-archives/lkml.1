@@ -1,37 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbZI2HKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbZI2HOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753431AbZI2HKR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 03:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZI2HKQ
+	id S1753479AbZI2HOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 03:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbZI2HOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 03:10:16 -0400
-Received: from mail-yx0-f173.google.com ([209.85.210.173]:43705 "EHLO
-	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753274AbZI2HKO convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 03:14:45 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:12443 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753286AbZI2HOo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 03:10:14 -0400
+	Tue, 29 Sep 2009 03:14:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=TpcZFOAASzokbX01dsJ4TOARhBs74qBttJe+eUx+hoM0G53tJCkakCid1AVXm0DkGM
-         Avur3Fl4cPXmrrALesYKaxHK5PXdqbLRLaogf8EIK4w71BbePdGNRR1am/4ALm8Gmi2J
-         6jqc6uc4Ws+qxtcVOBkKPZdv0S+cHjaK0L9Kg=
+        b=P7SHmY/uXTjR5H7Nop+FVnHpzEOX+O9q+ZDmY+XOgSFxcvWScvfP88KHhfw/AeVEch
+         sKTeOOSs8RJ8IutzdF71+ZFw5gonC+I16J/SCKRd0DdO0NJP/W6LzWjZsGiSEl6bYkKu
+         JZ07gyog36mtm7H1KRRqxp3KNrNGsIVoByhDw=
 MIME-Version: 1.0
-In-Reply-To: <20090928171420.GA3643@redhat.com>
+In-Reply-To: <1254164034.9820.81.camel@marge.simson.net>
 References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
 	 <4ABC28DE.7050809@datenparkplatz.de>
 	 <20090925202636.GC15007@redhat.com>
 	 <4e5e476b0909271000u69d79346s27cccad219e49902@mail.gmail.com>
 	 <20090928145655.GB8192@redhat.com>
 	 <4e5e476b0909280835w3410d58aod93a29d1dcda8909@mail.gmail.com>
-	 <20090928171420.GA3643@redhat.com>
-Date: Tue, 29 Sep 2009 09:10:18 +0200
-Message-ID: <4e5e476b0909290010r264b980v9e96c3413cc59800@mail.gmail.com>
+	 <1254160274.9820.25.camel@marge.simson.net>
+	 <20090928181846.GC3643@redhat.com>
+	 <1254164034.9820.81.camel@marge.simson.net>
+Date: Tue, 29 Sep 2009 09:14:48 +0200
+Message-ID: <4e5e476b0909290014u1374e65an859528441373510f@mail.gmail.com>
 Subject: Re: IO scheduler based IO controller V10
 From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+To: Mike Galbraith <efault@gmx.de>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
        linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
        lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
@@ -47,190 +50,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-On Mon, Sep 28, 2009 at 7:14 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Mon, Sep 28, 2009 at 05:35:02PM +0200, Corrado Zoccolo wrote:
->> On Mon, Sep 28, 2009 at 4:56 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
->> > On Sun, Sep 27, 2009 at 07:00:08PM +0200, Corrado Zoccolo wrote:
->> >> Hi Vivek,
->> >> On Fri, Sep 25, 2009 at 10:26 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
->> >> > On Fri, Sep 25, 2009 at 04:20:14AM +0200, Ulrich Lukas wrote:
->> >> >> Vivek Goyal wrote:
->> >> >> > Notes:
->> >> >> > - With vanilla CFQ, random writers can overwhelm a random reader.
->> >> >> >   Bring down its throughput and bump up latencies significantly.
->> >> >>
->> >> >>
->> >> >> IIRC, with vanilla CFQ, sequential writing can overwhelm random readers,
->> >> >> too.
->> >> >>
->> >> >> I'm basing this assumption on the observations I made on both OpenSuse
->> >> >> 11.1 and Ubuntu 9.10 alpha6 which I described in my posting on LKML
->> >> >> titled: "Poor desktop responsiveness with background I/O-operations" of
->> >> >> 2009-09-20.
->> >> >> (Message ID: 4AB59CBB.8090907@datenparkplatz.de)
->> >> >>
->> >> >>
->> >> >> Thus, I'm posting this to show that your work is greatly appreciated,
->> >> >> given the rather disappointig status quo of Linux's fairness when it
->> >> >> comes to disk IO time.
->> >> >>
->> >> >> I hope that your efforts lead to a change in performance of current
->> >> >> userland applications, the sooner, the better.
->> >> >>
->> >> > [Please don't remove people from original CC list. I am putting them back.]
->> >> >
->> >> > Hi Ulrich,
->> >> >
->> >> > I quicky went through that mail thread and I tried following on my
->> >> > desktop.
->> >> >
->> >> > ##########################################
->> >> > dd if=/home/vgoyal/4G-file of=/dev/null &
->> >> > sleep 5
->> >> > time firefox
->> >> > # close firefox once gui pops up.
->> >> > ##########################################
->> >> >
->> >> > It was taking close to 1 minute 30 seconds to launch firefox and dd got
->> >> > following.
->> >> >
->> >> > 4294967296 bytes (4.3 GB) copied, 100.602 s, 42.7 MB/s
->> >> >
->> >> > (Results do vary across runs, especially if system is booted fresh. Don't
->> >> >  know why...).
->> >> >
->> >> >
->> >> > Then I tried putting both the applications in separate groups and assign
->> >> > them weights 200 each.
->> >> >
->> >> > ##########################################
->> >> > dd if=/home/vgoyal/4G-file of=/dev/null &
->> >> > echo $! > /cgroup/io/test1/tasks
->> >> > sleep 5
->> >> > echo $$ > /cgroup/io/test2/tasks
->> >> > time firefox
->> >> > # close firefox once gui pops up.
->> >> > ##########################################
->> >> >
->> >> > Now I firefox pops up in 27 seconds. So it cut down the time by 2/3.
->> >> >
->> >> > 4294967296 bytes (4.3 GB) copied, 84.6138 s, 50.8 MB/s
->> >> >
->> >> > Notice that throughput of dd also improved.
->> >> >
->> >> > I ran the block trace and noticed in many a cases firefox threads
->> >> > immediately preempted the "dd". Probably because it was a file system
->> >> > request. So in this case latency will arise from seek time.
->> >> >
->> >> > In some other cases, threads had to wait for up to 100ms because dd was
->> >> > not preempted. In this case latency will arise both from waiting on queue
->> >> > as well as seek time.
->> >>
->> >> I think cfq should already be doing something similar, i.e. giving
->> >> 100ms slices to firefox, that alternate with dd, unless:
->> >> * firefox is too seeky (in this case, the idle window will be too small)
->> >> * firefox has too much think time.
->> >>
->> >
->> Hi Vivek,
->> > Hi Corrado,
->> >
->> > "firefox" is the shell script to setup the environment and launch the
->> > broser. It seems to be a group of threads. Some of them run in parallel
->> > and some of these seems to be running one after the other (once previous
->> > process or threads finished).
->>
->> Ok.
->>
->> >
->> >> To rule out the first case, what happens if you run the test with your
->> >> "fairness for seeky processes" patch?
->> >
->> > I applied that patch and it helps a lot.
->> >
->> > http://lwn.net/Articles/341032/
->> >
->> > With above patchset applied, and fairness=1, firefox pops up in 27-28 seconds.
->>
->> Great.
->> Can you try the attached patch (on top of 2.6.31)?
->> It implements the alternative approach we discussed privately in july,
->> and it addresses the possible latency increase that could happen with
->> your patch.
->>
->> To summarize for everyone, we separate sync sequential queues, sync
->> seeky queues and async queues in three separate RR strucutres, and
->> alternate servicing requests between them.
->>
->> When servicing seeky queues (the ones that are usually penalized by
->> cfq, for which no fairness is usually provided), we do not idle
->> between them, but we do idle for the last queue (the idle can be
->> exited when any seeky queue has requests). This allows us to allocate
->> disk time globally for all seeky processes, and to reduce seeky
->> processes latencies.
->>
+Hi Mike,
+On Mon, Sep 28, 2009 at 8:53 PM, Mike Galbraith <efault@gmx.de> wrote:
+> On Mon, 2009-09-28 at 14:18 -0400, Vivek Goyal wrote:
+>> On Mon, Sep 28, 2009 at 07:51:14PM +0200, Mike Galbraith wrote:
 >
-> Ok, I seem to be doing same thing at group level (In group scheduling
-> patches). I do not idle on individual sync seeky queues but if this is
-> last queue in the group, then I do idle to make sure group does not loose
-> its fair share and exit from idle the moment there is any busy queue in
-> the group.
+>> I guess changing class to IDLE should have helped a bit as now this is
+>> equivalent to setting the quantum to 1 and after dispatching one request
+>> to disk, CFQ will always expire the writer once. So it might happen that
+>> by the the reader preempted writer, we have less number of requests in
+>> disk and lesser latency for this reader.
 >
-> So you seem to be grouping all the sync seeky queues system wide in a
-> single group. So all the sync seeky queues collectively get 100ms in a
-> single round of dispatch?
+> I expected SCHED_IDLE to be better than setting quantum to 1, because
+> max is quantum*4 if you aren't IDLE.  But that's not what happened.  I
+> just retested with all knobs set back to stock, fairness off, and
+> quantum set to 1 with everything running nice 0.  2.8 seconds avg :-/
 
-A round of dispatch (defined by tunable target_latency, default 300ms)
-is subdivided between the three groups, proportionally to how many
-queues are waiting in each, so if we have 1 sequential and 2 seeky
-(and 0 async), we get 100ms for seq and 200ms for seeky.
+Idle doesn't work very well for async writes, since the writer process
+will just send its writes to the page cache.
+The real writeback will happen in the context of a kernel thread, with
+best effort scheduling class.
 
-> I am wondering what happens if there are lot
-> of such sync seeky queues this 100ms time slice is consumed before all the
-> sync seeky queues got a chance to dispatch. Does that mean that some of
-> the queues can completely skip the one dispatch round?
-It can happen: if each seek costs 10ms, and you have more than 30
-seeky processes, then you are guaranteed that they cannot issue all in
-the same round.
-When this happens, the ones that did not issue before, will be the
-first ones to be issued in the next round.
+>
+>> > I saw
+>> > the reference to Vivek's patch, and gave it a shot.  Makes a large
+>> > difference.
+>> >                                                            Avg
+>> > perf stat     12.82     7.19     8.49     5.76     9.32    8.7     anticipatory
+>> >               16.24   175.82   154.38   228.97   147.16  144.5     noop
+>> >               43.23    57.39    96.13   148.25   180.09  105.0     deadline
+>> >                9.15    14.51     9.39    15.06     9.90   11.6     cfq fairness=0 dd=nice 0
+>> >               12.22     9.85    12.55     9.88    15.06   11.9     cfq fairness=0 dd=nice 19
+>> >                9.77    13.19    11.78    17.40     9.51   11.9     cfq fairness=0 dd=SCHED_IDLE
+>> >                4.59     2.74     4.70     3.45     4.69    4.0     cfq fairness=1 dd=nice 0
+>> >                3.79     4.66     2.66     5.15     3.03    3.8     cfq fairness=1 dd=nice 19
+>> >                2.79     4.73     2.79     4.02     2.50    3.3     cfq fairness=1 dd=SCHED_IDLE
+>> >
+>>
+>> Hmm.., looks like average latency went down only in  case of fairness=1
+>> and not in case of fairness=0. (Looking at previous mail, average vanilla
+>> cfq latencies were around 12 seconds).
+>
+> Yup.
+>
+>> Are you running all this in root group or have you put writers and readers
+>> into separate cgroups?
+>
+> No cgroups here.
+>
+>> If everything is running in root group, then I am curious why latency went
+>> down in case of fairness=1. The only thing fairness=1 parameter does is
+>> that it lets complete all the requests from previous queue before start
+>> dispatching from next queue. On top of this is valid only if no preemption
+>> took place. In your test case, konsole should preempt the writer so
+>> practically fairness=1 might not make much difference.
+>
+> fairness=1 very definitely makes a very large difference.  All of those
+> cfq numbers were logged in back to back runs.
+>
+>> In fact now Jens has committed a patch which achieves the similar effect as
+>> fairness=1 for async queues.
+>
+> Yeah, I was there yesterday.  I speculated that that would hurt my
+> reader, but rearranging things didn't help one bit.  Playing with merge,
+> I managed to give dd ~7% more throughput, and injured poor reader even
+> more.  (problem analysis via hammer/axe not always most effective;)
+>
+>> commit 5ad531db6e0f3c3c985666e83d3c1c4d53acccf9
+>> Author: Jens Axboe <jens.axboe@oracle.com>
+>> Date:   Fri Jul 3 12:57:48 2009 +0200
+>>
+>>     cfq-iosched: drain device queue before switching to a sync queue
+>>
+>>     To lessen the impact of async IO on sync IO, let the device drain of
+>>     any async IO in progress when switching to a sync cfqq that has idling
+>>     enabled.
+>>
+>>
+>> If everything is in separate cgroups, then we should have seen latency
+>> improvements in case of fairness=0 case also. I am little perplexed here..
+>>
+>> Thanks
+>> Vivek
+>
+>
 
 Thanks,
 Corrado
-
->
-> Thanks
-> Vivek
->
->> I tested with 'konsole -e exit', while doing a sequential write with
->> dd, and the start up time reduced from 37s to 7s, on an old laptop
->> disk.
->>
->> Thanks,
->> Corrado
->>
->> >
->> >> To rule out the first case, what happens if you run the test with your
->> >> "fairness for seeky processes" patch?
->> >
->> > I applied that patch and it helps a lot.
->> >
->> > http://lwn.net/Articles/341032/
->> >
->> > With above patchset applied, and fairness=1, firefox pops up in 27-28
->> > seconds.
->> >
->> > So it looks like if we don't disable idle window for seeky processes on
->> > hardware supporting command queuing, it helps in this particular case.
->> >
->> > Thanks
->> > Vivek
->> >
->
->
->
-
 
 
 -- 
