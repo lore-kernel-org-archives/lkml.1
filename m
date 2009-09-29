@@ -1,71 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZI2Avj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZI2Avo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbZI2Avj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 20:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbZI2Avi
+	id S1753916AbZI2Avo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 20:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZI2Avn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 20:51:38 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:49480 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753681AbZI2Avh (ORCPT
+	Mon, 28 Sep 2009 20:51:43 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:62553
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753725AbZI2Avk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 20:51:37 -0400
-Subject: Re: [Pv-drivers] [PATCH 2.6.31-rc9] net: VMware virtual Ethernet
-	NIC driver: vmxnet3
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Greg KH <greg@kroah.com>
-Cc: Shreyas Bhatewara <sbhatewara@vmware.com>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20090929002207.GB31372@kroah.com>
-References: <89E2752CFA8EC044846EB849981913410173CDFAF6@EXCH-MBX-4.vmware.com>
-	 <20090929002207.GB31372@kroah.com>
+	Mon, 28 Sep 2009 20:51:40 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjUBAA/3wEp8qN+D/2dsb2JhbAAI11uEHgU
+X-IronPort-AV: E=Sophos;i="4.44,469,1249228800"; 
+   d="scan'208";a="469269523"
+Subject: Re: [PATCH] atmel_spi: fix dma addr calculation for len >
+ BUFFER_SIZE
+From: Ben Nizette <bn@niasdigital.com>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: hskinnemoen@atmel.com, spi-devel-general@lists.sourceforge.net,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       kernel <kernel@avr32linux.org>, dbrownell@users.sourceforge.net
+In-Reply-To: <20090928091259.27485716@hskinnemoen-d830>
+References: <1254029187.7587.146.camel@ben-desktop>
+	 <20090928091259.27485716@hskinnemoen-d830>
 Content-Type: text/plain
-Organization: VMware INC.
-Date: Mon, 28 Sep 2009 17:51:39 -0700
-Message-Id: <1254185499.13456.40.camel@ank32.eng.vmware.com>
+Date: Tue, 29 Sep 2009 10:55:59 +1000
+Message-Id: <1254185759.7587.180.camel@ben-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-09-28 at 09:12 +0200, Haavard Skinnemoen wrote:
 
-On Mon, 2009-09-28 at 17:22 -0700, Greg KH wrote:
-> On Mon, Sep 28, 2009 at 04:56:45PM -0700, Shreyas Bhatewara wrote:
+> Wow, that is subtle. I had to stare at it for a long while before I
+> understood what's going on, but I believe you're right.
 
-> > The patch applies to 2.6.31-rc9.
+Prolly just means my changelog was crappy ;-)
+
 > 
-> 2.6.32-rc1 is out, you should rebase to it as a few tens of thousands of
-> changes have already happened since 2.6.31-rc9 :)
+> Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 > 
+> While you're at it, could you send another patch renaming 'len' to
+> 'next_len'? I think that would make it a bit more obvious why your
+> patch is correct and prevent similar mistakes in the future.
 
-Yep, we should rebase this, we will do that while incorporating the
-comments that we got from David, and any others that you think we should
-be making. 
+Good plan, below.
 
-As a side note, were there any changes in the networking API's, that we
-should look out for in the merge cycle ?
-If not I think the rebase should be pretty trivial.
-
-Thanks,
-Alok
-
-> thanks,
+Thx,
+	--Ben.
 > 
-> greg k-h
-> _______________________________________________
-> Pv-drivers mailing list
-> Pv-drivers@vmware.com
-> http://mailman2.vmware.com/mailman/listinfo/pv-drivers
+> Haavard
+
+---8<---
+
+From: Ben Nizette <bn@niasdigital.com>
+Subject: [PATCH] atmel_spi: make "len" variable name less ambiguous in dma addr calculation
+
+"[PATCH] atmel_spi: fix dma addr calculation for len > BUFFER_SIZE"
+fixed a bug where the "len" variable in atmel_spi_next_xfer_data() was
+taken to be the total number of bytes remaining in the transfer but it
+actually represents the number of bytes which will be sent this dma
+chunk.  While the 2 will be the same if there is less than 1 chunk to go
+(or if we aren't using a scratch buffer and therefore aren't breaking
+the transfers in to chunks), they won't be the same in general.
+
+s/len/next_len to reflect the true nature and usage of this variable.
+
+Signed-off-by: Ben Nizette <bn@niasdigital.com>
+---
+ drivers/spi/atmel_spi.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
+index 8ce70cb..5d94fca 100644
+--- a/drivers/spi/atmel_spi.c
++++ b/drivers/spi/atmel_spi.c
+@@ -185,28 +185,28 @@ static void atmel_spi_next_xfer_data(struct spi_master *master,
+ 				u32 *plen)
+ {
+ 	struct atmel_spi	*as = spi_master_get_devdata(master);
+-	u32			len = *plen;
++	u32			next_len = *plen;
+ 
+ 	/* use scratch buffer only when rx or tx data is unspecified */
+ 	if (xfer->rx_buf)
+ 		*rx_dma = xfer->rx_dma + xfer->len - *plen;
+ 	else {
+ 		*rx_dma = as->buffer_dma;
+-		if (len > BUFFER_SIZE)
+-			len = BUFFER_SIZE;
++		if (next_len > BUFFER_SIZE)
++			next_len = BUFFER_SIZE;
+ 	}
+ 	if (xfer->tx_buf)
+ 		*tx_dma = xfer->tx_dma + xfer->len - *plen;
+ 	else {
+ 		*tx_dma = as->buffer_dma;
+-		if (len > BUFFER_SIZE)
+-			len = BUFFER_SIZE;
+-		memset(as->buffer, 0, len);
++		if (next_len > BUFFER_SIZE)
++			next_len = BUFFER_SIZE;
++		memset(as->buffer, 0, next_len);
+ 		dma_sync_single_for_device(&as->pdev->dev,
+-				as->buffer_dma, len, DMA_TO_DEVICE);
++				as->buffer_dma, next_len, DMA_TO_DEVICE);
+ 	}
+ 
+-	*plen = len;
++	*plen = next_len;
+ }
+ 
+ /*
+-- 
+1.6.0.4
+
+
 
