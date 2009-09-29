@@ -1,143 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbZI2R4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZI2SGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753628AbZI2R4n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZI2R4m
+	id S1753376AbZI2SGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 14:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZI2SGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:56:42 -0400
-Received: from mail-pz0-f191.google.com ([209.85.222.191]:39111 "EHLO
-	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751609AbZI2R4l (ORCPT
+	Tue, 29 Sep 2009 14:06:18 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:40296 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753188AbZI2SGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:56:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=s/pPBP5JcGgX0YVxpUDk1ANoEStYljSF6h3TmHfnkOSWMxpi+6l/peaFlsG1IZbq9V
-         e38JuQcij17wiwQlndpD5FyaxvTA2BTjlHpTCXVcwrQuBzVPZ7ZM7QjuSkuO3Pdml0ZK
-         mHzD0bWpCgSIQcsUx3IdFhe5k4oFDt706BSt4=
-Message-ID: <4AC24A69.7050702@gmail.com>
-Date: Tue, 29 Sep 2009 10:56:57 -0700
-From: Bruce Jones <brucej97223@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 29 Sep 2009 14:06:17 -0400
+Date: Tue, 29 Sep 2009 11:05:37 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+Cc: linux-api@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
+Message-ID: <20090929180537.GD4625@us.ibm.com>
+References: <20090924165548.GA16586@us.ibm.com> <20090924170308.GH16989@us.ibm.com> <200909242343.59903.arnd@arndb.de> <20090925082346.GB4436@localdomain> <20090925105632.GG12824@hawkmoon.kerlabs.com>
 MIME-Version: 1.0
-To: gregkh@suse.de
-CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: comedi: adl_pci7432 coding style cleanup
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090925105632.GG12824@hawkmoon.kerlabs.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Correct coding style problems in this file.
+Ccing kosaki.motohiro@jp.fujitsu.com and linux-api on this thread.
 
-Signed-off-by: Bruce Jones <brucej@linux.com>
----
- drivers/staging/comedi/drivers/adl_pci7432.c |   32 ++++++++++++-------------
- 1 files changed, 15 insertions(+), 17 deletions(-)
+Louis Rilling [Louis.Rilling@kerlabs.com] wrote:
+| > It will very likely break ia64, which defines CONFIG_HAVE_ARCH_TRACEHOOK and
+| > already has sys_clone2().
+| 
+| -> sys_clone_ext() ?
+| 
+| Louis
 
-diff --git a/drivers/staging/comedi/drivers/adl_pci7432.c b/drivers/staging/comedi/drivers/adl_pci7432.c
-index e0844c6..b5a9499 100644
---- a/drivers/staging/comedi/drivers/adl_pci7432.c
-+++ b/drivers/staging/comedi/drivers/adl_pci7432.c
-@@ -90,8 +90,7 @@ static int adl_pci7432_attach(struct comedi_device *dev,
- 	struct comedi_subdevice *s;
- 	int bus, slot;
- 
--	printk("comedi: attempt to attach...\n");
--	printk("comedi%d: adl_pci7432\n", dev->minor);
-+	printk(KERN_INFO "comedi%d: attach adl_pci7432\n", dev->minor);
- 
- 	dev->board_name = "pci7432";
- 	bus = it->options[0];
-@@ -118,13 +117,13 @@ static int adl_pci7432_attach(struct comedi_device *dev,
- 			}
- 			devpriv->pci_dev = pcidev;
- 			if (comedi_pci_enable(pcidev, "adl_pci7432") < 0) {
--				printk
--				    ("comedi%d: Failed to enable PCI device and request regions\n",
-+				printk(KERN_ERR "comedi%d: Failed to enable PCI device and request regions\n",
- 				     dev->minor);
- 				return -EIO;
- 			}
- 			dev->iobase = pci_resource_start(pcidev, 2);
--			printk("comedi: base addr %4lx\n", dev->iobase);
-+			printk(KERN_INFO "comedi: base addr %4lx\n",
-+				dev->iobase);
- 
- 			s = dev->subdevices + 0;
- 			s->type = COMEDI_SUBD_DI;
-@@ -148,25 +147,24 @@ static int adl_pci7432_attach(struct comedi_device *dev,
- 			s->range_table = &range_digital;
- 			s->insn_bits = adl_pci7432_do_insn_bits;
- 
--			printk("comedi: attached\n");
--
-+			printk(KERN_DEBUG "comedi%d: adl_pci7432 attached\n",
-+				dev->minor);
- 			return 1;
- 		}
- 	}
- 
--	printk("comedi%d: no supported board found! (req. bus/slot : %d/%d)\n",
-+	printk(KERN_ERR "comedi%d: no supported board found! (req. bus/slot : %d/%d)\n",
- 	       dev->minor, bus, slot);
- 	return -EIO;
- }
- 
- static int adl_pci7432_detach(struct comedi_device *dev)
- {
--	printk("comedi%d: pci7432: remove\n", dev->minor);
-+	printk(KERN_INFO "comedi%d: pci7432: remove\n", dev->minor);
- 
- 	if (devpriv && devpriv->pci_dev) {
--		if (dev->iobase) {
-+		if (dev->iobase)
- 			comedi_pci_disable(devpriv->pci_dev);
--		}
- 		pci_dev_put(devpriv->pci_dev);
- 	}
- 
-@@ -178,8 +176,8 @@ static int adl_pci7432_do_insn_bits(struct comedi_device *dev,
- 				    struct comedi_insn *insn,
- 				    unsigned int *data)
- {
--	printk("comedi: pci7432_do_insn_bits called\n");
--	printk("comedi: data0: %8x data1: %8x\n", data[0], data[1]);
-+	printk(KERN_DEBUG "comedi: pci7432_do_insn_bits called\n");
-+	printk(KERN_DEBUG "comedi: data0: %8x data1: %8x\n", data[0], data[1]);
- 
- 	if (insn->n != 2)
- 		return -EINVAL;
-@@ -188,7 +186,7 @@ static int adl_pci7432_do_insn_bits(struct comedi_device *dev,
- 		s->state &= ~data[0];
- 		s->state |= (data[0] & data[1]);
- 
--		printk("comedi: out: %8x on iobase %4lx\n", s->state,
-+		printk(KERN_DEBUG "comedi: out: %8x on iobase %4lx\n", s->state,
- 		       dev->iobase + PCI7432_DO);
- 		outl(s->state & 0xffffffff, dev->iobase + PCI7432_DO);
- 	}
-@@ -200,14 +198,14 @@ static int adl_pci7432_di_insn_bits(struct comedi_device *dev,
- 				    struct comedi_insn *insn,
- 				    unsigned int *data)
- {
--	printk("comedi: pci7432_di_insn_bits called\n");
--	printk("comedi: data0: %8x data1: %8x\n", data[0], data[1]);
-+	printk(KERN_DEBUG "comedi: pci7432_di_insn_bits called\n");
-+	printk(KERN_DEBUG "comedi: data0: %8x data1: %8x\n", data[0], data[1]);
- 
- 	if (insn->n != 2)
- 		return -EINVAL;
- 
- 	data[1] = inl(dev->iobase + PCI7432_DI) & 0xffffffff;
--	printk("comedi: data1 %8x\n", data[1]);
-+	printk(KERN_DEBUG "comedi: data1 %8x\n", data[1]);
- 
- 	return 2;
- }
--- 
-1.6.5.rc2
+How about spelling out extended and calling it clone_extended() ?
+
+The other options I can think of are clone_with_pids() and clone3().
+
+Thanks for your feedback.
+
+Sukadev
