@@ -1,128 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbZI2RSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbZI2RSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238AbZI2RSJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZI2RSH
+	id S1753406AbZI2RSK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZI2RSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:18:07 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:25661 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752302AbZI2RSG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:18:06 -0400
-Date: Tue, 29 Sep 2009 10:17:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ecryptfs-devel@lists.launchpad.net,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH -mmotm] ecryptfs: depends on CRYPTO
-Message-Id: <20090929101725.a225d382.randy.dunlap@oracle.com>
-In-Reply-To: <4AC23F27.20804@linux.vnet.ibm.com>
-References: <200909252158.n8PLwFhG024011@imap1.linux-foundation.org>
-	<20090928133420.f53a015f.randy.dunlap@oracle.com>
-	<4AC15058.8020709@linux.vnet.ibm.com>
-	<20090928172024.9f944f16.randy.dunlap@oracle.com>
-	<4AC23F27.20804@linux.vnet.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Sep 2009 13:18:09 -0400
+Received: from ozlabs.org ([203.10.76.45]:59215 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752896AbZI2RSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 13:18:08 -0400
+To: linux-kernel@vger.kernel.org
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Wed, 30 Sep 2009 02:48:09 +0930
+Subject: [PATCH 1/4] virtio_blk: deprecate the 1024-byte ID field.
+Cc: john cooper <john.cooper@redhat.com>,
+       virtualization@lists.linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt014.oracle.com [141.146.116.23]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4AC24128.0056:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200909300248.09630.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Sep 2009 12:08:55 -0500 Tyler Hicks wrote:
 
-> On 09/28/2009 07:20 PM, Randy Dunlap wrote:
-> > On Mon, 28 Sep 2009 19:10:00 -0500 Tyler Hicks wrote:
-> > 
-> >> On 09/28/2009 03:34 PM, Randy Dunlap wrote:
-> >>> From: Randy Dunlap <randy.dunlap@oracle.com>
-> >>>
-> >>> ecryptfs uses crypto APIs so it should depend on CRYPTO.
-> >>> Otherwise many build errors occur. [63 lines not pasted]
-> >>>
-> >>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> >>> ---
-> >>>  fs/ecryptfs/Kconfig |    2 +-
-> >>>  1 file changed, 1 insertion(+), 1 deletion(-)
-> >>>
-> >>> --- mmotm-2009-0925-1435.orig/fs/ecryptfs/Kconfig
-> >>> +++ mmotm-2009-0925-1435/fs/ecryptfs/Kconfig
-> >>> @@ -1,6 +1,6 @@
-> >>>  config ECRYPT_FS
-> >>>  	tristate "eCrypt filesystem layer support (EXPERIMENTAL)"
-> >>> -	depends on EXPERIMENTAL && KEYS && NET
-> >>> +	depends on EXPERIMENTAL && KEYS && NET && CRYPTO
-> >>>  	select CRYPTO_ECB
-> >>>  	select CRYPTO_CBC
-> >>>  	help
-> >>
-> >> Hi Randy - Thanks for the patch!  Unfortunately, I think it defeats what
-> >> Dave Hansen was wanting to do with commit
-> >> 382684984e93039a3bbd83b04d341b0ceb831519.
-> >>
-> >> When I pulled that patch in, I was under the assumption that the select
-> >> would also select all necessary dependencies.  According to
-> >> Documentation/kbuild/kconfig-language.txt, that's not the case:
-> >>
-> >> 	select should be used with care. select will force
-> >> 	a symbol to a value without visiting the dependencies.
-> >>         By abusing select you are able to select a symbol FOO even
-> >>         if FOO depends on BAR that is not set.
-> >>
-> >> Maybe we should do it how other folks are tackling this problem and
-> >> select CRYPTO, along with CRYPTO_ECB and CRYPTO_CBC.  While we're at it,
-> >> we should probably throw in CRYPTO_AES (aes-128 is the default cipher,
-> >> but the cipher is configurable at mount so it might be too obtrusive for
-> >> us to select it) and CRYPTO_MD5 (our default hash alg, not currently
-> >> configurable).  Also, we don't depend on NET anymore because our netlink
-> >> interface is no longer around.  It may not hurt to select KEYS, rather
-> >> than depend on it.  Does all of this sound sane to you?
-> > 
-> > It selects too much stuff.  "select" should not be used to enable
-> > a full subsystem (that's my general rule, not in kconfig-language.txt).
-> > What kconfig-language.txt says that applies here is just after your
-> > quoted text:
-> > 
-> > 	In general use select only for non-visible symbols
-> > 	(no prompts anywhere) and for symbols with no dependencies.
-> > 	That will limit the usefulness but on the other hand avoid
-> > 	the illegal configurations all over.
-> > 
-> > CRYPTO does not fit that.
-> > 
-> > One of the big problems with selecting kconfig symbols (like subsystem
-> > ones) is that it makes it difficult to disable that symbol, which some
-> > of us often want to do.
-> > 
-> > 
-> > ---
-> > ~Randy
-> 
-> eCryptfs wouldn't be the first to select CRYPTO:
-> 
-> $ grep -r "select CRYPTO$" --include=Kconfig . | wc -l
-> 26
+PCI, lguest and s390 can all only support 256-byte configuration
+space.  So, this giant field broke just about everyone.
+Unfortunately, removing it is not so simple: we don't want to break
+old userspace, but we're going to want to re-use that part of the
+struct.
 
-Yes, I realize that.  and INPUT is selected to much also.  :(
+So, modern users can #define VIRTIO_BLK_IDENTIFY_DEPRECATED to indicate
+that they know it's no longer in the config struct, and can use any
+new features (all new features which add a configuration field will
+conflict with this deprecated one).
 
-
-> But after trying to deselect CRYPTO with one of my custom configs, I
-> realized that you are right. :)  Depending on CRYPTO and then selecting
-> the proper CRYPTO_* symbols is the way to go.
-> 
-> Applied to
-> git://git.kernel.org/pub/scm/linux/kernel/git/ecryptfs/ecryptfs-2.6.git#next
-> 
-> Thanks again!
-
-Thanks, glad that you tried the experiment.
-
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
-~Randy
+ drivers/block/virtio_blk.c |   20 ++++++++++++++++++--
+ include/linux/virtio_blk.h |   10 +++++++++-
+ 2 files changed, 27 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
+--- a/drivers/block/virtio_blk.c
++++ b/drivers/block/virtio_blk.c
+@@ -1,4 +1,6 @@
+ //#define DEBUG
++/* We want to see new fields: we use our own struct if we fall back to this */
++#define VIRTIO_BLK_IDENTIFY_DEPRECATED
+ #include <linux/spinlock.h>
+ #include <linux/blkdev.h>
+ #include <linux/hdreg.h>
+@@ -183,8 +185,22 @@ static void do_virtblk_request(struct re
+ 		vblk->vq->vq_ops->kick(vblk->vq);
+ }
+ 
+-/* return ATA identify data
++/* return ATA identify data: deprecated
+  */
++struct virtio_blk_config_deprecated {
++	/* The capacity (in 512-byte sectors). */
++	__u64 capacity;
++	/* The maximum segment size (if VIRTIO_BLK_F_SIZE_MAX) */
++	__u32 size_max;
++	/* The maximum number of segments (if VIRTIO_BLK_F_SEG_MAX) */
++	__u32 seg_max;
++	/* geometry the device (if VIRTIO_BLK_F_GEOMETRY) */
++	struct virtio_blk_geometry geometry;
++	/* block size of device (if VIRTIO_BLK_F_BLK_SIZE) */
++	__u32 blk_size;
++	__u8 identify[VIRTIO_BLK_ID_BYTES];
++} __attribute__((packed));
++
+ static int virtblk_identify(struct gendisk *disk, void *argp)
+ {
+ 	struct virtio_blk *vblk = disk->private_data;
+@@ -196,7 +212,7 @@ static int virtblk_identify(struct gendi
+ 		goto out;
+ 
+ 	err = virtio_config_buf(vblk->vdev, VIRTIO_BLK_F_IDENTIFY,
+-		offsetof(struct virtio_blk_config, identify), opaque,
++		offsetof(struct virtio_blk_config_deprecated, identify), opaque,
+ 		VIRTIO_BLK_ID_BYTES);
+ 
+ 	if (err)
+diff --git a/include/linux/virtio_blk.h b/include/linux/virtio_blk.h
+--- a/include/linux/virtio_blk.h
++++ b/include/linux/virtio_blk.h
+@@ -13,7 +13,7 @@
+ #define VIRTIO_BLK_F_RO		5	/* Disk is read-only */
+ #define VIRTIO_BLK_F_BLK_SIZE	6	/* Block size of disk is available*/
+ #define VIRTIO_BLK_F_SCSI	7	/* Supports scsi command passthru */
+-#define VIRTIO_BLK_F_IDENTIFY	8	/* ATA IDENTIFY supported */
++#define VIRTIO_BLK_F_IDENTIFY	8	/* ATA IDENTIFY support (deprecated) */
+ #define VIRTIO_BLK_F_FLUSH	9	/* Cache flush command support */
+ 
+ #define VIRTIO_BLK_ID_BYTES	(sizeof(__u16[256]))	/* IDENTIFY DATA */
+@@ -33,7 +33,15 @@ struct virtio_blk_config {
+ 	} geometry;
+ 	/* block size of device (if VIRTIO_BLK_F_BLK_SIZE) */
+ 	__u32 blk_size;
++#ifndef VIRTIO_BLK_IDENTIFY_DEPRECATED
++	/*
++	 * New code shouldn't use this, but it's under the #ifndef so old
++	 * userspace doesn't break.
++	 */
+ 	__u8 identify[VIRTIO_BLK_ID_BYTES];
++#else
++	/* New fields go here: (all new extensions conflict with F_IDENTIFY) */
++#endif
+ } __attribute__((packed));
+ 
+ /*
+
