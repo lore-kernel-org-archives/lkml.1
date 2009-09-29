@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZI2Pxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZI2P4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260AbZI2Pxk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 11:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZI2Pxj
+	id S1753304AbZI2P4a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 11:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZI2P4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 11:53:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:47933 "EHLO mx1.redhat.com"
+	Tue, 29 Sep 2009 11:56:30 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:56820 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752830AbZI2Pxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 11:53:38 -0400
-Message-ID: <4AC22D00.5010406@redhat.com>
-Date: Tue, 29 Sep 2009 05:51:28 -1000
-From: Zachary Amsden <zamsden@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH v2: kvm 4/4] Fix hotplug of CPUs for KVM.
-References: <1254197072-889-1-git-send-email-zamsden@redhat.com> <1254197072-889-2-git-send-email-zamsden@redhat.com> <1254197072-889-3-git-send-email-zamsden@redhat.com> <1254197072-889-4-git-send-email-zamsden@redhat.com> <1254197072-889-5-git-send-email-zamsden@redhat.com> <4AC1C59F.6010703@redhat.com>
-In-Reply-To: <4AC1C59F.6010703@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751901AbZI2P43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 11:56:29 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.LFD.2.01.0909280743310.3349@localhost.localdomain>
+References: <alpine.LFD.2.01.0909280743310.3349@localhost.localdomain> <20090928135332.4300.56046.stgit@warthog.procyon.org.uk> <20090928151628.62955233@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dhowells@redhat.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove pty_ops_bsd and pty_bsd_ioctl() as they're not used
+Date: Tue, 29 Sep 2009 16:55:45 +0100
+Message-ID: <395.1254239745@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/28/2009 10:30 PM, Avi Kivity wrote:
-> On 09/29/2009 06:04 AM, Zachary Amsden wrote:
->> Both VMX and SVM require per-cpu memory allocation, which is done at 
->> module
->> init time, for only online cpus.
->>
->> Backend was not allocating enough structure for all possible CPUs, so
->> new CPUs coming online could not be hardware enabled.
->>
->> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
->> index e27b7a9..2cd8bc2 100644
->> --- a/virt/kvm/kvm_main.c
->> +++ b/virt/kvm/kvm_main.c
->> @@ -1716,9 +1716,6 @@ static int kvm_cpu_hotplug(struct 
->> notifier_block *notifier, unsigned long val,
->>   {
->>       int cpu = (long)v;
->>
->> -    if (!kvm_usage_count)
->> -        return NOTIFY_OK;
->> -
->>       val&= ~CPU_TASKS_FROZEN;
->>       switch (val) {
->>       case CPU_DYING:
->
-> I still don't see how this bit can work.  Maybe if we move the 
-> notification registration to the point where kvm_usage_count is bumped.
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-That was stray junk in the patch.  Let me rediff...
+>  
+>  	pty_slave_driver->owner = THIS_MODULE;
+>  	pty_slave_driver->driver_name = "pty_slave";
+> @@ -399,7 +387,7 @@ static void __init legacy_pty_init(void)
+>  	pty_slave_driver->flags = TTY_DRIVER_RESET_TERMIOS |
+>  					TTY_DRIVER_REAL_RAW;
+>  	pty_slave_driver->other = pty_driver;
+> -	tty_set_operations(pty_slave_driver, &pty_ops);
+> +	tty_set_operations(pty_slave_driver, &pty_ops_bsd);
+>  
+>  	if (tty_register_driver(pty_driver))
+>  		panic("Couldn't register pty driver");
+> 
 
+Is it right to use pty_ops_bsd in _both_ places?  Looking at the code in
+linux-2.6.0, the BSD ioctl only applies to the master and doesn't apply to the
+slave.
+
+David
