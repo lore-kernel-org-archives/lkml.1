@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZI2Pdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbZI2PlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbZI2Pdh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 11:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZI2Pdf
+	id S1753324AbZI2PlB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 11:41:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZI2PlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 11:33:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39463 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753110AbZI2Pde (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 11:33:34 -0400
-Date: Tue, 29 Sep 2009 08:33:22 -0700
-From: Greg KH <greg@kroah.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       sfr@canb.auug.org.au, akpm@linux-foundation.org, rientjes@google.com
-Subject: Re: [PATCH] linux-next: 20090929 - android driver build breaks
-Message-ID: <20090929153322.GD5020@kroah.com>
-References: <20090929140404.dfb2c5f5.sfr@canb.auug.org.au> <20090929152027.GC4373@linux.vnet.ibm.com>
+	Tue, 29 Sep 2009 11:41:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:12279 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753255AbZI2PlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 11:41:00 -0400
+Date: Tue, 29 Sep 2009 17:36:31 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Evgeny Polyakov <johnpol@2ka.mipt.ru>,
+       Scott James Remnant <scott@ubuntu.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Matt Helsley <matthltc@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH] connector: Fix sid connector (was: Badness at
+	kernel/softirq.c:143...)
+Message-ID: <20090929153631.GA12699@redhat.com>
+References: <200909251123.03482.borntraeger@de.ibm.com> <fbbbe0a028fa.4ac1f1c0@2ka.mipt.ru> <20090929132415.GB4538@redhat.com> <200909291547.21528.borntraeger@de.ibm.com> <20090929140718.GA23858@ioremap.net> <20090929142538.GA10180@redhat.com> <20090929145413.GA26327@ioremap.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090929152027.GC4373@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090929145413.GA26327@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 08:50:27PM +0530, Kamalesh Babulal wrote:
-> Hi Greg,
-> 
-> 	next-20090929 randconfig build breaks with
-> CONFIG_ANDROID_LOW_MEMORY_KILLER=y
-> 
-> drivers/staging/android/lowmemorykiller.c: In function 'lowmem_shrink':
-> drivers/staging/android/lowmemorykiller.c:111: error: 'struct mm_struct' has no member named 'oom_adj'
-> make[3]: *** [drivers/staging/android/lowmemorykiller.o] Error 1
-> 
-> Commit 0753ba01e126020bf0f8150934903b48935b697d was reverted back,
-> which moves back oom_adj from mm_struct to task_struct and commit 
-> 28b83c5193e7ab951e402252278f2cc79dc4d298 moved the oomkilladj
-> from task_struct to signal_struct. 
-> 
-> Following patch reverts the changes introduced by commit 
-> a6a9f81ccc9f5c86ccc22bbed1960a57d0316e8b to
-> drivers/staging/android/lowmemorykiller.c 
+On 09/29, Evgeniy Polyakov wrote:
+>
+> On Tue, Sep 29, 2009 at 04:25:38PM +0200, Oleg Nesterov (oleg@redhat.com) wrote:
+> > > --- a/kernel/sys.c
+> > > +++ b/kernel/sys.c
+> > > @@ -1090,6 +1090,7 @@ SYSCALL_DEFINE0(setsid)
+> > >  	struct pid *sid = task_pid(group_leader);
+> > >  	pid_t session = pid_vnr(sid);
+> > >  	int err = -EPERM;
+> > > +	int send_cn = 0;
+> > >
+> > >  	write_lock_irq(&tasklist_lock);
+> > >  	/* Fail if I am already a session leader */
+> > > @@ -1104,12 +1105,18 @@ SYSCALL_DEFINE0(setsid)
+> > >
+> > >  	group_leader->signal->leader = 1;
+> > >  	__set_special_pids(sid);
+> > > +	if (task_session(group_leader) != sid)
+> > > +		send_cn = 1;
+> >
+> > This is not right, task_session(group_leader) must be == sid after
+> > __set_special_pids().
+>
+> Yeah, that check should be done before __set_special_pids().
+>
+> > And I don't think "int send_cn" is needed. sys_setsid() must not
+> > succeed if the caller lived in session == task_pid(group_leader).
+>
+> Doesn't it only check pgid while patch intention was to send
+> notification about sid?
 
-Ick, what a mess.  I'll queue this up, thanks.
+If the proposed sid already was the session id, then prgp shouldn't
+be empty.
 
-greg k-h
+but this doesn't really matter, we also check ->signal->leader
+(not sure, but afaics this check is not strictly necessary because
+ of PIDTYPE_PGID check)
+
+> I.e. setsid() succeeds, although nothing
+> happens.
+
+This shouldn't happen, or sys_setsid() is buggy. Look, the new session
+id is task_pid(current). If sys_setsid() succeeds but we don't change
+the session, this means we were already the leader. In that case we
+should return -EPERM.
+
+Oleg.
+
