@@ -1,115 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZI2T3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZI2Ti2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbZI2T3f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 15:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZI2T3e
+	id S1753979AbZI2Ti2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 15:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZI2Ti1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 15:29:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57903 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753731AbZI2T3d (ORCPT
+	Tue, 29 Sep 2009 15:38:27 -0400
+Received: from mastodon.hardc0re.org.uk ([77.240.12.146]:52240 "EHLO
+	mastodon.hardc0re.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbZI2Ti1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 15:29:33 -0400
-Date: Tue, 29 Sep 2009 12:29:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haavard.skinnemoen@atmel.com, kernel@avr32linux.org,
-       nicolas.ferre@atmel.com
-Subject: Re: [PATCH 1/2] atmel-mci: change use of dma slave interface
-Message-Id: <20090929122928.f5fea29b.akpm@linux-foundation.org>
-In-Reply-To: <1253204967-30010-2-git-send-email-nicolas.ferre@atmel.com>
-References: <1253204967-30010-1-git-send-email-nicolas.ferre@atmel.com>
-	<1253204967-30010-2-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Sep 2009 15:38:27 -0400
+X-Greylist: delayed 490 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Sep 2009 15:38:27 EDT
+Message-ID: <4AC2604C.2060803@hardc0re.org.uk>
+Date: Tue, 29 Sep 2009 20:30:20 +0100
+From: Chris M <chrisfu@hardc0re.org.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: VIA VT6330 PCI-E Combo Controller not fully supported
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Sep 2009 18:29:26 +0200
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+Hi everyone!  I'll quickly introduce myself before I get to the crux of 
+my reason for posting to the mailing list.  My name is Chris Merrett and 
+although I'm not a subscriber to the list (my mail server would likely 
+cry), I check a well-known archive quite regularly just to try and keep 
+on top of developments in the community.
 
-> Allow the use of another DMA controller driver in atmel-mci sd/mmc driver. This
-> adds a generic dma_slave pointer to the mci platform structure where we can
-> store DMA controller information. In atmel-mci we use information provided by
-> this structure to initialize the driver (with new helper functions that are
-> architecture dependant).
-> This also adds at32/avr32 chip modifications to cope with this new access
-> method.
-> 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
->  arch/avr32/mach-at32ap/at32ap700x.c |    6 ++-
->  drivers/mmc/host/atmel-mci.c        |   82 ++++++++++++++++++++++++++---------
->  include/linux/atmel-mci.h           |    3 +-
->  3 files changed, 68 insertions(+), 23 deletions(-)
-> 
-> diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
-> index eb9d4dc..d1fe145 100644
-> --- a/arch/avr32/mach-at32ap/at32ap700x.c
-> +++ b/arch/avr32/mach-at32ap/at32ap700x.c
-> @@ -1320,7 +1320,7 @@ struct platform_device *__init
->  at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
->  {
->  	struct platform_device		*pdev;
-> -	struct dw_dma_slave		*dws = &data->dma_slave;
-> +	struct dw_dma_slave		*dws;
->  	u32				pioa_mask;
->  	u32				piob_mask;
->  
-> @@ -1339,6 +1339,8 @@ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
->  				ARRAY_SIZE(atmel_mci0_resource)))
->  		goto fail;
->  
-> +	dws = kzalloc(sizeof(struct dw_dma_slave), GFP_KERNEL);
+The reason I'm mailing is due to a partially-supported VIA chip present 
+on a small handful of motherboards currently on sale.  I mailed the 
+maintainer (Jeff Garzik) to bring this to his attention quite some time 
+ago, but I'd imagine he's not found the time to reply to me yet which is 
+understandable.  I figured that it'd be a good idea to make a post here 
+with the info I've gathered, so that people affected by this same issue 
+are aware that this particular chip isn't yet fully supported in the kernel.
 
-I don't see anywhere where this gets freed again?
+The VT6330 is a combo controller chip that handles both Firewire and 
+PATA, and is present on my Asrock N7AD-SLI.  I'm also aware of it being 
+present on other Asrock boards, and presumably other boards from 
+different manufacturers.  The Firewire functionality is supported 
+perfectly and without issue, but unfortunately the PATA support is 
+lacking at the moment.  VIA have some information on this at the 
+following URL: http://www.via.com.tw/en/products/peripherals/1394/vt6330/
 
->  	dws->dma_dev = &dw_dmac0_device.dev;
->  	dws->reg_width = DW_DMA_SLAVE_WIDTH_32BIT;
->  	dws->cfg_hi = (DWC_CFGH_SRC_PER(0)
-> @@ -1346,6 +1348,8 @@ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
->  	dws->cfg_lo &= ~(DWC_CFGL_HS_DST_POL
->  				| DWC_CFGL_HS_SRC_POL);
->  
-> +	data->dma_slave = dws;
-> +
->  	if (platform_device_add_data(pdev, data,
->  				sizeof(struct mci_platform_data)))
->  		goto fail;
-> diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-> index 065fa81..1689396 100644
-> --- a/drivers/mmc/host/atmel-mci.c
-> +++ b/drivers/mmc/host/atmel-mci.c
-> @@ -1575,16 +1575,71 @@ static void __exit atmci_cleanup_slot(struct atmel_mci_slot *slot,
->  }
->  
->  #ifdef CONFIG_MMC_ATMELMCI_DMA
-> -static bool filter(struct dma_chan *chan, void *slave)
-> +static struct device *find_slave_dev(void *slave)
-> +{
-> +	if (!slave)
-> +		return NULL;
-> +
-> +	if (cpu_is_at32ap7000())
-> +		return ((struct dw_dma_slave *)slave)->dma_dev;
-> +	else
-> +		return ((struct at_dma_slave *)slave)->dma_dev;
-> +}
+ From the info on the URL above, it appears that the PATA functionality 
+is identical to that of the VT6415 PATA controller, support for which 
+was added in 2.6.28.  The mailing list post made regarding the patch 
+that was submitted can be found here: 
+http://lkml.indiana.edu/hypermail/linux/kernel/0902.2/01428.html
 
-Quite a few unsafeish typecasts here.
+Finally, some relevant output from lshw:
 
->  struct mci_platform_data {
-> -	struct dw_dma_slave	dma_slave;
-> +	void			*dma_slave;
->  	struct mci_slot_pdata	slot[ATMEL_MCI_MAX_NR_SLOTS];
->  };
+           *-firewire
+                description: FireWire (IEEE 1394)
+                product: VIA Technologies, Inc.
+                vendor: VIA Technologies, Inc.
+                physical id: 0
+                bus info: pci@0000:01:00.0
+                version: 00
+                width: 64 bits
+                clock: 33MHz
+                capabilities: pm msi pciexpress bus_master cap_list
+                configuration: driver=ohci1394 latency=0 module=ohci1394
+           *-ide UNCLAIMED
+                description: IDE interface
+                product: PATA IDE Host Controller
+                vendor: VIA Technologies, Inc.
+                physical id: 0.1
+                bus info: pci@0000:01:00.1
+                version: a0
+                width: 32 bits
+                clock: 33MHz
+                capabilities: ide pm msi pciexpress cap_list
+                configuration: latency=0
 
-I think the code would come out better if this has type dw_dma_slave*.
+I'm going to get my hands dirty and have a try at fixing it myself one 
+evening this week, so if I have any luck (which I'll no doubt need) I'll 
+be sure to reply soon.
 
-You'll still need typecasts to support the dma_request_channel()
-callback, but the code will be safer and cleaner, I expect.
+Warmest regards to everyone,
 
+Chris Merrett
+
+****
