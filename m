@@ -1,76 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZI2Jbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbZI2JoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbZI2Jbl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 05:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZI2Jbk
+	id S1753770AbZI2JoK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 05:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZI2JoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 05:31:40 -0400
-Received: from mail-pz0-f191.google.com ([209.85.222.191]:64816 "EHLO
-	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753736AbZI2Jbk convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 05:44:10 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:44580 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408AbZI2JoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 05:31:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wwFHH2ZIXCxH/dlmYbBCPmhKnRTIExszq5P2aNHAQYFJY3s6o3ijnhd+7/8KJOrhXU
-         5pKXxbIvdA8vGlFcI021jChlb6hWc81iExdUCdjWhir0zmrFpymtdi+PpXOI7AToRdLm
-         hd5nmrwHInRmXJTEo58LsbDiP/K1TNd8b9b2o=
+	Tue, 29 Sep 2009 05:44:09 -0400
+Date: Tue, 29 Sep 2009 10:44:42 +0100
+From: Matt Fleming <matt@console-pimps.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH] tracing: Fix infinite loop in ftrace_update_pid_func()
+Message-ID: <20090929094442.GA6934@console-pimps.org>
+References: <1254152581-18347-1-git-send-email-matt@console-pimps.org> <20090929092245.GA5057@nowhere>
 MIME-Version: 1.0
-In-Reply-To: <20090929072454.GA11414@elte.hu>
-References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com>
-	 <2674af740909270127s464a3cb2xef5e7f4cd61b0eb7@mail.gmail.com>
-	 <20090929072454.GA11414@elte.hu>
-Date: Tue, 29 Sep 2009 17:31:43 +0800
-Message-ID: <2674af740909290231m5af0fbc6t5fba0b127c63bd9f@mail.gmail.com>
-Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 
-	hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 
-	__sysdev_resume+0xc3/0xe0()
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, clemens@ladisch.de,
-       venkatesh.pallipadi@intel.com, gregkh@suse.de
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090929092245.GA5057@nowhere>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 3:24 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yong Zhang <yong.zhang0@gmail.com> wrote:
->
->> On Sun, Sep 27, 2009 at 4:05 PM, Maciej Rutecki
->> <maciej.rutecki@gmail.com> wrote:
->> > Kernel: 2.6.31-git17
->> >
->> > During suspend to disk & resume I got it in dmesg:
->> >
->> > [  587.940010] ------------[ cut here ]------------
->> > [  587.940010] WARNING: at kernel/hrtimer.c:648 hres_timers_resume+0x40/0x50()
->> > [  587.940010] Hardware name: HP Compaq nx6310 (EY501ES#AKD)
->> > [  587.940010] hres_timers_resume() called with IRQs enabled!
->> > [  587.940010] Modules linked in: btusb i915 drm_kms_helper drm
->
-> Could you try this with .32-rc1? This commit should have fixed the
-> message above:
->
-> 89133f9: clocksource: Resume clocksource without taking the clocksource mutex
->
+On Tue, Sep 29, 2009 at 11:22:47AM +0200, Frederic Weisbecker wrote:
+> On Mon, Sep 28, 2009 at 04:43:01PM +0100, Matt Fleming wrote:
+> > From: Matt Fleming <matthew.fleming@imgtec.com>
+> > 
+> > When CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST is enabled
+> > __ftrace_trace_function contains the current trace function, not
+> > ftrace_trace_function. In ftrace_update_pid_func() we currently
+> > incorrectly assign the value of ftrace_trace_function to
+> > __ftrace_trace_funcion before returning.
+> > 
+> > Without this patch it is possible to execute an infinite loop whereby
+> > ftrace_test_stop_func() calls __ftrace_trace_function, which was
+> > assigned ftrace_test_stop_func() in ftrace_update_pid_func().
+> > 
+> > Signed-off-by: Matt Fleming <matthew.fleming@imgtec.com>
+> > ---
+> >  kernel/trace/ftrace.c |    4 ++++
+> >  1 files changed, 4 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> > index 25edd5c..d9ba6d9 100644
+> > --- a/kernel/trace/ftrace.c
+> > +++ b/kernel/trace/ftrace.c
+> > @@ -225,7 +225,11 @@ static void ftrace_update_pid_func(void)
+> >  	if (ftrace_trace_function == ftrace_stub)
+> >  		return;
+> >  
+> > +#ifdef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
+> >  	func = ftrace_trace_function;
+> > +#else
+> > +	func = __ftrace_trace_function;
+> > +#endif
+> 
+> 
+> 
+> I don't understand how it can do that infinite loop.
+> It doesn't seem the following can happen:
+> 
+> func = ftrace_trace_function  //which is ftrace_test_stop_func
+> 
+> _ftrace_trace_function = func
+> 
 
-Hi Ingo,
+Here is the unpatched version of ftrace_update_pid_func() from
+kernel/trace/ftrace.c
 
-Indeed, Maciej said this issue is gone with .32-rc1. But I don't think
-this is the same
-issue with 89133f9 because in this one timekeeping_resume() is called
-with irq enabled.
-This is very odd and the bug exists in other parts.
+Before calling:
+       ftrace_trace_function = ftrace_test_stop_func
+       __ftrace_trace_Function = real tracing function
 
-Thanks,
-Yong
+static void ftrace_update_pid_func(void)
+{
+	ftrace_func_t func;
 
->        Ingo
->
+	if (ftrace_trace_function == ftrace_stub)
+		return;
+
+	func = ftrace_trace_function;
+
+	if (ftrace_pid_trace) {
+		set_ftrace_pid_function(func);
+		func = ftrace_pid_func;
+	} else {
+		if (func == ftrace_pid_func)
+			func = ftrace_pid_function;
+	}
+
+#ifdef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
+	ftrace_trace_function = func;
+#else
+	__ftrace_trace_function = func;
+#endif
+}
+
+After calling:
+      ftrace_trace_function = ftrace_test_stop_func
+      __ftrace_trace_function = ftrace_test_stop_func
+
+
+Then look what happens next time ftrace_test_stop_func() is called via
+ftrace_call,
+
+#ifndef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
+/*
+ * For those archs that do not test ftrace_trace_stop in their
+ * mcount call site, we need to do it from C.
+ */
+static void ftrace_test_stop_func(unsigned long ip, unsigned long parent_ip)
+{
+	if (function_trace_stop)
+		return;
+
+	__ftrace_trace_function(ip, parent_ip);
+}
+#endif
+
+Here we're going to recurse infinitely because,
+     __ftrace_trace_function = ftrace_test_stop_func
+
