@@ -1,101 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbZI2PNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZI2PUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752920AbZI2PNA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 11:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZI2PM7
+	id S1752961AbZI2PUa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 11:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZI2PU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 11:12:59 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:47527 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbZI2PM5 (ORCPT
+	Tue, 29 Sep 2009 11:20:29 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:52779 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbZI2PU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 11:12:57 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Organization: IBM
-To: Oleg Nesterov <oleg@redhat.com>, Scott James Remnant <scott@ubuntu.com>
-Subject: Re: [PATCH] connector: Fix sid connector (was: Badness at kernel/softirq.c:143...)
-Date: Tue, 29 Sep 2009 17:12:33 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-release; KDE/4.3.1; i686; ; )
-Cc: Evgeniy Polyakov <zbr@ioremap.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Matt Helsley <matthltc@us.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-References: <200909251123.03482.borntraeger@de.ibm.com> <20090929142538.GA10180@redhat.com> <20090929144554.GA10937@redhat.com>
-In-Reply-To: <20090929144554.GA10937@redhat.com>
+	Tue, 29 Sep 2009 11:20:28 -0400
+Date: Tue, 29 Sep 2009 20:50:27 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: gregkh@suse.de
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sfr@canb.auug.org.au, akpm@linux-foundation.org, rientjes@google.com
+Subject: [PATCH] linux-next: 20090929 - android driver build breaks
+Message-ID: <20090929152027.GC4373@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20090929140404.dfb2c5f5.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909291712.33099.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090929140404.dfb2c5f5.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 29 September 2009 16:45:54 schrieb Oleg Nesterov:
-> I think Christian's patch only needs the small fixup.
+Hi Greg,
 
-Oleg, Evgeniy,
+	next-20090929 randconfig build breaks with
+CONFIG_ANDROID_LOW_MEMORY_KILLER=y
 
-just in case the discussion concludes that my patch is fine,
-here is a fixed version.
+drivers/staging/android/lowmemorykiller.c: In function 'lowmem_shrink':
+drivers/staging/android/lowmemorykiller.c:111: error: 'struct mm_struct' has no member named 'oom_adj'
+make[3]: *** [drivers/staging/android/lowmemorykiller.o] Error 1
 
-[PATCH] connector: Fix sid connector
+Commit 0753ba01e126020bf0f8150934903b48935b697d was reverted back,
+which moves back oom_adj from mm_struct to task_struct and commit 
+28b83c5193e7ab951e402252278f2cc79dc4d298 moved the oomkilladj
+from task_struct to signal_struct. 
 
-The sid connector gives the following warning:
-Badness at kernel/softirq.c:143
-[...]
-Call Trace:
-([<000000013fe04100>] 0x13fe04100)
- [<000000000048a946>] sk_filter+0x9a/0xd0
- [<000000000049d938>] netlink_broadcast+0x2c0/0x53c
- [<00000000003ba9ae>] cn_netlink_send+0x272/0x2b0
- [<00000000003baef0>] proc_sid_connector+0xc4/0xd4
- [<0000000000142604>] __set_special_pids+0x58/0x90
- [<0000000000159938>] sys_setsid+0xb4/0xd8
- [<00000000001187fe>] sysc_noemu+0x10/0x16
- [<00000041616cb266>] 0x41616cb266
+Following patch reverts the changes introduced by commit 
+a6a9f81ccc9f5c86ccc22bbed1960a57d0316e8b to
+drivers/staging/android/lowmemorykiller.c 
 
-The warning is
---->    WARN_ON_ONCE(in_irq() || irqs_disabled());
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+ drivers/staging/android/lowmemorykiller.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-The network code must not be called with disabled interrupts but
-sys_setsid holds the tasklist_lock with spinlock_irq while calling
-the connector. We can safely move proc_sid_connector from
-__set_special_pids to sys_setsid.
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-
----
- kernel/exit.c |    4 +---
- kernel/sys.c  |    2 ++
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/kernel/exit.c
-===================================================================
---- linux-2.6.orig/kernel/exit.c
-+++ linux-2.6/kernel/exit.c
-@@ -359,10 +359,8 @@ void __set_special_pids(struct pid *pid)
- {
- 	struct task_struct *curr = current->group_leader;
+diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
+index 935d281..63ef837 100644
+--- a/drivers/staging/android/lowmemorykiller.c
++++ b/drivers/staging/android/lowmemorykiller.c
+@@ -99,21 +99,19 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
  
--	if (task_session(curr) != pid) {
-+	if (task_session(curr) != pid)
- 		change_pid(curr, PIDTYPE_SID, pid);
--		proc_sid_connector(curr);
--	}
+ 	read_lock(&tasklist_lock);
+ 	for_each_process(p) {
+-		struct mm_struct *mm;
+ 		int oom_adj;
  
- 	if (task_pgrp(curr) != pid)
- 		change_pid(curr, PIDTYPE_PGID, pid);
-Index: linux-2.6/kernel/sys.c
-===================================================================
---- linux-2.6.orig/kernel/sys.c
-+++ linux-2.6/kernel/sys.c
-@@ -1110,6 +1110,8 @@ SYSCALL_DEFINE0(setsid)
- 	err = session;
- out:
- 	write_unlock_irq(&tasklist_lock);
-+	if (err > 0)
-+		proc_sid_connector(sid);
- 	return err;
- }
- 
+ 		task_lock(p);
+-		mm = p->mm;
+-		if (!mm) {
++		if (!p->mm) {
+ 			task_unlock(p);
+ 			continue;
+ 		}
+-		oom_adj = mm->oom_adj;
++		oom_adj = p->signal->oom_adj;
+ 		if (oom_adj < min_adj) {
+ 			task_unlock(p);
+ 			continue;
+ 		}
+-		tasksize = get_mm_rss(mm);
++		tasksize = get_mm_rss(p->mm);
+ 		task_unlock(p);
+ 		if (tasksize <= 0)
+ 			continue;
+			
+			Kamalesh
