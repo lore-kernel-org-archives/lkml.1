@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbZI2WzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbZI2XBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752289AbZI2WzT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 18:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZI2WzT
+	id S1752862AbZI2XBO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 19:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbZI2XBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 18:55:19 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46006 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750699AbZI2WzS (ORCPT
+	Tue, 29 Sep 2009 19:01:13 -0400
+Received: from smtp151.iad.emailsrvr.com ([207.97.245.151]:46907 "EHLO
+	smtp151.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039AbZI2XBM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 18:55:18 -0400
-Date: Tue, 29 Sep 2009 23:52:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       Johan Hovold <jhovold@gmail.com>, Oliver Neukum <oliver@neukum.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-Message-ID: <20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090929145514.GF2152@localhost>
-References: <20090924154023.GA27480@localhost>
-	<200909242103.48562.oliver@neukum.org>
-	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>
-	<20090924211459.GB27963@localhost>
-	<4ABD020B.4040901@gandalf.sssup.it>
-	<20090929145514.GF2152@localhost>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Sep 2009 19:01:12 -0400
+Message-ID: <4AC291B9.4060204@librato.com>
+Date: Tue, 29 Sep 2009 19:01:13 -0400
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Smith <danms@us.ibm.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [PATCH v18 49/80] c/r: support for UTS namespace
+References: <1253749920-18673-1-git-send-email-orenl@librato.com> <1253749920-18673-50-git-send-email-orenl@librato.com> <200909292213.21266@blacky.localdomain>
+In-Reply-To: <200909292213.21266@blacky.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As it stands today ftdi_sio does indeed call tty_flip_buffer_push from
-> interrupt context with low_latency set and that is obviously incorrect,
-> right?
 
-It seems to do it from a work queue - or did I miss a case ?
+
+Nikita V. Youshchenko wrote:
+>> +static struct uts_namespace *do_restore_uts_ns(struct ckpt_ctx *ctx)
+>> ...
+>> +#ifdef CONFIG_UTS_NS
+>> +	uts_ns = create_uts_ns();
+>> +	if (!uts_ns) {
+>> +		uts_ns = ERR_PTR(-ENOMEM);
+>> +		goto out;
+>> +	}
+>> +	down_read(&uts_sem);
+>> +	name = &uts_ns->name;
+>> +	memcpy(name->sysname, h->sysname, sizeof(name->sysname));
+>> +	memcpy(name->nodename, h->nodename, sizeof(name->nodename));
+>> +	memcpy(name->release, h->release, sizeof(name->release));
+>> +	memcpy(name->version, h->version, sizeof(name->version));
+>> +	memcpy(name->machine, h->machine, sizeof(name->machine));
+>> +	memcpy(name->domainname, h->domainname, sizeof(name->domainname));
+>> +	up_read(&uts_sem);
+> 
+> Could you please explain what for is this down_read() / up_read() ?
+> You operate only on local objects: 'name' points to just-created 
+> uts_ns, 'h' is also local data.
+
+Nothing more than symmetry with checkpoint code, and a pedagogical
+aspect...
+
+Can be replaced by a suitable comment.
+
+Oren.
