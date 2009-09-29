@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZI2R3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbZI2RbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbZI2R3R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZI2R3Q
+	id S1753645AbZI2RbB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbZI2RbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:29:16 -0400
-Received: from iksaif.net ([88.191.73.63]:39136 "EHLO iksaif.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752819AbZI2R3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:29:15 -0400
-From: Corentin Chary <corentincj@iksaif.net>
-To: dedekind1@gmail.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Corentin Chary <corentincj@iksaif.net>
-Subject: [PATCH 2/2] UBIFS: Use ubi_open_volume_path() in open_ubi()
-Date: Tue, 29 Sep 2009 19:29:47 +0200
-Message-Id: <1254245387-14629-2-git-send-email-corentincj@iksaif.net>
-X-Mailer: git-send-email 1.6.5.rc1
-In-Reply-To: <1254245387-14629-1-git-send-email-corentincj@iksaif.net>
-References: <1254234457.3778.84.camel@localhost>
- <1254245387-14629-1-git-send-email-corentincj@iksaif.net>
+	Tue, 29 Sep 2009 13:31:00 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:62484 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753126AbZI2Ra7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 13:30:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=ScnhAHWBi/GWHwt2tUzfhrBCL7e/4emFJtlKLBoGSuDiU/7hLs8HqVYlQ5ZM7WlP3k
+         KHzeGZ4vPQiaG8z+I+5dWF5HRwHwiDmnMd0BzCDtjDHCMRCQR+l39FK/VKrfLeY8UME1
+         PRgbvb5hhjEYRA+pt5rqwHNTIRJDVTAz3z8UI=
+From: Volker Armin Hemmann <volkerarmin@googlemail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: 2.6.31 ehci problem - mouse dead on scroll
+Date: Tue, 29 Sep 2009 19:30:56 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1r4; KDE/4.3.1; x86_64; ; )
+Cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+References: <Pine.LNX.4.44L0.0909211641580.4414-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0909211641580.4414-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200909291930.57037.volkerarmin@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed to use $ mount /dev/ubi0_0 /mnt/nand
-You'll also need a recent libblkid with UBI and UBIFS
-support.
+On Montag 21 September 2009, Alan Stern wrote:
 
-Signed-off-by: Corentin Chary <corentincj@iksaif.net>
----
- fs/ubifs/super.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> It is.  The usbmon log shows some unexpected gaps, which probably
+> correspond to the jerkiness.  But there's nothing to indicate that
+> these gaps are the computer's fault.
+> 
+> Have you tried using a different mouse, or a different brand of mouse,
+> on this computer?  Or using your mouse on a different machine?
 
-diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
-index 7e2b3d4..146289b 100644
---- a/fs/ubifs/super.c
-+++ b/fs/ubifs/super.c
-@@ -1847,6 +1847,7 @@ const struct super_operations ubifs_super_operations = {
-  * o ubiY      - UBI device number 0, volume Y;
-  * o ubiX:NAME - mount UBI device X, volume with name NAME;
-  * o ubi:NAME  - mount UBI device 0, volume with name NAME.
-+ * o PATH      - For example /dev/ubi0_0
-  *
-  * Alternative '!' separator may be used instead of ':' (because some shells
-  * like busybox may interpret ':' as an NFS host name separator). This function
-@@ -1855,9 +1856,15 @@ const struct super_operations ubifs_super_operations = {
-  */
- static struct ubi_volume_desc *open_ubi(const char *name, int mode)
- {
-+	struct ubi_volume_desc *ubi;
- 	int dev, vol;
- 	char *endptr;
- 
-+	/* path method */
-+	ubi = ubi_open_volume_path(name, mode);
-+	if (!IS_ERR(ubi))
-+		return ubi;
-+
- 	if (name[0] != 'u' || name[1] != 'b' || name[2] != 'i')
- 		return ERR_PTR(-EINVAL);
- 
--- 
-1.6.5.rc1
 
+sorry for the long break. I got a different mouse and tried it for a couple of 
+hours and haven't got the jerkiness so far. 
+But:
+the other mouse has a lot worse resolution. Which results in a 'slower' mouse.
+my own mouse has stretches of hours were it is ok.
+
+So... it might take some more time to trigger it. I will then report back
+
+Glück Auf,
+Volker
