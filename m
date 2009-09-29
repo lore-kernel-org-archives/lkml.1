@@ -1,111 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbZI2Rmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbZI2RnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753501AbZI2Rmv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZI2Rmu
+	id S1753728AbZI2RnP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZI2RnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:42:50 -0400
-Received: from mbox2.netikka.net ([213.250.81.203]:41934 "EHLO
-	mbox2.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbZI2Rmt (ORCPT
+	Tue, 29 Sep 2009 13:43:14 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:61422 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752884AbZI2RnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:42:49 -0400
-Message-ID: <4AC24719.60909@mandriva.org>
-Date: Tue, 29 Sep 2009 20:42:49 +0300
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090830)
+	Tue, 29 Sep 2009 13:43:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=CuB/Q6cixROW1hM7Mjq6R2vA2KmU+izJZ4x1/6n/SGW+HZcOxZz4NifYjWNv/QzTSD
+         IUci39wMM2rd2QjjTXCsMFRMFvOepX+4Hw4DKBdHq+j5Z5MbTax5A24ChzNxBkAv/7Gj
+         c2hwSNjfRFkjMszuGrl3N6AuZS5pihCtvlGy4=
+Message-ID: <4AC24741.8050205@gmail.com>
+Date: Tue, 29 Sep 2009 10:43:29 -0700
+From: Bruce Jones <brucej97223@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-CC: Len Brown <lenb@kernel.org>, Lin Ming <ming.m.lin@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [git pull request] ACPI & driver patches for Linux-2.6.32-rc0
-References: <alpine.LFD.2.00.0909190237560.22030@localhost.localdomain> <4ABCB2CA.4020709@mandriva.org> <d3f22a0909261902o5e48c2a0lab56fca21edf8c5b@mail.gmail.com> <1254016503.17697.21.camel@minggr.sh.intel.com> <alpine.LFD.2.00.0909270348570.16783@localhost.localdomain> <4AC11A0F.2030806@mandriva.org> <4AC12015.4040508@suse.de> <4AC12B4D.30508@mandriva.org> <4AC12E51.8050501@mandriva.org> <4AC134EB.1050705@suse.de> <4AC15582.8090601@mandriva.org> <4AC1C483.3000308@suse.de>
-In-Reply-To: <4AC1C483.3000308@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: gregkh@suse.de
+CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: comedi: adl_pci7296 CodingStyle cleanup
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Starikovskiy wrote:
-> Thomas Backlund пишет:
->> Alexey Starikovskiy wrote:
->>> Thomas Backlund пишет:
->>>> Thomas Backlund wrote:
->>>>> Alexey Starikovskiy wrote:
->>>>>> Thomas Backlund пишет:
->>>>>>> Now this is a Acer TravelMate 5720G laptop with the latest 1.35 
->>>>>>> bios.
->>>>>>> Distro is Mandriva Linux Cooker, and arch is x86_64
->>>>>>>
->>>>>>> Attached is output of "grep ACPI /var/log/dmesg"
->>>>>>> dmesg-acpi-20090903
->>>>>>> - all acpi patches as of 2.6.32-rc1
->>>>>> This one does not have errors you've mentioned earlier, could you 
->>>>>> find dmesg with them?
->>>>> Ah, sorry about that...
->>>>> I should have done dmesg|grep ACPI to get the errors... it would 
->>>>> have shown this too:
->>>>> tg3 0000:02:00.0: wake-up capability disabled by ACPI
->>>>> ACPI Exception: AE_TIME, Returned by Handler for [EmbeddedControl] 
->>>>> (20090903/evregion-424)
->>>>> ACPI Error (psparse-0537): Method parse/execution failed 
->>>>> [\_SB_.PCI0.LPCB.EC0_.GBST] (Node ffff88013f81c5e0), AE_TIME
->>>>> ACPI Error (psparse-0537): Method parse/execution failed 
->>>>> [\_SB_.PCI0.LPCB.EC0_.BAT0._BST] (Node ffff88013f81c720), AE_TIME
->>>>> ACPI Exception: AE_TIME, Evaluating _BST (20090903/battery-393)
->>>>>
->>>>>
->>>>>
->>>>>>> dmesg-acpi-20090903-ec-2.6.31
->>>>>>> - all acpi patches as of 2.6.32-rc1
->>>>>>> - ec.c from 2.6.31.1
->>>>>>>
->>>>>>>
->>>>>>> Should I start bisecting, or do you have any other suggestion?
->>>>>> There is only one patch which touch ec.c, 
->>>>>> 2a84cb9852f52c0cd1c48bca41a8792d44ad06cc. You may try to revert 
->>>>>> it, and see.
->>>>>>
->>>>> Isn't that what pretty much what I did when I built a kernel with 
->>>>> the 2.6.31.1 ec.c ?
->>>>>
->>>>> Anyway, after I applied your patch you just posted on acpi-devel:
->>>>> ACPI: EC: Rewrite DMI checks
->>>>>
->>>>> to the 2.6.32-rc1 tree the:
->>>>>
->>>>>> -ACPI Error (psargs-0359): [\_PR_.CPU0.CSTX] Namespace lookup 
->>>>>> failure, AE_NOT_FOUND
->>>>>> -ACPI Error (psparse-0537): Method parse/execution failed 
->>>>>> [\_SB_.PCI0.LPCB.EC0_._Q2F] (Node ffff88013f81c1a0), AE_NOT_FOUND
->>>>> does not show up at boot anymore, and so far I haven't seen the 
->>>>> other errors either...
->>>>>
->>>>> I'll post a follow-up if they show up again...
->>>>>
->>>> Bah...
->>>> I spoke too soon:
->>>>
->>> Could you please turn on timing information in printk ? Please also 
->>> uncomment "#define DEBUG" in ec.c
->>>
->>
->> That generated a big log......
->>
->> This is now grep ACPI /var/log/syslog from the 2.6.32-rc1 + the above 
->> "ACPI: EC: Rewrite DMI checks"
->>
->> As it's big, I posted it here:
->> http://tmb.mine.nu/acpi-ec-bug/acpi-ec-debug.bz2
-> Thanks,
-> please check if attached patch helps:
->>
+Fix up printk's and other simple coding style issues.
 
-Been running that patch for ~6 hours now, and the errors are gone...
+Signed-off-by: Bruce Jones <brucej@linux.com>
+---
+ drivers/staging/comedi/drivers/adl_pci7296.c |   19 +++++++++----------
+ 1 files changed, 9 insertions(+), 10 deletions(-)
 
-Thanks!
-
---
-Thomas
+diff --git a/drivers/staging/comedi/drivers/adl_pci7296.c b/drivers/staging/comedi/drivers/adl_pci7296.c
+index 4de6fad..8602865 100644
+--- a/drivers/staging/comedi/drivers/adl_pci7296.c
++++ b/drivers/staging/comedi/drivers/adl_pci7296.c
+@@ -82,8 +82,7 @@ static int adl_pci7296_attach(struct comedi_device *dev,
+ 	int bus, slot;
+ 	int ret;
+ 
+-	printk("comedi: attempt to attach...\n");
+-	printk("comedi%d: adl_pci7432\n", dev->minor);
++	printk(KERN_INFO "comedi%d: attach adl_pci7432\n", dev->minor);
+ 
+ 	dev->board_name = "pci7432";
+ 	bus = it->options[0];
+@@ -110,14 +109,14 @@ static int adl_pci7296_attach(struct comedi_device *dev,
+ 			}
+ 			devpriv->pci_dev = pcidev;
+ 			if (comedi_pci_enable(pcidev, "adl_pci7296") < 0) {
+-				printk
+-				    ("comedi%d: Failed to enable PCI device and request regions\n",
++				printk(KERN_ERR "comedi%d: Failed to enable PCI device and request regions\n",
+ 				     dev->minor);
+ 				return -EIO;
+ 			}
+ 
+ 			dev->iobase = pci_resource_start(pcidev, 2);
+-			printk("comedi: base addr %4lx\n", dev->iobase);
++			printk(KERN_INFO "comedi: base addr %4lx\n",
++				dev->iobase);
+ 
+ 			/*  four 8255 digital io subdevices */
+ 			s = dev->subdevices + 0;
+@@ -145,25 +144,25 @@ static int adl_pci7296_attach(struct comedi_device *dev,
+ 			if (ret < 0)
+ 				return ret;
+ 
+-			printk("attached\n");
++			printk(KERN_DEBUG "comedi%d: adl_pci7432 attached\n",
++				dev->minor);
+ 
+ 			return 1;
+ 		}
+ 	}
+ 
+-	printk("comedi%d: no supported board found! (req. bus/slot : %d/%d)\n",
++	printk(KERN_ERR "comedi%d: no supported board found! (req. bus/slot : %d/%d)\n",
+ 	       dev->minor, bus, slot);
+ 	return -EIO;
+ }
+ 
+ static int adl_pci7296_detach(struct comedi_device *dev)
+ {
+-	printk("comedi%d: pci7432: remove\n", dev->minor);
++	printk(KERN_INFO "comedi%d: pci7432: remove\n", dev->minor);
+ 
+ 	if (devpriv && devpriv->pci_dev) {
+-		if (dev->iobase) {
++		if (dev->iobase)
+ 			comedi_pci_disable(devpriv->pci_dev);
+-		}
+ 		pci_dev_put(devpriv->pci_dev);
+ 	}
+ 	/*  detach four 8255 digital io subdevices */
+-- 
+1.6.5.rc2
