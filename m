@@ -1,171 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZI2APQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbZI2APf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbZI2APQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 20:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbZI2APO
+	id S1753774AbZI2APf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 20:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZI2APf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 20:15:14 -0400
-Received: from mga03.intel.com ([143.182.124.21]:35557 "EHLO mga03.intel.com"
+	Mon, 28 Sep 2009 20:15:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47604 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753540AbZI2APN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 20:15:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,469,1249282800"; 
-   d="scan'208";a="192676911"
-Date: Tue, 29 Sep 2009 08:15:04 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: regression in page writeback
-Message-ID: <20090929001504.GA18192@localhost>
-References: <20090923022622.GB11918@localhost> <20090922193622.42c00012.akpm@linux-foundation.org> <20090923140058.GA2794@think> <20090924031508.GD6456@localhost> <20090925001117.GA9464@discord.disaster> <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost>
+	id S1753753AbZI2APd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 20:15:33 -0400
+Message-ID: <4AC15197.9010105@kernel.org>
+Date: Tue, 29 Sep 2009 09:15:19 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090928071507.GA20068@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tony Vroon <tony@linx.net>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] percpu: fix unit_map[] verification in pcpu_setup_first_chunk()
+References: <4ABAC2F1.3020302@kernel.org>	 <1254055797.2756.1.camel@localhost>  <4AC0E201.2020006@kernel.org> <1254175662.2783.1.camel@localhost>
+In-Reply-To: <1254175662.2783.1.camel@localhost>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 29 Sep 2009 00:15:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 03:15:07PM +0800, Wu Fengguang wrote:
-> On Mon, Sep 28, 2009 at 09:07:00AM +0800, Dave Chinner wrote:
-> > 
-> > pageout is so horribly inefficient from an IO perspective it is not
-> > funny. It is one of the reasons Linux sucks so much when under
-> > memory pressure. It basically causes the system to do random 4k
-> > writeback of dirty pages (and lumpy reclaim can make it
-> > synchronous!). 
-> > 
-> > pageout needs an enema, and preferably it should defer to background
-> > writeback to clean pages. background writeback will clean pages
-> > much, much faster than the random crap that pageout spews at the
-> > disk right now.
-> > 
-> > Given that I can basically lock up my 2.6.30-based laptop for 10-15
-> > minutes at a time with the disk running flat out in low memory
-> > situations simply by starting to copy a large file(*), I think that
-> > the way we currently handle dirty page writeback needs a bit of a
-> > rethink.
-> > 
-> > (*) I had this happen 4-5 times last week moving VM images around on
-> > my laptop, and it involved the Linux VM switching between pageout
-> > and swapping to make more memory available while the copy was was
-> > hammering the same drive with dirty pages from foreground writeback.
-> > It made for extremely fragmented files when the machine finally
-> > recovered because of the non-sequential writeback patterns on the
-> > single file being copied.  You can't tell me that this is sane,
-> > desirable behaviour, and this is the sort of problem that I want
-> > sorted out. I don't beleive it can be fixed by maintaining the
-> > number of uncoordinated, competing writeback mechanisms we currently
-> > have.
+Tony Vroon wrote:
+> On Tue, 2009-09-29 at 01:19 +0900, Tejun Heo wrote:
+>> pcpu_setup_first_chunk() incorrectly used NR_CPUS as the impossible
+>> unit number while unit number can equal and go over NR_CPUS with
+>> sparse unit map.  This triggers BUG_ON() spuriously on machines which
+>> have non-power-of-two number of cpus.  Use UINT_MAX instead.
+>>
+>> Signed-off-by: Tejun Heo <tj@kernel.org>
+>> Reported-by: Tony Vroon <tony@linx.net>
+> Tested-by: Tony Vroon <tony@linx.net>
 > 
-> I imagined some lumpy pageout policy would help, but didn't realize
-> it's such a severe problem that can happen in daily desktop workload..
+>> Erghh... stupid mistake.  This should fix it.  Can you please verify?
 > 
-> Below is a quick patch. Any comments?
+> Confirmed fixed. Thank you Tejun.
 
-Wow, it's much easier to reuse write_cache_pages for lumpy pageout :)
+Thank you.  Will push out later today.
 
----
- mm/page-writeback.c |   36 ++++++++++++++++++++++++------------
- mm/shmem.c          |    1 +
- mm/vmscan.c         |    6 ++++++
- 3 files changed, 31 insertions(+), 12 deletions(-)
-
---- linux.orig/mm/vmscan.c	2009-09-29 07:21:51.000000000 +0800
-+++ linux/mm/vmscan.c	2009-09-29 07:46:59.000000000 +0800
-@@ -344,6 +344,8 @@ typedef enum {
- 	PAGE_CLEAN,
- } pageout_t;
- 
-+#define LUMPY_PAGEOUT_PAGES	(512 * 1024 / PAGE_CACHE_SIZE)
-+
- /*
-  * pageout is called by shrink_page_list() for each dirty page.
-  * Calls ->writepage().
-@@ -408,6 +410,10 @@ static pageout_t pageout(struct page *pa
- 			return PAGE_ACTIVATE;
- 		}
- 
-+		wbc.range_start = (page->index + 1) << PAGE_CACHE_SHIFT;
-+		wbc.nr_to_write = LUMPY_PAGEOUT_PAGES - 1;
-+		generic_writepages(mapping, &wbc);
-+
- 		/*
- 		 * Wait on writeback if requested to. This happens when
- 		 * direct reclaiming a large contiguous area and the
---- linux.orig/mm/page-writeback.c	2009-09-29 07:33:13.000000000 +0800
-+++ linux/mm/page-writeback.c	2009-09-29 08:10:39.000000000 +0800
-@@ -799,6 +799,12 @@ retry:
- 		if (nr_pages == 0)
- 			break;
- 
-+		if (wbc->for_reclaim && done_index + nr_pages - 1 !=
-+					pvec.pages[nr_pages - 1]->index) {
-+			pagevec_release(&pvec);
-+			break;
-+		}
-+
- 		for (i = 0; i < nr_pages; i++) {
- 			struct page *page = pvec.pages[i];
- 
-@@ -852,24 +858,30 @@ continue_unlock:
- 			if (!clear_page_dirty_for_io(page))
- 				goto continue_unlock;
- 
-+			/*
-+			 * active and unevictable pages will be checked at
-+			 * rotate time
-+			 */
-+			if (wbc->for_reclaim)
-+				SetPageReclaim(page);
-+
- 			ret = (*writepage)(page, wbc, data);
- 			if (unlikely(ret)) {
- 				if (ret == AOP_WRITEPAGE_ACTIVATE) {
- 					unlock_page(page);
- 					ret = 0;
--				} else {
--					/*
--					 * done_index is set past this page,
--					 * so media errors will not choke
--					 * background writeout for the entire
--					 * file. This has consequences for
--					 * range_cyclic semantics (ie. it may
--					 * not be suitable for data integrity
--					 * writeout).
--					 */
--					done = 1;
--					break;
- 				}
-+				/*
-+				 * done_index is set past this page,
-+				 * so media errors will not choke
-+				 * background writeout for the entire
-+				 * file. This has consequences for
-+				 * range_cyclic semantics (ie. it may
-+				 * not be suitable for data integrity
-+				 * writeout).
-+				 */
-+				done = 1;
-+				break;
-  			}
- 
- 			if (nr_to_write > 0) {
---- linux.orig/mm/shmem.c	2009-09-29 08:07:22.000000000 +0800
-+++ linux/mm/shmem.c	2009-09-29 08:08:02.000000000 +0800
-@@ -1103,6 +1103,7 @@ unlock:
- 	 */
- 	swapcache_free(swap, NULL);
- redirty:
-+	wbc->pages_skipped++;
- 	set_page_dirty(page);
- 	if (wbc->for_reclaim)
- 		return AOP_WRITEPAGE_ACTIVATE;	/* Return with page locked */
+-- 
+tejun
