@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZI2MqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbZI2Mtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbZI2MqD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 08:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZI2MqD
+	id S1754122AbZI2Mtr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 08:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZI2Mtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 08:46:03 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:55929 "EHLO
+	Tue, 29 Sep 2009 08:49:46 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:56209 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbZI2MqB (ORCPT
+	with ESMTP id S1754046AbZI2Mtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 08:46:01 -0400
+	Tue, 29 Sep 2009 08:49:45 -0400
 From: Arnd Bergmann <arnd@arndb.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86: Use __builtin_memset and __builtin_memcpy for memset/memcpy
-Date: Tue, 29 Sep 2009 14:44:06 +0200
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH] tty: fix vt_compat_ioctl
+Date: Tue, 29 Sep 2009 14:49:46 +0200
 User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com,
-       torvalds@linux-foundation.org
-References: <20090928113433.5e9b8ea7@infradead.org>
-In-Reply-To: <20090928113433.5e9b8ea7@infradead.org>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <m2y6nzgcud.fsf@igel.home> <20090928183337.GA10855@suse.de> <m2tyymho45.fsf@igel.home>
+In-Reply-To: <m2tyymho45.fsf@igel.home>
 X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
  =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
  =?utf-8?q?3zb?=)
@@ -28,37 +27,35 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909291444.06422.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Xz/hMmZ14xaf+gmV4WUAVfAbSLl8dK6N/HBN
- ZfzloNCrW66SwGfN8jCNmq6VBvDHZgmZAcsSrGTY/vOqsiKZYP
- ydxWlMlyZKHp6urf6ESug==
+Message-Id: <200909291449.46371.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19PcebQZ2SFQHewSAhyjmFtPQH5+AbYExdycNG
+ aPy5lDbpWsg2wMWtxC3HTMKZaKh2b+YGX/ToJRTz+fiQ/ruD4S
+ nLTHjmWa8JFAFDb0l4F3w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 September 2009, Arjan van de Ven wrote:
+On Monday 28 September 2009, Andreas Schwab wrote:
+> Greg KH <gregkh@suse.de> writes:
 > 
-> GCC provides reasonable memset/memcpy functions itself, with __builtin_memset
-> and __builtin_memcpy. For the "unknown" cases, it'll fall back to our
-> current existing functions, but for fixed size versions it'll inline
-> something smart. Quite often that will be the same as we have now,
-> but sometimes it can do something smarter (for example, if the code
-> then sets the first member of a struct, it can do a shorter memset).
+> > On Mon, Sep 28, 2009 at 08:10:02PM +0200, Andreas Schwab wrote:
+> >> Call compat_unimap_ioctl, not do_unimap_ioctl.
+> >
+> > That's a nice description of what the patch does, but why do we need to
+> > do that?
 > 
-> In addition, and this is more important, gcc knows which registers and
-> such are not clobbered (while for our asm version it pretty much
-> acts like a compiler barrier), so for various cases it can avoid reloading
-> values.
-> 
-> The effect on codesize is shown below on my typical laptop .config:
-> 
->    text	   data	    bss	    dec	    hex	filename
-> 5605675	2041100	6525148	14171923	 d83f13	vmlinux.before
-> 5595849	2041668	6525148	14162665	 d81ae9	vmlinux.after
+> It's a compat ioctl handler, so lets call the compat ioctl handler.
 > 
 
-The patch looks good, but is there a reason to keep it architecture
-specific? I would guess that the same logic applies to all architectures
-with gcc-4.x and could be put into include/linux/compiler-gcc4.h.
+My bad, sorry.
+
+I broke it in e9216651 evidently, thanks for debugging this.
+
+The compat_unimap_ioctl was originally called do_unimap_ioctl in
+fs/compat_ioctl.h which got moved to drivers/char/vt_ioctl.c.
+In that patch, the caller was not updated and consequently called
+the native handler.
+
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
 	Arnd <><
