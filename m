@@ -1,60 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbZI2Ota@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZI2Ov5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752968AbZI2Ota (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 10:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZI2Ot3
+	id S1753071AbZI2Ov5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 10:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbZI2Ov4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 10:49:29 -0400
-Received: from mbox2.netikka.net ([213.250.81.203]:57093 "EHLO
-	mbox2.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750934AbZI2Ot2 (ORCPT
+	Tue, 29 Sep 2009 10:51:56 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:38503 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009AbZI2Ovy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 10:49:28 -0400
-Message-ID: <4AC21E7B.70000@mandriva.org>
-Date: Tue, 29 Sep 2009 17:49:31 +0300
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090830)
+	Tue, 29 Sep 2009 10:51:54 -0400
+Date: Wed, 30 Sep 2009 00:51:56 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Hannes Eder <heder@google.com>
+Cc: lvs-devel@vger.kernel.org, Wensong Zhang <wensong@linux-vs.org>,
+       Julius Volz <julius.volz@gmail.com>, lvs-users@linuxvirtualserver.org,
+       Laurent Grawet <laurent.grawet@uclouvain.be>,
+       Jean-Luc Fortemaison <jl.fortemaison@uclouvain.be>,
+       linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@medozas.de>,
+       Julian Anastasov <ja@ssi.bg>, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Fabien =?utf-8?Q?Duch=C3=AAne?= <mad_fab@skynet.be>,
+       Joseph Mack NA3T <jmack@wm7d.net>, Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH v2 0/4] IPVS full NAT support + netfilter 'ipvs' match
+ support
+Message-ID: <20090929145156.GB19797@verge.net.au>
+Mail-Followup-To: Hannes Eder <heder@google.com>, lvs-devel@vger.kernel.org,
+	Wensong Zhang <wensong@linux-vs.org>,
+	Julius Volz <julius.volz@gmail.com>,
+	lvs-users@linuxvirtualserver.org,
+	Laurent Grawet <laurent.grawet@uclouvain.be>,
+	Jean-Luc Fortemaison <jl.fortemaison@uclouvain.be>,
+	linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@medozas.de>,
+	Julian Anastasov <ja@ssi.bg>, netfilter-devel@vger.kernel.org,
+	netdev@vger.kernel.org,
+	Fabien =?utf-8?Q?Duch=C3=AAne?= <mad_fab@skynet.be>,
+	Joseph Mack NA3T <jmack@wm7d.net>,
+	Patrick McHardy <kaber@trash.net>
+References: <20090929123501.13798.84004.stgit@jazzy.zrh.corp.google.com>
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: Luca Tettamanti <kronos.it@gmail.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] asus_atk0110: add support for Asus P7P55D
-References: <20090923191240.GA15198@dreamland.darkstar.lan>	 <51f3faa70909232018v7e621190m84deb648b08d2135@mail.gmail.com>	 <20090928131700.GA19243@nb-core2.darkstar.lan>	 <51f3faa70909281920x2782d8dfm1835ab24779abfa3@mail.gmail.com>	 <51f3faa70909282134o1d60efekeded09f09b192df6@mail.gmail.com>	 <68676e00909290707u70d192f2j2f2d4dd07bd07234@mail.gmail.com> <51f3faa70909290740l4f4df186w114bf48e1db3a948@mail.gmail.com>
-In-Reply-To: <51f3faa70909290740l4f4df186w114bf48e1db3a948@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090929123501.13798.84004.stgit@jazzy.zrh.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock skrev:
-> On Tue, Sep 29, 2009 at 8:07 AM, Luca Tettamanti <kronos.it@gmail.com> wrote:
->>>>> Hi Robert,
->>>>> I have a new patch for you :)
->>>>> It contains the previous changes to handle the bigger ASBF buffer plus a new
->>>>> method to enable the EC as suggested by Asus. Be sure to compile with
->>>>> HWMON_DEBUG_CHIP enabled.
->>>> Excellent.. seems to work now and give actually updating sensor readings :-)
->>> Have seen a couple of these though, looks like about once an hour:
->>>
->>> ACPI Exception: AE_TIME, Returned by Handler for [EmbeddedControl]
->>> (20090903/evregion-424)
->>> ACPI Error (psparse-0537): Method parse/execution failed
->>> [\_SB_.PCI0.SBRG.ASOC.GIT6] (Node ffff88013ba778c0), AE_TIME
->>> ACPI Error (psparse-0537): Method parse/execution failed
->>> [\_SB_.PCI0.SBRG.ASOC.GITM] (Node ffff88013ba6ea40), AE_TIME
->>> ATK0110 ATK0110:00: atk_read_value_new: ACPI exception: AE_TIME
->>>
->>> Maybe sometimes the embedded controller takes longer than the timeout
->>> to process, or something?
->> Is there a message like "input buffer is not empty" before that?
-> 
-> Nope, that's all I'm getting each time it happens. Suggestions/debug
-> patches welcome..
-> 
+On Tue, Sep 29, 2009 at 02:35:15PM +0200, Hannes Eder wrote:
+> The following series implements full NAT support for IPVS.  The
+> approach is via a minimal change to IPVS (make friends with
+> nf_conntrack) and adding a netfilter matcher, kernel- and user-space
+> part, i.e. xt_ipvs and libxt_ipvs.
 
-Try this one:
-http://marc.info/?l=linux-kernel&m=125421276407283&w=2
+Its a bit late in the day for me to review the code, but I have a few
+quick comments.
 
---
-Thomas
+> 
+> Example usage:
+> 
+> % ipvsadm -A -t 192.168.100.30:80 -s rr
+> % ipvsadm -a -t 192.168.100.30:80 -r 192.168.10.20:80 -m
+> # ...
+> 
+> # Source NAT for VIP 192.168.100.30:80
+> % iptables -t nat -A POSTROUTING -m ipvs --vaddr 192.168.100.30/32 \
+> > --vport 80 -j SNAT --to-source 192.168.10.10
+> 
+> or SNAT-ing only a specific real server:
+> 
+> % iptables -t nat -A POSTROUTING --dst 192.168.11.20 \
+> > -m ipvs --vaddr 192.168.100.30/32 -j SNAT --to-source 192.168.10.10
+
+If the iptables rule is not in place does LVS just use
+its old NAT behaviour?
+
+> First of all, thanks for all the feedback.  This is the changelog for v2:
+> 
+> - Make ip_vs_ftp work again.  Setup nf_conntrack expectations for
+>   related data connections (based on Julian's patch see
+>   http://www.ssi.bg/~ja/nfct/) and let nf_conntrack/nf_nat do the
+>   packet mangling and the TCP sequence adjusting.
+> 
+>   This change rises the question how to deal with ip_vs_sync?  Does it
+>   work together with conntrackd?  Wild idea: what about getting rid of
+>   ip_vs_sync and piggy packing all on nf_conntrack and use conntrackd?
+> 
+>   Any comments on this?
+
+    That sounds like a reasonable suggestion.
+
+    I think that ip_vs_sync came along before conntrackd
+    and no one has given much thought to merging the functionality.
+
+> - xt_ipvs: add new rule '--vportctl port' to match the VIP port of the
+>   controlling connection, e.g. port 21 for FTP.  Can be used to match
+>   a related data connection for FTP:
+> 
+>   # SNAT FTP control connection
+>   % iptables -t nat -A POSTROUTING -m ipvs --vaddr 192.168.100.30/32 \
+>   > --vport 21 -j SNAT --to-source 192.168.10.10
+>   
+>   # SNAT FTP passive data connection
+>   % iptables -t nat -A POSTROUTING -m ipvs --vaddr 192.168.100.30/32 \
+>   > --vportctl 21 -j SNAT --to-source 192.168.10.10
+> 
+> - xt_ipvs: use 'par->family' instead of 'skb->protocol'
+> 
+> - xt_ipvs: add ipvs_mt_check and restrict to NFPROTO_IPV4 and NFPROTO_IPV6
+> 
+> - Call nf_conntrack_alter_reply(), so helper lookup is performed based
+>   on the changed tuple.
+> 
+> Changes to the linux kernel (rebased to next-20090925):
+> 
+> Hannes Eder (3):
+>       netfilter: xt_ipvs (netfilter matcher for IPVS)
+>       IPVS: make friends with nf_conntrack
+>       IPVS: make FTP work with full NAT support
+> 
+> 
+>  include/linux/netfilter/xt_ipvs.h |   25 +++++
+>  include/net/ip_vs.h               |    2 
+>  net/netfilter/Kconfig             |    9 ++
+>  net/netfilter/Makefile            |    1 
+>  net/netfilter/ipvs/Kconfig        |    4 -
+>  net/netfilter/ipvs/ip_vs_app.c    |   43 ---------
+>  net/netfilter/ipvs/ip_vs_core.c   |   37 -------
+>  net/netfilter/ipvs/ip_vs_ftp.c    |  178 ++++++++++++++++++++++++++++++++---
+>  net/netfilter/ipvs/ip_vs_proto.c  |    1 
+>  net/netfilter/ipvs/ip_vs_xmit.c   |   30 ++++++
+>  net/netfilter/xt_ipvs.c           |  187 +++++++++++++++++++++++++++++++++++++
+>  11 files changed, 418 insertions(+), 99 deletions(-)
+>  create mode 100644 include/linux/netfilter/xt_ipvs.h
+>  create mode 100644 net/netfilter/xt_ipvs.c
+> 
+> 
+> Changes to iptables (relative to 1.4.5):
+> 
+> Hannes Eder (1):
+>       libxt_ipvs: user-space lib for netfilter matcher xt_ipvs
+> 
+>  configure.ac                      |   11 +
+>  extensions/libxt_ipvs.c           |  365 +++++++++++++++++++++++++++++++++++++
+>  extensions/libxt_ipvs.man         |   24 ++
+>  include/linux/netfilter/xt_ipvs.h |   25 +++
+>  4 files changed, 422 insertions(+), 3 deletions(-)
+>  create mode 100644 extensions/libxt_ipvs.c
+>  create mode 100644 extensions/libxt_ipvs.man
+>  create mode 100644 include/linux/netfilter/xt_ipvs.h
