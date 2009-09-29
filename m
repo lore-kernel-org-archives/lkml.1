@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZI2Pcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZI2Pdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbZI2Pcu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 11:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZI2Pct
+	id S1753264AbZI2Pdh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 11:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZI2Pdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 11:32:49 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:38899 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbZI2Pct (ORCPT
+	Tue, 29 Sep 2009 11:33:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39463 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753110AbZI2Pde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 11:32:49 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: drbd-dev@lists.linbit.com
-Subject: Re: [Drbd-dev] [PATCH -next] drbd: trace depends on TRACING
-Date: Tue, 29 Sep 2009 17:32:50 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       akpm <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20090925133830.1ba29584.sfr@canb.auug.org.au> <4ABD4C28.9070202@oracle.com>
-In-Reply-To: <4ABD4C28.9070202@oracle.com>
-X-OTRS-FollowUp-SenderType: agent
+	Tue, 29 Sep 2009 11:33:34 -0400
+Date: Tue, 29 Sep 2009 08:33:22 -0700
+From: Greg KH <greg@kroah.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sfr@canb.auug.org.au, akpm@linux-foundation.org, rientjes@google.com
+Subject: Re: [PATCH] linux-next: 20090929 - android driver build breaks
+Message-ID: <20090929153322.GD5020@kroah.com>
+References: <20090929140404.dfb2c5f5.sfr@canb.auug.org.au> <20090929152027.GC4373@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909291732.51383.philipp.reisner@linbit.com>
+In-Reply-To: <20090929152027.GC4373@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 26 September 2009 01:03:04 Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> DRBD_TRACE should depend on TRACING.
-> It's also possible that TRACEPOINTS should depend on TRACING.
->
+On Tue, Sep 29, 2009 at 08:50:27PM +0530, Kamalesh Babulal wrote:
+> Hi Greg,
+> 
+> 	next-20090929 randconfig build breaks with
+> CONFIG_ANDROID_LOW_MEMORY_KILLER=y
+> 
+> drivers/staging/android/lowmemorykiller.c: In function 'lowmem_shrink':
+> drivers/staging/android/lowmemorykiller.c:111: error: 'struct mm_struct' has no member named 'oom_adj'
+> make[3]: *** [drivers/staging/android/lowmemorykiller.o] Error 1
+> 
+> Commit 0753ba01e126020bf0f8150934903b48935b697d was reverted back,
+> which moves back oom_adj from mm_struct to task_struct and commit 
+> 28b83c5193e7ab951e402252278f2cc79dc4d298 moved the oomkilladj
+> from task_struct to signal_struct. 
+> 
+> Following patch reverts the changes introduced by commit 
+> a6a9f81ccc9f5c86ccc22bbed1960a57d0316e8b to
+> drivers/staging/android/lowmemorykiller.c 
 
-Hi Randy,
+Ick, what a mess.  I'll queue this up, thanks.
 
-I tried to figure out in which way that should be done. By looking
-at "BLK_DEV_IO_TRACE" I got the impression that this should
-be done by adding "select GENERIC_TRACER".
-
-I will further examine this tomorrow. I just wanted to let you know
-that this did not fall off the table...
-
--Phil
-
-diff --git a/drivers/block/drbd/Kconfig b/drivers/block/drbd/Kconfig
-index 4e6f90f..7b35287 100644
---- a/drivers/block/drbd/Kconfig
-+++ b/drivers/block/drbd/Kconfig
-@@ -7,7 +7,7 @@ comment "DRBD disabled because PROC_FS, INET or CONNECTOR not 
-selected"
-
- config BLK_DEV_DRBD
-        tristate "DRBD Distributed Replicated Block Device support"
--       depends on PROC_FS && INET && CONNECTOR
-+       depends on BLOCK && PROC_FS && INET && CONNECTOR
-        select LRU_CACHE
-        default n
-        help
-@@ -42,6 +42,7 @@ config DRBD_TRACE
-        tristate "DRBD tracing"
-        depends on BLK_DEV_DRBD
-        select TRACEPOINTS
-+       select GENERIC_TRACER
-        default n
-        help
--- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
-
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
-
+greg k-h
