@@ -1,125 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbZI2UK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbZI2ULF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbZI2UK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 16:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZI2UK3
+	id S1754071AbZI2ULF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 16:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZI2ULE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 16:10:29 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:55458 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753961AbZI2UK2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 16:10:28 -0400
-Date: Tue, 29 Sep 2009 17:10:28 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, len.brown@intel.com, don@syst.com.br,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] cmpc_acpi: Added support for Classmate PC ACPI devices.
-Message-ID: <20090929201027.GQ18847@vespa.holoscopio.com>
-References: <1254188280-29155-1-git-send-email-cascardo@holoscopio.com> <20090929130522.ecf4d5ec.akpm@linux-foundation.org>
+	Tue, 29 Sep 2009 16:11:04 -0400
+Received: from mail.tmr.com ([64.65.253.246]:47872 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753914AbZI2ULD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 16:11:03 -0400
+Message-ID: <4AC269D4.4040605@tmr.com>
+Date: Tue, 29 Sep 2009 16:11:00 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="s2lX4GznBIrto1wi"
-Content-Disposition: inline
-In-Reply-To: <20090929130522.ecf4d5ec.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Newsgroups: gmane.linux.kernel
+To: Taro Okumichi <tarookumichi@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: visibility of linux source
+References: <25a94d2a0909281502u2bb383aemdb44f4af8ffdc9e7@mail.gmail.com>
+In-Reply-To: <25a94d2a0909281502u2bb383aemdb44f4af8ffdc9e7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Taro Okumichi wrote:
+> I have written a gcc-tracer and html-formatter that shows
+> Linux's init/main.c formatted as dynamic-html including:
+>  o expand macros by clicking on them
+>  o expand include directives
+>  o traverse c-structs
+> Address:
+> http://cfw.sourceforge.net/htmltag/init/main.c.pinfo.html
+> I have only processed init/main.c (50mb mysql content)
+> As far as I understand (maybe I am wrong) this kind of
+> visibility is not achieved till now.
+> Note:
+> I tested firefox (3.5) and konqueror. The first page takes ~
+> 10 Seconds to load, therefore be patient until the right
+> side init/main.c content is shown (ajax fetch from a mysql db).
+> 
+Just for the record, I tried seamonkey 1.1.17 and it works well there, as well. 
+I'll try the daily test version, but unless I find a problem assume it works, 
+using much code from Firefox{recent}.
 
---s2lX4GznBIrto1wi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'd like to try with Chrome, I suspect it will be faster there.
 
-On Tue, Sep 29, 2009 at 01:05:22PM -0700, Andrew Morton wrote:
-> On Mon, 28 Sep 2009 22:38:00 -0300
-> Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote:
->=20
-> > This add supports for devices like keyboard, backlight, tablet and
-> > accelerometer.
-> >=20
-> > This work is supported by International Syst S/A.
-> >=20
->=20
-> I need to have a big whine about the coding style.
->=20
-> > +static acpi_status cmpc_start_accel(acpi_handle handle)
-> > +{
-> > +	union acpi_object param[2];
-> > +	struct acpi_object_list input;
-> > +	acpi_status status;
-> > +	param[0].type =3D ACPI_TYPE_INTEGER;
-> > +	param[0].integer.value =3D 0x3;
-> > +	param[1].type =3D ACPI_TYPE_INTEGER;
-> > +	input.count =3D 2;
-> > +	input.pointer =3D param;
-> > +	status =3D acpi_evaluate_object(handle, "ACMD", &input, NULL);
-> > +	return status;
-> > +}
->=20
-> To the jaded kernel developer's eye, this is quite hard to read.  Every
-> function here squishes the declarations of the locals up against the
-> start of the code.  It's a small thing, but this:
->=20
-> static acpi_status cmpc_start_accel(acpi_handle handle)
-> {
-> 	union acpi_object param[2];
-> 	struct acpi_object_list input;
-> 	acpi_status status;
->=20
-> 	param[0].type =3D ACPI_TYPE_INTEGER;
-> 	param[0].integer.value =3D 0x3;
-> 	param[1].type =3D ACPI_TYPE_INTEGER;
-> 	input.count =3D 2;
-> 	input.pointer =3D param;
-> 	status =3D acpi_evaluate_object(handle, "ACMD", &input, NULL);
-> 	return status;
-> }
->=20
-> puts a smile on our faces.
->=20
+> o Complete Preprocessor Trace:
+>    All Macro expansions where traced and can be clicked
+>    open to see how they expand and where the macro was
+>    defined.
+>   - to open a macro expansion: click the macro marked
+>     with a white box,
+>     + after the macro has been expanded you can:
+>     + click the macro name to get the macro definition location
+>     + a "<" link appears at the end of the macro expansion,
+>        click it to close the macro expansion again.
+>   - #ifdef etc. preprocessor directives
+>     can also be expanded. Blocks that are inactive are
+>     marked grey.
+>   - #include directives can be clicked to expand to the
+>     included file
+> 
+> o Variable/function declares are Trace:
+>    Full struct type layout is traced and when a struct
+>    types is used you can click on the type declarator,
+> 
+> To get going:
+> 1. Browse to the end of init/main.c page:
+> 2. click on
+>     "param_check_bool" it will expand to:
+>      param_check_bool __param_check ( initcall_debug , & (
+> initcall_debug ) , int )[<]
+>      Click on param_check_bool again, it will sow the definition pos of
+>      the macro, click on "<" and it will close the expansion,
+>      You can recursively ascend into for instance expanding __param_check etc...
+> 
+> 
+> I thought to share this link to inspire some real gcc experts
+> or kernel hackers to implement this kind of feature in the production
+> gcc, I was using gcc-4.2.1 to output a cpp and c-parse trace
+> however the code is that kind of messy and would be of no
+> use, easier to implement newly, I guess that it should be obvious
+> what to do for for the right person. After getting the trace I use
+> a simple perl script (also messy code that I'm kind of ashamed to
+> publish) to format html.
+> 
+> Implementation note:
+> 
+> Using a ajax request to retrieve the html, the Mysql db
+> content is ~ 50 mb for the whole of main.c. No optimization
+> is done, so this includes lots of redundant entries.
+> 
+> The left index frame should not be used, the javascript code
+> is kind of buggy, so only use the right frame where the code
+> is shown.
+> 
+> Also: There is a bug in when closing a "include" directive section:
+> (At least in firefox) A new windows will pop up (I didnt find out
+> why this is the case). Click the window to the back and continue
+> (not closing it otherwise the next #include directive opens it again...
+> 
+> Have fun
+> -- Tkokum
 
-Will put this into consideration on the second version. Thanks, Andrew.
 
-> >
-> > ...
-> >
-> > +static ssize_t cmpc_accel_sense_store(struct device *dev,
-> > +				      struct device_attribute *attr,
-> > +				      const char *buf, size_t count)
-> > +{
-> > +	struct acpi_device *acpi;
-> > +	int sense;
-> > +	acpi =3D to_acpi_device(dev);
-> > +	if (sscanf(buf, "%d", &sense) <=3D 0)
-> > +		return -EINVAL;
-> > +	cmpc_accel_set_sense(acpi->handle, sense);
-> > +	return strnlen(buf, count);
-> > +}
->=20
-> This will treat input of the form "42foo" as a valid decimal number.=20
-> That's a bit sloppy.  Can we use strict_strtoul() here?
->=20
-
-Sure! The second version is coming soon. Thanks again.
-
-Best regards,
-Cascardo.
-
---s2lX4GznBIrto1wi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrCabMACgkQyTpryRcqtS1GPgCZAV0uxPOAcEQWmAQJNx9mBtic
-49MAn1KzulCZ4wG+erPcEkVx1DZ12xkB
-=TTIQ
------END PGP SIGNATURE-----
-
---s2lX4GznBIrto1wi--
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
