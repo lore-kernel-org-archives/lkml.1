@@ -1,77 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZI2T2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZI2T3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZI2T2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 15:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZI2T2t
+	id S1753958AbZI2T3f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 15:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZI2T3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 15:28:49 -0400
-Received: from mail-pz0-f191.google.com ([209.85.222.191]:37595 "EHLO
-	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753752AbZI2T2s convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 15:29:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57903 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753731AbZI2T3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 15:28:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sTXJfmnOHvJfC74WvlT7xYG9OioMLQdwdmICChC4rdlxtkN31bCi7l0bEIjq5W50ok
-         nISrvg5hbrsQaWhoWw+Mg1NLvDSwAbqSoWYSy9T0TwPq5bjiX1xtckqRr0rwJ/XjGy/5
-         p7p0tT/tXBEs2HZEfOpH4ayBDbvm2iqVNx1fU=
-MIME-Version: 1.0
-In-Reply-To: <Pine.A41.4.64.0909291547160.1114112@stalin.acc.umu.se>
-References: <Pine.A41.4.64.0909291547160.1114112@stalin.acc.umu.se>
-Date: Tue, 29 Sep 2009 12:28:51 -0700
-Message-ID: <86802c440909291228l7214c46agf9c62c0073b11e2a@mail.gmail.com>
-Subject: Re: still mtrr problems
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: =?ISO-8859-1?Q?Bo_Brant=E9n?= <bosse@acc.umu.se>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 29 Sep 2009 15:29:33 -0400
+Date: Tue, 29 Sep 2009 12:29:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haavard.skinnemoen@atmel.com, kernel@avr32linux.org,
+       nicolas.ferre@atmel.com
+Subject: Re: [PATCH 1/2] atmel-mci: change use of dma slave interface
+Message-Id: <20090929122928.f5fea29b.akpm@linux-foundation.org>
+In-Reply-To: <1253204967-30010-2-git-send-email-nicolas.ferre@atmel.com>
+References: <1253204967-30010-1-git-send-email-nicolas.ferre@atmel.com>
+	<1253204967-30010-2-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 6:52 AM, Bo Brantén <bosse@acc.umu.se> wrote:
->
-> Hello,
->
-> when installing 8G RAM on an Intel DG965OT motherboard Linux will hang at
-> boot (or parhaps only become very very slow) if I dont add the boot option
-> mem=8192M, Windows Vista 64-bit works without any probelm on the same
-> hardware.
->
-> /proc/mtrr:
-> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-> reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
-> reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
-> reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
-> reg05: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
-> reg06: base=0x200000000 (8192MB), size= 512MB: write-back, count=1
-> reg07: base=0xd0000000 (3328MB), size= 256MB: write-combining, count=1
->
-> dmesg|grep e820:
-> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000008f000 (usable)
-> [    0.000000]  BIOS-e820: 000000000008f000 - 00000000000a0000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000cf561000 (usable)
-> [    0.000000]  BIOS-e820: 00000000cf561000 - 00000000cf56e000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000cf56e000 - 00000000cf637000 (usable)
-> [    0.000000]  BIOS-e820: 00000000cf637000 - 00000000cf6e9000 (ACPI NVS)
-> [    0.000000]  BIOS-e820: 00000000cf6e9000 - 00000000cf6ed000 (usable)
-> [    0.000000]  BIOS-e820: 00000000cf6ed000 - 00000000cf6f2000 (ACPI data)
-> [    0.000000]  BIOS-e820: 00000000cf6f2000 - 00000000cf6f3000 (usable)
-> [    0.000000]  BIOS-e820: 00000000cf6f3000 - 00000000cf6ff000 (ACPI data)
-> [    0.000000]  BIOS-e820: 00000000cf6ff000 - 00000000cf700000 (usable)
-> [    0.000000]  BIOS-e820: 00000000cf700000 - 00000000d0000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000100000000 - 000000022c000000 (usable)
-> --
+On Thu, 17 Sep 2009 18:29:26 +0200
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-kernel should trim your e820 to 220000000, could be some strange MTRR
-layout that we don't want to touch.
+> Allow the use of another DMA controller driver in atmel-mci sd/mmc driver. This
+> adds a generic dma_slave pointer to the mci platform structure where we can
+> store DMA controller information. In atmel-mci we use information provided by
+> this structure to initialize the driver (with new helper functions that are
+> architecture dependant).
+> This also adds at32/avr32 chip modifications to cope with this new access
+> method.
+> 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> ---
+>  arch/avr32/mach-at32ap/at32ap700x.c |    6 ++-
+>  drivers/mmc/host/atmel-mci.c        |   82 ++++++++++++++++++++++++++---------
+>  include/linux/atmel-mci.h           |    3 +-
+>  3 files changed, 68 insertions(+), 23 deletions(-)
+> 
+> diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+> index eb9d4dc..d1fe145 100644
+> --- a/arch/avr32/mach-at32ap/at32ap700x.c
+> +++ b/arch/avr32/mach-at32ap/at32ap700x.c
+> @@ -1320,7 +1320,7 @@ struct platform_device *__init
+>  at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
+>  {
+>  	struct platform_device		*pdev;
+> -	struct dw_dma_slave		*dws = &data->dma_slave;
+> +	struct dw_dma_slave		*dws;
+>  	u32				pioa_mask;
+>  	u32				piob_mask;
+>  
+> @@ -1339,6 +1339,8 @@ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
+>  				ARRAY_SIZE(atmel_mci0_resource)))
+>  		goto fail;
+>  
+> +	dws = kzalloc(sizeof(struct dw_dma_slave), GFP_KERNEL);
 
-can you post whole bootlog with debug?
+I don't see anywhere where this gets freed again?
 
-YH
+>  	dws->dma_dev = &dw_dmac0_device.dev;
+>  	dws->reg_width = DW_DMA_SLAVE_WIDTH_32BIT;
+>  	dws->cfg_hi = (DWC_CFGH_SRC_PER(0)
+> @@ -1346,6 +1348,8 @@ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
+>  	dws->cfg_lo &= ~(DWC_CFGL_HS_DST_POL
+>  				| DWC_CFGL_HS_SRC_POL);
+>  
+> +	data->dma_slave = dws;
+> +
+>  	if (platform_device_add_data(pdev, data,
+>  				sizeof(struct mci_platform_data)))
+>  		goto fail;
+> diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
+> index 065fa81..1689396 100644
+> --- a/drivers/mmc/host/atmel-mci.c
+> +++ b/drivers/mmc/host/atmel-mci.c
+> @@ -1575,16 +1575,71 @@ static void __exit atmci_cleanup_slot(struct atmel_mci_slot *slot,
+>  }
+>  
+>  #ifdef CONFIG_MMC_ATMELMCI_DMA
+> -static bool filter(struct dma_chan *chan, void *slave)
+> +static struct device *find_slave_dev(void *slave)
+> +{
+> +	if (!slave)
+> +		return NULL;
+> +
+> +	if (cpu_is_at32ap7000())
+> +		return ((struct dw_dma_slave *)slave)->dma_dev;
+> +	else
+> +		return ((struct at_dma_slave *)slave)->dma_dev;
+> +}
+
+Quite a few unsafeish typecasts here.
+
+>  struct mci_platform_data {
+> -	struct dw_dma_slave	dma_slave;
+> +	void			*dma_slave;
+>  	struct mci_slot_pdata	slot[ATMEL_MCI_MAX_NR_SLOTS];
+>  };
+
+I think the code would come out better if this has type dw_dma_slave*.
+
+You'll still need typecasts to support the dma_request_channel()
+callback, but the code will be safer and cleaner, I expect.
+
