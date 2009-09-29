@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbZI2TZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZI2T2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753914AbZI2TZn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 15:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZI2TZn
+	id S1753933AbZI2T2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 15:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZI2T2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 15:25:43 -0400
-Received: from hosting.visp.net.lb ([194.146.153.11]:60429 "EHLO
-	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbZI2TZm (ORCPT
+	Tue, 29 Sep 2009 15:28:49 -0400
+Received: from mail-pz0-f191.google.com ([209.85.222.191]:37595 "EHLO
+	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753752AbZI2T2s convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 15:25:42 -0400
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Eric.Moore@lsi.com
-Subject: MPT Fusion SAS 2.6.31 regression, crash on heavy load
-Content-Disposition: inline
-From: Denys Fedoryschenko <denys@visp.net.lb>
-Organization: VISP
-Date: Tue, 29 Sep 2009 22:25:09 +0300
+	Tue, 29 Sep 2009 15:28:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=sTXJfmnOHvJfC74WvlT7xYG9OioMLQdwdmICChC4rdlxtkN31bCi7l0bEIjq5W50ok
+         nISrvg5hbrsQaWhoWw+Mg1NLvDSwAbqSoWYSy9T0TwPq5bjiX1xtckqRr0rwJ/XjGy/5
+         p7p0tT/tXBEs2HZEfOpH4ayBDbvm2iqVNx1fU=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909292225.09188.denys@visp.net.lb>
+In-Reply-To: <Pine.A41.4.64.0909291547160.1114112@stalin.acc.umu.se>
+References: <Pine.A41.4.64.0909291547160.1114112@stalin.acc.umu.se>
+Date: Tue, 29 Sep 2009 12:28:51 -0700
+Message-ID: <86802c440909291228l7214c46agf9c62c0073b11e2a@mail.gmail.com>
+Subject: Re: still mtrr problems
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: =?ISO-8859-1?Q?Bo_Brant=E9n?= <bosse@acc.umu.se>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Filled a bugzilla entry, no answer for 3 days, and at same time it is clear 
-regression.
-http://bugzilla.kernel.org/show_bug.cgi?id=14242
+On Tue, Sep 29, 2009 at 6:52 AM, Bo Brantén <bosse@acc.umu.se> wrote:
+>
+> Hello,
+>
+> when installing 8G RAM on an Intel DG965OT motherboard Linux will hang at
+> boot (or parhaps only become very very slow) if I dont add the boot option
+> mem=8192M, Windows Vista 64-bit works without any probelm on the same
+> hardware.
+>
+> /proc/mtrr:
+> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+> reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
+> reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
+> reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
+> reg05: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
+> reg06: base=0x200000000 (8192MB), size= 512MB: write-back, count=1
+> reg07: base=0xd0000000 (3328MB), size= 256MB: write-combining, count=1
+>
+> dmesg|grep e820:
+> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000008f000 (usable)
+> [    0.000000]  BIOS-e820: 000000000008f000 - 00000000000a0000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000cf561000 (usable)
+> [    0.000000]  BIOS-e820: 00000000cf561000 - 00000000cf56e000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000cf56e000 - 00000000cf637000 (usable)
+> [    0.000000]  BIOS-e820: 00000000cf637000 - 00000000cf6e9000 (ACPI NVS)
+> [    0.000000]  BIOS-e820: 00000000cf6e9000 - 00000000cf6ed000 (usable)
+> [    0.000000]  BIOS-e820: 00000000cf6ed000 - 00000000cf6f2000 (ACPI data)
+> [    0.000000]  BIOS-e820: 00000000cf6f2000 - 00000000cf6f3000 (usable)
+> [    0.000000]  BIOS-e820: 00000000cf6f3000 - 00000000cf6ff000 (ACPI data)
+> [    0.000000]  BIOS-e820: 00000000cf6ff000 - 00000000cf700000 (usable)
+> [    0.000000]  BIOS-e820: 00000000cf700000 - 00000000d0000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000100000000 - 000000022c000000 (usable)
+> --
 
-While on 2.6.30.5 MPT SAS controller worked fine, on 2.6.31 it fails on heavy
-operations and start spitting errors to dmesg (they vary). Failsystems also
-stopped, and i am unable to reboot box properly (only over sysrq or 
-hardreset). 
+kernel should trim your e820 to 220000000, could be some strange MTRR
+layout that we don't want to touch.
 
-x86, Sun Fire X4100, 8 GB RAM, PAE kernel enabled, module loaded with default
-options
+can you post whole bootlog with debug?
 
-I upgrade BIOS, LSI controller BIOS to latest version, it didn't fix the bug.
-I cannot do bisection, because this is loaded server and semi-embedded system.
-But i can do tests of patches or reverse specific commits, if you point me to
-exact commit.
-
-http://www.nuclearcat.com/files/dmesg.ok from 2.6.30.5 kernel
-http://www.nuclearcat.com/files/dmesg.fail from 2.6.31.1 kernel
-http://www.nuclearcat.com/files/config.gz config from 2.6.31.1 kernel
-
-Let me know if you need any additional information.
-
-Additionally - i have few other similar units (X4100), but with less amount of 
-RAM (4GB),HDD's(2 only), less load (but still enough heavy at some moments) 
-working ok. I dont think it is hardware issue, since it works on 2.6.30 very 
-stable, and worked on other (older) kernels for 1 year and more. It is clear 
-regression and i guess dangerous regression (causing data loss on high 
-loads). I will try to bisect some changes on mpt driver today. 
-
-Please CC me on answers, i am not subscribed at any SCSI/LSI list.
-
-Crossposting to linux-kernel, since there is no mails about issue from 
-linux-scsi.
-
-Here is some technical info about controller over lsiutil
-Current active firmware version is 01102800 (1.16.40)
-Firmware image's version is MPTFW-01.16.40.00-IE
-  LSI Logic
-x86 BIOS image's version is MPTBIOS-6.14.04.00 (2007.02.27)
-
-SAS1064's links are 3.0 G, 3.0 G, 3.0 G, 3.0 G
-
- B___T     SASAddress     PhyNum  Handle  Parent  Type
-        50003ba0000003ba           0001           SAS Initiator
-        50003ba0000003bb           0002           SAS Initiator
-        50003ba0000003bc           0003           SAS Initiator
-        50003ba0000003bd           0004           SAS Initiator
- 0   0  500000e01277abd2     0     0005    0001   SAS Target
- 0   1  500000e011e3b602     1     0006    0001   SAS Target
- 0   2  500000e012779792     2     0007    0001   SAS Target
- 0   3  500000e0120efb42     3     0008    0001   SAS Target
-
-Type      NumPhys    PhyNum  Handle     PhyNum  Handle  Port  Speed
-Adapter      4          0     0001  -->    0     0005     0    3.0
-                        1     0001  -->    0     0006     1    3.0
-                        2     0001  -->    0     0007     2    3.0
-                        3     0001  -->    0     0008     3    3.0
-
-Enclosure Handle   Slots       SASAddress       B___T (SEP)
-           0001      4      50003ba0000003ba
+YH
