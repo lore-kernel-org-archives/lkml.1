@@ -1,105 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZI2AjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbZI2ApG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbZI2AjL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 20:39:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZI2AjK
+	id S1753821AbZI2ApG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 20:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbZI2ApF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 20:39:10 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:49320 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbZI2AjJ convert rfc822-to-8bit (ORCPT
+	Mon, 28 Sep 2009 20:45:05 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:47791 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753645AbZI2ApE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 20:39:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VLIAxPTAv6VGUJqCAO82mlhHT4hI1F1pszqBd1zwuFQbQOtLcwTnMqfagqbPJYXNko
-         JsQalGnajd73CiwUgTIp9u7bckR/JpzIEnyWEvT8hvbQfqvrN2z0FRYBVbsVc6BX4HvK
-         vkYq5QZ9/q8TPKTKn/S/HWhIJmUVK3UUBYFI0=
-MIME-Version: 1.0
-In-Reply-To: <200909282220.32582.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0909280202280.14348-100000@netrider.rowland.org>
-	 <200909282220.32582.rjw@sisk.pl>
-Date: Tue, 29 Sep 2009 08:39:12 +0800
-Message-ID: <a8e1da0909281739j516177cfv82dcf0dcb807ce9b@mail.gmail.com>
-Subject: Re: [linux-pm] [PATCH, fix] Re: [Regression] 2.6.31-git: tty change 
-	broke resume from hibernation on MSI Wind U100
-From: Dave Young <hidave.darkstar@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <gregkh@suse.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 28 Sep 2009 20:45:04 -0400
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <4AB9CE66.1030504@redhat.com>
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
+	 <20090919224430.GB9567@kroah.com>
+	 <1253419185.3253.21.camel@ank32.eng.vmware.com>
+	 <20090920074247.GA5733@elte.hu>
+	 <1253647845.10565.20.camel@ank32.eng.vmware.com>
+	 <4AB9CE66.1030504@redhat.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 28 Sep 2009 17:45:07 -0700
+Message-Id: <1254185107.13456.32.camel@ank32.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 4:20 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday 28 September 2009, Alan Stern wrote:
->> On Mon, 28 Sep 2009, Dave Young wrote:
->>
->> > On Mon, Sep 28, 2009 at 2:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > > On Sunday 27 September 2009, Alan Stern wrote:
->> > >> On Sun, 27 Sep 2009, Rafael J. Wysocki wrote:
->> > >>
->> > >> > Tested, works.
->> > >> >
->> > >> > Greg, could you please consider taking the patch below? Â It fixes a recent
->> > >> > hibernation regression for me, so if not this one, another fix is necessary.
->> > >>
->> > >> This patch has a mistake.
->> > >>
->> > >> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
->> > >> > ===================================================================
->> > >> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
->> > >> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
->> > >> > @@ -1210,7 +1210,7 @@ static const struct tty_operations seria
->> > >> > Â  Â  .chars_in_buffer = Â  Â  Â serial_chars_in_buffer,
->> > >> > Â  Â  .tiocmget = Â  Â  Â  Â  Â  Â  serial_tiocmget,
->> > >> > Â  Â  .tiocmset = Â  Â  Â  Â  Â  Â  serial_tiocmset,
->> > >> > - Â  .shutdown = Â  Â  Â  Â  Â  Â  serial_release,
->> > >> > + Â  .cleanup = Â  Â  Â  Â  Â  Â  Â serial_release,
->> > >> > Â  Â  .install = Â  Â  Â  Â  Â  Â  Â serial_install,
->> > >> > Â  Â  .proc_fops = Â  Â  Â  Â  Â  Â &serial_proc_fops,
->> > >> > Â };
->> > >>
->> > >> It isn't enough to change the method pointer. Â The code in
->> > >> serial_release() has to be changed too; it must not call tty_shutdown()
->> > >> any more.
->> > >
->> > > Would it be sufficient to remove the tty_shutdown() call from
->> > > serial_release()?
->> >
->> > I think so, because standard shutdown will be called in queue_release_one_tty.
->> >
->> > Alan, could you confirm about this?  Thus I'd like to update the patch.
->>
->> Yes, that's right.  Just remove the function call.  But what happens if
->> the device is a serial console?  Shouldn't the call to tty_shutdown()
->> be skipped in that case?  (Eventually this won't matter; the console
->> code will be straightened out so that we never release a serial console
->> device.  But for now it's important.)
->>
->> If you think it would be appropriate, you could also rename
->> serial_release() to serial_cleanup() -- it's up to you.
->
-> The patch has been fixed up by Linus and merged as
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f278a2f7bbc2239f479eaf63d0b3ae573b1d746c
->
-> If any more fixes are necessary, they'll have to go on top of it.
 
-Oh, I'm late. Thanks for tell
+On Wed, 2009-09-23 at 00:29 -0700, Gerd Hoffmann wrote:
+> On 09/22/09 21:30, Alok Kataria wrote:
+> > Hi Ingo,
+> >
+> > On Sun, 2009-09-20 at 00:42 -0700, Ingo Molnar wrote:
+> >
+> >>
+> >> The thing is, the overwhelming majority of vmware users dont benefit
+> >> from hardware features like nested page tables yet. So this needs to be
+> >> done _way_ more carefully, with a proper sunset period of a couple of
+> >> kernel cycles.
+> >
+> > I am fine with that too. Below is a patch which adds notes in
+> > feature-removal-schedule.txt, I have marked it for removal from 2.6.34.
+> > Please consider this patch for 2.6.32.
+> 
+> Hmm.  Given that you are talking about vmi not being supported any more 
+> in *future* products, there is a huge installed base with vmi support 
+> available, right?  I don't think we should zap the code that quickly.
 
->
-> Best,
-> Rafael
->
+Yep, hpa too raised the same issue, I spoke to him during LPC and we
+decided that 2.6.37 will be the right time frame for removal of this
+code. 
+For now I have just added some text in the feature-removal file and
+disabled VMI by default in the Kconfig, the reason that needs to be done
+is because "Live Migration" of a VMI enabled VM to future products which
+don't support VMI will not work, so its important that newer distros
+keep this disabled, if they want seamless migration that is.
+
+> 
+> >   config VMI
+> > -	bool "VMI Guest support"
+> > -	select PARAVIRT
+> > -	depends on X86_32
+> > +	bool "VMI Guest support [will be deprecated soon]"
+> > +	default n
+> > +	depends on X86_32&&  PARAVIRT
+> >   	---help---
+> >   	  VMI provides a paravirtualized interface to the VMware ESX server
+> >   	  (it could be used by other hypervisors in theory too, but is not
+> >   	  at the moment), by linking the kernel to a GPL-ed ROM module
+> >   	  provided by the hypervisor.
+> > +	  VMware has started a phased retirement of this feature from there
+> > +	  products. Please see feature-removal-schedule.txt for details.
+> 
+> How about adding version numbers here?  i.e. latest versions with vmi 
+> support are workstation x.y, ...
+> 
+> So people can easily figure whenever it makes sense to turn this on for 
+> their environment.
+
+Okay, have added that text too.
+
+Thanks for your comments.
+
+Ingo/hpa, please consider the patch below for tip. 
+
+--
+
+Mark VMI for deprecation in feature-removal-schedule.txt.
+
+From: Alok N Kataria <akataria@vmware.com>
+
+Add text in feature-removal.txt and also modify Kconfig to disable
+vmi by default.
+---
+
+ Documentation/feature-removal-schedule.txt |   30 ++++++++++++++++++++++++++++
+ arch/x86/Kconfig                           |   13 +++++++++---
+ 2 files changed, 40 insertions(+), 3 deletions(-)
 
 
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index fa75220..0271f37 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -459,3 +459,33 @@ Why:	OSS sound_core grabs all legacy minors (0-255) of SOUND_MAJOR
+ 	will also allow making ALSA OSS emulation independent of
+ 	sound_core.  The dependency will be broken then too.
+ Who:	Tejun Heo <tj@kernel.org>
++
++----------------------------
++
++What:	Support for VMware's guest paravirtuliazation technique [VMI] will be
++	dropped.
++When:	2.6.37 or earlier.
++Why:	With the recent innovations in CPU hardware acceleration technologies
++	from Intel and AMD, VMware ran a few experiments to compare these
++	techniques to guest paravirtualization technique on VMware's platform.
++	These hardware assisted virtualization techniques have outperformed the
++	performance benefits provided by VMI in most of the workloads. VMware
++	expects that these hardware features will be ubiquitous in a couple of
++	years, as a result, VMware has started a phased retirement of this
++	feature from the hypervisor. We will be removing this feature from the
++	Kernel too. Right now we are targeting 2.6.37 but can retire earlier if
++	technical reasons ( read opportunity to remove major chunk of pvops)
++	arise.
++
++	Please note that VMI has always been an optimization and non-VMI kernels
++	still work fine on VMware's platform.
++	Latest versions of VMware's product which support VMI are,
++	Workstation 7.0 and VSphere 4.0 on ESX side, future maintainence
++	releases for these products will continue supporting VMI.
++
++	For more details about VMI retirement take a look at this,
++	http://blogs.vmware.com/guestosguide/2009/09/vmi-retirement.html
++
++Who:	Alok N Kataria <akataria@vmware.com>
++
++----------------------------
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index e214f45..84fd47c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -485,14 +485,21 @@ if PARAVIRT_GUEST
+ source "arch/x86/xen/Kconfig"
+ 
+ config VMI
+-	bool "VMI Guest support"
+-	select PARAVIRT
+-	depends on X86_32
++	bool "VMI Guest support [will be deprecated soon]"
++	default n
++	depends on X86_32 && PARAVIRT
+ 	---help---
+ 	  VMI provides a paravirtualized interface to the VMware ESX server
+ 	  (it could be used by other hypervisors in theory too, but is not
+ 	  at the moment), by linking the kernel to a GPL-ed ROM module
+ 	  provided by the hypervisor.
++	  As of September 2009, VMware has started a phased retirement of this
++	  feature from VMware's products. Please see
++	  feature-removal-schedule.txt for details.
++	  If you are planning to enable this option, please note that you
++	  cannot live migrate a VMI enabled VM to a future VMware product,
++	  which doesn't support VMI. So if you expect your kernel to seamlessly
++	  migrate to newer VMware products, keep this disabled.
+ 
+ config KVM_CLOCK
+ 	bool "KVM paravirtualized clock"
 
--- 
-Regards
-dave
+
