@@ -1,62 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZI2RNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbZI2RSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbZI2RNk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZI2RNj
+	id S1753238AbZI2RSJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZI2RSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:13:39 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42376 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753449AbZI2RNi (ORCPT
+	Tue, 29 Sep 2009 13:18:07 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:25661 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbZI2RSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:13:38 -0400
-Date: Tue, 29 Sep 2009 19:13:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-rdma@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
-Message-ID: <20090929171332.GD14405@elf.ucw.cz>
-References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins> <adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com> <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com> <adatyz1d17q.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adatyz1d17q.fsf@cisco.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 29 Sep 2009 13:18:06 -0400
+Date: Tue, 29 Sep 2009 10:17:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       ecryptfs-devel@lists.launchpad.net,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH -mmotm] ecryptfs: depends on CRYPTO
+Message-Id: <20090929101725.a225d382.randy.dunlap@oracle.com>
+In-Reply-To: <4AC23F27.20804@linux.vnet.ibm.com>
+References: <200909252158.n8PLwFhG024011@imap1.linux-foundation.org>
+	<20090928133420.f53a015f.randy.dunlap@oracle.com>
+	<4AC15058.8020709@linux.vnet.ibm.com>
+	<20090928172024.9f944f16.randy.dunlap@oracle.com>
+	<4AC23F27.20804@linux.vnet.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt014.oracle.com [141.146.116.23]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4AC24128.0056:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-09-17 08:45:29, Roland Dreier wrote:
-> 
->  > > > Hmm, or are you saying you can only get 1 event per registered range and
->  > > > allocate the thing on registration? That'd need some registration limit
->  > > > to avoid DoS scenarios.
->  > > 
->  > > Yes, that's what I do.  You're right, I should add a limit... although
->  > > their are lots of ways for userspace to consume arbitrary amounts of
->  > > kernel resources already.
->  > 
->  > I'd be good to work at reducing that number, not adding to it ;-)
-> 
-> Yes, definitely.  I'll add a quick ummunotify module parameter that
-> limits the number of registrations per process.
-> 
->  > But yeah, I currently don't see a very nice match to perf counters.
-> 
-> OK.  It would be nice to tie into something more general, but I think I
-> agree -- perf counters are missing the filtering and the "no lost
-> events" that ummunotify does have.  And I'm not sure it's worth messing
-> up the perf counters design just to jam one more not totally related
-> thing in.
+On Tue, 29 Sep 2009 12:08:55 -0500 Tyler Hicks wrote:
 
-I believe that extending perf counters to do what you want is better
-than adding one more, very strange, user<->kernel interface.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> On 09/28/2009 07:20 PM, Randy Dunlap wrote:
+> > On Mon, 28 Sep 2009 19:10:00 -0500 Tyler Hicks wrote:
+> > 
+> >> On 09/28/2009 03:34 PM, Randy Dunlap wrote:
+> >>> From: Randy Dunlap <randy.dunlap@oracle.com>
+> >>>
+> >>> ecryptfs uses crypto APIs so it should depend on CRYPTO.
+> >>> Otherwise many build errors occur. [63 lines not pasted]
+> >>>
+> >>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> >>> ---
+> >>>  fs/ecryptfs/Kconfig |    2 +-
+> >>>  1 file changed, 1 insertion(+), 1 deletion(-)
+> >>>
+> >>> --- mmotm-2009-0925-1435.orig/fs/ecryptfs/Kconfig
+> >>> +++ mmotm-2009-0925-1435/fs/ecryptfs/Kconfig
+> >>> @@ -1,6 +1,6 @@
+> >>>  config ECRYPT_FS
+> >>>  	tristate "eCrypt filesystem layer support (EXPERIMENTAL)"
+> >>> -	depends on EXPERIMENTAL && KEYS && NET
+> >>> +	depends on EXPERIMENTAL && KEYS && NET && CRYPTO
+> >>>  	select CRYPTO_ECB
+> >>>  	select CRYPTO_CBC
+> >>>  	help
+> >>
+> >> Hi Randy - Thanks for the patch!  Unfortunately, I think it defeats what
+> >> Dave Hansen was wanting to do with commit
+> >> 382684984e93039a3bbd83b04d341b0ceb831519.
+> >>
+> >> When I pulled that patch in, I was under the assumption that the select
+> >> would also select all necessary dependencies.  According to
+> >> Documentation/kbuild/kconfig-language.txt, that's not the case:
+> >>
+> >> 	select should be used with care. select will force
+> >> 	a symbol to a value without visiting the dependencies.
+> >>         By abusing select you are able to select a symbol FOO even
+> >>         if FOO depends on BAR that is not set.
+> >>
+> >> Maybe we should do it how other folks are tackling this problem and
+> >> select CRYPTO, along with CRYPTO_ECB and CRYPTO_CBC.  While we're at it,
+> >> we should probably throw in CRYPTO_AES (aes-128 is the default cipher,
+> >> but the cipher is configurable at mount so it might be too obtrusive for
+> >> us to select it) and CRYPTO_MD5 (our default hash alg, not currently
+> >> configurable).  Also, we don't depend on NET anymore because our netlink
+> >> interface is no longer around.  It may not hurt to select KEYS, rather
+> >> than depend on it.  Does all of this sound sane to you?
+> > 
+> > It selects too much stuff.  "select" should not be used to enable
+> > a full subsystem (that's my general rule, not in kconfig-language.txt).
+> > What kconfig-language.txt says that applies here is just after your
+> > quoted text:
+> > 
+> > 	In general use select only for non-visible symbols
+> > 	(no prompts anywhere) and for symbols with no dependencies.
+> > 	That will limit the usefulness but on the other hand avoid
+> > 	the illegal configurations all over.
+> > 
+> > CRYPTO does not fit that.
+> > 
+> > One of the big problems with selecting kconfig symbols (like subsystem
+> > ones) is that it makes it difficult to disable that symbol, which some
+> > of us often want to do.
+> > 
+> > 
+> > ---
+> > ~Randy
+> 
+> eCryptfs wouldn't be the first to select CRYPTO:
+> 
+> $ grep -r "select CRYPTO$" --include=Kconfig . | wc -l
+> 26
+
+Yes, I realize that.  and INPUT is selected to much also.  :(
+
+
+> But after trying to deselect CRYPTO with one of my custom configs, I
+> realized that you are right. :)  Depending on CRYPTO and then selecting
+> the proper CRYPTO_* symbols is the way to go.
+> 
+> Applied to
+> git://git.kernel.org/pub/scm/linux/kernel/git/ecryptfs/ecryptfs-2.6.git#next
+> 
+> Thanks again!
+
+Thanks, glad that you tried the experiment.
+
+---
+~Randy
