@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZI2IG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbZI2IMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbZI2IG4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 04:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZI2IGz
+	id S1753483AbZI2IMF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 04:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZI2IMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 04:06:55 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:36930 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753097AbZI2IGx (ORCPT
+	Tue, 29 Sep 2009 04:12:05 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43754 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212AbZI2IMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 04:06:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=I6XXcXQds6ADPn3iWNCNY8vsqATE9dxfOYzlt+pNgDKnLMEe0d6p6a4CrkzYvIG0ZA
-         ScN0ZNnaxeOz2oxlb5XOvl6Gi2swLCH17/GS++1GIgylBRmpawVki3iqp4IDYaHl4npt
-         6eQpAwTt03MWelYu7yTf5gWtaLEYxdD/V4RD8=
-Date: Tue, 29 Sep 2009 10:06:57 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: John Kacur <jkacur@redhat.com>
-Cc: mingo@elte.hu, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org
-Subject: Re: [PATCH] Put common histogram functions for perf in their own
-	file
-Message-ID: <20090929080654.GC5233@nowhere>
-References: <alpine.LFD.2.00.0909281457530.8316@localhost.localdomain> <20090928140158.GA6178@nowhere> <alpine.LFD.2.00.0909281652001.10299@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0909281652001.10299@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 29 Sep 2009 04:12:03 -0400
+Date: Tue, 29 Sep 2009 10:08:31 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: akataria@vmware.com
+Cc: Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+Message-ID: <20090929100831.18ece319@infradead.org>
+In-Reply-To: <1254185107.13456.32.camel@ank32.eng.vmware.com>
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
+	<20090919224430.GB9567@kroah.com>
+	<1253419185.3253.21.camel@ank32.eng.vmware.com>
+	<20090920074247.GA5733@elte.hu>
+	<1253647845.10565.20.camel@ank32.eng.vmware.com>
+	<4AB9CE66.1030504@redhat.com>
+	<1254185107.13456.32.camel@ank32.eng.vmware.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 05:04:07PM +0200, John Kacur wrote:
-> perf annotate still will not sort the entries with these changes.
-> because callchain will be equal to zero.
+> For now I have just added some text in the feature-removal file and
+> disabled VMI by default in the Kconfig, the reason that needs to be
+> done is because "Live Migration" of a VMI enabled VM to future
+> products which don't support VMI will not work, so its important that
+> newer distros keep this disabled, if they want seamless migration
+> that is.
 
-
-
-The sorting does not only applies to callchains but also on
-histogram entries.
-
-
- 
-> Calling output__resort(total) will be harmless because the calculation
-> will be thrown away in output__insert_entry() here:
-> if (callchain)
-> 		callchain_param.sort(&he->sorted_chain, &he->callchain,
-> 				      min_callchain_hits, &callchain_param);
-
-
-
-Hmm, but the histogram entries will still be sorted, I might be wrong
-but it doesn't seem to be needed.
-
-That said it's not something introduced by your patch, it was
-already there, but I guess it would be a nice separate cleanup patch.
-
-
-> From 7c6a2035c32d17db0e566a36c7e345ec2182f722 Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Mon, 28 Sep 2009 14:53:08 +0200
-> Subject: [PATCH] Put common histogram functions for perf in their own file
-> 
-> Move histogram related functions into their own files (hist.c and hist.h)
-> and make use of them in builtin-annotate.c and builtin-report.c
-> 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
-
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-Thanks!
-
+btw the "default" in KConfig tends to be totally ignored by distro
+kernel maintainers... please don't assume that just because some default
+is set in KConfig it has ANY impact on what shows up in distributions.
