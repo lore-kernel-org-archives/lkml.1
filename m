@@ -1,616 +1,463 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbZI2BiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbZI2Bn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948AbZI2BiE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 21:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbZI2BiD
+	id S1753951AbZI2Bn4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 21:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZI2Bnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 21:38:03 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:49018 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753860AbZI2BiB (ORCPT
+	Mon, 28 Sep 2009 21:43:55 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44584 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753777AbZI2Bny (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 21:38:01 -0400
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: linux-kernel@vger.kernel.org
-Cc: len.brown@intel.com, don@syst.com.br, linux-acpi@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: [PATCH] cmpc_acpi: Added support for Classmate PC ACPI devices.
-Date: Mon, 28 Sep 2009 22:38:00 -0300
-Message-Id: <1254188280-29155-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: git-send-email 1.6.3.3
+	Mon, 28 Sep 2009 21:43:54 -0400
+Date: Mon, 28 Sep 2009 21:43:57 -0400
+From: Dirk Hohndel <hohndel@infradead.org>
+To: Jin Kosina <trivial@kernel.org>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] trivial fix of a very frequent spelling mistake
+Message-ID: <20090929014357.GA3597@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This add supports for devices like keyboard, backlight, tablet and
-accelerometer.
+something-bility is spelled as something-blity
+so a grep for 'blit' would find these lines
 
-This work is supported by International Syst S/A.
+this is so trivial that I didn't split it by subsystem / copy 
+additional maintainers - all changes are to comments
+The only purpose is to get fewer false positives when grepping
+around the kernel sources.
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Signed-off-by: Dirk Hohndel <hohndel@infradead.org>
+
 ---
- MAINTAINERS                      |    6 +
- drivers/platform/x86/Kconfig     |   12 +
- drivers/platform/x86/Makefile    |    1 +
- drivers/platform/x86/cmpc_acpi.c |  522 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 541 insertions(+), 0 deletions(-)
- create mode 100644 drivers/platform/x86/cmpc_acpi.c
+ arch/parisc/kernel/perf.c                        |    2 +-
+ arch/powerpc/kernel/vdso.c                       |    2 +-
+ arch/powerpc/oprofile/op_model_cell.c            |    2 +-
+ drivers/char/tty_ioctl.c                         |    2 +-
+ drivers/isdn/i4l/isdn_net.c                      |    2 +-
+ drivers/md/dm-crypt.c                            |    2 +-
+ drivers/media/dvb/dvb-core/dvb_net.c             |    2 +-
+ drivers/net/tokenring/ibmtr.c                    |    2 +-
+ drivers/net/wireless/orinoco/hermes_dld.c        |    4 ++--
+ drivers/scsi/3w-9xxx.c                           |    2 +-
+ drivers/scsi/3w-xxxx.c                           |    2 +-
+ drivers/scsi/nsp32.c                             |    2 +-
+ drivers/staging/comedi/drivers/cb_das16_cs.c     |    2 +-
+ drivers/staging/comedi/drivers/cb_pcidda.c       |    2 +-
+ drivers/staging/comedi/drivers/dmm32at.c         |    2 +-
+ drivers/staging/comedi/drivers/dt2814.c          |    2 +-
+ drivers/staging/comedi/drivers/dt282x.c          |    4 ++--
+ drivers/staging/comedi/drivers/ni_atmio16d.c     |    2 +-
+ drivers/staging/comedi/drivers/ni_mio_common.c   |    2 +-
+ drivers/staging/comedi/drivers/ni_pcidio.c       |    2 +-
+ drivers/staging/comedi/drivers/quatech_daqp_cs.c |    2 +-
+ drivers/staging/comedi/drivers/rtd520.c          |    2 +-
+ drivers/staging/comedi/drivers/s626.c            |    2 +-
+ drivers/staging/comedi/drivers/skel.c            |    2 +-
+ drivers/staging/comedi/drivers/usbdux.c          |    4 ++--
+ drivers/uwb/neh.c                                |    2 +-
+ net/sched/act_api.c                              |    2 +-
+ sound/pci/ice1712/juli.c                         |    2 +-
+ 28 files changed, 31 insertions(+), 31 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c450f3a..9e14df1 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1368,6 +1368,12 @@ L:	linux-scsi@vger.kernel.org
- S:	Supported
- F:	drivers/scsi/fnic/
+diff --git a/arch/parisc/kernel/perf.c b/arch/parisc/kernel/perf.c
+index 75099ef..f9f6783 100644
+--- a/arch/parisc/kernel/perf.c
++++ b/arch/parisc/kernel/perf.c
+@@ -24,7 +24,7 @@
+  *
+  *  This driver programs the PCX-U/PCX-W performance counters
+  *  on the PA-RISC 2.0 chips.  The driver keeps all images now
+- *  internally to the kernel to hopefully eliminate the possiblity
++ *  internally to the kernel to hopefully eliminate the possibility
+  *  of a bad image halting the CPU.  Also, there are different
+  *  images for the PCX-W and later chips vs the PCX-U chips.
+  *
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 94e2df3..4ae0449 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -712,7 +712,7 @@ static int __init vdso_init(void)
  
-+CMPC ACPI DRIVER
-+M:	Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-+M:	Daniel Oliveira Nascimento <don@syst.com.br>
-+S:	Supported
-+F:	drivers/platform/x86/cmpc_acpi.c
-+
- CODA FILE SYSTEM
- M:	Jan Harkes <jaharkes@cs.cmu.edu>
- M:	coda@cs.cmu.edu
-diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index 55ca39d..2cbc6a6 100644
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -435,4 +435,16 @@ config ACPI_TOSHIBA
+ #ifdef CONFIG_PPC64
+ 	/*
+-	 * Fill up the "systemcfg" stuff for backward compatiblity
++	 * Fill up the "systemcfg" stuff for backward compatibility
+ 	 */
+ 	strcpy((char *)vdso_data->eye_catcher, "SYSTEMCFG:PPC64");
+ 	vdso_data->version.major = SYSTEMCFG_MAJOR;
+diff --git a/arch/powerpc/oprofile/op_model_cell.c b/arch/powerpc/oprofile/op_model_cell.c
+index ae06c62..52c98ed 100644
+--- a/arch/powerpc/oprofile/op_model_cell.c
++++ b/arch/powerpc/oprofile/op_model_cell.c
+@@ -248,7 +248,7 @@ static int pm_rtas_activate_signals(u32 node, u32 count)
+ 	 * There is no debug setup required for the cycles event.
+ 	 * Note that only events in the same group can be used.
+ 	 * Otherwise, there will be conflicts in correctly routing
+-	 * the signals on the debug bus.  It is the responsiblity
++	 * the signals on the debug bus.  It is the responsibility
+ 	 * of the OProfile user tool to check the events are in
+ 	 * the same group.
+ 	 */
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index 8e67d5c..6bd5f88 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -315,7 +315,7 @@ EXPORT_SYMBOL(tty_termios_input_baud_rate);
+  *	For maximal back compatibility with legacy SYS5/POSIX *nix behaviour
+  *	we need to carefully set the bits when the user does not get the
+  *	desired speed. We allow small margins and preserve as much of possible
+- *	of the input intent to keep compatiblity.
++ *	of the input intent to keep compatibility.
+  *
+  *	Locking: Caller should hold termios lock. This is already held
+  *	when calling this function from the driver termios handler.
+diff --git a/drivers/isdn/i4l/isdn_net.c b/drivers/isdn/i4l/isdn_net.c
+index 90b56ed..507e13d 100644
+--- a/drivers/isdn/i4l/isdn_net.c
++++ b/drivers/isdn/i4l/isdn_net.c
+@@ -1563,7 +1563,7 @@ isdn_net_ciscohdlck_slarp_send_keepalive(unsigned long data)
+ 	*(__be32 *)(p +  4) = cpu_to_be32(CISCO_SLARP_KEEPALIVE);
+ 	*(__be32 *)(p +  8) = cpu_to_be32(lp->cisco_myseq);
+ 	*(__be32 *)(p + 12) = cpu_to_be32(lp->cisco_yourseq);
+-	*(__be16 *)(p + 16) = cpu_to_be16(0xffff); // reliablity, always 0xffff
++	*(__be16 *)(p + 16) = cpu_to_be16(0xffff); // reliability, always 0xffff
+ 	p += 18;
  
- 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
- 	  series), say Y.
-+
-+config ACPI_CMPC
-+	tristate "CMPC Laptop Extras"
-+	depends on X86
-+	select INPUT
-+	select BACKLIGHT_CLASS_DEVICE
-+	default n
-+	help
-+	  Support for Intel Classmate PC ACPI devices, including some
-+	  keys as input device, backlight device, tablet and accelerometer
-+	  devices.
-+
- endif # X86_PLATFORM_DEVICES
-diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
-index d1c1621..fc92247 100644
---- a/drivers/platform/x86/Makefile
-+++ b/drivers/platform/x86/Makefile
-@@ -21,3 +21,4 @@ obj-$(CONFIG_ACPI_WMI)		+= wmi.o
- obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
- obj-$(CONFIG_TOPSTAR_LAPTOP)	+= topstar-laptop.o
- obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
-+obj-$(CONFIG_ACPI_CMPC)		+= cmpc_acpi.o
-diff --git a/drivers/platform/x86/cmpc_acpi.c b/drivers/platform/x86/cmpc_acpi.c
-new file mode 100644
-index 0000000..c77c855
---- /dev/null
-+++ b/drivers/platform/x86/cmpc_acpi.c
-@@ -0,0 +1,522 @@
-+/*
-+ *  Copyright (C) 2009  Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/workqueue.h>
-+#include <acpi/acpi_drivers.h>
-+#include <linux/backlight.h>
-+#include <linux/input.h>
-+
-+MODULE_LICENSE("GPL");
-+
-+
-+/*
-+ * Generic input device code.
-+ */
-+
-+typedef void (*input_device_init)(struct input_dev *dev);
-+
-+static int cmpc_add_acpi_notify_device(struct acpi_device *acpi, char *name,
-+				       acpi_notify_handler handler,
-+				       input_device_init idev_init)
-+{
-+	struct input_dev *inputdev;
-+	acpi_status status;
-+	int error;
-+	inputdev = input_allocate_device();
-+	if (!inputdev) {
-+		error = -ENOMEM;
-+		goto out;
-+	}
-+	inputdev->name = name;
-+	inputdev->dev.parent = &acpi->dev;
-+	idev_init(inputdev);
-+	error = input_register_device(inputdev);
-+	if (error)
-+		goto err_reg;
-+	dev_set_drvdata(&acpi->dev, inputdev);
-+	status = acpi_install_notify_handler(acpi->handle, ACPI_DEVICE_NOTIFY,
-+					     handler, inputdev);
-+	if (ACPI_FAILURE(status)) {
-+		error = -ENODEV;
-+		goto err_acpi;
-+	}
-+	return 0;
-+err_acpi:
-+	input_unregister_device(inputdev);
-+err_reg:
-+	input_free_device(inputdev);
-+out:
-+	return error;
-+}
-+
-+static int cmpc_remove_acpi_notify_device(struct acpi_device *acpi,
-+					  acpi_notify_handler handler)
-+{
-+	struct input_dev *inputdev;
-+	acpi_status status;
-+	status = acpi_remove_notify_handler(acpi->handle, ACPI_DEVICE_NOTIFY,
-+					    handler);
-+	inputdev = dev_get_drvdata(&acpi->dev);
-+	input_unregister_device(inputdev);
-+	input_free_device(inputdev);
-+	return 0;
-+}
-+
-+
-+/*
-+ * Accelerometer code.
-+ */
-+
-+static acpi_status cmpc_start_accel(acpi_handle handle)
-+{
-+	union acpi_object param[2];
-+	struct acpi_object_list input;
-+	acpi_status status;
-+	param[0].type = ACPI_TYPE_INTEGER;
-+	param[0].integer.value = 0x3;
-+	param[1].type = ACPI_TYPE_INTEGER;
-+	input.count = 2;
-+	input.pointer = param;
-+	status = acpi_evaluate_object(handle, "ACMD", &input, NULL);
-+	return status;
-+}
-+
-+static acpi_status cmpc_stop_accel(acpi_handle handle)
-+{
-+	union acpi_object param[2];
-+	struct acpi_object_list input;
-+	acpi_status status;
-+	param[0].type = ACPI_TYPE_INTEGER;
-+	param[0].integer.value = 0x4;
-+	param[1].type = ACPI_TYPE_INTEGER;
-+	input.count = 2;
-+	input.pointer = param;
-+	status = acpi_evaluate_object(handle, "ACMD", &input, NULL);
-+	return status;
-+}
-+
-+static acpi_status cmpc_accel_set_sense(acpi_handle handle, int val)
-+{
-+	union acpi_object param[2];
-+	struct acpi_object_list input;
-+	param[0].type = ACPI_TYPE_INTEGER;
-+	param[0].integer.value = 0x02;
-+	param[1].type = ACPI_TYPE_INTEGER;
-+	param[1].integer.value = val;
-+	input.count = 2;
-+	input.pointer = param;
-+	return acpi_evaluate_object(handle, "ACMD", &input, NULL);
-+}
-+
-+static acpi_status cmpc_get_accel(acpi_handle handle,
-+				  unsigned char *x,
-+				  unsigned char *y,
-+				  unsigned char *z)
-+{
-+	union acpi_object param[2];
-+	struct acpi_object_list input;
-+	struct acpi_buffer output = { ACPI_ALLOCATE_BUFFER, 0 };
-+	unsigned char *locs;
-+	acpi_status status;
-+	param[0].type = ACPI_TYPE_INTEGER;
-+	param[0].integer.value = 0x01;
-+	param[1].type = ACPI_TYPE_INTEGER;
-+	input.count = 2;
-+	input.pointer = param;
-+	status = acpi_evaluate_object(handle, "ACMD", &input, &output);
-+	if (ACPI_SUCCESS(status)) {
-+		union acpi_object *obj;
-+		obj = output.pointer;
-+		locs = obj->buffer.pointer;
-+		*x = locs[0];
-+		*y = locs[1];
-+		*z = locs[2];
-+		kfree(output.pointer);
-+	}
-+	return status;
-+}
-+
-+static void cmpc_accel_handler(acpi_handle handle, u32 event, void *ctx)
-+{
-+	struct input_dev *inputdev = ctx;
-+	acpi_status status;
-+	unsigned char x, y, z;
-+	if (event == 0x81) {
-+		status = cmpc_get_accel(handle, &x, &y, &z);
-+		if (ACPI_SUCCESS(status)) {
-+			input_report_abs(inputdev, ABS_X, x);
-+			input_report_abs(inputdev, ABS_Y, y);
-+			input_report_abs(inputdev, ABS_Z, z);
-+			input_sync(inputdev);
-+		}
-+	}
-+}
-+
-+static ssize_t cmpc_accel_sense_store(struct device *dev,
-+				      struct device_attribute *attr,
-+				      const char *buf, size_t count)
-+{
-+	struct acpi_device *acpi;
-+	int sense;
-+	acpi = to_acpi_device(dev);
-+	if (sscanf(buf, "%d", &sense) <= 0)
-+		return -EINVAL;
-+	cmpc_accel_set_sense(acpi->handle, sense);
-+	return strnlen(buf, count);
-+}
-+
-+struct device_attribute cmpc_accel_sense_attr = {
-+	.attr = { .name = "sense", .mode = 0220 },
-+	.store = cmpc_accel_sense_store
-+};
-+
-+static int cmpc_accel_open(struct input_dev *input)
-+{
-+	struct acpi_device *acpi;
-+	acpi = to_acpi_device(input->dev.parent);
-+	if (ACPI_SUCCESS(cmpc_start_accel(acpi->handle)))
-+		return 0;
-+	return -EIO;
-+}
-+
-+static void cmpc_accel_close(struct input_dev *input)
-+{
-+	struct acpi_device *acpi;
-+	acpi = to_acpi_device(input->dev.parent);
-+	cmpc_stop_accel(acpi->handle);
-+}
-+
-+static void cmpc_accel_idev_init(struct input_dev *inputdev)
-+{
-+	set_bit(EV_ABS, inputdev->evbit);
-+	input_set_abs_params(inputdev, ABS_X, 0, 255, 8, 0);
-+	input_set_abs_params(inputdev, ABS_Y, 0, 255, 8, 0);
-+	input_set_abs_params(inputdev, ABS_Z, 0, 255, 8, 0);
-+	inputdev->open = cmpc_accel_open;
-+	inputdev->close = cmpc_accel_close;
-+}
-+
-+static int cmpc_accel_add(struct acpi_device *acpi)
-+{
-+	int error;
-+	error = device_create_file(&acpi->dev, &cmpc_accel_sense_attr);
-+	if (error)
-+		return error;
-+	return cmpc_add_acpi_notify_device(acpi, "cmpc_accel",
-+					   cmpc_accel_handler,
-+					   cmpc_accel_idev_init);
-+}
-+
-+static int cmpc_accel_remove(struct acpi_device *acpi, int type)
-+{
-+	device_remove_file(&acpi->dev, &cmpc_accel_sense_attr);
-+	return cmpc_remove_acpi_notify_device(acpi, cmpc_accel_handler);
-+}
-+
-+static const struct acpi_device_id cmpc_accel_device_ids[] = {
-+	{"ACCE0000", 0},
-+	{"", 0}
-+};
-+MODULE_DEVICE_TABLE(acpi, cmpc_accel_device_ids);
-+
-+static struct acpi_driver cmpc_accel_acpi_driver = {
-+	.name = "cmpc_accel",
-+	.class = "cmpc_accel",
-+	.ids = cmpc_accel_device_ids,
-+	.ops = {
-+		.add = cmpc_accel_add,
-+		.remove = cmpc_accel_remove
-+	}
-+};
-+
-+static bool cmpc_accel_driver_registered;
-+
-+
-+/*
-+ * Tablet mode code.
-+ */
-+static acpi_status cmpc_get_tablet(acpi_handle handle,
-+				   unsigned long long *value)
-+{
-+	union acpi_object param;
-+	struct acpi_object_list input;
-+	unsigned long long output;
-+	acpi_status status;
-+	param.type = ACPI_TYPE_INTEGER;
-+	param.integer.value = 0x01;
-+	input.count = 1;
-+	input.pointer = &param;
-+	status = acpi_evaluate_integer(handle, "TCMD", &input, &output);
-+	if (ACPI_SUCCESS(status))
-+		*value = output;
-+	return status;
-+}
-+
-+static void cmpc_tablet_handler(acpi_handle handle, u32 event, void *ctx)
-+{
-+	unsigned long long val = 0;
-+	struct input_dev *inputdev = ctx;
-+	if (event == 0x81) {
-+		if (ACPI_SUCCESS(cmpc_get_tablet(handle, &val)))
-+			input_report_switch(inputdev, SW_TABLET_MODE, !val);
-+	}
-+}
-+
-+static void cmpc_tablet_idev_init(struct input_dev *inputdev)
-+{
-+	set_bit(EV_SW, inputdev->evbit);
-+	set_bit(SW_TABLET_MODE, inputdev->swbit);
-+}
-+
-+static int cmpc_tablet_add(struct acpi_device *acpi)
-+{
-+	return cmpc_add_acpi_notify_device(acpi, "cmpc_tablet",
-+					   cmpc_tablet_handler,
-+					   cmpc_tablet_idev_init);
-+}
-+
-+static int cmpc_tablet_remove(struct acpi_device *acpi, int type)
-+{
-+	return cmpc_remove_acpi_notify_device(acpi, cmpc_tablet_handler);
-+}
-+
-+static const struct acpi_device_id cmpc_tablet_device_ids[] = {
-+	{"TBLT0000", 0},
-+	{"", 0}
-+};
-+MODULE_DEVICE_TABLE(acpi, cmpc_tablet_device_ids);
-+
-+static struct acpi_driver cmpc_tablet_acpi_driver = {
-+	.name = "cmpc_tablet",
-+	.class = "cmpc_tablet",
-+	.ids = cmpc_tablet_device_ids,
-+	.ops = {
-+		.add = cmpc_tablet_add,
-+		.remove = cmpc_tablet_remove
-+	}
-+};
-+
-+static bool cmpc_tablet_driver_registered;
-+
-+
-+/*
-+ * Backlight code.
-+ */
-+
-+static acpi_status cmpc_get_brightness(acpi_handle handle,
-+				       unsigned long long *value)
-+{
-+	union acpi_object param;
-+	struct acpi_object_list input;
-+	unsigned long long output;
-+	acpi_status status;
-+	param.type = ACPI_TYPE_INTEGER;
-+	param.integer.value = 0xC0;
-+	input.count = 1;
-+	input.pointer = &param;
-+	status = acpi_evaluate_integer(handle, "GRDI", &input, &output);
-+	if (ACPI_SUCCESS(status))
-+		*value = output;
-+	return status;
-+}
-+
-+static acpi_status cmpc_set_brightness(acpi_handle handle,
-+				       unsigned long long value)
-+{
-+	union acpi_object param[2];
-+	struct acpi_object_list input;
-+	acpi_status status;
-+	unsigned long long output;
-+	param[0].type = ACPI_TYPE_INTEGER;
-+	param[0].integer.value = 0xC0;
-+	param[1].type = ACPI_TYPE_INTEGER;
-+	param[1].integer.value = value;
-+	input.count = 2;
-+	input.pointer = param;
-+	status = acpi_evaluate_integer(handle, "GWRI", &input, &output);
-+	return status;
-+}
-+
-+static int cmpc_bl_get_brightness(struct backlight_device *bd)
-+{
-+	acpi_status status;
-+	acpi_handle handle;
-+	unsigned long long brightness;
-+	handle = bl_get_data(bd);
-+	status = cmpc_get_brightness(handle, &brightness);
-+	if (ACPI_SUCCESS(status))
-+		return brightness;
-+	else
-+		return -1;
-+}
-+
-+static int cmpc_bl_update_status(struct backlight_device *bd)
-+{
-+	acpi_status status;
-+	acpi_handle handle;
-+	handle = bl_get_data(bd);
-+	status = cmpc_set_brightness(handle, bd->props.brightness);
-+	if (ACPI_SUCCESS(status))
-+		return 0;
-+	else
-+		return -1;
-+}
-+
-+static struct backlight_ops cmpc_bl_ops = {
-+	.get_brightness = cmpc_bl_get_brightness,
-+	.update_status = cmpc_bl_update_status
-+};
-+
-+static int cmpc_bl_add(struct acpi_device *acpi)
-+{
-+	struct backlight_device *bd;
-+	bd = backlight_device_register("cmpc_bl", &acpi->dev,
-+				       acpi->handle, &cmpc_bl_ops);
-+	bd->props.max_brightness = 7;
-+	dev_set_drvdata(&acpi->dev, bd);
-+	return 0;
-+}
-+
-+static int cmpc_bl_remove(struct acpi_device *acpi, int type)
-+{
-+	struct backlight_device *bd;
-+	bd = dev_get_drvdata(&acpi->dev);
-+	backlight_device_unregister(bd);
-+	return 0;
-+}
-+
-+static const struct acpi_device_id cmpc_device_ids[] = {
-+	{"IPML200", 0},
-+	{"", 0}
-+};
-+MODULE_DEVICE_TABLE(acpi, cmpc_device_ids);
-+
-+static struct acpi_driver cmpc_bl_acpi_driver = {
-+	.name = "cmpc",
-+	.class = "cmpc",
-+	.ids = cmpc_device_ids,
-+	.ops = {
-+		.add = cmpc_bl_add,
-+		.remove = cmpc_bl_remove
-+	}
-+};
-+
-+static bool cmpc_bl_driver_registered;
-+
-+
-+/*
-+ * Extra keys code.
-+ */
-+static int cmpc_keys_codes[] = {
-+	KEY_UNKNOWN,
-+	KEY_WLAN,
-+	KEY_SWITCHVIDEOMODE,
-+	KEY_BRIGHTNESSDOWN,
-+	KEY_BRIGHTNESSUP,
-+	KEY_VENDOR,
-+	KEY_MAX
-+};
-+
-+static void cmpc_keys_handler(acpi_handle handle, u32 event, void *ctx)
-+{
-+	struct input_dev *inputdev;
-+	int code = KEY_MAX;
-+	if ((event & 0x0F) < ARRAY_SIZE(cmpc_keys_codes))
-+		code = cmpc_keys_codes[event & 0x0F];
-+	inputdev = ctx;
-+	input_report_key(inputdev, code, !(event & 0x10));
-+}
-+
-+static void cmpc_keys_idev_init(struct input_dev *inputdev)
-+{
-+	int i;
-+	set_bit(EV_KEY, inputdev->evbit);
-+	for (i = 0; cmpc_keys_codes[i] != KEY_MAX; i++)
-+		set_bit(cmpc_keys_codes[i], inputdev->keybit);
-+}
-+
-+static int cmpc_keys_add(struct acpi_device *acpi)
-+{
-+	return cmpc_add_acpi_notify_device(acpi, "cmpc_keys",
-+					   cmpc_keys_handler,
-+					   cmpc_keys_idev_init);
-+}
-+
-+static int cmpc_keys_remove(struct acpi_device *acpi, int type)
-+{
-+	return cmpc_remove_acpi_notify_device(acpi, cmpc_keys_handler);
-+}
-+
-+static const struct acpi_device_id cmpc_keys_device_ids[] = {
-+	{"FnBT0000", 0},
-+	{"", 0}
-+};
-+MODULE_DEVICE_TABLE(acpi, cmpc_keys_device_ids);
-+
-+static struct acpi_driver cmpc_keys_acpi_driver = {
-+	.name = "cmpc_keys",
-+	.class = "cmpc_keys",
-+	.ids = cmpc_keys_device_ids,
-+	.ops = {
-+		.add = cmpc_keys_add,
-+		.remove = cmpc_keys_remove
-+	}
-+};
-+
-+static bool cmpc_keys_driver_registered;
-+
-+
-+/*
-+ * General init/exit code.
-+ */
-+
-+static int cmpc_init(void)
-+{
-+	int result;
-+	result = acpi_bus_register_driver(&cmpc_keys_acpi_driver);
-+	cmpc_keys_driver_registered = !!result;
-+	result = acpi_bus_register_driver(&cmpc_bl_acpi_driver);
-+	cmpc_bl_driver_registered = !!result;
-+	result = acpi_bus_register_driver(&cmpc_tablet_acpi_driver);
-+	cmpc_tablet_driver_registered = !!result;
-+	result = acpi_bus_register_driver(&cmpc_accel_acpi_driver);
-+	cmpc_accel_driver_registered = !!result;
-+	/*
-+	 * Not every CMPC has every ACPI device supported here. So always return
-+	 * success.
-+	 */
-+	return 0;
-+}
-+
-+static void cmpc_exit(void)
-+{
-+	if (cmpc_accel_driver_registered)
-+		acpi_bus_unregister_driver(&cmpc_accel_acpi_driver);
-+	if (cmpc_tablet_driver_registered)
-+		acpi_bus_unregister_driver(&cmpc_tablet_acpi_driver);
-+	if (cmpc_bl_driver_registered)
-+		acpi_bus_unregister_driver(&cmpc_bl_acpi_driver);
-+	if (cmpc_keys_driver_registered)
-+		acpi_bus_unregister_driver(&cmpc_keys_acpi_driver);
-+}
-+
-+module_init(cmpc_init);
-+module_exit(cmpc_exit);
+ 	isdn_net_write_super(lp, skb);
+diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
+index ed10381..e412980 100644
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -988,7 +988,7 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+ 		goto bad_cipher;
+ 	}
+ 
+-	/* Compatiblity mode for old dm-crypt cipher strings */
++	/* Compatibility mode for old dm-crypt cipher strings */
+ 	if (!chainmode || (strcmp(chainmode, "plain") == 0 && !ivmode)) {
+ 		chainmode = "cbc";
+ 		ivmode = "plain";
+diff --git a/drivers/media/dvb/dvb-core/dvb_net.c b/drivers/media/dvb/dvb-core/dvb_net.c
+index 8c9ae0a..039c6e4 100644
+--- a/drivers/media/dvb/dvb-core/dvb_net.c
++++ b/drivers/media/dvb/dvb-core/dvb_net.c
+@@ -1395,7 +1395,7 @@ static int dvb_net_do_ioctl(struct inode *inode, struct file *file,
+ 		return ret;
+ 	}
+ 
+-	/* binary compatiblity cruft */
++	/* binary compatibility cruft */
+ 	case __NET_ADD_IF_OLD:
+ 	{
+ 		struct __dvb_net_if_old *dvbnetif = parg;
+diff --git a/drivers/net/tokenring/ibmtr.c b/drivers/net/tokenring/ibmtr.c
+index 525bbc5..dedba2c 100644
+--- a/drivers/net/tokenring/ibmtr.c
++++ b/drivers/net/tokenring/ibmtr.c
+@@ -96,7 +96,7 @@
+  *
+  *      Change by Mike Sullivan et al.:
+  *      + added turbo card support. No need to use lanaid to configure
+- *      the adapter into isa compatiblity mode.
++ *      the adapter into isa compatibility mode.
+  *
+  *      Changes by Burt Silverman to allow the computer to behave nicely when
+  *	a cable is pulled or not in place, or a PCMCIA card is removed hot.
+diff --git a/drivers/net/wireless/orinoco/hermes_dld.c b/drivers/net/wireless/orinoco/hermes_dld.c
+index a3eefe1..84200da 100644
+--- a/drivers/net/wireless/orinoco/hermes_dld.c
++++ b/drivers/net/wireless/orinoco/hermes_dld.c
+@@ -550,7 +550,7 @@ static const struct {							\
+ 
+ #define DEFAULT_PDR(pid) default_pdr_data_##pid
+ 
+-/*  HWIF Compatiblity */
++/*  HWIF Compatibility */
+ DEFINE_DEFAULT_PDR(0x0005, 10, "\x00\x00\x06\x00\x01\x00\x01\x00\x01\x00");
+ 
+ /* PPPPSign */
+@@ -656,7 +656,7 @@ int hermes_apply_pda_with_defaults(hermes_t *hw,
+ 					 record_id + 1, pdi);
+ 			}
+ 			break;
+-		case 0x5: /*  HWIF Compatiblity */
++		case 0x5: /*  HWIF Compatibility */
+ 			default_pdi = (struct pdi *) &DEFAULT_PDR(0x0005);
+ 			break;
+ 		case 0x108: /* PPPPSign */
+diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
+index 36c21b1..b59e240 100644
+--- a/drivers/scsi/3w-9xxx.c
++++ b/drivers/scsi/3w-9xxx.c
+@@ -732,7 +732,7 @@ static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int
+ 		break;
+ 	case TW_IOCTL_GET_COMPATIBILITY_INFO:
+ 		tw_ioctl->driver_command.status = 0;
+-		/* Copy compatiblity struct into ioctl data buffer */
++		/* Copy compatibility struct into ioctl data buffer */
+ 		tw_compat_info = (TW_Compatibility_Info *)tw_ioctl->data_buffer;
+ 		memcpy(tw_compat_info, &tw_dev->tw_compat_info, sizeof(TW_Compatibility_Info));
+ 		break;
+diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
+index faa0fcf..ff04821 100644
+--- a/drivers/scsi/3w-xxxx.c
++++ b/drivers/scsi/3w-xxxx.c
+@@ -8,7 +8,7 @@
+ 
+    Copyright (C) 1999-2009 3ware Inc.
+ 
+-   Kernel compatiblity By: 	Andre Hedrick <andre@suse.com>
++   Kernel compatibility By: 	Andre Hedrick <andre@suse.com>
+    Non-Copyright (C) 2000	Andre Hedrick <andre@suse.com>
+    
+    Further tiny build fixes and trivial hoovering    Alan Cox
+diff --git a/drivers/scsi/nsp32.c b/drivers/scsi/nsp32.c
+index 2be7d5b..2c98a6e 100644
+--- a/drivers/scsi/nsp32.c
++++ b/drivers/scsi/nsp32.c
+@@ -1419,7 +1419,7 @@ static irqreturn_t do_nsp32_isr(int irq, void *dev_id)
+ 		nsp32_msg(KERN_ERR, "Received unexpected BMCNTERR IRQ! ");
+ 		/*
+ 		 * TODO: To be implemented improving bus master
+-		 * transfer reliablity when BMCNTERR is occurred in
++		 * transfer reliability when BMCNTERR is occurred in
+ 		 * AutoSCSI phase described in specification.
+ 		 */
+ 	}
+diff --git a/drivers/staging/comedi/drivers/cb_das16_cs.c b/drivers/staging/comedi/drivers/cb_das16_cs.c
+index 12d12b4..576f5a7 100644
+--- a/drivers/staging/comedi/drivers/cb_das16_cs.c
++++ b/drivers/staging/comedi/drivers/cb_das16_cs.c
+@@ -395,7 +395,7 @@ static int das16cs_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_TIMER &&
+ 	    cmd->scan_begin_src != TRIG_EXT)
+ 		err++;
+diff --git a/drivers/staging/comedi/drivers/cb_pcidda.c b/drivers/staging/comedi/drivers/cb_pcidda.c
+index 7a5d46e..7823577 100644
+--- a/drivers/staging/comedi/drivers/cb_pcidda.c
++++ b/drivers/staging/comedi/drivers/cb_pcidda.c
+@@ -497,7 +497,7 @@ static int cb_pcidda_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_TIMER
+ 	    && cmd->scan_begin_src != TRIG_EXT)
+ 		err++;
+diff --git a/drivers/staging/comedi/drivers/dmm32at.c b/drivers/staging/comedi/drivers/dmm32at.c
+index aeec1ee..9db9a46 100644
+--- a/drivers/staging/comedi/drivers/dmm32at.c
++++ b/drivers/staging/comedi/drivers/dmm32at.c
+@@ -629,7 +629,7 @@ static int dmm32at_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_TIMER &&
+ 	    cmd->scan_begin_src != TRIG_EXT)
+ 		err++;
+diff --git a/drivers/staging/comedi/drivers/dt2814.c b/drivers/staging/comedi/drivers/dt2814.c
+index 0364bbf..e1b7375 100644
+--- a/drivers/staging/comedi/drivers/dt2814.c
++++ b/drivers/staging/comedi/drivers/dt2814.c
+@@ -175,7 +175,7 @@ static int dt2814_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->stop_src != TRIG_TIMER && cmd->stop_src != TRIG_EXT)
+ 		err++;
+ 
+diff --git a/drivers/staging/comedi/drivers/dt282x.c b/drivers/staging/comedi/drivers/dt282x.c
+index a4c96c0..99ca294 100644
+--- a/drivers/staging/comedi/drivers/dt282x.c
++++ b/drivers/staging/comedi/drivers/dt282x.c
+@@ -777,7 +777,7 @@ static int dt282x_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_FOLLOW &&
+ 	    cmd->scan_begin_src != TRIG_EXT)
+ 		err++;
+@@ -1050,7 +1050,7 @@ static int dt282x_ao_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->stop_src != TRIG_COUNT && cmd->stop_src != TRIG_NONE)
+ 		err++;
+ 
+diff --git a/drivers/staging/comedi/drivers/ni_atmio16d.c b/drivers/staging/comedi/drivers/ni_atmio16d.c
+index 901833d..49ace5e 100644
+--- a/drivers/staging/comedi/drivers/ni_atmio16d.c
++++ b/drivers/staging/comedi/drivers/ni_atmio16d.c
+@@ -325,7 +325,7 @@ static int atmio16d_ai_cmdtest(struct comedi_device *dev,
+ 		return 1;
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_FOLLOW &&
+ 	    cmd->scan_begin_src != TRIG_EXT &&
+ 	    cmd->scan_begin_src != TRIG_TIMER)
+diff --git a/drivers/staging/comedi/drivers/ni_mio_common.c b/drivers/staging/comedi/drivers/ni_mio_common.c
+index e3ffb06..45d2862 100644
+--- a/drivers/staging/comedi/drivers/ni_mio_common.c
++++ b/drivers/staging/comedi/drivers/ni_mio_common.c
+@@ -2206,7 +2206,7 @@ static int ni_ai_cmdtest(struct comedi_device *dev, struct comedi_subdevice *s,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->start_src != TRIG_NOW &&
+ 	    cmd->start_src != TRIG_INT && cmd->start_src != TRIG_EXT)
+ 		err++;
+diff --git a/drivers/staging/comedi/drivers/ni_pcidio.c b/drivers/staging/comedi/drivers/ni_pcidio.c
+index 52b2eca..340b4e5 100644
+--- a/drivers/staging/comedi/drivers/ni_pcidio.c
++++ b/drivers/staging/comedi/drivers/ni_pcidio.c
+@@ -794,7 +794,7 @@ static int ni_pcidio_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->start_src != TRIG_NOW && cmd->start_src != TRIG_INT)
+ 		err++;
+ 	if (cmd->scan_begin_src != TRIG_TIMER &&
+diff --git a/drivers/staging/comedi/drivers/quatech_daqp_cs.c b/drivers/staging/comedi/drivers/quatech_daqp_cs.c
+index f63bdc3..49b88ea 100644
+--- a/drivers/staging/comedi/drivers/quatech_daqp_cs.c
++++ b/drivers/staging/comedi/drivers/quatech_daqp_cs.c
+@@ -506,7 +506,7 @@ static int daqp_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_TIMER &&
+ 	    cmd->scan_begin_src != TRIG_FOLLOW)
+ 		err++;
+diff --git a/drivers/staging/comedi/drivers/rtd520.c b/drivers/staging/comedi/drivers/rtd520.c
+index f35cce5..8626658 100644
+--- a/drivers/staging/comedi/drivers/rtd520.c
++++ b/drivers/staging/comedi/drivers/rtd520.c
+@@ -1768,7 +1768,7 @@ static int rtd_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique
+ 	   and mutually compatible */
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_TIMER &&
+ 	    cmd->scan_begin_src != TRIG_EXT) {
+ 		err++;
+diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
+index 80d2787..fdd7ab9 100644
+--- a/drivers/staging/comedi/drivers/s626.c
++++ b/drivers/staging/comedi/drivers/s626.c
+@@ -1926,7 +1926,7 @@ static int s626_ai_cmdtest(struct comedi_device *dev,
+ 	/* step 2: make sure trigger sources are unique and mutually
+ 	   compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_TIMER &&
+ 	    cmd->scan_begin_src != TRIG_EXT
+ 	    && cmd->scan_begin_src != TRIG_FOLLOW)
+diff --git a/drivers/staging/comedi/drivers/skel.c b/drivers/staging/comedi/drivers/skel.c
+index 3dee62a..aba57d9 100644
+--- a/drivers/staging/comedi/drivers/skel.c
++++ b/drivers/staging/comedi/drivers/skel.c
+@@ -399,7 +399,7 @@ static int skel_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/* step 2: make sure trigger sources are unique and mutually compatible */
+ 
+-	/* note that mutual compatiblity is not an issue here */
++	/* note that mutual compatibility is not an issue here */
+ 	if (cmd->scan_begin_src != TRIG_TIMER &&
+ 	    cmd->scan_begin_src != TRIG_EXT)
+ 		err++;
+diff --git a/drivers/staging/comedi/drivers/usbdux.c b/drivers/staging/comedi/drivers/usbdux.c
+index cca4e86..cec028e 100644
+--- a/drivers/staging/comedi/drivers/usbdux.c
++++ b/drivers/staging/comedi/drivers/usbdux.c
+@@ -979,7 +979,7 @@ static int usbdux_ai_cmdtest(struct comedi_device *dev,
+ 
+ 	/*
+ 	 * step 2: make sure trigger sources are unique and mutually compatible
+-	 * note that mutual compatiblity is not an issue here
++	 * note that mutual compatibility is not an issue here
+ 	 */
+ 	if (cmd->scan_begin_src != TRIG_FOLLOW &&
+ 	    cmd->scan_begin_src != TRIG_EXT &&
+@@ -1557,7 +1557,7 @@ static int usbdux_ao_cmdtest(struct comedi_device *dev,
+ 
+ 	/*
+ 	 * step 2: make sure trigger sources are unique and mutually compatible
+-	 * note that mutual compatiblity is not an issue here
++	 * note that mutual compatibility is not an issue here
+ 	 */
+ 	if (cmd->scan_begin_src != TRIG_FOLLOW &&
+ 	    cmd->scan_begin_src != TRIG_EXT &&
+diff --git a/drivers/uwb/neh.c b/drivers/uwb/neh.c
+index 0af8916..78510a1 100644
+--- a/drivers/uwb/neh.c
++++ b/drivers/uwb/neh.c
+@@ -150,7 +150,7 @@ void uwb_rc_neh_put(struct uwb_rc_neh *neh)
+  *	 0xff is invalid, so they must not be used. Initialization
+  *	 fills up those two in the bitmap so they are not allocated.
+  *
+- * We spread the allocation around to reduce the posiblity of two
++ * We spread the allocation around to reduce the possibility of two
+  * consecutive opened @neh's getting the same context ID assigned (to
+  * avoid surprises with late events that timed out long time ago). So
+  * first we search from where @rc->ctx_roll is, if not found, we
+diff --git a/net/sched/act_api.c b/net/sched/act_api.c
+index 2dfb3e7..5364d0b 100644
+--- a/net/sched/act_api.c
++++ b/net/sched/act_api.c
+@@ -598,7 +598,7 @@ int tcf_action_copy_stats(struct sk_buff *skb, struct tc_action *a,
+ 		goto errout;
+ 
+ 	/* compat_mode being true specifies a call that is supposed
+-	 * to add additional backward compatiblity statistic TLVs.
++	 * to add additional backward compatibility statistic TLVs.
+ 	 */
+ 	if (compat_mode) {
+ 		if (a->type == TCA_OLD_COMPAT)
+diff --git a/sound/pci/ice1712/juli.c b/sound/pci/ice1712/juli.c
+index fd948bf..9c0f78e 100644
+--- a/sound/pci/ice1712/juli.c
++++ b/sound/pci/ice1712/juli.c
+@@ -380,7 +380,7 @@ static struct snd_kcontrol_new juli_mute_controls[] __devinitdata = {
+ 	 * inputs) are fed from Xilinx.
+ 	 *
+ 	 * I even checked traces on board and coded a support in driver for
+-	 * an alternative possiblity - the unused I2S ICE output channels
++	 * an alternative possibility - the unused I2S ICE output channels
+ 	 * switched to HW-IN/SPDIF-IN and providing the monitoring signal to
+ 	 * the DAC - to no avail. The I2S outputs seem to be unconnected.
+ 	 *
 -- 
-1.6.3.3
+1.6.2.5
 
