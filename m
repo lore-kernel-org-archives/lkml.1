@@ -1,75 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbZI2SPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbZI2SRC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbZI2SPg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 14:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbZI2SPf
+	id S1753748AbZI2SRC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 14:17:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZI2SRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 14:15:35 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:35399 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbZI2SPe convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 14:17:01 -0400
+Received: from e24smtp04.br.ibm.com ([32.104.18.25]:38410 "EHLO
+	e24smtp04.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753344AbZI2SQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 14:15:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=iJq/QuGfQg2JcJujlI56Ryzv68G24oWj4w78UCWQmocZCs5hlPEN6WzUgdOYJ/g+Ie
-         PFkR7nrJl1Q5rNMN5JeMkzaNrpW0yvznpzcPfpS1A2TWptjc1unJmk8s518q5EBvn4YE
-         YsbqJFDbvD5tGD6+FP9zV8ijA0xKuf/k+kaLc=
-MIME-Version: 1.0
-In-Reply-To: <1253712627.5631.478.camel@Palantir>
-References: <1253615424.20345.76.camel@Palantir>
-	 <63386a3d0909230533o7ab835ecubc8d074fea97642f@mail.gmail.com>
-	 <1253712627.5631.478.camel@Palantir>
-Date: Tue, 29 Sep 2009 20:15:37 +0200
-Message-ID: <25e057c00909291115t63c36ddm657f9359d1ae34f4@mail.gmail.com>
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-From: roel kluin <roel.kluin@gmail.com>
-To: Raistlin <raistlin@linux.it>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, claudio@evidence.eu.com,
-       michael@evidence.eu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 29 Sep 2009 14:16:58 -0400
+From: Breno Leitao <leitao@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Scott.Kilau@digi.com, greg@kroah.com
+Subject: [PATCH 0/5] jsm: cleaning up structures
+Date: Tue, 29 Sep 2009 15:16:54 -0300
+Message-Id: <cover.1254247209.git.leitao@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  static int __sched_setscheduler(struct task_struct *p, int policy,
-> -                               struct sched_param *param, bool user)
-> +                               struct sched_param *param,
-> +                               struct sched_param_ex *param_ex,
-> +                               bool user)
-...
+A serie of patches that clean the jsm structures.
+There are a lot of fields there that were never used, 
+and is now being removed
 
-> @@ -6200,6 +6364,13 @@ recheck:
->            (p->mm && param->sched_priority > MAX_USER_RT_PRIO-1) ||
->            (!p->mm && param->sched_priority > MAX_RT_PRIO-1))
->                return -EINVAL;
-> +       if (edf_policy(policy) && param_ex->sched_priority != 0)
-> +               return -EINVAL;
-> +       if (edf_policy(policy) && (param_ex == NULL ||
-> +           timespec_to_ns(&param_ex->sched_period) == 0 ||
-> +           timespec_to_ns(&param_ex->sched_period) <
-> +           timespec_to_ns(&param_ex->sched_runtime)))
-> +               return -EINVAL;
+Breno Leitao (5):
+  jsm: remove the ch_custom_speed field
+  jsm: removing ch_old_baud field
+  jsm: Remove ch_cpstime field
+  jsm: Removing unused jsm_channel->ch_wopen field
+  jsm: removing the field jsm_board->intr_count
 
-shouldn't the NULL test be moved upwards, to prevent a dereference of
-a NULL pointer? Also I notice that `timespec_to_ns(&param_ex->sched_period)'
-is called twice, maybe gcc does this but can't we do something like
+ drivers/serial/jsm/jsm.h     |    8 --------
+ drivers/serial/jsm/jsm_neo.c |    8 --------
+ drivers/serial/jsm/jsm_tty.c |    2 --
+ 3 files changed, 0 insertions(+), 18 deletions(-)
 
-        if (edf_policy(policy)) {
-                if (param_ex == NULL || param_ex->sched_priority != 0)
-                        return -EINVAL;
-                s64 psp = timespec_to_ns(&param_ex->sched_period);
-                if (psp == 0 || psp < timespec_to_ns(&param_ex->sched_runtime))
-                        return -EINVAL;
-        }
-
-Roel
