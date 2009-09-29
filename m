@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZI2JDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZI2JKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549AbZI2JDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 05:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZI2JDX
+	id S1753594AbZI2JKA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 05:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbZI2JJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 05:03:23 -0400
-Received: from sous-sol.org ([216.99.217.87]:52045 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751052AbZI2JDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 05:03:22 -0400
-Date: Tue, 29 Sep 2009 02:01:30 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Alok Kataria <akataria@vmware.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Gerd Hoffmann <kraxel@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-Message-ID: <20090929090130.GD3958@sequoia.sous-sol.org>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com> <20090919224430.GB9567@kroah.com> <1253419185.3253.21.camel@ank32.eng.vmware.com> <20090920074247.GA5733@elte.hu> <1253647845.10565.20.camel@ank32.eng.vmware.com> <4AB9CE66.1030504@redhat.com> <1254185107.13456.32.camel@ank32.eng.vmware.com> <4AC17018.4040600@zytor.com> <1254193238.13456.48.camel@ank32.eng.vmware.com>
+	Tue, 29 Sep 2009 05:09:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34486 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751184AbZI2JJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 05:09:58 -0400
+Date: Tue, 29 Sep 2009 11:10:01 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Peter Huewe <PeterHuewe@gmx.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] staging/et131x:  adding __init/__exit macros
+In-Reply-To: <200909290134.15295.PeterHuewe@gmx.de>
+Message-ID: <alpine.LSU.2.00.0909291107410.9280@wotan.suse.de>
+References: <200909290134.15295.PeterHuewe@gmx.de>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254193238.13456.48.camel@ank32.eng.vmware.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alok Kataria (akataria@vmware.com) wrote:
+On Tue, 29 Sep 2009, Peter Huewe wrote:
+
+> From: Peter Huewe <peterhuewe@gmx.de>
 > 
-> On Mon, 2009-09-28 at 19:25 -0700, H. Peter Anvin wrote:
-> > On 09/28/2009 05:45 PM, Alok Kataria wrote:
-> > > +	bool "VMI Guest support [will be deprecated soon]"
-> > > +	default n
-> > 
-> > This is incorrect use of the word "deprecated"... it's *already*
-> > deprecated (a word which pretty much means the opposite of "recommended".)
-> > 
-> > As far as "default n" is concerned... this is usually not necessary; "n"
-> > is the default unless anything else is specified.
+> Trivial patch which adds the __init/__exit macros to the module_init/
+> module_exit functions of ./staging/et131x/et131x_initpci.c
 > 
-> How about this ?  Thanks.
+> Greg, please have a look at the small patch and either pull it through
+> your staging tree, or please ack' it so Jiri can pull it through the trivial tree.
 
-Looks good to me (missing Signed-off-by).  I think it's also useful
-to generate some runtime noise saying it's a deprecated option.
+Greg -- I'd prefer you taking trivial staging fixes through yoru tree, as 
+I expect we'll be conflicting soon due to the speed of changes in staging 
+area, if you don't have any objections.
 
-Even something as simple as:
+Thanks,
 
--	pv_info.name = "vmi"
-+	pv_info.name = "vmi [deprecated]";
-
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
