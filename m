@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZI2Svb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZI2TCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbZI2Svb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 14:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZI2Sva
+	id S1753899AbZI2TCw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 15:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbZI2TCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 14:51:30 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:40432 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbZI2Sv3 (ORCPT
+	Tue, 29 Sep 2009 15:02:51 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36043 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753735AbZI2TCu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 14:51:29 -0400
-Date: Tue, 29 Sep 2009 13:51:26 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
-Cc: Oren Laadan <orenl@librato.com>, Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Dan Smith <danms@us.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [PATCH v18 49/80] c/r: support for UTS namespace
-Message-ID: <20090929185126.GB13297@us.ibm.com>
-References: <1253749920-18673-1-git-send-email-orenl@librato.com> <1253749920-18673-50-git-send-email-orenl@librato.com> <200909292213.21266@blacky.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909292213.21266@blacky.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 29 Sep 2009 15:02:50 -0400
+Date: Tue, 29 Sep 2009 21:02:07 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Arnd Bergmann <arnd@arndb.de>,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
+       torvalds@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
+Message-ID: <20090929210207.247b94df@infradead.org>
+In-Reply-To: <4AC255A4.4030002@zytor.com>
+References: <20090924165548.GA16586@us.ibm.com>
+	<20090924170308.GH16989@us.ibm.com>
+	<200909242343.59903.arnd@arndb.de>
+	<20090925082346.GB4436@localdomain>
+	<20090925105632.GG12824@hawkmoon.kerlabs.com>
+	<20090929180537.GD4625@us.ibm.com>
+	<20090929184023.532DF34@magilla.sf.frob.com>
+	<4AC255A4.4030002@zytor.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Nikita V. Youshchenko (yoush@cs.msu.su):
-> > +static struct uts_namespace *do_restore_uts_ns(struct ckpt_ctx *ctx)
-> > ...
-> > +#ifdef CONFIG_UTS_NS
-> > +	uts_ns = create_uts_ns();
-> > +	if (!uts_ns) {
-> > +		uts_ns = ERR_PTR(-ENOMEM);
-> > +		goto out;
-> > +	}
-> > +	down_read(&uts_sem);
-> > +	name = &uts_ns->name;
-> > +	memcpy(name->sysname, h->sysname, sizeof(name->sysname));
-> > +	memcpy(name->nodename, h->nodename, sizeof(name->nodename));
-> > +	memcpy(name->release, h->release, sizeof(name->release));
-> > +	memcpy(name->version, h->version, sizeof(name->version));
-> > +	memcpy(name->machine, h->machine, sizeof(name->machine));
-> > +	memcpy(name->domainname, h->domainname, sizeof(name->domainname));
-> > +	up_read(&uts_sem);
+On Tue, 29 Sep 2009 11:44:52 -0700
+"H. Peter Anvin" <hpa@zytor.com> wrote:
+
+> On 09/29/2009 11:40 AM, Roland McGrath wrote:
+> > Why add a new syscall at all instead of just using a new CLONE_*
+> > flag to indicate that the argument layout is different?
 > 
-> Could you please explain what for is this down_read() / up_read() ?
-> You operate only on local objects: 'name' points to just-created 
-> uts_ns, 'h' is also local data.
+> What an absolutely atrociously bad idea.
+> 
+> We already have a syscall layer which is painful to thunk in places,
+> and this would make it much worse.
+> 
 
-Yup, good point, that looks unnecessary.
+syscalls are cheap as well.
+cheaper than decades of dealing with such multiplexer mess ;/
 
-thanks,
--serge
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
