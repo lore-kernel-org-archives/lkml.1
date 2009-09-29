@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbZI2Waz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbZI2WgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752153AbZI2Waz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 18:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZI2Way
+	id S1752315AbZI2WgJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 18:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZI2WgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 18:30:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52267 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857AbZI2Way (ORCPT
+	Tue, 29 Sep 2009 18:36:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50125 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751857AbZI2WgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 18:30:54 -0400
-Message-ID: <4AC287F2.8060603@zytor.com>
-Date: Tue, 29 Sep 2009 15:19:30 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Arjan van de Ven <arjan@infradead.org>, Roland McGrath <roland@redhat.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
-References: <20090924165548.GA16586@us.ibm.com> <20090924170308.GH16989@us.ibm.com> <200909242343.59903.arnd@arndb.de> <20090925082346.GB4436@localdomain> <20090925105632.GG12824@hawkmoon.kerlabs.com> <20090929180537.GD4625@us.ibm.com> <20090929184023.532DF34@magilla.sf.frob.com> <4AC255A4.4030002@zytor.com> <20090929210207.247b94df@infradead.org> <alpine.LFD.2.01.0909291207410.6996@localhost.localdomain> <4AC267C7.4070300@zytor.com> <alpine.LFD.2.01.0909291501530.6996@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0909291501530.6996@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 29 Sep 2009 18:36:08 -0400
+Date: Tue, 29 Sep 2009 23:35:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Lennart Baruschka" <FunFlyer@gmx.net>, linux-kernel@vger.kernel.org
+Subject: Re: Disabling DMA with ICH10?
+Message-ID: <20090929233505.7ff11cad@lxorguk.ukuu.org.uk>
+In-Reply-To: <m3k4zh32vp.fsf@intrepid.localdomain>
+References: <1254173481.4454.32.camel@goodbyte.homelinux.com>
+	<20090928234025.6dc4e3f7@lxorguk.ukuu.org.uk>
+	<20090929075416.77960@gmx.net>
+	<20090929101114.1712314b@infradead.org>
+	<m3bpku3peg.fsf@intrepid.localdomain>
+	<20090929180555.3c4a7259@lxorguk.ukuu.org.uk>
+	<m3k4zh32vp.fsf@intrepid.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/29/2009 03:11 PM, Linus Torvalds wrote:
+On Tue, 29 Sep 2009 22:35:54 +0200
+Krzysztof Halasa <khc@pm.waw.pl> wrote:
+
+> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 > 
-> Ok, I agree with that. The kernel side is easy (we have magic calling 
-> conventions there and need to turn registers into arguments anyway before 
-> you get to the shared code), but your point about the user side prototype 
-> is valid.
+> >> Not that long, there is no emulation there (except for port #80 (hex?)
+> >> and similar). Normal 33 MHz access.
+> >
+> > ATA accesses go across the cable and while some of them are snooped,
+> > cached and other magic is done there are cases it turns into a
+> > transaction back and forth with the drive - that *is* slow. PIO 0 in fact
+> > is ISA speed
 > 
+> Sure, PATA inserts wait states, the 4 bus cycles per access (or
+> something like that) is the minimum for PIO on PCI. But it's still
+> normal 33 MHz access (with as many wait states as the PATA mode needs),
+> not ISA 8 MHz emulation (fastest PIO would be faster than ISA)
 
-I think it would also apply to kernel-side munging.  It's quite possibly
-you're right in that clone is such a special case anyway, but it seems
-pointless to make it more special in the short bus sort of way even if
-it is possible.
+You are missing the point. The sequence is
 
-Let's just make it another system call.  It doesn't have any downside
-that I can see, might prevent problems, and avoids setting a bad
-precedent that someone can misinterpret.
 
-	-hpa
+INB foo
+
+	CPU -> PCI device		read this register
+	PCI device -> Disk
+			trundle whirr whirrr
+			clunk clunk thud
+	Disk -> PCI device
+	PCI device -> CPU... "5"
+
+INB completes
+
+The INB is not interruptible mid instruction and stalls the CPU for the
+full period of the message passing back and forth across the bus. So PIO
+0 on PCI stalls the bus for the equivalent of an ISA access, and PIO4
+while a good deal faster is still a very long stall in hard real time
+terms.
 
