@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbZI2V36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZI2Vk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752968AbZI2V36 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 17:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZI2V35
+	id S1753106AbZI2Vk4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 17:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZI2Vk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 17:29:57 -0400
-Received: from mga06.intel.com ([134.134.136.21]:60089 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752699AbZI2V35 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 17:29:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,475,1249282800"; 
-   d="scan'208";a="452800830"
-Date: Tue, 29 Sep 2009 23:31:57 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       michael.hennerich@analog.com
-Subject: Re: [Uclinux-dist-devel] [PATCH v2] mfd: ADP5520 Multifunction LCD
- Backlight and Keypad Input Device Driver
-Message-ID: <20090929213156.GB7567@sortiz.org>
-References: <1253212036-29445-1-git-send-email-vapier@gentoo.org>
- <1253682664-27040-1-git-send-email-vapier@gentoo.org>
- <8bd0f97a0909291404v6d7f8a9dyb19fa8ad48f9484f@mail.gmail.com>
- <20090929141450.b2b36e4d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090929141450.b2b36e4d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 29 Sep 2009 17:40:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:43344 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752647AbZI2Vkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 17:40:55 -0400
+From: Zachary Amsden <zamsden@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Zachary Amsden <zamsden@redhat.com>,
+       Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+Subject: [PATCH v4: kvm 1/4] Code motion.  Separate timer intialization into an indepedent function.
+Date: Tue, 29 Sep 2009 11:38:34 -1000
+Message-Id: <1254260317-3490-1-git-send-email-zamsden@redhat.com>
+In-Reply-To: <4AC1C59F.6010703@redhat.com>
+References: <4AC1C59F.6010703@redhat.com>
+Organization: Frobozz Magic Timekeeping Company
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 02:14:50PM -0700, Andrew Morton wrote:
-> On Tue, 29 Sep 2009 17:04:21 -0400
-> Mike Frysinger <vapier.adi@gmail.com> wrote:
-> 
-> > On Wed, Sep 23, 2009 at 01:11, Mike Frysinger wrote:
-> > > From: Michael Hennerich <michael.hennerich@analog.com>
-> > >
-> > > Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
-> > 
-> > could you check this out/pick up Andrew ?
-> 
-> Spose so.  Is Samuel not around?
-I'm around, just too busy those days to look at mfd stuff. Sorry for the
-latency...
-I'll grab my mfd hat tomorrow, look at the various patches pending and update
-my tree.
+Signed-off-by: Zachary Amsden <zamsden@redhat.com>
+---
+ arch/x86/kvm/x86.c |   23 +++++++++++++++--------
+ 1 files changed, 15 insertions(+), 8 deletions(-)
 
-Cheers,
-Samuel.
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index fedac9d..15d2ace 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -3116,9 +3116,22 @@ static struct notifier_block kvmclock_cpufreq_notifier_block = {
+         .notifier_call  = kvmclock_cpufreq_notifier
+ };
  
-> Does this patch have any dependencies on other stuff we weren't told about?
-> 
-
++static void kvm_timer_init(void)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu)
++		per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
++	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
++		tsc_khz_ref = tsc_khz;
++		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
++					  CPUFREQ_TRANSITION_NOTIFIER);
++	}
++}
++
+ int kvm_arch_init(void *opaque)
+ {
+-	int r, cpu;
++	int r;
+ 	struct kvm_x86_ops *ops = (struct kvm_x86_ops *)opaque;
+ 
+ 	if (kvm_x86_ops) {
+@@ -3150,13 +3163,7 @@ int kvm_arch_init(void *opaque)
+ 	kvm_mmu_set_mask_ptes(PT_USER_MASK, PT_ACCESSED_MASK,
+ 			PT_DIRTY_MASK, PT64_NX_MASK, 0);
+ 
+-	for_each_possible_cpu(cpu)
+-		per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
+-	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
+-		tsc_khz_ref = tsc_khz;
+-		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
+-					  CPUFREQ_TRANSITION_NOTIFIER);
+-	}
++	kvm_timer_init();
+ 
+ 	return 0;
+ 
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+1.6.4.4
+
