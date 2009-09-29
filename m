@@ -1,26 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZI2Wk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZI2Wlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbZI2Wk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 18:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZI2Wk1
+	id S1752551AbZI2Wlb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 18:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbZI2Wla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 18:40:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39743 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752080AbZI2Wk0 (ORCPT
+	Tue, 29 Sep 2009 18:41:30 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37911 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750873AbZI2Wla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 18:40:26 -0400
-Date: Tue, 29 Sep 2009 15:39:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       michael.hennerich@analog.com, chrisv@cyberswitching.com
-Subject: Re: [PATCH] ad525x_dpot: new driver for AD525x digital
- potentiometers
-Message-Id: <20090929153902.ab74aa01.akpm@linux-foundation.org>
-In-Reply-To: <1253161357-22453-1-git-send-email-vapier@gentoo.org>
-References: <1253161357-22453-1-git-send-email-vapier@gentoo.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 29 Sep 2009 18:41:30 -0400
+Date: Tue, 29 Sep 2009 23:39:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, dhowells@redhat.com,
+       akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove pty_ops_bsd and pty_bsd_ioctl() as they're not
+ used
+Message-ID: <20090929233952.2c224303@lxorguk.ukuu.org.uk>
+In-Reply-To: <4079.1254249610@redhat.com>
+References: <alpine.LFD.2.01.0909290936430.6996@localhost.localdomain>
+	<alpine.LFD.2.01.0909280743310.3349@localhost.localdomain>
+	<20090928135332.4300.56046.stgit@warthog.procyon.org.uk>
+	<20090928151628.62955233@lxorguk.ukuu.org.uk>
+	<395.1254239745@redhat.com>
+	<alpine.LFD.2.01.0909290909280.6996@localhost.localdomain>
+	<4079.1254249610@redhat.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,33 +34,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Sep 2009 00:22:37 -0400
-Mike Frysinger <vapier@gentoo.org> wrote:
+On Tue, 29 Sep 2009 19:40:10 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-> This driver supports the non-volatile digital potentiometers via I2C:
-> AD5258, AD5259, AD5251, AD5252, AD5253, AD5254, and AD5255
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> It provides a sysfs interface to each device for reading/writing.
+> > Comments?
+> 
+> Perhaps add legacy pty support to the list of features to be removed and see
+> who howls.
 
-This sysfs interface is by far the most important aspect of this
-driver.  For both its users and for its reviewers.
+You do break stuff still and they are part of the API, ABI and namespace
+so you break compatibility.
 
-Yet you tell us nothing about it!  Not in code comments, not in the
-changelog, not in supporting documentation.
+> >  static struct tty_driver *pty_driver, *pty_slave_driver;
+> 
+> These shouldn't be global variables.  They're only used within
+> legacy_pty_init().  That's a side issue, however.
 
-So some poor idiot (ie: me) is left having to scratch his way through
-the implementation trying to work out what the propoed userspace
-interface is supposed to look like.
-
-Then I come across something this:
-
-+	if (reg & AD525X_REG_TOL)
-+		return sprintf(buf, "0x%04x\n", value & 0xFFFF);
-+	else
-+		return sprintf(buf, "%u\n", value & data->rdac_mask);
-
-which makes me suspect that the proposed userspace interface is quite
-poor.
-
-
-Patch not applied!  Not even close.
+Agreed
