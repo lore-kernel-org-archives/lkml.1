@@ -1,414 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZI2UZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbZI2Uan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbZI2UZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 16:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZI2UZM
+	id S1754044AbZI2Uan (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 16:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbZI2Uan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 16:25:12 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:35135 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbZI2UZK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 16:25:10 -0400
-Date: Tue, 29 Sep 2009 16:25:04 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] proc: augment /proc/pid/limits to allow setting of
-	process limits (v2).
-Message-ID: <20090929202504.GC20420@hmsreliant.think-freely.org>
-References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20090928154403.25678002.akpm@linux-foundation.org>
+	Tue, 29 Sep 2009 16:30:43 -0400
+Received: from sous-sol.org ([216.99.217.87]:49287 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753453AbZI2Uam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 16:30:42 -0400
+Date: Tue, 29 Sep 2009 13:30:18 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Bhavesh Davda <bhavesh@vmware.com>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Shreyas Bhatewara <sbhatewara@vmware.com>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [Pv-drivers] [PATCH 2.6.31-rc9] net: VMware virtual Ethernet
+	NIC driver: vmxnet3
+Message-ID: <20090929203018.GG3958@sequoia.sous-sol.org>
+References: <89E2752CFA8EC044846EB849981913410173CDFAF6@EXCH-MBX-4.vmware.com> <20090929085333.GC3958@sequoia.sous-sol.org> <8B1F619C9F5F454E81D90D3C161698D7017DB76576@EXCH-MBX-3.vmware.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090928154403.25678002.akpm@linux-foundation.org>
+In-Reply-To: <8B1F619C9F5F454E81D90D3C161698D7017DB76576@EXCH-MBX-3.vmware.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-Score: -4.5 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Version 2 of this patch, taking your notes into account Andrew.
+* Bhavesh Davda (bhavesh@vmware.com) wrote:
+> Hi Chris,
+> 
+> Thanks a bunch for your really thorough review! I'll answer some of your questions here. Shreyas can respond to your comments about some of the coding style/comments/etc. in a separate mail.
 
-Change notes:
+The style is less important at this stage, but certainly eases review
+to make it more consistent w/ Linux code.  The StudlyCaps, extra macros
+(screaming caps) and inconistent space/tabs are visual distractions,
+that's all.
 
-1) Split sys_setrlimit into a wrapper (sys_setrlimit), and an interior common
-function (do_setrlimit).  The latter takes a resource, struct rlimit and
-task_struct argument to do the actual work of setting the request limit to the
-requested rlim_cur/max values.
+> > >         INTx, MSI, MSI-X (25 vectors) interrupts
+> > >         16 Rx queues, 8 Tx queues
+> > 
+> > Driver doesn't appear to actually support more than a single MSI-X
+> > interrupt.
+> > What is your plan for doing real multiqueue?
+> 
+> When we first wrote the driver a couple of years ago, Linux lacked proper multiqueue support, hence we chose to use only a single queue though the emulated device does support 16 Rx and 8 Tx queues, and 25 MSI-X vectors: 16 for Rx, 8 for Tx and 1 for other asynchronous event notifications, by design. Actually a driver can repurpose any of the 25 vectors for any notifications; just explaining the rationale for desiging the device with 25 MSI-X vectors.
 
-2) make sys_setrlimit call do_setrlimit
+I see, thanks.
 
-3) modify the proc/pid/limits write routine so that it uses do_setrlimit,
-thereby giving us the previously missing security checks.
+> We do have an internal prototype of a Linux vmxnet3 driver with 4 Tx queues and 4 Rx queues, using 9 MSI-X vectors, but it needs some work before calling it production ready.
 
+I'd expect once you switch to alloc_etherdev_mq(), make napi work per
+rx queue, and fix MSI-X allocation (all needed for 4/4), you should
+have enough to support the max of 16/8 (IOW, 4/4 still sounds like an
+aritificial limitation).
 
-Augment /proc/<pid>/limits file to support limit setting
+> > How about GRO conversion?
+> 
+> Looks attractive, and we'll work on that in a subsequent patch. Again, when we first wrote the driver, the NETIF_F_GRO stuff didn't exist in Linux.
 
-It was suggested to me recently that we support a mechanism by which we can set
-various process limits from points external to the process.  The reasoning being
-that some processes are very long lived, and it would be beneficial to these
-long lived processes if we could modify their various limits without needing to
-kill them, adjust the limits for the user and restarting them.  While individual
-application can certainly export this control on their own, it would be nice if
-such functionality were available to a sysadmin, without needing to have each
-application re-invent the wheel.
+OK, shouldn't be too much work.
 
-As such, I've implemented the below patch, which makes /proc/pid/limits writable
-for each process.  By writing the following format:
-<limit> <current value> <max value>
-to the limits file, an administrator can now dynamically change the limits for
-the respective process.  Tested by myself with good results.
+Another thing I forgot to mention is that net_device now has
+net_device_stats in it.  So you shouldn't need net_device_stats in
+vmxnet3_adapter.
 
-Neil
+> > Also, heavy use of BUG_ON() (counted 51 of them), are you sure that
+> > none
+> > of them can be triggered by guest or remote (esp. the ones that happen
+> > in interrupt context)?  Some initial thoughts below.
+> 
+> We'll definitely audit all the BUG_ONs again to make sure they can't be exploited.
+> 
+> > > --- /dev/null
+> > > +++ b/drivers/net/vmxnet3/upt1_defs.h
+> > > +#define UPT1_MAX_TX_QUEUES  64
+> > > +#define UPT1_MAX_RX_QUEUES  64
+> > 
+> > This is different than the 16/8 described above (and seemingly all moot
+> > since it becomes a single queue device).
+> 
+> Nice catch! Those are not even used and are from the earliest days of our driver development. We'll nuke those.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Could you describe the UPT layer a bit?  There were a number of
+constants that didn't appear to be used.
 
+> > > +/* interrupt moderation level */
+> > > +#define UPT1_IML_NONE     0 /* no interrupt moderation */
+> > > +#define UPT1_IML_HIGHEST  7 /* least intr generated */
+> > > +#define UPT1_IML_ADAPTIVE 8 /* adpative intr moderation */
+> > 
+> > enum?  also only appears to support adaptive mode?
+> 
+> Yes, the Linux driver currently only asks for adaptive mode, but the device supports 8 interrupt moderation levels.
+> 
+> > > --- /dev/null
+> > > +++ b/drivers/net/vmxnet3/vmxnet3_defs.h
+> > > +struct Vmxnet3_MiscConf {
+> > > +       struct Vmxnet3_DriverInfo driverInfo;
+> > > +       uint64_t             uptFeatures;
+> > > +       uint64_t             ddPA;         /* driver data PA */
+> > > +       uint64_t             queueDescPA;  /* queue descriptor table
+> > PA */
+> > > +       uint32_t             ddLen;        /* driver data len */
+> > > +       uint32_t             queueDescLen; /* queue desc. table len
+> > in bytes */
+> > > +       uint32_t             mtu;
+> > > +       uint16_t             maxNumRxSG;
+> > > +       uint8_t              numTxQueues;
+> > > +       uint8_t              numRxQueues;
+> > > +       uint32_t             reserved[4];
+> > > +};
+> > 
+> > should this be packed (or others that are shared w/ device)?  i assume
+> > you've already done 32 vs 64 here
+> > 
+> 
+> No need for packing since the fields are naturally 64-bit aligned. True for all structures shared between the driver and device.
 
- fs/proc/base.c        |  165 +++++++++++++++++++++++++++++++++++++++++---------
- include/linux/sched.h |    3 
- kernel/sys.c          |   48 +++++++++-----
- 3 files changed, 169 insertions(+), 47 deletions(-)
+I had quickly looked and thought I saw a hole that would lead to
+inconsistent layout for 32-bit vs 64-bit.  I figured I'd be wrong
+there ;-)
 
+> > > +#define VMXNET3_MAX_TX_QUEUES  8
+> > > +#define VMXNET3_MAX_RX_QUEUES  16
+> > 
+> > different to UPT, I must've missed some layering here
+> 
+> These are the authoritiative #defines. Ignore the UPT ones.
+> 
+> > > --- /dev/null
+> > > +++ b/drivers/net/vmxnet3/vmxnet3_drv.c
+> > > +       VMXNET3_WRITE_BAR0_REG(adapter, VMXNET3_REG_IMR + intr_idx *
+> > 8, 0);
+> > 
+> > 	writel(0, adapter->hw_addr0 + VMXNET3_REG_IMR + intr_idx * 8)
+> > seems just as clear to me.
+> 
+> Fair enough. We were just trying to clearly show which register accesses go to BAR 0 versus BAR 1.
+> 
+> > only ever num_intrs=1, so there's some plan to bump this up and make
+> > these wrappers useful?
+> 
+> Yes.
+> 
+> > > +static void
+> > > +vmxnet3_process_events(struct vmxnet3_adapter *adapter)
+> > 
+> > Should be trivial to break out to it's own MSI-X vector, basically set
+> > up to do that already.
+> 
+> Yes, and the device is configurable to use any vector for any "events", but didn't see any compelling reason to do so. "ECR" events are extremely rare and we've got a shadow copy of the ECR register that avoids an expensive round trip to the device, stored in adapter->shared->ecr. So we can cheaply handle events on the hot Tx/Rx path with minimal overhead. But if you really see a compelling reason to allocate a separate MSI-X vector for events, we can certainly do that.
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 6f742f6..2f05799 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -49,6 +49,8 @@
- 
- #include <asm/uaccess.h>
- 
-+#include <linux/string.h>
-+#include <linux/ctype.h>
- #include <linux/errno.h>
- #include <linux/time.h>
- #include <linux/proc_fs.h>
-@@ -455,72 +457,177 @@ static int proc_oom_score(struct task_struct *task, char *buffer)
- struct limit_names {
- 	char *name;
- 	char *unit;
-+	char *match;
- };
- 
- static const struct limit_names lnames[RLIM_NLIMITS] = {
--	[RLIMIT_CPU] = {"Max cpu time", "ms"},
--	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
--	[RLIMIT_DATA] = {"Max data size", "bytes"},
--	[RLIMIT_STACK] = {"Max stack size", "bytes"},
--	[RLIMIT_CORE] = {"Max core file size", "bytes"},
--	[RLIMIT_RSS] = {"Max resident set", "bytes"},
--	[RLIMIT_NPROC] = {"Max processes", "processes"},
--	[RLIMIT_NOFILE] = {"Max open files", "files"},
--	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes"},
--	[RLIMIT_AS] = {"Max address space", "bytes"},
--	[RLIMIT_LOCKS] = {"Max file locks", "locks"},
--	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals"},
--	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
--	[RLIMIT_NICE] = {"Max nice priority", NULL},
--	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
--	[RLIMIT_RTTIME] = {"Max realtime timeout", "us"},
-+	[RLIMIT_CPU] = {"Max cpu time", "ms", "cpu"},
-+	[RLIMIT_FSIZE] = {"Max file size", "bytes", "fsize"},
-+	[RLIMIT_DATA] = {"Max data size", "bytes", "data"},
-+	[RLIMIT_STACK] = {"Max stack size", "bytes", "stack"},
-+	[RLIMIT_CORE] = {"Max core file size", "bytes", "core"},
-+	[RLIMIT_RSS] = {"Max resident set", "bytes", "rss"},
-+	[RLIMIT_NPROC] = {"Max processes", "processes", "nproc"},
-+	[RLIMIT_NOFILE] = {"Max open files", "files", "nofile"},
-+	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes", "memlock"},
-+	[RLIMIT_AS] = {"Max address space", "bytes", "as"},
-+	[RLIMIT_LOCKS] = {"Max file locks", "locks", "locks"},
-+	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals", "sigpending"},
-+	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes", "msgqueue"},
-+	[RLIMIT_NICE] = {"Max nice priority", NULL, "nice"},
-+	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL, "rtprio"},
-+	[RLIMIT_RTTIME] = {"Max realtime timeout", "us", "rttime"},
- };
- 
- /* Display limits for a process */
--static int proc_pid_limits(struct task_struct *task, char *buffer)
-+static ssize_t proc_pid_limit_read(struct file *file, char __user *buf,
-+			size_t count, loff_t *ppos)
- {
- 	unsigned int i;
--	int count = 0;
- 	unsigned long flags;
--	char *bufptr = buffer;
-+	char *bufptr;
-+	size_t bcount = 0;
-+	size_t ccount = 0;
-+	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
- 
- 	struct rlimit rlim[RLIM_NLIMITS];
- 
-+	bufptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!bufptr)
-+		goto out;
-+
- 	if (!lock_task_sighand(task, &flags))
--		return 0;
-+		goto out;
- 	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
- 	unlock_task_sighand(task, &flags);
- 
- 	/*
- 	 * print the file header
- 	 */
--	count += sprintf(&bufptr[count], "%-25s %-20s %-20s %-10s\n",
-+	bcount += sprintf(&bufptr[bcount], "%-25s %-20s %-20s %-10s\n",
- 			"Limit", "Soft Limit", "Hard Limit", "Units");
- 
- 	for (i = 0; i < RLIM_NLIMITS; i++) {
- 		if (rlim[i].rlim_cur == RLIM_INFINITY)
--			count += sprintf(&bufptr[count], "%-25s %-20s ",
-+			bcount += sprintf(&bufptr[bcount], "%-25s %-20s ",
- 					 lnames[i].name, "unlimited");
- 		else
--			count += sprintf(&bufptr[count], "%-25s %-20lu ",
-+			bcount += sprintf(&bufptr[bcount], "%-25s %-20lu ",
- 					 lnames[i].name, rlim[i].rlim_cur);
- 
- 		if (rlim[i].rlim_max == RLIM_INFINITY)
--			count += sprintf(&bufptr[count], "%-20s ", "unlimited");
-+			bcount += sprintf(&bufptr[bcount], "%-20s ",
-+					 "unlimited");
- 		else
--			count += sprintf(&bufptr[count], "%-20lu ",
-+			bcount += sprintf(&bufptr[bcount], "%-20lu ",
- 					 rlim[i].rlim_max);
- 
- 		if (lnames[i].unit)
--			count += sprintf(&bufptr[count], "%-10s\n",
-+			bcount += sprintf(&bufptr[bcount], "%-10s\n",
- 					 lnames[i].unit);
- 		else
--			count += sprintf(&bufptr[count], "\n");
-+			bcount += sprintf(&bufptr[bcount], "\n");
-+	}
-+
-+	if (*ppos >= bcount)
-+		goto out_task;
-+
-+	ccount = min(count, (size_t)(bcount-(*ppos)));
-+	ccount = ccount - copy_to_user(buf, &bufptr[*ppos], ccount);
-+	*ppos += ccount;
-+	kfree(bufptr);
-+out_task:
-+	put_task_struct(task);
-+out:
-+	return ccount;
-+}
-+
-+static ssize_t proc_pid_limit_write(struct file *file, const char __user *buf,
-+		size_t count, loff_t *ppos)
-+{
-+	char *buffer;
-+	char *element, *vmc, *vmm;
-+	struct rlimit new_rlim;
-+	unsigned long flags;
-+	int i;
-+	int index = -1;
-+	size_t wcount = 0;
-+	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-+
-+
-+	if (*ppos != 0)
-+		goto out;
-+
-+	if (count > 128)
-+		goto out;
-+	buffer = kzalloc(128, GFP_KERNEL);
-+
-+	if (!buffer)
-+		goto out;
-+
-+	element = kzalloc(sizeof(buffer), GFP_KERNEL);
-+	vmc = kzalloc(sizeof(buffer), GFP_KERNEL);
-+	vmm = kzalloc(sizeof(buffer), GFP_KERNEL);
-+
-+	if (!element || !vmm || !vmc)
-+		goto out_free;
-+
-+	wcount = count - copy_from_user(buffer, buf, count);
-+	if (wcount < count)
-+		goto out_free;
-+
-+	i = sscanf(buffer, "%s %s %s", element, vmc, vmm);
-+
-+	if (i < 3)
-+		goto out_free;
-+
-+	for (i = 0; i <= strlen(element); i++)
-+		element[i] = tolower(element[i]);
-+
-+	if (!strncmp(vmc, "unlimited", 9))
-+		new_rlim.rlim_cur = RLIM_INFINITY;
-+	else
-+		new_rlim.rlim_cur = simple_strtoull(vmc, NULL, 10);
-+
-+	if (!strncmp(vmm, "unlimited", 9))
-+		new_rlim.rlim_max = RLIM_INFINITY;
-+	else
-+		new_rlim.rlim_max = simple_strtoull(vmm, NULL, 10);
-+
-+	for (i = 0; i < RLIM_NLIMITS; i++) {
-+		if ((lnames[i].match) &&
-+		    !strncmp(element, lnames[i].match,
-+		     strlen(lnames[i].match))) {
-+			index = i;
-+			break;
-+		}
- 	}
- 
-+	if (!lock_task_sighand(task, &flags))
-+		goto out_free;
-+
-+	if ((index >= 0) && (index < RLIM_NLIMITS))
-+		do_setrlimit(index, &new_rlim, task);
-+
-+	unlock_task_sighand(task, &flags);
-+
-+out_free:
-+	kfree(element);
-+	kfree(vmc);
-+	kfree(vmm);
-+	kfree(buffer);
-+out:
-+	*ppos += count;
-+	put_task_struct(task);
- 	return count;
- }
- 
-+
-+static const struct file_operations proc_limit_operations = {
-+	.read           = proc_pid_limit_read,
-+	.write		= proc_pid_limit_write,
-+};
-+
- #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
- static int proc_pid_syscall(struct task_struct *task, char *buffer)
- {
-@@ -2483,7 +2590,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	INF("auxv",       S_IRUSR, proc_pid_auxv),
- 	ONE("status",     S_IRUGO, proc_pid_status),
- 	ONE("personality", S_IRUSR, proc_pid_personality),
--	INF("limits",	  S_IRUSR, proc_pid_limits),
-+	REG("limits",	  S_IRUSR|S_IWUSR, proc_limit_operations),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
-@@ -2822,7 +2929,7 @@ static const struct pid_entry tid_base_stuff[] = {
- 	INF("auxv",      S_IRUSR, proc_pid_auxv),
- 	ONE("status",    S_IRUGO, proc_pid_status),
- 	ONE("personality", S_IRUSR, proc_pid_personality),
--	INF("limits",	 S_IRUSR, proc_pid_limits),
-+	REG("limits",	 S_IRUSR|S_IWUSR, proc_limit_operations),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index f3d74bd..6bcc125 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -633,6 +633,9 @@ struct signal_struct {
- #endif
- };
- 
-+extern int do_setrlimit(unsigned int resource, struct rlimit *new_rlim,
-+			struct task_struct *tsk);
-+
- /* Context switch must be unlocked if interrupts are to be enabled */
- #ifdef __ARCH_WANT_INTERRUPTS_ON_CTXSW
- # define __ARCH_WANT_UNLOCKED_CTXSW
-diff --git a/kernel/sys.c b/kernel/sys.c
-index b3f1097..05bd22a 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1236,41 +1236,41 @@ SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource,
- 
- #endif
- 
--SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
-+int do_setrlimit(unsigned int resource, struct rlimit *new_rlim,
-+		 struct task_struct *tsk)
- {
--	struct rlimit new_rlim, *old_rlim;
- 	int retval;
-+	struct rlimit *old_rlim;
- 
--	if (resource >= RLIM_NLIMITS)
--		return -EINVAL;
--	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
--		return -EFAULT;
--	if (new_rlim.rlim_cur > new_rlim.rlim_max)
-+
-+	if (new_rlim->rlim_cur > new_rlim->rlim_max)
- 		return -EINVAL;
--	old_rlim = current->signal->rlim + resource;
--	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
-+	old_rlim = tsk->signal->rlim + resource;
-+
-+	if ((new_rlim->rlim_max > old_rlim->rlim_max) &&
- 	    !capable(CAP_SYS_RESOURCE))
- 		return -EPERM;
--	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
-+
-+	if (resource == RLIMIT_NOFILE && new_rlim->rlim_max > sysctl_nr_open)
- 		return -EPERM;
- 
--	retval = security_task_setrlimit(resource, &new_rlim);
-+	retval = security_task_setrlimit(resource, new_rlim);
- 	if (retval)
- 		return retval;
- 
--	if (resource == RLIMIT_CPU && new_rlim.rlim_cur == 0) {
-+	if (resource == RLIMIT_CPU && new_rlim->rlim_cur == 0) {
- 		/*
- 		 * The caller is asking for an immediate RLIMIT_CPU
- 		 * expiry.  But we use the zero value to mean "it was
- 		 * never set".  So let's cheat and make it one second
- 		 * instead
- 		 */
--		new_rlim.rlim_cur = 1;
-+		new_rlim->rlim_cur = 1;
- 	}
- 
--	task_lock(current->group_leader);
--	*old_rlim = new_rlim;
--	task_unlock(current->group_leader);
-+	task_lock(tsk->group_leader);
-+	*old_rlim = *new_rlim;
-+	task_unlock(tsk->group_leader);
- 
- 	if (resource != RLIMIT_CPU)
- 		goto out;
-@@ -1281,14 +1281,26 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
- 	 * very long-standing error, and fixing it now risks breakage of
- 	 * applications, so we live with it
- 	 */
--	if (new_rlim.rlim_cur == RLIM_INFINITY)
-+	if (new_rlim->rlim_cur == RLIM_INFINITY)
- 		goto out;
- 
--	update_rlimit_cpu(new_rlim.rlim_cur);
-+	update_rlimit_cpu(new_rlim->rlim_cur);
- out:
- 	return 0;
- }
- 
-+SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
-+{
-+	struct rlimit new_rlim;
-+
-+	if (resource >= RLIM_NLIMITS)
-+		return -EINVAL;
-+	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
-+		return -EFAULT;
-+
-+	return do_setrlimit(resource, &new_rlim, current);
-+}
-+
- /*
-  * It would make sense to put struct rusage in the task_struct,
-  * except that would make the task_struct be *really big*.  After
+Nah, just thinking outloud while trying to understand the driver.  I
+figured it'd be the + 1 vector (16 + 8 + 1).
+
+thanks,
+-chris
