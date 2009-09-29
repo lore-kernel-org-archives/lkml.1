@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZI2Kpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZI2Krd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbZI2Kpc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 06:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZI2Kpb
+	id S1754029AbZI2Krd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 06:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZI2Krd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 06:45:31 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59043 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753890AbZI2Kpb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 06:45:31 -0400
-Date: Tue, 29 Sep 2009 11:46:56 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Lennart Baruschka" <FunFlyer@gmx.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Disabling DMA with ICH10?
-Message-ID: <20090929114656.05053387@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090929075416.77960@gmx.net>
-References: <1254173481.4454.32.camel@goodbyte.homelinux.com>
-	<20090928234025.6dc4e3f7@lxorguk.ukuu.org.uk>
-	<20090929075416.77960@gmx.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Sep 2009 06:47:33 -0400
+Received: from trinity.fluff.org ([89.16.178.74]:56735 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753913AbZI2Krc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 06:47:32 -0400
+Date: Tue, 29 Sep 2009 11:47:35 +0100
+From: Ben Dooks <ben@simtec.co.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ben@fluff.org, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net
+Subject: Re: gpiolib: add names file in gpio chip sysfs.
+Message-ID: <20090929104734.GL2698@trinity.fluff.org>
+References: <20090803165536.345974601@fluff.org> <20090804164339.99667a23.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090804164339.99667a23.akpm@linux-foundation.org>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I thought that PIO transfers (which I understand to be
-> write32()/read32()'s) unlike DMA transfers could be interrupted by an
-> high-priority interrupt. Is that wrong?
+On Tue, Aug 04, 2009 at 04:43:39PM -0700, Andrew Morton wrote:
+> On Mon, 03 Aug 2009 17:55:36 +0100
+> ben@fluff.org wrote:
+> >
+> 
+> Did you mean the commit to have an author of ben@fluff.org?  I assumed
+> not and rewrote it to
+> 
+> 	Ben Dooks <ben@simtec.co.uk>
+> 
+> If you indeed want a different Author: and Signed-off-by: line then
+> please indicate that explicitly by putting a From: line at the top of
+> the changelog.
 
-Yes. An I/O cycle will stall that CPU thread (and sometimes more) until
-it completes. Not only that but the only way to do PIO only at the
-hardware level is to take the controller out of AHCI mode into legacy
-mode which means doing a lot of PIO accesses routed to the drive.
+sorry, occasionally whilst using quilt mail I get this wrong.
+ 
+> As your MUA didn't fill in the real-name part of the From: address,
+> it's nice to provide a From: line in the changelog so the patch
+> receiver doesn't have to type it in.
+> 
+> > Add a 'names' file to the sysfs entries for each chip to show which
+> > have names.
+> 
+> Why?
 
-> Actually, that's what I do - except for locking the page, yet. I do need
-> to access the PCI bus in real time, though. So I wonder what happens
+To export this information to the user. That was the only reason.
 
-I didnt think any system with an ICH10 even had a legacy PCI bus.
+-- 
+Ben
 
-> when the RT CPU is getting data from the PCI device, doing some
-> calculations on it and then writing back some data to the device,
-> __while at the same time__ another (non-RT) CPU starts a DMA transfer. I
-> figured the DMA would block the PCI bus,
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
-It depends upon how you have configured the bus, devices and chipset what
-priority rules are active and also what size bursts are used for the
-transfers. In particular read up on the PCI latency setting for legacy
-PCI bus devices.
-
-Alan
