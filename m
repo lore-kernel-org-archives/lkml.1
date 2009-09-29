@@ -1,106 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZI2Sqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZI2Svb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZI2Sqx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 14:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZI2Sqx
+	id S1753854AbZI2Svb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 14:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZI2Sva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 14:46:53 -0400
-Received: from sous-sol.org ([216.99.217.87]:51483 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753731AbZI2Sqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 14:46:52 -0400
-Date: Tue, 29 Sep 2009 11:46:50 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Kay, Allen M" <allen.m.kay@intel.com>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>
-Subject: Re: [PATCH ACS v3 1/1]
-Message-ID: <20090929184650.GF3958@sequoia.sous-sol.org>
-References: <1253231193-5753-1-git-send-email-allen.m.kay@intel.com> <20090929000041.GB3958@sequoia.sous-sol.org> <57C9024A16AD2D4C97DC78E552063EA3E2EA3B70@orsmsx505.amr.corp.intel.com>
+	Tue, 29 Sep 2009 14:51:30 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:40432 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbZI2Sv3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 14:51:29 -0400
+Date: Tue, 29 Sep 2009 13:51:26 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+Cc: Oren Laadan <orenl@librato.com>, Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
+       Dan Smith <danms@us.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [PATCH v18 49/80] c/r: support for UTS namespace
+Message-ID: <20090929185126.GB13297@us.ibm.com>
+References: <1253749920-18673-1-git-send-email-orenl@librato.com> <1253749920-18673-50-git-send-email-orenl@librato.com> <200909292213.21266@blacky.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E2EA3B70@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200909292213.21266@blacky.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kay, Allen M (allen.m.kay@intel.com) wrote:
-> >
-> >This may negatively impact p2p traffic throughput for devices that don't
-> >need it.  Have you considered this impact or attempted to measure it?
-> >
+Quoting Nikita V. Youshchenko (yoush@cs.msu.su):
+> > +static struct uts_namespace *do_restore_uts_ns(struct ckpt_ctx *ctx)
+> > ...
+> > +#ifdef CONFIG_UTS_NS
+> > +	uts_ns = create_uts_ns();
+> > +	if (!uts_ns) {
+> > +		uts_ns = ERR_PTR(-ENOMEM);
+> > +		goto out;
+> > +	}
+> > +	down_read(&uts_sem);
+> > +	name = &uts_ns->name;
+> > +	memcpy(name->sysname, h->sysname, sizeof(name->sysname));
+> > +	memcpy(name->nodename, h->nodename, sizeof(name->nodename));
+> > +	memcpy(name->release, h->release, sizeof(name->release));
+> > +	memcpy(name->version, h->version, sizeof(name->version));
+> > +	memcpy(name->machine, h->machine, sizeof(name->machine));
+> > +	memcpy(name->domainname, h->domainname, sizeof(name->domainname));
+> > +	up_read(&uts_sem);
 > 
-> As far as I know, there is no existing PCIe devices that have ACS capable PCIe switches.  This means this patch will not impact existing P2P devices.  On the NHM platform I tested this patch on, only root ports support ACS which has no material impact on PCIe transactions since whatever upstream traffic root port sees is already forwarded to the root complex anyways.
+> Could you please explain what for is this down_read() / up_read() ?
+> You operate only on local objects: 'name' points to just-created 
+> uts_ns, 'h' is also local data.
 
-BTW, I tested it as well...works as advertised ;-)  I did not generate
-any errors to see if AER is working, did you?
-
-> As for future devices that does have ACS capable PCIe switches, this patch can cause potential P2P performance issue as you indicated.  Although PCI IOV SIG has yet to make a decision on this issue, it would be reasonable to expect this problem can be mitigated with ATS capable devices.  For example, it would be reasonable to expect translated addresses can be routed directly to the peer device while un-translated addresses would have to be routed to the root complex.
-
-This means adding direct translated P2P support, no?  And what does the
-device cache when the IOMMU is in PT mode?  I'm mainly voicing concern
-about the non-IOV case (i.e. common case) that this impacts by enabling
-as a default.
-
-> By the way, PLX technology announced first such switch on 8/26.  We will be take a look at these devices as soon as we get hold of these in our lab.
-
-Or multifunction devices, but any testing is good.
-
-> >An alternative approach would be to enable this during device assignment.
-> >
-> 
-> I have indeed spent some time playing around with a patch that does this.  There are some potential drawbacks. Given that PCI is already enabled at the time of device assignment, enabling P2P upstream forwarding might disrupt in flight PCIe transactions.  In addition, this means we need separate patches for enabling ACS for KVM and Xen as device assignment for KVM and Xen do not share code paths.
-
-I hadn't considered in-flight transactions.  The device should be
-quiesced and reset before assignment, but that doesn't account for
-other devices effected by intermediate downstream port ACS changes.
-It's also not entirely clear what to do on de-assignment.  Would be a
-bit odd, but could be driven from userspace.
-
-> >Also, there is no checking that the relevant path through the topology has
-> >the right capabilties.  Is there any reason you left that out?  It would
-> >certainly simplify the filtering logic, for example.  
-> >
-> 
-> Do you mean enable p2p forwarding on all upstream PCIe switches only if all of them are ACS capable?  I can see this can potentially simplify filtering software to just check the lowest level PCIe switch.
-
-Yeah, and the RC requirements too, of course.
-
-> This appears to be a trade-off between whether we want put the complexity in Linux PCI driver or in the user mode filtering code.  In my mind, if we take the view that the device filtering software is the ultimate authority in determining whether a device is assignable, it probably should not trust the host to always do the right thing from virtualization standpoint.  If a paranoid filtering software always checks the entire path from the device to the root complex anyways, it might be reasonable to simplify the code in the kernel.
-
-The reason I mention it is not just filtering, but can create a platform
-w/ undefined behaviour w/out checking.
-
-> >And given some states result in undefined behavior, perhaps it makes sense to check
-> >while enabling ACS.
-> >
-> 
-> By "undefined behavior", do you mean when there a mix of ACS and non-ACS capable PCIe switches and P2P upstream forwarding is enabled in ACS capable PCIe switches?  I would expect the aggregate behavior is the same as no P2P upstream forwarding.
-
-Yes, that's what I mean.
-
-> Let's say we have a configuration where the lowest PCIe switch is ACS capable and it has P2P upstream forwarding enabled.  However, the PCIe switch just above it is not ACS capable.
-> 
-> I would expect the following behavior:
-> 
-> 1) P2P transaction is forwarded upstream by the ACS capable PCIe switch
-> 2) non-ACS capable switch sends the transaction back
-> 3) ACS capable switch sends the transaction to the peer device.
-> 
-> The aggregate result is the transaction behaved as if all the switches are not ACS capable.
-
-Right, although it's implementation specific what actually happens.
-May not matter much, I just don't know what switch vendors will do.
-
-> > I'd call it pci_enable_acs...in fact, the kdoc above tries something close to that ;-)
-> >
-> 
-> No problem, I can change the code to incorporate this once we have an agreement on other items.
+Yup, good point, that looks unnecessary.
 
 thanks,
--chris
+-serge
