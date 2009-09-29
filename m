@@ -1,106 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbZI2Vz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZI2V5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753123AbZI2Vz0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 17:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbZI2Vz0
+	id S1753216AbZI2V5W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 17:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZI2V5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 17:55:26 -0400
-Received: from sous-sol.org ([216.99.217.87]:46935 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750873AbZI2VzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 17:55:25 -0400
-Date: Tue, 29 Sep 2009 14:54:23 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Bhavesh Davda <bhavesh@vmware.com>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Shreyas Bhatewara <sbhatewara@vmware.com>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [Pv-drivers] [PATCH 2.6.31-rc9] net: VMware virtual Ethernet
-	NIC driver: vmxnet3
-Message-ID: <20090929215423.GI3958@sequoia.sous-sol.org>
-References: <89E2752CFA8EC044846EB849981913410173CDFAF6@EXCH-MBX-4.vmware.com> <20090929085333.GC3958@sequoia.sous-sol.org> <8B1F619C9F5F454E81D90D3C161698D7017DB76576@EXCH-MBX-3.vmware.com> <20090929203018.GG3958@sequoia.sous-sol.org> <8B1F619C9F5F454E81D90D3C161698D7017DB765E8@EXCH-MBX-3.vmware.com>
+	Tue, 29 Sep 2009 17:57:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56436 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751657AbZI2V5V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 17:57:21 -0400
+Date: Tue, 29 Sep 2009 14:56:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Linux 2.6.32-rc1
+In-Reply-To: <20090929232248.735bf4df@infradead.org>
+Message-ID: <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain>
+References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain> <4AC060AE.1090401@gmail.com> <alpine.LFD.2.01.0909280829100.3349@localhost.localdomain> <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com> <4AC10365.7090802@gmail.com>
+ <4AC2712C.4080901@gmail.com> <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain> <20090929232248.735bf4df@infradead.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8B1F619C9F5F454E81D90D3C161698D7017DB765E8@EXCH-MBX-3.vmware.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bhavesh Davda (bhavesh@vmware.com) wrote:
-> > > Thanks a bunch for your really thorough review! I'll answer some of
-> > your questions here. Shreyas can respond to your comments about some of
-> > the coding style/comments/etc. in a separate mail.
-> > 
-> > The style is less important at this stage, but certainly eases review
-> > to make it more consistent w/ Linux code.  The StudlyCaps, extra macros
-> > (screaming caps) and inconistent space/tabs are visual distractions,
-> > that's all.
-> 
-> Agreed, but we'll definitely address all the style issues in our subsequent patch posts. Actually Shreyas showed me his raw patch and it had tabs and not spaces, so we're trying to figure out if either Outlook (corporate blessed) or our Exchange server is converting those tabs to spaces or something.
 
-Ah, that's always fun.  You can check by mailing to yourself and looking
-at the outcome.
 
-> > > We do have an internal prototype of a Linux vmxnet3 driver with 4 Tx
-> > queues and 4 Rx queues, using 9 MSI-X vectors, but it needs some work
-> > before calling it production ready.
-> > 
-> > I'd expect once you switch to alloc_etherdev_mq(), make napi work per
-> > rx queue, and fix MSI-X allocation (all needed for 4/4), you should
-> > have enough to support the max of 16/8 (IOW, 4/4 still sounds like an
-> > aritificial limitation).
+On Tue, 29 Sep 2009, Arjan van de Ven wrote:
 > 
-> Absolutely: 4/4 was simply a prototype to see if it helps with performance any with certain benchmarks. So far it looks like there's a small performance gain with microbenchmarks like netperf, but we're hoping having multiple queues with multiple vectors might have some promise with macro benchmarks like SPECjbb. If it pans out, we'll most likely make it a module_param with some reasonable defaults, possibly just 1/1 by default.
+> can't we use alternatives() for this, to patch cmpxchg64 in ?
+> I mean.. it'll be commonly supported nowadays.. the fallback to it not
+> being supported could be a bit slower by now...
 
-Most physical devices that do MSI-X will do queue per cpu (or some
-grouping if large number of cpus compared to queues).  Probably
-reasonable default here too.
+Yes, we could. It would limit us to some fixed address format, probably
 
-> > > > How about GRO conversion?
-> > >
-> > > Looks attractive, and we'll work on that in a subsequent patch.
-> > Again, when we first wrote the driver, the NETIF_F_GRO stuff didn't
-> > exist in Linux.
-> > 
-> > OK, shouldn't be too much work.
-> > 
-> > Another thing I forgot to mention is that net_device now has
-> > net_device_stats in it.  So you shouldn't need net_device_stats in
-> > vmxnet3_adapter.
-> 
-> Cool. Will do.
-> 
-> > > > > +#define UPT1_MAX_TX_QUEUES  64
-> > > > > +#define UPT1_MAX_RX_QUEUES  64
-> > > >
-> > > > This is different than the 16/8 described above (and seemingly all
-> > moot
-> > > > since it becomes a single queue device).
-> > >
-> > > Nice catch! Those are not even used and are from the earliest days of
-> > our driver development. We'll nuke those.
-> > 
-> > Could you describe the UPT layer a bit?  There were a number of
-> > constants that didn't appear to be used.
-> 
-> UPT stands for Uniform Pass Thru, a spec/framework VMware developed with its IHV partners to implement the fast path (Tx/Rx) features of vmxnet3 in silicon. Some of these #defines that appear not to be used are based on this initial spec that VMware shared with its IHV partners.
-> 
-> We divided the emulated vmxnet3 PCIe device's registers into two sets on two separate BARs: BAR 0 for the UPT registers we asked IHV partners to implement that we emulate in our hypervisor if no physical device compliant with the UPT spec is available to pass thru from a virtual machine, and BAR 1 for registers we always emulate for slow path/control operations like setting the MAC address, or activating/quiescing/resetting the device, etc.
+	cmpxchg8b (%esi)
 
-Interesting.  Sounds like part of NetQueue and also something that virtio
-has looked into to support, e.g. VMDq.  Do you have a more complete
-spec?
+or something. Use something like this as a starting point, perhaps?
 
-thanks,
--chris
+NOTE! Totally untested! And you'd actually need to implement the 
+"cmpxchg8b_emu" function that takes it's arguments in %eax:%edx, %ebx:%ecx 
+and %esi and doesn't trash any other registers..
+
+		Linus
+
+---
+ arch/x86/include/asm/cmpxchg_32.h |   27 ++++++++++++++-------------
+ 1 files changed, 14 insertions(+), 13 deletions(-)
+
+diff --git a/arch/x86/include/asm/cmpxchg_32.h b/arch/x86/include/asm/cmpxchg_32.h
+index 82ceb78..d16a486 100644
+--- a/arch/x86/include/asm/cmpxchg_32.h
++++ b/arch/x86/include/asm/cmpxchg_32.h
+@@ -312,19 +312,20 @@ static inline unsigned long cmpxchg_386(volatile void *ptr, unsigned long old,
+ 
+ extern unsigned long long cmpxchg_486_u64(volatile void *, u64, u64);
+ 
+-#define cmpxchg64(ptr, o, n)						\
+-({									\
+-	__typeof__(*(ptr)) __ret;					\
+-	if (likely(boot_cpu_data.x86 > 4))				\
+-		__ret = (__typeof__(*(ptr)))__cmpxchg64((ptr),		\
+-				(unsigned long long)(o),		\
+-				(unsigned long long)(n));		\
+-	else								\
+-		__ret = (__typeof__(*(ptr)))cmpxchg_486_u64((ptr),	\
+-				(unsigned long long)(o),		\
+-				(unsigned long long)(n));		\
+-	__ret;								\
+-})
++#define cmpxchg64(ptr, o, n)					\
++({								\
++	__typeof__(*(ptr)) __ret;				\
++	__typeof__(*(ptr)) __old = (o);				\
++	__typeof__(*(ptr)) __new = (n);				\
++	alternative_io(LOCK_PREFIX "cmpxchg8b (%%esi)",		\
++		       "call cmpxchg8b_emu",			\
++		       X86_FEATURE_CMPXCHG8B,			\
++		       "=A" (__ret),				\
++		       "m" (*(ptr)), "0" (__old),		\
++		       "b" ((unsigned int)__new),		\
++		       "c" ((unsigned int)(__new>>32)) );	\
++	__ret; })
++
+ #define cmpxchg64_local(ptr, o, n)					\
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
